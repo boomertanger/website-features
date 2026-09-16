@@ -1,17 +1,25 @@
 // shared/memberspace-helper.js
-// Small wrapper around Memberspace's client-side state.
-// Assumes the Memberspace script is already loaded on the page.
+// Small wrapper around MemberSpace's client-side state.
+// Assumes the MemberSpace script is already loaded on the page.
+
+export function isMemberSpaceReady() {
+  return !!(window.MemberSpace && window.MemberSpace.ready);
+}
 
 export function getCurrentMember() {
-  return (window.Memberspace && window.Memberspace.member) || null;
+  if (!isMemberSpaceReady()) return null;
+  return window.MemberSpace.getMemberInfo().memberInfo || null;
 }
 
 export function isLoggedIn() {
-  return !!getCurrentMember();
+  if (!isMemberSpaceReady()) return false;
+  return !!window.MemberSpace.getMemberInfo().isLoggedIn;
 }
 
-export function hasActivePlan(planId) {
+// NOTE: verified against the free "Fan Club" membership shape only —
+// matching a paid-tier publicPlanId hasn't been confirmed yet.
+export function hasActivePlan(publicPlanId) {
   const member = getCurrentMember();
-  if (!member || !member.plans) return false;
-  return member.plans.some((p) => p.id === planId && p.status === "active");
+  if (!member || !member.memberships) return false;
+  return member.memberships.some((m) => m.publicPlanId === publicPlanId);
 }

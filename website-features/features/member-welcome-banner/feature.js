@@ -1,5 +1,5 @@
 // features/member-welcome-banner/feature.js
-import { isLoggedIn } from "../../shared/memberspace-helper.js";
+import { isLoggedIn, isMemberSpaceReady } from "../../shared/memberspace-helper.js";
 
 const BANNER_ID = "member-welcome-banner";
 const POLL_INTERVAL_MS = 200;
@@ -26,13 +26,14 @@ function render(banner, state) {
   banner.style.borderRadius = "6px";
 }
 
-// Memberspace's script can load after this one, so wait briefly for it
-// before deciding the login state, rather than always rendering logged-out.
-function waitForMemberspace(callback) {
+// MemberSpace's script can load after this one, so wait briefly for
+// window.MemberSpace.ready before deciding the login state, rather than
+// always rendering logged-out.
+function waitForMemberSpace(callback) {
   const start = Date.now();
 
   (function poll() {
-    if (window.Memberspace || Date.now() - start >= POLL_TIMEOUT_MS) {
+    if (isMemberSpaceReady() || Date.now() - start >= POLL_TIMEOUT_MS) {
       callback();
       return;
     }
@@ -44,7 +45,7 @@ function init() {
   const banner = document.getElementById(BANNER_ID);
   if (!banner) return;
 
-  waitForMemberspace(() => {
+  waitForMemberSpace(() => {
     render(banner, isLoggedIn() ? STATES.loggedIn : STATES.loggedOut);
   });
 }

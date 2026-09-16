@@ -31,8 +31,8 @@ either state.
 ## Edge cases
 - [ ] `#member-welcome-banner` div not found on the page → script no-ops silently
 - [ ] Script runs before DOM is ready → guarded with `DOMContentLoaded`
-- [ ] `window.Memberspace` not yet defined when script runs (async load) →
-      poll every ~200ms for up to ~3s; if it never appears, render the
+- [ ] `window.MemberSpace.ready` not yet true when script runs (async load) →
+      poll every ~200ms for up to ~3s; if it never becomes ready, render the
       logged-out box
 - [ ] Multiple divs share the id → only the first match (`getElementById`) is filled
 
