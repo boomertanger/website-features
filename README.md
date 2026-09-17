@@ -37,3 +37,12 @@ that's why production always points at a tag, never `@main` or `@dev`.
 3. Write `<feature-name>/feature.js`
 4. Test via the staging script tag above
 5. Tag a release and flip the production script tag to that tag
+
+## Releasing a version (promoting dev → production)
+1. Merge dev into main — main should always reflect exactly what's tested
+   and working, never be stale.
+2. If the release touches shared/firebase-init.js, flip its ENV constant
+   to "production" only on main. dev should always stay set to "staging".
+3. Commit that ENV flip directly on main.
+4. Tag the release from main (e.g. git tag v1.1.0) and push the tag.
+5. Update the production Squarespace code block(s) to point at the new tag.
