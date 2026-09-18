@@ -5,6 +5,13 @@ All notable changes, one entry per tagged release.
 ## [Unreleased]
 -
 
+## [v1.1.0] - 2026-09-18
+- Add `site-nav-login` feature: injects a "LOG IN" link into the desktop and
+  mobile nav via Footer Code Injection, hidden automatically for logged-in
+  visitors via MemberSpace's `data-ms-hide-when-logged-in`. Consolidates two
+  raw scripts previously pasted directly into Squarespace's Footer Code
+  Injection.
+
 ## [v1.0.0] - 2026-09-16
 - Add `member-welcome-banner` feature: shows a welcome message for logged-in
   members or a login prompt for logged-out visitors, based on MemberSpace
