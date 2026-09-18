@@ -9,26 +9,52 @@ const LOGIN_URL = "https://boomertanger.com?msopen=/member/sign_in";
 const LOGIN_TEXT = "LOG IN";
 const LOGIN_CLASS = "boomertanger-login";
 
-const TARGET_SELECTORS = [
-  ".header-actions--right",
-  ".header-menu-nav-folder-content",
-];
-
-function buildLoginLink() {
+function buildLoginAnchor() {
   const link = document.createElement("a");
   link.href = LOGIN_URL;
-  link.textContent = LOGIN_TEXT;
   link.className = LOGIN_CLASS;
   link.setAttribute("data-ms-hide-when-logged-in", "");
+  link.setAttribute("rel", "nofollow");
   return link;
 }
 
+function buildDesktopLink() {
+  const link = buildLoginAnchor();
+  link.textContent = LOGIN_TEXT;
+  return link;
+}
+
+function buildMobileWrapper() {
+  const wrapper = document.createElement("div");
+  wrapper.className =
+    "container header-menu-nav-item header-menu-nav-item--collection";
+
+  const link = buildLoginAnchor();
+
+  const content = document.createElement("div");
+  content.className = "header-menu-nav-item-content";
+  content.textContent = LOGIN_TEXT;
+
+  link.appendChild(content);
+  wrapper.appendChild(link);
+  return wrapper;
+}
+
 function injectLoginLinks() {
-  TARGET_SELECTORS.forEach((selector) => {
-    const container = document.querySelector(selector);
-    if (!container || container.querySelector(`.${LOGIN_CLASS}`)) return;
-    container.appendChild(buildLoginLink());
-  });
+  const desktopContainer = document.querySelector(".header-actions--right");
+  if (desktopContainer && !desktopContainer.querySelector(`.${LOGIN_CLASS}`)) {
+    desktopContainer.appendChild(buildDesktopLink());
+  }
+
+  const mobileContainer = document.querySelector(
+    ".header-menu-nav-folder-content"
+  );
+  if (mobileContainer && !mobileContainer.querySelector(`.${LOGIN_CLASS}`)) {
+    mobileContainer.insertBefore(
+      buildMobileWrapper(),
+      mobileContainer.firstChild
+    );
+  }
 }
 
 if (document.readyState === "loading") {

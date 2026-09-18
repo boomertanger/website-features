@@ -28,6 +28,17 @@ detects a logged-in visitor.
 1. **Logged out** — "LOG IN" link appears in both the desktop
    (`.header-actions--right`) and mobile (`.header-menu-nav-folder-content`)
    nav, linking to `https://boomertanger.com?msopen=/member/sign_in`.
+   - Desktop: a bare `<a class="boomertanger-login">` appended directly to
+     `.header-actions--right`.
+   - Mobile: matches the old script's markup, inserted as the first child
+     of `.header-menu-nav-folder-content`:
+     ```html
+     <div class="container header-menu-nav-item header-menu-nav-item--collection">
+       <a class="boomertanger-login" data-ms-hide-when-logged-in rel="nofollow">
+         <div class="header-menu-nav-item-content">LOG IN</div>
+       </a>
+     </div>
+     ```
 2. **Logged in** — link is hidden by MemberSpace.
 
 Left out for now: a "Members" dashboard button/link — to be added later as
