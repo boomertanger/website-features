@@ -7,7 +7,7 @@
 
 const LOGIN_URL = "https://boomertanger.com?msopen=/member/sign_in";
 const LOGIN_TEXT = "LOG IN";
-const LOGIN_CLASS = "site-nav-login-link";
+const LOGIN_CLASS = "boomertanger-login";
 
 const TARGET_SELECTORS = [
   ".header-actions--right",

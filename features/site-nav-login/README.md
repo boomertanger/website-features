@@ -39,11 +39,11 @@ a separate change.
 - [ ] Script runs before DOM is ready → guarded with `DOMContentLoaded`,
       same pattern as `member-welcome-banner`
 - [ ] Script re-runs on the same page (e.g. Squarespace AJAX nav) → guarded
-      against double-inject by checking for an existing `.site-nav-login-link`
+      against double-inject by checking for an existing `.boomertanger-login`
       in the target container first
-- [ ] Existing Custom CSS from the old inline scripts may target different
-      class names than `.site-nav-login-link` — check and update that CSS
-      if the link's styling doesn't match what was there before
+- [ ] The link uses class `boomertanger-login`, matching the class name the
+      old inline scripts used, so existing Custom CSS in Squarespace's
+      Design settings continues to apply with no changes needed there
 
 ## Test checklist (staging)
 - [ ] Logged out: "LOG IN" link appears in desktop nav, links to the
