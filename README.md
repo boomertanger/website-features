@@ -44,5 +44,5 @@ that's why production always points at a tag, never `@main` or `@dev`.
 2. If the release touches shared/firebase-init.js, flip its ENV constant
    to "production" only on main. dev should always stay set to "staging".
 3. Commit that ENV flip directly on main.
-4. Tag the release from main (e.g. git tag v1.1.0) and push the tag.
+4. Tag the release from main (e.g. git tag v1.2.0) and push the tag.
 5. Update the production Squarespace code block(s) to point at the new tag.
