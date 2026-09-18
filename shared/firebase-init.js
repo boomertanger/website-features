@@ -26,7 +26,7 @@ const configs = {
 };
 
 // Flip this manually per environment (or derive it from hostname/page).
-const ENV = "staging"; // "staging" | "production"
+const ENV = "production"; // "staging" | "production"
 
 export function getFirebaseApp() {
   return getApps().length ? getApp() : initializeApp(configs[ENV]);
