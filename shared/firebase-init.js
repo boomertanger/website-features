@@ -4,24 +4,24 @@
 // these are safe to commit; Firebase web config is not a secret,
 // access control lives in your Firestore/Storage security rules.
 
-import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { initializeApp, getApps, getApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
 
 const configs = {
   staging: {
-    apiKey: "STAGING_API_KEY",
-    authDomain: "STAGING_PROJECT.firebaseapp.com",
-    projectId: "STAGING_PROJECT",
-    storageBucket: "STAGING_PROJECT.appspot.com",
-    messagingSenderId: "STAGING_SENDER_ID",
-    appId: "STAGING_APP_ID",
+    apiKey: "AIzaSyClJypz3Zilx0kiTU354ycmPvr2B3iQa7I",
+    authDomain: "boomertanger-staging.firebaseapp.com",
+    projectId: "boomertanger-staging",
+    storageBucket: "boomertanger-staging.firebasestorage.app",
+    messagingSenderId: "1046602786327",
+    appId: "1:1046602786327:web:b9e864ceb4d864cf355e52",
   },
   production: {
-    apiKey: "PROD_API_KEY",
-    authDomain: "PROD_PROJECT.firebaseapp.com",
-    projectId: "PROD_PROJECT",
-    storageBucket: "PROD_PROJECT.appspot.com",
-    messagingSenderId: "PROD_SENDER_ID",
-    appId: "PROD_APP_ID",
+    apiKey: "AIzaSyA2fumbLoU94Tt1x46xeUXpOFKCS14IEtM",
+    authDomain: "boomertanger-prod.firebaseapp.com",
+    projectId: "boomertanger-prod",
+    storageBucket: "boomertanger-prod.firebasestorage.app",
+    messagingSenderId: "738386876648",
+    appId: "1:738386876648:web:131af951e6d2fbc985d15d",
   },
 };
 
