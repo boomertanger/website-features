@@ -265,7 +265,7 @@ function openSubmitModal() {
         description,
         status: "submitted",
         priority: null,
-        requesterId: state.memberId,
+        requesterId: state.memberId ?? "",
         requesterName: state.memberName,
         createdAt: serverTimestamp(),
         updatedAt: serverTimestamp(),
@@ -505,7 +505,7 @@ export async function initFeatureLab() {
   }
 
   const member = getCurrentMember();
-  state.memberId = member?.id ?? null;
+  state.memberId = member?.id != null ? String(member.id) : null;
   state.memberName = member?.name ?? "Member";
 
   renderFilters();
