@@ -217,12 +217,12 @@ function openSubmitModal() {
         </div>
         <div class="fl-field">
           <label class="fl-label" for="fl-title-input">Title</label>
-          <input id="fl-title-input" class="fl-input" type="text" maxlength="200" placeholder="e.g. Dark mode toggle on the shop pages">
+          <input id="fl-title-input" class="fl-input" type="text" maxlength="200" placeholder="e.g. A countdown timer for movie nights">
           <div class="fl-hint">3&ndash;200 characters</div>
         </div>
         <div class="fl-field">
           <label class="fl-label" for="fl-desc-input">Description</label>
-          <textarea id="fl-desc-input" class="fl-textarea" rows="5" maxlength="2000" placeholder="What's the problem, and what would fix it?"></textarea>
+          <textarea id="fl-desc-input" class="fl-textarea" rows="5" maxlength="2000" placeholder="Describe the idea — what should it do?"></textarea>
           <div class="fl-hint">Up to 2,000 characters</div>
         </div>
         <div id="fl-submit-error" class="fl-error" hidden></div>
