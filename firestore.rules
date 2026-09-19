@@ -1,0 +1,47 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isAdmin() {
+      return request.auth != null &&
+        exists(/databases/$(database)/documents/admins/$(request.auth.uid));
+    }
+
+    // Written only by the syncAdminStatus Cloud Function via the Admin SDK,
+    // which bypasses these rules entirely. Never touched directly by clients.
+    match /admins/{uid} {
+      allow read, write: if false;
+    }
+
+    // Managed by hand in the Firebase console (or the Admin SDK).
+    // Existence of a doc, keyed by lowercase email, marks that email as admin.
+    match /adminAllowlist/{email} {
+      allow read, write: if false;
+    }
+
+    match /featureRequests/{requestId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.description is string
+        && request.resource.data.description.size() <= 2000
+        && request.resource.data.status == "submitted"
+        && request.resource.data.priority == null
+        && request.resource.data.requesterId is string
+        && request.resource.data.requesterName is string;
+
+      // Only a real, verified admin (see isAdmin()) can change anything
+      // after creation, and only status/priority/history fields.
+      allow update: if isAdmin()
+        && request.resource.data.title == resource.data.title
+        && request.resource.data.description == resource.data.description
+        && request.resource.data.requesterId == resource.data.requesterId
+        && request.resource.data.requesterName == resource.data.requesterName;
+
+      allow delete: if isAdmin();
+    }
+  }
+}
