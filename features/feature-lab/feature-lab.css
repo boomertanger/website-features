@@ -1,0 +1,403 @@
+/* features/feature-lab/feature-lab.css
+   Matches the approved mockups: dark ground, one accent red,
+   Space Grotesk display + IBM Plex Sans body. Responsive via
+   media queries — no JS branching for layout. */
+
+#feature-lab-root {
+  --fl-bg: #121014;
+  --fl-surface: #1a1619;
+  --fl-surface-2: #1e1a1d;
+  --fl-border: #2a2326;
+  --fl-border-2: #332b2e;
+  --fl-text: #f3ede9;
+  --fl-text-muted: #a89a9c;
+  --fl-text-faint: #786e70;
+  --fl-accent: #c1443c;
+  --fl-accent-bg: rgba(193, 68, 60, 0.14);
+  --fl-amber: #d9a441;
+  --fl-amber-bg: rgba(217, 164, 65, 0.14);
+  --fl-blue: #6a93c9;
+  --fl-blue-bg: rgba(106, 147, 201, 0.14);
+  --fl-purple: #9573c9;
+  --fl-purple-bg: rgba(149, 115, 201, 0.14);
+  --fl-green: #5fa876;
+  --fl-green-bg: rgba(95, 168, 118, 0.12);
+  --fl-gray: #a89a9c;
+  --fl-gray-bg: #241f22;
+
+  font-family: "IBM Plex Sans", sans-serif;
+  color: var(--fl-text);
+  background: var(--fl-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+#feature-lab-root * {
+  box-sizing: border-box;
+}
+
+#feature-lab-root .fl-display {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+/* ---------- Header ---------- */
+
+#feature-lab-root .fl-header {
+  padding: 32px 32px 20px 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--fl-border);
+  flex-wrap: wrap;
+}
+
+#feature-lab-root .fl-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--fl-accent);
+}
+
+#feature-lab-root .fl-title {
+  margin: 4px 0 0 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+#feature-lab-root .fl-subtitle {
+  font-size: 14px;
+  color: var(--fl-text-muted);
+  margin-top: 4px;
+}
+
+#feature-lab-root .fl-btn {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-btn-primary {
+  background: var(--fl-accent);
+  color: var(--fl-bg);
+}
+
+#feature-lab-root .fl-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--fl-border-2);
+  color: var(--fl-text-muted);
+}
+
+#feature-lab-root .fl-btn-ghost {
+  background: transparent;
+  border: none;
+  color: var(--fl-text-faint);
+  font-size: 13px;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 4px;
+}
+
+/* ---------- Filters ---------- */
+
+#feature-lab-root .fl-filters {
+  padding: 16px 32px 0 32px;
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+}
+
+#feature-lab-root .fl-filters::-webkit-scrollbar {
+  display: none;
+}
+
+#feature-lab-root .fl-chip {
+  flex-shrink: 0;
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--fl-text-muted);
+  background: var(--fl-surface-2);
+  border: 1px solid var(--fl-border-2);
+  border-radius: 999px;
+  padding: 8px 14px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+#feature-lab-root .fl-chip.fl-active {
+  font-weight: 600;
+  color: var(--fl-bg);
+  background: var(--fl-text);
+  border-color: var(--fl-text);
+}
+
+/* ---------- List ---------- */
+
+#feature-lab-root .fl-list {
+  padding: 20px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 640px;
+  overflow-y: auto;
+}
+
+#feature-lab-root .fl-empty {
+  padding: 48px 16px;
+  text-align: center;
+  color: var(--fl-text-muted);
+  font-size: 14px;
+}
+
+#feature-lab-root .fl-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: 12px;
+  cursor: default;
+}
+
+#feature-lab-root .fl-row.fl-clickable {
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-row.fl-declined {
+  opacity: 0.6;
+}
+
+#feature-lab-root .fl-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+#feature-lab-root .fl-row-body {
+  flex-grow: 1;
+  min-width: 0;
+}
+
+#feature-lab-root .fl-row-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+#feature-lab-root .fl-row-desc {
+  font-size: 13px;
+  color: var(--fl-text-muted);
+  margin-top: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+#feature-lab-root .fl-badge {
+  font-size: 12px;
+  font-weight: 600;
+  border-radius: 999px;
+  padding: 6px 12px;
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+#feature-lab-root .fl-badge-neutral {
+  color: var(--fl-text-muted);
+  background: var(--fl-gray-bg);
+  border: 1px solid var(--fl-border-2);
+}
+
+#feature-lab-root .fl-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 999px;
+  background: var(--fl-border-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+#feature-lab-root .fl-row-date {
+  font-size: 12px;
+  color: var(--fl-text-faint);
+  flex-shrink: 0;
+  width: 60px;
+  text-align: right;
+}
+
+/* Tablet portrait: drop the date column */
+@media (max-width: 900px) {
+  #feature-lab-root .fl-row-date {
+    display: none;
+  }
+}
+
+/* Phone: rows become stacked cards */
+@media (max-width: 600px) {
+  #feature-lab-root .fl-header {
+    padding: 20px 20px 14px 20px;
+  }
+  #feature-lab-root .fl-filters {
+    padding: 12px 20px 0 20px;
+  }
+  #feature-lab-root .fl-list {
+    padding: 14px 20px 20px 20px;
+    max-height: none;
+  }
+  #feature-lab-root .fl-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  #feature-lab-root .fl-row-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  #feature-lab-root .fl-row-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  #feature-lab-root .fl-row-badges {
+    display: flex;
+    gap: 6px;
+  }
+  #feature-lab-root .fl-row-date {
+    display: block;
+    width: auto;
+    text-align: left;
+  }
+  #feature-lab-root .fl-avatar {
+    display: none;
+  }
+}
+
+/* ---------- Modal (submit form + admin detail) ---------- */
+
+#feature-lab-root .fl-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  z-index: 1000;
+}
+
+#feature-lab-root .fl-modal {
+  width: 100%;
+  max-width: 460px;
+  max-height: 90vh;
+  overflow-y: auto;
+  background: var(--fl-surface);
+  border: 1px solid var(--fl-border);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+#feature-lab-root .fl-modal.fl-modal-wide {
+  max-width: 640px;
+}
+
+#feature-lab-root .fl-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#feature-lab-root .fl-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--fl-text-muted);
+}
+
+#feature-lab-root .fl-hint {
+  font-size: 12px;
+  color: var(--fl-text-faint);
+}
+
+#feature-lab-root .fl-input,
+#feature-lab-root .fl-textarea,
+#feature-lab-root .fl-select {
+  font-family: "IBM Plex Sans", sans-serif;
+  background: var(--fl-bg);
+  border: 1px solid var(--fl-border-2);
+  border-radius: 8px;
+  padding: 12px 14px;
+  color: var(--fl-text);
+  font-size: 15px;
+  outline: none;
+  width: 100%;
+}
+
+#feature-lab-root .fl-textarea {
+  resize: none;
+  font-family: "IBM Plex Sans", sans-serif;
+}
+
+#feature-lab-root .fl-modal-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 4px;
+}
+
+#feature-lab-root .fl-modal-actions .fl-btn {
+  flex-grow: 1;
+}
+
+#feature-lab-root .fl-error {
+  font-size: 13px;
+  color: var(--fl-accent);
+}
+
+#feature-lab-root .fl-history-item {
+  display: flex;
+  gap: 14px;
+}
+
+#feature-lab-root .fl-history-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+#feature-lab-root .fl-history-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  margin-top: 6px;
+}
+
+#feature-lab-root .fl-history-rule {
+  width: 1px;
+  flex-grow: 1;
+  background: var(--fl-border);
+  margin-top: 4px;
+}
+
+#feature-lab-root .fl-logged-out {
+  padding: 48px 32px;
+  text-align: center;
+  color: var(--fl-text-muted);
+  font-size: 15px;
+}
