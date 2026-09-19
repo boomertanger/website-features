@@ -70,6 +70,23 @@ service cloud.firestore {
         || isSingleVoteToggle();
 
       allow delete: if isAdmin();
+
+      // Public comment thread. authorId, like requesterId, isn't
+      // identity-verified — but isAdminAuthor IS checked against the
+      // real isAdmin() status, since faking an "Admin" badge on a public
+      // comment is a trust issue we can actually prevent here.
+      match /comments/{commentId} {
+        allow read: if request.auth != null;
+        allow create: if request.auth != null
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.authorId is string
+          && request.resource.data.authorName is string
+          && request.resource.data.isAdminAuthor is bool
+          && (request.resource.data.isAdminAuthor == false || isAdmin());
+        allow update, delete: if false;
+      }
     }
   }
 }

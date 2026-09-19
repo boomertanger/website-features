@@ -220,10 +220,9 @@ function renderList() {
       const status = STATUS_META[r.status] ?? STATUS_META.submitted;
       const priority = r.priority ? PRIORITY_META[r.priority] : null;
       const declinedClass = r.status === "declined" ? "fl-declined" : "";
-      const clickable = state.isAdmin ? "fl-clickable" : "";
       const voted = hasVoted(r);
       return `
-      <div class="fl-row ${declinedClass} ${clickable}" data-id="${r.id}">
+      <div class="fl-row ${declinedClass} fl-clickable" data-id="${r.id}">
         <div class="fl-row-top" style="display:flex;align-items:flex-start;gap:16px;flex-grow:1;min-width:0;">
           <button type="button" class="fl-vote-btn ${voted ? "fl-voted" : ""}" data-vote-id="${r.id}" aria-label="${voted ? "Remove your vote" : "Vote for this request"}">
             <span class="fl-vote-arrow">&#9650;</span>
@@ -254,11 +253,9 @@ function renderList() {
     });
   });
 
-  if (state.isAdmin) {
-    el.querySelectorAll(".fl-row").forEach((row) => {
-      row.addEventListener("click", () => openAdminModal(row.dataset.id));
-    });
-  }
+  el.querySelectorAll(".fl-row").forEach((row) => {
+    row.addEventListener("click", () => openDetailModal(row.dataset.id));
+  });
 }
 
 // ---------- Submit modal ----------
@@ -345,28 +342,18 @@ function openSubmitModal() {
   });
 }
 
-// ---------- Admin modal ----------
+// ---------- Detail modal (description, comments, admin controls, history) ----------
 
-function openAdminModal(requestId) {
+function openDetailModal(requestId) {
   const request = state.requests.find((r) => r.id === requestId);
   if (!request) return;
 
   const slot = state.root.querySelector("#fl-modal-slot");
   const history = [...(request.statusHistory ?? [])].reverse();
+  let unsubscribeComments = null;
 
-  slot.innerHTML = `
-    <div class="fl-modal-backdrop" id="fl-admin-backdrop">
-      <div class="fl-modal fl-modal-wide">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <div>
-            <span class="fl-badge" style="color:var(--fl-accent);background:var(--fl-accent-bg);">Admin view</span>
-            <h3 class="fl-title fl-display" style="font-size:22px;margin-top:10px;">${escapeHtml(request.title)}</h3>
-          </div>
-          <button type="button" id="fl-admin-close" class="fl-btn-secondary fl-btn" style="padding:8px 12px;">&times;</button>
-        </div>
-
-        <p style="margin:0;font-size:15px;line-height:1.6;color:var(--fl-text);">${escapeHtml(request.description)}</p>
-
+  const adminControlsHtml = state.isAdmin
+    ? `
         <div style="display:flex;flex-direction:column;gap:16px;padding:18px;background:var(--fl-surface-2);border:1px solid var(--fl-border);border-radius:12px;">
           <div style="display:flex;gap:16px;flex-wrap:wrap;">
             <div class="fl-field" style="flex:1;min-width:160px;">
@@ -399,7 +386,30 @@ function openAdminModal(requestId) {
           </div>
           <div id="fl-admin-error" class="fl-error" hidden></div>
           <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display" style="align-self:flex-end;">Save changes</button>
+        </div>`
+    : "";
+
+  slot.innerHTML = `
+    <div class="fl-modal-backdrop" id="fl-detail-backdrop">
+      <div class="fl-modal fl-modal-wide">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
+          <h3 class="fl-title fl-display" style="font-size:22px;">${escapeHtml(request.title)}</h3>
+          <button type="button" id="fl-detail-close" class="fl-btn-secondary fl-btn" style="padding:8px 12px;">&times;</button>
         </div>
+
+        <p style="margin:0;font-size:15px;line-height:1.6;color:var(--fl-text);">${escapeHtml(request.description)}</p>
+
+        <div>
+          <div class="fl-label" style="margin-bottom:12px;">Comments</div>
+          <div id="fl-comments-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;"></div>
+          <div class="fl-field">
+            <textarea id="fl-comment-input" class="fl-textarea" rows="2" maxlength="1000" placeholder="Ask a question or add context&hellip;"></textarea>
+          </div>
+          <div id="fl-comment-error" class="fl-error" hidden></div>
+          <button type="button" id="fl-comment-post" class="fl-btn fl-btn-secondary fl-display" style="margin-top:8px;">Post comment</button>
+        </div>
+
+        ${adminControlsHtml}
 
         <div>
           <div class="fl-label" style="margin-bottom:12px;">History</div>
@@ -426,40 +436,105 @@ function openAdminModal(requestId) {
   `;
 
   const close = () => {
+    if (unsubscribeComments) unsubscribeComments();
     slot.innerHTML = "";
   };
-  slot.querySelector("#fl-admin-backdrop").addEventListener("click", (e) => {
-    if (e.target.id === "fl-admin-backdrop") close();
+  slot.querySelector("#fl-detail-backdrop").addEventListener("click", (e) => {
+    if (e.target.id === "fl-detail-backdrop") close();
   });
-  slot.querySelector("#fl-admin-close").addEventListener("click", close);
+  slot.querySelector("#fl-detail-close").addEventListener("click", close);
 
-  slot.querySelector("#fl-admin-save").addEventListener("click", async () => {
-    const status = slot.querySelector("#fl-status-select").value;
-    const priority = slot.querySelector("#fl-priority-select").value || null;
-    const note = slot.querySelector("#fl-note-input").value.trim();
-    const errorEl = slot.querySelector("#fl-admin-error");
+  // Live comment thread
+  const commentsList = slot.querySelector("#fl-comments-list");
+  const commentsQuery = query(
+    collection(db, "featureRequests", requestId, "comments"),
+    orderBy("createdAt", "asc")
+  );
+  unsubscribeComments = onSnapshot(
+    commentsQuery,
+    (snapshot) => {
+      const comments = snapshot.docs.map((d) => d.data());
+      if (comments.length === 0) {
+        commentsList.innerHTML = `<div style="font-size:13px;color:var(--fl-text-faint);">No comments yet.</div>`;
+        return;
+      }
+      commentsList.innerHTML = comments
+        .map(
+          (c) => `
+        <div class="fl-comment">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <span style="font-size:13px;font-weight:600;">${escapeHtml(c.authorName)}</span>
+            ${c.isAdminAuthor ? `<span class="fl-badge" style="color:var(--fl-accent);background:var(--fl-accent-bg);padding:2px 8px;font-size:10px;">Admin</span>` : ""}
+            <span style="font-size:12px;color:var(--fl-text-faint);">${formatDate(c.createdAt)}</span>
+          </div>
+          <div style="font-size:14px;color:var(--fl-text);margin-top:4px;line-height:1.5;">${escapeHtml(c.text)}</div>
+        </div>`
+        )
+        .join("");
+    },
+    (err) => {
+      console.error("Failed to load comments", err);
+      commentsList.innerHTML = `<div style="font-size:13px;color:var(--fl-text-faint);">Couldn't load comments.</div>`;
+    }
+  );
 
-    const historyEntry = {
-      status,
-      changedBy: auth.currentUser?.email ?? "Admin",
-      changedAt: new Date().toISOString(),
-    };
-    if (note) historyEntry.note = note;
-
+  slot.querySelector("#fl-comment-post").addEventListener("click", async () => {
+    const input = slot.querySelector("#fl-comment-input");
+    const errorEl = slot.querySelector("#fl-comment-error");
+    const text = input.value.trim();
+    if (text.length < 1 || text.length > 1000) {
+      errorEl.textContent = "Comment can't be empty.";
+      errorEl.hidden = false;
+      return;
+    }
     try {
-      await updateDoc(doc(db, "featureRequests", requestId), {
-        status,
-        priority,
-        updatedAt: serverTimestamp(),
-        statusHistory: arrayUnion(historyEntry),
+      await addDoc(collection(db, "featureRequests", requestId, "comments"), {
+        text,
+        authorId: state.memberId ?? "",
+        authorName: state.memberName,
+        isAdminAuthor: state.isAdmin,
+        createdAt: serverTimestamp(),
       });
-      close();
+      input.value = "";
+      errorEl.hidden = true;
     } catch (err) {
-      console.error("Failed to save admin changes", err);
-      errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
+      console.error("Failed to post comment", err);
+      errorEl.textContent = "Something went wrong posting your comment.";
       errorEl.hidden = false;
     }
   });
+
+  // Admin controls (only present in the DOM if state.isAdmin)
+  const saveBtn = slot.querySelector("#fl-admin-save");
+  if (saveBtn) {
+    saveBtn.addEventListener("click", async () => {
+      const status = slot.querySelector("#fl-status-select").value;
+      const priority = slot.querySelector("#fl-priority-select").value || null;
+      const note = slot.querySelector("#fl-note-input").value.trim();
+      const errorEl = slot.querySelector("#fl-admin-error");
+
+      const historyEntry = {
+        status,
+        changedBy: state.memberName || "Admin",
+        changedAt: new Date().toISOString(),
+      };
+      if (note) historyEntry.note = note;
+
+      try {
+        await updateDoc(doc(db, "featureRequests", requestId), {
+          status,
+          priority,
+          updatedAt: serverTimestamp(),
+          statusHistory: arrayUnion(historyEntry),
+        });
+        close();
+      } catch (err) {
+        console.error("Failed to save admin changes", err);
+        errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
+        errorEl.hidden = false;
+      }
+    });
+  }
 }
 
 // ---------- Data ----------

@@ -431,6 +431,13 @@
   color: var(--fl-accent);
 }
 
+#feature-lab-root .fl-comment {
+  padding: 10px 12px;
+  background: var(--fl-bg);
+  border: 1px solid var(--fl-border);
+  border-radius: 8px;
+}
+
 #feature-lab-root .fl-history-item {
   display: flex;
   gap: 14px;
