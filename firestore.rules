@@ -56,9 +56,9 @@ service cloud.firestore {
         && request.resource.data.description.size() <= 2000
         && request.resource.data.status == "submitted"
         && request.resource.data.priority == null
-        && request.resource.data.votes == []
         && request.resource.data.requesterId is string
-        && request.resource.data.requesterName is string;
+        && request.resource.data.requesterName is string
+        && request.resource.data.votes == [];
 
       // Only a real, verified admin (see isAdmin()) can change anything
       // after creation, and only status/priority/history fields.

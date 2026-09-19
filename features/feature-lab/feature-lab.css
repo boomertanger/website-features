@@ -1,9 +1,15 @@
 /* features/feature-lab/feature-lab.css
    Matches the approved mockups: dark ground, one accent red,
    Space Grotesk display + IBM Plex Sans body. Responsive via
-   media queries — no JS branching for layout. */
+   CONTAINER queries (not media queries) — deliberately, since a
+   Squarespace Code Block's width has nothing to do with the browser
+   window's width. A narrow block on a wide desktop screen still needs
+   the mobile layout; media queries can't see that, only container
+   queries can. No JS branching for layout. */
 
 #feature-lab-root {
+  container-type: inline-size;
+  container-name: fl;
   --fl-bg: #121014;
   --fl-surface: #1a1619;
   --fl-surface-2: #1e1a1d;
@@ -139,6 +145,24 @@
   border-color: var(--fl-text);
 }
 
+#feature-lab-root .fl-sort {
+  padding: 12px 32px 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+#feature-lab-root .fl-sort-label {
+  font-size: 13px;
+  color: var(--fl-text-faint);
+  margin-right: 2px;
+}
+
+#feature-lab-root .fl-chip-small {
+  padding: 6px 12px;
+  font-size: 12px;
+}
+
 /* ---------- List ---------- */
 
 #feature-lab-root .fl-list {
@@ -174,6 +198,42 @@
 
 #feature-lab-root .fl-row.fl-declined {
   opacity: 0.6;
+}
+
+#feature-lab-root .fl-vote-btn {
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  min-width: 44px;
+  padding: 8px 6px;
+  background: var(--fl-surface-2);
+  border: 1px solid var(--fl-border-2);
+  border-radius: 8px;
+  color: var(--fl-text-muted);
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-vote-btn:hover {
+  border-color: var(--fl-text-faint);
+}
+
+#feature-lab-root .fl-vote-btn.fl-voted {
+  color: var(--fl-accent);
+  background: var(--fl-accent-bg);
+  border-color: var(--fl-accent);
+}
+
+#feature-lab-root .fl-vote-arrow {
+  font-size: 10px;
+  line-height: 1;
+}
+
+#feature-lab-root .fl-vote-count {
+  font-size: 13px;
+  font-weight: 600;
 }
 
 #feature-lab-root .fl-dot {
@@ -238,15 +298,17 @@
   text-align: right;
 }
 
-/* Tablet portrait: drop the date column */
-@media (max-width: 900px) {
+/* Tablet portrait width, or a code block that narrow on any screen:
+   drop the date column */
+@container fl (max-width: 900px) {
   #feature-lab-root .fl-row-date {
     display: none;
   }
 }
 
-/* Phone: rows become stacked cards */
-@media (max-width: 600px) {
+/* Phone width, or a code block that narrow on any screen:
+   rows become stacked cards */
+@container fl (max-width: 600px) {
   #feature-lab-root .fl-header {
     padding: 20px 20px 14px 20px;
   }
