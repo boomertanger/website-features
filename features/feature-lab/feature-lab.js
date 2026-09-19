@@ -32,6 +32,7 @@ import {
   updateDoc,
   serverTimestamp,
   arrayUnion,
+  arrayRemove,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
   getAuth,
@@ -80,6 +81,7 @@ const functions = getFunctions(app);
 const state = {
   requests: [],
   filter: "all",
+  sort: "newest",
   isAdmin: false,
   memberId: null,
   memberName: "Member",
@@ -129,6 +131,7 @@ function renderShell() {
       </div>
     </div>
     <div class="fl-filters" id="fl-filters"></div>
+    <div class="fl-sort" id="fl-sort"></div>
     <div class="fl-list" id="fl-list"></div>
     <div id="fl-modal-slot"></div>
   `;
@@ -157,12 +160,55 @@ function renderFilters() {
   });
 }
 
+function renderSort() {
+  const el = state.root.querySelector("#fl-sort");
+  el.innerHTML = `
+    <span class="fl-sort-label">Sort by</span>
+    <button type="button" class="fl-chip fl-chip-small ${state.sort === "newest" ? "fl-active" : ""}" data-sort="newest">Newest</button>
+    <button type="button" class="fl-chip fl-chip-small ${state.sort === "votes" ? "fl-active" : ""}" data-sort="votes">Most voted</button>
+  `;
+  el.querySelectorAll("[data-sort]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.sort = btn.dataset.sort;
+      renderSort();
+      renderList();
+    });
+  });
+}
+
+function voteCount(r) {
+  return (r.votes ?? []).length;
+}
+
+function hasVoted(r) {
+  return !!state.memberId && (r.votes ?? []).includes(state.memberId);
+}
+
+async function toggleVote(requestId) {
+  if (!state.memberId) return;
+  const request = state.requests.find((r) => r.id === requestId);
+  if (!request) return;
+  const voted = hasVoted(request);
+  try {
+    await updateDoc(doc(db, "featureRequests", requestId), {
+      votes: voted ? arrayRemove(state.memberId) : arrayUnion(state.memberId),
+    });
+  } catch (err) {
+    console.error("Failed to toggle vote", err);
+  }
+}
+
+
 function renderList() {
   const el = state.root.querySelector("#fl-list");
-  const items =
+  let items =
     state.filter === "all"
       ? state.requests
       : state.requests.filter((r) => r.status === state.filter);
+
+  if (state.sort === "votes") {
+    items = [...items].sort((a, b) => voteCount(b) - voteCount(a));
+  }
 
   if (items.length === 0) {
     el.innerHTML = `<div class="fl-empty">No requests here yet.</div>`;
@@ -175,9 +221,14 @@ function renderList() {
       const priority = r.priority ? PRIORITY_META[r.priority] : null;
       const declinedClass = r.status === "declined" ? "fl-declined" : "";
       const clickable = state.isAdmin ? "fl-clickable" : "";
+      const voted = hasVoted(r);
       return `
       <div class="fl-row ${declinedClass} ${clickable}" data-id="${r.id}">
         <div class="fl-row-top" style="display:flex;align-items:flex-start;gap:16px;flex-grow:1;min-width:0;">
+          <button type="button" class="fl-vote-btn ${voted ? "fl-voted" : ""}" data-vote-id="${r.id}" aria-label="${voted ? "Remove your vote" : "Vote for this request"}">
+            <span class="fl-vote-arrow">&#9650;</span>
+            <span class="fl-vote-count">${voteCount(r)}</span>
+          </button>
           <div class="fl-dot" style="background:${status.color};margin-top:6px;"></div>
           <div class="fl-row-body">
             <div class="fl-row-title fl-display">${escapeHtml(r.title)}</div>
@@ -195,6 +246,13 @@ function renderList() {
       </div>`;
     })
     .join("");
+
+  el.querySelectorAll(".fl-vote-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleVote(btn.dataset.voteId);
+    });
+  });
 
   if (state.isAdmin) {
     el.querySelectorAll(".fl-row").forEach((row) => {
@@ -221,9 +279,9 @@ function openSubmitModal() {
           <div class="fl-hint">3&ndash;200 characters</div>
         </div>
         <div class="fl-field">
-          <label class="fl-label" for="fl-desc-input">Description</label>
+          <label class="fl-label" for="fl-desc-input">Description (required)</label>
           <textarea id="fl-desc-input" class="fl-textarea" rows="5" maxlength="2000" placeholder="Describe the idea — what should it do?"></textarea>
-          <div class="fl-hint">Up to 2,000 characters</div>
+          <div class="fl-hint">10&ndash;2,000 characters</div>
         </div>
         <div id="fl-submit-error" class="fl-error" hidden></div>
         <div class="fl-modal-actions">
@@ -253,8 +311,8 @@ function openSubmitModal() {
       errorEl.hidden = false;
       return;
     }
-    if (description.length > 2000) {
-      errorEl.textContent = "Description is too long.";
+    if (description.length < 10 || description.length > 2000) {
+      errorEl.textContent = "Description needs to be 10–2,000 characters.";
       errorEl.hidden = false;
       return;
     }
@@ -265,6 +323,7 @@ function openSubmitModal() {
         description,
         status: "submitted",
         priority: null,
+        votes: [],
         requesterId: state.memberId ?? "",
         requesterName: state.memberName,
         createdAt: serverTimestamp(),
@@ -509,6 +568,7 @@ export async function initFeatureLab() {
   state.memberName = member?.name ?? "Member";
 
   renderFilters();
+  renderSort();
   updateAdminUi();
   watchAuthState();
 }

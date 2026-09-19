@@ -19,6 +19,31 @@ service cloud.firestore {
       allow read, write: if false;
     }
 
+    // A member may toggle their own vote (add/remove exactly one entry in
+    // votes) without touching anything else. Note: like requesterId, the
+    // voter's id isn't identity-verified — someone could vote under a
+    // fabricated id, or from two browsers. Acceptable given the stakes;
+    // this is not a fraud-proof tally, just a lightweight signal.
+    function isSingleVoteToggle() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let beforeVotes = before.get('votes', []);
+      let afterVotes = after.get('votes', []);
+      let added = afterVotes.toSet().difference(beforeVotes.toSet());
+      let removed = beforeVotes.toSet().difference(afterVotes.toSet());
+      return request.auth != null
+        && after.title == before.title
+        && after.description == before.description
+        && after.status == before.status
+        && after.priority == before.priority
+        && after.requesterId == before.requesterId
+        && after.requesterName == before.requesterName
+        && after.statusHistory == before.statusHistory
+        && after.createdAt == before.createdAt
+        && ((added.size() == 1 && removed.size() == 0)
+            || (added.size() == 0 && removed.size() == 1));
+    }
+
     match /featureRequests/{requestId} {
       allow read: if request.auth != null;
 
@@ -27,19 +52,22 @@ service cloud.firestore {
         && request.resource.data.title.size() >= 3
         && request.resource.data.title.size() <= 200
         && request.resource.data.description is string
+        && request.resource.data.description.size() >= 10
         && request.resource.data.description.size() <= 2000
         && request.resource.data.status == "submitted"
         && request.resource.data.priority == null
+        && request.resource.data.votes == []
         && request.resource.data.requesterId is string
         && request.resource.data.requesterName is string;
 
       // Only a real, verified admin (see isAdmin()) can change anything
       // after creation, and only status/priority/history fields.
-      allow update: if isAdmin()
+      allow update: if (isAdmin()
         && request.resource.data.title == resource.data.title
         && request.resource.data.description == resource.data.description
         && request.resource.data.requesterId == resource.data.requesterId
-        && request.resource.data.requesterName == resource.data.requesterName;
+        && request.resource.data.requesterName == resource.data.requesterName)
+        || isSingleVoteToggle();
 
       allow delete: if isAdmin();
     }
