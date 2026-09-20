@@ -3,7 +3,15 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
--
+- Add `disk-stash` feature: admin-only dashboard for the shared
+  `externalAssets` storage collection — tracked-storage usage bar, asset
+  list with a manual purge action, and admin-editable auto-cleanup rules.
+  Adds `deleteExternalAsset` (callable) and `scheduledAssetCleanup`
+  (daily) Cloud Functions, the single allowed Cloudinary deletion path,
+  plus `functions/lib/externalAssets.js`'s `recordAssetCreated()` helper
+  for future writers (Bug Zapper first). Requires `CLOUDINARY_CLOUD_NAME`
+  / `CLOUDINARY_API_KEY` / `CLOUDINARY_API_SECRET` secrets on both
+  Firebase projects before deploying functions.
 
 ## [v1.1.0] - 2026-09-18
 - Add `site-nav-login` feature: injects a "LOG IN" link into the desktop and

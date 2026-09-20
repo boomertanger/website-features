@@ -1,4 +1,14 @@
 {
-  "indexes": [],
+  "indexes": [
+    {
+      "collectionGroup": "externalAssets",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "linkedDoc.collection", "order": "ASCENDING" },
+        { "fieldPath": "linkedDoc.docId", "order": "ASCENDING" }
+      ]
+    }
+  ],
   "fieldOverrides": []
 }
+

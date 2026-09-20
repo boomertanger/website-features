@@ -78,6 +78,45 @@ service cloud.firestore {
       allow delete: if isAdmin(); // moderation only
     }
 
+    // ---------- Disk Stash: shared external-storage tracking ----------
+    // See /features/disk-stash/README.md for the full contract.
+
+    // Written ONLY by Cloud Functions (recordAssetCreated / the safe-delete
+    // path in performAssetDeletion, functions/index.js) via the Admin SDK.
+    // Never touched directly by clients, even admins — deletion must go
+    // through the Cloudinary Admin API call first, which client code can't
+    // safely be trusted to do (an interrupted client write could delete the
+    // Firestore record while the file stays live in Cloudinary, or clear a
+    // linked doc's field while the Cloudinary asset survives).
+    match /externalAssets/{assetId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Same reasoning: only the functions that create/delete assets should
+    // ever move this counter, so client writes (even correct-looking ones)
+    // are refused rather than trusted to stay in sync.
+    match /storageUsage/{docId} {
+      allow read: if isAdmin();
+      allow write: if false;
+    }
+
+    // Config only, no real data at stake — admins can edit these directly.
+    // The scheduled cleanup function (functions/index.js) reads whatever is
+    // enabled here and still deletes only via the shared safe-delete path.
+    match /cleanupRules/{ruleId} {
+      allow read: if isAdmin();
+      allow write: if isAdmin()
+        && request.resource.data.feature is string
+        && request.resource.data.collection is string
+        && request.resource.data.matchField is string
+        && request.resource.data.matchValue is string
+        && request.resource.data.ageField is string
+        && request.resource.data.ageThresholdDays is int
+        && request.resource.data.ageThresholdDays > 0
+        && request.resource.data.enabled is bool;
+    }
+
     match /featureRequests/{requestId} {
       allow read: if request.auth != null;
 
