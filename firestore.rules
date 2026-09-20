@@ -40,8 +40,42 @@ service cloud.firestore {
         && after.requesterName == before.requesterName
         && after.statusHistory == before.statusHistory
         && after.createdAt == before.createdAt
+        && after.get('commentCount', 0) == before.get('commentCount', 0)
         && ((added.size() == 1 && removed.size() == 0)
             || (added.size() == 0 && removed.size() == 1));
+    }
+
+    // Bumping the comment counter by exactly 1, and nothing else. Client
+    // calls this right after a successful comment create; if it fails the
+    // comment still exists, just undercounted — not identity-verified,
+    // same tradeoff as voting.
+    function isCommentCountBump() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return request.auth != null
+        && after.title == before.title
+        && after.description == before.description
+        && after.status == before.status
+        && after.priority == before.priority
+        && after.requesterId == before.requesterId
+        && after.requesterName == before.requesterName
+        && after.statusHistory == before.statusHistory
+        && after.createdAt == before.createdAt
+        && after.get('votes', []) == before.get('votes', [])
+        && after.commentCount == before.get('commentCount', 0) + 1;
+    }
+
+    // Shared, append-only event log used across every feature on the
+    // site (see functions/index.js) to back a future "Latest updates"
+    // feed. Written ONLY by Cloud Functions via the Admin SDK, which
+    // bypasses these rules entirely — "create" is deliberately false
+    // here so no client (in-app or an outside browser console) can
+    // write a fabricated public event. See functions/index.js for the
+    // convention future features should follow to add their own events.
+    match /activityLog/{eventId} {
+      allow read: if request.auth != null;
+      allow create, update: if false;
+      allow delete: if isAdmin(); // moderation only
     }
 
     match /featureRequests/{requestId} {
@@ -58,7 +92,8 @@ service cloud.firestore {
         && request.resource.data.priority == null
         && request.resource.data.requesterId is string
         && request.resource.data.requesterName is string
-        && request.resource.data.votes == [];
+        && request.resource.data.votes == []
+        && request.resource.data.commentCount == 0;
 
       // Only a real, verified admin (see isAdmin()) can change anything
       // after creation, and only status/priority/history fields.
@@ -67,7 +102,8 @@ service cloud.firestore {
         && request.resource.data.description == resource.data.description
         && request.resource.data.requesterId == resource.data.requesterId
         && request.resource.data.requesterName == resource.data.requesterName)
-        || isSingleVoteToggle();
+        || isSingleVoteToggle()
+        || isCommentCountBump();
 
       allow delete: if isAdmin();
 

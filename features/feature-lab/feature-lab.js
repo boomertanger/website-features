@@ -33,6 +33,7 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
+  increment,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
   getAuth,
@@ -238,6 +239,7 @@ function renderList() {
           <div class="fl-row-badges" style="display:flex;gap:6px;">
             ${priority ? `<span class="fl-badge" style="color:${priority.color};background:${priority.bg};">${priority.label}</span>` : `<span class="fl-badge fl-badge-neutral">&mdash;</span>`}
             <span class="fl-badge" style="color:${status.color};background:${status.bg};">${status.label}</span>
+            ${r.commentCount > 0 ? `<span class="fl-comment-badge" title="${r.commentCount} comment${r.commentCount === 1 ? "" : "s"}"><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5C3 4.67157 3.67157 4 4.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12.5C17 13.3284 16.3284 14 15.5 14H8L4.5 17V14H4.5C3.67157 14 3 13.3284 3 12.5V5.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>${r.commentCount}</span>` : ""}
           </div>
           <div class="fl-avatar" title="${escapeHtml(r.requesterName)}">${initials(r.requesterName)}</div>
           <div class="fl-row-date">${formatDate(r.createdAt)}</div>
@@ -321,6 +323,7 @@ function openSubmitModal() {
         status: "submitted",
         priority: null,
         votes: [],
+        commentCount: 0,
         requesterId: state.memberId ?? "",
         requesterName: state.memberName,
         createdAt: serverTimestamp(),
@@ -495,6 +498,9 @@ function openDetailModal(requestId) {
         isAdminAuthor: state.isAdmin,
         createdAt: serverTimestamp(),
       });
+      await updateDoc(doc(db, "featureRequests", requestId), {
+        commentCount: increment(1),
+      }).catch((err) => console.error("Failed to bump comment count", err));
       input.value = "";
       errorEl.hidden = true;
     } catch (err) {

@@ -277,6 +277,22 @@
   border: 1px solid var(--fl-border-2);
 }
 
+#feature-lab-root .fl-comment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--fl-text-muted);
+  flex-shrink: 0;
+}
+
+#feature-lab-root .fl-comment-badge svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
 #feature-lab-root .fl-avatar {
   width: 24px;
   height: 24px;
