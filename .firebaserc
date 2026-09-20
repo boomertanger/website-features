@@ -1,0 +1,7 @@
+{
+  "projects": {
+    "staging": "boomertanger-staging",
+    "production": "boomertanger-prod",
+    "default": "boomertanger-staging"
+  }
+}
