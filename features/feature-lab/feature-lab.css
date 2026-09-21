@@ -96,8 +96,8 @@
 #feature-lab-root .fl-title {
   margin: 0;
   font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.02em;
+  font-weight: 900;
+  letter-spacing: -0.03em;
   color: var(--fl-title-accent);
 }
 
@@ -190,6 +190,12 @@
 #feature-lab-root .fl-chip-small {
   padding: 6px 12px;
   font-size: 12px;
+}
+
+#feature-lab-root #fl-sort .fl-chip.fl-active {
+  color: var(--fl-text);
+  background: var(--fl-border-2);
+  border-color: var(--fl-text-faint);
 }
 
 /* ---------- List ---------- */
@@ -395,6 +401,10 @@
   #feature-lab-root .fl-avatar {
     display: none;
   }
+  #feature-lab-root .fl-modal-backdrop {
+    align-items: center;
+    padding: 20px;
+  }
 }
 
 /* ---------- Modal (submit form + admin detail) ---------- */
@@ -404,10 +414,11 @@
   inset: 0;
   background: rgba(0, 0, 0, 0.6);
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: center;
-  padding: 20px;
-  z-index: 1000;
+  padding: 300px 20px 40px 20px;
+  overflow-y: auto;
+  z-index: 999999;
 }
 
 #feature-lab-root .fl-modal {
