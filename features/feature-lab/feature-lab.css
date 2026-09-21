@@ -86,7 +86,7 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--fl-primary);
+  color: var(--fl-title-accent);
 }
 
 #feature-lab-root .fl-header {
@@ -98,6 +98,10 @@
   font-size: 28px;
   font-weight: 700;
   color: var(--fl-title-accent);
+}
+
+#feature-lab-root .fl-modal .fl-title {
+  color: var(--fl-primary);
 }
 
 #feature-lab-root .fl-subtitle {
