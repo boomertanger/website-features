@@ -174,7 +174,7 @@ function renderShell() {
   return `
     <div class="bz-header">
       <div>
-        <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+        <div class="bz-wordmark bz-display"><span class="bz-wordmark-brand">BOOMERTANGER</span> &middot; BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
         <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
         <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
       </div>
@@ -194,7 +194,7 @@ function renderShell() {
 function renderLoggedOut() {
   return `
     <div class="bz-logged-out">
-      <div class="bz-wordmark bz-display" style="margin-bottom:10px;">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+      <div class="bz-wordmark bz-display" style="margin-bottom:10px;"><span class="bz-wordmark-brand">BOOMERTANGER</span> &middot; BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
       <h2 class="bz-title bz-display" style="font-size:24px;">Bug reports are for members</h2>
       <p class="bz-subtitle" style="margin-top:8px;">Log in with any Boomertanger membership to see open reports and file your own.</p>
     </div>

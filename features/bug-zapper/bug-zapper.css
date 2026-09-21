@@ -84,10 +84,14 @@
 }
 
 #bug-zapper-root .bz-wordmark {
-  font-size: 20px;
+  font-size: 14px;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--bz-text);
+}
+
+#bug-zapper-root .bz-wordmark-brand {
+  color: var(--bz-accent);
 }
 
 #bug-zapper-root .bz-wordmark-accent {
@@ -431,9 +435,9 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 48px 20px;
+  padding: 140px 20px 48px 20px;
   overflow-y: auto;
-  z-index: 1000;
+  z-index: 999999;
 }
 
 #bug-zapper-root .bz-modal {
