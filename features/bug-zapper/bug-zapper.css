@@ -65,14 +65,24 @@
 
 /* ---------- Header ---------- */
 
-#bug-zapper-root .bz-header {
-  padding: 32px 32px 20px 32px;
+#bug-zapper-root .bz-topbar {
+  padding: 20px 32px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--bz-border);
   flex-wrap: wrap;
+}
+
+#bug-zapper-root .bz-topnav {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+#bug-zapper-root .bz-header {
+  padding: 24px 32px 20px 32px;
 }
 
 #bug-zapper-root .bz-eyebrow {
@@ -84,14 +94,11 @@
 }
 
 #bug-zapper-root .bz-wordmark {
-  font-size: 14px;
+  font-size: 20px;
   font-weight: 700;
   letter-spacing: 0.02em;
   color: var(--bz-text);
-}
-
-#bug-zapper-root .bz-wordmark-brand {
-  color: var(--bz-accent);
+  display: flex;
 }
 
 #bug-zapper-root .bz-wordmark-accent {
@@ -435,7 +442,7 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 140px 20px 48px 20px;
+  padding: 300px 20px 48px 20px;
   overflow-y: auto;
   z-index: 999999;
 }
@@ -515,7 +522,7 @@
 /* ---------- Narrow container (mobile) ---------- */
 
 @container bz (max-width: 640px) {
-  #bug-zapper-root .bz-header {
+  #bug-zapper-root .bz-topbar {
     flex-direction: column;
     align-items: flex-start;
   }

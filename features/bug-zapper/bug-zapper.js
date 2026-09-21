@@ -172,17 +172,17 @@ function matchesFilter(r) {
 
 function renderShell() {
   return `
-    <div class="bz-header">
-      <div>
-        <div class="bz-wordmark bz-display"><span class="bz-wordmark-brand">BOOMERTANGER</span> &middot; BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
-        <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
-        <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
-      </div>
-      <div style="display:flex;align-items:center;gap:14px;">
+    <div class="bz-topbar">
+      <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+      <nav class="bz-topnav">
         <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
         <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
         <button type="button" id="bz-new-report" class="bz-btn bz-btn-primary bz-display">Report a bug</button>
-      </div>
+      </nav>
+    </div>
+    <div class="bz-header">
+      <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
+      <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
     </div>
     <div class="bz-filters" id="bz-filters"></div>
     <div class="bz-sortbar" id="bz-sortbar"></div>
@@ -194,7 +194,7 @@ function renderShell() {
 function renderLoggedOut() {
   return `
     <div class="bz-logged-out">
-      <div class="bz-wordmark bz-display" style="margin-bottom:10px;"><span class="bz-wordmark-brand">BOOMERTANGER</span> &middot; BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+      <div class="bz-wordmark bz-display" style="margin-bottom:10px;justify-content:center;">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
       <h2 class="bz-title bz-display" style="font-size:24px;">Bug reports are for members</h2>
       <p class="bz-subtitle" style="margin-top:8px;">Log in with any Boomertanger membership to see open reports and file your own.</p>
     </div>
