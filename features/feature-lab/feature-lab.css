@@ -51,6 +51,7 @@
 
 #feature-lab-root * {
   box-sizing: border-box;
+  font-family: inherit;
 }
 
 #feature-lab-root .fl-display {
@@ -95,9 +96,10 @@
 
 #feature-lab-root .fl-title {
   margin: 0;
-  font-size: 28px;
-  font-weight: 900;
-  letter-spacing: -0.03em;
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: 0.32px;
+  text-transform: uppercase;
   color: var(--fl-title-accent);
 }
 
