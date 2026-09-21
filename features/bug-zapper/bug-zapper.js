@@ -540,8 +540,8 @@ function openDetailModal(reportId) {
           </div>
           <div class="bz-field" style="flex:1;min-width:160px;">
             <label class="bz-label" for="bz-dup-input">Duplicate of (report id)</label>
-            <input type="text" id="bz-dup-input" class="bz-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="e.g. aB3xQ...">
-          </div>
+            <input type="text" id="bz-dup-input" class="bz-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste from the original report's ID line">
+            <div class="bz-hint">Open the original report — its ID is shown just below its title, click it to select and copy.</div>          </div>
         </div>
         <div id="bz-admin-error" class="bz-error" hidden></div>
         <button type="button" id="bz-admin-save" class="bz-btn bz-btn-primary bz-display">Save changes</button>
@@ -559,8 +559,9 @@ function openDetailModal(reportId) {
             </div>
             <h3 class="bz-title bz-display" style="font-size:22px;">${escapeHtml(report.title)}</h3>
             <div class="bz-row-meta" style="margin-top:6px;">reported by ${escapeHtml(report.reporterName)} &middot; ${formatDate(report.createdAt)} &middot; ${escapeHtml(report.page)}</div>
+            <div class="bz-row-meta" style="margin-top:4px;user-select:all;cursor:text;" title="Click to select, then copy — this is what goes in another report's &quot;Duplicate of&quot; field">ID: ${escapeHtml(report.id)}</div>
           </div>
-          <button type="button" id="bz-detail-close" class="bz-btn bz-btn-secondary" style="padding:8px 12px;">&times;</button>
+          <button type="button" id="bz-detail-close" class="bz-btn bz-btn-secondary" style="padding:6px 14px;font-size:22px;line-height:1;">&times;</button>
         </div>
 
         <div class="bz-section">

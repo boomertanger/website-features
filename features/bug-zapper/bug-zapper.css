@@ -225,9 +225,8 @@
 }
 
 #bug-zapper-root .bz-sortbar-label {
-  font-size: 11px;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+  font-size: 12px;
+  text-transform: lowercase;
   color: var(--bz-text-faint);
   flex: none;
 }
@@ -245,9 +244,8 @@
 
 #bug-zapper-root .bz-sort-btn {
   font-family: "Inter", sans-serif;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
+  font-size: 13px;
+  text-transform: lowercase;
   padding: 7px 14px;
   border-radius: 999px;
   border: 1px solid transparent;
