@@ -52,6 +52,7 @@ import {
   signInAnonymously,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   getFunctions,
@@ -67,7 +68,7 @@ const ROOT_ID = "bug-zapper-root";
 // on the preset itself (client-side compression below is a first pass,
 // not the real limit).
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
-const CLOUDINARY_UPLOAD_PRESET = "disk-stash";
+const CLOUDINARY_UPLOAD_PRESET = "REPLACE_ME_bug_zapper_unsigned"; // <-- fill in
 
 const MAX_ORIGINAL_FILE_BYTES = 15 * 1024 * 1024; // sanity cap before we even try to compress
 const COMPRESS_MAX_WIDTH = 1280;
@@ -174,11 +175,14 @@ function renderShell() {
   return `
     <div class="bz-topbar">
       <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
-      <nav class="bz-topnav">
-        <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
-        <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
+      <div class="bz-topnav">
         <button type="button" id="bz-new-report" class="bz-btn bz-btn-primary bz-display">Report a bug</button>
-      </nav>
+        <div class="bz-admin-row">
+          <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
+          <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
+          <button type="button" id="bz-admin-signout" class="bz-admin-signout" hidden>Sign out</button>
+        </div>
+      </div>
     </div>
     <div class="bz-header">
       <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
@@ -715,6 +719,21 @@ async function handleAdminSignIn() {
   }
 }
 
+async function handleAdminSignOut() {
+  try {
+    // Signs out of the real (Google) Firebase session entirely.
+    // watchAuthState's onAuthStateChanged listener will fire with
+    // user=null and automatically fall back to a fresh anonymous
+    // session, same as a first-time visitor.
+    await signOut(auth);
+    state.isAdmin = false;
+    updateAdminUi();
+    renderList();
+  } catch (err) {
+    console.error("Admin sign-out failed", err);
+  }
+}
+
 async function syncAdmin() {
   try {
     const syncAdminStatus = httpsCallable(functions, "syncAdminStatus");
@@ -731,12 +750,14 @@ async function syncAdmin() {
 function updateAdminUi() {
   const signinBtn = state.root.querySelector("#bz-admin-signin");
   const badge = state.root.querySelector("#bz-admin-badge");
-  if (!signinBtn || !badge) return;
+  const signoutBtn = state.root.querySelector("#bz-admin-signout");
+  if (!signinBtn || !badge || !signoutBtn) return;
   // Single expression per element, rather than two branches that could
   // drift apart — signinBtn is hidden whenever isAdmin is true, full
   // stop, regardless of the MemberSpace-plan convenience check below.
   signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
   badge.hidden = !state.isAdmin;
+  signoutBtn.hidden = !state.isAdmin;
 }
 
 function watchAuthState() {
@@ -769,6 +790,7 @@ export async function initBugZapper() {
 
   root.querySelector("#bz-new-report").addEventListener("click", openSubmitModal);
   root.querySelector("#bz-admin-signin").addEventListener("click", handleAdminSignIn);
+  root.querySelector("#bz-admin-signout").addEventListener("click", handleAdminSignOut);
 
   await waitForReady();
 
