@@ -176,12 +176,12 @@ function renderShell() {
     <div class="bz-topbar">
       <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
       <div class="bz-topnav">
-        <button type="button" id="bz-new-report" class="bz-btn bz-btn-primary bz-display">Report a bug</button>
         <div class="bz-admin-row">
           <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
           <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
           <button type="button" id="bz-admin-signout" class="bz-admin-signout" hidden>Sign out</button>
         </div>
+        <button type="button" id="bz-new-report" class="bz-btn bz-btn-primary bz-display">Report a bug</button>
       </div>
     </div>
     <div class="bz-header">
@@ -739,6 +739,8 @@ async function syncAdmin() {
     const syncAdminStatus = httpsCallable(functions, "syncAdminStatus");
     const result = await syncAdminStatus();
     state.isAdmin = !!result.data?.isAdmin;
+    // TEMPORARY diagnostic — remove once the admin-badge issue is resolved.
+    console.log("[BugZapper] syncAdmin result:", result.data, "| uid:", auth.currentUser?.uid, "| email:", auth.currentUser?.email, "| isAnonymous:", auth.currentUser?.isAnonymous);
   } catch (err) {
     console.error("Failed to sync admin status", err);
     state.isAdmin = false;
@@ -768,6 +770,9 @@ function watchAuthState() {
     }
 
     state.uid = user.uid;
+
+    // TEMPORARY diagnostic — remove once the admin-badge issue is resolved.
+    console.log("[BugZapper] auth state changed | uid:", user.uid, "| email:", user.email, "| isAnonymous:", user.isAnonymous, "| will call syncAdmin:", !user.isAnonymous);
 
     if (!user.isAnonymous) {
       await syncAdmin();

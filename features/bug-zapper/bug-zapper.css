@@ -76,15 +76,17 @@
 
 #bug-zapper-root .bz-topnav {
   display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 8px;
-  flex: none;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  flex: 1;
 }
 
 #bug-zapper-root .bz-admin-row {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
 }
 
@@ -544,6 +546,15 @@
 /* ---------- Narrow container (mobile) ---------- */
 
 @container bz (max-width: 640px) {
+  #bug-zapper-root .bz-admin-row {
+    order: 2;
+    flex-basis: 100%;
+  }
+
+  #bug-zapper-root #bz-new-report {
+    order: 1;
+  }
+
   #bug-zapper-root .bz-row {
     flex-wrap: wrap;
   }
