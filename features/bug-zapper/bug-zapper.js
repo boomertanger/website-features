@@ -67,7 +67,7 @@ const ROOT_ID = "bug-zapper-root";
 // on the preset itself (client-side compression below is a first pass,
 // not the real limit).
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
-const CLOUDINARY_UPLOAD_PRESET = "ml_default";
+const CLOUDINARY_UPLOAD_PRESET = "disk-stash";
 
 const MAX_ORIGINAL_FILE_BYTES = 15 * 1024 * 1024; // sanity cap before we even try to compress
 const COMPRESS_MAX_WIDTH = 1280;
