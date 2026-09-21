@@ -739,8 +739,6 @@ async function syncAdmin() {
     const syncAdminStatus = httpsCallable(functions, "syncAdminStatus");
     const result = await syncAdminStatus();
     state.isAdmin = !!result.data?.isAdmin;
-    // TEMPORARY diagnostic — remove once the admin-badge issue is resolved.
-    console.log("[BugZapper] syncAdmin result:", result.data, "| uid:", auth.currentUser?.uid, "| email:", auth.currentUser?.email, "| isAnonymous:", auth.currentUser?.isAnonymous);
   } catch (err) {
     console.error("Failed to sync admin status", err);
     state.isAdmin = false;
@@ -770,9 +768,6 @@ function watchAuthState() {
     }
 
     state.uid = user.uid;
-
-    // TEMPORARY diagnostic — remove once the admin-badge issue is resolved.
-    console.log("[BugZapper] auth state changed | uid:", user.uid, "| email:", user.email, "| isAnonymous:", user.isAnonymous, "| will call syncAdmin:", !user.isAnonymous);
 
     if (!user.isAnonymous) {
       await syncAdmin();

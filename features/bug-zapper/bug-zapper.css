@@ -10,6 +10,15 @@
    queries, not media queries — a Squarespace Code Block's width has
    nothing to do with the browser window's width. */
 
+/* Guard rail: several elements below (like .bz-badge) set their own
+   `display` for when they're visible, which otherwise silently outranks
+   the browser's built-in [hidden]{display:none} rule and makes the
+   `hidden` attribute a no-op. This single rule guarantees `hidden`
+   always wins regardless of what else is declared on that element. */
+#bug-zapper-root [hidden] {
+  display: none !important;
+}
+
 #bug-zapper-root {
   container-type: inline-size;
   container-name: bz;
