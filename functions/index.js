@@ -3,6 +3,7 @@ const { onDocumentCreated, onDocumentUpdated } = require("firebase-functions/v2/
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
+const { recordAssetCreated } = require("./lib/externalAssets");
 
 admin.initializeApp();
 
@@ -126,6 +127,77 @@ async function isCallerAdmin(auth) {
   const doc = await admin.firestore().collection("admins").doc(auth.uid).get();
   return doc.exists;
 }
+
+// ---------- Bug Zapper: screenshot attach ----------
+// See /features/bug-zapper/README.md for the full contract. No new trigger
+// for "new bug report" activity is added here on purpose — per the Alert
+// Center planning, a new bug report should eventually raise an Alert
+// Center item (severity, reporter, link), NOT an activityLog event, but
+// Alert Center doesn't exist yet. When it ships, add an
+// onDocumentCreated("bugReports/{reportId}") trigger here, following
+// whatever write convention Alert Center establishes (mirroring the
+// activityLog convention comment at the top of this file).
+
+/**
+ * Callable from Bug Zapper's client right after a successful Cloudinary
+ * upload. Records the asset in the shared externalAssets/storageUsage
+ * collections (Disk Stash's contract) and sets screenshotUrl on the
+ * bug report doc. This is the ONLY path that ever writes screenshotUrl —
+ * Firestore rules refuse client writes to that field directly.
+ */
+exports.recordBugScreenshot = onCall(async (request) => {
+  if (!request.auth) {
+    throw new HttpsError("unauthenticated", "Must be signed in.");
+  }
+
+  const { docId, url, publicId, sizeBytes, resourceType } = request.data || {};
+  if (typeof docId !== "string" || !docId) {
+    throw new HttpsError("invalid-argument", "docId is required.");
+  }
+  if (typeof url !== "string" || typeof publicId !== "string" || !Number.isFinite(sizeBytes)) {
+    throw new HttpsError(
+      "invalid-argument",
+      "url, publicId and a numeric sizeBytes are required."
+    );
+  }
+
+  const db = admin.firestore();
+  const reportRef = db.collection("bugReports").doc(docId);
+  const reportSnap = await reportRef.get();
+  if (!reportSnap.exists) {
+    throw new HttpsError("not-found", "No bug report with that id.");
+  }
+  const report = reportSnap.data();
+
+  // Only the reporter who owns this report, or a real admin, may attach
+  // a screenshot to it — otherwise any signed-in caller could attach an
+  // image to someone else's report.
+  const callerIsOwner = report.reporterUid === request.auth.uid;
+  if (!callerIsOwner && !(await isCallerAdmin(request.auth))) {
+    throw new HttpsError(
+      "permission-denied",
+      "You can only attach a screenshot to your own report."
+    );
+  }
+  if (report.screenshotUrl) {
+    throw new HttpsError("failed-precondition", "This report already has a screenshot.");
+  }
+
+  await recordAssetCreated({
+    url,
+    publicId,
+    resourceType: resourceType || "image",
+    feature: "bugZapper",
+    sizeBytes,
+    linkedCollection: "bugReports",
+    linkedDocId: docId,
+    linkedField: "screenshotUrl",
+  });
+
+  await reportRef.set({ screenshotUrl: url }, { merge: true });
+
+  return { ok: true };
+});
 
 // Cloudinary's Admin API treats "already gone" as success (not an error),
 // which is what we want: a resource that was somehow already deleted

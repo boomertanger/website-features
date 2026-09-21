@@ -163,5 +163,82 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
+
+    // A member may toggle their own "me too" (add/remove exactly their own
+    // uid in meTooBy) without touching anything else. Unlike featureRequests'
+    // isSingleVoteToggle, this checks the toggled id against request.auth.uid
+    // directly — Bug Zapper's client uses the real Firebase Auth uid (not a
+    // MemberSpace id) specifically so this can be verified server-side.
+    function isMeTooToggle() {
+      let before = resource.data;
+      let after = request.resource.data;
+      let beforeSet = before.get('meTooBy', []);
+      let afterSet = after.get('meTooBy', []);
+      let added = afterSet.toSet().difference(beforeSet.toSet());
+      let removed = beforeSet.toSet().difference(afterSet.toSet());
+      return request.auth != null
+        && after.title == before.title
+        && after.page == before.page
+        && after.whatHappened == before.whatHappened
+        && after.expectedInstead == before.expectedInstead
+        && after.stepsToReproduce == before.stepsToReproduce
+        && after.severity == before.severity
+        && after.priority == before.priority
+        && after.status == before.status
+        && after.duplicateOf == before.duplicateOf
+        && after.screenshotUrl == before.screenshotUrl
+        && after.reporterUid == before.reporterUid
+        && after.reporterName == before.reporterName
+        && after.createdAt == before.createdAt
+        && after.get('statusChangedAt', null) == before.get('statusChangedAt', null)
+        && ((added.size() == 1 && added.hasOnly([request.auth.uid]) && removed.size() == 0)
+            || (removed.size() == 1 && removed.hasOnly([request.auth.uid]) && added.size() == 0));
+    }
+
+    match /bugReports/{reportId} {
+      allow read: if request.auth != null;
+
+      allow create: if request.auth != null
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 3
+        && request.resource.data.title.size() <= 200
+        && request.resource.data.page is string
+        && request.resource.data.whatHappened is string
+        && request.resource.data.whatHappened.size() >= 1
+        && request.resource.data.whatHappened.size() <= 2000
+        && request.resource.data.expectedInstead is string
+        && request.resource.data.expectedInstead.size() <= 2000
+        && request.resource.data.stepsToReproduce is string
+        && request.resource.data.stepsToReproduce.size() <= 2000
+        && request.resource.data.severity in ["Cosmetic", "Minor", "Major", "Critical"]
+        && request.resource.data.priority == null
+        && request.resource.data.status == "Open"
+        && request.resource.data.duplicateOf == null
+        && request.resource.data.screenshotUrl == null
+        && request.resource.data.reporterUid == request.auth.uid
+        && request.resource.data.reporterName is string
+        && request.resource.data.meTooBy == [];
+
+      // Two disjoint ways to update: a member's own me-too toggle, or an
+      // admin editing status/priority/duplicateOf. screenshotUrl is left out
+      // of BOTH — it can only ever be set by recordBugScreenshot (Admin SDK,
+      // bypasses these rules entirely) or cleared by Disk Stash's safe-delete
+      // path, never directly by a client write.
+      allow update: if isMeTooToggle()
+        || (isAdmin()
+            && request.resource.data.title == resource.data.title
+            && request.resource.data.page == resource.data.page
+            && request.resource.data.whatHappened == resource.data.whatHappened
+            && request.resource.data.expectedInstead == resource.data.expectedInstead
+            && request.resource.data.stepsToReproduce == resource.data.stepsToReproduce
+            && request.resource.data.severity == resource.data.severity
+            && request.resource.data.reporterUid == resource.data.reporterUid
+            && request.resource.data.reporterName == resource.data.reporterName
+            && request.resource.data.createdAt == resource.data.createdAt
+            && request.resource.data.meTooBy == resource.data.meTooBy
+            && request.resource.data.screenshotUrl == resource.data.screenshotUrl);
+
+      allow delete: if isAdmin();
+    }
   }
 }

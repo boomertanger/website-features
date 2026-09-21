@@ -1,0 +1,454 @@
+/* features/bug-zapper/bug-zapper.css
+   Same tokens as feature-lab.css / disk-stash.css: dark ground, one
+   accent red, Space Grotesk display + IBM Plex Sans body, IBM Plex Mono
+   for tabular/meta text. Responsive via CONTAINER queries, not media
+   queries — a Squarespace Code Block's width has nothing to do with the
+   browser window's width. */
+
+#bug-zapper-root {
+  container-type: inline-size;
+  container-name: bz;
+  --bz-bg: #121014;
+  --bz-surface: #1a1619;
+  --bz-surface-2: #1e1a1d;
+  --bz-border: #2a2326;
+  --bz-border-2: #332b2e;
+  --bz-text: #f3ede9;
+  --bz-text-muted: #a89a9c;
+  --bz-text-faint: #786e70;
+  --bz-accent: #c1443c;
+  --bz-accent-bg: rgba(193, 68, 60, 0.14);
+  --bz-amber: #d9a441;
+  --bz-amber-bg: rgba(217, 164, 65, 0.14);
+  --bz-blue: #6a93c9;
+  --bz-blue-bg: rgba(106, 147, 201, 0.14);
+  --bz-green: #5fa876;
+  --bz-green-bg: rgba(95, 168, 118, 0.12);
+  --bz-gray: #a89a9c;
+  --bz-gray-bg: #241f22;
+
+  font-family: "IBM Plex Sans", sans-serif;
+  color: var(--bz-text);
+  background: var(--bz-bg);
+  border-radius: 16px;
+  overflow: hidden;
+  max-width: 1280px;
+  margin: 0 auto;
+}
+
+#bug-zapper-root * {
+  box-sizing: border-box;
+}
+
+#bug-zapper-root .bz-display {
+  font-family: "Space Grotesk", sans-serif;
+}
+
+#bug-zapper-root .bz-mono {
+  font-family: "IBM Plex Mono", monospace;
+}
+
+/* ---------- Header ---------- */
+
+#bug-zapper-root .bz-header {
+  padding: 32px 32px 20px 32px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  border-bottom: 1px solid var(--bz-border);
+  flex-wrap: wrap;
+}
+
+#bug-zapper-root .bz-eyebrow {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--bz-accent);
+}
+
+#bug-zapper-root .bz-title {
+  margin: 4px 0 0 0;
+  font-size: 28px;
+  font-weight: 700;
+}
+
+#bug-zapper-root .bz-subtitle {
+  font-size: 14px;
+  color: var(--bz-text-muted);
+  margin-top: 4px;
+}
+
+#bug-zapper-root .bz-logged-out {
+  padding: 64px 32px;
+  text-align: center;
+  max-width: 420px;
+  margin: 0 auto;
+}
+
+/* ---------- Buttons / badges ---------- */
+
+#bug-zapper-root .bz-btn {
+  font-family: "Space Grotesk", sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+#bug-zapper-root .bz-btn-primary {
+  background: var(--bz-accent);
+  color: var(--bz-bg);
+}
+
+#bug-zapper-root .bz-btn-primary:hover:not(:disabled) {
+  background: #d9534a;
+}
+
+#bug-zapper-root .bz-btn-secondary {
+  background: transparent;
+  border: 1px solid var(--bz-border-2);
+  color: var(--bz-text);
+}
+
+#bug-zapper-root .bz-badge,
+#bug-zapper-root .bz-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  font-family: "IBM Plex Mono", monospace;
+  white-space: nowrap;
+}
+
+#bug-zapper-root .bz-badge-neutral {
+  background: var(--bz-surface-2);
+  color: var(--bz-text-muted);
+}
+
+#bug-zapper-root .bz-sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bz-text-muted);
+}
+
+#bug-zapper-root .bz-sev-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+}
+
+/* ---------- Filters ---------- */
+
+#bug-zapper-root .bz-filters {
+  display: flex;
+  gap: 8px;
+  padding: 20px 32px 0 32px;
+  flex-wrap: wrap;
+}
+
+#bug-zapper-root .bz-chip {
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 13px;
+  padding: 8px 14px;
+  border-radius: 8px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--bz-text-muted);
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-chip.bz-active {
+  background: var(--bz-surface-2);
+  border-color: var(--bz-border-2);
+  color: var(--bz-text);
+}
+
+/* ---------- List ---------- */
+
+#bug-zapper-root .bz-list {
+  padding: 20px 32px 32px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#bug-zapper-root .bz-empty {
+  padding: 40px 0;
+  text-align: center;
+  color: var(--bz-text-faint);
+  font-size: 14px;
+}
+
+#bug-zapper-root .bz-row {
+  display: flex;
+  gap: 18px;
+  align-items: flex-start;
+  background: var(--bz-surface);
+  border: 1px solid var(--bz-border);
+  border-radius: 12px;
+  padding: 18px 20px;
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-row:hover {
+  border-color: var(--bz-border-2);
+}
+
+#bug-zapper-root .bz-thumb {
+  width: 56px;
+  height: 56px;
+  border-radius: 8px;
+  background: var(--bz-surface-2);
+  border: 1px solid var(--bz-border-2);
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  font-size: 9px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--bz-text-faint);
+  text-align: center;
+  line-height: 1.3;
+}
+
+#bug-zapper-root .bz-thumb img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+#bug-zapper-root .bz-row-body {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+#bug-zapper-root .bz-row-badges {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+#bug-zapper-root .bz-row-title {
+  font-size: 16px;
+  font-weight: 600;
+}
+
+#bug-zapper-root .bz-row-meta {
+  font-size: 12px;
+  font-family: "IBM Plex Mono", monospace;
+  color: var(--bz-text-faint);
+}
+
+#bug-zapper-root .bz-row-metoo {
+  flex: none;
+  text-align: center;
+}
+
+#bug-zapper-root .bz-row-metoo-count {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+#bug-zapper-root .bz-row-metoo-label {
+  font-size: 10px;
+  font-family: "IBM Plex Mono", monospace;
+  text-transform: uppercase;
+  color: var(--bz-text-faint);
+}
+
+/* ---------- Form fields (shared by submit + admin panel) ---------- */
+
+#bug-zapper-root .bz-field {
+  margin-bottom: 20px;
+}
+
+#bug-zapper-root .bz-label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--bz-text-muted);
+  margin-bottom: 8px;
+}
+
+#bug-zapper-root .bz-input,
+#bug-zapper-root .bz-textarea,
+#bug-zapper-root .bz-select {
+  width: 100%;
+  background: var(--bz-surface-2);
+  border: 1px solid var(--bz-border-2);
+  border-radius: 8px;
+  color: var(--bz-text);
+  font-family: "IBM Plex Sans", sans-serif;
+  font-size: 14px;
+  padding: 11px 13px;
+}
+
+#bug-zapper-root .bz-input:focus,
+#bug-zapper-root .bz-textarea:focus,
+#bug-zapper-root .bz-select:focus {
+  outline: 2px solid var(--bz-accent);
+  outline-offset: 1px;
+  border-color: var(--bz-accent);
+}
+
+#bug-zapper-root .bz-textarea {
+  resize: vertical;
+}
+
+#bug-zapper-root .bz-hint {
+  font-size: 12px;
+  color: var(--bz-text-faint);
+  margin-top: 6px;
+}
+
+#bug-zapper-root .bz-dropzone {
+  width: 100%;
+  border: 1.5px dashed var(--bz-border-2);
+  border-radius: 10px;
+  padding: 22px;
+  text-align: center;
+  background: var(--bz-surface-2);
+  color: var(--bz-text-muted);
+  font-size: 13px;
+  font-family: "IBM Plex Sans", sans-serif;
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-error {
+  color: var(--bz-accent);
+  font-size: 13px;
+  margin-bottom: 14px;
+}
+
+/* ---------- Modal ---------- */
+
+#bug-zapper-root .bz-modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(10, 9, 10, 0.72);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 48px 20px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+#bug-zapper-root .bz-modal {
+  background: var(--bz-surface);
+  border: 1px solid var(--bz-border);
+  border-radius: 16px;
+  padding: 32px;
+  width: 100%;
+  max-width: 520px;
+}
+
+#bug-zapper-root .bz-modal-wide {
+  max-width: 680px;
+}
+
+#bug-zapper-root .bz-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: flex-end;
+  margin-top: 8px;
+}
+
+#bug-zapper-root .bz-section {
+  margin: 26px 0;
+}
+
+#bug-zapper-root .bz-section-label {
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--bz-text-faint);
+  font-weight: 500;
+  margin: 0 0 10px 0;
+}
+
+#bug-zapper-root .bz-section-text {
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--bz-text);
+  margin: 0;
+}
+
+#bug-zapper-root .bz-metoo-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  background: var(--bz-surface-2);
+  border: 1px solid var(--bz-border);
+  border-radius: 10px;
+  margin: 26px 0;
+}
+
+#bug-zapper-root .bz-admin-panel {
+  margin-top: 30px;
+  padding: 22px 24px;
+  background: #191315;
+  border: 1px solid #3a2a28;
+  border-radius: 10px;
+}
+
+#bug-zapper-root .bz-admin-tag {
+  display: inline-block;
+  font-family: "IBM Plex Mono", monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--bz-accent);
+  border: 1px solid #4a2f2c;
+  padding: 3px 8px;
+  border-radius: 5px;
+}
+
+/* ---------- Narrow container (mobile) ---------- */
+
+@container bz (max-width: 640px) {
+  #bug-zapper-root .bz-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  #bug-zapper-root .bz-row {
+    flex-wrap: wrap;
+  }
+
+  #bug-zapper-root .bz-row-metoo {
+    flex-direction: row;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #bug-zapper-root .bz-modal {
+    padding: 24px 20px;
+  }
+}
