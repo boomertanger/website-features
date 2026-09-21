@@ -96,7 +96,8 @@
 #feature-lab-root .fl-title {
   margin: 0;
   font-size: 28px;
-  font-weight: 700;
+  font-weight: 800;
+  letter-spacing: -0.02em;
   color: var(--fl-title-accent);
 }
 
@@ -121,7 +122,7 @@
 
 #feature-lab-root .fl-btn-primary {
   background: var(--fl-primary);
-  color: var(--fl-bg);
+  color: var(--fl-text);
 }
 
 #feature-lab-root .fl-btn-secondary {
@@ -169,8 +170,8 @@
 #feature-lab-root .fl-chip.fl-active {
   font-weight: 600;
   color: var(--fl-bg);
-  background: var(--fl-primary);
-  border-color: var(--fl-primary);
+  background: var(--fl-text);
+  border-color: var(--fl-text);
 }
 
 #feature-lab-root .fl-sort {
@@ -475,6 +476,23 @@
 #feature-lab-root .fl-error {
   font-size: 13px;
   color: var(--fl-critical);
+}
+
+#feature-lab-root .fl-admin-only-badge {
+  display: inline-block;
+  padding: 6px 12px;
+  border: 1px solid var(--fl-critical);
+  border-radius: 6px;
+  color: var(--fl-critical);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#feature-lab-root .fl-btn-critical {
+  background: var(--fl-critical);
+  color: var(--fl-text);
 }
 
 #feature-lab-root .fl-comment {

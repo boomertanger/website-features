@@ -30,6 +30,7 @@ import {
   orderBy,
   doc,
   updateDoc,
+  deleteDoc,
   serverTimestamp,
   arrayUnion,
   arrayRemove,
@@ -358,6 +359,7 @@ function openDetailModal(requestId) {
   const adminControlsHtml = state.isAdmin
     ? `
         <div style="display:flex;flex-direction:column;gap:16px;padding:18px;background:var(--fl-surface-2);border:1px solid var(--fl-border);border-radius:12px;">
+          <span class="fl-admin-only-badge">Admin only</span>
           <div style="display:flex;gap:16px;flex-wrap:wrap;">
             <div class="fl-field" style="flex:1;min-width:160px;">
               <label class="fl-label" for="fl-status-select">Status</label>
@@ -388,7 +390,10 @@ function openDetailModal(requestId) {
             <textarea id="fl-note-input" class="fl-textarea" rows="2" maxlength="500"></textarea>
           </div>
           <div id="fl-admin-error" class="fl-error" hidden></div>
-          <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display" style="align-self:flex-end;">Save changes</button>
+          <div style="display:flex;justify-content:space-between;align-items:center;">
+            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete report</button>
+            <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display">Save changes</button>
+          </div>
         </div>`
     : "";
 
@@ -537,6 +542,25 @@ function openDetailModal(requestId) {
       } catch (err) {
         console.error("Failed to save admin changes", err);
         errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
+        errorEl.hidden = false;
+      }
+    });
+  }
+
+  const deleteBtn = slot.querySelector("#fl-admin-delete");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        `Delete "${request.title}"? This can't be undone. (Its comments will remain in the database, orphaned — a known limitation, not something this deletes for you.)`
+      );
+      if (!confirmed) return;
+      try {
+        await deleteDoc(doc(db, "featureRequests", requestId));
+        close();
+      } catch (err) {
+        console.error("Failed to delete request", err);
+        const errorEl = slot.querySelector("#fl-admin-error");
+        errorEl.textContent = "Couldn't delete — you may need to sign in again.";
         errorEl.hidden = false;
       }
     });
