@@ -176,7 +176,8 @@ function renderShell() {
     <div class="bz-topbar">
       <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
       <div class="bz-topnav">
-        <div class="bz-admin-row">
+        <button type="button" id="bz-admin-menu-toggle" class="bz-btn bz-btn-secondary bz-admin-menu-toggle">&#8942;</button>
+        <div class="bz-admin-row" id="bz-admin-row">
           <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
           <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
           <button type="button" id="bz-admin-signout" class="bz-admin-signout" hidden>Sign out</button>
@@ -791,6 +792,18 @@ export async function initBugZapper() {
   root.querySelector("#bz-new-report").addEventListener("click", openSubmitModal);
   root.querySelector("#bz-admin-signin").addEventListener("click", handleAdminSignIn);
   root.querySelector("#bz-admin-signout").addEventListener("click", handleAdminSignOut);
+
+  // Mobile-only dots menu: purely a viewport-width thing, not tied to
+  // admin state — CSS decides whether the toggle button and the
+  // dropdown-vs-inline styling apply at all (see the container query).
+  root.querySelector("#bz-admin-menu-toggle").addEventListener("click", (e) => {
+    e.stopPropagation();
+    root.querySelector("#bz-admin-row").classList.toggle("bz-open");
+  });
+  document.addEventListener("click", () => {
+    const adminRow = root.querySelector("#bz-admin-row");
+    if (adminRow) adminRow.classList.remove("bz-open");
+  });
 
   await waitForReady();
 
