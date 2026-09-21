@@ -99,6 +99,11 @@ const FILTERS = [
   { key: "closed", label: "Closed" }, // groups Won't fix / Can't reproduce / Duplicate
 ];
 
+const SORT_OPTIONS = [
+  { key: "newest", label: "Newest" },
+  { key: "mostBit", label: "Most bit me too'd" },
+];
+
 const PAGE_OPTIONS = [
   "boomertanger.com",
   "boomertanger.tv",
@@ -126,6 +131,7 @@ const functions = getFunctions(app);
 const state = {
   reports: [],
   filter: "all",
+  sort: "newest", // "newest" | "mostBit"
   isAdmin: false,
   uid: null, // Firebase Auth uid (anonymous or real) — used for reporterUid + meTooBy
   memberName: "Member",
@@ -169,8 +175,8 @@ function renderShell() {
     <div class="bz-header">
       <div>
         <div class="bz-eyebrow">Boomertanger &middot; Bug Zapper</div>
-        <h2 class="bz-title bz-display">Bug reports</h2>
-        <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;me too&rdquo; or file your own</div>
+        <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
+        <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
       </div>
       <div style="display:flex;align-items:center;gap:14px;">
         <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
@@ -179,6 +185,7 @@ function renderShell() {
       </div>
     </div>
     <div class="bz-filters" id="bz-filters"></div>
+    <div class="bz-sortbar" id="bz-sortbar"></div>
     <div class="bz-list" id="bz-list"></div>
     <div id="bz-modal-slot"></div>
   `;
@@ -215,9 +222,47 @@ function renderFilters() {
   });
 }
 
+function renderSortBar() {
+  const el = state.root.querySelector("#bz-sortbar");
+  el.innerHTML = `
+    <span class="bz-sortbar-label">Sort by</span>
+    <div class="bz-sort-options">
+      ${SORT_OPTIONS.map(
+        (s) =>
+          `<button type="button" class="bz-sort-btn ${state.sort === s.key ? "bz-active" : ""}" data-sort="${s.key}">${s.label}</button>`
+      ).join("")}
+    </div>
+  `;
+  el.querySelectorAll("[data-sort]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.sort = btn.dataset.sort;
+      renderSortBar();
+      renderList();
+    });
+  });
+}
+
+function sortReports(items) {
+  const sorted = [...items];
+  if (state.sort === "mostBit") {
+    sorted.sort((a, b) => meTooCount(b) - meTooCount(a));
+  } else {
+    // "newest" — reports already arrive newest-first from the Firestore
+    // query's orderBy("createdAt", "desc"), so this is a no-op today,
+    // but sorting explicitly here keeps the two modes symmetric and
+    // makes the intent obvious if that query ever changes.
+    sorted.sort((a, b) => {
+      const at = a.createdAt?.toMillis ? a.createdAt.toMillis() : 0;
+      const bt = b.createdAt?.toMillis ? b.createdAt.toMillis() : 0;
+      return bt - at;
+    });
+  }
+  return sorted;
+}
+
 function renderList() {
   const el = state.root.querySelector("#bz-list");
-  const items = state.reports.filter(matchesFilter);
+  const items = sortReports(state.reports.filter(matchesFilter));
 
   if (items.length === 0) {
     el.innerHTML = `<div class="bz-empty">No reports here yet.</div>`;
@@ -241,7 +286,7 @@ function renderList() {
         </div>
         <div class="bz-row-metoo">
           <div class="bz-display bz-row-metoo-count">${meTooCount(r)}</div>
-          <div class="bz-row-metoo-label">me too</div>
+          <div class="bz-row-metoo-label">bit me too</div>
         </div>
       </div>`;
     })
@@ -543,9 +588,9 @@ function openDetailModal(reportId) {
 
         <div class="bz-metoo-row">
           <button type="button" id="bz-metoo-btn" class="bz-btn ${voted ? "bz-btn-secondary" : "bz-btn-primary"} bz-display" ${voted ? "disabled" : ""}>
-            ${voted ? "You flagged this too" : "This is happening to me too"}
+            ${voted ? "You already bit this too" : "Bit me too"}
           </button>
-          <span class="bz-row-meta">${meTooCount(report)} member${meTooCount(report) === 1 ? "" : "s"} also hit this</span>
+          <span class="bz-row-meta">${meTooCount(report)} member${meTooCount(report) === 1 ? "" : "s"} also got bit</span>
         </div>
 
         ${adminControlsHtml}
@@ -706,6 +751,7 @@ export async function initBugZapper() {
   state.memberName = member?.name ?? "Member";
 
   renderFilters();
+  renderSortBar();
   updateAdminUi();
   watchAuthState();
 }

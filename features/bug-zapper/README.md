@@ -2,9 +2,33 @@
 
 Members report bugs with enough structured detail (steps to reproduce,
 expected vs. actual, severity) to make them trackable and actionable.
-Public list, logged-in-members-only (any active membership), "me too"
-confirmations instead of upvotes, real admin controls for status /
-priority / duplicate-linking.
+Public list, logged-in-members-only (any active membership), "bit me
+too" confirmations instead of upvotes, real admin controls for status /
+priority / duplicate-linking. Visual design follows the Boomertanger
+logo palette — see FRONTEND CONVENTIONS note below.
+
+## Visual design — Boomertanger logo palette
+
+This feature moved off the original single-red-accent look shared with
+Feature Lab / Disk Stash, to match the real Boomertanger logo. Exact
+values (pulled directly from the logo file, not eyeballed):
+
+| Role | Hex | CSS var |
+|---|---|---|
+| Background | `#0F0F0F` | `--bz-bg` |
+| Primary / interactive (buttons, links, focus states) | `#9146FF` | `--bz-primary` |
+| Page title accent | `#FFA100` | `--bz-title` |
+| Critical severity + admin danger states only | `#AE201B` | `--bz-accent` |
+| Body text | `#F4F2EA` | `--bz-text` |
+| Font (everywhere — display, body, and what used to be "mono" meta text) | Inter | — |
+
+Status pill colors (blue/amber/green for Open/In progress/Fixed, etc.)
+are functional UI state colors, not brand identity — they weren't
+changed and don't need to match the logo.
+
+**Next step, per the plan:** retrofit Feature Lab's and Disk Stash's
+CSS to this same palette so all three features look consistent. This
+table is the reference for that pass — no need to re-derive the colors.
 
 ## Files in this feature
 
@@ -49,9 +73,20 @@ priority / duplicate-linking.
 
 ```html
 <div id="bug-zapper-root"></div>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@dev/features/bug-zapper/bug-zapper.css">
 <script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@dev/features/bug-zapper/bug-zapper.js"></script>
 ```
+
+**Note:** earlier versions of this snippet were missing the Google Fonts
+`<link>` entirely — `bug-zapper.css` declared `font-family: "Space
+Grotesk"` etc. but nothing ever loaded them, so the page was silently
+falling back to the browser's default sans-serif this whole time. Now
+that the design has moved to Inter, this snippet actually loads it —
+if you already have this embedded on the `bug-zapper` page, replace the
+whole block, not just the two lines that reference the repo files.
 
 Swap `@dev` for a pinned tag (e.g. `@v1.3.0`) when promoting to production,
 per the repo's normal release process.
@@ -73,7 +108,7 @@ per the repo's normal release process.
 | `screenshotUrl` | string \| null | **only** `recordBugScreenshot` (Admin SDK) or Disk Stash's safe-delete path — never a direct client write |
 | `reporterUid` | string | member's Firebase Auth uid (anonymous or real), set on create |
 | `reporterName` | string | MemberSpace `memberInfo.name`, captured on create |
-| `meTooBy` | array of strings | members, one uid added/removed at a time |
+| `meTooBy` | array of strings | members, one uid added/removed at a time (field name unchanged even though the UI now says "bit me too" — no schema/rules impact from the rename) |
 | `createdAt` | timestamp | server, on create |
 
 ## Known gaps / accepted tradeoffs (flagging, not solving here)

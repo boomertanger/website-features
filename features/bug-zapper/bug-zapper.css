@@ -1,23 +1,32 @@
 /* features/bug-zapper/bug-zapper.css
-   Same tokens as feature-lab.css / disk-stash.css: dark ground, one
-   accent red, Space Grotesk display + IBM Plex Sans body, IBM Plex Mono
-   for tabular/meta text. Responsive via CONTAINER queries, not media
-   queries — a Squarespace Code Block's width has nothing to do with the
-   browser window's width. */
+   Boomertanger logo palette: near-black ground (#0f0f0f), Inter
+   throughout, purple (#9146ff) as the interactive/primary accent, brand
+   orange (#ffa100) reserved for the page title, and red (#ae201b)
+   reserved specifically for Critical severity + admin danger states —
+   not the general accent anymore. This is a deliberate departure from
+   the older single-red-accent look shared with feature-lab.css /
+   disk-stash.css; see custom-instructions.md for the plan to bring
+   those in line with this palette next. Responsive via CONTAINER
+   queries, not media queries — a Squarespace Code Block's width has
+   nothing to do with the browser window's width. */
 
 #bug-zapper-root {
   container-type: inline-size;
   container-name: bz;
-  --bz-bg: #121014;
+  --bz-bg: #0f0f0f;
   --bz-surface: #1a1619;
   --bz-surface-2: #1e1a1d;
   --bz-border: #2a2326;
   --bz-border-2: #332b2e;
-  --bz-text: #f3ede9;
+  --bz-text: #f4f2ea;
   --bz-text-muted: #a89a9c;
   --bz-text-faint: #786e70;
-  --bz-accent: #c1443c;
-  --bz-accent-bg: rgba(193, 68, 60, 0.14);
+  --bz-primary: #9146ff;
+  --bz-primary-hover: #a565ff;
+  --bz-primary-bg: rgba(145, 70, 255, 0.14);
+  --bz-title: #ffa100;
+  --bz-accent: #ae201b;
+  --bz-accent-bg: rgba(174, 32, 27, 0.14);
   --bz-amber: #d9a441;
   --bz-amber-bg: rgba(217, 164, 65, 0.14);
   --bz-blue: #6a93c9;
@@ -27,7 +36,7 @@
   --bz-gray: #a89a9c;
   --bz-gray-bg: #241f22;
 
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   color: var(--bz-text);
   background: var(--bz-bg);
   border-radius: 16px;
@@ -41,11 +50,17 @@
 }
 
 #bug-zapper-root .bz-display {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", sans-serif;
 }
 
 #bug-zapper-root .bz-mono {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
+}
+
+#bug-zapper-root .bz-title-brand {
+  color: var(--bz-title);
+  text-transform: uppercase;
+  letter-spacing: 0.01em;
 }
 
 /* ---------- Header ---------- */
@@ -65,12 +80,12 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--bz-accent);
+  color: var(--bz-primary);
 }
 
 #bug-zapper-root .bz-title {
   margin: 4px 0 0 0;
-  font-size: 28px;
+  font-size: 32px;
   font-weight: 700;
 }
 
@@ -90,7 +105,7 @@
 /* ---------- Buttons / badges ---------- */
 
 #bug-zapper-root .bz-btn {
-  font-family: "Space Grotesk", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   font-weight: 600;
   border: none;
@@ -105,12 +120,12 @@
 }
 
 #bug-zapper-root .bz-btn-primary {
-  background: var(--bz-accent);
-  color: var(--bz-bg);
+  background: var(--bz-primary);
+  color: var(--bz-text);
 }
 
 #bug-zapper-root .bz-btn-primary:hover:not(:disabled) {
-  background: #d9534a;
+  background: var(--bz-primary-hover);
 }
 
 #bug-zapper-root .bz-btn-secondary {
@@ -129,7 +144,7 @@
   font-size: 11px;
   letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   white-space: nowrap;
 }
 
@@ -143,7 +158,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   text-transform: uppercase;
   letter-spacing: 0.04em;
   color: var(--bz-text-muted);
@@ -156,27 +171,83 @@
   flex: none;
 }
 
-/* ---------- Filters ---------- */
+/* ---------- Filters / sort ---------- */
 
 #bug-zapper-root .bz-filters {
   display: flex;
   gap: 8px;
   padding: 20px 32px 0 32px;
-  flex-wrap: wrap;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+#bug-zapper-root .bz-filters::-webkit-scrollbar {
+  display: none;
 }
 
 #bug-zapper-root .bz-chip {
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 13px;
-  padding: 8px 14px;
-  border-radius: 8px;
-  border: 1px solid transparent;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--bz-border-2);
   background: transparent;
   color: var(--bz-text-muted);
   cursor: pointer;
+  flex: none;
+  white-space: nowrap;
 }
 
 #bug-zapper-root .bz-chip.bz-active {
+  background: var(--bz-text);
+  border-color: var(--bz-text);
+  color: var(--bz-bg);
+  font-weight: 600;
+}
+
+#bug-zapper-root .bz-sortbar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 4px 32px 0 32px;
+}
+
+#bug-zapper-root .bz-sortbar-label {
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--bz-text-faint);
+  flex: none;
+}
+
+#bug-zapper-root .bz-sort-options {
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+#bug-zapper-root .bz-sort-options::-webkit-scrollbar {
+  display: none;
+}
+
+#bug-zapper-root .bz-sort-btn {
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--bz-text-faint);
+  cursor: pointer;
+  flex: none;
+  white-space: nowrap;
+}
+
+#bug-zapper-root .bz-sort-btn.bz-active {
   background: var(--bz-surface-2);
   border-color: var(--bz-border-2);
   color: var(--bz-text);
@@ -225,7 +296,7 @@
   justify-content: center;
   overflow: hidden;
   font-size: 9px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   color: var(--bz-text-faint);
   text-align: center;
   line-height: 1.3;
@@ -259,7 +330,7 @@
 
 #bug-zapper-root .bz-row-meta {
   font-size: 12px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   color: var(--bz-text-faint);
 }
 
@@ -275,7 +346,7 @@
 
 #bug-zapper-root .bz-row-metoo-label {
   font-size: 10px;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   text-transform: uppercase;
   color: var(--bz-text-faint);
 }
@@ -302,7 +373,7 @@
   border: 1px solid var(--bz-border-2);
   border-radius: 8px;
   color: var(--bz-text);
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   font-size: 14px;
   padding: 11px 13px;
 }
@@ -310,9 +381,9 @@
 #bug-zapper-root .bz-input:focus,
 #bug-zapper-root .bz-textarea:focus,
 #bug-zapper-root .bz-select:focus {
-  outline: 2px solid var(--bz-accent);
+  outline: 2px solid var(--bz-primary);
   outline-offset: 1px;
-  border-color: var(--bz-accent);
+  border-color: var(--bz-primary);
 }
 
 #bug-zapper-root .bz-textarea {
@@ -334,7 +405,7 @@
   background: var(--bz-surface-2);
   color: var(--bz-text-muted);
   font-size: 13px;
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   cursor: pointer;
 }
 
@@ -383,7 +454,7 @@
 }
 
 #bug-zapper-root .bz-section-label {
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   font-size: 12px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -420,7 +491,7 @@
 
 #bug-zapper-root .bz-admin-tag {
   display: inline-block;
-  font-family: "IBM Plex Mono", monospace;
+  font-family: "Inter", sans-serif;
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
