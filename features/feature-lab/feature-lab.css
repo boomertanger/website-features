@@ -1,37 +1,46 @@
 /* features/feature-lab/feature-lab.css
-   Matches the approved mockups: dark ground, one accent red,
-   Space Grotesk display + IBM Plex Sans body. Responsive via
-   CONTAINER queries (not media queries) — deliberately, since a
-   Squarespace Code Block's width has nothing to do with the browser
-   window's width. A narrow block on a wide desktop screen still needs
-   the mobile layout; media queries can't see that, only container
-   queries can. No JS branching for layout. */
+   Boomertanger site-wide design system (established with Bug Zapper):
+   background #0F0F0F, primary interactive purple #9146FF, title accent
+   orange #FFA100, critical/danger-only red #AE201B, body text #F4F2EA,
+   Inter everywhere (display, body, and meta/tabular text — no separate
+   mono or display family). Responsive via CONTAINER queries (not
+   @media) — a Squarespace Code Block's width has nothing to do with
+   the browser window's width. No JS branching for layout. */
 
 #feature-lab-root {
   container-type: inline-size;
   container-name: fl;
-  --fl-bg: #121014;
+  --fl-bg: #0f0f0f;
   --fl-surface: #1a1619;
   --fl-surface-2: #1e1a1d;
   --fl-border: #2a2326;
   --fl-border-2: #332b2e;
-  --fl-text: #f3ede9;
+  --fl-text: #f4f2ea;
   --fl-text-muted: #a89a9c;
   --fl-text-faint: #786e70;
-  --fl-accent: #c1443c;
-  --fl-accent-bg: rgba(193, 68, 60, 0.14);
+
+  /* Brand roles */
+  --fl-primary: #9146ff;
+  --fl-primary-bg: rgba(145, 70, 255, 0.14);
+  --fl-title-accent: #ffa100;
+  --fl-critical: #ae201b;
+  --fl-critical-bg: rgba(174, 32, 27, 0.14);
+
+  /* Functional status colors — don't need to match brand palette,
+     just need to stay distinguishable from each other AND from
+     --fl-primary (so a status pill never reads as a clickable button). */
   --fl-amber: #d9a441;
   --fl-amber-bg: rgba(217, 164, 65, 0.14);
   --fl-blue: #6a93c9;
   --fl-blue-bg: rgba(106, 147, 201, 0.14);
-  --fl-purple: #9573c9;
-  --fl-purple-bg: rgba(149, 115, 201, 0.14);
+  --fl-teal: #2ec4b6;
+  --fl-teal-bg: rgba(46, 196, 182, 0.14);
   --fl-green: #5fa876;
   --fl-green-bg: rgba(95, 168, 118, 0.12);
   --fl-gray: #a89a9c;
   --fl-gray-bg: #241f22;
 
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   color: var(--fl-text);
   background: var(--fl-bg);
   border-radius: 16px;
@@ -45,33 +54,50 @@
 }
 
 #feature-lab-root .fl-display {
-  font-family: "Space Grotesk", sans-serif;
+  font-weight: 700;
 }
 
-/* ---------- Header ---------- */
+/* ---------- Wordmark bar ---------- */
 
-#feature-lab-root .fl-header {
-  padding: 32px 32px 20px 32px;
+#feature-lab-root .fl-wordmark-bar {
+  padding: 18px 32px;
   display: flex;
-  align-items: flex-end;
+  align-items: center;
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--fl-border);
   flex-wrap: wrap;
 }
 
+#feature-lab-root .fl-wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
+#feature-lab-root .fl-wordmark-primary {
+  color: var(--fl-primary);
+}
+
+/* ---------- Header ---------- */
+
 #feature-lab-root .fl-eyebrow {
   font-size: 12px;
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--fl-accent);
+  color: var(--fl-primary);
+}
+
+#feature-lab-root .fl-header {
+  padding: 24px 32px 20px 32px;
 }
 
 #feature-lab-root .fl-title {
-  margin: 4px 0 0 0;
+  margin: 0;
   font-size: 28px;
   font-weight: 700;
+  color: var(--fl-title-accent);
 }
 
 #feature-lab-root .fl-subtitle {
@@ -81,7 +107,6 @@
 }
 
 #feature-lab-root .fl-btn {
-  font-family: "Space Grotesk", sans-serif;
   font-size: 14px;
   font-weight: 600;
   border: none;
@@ -91,7 +116,7 @@
 }
 
 #feature-lab-root .fl-btn-primary {
-  background: var(--fl-accent);
+  background: var(--fl-primary);
   color: var(--fl-bg);
 }
 
@@ -126,7 +151,6 @@
 
 #feature-lab-root .fl-chip {
   flex-shrink: 0;
-  font-family: "IBM Plex Sans", sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: var(--fl-text-muted);
@@ -141,8 +165,8 @@
 #feature-lab-root .fl-chip.fl-active {
   font-weight: 600;
   color: var(--fl-bg);
-  background: var(--fl-text);
-  border-color: var(--fl-text);
+  background: var(--fl-primary);
+  border-color: var(--fl-primary);
 }
 
 #feature-lab-root .fl-sort {
@@ -221,9 +245,9 @@
 }
 
 #feature-lab-root .fl-vote-btn.fl-voted {
-  color: var(--fl-accent);
-  background: var(--fl-accent-bg);
-  border-color: var(--fl-accent);
+  color: var(--fl-primary);
+  background: var(--fl-primary-bg);
+  border-color: var(--fl-primary);
 }
 
 #feature-lab-root .fl-vote-arrow {
@@ -325,8 +349,11 @@
 /* Phone width, or a code block that narrow on any screen:
    rows become stacked cards */
 @container fl (max-width: 600px) {
+  #feature-lab-root .fl-wordmark-bar {
+    padding: 16px 20px;
+  }
   #feature-lab-root .fl-header {
-    padding: 20px 20px 14px 20px;
+    padding: 16px 20px 14px 20px;
   }
   #feature-lab-root .fl-filters {
     padding: 12px 20px 0 20px;
@@ -416,7 +443,7 @@
 #feature-lab-root .fl-input,
 #feature-lab-root .fl-textarea,
 #feature-lab-root .fl-select {
-  font-family: "IBM Plex Sans", sans-serif;
+  font-family: "Inter", sans-serif;
   background: var(--fl-bg);
   border: 1px solid var(--fl-border-2);
   border-radius: 8px;
@@ -429,7 +456,6 @@
 
 #feature-lab-root .fl-textarea {
   resize: none;
-  font-family: "IBM Plex Sans", sans-serif;
 }
 
 #feature-lab-root .fl-modal-actions {
@@ -444,7 +470,7 @@
 
 #feature-lab-root .fl-error {
   font-size: 13px;
-  color: var(--fl-accent);
+  color: var(--fl-critical);
 }
 
 #feature-lab-root .fl-comment {

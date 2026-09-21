@@ -53,7 +53,7 @@ const STATUS_META = {
   submitted: { label: "Submitted", color: "var(--fl-gray)", bg: "var(--fl-gray-bg)" },
   under_review: { label: "Under review", color: "var(--fl-amber)", bg: "var(--fl-amber-bg)" },
   planned: { label: "Planned", color: "var(--fl-blue)", bg: "var(--fl-blue-bg)" },
-  in_progress: { label: "In progress", color: "var(--fl-purple)", bg: "var(--fl-purple-bg)" },
+  in_progress: { label: "In progress", color: "var(--fl-teal)", bg: "var(--fl-teal-bg)" },
   shipped: { label: "Shipped", color: "var(--fl-green)", bg: "var(--fl-green-bg)" },
   declined: { label: "Declined", color: "var(--fl-text-faint)", bg: "var(--fl-surface-2)" },
 };
@@ -61,7 +61,7 @@ const STATUS_META = {
 const PRIORITY_META = {
   low: { label: "Low", color: "var(--fl-gray)", bg: "var(--fl-gray-bg)" },
   medium: { label: "Medium", color: "var(--fl-amber)", bg: "var(--fl-amber-bg)" },
-  high: { label: "High", color: "var(--fl-accent)", bg: "var(--fl-accent-bg)" },
+  high: { label: "High", color: "var(--fl-critical)", bg: "var(--fl-critical-bg)" },
 };
 
 const FILTERS = [
@@ -119,17 +119,17 @@ function formatDate(value) {
 
 function renderShell() {
   return `
-    <div class="fl-header">
-      <div>
-        <div class="fl-eyebrow">Boomertanger &middot; Feature Lab</div>
-        <h2 class="fl-title fl-display">Feature requests</h2>
-        <div class="fl-subtitle">Submitted by Fan Club members &middot; reviewed by the team</div>
-      </div>
+    <div class="fl-wordmark-bar">
+      <div class="fl-wordmark">FEATURE <span class="fl-wordmark-primary">LAB</span></div>
       <div style="display:flex;align-items:center;gap:14px;">
         <button type="button" id="fl-admin-signin" class="fl-btn-ghost" hidden>Sign in as Admin</button>
         <span id="fl-admin-badge" class="fl-badge fl-badge-neutral" hidden>Admin</span>
         <button type="button" id="fl-new-request" class="fl-btn fl-btn-primary fl-display">+ New request</button>
       </div>
+    </div>
+    <div class="fl-header">
+      <h2 class="fl-title fl-display">Feature requests</h2>
+      <div class="fl-subtitle">Submitted by Fan Club members &middot; reviewed by the team</div>
     </div>
     <div class="fl-filters" id="fl-filters"></div>
     <div class="fl-sort" id="fl-sort"></div>
@@ -467,7 +467,7 @@ function openDetailModal(requestId) {
         <div class="fl-comment">
           <div style="display:flex;align-items:center;gap:8px;">
             <span style="font-size:13px;font-weight:600;">${escapeHtml(c.authorName)}</span>
-            ${c.isAdminAuthor ? `<span class="fl-badge" style="color:var(--fl-accent);background:var(--fl-accent-bg);padding:2px 8px;font-size:10px;">Admin</span>` : ""}
+            ${c.isAdminAuthor ? `<span class="fl-badge" style="color:var(--fl-primary);background:var(--fl-primary-bg);padding:2px 8px;font-size:10px;">Admin</span>` : ""}
             <span style="font-size:12px;color:var(--fl-text-faint);">${formatDate(c.createdAt)}</span>
           </div>
           <div style="font-size:14px;color:var(--fl-text);margin-top:4px;line-height:1.5;">${escapeHtml(c.text)}</div>
