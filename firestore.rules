@@ -237,8 +237,6 @@ service cloud.firestore {
             && request.resource.data.createdAt == resource.data.createdAt
             && request.resource.data.meTooBy == resource.data.meTooBy
             && request.resource.data.screenshotUrl == resource.data.screenshotUrl);
-
-      allow delete: if isAdmin();
     }
   }
 }

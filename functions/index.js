@@ -298,6 +298,66 @@ exports.deleteExternalAsset = onCall({ secrets: CLOUDINARY_SECRETS }, async (req
   });
 });
 
+// ---------- Bug Zapper: safe report deletion ----------
+// Why this can't just be a client-side Firestore delete: if the report
+// has a screenshot, deleting the bugReports doc directly would leave its
+// Cloudinary asset (and its externalAssets record) orphaned — exactly
+// the failure mode Disk Stash's safe-delete path exists to prevent. This
+// function always cleans up the asset first (via the same
+// performAssetDeletion used by Disk Stash's manual purge and scheduled
+// sweep), and only deletes the report doc once that's done — or
+// immediately, if there was never a screenshot to begin with.
+//
+// IMPORTANT: this requires the corresponding firestore.rules change
+// (removing bugReports' old `allow delete: if isAdmin();` line) to
+// actually be the ONLY delete path. The Admin SDK used here bypasses
+// rules entirely, so this function keeps working either way; the rules
+// change just closes off the unsafe direct-delete route for any future
+// client code.
+exports.deleteBugReport = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) => {
+  if (!(await isCallerAdmin(request.auth))) {
+    throw new HttpsError("permission-denied", "Admins only.");
+  }
+
+  const reportId = request.data?.reportId;
+  if (typeof reportId !== "string" || !reportId) {
+    throw new HttpsError("invalid-argument", "reportId is required.");
+  }
+
+  const db = admin.firestore();
+  const reportRef = db.collection("bugReports").doc(reportId);
+  const reportSnap = await reportRef.get();
+  if (!reportSnap.exists) {
+    throw new HttpsError("not-found", "No bug report with that id.");
+  }
+
+  const creds = {
+    cloudName: CLOUDINARY_CLOUD_NAME.value(),
+    apiKey: CLOUDINARY_API_KEY.value(),
+    apiSecret: CLOUDINARY_API_SECRET.value(),
+  };
+
+  // Find any externalAssets record(s) tied to this report (normally 0 or
+  // 1 — a report only ever gets one screenshot today, but this handles
+  // it defensively rather than assuming exactly one).
+  const assetsSnap = await db
+    .collection("externalAssets")
+    .where("linkedDoc.collection", "==", "bugReports")
+    .where("linkedDoc.docId", "==", reportId)
+    .get();
+
+  for (const assetDoc of assetsSnap.docs) {
+    // Cloudinary delete + externalAssets/storageUsage cleanup first,
+    // same safe path as Disk Stash's manual purge button. If this
+    // throws, the report is NOT deleted, so nothing is left half-done.
+    await performAssetDeletion(assetDoc.id, creds);
+  }
+
+  await reportRef.delete();
+
+  return { ok: true };
+});
+
 // Daily sweep: reads every enabled cleanupRules doc, finds linked docs
 // matching its status+age condition, and purges their assets through the
 // exact same safe-delete path as the manual button above.

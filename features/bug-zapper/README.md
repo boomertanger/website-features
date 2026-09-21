@@ -49,10 +49,18 @@ table is the reference for that pass — no need to re-derive the colors.
    `recordBugScreenshot`, the only path allowed to set `screenshotUrl`.
 3. **Merge `firestore-rules-addition.txt`** into `firestore.rules` — adds
    the `bugReports` collection rules, including the me-too toggle exception.
-4. **Deploy both, separately** — pushing to git alone doesn't update either;
+4. **Merge `functions-addition-delete.js`** into `functions/index.js` —
+   adds `deleteBugReport`, which cleans up any attached screenshot via
+   the same safe path Disk Stash's manual purge uses, then deletes the
+   report itself.
+5. **Apply `firestore-rules-delete-update.txt`** — removes bugReports'
+   old `allow delete: if isAdmin();` line, so `deleteBugReport` becomes
+   the only way to delete a report (a direct client delete would skip
+   the Cloudinary cleanup step and orphan the asset).
+6. **Deploy both, separately** — pushing to git alone doesn't update either;
    `firebase deploy --project <staging|production> --only firestore:rules`
    and the functions deploy are two separate steps, for both projects.
-5. **Add a `cleanupRules` doc in Disk Stash** (after Bug Zapper has at least
+7. **Add a `cleanupRules` doc in Disk Stash** (after Bug Zapper has at least
    one real "Fixed" report with a screenshot to test against):
    ```json
    {

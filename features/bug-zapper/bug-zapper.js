@@ -541,10 +541,14 @@ function openDetailModal(reportId) {
           <div class="bz-field" style="flex:1;min-width:160px;">
             <label class="bz-label" for="bz-dup-input">Duplicate of (report id)</label>
             <input type="text" id="bz-dup-input" class="bz-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste from the original report's ID line">
-            <div class="bz-hint">Open the original report — its ID is shown just below its title, click it to select and copy.</div>          </div>
+            <div class="bz-hint">Open the original report — its ID is shown just below its title, click it to select and copy.</div>
+          </div>
         </div>
         <div id="bz-admin-error" class="bz-error" hidden></div>
-        <button type="button" id="bz-admin-save" class="bz-btn bz-btn-primary bz-display">Save changes</button>
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+          <button type="button" id="bz-admin-save" class="bz-btn bz-btn-primary bz-display">Save changes</button>
+          <button type="button" id="bz-admin-delete" class="bz-btn bz-display" style="background:var(--bz-accent);color:var(--bz-text);">Delete report</button>
+        </div>
       </div>`
     : "";
 
@@ -648,6 +652,32 @@ function openDetailModal(reportId) {
         console.error("Failed to save admin changes", err);
         errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
         errorEl.hidden = false;
+      }
+    });
+  }
+
+  const deleteBtn = slot.querySelector("#bz-admin-delete");
+  if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+      const confirmed = window.confirm(
+        `Delete "${report.title}"? This can't be undone${report.screenshotUrl ? " — its screenshot will also be removed from Cloudinary" : ""}.`
+      );
+      if (!confirmed) return;
+
+      const errorEl = slot.querySelector("#bz-admin-error");
+      deleteBtn.disabled = true;
+      deleteBtn.textContent = "Deleting…";
+
+      try {
+        const deleteBugReport = httpsCallable(functions, "deleteBugReport");
+        await deleteBugReport({ reportId });
+        close();
+      } catch (err) {
+        console.error("Failed to delete report", err);
+        errorEl.textContent = "Couldn't delete this report — you may need to sign in again.";
+        errorEl.hidden = false;
+        deleteBtn.disabled = false;
+        deleteBtn.textContent = "Delete report";
       }
     });
   }
