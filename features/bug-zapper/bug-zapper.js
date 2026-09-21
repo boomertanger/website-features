@@ -174,7 +174,7 @@ function renderShell() {
   return `
     <div class="bz-header">
       <div>
-        <div class="bz-eyebrow">Boomertanger &middot; Bug Zapper</div>
+        <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
         <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
         <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
       </div>
@@ -194,7 +194,7 @@ function renderShell() {
 function renderLoggedOut() {
   return `
     <div class="bz-logged-out">
-      <div class="bz-eyebrow" style="margin-bottom:10px;">Boomertanger &middot; Bug Zapper</div>
+      <div class="bz-wordmark bz-display" style="margin-bottom:10px;">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
       <h2 class="bz-title bz-display" style="font-size:24px;">Bug reports are for members</h2>
       <p class="bz-subtitle" style="margin-top:8px;">Log in with any Boomertanger membership to see open reports and file your own.</p>
     </div>
@@ -700,13 +700,12 @@ async function syncAdmin() {
 function updateAdminUi() {
   const signinBtn = state.root.querySelector("#bz-admin-signin");
   const badge = state.root.querySelector("#bz-admin-badge");
-  if (state.isAdmin) {
-    signinBtn.hidden = true;
-    badge.hidden = false;
-  } else {
-    badge.hidden = true;
-    signinBtn.hidden = !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
-  }
+  if (!signinBtn || !badge) return;
+  // Single expression per element, rather than two branches that could
+  // drift apart — signinBtn is hidden whenever isAdmin is true, full
+  // stop, regardless of the MemberSpace-plan convenience check below.
+  signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
+  badge.hidden = !state.isAdmin;
 }
 
 function watchAuthState() {

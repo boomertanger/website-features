@@ -80,6 +80,17 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  color: var(--bz-accent);
+}
+
+#bug-zapper-root .bz-wordmark {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--bz-text);
+}
+
+#bug-zapper-root .bz-wordmark-accent {
   color: var(--bz-primary);
 }
 
@@ -210,7 +221,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 4px 32px 0 32px;
+  padding: 18px 32px 0 32px;
 }
 
 #bug-zapper-root .bz-sortbar-label {
@@ -369,7 +380,7 @@
 #bug-zapper-root .bz-textarea,
 #bug-zapper-root .bz-select {
   width: 100%;
-  background: var(--bz-surface-2);
+  background: var(--bz-bg);
   border: 1px solid var(--bz-border-2);
   border-radius: 8px;
   color: var(--bz-text);
