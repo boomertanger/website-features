@@ -389,8 +389,9 @@
 
 #bug-zapper-root .bz-row {
   display: flex;
-  gap: 18px;
+  justify-content: space-between;
   align-items: flex-start;
+  gap: 16px;
   background: var(--bz-surface);
   border: 1px solid var(--bz-border);
   border-radius: 12px;
@@ -402,28 +403,60 @@
   border-color: var(--bz-border-2);
 }
 
-#bug-zapper-root .bz-thumb {
-  width: 56px;
-  height: 56px;
-  border-radius: 8px;
-  background: var(--bz-surface-2);
-  border: 1px solid var(--bz-border-2);
-  flex: none;
+#bug-zapper-root .bz-row-top {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  font-size: 9px;
-  font-family: "Inter", sans-serif;
-  color: var(--bz-text-faint);
-  text-align: center;
-  line-height: 1.3;
+  align-items: flex-start;
+  gap: 16px;
+  flex-grow: 1;
+  min-width: 0;
 }
 
-#bug-zapper-root .bz-thumb img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+#bug-zapper-root .bz-bit-btn {
+  width: 52px;
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  background: transparent;
+  border: 1.5px solid var(--bz-border-2);
+  border-radius: 10px;
+  padding: 8px 4px;
+  cursor: pointer;
+  color: var(--bz-text);
+  font-family: "Inter", sans-serif;
+}
+
+#bug-zapper-root .bz-bit-btn.bz-bit-active {
+  border-color: var(--bz-primary);
+  background: var(--bz-primary-bg);
+  color: #c9a8ff;
+}
+
+#bug-zapper-root .bz-bit-count {
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+#bug-zapper-root .bz-bit-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--bz-text-faint);
+}
+
+#bug-zapper-root .bz-bit-btn.bz-bit-active .bz-bit-label {
+  color: #c9a8ff;
+}
+
+#bug-zapper-root .bz-row-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex: none;
+  margin-top: 6px;
 }
 
 #bug-zapper-root .bz-row-body {
@@ -431,7 +464,7 @@
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 4px;
 }
 
 #bug-zapper-root .bz-row-badges {
@@ -446,27 +479,59 @@
   font-weight: 600;
 }
 
+#bug-zapper-root .bz-row-desc {
+  font-size: 13px;
+  color: var(--bz-text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 #bug-zapper-root .bz-row-meta {
   font-size: 12px;
   font-family: "Inter", sans-serif;
   color: var(--bz-text-faint);
 }
 
-#bug-zapper-root .bz-row-metoo {
+#bug-zapper-root .bz-row-right {
+  display: flex;
+  align-items: center;
+  gap: 12px;
   flex: none;
-  text-align: center;
 }
 
-#bug-zapper-root .bz-row-metoo-count {
-  font-size: 18px;
+#bug-zapper-root .bz-comment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 11px;
+  color: #8fd9aa;
+  background: rgba(95, 168, 118, 0.12);
+  padding: 4px 9px;
+  border-radius: 999px;
+  flex: none;
+}
+
+#bug-zapper-root .bz-avatar {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--bz-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
   font-weight: 700;
+  color: var(--bz-text-muted);
+  flex: none;
+  font-family: "Inter", sans-serif;
 }
 
-#bug-zapper-root .bz-row-metoo-label {
-  font-size: 10px;
-  font-family: "Inter", sans-serif;
-  text-transform: uppercase;
+#bug-zapper-root .bz-row-date {
+  font-size: 12px;
   color: var(--bz-text-faint);
+  white-space: nowrap;
+  flex: none;
 }
 
 /* ---------- Form fields (shared by submit + admin panel) ---------- */
@@ -621,6 +686,42 @@
   font-weight: 700;
 }
 
+#bug-zapper-root .bz-comment {
+  background: var(--bz-bg);
+  border: 1px solid var(--bz-border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+#bug-zapper-root .bz-history-item {
+  display: flex;
+  gap: 14px;
+}
+
+#bug-zapper-root .bz-history-line {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+#bug-zapper-root .bz-history-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex: none;
+}
+
+#bug-zapper-root .bz-history-rule {
+  width: 2px;
+  flex: 1;
+  background: var(--bz-border);
+  margin-top: 4px;
+}
+
+#bug-zapper-root .bz-history-body {
+  padding-bottom: 18px;
+}
+
 /* ---------- Narrow container (mobile) ---------- */
 
 @container bz (max-width: 640px) {
@@ -707,10 +808,9 @@
     flex-wrap: wrap;
   }
 
-  #bug-zapper-root .bz-row-metoo {
-    flex-direction: row;
-    align-items: center;
-    gap: 6px;
+  #bug-zapper-root .bz-row-right {
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   #bug-zapper-root .bz-modal {

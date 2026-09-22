@@ -57,10 +57,13 @@ table is the reference for that pass — no need to re-derive the colors.
    old `allow delete: if isAdmin();` line, so `deleteBugReport` becomes
    the only way to delete a report (a direct client delete would skip
    the Cloudinary cleanup step and orphan the asset).
-6. **Deploy both, separately** — pushing to git alone doesn't update either;
+6. **Apply `firestore-rules-comments-history.txt`** — five precise edits
+   adding the private comments subcollection, the `isCommentCountBump`
+   exception, and letting admin saves append to `statusHistory`.
+7. **Deploy both, separately** — pushing to git alone doesn't update either;
    `firebase deploy --project <staging|production> --only firestore:rules`
    and the functions deploy are two separate steps, for both projects.
-7. **Add a `cleanupRules` doc in Disk Stash** (after Bug Zapper has at least
+8. **Add a `cleanupRules` doc in Disk Stash** (after Bug Zapper has at least
    one real "Fixed" report with a screenshot to test against):
    ```json
    {
@@ -117,6 +120,12 @@ per the repo's normal release process.
 | `reporterUid` | string | member's Firebase Auth uid (anonymous or real), set on create |
 | `reporterName` | string | MemberSpace `memberInfo.name`, captured on create |
 | `meTooBy` | array of strings | members, one uid added/removed at a time (field name unchanged even though the UI now says "bit me too" — no schema/rules impact from the rename) |
+| `commentCount` | number | bumped by 1 whenever a comment is posted (via the `isCommentCountBump` narrow rule exception) — kept as a plain field, not derived, so the list view doesn't need to read every report's comments subcollection just to show a count |
+| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | admin only, appended via `arrayUnion` every time "Save changes" is clicked in the admin panel — one entry per save, using whatever status is currently selected (even if unchanged), same convention Feature Lab already uses |
+
+### `bugReports/{reportId}/comments/{commentId}` (subcollection)
+
+**Private** — readable and postable only by a real admin or that specific report's `reporterUid`, enforced in `firestore.rules` via a `get()` on the parent report doc, not just a client-side check. Nobody else can see this thread exists, including other members. Shape: `{ text, authorId, authorName, isAdminAuthor, createdAt }` — same as Feature Lab's public comments, just with a much narrower read/write rule.
 | `createdAt` | timestamp | server, on create |
 
 ## Known gaps / accepted tradeoffs (flagging, not solving here)

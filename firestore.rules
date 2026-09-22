@@ -191,8 +191,34 @@ service cloud.firestore {
         && after.reporterName == before.reporterName
         && after.createdAt == before.createdAt
         && after.get('statusChangedAt', null) == before.get('statusChangedAt', null)
+        && after.get('statusHistory', []) == before.get('statusHistory', [])
+        && after.get('commentCount', 0) == before.get('commentCount', 0)
         && ((added.size() == 1 && added.hasOnly([request.auth.uid]) && removed.size() == 0)
             || (removed.size() == 1 && removed.hasOnly([request.auth.uid]) && added.size() == 0));
+    }
+
+    function isCommentCountBump() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return request.auth != null
+        && (isAdmin() || request.auth.uid == before.reporterUid)
+        && after.commentCount == before.get('commentCount', 0) + 1
+        && after.title == before.title
+        && after.page == before.page
+        && after.whatHappened == before.whatHappened
+        && after.expectedInstead == before.expectedInstead
+        && after.stepsToReproduce == before.stepsToReproduce
+        && after.severity == before.severity
+        && after.priority == before.priority
+        && after.status == before.status
+        && after.duplicateOf == before.duplicateOf
+        && after.screenshotUrl == before.screenshotUrl
+        && after.reporterUid == before.reporterUid
+        && after.reporterName == before.reporterName
+        && after.createdAt == before.createdAt
+        && after.meTooBy == before.meTooBy
+        && after.get('statusChangedAt', null) == before.get('statusChangedAt', null)
+        && after.get('statusHistory', []) == before.get('statusHistory', []);
     }
 
     match /bugReports/{reportId} {
@@ -217,7 +243,9 @@ service cloud.firestore {
         && request.resource.data.screenshotUrl == null
         && request.resource.data.reporterUid == request.auth.uid
         && request.resource.data.reporterName is string
-        && request.resource.data.meTooBy == [];
+        && request.resource.data.meTooBy == []
+        && request.resource.data.commentCount == 0
+        && request.resource.data.statusHistory == [];
 
       // Two disjoint ways to update: a member's own me-too toggle, or an
       // admin editing status/priority/duplicateOf. screenshotUrl is left out
@@ -225,6 +253,7 @@ service cloud.firestore {
       // bypasses these rules entirely) or cleared by Disk Stash's safe-delete
       // path, never directly by a client write.
       allow update: if isMeTooToggle()
+        || isCommentCountBump()
         || (isAdmin()
             && request.resource.data.title == resource.data.title
             && request.resource.data.page == resource.data.page
@@ -236,7 +265,27 @@ service cloud.firestore {
             && request.resource.data.reporterName == resource.data.reporterName
             && request.resource.data.createdAt == resource.data.createdAt
             && request.resource.data.meTooBy == resource.data.meTooBy
-            && request.resource.data.screenshotUrl == resource.data.screenshotUrl);
+            && request.resource.data.screenshotUrl == resource.data.screenshotUrl
+            && request.resource.data.commentCount == resource.data.commentCount);
+
+      match /comments/{commentId} {
+        allow read: if request.auth != null
+          && (isAdmin()
+              || request.auth.uid == get(/databases/$(database)/documents/bugReports/$(reportId)).data.reporterUid);
+
+        allow create: if request.auth != null
+          && (isAdmin()
+              || request.auth.uid == get(/databases/$(database)/documents/bugReports/$(reportId)).data.reporterUid)
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1
+          && request.resource.data.text.size() <= 1000
+          && request.resource.data.authorId is string
+          && request.resource.data.authorName is string
+          && request.resource.data.isAdminAuthor is bool
+          && (request.resource.data.isAdminAuthor == false || isAdmin());
+
+        allow update, delete: if false;
+      }
     }
   }
 }

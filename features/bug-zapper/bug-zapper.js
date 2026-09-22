@@ -45,6 +45,7 @@ import {
   serverTimestamp,
   arrayUnion,
   arrayRemove,
+  increment,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import {
   getAuth,
@@ -75,10 +76,10 @@ const COMPRESS_MAX_WIDTH = 1280;
 const COMPRESS_QUALITY = 0.75;
 
 const SEVERITY_META = {
-  Cosmetic: { label: "Cosmetic", color: "var(--bz-gray)" },
-  Minor: { label: "Minor", color: "var(--bz-blue)" },
-  Major: { label: "Major", color: "var(--bz-amber)" },
-  Critical: { label: "Critical", color: "var(--bz-accent)" },
+  Cosmetic: { label: "Cosmetic", color: "var(--bz-gray)", bg: "var(--bz-gray-bg)" },
+  Minor: { label: "Minor", color: "var(--bz-blue)", bg: "var(--bz-blue-bg)" },
+  Major: { label: "Major", color: "var(--bz-amber)", bg: "var(--bz-amber-bg)" },
+  Critical: { label: "Critical", color: "var(--bz-accent)", bg: "var(--bz-accent-bg)" },
 };
 
 const STATUS_META = {
@@ -161,6 +162,24 @@ function meTooCount(r) {
 
 function hasMeToo(r) {
   return !!state.uid && (r.meTooBy ?? []).includes(state.uid);
+}
+
+function initials(name) {
+  return String(name ?? "")
+    .trim()
+    .split(/\s+/)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() ?? "")
+    .join("") || "?";
+}
+
+// Private comments are visible only to a real admin or the report's own
+// reporter — never any other member, and never shown publicly. This is
+// checked both here (to decide what to render) and, more importantly,
+// server-side in firestore.rules (the client check alone is never a
+// security boundary).
+function canSeeComments(r) {
+  return state.isAdmin || (!!state.uid && r.reporterUid === state.uid);
 }
 
 function matchesFilter(r) {
@@ -278,6 +297,20 @@ function sortReports(items) {
   return sorted;
 }
 
+async function toggleMeToo(reportId) {
+  if (!state.uid) return;
+  const report = state.reports.find((r) => r.id === reportId);
+  if (!report) return;
+  const voted = hasMeToo(report);
+  try {
+    await updateDoc(doc(db, "bugReports", reportId), {
+      meTooBy: voted ? arrayRemove(state.uid) : arrayUnion(state.uid),
+    });
+  } catch (err) {
+    console.error("Failed to toggle me-too", err);
+  }
+}
+
 function renderList() {
   const el = state.root.querySelector("#bz-list");
   const items = sortReports(state.reports.filter(matchesFilter));
@@ -291,24 +324,38 @@ function renderList() {
     .map((r) => {
       const status = STATUS_META[r.status] ?? STATUS_META.Open;
       const severity = SEVERITY_META[r.severity] ?? SEVERITY_META.Minor;
+      const voted = hasMeToo(r);
+      const showComments = canSeeComments(r) && (r.commentCount ?? 0) > 0;
       return `
       <div class="bz-row bz-clickable" data-id="${r.id}">
-        <div class="bz-thumb">${r.screenshotUrl ? `<img src="${escapeHtml(r.screenshotUrl)}" alt="">` : "No screenshot"}</div>
-        <div class="bz-row-body">
-          <div class="bz-row-badges">
-            <span class="bz-pill" style="color:${status.color};background:${status.bg};">${status.label}</span>
-            <span class="bz-sev"><span class="bz-sev-dot" style="background:${severity.color};"></span>${severity.label}</span>
+        <div class="bz-row-top">
+          <button type="button" class="bz-bit-btn ${voted ? "bz-bit-active" : ""}" data-bit-id="${r.id}" aria-label="${voted ? "Remove your bit me too" : "Bit me too"}">
+            <span class="bz-bit-count bz-display">${meTooCount(r)}</span>
+            <span class="bz-bit-label">bit</span>
+          </button>
+          <div class="bz-row-dot" style="background:${status.color};"></div>
+          <div class="bz-row-body">
+            <div class="bz-row-title bz-display">${escapeHtml(r.title)}</div>
+            <div class="bz-row-desc">${escapeHtml(r.whatHappened)}</div>
           </div>
-          <div class="bz-row-title bz-display">${escapeHtml(r.title)}</div>
-          <div class="bz-row-meta">reported by ${escapeHtml(r.reporterName)} &middot; ${formatDate(r.createdAt)} &middot; ${escapeHtml(r.page)}${r.duplicateOf ? ` &middot; duplicate of #${escapeHtml(r.duplicateOf)}` : ""}</div>
         </div>
-        <div class="bz-row-metoo">
-          <div class="bz-display bz-row-metoo-count">${meTooCount(r)}</div>
-          <div class="bz-row-metoo-label">bit me too</div>
+        <div class="bz-row-right">
+          <span class="bz-pill" style="color:${severity.color};background:${severity.bg ?? "transparent"};">${severity.label}</span>
+          <span class="bz-pill" style="color:${status.color};background:${status.bg};">${status.label}</span>
+          ${showComments ? `<span class="bz-comment-badge" title="Private — only visible to you and the reporter"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>${r.commentCount}</span>` : ""}
+          <div class="bz-avatar" title="${escapeHtml(r.reporterName)}">${initials(r.reporterName)}</div>
+          <div class="bz-row-date">${formatDate(r.createdAt)}</div>
         </div>
       </div>`;
     })
     .join("");
+
+  el.querySelectorAll(".bz-bit-btn").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      toggleMeToo(btn.dataset.bitId);
+    });
+  });
 
   el.querySelectorAll(".bz-row").forEach((row) => {
     row.addEventListener("click", () => openDetailModal(row.dataset.id));
@@ -495,11 +542,13 @@ function openSubmitModal() {
         priority: null,
         status: "Open",
         statusChangedAt: serverTimestamp(),
+        statusHistory: [],
         duplicateOf: null,
         screenshotUrl: null,
         reporterUid: state.uid ?? "",
         reporterName: state.memberName,
         meTooBy: [],
+        commentCount: 0,
         createdAt: serverTimestamp(),
       });
 
@@ -532,6 +581,51 @@ function openDetailModal(reportId) {
 
   const slot = state.root.querySelector("#bz-modal-slot");
   const voted = hasMeToo(report);
+  const showComments = canSeeComments(report);
+  const history = [...(report.statusHistory ?? [])].reverse();
+  let unsubscribeComments = null;
+
+  const commentsHtml = showComments
+    ? `
+      <div class="bz-section">
+        <div class="bz-section-label" style="display:flex;align-items:center;gap:6px;">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>
+          Private comments
+        </div>
+        <div class="bz-hint" style="margin:-4px 0 12px;">Only visible to you and the reporter — no one else can see this thread.</div>
+        <div id="bz-comments-list" style="display:flex;flex-direction:column;gap:10px;margin-bottom:14px;"></div>
+        <div class="bz-field">
+          <textarea id="bz-comment-input" class="bz-textarea" rows="2" maxlength="1000" placeholder="Reply..."></textarea>
+        </div>
+        <div id="bz-comment-error" class="bz-error" hidden></div>
+        <button type="button" id="bz-comment-post" class="bz-btn bz-btn-secondary bz-display" style="margin-top:8px;">Post comment</button>
+      </div>`
+    : "";
+
+  const historyHtml =
+    history.length > 0
+      ? `
+      <div class="bz-section">
+        <h4 class="bz-section-label">History</h4>
+        ${history
+          .map((h, i) => {
+            const meta = STATUS_META[h.status] ?? STATUS_META.Open;
+            const isLast = i === history.length - 1;
+            return `
+            <div class="bz-history-item">
+              <div class="bz-history-line">
+                <div class="bz-history-dot" style="background:${meta.color};"></div>
+                ${isLast ? "" : `<div class="bz-history-rule"></div>`}
+              </div>
+              <div class="bz-history-body">
+                <div style="font-size:14px;"><strong>${meta.label}</strong> &middot; ${escapeHtml(h.changedBy)}</div>
+                <div style="font-size:13px;color:var(--bz-text-faint);margin-top:2px;">${formatDate(h.changedAt)}${h.note ? ` &mdash; "${escapeHtml(h.note)}"` : ""}</div>
+              </div>
+            </div>`;
+          })
+          .join("")}
+      </div>`
+      : "";
 
   const adminControlsHtml = state.isAdmin
     ? `
@@ -561,6 +655,10 @@ function openDetailModal(reportId) {
             <input type="text" id="bz-dup-input" class="bz-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste from the original report's ID line">
             <div class="bz-hint">Open the original report — its ID is shown just below its title, click it to select and copy.</div>
           </div>
+        </div>
+        <div class="bz-field">
+          <label class="bz-label" for="bz-note-input">Note (optional, added to history)</label>
+          <textarea id="bz-note-input" class="bz-textarea" rows="2" maxlength="500"></textarea>
         </div>
         <div id="bz-admin-error" class="bz-error" hidden></div>
         <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
@@ -616,12 +714,17 @@ function openDetailModal(reportId) {
           <span class="bz-row-meta">${meTooCount(report)} member${meTooCount(report) === 1 ? "" : "s"} also got bit</span>
         </div>
 
+        ${commentsHtml}
+
         ${adminControlsHtml}
+
+        ${historyHtml}
       </div>
     </div>
   `;
 
   const close = () => {
+    if (unsubscribeComments) unsubscribeComments();
     slot.innerHTML = "";
   };
   slot.querySelector("#bz-detail-backdrop").addEventListener("click", (e) => {
@@ -630,18 +733,76 @@ function openDetailModal(reportId) {
   slot.querySelector("#bz-detail-close").addEventListener("click", close);
 
   const metooBtn = slot.querySelector("#bz-metoo-btn");
-  if (!voted) {
-    metooBtn.addEventListener("click", async () => {
-      if (!state.uid) return;
-      metooBtn.disabled = true;
+  metooBtn.addEventListener("click", async () => {
+    if (!state.uid) return;
+    metooBtn.disabled = true;
+    await toggleMeToo(reportId);
+    close();
+  });
+
+  // Private comment thread — only wired up at all when showComments is
+  // true; the section HTML itself isn't even rendered otherwise, per
+  // the admin-or-reporter-only rule enforced (for real) in firestore.rules.
+  if (showComments) {
+    const commentsList = slot.querySelector("#bz-comments-list");
+    const commentsQuery = query(
+      collection(db, "bugReports", reportId, "comments"),
+      orderBy("createdAt", "asc")
+    );
+    unsubscribeComments = onSnapshot(
+      commentsQuery,
+      (snapshot) => {
+        const comments = snapshot.docs.map((d) => d.data());
+        if (comments.length === 0) {
+          commentsList.innerHTML = `<div style="font-size:13px;color:var(--bz-text-faint);">No comments yet.</div>`;
+          return;
+        }
+        commentsList.innerHTML = comments
+          .map(
+            (c) => `
+          <div class="bz-comment">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <span style="font-size:13px;font-weight:600;">${escapeHtml(c.authorName)}</span>
+              ${c.isAdminAuthor ? `<span class="bz-admin-tag" style="font-size:10px;padding:2px 8px;">Admin</span>` : ""}
+              <span style="font-size:12px;color:var(--bz-text-faint);">${formatDate(c.createdAt)}</span>
+            </div>
+            <div style="font-size:14px;color:var(--bz-text);margin-top:4px;line-height:1.5;">${escapeHtml(c.text)}</div>
+          </div>`
+          )
+          .join("");
+      },
+      (err) => {
+        console.error("Failed to load comments", err);
+        commentsList.innerHTML = `<div style="font-size:13px;color:var(--bz-text-faint);">Couldn't load comments.</div>`;
+      }
+    );
+
+    slot.querySelector("#bz-comment-post").addEventListener("click", async () => {
+      const input = slot.querySelector("#bz-comment-input");
+      const errorEl = slot.querySelector("#bz-comment-error");
+      const text = input.value.trim();
+      if (text.length < 1 || text.length > 1000) {
+        errorEl.textContent = "Comment can't be empty.";
+        errorEl.hidden = false;
+        return;
+      }
       try {
-        await updateDoc(doc(db, "bugReports", reportId), {
-          meTooBy: arrayUnion(state.uid),
+        await addDoc(collection(db, "bugReports", reportId, "comments"), {
+          text,
+          authorId: state.uid ?? "",
+          authorName: state.memberName,
+          isAdminAuthor: state.isAdmin,
+          createdAt: serverTimestamp(),
         });
-        close();
+        await updateDoc(doc(db, "bugReports", reportId), {
+          commentCount: increment(1),
+        }).catch((err) => console.error("Failed to bump comment count", err));
+        input.value = "";
+        errorEl.hidden = true;
       } catch (err) {
-        console.error("Failed to add me-too", err);
-        metooBtn.disabled = false;
+        console.error("Failed to post comment", err);
+        errorEl.textContent = "Something went wrong posting your comment.";
+        errorEl.hidden = false;
       }
     });
   }
@@ -652,9 +813,21 @@ function openDetailModal(reportId) {
       const status = slot.querySelector("#bz-status-select").value;
       const priority = slot.querySelector("#bz-priority-select").value || null;
       const duplicateOf = slot.querySelector("#bz-dup-input").value.trim() || null;
+      const note = slot.querySelector("#bz-note-input").value.trim();
       const errorEl = slot.querySelector("#bz-admin-error");
 
-      const update = { priority, duplicateOf };
+      const historyEntry = {
+        status,
+        changedBy: state.memberName || "Admin",
+        changedAt: new Date().toISOString(),
+      };
+      if (note) historyEntry.note = note;
+
+      const update = {
+        priority,
+        duplicateOf,
+        statusHistory: arrayUnion(historyEntry),
+      };
       // Only bump statusChangedAt when status actually changes, since
       // Disk Stash's cleanup rule ages off this doc's screenshot based
       // on how long it's sat in a given status.
