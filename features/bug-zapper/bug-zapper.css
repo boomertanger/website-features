@@ -298,7 +298,7 @@
 #bug-zapper-root .bz-filters {
   display: flex;
   gap: 8px;
-  padding: 20px 32px 0 32px;
+  padding: 16px 32px 0 32px;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
@@ -309,66 +309,48 @@
 }
 
 #bug-zapper-root .bz-chip {
+  flex-shrink: 0;
   font-family: "Inter", sans-serif;
   font-size: 13px;
-  padding: 9px 18px;
-  border-radius: 999px;
-  border: 1px solid var(--bz-border-2);
-  background: transparent;
+  font-weight: 500;
   color: var(--bz-text-muted);
+  background: var(--bz-surface-2);
+  border: 1px solid var(--bz-border-2);
+  border-radius: 999px;
+  padding: 8px 14px;
   cursor: pointer;
-  flex: none;
   white-space: nowrap;
 }
 
 #bug-zapper-root .bz-chip.bz-active {
+  font-weight: 600;
+  color: var(--bz-bg);
   background: var(--bz-text);
   border-color: var(--bz-text);
-  color: var(--bz-bg);
-  font-weight: 600;
+}
+
+#bug-zapper-root .bz-chip-small {
+  padding: 6px 12px;
+  font-size: 12px;
 }
 
 #bug-zapper-root .bz-sortbar {
+  padding: 12px 32px 0 32px;
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 18px 32px 0 32px;
+  gap: 8px;
 }
 
 #bug-zapper-root .bz-sortbar-label {
-  font-size: 12px;
-  color: var(--bz-text-faint);
-  flex: none;
-}
-
-#bug-zapper-root .bz-sort-options {
-  display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  scrollbar-width: none;
-}
-
-#bug-zapper-root .bz-sort-options::-webkit-scrollbar {
-  display: none;
-}
-
-#bug-zapper-root .bz-sort-btn {
-  font-family: "Inter", sans-serif;
   font-size: 13px;
-  padding: 7px 14px;
-  border-radius: 999px;
-  border: 1px solid transparent;
-  background: transparent;
   color: var(--bz-text-faint);
-  cursor: pointer;
-  flex: none;
-  white-space: nowrap;
+  margin-right: 2px;
 }
 
-#bug-zapper-root .bz-sort-btn.bz-active {
-  background: var(--bz-surface-2);
-  border-color: var(--bz-border-2);
+#bug-zapper-root #bz-sortbar .bz-chip.bz-active {
   color: var(--bz-text);
+  background: var(--bz-border-2);
+  border-color: var(--bz-text-faint);
 }
 
 /* ---------- List ---------- */

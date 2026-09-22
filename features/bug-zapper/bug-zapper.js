@@ -263,12 +263,10 @@ function renderSortBar() {
   const el = state.root.querySelector("#bz-sortbar");
   el.innerHTML = `
     <span class="bz-sortbar-label">Sort by</span>
-    <div class="bz-sort-options">
-      ${SORT_OPTIONS.map(
-        (s) =>
-          `<button type="button" class="bz-sort-btn ${state.sort === s.key ? "bz-active" : ""}" data-sort="${s.key}">${s.label}</button>`
-      ).join("")}
-    </div>
+    ${SORT_OPTIONS.map(
+      (s) =>
+        `<button type="button" class="bz-chip bz-chip-small ${state.sort === s.key ? "bz-active" : ""}" data-sort="${s.key}">${s.label}</button>`
+    ).join("")}
   `;
   el.querySelectorAll("[data-sort]").forEach((btn) => {
     btn.addEventListener("click", () => {
