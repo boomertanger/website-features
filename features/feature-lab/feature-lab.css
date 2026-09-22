@@ -7,6 +7,18 @@
    @media) — a Squarespace Code Block's width has nothing to do with
    the browser window's width. No JS branching for layout. */
 
+/* Guard rail: several elements below (like .fl-admin-pill,
+   .fl-signout-row) set their own `display` for when they're visible,
+   which otherwise silently outranks the browser's built-in
+   [hidden]{display:none} rule and makes the `hidden` attribute a
+   no-op — this exact bug caused Bug Zapper's admin badge to never
+   actually hide, regardless of what the JS set .hidden to. This single
+   rule guarantees `hidden` always wins regardless of what else is
+   declared on that element. */
+#feature-lab-root [hidden] {
+  display: none !important;
+}
+
 #feature-lab-root {
   container-type: inline-size;
   container-name: fl;
@@ -67,7 +79,91 @@
   justify-content: space-between;
   gap: 16px;
   border-bottom: 1px solid var(--fl-border);
-  flex-wrap: wrap;
+}
+
+#feature-lab-root .fl-topnav {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  position: relative;
+}
+
+#feature-lab-root .fl-admin-menu-toggle {
+  display: none;
+  font-size: 16px;
+  padding: 8px 12px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+#feature-lab-root .fl-admin-section {
+  display: contents; /* wrapper disappears at wide widths — children sit inline directly in fl-admin-row */
+}
+
+#feature-lab-root .fl-admin-label {
+  display: none; /* only shown inside the mobile dropdown */
+}
+
+#feature-lab-root .fl-signin-btn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid #5fa876;
+  color: #8fd9aa;
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-signin-btn:hover {
+  background: rgba(95, 168, 118, 0.1);
+}
+
+#feature-lab-root .fl-admin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(95, 168, 118, 0.16);
+  color: #8fd9aa;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: "Inter", sans-serif;
+}
+
+#feature-lab-root .fl-admin-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5fa876;
+  flex: none;
+}
+
+#feature-lab-root .fl-signout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: "Inter", sans-serif;
+  font-size: 12px;
+  color: var(--fl-text-faint);
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-signout-row:hover {
+  color: var(--fl-critical);
 }
 
 #feature-lab-root .fl-wordmark {
@@ -120,6 +216,8 @@
   border-radius: 8px;
   padding: 12px 20px;
   cursor: pointer;
+  white-space: nowrap;
+  flex: none;
 }
 
 #feature-lab-root .fl-btn-primary {
@@ -365,6 +463,79 @@
   #feature-lab-root .fl-wordmark-bar {
     padding: 16px 20px;
   }
+
+  #feature-lab-root .fl-admin-menu-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  #feature-lab-root .fl-admin-row {
+    display: none;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+    background: var(--fl-surface);
+    border: 1px solid var(--fl-border-2);
+    border-radius: 12px;
+    padding: 0;
+    gap: 0;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
+    z-index: 20;
+    min-width: 200px;
+    overflow: hidden;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--fl-surface);
+    border-left: 1px solid var(--fl-border-2);
+    border-top: 1px solid var(--fl-border-2);
+    transform: rotate(45deg);
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-admin-section {
+    display: block;
+    padding: 14px 16px;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-admin-section + .fl-admin-section {
+    border-top: 1px solid var(--fl-border);
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-admin-section:has(#fl-admin-signin[hidden]) {
+    display: none;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-admin-section:has(#fl-admin-badge[hidden]) {
+    display: none;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-admin-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--fl-text-faint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  #feature-lab-root .fl-admin-row.fl-open .fl-signin-btn {
+    width: 100%;
+  }
+
   #feature-lab-root .fl-header {
     padding: 16px 20px 14px 20px;
   }
@@ -491,12 +662,23 @@
   color: var(--fl-critical);
 }
 
+#feature-lab-root .fl-admin-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  background: #131c17;
+  border: 1px solid #2e4a38;
+  border-radius: 12px;
+}
+
 #feature-lab-root .fl-admin-only-badge {
   display: inline-block;
   padding: 6px 12px;
-  border: 1px solid var(--fl-critical);
+  border: 1px solid #2e4a38;
+  background: rgba(95, 168, 118, 0.1);
   border-radius: 6px;
-  color: var(--fl-critical);
+  color: #8fd9aa;
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.08em;

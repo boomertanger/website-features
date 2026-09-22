@@ -42,6 +42,7 @@ import {
   signInAnonymously,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   getFunctions,
@@ -122,9 +123,24 @@ function renderShell() {
   return `
     <div class="fl-wordmark-bar">
       <div class="fl-wordmark">FEATURE <span class="fl-wordmark-primary">LAB</span></div>
-      <div style="display:flex;align-items:center;gap:14px;">
-        <button type="button" id="fl-admin-signin" class="fl-btn-ghost" hidden>Sign in as Admin</button>
-        <span id="fl-admin-badge" class="fl-badge fl-badge-neutral" hidden>Admin</span>
+      <div class="fl-topnav">
+        <button type="button" id="fl-admin-menu-toggle" class="fl-btn-secondary fl-admin-menu-toggle">&#8942;</button>
+        <div class="fl-admin-row" id="fl-admin-row">
+          <div class="fl-admin-section">
+            <div class="fl-admin-label">Admin access</div>
+            <button type="button" id="fl-admin-signin" class="fl-signin-btn fl-display" hidden>Sign in as Admin</button>
+          </div>
+          <div class="fl-admin-section">
+            <div class="fl-admin-label">Signed in as</div>
+            <span id="fl-admin-badge" class="fl-admin-pill" hidden><span class="fl-admin-pill-dot"></span>Admin</span>
+          </div>
+          <div class="fl-admin-section">
+            <button type="button" id="fl-admin-signout" class="fl-signout-row" hidden>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span>Sign out</span>
+            </button>
+          </div>
+        </div>
         <button type="button" id="fl-new-request" class="fl-btn fl-btn-primary fl-display">+ New request</button>
       </div>
     </div>
@@ -358,7 +374,7 @@ function openDetailModal(requestId) {
 
   const adminControlsHtml = state.isAdmin
     ? `
-        <div style="display:flex;flex-direction:column;gap:16px;padding:18px;background:var(--fl-surface-2);border:1px solid var(--fl-border);border-radius:12px;">
+        <div class="fl-admin-panel">
           <span class="fl-admin-only-badge">Admin only</span>
           <div style="display:flex;gap:16px;flex-wrap:wrap;">
             <div class="fl-field" style="flex:1;min-width:160px;">
@@ -391,7 +407,7 @@ function openDetailModal(requestId) {
           </div>
           <div id="fl-admin-error" class="fl-error" hidden></div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete report</button>
+            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete request</button>
             <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display">Save changes</button>
           </div>
         </div>`
@@ -599,6 +615,17 @@ async function handleAdminSignIn() {
   }
 }
 
+async function handleAdminSignOut() {
+  try {
+    await signOut(auth);
+    state.isAdmin = false;
+    updateAdminUi();
+    renderList();
+  } catch (err) {
+    console.error("Admin sign-out failed", err);
+  }
+}
+
 async function syncAdmin() {
   try {
     const syncAdminStatus = httpsCallable(functions, "syncAdminStatus");
@@ -615,15 +642,11 @@ async function syncAdmin() {
 function updateAdminUi() {
   const signinBtn = state.root.querySelector("#fl-admin-signin");
   const badge = state.root.querySelector("#fl-admin-badge");
-  if (state.isAdmin) {
-    signinBtn.hidden = true;
-    badge.hidden = false;
-  } else {
-    badge.hidden = true;
-    // Only invite Admins (per MemberSpace's own role) to sign in —
-    // this is a UI convenience, not a security boundary.
-    signinBtn.hidden = !hasActivePlan(PLANS.ADMIN);
-  }
+  const signoutBtn = state.root.querySelector("#fl-admin-signout");
+  if (!signinBtn || !badge || !signoutBtn) return;
+  signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
+  badge.hidden = !state.isAdmin;
+  signoutBtn.hidden = !state.isAdmin;
 }
 
 function watchAuthState() {
@@ -660,6 +683,19 @@ export async function initFeatureLab() {
 
   root.querySelector("#fl-new-request").addEventListener("click", openSubmitModal);
   root.querySelector("#fl-admin-signin").addEventListener("click", handleAdminSignIn);
+  root.querySelector("#fl-admin-signout").addEventListener("click", handleAdminSignOut);
+
+  // Mobile-only dots menu: purely a viewport-width thing, not tied to
+  // admin state — CSS decides whether the toggle button and the
+  // dropdown-vs-inline styling apply at all (see the container query).
+  root.querySelector("#fl-admin-menu-toggle").addEventListener("click", (e) => {
+    e.stopPropagation();
+    root.querySelector("#fl-admin-row").classList.toggle("fl-open");
+  });
+  document.addEventListener("click", () => {
+    const adminRow = root.querySelector("#fl-admin-row");
+    if (adminRow) adminRow.classList.remove("fl-open");
+  });
 
   await waitForReady();
 

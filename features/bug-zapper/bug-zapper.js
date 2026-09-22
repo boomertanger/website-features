@@ -178,9 +178,20 @@ function renderShell() {
       <div class="bz-topnav">
         <button type="button" id="bz-admin-menu-toggle" class="bz-btn bz-btn-secondary bz-admin-menu-toggle">&#8942;</button>
         <div class="bz-admin-row" id="bz-admin-row">
-          <button type="button" id="bz-admin-signin" class="bz-btn bz-btn-secondary bz-display" hidden>Sign in as Admin</button>
-          <span id="bz-admin-badge" class="bz-badge bz-badge-neutral" hidden>Admin</span>
-          <button type="button" id="bz-admin-signout" class="bz-admin-signout" hidden>Sign out</button>
+          <div class="bz-admin-section">
+            <div class="bz-admin-label">Admin access</div>
+            <button type="button" id="bz-admin-signin" class="bz-signin-btn bz-display" hidden>Sign in as Admin</button>
+          </div>
+          <div class="bz-admin-section">
+            <div class="bz-admin-label">Signed in as</div>
+            <span id="bz-admin-badge" class="bz-admin-pill" hidden><span class="bz-admin-pill-dot"></span>Admin</span>
+          </div>
+          <div class="bz-admin-section">
+            <button type="button" id="bz-admin-signout" class="bz-signout-row" hidden>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+              <span>Sign out</span>
+            </button>
+          </div>
         </div>
         <button type="button" id="bz-new-report" class="bz-btn bz-btn-primary bz-display">Report a bug</button>
       </div>

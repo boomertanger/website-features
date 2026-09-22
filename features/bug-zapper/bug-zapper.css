@@ -105,19 +105,66 @@
   gap: 10px;
 }
 
-#bug-zapper-root .bz-admin-signout {
+#bug-zapper-root .bz-admin-section {
+  display: contents; /* wrapper disappears at wide widths — children sit inline directly in bz-admin-row */
+}
+
+#bug-zapper-root .bz-admin-label {
+  display: none; /* only shown inside the mobile dropdown, see the container query below */
+}
+
+#bug-zapper-root .bz-signin-btn {
+  font-family: "Inter", sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  background: transparent;
+  border: 1px solid #5fa876;
+  color: #8fd9aa;
+  border-radius: 8px;
+  padding: 9px 14px;
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-signin-btn:hover {
+  background: rgba(95, 168, 118, 0.1);
+}
+
+#bug-zapper-root .bz-admin-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(95, 168, 118, 0.16);
+  color: #8fd9aa;
+  font-size: 12px;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: "Inter", sans-serif;
+}
+
+#bug-zapper-root .bz-admin-pill-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #5fa876;
+  flex: none;
+}
+
+#bug-zapper-root .bz-signout-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   padding: 0;
   font-family: "Inter", sans-serif;
   font-size: 12px;
   color: var(--bz-text-faint);
-  text-decoration: underline;
   cursor: pointer;
 }
 
-#bug-zapper-root .bz-admin-signout:hover {
-  color: var(--bz-text);
+#bug-zapper-root .bz-signout-row:hover {
+  color: var(--bz-accent);
 }
 
 #bug-zapper-root .bz-header {
@@ -173,6 +220,8 @@
   border-radius: 8px;
   padding: 12px 20px;
   cursor: pointer;
+  white-space: nowrap;
+  flex: none;
 }
 
 #bug-zapper-root .bz-btn:disabled {
@@ -541,8 +590,8 @@
 #bug-zapper-root .bz-admin-panel {
   margin-top: 30px;
   padding: 22px 24px;
-  background: #191315;
-  border: 1px solid #3a2a28;
+  background: #131c17;
+  border: 1px solid #2e4a38;
   border-radius: 10px;
 }
 
@@ -552,10 +601,12 @@
   font-size: 10px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--bz-accent);
-  border: 1px solid #4a2f2c;
+  color: #8fd9aa;
+  background: rgba(95, 168, 118, 0.1);
+  border: 1px solid #2e4a38;
   padding: 3px 8px;
   border-radius: 5px;
+  font-weight: 700;
 }
 
 /* ---------- Narrow container (mobile) ---------- */
@@ -576,18 +627,68 @@
   #bug-zapper-root .bz-admin-row.bz-open {
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     position: absolute;
     top: calc(100% + 8px);
     right: 0;
     background: var(--bz-surface);
     border: 1px solid var(--bz-border-2);
-    border-radius: 10px;
-    padding: 12px 14px;
-    gap: 10px;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    border-radius: 12px;
+    padding: 0;
+    gap: 0;
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.55), 0 2px 8px rgba(0, 0, 0, 0.4);
     z-index: 20;
-    min-width: 160px;
+    min-width: 200px;
+    overflow: hidden;
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open::before {
+    content: "";
+    position: absolute;
+    top: -7px;
+    right: 24px;
+    width: 12px;
+    height: 12px;
+    background: var(--bz-surface);
+    border-left: 1px solid var(--bz-border-2);
+    border-top: 1px solid var(--bz-border-2);
+    transform: rotate(45deg);
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open .bz-admin-section {
+    display: block;
+    padding: 14px 16px;
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open .bz-admin-section + .bz-admin-section {
+    border-top: 1px solid var(--bz-border);
+  }
+
+  /* Hide whichever section's control is currently hidden (signed-in vs
+     signed-out are mutually exclusive) so no empty labeled section shows.
+     :has() has broad modern browser support; if unsupported, worst case
+     is an extra section header with nothing under it — not broken,
+     just slightly untidy on very old browsers. */
+  #bug-zapper-root .bz-admin-row.bz-open .bz-admin-section:has(#bz-admin-signin[hidden]) {
+    display: none;
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open .bz-admin-section:has(#bz-admin-badge[hidden]) {
+    display: none;
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open .bz-admin-label {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: var(--bz-text-faint);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  #bug-zapper-root .bz-admin-row.bz-open .bz-signin-btn {
+    width: 100%;
   }
 
   #bug-zapper-root .bz-row {
