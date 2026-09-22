@@ -91,10 +91,21 @@
 
 #feature-lab-root .fl-admin-menu-toggle {
   display: none;
-  font-size: 16px;
-  padding: 8px 12px;
-  line-height: 1;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 8px;
+  background: transparent;
+  border: none;
+  color: var(--fl-text-faint);
   cursor: pointer;
+  flex: none;
+}
+
+#feature-lab-root .fl-admin-menu-toggle:hover {
+  color: var(--fl-text);
+  background: var(--fl-surface-2);
 }
 
 #feature-lab-root .fl-admin-row {
