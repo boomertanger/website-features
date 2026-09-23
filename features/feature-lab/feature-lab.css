@@ -507,6 +507,20 @@
     padding: 16px 20px;
   }
 
+  #feature-lab-root .fl-wordmark {
+    font-size: 14px;
+    white-space: nowrap;
+  }
+
+  #feature-lab-root .fl-wordmark-group svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  #feature-lab-root .fl-wordmark-group {
+    gap: 8px;
+  }
+
   #feature-lab-root .fl-admin-menu-toggle {
     display: inline-flex;
     align-items: center;
