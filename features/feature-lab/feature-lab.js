@@ -680,6 +680,10 @@ function updateAdminUi() {
   // to show inside it — otherwise a non-admin member gets a dropdown
   // button that opens onto an empty panel.
   menuToggle.hidden = !hasAnythingToShow;
+  // Lets mobile CSS give the wordmark full desktop size when the trigger
+  // icon isn't competing for the same row, instead of one fixed size
+  // regardless of how much space is actually free.
+  state.root.classList.toggle("fl-has-admin-trigger", hasAnythingToShow);
 }
 
 function watchAuthState() {

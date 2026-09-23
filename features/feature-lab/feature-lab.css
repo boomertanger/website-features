@@ -507,19 +507,30 @@
     padding: 16px 20px;
   }
 
+  /* Always prevent wrapping, regardless of size */
   #feature-lab-root .fl-wordmark {
-    font-size: 16px;
     white-space: nowrap;
   }
 
-  #feature-lab-root .fl-wordmark-group svg {
-    width: 26px;
-    height: 26px;
+  /* When the admin trigger icon is ALSO in this row, it needs the room —
+     shrink the wordmark modestly to keep both from wrapping. */
+  #feature-lab-root.fl-has-admin-trigger .fl-wordmark {
+    font-size: 18px;
   }
 
-  #feature-lab-root .fl-wordmark-group {
+  #feature-lab-root.fl-has-admin-trigger .fl-wordmark-group svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  #feature-lab-root.fl-has-admin-trigger .fl-wordmark-group {
     gap: 8px;
   }
+
+  /* When the trigger is hidden (non-admin, non-eligible visitor), there's
+     nothing competing for the space — let the wordmark use its full
+     desktop size (20px / 30px icon / 10px gap, inherited, no override
+     needed here) instead of staying artificially small. */
 
   #feature-lab-root .fl-admin-menu-toggle {
     display: inline-flex;
