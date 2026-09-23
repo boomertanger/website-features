@@ -677,7 +677,9 @@ function openDetailModal(reportId) {
               <span class="bz-pill" style="color:${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).color};background:${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).bg};">${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).label}</span>
             </span>
           </div>
-          <button type="button" id="bz-detail-close" class="bz-btn bz-btn-secondary" style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;font-size:20px;line-height:1;">&times;</button>
+          <button type="button" id="bz-detail-close" class="bz-btn bz-btn-secondary" style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
         <div class="bz-row-meta" style="margin-top:6px;">reported by ${escapeHtml(report.reporterName)} &middot; ${formatDate(report.createdAt)} &middot; ${escapeHtml(report.page)}</div>
         <div class="bz-row-meta" style="margin-top:4px;user-select:all;cursor:text;" title="Click to select, then copy — this is what goes in another report's &quot;Duplicate of&quot; field">ID: ${escapeHtml(report.id)}</div>
