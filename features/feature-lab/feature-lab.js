@@ -370,6 +370,8 @@ function openDetailModal(requestId) {
   const request = state.requests.find((r) => r.id === requestId);
   if (!request) return;
 
+  const status = STATUS_META[request.status] ?? STATUS_META.submitted;
+  const priority = request.priority ? PRIORITY_META[request.priority] : null;
   const slot = state.root.querySelector("#fl-modal-slot");
   const history = [...(request.statusHistory ?? [])].reverse();
   let unsubscribeComments = null;
@@ -377,7 +379,7 @@ function openDetailModal(requestId) {
   const adminControlsHtml = state.isAdmin
     ? `
         <div class="fl-admin-panel">
-          <span class="fl-admin-only-badge">Admin only</span>
+          <span class="fl-admin-only-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="#3ba86b" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Admin only</span>
           <div style="display:flex;gap:16px;flex-wrap:wrap;">
             <div class="fl-field" style="flex:1;min-width:160px;">
               <label class="fl-label" for="fl-status-select">Status</label>
@@ -409,8 +411,8 @@ function openDetailModal(requestId) {
           </div>
           <div id="fl-admin-error" class="fl-error" hidden></div>
           <div style="display:flex;justify-content:space-between;align-items:center;">
-            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete request</button>
             <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display">Save changes</button>
+            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete request</button>
           </div>
         </div>`
     : "";
@@ -418,9 +420,17 @@ function openDetailModal(requestId) {
   slot.innerHTML = `
     <div class="fl-modal-backdrop" id="fl-detail-backdrop">
       <div class="fl-modal fl-modal-wide">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px;">
-          <h3 class="fl-title fl-display" style="font-size:22px;">${escapeHtml(request.title)}</h3>
-          <button type="button" id="fl-detail-close" class="fl-btn-secondary fl-btn" style="padding:8px 12px;">&times;</button>
+        <div class="fl-detail-header">
+          <div class="fl-detail-heading">
+            <h3 class="fl-title fl-display" style="font-size:22px;">${escapeHtml(request.title)}</h3>
+            <span class="fl-detail-pills">
+              <span class="fl-badge" style="color:${status.color};background:${status.bg};">${status.label}</span>
+              ${priority ? `<span class="fl-badge" style="color:${priority.color};background:${priority.bg};">${priority.label}</span>` : ""}
+            </span>
+          </div>
+          <button type="button" id="fl-detail-close" class="fl-close-btn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+          </button>
         </div>
 
         <p style="margin:0;font-size:15px;line-height:1.6;color:var(--fl-text);">${escapeHtml(request.description)}</p>

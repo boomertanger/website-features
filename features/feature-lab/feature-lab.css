@@ -589,6 +589,9 @@
     align-items: center;
     padding: 20px;
   }
+  #feature-lab-root .fl-detail-pills {
+    flex-basis: 100%;
+  }
 }
 
 /* ---------- Modal (submit form + admin detail) ---------- */
@@ -608,8 +611,6 @@
 #feature-lab-root .fl-modal {
   width: 100%;
   max-width: 460px;
-  max-height: 90vh;
-  overflow-y: auto;
   background: var(--fl-surface);
   border: 1px solid var(--fl-border);
   border-radius: 16px;
@@ -621,6 +622,48 @@
 
 #feature-lab-root .fl-modal.fl-modal-wide {
   max-width: 640px;
+}
+
+#feature-lab-root .fl-detail-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+#feature-lab-root .fl-detail-heading {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  flex: 1;
+  min-width: 0;
+}
+
+#feature-lab-root .fl-detail-pills {
+  display: flex;
+  gap: 8px;
+  flex: none;
+}
+
+#feature-lab-root .fl-close-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--fl-border-2);
+  border-radius: 8px;
+  color: var(--fl-text-muted);
+  cursor: pointer;
+}
+
+#feature-lab-root .fl-close-btn:hover {
+  border-color: var(--fl-text-faint);
+  color: var(--fl-text);
 }
 
 #feature-lab-root .fl-field {
@@ -678,22 +721,21 @@
   flex-direction: column;
   gap: 16px;
   padding: 18px;
-  background: #131c17;
-  border: 1px solid #2e4a38;
-  border-radius: 12px;
+  background: #0d2418;
+  border: 2.5px solid #3ba86b;
+  border-radius: 10px;
+  box-shadow: 0 0 0 1px rgba(59, 168, 107, 0.25) inset;
 }
 
 #feature-lab-root .fl-admin-only-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  border: 1px solid #2e4a38;
-  background: rgba(95, 168, 118, 0.1);
-  border-radius: 6px;
-  color: #8fd9aa;
-  font-size: 11px;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 15px;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
+  color: #5fe89a;
 }
 
 #feature-lab-root .fl-btn-critical {
