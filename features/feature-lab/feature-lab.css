@@ -508,17 +508,17 @@
   }
 
   #feature-lab-root .fl-wordmark {
-    font-size: 14px;
+    font-size: 13px;
     white-space: nowrap;
   }
 
   #feature-lab-root .fl-wordmark-group svg {
-    width: 24px;
-    height: 24px;
+    width: 20px;
+    height: 20px;
   }
 
   #feature-lab-root .fl-wordmark-group {
-    gap: 8px;
+    gap: 6px;
   }
 
   #feature-lab-root .fl-admin-menu-toggle {

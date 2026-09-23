@@ -670,10 +670,16 @@ function updateAdminUi() {
   const signinBtn = state.root.querySelector("#fl-admin-signin");
   const badge = state.root.querySelector("#fl-admin-badge");
   const signoutBtn = state.root.querySelector("#fl-admin-signout");
-  if (!signinBtn || !badge || !signoutBtn) return;
+  const menuToggle = state.root.querySelector("#fl-admin-menu-toggle");
+  if (!signinBtn || !badge || !signoutBtn || !menuToggle) return;
+  const hasAnythingToShow = state.isAdmin || hasActivePlan(PLANS.ADMIN);
   signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
   badge.hidden = !state.isAdmin;
   signoutBtn.hidden = !state.isAdmin;
+  // The mobile trigger itself must also hide when there's nothing eligible
+  // to show inside it — otherwise a non-admin member gets a dropdown
+  // button that opens onto an empty panel.
+  menuToggle.hidden = !hasAnythingToShow;
 }
 
 function watchAuthState() {
