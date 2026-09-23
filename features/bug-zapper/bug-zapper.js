@@ -966,6 +966,22 @@ function watchAuthState() {
 
 // ---------- Init ----------
 
+// The site's sticky header height differs by breakpoint (and we have no
+// reliable way to target it directly — it's Squarespace's own element,
+// not ours). Rather than guess a fixed pixel number that only works on
+// one device, measure the real gap between the true top of the
+// viewport and the top of this widget at page load: since the header
+// is sticky/fixed, that gap IS its effective height, on whatever device
+// this happens to be. Only trust the measurement when we're at (or very
+// near) the top of the page — if the page loaded already scrolled, fall
+// back to a safe default instead of measuring something meaningless.
+function measureAndSetModalTopOffset() {
+  if (!state.root || window.scrollY > 50) return;
+  const gap = Math.round(state.root.getBoundingClientRect().top);
+  if (gap <= 0) return; // nothing above the widget — no offset needed
+  state.root.style.setProperty("--bz-modal-top-offset", `${gap + 20}px`);
+}
+
 export async function initBugZapper() {
   const root = document.getElementById(ROOT_ID);
   if (!root) {
@@ -974,6 +990,9 @@ export async function initBugZapper() {
   }
   state.root = root;
   root.innerHTML = renderShell();
+
+  measureAndSetModalTopOffset();
+  window.addEventListener("resize", measureAndSetModalTopOffset);
 
   root.querySelector("#bz-new-report").addEventListener("click", openSubmitModal);
   root.querySelector("#bz-admin-signin").addEventListener("click", handleAdminSignIn);
