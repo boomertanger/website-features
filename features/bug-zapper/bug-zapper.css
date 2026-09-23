@@ -589,7 +589,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  padding: 48px 20px;
+  /* Desktop default: real measured header height (186px) + 24px spacing. */
+  padding: 210px 20px 48px 20px;
   overflow-y: auto;
   z-index: 999999;
 }
@@ -730,9 +731,23 @@
   padding-bottom: 18px;
 }
 
+/* ---------- Medium container (tablet / mobile landscape) ---------- */
+
+@container bz (max-width: 1024px) {
+  /* Real measured header height (140px) + 24px spacing. */
+  #bug-zapper-root .bz-modal-backdrop {
+    padding-top: 164px;
+  }
+}
+
 /* ---------- Narrow container (mobile) ---------- */
 
 @container bz (max-width: 640px) {
+  /* Real measured header height (100px) + 24px spacing. */
+  #bug-zapper-root .bz-modal-backdrop {
+    padding-top: 124px;
+  }
+
   #bug-zapper-root .bz-detail-pills {
     flex-basis: 100%;
   }
