@@ -589,8 +589,8 @@
   display: flex;
   align-items: flex-start;
   justify-content: center;
-  /* Desktop default: real measured header height (230px) + 24px spacing. */
-  padding: 254px 20px 48px 20px;
+  /* Desktop default: real measured header height (230px) + 50px spacing. */
+  padding: 280px 20px 48px 20px;
   overflow-y: auto;
   z-index: 999999;
 }
