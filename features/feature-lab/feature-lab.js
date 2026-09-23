@@ -122,7 +122,22 @@ function formatDate(value) {
 function renderShell() {
   return `
     <div class="fl-wordmark-bar">
-      <div class="fl-wordmark">FEATURE <span class="fl-wordmark-primary">LAB</span></div>
+      <div class="fl-wordmark-group">
+        <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <path d="M16 6H28" stroke="#9146FF" stroke-width="2.5" stroke-linecap="round"/>
+          <path d="M17.5 6V9L7 27.5C5.5 31 8 35 12 35H32C36 35 38.5 31 37 27.5L26.5 9V6" stroke="#9146FF" stroke-width="2.5" stroke-linejoin="round"/>
+          <path d="M10.5 26.5L12 27.5H32L33.5 26.5C33.5 31 30 34 22 34C14 34 10.5 31 10.5 26.5Z" fill="#9146FF" fill-opacity="0.4"/>
+          <path d="M12 27.5H32" stroke="#FFA100" stroke-width="2.5" stroke-linecap="round"/>
+          <circle class="fl-flask-bubble" cx="15" cy="7" r="2.2" fill="#9146FF"/>
+          <circle class="fl-flask-bubble" cx="22" cy="6" r="4" fill="#FFA100"/>
+          <circle class="fl-flask-bubble" cx="28" cy="7.5" r="3" fill="#9146FF"/>
+          <circle class="fl-flask-bubble" cx="19" cy="3" r="3.6" fill="#FFA100"/>
+          <circle class="fl-flask-bubble" cx="25" cy="2" r="2.4" fill="#9146FF"/>
+          <circle class="fl-flask-burst" cx="22" cy="6" r="4" stroke="#FFA100" fill="none"/>
+          <circle class="fl-flask-burst" cx="19" cy="3" r="3.6" stroke="#FFA100" fill="none" style="animation-delay:0.4s;"/>
+        </svg>
+        <div class="fl-wordmark">FEATURE <span class="fl-wordmark-primary">LAB</span></div>
+      </div>
       <div class="fl-topnav">
         <button type="button" id="fl-admin-menu-toggle" class="fl-admin-menu-toggle">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
@@ -148,7 +163,7 @@ function renderShell() {
     </div>
     <div class="fl-header">
       <h2 class="fl-title fl-display">Feature requests</h2>
-      <div class="fl-subtitle">Submitted by Fan Club members &middot; reviewed by the team</div>
+      <div class="fl-subtitle">Suggest ideas for the site or the stream, vote on your favorites, and track progress &mdash; all in one place.</div>
     </div>
     <div class="fl-filters" id="fl-filters"></div>
     <div class="fl-sort" id="fl-sort"></div>
