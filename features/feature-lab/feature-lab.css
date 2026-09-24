@@ -183,6 +183,13 @@
   gap: 10px;
 }
 
+/* Belt-and-suspenders: the SVG already has overflow="visible" as an HTML
+   attribute, but some browsers' internal default stylesheets can still
+   win over an attribute-based value. A real CSS rule can't lose that way. */
+#feature-lab-root .fl-wordmark-group svg {
+  overflow: visible;
+}
+
 #feature-lab-root .fl-wordmark {
   font-size: 20px;
   font-weight: 700;
