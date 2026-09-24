@@ -193,7 +193,19 @@ function matchesFilter(r) {
 function renderShell() {
   return `
     <div class="bz-topbar">
-      <div class="bz-wordmark bz-display">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+      <div class="bz-wordmark bz-display">
+        <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+          <path class="bz-bolt-flicker" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
+          <ellipse cx="17" cy="41.5" rx="8" ry="1.4" fill="#2A2326" fill-opacity="0.7"/>
+          <rect class="bz-debris-l" x="9" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="10 40"/>
+          <rect class="bz-debris-l" x="7" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="8 42"/>
+          <rect class="bz-debris-l" x="11" y="42" width="2" height="2" fill="#FFA100" transform-origin="12 43"/>
+          <rect class="bz-debris-r" x="24" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="25 40"/>
+          <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
+          <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
+        </svg>
+        BUG<span class="bz-wordmark-accent">ZAPPER</span>
+      </div>
       <div class="bz-topnav">
         <button type="button" id="bz-admin-menu-toggle" class="bz-admin-menu-toggle">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
@@ -219,7 +231,7 @@ function renderShell() {
     </div>
     <div class="bz-header">
       <h2 class="bz-title bz-title-brand bz-display">Bug reports</h2>
-      <div class="bz-subtitle">Reported by members &middot; log in to add a &ldquo;bit me too&rdquo; or file your own</div>
+      <div class="bz-subtitle">Report issues, add a &ldquo;bit me too&rdquo; if it's happening to you as well, and track fixes &mdash; all in one place.</div>
     </div>
     <div class="bz-filters" id="bz-filters"></div>
     <div class="bz-sortbar" id="bz-sortbar"></div>
@@ -231,7 +243,19 @@ function renderShell() {
 function renderLoggedOut() {
   return `
     <div class="bz-logged-out">
-      <div class="bz-wordmark bz-display" style="margin-bottom:10px;justify-content:center;">BUG<span class="bz-wordmark-accent">ZAPPER</span></div>
+      <div class="bz-wordmark bz-display" style="margin-bottom:10px;justify-content:center;">
+      <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
+        <path class="bz-bolt-flicker" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
+        <ellipse cx="17" cy="41.5" rx="8" ry="1.4" fill="#2A2326" fill-opacity="0.7"/>
+        <rect class="bz-debris-l" x="9" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="10 40"/>
+        <rect class="bz-debris-l" x="7" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="8 42"/>
+        <rect class="bz-debris-l" x="11" y="42" width="2" height="2" fill="#FFA100" transform-origin="12 43"/>
+        <rect class="bz-debris-r" x="24" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="25 40"/>
+        <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
+        <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
+      </svg>
+      BUG<span class="bz-wordmark-accent">ZAPPER</span>
+    </div>
       <h2 class="bz-title bz-display" style="font-size:24px;">Bug reports are for members</h2>
       <p class="bz-subtitle" style="margin-top:8px;">Log in with any Boomertanger membership to see open reports and file your own.</p>
     </div>
@@ -938,13 +962,23 @@ function updateAdminUi() {
   const signinBtn = state.root.querySelector("#bz-admin-signin");
   const badge = state.root.querySelector("#bz-admin-badge");
   const signoutBtn = state.root.querySelector("#bz-admin-signout");
-  if (!signinBtn || !badge || !signoutBtn) return;
+  const menuToggle = state.root.querySelector("#bz-admin-menu-toggle");
+  if (!signinBtn || !badge || !signoutBtn || !menuToggle) return;
   // Single expression per element, rather than two branches that could
   // drift apart — signinBtn is hidden whenever isAdmin is true, full
   // stop, regardless of the MemberSpace-plan convenience check below.
   signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
   badge.hidden = !state.isAdmin;
   signoutBtn.hidden = !state.isAdmin;
+  const hasAnythingToShow = state.isAdmin || hasActivePlan(PLANS.ADMIN);
+  // The mobile trigger itself must also hide when there's nothing
+  // eligible to show inside it — otherwise a non-admin member gets a
+  // dropdown button that opens onto an empty panel.
+  menuToggle.hidden = !hasAnythingToShow;
+  // Lets mobile CSS give the wordmark full desktop size when the trigger
+  // icon isn't competing for the same row, instead of one fixed size
+  // regardless of how much space is actually free.
+  state.root.classList.toggle("bz-has-admin-trigger", hasAnythingToShow);
 }
 
 function watchAuthState() {

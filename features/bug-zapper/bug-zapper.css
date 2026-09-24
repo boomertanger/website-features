@@ -197,6 +197,47 @@
   letter-spacing: 0.02em;
   color: var(--bz-text);
   display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+@keyframes bz-bolt-flicker {
+  0%, 100% { opacity: 1; }
+  45% { opacity: 1; }
+  50% { opacity: 0.3; }
+  55% { opacity: 1; }
+}
+
+#bug-zapper-root .bz-bolt-flicker {
+  animation: bz-bolt-flicker 2s ease-in-out infinite;
+}
+
+@keyframes bz-debris-l {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(-22px, -6px) rotate(-40deg); opacity: 0; }
+}
+
+@keyframes bz-debris-r {
+  0% { transform: translate(0, 0) rotate(0deg); opacity: 1; }
+  100% { transform: translate(22px, -6px) rotate(40deg); opacity: 0; }
+}
+
+#bug-zapper-root .bz-debris-l {
+  animation: bz-debris-l 1s ease-out infinite;
+}
+
+#bug-zapper-root .bz-debris-r {
+  animation: bz-debris-r 1s ease-out infinite;
+}
+
+#bug-zapper-root .bz-debris-l:nth-child(2),
+#bug-zapper-root .bz-debris-r:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+#bug-zapper-root .bz-debris-l:nth-child(3),
+#bug-zapper-root .bz-debris-r:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 #bug-zapper-root .bz-wordmark-accent {
@@ -751,6 +792,28 @@
   #bug-zapper-root .bz-detail-pills {
     flex-basis: 100%;
   }
+
+  /* Always prevent wrapping, regardless of size */
+  #bug-zapper-root .bz-wordmark {
+    white-space: nowrap;
+  }
+
+  /* When the admin trigger icon is ALSO in this row, it needs the room —
+     shrink the wordmark modestly to keep both from wrapping. */
+  #bug-zapper-root.bz-has-admin-trigger .bz-wordmark {
+    font-size: 18px;
+    gap: 6px;
+  }
+
+  #bug-zapper-root.bz-has-admin-trigger .bz-wordmark svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  /* When the trigger is hidden (non-admin, non-eligible visitor), there's
+     nothing competing for the space — let the wordmark use its full
+     desktop size (20px / 30px icon / 8px gap, inherited, no override
+     needed here) instead of staying artificially small. */
 
   #bug-zapper-root .bz-admin-menu-toggle {
     display: inline-flex;
