@@ -195,14 +195,18 @@ function renderShell() {
     <div class="bz-topbar">
       <div class="bz-wordmark bz-display">
         <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-          <path class="bz-bolt-flicker" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
+          <path class="bz-bolt-flash" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
           <ellipse cx="17" cy="41.5" rx="8" ry="1.4" fill="#2A2326" fill-opacity="0.7"/>
-          <rect class="bz-debris-l" x="9" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="10 40"/>
-          <rect class="bz-debris-l" x="7" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="8 42"/>
-          <rect class="bz-debris-l" x="11" y="42" width="2" height="2" fill="#FFA100" transform-origin="12 43"/>
-          <rect class="bz-debris-r" x="24" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="25 40"/>
-          <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
-          <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
+          <rect class="bz-debris-upleft" x="14.5" y="38" width="2.2" height="2.2" fill="#FFD400"/>
+          <circle class="bz-debris-left" cx="12" cy="41" r="1.3" fill="#786e70"/>
+          <rect class="bz-debris-downleft" x="10" y="43" width="1.8" height="1.8" fill="#FFA100"/>
+          <rect class="bz-debris-upright" x="19.5" y="38" width="2.2" height="2.2" fill="#FFD400"/>
+          <circle class="bz-debris-right" cx="22" cy="41" r="1.3" fill="#786e70"/>
+          <rect class="bz-debris-downright" x="24" y="43" width="1.8" height="1.8" fill="#FFA100"/>
+          <rect class="bz-debris-upleft" x="8" y="40" width="1.4" height="1.4" fill="#786e70" style="animation-delay:0.2s;"/>
+          <rect class="bz-debris-upright" x="26" y="40" width="1.4" height="1.4" fill="#786e70" style="animation-delay:0.22s;"/>
+          <circle class="bz-debris-downleft" cx="13" cy="44" r="1" fill="#FFD400" style="animation-delay:0.18s;"/>
+          <circle class="bz-debris-downright" cx="21" cy="44" r="1" fill="#FFD400" style="animation-delay:0.2s;"/>
         </svg>
         <span>BUG<span class="bz-wordmark-accent">ZAPPER</span></span>
       </div>
@@ -245,14 +249,18 @@ function renderLoggedOut() {
     <div class="bz-logged-out">
       <div class="bz-wordmark bz-display" style="margin-bottom:10px;justify-content:center;">
       <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-        <path class="bz-bolt-flicker" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
+        <path class="bz-bolt-flash" d="M25 3L9 24H18L13 41L35 16H24L29 3H25Z" fill="#FFD400" stroke="#FFD400" stroke-width="1"/>
         <ellipse cx="17" cy="41.5" rx="8" ry="1.4" fill="#2A2326" fill-opacity="0.7"/>
-        <rect class="bz-debris-l" x="9" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="10 40"/>
-        <rect class="bz-debris-l" x="7" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="8 42"/>
-        <rect class="bz-debris-l" x="11" y="42" width="2" height="2" fill="#FFA100" transform-origin="12 43"/>
-        <rect class="bz-debris-r" x="24" y="39" width="2.4" height="2.4" fill="#FFD400" transform-origin="25 40"/>
-        <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
-        <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
+        <rect class="bz-debris-upleft" x="14.5" y="38" width="2.2" height="2.2" fill="#FFD400"/>
+        <circle class="bz-debris-left" cx="12" cy="41" r="1.3" fill="#786e70"/>
+        <rect class="bz-debris-downleft" x="10" y="43" width="1.8" height="1.8" fill="#FFA100"/>
+        <rect class="bz-debris-upright" x="19.5" y="38" width="2.2" height="2.2" fill="#FFD400"/>
+        <circle class="bz-debris-right" cx="22" cy="41" r="1.3" fill="#786e70"/>
+        <rect class="bz-debris-downright" x="24" y="43" width="1.8" height="1.8" fill="#FFA100"/>
+        <rect class="bz-debris-upleft" x="8" y="40" width="1.4" height="1.4" fill="#786e70" style="animation-delay:0.2s;"/>
+        <rect class="bz-debris-upright" x="26" y="40" width="1.4" height="1.4" fill="#786e70" style="animation-delay:0.22s;"/>
+        <circle class="bz-debris-downleft" cx="13" cy="44" r="1" fill="#FFD400" style="animation-delay:0.18s;"/>
+        <circle class="bz-debris-downright" cx="21" cy="44" r="1" fill="#FFD400" style="animation-delay:0.2s;"/>
       </svg>
       <span>BUG<span class="bz-wordmark-accent">ZAPPER</span></span>
     </div>
