@@ -204,7 +204,7 @@ function renderShell() {
           <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
           <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
         </svg>
-        BUG<span class="bz-wordmark-accent">ZAPPER</span>
+        <span>BUG<span class="bz-wordmark-accent">ZAPPER</span></span>
       </div>
       <div class="bz-topnav">
         <button type="button" id="bz-admin-menu-toggle" class="bz-admin-menu-toggle">
@@ -254,7 +254,7 @@ function renderLoggedOut() {
         <rect class="bz-debris-r" x="26" y="41" width="1.6" height="1.6" fill="#786e70" transform-origin="27 42"/>
         <rect class="bz-debris-r" x="22" y="42" width="2" height="2" fill="#FFA100" transform-origin="23 43"/>
       </svg>
-      BUG<span class="bz-wordmark-accent">ZAPPER</span>
+      <span>BUG<span class="bz-wordmark-accent">ZAPPER</span></span>
     </div>
       <h2 class="bz-title bz-display" style="font-size:24px;">Bug reports are for members</h2>
       <p class="bz-subtitle" style="margin-top:8px;">Log in with any Boomertanger membership to see open reports and file your own.</p>
@@ -453,7 +453,7 @@ function openSubmitModal() {
   slot.innerHTML = `
     <div class="bz-modal-backdrop" id="bz-submit-backdrop">
       <div class="bz-modal">
-        <div>
+        <div style="margin-bottom:18px;">
           <div class="bz-eyebrow">New report</div>
           <h3 class="bz-title bz-display" style="font-size:22px;">Report a bug</h3>
           <div class="bz-subtitle">The more detail you give, the faster it gets fixed.</div>
@@ -564,7 +564,13 @@ function openSubmitModal() {
         priority: null,
         status: "Open",
         statusChangedAt: serverTimestamp(),
-        statusHistory: [],
+        statusHistory: [
+          {
+            status: "Open",
+            changedBy: state.memberName || "Member",
+            changedAt: new Date().toISOString(),
+          },
+        ],
         duplicateOf: null,
         screenshotUrl: null,
         reporterUid: state.uid ?? "",
@@ -620,7 +626,7 @@ function openDetailModal(reportId) {
           <textarea id="bz-comment-input" class="bz-textarea" rows="2" maxlength="1000" placeholder="Reply..."></textarea>
         </div>
         <div id="bz-comment-error" class="bz-error" hidden></div>
-        <button type="button" id="bz-comment-post" class="bz-btn bz-btn-secondary bz-display" style="margin-top:8px;">Post comment</button>
+        <button type="button" id="bz-comment-post" class="bz-btn bz-btn-primary bz-display" style="margin-top:8px;">Post comment</button>
       </div>`
     : "";
 
@@ -701,7 +707,7 @@ function openDetailModal(reportId) {
               <span class="bz-pill" style="color:${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).color};background:${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).bg};">${(SEVERITY_META[report.severity] ?? SEVERITY_META.Minor).label}</span>
             </span>
           </div>
-          <button type="button" id="bz-detail-close" class="bz-btn bz-btn-secondary" style="width:36px;height:36px;padding:0;display:flex;align-items:center;justify-content:center;">
+          <button type="button" id="bz-detail-close" class="bz-close-btn">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
           </button>
         </div>

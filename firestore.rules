@@ -245,7 +245,11 @@ service cloud.firestore {
         && request.resource.data.reporterName is string
         && request.resource.data.meTooBy == []
         && request.resource.data.commentCount == 0
-        && request.resource.data.statusHistory == [];
+        && request.resource.data.statusHistory is list
+        && request.resource.data.statusHistory.size() == 1
+        && request.resource.data.statusHistory[0].status == "Open"
+        && request.resource.data.statusHistory[0].changedBy is string
+        && request.resource.data.statusHistory[0].changedAt is string;
 
       // Two disjoint ways to update: a member's own me-too toggle, or an
       // admin editing status/priority/duplicateOf. screenshotUrl is left out

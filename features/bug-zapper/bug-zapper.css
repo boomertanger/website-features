@@ -294,6 +294,26 @@
 #bug-zapper-root .bz-btn-secondary {
   background: transparent;
   border: 1px solid var(--bz-border-2);
+  color: var(--bz-text-muted);
+}
+
+#bug-zapper-root .bz-close-btn {
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: transparent;
+  border: 1px solid var(--bz-border-2);
+  border-radius: 8px;
+  color: var(--bz-text-muted);
+  cursor: pointer;
+}
+
+#bug-zapper-root .bz-close-btn:hover {
+  border-color: var(--bz-text-faint);
   color: var(--bz-text);
 }
 
