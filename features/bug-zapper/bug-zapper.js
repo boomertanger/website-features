@@ -34,7 +34,7 @@ import {
   hasActivePlan,
   PLANS,
 } from "../../shared/memberspace-helper.js";
-import { escapeHtml, formatDate, initials } from "../../shared/ui/dom.js";
+import { escapeHtml, formatDate, initials, levelBars } from "../../shared/ui/dom.js";
 import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
 import { initRowSpotlight } from "../../shared/ui/effects.js";
@@ -108,21 +108,35 @@ const COPY_ICON =
 const COMMENT_ICON =
   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
 
+// Site-wide badge system (docs/design-system.md §5). Keys are the stored
+// values and never change; labels and tones are presentation only.
+// Levels (ordered scales) show signal bars: level n of LEVEL_STEPS.
+const LEVEL_STEPS = 4;
 const SEVERITY_META = {
-  Cosmetic: { label: "Cosmetic", tone: "gray" },
-  Minor: { label: "Minor", tone: "blue" },
-  Major: { label: "Major", tone: "amber" },
-  Critical: { label: "Critical", tone: "red" },
+  Cosmetic: { label: "Cosmetic", tone: "blue", level: 1 },
+  Minor: { label: "Minor", tone: "gold", level: 2 },
+  Major: { label: "Major", tone: "pink", level: 3 },
+  Critical: { label: "Critical", tone: "red", level: 4 },
 };
 
+// Statuses keep the dot. Closed-without-a-change statuses are gray and
+// dim their row (CLOSED_STATUSES below).
 const STATUS_META = {
   Open: { label: "Open", tone: "blue" },
-  "In progress": { label: "In progress", tone: "amber" },
-  Fixed: { label: "Fixed", tone: "green" },
+  "In progress": { label: "In progress", tone: "green" },
+  Fixed: { label: "Fixed", tone: "lime" },
   "Won't fix": { label: "Won't fix", tone: "gray" },
   "Can't reproduce": { label: "Can't reproduce", tone: "gray" },
   Duplicate: { label: "Duplicate", tone: "gray" },
 };
+
+function statusBadge(meta) {
+  return `<span class="bt-badge bt-badge--${meta.tone}"><span class="bt-badge-dot"></span>${meta.label}</span>`;
+}
+
+function levelBadge(meta) {
+  return `<span class="bt-badge bt-badge--${meta.tone}">${levelBars(meta.level, LEVEL_STEPS)}${meta.label}</span>`;
+}
 
 const CLOSED_STATUSES = ["Won't fix", "Can't reproduce", "Duplicate"];
 
@@ -327,7 +341,7 @@ function rowHtml(r) {
   const voted = hasMeToo(r);
   const showComments = canSeeComments(r) && (r.commentCount ?? 0) > 0;
   return `
-  <div class="bt-row bt-row--clickable" data-id="${r.id}" tabindex="0">
+  <div class="bt-row bt-row--clickable ${CLOSED_STATUSES.includes(r.status) ? "bt-row--dimmed" : ""}" data-id="${r.id}" tabindex="0">
     <button type="button" class="bt-tally ${voted ? "is-active" : ""}" data-bit-id="${r.id}" aria-pressed="${voted}" aria-label="${voted ? "Remove your bit me too" : "Bit me too"}">
       ${UP_ICON}<span class="bt-tally-count">${meTooCount(r)}</span><span class="bt-tally-label">bit</span>
     </button>
@@ -338,8 +352,8 @@ function rowHtml(r) {
     </div>
     <div class="bt-row-side">
       <div class="bt-row-badges">
-        <span class="bt-badge bt-badge--${severity.tone}">${severity.label}</span>
-        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
+        ${levelBadge(severity)}
+        ${statusBadge(status)}
       </div>
       ${showComments ? `<span class="bt-count" title="Private — only visible to you and the reporter">${COMMENT_ICON}${r.commentCount}</span>` : ""}
       <span class="bt-row-date">${formatDate(r.createdAt)}</span>
@@ -682,10 +696,11 @@ function openDetailModal(reportId) {
       </div>
       <div class="bt-field">
         <label class="bt-label" for="bz-note-input">Note (optional, added to history)</label>
-        <textarea id="bz-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
+        <textarea id="bz-note-input" class="bt-textarea" rows="2" maxlength="500" disabled></textarea>
+        <span class="bt-hint">A note is saved with a status change.</span>
       </div>
       <p id="bz-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin">Save changes</button></div>
+      <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
     </div>`
     : "";
 
@@ -696,8 +711,8 @@ function openDetailModal(reportId) {
     content: `
       ${modalHeader(escapeHtml(report.title), `<span class="bt-meta">Reported by ${escapeHtml(report.reporterName)} on ${formatDate(report.createdAt)}</span>`)}
       <div class="bt-row-badges">
-        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
-        <span class="bt-badge bt-badge--${severity.tone}">${severity.label}</span>
+        ${statusBadge(status)}
+        ${levelBadge(severity)}
       </div>
 
       <div class="bt-modal-section">
@@ -853,35 +868,61 @@ function openDetailModal(reportId) {
     });
   }
 
+  // Admin panel save. Enabled only when status, priority or duplicate-of
+  // differ from the saved report; a history entry (and its note) is
+  // written only on a real status change. firestore.rules enforces the
+  // same thing, so a double-click can't add a duplicate history entry.
   const saveBtn = modal.querySelector("#bz-admin-save");
   if (saveBtn) {
+    const statusSel = modal.querySelector("#bz-status-select");
+    const prioritySel = modal.querySelector("#bz-priority-select");
+    const dupInput = modal.querySelector("#bz-dup-input");
+    const noteInput = modal.querySelector("#bz-note-input");
+    const errorEl = modal.querySelector("#bz-admin-error");
+    const read = () => ({
+      status: statusSel.value,
+      priority: prioritySel.value || null,
+      duplicateOf: dupInput.value.trim() || null,
+    });
+    let saving = false;
+    const refresh = () => {
+      const v = read();
+      const statusChanged = v.status !== report.status;
+      noteInput.disabled = !statusChanged;
+      saveBtn.disabled = saving || !(statusChanged
+        || v.priority !== (report.priority ?? null)
+        || v.duplicateOf !== (report.duplicateOf ?? null));
+    };
+    [statusSel, prioritySel, dupInput].forEach((el) => {
+      el.addEventListener("input", refresh);
+      el.addEventListener("change", refresh);
+    });
+
     saveBtn.addEventListener("click", async () => {
-      const status = modal.querySelector("#bz-status-select").value;
-      const priority = modal.querySelector("#bz-priority-select").value || null;
-      const duplicateOf = modal.querySelector("#bz-dup-input").value.trim() || null;
-      const note = modal.querySelector("#bz-note-input").value.trim();
-      const errorEl = modal.querySelector("#bz-admin-error");
-
-      const historyEntry = {
-        status,
-        changedBy: state.memberName || "Admin",
-        changedAt: new Date().toISOString(),
-      };
-      if (note) historyEntry.note = note;
-
-      const update = {
-        priority,
-        duplicateOf,
-        statusHistory: arrayUnion(historyEntry),
-      };
-      // Only bump statusChangedAt when status actually changes, since
-      // Disk Stash's cleanup rule ages off this doc's screenshot based
-      // on how long it's sat in a given status.
-      if (status !== report.status) {
-        update.status = status;
+      if (saveBtn.disabled) return;
+      const v = read();
+      const update = {};
+      if (v.priority !== (report.priority ?? null)) update.priority = v.priority;
+      if (v.duplicateOf !== (report.duplicateOf ?? null)) update.duplicateOf = v.duplicateOf;
+      if (v.status !== report.status) {
+        const historyEntry = {
+          status: v.status,
+          changedBy: state.memberName || "Admin",
+          changedAt: new Date().toISOString(),
+        };
+        const note = noteInput.value.trim();
+        if (note) historyEntry.note = note;
+        update.status = v.status;
+        update.statusHistory = arrayUnion(historyEntry);
+        // Disk Stash's cleanup rule ages off this doc's screenshot based on
+        // how long it's sat in a given status.
         update.statusChangedAt = serverTimestamp();
       }
 
+      saving = true;
+      errorEl.hidden = true;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
       try {
         await updateDoc(doc(db, "bugReports", reportId), update);
         close();
@@ -889,6 +930,9 @@ function openDetailModal(reportId) {
         console.error("Failed to save admin changes", err);
         errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
         errorEl.hidden = false;
+        saving = false;
+        saveBtn.textContent = "Save changes";
+        refresh();
       }
     });
   }

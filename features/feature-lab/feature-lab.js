@@ -21,7 +21,7 @@ import {
   hasActivePlan,
   PLANS,
 } from "../../shared/memberspace-helper.js";
-import { escapeHtml, formatDate, initials } from "../../shared/ui/dom.js";
+import { escapeHtml, formatDate, initials, levelBars } from "../../shared/ui/dom.js";
 import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
 import { initRowSpotlight } from "../../shared/ui/effects.js";
@@ -77,20 +77,33 @@ const TRASH_ICON =
 const COMMENT_ICON =
   '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 4.67157 3.67157 4 4.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12.5C17 13.3284 16.3284 14 15.5 14H8L4.5 17V14H4.5C3.67157 14 3 13.3284 3 12.5V5.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
 
+// Site-wide badge system (docs/design-system.md §5). Keys are the stored
+// values and never change; labels and tones are presentation only.
+// under_review isn't in the site-wide table; it uses the spare teal tone.
 const STATUS_META = {
-  submitted: { label: "Submitted", tone: "gray" },
-  under_review: { label: "Under review", tone: "amber" },
-  planned: { label: "Planned", tone: "blue" },
-  in_progress: { label: "In progress", tone: "teal" },
-  shipped: { label: "Shipped", tone: "green" },
+  submitted: { label: "Submitted", tone: "blue" },
+  under_review: { label: "Under review", tone: "teal" },
+  planned: { label: "Planned", tone: "gold" },
+  in_progress: { label: "In progress", tone: "green" },
+  shipped: { label: "Shipped", tone: "lime" },
   declined: { label: "Declined", tone: "gray" },
 };
 
+// Priority is a level (ordered scale): signal bars, level n of LEVEL_STEPS.
+const LEVEL_STEPS = 3;
 const PRIORITY_META = {
-  low: { label: "Low", tone: "gray" },
-  medium: { label: "Medium", tone: "amber" },
-  high: { label: "High", tone: "red" },
+  low: { label: "Low", tone: "blue", level: 1 },
+  medium: { label: "Medium", tone: "gold", level: 2 },
+  high: { label: "High", tone: "pink", level: 3 },
 };
+
+function statusBadge(meta) {
+  return `<span class="bt-badge bt-badge--${meta.tone}"><span class="bt-badge-dot"></span>${meta.label}</span>`;
+}
+
+function levelBadge(meta) {
+  return `<span class="bt-badge bt-badge--${meta.tone}">${levelBars(meta.level, LEVEL_STEPS)}${meta.label}</span>`;
+}
 
 const FILTERS = [
   { key: "all", label: "All" },
@@ -249,8 +262,8 @@ function rowHtml(r) {
     </div>
     <div class="bt-row-side">
       <div class="bt-row-badges">
-        ${priority ? `<span class="bt-badge bt-badge--${priority.tone}">${priority.label}</span>` : ""}
-        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
+        ${priority ? levelBadge(priority) : ""}
+        ${statusBadge(status)}
       </div>
       ${r.commentCount > 0 ? `<span class="bt-count">${COMMENT_ICON}${r.commentCount}</span>` : ""}
       <span class="bt-row-date">${formatDate(r.createdAt)}</span>
@@ -407,10 +420,11 @@ function adminPanelHtml(request) {
       </div>
       <div class="bt-field">
         <label class="bt-label" for="fl-note-input">Note (optional, added to history)</label>
-        <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
+        <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500" disabled></textarea>
+        <span class="bt-hint">A note is saved with a status change.</span>
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin">Save changes</button></div>
+      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
     </div>`;
 }
 
@@ -448,8 +462,8 @@ function openDetailModal(requestId) {
     content: `
       ${modalHeader(escapeHtml(request.title), `<span class="bt-meta">Requested by ${escapeHtml(request.requesterName)} on ${formatDate(request.createdAt)}</span>`)}
       <div class="bt-row-badges">
-        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
-        ${priority ? `<span class="bt-badge bt-badge--${priority.tone}">${priority.label}</span>` : ""}
+        ${statusBadge(status)}
+        ${priority ? levelBadge(priority) : ""}
       </div>
       <div class="bt-modal-section">
         <p class="bt-section-label">Description</p>
@@ -533,31 +547,58 @@ function openDetailModal(requestId) {
   // Admin controls (only present in the DOM if state.isAdmin)
   const saveBtn = modal.querySelector("#fl-admin-save");
   if (saveBtn) {
+    // Enabled only when status or priority differ from the saved request;
+    // a history entry (and its note) is written only on a real status
+    // change. firestore.rules enforces the same thing, so a double-click
+    // can't add a duplicate history entry.
+    const statusSel = modal.querySelector("#fl-status-select");
+    const prioritySel = modal.querySelector("#fl-priority-select");
+    const noteInput = modal.querySelector("#fl-note-input");
+    const errorEl = modal.querySelector("#fl-admin-error");
+    const read = () => ({ status: statusSel.value, priority: prioritySel.value || null });
+    let saving = false;
+    const refresh = () => {
+      const v = read();
+      const statusChanged = v.status !== request.status;
+      noteInput.disabled = !statusChanged;
+      saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null));
+    };
+    [statusSel, prioritySel].forEach((el) => {
+      el.addEventListener("input", refresh);
+      el.addEventListener("change", refresh);
+    });
+
     saveBtn.addEventListener("click", async () => {
-      const status = modal.querySelector("#fl-status-select").value;
-      const priority = modal.querySelector("#fl-priority-select").value || null;
-      const note = modal.querySelector("#fl-note-input").value.trim();
-      const errorEl = modal.querySelector("#fl-admin-error");
+      if (saveBtn.disabled) return;
+      const v = read();
+      const update = { updatedAt: serverTimestamp() };
+      if (v.priority !== (request.priority ?? null)) update.priority = v.priority;
+      if (v.status !== request.status) {
+        const historyEntry = {
+          status: v.status,
+          changedBy: state.memberName || "Admin",
+          changedAt: new Date().toISOString(),
+        };
+        const note = noteInput.value.trim();
+        if (note) historyEntry.note = note;
+        update.status = v.status;
+        update.statusHistory = arrayUnion(historyEntry);
+      }
 
-      const historyEntry = {
-        status,
-        changedBy: state.memberName || "Admin",
-        changedAt: new Date().toISOString(),
-      };
-      if (note) historyEntry.note = note;
-
+      saving = true;
+      errorEl.hidden = true;
+      saveBtn.disabled = true;
+      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
       try {
-        await updateDoc(doc(db, "featureRequests", requestId), {
-          status,
-          priority,
-          updatedAt: serverTimestamp(),
-          statusHistory: arrayUnion(historyEntry),
-        });
+        await updateDoc(doc(db, "featureRequests", requestId), update);
         close();
       } catch (err) {
         console.error("Failed to save admin changes", err);
         errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
         errorEl.hidden = false;
+        saving = false;
+        saveBtn.textContent = "Save changes";
+        refresh();
       }
     });
   }

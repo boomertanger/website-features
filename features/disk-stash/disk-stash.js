@@ -169,7 +169,7 @@ function renderUsage() {
   const status = used >= CAP_BYTES ? "over" : used >= BUFFER_BYTES ? "near" : "ok";
   const statusMeta = {
     ok: { label: "Healthy", tone: "green" },
-    near: { label: "Uploads paused", tone: "amber" },
+    near: { label: "Uploads paused", tone: "gold" },
     over: { label: "Over limit", tone: "red" },
   }[status];
 

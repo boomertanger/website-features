@@ -444,10 +444,3 @@ section 5 (decided after the migration). New features must use it too.
   callback only reports `{ user, isAdmin }`; it doesn't own this DOM
   toggling. A small shared helper (in `admin-auth.js` or `admin-menu.js`)
   could take this over.
-- **Bug Zapper never dims a closed report.** Its row rendering
-  (`features/bug-zapper/bug-zapper.js`) never applies `.bt-row--dimmed`,
-  so `Won't fix` / `Can't reproduce` / `Duplicate` all render at full
-  opacity, same as `Open`. Feature Lab's rows do dim when `status ===
-  "declined"` (`features/feature-lab/feature-lab.js`). Pre-existing
-  asymmetry, preserved as-is since this was a visual/markup migration, not
-  a behavior-unification pass.
