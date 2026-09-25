@@ -73,35 +73,58 @@ dropzone, the "bit me too" row).
    the first time this specific rule shape runs — normal, just create the
    index via the link in the error and it'll work from then on.
 
-## Staging embed snippet (bug-zapper page, Code Block)
+## Embed snippets (bug-zapper page, Code Block)
 
-Per `docs/design-system.md` §1 ("Until then (staging)"), each staging Code
-Block loads the shared kit and this feature's own files, in order, pinned to
-one commit SHA so the page never silently picks up an unfinished change:
+**Staging** uses the staging loader from `docs/design-system.md` §1: it
+looks up the newest `dev` commit on every page load and loads this
+feature's files pinned to it, so the Code Block never needs editing after
+a push (hard-refresh to pick up a new commit; the corner badge shows which
+commit is running). Paste the template from §1 with:
+
+- `FEATURE_CSS` → `features/bug-zapper/bug-zapper.css`
+- `FEATURE_JS` → `features/bug-zapper/bug-zapper.js`
+- `ROOT_ID` → `bug-zapper-root`
+
+Filled in:
 
 ```html
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/shared/bt-ui.css">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/bug-zapper/bug-zapper.css">
 <div id="bug-zapper-root"></div>
-<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/bug-zapper/bug-zapper.js"></script>
+<script type="module">
+  // Boomertanger staging loader: always runs the newest dev commit.
+  const REPO = "boomertanger/website-features";
+  const CSS = ["shared/bt-ui.css", "features/bug-zapper/bug-zapper.css"];
+  const JS = "features/bug-zapper/bug-zapper.js";
+  let sha = "dev", note = "fallback";
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/commits/dev`, { headers: { Accept: "application/vnd.github.sha" }, cache: "no-store" });
+    if (r.ok) { sha = (await r.text()).trim(); note = ""; }
+  } catch (e) {}
+  const base = `https://cdn.jsdelivr.net/gh/${REPO}@${sha}/`;
+  await Promise.all(CSS.map((f) => new Promise((res) => {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = base + f;
+    l.onload = l.onerror = res; document.head.appendChild(l);
+  })));
+  await import(base + JS);
+  const b = document.createElement("div");
+  b.textContent = `staging @${sha.slice(0, 7)}${note ? " (" + note + ")" : ""}`;
+  b.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:2147483647;font:600 11px/1 system-ui,sans-serif;padding:5px 8px;border-radius:6px;background:#1e1a1d;color:#a89a9c;border:1px solid #332b2e;pointer-events:none";
+  document.body.appendChild(b);
+  console.info("[bt staging] loaded", sha);
+</script>
 ```
 
-Replace `<sha>` in all three URLs with the current full commit SHA on `dev`
-(`git rev-parse HEAD`, or the snippet printed after the last push to `dev` —
-see `CLAUDE.md`'s "After every push to dev"). If this feature is already
-embedded on the `bug-zapper` page from before this migration, replace the
-whole block — the old snippet had no `shared/bt-ui.css` line at all, and
-`bug-zapper.css` no longer carries its own tokens or layout, so the page
-would otherwise render unstyled.
+**Production** uses plain `@1` URLs (no loader, no GitHub lookup). The
+Inter font links and `shared/bt-ui.css@1` load once site-wide from
+Squarespace Header Code Injection, so the Code Block is just:
 
-Swap `<sha>` for a pinned release tag (e.g. `@v2.0.0`) when promoting to
-production, per the repo's normal release process. After the first release,
-this feature's Code Block will only need its own two lines (`bug-zapper.css`
-+ `bug-zapper.js`) — the Inter font links and `shared/bt-ui.css` move to
-Squarespace Header Code Injection, loaded once site-wide.
+```html
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/bug-zapper/bug-zapper.css">
+<div id="bug-zapper-root"></div>
+<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/bug-zapper/bug-zapper.js"></script>
+```
 
 ## Data model — `bugReports/{reportId}`
 

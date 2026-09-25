@@ -40,27 +40,25 @@ as-is by the browser.
 
 ## How a feature gets onto a page
 
-Each feature is a Squarespace Code Block. Until the shared kit moves into
-Squarespace Header Code Injection (the target end state — see
-`docs/design-system.md` §1), every staging Code Block loads, in order: the
-Inter font `<link>`s, `shared/bt-ui.css`, the feature's own `<name>.css`,
-the feature's root `<div id="<name>-root">`, and the feature's own
-`<name>.js` as a `type="module"` script — all four repo URLs pinned to the
-same commit SHA via jsDelivr
-(`https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/...`), so
-a page never picks up a half-finished change mid-deploy. Each feature's own
-`README.md` has its exact, ready-to-paste snippet.
+Each feature is a Squarespace Code Block (see `docs/design-system.md` §1).
+Staging Code Blocks use the **staging loader**: on every page load it asks
+GitHub for the newest `dev` commit and loads `shared/bt-ui.css`, the
+feature's `<name>.css` and `<name>.js` from jsDelivr pinned to that exact
+SHA, so all files always come from the same commit and the Code Block never
+needs editing after a push. Production Code Blocks use plain `@1` URLs, with
+the Inter fonts and `shared/bt-ui.css` in Squarespace Header Code Injection.
+Each feature's own `README.md` has its exact, ready-to-paste snippets.
 
 ## Branches and releases
 
-- `dev` — work in progress; staging Code Blocks point here (pinned to a
-  specific commit SHA, not the branch name, once past initial development).
+- `dev` — work in progress; staging Code Blocks follow it via the staging
+  loader (always the newest commit, loaded pinned to its SHA).
 - `main` — production-ready; production Code Blocks point to a tag cut from
   `main` (e.g. `@v2.0.0`). Never tag from `dev`.
 - After every push to `dev`, confirm it landed
   (`git rev-parse HEAD` should match
   `git ls-remote https://github.com/boomertanger/website-features.git dev`)
-  before handing out any snippet pinned to that SHA — see `CLAUDE.md`'s
+  before telling anyone to refresh staging — see `CLAUDE.md`'s
   "After every push to dev".
 - Firestore rules and Cloud Functions are deployed separately from git
   (`firebase deploy --project <staging|production> --only firestore:rules`

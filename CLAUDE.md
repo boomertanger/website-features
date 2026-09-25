@@ -63,7 +63,9 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
    `git ls-remote https://github.com/boomertanger/website-features.git dev`.
    If they differ, the push silently failed (sandboxed credential prompt) — stop and
    tell the user to run `git push origin dev` from a real terminal.
-2. Print ready-to-paste Squarespace Code Block snippets pinned to that full SHA:
-   `https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/<path>`.
-   Until the release moves them into Header Code Injection, staging snippets must
-   include the Inter font `<link>`s and `shared/bt-ui.css` before the feature CSS.
+2. Staging pages use the staging loader (`docs/design-system.md` §1), so they pick
+   up new commits on their own. Just report the full SHA and remind the user to
+   hard-refresh the staging pages (the corner badge should show the new short SHA).
+3. Print full Code Block snippets (the loader template filled in with the feature's
+   CSS path, JS path and root id) ONLY when a page's files change: a new CSS/JS
+   file, a renamed file, or a renamed root id.
