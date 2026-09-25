@@ -7,8 +7,15 @@
         { "fieldPath": "linkedDoc.collection", "order": "ASCENDING" },
         { "fieldPath": "linkedDoc.docId", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "adminLog",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "itemPath", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
 }
-

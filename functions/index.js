@@ -128,6 +128,65 @@ async function isCallerAdmin(auth) {
   return doc.exists;
 }
 
+// ---------- adminLog ----------
+// Admin-only audit trail (docs/specs/admin-editing.md). Written ONLY here via
+// the Admin SDK; firestore.rules lets admins read it and nobody write it.
+// Entries expire through a Firestore TTL policy on expireAt (set per project
+// in the console), createdAt + adminSettings/log.retentionDays (default 365).
+const DEFAULT_LOG_RETENTION_DAYS = 365;
+const LOG_TEXT_CAP = 2000;
+
+function actorNameOf(auth) {
+  return auth?.token?.name || auth?.token?.email || "Admin";
+}
+
+function capText(value) {
+  return typeof value === "string" && value.length > LOG_TEXT_CAP ? value.slice(0, LOG_TEXT_CAP) : value;
+}
+
+async function logExpireAt(db) {
+  let days = DEFAULT_LOG_RETENTION_DAYS;
+  try {
+    const settings = await db.collection("adminSettings").doc("log").get();
+    const configured = settings.get("retentionDays");
+    if (Number.isFinite(configured) && configured > 0) days = configured;
+  } catch (err) {
+    console.error("adminLog: couldn't read adminSettings/log, using the default retention", err);
+  }
+  return admin.firestore.Timestamp.fromMillis(Date.now() + days * 24 * 60 * 60 * 1000);
+}
+
+// feature: "bugZapper" | "featureLab" | "diskStash"; action: "edit" | "delete" | "purge".
+// actorUid null + actorName "Automatic" for scheduled actions.
+async function adminLogEntry(db, { feature, action, itemPath, itemTitle, actorUid, actorName, reason, changes, snapshot }) {
+  const entry = {
+    feature,
+    action,
+    itemPath,
+    itemTitle: capText(itemTitle || ""),
+    actorUid: actorUid ?? null,
+    actorName: actorName || "Admin",
+    reason: reason || "",
+    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    expireAt: await logExpireAt(db),
+  };
+  if (changes) entry.changes = changes;
+  if (snapshot) entry.snapshot = snapshot;
+  return entry;
+}
+
+async function writeAdminLog(fields) {
+  const db = admin.firestore();
+  await db.collection("adminLog").add(await adminLogEntry(db, fields));
+}
+
+// Text snapshot for delete entries: only string fields, each capped.
+function textSnapshot(data, fields) {
+  const out = {};
+  for (const f of fields) if (typeof data[f] === "string") out[f] = capText(data[f]);
+  return out;
+}
+
 // ---------- Deleting an item without leaving orphans ----------
 // Firestore never cascades a delete, so every item delete goes through a
 // Cloud Function that removes, in this order:
@@ -266,7 +325,14 @@ async function cloudinaryDelete({ publicId, resourceType, cloudName, apiKey, api
 // Shared by the callable and the scheduled sweep below. Never call this
 // with an assetId you haven't verified the caller is allowed to touch —
 // callers below check admin status first.
-async function performAssetDeletion(assetId, cloudinaryCreds) {
+//
+// options.clearLinkedField (default true): set false when the linked doc's
+//   field no longer points at THIS asset (adminEditItem's replace, or its
+//   rollback), so the doc's current URL isn't wiped.
+// options.logActor: { uid, name } writes an adminLog "purge" entry (manual
+//   purges and the scheduled sweep; name "Automatic", uid null).
+async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
+  const { clearLinkedField = true, logActor = null } = options;
   const db = admin.firestore();
   const assetRef = db.collection("externalAssets").doc(assetId);
   const assetSnap = await assetRef.get();
@@ -290,7 +356,7 @@ async function performAssetDeletion(assetId, cloudinaryCreds) {
   const batch = db.batch();
   const { collection: linkedCollection, docId: linkedDocId, field: linkedField } =
     asset.linkedDoc || {};
-  if (linkedCollection && linkedDocId && linkedField) {
+  if (clearLinkedField && linkedCollection && linkedDocId && linkedField) {
     batch.set(
       db.collection(linkedCollection).doc(linkedDocId),
       { [linkedField]: admin.firestore.FieldValue.delete() },
@@ -317,6 +383,23 @@ async function performAssetDeletion(assetId, cloudinaryCreds) {
     createdAt: admin.firestore.FieldValue.serverTimestamp(),
   });
 
+  if (logActor) {
+    await writeAdminLog({
+      feature: "diskStash",
+      action: "purge",
+      itemPath: `externalAssets/${assetId}`,
+      itemTitle: asset.publicId,
+      actorUid: logActor.uid,
+      actorName: logActor.name,
+      snapshot: {
+        publicId: asset.publicId,
+        feature: asset.feature || "",
+        linkedPath: linkedCollection && linkedDocId ? `${linkedCollection}/${linkedDocId}` : "",
+        sizeBytes: asset.sizeBytes || 0,
+      },
+    });
+  }
+
   return { ok: true };
 }
 
@@ -329,11 +412,15 @@ exports.deleteExternalAsset = onCall({ secrets: CLOUDINARY_SECRETS }, async (req
   if (typeof assetId !== "string" || !assetId) {
     throw new HttpsError("invalid-argument", "assetId is required.");
   }
-  return performAssetDeletion(assetId, {
-    cloudName: CLOUDINARY_CLOUD_NAME.value(),
-    apiKey: CLOUDINARY_API_KEY.value(),
-    apiSecret: CLOUDINARY_API_SECRET.value(),
-  });
+  return performAssetDeletion(
+    assetId,
+    {
+      cloudName: CLOUDINARY_CLOUD_NAME.value(),
+      apiKey: CLOUDINARY_API_KEY.value(),
+      apiSecret: CLOUDINARY_API_SECRET.value(),
+    },
+    { logActor: { uid: request.auth.uid, name: actorNameOf(request.auth) } }
+  );
 });
 
 // ---------- Bug Zapper: safe report deletion ----------
@@ -395,6 +482,17 @@ exports.deleteBugReport = onCall({ secrets: CLOUDINARY_SECRETS }, async (request
   // activityLog events — see deleteItemCompletely above.
   const { activityDeleted } = await deleteItemCompletely("bugReports", reportId);
 
+  const report = reportSnap.data();
+  await writeAdminLog({
+    feature: "bugZapper",
+    action: "delete",
+    itemPath: `bugReports/${reportId}`,
+    itemTitle: report.title,
+    actorUid: request.auth.uid,
+    actorName: actorNameOf(request.auth),
+    snapshot: textSnapshot(report, ["title", "whatHappened", "expectedInstead", "page", "stepsToReproduce", "severity", "status", "reporterName"]),
+  });
+
   return { ok: true, activityDeleted };
 });
 
@@ -419,7 +517,275 @@ exports.deleteFeatureRequest = onCall(async (request) => {
 
   const { activityDeleted } = await deleteItemCompletely("featureRequests", requestId);
 
+  const featureRequest = reqSnap.data();
+  await writeAdminLog({
+    feature: "featureLab",
+    action: "delete",
+    itemPath: `featureRequests/${requestId}`,
+    itemTitle: featureRequest.title,
+    actorUid: request.auth.uid,
+    actorName: actorNameOf(request.auth),
+    snapshot: textSnapshot(featureRequest, ["title", "description", "status", "requesterName"]),
+  });
+
   return { ok: true, activityDeleted };
+});
+
+// ---------- Admin editing (docs/specs/admin-editing.md) ----------
+// One generic callable: adminEditItem({ feature, id, changes, before, reason }).
+// changes: { field: newValue } for allowlisted fields, plus (Bug Zapper)
+//   screenshot: { action: "replace", url, publicId, sizeBytes, resourceType }
+//             | { action: "remove" }
+// before: the values the client loaded for every changed field (and
+//   screenshotUrl when the screenshot changes) — the conflict check.
+// Content fields can only change here: firestore.rules blocks them from the
+// browser for everyone, so no edit can skip the adminLog entry.
+// Limits match each collection's create rule.
+const EDITABLE = {
+  bugZapper: {
+    collection: "bugReports",
+    fields: {
+      title: { label: "Title", min: 3, max: 200 },
+      whatHappened: { label: "What happened", min: 1, max: 2000 },
+      expectedInstead: { label: "What you expected", min: 0, max: 2000 },
+      page: { label: "Page", min: 1, max: 300 },
+      stepsToReproduce: { label: "Steps to reproduce", min: 0, max: 2000 },
+      severity: { label: "How bad is it", oneOf: ["Cosmetic", "Minor", "Major", "Critical"] },
+    },
+    screenshot: { field: "screenshotUrl", assetFeature: "bugZapper" },
+  },
+  featureLab: {
+    collection: "featureRequests",
+    fields: {
+      title: { label: "Title", min: 3, max: 200 },
+      description: { label: "Description", min: 10, max: 2000 },
+    },
+  },
+};
+
+function editInvalid(field, message) {
+  return new HttpsError("invalid-argument", message, { field });
+}
+
+function validateEditField(field, rule, value) {
+  if (rule.oneOf) {
+    if (!rule.oneOf.includes(value)) throw editInvalid(field, `${rule.label}: pick one of the listed options.`);
+    return value;
+  }
+  if (typeof value !== "string") throw editInvalid(field, `${rule.label} must be text.`);
+  const v = value.trim();
+  if (v.length < rule.min || v.length > rule.max) {
+    throw editInvalid(
+      field,
+      rule.min > 0
+        ? `${rule.label} needs to be ${rule.min}–${rule.max.toLocaleString("en-US")} characters.`
+        : `${rule.label} can be at most ${rule.max.toLocaleString("en-US")} characters.`
+    );
+  }
+  return v;
+}
+
+function validateScreenshotChange(shot) {
+  if (!shot || (shot.action !== "replace" && shot.action !== "remove")) {
+    throw editInvalid("screenshot", "Screenshot change must be replace or remove.");
+  }
+  if (shot.action === "remove") return { action: "remove" };
+  const { url, publicId, sizeBytes, resourceType = "image" } = shot;
+  if (typeof url !== "string" || !url.startsWith("https://res.cloudinary.com/")) {
+    throw editInvalid("screenshot", "The new screenshot must be a Cloudinary URL.");
+  }
+  if (typeof publicId !== "string" || !publicId || publicId.length > 300 || !Number.isFinite(sizeBytes) || sizeBytes < 0) {
+    throw editInvalid("screenshot", "The new screenshot is missing its Cloudinary details.");
+  }
+  if (!["image", "video", "raw"].includes(resourceType)) throw editInvalid("screenshot", "Unknown screenshot type.");
+  return { action: "replace", url, publicId, sizeBytes, resourceType };
+}
+
+const CONFLICT_MESSAGE = "This was changed while you were editing.";
+
+function normalizeText(v) {
+  return v ?? "";
+}
+
+// Throws "aborted" if any field the admin edited no longer matches what they loaded.
+function checkEditConflict(data, before, fields, shotField) {
+  for (const f of fields) {
+    if (normalizeText(data[f]) !== normalizeText(before[f])) {
+      throw new HttpsError("aborted", CONFLICT_MESSAGE, { reason: "conflict", field: f });
+    }
+  }
+  if (shotField && (data[shotField] ?? null) !== (before[shotField] ?? null)) {
+    throw new HttpsError("aborted", CONFLICT_MESSAGE, { reason: "conflict", field: "screenshot" });
+  }
+}
+
+async function linkedAssetIds(db, collectionName, docId) {
+  const snap = await db
+    .collection("externalAssets")
+    .where("linkedDoc.collection", "==", collectionName)
+    .where("linkedDoc.docId", "==", docId)
+    .get();
+  return snap.docs.map((d) => d.id);
+}
+
+exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) => {
+  // 1. Verify admin.
+  if (!(await isCallerAdmin(request.auth))) {
+    throw new HttpsError("permission-denied", "Admins only.");
+  }
+  const { feature, id, changes, before = {}, reason = "" } = request.data || {};
+  const cfg = EDITABLE[feature];
+  if (!cfg) throw new HttpsError("invalid-argument", "Unknown feature.");
+  if (typeof id !== "string" || !id) throw new HttpsError("invalid-argument", "id is required.");
+  if (!changes || typeof changes !== "object" || Array.isArray(changes)) {
+    throw new HttpsError("invalid-argument", "changes is required.");
+  }
+  if (!before || typeof before !== "object") throw new HttpsError("invalid-argument", "before is required.");
+
+  let shot = null;
+  if ("screenshot" in changes) {
+    if (!cfg.screenshot) throw editInvalid("screenshot", "This item has no screenshot.");
+    shot = validateScreenshotChange(changes.screenshot);
+  }
+  const shotField = shot ? cfg.screenshot.field : null;
+
+  const db = admin.firestore();
+  const ref = db.collection(cfg.collection).doc(id);
+  const itemPath = `${cfg.collection}/${id}`;
+  const creds = {
+    cloudName: CLOUDINARY_CLOUD_NAME.value(),
+    apiKey: CLOUDINARY_API_KEY.value(),
+    apiSecret: CLOUDINARY_API_SECRET.value(),
+  };
+
+  // Replace: the client already uploaded the new file to Cloudinary (on
+  // Save). Record it FIRST, so it's tracked by Disk Stash no matter what
+  // happens next; every failure below rolls it back (Cloudinary + record).
+  let newAssetId = null;
+  if (shot && shot.action === "replace") {
+    newAssetId = await recordAssetCreated({
+      url: shot.url,
+      publicId: shot.publicId,
+      resourceType: shot.resourceType,
+      feature: cfg.screenshot.assetFeature,
+      sizeBytes: shot.sizeBytes,
+      linkedCollection: cfg.collection,
+      linkedDocId: id,
+      linkedField: shotField,
+    });
+  }
+
+  let changed = false;
+  let oldAssetIds = [];
+  try {
+    if (typeof reason !== "string" || reason.trim().length > 300) {
+      throw editInvalid("reason", "Reason can be at most 300 characters.");
+    }
+    if (shot && !(shotField in before)) {
+      throw new HttpsError("invalid-argument", `before.${shotField} is required.`);
+    }
+
+    // 2. Validate each changed field against the allowlist + create-rule limits.
+    const fieldValues = {};
+    for (const [field, value] of Object.entries(changes)) {
+      if (field === "screenshot") continue;
+      const rule = cfg.fields[field];
+      if (!rule) throw editInvalid(field, `${field} can't be edited.`);
+      if (!(field in before)) throw new HttpsError("invalid-argument", `before.${field} is required.`);
+      fieldValues[field] = validateEditField(field, rule, value);
+    }
+    const editedFields = Object.keys(fieldValues);
+
+    // 3. Conflict pre-check (re-checked inside the transaction) and 5. no-op.
+    const snap = await ref.get();
+    if (!snap.exists) throw new HttpsError("not-found", "This item no longer exists.");
+    const current = snap.data();
+    checkEditConflict(current, before, editedFields, shotField);
+    const textChanged = editedFields.some((f) => normalizeText(current[f]) !== fieldValues[f]);
+    const shotChanged = !!shot && (shot.action === "replace" || !!current[shotField]);
+    if (!textChanged && !shotChanged) return { ok: true, changed: false, warnings: [] };
+
+    const oldShotUrl = shotField ? current[shotField] ?? null : null;
+    if (shotChanged) {
+      oldAssetIds = (await linkedAssetIds(db, cfg.collection, id)).filter((a) => a !== newAssetId);
+    }
+
+    // Remove: delete the old asset first (Cloudinary, then its record, then
+    // the field). If Cloudinary refuses, nothing has changed yet.
+    if (shotChanged && shot.action === "remove") {
+      for (const assetId of oldAssetIds) await performAssetDeletion(assetId, creds);
+      oldAssetIds = [];
+    }
+
+    // 4. One transaction: update the fields, editedAt, editCount, adminLog entry.
+    const baseEntry = await adminLogEntry(db, {
+      feature,
+      action: "edit",
+      itemPath,
+      actorUid: request.auth.uid,
+      actorName: actorNameOf(request.auth),
+      reason: reason.trim(),
+    });
+    await db.runTransaction(async (tx) => {
+      const fresh = await tx.get(ref);
+      if (!fresh.exists) throw new HttpsError("not-found", "This item no longer exists.");
+      const data = fresh.data();
+      // A remove already cleared the field above, so only a replace re-checks it.
+      checkEditConflict(data, before, editedFields, shot?.action === "replace" ? shotField : null);
+
+      const update = {};
+      const logChanges = {};
+      for (const f of editedFields) {
+        const was = normalizeText(data[f]);
+        if (was !== fieldValues[f]) {
+          update[f] = fieldValues[f];
+          logChanges[f] = { before: capText(was), after: capText(fieldValues[f]) };
+        }
+      }
+      if (shotChanged) {
+        // null, not a deleted field: firestore.rules compare this field.
+        update[shotField] = shot.action === "replace" ? shot.url : null;
+        logChanges[shotField] = { before: oldShotUrl, after: update[shotField] };
+      }
+      if (!Object.keys(logChanges).length) return;
+
+      update.editedAt = admin.firestore.FieldValue.serverTimestamp();
+      update.editCount = admin.firestore.FieldValue.increment(1);
+      tx.update(ref, update);
+      tx.set(db.collection("adminLog").doc(), {
+        ...baseEntry,
+        itemTitle: capText(update.title ?? data.title ?? ""),
+        changes: logChanges,
+      });
+      changed = true;
+    });
+    if (newAssetId && !changed) throw new Error("Screenshot replace didn't apply.");
+  } catch (err) {
+    // The item never pointed at the new asset: remove it (Cloudinary +
+    // record) without touching the item's current screenshotUrl.
+    if (newAssetId) {
+      await performAssetDeletion(newAssetId, creds, { clearLinkedField: false }).catch((e) =>
+        console.error(`adminEditItem: couldn't roll back new asset ${newAssetId}`, e)
+      );
+    }
+    throw err;
+  }
+
+  // Replace: only now remove the old asset(s). The item already points at
+  // the new URL, so the linked field is left alone.
+  const warnings = [];
+  if (newAssetId) {
+    for (const assetId of oldAssetIds) {
+      try {
+        await performAssetDeletion(assetId, creds, { clearLinkedField: false });
+      } catch (e) {
+        console.error(`adminEditItem: old asset ${assetId} wasn't removed`, e);
+        warnings.push("The old screenshot couldn't be removed; purge it from Disk Stash.");
+      }
+    }
+  }
+
+  return { ok: true, changed, warnings };
 });
 
 // Daily sweep: reads every enabled cleanupRules doc, finds linked docs
@@ -474,7 +840,7 @@ exports.scheduledAssetCleanup = onSchedule(
 
         for (const assetDoc of assetsSnap.docs) {
           try {
-            await performAssetDeletion(assetDoc.id, creds);
+            await performAssetDeletion(assetDoc.id, creds, { logActor: { uid: null, name: "Automatic" } });
           } catch (err) {
             console.error(`scheduledAssetCleanup: failed to purge ${assetDoc.id}`, err);
             // Keep sweeping — one failure shouldn't stop the rest.
