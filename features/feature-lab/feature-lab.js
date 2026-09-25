@@ -24,6 +24,8 @@ import {
 import { escapeHtml, formatDate, initials } from "../../shared/ui/dom.js";
 import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
+import { initRowSpotlight } from "../../shared/ui/effects.js";
+import { composerHtml, initComposer } from "../../shared/ui/composer.js";
 import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
 import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
@@ -45,6 +47,9 @@ import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-aut
 import { getFunctions } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 const ROOT_ID = "feature-lab-root";
+
+// Matches the comments text.size() <= 1000 check in firestore.rules.
+const COMMENT_MAX_LENGTH = 1000;
 
 const WORDMARK_ICON = `
   <svg viewBox="0 0 44 44" overflow="visible" aria-hidden="true">
@@ -304,7 +309,7 @@ function openSubmitModal() {
     feature: "feature-lab",
     title: "New request",
     content: `
-      ${modalHeader("New request")}
+      ${modalHeader("New request", "Got an idea? Pitch it here and the community will vote on what gets built next.")}
       <div class="bt-field">
         <label class="bt-label" for="fl-title-input">Title</label>
         <input id="fl-title-input" class="bt-input" type="text" maxlength="200" placeholder="e.g. A countdown timer for movie nights" autofocus>
@@ -439,11 +444,10 @@ function openDetailModal(requestId) {
     feature: "feature-lab",
     title: request.title,
     content: `
-      ${modalHeader(escapeHtml(request.title))}
-      <div class="bt-row-badges" style="gap:var(--bt-space-3)">
+      ${modalHeader(escapeHtml(request.title), `<span class="bt-meta">Requested by ${escapeHtml(request.requesterName)} on ${formatDate(request.createdAt)}</span>`)}
+      <div class="bt-row-badges">
         <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
         ${priority ? `<span class="bt-badge bt-badge--${priority.tone}">${priority.label}</span>` : ""}
-        <span class="bt-meta">Requested by ${escapeHtml(request.requesterName)} on ${formatDate(request.createdAt)}</span>
       </div>
       <div class="bt-modal-section">
         <p class="bt-section-label">Description</p>
@@ -453,11 +457,7 @@ function openDetailModal(requestId) {
       <div class="bt-modal-section">
         <p class="bt-section-label">Comments</p>
         <div id="fl-comments-list" class="bt-comments"></div>
-        <div class="bt-field" style="margin-top:var(--bt-space-3)">
-          <textarea id="fl-comment-input" class="bt-textarea" rows="2" maxlength="1000" placeholder="Ask a question or add context&hellip;"></textarea>
-        </div>
-        <p id="fl-comment-error" class="bt-error" hidden></p>
-        <button type="button" id="fl-comment-post" class="bt-btn bt-btn--secondary" style="margin-top:var(--bt-space-2)">Post comment</button>
+        <div style="margin-top:var(--bt-space-3)">${composerHtml({ placeholder: "Ask a question or add context…", maxLength: COMMENT_MAX_LENGTH, id: "fl-comment-input" })}</div>
       </div>
       <div class="bt-modal-section">
         <p class="bt-section-label">History</p>
@@ -506,33 +506,26 @@ function openDetailModal(requestId) {
     }
   );
 
-  modal.querySelector("#fl-comment-post").addEventListener("click", async () => {
-    const input = modal.querySelector("#fl-comment-input");
-    const errorEl = modal.querySelector("#fl-comment-error");
-    const text = input.value.trim();
-    if (text.length < 1 || text.length > 1000) {
-      errorEl.textContent = "Comment can't be empty.";
-      errorEl.hidden = false;
-      return;
-    }
-    try {
-      await addDoc(collection(db, "featureRequests", requestId, "comments"), {
-        text,
-        authorId: state.memberId ?? "",
-        authorName: state.memberName,
-        isAdminAuthor: state.isAdmin,
-        createdAt: serverTimestamp(),
-      });
+  // The composer owns the busy state, the empty/over-length guard and the
+  // error display; a thrown Error's message is what the member sees.
+  initComposer(modal.querySelector(".bt-composer"), {
+    onSubmit: async (text) => {
+      try {
+        await addDoc(collection(db, "featureRequests", requestId, "comments"), {
+          text,
+          authorId: state.memberId ?? "",
+          authorName: state.memberName,
+          isAdminAuthor: state.isAdmin,
+          createdAt: serverTimestamp(),
+        });
+      } catch (err) {
+        console.error("Failed to post comment", err);
+        throw new Error("Something went wrong posting your comment.");
+      }
       await updateDoc(doc(db, "featureRequests", requestId), {
         commentCount: increment(1),
       }).catch((err) => console.error("Failed to bump comment count", err));
-      input.value = "";
-      errorEl.hidden = true;
-    } catch (err) {
-      console.error("Failed to post comment", err);
-      errorEl.textContent = "Something went wrong posting your comment.";
-      errorEl.hidden = false;
-    }
+    },
   });
 
   // Admin controls (only present in the DOM if state.isAdmin)
@@ -617,6 +610,7 @@ export async function initFeatureLab() {
   state.root = root;
   root.classList.add("bt-root");
   root.innerHTML = renderShell();
+  initRowSpotlight(root);
 
   root.querySelector("#fl-new-request").addEventListener("click", openSubmitModal);
 

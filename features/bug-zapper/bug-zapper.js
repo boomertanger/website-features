@@ -37,6 +37,8 @@ import {
 import { escapeHtml, formatDate, initials } from "../../shared/ui/dom.js";
 import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
+import { initRowSpotlight } from "../../shared/ui/effects.js";
+import { composerHtml, initComposer } from "../../shared/ui/composer.js";
 import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
 import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
@@ -69,6 +71,9 @@ const ROOT_ID = "bug-zapper-root";
 // not the real limit).
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
 const CLOUDINARY_UPLOAD_PRESET = "REPLACE_ME_bug_zapper_unsigned"; // <-- fill in
+
+// Matches the comments text.size() <= 1000 check in firestore.rules.
+const COMMENT_MAX_LENGTH = 1000;
 
 const MAX_ORIGINAL_FILE_BYTES = 15 * 1024 * 1024; // sanity cap before we even try to compress
 const COMPRESS_MAX_WIDTH = 1280;
@@ -459,8 +464,7 @@ function openSubmitModal() {
     feature: "bug-zapper",
     title: "Report a bug",
     content: `
-      ${modalHeader("Report a bug")}
-      <p class="bt-subtitle" style="margin:0">The more detail you give, the faster it gets fixed.</p>
+      ${modalHeader("Report a bug", "The more detail you give, the faster it gets fixed.")}
 
       <div class="bt-field">
         <label class="bt-label" for="bz-title-input">Title</label>
@@ -634,11 +638,7 @@ function openDetailModal(reportId) {
       <p class="bt-section-label">Private comments</p>
       <p class="bt-hint" style="margin:-4px 0 12px">Only visible to you and the reporter — no one else can see this thread.</p>
       <div id="bz-comments-list" class="bt-comments"></div>
-      <div class="bt-field" style="margin-top:var(--bt-space-3)">
-        <textarea id="bz-comment-input" class="bt-textarea" rows="2" maxlength="1000" placeholder="Reply..."></textarea>
-      </div>
-      <p id="bz-comment-error" class="bt-error" hidden></p>
-      <button type="button" id="bz-comment-post" class="bt-btn bt-btn--secondary" style="margin-top:var(--bt-space-2)">Post comment</button>
+      <div style="margin-top:var(--bt-space-3)">${composerHtml({ placeholder: "Reply…", maxLength: COMMENT_MAX_LENGTH, id: "bz-comment-input" })}</div>
     </div>`
     : "";
 
@@ -685,13 +685,18 @@ function openDetailModal(reportId) {
     feature: "bug-zapper",
     title: report.title,
     content: `
-      ${modalHeader(escapeHtml(report.title))}
-      <div class="bt-row-badges" style="gap:var(--bt-space-3)">
+      ${modalHeader(escapeHtml(report.title), `<span class="bt-meta">Reported by ${escapeHtml(report.reporterName)} on ${formatDate(report.createdAt)}</span>`)}
+      <div class="bt-row-badges">
         <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
         <span class="bt-badge bt-badge--${severity.tone}">${severity.label}</span>
       </div>
-      <p class="bt-meta">reported by ${escapeHtml(report.reporterName)} &middot; ${formatDate(report.createdAt)} &middot; ${escapeHtml(report.page)}</p>
       <p class="bt-meta" style="user-select:all;cursor:text" title="Click to select, then copy — this is what goes in another report's &quot;Duplicate of&quot; field">ID: ${escapeHtml(report.id)}</p>
+
+      ${report.page ? `
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Page</p>
+        <p class="bt-section-text">${escapeHtml(report.page)}</p>
+      </div>` : ""}
 
       <div class="bt-modal-section">
         <p class="bt-section-label">What happened</p>
@@ -785,33 +790,26 @@ function openDetailModal(reportId) {
       }
     );
 
-    modal.querySelector("#bz-comment-post").addEventListener("click", async () => {
-      const input = modal.querySelector("#bz-comment-input");
-      const errorEl = modal.querySelector("#bz-comment-error");
-      const text = input.value.trim();
-      if (text.length < 1 || text.length > 1000) {
-        errorEl.textContent = "Comment can't be empty.";
-        errorEl.hidden = false;
-        return;
-      }
-      try {
-        await addDoc(collection(db, "bugReports", reportId, "comments"), {
-          text,
-          authorId: state.uid ?? "",
-          authorName: state.memberName,
-          isAdminAuthor: state.isAdmin,
-          createdAt: serverTimestamp(),
-        });
+    // The composer owns the busy state, the empty/over-length guard and the
+    // error display; a thrown Error's message is what the member sees.
+    initComposer(modal.querySelector(".bt-composer"), {
+      onSubmit: async (text) => {
+        try {
+          await addDoc(collection(db, "bugReports", reportId, "comments"), {
+            text,
+            authorId: state.uid ?? "",
+            authorName: state.memberName,
+            isAdminAuthor: state.isAdmin,
+            createdAt: serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("Failed to post comment", err);
+          throw new Error("Something went wrong posting your comment.");
+        }
         await updateDoc(doc(db, "bugReports", reportId), {
           commentCount: increment(1),
         }).catch((err) => console.error("Failed to bump comment count", err));
-        input.value = "";
-        errorEl.hidden = true;
-      } catch (err) {
-        console.error("Failed to post comment", err);
-        errorEl.textContent = "Something went wrong posting your comment.";
-        errorEl.hidden = false;
-      }
+      },
     });
   }
 
@@ -906,6 +904,7 @@ export async function initBugZapper() {
   state.root = root;
   root.classList.add("bt-root");
   root.innerHTML = renderShell();
+  initRowSpotlight(root);
 
   root.querySelector("#bz-new-report").addEventListener("click", openSubmitModal);
 
