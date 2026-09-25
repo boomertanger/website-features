@@ -693,18 +693,27 @@ function activitySkeleton() {
   </div>`;
 }
 
+// Purges are logged against the item whose file was removed (Disk Stash
+// manual purge or the scheduled cleanup); details name the field and file.
+function purgeLabel(details = {}) {
+  const field = FIELD_NAMES[details.linkedField];
+  return field ? `${field[0].toUpperCase()}${field.slice(1)} file purged` : "File purged";
+}
+
 function activityListHtml(entries) {
   if (!entries.length) return `<p class="bt-meta">No admin activity yet.</p>`;
   return `<div class="bt-history">${entries
     .map((a) => {
       const fields = Object.keys(a.changes || {}).map((f) => FIELD_NAMES[f] || f);
-      const what = a.action === "edit" ? `Edited ${listJoin(fields) || "the report"}` : a.action === "delete" ? "Deleted" : "Purged a file";
+      const what = a.action === "edit" ? `Edited ${listJoin(fields) || "the report"}` : a.action === "delete" ? "Deleted" : purgeLabel(a.details);
+      const rule = a.action === "purge" ? a.details?.cleanupRule : null;
       return `
       <div class="bt-history-item">
         <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--blue"></span><span class="bt-history-rule"></span></div>
         <div class="bt-history-body">
           <div><strong style="font-weight:600">${escapeHtml(what)}</strong></div>
           ${a.reason ? `<div style="color:var(--bt-text-muted);margin-top:2px">Reason: ${escapeHtml(a.reason)}</div>` : ""}
+          ${rule ? `<div style="color:var(--bt-text-muted);margin-top:2px">Cleanup rule: ${escapeHtml(rule.matchField)} is ${escapeHtml(String(rule.matchValue))}, ${escapeHtml(String(rule.ageThresholdDays))}+ days</div>` : ""}
           <div class="bt-meta">${escapeHtml(a.actorName || "Admin")}, ${formatDate(a.createdAt)}</div>
         </div>
       </div>`;

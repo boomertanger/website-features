@@ -158,7 +158,7 @@ async function logExpireAt(db) {
 
 // feature: "bugZapper" | "featureLab" | "diskStash"; action: "edit" | "delete" | "purge".
 // actorUid null + actorName "Automatic" for scheduled actions.
-async function adminLogEntry(db, { feature, action, itemPath, itemTitle, actorUid, actorName, reason, changes, snapshot }) {
+async function adminLogEntry(db, { feature, action, itemPath, itemTitle, actorUid, actorName, reason, changes, snapshot, details }) {
   const entry = {
     feature,
     action,
@@ -172,6 +172,7 @@ async function adminLogEntry(db, { feature, action, itemPath, itemTitle, actorUi
   };
   if (changes) entry.changes = changes;
   if (snapshot) entry.snapshot = snapshot;
+  if (details) entry.details = details;
   return entry;
 }
 
@@ -330,9 +331,13 @@ async function cloudinaryDelete({ publicId, resourceType, cloudName, apiKey, api
 //   field no longer points at THIS asset (adminEditItem's replace, or its
 //   rollback), so the doc's current URL isn't wiped.
 // options.logActor: { uid, name } writes an adminLog "purge" entry (manual
-//   purges and the scheduled sweep; name "Automatic", uid null).
+//   purges and the scheduled sweep; name "Automatic", uid null). The entry
+//   is logged against the linked item (e.g. bugReports/abc123, so it shows
+//   in that item's Admin activity) when it still exists, else the file.
+// options.cleanupRule: the cleanupRules doc behind an automatic purge,
+//   recorded in the entry's details.
 async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
-  const { clearLinkedField = true, logActor = null } = options;
+  const { clearLinkedField = true, logActor = null, cleanupRule = null } = options;
   const db = admin.firestore();
   const assetRef = db.collection("externalAssets").doc(assetId);
   const assetSnap = await assetRef.get();
@@ -350,18 +355,18 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
     ...cloudinaryCreds,
   });
 
-  // Step 2: only now touch Firestore. set()+merge (not update()) on the
-  // linked doc so a linked doc that was independently deleted doesn't
-  // throw here — there's nothing left to orphan in that case anyway.
+  // Step 2: only now touch Firestore. The linked doc is read first and only
+  // updated if it still exists: a set()+merge on a doc that was deleted
+  // independently would re-create it as an empty document (e.g. a blank
+  // bug report in the list). If it's gone there's nothing left to orphan.
   const batch = db.batch();
   const { collection: linkedCollection, docId: linkedDocId, field: linkedField } =
     asset.linkedDoc || {};
-  if (clearLinkedField && linkedCollection && linkedDocId && linkedField) {
-    batch.set(
-      db.collection(linkedCollection).doc(linkedDocId),
-      { [linkedField]: admin.firestore.FieldValue.delete() },
-      { merge: true }
-    );
+  const linkedSnap = linkedCollection && linkedDocId
+    ? await db.collection(linkedCollection).doc(linkedDocId).get()
+    : null;
+  if (clearLinkedField && linkedSnap?.exists && linkedField) {
+    batch.update(linkedSnap.ref, { [linkedField]: admin.firestore.FieldValue.delete() });
   }
   batch.delete(assetRef);
   batch.set(
@@ -384,19 +389,37 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
   });
 
   if (logActor) {
+    let itemPath = `externalAssets/${assetId}`;
+    let itemTitle = asset.publicId;
+    if (linkedSnap?.exists) {
+      itemPath = `${linkedCollection}/${linkedDocId}`;
+      itemTitle = linkedSnap.get("title") || asset.publicId;
+    }
+    const details = {
+      assetId,
+      publicId: asset.publicId,
+      sizeBytes: asset.sizeBytes || 0,
+      assetFeature: asset.feature || "",
+      linkedField: linkedField || "",
+    };
+    if (cleanupRule) {
+      details.cleanupRule = {
+        id: cleanupRule.id,
+        collection: cleanupRule.collection || "",
+        matchField: cleanupRule.matchField || "",
+        matchValue: cleanupRule.matchValue ?? "",
+        ageField: cleanupRule.ageField || "",
+        ageThresholdDays: cleanupRule.ageThresholdDays ?? null,
+      };
+    }
     await writeAdminLog({
       feature: "diskStash",
       action: "purge",
-      itemPath: `externalAssets/${assetId}`,
-      itemTitle: asset.publicId,
+      itemPath,
+      itemTitle,
       actorUid: logActor.uid,
       actorName: logActor.name,
-      snapshot: {
-        publicId: asset.publicId,
-        feature: asset.feature || "",
-        linkedPath: linkedCollection && linkedDocId ? `${linkedCollection}/${linkedDocId}` : "",
-        sizeBytes: asset.sizeBytes || 0,
-      },
+      details,
     });
   }
 
@@ -840,7 +863,10 @@ exports.scheduledAssetCleanup = onSchedule(
 
         for (const assetDoc of assetsSnap.docs) {
           try {
-            await performAssetDeletion(assetDoc.id, creds, { logActor: { uid: null, name: "Automatic" } });
+            await performAssetDeletion(assetDoc.id, creds, {
+              logActor: { uid: null, name: "Automatic" },
+              cleanupRule: { id: ruleDoc.id, ...rule },
+            });
           } catch (err) {
             console.error(`scheduledAssetCleanup: failed to purge ${assetDoc.id}`, err);
             // Keep sweeping — one failure shouldn't stop the rest.

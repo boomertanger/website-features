@@ -427,15 +427,6 @@ section 5 (decided after the migration). New features must use it too.
   pre-migration code, where each feature had its own duplicate `--*-gray`
   var. The migration consolidated two duplicates into one; the duplication
   itself is still there.
-- **Feature Lab's delete only removes the parent doc.** `confirmAction()`'s
-  `onConfirm` in `features/feature-lab/feature-lab.js` (the detail modal's
-  delete handler) calls `deleteDoc()` on the `featureRequests` doc only —
-  its `comments` subcollection isn't cascade-deleted (Firestore doesn't do
-  that automatically) and is left orphaned. This is a known, documented
-  limitation (the confirm dialog's own message says so, and so does
-  `features/feature-lab/README.md`), not a bug, but it's still true and
-  worth knowing before anyone builds cleanup tooling for orphaned
-  subcollections.
 - **`updateAdminUi()` is still duplicated.** Bug Zapper
   (`features/bug-zapper/bug-zapper.js`) and Feature Lab
   (`features/feature-lab/feature-lab.js`) each define their own
