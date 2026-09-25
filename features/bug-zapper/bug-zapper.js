@@ -138,17 +138,10 @@ const SORT_OPTIONS = [
   { key: "mostBit", label: "Most bit me too'd" },
 ];
 
-const PAGE_OPTIONS = [
-  "boomertanger.com",
-  "boomertanger.tv",
-  "boomertanger.live",
-  "boomertanger.events",
-  "boomertanger.games",
-  "boomertanger.shop",
-  "boomertanger.club (Fan Club)",
-  "boomertanger.plus (Sub Club)",
-  "Not sure",
-];
+// Free text (a pasted URL or a feature name). Matches the page.size()
+// 1–300 check in firestore.rules. Older reports keep their original
+// dropdown values (e.g. "boomertanger.tv", "Not sure") and still display.
+const PAGE_MAX_LENGTH = 300;
 
 const SEVERITY_OPTIONS = [
   { value: "Cosmetic", label: "Cosmetic — small visual issue, doesn't block anything" },
@@ -473,9 +466,8 @@ function openSubmitModal() {
 
       <div class="bt-field">
         <label class="bt-label" for="bz-page-input">Which page or feature?</label>
-        <select id="bz-page-input" class="bt-select">
-          ${PAGE_OPTIONS.map((p) => `<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("")}
-        </select>
+        <input id="bz-page-input" class="bt-input" type="text" maxlength="${PAGE_MAX_LENGTH}" placeholder="e.g. www.boomertanger.com/live">
+        <span class="bt-hint">Paste the address of the page where it happened.</span>
       </div>
 
       <div class="bt-field">
@@ -529,7 +521,8 @@ function openSubmitModal() {
   modal.querySelector("#bz-submit").addEventListener("click", async () => {
     const titleInput = modal.querySelector("#bz-title-input");
     const title = titleInput.value.trim();
-    const page = modal.querySelector("#bz-page-input").value;
+    const pageInput = modal.querySelector("#bz-page-input");
+    const page = pageInput.value.trim().slice(0, PAGE_MAX_LENGTH);
     const whatHappened = modal.querySelector("#bz-what-input").value.trim();
     const expectedInstead = modal.querySelector("#bz-expected-input").value.trim();
     const stepsToReproduce = modal.querySelector("#bz-steps-input").value.trim();
@@ -544,6 +537,13 @@ function openSubmitModal() {
       return;
     }
     titleInput.removeAttribute("aria-invalid");
+    if (page.length < 1) {
+      pageInput.setAttribute("aria-invalid", "true");
+      errorEl.textContent = "Let us know which page or feature it happened on.";
+      errorEl.hidden = false;
+      return;
+    }
+    pageInput.removeAttribute("aria-invalid");
     if (whatHappened.length < 1) {
       errorEl.textContent = "Let us know what happened.";
       errorEl.hidden = false;

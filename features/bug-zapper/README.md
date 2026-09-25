@@ -105,7 +105,7 @@ Squarespace Header Code Injection, loaded once site-wide.
 | Field | Type | Set by |
 |---|---|---|
 | `title` | string | member, on create |
-| `page` | string | member, on create |
+| `page` | string (free text, 1–300 chars; older reports hold the former dropdown values) | member, on create |
 | `whatHappened` | string | member, on create |
 | `expectedInstead` | string | member, on create |
 | `stepsToReproduce` | string | member, on create |
