@@ -661,6 +661,63 @@
 .bt-root:not(#_) .bt-history-body { padding-bottom: var(--bt-space-4); font-size: var(--bt-text-base); }
 .bt-root:not(#_) .bt-history-body .bt-meta { margin-top: var(--bt-space-0h); }
 
+/* ================= Image thumbnails & lightbox ================= */
+
+/* Clickable preview inside dialogs (shared/ui/lightbox.js thumbHtml). */
+.bt-root:not(#_) .bt-thumb {
+  position: relative;
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: 1px solid var(--bt-border-2);
+  border-radius: var(--bt-radius-md);
+  background: var(--bt-bg);
+  overflow: hidden;
+  cursor: zoom-in;
+}
+.bt-root:not(#_) .bt-thumb img { display: block; width: 100%; max-height: 320px; object-fit: contain; }
+.bt-root:not(#_) .bt-thumb-hint {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: var(--bt-radius-full);
+  background: rgba(15, 15, 15, 0.82);
+  border: 1px solid var(--bt-border-2);
+  color: var(--bt-text);
+  font-size: var(--bt-text-sm);
+  font-weight: 600;
+  transition: background-color 0.15s, border-color 0.15s;
+}
+.bt-root:not(#_) .bt-thumb:hover .bt-thumb-hint, .bt-root:not(#_) .bt-thumb:focus-visible .bt-thumb-hint { background: var(--bt-primary); border-color: var(--bt-primary); }
+
+/* Full-screen viewer. Sits above the site header on purpose. */
+.bt-root:not(#_) .bt-lightbox {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: rgba(5, 4, 5, 0.94);
+  animation: bt-fade 0.15s ease-out;
+}
+.bt-root:not(#_) .bt-lightbox-bar { display: flex; align-items: center; justify-content: flex-end; gap: var(--bt-space-3); padding: var(--bt-space-3) var(--bt-space-4); flex: none; }
+.bt-root:not(#_) .bt-lightbox-link { font-size: var(--bt-text-md); font-weight: 600; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-lightbox-link:hover { color: var(--bt-text); }
+.bt-root:not(#_) .bt-lightbox-close {
+  width: 40px; height: 40px; border-radius: 50%;
+  display: inline-flex; align-items: center; justify-content: center;
+  background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text); cursor: pointer;
+}
+.bt-root:not(#_) .bt-lightbox-close:hover { background: var(--bt-border-2); }
+.bt-root:not(#_) .bt-lightbox-stage { flex: 1; min-height: 0; display: flex; align-items: center; justify-content: center; padding: 0 var(--bt-space-4); overflow: auto; }
+.bt-root:not(#_) .bt-lightbox-img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--bt-radius-sm); box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6); cursor: zoom-in; }
+.bt-root:not(#_) .bt-lightbox.is-zoomed .bt-lightbox-stage { align-items: flex-start; justify-content: flex-start; }
+.bt-root:not(#_) .bt-lightbox.is-zoomed .bt-lightbox-img { max-width: none; max-height: none; cursor: zoom-out; margin: auto; }
+.bt-root:not(#_) .bt-lightbox-tip { flex: none; text-align: center; font-size: var(--bt-text-sm); color: var(--bt-text-faint); padding: var(--bt-space-3) var(--bt-space-4) calc(var(--bt-space-4) + env(safe-area-inset-bottom, 0px)); }
+
 /* ================= Modal (portal) ================= */
 
 /* The portal is appended to <body> by modal.js and is its own container,

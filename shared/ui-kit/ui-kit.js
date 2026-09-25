@@ -7,6 +7,7 @@ import { confirmAction } from "../ui/confirm.js";
 import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../ui/admin-menu.js";
 import { initRowSpotlight } from "../ui/effects.js";
 import { composerHtml, initComposer } from "../ui/composer.js";
+import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
 
 const KIT_VERSION = "dev";
 
@@ -22,6 +23,22 @@ const ICON = {
   // like the real feature icons, to prove the top bar doesn't clip or shift.
   demo: '<svg class="kit-demo-icon" viewBox="0 0 32 32" overflow="visible" aria-hidden="true"><circle class="kit-pulse" cx="16" cy="16" r="6" fill="none" stroke="var(--bt-title)" stroke-width="1.5"></circle><path d="M16 3 L27 9.5 V22.5 L16 29 L5 22.5 V9.5 Z" fill="none" stroke="var(--bt-primary)" stroke-width="2" stroke-linejoin="round"></path><circle cx="16" cy="16" r="4.5" fill="var(--bt-title)"></circle></svg>',
 };
+
+
+// Demo screenshot: a fake page with small text, so enlarging it matters.
+const DEMO_SHOT = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="1000" viewBox="0 0 1600 1000">
+<rect width="1600" height="1000" fill="#0f0f0f"/><rect width="1600" height="90" fill="#151215"/>
+<text x="60" y="58" font-family="Arial" font-size="34" font-weight="700" fill="#ffa100">BOOMER<tspan fill="#f4f2ea">TANGER</tspan></text>
+<text x="1080" y="56" font-family="Arial" font-size="24" fill="#a89a9c">Watch    Live    Schedule    Shop</text>
+<rect x="60" y="140" width="1040" height="585" rx="10" fill="#1e1a1d"/><text x="480" y="440" font-family="Arial" font-size="40" fill="#332b2e">LIVE STREAM</text>
+<rect x="60" y="640" width="1040" height="60" fill="#000" opacity=".6"/><text x="140" y="680" font-family="Arial" font-size="26" fill="#fff">[Subtitles] Did you hear that? Something is in the basement...</text>
+<rect x="780" y="520" width="300" height="200" rx="8" fill="#241f22" stroke="#9146ff" stroke-width="3"/>
+<text x="800" y="560" font-family="Arial" font-size="20" fill="#c9a8ff">ChatOverlay v2.3</text>
+<text x="800" y="600" font-family="Arial" font-size="18" fill="#a89a9c">GrimTuesday: RUN</text><text x="800" y="630" font-family="Arial" font-size="18" fill="#a89a9c">HollowMoth: nope nope</text><text x="800" y="660" font-family="Arial" font-size="18" fill="#a89a9c">VeraCrane: subtitles hidden!</text>
+<rect x="1140" y="140" width="400" height="585" rx="10" fill="#1a1619"/><text x="1170" y="190" font-family="Arial" font-size="22" font-weight="700" fill="#f4f2ea">Up next</text>
+<text x="1170" y="240" font-family="Arial" font-size="18" fill="#786e70">Fri 9:00 PM  Resident Evil marathon</text><text x="1170" y="275" font-family="Arial" font-size="18" fill="#786e70">Sat 8:30 PM  Viewer picks</text>
+<text x="60" y="800" font-family="Arial" font-size="16" fill="#786e70">Console: TypeError: overlay.zIndex is undefined at chat-overlay.js:214:17</text>
+</svg>`);
 
 const STATUS = {
   submitted:    { label: "Submitted",    tone: "gray" },
@@ -354,6 +371,10 @@ function detailContent(r) {
       <p class="bt-section-label">Description</p>
       <p class="bt-section-text">${escapeHtml(r.desc)}</p>
     </div>
+    <div class="bt-modal-section">
+      <p class="bt-section-label">Screenshot</p>
+      ${thumbHtml({ src: DEMO_SHOT, alt: "Screenshot of the live page" })}
+    </div>
     ${state.admin ? adminPanelHtml(r) : ""}
     <div class="bt-modal-section">
       <p class="bt-section-label">Comments</p>
@@ -453,6 +474,7 @@ function openSubmit() {
 function openDetail(r) {
   const { modal, close } = openModal({ content: detailContent(r), wide: true, feature: "ui-kit" });
   initComposer(modal.querySelector(".bt-composer"), { onSubmit: () => new Promise((res) => setTimeout(res, 900)) });
+  initLightboxTriggers(modal);
   modal.querySelector("[data-kit-delete]")?.addEventListener("click", async () => {
     const ok = await confirmAction({
       title: "Delete this request?",

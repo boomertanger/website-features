@@ -39,6 +39,7 @@ import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
 import { initRowSpotlight } from "../../shared/ui/effects.js";
 import { composerHtml, initComposer } from "../../shared/ui/composer.js";
+import { thumbHtml, initLightboxTriggers, cloudinaryUrl } from "../../shared/ui/lightbox.js";
 import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
 import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
@@ -725,7 +726,12 @@ function openDetailModal(reportId) {
       ${report.screenshotUrl ? `
       <div class="bt-modal-section">
         <p class="bt-section-label">Screenshot</p>
-        <img src="${escapeHtml(report.screenshotUrl)}" alt="" style="max-width:100%;border-radius:var(--bt-radius-md);border:1px solid var(--bt-border);">
+        ${thumbHtml({
+          // Transformed at display time only; screenshotUrl stays as stored.
+          src: cloudinaryUrl(report.screenshotUrl, "w_900,c_limit,f_auto,q_auto"),
+          full: cloudinaryUrl(report.screenshotUrl, "f_auto,q_auto"),
+          alt: "Screenshot of the bug",
+        })}
       </div>` : ""}
 
       <div class="bz-metoo-row">
@@ -751,6 +757,8 @@ function openDetailModal(reportId) {
       if (unsubscribeComments) unsubscribeComments();
     },
   });
+
+  initLightboxTriggers(modal);
 
   const metooBtn = modal.querySelector("#bz-metoo-btn");
   metooBtn.addEventListener("click", async () => {

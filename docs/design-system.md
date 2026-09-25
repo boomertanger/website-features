@@ -222,6 +222,20 @@ box + button locked, button reads "Posting…". On error the message shows and
 the text is kept. Use the feature's existing comment length limit (from its
 firestore.rules) as `maxLength`.
 
+**Image thumbnails + lightbox.** Uploaded images in dialogs render with
+`thumbHtml({ src, full, alt })` (shared/ui/lightbox.js): a full-width,
+clickable preview (max 320px tall, `object-fit: contain`, never cropped) with
+a "Click to enlarge" chip that turns purple on hover. Clicking opens
+`openLightbox()`: a full-screen dark viewer above the site header, image fit
+to the screen; clicking the image toggles actual size (scrollable); "Open
+original" opens the file in a new tab; Escape, the close button, or clicking
+the dark area closes it (Escape closes only the lightbox, not the dialog
+underneath). Call `initLightboxTriggers(modalElement)` once per dialog.
+For Cloudinary images use `cloudinaryUrl(url, "w_900,c_limit,f_auto,q_auto")`
+for the thumbnail `src` and `cloudinaryUrl(url, "f_auto,q_auto")` for `full`
+(full resolution, efficient format). Never store transformed URLs; transform
+at display time only.
+
 **Dashboard (Disk Stash, Alert Center)**
 `.bt-body` (padded column) > cards and `.bt-columns` (2fr/1fr, stacks ≤ 1024px).
 `.bt-card [bt-card--divided]` > `.bt-card-head` (`.bt-card-title` + `.bt-card-meta` or a
@@ -245,6 +259,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | `admin-auth.js` | Extracted from the identical admin code in Bug Zapper and Feature Lab (see §7). |
 | `effects.js` | `initRowSpotlight(root)` — one delegated pointermove listener; sets `--bt-mx`/`--bt-my` on the hovered `.bt-row--clickable`. |
 | `composer.js` | `composerHtml(opts)`, `initComposer(el, { onSubmit, busyLabel })` → `{ focus, reset }` |
+| `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Disk Stash)
 
