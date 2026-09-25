@@ -463,12 +463,6 @@ function openSubmitModal() {
       </div>
 
       <div class="bt-field">
-        <label class="bt-label" for="bz-page-input">Which page or feature?</label>
-        <input id="bz-page-input" class="bt-input" type="text" maxlength="${PAGE_MAX_LENGTH}" placeholder="e.g. www.boomertanger.com/live">
-        <span class="bt-hint">Paste the address of the page where it happened.</span>
-      </div>
-
-      <div class="bt-field">
         <label class="bt-label" for="bz-what-input">What happened?</label>
         <textarea id="bz-what-input" class="bt-textarea" rows="3" maxlength="2000" placeholder="Describe what you saw."></textarea>
       </div>
@@ -476,6 +470,12 @@ function openSubmitModal() {
       <div class="bt-field">
         <label class="bt-label" for="bz-expected-input">What did you expect instead?</label>
         <textarea id="bz-expected-input" class="bt-textarea" rows="3" maxlength="2000" placeholder="Describe what should have happened."></textarea>
+      </div>
+
+      <div class="bt-field">
+        <label class="bt-label" for="bz-page-input">Which page or feature?</label>
+        <input id="bz-page-input" class="bt-input" type="text" maxlength="${PAGE_MAX_LENGTH}" placeholder="e.g. www.boomertanger.com/live">
+        <span class="bt-hint">Paste the address of the page where it happened.</span>
       </div>
 
       <div class="bt-field">
@@ -690,12 +690,6 @@ function openDetailModal(reportId) {
       </div>
       <p class="bt-meta" style="user-select:all;cursor:text" title="Click to select, then copy — this is what goes in another report's &quot;Duplicate of&quot; field">ID: ${escapeHtml(report.id)}</p>
 
-      ${report.page ? `
-      <div class="bt-modal-section">
-        <p class="bt-section-label">Page</p>
-        <p class="bt-section-text">${escapeHtml(report.page)}</p>
-      </div>` : ""}
-
       <div class="bt-modal-section">
         <p class="bt-section-label">What happened</p>
         <p class="bt-section-text">${escapeHtml(report.whatHappened)}</p>
@@ -705,6 +699,12 @@ function openDetailModal(reportId) {
       <div class="bt-modal-section">
         <p class="bt-section-label">Expected instead</p>
         <p class="bt-section-text">${escapeHtml(report.expectedInstead)}</p>
+      </div>` : ""}
+
+      ${report.page ? `
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Page</p>
+        <p class="bt-section-text">${escapeHtml(report.page)}</p>
       </div>` : ""}
 
       ${report.stepsToReproduce ? `
