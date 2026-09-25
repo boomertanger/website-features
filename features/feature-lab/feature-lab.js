@@ -410,7 +410,7 @@ function adminPanelHtml(request) {
         <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--primary">Save changes</button></div>
+      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin">Save changes</button></div>
     </div>`;
 }
 

@@ -216,7 +216,7 @@ function renderAssets() {
         <td><span class="bt-code">${escapeHtml(a.linkedDoc?.collection ?? "")}/${escapeHtml(a.linkedDoc?.docId ?? "")}</span></td>
         <td class="bt-muted">${formatAge(a.createdAt)}</td>
         <td class="bt-num bt-muted">${formatBytes(a.sizeBytes || 0)}</td>
-        <td class="bt-table-action"><button type="button" class="bt-btn bt-btn--sm bt-btn--danger-outline" data-purge="${a.id}">Purge</button></td>
+        <td class="bt-table-action"><button type="button" class="bt-btn bt-btn--sm bt-btn--danger" data-purge="${a.id}">Purge</button></td>
       </tr>
     `
     )
@@ -275,7 +275,7 @@ function renderRules() {
         <p id="ds-rule-error" class="bt-error" hidden></p>
         <div class="bt-form-actions">
           <button type="button" id="ds-cancel-rule" class="bt-btn bt-btn--sm bt-btn--secondary">Cancel</button>
-          <button type="submit" class="bt-btn bt-btn--sm bt-btn--primary">Save rule</button>
+          <button type="submit" class="bt-btn bt-btn--sm bt-btn--admin">Save rule</button>
         </div>
       </form>
     `
@@ -285,7 +285,7 @@ function renderRules() {
     <div class="bt-card">
       <div class="bt-card-head">
         <h2 class="bt-card-title">Cleanup rules</h2>
-        ${state.addingRule ? "" : `<button type="button" id="ds-add-rule-btn" class="bt-btn bt-btn--sm bt-btn--secondary">${PLUS_ICON}Add rule</button>`}
+        ${state.addingRule ? "" : `<button type="button" id="ds-add-rule-btn" class="bt-btn bt-btn--sm bt-btn--admin">${PLUS_ICON}Add rule</button>`}
       </div>
       ${items}
       ${addForm}

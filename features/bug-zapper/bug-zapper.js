@@ -676,7 +676,7 @@ function openDetailModal(reportId) {
         <textarea id="bz-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
       </div>
       <p id="bz-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--primary">Save changes</button></div>
+      <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin">Save changes</button></div>
     </div>`
     : "";
 
