@@ -7,33 +7,23 @@ too" confirmations instead of upvotes, real admin controls for status /
 priority / duplicate-linking. Visual design follows the Boomertanger
 logo palette — see FRONTEND CONVENTIONS note below.
 
-## Visual design — Boomertanger logo palette
+## Visual design
 
-This feature moved off the original single-red-accent look shared with
-Feature Lab / Disk Stash, to match the real Boomertanger logo. Exact
-values (pulled directly from the logo file, not eyeballed):
-
-| Role | Hex | CSS var |
-|---|---|---|
-| Background | `#0F0F0F` | `--bz-bg` |
-| Primary / interactive (buttons, links, focus states) | `#9146FF` | `--bz-primary` |
-| Page title accent | `#FFA100` | `--bz-title` |
-| Critical severity + admin danger states only | `#AE201B` | `--bz-accent` |
-| Body text | `#F4F2EA` | `--bz-text` |
-| Font (everywhere — display, body, and what used to be "mono" meta text) | Inter | — |
-
-Status pill colors (blue/amber/green for Open/In progress/Fixed, etc.)
-are functional UI state colors, not brand identity — they weren't
-changed and don't need to match the logo.
-
-**Next step, per the plan:** retrofit Feature Lab's and Disk Stash's
-CSS to this same palette so all three features look consistent. This
-table is the reference for that pass — no need to re-derive the colors.
+Built on the shared `bt-ui` kit (`shared/bt-ui.css`, `shared/ui/*.js`) — see
+`docs/design-system.md` for the full token/component reference and
+`CLAUDE.md` for the rules this feature follows. The Boomertanger logo
+palette (near-black ground, purple primary, gold titles, red reserved for
+Critical severity and admin-danger states) now lives once in the shared kit
+and applies to every feature, including Feature Lab and Disk Stash — this
+feature's own `bug-zapper.css` keeps only what's genuinely unique to it: the
+animated bolt/debris wordmark icon (one feature custom property, `--bz-bolt`,
+for the bolt's yellow) and the two dialog-only pieces (the screenshot
+dropzone, the "bit me too" row).
 
 ## Files in this feature
 
 - `bug-zapper.js` — client module, imported from the page's Code Block
-- `bug-zapper.css` — stylesheet, same dark theme tokens as Feature Lab / Disk Stash
+- `bug-zapper.css` — feature-specific styling only; everything shared lives in `shared/bt-ui.css`
 - `functions-addition.js` — paste into `functions/index.js` (see comments inside)
 - `firestore-rules-addition.txt` — paste into `firestore.rules` (see comments inside)
 
@@ -80,27 +70,35 @@ table is the reference for that pass — no need to re-derive the colors.
    the first time this specific rule shape runs — normal, just create the
    index via the link in the error and it'll work from then on.
 
-## Squarespace embed (bug-zapper page, Code Block)
+## Staging embed snippet (bug-zapper page, Code Block)
+
+Per `docs/design-system.md` §1 ("Until then (staging)"), each staging Code
+Block loads the shared kit and this feature's own files, in order, pinned to
+one commit SHA so the page never silently picks up an unfinished change:
 
 ```html
-<div id="bug-zapper-root"></div>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@dev/features/bug-zapper/bug-zapper.css">
-<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@dev/features/bug-zapper/bug-zapper.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/shared/bt-ui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/bug-zapper/bug-zapper.css">
+<div id="bug-zapper-root"></div>
+<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/bug-zapper/bug-zapper.js"></script>
 ```
 
-**Note:** earlier versions of this snippet were missing the Google Fonts
-`<link>` entirely — `bug-zapper.css` declared `font-family: "Space
-Grotesk"` etc. but nothing ever loaded them, so the page was silently
-falling back to the browser's default sans-serif this whole time. Now
-that the design has moved to Inter, this snippet actually loads it —
-if you already have this embedded on the `bug-zapper` page, replace the
-whole block, not just the two lines that reference the repo files.
+Replace `<sha>` in all three URLs with the current full commit SHA on `dev`
+(`git rev-parse HEAD`, or the snippet printed after the last push to `dev` —
+see `CLAUDE.md`'s "After every push to dev"). If this feature is already
+embedded on the `bug-zapper` page from before this migration, replace the
+whole block — the old snippet had no `shared/bt-ui.css` line at all, and
+`bug-zapper.css` no longer carries its own tokens or layout, so the page
+would otherwise render unstyled.
 
-Swap `@dev` for a pinned tag (e.g. `@v1.3.0`) when promoting to production,
-per the repo's normal release process.
+Swap `<sha>` for a pinned release tag (e.g. `@v2.0.0`) when promoting to
+production, per the repo's normal release process. After the first release,
+this feature's Code Block will only need its own two lines (`bug-zapper.css`
++ `bug-zapper.js`) — the Inter font links and `shared/bt-ui.css` move to
+Squarespace Header Code Injection, loaded once site-wide.
 
 ## Data model — `bugReports/{reportId}`
 
@@ -121,7 +119,7 @@ per the repo's normal release process.
 | `reporterName` | string | MemberSpace `memberInfo.name`, captured on create |
 | `meTooBy` | array of strings | members, one uid added/removed at a time (field name unchanged even though the UI now says "bit me too" — no schema/rules impact from the rename) |
 | `commentCount` | number | bumped by 1 whenever a comment is posted (via the `isCommentCountBump` narrow rule exception) — kept as a plain field, not derived, so the list view doesn't need to read every report's comments subcollection just to show a count |
-| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | admin only, appended via `arrayUnion` every time "Save changes" is clicked in the admin panel — one entry per save, using whatever status is currently selected (even if unchanged), same convention Feature Lab already uses |
+| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | seeded with one opening entry (`status: "Open"`) at report creation, so the History timeline always shows when a bug was first opened — then appended via `arrayUnion` every time an admin clicks "Save changes," one entry per save, using whatever status is currently selected (even if unchanged) |
 
 ### `bugReports/{reportId}/comments/{commentId}` (subcollection)
 
