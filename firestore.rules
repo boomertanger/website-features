@@ -49,7 +49,7 @@ service cloud.firestore {
     // calls this right after a successful comment create; if it fails the
     // comment still exists, just undercounted — not identity-verified,
     // same tradeoff as voting.
-    function isCommentCountBump() {
+    function isFeatureCommentCountBump() {
       let before = resource.data;
       let after = request.resource.data;
       return request.auth != null
@@ -142,7 +142,7 @@ service cloud.firestore {
         && request.resource.data.requesterId == resource.data.requesterId
         && request.resource.data.requesterName == resource.data.requesterName)
         || isSingleVoteToggle()
-        || isCommentCountBump();
+        || isFeatureCommentCountBump();
 
       // No client deletes, even for admins: deleteFeatureRequest (Cloud
       // Function, Admin SDK) is the only path, so a request's comments and
@@ -200,7 +200,7 @@ service cloud.firestore {
             || (removed.size() == 1 && removed.hasOnly([request.auth.uid]) && added.size() == 0));
     }
 
-    function isCommentCountBump() {
+    function isBugCommentCountBump() {
       let before = resource.data;
       let after = request.resource.data;
       return request.auth != null
@@ -262,7 +262,7 @@ service cloud.firestore {
       // bypasses these rules entirely) or cleared by Disk Stash's safe-delete
       // path, never directly by a client write.
       allow update: if isMeTooToggle()
-        || isCommentCountBump()
+        || isBugCommentCountBump()
         || (isAdmin()
             && request.resource.data.title == resource.data.title
             && request.resource.data.page == resource.data.page
