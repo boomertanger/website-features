@@ -2,7 +2,7 @@
 //
 // Renders into <div id="feature-lab-root"></div>. Import as a module
 // from the Squarespace Code Block — see the embed snippet in this
-// feature's README / kickoff notes.
+// feature's README.
 //
 // Security model (see /firestore.rules and /functions/index.js):
 // - Fan Club members: gated client-side by MemberSpace isLoggedIn(),
@@ -21,6 +21,11 @@ import {
   hasActivePlan,
   PLANS,
 } from "../../shared/memberspace-helper.js";
+import { escapeHtml, formatDate, initials } from "../../shared/ui/dom.js";
+import { openModal, modalHeader } from "../../shared/ui/modal.js";
+import { confirmAction } from "../../shared/ui/confirm.js";
+import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
+import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
   getFirestore,
   collection,
@@ -36,34 +41,48 @@ import {
   arrayRemove,
   increment,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
-import {
-  getAuth,
-  onAuthStateChanged,
-  signInAnonymously,
-  GoogleAuthProvider,
-  signInWithPopup,
-  signOut,
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import {
-  getFunctions,
-  httpsCallable,
-} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
+import { getFunctions } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 const ROOT_ID = "feature-lab-root";
 
+const WORDMARK_ICON = `
+  <svg viewBox="0 0 44 44" overflow="visible" aria-hidden="true">
+    <path d="M16 6H28" stroke="var(--bt-primary)" stroke-width="2.5" stroke-linecap="round"/>
+    <path d="M17.5 6V9L7 27.5C5.5 31 8 35 12 35H32C36 35 38.5 31 37 27.5L26.5 9V6" stroke="var(--bt-primary)" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M10.5 26.5L12 27.5H32L33.5 26.5C33.5 31 30 34 22 34C14 34 10.5 31 10.5 26.5Z" fill="var(--bt-primary)" fill-opacity="0.4"/>
+    <path d="M12 27.5H32" stroke="var(--bt-title)" stroke-width="2.5" stroke-linecap="round"/>
+    <circle class="fl-flask-bubble" cx="15" cy="7" r="2.2" fill="var(--bt-primary)"/>
+    <circle class="fl-flask-bubble" cx="22" cy="6" r="4" fill="var(--bt-title)"/>
+    <circle class="fl-flask-bubble" cx="28" cy="7.5" r="3" fill="var(--bt-primary)"/>
+    <circle class="fl-flask-bubble" cx="19" cy="3" r="3.6" fill="var(--bt-title)"/>
+    <circle class="fl-flask-bubble" cx="25" cy="2" r="2.4" fill="var(--bt-primary)"/>
+    <circle class="fl-flask-burst" cx="22" cy="6" r="4" stroke="var(--bt-title)" fill="none"/>
+    <circle class="fl-flask-burst" cx="19" cy="3" r="3.6" stroke="var(--bt-title)" fill="none" style="animation-delay:0.4s;"/>
+  </svg>`;
+
+const UP_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="18 15 12 9 6 15"></polyline></svg>';
+const PLUS_ICON =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+const TRASH_ICON =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+const COMMENT_ICON =
+  '<svg width="12" height="12" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><path d="M3 5.5C3 4.67157 3.67157 4 4.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12.5C17 13.3284 16.3284 14 15.5 14H8L4.5 17V14H4.5C3.67157 14 3 13.3284 3 12.5V5.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>';
+
 const STATUS_META = {
-  submitted: { label: "Submitted", color: "var(--fl-gray)", bg: "var(--fl-gray-bg)" },
-  under_review: { label: "Under review", color: "var(--fl-amber)", bg: "var(--fl-amber-bg)" },
-  planned: { label: "Planned", color: "var(--fl-blue)", bg: "var(--fl-blue-bg)" },
-  in_progress: { label: "In progress", color: "var(--fl-teal)", bg: "var(--fl-teal-bg)" },
-  shipped: { label: "Shipped", color: "var(--fl-green)", bg: "var(--fl-green-bg)" },
-  declined: { label: "Declined", color: "var(--fl-text-faint)", bg: "var(--fl-surface-2)" },
+  submitted: { label: "Submitted", tone: "gray" },
+  under_review: { label: "Under review", tone: "amber" },
+  planned: { label: "Planned", tone: "blue" },
+  in_progress: { label: "In progress", tone: "teal" },
+  shipped: { label: "Shipped", tone: "green" },
+  declined: { label: "Declined", tone: "gray" },
 };
 
 const PRIORITY_META = {
-  low: { label: "Low", color: "var(--fl-gray)", bg: "var(--fl-gray-bg)" },
-  medium: { label: "Medium", color: "var(--fl-amber)", bg: "var(--fl-amber-bg)" },
-  high: { label: "High", color: "var(--fl-critical)", bg: "var(--fl-critical-bg)" },
+  low: { label: "Low", tone: "gray" },
+  medium: { label: "Medium", tone: "amber" },
+  high: { label: "High", tone: "red" },
 };
 
 const FILTERS = [
@@ -85,6 +104,7 @@ const state = {
   requests: [],
   filter: "all",
   sort: "newest",
+  listStatus: "loading", // "loading" | "loaded" | "error"
   isAdmin: false,
   memberId: null,
   memberName: "Member",
@@ -92,99 +112,60 @@ const state = {
   unsubscribeRequests: null,
 };
 
-function escapeHtml(str) {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
-
-function initials(name) {
-  return String(name ?? "?")
-    .trim()
-    .split(/\s+/)
-    .map((p) => p[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-}
-
-function formatDate(value) {
-  if (!value) return "";
-  const d = value.toDate ? value.toDate() : new Date(value);
-  if (Number.isNaN(d.getTime())) return "";
-  return d.toLocaleDateString(undefined, { month: "short", day: "numeric" });
-}
-
 // ---------- Rendering ----------
 
 function renderShell() {
   return `
-    <div class="fl-wordmark-bar">
-      <div class="fl-wordmark-group">
-        <svg width="30" height="30" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" overflow="visible">
-          <path d="M16 6H28" stroke="#9146FF" stroke-width="2.5" stroke-linecap="round"/>
-          <path d="M17.5 6V9L7 27.5C5.5 31 8 35 12 35H32C36 35 38.5 31 37 27.5L26.5 9V6" stroke="#9146FF" stroke-width="2.5" stroke-linejoin="round"/>
-          <path d="M10.5 26.5L12 27.5H32L33.5 26.5C33.5 31 30 34 22 34C14 34 10.5 31 10.5 26.5Z" fill="#9146FF" fill-opacity="0.4"/>
-          <path d="M12 27.5H32" stroke="#FFA100" stroke-width="2.5" stroke-linecap="round"/>
-          <circle class="fl-flask-bubble" cx="15" cy="7" r="2.2" fill="#9146FF"/>
-          <circle class="fl-flask-bubble" cx="22" cy="6" r="4" fill="#FFA100"/>
-          <circle class="fl-flask-bubble" cx="28" cy="7.5" r="3" fill="#9146FF"/>
-          <circle class="fl-flask-bubble" cx="19" cy="3" r="3.6" fill="#FFA100"/>
-          <circle class="fl-flask-bubble" cx="25" cy="2" r="2.4" fill="#9146FF"/>
-          <circle class="fl-flask-burst" cx="22" cy="6" r="4" stroke="#FFA100" fill="none"/>
-          <circle class="fl-flask-burst" cx="19" cy="3" r="3.6" stroke="#FFA100" fill="none" style="animation-delay:0.4s;"/>
-        </svg>
-        <div class="fl-wordmark">FEATURE <span class="fl-wordmark-primary">LAB</span></div>
+    <div class="bt-topbar">
+      <div class="bt-wordmark">
+        <span class="bt-wordmark-icon">${WORDMARK_ICON}</span>
+        <span class="bt-wordmark-text">FEATURE <span class="bt-wordmark-accent">LAB</span></span>
       </div>
-      <div class="fl-topnav">
-        <button type="button" id="fl-admin-menu-toggle" class="fl-admin-menu-toggle">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
-        </button>
-        <div class="fl-admin-row" id="fl-admin-row">
-          <div class="fl-admin-section">
-            <div class="fl-admin-label">Admin access</div>
-            <button type="button" id="fl-admin-signin" class="fl-signin-btn fl-display" hidden>Sign in as Admin</button>
-          </div>
-          <div class="fl-admin-section">
-            <div class="fl-admin-label">Signed in as</div>
-            <span id="fl-admin-badge" class="fl-admin-pill" hidden><span class="fl-admin-pill-dot"></span>Admin</span>
-          </div>
-          <div class="fl-admin-section">
-            <button type="button" id="fl-admin-signout" class="fl-signout-row" hidden>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-              <span>Sign out</span>
-            </button>
+      <div class="bt-topnav">
+        <div class="bt-admin">
+          <button type="button" class="bt-admin-menu-toggle" aria-label="Admin menu" aria-expanded="false">${LOGIN_ICON}</button>
+          <div class="bt-admin-row">
+            <div class="bt-admin-section">
+              <span class="bt-admin-label">Admin access</span>
+              <button type="button" id="fl-admin-signin" class="bt-signin-btn" hidden>Sign in as Admin</button>
+            </div>
+            <div class="bt-admin-section">
+              <span class="bt-admin-label">Signed in as</span>
+              <span id="fl-admin-badge" class="bt-admin-pill" hidden><span class="bt-admin-pill-dot"></span>Admin</span>
+              <button type="button" id="fl-admin-signout" class="bt-signout-row" hidden>${SIGNOUT_ICON}<span>Sign out</span></button>
+            </div>
           </div>
         </div>
-        <button type="button" id="fl-new-request" class="fl-btn fl-btn-primary fl-display">+ New request</button>
+        <button type="button" id="fl-new-request" class="bt-btn bt-btn--primary" aria-label="New request">${PLUS_ICON}<span class="bt-btn-label">New request</span></button>
       </div>
     </div>
-    <div class="fl-header">
-      <h2 class="fl-title fl-display">Feature requests</h2>
-      <div class="fl-subtitle">Suggest ideas for the site or the stream, vote on your favorites, and track progress &mdash; all in one place.</div>
+    <div class="bt-header">
+      <h1 class="bt-title">Feature requests</h1>
+      <p class="bt-subtitle">Suggest ideas for the site or the stream, vote on your favorites, and track progress &mdash; all in one place.</p>
     </div>
-    <div class="fl-filters" id="fl-filters"></div>
-    <div class="fl-sort" id="fl-sort"></div>
-    <div class="fl-list" id="fl-list"></div>
-    <div id="fl-modal-slot"></div>
+    <div class="bt-filters" id="fl-filters"></div>
+    <div class="bt-sortbar" id="fl-sort"></div>
+    <div class="bt-list" id="fl-list"></div>
   `;
 }
 
 function renderLoggedOut() {
-  return `<div class="fl-logged-out">Log in as a Fan Club member to view and submit feature requests.</div>`;
+  return `
+    <div class="bt-logged-out">
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">FEATURE <span class="bt-wordmark-accent">LAB</span></span></div>
+      <h2 class="bt-logged-out-title">Feature requests are members-only</h2>
+      <p class="bt-logged-out-text">Log in with your free Fan Club membership to suggest ideas and vote on what gets built next.</p>
+    </div>
+  `;
 }
 
 function renderFilters() {
   const el = state.root.querySelector("#fl-filters");
   el.innerHTML = FILTERS.map((f) => {
     const count =
-      f.key === "all"
-        ? state.requests.length
-        : state.requests.filter((r) => r.status === f.key).length;
-    const active = state.filter === f.key ? "fl-active" : "";
-    return `<button type="button" class="fl-chip ${active}" data-filter="${f.key}">${f.label} &middot; ${count}</button>`;
+      f.key === "all" ? state.requests.length : state.requests.filter((r) => r.status === f.key).length;
+    const active = state.filter === f.key;
+    return `<button type="button" class="bt-chip ${active ? "is-active" : ""}" data-filter="${f.key}" aria-pressed="${active}">${f.label} &middot; ${count}</button>`;
   }).join("");
   el.querySelectorAll("[data-filter]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -198,9 +179,9 @@ function renderFilters() {
 function renderSort() {
   const el = state.root.querySelector("#fl-sort");
   el.innerHTML = `
-    <span class="fl-sort-label">Sort by</span>
-    <button type="button" class="fl-chip fl-chip-small ${state.sort === "newest" ? "fl-active" : ""}" data-sort="newest">Newest</button>
-    <button type="button" class="fl-chip fl-chip-small ${state.sort === "votes" ? "fl-active" : ""}" data-sort="votes">Most voted</button>
+    <span class="bt-sortbar-label">Sort by</span>
+    <button type="button" class="bt-chip bt-chip--small ${state.sort === "newest" ? "is-active" : ""}" data-sort="newest" aria-pressed="${state.sort === "newest"}">Newest</button>
+    <button type="button" class="bt-chip bt-chip--small ${state.sort === "votes" ? "is-active" : ""}" data-sort="votes" aria-pressed="${state.sort === "votes"}">Most voted</button>
   `;
   el.querySelectorAll("[data-sort]").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -233,122 +214,135 @@ async function toggleVote(requestId) {
   }
 }
 
+function skeletonRow() {
+  return `
+  <div class="bt-skeleton-row" aria-hidden="true">
+    <span class="bt-skeleton" style="width:52px;height:58px;border-radius:var(--bt-radius-md)"></span>
+    <div class="bt-skeleton-lines">
+      <span class="bt-skeleton" style="width:55%;height:16px"></span>
+      <span class="bt-skeleton" style="width:85%;height:12px"></span>
+      <span class="bt-skeleton" style="width:30%;height:12px"></span>
+    </div>
+  </div>`;
+}
+
+function rowHtml(r) {
+  const status = STATUS_META[r.status] ?? STATUS_META.submitted;
+  const priority = r.priority ? PRIORITY_META[r.priority] : null;
+  const voted = hasVoted(r);
+  return `
+  <div class="bt-row bt-row--clickable ${r.status === "declined" ? "bt-row--dimmed" : ""}" data-id="${r.id}" tabindex="0">
+    <button type="button" class="bt-tally ${voted ? "is-active" : ""}" data-vote-id="${r.id}" aria-pressed="${voted}" aria-label="${voted ? "Remove your vote" : "Vote for this request"}">
+      ${UP_ICON}<span class="bt-tally-count">${voteCount(r)}</span><span class="bt-tally-label">votes</span>
+    </button>
+    <div class="bt-row-body">
+      <div class="bt-row-title">${escapeHtml(r.title)}</div>
+      <div class="bt-row-desc">${escapeHtml(r.description)}</div>
+      <div class="bt-row-meta"><span class="bt-avatar">${initials(r.requesterName)}</span><span>${escapeHtml(r.requesterName)}</span></div>
+    </div>
+    <div class="bt-row-side">
+      <div class="bt-row-badges">
+        ${priority ? `<span class="bt-badge bt-badge--${priority.tone}">${priority.label}</span>` : ""}
+        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
+      </div>
+      ${r.commentCount > 0 ? `<span class="bt-count">${COMMENT_ICON}${r.commentCount}</span>` : ""}
+      <span class="bt-row-date">${formatDate(r.createdAt)}</span>
+    </div>
+  </div>`;
+}
 
 function renderList() {
   const el = state.root.querySelector("#fl-list");
-  let items =
-    state.filter === "all"
-      ? state.requests
-      : state.requests.filter((r) => r.status === state.filter);
 
+  if (state.listStatus === "loading") {
+    el.setAttribute("aria-busy", "true");
+    el.innerHTML = skeletonRow() + skeletonRow() + skeletonRow();
+    return;
+  }
+  el.removeAttribute("aria-busy");
+
+  if (state.listStatus === "error") {
+    el.innerHTML = `<div class="bt-empty"><p class="bt-empty-title">Couldn't load requests</p><p>Check your connection, then refresh the page.</p></div>`;
+    return;
+  }
+
+  let items =
+    state.filter === "all" ? state.requests : state.requests.filter((r) => r.status === state.filter);
   if (state.sort === "votes") {
     items = [...items].sort((a, b) => voteCount(b) - voteCount(a));
   }
 
   if (items.length === 0) {
-    el.innerHTML = `<div class="fl-empty">No requests here yet.</div>`;
+    el.innerHTML = `<div class="bt-empty"><p class="bt-empty-title">No requests here yet</p><p>Be the first to suggest one.</p></div>`;
     return;
   }
 
-  el.innerHTML = items
-    .map((r) => {
-      const status = STATUS_META[r.status] ?? STATUS_META.submitted;
-      const priority = r.priority ? PRIORITY_META[r.priority] : null;
-      const declinedClass = r.status === "declined" ? "fl-declined" : "";
-      const voted = hasVoted(r);
-      return `
-      <div class="fl-row ${declinedClass} fl-clickable" data-id="${r.id}">
-        <div class="fl-row-top" style="display:flex;align-items:flex-start;gap:16px;flex-grow:1;min-width:0;">
-          <button type="button" class="fl-vote-btn ${voted ? "fl-voted" : ""}" data-vote-id="${r.id}" aria-label="${voted ? "Remove your vote" : "Vote for this request"}">
-            <span class="fl-vote-arrow">&#9650;</span>
-            <span class="fl-vote-count">${voteCount(r)}</span>
-          </button>
-          <div class="fl-dot" style="background:${status.color};margin-top:6px;"></div>
-          <div class="fl-row-body">
-            <div class="fl-row-title fl-display">${escapeHtml(r.title)}</div>
-            <div class="fl-row-desc">${escapeHtml(r.description)}</div>
-          </div>
-        </div>
-        <div class="fl-row-meta" style="display:flex;align-items:center;gap:16px;">
-          <div class="fl-row-badges" style="display:flex;gap:6px;">
-            ${priority ? `<span class="fl-badge" style="color:${priority.color};background:${priority.bg};">${priority.label}</span>` : `<span class="fl-badge fl-badge-neutral">&mdash;</span>`}
-            <span class="fl-badge" style="color:${status.color};background:${status.bg};">${status.label}</span>
-            ${r.commentCount > 0 ? `<span class="fl-comment-badge" title="${r.commentCount} comment${r.commentCount === 1 ? "" : "s"}"><svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M3 5.5C3 4.67157 3.67157 4 4.5 4H15.5C16.3284 4 17 4.67157 17 5.5V12.5C17 13.3284 16.3284 14 15.5 14H8L4.5 17V14H4.5C3.67157 14 3 13.3284 3 12.5V5.5Z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>${r.commentCount}</span>` : ""}
-          </div>
-          <div class="fl-avatar" title="${escapeHtml(r.requesterName)}">${initials(r.requesterName)}</div>
-          <div class="fl-row-date">${formatDate(r.createdAt)}</div>
-        </div>
-      </div>`;
-    })
-    .join("");
+  el.innerHTML = items.map(rowHtml).join("");
 
-  el.querySelectorAll(".fl-vote-btn").forEach((btn) => {
+  el.querySelectorAll(".bt-tally").forEach((btn) => {
     btn.addEventListener("click", (e) => {
       e.stopPropagation();
       toggleVote(btn.dataset.voteId);
     });
   });
 
-  el.querySelectorAll(".fl-row").forEach((row) => {
+  el.querySelectorAll(".bt-row").forEach((row) => {
     row.addEventListener("click", () => openDetailModal(row.dataset.id));
+    row.addEventListener("keydown", (e) => {
+      if (e.target === row && (e.key === "Enter" || e.key === " ")) {
+        e.preventDefault();
+        openDetailModal(row.dataset.id);
+      }
+    });
   });
 }
 
 // ---------- Submit modal ----------
 
 function openSubmitModal() {
-  const slot = state.root.querySelector("#fl-modal-slot");
-  slot.innerHTML = `
-    <div class="fl-modal-backdrop" id="fl-submit-backdrop">
-      <div class="fl-modal">
-        <div>
-          <div class="fl-eyebrow">New request</div>
-          <h3 class="fl-title fl-display" style="font-size:22px;">What should we build?</h3>
-          <div class="fl-subtitle">Visible to the whole Fan Club once submitted.</div>
-        </div>
-        <div class="fl-field">
-          <label class="fl-label" for="fl-title-input">Title</label>
-          <input id="fl-title-input" class="fl-input" type="text" maxlength="200" placeholder="e.g. A countdown timer for movie nights">
-          <div class="fl-hint">3&ndash;200 characters</div>
-        </div>
-        <div class="fl-field">
-          <label class="fl-label" for="fl-desc-input">Description (required)</label>
-          <textarea id="fl-desc-input" class="fl-textarea" rows="5" maxlength="2000" placeholder="Describe the idea — what should it do?"></textarea>
-          <div class="fl-hint">10&ndash;2,000 characters</div>
-        </div>
-        <div id="fl-submit-error" class="fl-error" hidden></div>
-        <div class="fl-modal-actions">
-          <button type="button" id="fl-cancel" class="fl-btn fl-btn-secondary fl-display">Cancel</button>
-          <button type="button" id="fl-submit" class="fl-btn fl-btn-primary fl-display">Submit request</button>
-        </div>
+  const { modal, close } = openModal({
+    feature: "feature-lab",
+    title: "New request",
+    content: `
+      ${modalHeader("New request")}
+      <div class="bt-field">
+        <label class="bt-label" for="fl-title-input">Title</label>
+        <input id="fl-title-input" class="bt-input" type="text" maxlength="200" placeholder="e.g. A countdown timer for movie nights" autofocus>
+        <span class="bt-hint">3&ndash;200 characters</span>
       </div>
-    </div>
-  `;
-
-  const close = () => {
-    slot.innerHTML = "";
-  };
-
-  slot.querySelector("#fl-submit-backdrop").addEventListener("click", (e) => {
-    if (e.target.id === "fl-submit-backdrop") close();
+      <div class="bt-field">
+        <label class="bt-label" for="fl-desc-input">Description (required)</label>
+        <textarea id="fl-desc-input" class="bt-textarea" rows="5" maxlength="2000" placeholder="Describe the idea — what should it do?"></textarea>
+        <span class="bt-hint">10&ndash;2,000 characters</span>
+      </div>
+      <p id="fl-submit-error" class="bt-error" hidden></p>
+      <div class="bt-modal-actions">
+        <button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button>
+        <button type="button" id="fl-submit" class="bt-btn bt-btn--primary">Submit request</button>
+      </div>`,
   });
-  slot.querySelector("#fl-cancel").addEventListener("click", close);
 
-  slot.querySelector("#fl-submit").addEventListener("click", async () => {
-    const title = slot.querySelector("#fl-title-input").value.trim();
-    const description = slot.querySelector("#fl-desc-input").value.trim();
-    const errorEl = slot.querySelector("#fl-submit-error");
+  modal.querySelector("#fl-submit").addEventListener("click", async () => {
+    const titleInput = modal.querySelector("#fl-title-input");
+    const descInput = modal.querySelector("#fl-desc-input");
+    const title = titleInput.value.trim();
+    const description = descInput.value.trim();
+    const errorEl = modal.querySelector("#fl-submit-error");
 
     if (title.length < 3 || title.length > 200) {
+      titleInput.setAttribute("aria-invalid", "true");
       errorEl.textContent = "Title needs to be 3–200 characters.";
       errorEl.hidden = false;
       return;
     }
+    titleInput.removeAttribute("aria-invalid");
     if (description.length < 10 || description.length > 2000) {
+      descInput.setAttribute("aria-invalid", "true");
       errorEl.textContent = "Description needs to be 10–2,000 characters.";
       errorEl.hidden = false;
       return;
     }
+    descInput.removeAttribute("aria-invalid");
 
     try {
       await addDoc(collection(db, "featureRequests"), {
@@ -381,122 +375,105 @@ function openSubmitModal() {
 
 // ---------- Detail modal (description, comments, admin controls, history) ----------
 
+function adminPanelHtml(request) {
+  return `
+    <div class="bt-admin-panel">
+      <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
+      <div class="bt-form-grid">
+        <div class="bt-field">
+          <label class="bt-label" for="fl-status-select">Status</label>
+          <select id="fl-status-select" class="bt-select">
+            ${Object.entries(STATUS_META)
+              .map(([key, m]) => `<option value="${key}" ${request.status === key ? "selected" : ""}>${m.label}</option>`)
+              .join("")}
+          </select>
+        </div>
+        <div class="bt-field">
+          <label class="bt-label" for="fl-priority-select">Priority</label>
+          <select id="fl-priority-select" class="bt-select">
+            <option value="" ${!request.priority ? "selected" : ""}>&mdash;</option>
+            ${Object.entries(PRIORITY_META)
+              .map(([key, m]) => `<option value="${key}" ${request.priority === key ? "selected" : ""}>${m.label}</option>`)
+              .join("")}
+          </select>
+        </div>
+      </div>
+      <div class="bt-field">
+        <label class="bt-label" for="fl-note-input">Note (optional, added to history)</label>
+        <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
+      </div>
+      <p id="fl-admin-error" class="bt-error" hidden></p>
+      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--primary">Save changes</button></div>
+    </div>`;
+}
+
+function historyHtml(history) {
+  if (history.length === 0) return `<p class="bt-meta">No history yet.</p>`;
+  return `<div class="bt-history">${history
+    .map((h) => {
+      const meta = STATUS_META[h.status] ?? STATUS_META.submitted;
+      return `
+      <div class="bt-history-item">
+        <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--${meta.tone}"></span><span class="bt-history-rule"></span></div>
+        <div class="bt-history-body">
+          <div><strong style="font-weight:600">${meta.label}</strong> &middot; ${escapeHtml(h.changedBy)}</div>
+          ${h.note ? `<div style="color:var(--bt-text-muted);margin-top:2px">${escapeHtml(h.note)}</div>` : ""}
+          <div class="bt-meta">${formatDate(h.changedAt)}</div>
+        </div>
+      </div>`;
+    })
+    .join("")}</div>`;
+}
+
 function openDetailModal(requestId) {
   const request = state.requests.find((r) => r.id === requestId);
   if (!request) return;
 
   const status = STATUS_META[request.status] ?? STATUS_META.submitted;
   const priority = request.priority ? PRIORITY_META[request.priority] : null;
-  const slot = state.root.querySelector("#fl-modal-slot");
   const history = [...(request.statusHistory ?? [])].reverse();
   let unsubscribeComments = null;
 
-  const adminControlsHtml = state.isAdmin
-    ? `
-        <div class="fl-admin-panel">
-          <span class="fl-admin-only-badge"><svg width="18" height="18" viewBox="0 0 24 24" fill="#3ba86b" stroke="none"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>Admin only</span>
-          <div style="display:flex;gap:16px;flex-wrap:wrap;">
-            <div class="fl-field" style="flex:1;min-width:160px;">
-              <label class="fl-label" for="fl-status-select">Status</label>
-              <select id="fl-status-select" class="fl-select">
-                ${Object.entries(STATUS_META)
-                  .map(
-                    ([key, m]) =>
-                      `<option value="${key}" ${request.status === key ? "selected" : ""}>${m.label}</option>`
-                  )
-                  .join("")}
-              </select>
-            </div>
-            <div class="fl-field" style="flex:1;min-width:160px;">
-              <label class="fl-label" for="fl-priority-select">Priority</label>
-              <select id="fl-priority-select" class="fl-select">
-                <option value="" ${!request.priority ? "selected" : ""}>&mdash;</option>
-                ${Object.entries(PRIORITY_META)
-                  .map(
-                    ([key, m]) =>
-                      `<option value="${key}" ${request.priority === key ? "selected" : ""}>${m.label}</option>`
-                  )
-                  .join("")}
-              </select>
-            </div>
-          </div>
-          <div class="fl-field">
-            <label class="fl-label" for="fl-note-input">Note (optional, added to history)</label>
-            <textarea id="fl-note-input" class="fl-textarea" rows="2" maxlength="500"></textarea>
-          </div>
-          <div id="fl-admin-error" class="fl-error" hidden></div>
-          <div style="display:flex;justify-content:space-between;align-items:center;">
-            <button type="button" id="fl-admin-save" class="fl-btn fl-btn-primary fl-display">Save changes</button>
-            <button type="button" id="fl-admin-delete" class="fl-btn fl-btn-critical fl-display">Delete request</button>
-          </div>
-        </div>`
-    : "";
-
-  slot.innerHTML = `
-    <div class="fl-modal-backdrop" id="fl-detail-backdrop">
-      <div class="fl-modal fl-modal-wide">
-        <div class="fl-detail-header">
-          <div class="fl-detail-heading">
-            <h3 class="fl-title fl-display" style="font-size:22px;">${escapeHtml(request.title)}</h3>
-            <span class="fl-detail-pills">
-              <span class="fl-badge" style="color:${status.color};background:${status.bg};">${status.label}</span>
-              ${priority ? `<span class="fl-badge" style="color:${priority.color};background:${priority.bg};">${priority.label}</span>` : ""}
-            </span>
-          </div>
-          <button type="button" id="fl-detail-close" class="fl-close-btn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-          </button>
-        </div>
-
-        <p style="margin:0;font-size:15px;line-height:1.6;color:var(--fl-text);">${escapeHtml(request.description)}</p>
-
-        <div>
-          <div class="fl-label" style="margin-bottom:12px;">Comments</div>
-          <div id="fl-comments-list" style="display:flex;flex-direction:column;gap:12px;margin-bottom:14px;"></div>
-          <div class="fl-field">
-            <textarea id="fl-comment-input" class="fl-textarea" rows="2" maxlength="1000" placeholder="Ask a question or add context&hellip;"></textarea>
-          </div>
-          <div id="fl-comment-error" class="fl-error" hidden></div>
-          <button type="button" id="fl-comment-post" class="fl-btn fl-btn-secondary fl-display" style="margin-top:8px;">Post comment</button>
-        </div>
-
-        ${adminControlsHtml}
-
-        <div>
-          <div class="fl-label" style="margin-bottom:12px;">History</div>
-          ${history
-            .map((h, i) => {
-              const meta = STATUS_META[h.status] ?? STATUS_META.submitted;
-              const isLast = i === history.length - 1;
-              return `
-              <div class="fl-history-item">
-                <div class="fl-history-line">
-                  <div class="fl-history-dot" style="background:${meta.color};"></div>
-                  ${isLast ? "" : `<div class="fl-history-rule"></div>`}
-                </div>
-                <div style="padding-bottom:16px;">
-                  <div style="font-size:14px;"><strong>${meta.label}</strong> &middot; ${escapeHtml(h.changedBy)}</div>
-                  <div style="font-size:13px;color:var(--fl-text-faint);margin-top:2px;">${formatDate(h.changedAt)}${h.note ? ` &mdash; "${escapeHtml(h.note)}"` : ""}</div>
-                </div>
-              </div>`;
-            })
-            .join("")}
-        </div>
+  const { modal, close } = openModal({
+    wide: true,
+    feature: "feature-lab",
+    title: request.title,
+    content: `
+      ${modalHeader(escapeHtml(request.title))}
+      <div class="bt-row-badges" style="gap:var(--bt-space-3)">
+        <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
+        ${priority ? `<span class="bt-badge bt-badge--${priority.tone}">${priority.label}</span>` : ""}
+        <span class="bt-meta">Requested by ${escapeHtml(request.requesterName)} on ${formatDate(request.createdAt)}</span>
       </div>
-    </div>
-  `;
-
-  const close = () => {
-    if (unsubscribeComments) unsubscribeComments();
-    slot.innerHTML = "";
-  };
-  slot.querySelector("#fl-detail-backdrop").addEventListener("click", (e) => {
-    if (e.target.id === "fl-detail-backdrop") close();
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Description</p>
+        <p class="bt-section-text">${escapeHtml(request.description)}</p>
+      </div>
+      ${state.isAdmin ? adminPanelHtml(request) : ""}
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Comments</p>
+        <div id="fl-comments-list" class="bt-comments"></div>
+        <div class="bt-field" style="margin-top:var(--bt-space-3)">
+          <textarea id="fl-comment-input" class="bt-textarea" rows="2" maxlength="1000" placeholder="Ask a question or add context&hellip;"></textarea>
+        </div>
+        <p id="fl-comment-error" class="bt-error" hidden></p>
+        <button type="button" id="fl-comment-post" class="bt-btn bt-btn--secondary" style="margin-top:var(--bt-space-2)">Post comment</button>
+      </div>
+      <div class="bt-modal-section">
+        <p class="bt-section-label">History</p>
+        ${historyHtml(history)}
+      </div>
+      <div class="bt-modal-actions">
+        ${state.isAdmin ? `<button type="button" id="fl-admin-delete" class="bt-btn bt-btn--danger">${TRASH_ICON}Delete request</button>` : ""}
+        <button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>
+      </div>`,
+    onClose: () => {
+      if (unsubscribeComments) unsubscribeComments();
+    },
   });
-  slot.querySelector("#fl-detail-close").addEventListener("click", close);
 
   // Live comment thread
-  const commentsList = slot.querySelector("#fl-comments-list");
+  const commentsList = modal.querySelector("#fl-comments-list");
   const commentsQuery = query(
     collection(db, "featureRequests", requestId, "comments"),
     orderBy("createdAt", "asc")
@@ -506,32 +483,32 @@ function openDetailModal(requestId) {
     (snapshot) => {
       const comments = snapshot.docs.map((d) => d.data());
       if (comments.length === 0) {
-        commentsList.innerHTML = `<div style="font-size:13px;color:var(--fl-text-faint);">No comments yet.</div>`;
+        commentsList.innerHTML = `<p class="bt-meta">No comments yet.</p>`;
         return;
       }
       commentsList.innerHTML = comments
         .map(
           (c) => `
-        <div class="fl-comment">
-          <div style="display:flex;align-items:center;gap:8px;">
-            <span style="font-size:13px;font-weight:600;">${escapeHtml(c.authorName)}</span>
-            ${c.isAdminAuthor ? `<span class="fl-badge" style="color:var(--fl-primary);background:var(--fl-primary-bg);padding:2px 8px;font-size:10px;">Admin</span>` : ""}
-            <span style="font-size:12px;color:var(--fl-text-faint);">${formatDate(c.createdAt)}</span>
+        <div class="bt-comment">
+          <div class="bt-comment-head">
+            <span class="bt-comment-author">${escapeHtml(c.authorName)}</span>
+            ${c.isAdminAuthor ? `<span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Admin</span>` : ""}
+            <span class="bt-comment-time">${formatDate(c.createdAt)}</span>
           </div>
-          <div style="font-size:14px;color:var(--fl-text);margin-top:4px;line-height:1.5;">${escapeHtml(c.text)}</div>
+          <p class="bt-comment-text">${escapeHtml(c.text)}</p>
         </div>`
         )
         .join("");
     },
     (err) => {
       console.error("Failed to load comments", err);
-      commentsList.innerHTML = `<div style="font-size:13px;color:var(--fl-text-faint);">Couldn't load comments.</div>`;
+      commentsList.innerHTML = `<p class="bt-meta">Couldn't load comments.</p>`;
     }
   );
 
-  slot.querySelector("#fl-comment-post").addEventListener("click", async () => {
-    const input = slot.querySelector("#fl-comment-input");
-    const errorEl = slot.querySelector("#fl-comment-error");
+  modal.querySelector("#fl-comment-post").addEventListener("click", async () => {
+    const input = modal.querySelector("#fl-comment-input");
+    const errorEl = modal.querySelector("#fl-comment-error");
     const text = input.value.trim();
     if (text.length < 1 || text.length > 1000) {
       errorEl.textContent = "Comment can't be empty.";
@@ -559,13 +536,13 @@ function openDetailModal(requestId) {
   });
 
   // Admin controls (only present in the DOM if state.isAdmin)
-  const saveBtn = slot.querySelector("#fl-admin-save");
+  const saveBtn = modal.querySelector("#fl-admin-save");
   if (saveBtn) {
     saveBtn.addEventListener("click", async () => {
-      const status = slot.querySelector("#fl-status-select").value;
-      const priority = slot.querySelector("#fl-priority-select").value || null;
-      const note = slot.querySelector("#fl-note-input").value.trim();
-      const errorEl = slot.querySelector("#fl-admin-error");
+      const status = modal.querySelector("#fl-status-select").value;
+      const priority = modal.querySelector("#fl-priority-select").value || null;
+      const note = modal.querySelector("#fl-note-input").value.trim();
+      const errorEl = modal.querySelector("#fl-admin-error");
 
       const historyEntry = {
         status,
@@ -590,22 +567,20 @@ function openDetailModal(requestId) {
     });
   }
 
-  const deleteBtn = slot.querySelector("#fl-admin-delete");
+  const deleteBtn = modal.querySelector("#fl-admin-delete");
   if (deleteBtn) {
     deleteBtn.addEventListener("click", async () => {
-      const confirmed = window.confirm(
-        `Delete "${request.title}"? This can't be undone. (Its comments will remain in the database, orphaned — a known limitation, not something this deletes for you.)`
-      );
-      if (!confirmed) return;
-      try {
-        await deleteDoc(doc(db, "featureRequests", requestId));
-        close();
-      } catch (err) {
-        console.error("Failed to delete request", err);
-        const errorEl = slot.querySelector("#fl-admin-error");
-        errorEl.textContent = "Couldn't delete — you may need to sign in again.";
-        errorEl.hidden = false;
-      }
+      const ok = await confirmAction({
+        title: "Delete this request?",
+        message: `"${request.title}" will be removed. Its comments will remain in the database, orphaned — a known limitation, not something this deletes for you.`,
+        confirmLabel: "Delete request",
+        busyLabel: "Deleting…",
+        feature: "feature-lab",
+        onConfirm: async () => {
+          await deleteDoc(doc(db, "featureRequests", requestId));
+        },
+      });
+      if (ok) close();
     });
   }
 }
@@ -619,92 +594,16 @@ function subscribeToRequests() {
     q,
     (snapshot) => {
       state.requests = snapshot.docs.map((d) => ({ id: d.id, ...d.data() }));
+      state.listStatus = "loaded";
       renderFilters();
       renderList();
     },
     (err) => {
       console.error("Failed to load feature requests", err);
-      state.root.querySelector("#fl-list").innerHTML =
-        `<div class="fl-empty">Couldn't load requests right now. Try refreshing.</div>`;
+      state.listStatus = "error";
+      renderList();
     }
   );
-}
-
-// ---------- Auth ----------
-
-async function handleAdminSignIn() {
-  const provider = new GoogleAuthProvider();
-  try {
-    await signInWithPopup(auth, provider);
-    await syncAdmin();
-  } catch (err) {
-    console.error("Admin sign-in failed", err);
-  }
-}
-
-async function handleAdminSignOut() {
-  try {
-    await signOut(auth);
-    state.isAdmin = false;
-    updateAdminUi();
-    renderList();
-  } catch (err) {
-    console.error("Admin sign-out failed", err);
-  }
-}
-
-async function syncAdmin() {
-  try {
-    const syncAdminStatus = httpsCallable(functions, "syncAdminStatus");
-    const result = await syncAdminStatus();
-    state.isAdmin = !!result.data?.isAdmin;
-  } catch (err) {
-    console.error("Failed to sync admin status", err);
-    state.isAdmin = false;
-  }
-  updateAdminUi();
-  renderList();
-}
-
-function updateAdminUi() {
-  const signinBtn = state.root.querySelector("#fl-admin-signin");
-  const badge = state.root.querySelector("#fl-admin-badge");
-  const signoutBtn = state.root.querySelector("#fl-admin-signout");
-  const menuToggle = state.root.querySelector("#fl-admin-menu-toggle");
-  if (!signinBtn || !badge || !signoutBtn || !menuToggle) return;
-  const hasAnythingToShow = state.isAdmin || hasActivePlan(PLANS.ADMIN);
-  signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
-  badge.hidden = !state.isAdmin;
-  signoutBtn.hidden = !state.isAdmin;
-  // The mobile trigger itself must also hide when there's nothing eligible
-  // to show inside it — otherwise a non-admin member gets a dropdown
-  // button that opens onto an empty panel.
-  menuToggle.hidden = !hasAnythingToShow;
-  // Lets mobile CSS give the wordmark full desktop size when the trigger
-  // icon isn't competing for the same row, instead of one fixed size
-  // regardless of how much space is actually free.
-  state.root.classList.toggle("fl-has-admin-trigger", hasAnythingToShow);
-}
-
-function watchAuthState() {
-  onAuthStateChanged(auth, async (user) => {
-    if (!user) {
-      // No session yet — sign in anonymously so members can write.
-      // This re-triggers onAuthStateChanged with the anonymous user.
-      signInAnonymously(auth).catch((err) =>
-        console.error("Anonymous sign-in failed", err)
-      );
-      return;
-    }
-
-    if (!user.isAnonymous) {
-      // A real (Google) session persisted from a previous visit —
-      // re-verify against the allowlist rather than trusting the cache.
-      await syncAdmin();
-    }
-
-    subscribeToRequests();
-  });
 }
 
 // ---------- Init ----------
@@ -716,23 +615,22 @@ export async function initFeatureLab() {
     return;
   }
   state.root = root;
+  root.classList.add("bt-root");
   root.innerHTML = renderShell();
 
   root.querySelector("#fl-new-request").addEventListener("click", openSubmitModal);
-  root.querySelector("#fl-admin-signin").addEventListener("click", handleAdminSignIn);
-  root.querySelector("#fl-admin-signout").addEventListener("click", handleAdminSignOut);
 
-  // Mobile-only dots menu: purely a viewport-width thing, not tied to
-  // admin state — CSS decides whether the toggle button and the
-  // dropdown-vs-inline styling apply at all (see the container query).
-  root.querySelector("#fl-admin-menu-toggle").addEventListener("click", (e) => {
-    e.stopPropagation();
-    root.querySelector("#fl-admin-row").classList.toggle("fl-open");
-  });
-  document.addEventListener("click", () => {
-    const adminRow = root.querySelector("#fl-admin-row");
-    if (adminRow) adminRow.classList.remove("fl-open");
-  });
+  const menu = initAdminMenu(root);
+  const signinBtn = root.querySelector("#fl-admin-signin");
+  const badge = root.querySelector("#fl-admin-badge");
+  const signoutBtn = root.querySelector("#fl-admin-signout");
+
+  function updateAdminUi() {
+    signinBtn.hidden = state.isAdmin || !hasActivePlan(PLANS.ADMIN); // UI convenience only, not a security boundary
+    badge.hidden = !state.isAdmin;
+    signoutBtn.hidden = !state.isAdmin;
+    menu.sync();
+  }
 
   await waitForReady();
 
@@ -748,7 +646,20 @@ export async function initFeatureLab() {
   renderFilters();
   renderSort();
   updateAdminUi();
-  watchAuthState();
+  renderList();
+
+  const { signIn, signOut } = initAdminAuth({
+    auth,
+    functions,
+    onChange({ isAdmin }) {
+      state.isAdmin = isAdmin;
+      updateAdminUi();
+      subscribeToRequests();
+      renderList();
+    },
+  });
+  signinBtn.addEventListener("click", signIn);
+  signoutBtn.addEventListener("click", signOut);
 }
 
 initFeatureLab();
