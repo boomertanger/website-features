@@ -29,12 +29,11 @@ dropzone, the "bit me too" row).
 
 ## One-time setup before this goes live
 
-1. **Cloudinary unsigned upload preset.** Cloud name is `nz4usqtz` (confirmed).
-   In the Cloudinary dashboard, create an **unsigned** upload preset scoped to
-   this use case: image-only, a server-side file-size cap, folder restricted
-   to `bug-zapper/` if that's configurable. Put its name into
-   `bug-zapper.js`'s `CLOUDINARY_UPLOAD_PRESET` constant (currently a
-   placeholder — `REPLACE_ME_bug_zapper_unsigned`).
+1. **Cloudinary unsigned upload preset.** Done: cloud `nz4usqtz`, unsigned
+   preset `disk-stash`, uploads go to the `bug-zapper` folder
+   (`CLOUDINARY_UPLOAD_PRESET` in `bug-zapper.js`). Until it was set, the
+   constant held a placeholder, so every screenshot upload failed with
+   "Upload preset not found" while the report itself still saved.
 2. **Merge `functions-addition.js`** into `functions/index.js` — adds
    `recordBugScreenshot`, the only path allowed to set `screenshotUrl`.
 3. **Merge `firestore-rules-addition.txt`** into `firestore.rules` — adds

@@ -63,14 +63,12 @@ import {
 
 const ROOT_ID = "bug-zapper-root";
 
-// ---------- Config you need to fill in (see README) ----------
-// Cloudinary cloud name is confirmed: nz4usqtz.
-// UPLOAD_PRESET still needs to be created in the Cloudinary dashboard —
-// an UNSIGNED preset, image-only, with a server-side file-size limit set
-// on the preset itself (client-side compression below is a first pass,
-// not the real limit).
+// ---------- Cloudinary (see README) ----------
+// "disk-stash" is the shared UNSIGNED upload preset on cloud nz4usqtz.
+// Any server-side size/format limits live on the preset itself (the
+// client-side compression below is a first pass, not the real limit).
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
-const CLOUDINARY_UPLOAD_PRESET = "REPLACE_ME_bug_zapper_unsigned"; // <-- fill in
+const CLOUDINARY_UPLOAD_PRESET = "disk-stash";
 
 // Matches the comments text.size() <= 1000 check in firestore.rules.
 const COMMENT_MAX_LENGTH = 1000;
