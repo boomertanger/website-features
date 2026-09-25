@@ -40,7 +40,7 @@ import { confirmAction } from "../../shared/ui/confirm.js";
 import { initRowSpotlight } from "../../shared/ui/effects.js";
 import { composerHtml, initComposer } from "../../shared/ui/composer.js";
 import { thumbHtml, initLightboxTriggers, cloudinaryUrl } from "../../shared/ui/lightbox.js";
-import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
+import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON, PENCIL_ICON } from "../../shared/ui/admin-menu.js";
 import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
   getFirestore,
@@ -49,7 +49,10 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
+  limit,
   doc,
+  getDoc,
   updateDoc,
   serverTimestamp,
   arrayUnion,
@@ -431,13 +434,18 @@ function compressImage(file, maxWidth = COMPRESS_MAX_WIDTH, quality = COMPRESS_Q
   });
 }
 
-async function uploadScreenshotAndAttach(docId, file) {
-  if (file.size > MAX_ORIGINAL_FILE_BYTES) {
-    throw new Error("That image is too large — try a smaller screenshot.");
-  }
-  if (!file.type.startsWith("image/")) {
-    throw new Error("Screenshots need to be an image file.");
-  }
+// Returns an error message for a picked file, or "" if it can be uploaded.
+function screenshotFileError(file) {
+  if (!file.type.startsWith("image/")) return "Screenshots need to be an image file.";
+  if (file.size > MAX_ORIGINAL_FILE_BYTES) return "That image is too large — try a smaller screenshot.";
+  return "";
+}
+
+// Compresses and uploads to Cloudinary (unsigned preset). Returns the
+// details recordBugScreenshot / adminEditItem need to track the asset.
+async function uploadToCloudinary(file) {
+  const problem = screenshotFileError(file);
+  if (problem) throw new Error(problem);
 
   const compressed = await compressImage(file);
 
@@ -451,18 +459,21 @@ async function uploadScreenshotAndAttach(docId, file) {
     { method: "POST", body: formData }
   );
   if (!uploadRes.ok) {
-    throw new Error("Screenshot upload failed. Your report was still submitted.");
+    throw new Error("Screenshot upload failed.");
   }
   const uploadData = await uploadRes.json();
-
-  const recordBugScreenshot = httpsCallable(functions, "recordBugScreenshot");
-  await recordBugScreenshot({
-    docId,
+  return {
     url: uploadData.secure_url,
     publicId: uploadData.public_id,
     sizeBytes: uploadData.bytes,
     resourceType: uploadData.resource_type,
-  });
+  };
+}
+
+async function uploadScreenshotAndAttach(docId, file) {
+  const uploaded = await uploadToCloudinary(file);
+  const recordBugScreenshot = httpsCallable(functions, "recordBugScreenshot");
+  await recordBugScreenshot({ docId, ...uploaded });
 }
 
 // ---------- Submit modal ----------
@@ -636,31 +647,85 @@ function historyHtml(history) {
     .join("")}</div>`;
 }
 
-function openDetailModal(reportId) {
-  const report = state.reports.find((r) => r.id === reportId);
-  if (!report) return;
+// ---------- Detail modal: view mode + admin edit mode in the same dialog ----------
+// Spec: docs/specs/admin-editing.md. Every dialog element is looked up
+// through `modal` (openModal renders into a portal on <body>, not the root).
 
-  const status = STATUS_META[report.status] ?? STATUS_META.Open;
-  const severity = SEVERITY_META[report.severity] ?? SEVERITY_META.Minor;
-  const voted = hasMeToo(report);
-  const showComments = canSeeComments(report);
-  const history = [...(report.statusHistory ?? [])].reverse();
-  let unsubscribeComments = null;
+// Fields admins can edit in place. Limits match the create form / rules;
+// adminEditItem re-validates everything server-side.
+const EDIT_FIELDS = [
+  { key: "title", label: "Title", name: "Title", kind: "input", min: 3, max: 200 },
+  { key: "whatHappened", label: "What happened?", name: "What happened", kind: "textarea", rows: 3, min: 1, max: 2000 },
+  { key: "expectedInstead", label: "What did you expect instead?", name: "What you expected", kind: "textarea", rows: 3, min: 0, max: 2000 },
+  { key: "page", label: "Which page or feature?", name: "Page", kind: "input", min: 1, max: PAGE_MAX_LENGTH,
+    placeholder: "e.g. www.boomertanger.com/live", hint: "Paste the address of the page where it happened." },
+  { key: "stepsToReproduce", label: "Steps to reproduce", name: "Steps to reproduce", kind: "textarea", rows: 4, min: 0, max: 2000 },
+  { key: "severity", label: "How bad is it?", name: "How bad is it", kind: "select" },
+];
 
-  const commentsHtml = showComments
-    ? `
-    <div class="bt-modal-section">
-      <p class="bt-section-label">Private comments</p>
-      <p class="bt-hint" style="margin:-4px 0 12px">Only visible to you and the reporter — no one else can see this thread.</p>
-      <div id="bz-comments-list" class="bt-comments"></div>
-      <div style="margin-top:var(--bt-space-3)">${composerHtml({ placeholder: "Reply…", maxLength: COMMENT_MAX_LENGTH, id: "bz-comment-input" })}</div>
-    </div>`
-    : "";
+// Short names used in the Admin activity list.
+const FIELD_NAMES = {
+  title: "title",
+  whatHappened: "what happened",
+  expectedInstead: "expected",
+  page: "page",
+  stepsToReproduce: "steps",
+  severity: "how bad it is",
+  screenshotUrl: "screenshot",
+};
 
-  const adminControlsHtml = state.isAdmin
-    ? `
+const REASON_MAX_LENGTH = 300;
+
+function listJoin(items) {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+function detailSubtitle(r) {
+  return `<span class="bt-meta">Reported by ${escapeHtml(r.reporterName)} on ${formatDate(r.createdAt)}</span>` +
+    (r.editedAt ? `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on ${formatDate(r.editedAt)}</span>` : "");
+}
+
+function activitySkeleton() {
+  return `<div aria-hidden="true" style="display:flex;flex-direction:column;gap:var(--bt-space-2)">
+    <span class="bt-skeleton" style="width:60%;height:12px"></span>
+    <span class="bt-skeleton" style="width:40%;height:12px"></span>
+  </div>`;
+}
+
+function activityListHtml(entries) {
+  if (!entries.length) return `<p class="bt-meta">No admin activity yet.</p>`;
+  return `<div class="bt-history">${entries
+    .map((a) => {
+      const fields = Object.keys(a.changes || {}).map((f) => FIELD_NAMES[f] || f);
+      const what = a.action === "edit" ? `Edited ${listJoin(fields) || "the report"}` : a.action === "delete" ? "Deleted" : "Purged a file";
+      return `
+      <div class="bt-history-item">
+        <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--blue"></span><span class="bt-history-rule"></span></div>
+        <div class="bt-history-body">
+          <div><strong style="font-weight:600">${escapeHtml(what)}</strong></div>
+          ${a.reason ? `<div style="color:var(--bt-text-muted);margin-top:2px">Reason: ${escapeHtml(a.reason)}</div>` : ""}
+          <div class="bt-meta">${escapeHtml(a.actorName || "Admin")}, ${formatDate(a.createdAt)}</div>
+        </div>
+      </div>`;
+    })
+    .join("")}</div>`;
+}
+
+function screenshotThumb(url) {
+  return thumbHtml({
+    // Transformed at display time only; screenshotUrl stays as stored.
+    src: cloudinaryUrl(url, "w_900,c_limit,f_auto,q_auto"),
+    full: cloudinaryUrl(url, "f_auto,q_auto"),
+    alt: "Screenshot of the bug",
+  });
+}
+
+function adminPanelHtml(report, notice) {
+  return `
     <div class="bt-admin-panel">
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
+      ${notice ? `<p class="bt-error">${escapeHtml(notice)}</p>` : ""}
       <div class="bt-field">
         <span class="bt-label" id="bz-report-id-label">Report ID</span>
         <div style="display:flex;align-items:center;gap:var(--bt-space-2);flex-wrap:wrap">
@@ -701,15 +766,34 @@ function openDetailModal(reportId) {
       </div>
       <p id="bz-admin-error" class="bt-error" hidden></p>
       <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Admin activity</p>
+        <div id="bz-activity" aria-live="polite">${activitySkeleton()}</div>
+      </div>
+    </div>`;
+}
+
+function viewHtml(report, notice = "") {
+  const status = STATUS_META[report.status] ?? STATUS_META.Open;
+  const severity = SEVERITY_META[report.severity] ?? SEVERITY_META.Minor;
+  const voted = hasMeToo(report);
+  const history = [...(report.statusHistory ?? [])].reverse();
+  const editTool = state.isAdmin
+    ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-bz-edit aria-label="Edit">${PENCIL_ICON}<span class="bt-btn-label">Edit</span></button>`
+    : "";
+
+  const commentsHtml = canSeeComments(report)
+    ? `
+    <div class="bt-modal-section">
+      <p class="bt-section-label">Private comments</p>
+      <p class="bt-hint" style="margin:-4px 0 12px">Only visible to you and the reporter — no one else can see this thread.</p>
+      <div id="bz-comments-list" class="bt-comments"></div>
+      <div style="margin-top:var(--bt-space-3)">${composerHtml({ placeholder: "Reply…", maxLength: COMMENT_MAX_LENGTH, id: "bz-comment-input" })}</div>
     </div>`
     : "";
 
-  const { modal, close } = openModal({
-    wide: true,
-    feature: "bug-zapper",
-    title: report.title,
-    content: `
-      ${modalHeader(escapeHtml(report.title), `<span class="bt-meta">Reported by ${escapeHtml(report.reporterName)} on ${formatDate(report.createdAt)}</span>`)}
+  return `
+      ${modalHeader(escapeHtml(report.title), detailSubtitle(report), editTool)}
       <div class="bt-row-badges">
         ${statusBadge(status)}
         ${levelBadge(severity)}
@@ -741,12 +825,7 @@ function openDetailModal(reportId) {
       ${report.screenshotUrl ? `
       <div class="bt-modal-section">
         <p class="bt-section-label">Screenshot</p>
-        ${thumbHtml({
-          // Transformed at display time only; screenshotUrl stays as stored.
-          src: cloudinaryUrl(report.screenshotUrl, "w_900,c_limit,f_auto,q_auto"),
-          full: cloudinaryUrl(report.screenshotUrl, "f_auto,q_auto"),
-          alt: "Screenshot of the bug",
-        })}
+        ${screenshotThumb(report.screenshotUrl)}
       </div>` : ""}
 
       <div class="bz-metoo-row">
@@ -757,7 +836,7 @@ function openDetailModal(reportId) {
       </div>
 
       ${commentsHtml}
-      ${adminControlsHtml}
+      ${state.isAdmin ? adminPanelHtml(report, notice) : ""}
 
       <div class="bt-modal-section">
         <p class="bt-section-label">History</p>
@@ -767,192 +846,556 @@ function openDetailModal(reportId) {
       <div class="bt-modal-actions">
         ${state.isAdmin ? `<button type="button" id="bz-admin-delete" class="bt-btn bt-btn--danger">${TRASH_ICON}Delete report</button>` : ""}
         <button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>
-      </div>`,
-    onClose: () => {
-      if (unsubscribeComments) unsubscribeComments();
-    },
-  });
+      </div>`;
+}
 
+function editFieldHtml(f, report) {
+  const id = `bz-e-${f.key}`;
+  const value = report[f.key] ?? "";
+  let control;
+  if (f.kind === "select") {
+    control = `<select id="${id}" class="bt-select" data-edit="${f.key}">
+      ${SEVERITY_OPTIONS.map((s) => `<option value="${s.value}" ${value === s.value ? "selected" : ""}>${escapeHtml(s.label)}</option>`).join("")}
+    </select>`;
+  } else if (f.kind === "textarea") {
+    control = `<textarea id="${id}" class="bt-textarea" rows="${f.rows}" maxlength="${f.max}" data-edit="${f.key}">${escapeHtml(value)}</textarea>`;
+  } else {
+    control = `<input id="${id}" class="bt-input" type="text" maxlength="${f.max}" data-edit="${f.key}" value="${escapeHtml(value)}"${f.placeholder ? ` placeholder="${escapeHtml(f.placeholder)}"` : ""}>`;
+  }
+  return `
+      <div class="bt-field">
+        <label class="bt-label" for="${id}">${f.label}</label>
+        ${control}
+        ${f.hint ? `<span class="bt-hint">${escapeHtml(f.hint)}</span>` : ""}
+        <p class="bt-error" data-error-for="${f.key}" hidden></p>
+      </div>`;
+}
+
+function editHtml(report) {
+  return `
+      <div class="bt-edit-banner"><span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Editing as admin</span><span class="bt-meta">Changes are logged</span></div>
+      ${modalHeader(escapeHtml(report.title), detailSubtitle(report))}
+
+      <div id="bz-edit-conflict" hidden style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--bt-space-2)">
+        <p class="bt-error">This was changed while you were editing. Your text is still below, so copy anything you want to keep, then load the latest version.</p>
+        <button type="button" id="bz-edit-reload" class="bt-btn bt-btn--sm bt-btn--secondary">Load latest</button>
+      </div>
+
+      ${EDIT_FIELDS.map((f) => editFieldHtml(f, report)).join("")}
+
+      <div class="bt-field">
+        <span class="bt-label">Screenshot</span>
+        <div id="bz-e-shot-preview"></div>
+        <input type="file" id="bz-e-shot-input" accept="image/*" hidden>
+        <div style="display:flex;gap:var(--bt-space-2);flex-wrap:wrap">
+          <button type="button" id="bz-e-shot-pick" class="bt-btn bt-btn--sm bt-btn--secondary"></button>
+          <button type="button" id="bz-e-shot-remove" class="bt-btn bt-btn--sm bt-btn--secondary">Remove screenshot</button>
+          <button type="button" id="bz-e-shot-undo" class="bt-btn bt-btn--sm bt-btn--secondary" hidden>Keep current</button>
+        </div>
+        <span class="bt-hint">A new image is uploaded when you save.</span>
+        <p class="bt-error" data-error-for="screenshot" hidden></p>
+      </div>
+
+      <div class="bt-field">
+        <label class="bt-label" for="bz-e-reason">Reason for the edit</label>
+        <input id="bz-e-reason" class="bt-input" type="text" maxlength="${REASON_MAX_LENGTH}" placeholder="Optional, saved to the admin log">
+        <p class="bt-error" data-error-for="reason" hidden></p>
+      </div>
+
+      <p id="bz-edit-error" class="bt-error" hidden></p>
+      <div class="bt-modal-actions">
+        <button type="button" id="bz-edit-cancel" class="bt-btn bt-btn--secondary">Cancel</button>
+        <button type="button" id="bz-edit-save" class="bt-btn bt-btn--admin" disabled>Save changes</button>
+      </div>`;
+}
+
+function openDetailModal(reportId) {
+  let report = state.reports.find((r) => r.id === reportId);
+  if (!report) return;
+
+  // Live listeners for the current mode (comments, admin activity).
+  let unsubs = [];
+  const stopLive = () => {
+    unsubs.forEach((u) => u());
+    unsubs = [];
+  };
+
+  const { modal, close, setBeforeClose, setDismissible } = openModal({
+    wide: true,
+    feature: "bug-zapper",
+    title: report.title,
+    content: viewHtml(report),
+    onClose: stopLive,
+  });
   initLightboxTriggers(modal);
+  wireView();
 
-  const metooBtn = modal.querySelector("#bz-metoo-btn");
-  metooBtn.addEventListener("click", async () => {
-    if (!state.uid) return;
-    metooBtn.disabled = true;
-    await toggleMeToo(reportId);
-    close();
-  });
+  async function loadLatest() {
+    const snap = await getDoc(doc(db, "bugReports", reportId));
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  }
 
-  // Private comment thread — only wired up at all when showComments is
-  // true; the section HTML itself isn't even rendered otherwise, per
-  // the admin-or-reporter-only rule enforced (for real) in firestore.rules.
-  if (showComments) {
+  function showView(notice = "") {
+    stopLive();
+    setBeforeClose(null);
+    setDismissible(true); // a save locks the dialog while it runs
+    modal.classList.remove("bt-modal--editing");
+    modal.innerHTML = viewHtml(report, notice);
+    wireView();
+  }
+
+  function itemGone(errorEl) {
+    errorEl.textContent = "This item no longer exists.";
+    errorEl.hidden = false;
+    modal.querySelectorAll("button, input, textarea, select").forEach((el) => (el.disabled = true));
+    setBeforeClose(null);
+    setTimeout(close, 1800);
+  }
+
+  // ----- view mode wiring -----
+  function wireView() {
+    modal.querySelector("[data-bz-edit]")?.addEventListener("click", showEdit);
+
+    const metooBtn = modal.querySelector("#bz-metoo-btn");
+    metooBtn.addEventListener("click", async () => {
+      if (!state.uid) return;
+      metooBtn.disabled = true;
+      await toggleMeToo(reportId);
+      close();
+    });
+
+    // Private comment thread — only wired up at all when it's rendered, per
+    // the admin-or-reporter-only rule enforced (for real) in firestore.rules.
     const commentsList = modal.querySelector("#bz-comments-list");
-    const commentsQuery = query(
-      collection(db, "bugReports", reportId, "comments"),
-      orderBy("createdAt", "asc")
-    );
-    unsubscribeComments = onSnapshot(
-      commentsQuery,
-      (snapshot) => {
-        const comments = snapshot.docs.map((d) => d.data());
-        if (comments.length === 0) {
-          commentsList.innerHTML = `<p class="bt-meta">No comments yet.</p>`;
-          return;
+    if (commentsList) {
+      const commentsQuery = query(
+        collection(db, "bugReports", reportId, "comments"),
+        orderBy("createdAt", "asc")
+      );
+      unsubs.push(onSnapshot(
+        commentsQuery,
+        (snapshot) => {
+          const comments = snapshot.docs.map((d) => d.data());
+          if (comments.length === 0) {
+            commentsList.innerHTML = `<p class="bt-meta">No comments yet.</p>`;
+            return;
+          }
+          commentsList.innerHTML = comments
+            .map(
+              (c) => `
+            <div class="bt-comment">
+              <div class="bt-comment-head">
+                <span class="bt-comment-author">${escapeHtml(c.authorName)}</span>
+                ${c.isAdminAuthor ? `<span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Admin</span>` : ""}
+                <span class="bt-comment-time">${formatDate(c.createdAt)}</span>
+              </div>
+              <p class="bt-comment-text">${escapeHtml(c.text)}</p>
+            </div>`
+            )
+            .join("");
+        },
+        (err) => {
+          console.error("Failed to load comments", err);
+          commentsList.innerHTML = `<p class="bt-meta">Couldn't load comments.</p>`;
         }
-        commentsList.innerHTML = comments
-          .map(
-            (c) => `
-          <div class="bt-comment">
-            <div class="bt-comment-head">
-              <span class="bt-comment-author">${escapeHtml(c.authorName)}</span>
-              ${c.isAdminAuthor ? `<span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Admin</span>` : ""}
-              <span class="bt-comment-time">${formatDate(c.createdAt)}</span>
-            </div>
-            <p class="bt-comment-text">${escapeHtml(c.text)}</p>
-          </div>`
-          )
-          .join("");
-      },
-      (err) => {
-        console.error("Failed to load comments", err);
-        commentsList.innerHTML = `<p class="bt-meta">Couldn't load comments.</p>`;
-      }
-    );
+      ));
 
-    // The composer owns the busy state, the empty/over-length guard and the
-    // error display; a thrown Error's message is what the member sees.
-    initComposer(modal.querySelector(".bt-composer"), {
-      onSubmit: async (text) => {
+      // The composer owns the busy state, the empty/over-length guard and the
+      // error display; a thrown Error's message is what the member sees.
+      initComposer(modal.querySelector(".bt-composer"), {
+        onSubmit: async (text) => {
+          try {
+            await addDoc(collection(db, "bugReports", reportId, "comments"), {
+              text,
+              authorId: state.uid ?? "",
+              authorName: state.memberName,
+              isAdminAuthor: state.isAdmin,
+              createdAt: serverTimestamp(),
+            });
+          } catch (err) {
+            console.error("Failed to post comment", err);
+            throw new Error("Something went wrong posting your comment.");
+          }
+          await updateDoc(doc(db, "bugReports", reportId), {
+            commentCount: increment(1),
+          }).catch((err) => console.error("Failed to bump comment count", err));
+        },
+      });
+    }
+
+    // Admin activity: this report's adminLog entries, newest first. The
+    // first run on a project needs a composite index (itemPath + createdAt
+    // desc); Firestore's error message links straight to creating it.
+    const activityEl = modal.querySelector("#bz-activity");
+    if (activityEl) {
+      unsubs.push(onSnapshot(
+        query(
+          collection(db, "adminLog"),
+          where("itemPath", "==", `bugReports/${reportId}`),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        ),
+        (snapshot) => { activityEl.innerHTML = activityListHtml(snapshot.docs.map((d) => d.data())); },
+        (err) => {
+          console.error("Failed to load admin activity (if this mentions an index, open its link to create it)", err);
+          activityEl.innerHTML = `<p class="bt-meta">Couldn't load admin activity.</p>`;
+        }
+      ));
+    }
+
+    // Report ID copy (admin panel only). Falls back to selecting the text
+    // when the Clipboard API isn't available (e.g. an insecure context).
+    const copyBtn = modal.querySelector("#bz-copy-id");
+    if (copyBtn) {
+      const idEl = modal.querySelector("#bz-report-id");
+      const statusEl = modal.querySelector("#bz-copy-status");
+      let statusTimer = null;
+      copyBtn.addEventListener("click", async () => {
+        let copied = false;
         try {
-          await addDoc(collection(db, "bugReports", reportId, "comments"), {
-            text,
-            authorId: state.uid ?? "",
-            authorName: state.memberName,
-            isAdminAuthor: state.isAdmin,
-            createdAt: serverTimestamp(),
-          });
+          await navigator.clipboard.writeText(report.id);
+          copied = true;
         } catch (err) {
-          console.error("Failed to post comment", err);
-          throw new Error("Something went wrong posting your comment.");
+          const range = document.createRange();
+          range.selectNodeContents(idEl);
+          const sel = window.getSelection();
+          sel.removeAllRanges();
+          sel.addRange(range);
         }
-        await updateDoc(doc(db, "bugReports", reportId), {
-          commentCount: increment(1),
-        }).catch((err) => console.error("Failed to bump comment count", err));
-      },
-    });
+        statusEl.textContent = copied ? "Copied" : "Selected — press Ctrl+C to copy";
+        clearTimeout(statusTimer);
+        statusTimer = setTimeout(() => { statusEl.textContent = ""; }, 1800);
+      });
+    }
+
+    // Admin panel save. Enabled only when status, priority or duplicate-of
+    // differ from the saved report; a history entry (and its note) is
+    // written only on a real status change. firestore.rules enforces the
+    // same thing, so a double-click can't add a duplicate history entry.
+    const saveBtn = modal.querySelector("#bz-admin-save");
+    if (saveBtn) {
+      const statusSel = modal.querySelector("#bz-status-select");
+      const prioritySel = modal.querySelector("#bz-priority-select");
+      const dupInput = modal.querySelector("#bz-dup-input");
+      const noteInput = modal.querySelector("#bz-note-input");
+      const errorEl = modal.querySelector("#bz-admin-error");
+      const read = () => ({
+        status: statusSel.value,
+        priority: prioritySel.value || null,
+        duplicateOf: dupInput.value.trim() || null,
+      });
+      let saving = false;
+      const refresh = () => {
+        const v = read();
+        const statusChanged = v.status !== report.status;
+        noteInput.disabled = !statusChanged;
+        saveBtn.disabled = saving || !(statusChanged
+          || v.priority !== (report.priority ?? null)
+          || v.duplicateOf !== (report.duplicateOf ?? null));
+      };
+      [statusSel, prioritySel, dupInput].forEach((el) => {
+        el.addEventListener("input", refresh);
+        el.addEventListener("change", refresh);
+      });
+
+      saveBtn.addEventListener("click", async () => {
+        if (saveBtn.disabled) return;
+        const v = read();
+        const update = {};
+        if (v.priority !== (report.priority ?? null)) update.priority = v.priority;
+        if (v.duplicateOf !== (report.duplicateOf ?? null)) update.duplicateOf = v.duplicateOf;
+        if (v.status !== report.status) {
+          const historyEntry = {
+            status: v.status,
+            changedBy: state.memberName || "Admin",
+            changedAt: new Date().toISOString(),
+          };
+          const note = noteInput.value.trim();
+          if (note) historyEntry.note = note;
+          update.status = v.status;
+          update.statusHistory = arrayUnion(historyEntry);
+          // Disk Stash's cleanup rule ages off this doc's screenshot based on
+          // how long it's sat in a given status.
+          update.statusChangedAt = serverTimestamp();
+        }
+
+        saving = true;
+        errorEl.hidden = true;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
+        try {
+          await updateDoc(doc(db, "bugReports", reportId), update);
+          close();
+        } catch (err) {
+          console.error("Failed to save admin changes", err);
+          errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
+          errorEl.hidden = false;
+          saving = false;
+          saveBtn.textContent = "Save changes";
+          refresh();
+        }
+      });
+    }
+
+    const deleteBtn = modal.querySelector("#bz-admin-delete");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", async () => {
+        const ok = await confirmAction({
+          title: "Delete this report?",
+          message: `"${report.title}" will be removed. This can't be undone${report.screenshotUrl ? " — its screenshot will also be removed from Cloudinary" : ""}.`,
+          confirmLabel: "Delete report",
+          busyLabel: "Deleting…",
+          feature: "bug-zapper",
+          onConfirm: async () => {
+            const deleteBugReport = httpsCallable(functions, "deleteBugReport");
+            await deleteBugReport({ reportId });
+          },
+        });
+        if (ok) close();
+      });
+    }
   }
 
-  // Report ID copy (admin panel only). Falls back to selecting the text
-  // when the Clipboard API isn't available (e.g. an insecure context).
-  const copyBtn = modal.querySelector("#bz-copy-id");
-  if (copyBtn) {
-    const idEl = modal.querySelector("#bz-report-id");
-    const statusEl = modal.querySelector("#bz-copy-status");
-    let statusTimer = null;
-    copyBtn.addEventListener("click", async () => {
-      let copied = false;
-      try {
-        await navigator.clipboard.writeText(report.id);
-        copied = true;
-      } catch (err) {
-        const range = document.createRange();
-        range.selectNodeContents(idEl);
-        const sel = window.getSelection();
-        sel.removeAllRanges();
-        sel.addRange(range);
-      }
-      statusEl.textContent = copied ? "Copied" : "Selected — press Ctrl+C to copy";
-      clearTimeout(statusTimer);
-      statusTimer = setTimeout(() => { statusEl.textContent = ""; }, 1800);
-    });
-  }
+  // ----- edit mode (admins only) -----
+  function showEdit() {
+    if (!state.isAdmin) return;
+    stopLive();
+    modal.classList.add("bt-modal--editing");
+    modal.innerHTML = editHtml(report);
 
-  // Admin panel save. Enabled only when status, priority or duplicate-of
-  // differ from the saved report; a history entry (and its note) is
-  // written only on a real status change. firestore.rules enforces the
-  // same thing, so a double-click can't add a duplicate history entry.
-  const saveBtn = modal.querySelector("#bz-admin-save");
-  if (saveBtn) {
-    const statusSel = modal.querySelector("#bz-status-select");
-    const prioritySel = modal.querySelector("#bz-priority-select");
-    const dupInput = modal.querySelector("#bz-dup-input");
-    const noteInput = modal.querySelector("#bz-note-input");
-    const errorEl = modal.querySelector("#bz-admin-error");
-    const read = () => ({
-      status: statusSel.value,
-      priority: prioritySel.value || null,
-      duplicateOf: dupInput.value.trim() || null,
-    });
-    let saving = false;
-    const refresh = () => {
-      const v = read();
-      const statusChanged = v.status !== report.status;
-      noteInput.disabled = !statusChanged;
-      saveBtn.disabled = saving || !(statusChanged
-        || v.priority !== (report.priority ?? null)
-        || v.duplicateOf !== (report.duplicateOf ?? null));
+    const inputs = EDIT_FIELDS.map((f) => ({ f, el: modal.querySelector(`[data-edit="${f.key}"]`) }));
+    const reasonInput = modal.querySelector("#bz-e-reason");
+    const saveBtn = modal.querySelector("#bz-edit-save");
+    const cancelBtn = modal.querySelector("#bz-edit-cancel");
+    const errorEl = modal.querySelector("#bz-edit-error");
+    const conflictEl = modal.querySelector("#bz-edit-conflict");
+    const shotPreview = modal.querySelector("#bz-e-shot-preview");
+    const shotInput = modal.querySelector("#bz-e-shot-input");
+    const shotPick = modal.querySelector("#bz-e-shot-pick");
+    const shotRemove = modal.querySelector("#bz-e-shot-remove");
+    const shotUndo = modal.querySelector("#bz-e-shot-undo");
+
+    // Screenshot: picking a file only shows a local preview; the upload
+    // happens on Save.
+    const shot = { mode: "keep", file: null, previewUrl: "" };
+    const dropPreview = () => {
+      if (shot.previewUrl) URL.revokeObjectURL(shot.previewUrl);
+      shot.previewUrl = "";
+      shot.file = null;
     };
-    [statusSel, prioritySel, dupInput].forEach((el) => {
+
+    let saving = false;
+    let conflicted = false;
+
+    const original = (f) => report[f.key] ?? "";
+    const current = (f) => (f.kind === "select" ? inputs.find((i) => i.f === f).el.value : inputs.find((i) => i.f === f).el.value.trim());
+    const changedFields = () => EDIT_FIELDS.filter((f) => current(f) !== original(f));
+    const isDirty = () => changedFields().length > 0 || shot.mode !== "keep";
+
+    function fieldError(key, message) {
+      const el = modal.querySelector(`[data-error-for="${key}"]`);
+      const input = modal.querySelector(`[data-edit="${key}"]`) || (key === "reason" ? reasonInput : null);
+      if (el) {
+        el.textContent = message;
+        el.hidden = !message;
+      }
+      if (input) {
+        if (message) input.setAttribute("aria-invalid", "true");
+        else input.removeAttribute("aria-invalid");
+      }
+    }
+
+    function clearErrors() {
+      modal.querySelectorAll("[data-error-for]").forEach((el) => fieldError(el.dataset.errorFor, ""));
+      errorEl.hidden = true;
+    }
+
+    function refresh() {
+      saveBtn.disabled = saving || conflicted || !isDirty();
+    }
+
+    function renderShot() {
+      const hasCurrent = !!report.screenshotUrl;
+      if (shot.mode === "replace") {
+        shotPreview.innerHTML = `${thumbHtml({ src: shot.previewUrl, alt: "New screenshot (not uploaded yet)" })}
+          <p class="bt-meta" style="margin-top:var(--bt-space-2)">New image: ${escapeHtml(shot.file.name)} (uploads when you save)</p>`;
+      } else if (shot.mode === "remove") {
+        shotPreview.innerHTML = `<p class="bt-meta">The screenshot will be removed when you save.</p>`;
+      } else {
+        shotPreview.innerHTML = hasCurrent ? screenshotThumb(report.screenshotUrl) : `<p class="bt-meta">No screenshot.</p>`;
+      }
+      shotPick.textContent = shot.mode === "replace" ? "Choose a different image" : hasCurrent ? "Replace screenshot" : "Add screenshot";
+      shotRemove.hidden = !hasCurrent || shot.mode !== "keep";
+      shotUndo.hidden = shot.mode === "keep";
+      refresh();
+    }
+
+    function lock(locked) {
+      modal.querySelectorAll("#bz-edit-save, #bz-edit-cancel, [data-edit], #bz-e-reason, #bz-e-shot-pick, #bz-e-shot-remove, #bz-e-shot-undo")
+        .forEach((el) => (el.disabled = locked));
+      setDismissible(!locked);
+      if (!locked) refresh();
+    }
+
+    function validate() {
+      clearErrors();
+      let ok = true;
+      for (const f of changedFields()) {
+        if (f.kind === "select") continue;
+        const len = current(f).length;
+        if (len < f.min || len > f.max) {
+          ok = false;
+          fieldError(f.key, f.min > 0
+            ? `${f.name} needs to be ${f.min}–${f.max.toLocaleString("en-US")} characters.`
+            : `${f.name} can be at most ${f.max.toLocaleString("en-US")} characters.`);
+        }
+      }
+      if (reasonInput.value.trim().length > REASON_MAX_LENGTH) {
+        ok = false;
+        fieldError("reason", `Reason can be at most ${REASON_MAX_LENGTH} characters.`);
+      }
+      if (!ok) modal.querySelector('[aria-invalid="true"]')?.focus();
+      return ok;
+    }
+
+    const discardGuard = async () => !isDirty() || confirmAction({
+      title: "Discard your changes?",
+      message: "Your edits haven't been saved.",
+      confirmLabel: "Discard",
+      busyLabel: "Discarding…",
+      feature: "bug-zapper",
+      onConfirm: async () => {},
+    });
+    setBeforeClose(discardGuard);
+
+    function leaveEdit(notice = "") {
+      dropPreview();
+      showView(notice);
+    }
+
+    // Listen on the fields themselves: `modal` outlives each edit session.
+    inputs.forEach(({ el }) => {
       el.addEventListener("input", refresh);
       el.addEventListener("change", refresh);
     });
 
+    shotPick.addEventListener("click", () => shotInput.click());
+    shotInput.addEventListener("change", () => {
+      const file = shotInput.files[0];
+      shotInput.value = "";
+      if (!file) return;
+      const problem = screenshotFileError(file);
+      if (problem) {
+        fieldError("screenshot", problem);
+        return;
+      }
+      fieldError("screenshot", "");
+      dropPreview();
+      shot.mode = "replace";
+      shot.file = file;
+      shot.previewUrl = URL.createObjectURL(file);
+      renderShot();
+    });
+    shotRemove.addEventListener("click", () => {
+      dropPreview();
+      shot.mode = "remove";
+      renderShot();
+    });
+    shotUndo.addEventListener("click", () => {
+      dropPreview();
+      shot.mode = "keep";
+      fieldError("screenshot", "");
+      renderShot();
+    });
+
+    cancelBtn.addEventListener("click", async () => {
+      if (await discardGuard()) leaveEdit();
+    });
+
+    modal.querySelector("#bz-edit-reload").addEventListener("click", async () => {
+      const latest = await loadLatest().catch((err) => {
+        console.error("Failed to load the latest report", err);
+        return undefined;
+      });
+      if (latest === null) return itemGone(errorEl);
+      if (!latest) {
+        errorEl.textContent = "Couldn't load the latest version. Try again.";
+        errorEl.hidden = false;
+        return;
+      }
+      report = latest;
+      dropPreview();
+      showEdit();
+    });
+
     saveBtn.addEventListener("click", async () => {
-      if (saveBtn.disabled) return;
-      const v = read();
-      const update = {};
-      if (v.priority !== (report.priority ?? null)) update.priority = v.priority;
-      if (v.duplicateOf !== (report.duplicateOf ?? null)) update.duplicateOf = v.duplicateOf;
-      if (v.status !== report.status) {
-        const historyEntry = {
-          status: v.status,
-          changedBy: state.memberName || "Admin",
-          changedAt: new Date().toISOString(),
-        };
-        const note = noteInput.value.trim();
-        if (note) historyEntry.note = note;
-        update.status = v.status;
-        update.statusHistory = arrayUnion(historyEntry);
-        // Disk Stash's cleanup rule ages off this doc's screenshot based on
-        // how long it's sat in a given status.
-        update.statusChangedAt = serverTimestamp();
+      if (saveBtn.disabled || !validate()) return;
+      saving = true;
+      lock(true);
+      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
+
+      const changes = {};
+      const before = {};
+      for (const f of changedFields()) {
+        changes[f.key] = current(f);
+        before[f.key] = report[f.key] ?? "";
       }
 
-      saving = true;
-      errorEl.hidden = true;
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
       try {
-        await updateDoc(doc(db, "bugReports", reportId), update);
-        close();
+        if (shot.mode !== "keep") {
+          before.screenshotUrl = report.screenshotUrl ?? null;
+          if (shot.mode === "remove") {
+            changes.screenshot = { action: "remove" };
+          } else {
+            try {
+              changes.screenshot = { action: "replace", ...(await uploadToCloudinary(shot.file)) };
+            } catch (err) {
+              console.error("Screenshot upload failed", err);
+              fieldError("screenshot", err.message || "Screenshot upload failed.");
+              throw Object.assign(new Error("upload"), { handled: true });
+            }
+          }
+        }
+
+        const adminEditItem = httpsCallable(functions, "adminEditItem");
+        const result = await adminEditItem({
+          feature: "bugZapper",
+          id: reportId,
+          changes,
+          before,
+          reason: reasonInput.value.trim(),
+        });
+        report = (await loadLatest().catch(() => null)) ?? report;
+        leaveEdit((result.data?.warnings ?? []).join(" "));
       } catch (err) {
-        console.error("Failed to save admin changes", err);
-        errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
-        errorEl.hidden = false;
         saving = false;
         saveBtn.textContent = "Save changes";
-        refresh();
+        if (err.handled) {
+          lock(false);
+          return;
+        }
+        console.error("Failed to save the edit", err);
+        if (err.code === "functions/not-found") return itemGone(errorEl);
+        if (err.code === "functions/aborted") {
+          conflicted = true;
+          conflictEl.hidden = false;
+          lock(false);
+          conflictEl.scrollIntoView({ block: "nearest" });
+          modal.querySelector("#bz-edit-reload").focus();
+          return;
+        }
+        if (err.code === "functions/invalid-argument" && err.details?.field) {
+          fieldError(err.details.field, err.message);
+        } else {
+          errorEl.textContent = "Couldn't save your changes. Try again.";
+          errorEl.hidden = false;
+        }
+        lock(false);
       }
     });
-  }
 
-  const deleteBtn = modal.querySelector("#bz-admin-delete");
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", async () => {
-      const ok = await confirmAction({
-        title: "Delete this report?",
-        message: `"${report.title}" will be removed. This can't be undone${report.screenshotUrl ? " — its screenshot will also be removed from Cloudinary" : ""}.`,
-        confirmLabel: "Delete report",
-        busyLabel: "Deleting…",
-        feature: "bug-zapper",
-        onConfirm: async () => {
-          const deleteBugReport = httpsCallable(functions, "deleteBugReport");
-          await deleteBugReport({ reportId });
-        },
-      });
-      if (ok) close();
-    });
+    renderShot();
+    modal.querySelector("#bz-e-title").focus();
   }
 }
 

@@ -26,7 +26,7 @@ import { openModal, modalHeader } from "../../shared/ui/modal.js";
 import { confirmAction } from "../../shared/ui/confirm.js";
 import { initRowSpotlight } from "../../shared/ui/effects.js";
 import { composerHtml, initComposer } from "../../shared/ui/composer.js";
-import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
+import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON, PENCIL_ICON } from "../../shared/ui/admin-menu.js";
 import { initAdminAuth } from "../../shared/ui/admin-auth.js";
 import {
   getFirestore,
@@ -35,7 +35,10 @@ import {
   onSnapshot,
   query,
   orderBy,
+  where,
+  limit,
   doc,
+  getDoc,
   updateDoc,
   serverTimestamp,
   arrayUnion,
@@ -393,7 +396,57 @@ function openSubmitModal() {
   });
 }
 
-// ---------- Detail modal (description, comments, admin controls, history) ----------
+// ---------- Detail modal: view mode + admin edit mode in the same dialog ----------
+// Spec: docs/specs/admin-editing.md. Every dialog element is looked up
+// through `modal` (openModal renders into a portal on <body>, not the root).
+
+// Fields admins can edit in place. Limits match the create form / rules;
+// adminEditItem re-validates everything server-side.
+const EDIT_FIELDS = [
+  { key: "title", label: "Title", name: "Title", kind: "input", min: 3, max: 200 },
+  { key: "description", label: "What should it do?", name: "Description", kind: "textarea", rows: 5, min: 10, max: 2000 },
+];
+
+// Short names used in the Admin activity list.
+const FIELD_NAMES = { title: "title", description: "description" };
+
+const REASON_MAX_LENGTH = 300;
+
+function listJoin(items) {
+  if (items.length <= 1) return items.join("");
+  return `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+}
+
+function detailSubtitle(r) {
+  return `<span class="bt-meta">Requested by ${escapeHtml(r.requesterName)} on ${formatDate(r.createdAt)}</span>` +
+    (r.editedAt ? `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on ${formatDate(r.editedAt)}</span>` : "");
+}
+
+function activitySkeleton() {
+  return `<div aria-hidden="true" style="display:flex;flex-direction:column;gap:var(--bt-space-2)">
+    <span class="bt-skeleton" style="width:60%;height:12px"></span>
+    <span class="bt-skeleton" style="width:40%;height:12px"></span>
+  </div>`;
+}
+
+function activityListHtml(entries) {
+  if (!entries.length) return `<p class="bt-meta">No admin activity yet.</p>`;
+  return `<div class="bt-history">${entries
+    .map((a) => {
+      const fields = Object.keys(a.changes || {}).map((f) => FIELD_NAMES[f] || f);
+      const what = a.action === "edit" ? `Edited ${listJoin(fields) || "the request"}` : a.action === "delete" ? "Deleted" : "Purged a file";
+      return `
+      <div class="bt-history-item">
+        <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--blue"></span><span class="bt-history-rule"></span></div>
+        <div class="bt-history-body">
+          <div><strong style="font-weight:600">${escapeHtml(what)}</strong></div>
+          ${a.reason ? `<div style="color:var(--bt-text-muted);margin-top:2px">Reason: ${escapeHtml(a.reason)}</div>` : ""}
+          <div class="bt-meta">${escapeHtml(a.actorName || "Admin")}, ${formatDate(a.createdAt)}</div>
+        </div>
+      </div>`;
+    })
+    .join("")}</div>`;
+}
 
 function adminPanelHtml(request) {
   return `
@@ -425,6 +478,10 @@ function adminPanelHtml(request) {
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
       <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      <div class="bt-modal-section">
+        <p class="bt-section-label">Admin activity</p>
+        <div id="fl-activity" aria-live="polite">${activitySkeleton()}</div>
+      </div>
     </div>`;
 }
 
@@ -446,21 +503,15 @@ function historyHtml(history) {
     .join("")}</div>`;
 }
 
-function openDetailModal(requestId) {
-  const request = state.requests.find((r) => r.id === requestId);
-  if (!request) return;
-
+function viewHtml(request) {
   const status = STATUS_META[request.status] ?? STATUS_META.submitted;
   const priority = request.priority ? PRIORITY_META[request.priority] : null;
   const history = [...(request.statusHistory ?? [])].reverse();
-  let unsubscribeComments = null;
-
-  const { modal, close } = openModal({
-    wide: true,
-    feature: "feature-lab",
-    title: request.title,
-    content: `
-      ${modalHeader(escapeHtml(request.title), `<span class="bt-meta">Requested by ${escapeHtml(request.requesterName)} on ${formatDate(request.createdAt)}</span>`)}
+  const editTool = state.isAdmin
+    ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-fl-edit aria-label="Edit">${PENCIL_ICON}<span class="bt-btn-label">Edit</span></button>`
+    : "";
+  return `
+      ${modalHeader(escapeHtml(request.title), detailSubtitle(request), editTool)}
       <div class="bt-row-badges">
         ${statusBadge(status)}
         ${priority ? levelBadge(priority) : ""}
@@ -482,143 +533,397 @@ function openDetailModal(requestId) {
       <div class="bt-modal-actions">
         ${state.isAdmin ? `<button type="button" id="fl-admin-delete" class="bt-btn bt-btn--danger">${TRASH_ICON}Delete request</button>` : ""}
         <button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>
-      </div>`,
-    onClose: () => {
-      if (unsubscribeComments) unsubscribeComments();
-    },
-  });
+      </div>`;
+}
 
-  // Live comment thread
-  const commentsList = modal.querySelector("#fl-comments-list");
-  const commentsQuery = query(
-    collection(db, "featureRequests", requestId, "comments"),
-    orderBy("createdAt", "asc")
-  );
-  unsubscribeComments = onSnapshot(
-    commentsQuery,
-    (snapshot) => {
-      const comments = snapshot.docs.map((d) => d.data());
-      if (comments.length === 0) {
-        commentsList.innerHTML = `<p class="bt-meta">No comments yet.</p>`;
-        return;
+function editFieldHtml(f, request) {
+  const id = `fl-e-${f.key}`;
+  const value = request[f.key] ?? "";
+  const control = f.kind === "textarea"
+    ? `<textarea id="${id}" class="bt-textarea" rows="${f.rows}" maxlength="${f.max}" data-edit="${f.key}">${escapeHtml(value)}</textarea>`
+    : `<input id="${id}" class="bt-input" type="text" maxlength="${f.max}" data-edit="${f.key}" value="${escapeHtml(value)}">`;
+  return `
+      <div class="bt-field">
+        <label class="bt-label" for="${id}">${f.label}</label>
+        ${control}
+        <span class="bt-hint">${f.min}&ndash;${f.max.toLocaleString("en-US")} characters</span>
+        <p class="bt-error" data-error-for="${f.key}" hidden></p>
+      </div>`;
+}
+
+function editHtml(request) {
+  return `
+      <div class="bt-edit-banner"><span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Editing as admin</span><span class="bt-meta">Changes are logged</span></div>
+      ${modalHeader(escapeHtml(request.title), detailSubtitle(request))}
+
+      <div id="fl-edit-conflict" hidden style="display:flex;flex-direction:column;align-items:flex-start;gap:var(--bt-space-2)">
+        <p class="bt-error">This was changed while you were editing. Your text is still below, so copy anything you want to keep, then load the latest version.</p>
+        <button type="button" id="fl-edit-reload" class="bt-btn bt-btn--sm bt-btn--secondary">Load latest</button>
+      </div>
+
+      ${EDIT_FIELDS.map((f) => editFieldHtml(f, request)).join("")}
+
+      <div class="bt-field">
+        <label class="bt-label" for="fl-e-reason">Reason for the edit</label>
+        <input id="fl-e-reason" class="bt-input" type="text" maxlength="${REASON_MAX_LENGTH}" placeholder="Optional, saved to the admin log">
+        <p class="bt-error" data-error-for="reason" hidden></p>
+      </div>
+
+      <p id="fl-edit-error" class="bt-error" hidden></p>
+      <div class="bt-modal-actions">
+        <button type="button" id="fl-edit-cancel" class="bt-btn bt-btn--secondary">Cancel</button>
+        <button type="button" id="fl-edit-save" class="bt-btn bt-btn--admin" disabled>Save changes</button>
+      </div>`;
+}
+
+function openDetailModal(requestId) {
+  let request = state.requests.find((r) => r.id === requestId);
+  if (!request) return;
+
+  // Live listeners for the current mode (comments, admin activity).
+  let unsubs = [];
+  const stopLive = () => {
+    unsubs.forEach((u) => u());
+    unsubs = [];
+  };
+
+  const { modal, close, setBeforeClose, setDismissible } = openModal({
+    wide: true,
+    feature: "feature-lab",
+    title: request.title,
+    content: viewHtml(request),
+    onClose: stopLive,
+  });
+  wireView();
+
+  async function loadLatest() {
+    const snap = await getDoc(doc(db, "featureRequests", requestId));
+    return snap.exists() ? { id: snap.id, ...snap.data() } : null;
+  }
+
+  function showView() {
+    stopLive();
+    setBeforeClose(null);
+    setDismissible(true); // a save locks the dialog while it runs
+    modal.classList.remove("bt-modal--editing");
+    modal.innerHTML = viewHtml(request);
+    wireView();
+  }
+
+  function itemGone(errorEl) {
+    errorEl.textContent = "This item no longer exists.";
+    errorEl.hidden = false;
+    modal.querySelectorAll("button, input, textarea, select").forEach((el) => (el.disabled = true));
+    setBeforeClose(null);
+    setTimeout(close, 1800);
+  }
+
+  // ----- view mode wiring -----
+  function wireView() {
+    modal.querySelector("[data-fl-edit]")?.addEventListener("click", showEdit);
+
+    // Live comment thread
+    const commentsList = modal.querySelector("#fl-comments-list");
+    unsubs.push(onSnapshot(
+      query(collection(db, "featureRequests", requestId, "comments"), orderBy("createdAt", "asc")),
+      (snapshot) => {
+        const comments = snapshot.docs.map((d) => d.data());
+        if (comments.length === 0) {
+          commentsList.innerHTML = `<p class="bt-meta">No comments yet.</p>`;
+          return;
+        }
+        commentsList.innerHTML = comments
+          .map(
+            (c) => `
+          <div class="bt-comment">
+            <div class="bt-comment-head">
+              <span class="bt-comment-author">${escapeHtml(c.authorName)}</span>
+              ${c.isAdminAuthor ? `<span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Admin</span>` : ""}
+              <span class="bt-comment-time">${formatDate(c.createdAt)}</span>
+            </div>
+            <p class="bt-comment-text">${escapeHtml(c.text)}</p>
+          </div>`
+          )
+          .join("");
+      },
+      (err) => {
+        console.error("Failed to load comments", err);
+        commentsList.innerHTML = `<p class="bt-meta">Couldn't load comments.</p>`;
       }
-      commentsList.innerHTML = comments
-        .map(
-          (c) => `
-        <div class="bt-comment">
-          <div class="bt-comment-head">
-            <span class="bt-comment-author">${escapeHtml(c.authorName)}</span>
-            ${c.isAdminAuthor ? `<span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Admin</span>` : ""}
-            <span class="bt-comment-time">${formatDate(c.createdAt)}</span>
-          </div>
-          <p class="bt-comment-text">${escapeHtml(c.text)}</p>
-        </div>`
-        )
-        .join("");
-    },
-    (err) => {
-      console.error("Failed to load comments", err);
-      commentsList.innerHTML = `<p class="bt-meta">Couldn't load comments.</p>`;
+    ));
+
+    // The composer owns the busy state, the empty/over-length guard and the
+    // error display; a thrown Error's message is what the member sees.
+    initComposer(modal.querySelector(".bt-composer"), {
+      onSubmit: async (text) => {
+        try {
+          await addDoc(collection(db, "featureRequests", requestId, "comments"), {
+            text,
+            authorId: state.memberId ?? "",
+            authorName: state.memberName,
+            isAdminAuthor: state.isAdmin,
+            createdAt: serverTimestamp(),
+          });
+        } catch (err) {
+          console.error("Failed to post comment", err);
+          throw new Error("Something went wrong posting your comment.");
+        }
+        await updateDoc(doc(db, "featureRequests", requestId), {
+          commentCount: increment(1),
+        }).catch((err) => console.error("Failed to bump comment count", err));
+      },
+    });
+
+    // Admin activity: this request's adminLog entries, newest first. The
+    // first run on a project needs a composite index (itemPath + createdAt
+    // desc); Firestore's error message links straight to creating it.
+    const activityEl = modal.querySelector("#fl-activity");
+    if (activityEl) {
+      unsubs.push(onSnapshot(
+        query(
+          collection(db, "adminLog"),
+          where("itemPath", "==", `featureRequests/${requestId}`),
+          orderBy("createdAt", "desc"),
+          limit(20)
+        ),
+        (snapshot) => { activityEl.innerHTML = activityListHtml(snapshot.docs.map((d) => d.data())); },
+        (err) => {
+          console.error("Failed to load admin activity (if this mentions an index, open its link to create it)", err);
+          activityEl.innerHTML = `<p class="bt-meta">Couldn't load admin activity.</p>`;
+        }
+      ));
     }
-  );
 
-  // The composer owns the busy state, the empty/over-length guard and the
-  // error display; a thrown Error's message is what the member sees.
-  initComposer(modal.querySelector(".bt-composer"), {
-    onSubmit: async (text) => {
-      try {
-        await addDoc(collection(db, "featureRequests", requestId, "comments"), {
-          text,
-          authorId: state.memberId ?? "",
-          authorName: state.memberName,
-          isAdminAuthor: state.isAdmin,
-          createdAt: serverTimestamp(),
+    // Admin controls (only present in the DOM if state.isAdmin)
+    const saveBtn = modal.querySelector("#fl-admin-save");
+    if (saveBtn) {
+      // Enabled only when status or priority differ from the saved request;
+      // a history entry (and its note) is written only on a real status
+      // change. firestore.rules enforces the same thing, so a double-click
+      // can't add a duplicate history entry.
+      const statusSel = modal.querySelector("#fl-status-select");
+      const prioritySel = modal.querySelector("#fl-priority-select");
+      const noteInput = modal.querySelector("#fl-note-input");
+      const errorEl = modal.querySelector("#fl-admin-error");
+      const read = () => ({ status: statusSel.value, priority: prioritySel.value || null });
+      let saving = false;
+      const refresh = () => {
+        const v = read();
+        const statusChanged = v.status !== request.status;
+        noteInput.disabled = !statusChanged;
+        saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null));
+      };
+      [statusSel, prioritySel].forEach((el) => {
+        el.addEventListener("input", refresh);
+        el.addEventListener("change", refresh);
+      });
+
+      saveBtn.addEventListener("click", async () => {
+        if (saveBtn.disabled) return;
+        const v = read();
+        const update = { updatedAt: serverTimestamp() };
+        if (v.priority !== (request.priority ?? null)) update.priority = v.priority;
+        if (v.status !== request.status) {
+          const historyEntry = {
+            status: v.status,
+            changedBy: state.memberName || "Admin",
+            changedAt: new Date().toISOString(),
+          };
+          const note = noteInput.value.trim();
+          if (note) historyEntry.note = note;
+          update.status = v.status;
+          update.statusHistory = arrayUnion(historyEntry);
+        }
+
+        saving = true;
+        errorEl.hidden = true;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
+        try {
+          await updateDoc(doc(db, "featureRequests", requestId), update);
+          close();
+        } catch (err) {
+          console.error("Failed to save admin changes", err);
+          errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
+          errorEl.hidden = false;
+          saving = false;
+          saveBtn.textContent = "Save changes";
+          refresh();
+        }
+      });
+    }
+
+    const deleteBtn = modal.querySelector("#fl-admin-delete");
+    if (deleteBtn) {
+      deleteBtn.addEventListener("click", async () => {
+        const ok = await confirmAction({
+          title: "Delete this request?",
+          message: `"${request.title}" will be removed, along with its comments and activity. This can't be undone.`,
+          confirmLabel: "Delete request",
+          busyLabel: "Deleting…",
+          feature: "feature-lab",
+          onConfirm: async () => {
+            const deleteFeatureRequest = httpsCallable(functions, "deleteFeatureRequest");
+            await deleteFeatureRequest({ requestId });
+          },
         });
-      } catch (err) {
-        console.error("Failed to post comment", err);
-        throw new Error("Something went wrong posting your comment.");
-      }
-      await updateDoc(doc(db, "featureRequests", requestId), {
-        commentCount: increment(1),
-      }).catch((err) => console.error("Failed to bump comment count", err));
-    },
-  });
+        if (ok) close();
+      });
+    }
+  }
 
-  // Admin controls (only present in the DOM if state.isAdmin)
-  const saveBtn = modal.querySelector("#fl-admin-save");
-  if (saveBtn) {
-    // Enabled only when status or priority differ from the saved request;
-    // a history entry (and its note) is written only on a real status
-    // change. firestore.rules enforces the same thing, so a double-click
-    // can't add a duplicate history entry.
-    const statusSel = modal.querySelector("#fl-status-select");
-    const prioritySel = modal.querySelector("#fl-priority-select");
-    const noteInput = modal.querySelector("#fl-note-input");
-    const errorEl = modal.querySelector("#fl-admin-error");
-    const read = () => ({ status: statusSel.value, priority: prioritySel.value || null });
+  // ----- edit mode (admins only) -----
+  function showEdit() {
+    if (!state.isAdmin) return;
+    stopLive();
+    modal.classList.add("bt-modal--editing");
+    modal.innerHTML = editHtml(request);
+
+    const inputs = EDIT_FIELDS.map((f) => ({ f, el: modal.querySelector(`[data-edit="${f.key}"]`) }));
+    const reasonInput = modal.querySelector("#fl-e-reason");
+    const saveBtn = modal.querySelector("#fl-edit-save");
+    const cancelBtn = modal.querySelector("#fl-edit-cancel");
+    const errorEl = modal.querySelector("#fl-edit-error");
+    const conflictEl = modal.querySelector("#fl-edit-conflict");
+
     let saving = false;
-    const refresh = () => {
-      const v = read();
-      const statusChanged = v.status !== request.status;
-      noteInput.disabled = !statusChanged;
-      saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null));
-    };
-    [statusSel, prioritySel].forEach((el) => {
+    let conflicted = false;
+
+    const original = (f) => request[f.key] ?? "";
+    const current = (f) => inputs.find((i) => i.f === f).el.value.trim();
+    const changedFields = () => EDIT_FIELDS.filter((f) => current(f) !== original(f));
+    const isDirty = () => changedFields().length > 0;
+
+    function fieldError(key, message) {
+      const el = modal.querySelector(`[data-error-for="${key}"]`);
+      const input = modal.querySelector(`[data-edit="${key}"]`) || (key === "reason" ? reasonInput : null);
+      if (el) {
+        el.textContent = message;
+        el.hidden = !message;
+      }
+      if (input) {
+        if (message) input.setAttribute("aria-invalid", "true");
+        else input.removeAttribute("aria-invalid");
+      }
+    }
+
+    function clearErrors() {
+      modal.querySelectorAll("[data-error-for]").forEach((el) => fieldError(el.dataset.errorFor, ""));
+      errorEl.hidden = true;
+    }
+
+    function refresh() {
+      saveBtn.disabled = saving || conflicted || !isDirty();
+    }
+
+    function lock(locked) {
+      modal.querySelectorAll("#fl-edit-save, #fl-edit-cancel, [data-edit], #fl-e-reason")
+        .forEach((el) => (el.disabled = locked));
+      setDismissible(!locked);
+      if (!locked) refresh();
+    }
+
+    function validate() {
+      clearErrors();
+      let ok = true;
+      for (const f of changedFields()) {
+        const len = current(f).length;
+        if (len < f.min || len > f.max) {
+          ok = false;
+          fieldError(f.key, `${f.name} needs to be ${f.min}–${f.max.toLocaleString("en-US")} characters.`);
+        }
+      }
+      if (reasonInput.value.trim().length > REASON_MAX_LENGTH) {
+        ok = false;
+        fieldError("reason", `Reason can be at most ${REASON_MAX_LENGTH} characters.`);
+      }
+      if (!ok) modal.querySelector('[aria-invalid="true"]')?.focus();
+      return ok;
+    }
+
+    const discardGuard = async () => !isDirty() || confirmAction({
+      title: "Discard your changes?",
+      message: "Your edits haven't been saved.",
+      confirmLabel: "Discard",
+      busyLabel: "Discarding…",
+      feature: "feature-lab",
+      onConfirm: async () => {},
+    });
+    setBeforeClose(discardGuard);
+
+    // Listen on the fields themselves: `modal` outlives each edit session.
+    inputs.forEach(({ el }) => {
       el.addEventListener("input", refresh);
       el.addEventListener("change", refresh);
     });
 
+    cancelBtn.addEventListener("click", async () => {
+      if (await discardGuard()) showView();
+    });
+
+    modal.querySelector("#fl-edit-reload").addEventListener("click", async () => {
+      const latest = await loadLatest().catch((err) => {
+        console.error("Failed to load the latest request", err);
+        return undefined;
+      });
+      if (latest === null) return itemGone(errorEl);
+      if (!latest) {
+        errorEl.textContent = "Couldn't load the latest version. Try again.";
+        errorEl.hidden = false;
+        return;
+      }
+      request = latest;
+      showEdit();
+    });
+
     saveBtn.addEventListener("click", async () => {
-      if (saveBtn.disabled) return;
-      const v = read();
-      const update = { updatedAt: serverTimestamp() };
-      if (v.priority !== (request.priority ?? null)) update.priority = v.priority;
-      if (v.status !== request.status) {
-        const historyEntry = {
-          status: v.status,
-          changedBy: state.memberName || "Admin",
-          changedAt: new Date().toISOString(),
-        };
-        const note = noteInput.value.trim();
-        if (note) historyEntry.note = note;
-        update.status = v.status;
-        update.statusHistory = arrayUnion(historyEntry);
+      if (saveBtn.disabled || !validate()) return;
+      saving = true;
+      lock(true);
+      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
+
+      const changes = {};
+      const before = {};
+      for (const f of changedFields()) {
+        changes[f.key] = current(f);
+        before[f.key] = request[f.key] ?? "";
       }
 
-      saving = true;
-      errorEl.hidden = true;
-      saveBtn.disabled = true;
-      saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
       try {
-        await updateDoc(doc(db, "featureRequests", requestId), update);
-        close();
+        const adminEditItem = httpsCallable(functions, "adminEditItem");
+        await adminEditItem({
+          feature: "featureLab",
+          id: requestId,
+          changes,
+          before,
+          reason: reasonInput.value.trim(),
+        });
+        request = (await loadLatest().catch(() => null)) ?? request;
+        showView();
       } catch (err) {
-        console.error("Failed to save admin changes", err);
-        errorEl.textContent = "Couldn't save changes — you may need to sign in again.";
-        errorEl.hidden = false;
         saving = false;
         saveBtn.textContent = "Save changes";
-        refresh();
+        console.error("Failed to save the edit", err);
+        if (err.code === "functions/not-found") return itemGone(errorEl);
+        if (err.code === "functions/aborted") {
+          conflicted = true;
+          conflictEl.hidden = false;
+          lock(false);
+          conflictEl.scrollIntoView({ block: "nearest" });
+          modal.querySelector("#fl-edit-reload").focus();
+          return;
+        }
+        if (err.code === "functions/invalid-argument" && err.details?.field) {
+          fieldError(err.details.field, err.message);
+        } else {
+          errorEl.textContent = "Couldn't save your changes. Try again.";
+          errorEl.hidden = false;
+        }
+        lock(false);
       }
     });
-  }
 
-  const deleteBtn = modal.querySelector("#fl-admin-delete");
-  if (deleteBtn) {
-    deleteBtn.addEventListener("click", async () => {
-      const ok = await confirmAction({
-        title: "Delete this request?",
-        message: `"${request.title}" will be removed, along with its comments and activity. This can't be undone.`,
-        confirmLabel: "Delete request",
-        busyLabel: "Deleting…",
-        feature: "feature-lab",
-        onConfirm: async () => {
-          const deleteFeatureRequest = httpsCallable(functions, "deleteFeatureRequest");
-          await deleteFeatureRequest({ requestId });
-        },
-      });
-      if (ok) close();
-    });
+    modal.querySelector("#fl-e-title").focus();
   }
 }
 

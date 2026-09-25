@@ -29,16 +29,17 @@ everything else (layout, colors, buttons, forms, modals, badges) is shared.
 
 | Field | Type | Set by |
 |---|---|---|
-| `title` | string | member, on create |
-| `description` | string | member, on create |
+| `title` | string | member, on create; admins can correct it via `adminEditItem` |
+| `description` | string | member, on create; admins can correct it via `adminEditItem` |
 | `status` | `submitted`\|`under_review`\|`planned`\|`in_progress`\|`shipped`\|`declined` | admin only |
 | `priority` | `low`\|`medium`\|`high`\|`null` | admin only |
 | `votes` | array of strings (MemberSpace member id, as a string) | members, one id added/removed at a time |
 | `commentCount` | number | bumped by 1 whenever a comment is posted — kept as a plain field so the list view doesn't need to read every request's comments subcollection just to show a count |
 | `requesterId` | string | MemberSpace `memberInfo.id`, `String()`-cast, set on create |
 | `requesterName` | string | MemberSpace `memberInfo.name`, captured on create |
-| `createdAt` / `updatedAt` | timestamp | server; `updatedAt` is bumped on every admin save |
-| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | seeded with one `submitted` entry at creation, then appended via `arrayUnion` every time an admin clicks "Save changes" (one entry per save, using whatever status is currently selected, even if unchanged) |
+| `createdAt` / `updatedAt` | timestamp | server; `updatedAt` is bumped on every admin panel save |
+| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | seeded with one `submitted` entry at creation, then appended via `arrayUnion` only when an admin saves a real status change (one entry, carrying the optional note). `firestore.rules` (`isConsistentStatusChange`) rejects a history entry without a status change |
+| `editedAt` / `editCount` | timestamp / number | **only** `adminEditItem`; never settable from a browser. `editedAt` drives the public "Edited by an admin on DATE" note |
 
 ### `featureRequests/{requestId}/comments/{commentId}` (subcollection)
 

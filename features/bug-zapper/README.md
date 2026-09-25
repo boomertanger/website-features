@@ -129,22 +129,23 @@ Squarespace Header Code Injection, so the Code Block is just:
 
 | Field | Type | Set by |
 |---|---|---|
-| `title` | string | member, on create |
-| `page` | string (free text, 1–300 chars; older reports hold the former dropdown values) | member, on create |
-| `whatHappened` | string | member, on create |
-| `expectedInstead` | string | member, on create |
-| `stepsToReproduce` | string | member, on create |
-| `severity` | `Cosmetic`\|`Minor`\|`Major`\|`Critical` | member, on create |
+| `title` | string | member, on create; admins can correct it via `adminEditItem` |
+| `page` | string (free text, 1–300 chars; older reports hold the former dropdown values) | member, on create; admins can correct it via `adminEditItem` |
+| `whatHappened` | string | member, on create; admins can correct it via `adminEditItem` |
+| `expectedInstead` | string | member, on create; admins can correct it via `adminEditItem` |
+| `stepsToReproduce` | string | member, on create; admins can correct it via `adminEditItem` |
+| `severity` | `Cosmetic`\|`Minor`\|`Major`\|`Critical` | member, on create; admins can correct it via `adminEditItem` |
 | `priority` | `Low`\|`Normal`\|`High`\|`Urgent`\|`null` | admin only |
 | `status` | `Open`\|`In progress`\|`Fixed`\|`Won't fix`\|`Can't reproduce`\|`Duplicate` | admin only |
 | `statusChangedAt` | timestamp | admin only, bumped only when `status` actually changes — Disk Stash's cleanup rule ages off this field |
 | `duplicateOf` | string \| null | admin only |
-| `screenshotUrl` | string \| null | **only** `recordBugScreenshot` (Admin SDK) or Disk Stash's safe-delete path — never a direct client write |
+| `screenshotUrl` | string \| null (missing after a Disk Stash purge) | **only** `recordBugScreenshot`, `adminEditItem` (replace/remove) or Disk Stash's safe-delete path (all Admin SDK) — never a direct client write |
 | `reporterUid` | string | member's Firebase Auth uid (anonymous or real), set on create |
 | `reporterName` | string | MemberSpace `memberInfo.name`, captured on create |
 | `meTooBy` | array of strings | members, one uid added/removed at a time (field name unchanged even though the UI now says "bit me too" — no schema/rules impact from the rename) |
 | `commentCount` | number | bumped by 1 whenever a comment is posted (via the `isCommentCountBump` narrow rule exception) — kept as a plain field, not derived, so the list view doesn't need to read every report's comments subcollection just to show a count |
-| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | seeded with one opening entry (`status: "Open"`) at report creation, so the History timeline always shows when a bug was first opened — then appended via `arrayUnion` every time an admin clicks "Save changes," one entry per save, using whatever status is currently selected (even if unchanged) |
+| `statusHistory` | array of `{ status, changedBy, changedAt, note? }` | seeded with one opening entry (`status: "Open"`) at report creation, so the History timeline always shows when a bug was first opened — then appended via `arrayUnion` only when an admin saves a real status change (one entry, carrying the optional note). `firestore.rules` (`isConsistentStatusChange`) rejects a history entry without a status change |
+| `editedAt` / `editCount` | timestamp / number | **only** `adminEditItem`; never settable from a browser. `editedAt` drives the public "Edited by an admin on DATE" note |
 
 ### `bugReports/{reportId}/comments/{commentId}` (subcollection)
 
