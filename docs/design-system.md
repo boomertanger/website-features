@@ -22,6 +22,44 @@ site-wide: the Inter font links and `shared/bt-ui.css` from a jsDelivr semver ra
 After release, a staging page can still override the header's copy by loading
 `bt-ui.css@<sha>` in its Code Block (later stylesheet wins).
 
+### Staging loader
+Staging pages use a small loader instead of commit-pinned URLs, so they
+never need editing after a push. On every page load it asks GitHub for the
+newest `dev` commit and loads the files pinned to that exact commit (so the
+jsDelivr branch cache can't serve stale files). If GitHub's unauthenticated
+limit (60 lookups/hour per visitor) is hit, it falls back to `@dev` and says
+so. A small corner badge shows which commit is running. Template (replace
+FEATURE_CSS, FEATURE_JS, ROOT_ID):
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<div id="ROOT_ID"></div>
+<script type="module">
+  // Boomertanger staging loader: always runs the newest dev commit.
+  const REPO = "boomertanger/website-features";
+  const CSS = ["shared/bt-ui.css", "FEATURE_CSS"];
+  const JS = "FEATURE_JS";
+  let sha = "dev", note = "fallback";
+  try {
+    const r = await fetch(`https://api.github.com/repos/${REPO}/commits/dev`, { headers: { Accept: "application/vnd.github.sha" }, cache: "no-store" });
+    if (r.ok) { sha = (await r.text()).trim(); note = ""; }
+  } catch (e) {}
+  const base = `https://cdn.jsdelivr.net/gh/${REPO}@${sha}/`;
+  await Promise.all(CSS.map((f) => new Promise((res) => {
+    const l = document.createElement("link"); l.rel = "stylesheet"; l.href = base + f;
+    l.onload = l.onerror = res; document.head.appendChild(l);
+  })));
+  await import(base + JS);
+  const b = document.createElement("div");
+  b.textContent = `staging @${sha.slice(0, 7)}${note ? " (" + note + ")" : ""}`;
+  b.style.cssText = "position:fixed;left:8px;bottom:8px;z-index:2147483647;font:600 11px/1 system-ui,sans-serif;padding:5px 8px;border-radius:6px;background:#1e1a1d;color:#a89a9c;border:1px solid #332b2e;pointer-events:none";
+  document.body.appendChild(b);
+  console.info("[bt staging] loaded", sha);
+</script>
+```
+Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
+
 ## 2. How the CSS is built
 - Everything is scoped under `.bt-root`. Plain Squarespace pages are untouched.
 - Every shared selector starts with `.bt-root:not(#_)` — `:not(#_)` matches everything
@@ -37,8 +75,9 @@ After release, a staging page can still override the header's copy by loading
 |---|---|
 | Surfaces/text | `bg` `surface` `surface-2` `border` `border-2` `text` `text-muted` `text-faint` |
 | Brand | `primary` (interactive only) `primary-hover` `primary-bg` `primary-soft` · `title` (gold, headings) · `danger` `danger-hover` `danger-bg` `danger-text` (destructive only) |
-| Brand (added) | `primary-rgb` (145, 70, 255, for `rgba(var(--bt-primary-rgb), a)` glows) · `neon` (#b98aff, lit row edge) · `title-gradient` (gold → ember, page title only) |
+| Brand (added) | `primary-rgb` (145, 70, 255, for `rgba(var(--bt-primary-rgb), a)` glows) · `neon` (#b98aff, lit row edge) · `title-gradient` (gold holds for the first 25%, then fades to ember; page title only) |
 | Admin (restricted, not destructive) | `admin-text` `admin-accent` `admin-tint` `admin-panel-bg` `admin-panel-border` `admin-tag` |
+| Admin (added) | `admin-btn-text` (dark text on the admin button) · `admin-neon` / `admin-neon-rgb` (bright neon green hover) |
 | Status tones | `amber` `blue` `teal` `green` `gray` `red`, each with `-bg` |
 | Spacing | `space-0h`(2) `1`(4) `1h`(6) `2`(8) `3`(12) `4`(16) `5`(20) `6`(24) `8`(32) `12`(48) `16`(64) · `gutter` (32, 20 when narrow) |
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
@@ -100,9 +139,17 @@ slot never clips, so animations can burst past it). Top-bar action buttons: icon
 Wire with `initAdminMenu(root)`; call `.sync()` after toggling any control's `.hidden`.
 
 **Buttons:** `.bt-btn` + `--primary` | `--secondary` | `--ghost` | `--danger` |
-`--danger-outline` (row-level destructive, e.g. table "Purge"); size `--sm`; `--block`.
+`--danger-outline` | `--admin`; size `--sm`; `--block`.
 `.bt-icon-btn` (36px, e.g. close) and `.bt-icon-btn--sm` (28px). Busy state: prepend
 `<span class="bt-spinner"></span>` and disable.
+
+**Buttons (updated).** Row-level destructive actions (e.g. the table's
+"Purge") use the same solid red as every delete: `.bt-btn--sm .bt-btn--danger`.
+`.bt-btn--danger-outline` stays in the kit but isn't used by current features.
+New `.bt-btn--admin`: solid soft green at rest, bright neon green with a glow
+on hover. Use it for EVERY admin-only action button across the site (Add
+rule, Save rule, Save status in admin panels, etc.) so green buttons always
+mean "admin action". Purple primary stays for member-facing actions.
 
 **Chips:** `.bt-chip` (+ `.is-active`, `aria-pressed`), `.bt-chip--small`. Inside
 `.bt-sortbar`, active chips are purple-tinted.

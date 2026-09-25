@@ -215,7 +215,7 @@ function assetsCard() {
             <td><span class="bt-code">${escapeHtml(a.path)}</span></td>
             <td class="bt-muted">${a.age}</td>
             <td class="bt-num bt-muted">${formatBytes(a.bytes)}</td>
-            <td class="bt-table-action"><button type="button" class="bt-btn bt-btn--sm bt-btn--danger-outline" data-dash-purge="${a.id}">Purge</button></td>
+            <td class="bt-table-action"><button type="button" class="bt-btn bt-btn--sm bt-btn--danger" data-dash-purge="${a.id}">Purge</button></td>
           </tr>`).join("")}</tbody>
       </table></div>`
     : `<div class="bt-empty bt-empty--compact"><p class="bt-empty-title">No files tracked yet</p><p>Files show up here once a feature saves an upload.</p></div>`;
@@ -255,14 +255,14 @@ function rulesCard() {
       </div>
       <div class="bt-form-actions">
         <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-dash-cancel>Cancel</button>
-        <button type="button" class="bt-btn bt-btn--sm bt-btn--primary" data-dash-save>Save rule</button>
+        <button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-dash-save>Save rule</button>
       </div>
     </div>` : "";
   return `
   <div class="bt-card">
     <div class="bt-card-head">
       <h2 class="bt-card-title">Cleanup rules</h2>
-      ${dash.adding ? "" : `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-dash-add>${ICON.plus}Add rule</button>`}
+      ${dash.adding ? "" : `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-dash-add>${ICON.plus}Add rule</button>`}
     </div>
     ${items}
     ${form}
@@ -383,7 +383,7 @@ function adminPanelHtml(r) {
         <input class="bt-input" id="kit-note" placeholder="Optional">
         <span class="bt-hint">Shown to members next to the status change.</span>
       </div>
-      <div><button type="button" class="bt-btn bt-btn--primary">Save status</button></div>
+      <div><button type="button" class="bt-btn bt-btn--admin">Save status</button></div>
     </div>`;
 }
 
@@ -568,6 +568,7 @@ function pageHtml() {
       <button type="button" class="bt-btn bt-btn--secondary">Cancel</button>
       <button type="button" class="bt-btn bt-btn--ghost">Clear filters</button>
       <button type="button" class="bt-btn bt-btn--danger">${ICON.trash}Delete report</button>
+      <button type="button" class="bt-btn bt-btn--admin">Save status</button>
       <button type="button" class="bt-btn bt-btn--primary" disabled>Disabled</button>
       <button type="button" class="bt-btn bt-btn--danger" disabled><span class="bt-spinner" aria-hidden="true"></span>Deleting…</button>
       <button type="button" class="bt-icon-btn" aria-label="Close">${'<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>'}</button>
@@ -635,7 +636,7 @@ function pageHtml() {
 
   <section class="kit-section">
     <h2 class="kit-h">Dashboard parts</h2>
-    <p class="kit-p">Row-level destructive actions use a red outline, so a table full of them stays calm. The solid red button is saved for the final confirmation. Monospace appears only for literal identifiers like <span class="bt-code">bugReports/k2Pq81</span>.</p>
+    <p class="kit-p">Row-level destructive actions use the same solid red as every delete, in the small size. Green buttons are admin-only actions: soft green at rest, neon on hover. Monospace appears only for literal identifiers like <span class="bt-code">bugReports/k2Pq81</span>.</p>
     <p class="kit-sub">Meters</p>
     <div class="kit-grid-2">
       <div class="bt-meter bt-meter--green"><div class="bt-meter-track"><div class="bt-meter-fill" style="width:48%"></div><div class="bt-meter-marker" style="left:80%"></div></div><div class="bt-meter-legend"><span>Healthy</span><span>48%</span></div></div>
@@ -645,9 +646,9 @@ function pageHtml() {
     </div>
     <p class="kit-sub">Small buttons and switches</p>
     <div class="kit-row">
-      <button type="button" class="bt-btn bt-btn--sm bt-btn--primary">Save rule</button>
-      <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary">${ICON.plus}Add rule</button>
-      <button type="button" class="bt-btn bt-btn--sm bt-btn--danger-outline">Purge</button>
+      <button type="button" class="bt-btn bt-btn--sm bt-btn--admin">${ICON.plus}Add rule</button>
+      <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary">Cancel</button>
+      <button type="button" class="bt-btn bt-btn--sm bt-btn--danger">Purge</button>
       <button type="button" class="bt-icon-btn bt-icon-btn--sm" aria-label="Delete">${ICON.x}</button>
       <button type="button" class="bt-switch" role="switch" aria-checked="true" data-kit-switch aria-label="Example switch, on"></button>
       <button type="button" class="bt-switch" role="switch" aria-checked="false" data-kit-switch aria-label="Example switch, off"></button>

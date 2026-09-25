@@ -41,7 +41,7 @@
   --bt-primary-bg: rgba(145, 70, 255, 0.14);
   --bt-primary-soft: #c9a8ff;     /* text on a primary-tinted background */
   --bt-title: #ffa100;            /* page headings only */
-  --bt-title-gradient: linear-gradient(90deg, #ffa100 0%, #ff7a12 45%, #f0441c 100%);  /* page title only */
+  --bt-title-gradient: linear-gradient(90deg, #ffa100 0%, #ffa100 25%, #ff7a12 62%, #f0441c 100%);  /* page title only: gold holds for the first quarter */
   --bt-danger: #ae201b;           /* destructive actions ONLY */
   --bt-danger-hover: #c2261f;
   --bt-danger-bg: rgba(174, 32, 27, 0.14);
@@ -54,6 +54,9 @@
   --bt-admin-panel-bg: #0d2418;
   --bt-admin-panel-border: #3ba86b;
   --bt-admin-tag: #5fe89a;
+  --bt-admin-btn-text: #0f1a13;   /* dark text on the solid admin button */
+  --bt-admin-neon: #6dffae;       /* admin button hover: bright neon green */
+  --bt-admin-neon-rgb: 109, 255, 174;
 
   /* Status colors — functional, not brand. Never the primary purple. */
   --bt-amber: #d9a441;  --bt-amber-bg: rgba(217, 164, 65, 0.14);
@@ -279,6 +282,15 @@
 .bt-root:not(#_) .bt-btn--danger { background: var(--bt-danger); color: var(--bt-text); }
 .bt-root:not(#_) .bt-btn--danger:hover:not(:disabled) { background: var(--bt-danger-hover); }
 .bt-root:not(#_) .bt-btn--block { width: 100%; }
+/* Admin action: every admin-only action button (Add rule, Save rule, Save status…).
+   Soft admin green at rest, bright neon green with a glow on hover. */
+.bt-root:not(#_) .bt-btn--admin { background: var(--bt-admin-accent); border-color: var(--bt-admin-accent); color: var(--bt-admin-btn-text); transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; }
+.bt-root:not(#_) .bt-btn--admin:hover:not(:disabled) {
+  background: var(--bt-admin-neon);
+  border-color: var(--bt-admin-neon);
+  box-shadow: 0 0 0 1px rgba(var(--bt-admin-neon-rgb), 0.55), 0 0 14px rgba(var(--bt-admin-neon-rgb), 0.55), 0 0 32px rgba(var(--bt-admin-neon-rgb), 0.22);
+}
+.bt-root:not(#_) .bt-btn--admin:focus-visible { outline-color: var(--bt-admin-neon); }
 
 .bt-root:not(#_) .bt-icon-btn {
   display: inline-flex;
