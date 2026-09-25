@@ -1,10 +1,10 @@
 // shared/ui-kit/ui-kit.js — renders the UI Kit reference page into #bt-ui-kit.
 // Squarespace Code Block: <div id="bt-ui-kit"></div> + this script + ui-kit.css
 // (bt-ui.css itself comes from Header Code Injection).
-import { escapeHtml, formatDate, initials } from "../ui/dom.js";
+import { escapeHtml, formatDate, initials, levelBars } from "../ui/dom.js";
 import { openModal, modalHeader } from "../ui/modal.js";
 import { confirmAction } from "../ui/confirm.js";
-import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../ui/admin-menu.js";
+import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON, PENCIL_ICON } from "../ui/admin-menu.js";
 import { initRowSpotlight } from "../ui/effects.js";
 import { composerHtml, initComposer } from "../ui/composer.js";
 import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
@@ -40,21 +40,30 @@ const DEMO_SHOT = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="h
 <text x="60" y="800" font-family="Arial" font-size="16" fill="#786e70">Console: TypeError: overlay.zIndex is undefined at chat-overlay.js:214:17</text>
 </svg>`);
 
+// The site-wide badge system (same word, same color in every feature).
 const STATUS = {
-  submitted:    { label: "Submitted",    tone: "gray" },
-  under_review: { label: "Under review", tone: "blue" },
-  planned:      { label: "Planned",      tone: "amber" },
-  in_progress:  { label: "In progress",  tone: "teal" },
-  shipped:      { label: "Shipped",      tone: "green" },
-  declined:     { label: "Declined",     tone: "gray" },
+  submitted:   { label: "Submitted",   tone: "blue" },
+  planned:     { label: "Planned",     tone: "gold" },
+  in_progress: { label: "In progress", tone: "green" },
+  shipped:     { label: "Shipped",     tone: "lime" },
+  declined:    { label: "Declined",    tone: "gray" },
 };
+const BADGE_SYSTEM = [
+  ["Bug: how bad is it", "level", [["blue", "Cosmetic"], ["gold", "Minor"], ["pink", "Major"], ["red", "Critical"]]],
+  ["Bug: priority", "level", [["blue", "Low"], ["gold", "Normal"], ["pink", "High"], ["red", "Urgent"]]],
+  ["Bug: status", "status", [["blue", "Open"], ["green", "In progress"], ["lime", "Fixed"], ["gray", "Won't fix"], ["gray", "Can't reproduce"], ["gray", "Duplicate"]]],
+  ["Feature: priority", "level", [["blue", "Low"], ["gold", "Medium"], ["pink", "High"]]],
+  ["Feature: status", "status", [["blue", "Submitted"], ["gold", "Planned"], ["green", "In progress"], ["lime", "Shipped"], ["gray", "Declined"]]],
+];
+const PRIORITY = [["blue", "Low"], ["gold", "Medium"], ["pink", "High"]];
+const levelBadge = (i, list) => `<span class="bt-badge bt-badge--${list[i][0]}">${levelBars(i + 1, list.length)}${list[i][1]}</span>`;
 
 const ROWS = [
-  { id: "r1", title: "Clip button on the live page", desc: "Let viewers grab the last 30 seconds of the stream without leaving the site or opening Twitch.", votes: 42, voted: true, status: "in_progress", comments: 7, author: "Hollow Moth", date: "2026-09-12" },
-  { id: "r2", title: "Spoiler tags in chat", desc: "Blur messages about endings and jump scares until you click to reveal them.", votes: 31, voted: false, status: "under_review", comments: 4, author: "Vera Crane", date: "2026-09-03" },
-  { id: "r3", title: "Schedule shown in my time zone", desc: "The events page lists everything in Eastern time. Convert it to wherever I am.", votes: 18, voted: false, status: "planned", comments: 2, author: "Ash", date: "2026-08-27" },
-  { id: "r4", title: "Monthly scare-o-meter leaderboard", desc: "Rank the games by how many times chat screamed.", votes: 57, voted: true, status: "shipped", comments: 12, author: "Grim Tuesday", date: "2026-07-30" },
-  { id: "r5", title: "Move the community to a forum", desc: "Replace the Discord with threaded forum boards on the site.", votes: 6, voted: false, status: "declined", comments: 9, author: "Pale Rider", date: "2026-07-11" },
+  { id: "r1", title: "Clip button on the live page", desc: "Let viewers grab the last 30 seconds of the stream without leaving the site or opening Twitch.", votes: 42, voted: true, status: "in_progress", comments: 7, pri: 2, author: "Hollow Moth", date: "2026-09-12" },
+  { id: "r2", title: "Spoiler tags in chat", desc: "Blur messages about endings and jump scares until you click to reveal them.", votes: 31, voted: false, status: "submitted", comments: 4, pri: 1, author: "Vera Crane", date: "2026-09-03" },
+  { id: "r3", title: "Schedule shown in my time zone", desc: "The events page lists everything in Eastern time. Convert it to wherever I am.", votes: 18, voted: false, status: "planned", comments: 2, pri: 0, author: "Ash", date: "2026-08-27" },
+  { id: "r4", title: "Monthly scare-o-meter leaderboard", desc: "Rank the games by how many times chat screamed.", votes: 57, voted: true, status: "shipped", comments: 12, pri: 2, author: "Grim Tuesday", date: "2026-07-30" },
+  { id: "r5", title: "Move the community to a forum", desc: "Replace the Discord with threaded forum boards on the site.", votes: 6, voted: false, status: "declined", comments: 9, pri: 0, author: "Pale Rider", date: "2026-07-11" },
 ];
 
 const state = { width: "full", admin: false, list: "loaded", filter: "all", sort: "votes", rows: ROWS.map((r) => ({ ...r })) };
@@ -99,7 +108,7 @@ function rowHtml(r) {
       <div class="bt-row-meta"><span class="bt-avatar">${initials(r.author)}</span><span>${escapeHtml(r.author)}</span></div>
     </div>
     <div class="bt-row-side">
-      <div class="bt-row-badges">${badge(r.status)}</div>
+      <div class="bt-row-badges">${badge(r.status)}${levelBadge(r.pri ?? 0, PRIORITY)}</div>
       <span class="bt-count">${ICON.comment}${r.comments}</span>
       <span class="bt-row-date">${formatDate(r.date + "T12:00:00")}</span>
     </div>
@@ -363,9 +372,15 @@ const RADII = [["sm", 8], ["md", 10], ["lg", 12], ["xl", 16], ["full", 999]];
 
 // ---------- Detail modal content ----------
 
+function detailSubtitle(r) {
+  return `<span class="bt-meta">Requested by ${escapeHtml(r.author)} on ${formatDate(r.date + "T12:00:00")}</span>` +
+    (r.editedAt ? `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on ${formatDate(r.editedAt)}</span>` : "");
+}
+
 function detailContent(r) {
+  const tools = state.admin ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-kit-edit aria-label="Edit">${PENCIL_ICON}<span class="bt-btn-label">Edit</span></button>` : "";
   return `
-    ${modalHeader(escapeHtml(r.title), `<span class="bt-meta">Requested by ${escapeHtml(r.author)} on ${formatDate(r.date + "T12:00:00")}</span>`)}
+    ${modalHeader(escapeHtml(r.title), detailSubtitle(r), tools)}
     <div class="bt-row-badges">${badge(r.status)}</div>
     <div class="bt-modal-section">
       <p class="bt-section-label">Description</p>
@@ -391,6 +406,26 @@ function detailContent(r) {
     </div>`;
 }
 
+function editContent(r) {
+  return `
+    <div class="bt-edit-banner"><span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Editing as admin</span><span class="bt-meta">Changes are logged</span></div>
+    ${modalHeader(escapeHtml(r.title), detailSubtitle(r))}
+    <div class="bt-field"><label class="bt-label" for="kit-e-title">Title</label><input class="bt-input" id="kit-e-title" data-edit="title" value="${escapeHtml(r.title)}"></div>
+    <div class="bt-field"><label class="bt-label" for="kit-e-desc">What should it do?</label><textarea class="bt-textarea" id="kit-e-desc" data-edit="desc">${escapeHtml(r.desc)}</textarea></div>
+    <div class="bt-field"><label class="bt-label" for="kit-e-reason">Reason for the edit</label><input class="bt-input" id="kit-e-reason" data-reason placeholder="Optional, saved to the admin log"></div>
+    <div class="bt-modal-actions">
+      <button type="button" class="bt-btn bt-btn--secondary" data-kit-edit-cancel>Cancel</button>
+      <button type="button" class="bt-btn bt-btn--admin" data-kit-edit-save disabled>Save changes</button>
+    </div>`;
+}
+
+function activityHtml(r) {
+  const items = (r.activity || []);
+  return `<div class="bt-modal-section"><p class="bt-section-label">Admin activity</p>${items.length ? `<div class="bt-history">${items.map((a) => `
+    <div class="bt-history-item"><div class="bt-history-line"><span class="bt-history-dot bt-history-dot--blue"></span><span class="bt-history-rule"></span></div>
+    <div class="bt-history-body"><div><strong style="font-weight:600">${escapeHtml(a.what)}</strong></div>${a.reason ? `<div style="color:var(--bt-text-muted);margin-top:2px">Reason: ${escapeHtml(a.reason)}</div>` : ""}<div class="bt-meta">Boomertanger, ${a.when}</div></div></div>`).join("")}</div>` : `<p class="bt-meta">No admin activity yet.</p>`}</div>`;
+}
+
 function adminPanelHtml(r) {
   return `
     <div class="bt-admin-panel">
@@ -405,6 +440,7 @@ function adminPanelHtml(r) {
         <span class="bt-hint">Shown to members next to the status change.</span>
       </div>
       <div><button type="button" class="bt-btn bt-btn--admin">Save status</button></div>
+      ${r && r.id ? activityHtml(r) : ""}
     </div>`;
 }
 
@@ -425,7 +461,7 @@ function commentsHtml() {
 function historyHtml() {
   const items = [
     ["in_progress", "Boomertanger", "Sep 14, 2026", "Started building the clip recorder."],
-    ["under_review", "Boomertanger", "Sep 12, 2026", ""],
+    ["planned", "Boomertanger", "Sep 12, 2026", ""],
     ["submitted", "Hollow Moth", "Sep 12, 2026", ""],
   ];
   return `<div class="bt-history">${items.map(([key, who, when, note]) => { const s = STATUS[key].label; return `
@@ -472,10 +508,50 @@ function openSubmit() {
 }
 
 function openDetail(r) {
-  const { modal, close } = openModal({ content: detailContent(r), wide: true, feature: "ui-kit" });
-  initComposer(modal.querySelector(".bt-composer"), { onSubmit: () => new Promise((res) => setTimeout(res, 900)) });
+  const { modal, close, setBeforeClose } = openModal({ content: detailContent(r), wide: true, feature: "ui-kit" });
   initLightboxTriggers(modal);
-  modal.querySelector("[data-kit-delete]")?.addEventListener("click", async () => {
+  let dirty = false;
+  const discardGuard = async () => !dirty || confirmAction({
+    title: "Discard your changes?", message: "Your edits haven't been saved.",
+    confirmLabel: "Discard", busyLabel: "Discarding…", feature: "ui-kit", onConfirm: async () => {},
+  });
+
+  function showView() {
+    dirty = false; setBeforeClose(null);
+    modal.classList.remove("bt-modal--editing");
+    modal.innerHTML = detailContent(r);
+    initComposer(modal.querySelector(".bt-composer"), { onSubmit: () => new Promise((res) => setTimeout(res, 900)) });
+    wireView();
+  }
+  function showEdit() {
+    modal.classList.add("bt-modal--editing");
+    modal.innerHTML = editContent(r);
+    setBeforeClose(discardGuard);
+    const inputs = [...modal.querySelectorAll("[data-edit]")];
+    const save = modal.querySelector("[data-kit-edit-save]");
+    const refresh = () => { dirty = inputs.some((el) => el.value !== r[el.dataset.edit]); save.disabled = !dirty || !modal.querySelector("#kit-e-title").value.trim(); };
+    modal.addEventListener("input", refresh);
+    modal.querySelector("#kit-e-title").focus();
+    modal.querySelector("[data-kit-edit-cancel]").addEventListener("click", async () => { if (await discardGuard()) showView(); });
+    save.addEventListener("click", async () => {
+      save.disabled = true; save.innerHTML = '<span class="bt-spinner" aria-hidden="true"></span>Saving…';
+      await new Promise((res) => setTimeout(res, 900));
+      const changed = inputs.filter((el) => el.value !== r[el.dataset.edit]).map((el) => el.dataset.edit === "desc" ? "description" : el.dataset.edit);
+      inputs.forEach((el) => { r[el.dataset.edit] = el.value.trim(); });
+      r.editedAt = new Date().toISOString();
+      r.activity = [{ what: `Edited ${changed.join(" and ")}`, reason: modal.querySelector("[data-reason]").value.trim(), when: formatDate(r.editedAt) }, ...(r.activity || [])];
+      renderPreview();
+      showView();
+    });
+  }
+  function wireView() {
+    modal.querySelector("[data-kit-edit]")?.addEventListener("click", showEdit);
+    modal.querySelector("[data-kit-delete]")?.addEventListener("click", onDelete);
+  }
+  initComposer(modal.querySelector(".bt-composer"), { onSubmit: () => new Promise((res) => setTimeout(res, 900)) });
+  wireView();
+
+  async function onDelete() {
     const ok = await confirmAction({
       title: "Delete this request?",
       message: `"${r.title}" and its votes will be removed. This can't be undone.`,
@@ -489,7 +565,7 @@ function openDetail(r) {
       state.rows = state.rows.filter((x) => x.id !== r.id);
       renderPreview();
     }
-  });
+  }
 }
 
 // ---------- Page ----------
@@ -609,16 +685,9 @@ function pageHtml() {
     <div class="kit-row">${chip("All", "a", true)}${chip("Open", "b", false)}${chip("Fixed", "c", false)}</div>
     <p class="kit-sub">Sort chips</p>
     <div class="bt-sortbar" style="padding:0">${chip("Most votes", "a", true, "bt-chip--small")}${chip("Newest", "b", false, "bt-chip--small")}</div>
-    <p class="kit-sub">Status badges</p>
-    <div class="kit-row">
-      <span class="bt-badge bt-badge--gray"><span class="bt-badge-dot"></span>Submitted</span>
-      <span class="bt-badge bt-badge--blue"><span class="bt-badge-dot"></span>Under review</span>
-      <span class="bt-badge bt-badge--amber"><span class="bt-badge-dot"></span>Planned</span>
-      <span class="bt-badge bt-badge--teal"><span class="bt-badge-dot"></span>In progress</span>
-      <span class="bt-badge bt-badge--green"><span class="bt-badge-dot"></span>Fixed</span>
-      <span class="bt-badge bt-badge--red"><span class="bt-badge-dot"></span>Critical</span>
-      <span class="bt-badge bt-badge--gray">No dot</span>
-    </div>
+    <p class="kit-sub">Badge system</p>
+    <p class="kit-p">Levels (how bad, priority) use signal bars and climb blue, gold, pink, red. Statuses use a dot: blue = new, gold = planned, green = in progress, lime = done, gray = closed. The same word is the same color in every feature.</p>
+    <div class="kit-ladder">${BADGE_SYSTEM.map(([name, kind, list]) => `<div class="kit-ladder-row"><span class="kit-scale-name">${name}</span><div class="kit-row" style="gap:8px">${list.map(([tone, label], i) => kind === "level" ? `<span class="bt-badge bt-badge--${tone}">${levelBars(i + 1, list.length)}${label}</span>` : `<span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>${label}</span>`).join("")}</div></div>`).join("")}</div>
     <p class="kit-sub">Counters, avatar, and tally</p>
     <div class="kit-row">
       <span class="bt-count">${ICON.comment}7</span>

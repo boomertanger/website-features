@@ -58,13 +58,18 @@
   --bt-admin-neon: #6dffae;       /* admin button hover: bright neon green */
   --bt-admin-neon-rgb: 109, 255, 174;
 
-  /* Status colors — functional, not brand. Never the primary purple. */
-  --bt-amber: #d9a441;  --bt-amber-bg: rgba(217, 164, 65, 0.14);
-  --bt-blue:  #6a93c9;  --bt-blue-bg:  rgba(106, 147, 201, 0.14);
-  --bt-teal:  #2ec4b6;  --bt-teal-bg:  rgba(46, 196, 182, 0.14);
-  --bt-green: #5fa876;  --bt-green-bg: rgba(95, 168, 118, 0.12);
+  /* Status/level tones — functional, not brand. Never the primary purple.
+     Levels (severity, priority) climb: blue → gold → pink → red.
+     Status: blue = new · gold = planned · green = in progress · lime = done · gray = closed. */
+  --bt-blue:  #6a93c9;  --bt-blue-bg:  rgba(106, 147, 201, 0.15);
+  --bt-gold:  #e3b341;  --bt-gold-bg:  rgba(227, 179, 65, 0.15);
+  --bt-pink:  #ff5fb8;  --bt-pink-bg:  rgba(255, 95, 184, 0.15);
+  --bt-red:   #ef5350;  --bt-red-bg:   rgba(239, 83, 80, 0.16);
+  --bt-green: #3ccf6e;  --bt-green-bg: rgba(60, 207, 110, 0.13);   /* distinct from the admin greens */
+  --bt-lime:  #b5e04a;  --bt-lime-bg:  rgba(181, 224, 74, 0.13);
   --bt-gray:  #a89a9c;  --bt-gray-bg:  #241f22;
-  --bt-red:   #e0605b;  --bt-red-bg:   rgba(174, 32, 27, 0.18);
+  --bt-teal:  #2ec4b6;  --bt-teal-bg:  rgba(46, 196, 182, 0.14);   /* spare tone, not in the status map */
+  --bt-amber: var(--bt-gold);  --bt-amber-bg: var(--bt-gold-bg);  /* old name, kept as an alias */
 
   /* Spacing scale (px): 2 4 6 8 12 16 20 24 32 48 64 */
   --bt-space-0h: 2px;
@@ -353,11 +358,23 @@
 }
 .bt-root:not(#_) .bt-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: currentColor; flex: none; }
 .bt-root:not(#_) .bt-badge--amber { color: var(--bt-amber); background: var(--bt-amber-bg); }
+.bt-root:not(#_) .bt-badge--gold  { color: var(--bt-gold);  background: var(--bt-gold-bg); }
+.bt-root:not(#_) .bt-badge--pink  { color: var(--bt-pink);  background: var(--bt-pink-bg); }
+.bt-root:not(#_) .bt-badge--lime  { color: var(--bt-lime);  background: var(--bt-lime-bg); }
 .bt-root:not(#_) .bt-badge--blue  { color: var(--bt-blue);  background: var(--bt-blue-bg); }
 .bt-root:not(#_) .bt-badge--teal  { color: var(--bt-teal);  background: var(--bt-teal-bg); }
 .bt-root:not(#_) .bt-badge--green { color: var(--bt-green); background: var(--bt-green-bg); }
 .bt-root:not(#_) .bt-badge--gray  { color: var(--bt-gray);  background: var(--bt-gray-bg); }
 .bt-root:not(#_) .bt-badge--red   { color: var(--bt-red);   background: var(--bt-red-bg); }
+/* Level badges (severity, priority) show signal bars instead of a dot:
+   <span class="bt-level" data-level="2" data-of="4"> via levelBars() in dom.js */
+.bt-root:not(#_) .bt-level { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; flex: none; }
+.bt-root:not(#_) .bt-level i { display: block; width: 3px; border-radius: 1px; background: currentColor; opacity: 0.28; }
+.bt-root:not(#_) .bt-level i:nth-child(1) { height: 4px; }
+.bt-root:not(#_) .bt-level i:nth-child(2) { height: 7px; }
+.bt-root:not(#_) .bt-level i:nth-child(3) { height: 9px; }
+.bt-root:not(#_) .bt-level i:nth-child(4) { height: 11px; }
+.bt-root:not(#_) .bt-level i.is-on { opacity: 1; }
 
 .bt-root:not(#_) .bt-count {
   display: inline-flex;
@@ -651,6 +668,9 @@
 .bt-root:not(#_) .bt-history-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--bt-text-faint); margin-top: 6px; flex: none; }
 /* Dots take the status's tone, same names as the badge modifiers. */
 .bt-root:not(#_) .bt-history-dot--amber { background: var(--bt-amber); }
+.bt-root:not(#_) .bt-history-dot--gold  { background: var(--bt-gold); }
+.bt-root:not(#_) .bt-history-dot--pink  { background: var(--bt-pink); }
+.bt-root:not(#_) .bt-history-dot--lime  { background: var(--bt-lime); }
 .bt-root:not(#_) .bt-history-dot--blue  { background: var(--bt-blue); }
 .bt-root:not(#_) .bt-history-dot--teal  { background: var(--bt-teal); }
 .bt-root:not(#_) .bt-history-dot--green { background: var(--bt-green); }
@@ -761,6 +781,26 @@
 .bt-root:not(#_) .bt-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--bt-space-4); }
 /* Title + optional subtitle travel together, 6px apart (modalHeader(title, subtitle)).
    Detail views put "Reported by … on …" in the subtitle slot. */
+/* Header button group (Edit + close). */
+.bt-root:not(#_) .bt-modal-tools { display: flex; align-items: center; gap: var(--bt-space-2); flex: none; }
+/* Admin edit mode: same dialog, green border + strip across the top. */
+.bt-root:not(#_) .bt-modal--editing { border-color: var(--bt-admin-panel-border); box-shadow: var(--bt-shadow-admin-inset), 0 0 0 1px rgba(59, 168, 107, 0.25); }
+.bt-root:not(#_) .bt-edit-banner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--bt-space-3);
+  flex-wrap: wrap;
+  margin: -28px -28px 0;
+  padding: 10px 28px;
+  background: var(--bt-admin-panel-bg);
+  border-bottom: 1px solid var(--bt-admin-panel-border);
+  border-radius: var(--bt-radius-xl) var(--bt-radius-xl) 0 0;
+}
+.bt-root:not(#_) .bt-edit-banner .bt-meta { color: var(--bt-admin-text); }
+/* Public "Edited by an admin on DATE" note (second line of the subtitle slot). */
+.bt-root:not(#_) .bt-edited { display: inline-flex; align-items: center; gap: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-edited svg { width: 12px; height: 12px; }
 .bt-root:not(#_) .bt-modal-heading { display: flex; flex-direction: column; gap: var(--bt-space-1h); min-width: 0; }
 .bt-root:not(#_) .bt-modal-subtitle { font-size: var(--bt-text-base); line-height: 1.5; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-modal-subtitle .bt-meta { font-size: inherit; }
@@ -861,6 +901,7 @@
   /* Modals */
   .bt-root:not(#_) .bt-modal-backdrop { --bt-modal-gap: 16px; padding-left: var(--bt-space-3); padding-right: var(--bt-space-3); }
   .bt-root:not(#_) .bt-modal { padding: var(--bt-space-5); }
+  .bt-root:not(#_) .bt-edit-banner { margin: calc(var(--bt-space-5) * -1) calc(var(--bt-space-5) * -1) 0; padding: 10px var(--bt-space-5); }
   .bt-root:not(#_) .bt-modal-actions .bt-btn { flex: 1 1 auto; }
   .bt-root:not(#_) .bt-admin-panel { padding: var(--bt-space-4); }
 }
@@ -932,6 +973,7 @@
 .bt-root:not(#_) .bt-meter { --bt-meter-color: var(--bt-green); display: flex; flex-direction: column; gap: var(--bt-space-2); }
 .bt-root:not(#_) .bt-meter--green { --bt-meter-color: var(--bt-green); }
 .bt-root:not(#_) .bt-meter--amber { --bt-meter-color: var(--bt-amber); }
+.bt-root:not(#_) .bt-meter--gold  { --bt-meter-color: var(--bt-gold); }
 .bt-root:not(#_) .bt-meter--red   { --bt-meter-color: var(--bt-red); }
 .bt-root:not(#_) .bt-meter--blue  { --bt-meter-color: var(--bt-blue); }
 .bt-root:not(#_) .bt-meter-track { position: relative; height: 12px; background: var(--bt-surface-2); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); }

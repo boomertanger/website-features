@@ -45,7 +45,7 @@ function onKeydown(e) {
   if (e.key === "Escape") {
     if (top.dismissible) {
       e.preventDefault();
-      top.close();
+      top.requestClose();
     }
     return;
   }
@@ -77,7 +77,8 @@ function onKeydown(e) {
  *  wide     true for the 680px detail width
  *  feature  sets data-feature on the portal for feature-specific CSS
  *  onClose  called after the modal is removed
- * Returns { modal, close, setDismissible }.
+ * Returns { modal, close, requestClose, setBeforeClose, setDismissible }.
+ * close() always closes; requestClose() runs the beforeClose guard first.
  * Any element with [data-bt-close] inside the modal closes it.
  */
 export function openModal({ content = "", title = "Dialog", wide = false, feature = "", onClose } = {}) {
@@ -125,6 +126,21 @@ export function openModal({ content = "", title = "Dialog", wide = false, featur
     modal,
     backdrop,
     dismissible: true,
+    beforeClose: null,
+    guarding: false,
+    // User-initiated close (Escape, backdrop, [data-bt-close]): runs the
+    // beforeClose guard first, e.g. an unsaved-changes check.
+    async requestClose() {
+      if (entry.guarding) return;
+      if (entry.beforeClose) {
+        entry.guarding = true;
+        let ok = false;
+        try { ok = await entry.beforeClose(); } finally { entry.guarding = false; }
+        if (!ok) return;
+      }
+      entry.close();
+    },
+    // Programmatic close: always closes, no guard (e.g. after a successful save).
     close() {
       const i = stack.indexOf(entry);
       if (i === -1) return;
@@ -142,10 +158,10 @@ export function openModal({ content = "", title = "Dialog", wide = false, featur
   stack.push(entry);
 
   backdrop.addEventListener("mousedown", (e) => {
-    if (e.target === backdrop && entry.dismissible) entry.close();
+    if (e.target === backdrop && entry.dismissible) entry.requestClose();
   });
   modal.addEventListener("click", (e) => {
-    if (e.target.closest("[data-bt-close]") && entry.dismissible) entry.close();
+    if (e.target.closest("[data-bt-close]") && entry.dismissible) entry.requestClose();
   });
 
   const initial = modal.querySelector("[autofocus]") || modal.querySelector(FOCUSABLE) || modal;
@@ -154,6 +170,9 @@ export function openModal({ content = "", title = "Dialog", wide = false, featur
   return {
     modal,
     close: () => entry.close(),
+    requestClose: () => entry.requestClose(),
+    // fn: async () => boolean. Return false to keep the dialog open.
+    setBeforeClose(fn) { entry.beforeClose = typeof fn === "function" ? fn : null; },
     setDismissible(value) {
       entry.dismissible = !!value;
       modal.querySelectorAll("[data-bt-close]").forEach((el) => (el.disabled = !value));
@@ -164,11 +183,13 @@ export function openModal({ content = "", title = "Dialog", wide = false, featur
 export const CLOSE_ICON =
   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
 
-// Standard header markup: title (+ optional subtitle) + close button.
+// Standard header markup: title (+ optional subtitle) + header buttons + close.
 // subtitleHtml: a short line under the title. New-item dialogs use it for a
-// one-sentence prompt; detail views use it for "Reported by … on …".
-export function modalHeader(titleHtml, subtitleHtml = "") {
+// one-sentence prompt; detail views use it for "Reported by … on …" (plus an
+// optional second line such as the "Edited by an admin" note).
+// toolsHtml: extra header buttons placed before the close button (e.g. Edit).
+export function modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "") {
   return `<div class="bt-modal-header"><div class="bt-modal-heading"><h2 class="bt-modal-title">${titleHtml}</h2>` +
     (subtitleHtml ? `<p class="bt-modal-subtitle">${subtitleHtml}</p>` : "") +
-    `</div><button type="button" class="bt-icon-btn" data-bt-close aria-label="Close">${CLOSE_ICON}</button></div>`;
+    `</div><div class="bt-modal-tools">${toolsHtml}<button type="button" class="bt-icon-btn" data-bt-close aria-label="Close">${CLOSE_ICON}</button></div></div>`;
 }

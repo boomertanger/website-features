@@ -30,3 +30,9 @@ export function initials(name) {
       .join("") || "?"
   );
 }
+
+// Signal bars for ordered scales (severity, priority): level n of `of`.
+// Put it first inside a .bt-badge in place of the status dot.
+export function levelBars(n, of = 4) {
+  return `<span class="bt-level" aria-hidden="true">${Array.from({ length: of }, (_, i) => `<i class="${i < n ? "is-on" : ""}"></i>`).join("")}</span>`;
+}

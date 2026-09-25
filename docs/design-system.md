@@ -78,15 +78,15 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Brand (added) | `primary-rgb` (145, 70, 255, for `rgba(var(--bt-primary-rgb), a)` glows) · `neon` (#b98aff, lit row edge) · `title-gradient` (gold holds for the first 25%, then fades to ember; page title only) |
 | Admin (restricted, not destructive) | `admin-text` `admin-accent` `admin-tint` `admin-panel-bg` `admin-panel-border` `admin-tag` |
 | Admin (added) | `admin-btn-text` (dark text on the admin button) · `admin-neon` / `admin-neon-rgb` (bright neon green hover) |
-| Status tones | `amber` `blue` `teal` `green` `gray` `red`, each with `-bg` |
+| Status/level tones | `blue` `gold` `pink` `red` `green` `lime` `gray` (each with `-bg`) · `teal` spare · `amber` = alias of `gold`. `--bt-green` is now #3ccf6e, deliberately distinct from the admin greens. |
 | Spacing | `space-0h`(2) `1`(4) `1h`(6) `2`(8) `3`(12) `4`(16) `5`(20) `6`(24) `8`(32) `12`(48) `16`(64) · `gutter` (32, 20 when narrow) |
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
 | Radii | `radius-sm`(8) `md`(10) `lg`(12) `xl`(16) `full` |
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
-Red = destroys data. Green = admin-only. Status tones only need to be distinct from each
-other and from purple.
+Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
+the site-wide badge system in §5 and are never purple.
 
 ## 4. Heading ladder
 | Level | Class | Look |
@@ -154,9 +154,33 @@ mean "admin action". Purple primary stays for member-facing actions.
 **Chips:** `.bt-chip` (+ `.is-active`, `aria-pressed`), `.bt-chip--small`. Inside
 `.bt-sortbar`, active chips are purple-tinted.
 
-**Badges:** `.bt-badge .bt-badge--{amber|blue|teal|green|gray|red}`, optional leading
-`<span class="bt-badge-dot"></span>`. Sentence case. Features map each status to a TONE
-NAME (not a color value): `{ label: "In progress", tone: "teal" }`.
+**Badges:** `.bt-badge .bt-badge--{blue|gold|pink|red|green|lime|gray|teal}` (`amber` = old
+alias of `gold`). Sentence case. Features map each value to a TONE NAME (not a color
+value): `{ label: "In progress", tone: "green" }`.
+
+**Badges: one site-wide system.** Same word, same color in every feature.
+- **Levels** (ordered scales: how bad, priority) climb **blue → gold → pink →
+  red** and show signal bars instead of a dot:
+  `<span class="bt-badge bt-badge--gold">${levelBars(2, 4)}Minor</span>`
+  (`levelBars(n, of)` from shared/ui/dom.js; `of` = number of steps in that
+  scale, `n` = this value's position starting at 1).
+- **Statuses** keep the dot and are colored by meaning: **blue** = new /
+  waiting for a look · **gold** = planned · **green** = in progress · **lime**
+  = done · **gray** = closed without a change (those rows also get
+  `.bt-row--dimmed`). History dots use the same tone as the status.
+
+| Scale | Values → tone |
+|---|---|
+| Bug: how bad is it (level, 4) | Cosmetic blue · Minor gold · Major pink · Critical red |
+| Bug: priority (level, 4) | Low blue · Normal gold · High pink · Urgent red |
+| Bug: status | Open blue · In progress green · Fixed lime · Won't fix gray · Can't reproduce gray · Duplicate gray |
+| Feature: priority (level, 3) | Low blue · Medium gold · High pink |
+| Feature: status | Submitted blue · Under review teal · Planned gold · In progress green · Shipped lime · Declined gray |
+
+Feature Lab's stored `under_review` status isn't in the original table; it uses the
+spare `teal` tone (decided with the badge system). Disk Stash usage keeps its meanings:
+Healthy green, Uploads paused gold, Over limit red.
+
 `.bt-count` = small counter pill (comments). `.bt-avatar` = 24px initials.
 
 **List rows**
@@ -214,6 +238,37 @@ the who/when line in the subtitle slot, so the order is always: title →
 Never place a subtitle as a separate child of `.bt-modal` (that's what caused
 the 20px gap).
 
+**Dialog header buttons.** `modalHeader(titleHtml, subtitleHtml, toolsHtml)`:
+the third argument places extra header buttons (e.g. Edit) in
+`.bt-modal-tools`, before the close button. The Edit button is
+`.bt-btn--sm .bt-btn--admin` with `PENCIL_ICON` and its text in
+`.bt-btn-label` (icon-only at ≤ 420px) plus `aria-label="Edit"`.
+
+**Admin edit mode.** The same dialog switches in place: add
+`.bt-modal--editing` to the `.bt-modal` element (green border) and start the
+content with `.bt-edit-banner` (`.bt-admin-tag--small` "Editing as admin" +
+`.bt-meta` "Changes are logged"). Fields are normal `.bt-field`s pre-filled
+with current values, then an optional "Reason for the edit" input, then
+`.bt-modal-actions` with Cancel (`--secondary`) and Save changes (`--admin`,
+disabled until something changed, "Saving…" while busy). Status stays in the
+admin panel, never in edit mode.
+
+**Edited note.** When an item has `editedAt`, its detail view subtitle gets a
+second line: `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on
+DATE</span>`. Never name the admin publicly.
+
+**Unsaved changes.** While editing, call `setBeforeClose(guard)` (returned by
+`openModal`). Escape, backdrop clicks, and `[data-bt-close]` run the guard;
+the guard shows `confirmAction({ title: "Discard your changes?", confirmLabel:
+"Discard" })` only if something changed. Programmatic `close()` skips the
+guard (use it after a successful save or delete). Clear the guard with
+`setBeforeClose(null)` when leaving edit mode.
+
+**Admin activity.** Inside the admin panel, a `.bt-modal-section` labelled
+"Admin activity" with a `.bt-history` list of this item's `adminLog` entries
+(newest first, up to 20): what changed, the reason if any, and "ADMIN NAME,
+DATE". Skeleton while loading; "No admin activity yet." when empty.
+
 **Comment composer.** `composerHtml({ placeholder, buttonLabel, maxLength })` +
 `initComposer(el, { onSubmit, busyLabel })` from shared/ui/composer.js.
 Button is right-aligned and stays quiet (grey) until there's text, then turns
@@ -252,10 +307,10 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
-| `dom.js` | `escapeHtml(str)`, `formatDate(value)` (Timestamp/Date/ms/ISO → "Sep 12, 2026"), `initials(name)` |
-| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` close; focus trap + restore; body scroll lock; positions below the measured Squarespace `#header`. |
+| `dom.js` | `escapeHtml(str)`, `formatDate(value)` (Timestamp/Date/ms/ISO → "Sep 12, 2026"), `initials(name)`, `levelBars(n, of)` |
+| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, requestClose, setBeforeClose, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` go through `requestClose()` (runs the `setBeforeClose` guard); `close()` always closes; focus trap + restore; body scroll lock; positions below the measured Squarespace `#header`. |
 | `confirm.js` | `confirmAction({ title, message, confirmLabel, busyLabel, danger, feature, onConfirm })` → `Promise<boolean>`. Locks everything while `onConfirm` runs; shows the error and re-enables if it throws. |
-| `admin-menu.js` | `initAdminMenu(root)` → `{ close, sync }`; `LOGIN_ICON`, `SIGNOUT_ICON`, `SHIELD_ICON` |
+| `admin-menu.js` | `initAdminMenu(root)` → `{ close, sync }`; `LOGIN_ICON`, `SIGNOUT_ICON`, `SHIELD_ICON`, `PENCIL_ICON` |
 | `admin-auth.js` | Extracted from the identical admin code in Bug Zapper and Feature Lab (see §7). |
 | `effects.js` | `initRowSpotlight(root)` — one delegated pointermove listener; sets `--bt-mx`/`--bt-my` on the hovered `.bt-row--clickable`. |
 | `composer.js` | `composerHtml(opts)`, `initComposer(el, { onSubmit, busyLabel })` → `{ focus, reset }` |
@@ -355,54 +410,10 @@ follows Disk Stash's pattern (its own `watchAuthState()`, no anonymous
 fallback) until `admin-auth.js` gains an option to skip the anonymous sign-in —
 see 8c.
 
-### 8b. Status tone maps (intentional)
+### 8b. Status tone maps
 
-**Bug Zapper — status**
-| Value | Tone |
-|---|---|
-| `Open` | blue |
-| `In progress` | amber |
-| `Fixed` | green |
-| `Won't fix` | gray |
-| `Can't reproduce` | gray |
-| `Duplicate` | gray |
-
-**Bug Zapper — severity**
-| Value | Tone |
-|---|---|
-| `Cosmetic` | gray |
-| `Minor` | blue |
-| `Major` | amber |
-| `Critical` | red |
-
-**Feature Lab — status**
-| Value | Tone |
-|---|---|
-| `submitted` | gray |
-| `under_review` | amber |
-| `planned` | blue |
-| `in_progress` | teal |
-| `shipped` | green |
-| `declined` | gray |
-
-**Feature Lab — priority**
-| Value | Tone |
-|---|---|
-| `low` | gray |
-| `medium` | amber |
-| `high` | red |
-
-**Disk Stash — usage state**
-| Value | Tone |
-|---|---|
-| Healthy | green |
-| Uploads paused | amber |
-| Over limit | red |
-
-These preserve each feature's original pre-migration colors on purpose. The UI
-Kit page's demo data is illustrative only and does NOT match (for example, the
-demo shows `under_review` as blue and `planned` as amber; Feature Lab's real
-map is the reverse). Don't "correct" these to match the kit.
+Superseded: all features now use the site-wide badge system in
+section 5 (decided after the migration). New features must use it too.
 
 ### 8c. Known follow-ups
 
@@ -411,13 +422,6 @@ map is the reverse). Don't "correct" these to match the kit.
   currently duplicates that flow locally instead. A future version of
   `shared/ui/admin-auth.js` could take an option (e.g. `anonymousFallback:
   false`) so an admin-only feature could use the shared module too.
-- **`--bt-green` and `--bt-admin-accent` are the same hex** (`#5fa876`,
-  `shared/bt-ui.css`) — but this doc's own color rule says green means
-  "admin-only," while `--bt-green` is also a generic status tone (`Fixed` /
-  `shipped` / `Healthy` all render in it). The design rules say status tones
-  only need to be distinct from each other and from purple, but this one
-  collides with the admin-only meaning specifically, which the rule doesn't
-  call out as safe.
 - **`--bt-gray` and `--bt-text-muted` are the same hex** (`#a89a9c`,
   `shared/bt-ui.css`) — a redundant token pair carried over from the
   pre-migration code, where each feature had its own duplicate `--*-gray`
