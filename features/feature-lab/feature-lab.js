@@ -37,14 +37,16 @@ import {
   orderBy,
   doc,
   updateDoc,
-  deleteDoc,
   serverTimestamp,
   arrayUnion,
   arrayRemove,
   increment,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
 import { getAuth } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
-import { getFunctions } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
+import {
+  getFunctions,
+  httpsCallable,
+} from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
 const ROOT_ID = "feature-lab-root";
 
@@ -565,12 +567,13 @@ function openDetailModal(requestId) {
     deleteBtn.addEventListener("click", async () => {
       const ok = await confirmAction({
         title: "Delete this request?",
-        message: `"${request.title}" will be removed. Its comments will remain in the database, orphaned — a known limitation, not something this deletes for you.`,
+        message: `"${request.title}" will be removed, along with its comments and activity. This can't be undone.`,
         confirmLabel: "Delete request",
         busyLabel: "Deleting…",
         feature: "feature-lab",
         onConfirm: async () => {
-          await deleteDoc(doc(db, "featureRequests", requestId));
+          const deleteFeatureRequest = httpsCallable(functions, "deleteFeatureRequest");
+          await deleteFeatureRequest({ requestId });
         },
       });
       if (ok) close();

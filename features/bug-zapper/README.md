@@ -42,7 +42,10 @@ dropzone, the "bit me too" row).
 4. **Merge `functions-addition-delete.js`** into `functions/index.js` —
    adds `deleteBugReport`, which cleans up any attached screenshot via
    the same safe path Disk Stash's manual purge uses, then deletes the
-   report itself.
+   report and all its subcollections (`recursiveDelete`) plus any
+   `activityLog` events tagged `feature: "bug-zapper"` + `reportId`
+   (none exist today). Disk Stash's `asset_purged` event for the
+   screenshot is kept as the purge audit trail.
 5. **Apply `firestore-rules-delete-update.txt`** — removes bugReports'
    old `allow delete: if isAdmin();` line, so `deleteBugReport` becomes
    the only way to delete a report (a direct client delete would skip

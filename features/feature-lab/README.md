@@ -62,9 +62,12 @@ Lab has no such rule, so it keeps using the MemberSpace id it always has.
   per member, not per browser), so this one is actually *not* subject to the
   same per-browser tradeoff Bug Zapper's anonymous-Auth-based "me too"
   accepts — a real member can't double-vote from a second device.
-- **Deleting a request orphans its comments** — `comments` is a
-  subcollection, and Firestore doesn't cascade-delete subcollections when
-  the parent document is deleted. The confirm dialog says so.
+- **Deletes go through `deleteFeatureRequest`** (Cloud Function, admin
+  only). It removes the request, its `comments` subcollection
+  (`recursiveDelete`), and its `activityLog` events (matched on
+  `requestId`). `firestore.rules` refuses client deletes, so there's no
+  path that leaves orphaned comments. Anything orphaned before this change
+  can be found with `functions/scripts/find-orphans.js`.
 
 ## Staging embed snippet (feature-lab page, Code Block)
 
@@ -108,7 +111,8 @@ Injection, loaded once site-wide.
       under.
 - [ ] Admin delete: confirm dialog appears, "Deleting…" busy state shows and
       every control locks while it runs, the request disappears from the
-      list on success.
+      list on success, and its comments and activityLog events are gone in
+      the Firestore console.
 - [ ] Sign out: admin controls disappear immediately; the page falls back to
       the normal member view without a refresh.
 - [ ] Resize the Code Block (or the browser) through ~1024px, ~640px, and

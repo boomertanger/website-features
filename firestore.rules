@@ -144,7 +144,10 @@ service cloud.firestore {
         || isSingleVoteToggle()
         || isCommentCountBump();
 
-      allow delete: if isAdmin();
+      // No client deletes, even for admins: deleteFeatureRequest (Cloud
+      // Function, Admin SDK) is the only path, so a request's comments and
+      // activityLog events always go with it.
+      allow delete: if false;
 
       // Public comment thread. authorId, like requesterId, isn't
       // identity-verified — but isAdminAuthor IS checked against the

@@ -128,6 +128,44 @@ async function isCallerAdmin(auth) {
   return doc.exists;
 }
 
+// ---------- Deleting an item without leaving orphans ----------
+// Firestore never cascades a delete, so every item delete goes through a
+// Cloud Function that removes, in this order:
+//   1. the item's activityLog events (matched by feature + the id field the
+//      event stores — feature-lab events carry requestId; bug-zapper has no
+//      events today, but any future one must carry reportId to be cleaned)
+//   2. the item doc AND every subcollection under it (recursiveDelete)
+// Events go first so a retry after a partial failure still finds the item.
+// Disk Stash's "asset_purged" events are deliberately NOT removed: they're
+// the purge audit trail and store no linked doc id anyway.
+// functions/scripts/find-orphans.js mirrors this ACTIVITY_LINKS map.
+const ACTIVITY_LINKS = {
+  featureRequests: { feature: "feature-lab", idField: "requestId" },
+  bugReports: { feature: "bug-zapper", idField: "reportId" },
+};
+
+async function deleteActivityEvents(collectionName, docId) {
+  const { feature, idField } = ACTIVITY_LINKS[collectionName];
+  const db = admin.firestore();
+  // Single-field equality (auto-indexed); feature is checked in code so no
+  // composite index is needed.
+  const snap = await db.collection("activityLog").where(idField, "==", docId).get();
+  const refs = snap.docs.filter((d) => d.get("feature") === feature).map((d) => d.ref);
+  for (let i = 0; i < refs.length; i += 500) {
+    const batch = db.batch();
+    refs.slice(i, i + 500).forEach((ref) => batch.delete(ref));
+    await batch.commit();
+  }
+  return refs.length;
+}
+
+async function deleteItemCompletely(collectionName, docId) {
+  const db = admin.firestore();
+  const activityDeleted = await deleteActivityEvents(collectionName, docId);
+  await db.recursiveDelete(db.collection(collectionName).doc(docId));
+  return { activityDeleted };
+}
+
 // ---------- Bug Zapper: screenshot attach ----------
 // See /features/bug-zapper/README.md for the full contract. No new trigger
 // for "new bug report" activity is added here on purpose — per the Alert
@@ -353,9 +391,35 @@ exports.deleteBugReport = onCall({ secrets: CLOUDINARY_SECRETS }, async (request
     await performAssetDeletion(assetDoc.id, creds);
   }
 
-  await reportRef.delete();
+  // Then the report, its comments (and any other subcollection), and its
+  // activityLog events — see deleteItemCompletely above.
+  const { activityDeleted } = await deleteItemCompletely("bugReports", reportId);
 
-  return { ok: true };
+  return { ok: true, activityDeleted };
+});
+
+// ---------- Feature Lab: request deletion ----------
+// The only way to delete a feature request: firestore.rules refuses client
+// deletes on featureRequests and its comments. Feature Lab has no uploads,
+// so there are no externalAssets to clean up first.
+exports.deleteFeatureRequest = onCall(async (request) => {
+  if (!(await isCallerAdmin(request.auth))) {
+    throw new HttpsError("permission-denied", "Admins only.");
+  }
+
+  const requestId = request.data?.requestId;
+  if (typeof requestId !== "string" || !requestId) {
+    throw new HttpsError("invalid-argument", "requestId is required.");
+  }
+
+  const reqSnap = await admin.firestore().collection("featureRequests").doc(requestId).get();
+  if (!reqSnap.exists) {
+    throw new HttpsError("not-found", "No feature request with that id.");
+  }
+
+  const { activityDeleted } = await deleteItemCompletely("featureRequests", requestId);
+
+  return { ok: true, activityDeleted };
 });
 
 // Daily sweep: reads every enabled cleanupRules doc, finds linked docs
