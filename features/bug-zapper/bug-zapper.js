@@ -102,6 +102,8 @@ const PLUS_ICON =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
 const TRASH_ICON =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>';
+const COPY_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="12" height="12" rx="2"></rect><path d="M5 15H4a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v1"></path></svg>';
 const COMMENT_ICON =
   '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"></rect><path d="M8 11V7a4 4 0 0 1 8 0v4"></path></svg>';
 
@@ -644,6 +646,14 @@ function openDetailModal(reportId) {
     ? `
     <div class="bt-admin-panel">
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
+      <div class="bt-field">
+        <span class="bt-label" id="bz-report-id-label">Report ID</span>
+        <div style="display:flex;align-items:center;gap:var(--bt-space-2);flex-wrap:wrap">
+          <span class="bt-code" id="bz-report-id" aria-labelledby="bz-report-id-label">${escapeHtml(report.id)}</span>
+          <button type="button" id="bz-copy-id" class="bt-icon-btn bt-icon-btn--sm" aria-label="Copy report ID" title="Copy report ID">${COPY_ICON}</button>
+          <span id="bz-copy-status" class="bt-meta" aria-live="polite"></span>
+        </div>
+      </div>
       <div class="bt-form-grid">
         <div class="bt-field">
           <label class="bt-label" for="bz-status-select">Status</label>
@@ -665,8 +675,8 @@ function openDetailModal(reportId) {
         </div>
         <div class="bt-field">
           <label class="bt-label" for="bz-dup-input">Duplicate of (report id)</label>
-          <input type="text" id="bz-dup-input" class="bt-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste from the original report's ID line">
-          <span class="bt-hint">Open the original report — its ID is shown just below its title, click it to select and copy.</span>
+          <input type="text" id="bz-dup-input" class="bt-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste the original report's ID">
+          <span class="bt-hint">Open the original report and use the copy button next to its Report ID above.</span>
         </div>
       </div>
       <div class="bt-field">
@@ -688,7 +698,6 @@ function openDetailModal(reportId) {
         <span class="bt-badge bt-badge--${status.tone}">${status.label}</span>
         <span class="bt-badge bt-badge--${severity.tone}">${severity.label}</span>
       </div>
-      <p class="bt-meta" style="user-select:all;cursor:text" title="Click to select, then copy — this is what goes in another report's &quot;Duplicate of&quot; field">ID: ${escapeHtml(report.id)}</p>
 
       <div class="bt-modal-section">
         <p class="bt-section-label">What happened</p>
@@ -808,6 +817,31 @@ function openDetailModal(reportId) {
           commentCount: increment(1),
         }).catch((err) => console.error("Failed to bump comment count", err));
       },
+    });
+  }
+
+  // Report ID copy (admin panel only). Falls back to selecting the text
+  // when the Clipboard API isn't available (e.g. an insecure context).
+  const copyBtn = modal.querySelector("#bz-copy-id");
+  if (copyBtn) {
+    const idEl = modal.querySelector("#bz-report-id");
+    const statusEl = modal.querySelector("#bz-copy-status");
+    let statusTimer = null;
+    copyBtn.addEventListener("click", async () => {
+      let copied = false;
+      try {
+        await navigator.clipboard.writeText(report.id);
+        copied = true;
+      } catch (err) {
+        const range = document.createRange();
+        range.selectNodeContents(idEl);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+      }
+      statusEl.textContent = copied ? "Copied" : "Selected — press Ctrl+C to copy";
+      clearTimeout(statusTimer);
+      statusTimer = setTimeout(() => { statusEl.textContent = ""; }, 1800);
     });
   }
 
