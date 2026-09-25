@@ -1,0 +1,98 @@
+/* shared/ui-kit/ui-kit.css — styles for the UI Kit reference page only.
+   Nothing here is part of the shared kit; features never load this file. */
+
+#bt-ui-kit .kit-section {
+  padding: var(--bt-space-8) var(--bt-gutter);
+  border-top: 1px solid var(--bt-border);
+  display: flex;
+  flex-direction: column;
+  gap: var(--bt-space-5);
+}
+#bt-ui-kit .kit-h { font-size: var(--bt-text-2xl); font-weight: 700; color: var(--bt-text); }
+#bt-ui-kit .kit-p { font-size: var(--bt-text-base); color: var(--bt-text-muted); line-height: var(--bt-leading-body); max-width: 68ch; }
+#bt-ui-kit .kit-p code, #bt-ui-kit .kit-code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important;
+  font-size: 0.9em;
+  color: var(--bt-primary-soft);
+  background: var(--bt-primary-bg);
+  padding: 1px 6px;
+  border-radius: 5px;
+}
+#bt-ui-kit .kit-sub { font-size: var(--bt-text-base); font-weight: 600; color: var(--bt-text); margin-top: var(--bt-space-2); }
+#bt-ui-kit .kit-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bt-space-3); }
+#bt-ui-kit .kit-stack { display: flex; flex-direction: column; gap: var(--bt-space-4); }
+#bt-ui-kit .kit-grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: var(--bt-space-5); align-items: start; }
+#bt-ui-kit .kit-note { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+
+/* Preview controls */
+#bt-ui-kit .kit-controls { display: flex; flex-wrap: wrap; gap: var(--bt-space-4) var(--bt-space-8); }
+#bt-ui-kit .kit-control { display: flex; flex-direction: column; gap: var(--bt-space-2); min-width: 0; }
+#bt-ui-kit .kit-control-label { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+#bt-ui-kit .kit-control .kit-row { gap: var(--bt-space-2); flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
+
+/* Resizable frame */
+#bt-ui-kit .kit-frame {
+  resize: horizontal;
+  overflow: auto;
+  width: 100%;
+  min-width: 320px;
+  max-width: 100%;
+  padding: var(--bt-space-3);
+  border: 1px dashed var(--bt-border-2);
+  border-radius: var(--bt-radius-lg);
+  background: repeating-linear-gradient(45deg, transparent 0 10px, rgba(255,255,255,0.015) 10px 20px);
+}
+#bt-ui-kit .kit-frame > .bt-root { border: 1px solid var(--bt-border); min-height: 420px; }
+#bt-ui-kit .kit-readout { font-size: var(--bt-text-sm); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+
+/* Swatches */
+#bt-ui-kit .kit-swatches { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: var(--bt-space-3); }
+#bt-ui-kit .kit-swatch { border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); overflow: hidden; background: var(--bt-surface); }
+#bt-ui-kit .kit-chip-color { height: 56px; border-bottom: 1px solid var(--bt-border); }
+#bt-ui-kit .kit-swatch-body { padding: 10px 12px; display: flex; flex-direction: column; gap: 2px; }
+#bt-ui-kit .kit-swatch-name { font-size: var(--bt-text-md); font-weight: 600; }
+#bt-ui-kit .kit-swatch-token { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace !important; word-break: break-all; }
+
+/* Spacing / type / radius specimens */
+#bt-ui-kit .kit-scale { display: flex; flex-direction: column; gap: var(--bt-space-2); }
+#bt-ui-kit .kit-scale-row { display: grid; grid-template-columns: 120px 1fr; align-items: center; gap: var(--bt-space-3); }
+#bt-ui-kit .kit-scale-name { font-size: var(--bt-text-sm); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+#bt-ui-kit .kit-bar { height: 12px; background: var(--bt-primary); border-radius: 3px; }
+#bt-ui-kit .kit-type-sample { color: var(--bt-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+#bt-ui-kit .kit-radii { display: flex; flex-wrap: wrap; gap: var(--bt-space-4); }
+#bt-ui-kit .kit-radius { width: 88px; height: 64px; border: 1.5px solid var(--bt-primary); background: var(--bt-primary-bg); display: flex; align-items: flex-end; padding: 6px 8px; font-size: var(--bt-text-xs); color: var(--bt-primary-soft); }
+
+@container bt (max-width: 640px) {
+  #bt-ui-kit .kit-scale-row { grid-template-columns: 84px 1fr; }
+}
+
+/* Demo animated icon (kit only) */
+#bt-ui-kit .kit-pulse { transform-origin: 16px 16px; animation: kit-pulse 2.6s ease-out infinite; }
+@keyframes kit-pulse { 0% { transform: scale(1); opacity: 0.9; } 80%, 100% { transform: scale(4.2); opacity: 0; } }
+
+@container bt (max-width: 640px) {
+  #bt-ui-kit .kit-section { --bt-gutter: 20px; }
+  #bt-ui-kit .kit-frame { padding: 6px; }
+}
+
+/* Heading ladder specimen */
+#bt-ui-kit .kit-ladder { display: flex; flex-direction: column; }
+#bt-ui-kit .kit-ladder-row { display: grid; grid-template-columns: 170px 1fr; align-items: center; gap: var(--bt-space-4); padding: var(--bt-space-4) 0; border-top: 1px solid var(--bt-border); }
+#bt-ui-kit .kit-ladder-row:first-child { border-top: 0; }
+#bt-ui-kit .kit-ladder-row .kit-scale-name { line-height: 1.7; }
+#bt-ui-kit .kit-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+#bt-ui-kit .kit-disk-blip { animation: kit-blip 1.8s ease-in-out infinite; transform-origin: 22px 22.5px; }
+@keyframes kit-blip { 0%, 60%, 100% { opacity: 1; transform: scale(1); } 30% { opacity: 0.2; transform: scale(2.4); } }
+@container bt (max-width: 640px) {
+  #bt-ui-kit .kit-ladder-row { grid-template-columns: 1fr; gap: var(--bt-space-2); }
+}
+
+/* ---- Card title options (kit-only comparison; not part of bt-ui) ---- */
+#bt-ui-kit [data-heading="b"] :is(.bt-card-title, .bt-heading) { font-size: var(--bt-text-xl); font-weight: 700; letter-spacing: -0.005em; }
+#bt-ui-kit [data-heading="c"] :is(.bt-card-title, .bt-heading) { font-size: var(--bt-text-xl); font-weight: 700; display: inline-flex; align-items: center; gap: 10px; }
+#bt-ui-kit [data-heading="c"] :is(.bt-card-title, .bt-heading)::before { content: ""; width: 4px; height: 1.05em; border-radius: 2px; background: var(--bt-title); flex: none; }
+#bt-ui-kit [data-heading="d"] :is(.bt-card-title, .bt-heading) { font-size: var(--bt-text-xl); font-weight: 700; color: #ffd08a; }
+#bt-ui-kit [data-heading="e"] :is(.bt-card-title, .bt-heading) { font-size: var(--bt-text-md); font-weight: 700; text-transform: uppercase; letter-spacing: 0.08em; }
+#bt-ui-kit .kit-options { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--bt-space-4); }
+#bt-ui-kit .kit-option { display: flex; flex-direction: column; gap: var(--bt-space-2); }
+#bt-ui-kit .kit-option .bt-card { gap: var(--bt-space-3); }
