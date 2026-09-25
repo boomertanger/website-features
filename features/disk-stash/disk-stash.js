@@ -7,17 +7,29 @@
 // - MemberSpace's Admin plan gates VISIBILITY only (an invite to sign in) —
 //   it is not server-verifiable, so it can't gate real reads/writes.
 // - Real access: Firebase Auth via Google Sign-In + syncAdminStatus (the
-//   same Cloud Function Feature Lab uses), which checks the signed-in
-//   email against adminAllowlist and mirrors the result into admins/{uid}.
-//   firestore.rules trusts that doc, not anything client-side.
+//   same Cloud Function Feature Lab and Bug Zapper use), which checks the
+//   signed-in email against adminAllowlist and mirrors the result into
+//   admins/{uid}. firestore.rules trusts that doc, not anything
+//   client-side.
 // - externalAssets and storageUsage are read-only here even for admins —
 //   they're written only by Cloud Functions (recordAssetCreated,
 //   performAssetDeletion) so they can never drift from Cloudinary's real
 //   state. cleanupRules is plain admin-editable config, no Cloud Function
 //   needed for that part.
+//
+// Auth flow note: this feature does NOT use shared/ui/admin-auth.js. That
+// module's onAuthStateChanged handler always falls back to a silent
+// anonymous sign-in when there's no user, which fits Bug Zapper/Feature
+// Lab (public, member-facing views that need to write before anyone signs
+// in) but not this one — Disk Stash has no public view at all, so it
+// keeps its own watchAuthState() that shows the sign-in gate on
+// user === null instead of ever creating an anonymous session.
 
 import { getFirebaseApp } from "../../shared/firebase-init.js";
 import { waitForReady, hasActivePlan, PLANS } from "../../shared/memberspace-helper.js";
+import { escapeHtml } from "../../shared/ui/dom.js";
+import { confirmAction } from "../../shared/ui/confirm.js";
+import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../../shared/ui/admin-menu.js";
 import {
   getFirestore,
   collection,
@@ -33,6 +45,7 @@ import {
   onAuthStateChanged,
   GoogleAuthProvider,
   signInWithPopup,
+  signOut,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-auth.js";
 import {
   getFunctions,
@@ -48,6 +61,18 @@ const ROOT_ID = "disk-stash-root";
 const CAP_BYTES = 25 * 1024 ** 3; // 25 GB, Cloudinary free tier
 const BUFFER_BYTES = 20 * 1024 ** 3; // pause new uploads at 20 GB
 
+const WORDMARK_ICON =
+  '<svg viewBox="0 0 32 32" overflow="visible" aria-hidden="true">' +
+  '<ellipse cx="16" cy="9" rx="10" ry="4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></ellipse>' +
+  '<path d="M6 9v14c0 2.2 4.5 4 10 4s10-1.8 10-4V9" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
+  '<path d="M6 16c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
+  '<circle class="ds-disk-blip" cx="22" cy="22.5" r="1.8" fill="var(--bt-title)"></circle>' +
+  "</svg>";
+const PLUS_ICON =
+  '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
+const X_ICON =
+  '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
+
 const app = getFirebaseApp();
 const db = getFirestore(app);
 const auth = getAuth(app);
@@ -59,20 +84,9 @@ const state = {
   assets: [],
   usage: { totalBytes: 0 },
   rules: [],
-  purgeTargetId: null,
-  purgeError: null,
-  purgeInFlight: false,
   addingRule: false,
   unsubs: [],
 };
-
-function escapeHtml(str) {
-  return String(str ?? "")
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
-}
 
 function formatBytes(bytes) {
   const gb = bytes / 1024 ** 3;
@@ -93,26 +107,17 @@ function formatAge(createdAt) {
 // ---------- Gated / signed-out shells ----------
 
 function renderNotAdmin() {
-  return `
-    <div id="${ROOT_ID}" class="ds-gate">
-      <p>Disk Stash is admin-only.</p>
-    </div>
-  `;
+  return `<div class="bt-empty"><p>Disk Stash is admin-only.</p></div>`;
 }
 
 function renderSignInGate() {
   return `
-    <div class="ds-header">
-      <div class="ds-header-text">
-        <h1 class="ds-display">Disk Stash</h1>
-        <p class="ds-sub">External storage admin — Cloudinary usage &amp; asset management</p>
-      </div>
-      <span class="ds-badge ds-badge-amber">ADMIN ONLY</span>
-    </div>
-    <div class="ds-gate">
-      <p>Sign in with the Google account on your admin allowlist to continue.</p>
-      <button type="button" id="ds-signin" class="ds-btn ds-btn-primary">Sign in with Google</button>
-      <div id="ds-signin-error" class="ds-error" hidden></div>
+    <div class="bt-logged-out">
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span></div>
+      <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
+      <p class="bt-logged-out-text">Sign in with the Google account on your admin allowlist to continue.</p>
+      <button type="button" id="ds-signin" class="bt-signin-btn">Sign in as Admin</button>
+      <p id="ds-signin-error" class="bt-error" hidden></p>
     </div>
   `;
 }
@@ -121,21 +126,39 @@ function renderSignInGate() {
 
 function renderShell() {
   return `
-    <div class="ds-header">
-      <div class="ds-header-text">
-        <h1 class="ds-display">Disk Stash</h1>
-        <p class="ds-sub">External storage admin — Cloudinary usage &amp; asset management</p>
+    <div class="bt-topbar">
+      <div class="bt-wordmark">
+        <span class="bt-wordmark-icon">${WORDMARK_ICON}</span>
+        <span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span>
       </div>
-      <span class="ds-badge ds-badge-green">ADMIN</span>
+      <div class="bt-topnav">
+        <div class="bt-admin">
+          <button type="button" class="bt-admin-menu-toggle" aria-label="Admin menu" aria-expanded="false">${LOGIN_ICON}</button>
+          <div class="bt-admin-row">
+            <div class="bt-admin-section">
+              <span class="bt-admin-label">Admin access</span>
+              <button type="button" class="bt-signin-btn" hidden>Sign in as Admin</button>
+            </div>
+            <div class="bt-admin-section">
+              <span class="bt-admin-label">Signed in as</span>
+              <span class="bt-admin-pill"><span class="bt-admin-pill-dot"></span>Admin</span>
+              <button type="button" id="ds-admin-signout" class="bt-signout-row">${SIGNOUT_ICON}<span>Sign out</span></button>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-    <div class="ds-body">
+    <div class="bt-header">
+      <h1 class="bt-title">Storage</h1>
+      <p class="bt-subtitle">External storage admin &mdash; Cloudinary usage &amp; asset management.</p>
+    </div>
+    <div class="bt-body" style="padding-top:0">
       <div id="ds-usage"></div>
-      <div class="ds-columns">
+      <div class="bt-columns">
         <div id="ds-assets"></div>
         <div id="ds-rules"></div>
       </div>
     </div>
-    <div id="ds-modal"></div>
   `;
 }
 
@@ -145,26 +168,26 @@ function renderUsage() {
   const bufferPct = (BUFFER_BYTES / CAP_BYTES) * 100;
   const status = used >= CAP_BYTES ? "over" : used >= BUFFER_BYTES ? "near" : "ok";
   const statusMeta = {
-    ok: { label: "HEALTHY", cls: "ds-badge-green" },
-    near: { label: "NEAR BUFFER", cls: "ds-badge-amber" },
-    over: { label: "OVER BUFFER", cls: "ds-badge-red" },
+    ok: { label: "Healthy", tone: "green" },
+    near: { label: "Uploads paused", tone: "amber" },
+    over: { label: "Over limit", tone: "red" },
   }[status];
 
   return `
-    <div class="ds-card">
-      <div class="ds-card-head">
-        <h2 class="ds-eyebrow">Tracked storage</h2>
-        <span class="ds-badge ${statusMeta.cls}">${statusMeta.label}</span>
+    <div class="bt-card">
+      <div class="bt-card-head">
+        <h2 class="bt-card-title">Tracked storage</h2>
+        <span class="bt-badge bt-badge--${statusMeta.tone}"><span class="bt-badge-dot"></span>${statusMeta.label}</span>
       </div>
-      <div class="ds-bar-track">
-        <div class="ds-bar-fill" style="width:${pct}%"></div>
-        <div class="ds-bar-buffer" style="left:${bufferPct}%"></div>
+      <div class="bt-stat"><span class="bt-stat-value">${formatBytes(used)}</span><span class="bt-stat-unit">of 25 GB monthly cap (free tier)</span></div>
+      <div class="bt-meter bt-meter--${statusMeta.tone}">
+        <div class="bt-meter-track" role="meter" aria-valuemin="0" aria-valuemax="${(CAP_BYTES / 1024 ** 3).toFixed(0)}" aria-valuenow="${(used / 1024 ** 3).toFixed(1)}" aria-label="Tracked storage in GB">
+          <div class="bt-meter-fill" style="width:${pct}%"></div>
+          <div class="bt-meter-marker" style="left:${bufferPct}%" title="Uploads pause at ${formatBytes(BUFFER_BYTES)}"></div>
+        </div>
+        <div class="bt-meter-legend"><span>0 GB</span><span class="bt-meter-legend-mark" style="--bt-at:${bufferPct}%">Uploads pause at ${formatBytes(BUFFER_BYTES)}</span><span>${formatBytes(CAP_BYTES)}</span></div>
       </div>
-      <div class="ds-usage-row">
-        <div><span class="ds-mono ds-usage-num">${formatBytes(used)}</span> <span class="ds-sub-inline">of 25 GB monthly cap (free tier)</span></div>
-        <div class="ds-buffer-note">Upload pause buffer at 20 GB</div>
-      </div>
-      <p class="ds-fineprint">This tracks bytes in known externalAssets records only — not the full Cloudinary credit pool, which also spans bandwidth and transforms.</p>
+      <p class="bt-fineprint">This tracks bytes in known externalAssets records only — not the full Cloudinary credit pool, which also spans bandwidth and transforms.</p>
     </div>
   `;
 }
@@ -172,14 +195,14 @@ function renderUsage() {
 function renderAssets() {
   if (state.assets.length === 0) {
     return `
-      <div class="ds-card">
-        <div class="ds-card-head ds-card-head-border">
-          <h2 class="ds-title">Tracked assets</h2>
-          <span class="ds-mono ds-count">0 assets</span>
+      <div class="bt-card bt-card--divided">
+        <div class="bt-card-head">
+          <h2 class="bt-card-title">Tracked files</h2>
+          <span class="bt-card-meta">0 files</span>
         </div>
-        <div class="ds-empty">
-          <p>Nothing tracked yet</p>
-          <p class="ds-empty-sub">Assets appear once a feature writes a record to externalAssets.</p>
+        <div class="bt-empty bt-empty--compact">
+          <p class="bt-empty-title">No files tracked yet</p>
+          <p>Files show up here once a feature saves an upload.</p>
         </div>
       </div>
     `;
@@ -190,102 +213,82 @@ function renderAssets() {
       (a) => `
       <tr>
         <td>${escapeHtml(a.feature)}</td>
-        <td class="ds-mono ds-muted">${escapeHtml(a.linkedDoc?.collection ?? "")}/${escapeHtml(a.linkedDoc?.docId ?? "")}</td>
-        <td>${formatAge(a.createdAt)}</td>
-        <td class="ds-mono ds-muted">${formatBytes(a.sizeBytes || 0)}</td>
-        <td class="ds-row-action"><button type="button" class="ds-btn-ghost-danger" data-purge="${a.id}">Purge</button></td>
+        <td><span class="bt-code">${escapeHtml(a.linkedDoc?.collection ?? "")}/${escapeHtml(a.linkedDoc?.docId ?? "")}</span></td>
+        <td class="bt-muted">${formatAge(a.createdAt)}</td>
+        <td class="bt-num bt-muted">${formatBytes(a.sizeBytes || 0)}</td>
+        <td class="bt-table-action"><button type="button" class="bt-btn bt-btn--sm bt-btn--danger-outline" data-purge="${a.id}">Purge</button></td>
       </tr>
     `
     )
     .join("");
 
   return `
-    <div class="ds-card">
-      <div class="ds-card-head ds-card-head-border">
-        <h2 class="ds-title">Tracked assets</h2>
-        <span class="ds-mono ds-count">${state.assets.length} asset${state.assets.length === 1 ? "" : "s"}</span>
+    <div class="bt-card bt-card--divided">
+      <div class="bt-card-head">
+        <h2 class="bt-card-title">Tracked files</h2>
+        <span class="bt-card-meta">${state.assets.length} file${state.assets.length === 1 ? "" : "s"}</span>
       </div>
-      <table class="ds-table">
-        <thead>
-          <tr><th>Feature</th><th>Linked doc</th><th>Age</th><th>Size</th><th></th></tr>
-        </thead>
-        <tbody>${rows}</tbody>
-      </table>
+      <div class="bt-table-wrap">
+        <table class="bt-table">
+          <thead>
+            <tr><th>Feature</th><th>Linked record</th><th>Age</th><th class="bt-num">Size</th><th></th></tr>
+          </thead>
+          <tbody>${rows}</tbody>
+        </table>
+      </div>
     </div>
   `;
 }
 
 function renderRules() {
-  const list = state.rules
-    .map(
-      (r) => `
-      <div class="ds-rule">
-        <div class="ds-rule-top">
-          <span class="ds-rule-feature">${escapeHtml(r.feature)}</span>
-          <div class="ds-rule-actions">
-            <button type="button" class="ds-toggle ${r.enabled ? "ds-toggle-on" : ""}" data-toggle-rule="${r.id}" aria-pressed="${r.enabled}" aria-label="Toggle ${escapeHtml(r.feature)} cleanup rule">
-              <span class="ds-toggle-knob"></span>
-            </button>
-            <button type="button" class="ds-icon-btn" data-delete-rule="${r.id}" aria-label="Delete rule">&times;</button>
+  const items = state.rules.length
+    ? `<div class="bt-items">${state.rules
+        .map(
+          (r) => `
+        <div class="bt-item ${r.enabled ? "" : "bt-item--off"}">
+          <div class="bt-item-head">
+            <span class="bt-item-title">${escapeHtml(r.feature)}</span>
+            <div class="bt-item-actions">
+              <button type="button" class="bt-switch" role="switch" aria-checked="${r.enabled}" data-toggle-rule="${r.id}" aria-label="Toggle ${escapeHtml(r.feature)} cleanup rule"></button>
+              <button type="button" class="bt-icon-btn bt-icon-btn--sm" data-delete-rule="${r.id}" aria-label="Delete rule">${X_ICON}</button>
+            </div>
           </div>
-        </div>
-        <p class="ds-rule-desc">${escapeHtml(r.matchField)}: <span class="ds-mono">${escapeHtml(r.matchValue)}</span> · unchanged &ge; <span class="ds-mono">${escapeHtml(String(r.ageThresholdDays))} days</span></p>
-      </div>
-    `
-    )
-    .join("");
+          <p class="bt-item-desc">${escapeHtml(r.matchField)}: <span class="bt-code">${escapeHtml(r.matchValue)}</span> &middot; unchanged &ge; <span class="bt-code">${escapeHtml(String(r.ageThresholdDays))} days</span></p>
+        </div>`
+        )
+        .join("")}</div>`
+    : state.addingRule
+    ? ""
+    : `<div class="bt-empty bt-empty--compact"><p>No cleanup rules yet. Add one to delete old files automatically.</p></div>`;
 
   const addForm = state.addingRule
     ? `
-      <form id="ds-add-rule-form" class="ds-add-form">
-        <label>Feature key <input name="feature" required placeholder="bugZapper"></label>
-        <label>Collection <input name="collection" required placeholder="bugReports"></label>
-        <label>Match field <input name="matchField" required placeholder="status"></label>
-        <label>Match value <input name="matchValue" required placeholder="fixed"></label>
-        <label>Age field <input name="ageField" required placeholder="statusUpdatedAt"></label>
-        <label>Age threshold (days) <input name="ageThresholdDays" type="number" min="1" required placeholder="60"></label>
-        <div id="ds-rule-error" class="ds-error" hidden></div>
-        <div class="ds-add-form-actions">
-          <button type="button" id="ds-cancel-rule" class="ds-btn-ghost">Cancel</button>
-          <button type="submit" class="ds-btn ds-btn-primary">Save rule</button>
+      <form id="ds-add-rule-form" class="bt-form">
+        <div class="bt-form-grid">
+          <div class="bt-field"><label class="bt-label" for="ds-f-feature">Feature key</label><input id="ds-f-feature" name="feature" class="bt-input" required placeholder="bugZapper"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-collection">Collection</label><input id="ds-f-collection" name="collection" class="bt-input" required placeholder="bugReports"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-matchField">Match field</label><input id="ds-f-matchField" name="matchField" class="bt-input" required placeholder="status"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-matchValue">Match value</label><input id="ds-f-matchValue" name="matchValue" class="bt-input" required placeholder="fixed"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-ageField">Age field</label><input id="ds-f-ageField" name="ageField" class="bt-input" required placeholder="statusUpdatedAt"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-ageThresholdDays">Age threshold (days)</label><input id="ds-f-ageThresholdDays" name="ageThresholdDays" type="number" min="1" class="bt-input" required placeholder="60"></div>
+        </div>
+        <p id="ds-rule-error" class="bt-error" hidden></p>
+        <div class="bt-form-actions">
+          <button type="button" id="ds-cancel-rule" class="bt-btn bt-btn--sm bt-btn--secondary">Cancel</button>
+          <button type="submit" class="bt-btn bt-btn--sm bt-btn--primary">Save rule</button>
         </div>
       </form>
     `
     : "";
 
   return `
-    <div class="ds-card ds-card-tight">
-      <div class="ds-card-head">
-        <h2 class="ds-title">Cleanup rules</h2>
-        <button type="button" id="ds-add-rule-btn" class="ds-btn-ghost">+ Add rule</button>
+    <div class="bt-card">
+      <div class="bt-card-head">
+        <h2 class="bt-card-title">Cleanup rules</h2>
+        ${state.addingRule ? "" : `<button type="button" id="ds-add-rule-btn" class="bt-btn bt-btn--sm bt-btn--secondary">${PLUS_ICON}Add rule</button>`}
       </div>
-      ${
-        state.rules.length === 0 && !state.addingRule
-          ? `<div class="ds-empty-dashed"><p>No rules yet.</p></div>`
-          : `<div class="ds-rule-list">${list}</div>`
-      }
+      ${items}
       ${addForm}
-    </div>
-  `;
-}
-
-function renderModal() {
-  if (!state.purgeTargetId) return "";
-  const asset = state.assets.find((a) => a.id === state.purgeTargetId);
-  if (!asset) return "";
-
-  return `
-    <div class="ds-modal-overlay">
-      <div class="ds-modal">
-        <h2 class="ds-title">Purge this asset?</h2>
-        <p class="ds-modal-meta">${escapeHtml(asset.feature)} · <span class="ds-mono">${escapeHtml(asset.linkedDoc?.collection ?? "")}/${escapeHtml(asset.linkedDoc?.docId ?? "")}</span></p>
-        <p class="ds-modal-body">Deletes the file from Cloudinary via the safe-delete function, then clears the reference on the linked doc. This cannot be undone.</p>
-        ${state.purgeError ? `<div class="ds-error">${escapeHtml(state.purgeError)}</div>` : ""}
-        <div class="ds-modal-actions">
-          <button type="button" id="ds-cancel-purge" class="ds-btn-ghost" ${state.purgeInFlight ? "disabled" : ""}>Cancel</button>
-          <button type="button" id="ds-confirm-purge" class="ds-btn ds-btn-danger" ${state.purgeInFlight ? "disabled" : ""}>${state.purgeInFlight ? "Purging…" : "Confirm purge"}</button>
-        </div>
-      </div>
     </div>
   `;
 }
@@ -296,17 +299,27 @@ function renderAll() {
   state.root.querySelector("#ds-usage").innerHTML = renderUsage();
   state.root.querySelector("#ds-assets").innerHTML = renderAssets();
   state.root.querySelector("#ds-rules").innerHTML = renderRules();
-  state.root.querySelector("#ds-modal").innerHTML = renderModal();
   attachBodyHandlers();
 }
 
 function attachBodyHandlers() {
   state.root.querySelectorAll("[data-purge]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.purgeTargetId = btn.dataset.purge;
-      state.purgeError = null;
-      state.root.querySelector("#ds-modal").innerHTML = renderModal();
-      attachModalHandlers();
+    btn.addEventListener("click", async () => {
+      const asset = state.assets.find((a) => a.id === btn.dataset.purge);
+      if (!asset) return;
+      await confirmAction({
+        title: "Purge this file?",
+        message: `Deletes the file for ${asset.feature} · ${asset.linkedDoc?.collection ?? ""}/${asset.linkedDoc?.docId ?? ""} from Cloudinary via the safe-delete function, then clears the reference on the linked doc. This can't be undone.`,
+        confirmLabel: "Purge file",
+        busyLabel: "Purging…",
+        feature: "disk-stash",
+        onConfirm: async () => {
+          const deleteExternalAsset = httpsCallable(functions, "deleteExternalAsset");
+          await deleteExternalAsset({ assetId: asset.id });
+        },
+      });
+      // Success re-renders naturally: the externalAssets onSnapshot
+      // subscription drops the purged doc and calls renderAll() again.
     });
   });
 
@@ -324,12 +337,18 @@ function attachBodyHandlers() {
 
   state.root.querySelectorAll("[data-delete-rule]").forEach((btn) => {
     btn.addEventListener("click", async () => {
-      if (!confirm("Delete this cleanup rule?")) return;
-      try {
-        await deleteDoc(doc(db, "cleanupRules", btn.dataset.deleteRule));
-      } catch (err) {
-        console.error("Failed to delete rule", err);
-      }
+      const rule = state.rules.find((r) => r.id === btn.dataset.deleteRule);
+      if (!rule) return;
+      await confirmAction({
+        title: "Delete this cleanup rule?",
+        message: `Files from ${rule.feature} will no longer be cleaned up automatically. Files already deleted stay deleted.`,
+        confirmLabel: "Delete rule",
+        busyLabel: "Deleting…",
+        feature: "disk-stash",
+        onConfirm: async () => {
+          await deleteDoc(doc(db, "cleanupRules", rule.id));
+        },
+      });
     });
   });
 
@@ -339,6 +358,7 @@ function attachBodyHandlers() {
       state.addingRule = true;
       state.root.querySelector("#ds-rules").innerHTML = renderRules();
       attachBodyHandlers();
+      state.root.querySelector("#ds-f-feature")?.focus();
     });
   }
 
@@ -379,38 +399,6 @@ function attachBodyHandlers() {
   }
 }
 
-function attachModalHandlers() {
-  const cancelBtn = state.root.querySelector("#ds-cancel-purge");
-  if (cancelBtn) {
-    cancelBtn.addEventListener("click", () => {
-      state.purgeTargetId = null;
-      state.purgeError = null;
-      state.root.querySelector("#ds-modal").innerHTML = renderModal();
-    });
-  }
-
-  const confirmBtn = state.root.querySelector("#ds-confirm-purge");
-  if (confirmBtn) {
-    confirmBtn.addEventListener("click", async () => {
-      state.purgeInFlight = true;
-      state.root.querySelector("#ds-modal").innerHTML = renderModal();
-      attachModalHandlers();
-      try {
-        const deleteExternalAsset = httpsCallable(functions, "deleteExternalAsset");
-        await deleteExternalAsset({ assetId: state.purgeTargetId });
-        state.purgeTargetId = null;
-        state.purgeError = null;
-      } catch (err) {
-        console.error("Purge failed", err);
-        state.purgeError = err.message || "Purge failed — see console for details.";
-      }
-      state.purgeInFlight = false;
-      state.root.querySelector("#ds-modal").innerHTML = renderModal();
-      attachModalHandlers();
-    });
-  }
-}
-
 // ---------- Data subscriptions ----------
 
 function subscribeToData() {
@@ -432,6 +420,11 @@ function subscribeToData() {
       renderAll();
     })
   );
+}
+
+function unsubscribeAll() {
+  state.unsubs.forEach((unsub) => unsub());
+  state.unsubs = [];
 }
 
 // ---------- Auth ----------
@@ -461,9 +454,22 @@ async function handleSignIn() {
   }
 }
 
+async function handleSignOut() {
+  try {
+    await signOut(auth);
+    // onAuthStateChanged fires with user=null and watchAuthState() shows
+    // the sign-in gate — there's no anonymous fallback for this feature.
+  } catch (err) {
+    console.error("Admin sign-out failed", err);
+  }
+}
+
 function watchAuthState() {
   onAuthStateChanged(auth, async (user) => {
+    unsubscribeAll();
+
     if (!user) {
+      state.isAdmin = false;
       state.root.innerHTML = renderSignInGate();
       state.root.querySelector("#ds-signin").addEventListener("click", handleSignIn);
       return;
@@ -482,6 +488,8 @@ function watchAuthState() {
     }
 
     state.root.innerHTML = renderShell();
+    initAdminMenu(state.root).sync();
+    state.root.querySelector("#ds-admin-signout").addEventListener("click", handleSignOut);
     subscribeToData();
   });
 }
@@ -495,6 +503,7 @@ export async function initDiskStash() {
     return;
   }
   state.root = root;
+  root.classList.add("bt-root");
 
   await waitForReady();
 

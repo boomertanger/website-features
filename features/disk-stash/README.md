@@ -13,9 +13,39 @@ requires signing in with a Google account on `adminAllowlist`, the same
 pattern Feature Lab established (`syncAdminStatus` + `admins/{uid}`).
 
 ## Where it lives
-Squarespace page slug: `disk-stash` (create this page; embed the usual
-`<div id="disk-stash-root"></div>` + module script tag, per the repo's
-loading convention).
+Squarespace page slug: `disk-stash`. Built on the shared `bt-ui` kit
+(`shared/bt-ui.css`, `shared/ui/*.js`) — see `docs/design-system.md` for
+the component/token reference and `CLAUDE.md` for the rules this feature
+follows. This feature's own CSS (`disk-stash.css`) keeps only the
+blinking dot on the wordmark's disk icon; everything else (layout, cards,
+table, meter, buttons, forms, the admin sign-in/out controls) is shared.
+
+### Staging embed snippet (disk-stash page, Code Block)
+
+Per `docs/design-system.md` §1 ("Until then (staging)"), each staging Code
+Block loads the shared kit and this feature's own files, in order, pinned
+to one commit SHA so the page never silently picks up an unfinished
+change:
+
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/shared/bt-ui.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/disk-stash/disk-stash.css">
+<div id="disk-stash-root"></div>
+<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@<sha>/features/disk-stash/disk-stash.js"></script>
+```
+
+Replace `<sha>` in all three URLs with the current full commit SHA on
+`dev` (`git rev-parse HEAD`, or the snippet printed after the last push to
+`dev` — see `CLAUDE.md`'s "After every push to dev"). If this feature is
+already embedded on the `disk-stash` page from before this migration,
+replace the whole block — the old snippet had no `shared/bt-ui.css` line
+at all, and `disk-stash.css` no longer carries its own tokens, fonts, or
+layout, so the page would otherwise render unstyled. Swap `<sha>` for a
+pinned release tag (e.g. `@v2.0.0`) when promoting to production, per the
+repo's normal release process.
 
 ## Data model
 
@@ -91,13 +121,28 @@ needed to write this; it's config, not user data):
   consistent with the schema above.
 
 ## UI states
-- **Sign-in gate** — Admin-plan member, not yet Google-signed-in.
-- **Not admin** — MemberSpace doesn't show them as Admin plan at all.
-- **Populated dashboard** — usage bar, asset table, cleanup rules list.
-- **Empty state** — no `externalAssets` docs yet (true today, until Bug
-  Zapper ships and becomes the first writer).
-- **Purge confirmation modal** — inline, with an in-progress and an error
-  state if the callable fails.
+- **Not admin** — MemberSpace doesn't show them as Admin plan at all: a
+  single unbranded line, no wordmark, no invitation to sign in.
+- **Sign-in gate** — Admin-plan member, not yet Google-signed-in (or
+  signed in with an account that isn't on the allowlist): the full
+  branded `.bt-logged-out` screen with the admin shield tag.
+- **Populated dashboard** — the standard top bar (wordmark + admin
+  pill/sign-out, using the same dropdown-at-narrow-widths pattern as
+  every other feature) over a usage card (`.bt-stat` + `.bt-meter`,
+  tone-based "Healthy" / "Uploads paused" / "Over limit" badge), an asset
+  table (`.bt-table`, Purge as a row-level `.bt-btn--danger-outline`),
+  and a cleanup-rules card (`.bt-items`, each with a `.bt-switch` and a
+  delete icon button).
+- **Empty states** — `.bt-empty--compact` for "no files tracked yet" and
+  "no cleanup rules yet," independent of each other.
+- **Sign out** — new in this pass: the standard admin sign-out control now
+  exists here too (it didn't before). Clicking it signs out of the real
+  Google session and drops straight back to the sign-in gate — this
+  feature has no anonymous-member fallback to land on instead, unlike
+  Bug Zapper/Feature Lab.
+- **Purge / delete-rule confirmation** — both now go through the shared
+  `confirmAction()` dialog (busy label "Purging…" / "Deleting…") instead
+  of a hand-rolled modal or `window.confirm()`.
 - Loading/error states beyond "no data yet" were not built out — flagged
   as a possible follow-up if this proves flaky in practice.
 
@@ -134,7 +179,12 @@ needed to write this; it's config, not user data):
       confirm → asset disappears from Cloudinary AND the `externalAssets`
       doc is gone AND `storageUsage/current` decremented.
 - [ ] Add a cleanup rule via the UI, confirm it shows up with the toggle
-      on; toggle off/on; delete it.
+      on; toggle off/on; delete it (via the shared confirm dialog, not a
+      native `confirm()` popup).
+- [ ] Click Sign out: returns to the sign-in gate immediately, no
+      leftover dashboard state; signing back in with the same allowlisted
+      account reaches the dashboard again with live data (no duplicate
+      Firestore listeners from the previous session).
 - [ ] Manually trigger `scheduledAssetCleanup` (Firebase console → Run
       now) against a test rule + a matching test doc, confirm it purges
       correctly and doesn't touch non-matching docs.
