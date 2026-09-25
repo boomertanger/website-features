@@ -228,3 +228,127 @@ classes; icon SVG fills via `var(--bt-*)` or a declared feature custom property)
 genuinely unique pieces (e.g. Bug Zapper's screenshot dropzone — which lives in a
 dialog, so target `.bt-portal[data-feature="bug-zapper"]`), and feature-unique layout.
 Any `@container` rules use the `bt` name and the three standard widths.
+
+## 8. Recorded decisions
+
+Written from the actual code after the bt-ui migration (commit `70722be`), not
+from the original plan — these are the calls that were made and why, and the
+gaps that are still open.
+
+### 8a. Admin-only page pattern (Disk Stash)
+
+Disk Stash does **not** use `shared/ui/admin-auth.js`, on purpose. That module's
+`onAuthStateChanged` handler always falls back to `signInAnonymously()` when
+there's no user — correct for Bug Zapper and Feature Lab, which are public,
+member-facing views that need to let a logged-in member write (vote, comment)
+before anyone has signed in as an admin. Disk Stash has no public view at all:
+every visitor who isn't an admin sees either the plan-gate message or the
+sign-in gate, never a working page, and it never created an anonymous Firebase
+session before this migration. Force-fitting `admin-auth.js` here would have
+started silently creating one on every visit — a real behavior change, not a
+markup one.
+
+Disk Stash instead keeps its own `syncAdmin()`, `handleSignIn()`,
+`handleSignOut()`, and `watchAuthState()` in `disk-stash.js`. Its
+`watchAuthState()` shows the sign-in gate directly on `user === null`, with no
+anonymous fallback branch. It does still use the shared `initAdminMenu()` for
+the dropdown and `confirmAction()` for its destructive confirmations — only the
+Firebase auth wiring itself is feature-local.
+
+**Rule for future features:** an admin-only feature with no member-facing view
+follows Disk Stash's pattern (its own `watchAuthState()`, no anonymous
+fallback) until `admin-auth.js` gains an option to skip the anonymous sign-in —
+see 8c.
+
+### 8b. Status tone maps (intentional)
+
+**Bug Zapper — status**
+| Value | Tone |
+|---|---|
+| `Open` | blue |
+| `In progress` | amber |
+| `Fixed` | green |
+| `Won't fix` | gray |
+| `Can't reproduce` | gray |
+| `Duplicate` | gray |
+
+**Bug Zapper — severity**
+| Value | Tone |
+|---|---|
+| `Cosmetic` | gray |
+| `Minor` | blue |
+| `Major` | amber |
+| `Critical` | red |
+
+**Feature Lab — status**
+| Value | Tone |
+|---|---|
+| `submitted` | gray |
+| `under_review` | amber |
+| `planned` | blue |
+| `in_progress` | teal |
+| `shipped` | green |
+| `declined` | gray |
+
+**Feature Lab — priority**
+| Value | Tone |
+|---|---|
+| `low` | gray |
+| `medium` | amber |
+| `high` | red |
+
+**Disk Stash — usage state**
+| Value | Tone |
+|---|---|
+| Healthy | green |
+| Uploads paused | amber |
+| Over limit | red |
+
+These preserve each feature's original pre-migration colors on purpose. The UI
+Kit page's demo data is illustrative only and does NOT match (for example, the
+demo shows `under_review` as blue and `planned` as amber; Feature Lab's real
+map is the reverse). Don't "correct" these to match the kit.
+
+### 8c. Known follow-ups
+
+- **`admin-auth.js` has no skip-anonymous option.** Referenced in 8a — Disk
+  Stash needs an admin-only auth flow with no anonymous fallback, and
+  currently duplicates that flow locally instead. A future version of
+  `shared/ui/admin-auth.js` could take an option (e.g. `anonymousFallback:
+  false`) so an admin-only feature could use the shared module too.
+- **`--bt-green` and `--bt-admin-accent` are the same hex** (`#5fa876`,
+  `shared/bt-ui.css`) — but this doc's own color rule says green means
+  "admin-only," while `--bt-green` is also a generic status tone (`Fixed` /
+  `shipped` / `Healthy` all render in it). The design rules say status tones
+  only need to be distinct from each other and from purple, but this one
+  collides with the admin-only meaning specifically, which the rule doesn't
+  call out as safe.
+- **`--bt-gray` and `--bt-text-muted` are the same hex** (`#a89a9c`,
+  `shared/bt-ui.css`) — a redundant token pair carried over from the
+  pre-migration code, where each feature had its own duplicate `--*-gray`
+  var. The migration consolidated two duplicates into one; the duplication
+  itself is still there.
+- **Feature Lab's delete only removes the parent doc.** `confirmAction()`'s
+  `onConfirm` in `features/feature-lab/feature-lab.js` (the detail modal's
+  delete handler) calls `deleteDoc()` on the `featureRequests` doc only —
+  its `comments` subcollection isn't cascade-deleted (Firestore doesn't do
+  that automatically) and is left orphaned. This is a known, documented
+  limitation (the confirm dialog's own message says so, and so does
+  `features/feature-lab/README.md`), not a bug, but it's still true and
+  worth knowing before anyone builds cleanup tooling for orphaned
+  subcollections.
+- **`updateAdminUi()` is still duplicated.** Bug Zapper
+  (`features/bug-zapper/bug-zapper.js`) and Feature Lab
+  (`features/feature-lab/feature-lab.js`) each define their own
+  near-identical closure that toggles the sign-in/badge/sign-out
+  visibility and calls `menu.sync()`. `admin-auth.js`'s `onChange`
+  callback only reports `{ user, isAdmin }`; it doesn't own this DOM
+  toggling. A small shared helper (in `admin-auth.js` or `admin-menu.js`)
+  could take this over.
+- **Bug Zapper never dims a closed report.** Its row rendering
+  (`features/bug-zapper/bug-zapper.js`) never applies `.bt-row--dimmed`,
+  so `Won't fix` / `Can't reproduce` / `Duplicate` all render at full
+  opacity, same as `Open`. Feature Lab's rows do dim when `status ===
+  "declined"` (`features/feature-lab/feature-lab.js`). Pre-existing
+  asymmetry, preserved as-is since this was a visual/markup migration, not
+  a behavior-unification pass.

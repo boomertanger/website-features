@@ -43,6 +43,9 @@ before touching any feature's markup or CSS.
 9. Button/heading/label text is sentence case. Uppercase only where the kit does it
    (page title, dialog title, labels, table headers, admin tag).
 
+Building an admin-only feature, auditing status colors, or picking up
+follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
+
 ## Other conventions
 - MemberSpace: use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.
   `memberInfo.id` is a NUMBER — `String()` it before writing to Firestore.
