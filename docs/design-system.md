@@ -37,6 +37,7 @@ After release, a staging page can still override the header's copy by loading
 |---|---|
 | Surfaces/text | `bg` `surface` `surface-2` `border` `border-2` `text` `text-muted` `text-faint` |
 | Brand | `primary` (interactive only) `primary-hover` `primary-bg` `primary-soft` · `title` (gold, headings) · `danger` `danger-hover` `danger-bg` `danger-text` (destructive only) |
+| Brand (added) | `primary-rgb` (145, 70, 255, for `rgba(var(--bt-primary-rgb), a)` glows) · `neon` (#b98aff, lit row edge) · `title-gradient` (gold → ember, page title only) |
 | Admin (restricted, not destructive) | `admin-text` `admin-accent` `admin-tint` `admin-panel-bg` `admin-panel-border` `admin-tag` |
 | Status tones | `amber` `blue` `teal` `green` `gray` `red`, each with `-bg` |
 | Spacing | `space-0h`(2) `1`(4) `1h`(6) `2`(8) `3`(12) `4`(16) `5`(20) `6`(24) `8`(32) `12`(48) `16`(64) · `gutter` (32, 20 when narrow) |
@@ -51,10 +52,10 @@ other and from purple.
 ## 4. Heading ladder
 | Level | Class | Look |
 |---|---|---|
-| 1 Page title | `.bt-title` | 32px bold gold UPPERCASE (26px narrow). One per page. |
+| 1 Page title | `.bt-title` | 32px bold UPPERCASE (26px narrow), gold-to-ember gradient through the letters (solid gold fallback). One per page. The element sizes to its text (`fit-content`) so the gradient spans the words. |
 | 2 Dialog title | `.bt-modal-title` | 20px bold gold UPPERCASE |
 | 3 Card / section | `.bt-heading` or `.bt-card-title` | 18px bold off-white, normal case, gold tick before it |
-| 4 Label | `.bt-section-label` | 12px UPPERCASE faint |
+| 4 Label | `.bt-section-label` and `.bt-label` | ONE style for both form labels and read-only section labels: 12px semibold UPPERCASE, 0.06em tracking, muted color. |
 | Data | `.bt-stat` | big number, not a heading |
 
 ## 5. Components (markup patterns)
@@ -124,6 +125,13 @@ NAME (not a color value): `{ label: "In progress", tone: "teal" }`.
 ```
 At ≤ 640px rows restack (tally stays left). `--dimmed` for closed/declined items.
 
+**Row hover (clickable rows).** Mouse only (`(hover: hover) and (pointer: fine)`):
+a purple spotlight follows the pointer, the neon edge flickers on, then holds
+with an outer glow. Keyboard focus gets the steady lit state without the
+flicker. Reduce-motion users get the steady state on hover. Requires
+`initRowSpotlight(root)` once per feature root (shared/ui/effects.js) so the
+spotlight tracks the mouse; without it the glow sits centered.
+
 **States:** loading → 3× `.bt-skeleton-row` (see UI Kit markup) while the first snapshot
 is in flight. Empty/error → `.bt-empty` with `<p class="bt-empty-title">` + one line of
 direction + optional action button. Inside cards use `.bt-empty--compact`. Logged out →
@@ -131,11 +139,18 @@ direction + optional action button. Inside cards use `.bt-empty--compact`. Logge
 Admin-only gate → same, with `.bt-admin-tag` and `.bt-signin-btn`.
 
 **Forms:** `.bt-field` > `.bt-label` + `.bt-input|.bt-textarea|.bt-select` +
-`.bt-hint` / `.bt-error`. Inputs are 16px (prevents iOS zoom) with a purple focus ring.
+`.bt-hint` / `.bt-error`. Inputs are 16px (prevents iOS zoom).
 Invalid: `aria-invalid="true"`. Grouping: `.bt-form`, `.bt-form-grid`, `.bt-form-actions`.
 
+**Field focus.** 1px purple border + 3px soft purple glow
+(`box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), .22)`), no outline.
+
+**Page/URL fields.** Plain `.bt-input` with placeholder
+`e.g. www.boomertanger.com/live` (placeholder, never a prefilled value) and a
+`.bt-hint` underneath.
+
 **Dialog content** (inside `openModal`)
-`modalHeader(title)` → gold uppercase title + close button. Then `.bt-modal-section` >
+`modalHeader(title, subtitle)` → gold uppercase title (+ subtitle) + close button. Then `.bt-modal-section` >
 `.bt-section-label` + `.bt-section-text`; `.bt-admin-panel` (starts with
 `<span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>`); `.bt-comments` >
 `.bt-comment` > `.bt-comment-head` (`.bt-comment-author`, optional
@@ -143,6 +158,22 @@ Invalid: `aria-invalid="true"`. Grouping: `.bt-form`, `.bt-form-grid`, `.bt-form
 `.bt-history` > `.bt-history-item` > `.bt-history-line` (`.bt-history-dot
 .bt-history-dot--{tone}` + `.bt-history-rule`) + `.bt-history-body`;
 `.bt-modal-actions` last.
+
+**Dialog heading + subtitle.** `modalHeader(titleHtml, subtitleHtml)` renders
+`.bt-modal-heading` (title + `.bt-modal-subtitle`, 6px apart) next to the close
+button. Every "new item" dialog gets a one-sentence subtitle. Detail views put
+the who/when line in the subtitle slot, so the order is always: title →
+"Reported by NAME on DATE" (or "Requested by…") → status badges → sections.
+Never place a subtitle as a separate child of `.bt-modal` (that's what caused
+the 20px gap).
+
+**Comment composer.** `composerHtml({ placeholder, buttonLabel, maxLength })` +
+`initComposer(el, { onSubmit, busyLabel })` from shared/ui/composer.js.
+Button is right-aligned and stays quiet (grey) until there's text, then turns
+purple. Character count on the left. Ctrl/Cmd+Enter submits. While posting:
+box + button locked, button reads "Posting…". On error the message shows and
+the text is kept. Use the feature's existing comment length limit (from its
+firestore.rules) as `maxLength`.
 
 **Dashboard (Disk Stash, Alert Center)**
 `.bt-body` (padded column) > cards and `.bt-columns` (2fr/1fr, stacks ≤ 1024px).
@@ -161,10 +192,12 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | Module | Exports |
 |---|---|
 | `dom.js` | `escapeHtml(str)`, `formatDate(value)` (Timestamp/Date/ms/ISO → "Sep 12, 2026"), `initials(name)` |
-| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, setDismissible }`; `modalHeader(titleHtml)`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` close; focus trap + restore; body scroll lock; positions below the measured Squarespace `#header`. |
+| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` close; focus trap + restore; body scroll lock; positions below the measured Squarespace `#header`. |
 | `confirm.js` | `confirmAction({ title, message, confirmLabel, busyLabel, danger, feature, onConfirm })` → `Promise<boolean>`. Locks everything while `onConfirm` runs; shows the error and re-enables if it throws. |
 | `admin-menu.js` | `initAdminMenu(root)` → `{ close, sync }`; `LOGIN_ICON`, `SIGNOUT_ICON`, `SHIELD_ICON` |
 | `admin-auth.js` | Extracted from the identical admin code in Bug Zapper and Feature Lab (see §7). |
+| `effects.js` | `initRowSpotlight(root)` — one delegated pointermove listener; sets `--bt-mx`/`--bt-my` on the hovered `.bt-row--clickable`. |
+| `composer.js` | `composerHtml(opts)`, `initComposer(el, { onSubmit, busyLabel })` → `{ focus, reset }` |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Disk Stash)
 

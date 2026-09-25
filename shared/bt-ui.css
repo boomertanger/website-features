@@ -36,9 +36,12 @@
   /* Brand roles */
   --bt-primary: #9146ff;          /* interactive: buttons, links, focus */
   --bt-primary-hover: #a565ff;
+  --bt-primary-rgb: 145, 70, 255;  /* for rgba(var(--bt-primary-rgb), a) glows */
+  --bt-neon: #b98aff;             /* lit edge of the row-hover neon */
   --bt-primary-bg: rgba(145, 70, 255, 0.14);
   --bt-primary-soft: #c9a8ff;     /* text on a primary-tinted background */
   --bt-title: #ffa100;            /* page headings only */
+  --bt-title-gradient: linear-gradient(90deg, #ffa100 0%, #ff7a12 45%, #f0441c 100%);  /* page title only */
   --bt-danger: #ae201b;           /* destructive actions ONLY */
   --bt-danger-hover: #c2261f;
   --bt-danger-bg: rgba(174, 32, 27, 0.14);
@@ -212,16 +215,31 @@
   text-transform: uppercase;
   letter-spacing: 0.01em;
   color: var(--bt-title);
+  width: fit-content;   /* the gradient spans the words, not the page */
+  max-width: 100%;
+}
+/* Gold-to-ember gradient through the letters (page title only). Browsers
+   without text clipping keep the solid gold above. */
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .bt-root:not(#_) .bt-title {
+    background: var(--bt-title-gradient);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
 }
 .bt-root:not(#_) .bt-subtitle { font-size: var(--bt-text-base); color: var(--bt-text-muted); margin-top: var(--bt-space-1); }
-.bt-root:not(#_) .bt-section-label {
+/* One label style everywhere: form fields (.bt-label) and read-only
+   sections (.bt-section-label) look identical. */
+.bt-root:not(#_) .bt-section-label, .bt-root:not(#_) .bt-label {
   font-size: var(--bt-text-sm);
-  font-weight: 500;
+  font-weight: 600;
   letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: var(--bt-text-faint);
-  margin-bottom: var(--bt-space-3);
+  color: var(--bt-text-muted);
 }
+.bt-root:not(#_) .bt-section-label { margin-bottom: var(--bt-space-3); }
 .bt-root:not(#_) .bt-section-text { font-size: var(--bt-text-lg); line-height: var(--bt-leading-body); color: var(--bt-text); white-space: pre-wrap; }
 .bt-root:not(#_) .bt-meta { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
 
@@ -354,8 +372,38 @@
   text-align: left;
   width: 100%;
 }
-.bt-root:not(#_) .bt-row--clickable { cursor: pointer; transition: border-color 0.15s; }
-.bt-root:not(#_) .bt-row--clickable:hover { border-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-row--clickable { cursor: pointer; position: relative; transition: border-color 0.15s, box-shadow 0.15s; }
+.bt-root:not(#_) .bt-row--clickable > * { position: relative; }
+/* Hover (mouse only): a purple spotlight follows the pointer (shared/ui/effects.js
+   sets --bt-mx/--bt-my), the neon edge flickers on, then holds with an outer glow. */
+.bt-root:not(#_) .bt-row--clickable::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  background: radial-gradient(260px circle at var(--bt-mx, 50%) var(--bt-my, 50%), rgba(var(--bt-primary-rgb), 0.20), transparent 70%);
+}
+@media (hover: hover) and (pointer: fine) {
+  /* Capability queries, not layout breakpoints — allowed. */
+  .bt-root:not(#_) .bt-row--clickable:hover::before { opacity: 1; }
+  .bt-root:not(#_) .bt-row--clickable:hover { animation: bt-neon-on 0.9s linear 1 forwards; }
+}
+/* Keyboard focus gets the steady lit state, no flicker. */
+.bt-root:not(#_) .bt-row--clickable:focus-visible {
+  outline: none;
+  border-color: var(--bt-neon);
+  box-shadow: 0 0 0 1px rgba(var(--bt-primary-rgb), 0.9), 0 0 8px rgba(var(--bt-primary-rgb), 0.75), 0 0 26px 2px rgba(var(--bt-primary-rgb), 0.35);
+}
+@keyframes bt-neon-on {
+  0%   { border-color: var(--bt-neon); box-shadow: 0 0 0 1px rgba(var(--bt-primary-rgb), .9), 0 0 8px rgba(var(--bt-primary-rgb), .75), 0 0 26px 2px rgba(var(--bt-primary-rgb), .35); }
+  8%   { border-color: var(--bt-border); box-shadow: none; }
+  16%  { border-color: var(--bt-neon); box-shadow: 0 0 0 1px rgba(var(--bt-primary-rgb), .9), 0 0 8px rgba(var(--bt-primary-rgb), .75), 0 0 26px 2px rgba(var(--bt-primary-rgb), .35); }
+  22%  { border-color: var(--bt-border); box-shadow: none; }
+  48%, 100% { border-color: var(--bt-neon); box-shadow: 0 0 0 1px rgba(var(--bt-primary-rgb), .9), 0 0 8px rgba(var(--bt-primary-rgb), .75), inset 0 0 8px rgba(var(--bt-primary-rgb), .25), 0 0 26px 2px rgba(var(--bt-primary-rgb), .35), 0 0 70px rgba(var(--bt-primary-rgb), .16); }
+}
 .bt-root:not(#_) .bt-row--dimmed { opacity: 0.6; }
 .bt-root:not(#_) .bt-row-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--bt-space-1); }
 .bt-root:not(#_) .bt-row-title { font-size: var(--bt-text-lg); font-weight: 600; }
@@ -454,7 +502,6 @@
 /* ================= Forms ================= */
 
 .bt-root:not(#_) .bt-field { display: flex; flex-direction: column; gap: var(--bt-space-2); }
-.bt-root:not(#_) .bt-label { font-size: var(--bt-text-md); font-weight: 600; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-input, .bt-root:not(#_) .bt-textarea, .bt-root:not(#_) .bt-select {
   width: 100%;
   font-size: var(--bt-text-lg);      /* 16px: below this, iOS Safari zooms on focus */
@@ -464,16 +511,18 @@
   border-radius: var(--bt-radius-sm);
   color: var(--bt-text);
   outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 .bt-root:not(#_) .bt-input::placeholder, .bt-root:not(#_) .bt-textarea::placeholder { color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-textarea { min-height: 120px; resize: vertical; line-height: 1.5; }
 .bt-root:not(#_) .bt-select { appearance: none; padding-right: 40px; cursor: pointer;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%23a89a9c' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
   background-repeat: no-repeat; background-position: right 14px center; }
+/* Focus: thin purple line + soft glow (same 1px weight as the admin panel border). */
 .bt-root:not(#_) .bt-input:focus, .bt-root:not(#_) .bt-textarea:focus, .bt-root:not(#_) .bt-select:focus {
-  outline: 2px solid var(--bt-primary);
-  outline-offset: 1px;
+  outline: none;
   border-color: var(--bt-primary);
+  box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22);
 }
 .bt-root:not(#_) .bt-input[aria-invalid="true"], .bt-root:not(#_) .bt-textarea[aria-invalid="true"] { border-color: var(--bt-danger); }
 .bt-root:not(#_) .bt-hint { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
@@ -575,6 +624,13 @@
 .bt-root:not(#_) .bt-comment-head { display: flex; align-items: center; gap: var(--bt-space-2); margin-bottom: var(--bt-space-1); flex-wrap: wrap; }
 .bt-root:not(#_) .bt-comment-author { font-size: var(--bt-text-md); font-weight: 600; }
 .bt-root:not(#_) .bt-comment-time { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+/* Comment composer: the post button stays quiet until there's text (shared/ui/composer.js). */
+.bt-root:not(#_) .bt-composer { display: flex; flex-direction: column; gap: var(--bt-space-3); }
+.bt-root:not(#_) .bt-composer .bt-textarea { min-height: 88px; }
+.bt-root:not(#_) .bt-composer-actions { display: flex; align-items: center; justify-content: flex-end; gap: var(--bt-space-3); }
+.bt-root:not(#_) .bt-composer-count { margin-right: auto; font-size: var(--bt-text-sm); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-composer-count.is-over { color: var(--bt-danger-text); }
+.bt-root:not(#_) .bt-composer .bt-btn:disabled { opacity: 1; background: var(--bt-surface-2); border-color: var(--bt-border-2); color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-comment-text { font-size: var(--bt-text-base); line-height: var(--bt-leading-body); color: var(--bt-text); white-space: pre-wrap; }
 
 .bt-root:not(#_) .bt-history { display: flex; flex-direction: column; }
@@ -634,6 +690,11 @@
 }
 .bt-root:not(#_) .bt-modal--wide { max-width: 680px; }
 .bt-root:not(#_) .bt-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--bt-space-4); }
+/* Title + optional subtitle travel together, 6px apart (modalHeader(title, subtitle)).
+   Detail views put "Reported by … on …" in the subtitle slot. */
+.bt-root:not(#_) .bt-modal-heading { display: flex; flex-direction: column; gap: var(--bt-space-1h); min-width: 0; }
+.bt-root:not(#_) .bt-modal-subtitle { font-size: var(--bt-text-base); line-height: 1.5; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-modal-subtitle .bt-meta { font-size: inherit; }
 .bt-root:not(#_) .bt-modal-title { font-size: var(--bt-text-2xl); font-weight: 700; line-height: 1.3; color: var(--bt-title); text-transform: uppercase; letter-spacing: 0.01em; overflow-wrap: anywhere; }
 .bt-root:not(#_) .bt-modal-actions { display: flex; justify-content: flex-end; gap: var(--bt-space-3); flex-wrap: wrap; margin-top: var(--bt-space-1); }
 .bt-root:not(#_) .bt-modal-section { display: flex; flex-direction: column; }
@@ -644,6 +705,7 @@
 
 @media (prefers-reduced-motion: reduce) {
   /* A preference query, not a layout breakpoint — allowed. */
+  .bt-root:not(#_) .bt-row--clickable:hover { border-color: var(--bt-neon); box-shadow: 0 0 0 1px rgba(var(--bt-primary-rgb), .9), 0 0 26px 2px rgba(var(--bt-primary-rgb), .35); }
   .bt-root *, .bt-root *::before, .bt-root *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; transition-duration: 0.001ms !important; }
 }
 

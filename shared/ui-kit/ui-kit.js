@@ -5,6 +5,8 @@ import { escapeHtml, formatDate, initials } from "../ui/dom.js";
 import { openModal, modalHeader } from "../ui/modal.js";
 import { confirmAction } from "../ui/confirm.js";
 import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON } from "../ui/admin-menu.js";
+import { initRowSpotlight } from "../ui/effects.js";
+import { composerHtml, initComposer } from "../ui/composer.js";
 
 const KIT_VERSION = "dev";
 
@@ -346,8 +348,8 @@ const RADII = [["sm", 8], ["md", 10], ["lg", 12], ["xl", 16], ["full", 999]];
 
 function detailContent(r) {
   return `
-    ${modalHeader(escapeHtml(r.title))}
-    <div class="bt-row-badges" style="gap:var(--bt-space-3)">${badge(r.status)}<span class="bt-meta">Requested by ${escapeHtml(r.author)} on ${formatDate(r.date + "T12:00:00")}</span></div>
+    ${modalHeader(escapeHtml(r.title), `<span class="bt-meta">Requested by ${escapeHtml(r.author)} on ${formatDate(r.date + "T12:00:00")}</span>`)}
+    <div class="bt-row-badges">${badge(r.status)}</div>
     <div class="bt-modal-section">
       <p class="bt-section-label">Description</p>
       <p class="bt-section-text">${escapeHtml(r.desc)}</p>
@@ -356,6 +358,7 @@ function detailContent(r) {
     <div class="bt-modal-section">
       <p class="bt-section-label">Comments</p>
       ${commentsHtml()}
+      <div style="margin-top:var(--bt-space-3)">${composerHtml()}</div>
     </div>
     <div class="bt-modal-section">
       <p class="bt-section-label">History</p>
@@ -413,7 +416,7 @@ function historyHtml() {
 
 function submitContent() {
   return `
-    ${modalHeader("New request")}
+    ${modalHeader("New request", "Got an idea? Pitch it here and the community will vote on what gets built next.")}
     <div class="bt-field">
       <label class="bt-label" for="kit-new-title">Title</label>
       <input class="bt-input" id="kit-new-title" placeholder="Short and specific" autofocus>
@@ -422,6 +425,11 @@ function submitContent() {
       <label class="bt-label" for="kit-new-desc">What should it do?</label>
       <textarea class="bt-textarea" id="kit-new-desc" placeholder="Describe the feature and why you'd use it"></textarea>
       <span class="bt-hint">Other members will see this and can vote on it.</span>
+    </div>
+    <div class="bt-field">
+      <label class="bt-label" for="kit-new-page">Page</label>
+      <input class="bt-input" id="kit-new-page" placeholder="e.g. www.boomertanger.com/live">
+      <span class="bt-hint">Paste the address of the page this is about.</span>
     </div>
     <p class="bt-error" data-kit-err hidden>Add a title before submitting.</p>
     <div class="bt-modal-actions">
@@ -444,6 +452,7 @@ function openSubmit() {
 
 function openDetail(r) {
   const { modal, close } = openModal({ content: detailContent(r), wide: true, feature: "ui-kit" });
+  initComposer(modal.querySelector(".bt-composer"), { onSubmit: () => new Promise((res) => setTimeout(res, 900)) });
   modal.querySelector("[data-kit-delete]")?.addEventListener("click", async () => {
     const ok = await confirmAction({
       title: "Delete this request?",
@@ -699,6 +708,7 @@ function init() {
   }).observe(preview);
 
   menu = initAdminMenu(preview);
+  initRowSpotlight(mount);
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {

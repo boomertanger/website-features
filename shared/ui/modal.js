@@ -164,8 +164,11 @@ export function openModal({ content = "", title = "Dialog", wide = false, featur
 export const CLOSE_ICON =
   '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
 
-// Standard header markup: title + close button.
-export function modalHeader(titleHtml) {
-  return `<div class="bt-modal-header"><h2 class="bt-modal-title">${titleHtml}</h2>` +
-    `<button type="button" class="bt-icon-btn" data-bt-close aria-label="Close">${CLOSE_ICON}</button></div>`;
+// Standard header markup: title (+ optional subtitle) + close button.
+// subtitleHtml: a short line under the title. New-item dialogs use it for a
+// one-sentence prompt; detail views use it for "Reported by … on …".
+export function modalHeader(titleHtml, subtitleHtml = "") {
+  return `<div class="bt-modal-header"><div class="bt-modal-heading"><h2 class="bt-modal-title">${titleHtml}</h2>` +
+    (subtitleHtml ? `<p class="bt-modal-subtitle">${subtitleHtml}</p>` : "") +
+    `</div><button type="button" class="bt-icon-btn" data-bt-close aria-label="Close">${CLOSE_ICON}</button></div>`;
 }
