@@ -142,7 +142,7 @@ function renderShell() {
     <div class="bt-topbar">
       <div class="bt-wordmark">
         <span class="bt-wordmark-icon">${WORDMARK_ICON}</span>
-        <span class="bt-wordmark-text">FEATURE <span class="bt-wordmark-accent">LAB</span></span>
+        <span class="bt-wordmark-text">FEATURE<span class="bt-wordmark-accent">LAB</span></span>
       </div>
       <div class="bt-topnav">
         <div class="bt-admin">
@@ -175,7 +175,7 @@ function renderShell() {
 function renderLoggedOut() {
   return `
     <div class="bt-logged-out">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">FEATURE <span class="bt-wordmark-accent">LAB</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">FEATURE<span class="bt-wordmark-accent">LAB</span></span></div>
       <h2 class="bt-logged-out-title">Feature requests are members-only</h2>
       <p class="bt-logged-out-text">Log in with your free Fan Club membership to suggest ideas and vote on what gets built next.</p>
     </div>

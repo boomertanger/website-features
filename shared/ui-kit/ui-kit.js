@@ -43,6 +43,7 @@ const DEMO_SHOT = "data:image/svg+xml;utf8," + encodeURIComponent(`<svg xmlns="h
 // The site-wide badge system (same word, same color in every feature).
 const STATUS = {
   submitted:   { label: "Submitted",   tone: "blue" },
+  under_review: { label: "Under review", tone: "teal" },
   planned:     { label: "Planned",     tone: "gold" },
   in_progress: { label: "In progress", tone: "green" },
   shipped:     { label: "Shipped",     tone: "lime" },
@@ -53,7 +54,7 @@ const BADGE_SYSTEM = [
   ["Bug: priority", "level", [["blue", "Low"], ["gold", "Normal"], ["pink", "High"], ["red", "Urgent"]]],
   ["Bug: status", "status", [["blue", "Open"], ["green", "In progress"], ["lime", "Fixed"], ["gray", "Won't fix"], ["gray", "Can't reproduce"], ["gray", "Duplicate"]]],
   ["Feature: priority", "level", [["blue", "Low"], ["gold", "Medium"], ["pink", "High"]]],
-  ["Feature: status", "status", [["blue", "Submitted"], ["gold", "Planned"], ["green", "In progress"], ["lime", "Shipped"], ["gray", "Declined"]]],
+  ["Feature: status", "status", [["blue", "Submitted"], ["teal", "Under review"], ["gold", "Planned"], ["green", "In progress"], ["lime", "Shipped"], ["gray", "Declined"]]],
 ];
 const PRIORITY = [["blue", "Low"], ["gold", "Medium"], ["pink", "High"]];
 const levelBadge = (i, list) => `<span class="bt-badge bt-badge--${list[i][0]}">${levelBars(i + 1, list.length)}${list[i][1]}</span>`;
@@ -61,6 +62,7 @@ const levelBadge = (i, list) => `<span class="bt-badge bt-badge--${list[i][0]}">
 const ROWS = [
   { id: "r1", title: "Clip button on the live page", desc: "Let viewers grab the last 30 seconds of the stream without leaving the site or opening Twitch.", votes: 42, voted: true, status: "in_progress", comments: 7, pri: 2, author: "Hollow Moth", date: "2026-09-12" },
   { id: "r2", title: "Spoiler tags in chat", desc: "Blur messages about endings and jump scares until you click to reveal them.", votes: 31, voted: false, status: "submitted", comments: 4, pri: 1, author: "Vera Crane", date: "2026-09-03" },
+  { id: "r6", title: "Rewind the live stream", desc: "Scrub back a few minutes during a stream to catch a jump scare you missed.", votes: 24, voted: false, status: "under_review", comments: 3, pri: 1, author: "Ash", date: "2026-09-05" },
   { id: "r3", title: "Schedule shown in my time zone", desc: "The events page lists everything in Eastern time. Convert it to wherever I am.", votes: 18, voted: false, status: "planned", comments: 2, pri: 0, author: "Ash", date: "2026-08-27" },
   { id: "r4", title: "Monthly scare-o-meter leaderboard", desc: "Rank the games by how many times chat screamed.", votes: 57, voted: true, status: "shipped", comments: 12, pri: 2, author: "Grim Tuesday", date: "2026-07-30" },
   { id: "r5", title: "Move the community to a forum", desc: "Replace the Discord with threaded forum boards on the site.", votes: 6, voted: false, status: "declined", comments: 9, pri: 0, author: "Pale Rider", date: "2026-07-11" },
@@ -462,6 +464,7 @@ function historyHtml() {
   const items = [
     ["in_progress", "Boomertanger", "Sep 14, 2026", "Started building the clip recorder."],
     ["planned", "Boomertanger", "Sep 12, 2026", ""],
+    ["under_review", "Boomertanger", "Sep 12, 2026", ""],
     ["submitted", "Hollow Moth", "Sep 12, 2026", ""],
   ];
   return `<div class="bt-history">${items.map(([key, who, when, note]) => { const s = STATUS[key].label; return `
@@ -686,7 +689,7 @@ function pageHtml() {
     <p class="kit-sub">Sort chips</p>
     <div class="bt-sortbar" style="padding:0">${chip("Most votes", "a", true, "bt-chip--small")}${chip("Newest", "b", false, "bt-chip--small")}</div>
     <p class="kit-sub">Badge system</p>
-    <p class="kit-p">Levels (how bad, priority) use signal bars and climb blue, gold, pink, red. Statuses use a dot: blue = new, gold = planned, green = in progress, lime = done, gray = closed. The same word is the same color in every feature.</p>
+    <p class="kit-p">Levels (how bad, priority) use signal bars and climb blue, gold, pink, red. Statuses use a dot: blue = new, teal = under review, gold = planned, green = in progress, lime = done, gray = closed. The same word is the same color in every feature.</p>
     <div class="kit-ladder">${BADGE_SYSTEM.map(([name, kind, list]) => `<div class="kit-ladder-row"><span class="kit-scale-name">${name}</span><div class="kit-row" style="gap:8px">${list.map(([tone, label], i) => kind === "level" ? `<span class="bt-badge bt-badge--${tone}">${levelBars(i + 1, list.length)}${label}</span>` : `<span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>${label}</span>`).join("")}</div></div>`).join("")}</div>
     <p class="kit-sub">Counters, avatar, and tally</p>
     <div class="kit-row">
