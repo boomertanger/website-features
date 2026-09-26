@@ -1,7 +1,7 @@
-// features/disk-stash/disk-stash.js
+// features/cloud-stash/cloud-stash.js
 //
-// Renders into <div id="disk-stash-root"></div>. Import as a module from
-// the Squarespace Code Block on the disk-stash page.
+// Renders into <div id="cloud-stash-root"></div>. Import as a module from
+// the Squarespace Code Block on the cloud-stash page.
 //
 // Security model (see /firestore.rules and /functions/index.js):
 // - MemberSpace's Admin plan gates VISIBILITY only (an invite to sign in) —
@@ -21,7 +21,7 @@
 // module's onAuthStateChanged handler always falls back to a silent
 // anonymous sign-in when there's no user, which fits Bug Zapper/Feature
 // Lab (public, member-facing views that need to write before anyone signs
-// in) but not this one — Disk Stash has no public view at all, so it
+// in) but not this one — Cloud Stash has no public view at all, so it
 // keeps its own watchAuthState() that shows the sign-in gate on
 // user === null instead of ever creating an anonymous session.
 
@@ -52,7 +52,7 @@ import {
   httpsCallable,
 } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-functions.js";
 
-const ROOT_ID = "disk-stash-root";
+const ROOT_ID = "cloud-stash-root";
 
 // Storage-only cap tracking (see README: this is bytes we know are stored
 // in live externalAssets records — NOT the full Cloudinary credit pool,
@@ -66,7 +66,7 @@ const WORDMARK_ICON =
   '<ellipse cx="16" cy="9" rx="10" ry="4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></ellipse>' +
   '<path d="M6 9v14c0 2.2 4.5 4 10 4s10-1.8 10-4V9" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
   '<path d="M6 16c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
-  '<circle class="ds-disk-blip" cx="22" cy="22.5" r="1.8" fill="var(--bt-title)"></circle>' +
+  '<circle class="cs-disk-blip" cx="22" cy="22.5" r="1.8" fill="var(--bt-title)"></circle>' +
   "</svg>";
 const PLUS_ICON =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
@@ -107,17 +107,17 @@ function formatAge(createdAt) {
 // ---------- Gated / signed-out shells ----------
 
 function renderNotAdmin() {
-  return `<div class="bt-empty"><p>Disk Stash is admin-only.</p></div>`;
+  return `<div class="bt-empty"><p>Cloud Stash is admin-only.</p></div>`;
 }
 
 function renderSignInGate() {
   return `
     <div class="bt-logged-out">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${WORDMARK_ICON}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
       <p class="bt-logged-out-text">Sign in with the Google account on your admin allowlist to continue.</p>
-      <button type="button" id="ds-signin" class="bt-signin-btn">Sign in as Admin</button>
-      <p id="ds-signin-error" class="bt-error" hidden></p>
+      <button type="button" id="cs-signin" class="bt-signin-btn">Sign in as Admin</button>
+      <p id="cs-signin-error" class="bt-error" hidden></p>
     </div>
   `;
 }
@@ -129,7 +129,7 @@ function renderShell() {
     <div class="bt-topbar">
       <div class="bt-wordmark">
         <span class="bt-wordmark-icon">${WORDMARK_ICON}</span>
-        <span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span>
+        <span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span>
       </div>
       <div class="bt-topnav">
         <div class="bt-admin">
@@ -142,7 +142,7 @@ function renderShell() {
             <div class="bt-admin-section">
               <span class="bt-admin-label">Signed in as</span>
               <span class="bt-admin-pill"><span class="bt-admin-pill-dot"></span>Admin</span>
-              <button type="button" id="ds-admin-signout" class="bt-signout-row">${SIGNOUT_ICON}<span>Sign out</span></button>
+              <button type="button" id="cs-admin-signout" class="bt-signout-row">${SIGNOUT_ICON}<span>Sign out</span></button>
             </div>
           </div>
         </div>
@@ -153,10 +153,10 @@ function renderShell() {
       <p class="bt-subtitle">External storage admin &mdash; Cloudinary usage &amp; asset management.</p>
     </div>
     <div class="bt-body" style="padding-top:0">
-      <div id="ds-usage"></div>
+      <div id="cs-usage"></div>
       <div class="bt-columns">
-        <div id="ds-assets"></div>
-        <div id="ds-rules"></div>
+        <div id="cs-assets"></div>
+        <div id="cs-rules"></div>
       </div>
     </div>
   `;
@@ -240,7 +240,7 @@ function renderAssets() {
   `;
 }
 
-// Collections whose files Disk Stash can clean up, with the EXACT values
+// Collections whose files Cloud Stash can clean up, with the EXACT values
 // stored in each match field. Firestore matching is case-sensitive, so a
 // rule for "fixed" never matches a report whose status is "Fixed"; offering
 // these as a dropdown keeps the stored match value identical to the data.
@@ -266,13 +266,13 @@ function knownMatchValues(collectionName, matchField) {
 function matchValueControl(collectionName, matchField, current = "") {
   const known = knownMatchValues(collectionName, matchField);
   if (known) {
-    return `<select id="ds-f-matchValue" name="matchValue" class="bt-select" required>
+    return `<select id="cs-f-matchValue" name="matchValue" class="bt-select" required>
       <option value="" ${known.includes(current) ? "" : "selected"} disabled>Choose a value</option>
       ${known.map((v) => `<option value="${escapeHtml(v)}" ${v === current ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
     </select>
     <span class="bt-hint">Exact values stored in ${escapeHtml(collectionName.trim())}.${escapeHtml(matchField.trim())}.</span>`;
   }
-  return `<input id="ds-f-matchValue" name="matchValue" class="bt-input" required value="${escapeHtml(current)}" placeholder="Exact stored value (case-sensitive)">`;
+  return `<input id="cs-f-matchValue" name="matchValue" class="bt-input" required value="${escapeHtml(current)}" placeholder="Exact stored value (case-sensitive)">`;
 }
 
 function datalist(id, values) {
@@ -302,18 +302,18 @@ function renderRules() {
 
   const addForm = state.addingRule
     ? `
-      <form id="ds-add-rule-form" class="bt-form">
+      <form id="cs-add-rule-form" class="bt-form">
         <div class="bt-form-grid">
-          <div class="bt-field"><label class="bt-label" for="ds-f-feature">Feature key</label><input id="ds-f-feature" name="feature" class="bt-input" required placeholder="bugZapper"></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-collection">Collection</label><input id="ds-f-collection" name="collection" class="bt-input" required placeholder="bugReports" list="ds-l-collection">${datalist("ds-l-collection", Object.keys(RULE_TARGETS))}</div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-matchField">Match field</label><input id="ds-f-matchField" name="matchField" class="bt-input" required placeholder="status" list="ds-l-matchField"><datalist id="ds-l-matchField"></datalist></div>
-          <div class="bt-field" id="ds-f-matchValue-field"><label class="bt-label" for="ds-f-matchValue">Match value</label>${matchValueControl("", "")}</div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-ageField">Age field</label><input id="ds-f-ageField" name="ageField" class="bt-input" required placeholder="statusChangedAt" list="ds-l-ageField"><datalist id="ds-l-ageField"></datalist></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-ageThresholdDays">Age threshold (days)</label><input id="ds-f-ageThresholdDays" name="ageThresholdDays" type="number" min="1" class="bt-input" required placeholder="60"></div>
+          <div class="bt-field"><label class="bt-label" for="cs-f-feature">Feature key</label><input id="cs-f-feature" name="feature" class="bt-input" required placeholder="bugZapper"></div>
+          <div class="bt-field"><label class="bt-label" for="cs-f-collection">Collection</label><input id="cs-f-collection" name="collection" class="bt-input" required placeholder="bugReports" list="cs-l-collection">${datalist("cs-l-collection", Object.keys(RULE_TARGETS))}</div>
+          <div class="bt-field"><label class="bt-label" for="cs-f-matchField">Match field</label><input id="cs-f-matchField" name="matchField" class="bt-input" required placeholder="status" list="cs-l-matchField"><datalist id="cs-l-matchField"></datalist></div>
+          <div class="bt-field" id="cs-f-matchValue-field"><label class="bt-label" for="cs-f-matchValue">Match value</label>${matchValueControl("", "")}</div>
+          <div class="bt-field"><label class="bt-label" for="cs-f-ageField">Age field</label><input id="cs-f-ageField" name="ageField" class="bt-input" required placeholder="statusChangedAt" list="cs-l-ageField"><datalist id="cs-l-ageField"></datalist></div>
+          <div class="bt-field"><label class="bt-label" for="cs-f-ageThresholdDays">Age threshold (days)</label><input id="cs-f-ageThresholdDays" name="ageThresholdDays" type="number" min="1" class="bt-input" required placeholder="60"></div>
         </div>
-        <p id="ds-rule-error" class="bt-error" hidden></p>
+        <p id="cs-rule-error" class="bt-error" hidden></p>
         <div class="bt-form-actions">
-          <button type="button" id="ds-cancel-rule" class="bt-btn bt-btn--sm bt-btn--secondary">Cancel</button>
+          <button type="button" id="cs-cancel-rule" class="bt-btn bt-btn--sm bt-btn--secondary">Cancel</button>
           <button type="submit" class="bt-btn bt-btn--sm bt-btn--admin">Save rule</button>
         </div>
       </form>
@@ -324,7 +324,7 @@ function renderRules() {
     <div class="bt-card">
       <div class="bt-card-head">
         <h2 class="bt-card-title">Cleanup rules</h2>
-        ${state.addingRule ? "" : `<button type="button" id="ds-add-rule-btn" class="bt-btn bt-btn--sm bt-btn--admin">${PLUS_ICON}Add rule</button>`}
+        ${state.addingRule ? "" : `<button type="button" id="cs-add-rule-btn" class="bt-btn bt-btn--sm bt-btn--admin">${PLUS_ICON}Add rule</button>`}
       </div>
       ${items}
       ${addForm}
@@ -335,9 +335,9 @@ function renderRules() {
 // ---------- Render orchestration ----------
 
 function renderAll() {
-  state.root.querySelector("#ds-usage").innerHTML = renderUsage();
-  state.root.querySelector("#ds-assets").innerHTML = renderAssets();
-  state.root.querySelector("#ds-rules").innerHTML = renderRules();
+  state.root.querySelector("#cs-usage").innerHTML = renderUsage();
+  state.root.querySelector("#cs-assets").innerHTML = renderAssets();
+  state.root.querySelector("#cs-rules").innerHTML = renderRules();
   attachBodyHandlers();
 }
 
@@ -351,7 +351,7 @@ function attachBodyHandlers() {
         message: `Deletes the file for ${asset.feature} · ${asset.linkedDoc?.collection ?? ""}/${asset.linkedDoc?.docId ?? ""} from Cloudinary via the safe-delete function, then clears the reference on the linked doc. This can't be undone.`,
         confirmLabel: "Purge file",
         busyLabel: "Purging…",
-        feature: "disk-stash",
+        feature: "cloud-stash",
         onConfirm: async () => {
           const deleteExternalAsset = httpsCallable(functions, "deleteExternalAsset");
           await deleteExternalAsset({ assetId: asset.id });
@@ -383,7 +383,7 @@ function attachBodyHandlers() {
         message: `Files from ${rule.feature} will no longer be cleaned up automatically. Files already deleted stay deleted.`,
         confirmLabel: "Delete rule",
         busyLabel: "Deleting…",
-        feature: "disk-stash",
+        feature: "cloud-stash",
         onConfirm: async () => {
           await deleteDoc(doc(db, "cleanupRules", rule.id));
         },
@@ -391,38 +391,38 @@ function attachBodyHandlers() {
     });
   });
 
-  const addBtn = state.root.querySelector("#ds-add-rule-btn");
+  const addBtn = state.root.querySelector("#cs-add-rule-btn");
   if (addBtn) {
     addBtn.addEventListener("click", () => {
       state.addingRule = true;
-      state.root.querySelector("#ds-rules").innerHTML = renderRules();
+      state.root.querySelector("#cs-rules").innerHTML = renderRules();
       attachBodyHandlers();
-      state.root.querySelector("#ds-f-feature")?.focus();
+      state.root.querySelector("#cs-f-feature")?.focus();
     });
   }
 
-  const cancelRuleBtn = state.root.querySelector("#ds-cancel-rule");
+  const cancelRuleBtn = state.root.querySelector("#cs-cancel-rule");
   if (cancelRuleBtn) {
     cancelRuleBtn.addEventListener("click", () => {
       state.addingRule = false;
-      state.root.querySelector("#ds-rules").innerHTML = renderRules();
+      state.root.querySelector("#cs-rules").innerHTML = renderRules();
       attachBodyHandlers();
     });
   }
 
-  const addForm = state.root.querySelector("#ds-add-rule-form");
+  const addForm = state.root.querySelector("#cs-add-rule-form");
   if (addForm) {
-    const collectionInput = addForm.querySelector("#ds-f-collection");
-    const matchFieldInput = addForm.querySelector("#ds-f-matchField");
-    const featureInput = addForm.querySelector("#ds-f-feature");
-    const valueField = addForm.querySelector("#ds-f-matchValue-field");
+    const collectionInput = addForm.querySelector("#cs-f-collection");
+    const matchFieldInput = addForm.querySelector("#cs-f-matchField");
+    const featureInput = addForm.querySelector("#cs-f-feature");
+    const valueField = addForm.querySelector("#cs-f-matchValue-field");
     let shownKnown = null;
     const syncRuleForm = () => {
       const target = RULE_TARGETS[collectionInput.value.trim()];
-      addForm.querySelector("#ds-l-matchField").innerHTML = target
+      addForm.querySelector("#cs-l-matchField").innerHTML = target
         ? Object.keys(target.matchFields).map((f) => `<option value="${escapeHtml(f)}"></option>`).join("")
         : "";
-      addForm.querySelector("#ds-l-ageField").innerHTML = target
+      addForm.querySelector("#cs-l-ageField").innerHTML = target
         ? target.ageFields.map((f) => `<option value="${escapeHtml(f)}"></option>`).join("")
         : "";
       if (target && !featureInput.value.trim()) featureInput.value = target.feature;
@@ -431,8 +431,8 @@ function attachBodyHandlers() {
       const known = knownMatchValues(collectionInput.value, matchFieldInput.value);
       if (known !== shownKnown) {
         shownKnown = known;
-        const current = addForm.querySelector("#ds-f-matchValue").value;
-        valueField.innerHTML = `<label class="bt-label" for="ds-f-matchValue">Match value</label>${matchValueControl(collectionInput.value, matchFieldInput.value, current)}`;
+        const current = addForm.querySelector("#cs-f-matchValue").value;
+        valueField.innerHTML = `<label class="bt-label" for="cs-f-matchValue">Match value</label>${matchValueControl(collectionInput.value, matchFieldInput.value, current)}`;
       }
     };
     [collectionInput, matchFieldInput].forEach((el) => {
@@ -443,7 +443,7 @@ function attachBodyHandlers() {
     addForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(addForm).entries());
-      const errorEl = state.root.querySelector("#ds-rule-error");
+      const errorEl = state.root.querySelector("#cs-rule-error");
       try {
         await addDoc(collection(db, "cleanupRules"), {
           feature: data.feature.trim(),
@@ -509,7 +509,7 @@ async function syncAdmin() {
 
 async function handleSignIn() {
   const provider = new GoogleAuthProvider();
-  const errorEl = state.root.querySelector("#ds-signin-error");
+  const errorEl = state.root.querySelector("#cs-signin-error");
   try {
     await signInWithPopup(auth, provider);
   } catch (err) {
@@ -538,7 +538,7 @@ function watchAuthState() {
     if (!user) {
       state.isAdmin = false;
       state.root.innerHTML = renderSignInGate();
-      state.root.querySelector("#ds-signin").addEventListener("click", handleSignIn);
+      state.root.querySelector("#cs-signin").addEventListener("click", handleSignIn);
       return;
     }
 
@@ -547,26 +547,26 @@ function watchAuthState() {
 
     if (!isAdmin) {
       state.root.innerHTML = renderSignInGate();
-      const el = state.root.querySelector("#ds-signin-error");
+      const el = state.root.querySelector("#cs-signin-error");
       el.textContent = "That account isn't on the admin allowlist.";
       el.hidden = false;
-      state.root.querySelector("#ds-signin").addEventListener("click", handleSignIn);
+      state.root.querySelector("#cs-signin").addEventListener("click", handleSignIn);
       return;
     }
 
     state.root.innerHTML = renderShell();
     initAdminMenu(state.root).sync();
-    state.root.querySelector("#ds-admin-signout").addEventListener("click", handleSignOut);
+    state.root.querySelector("#cs-admin-signout").addEventListener("click", handleSignOut);
     subscribeToData();
   });
 }
 
 // ---------- Init ----------
 
-export async function initDiskStash() {
+export async function initCloudStash() {
   const root = document.getElementById(ROOT_ID);
   if (!root) {
-    console.error(`Disk Stash: no #${ROOT_ID} element found on the page.`);
+    console.error(`Cloud Stash: no #${ROOT_ID} element found on the page.`);
     return;
   }
   state.root = root;
@@ -583,8 +583,8 @@ export async function initDiskStash() {
   }
 
   root.innerHTML = renderSignInGate();
-  root.querySelector("#ds-signin").addEventListener("click", handleSignIn);
+  root.querySelector("#cs-signin").addEventListener("click", handleSignIn);
   watchAuthState();
 }
 
-initDiskStash();
+initCloudStash();

@@ -2,12 +2,12 @@
 //
 // Shared helper for any feature that stores a file in Cloudinary and wants
 // it tracked in the shared externalAssets / storageUsage collections — see
-// /features/disk-stash/README.md for the full contract these fields serve.
+// /features/cloud-stash/README.md for the full contract these fields serve.
 //
 // Call recordAssetCreated() from your own feature's Cloud Function right
 // after a successful Cloudinary upload. Do NOT write to externalAssets or
 // storageUsage directly — firestore.rules denies client writes to both, and
-// hand-rolling this write elsewhere risks drifting from the shape Disk
+// hand-rolling this write elsewhere risks drifting from the shape Cloud
 // Stash (and the safe-delete function) expect.
 //
 // Deletion is NEVER a feature's own responsibility — see

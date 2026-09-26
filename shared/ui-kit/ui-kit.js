@@ -181,7 +181,7 @@ function previewHtml() {
 }
 
 
-// ---------- Dashboard preview (Disk Stash–style) ----------
+// ---------- Dashboard preview (Cloud Stash–style) ----------
 
 const GB = 1024 ** 3;
 const CAP = 25 * GB;
@@ -301,7 +301,7 @@ function dashBody() {
   if (dash.access === "gate") {
     return `
     <div class="bt-logged-out">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
       <p class="bt-logged-out-text">Sign in with the Google account on the admin allowlist to manage stored files.</p>
       <button type="button" class="bt-signin-btn" data-dash-signin>Sign in as Admin</button>
@@ -325,7 +325,7 @@ function dashboardHtml() {
   return `
   <div class="bt-root" id="kit-dash">
     <div class="bt-topbar">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">DISK<span class="bt-wordmark-accent">STASH</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
       <div class="bt-topnav">${adminBlock()}</div>
     </div>
     <div data-dash-body>${dashBody()}</div>
@@ -600,7 +600,7 @@ function pageHtml() {
 
   <section class="kit-section">
     <h2 class="kit-h">Dashboard preview</h2>
-    <p class="kit-p">An admin dashboard in the style of Disk Stash, built from the same kit. The side column drops below the main one at 1024px, and the table scrolls sideways inside its card on narrow screens instead of squashing.</p>
+    <p class="kit-p">An admin dashboard in the style of Cloud Stash, built from the same kit. The side column drops below the main one at 1024px, and the table scrolls sideways inside its card on narrow screens instead of squashing.</p>
     <div class="kit-controls">
       <div class="kit-control"><span class="kit-control-label">Width</span><div class="kit-row" data-dash-width>${[["Full width", "full"], ["1024px", "1024"], ["640px", "640"], ["360px", "360"]].map(([l, v]) => chip(l, v, dash.width === v, "bt-chip--small")).join("")}</div></div>
       <div class="kit-control"><span class="kit-control-label">Access</span><div class="kit-row" data-dash-access>${chip("Admin", "admin", true, "bt-chip--small")}${chip("Sign-in gate", "gate", false, "bt-chip--small")}</div></div>

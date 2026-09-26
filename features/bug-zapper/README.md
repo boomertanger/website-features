@@ -14,7 +14,7 @@ Built on the shared `bt-ui` kit (`shared/bt-ui.css`, `shared/ui/*.js`) — see
 `CLAUDE.md` for the rules this feature follows. The Boomertanger logo
 palette (near-black ground, purple primary, gold titles, red reserved for
 Critical severity and admin-danger states) now lives once in the shared kit
-and applies to every feature, including Feature Lab and Disk Stash — this
+and applies to every feature, including Feature Lab and Cloud Stash — this
 feature's own `bug-zapper.css` keeps only what's genuinely unique to it: the
 animated bolt/debris wordmark icon (one feature custom property, `--bz-bolt`,
 for the bolt's yellow) and the two dialog-only pieces (the screenshot
@@ -44,10 +44,10 @@ dropzone, the "bit me too" row).
    the `bugReports` collection rules, including the me-too toggle exception.
 4. **Merge `functions-addition-delete.js`** into `functions/index.js` —
    adds `deleteBugReport`, which cleans up any attached screenshot via
-   the same safe path Disk Stash's manual purge uses, then deletes the
+   the same safe path Cloud Stash's manual purge uses, then deletes the
    report and all its subcollections (`recursiveDelete`) plus any
    `activityLog` events tagged `feature: "bug-zapper"` + `reportId`
-   (none exist today). Disk Stash's `asset_purged` event for the
+   (none exist today). Cloud Stash's `asset_purged` event for the
    screenshot is kept as the purge audit trail.
 5. **Apply `firestore-rules-delete-update.txt`** — removes bugReports'
    old `allow delete: if isAdmin();` line, so `deleteBugReport` becomes
@@ -59,7 +59,7 @@ dropzone, the "bit me too" row).
 7. **Deploy both, separately** — pushing to git alone doesn't update either;
    `firebase deploy --project <staging|production> --only firestore:rules`
    and the functions deploy are two separate steps, for both projects.
-8. **Add a `cleanupRules` doc in Disk Stash** (after Bug Zapper has at least
+8. **Add a `cleanupRules` doc in Cloud Stash** (after Bug Zapper has at least
    one real "Fixed" report with a screenshot to test against):
    ```json
    {
@@ -141,9 +141,9 @@ Squarespace Header Code Injection, so the Code Block is just:
 | `severity` | `Cosmetic`\|`Minor`\|`Major`\|`Critical` | member, on create; admins can correct it via `adminEditItem` |
 | `priority` | `Low`\|`Normal`\|`High`\|`Urgent`\|`null` | admin only |
 | `status` | `Open`\|`In progress`\|`Fixed`\|`Won't fix`\|`Can't reproduce`\|`Duplicate` | admin only |
-| `statusChangedAt` | timestamp | admin only, bumped only when `status` actually changes — Disk Stash's cleanup rule ages off this field |
+| `statusChangedAt` | timestamp | admin only, bumped only when `status` actually changes — Cloud Stash's cleanup rule ages off this field |
 | `duplicateOf` | string \| null | admin only |
-| `screenshotUrl` | string \| null (missing after a Disk Stash purge) | **only** `recordBugScreenshot`, `adminEditItem` (replace/remove) or Disk Stash's safe-delete path (all Admin SDK) — never a direct client write |
+| `screenshotUrl` | string \| null (missing after a Cloud Stash purge) | **only** `recordBugScreenshot`, `adminEditItem` (replace/remove) or Cloud Stash's safe-delete path (all Admin SDK) — never a direct client write |
 | `reporterUid` | string | member's Firebase Auth uid (anonymous or real), set on create |
 | `reporterName` | string | MemberSpace `memberInfo.name`, captured on create |
 | `meTooBy` | array of strings | members, one uid added/removed at a time (field name unchanged even though the UI now says "bit me too" — no schema/rules impact from the rename) |

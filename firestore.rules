@@ -120,8 +120,8 @@ service cloud.firestore {
       allow delete: if isAdmin(); // moderation only
     }
 
-    // ---------- Disk Stash: shared external-storage tracking ----------
-    // See /features/disk-stash/README.md for the full contract.
+    // ---------- Cloud Stash: shared external-storage tracking ----------
+    // See /features/cloud-stash/README.md for the full contract.
 
     // Written ONLY by Cloud Functions (recordAssetCreated / the safe-delete
     // path in performAssetDeletion, functions/index.js) via the Admin SDK.
@@ -310,10 +310,10 @@ service cloud.firestore {
       // Two disjoint ways to update: a member's own me-too toggle, or an
       // admin editing status/priority/duplicateOf. screenshotUrl is left out
       // of BOTH — it can only ever be set by recordBugScreenshot or
-      // adminEditItem (Admin SDK, bypass these rules) or cleared by Disk
+      // adminEditItem (Admin SDK, bypass these rules) or cleared by Cloud
       // Stash's safe-delete path, never directly by a client write. Content
       // fields are locked for everyone here; admins edit them through
-      // adminEditItem. (screenshotUrl is read with get(): a Disk Stash purge
+      // adminEditItem. (screenshotUrl is read with get(): a Cloud Stash purge
       // deletes the field.)
       allow update: if keepsEditMarkers() && (isMeTooToggle()
         || isBugCommentCountBump()

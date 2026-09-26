@@ -178,7 +178,7 @@ value): `{ label: "In progress", tone: "green" }`.
 | Feature: status | Submitted blue · Under review teal · Planned gold · In progress green · Shipped lime · Declined gray |
 
 Feature Lab's stored `under_review` status isn't in the original table; it uses the
-spare `teal` tone (decided with the badge system). Disk Stash usage keeps its meanings:
+spare `teal` tone (decided with the badge system). Cloud Stash usage keeps its meanings:
 Healthy green, Uploads paused gold, Over limit red.
 
 `.bt-count` = small counter pill (comments). `.bt-avatar` = 24px initials.
@@ -291,7 +291,7 @@ for the thumbnail `src` and `cloudinaryUrl(url, "f_auto,q_auto")` for `full`
 (full resolution, efficient format). Never store transformed URLs; transform
 at display time only.
 
-**Dashboard (Disk Stash, Alert Center)**
+**Dashboard (Cloud Stash, Alert Center)**
 `.bt-body` (padded column) > cards and `.bt-columns` (2fr/1fr, stacks ≤ 1024px).
 `.bt-card [bt-card--divided]` > `.bt-card-head` (`.bt-card-title` + `.bt-card-meta` or a
 `--sm` button). `.bt-stat` > `.bt-stat-value` + `.bt-stat-unit`. `.bt-meter
@@ -316,13 +316,13 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | `composer.js` | `composerHtml(opts)`, `initComposer(el, { onSubmit, busyLabel })` → `{ focus, reset }` |
 | `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
 
-## 7. Migration guide (Bug Zapper, Feature Lab, Disk Stash)
+## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 
 Visual/markup refactor only: no changes to Firestore data shapes, rules, Cloud
 Functions, enum values, identity sources (Bug Zapper's `meTooBy` uses Firebase uid,
 Feature Lab's `votes` uses MemberSpace id — keep both), or comment visibility.
 
-**Class mapping** (`bz-`/`fl-` shown; Disk Stash equivalents below)
+**Class mapping** (`bz-`/`fl-` shown; Cloud Stash equivalents below)
 | Old | New |
 |---|---|
 | root `#x-root` tokens `--bz-*`/`--fl-*` | `class="bt-root"` + `--bt-*`; delete the feature token block, the `[hidden]` rule, the `*` font rule |
@@ -348,7 +348,7 @@ Feature Lab's `votes` uses MemberSpace id — keep both), or comment visibility.
 | `.bz-comment*` `.bz-history*` (inline dot color) | `.bt-comment*`, `.bt-history*` with `.bt-history-dot--{tone}` |
 | `window.confirm()` deletes | `confirmAction()` (busy label "Deleting…") |
 
-**Disk Stash:** `.ds-header` → `.bt-topbar` (wordmark DISK + STASH, admin controls) +
+**Cloud Stash:** `.ds-header` → `.bt-topbar` (wordmark CLOUD + STASH, admin controls) +
 `.bt-header` (`.bt-title` "Storage" or similar). `.ds-body` → `.bt-body`; `.ds-columns` →
 `.bt-columns`; `.ds-card(-tight)` → `.bt-card`; `.ds-card-head(-border)` →
 `.bt-card-head` / `.bt-card--divided`; `.ds-title` / `.ds-eyebrow` (as card heading) →
@@ -385,28 +385,28 @@ Written from the actual code after the bt-ui migration (commit `70722be`), not
 from the original plan — these are the calls that were made and why, and the
 gaps that are still open.
 
-### 8a. Admin-only page pattern (Disk Stash)
+### 8a. Admin-only page pattern (Cloud Stash)
 
-Disk Stash does **not** use `shared/ui/admin-auth.js`, on purpose. That module's
+Cloud Stash does **not** use `shared/ui/admin-auth.js`, on purpose. That module's
 `onAuthStateChanged` handler always falls back to `signInAnonymously()` when
 there's no user — correct for Bug Zapper and Feature Lab, which are public,
 member-facing views that need to let a logged-in member write (vote, comment)
-before anyone has signed in as an admin. Disk Stash has no public view at all:
+before anyone has signed in as an admin. Cloud Stash has no public view at all:
 every visitor who isn't an admin sees either the plan-gate message or the
 sign-in gate, never a working page, and it never created an anonymous Firebase
 session before this migration. Force-fitting `admin-auth.js` here would have
 started silently creating one on every visit — a real behavior change, not a
 markup one.
 
-Disk Stash instead keeps its own `syncAdmin()`, `handleSignIn()`,
-`handleSignOut()`, and `watchAuthState()` in `disk-stash.js`. Its
+Cloud Stash instead keeps its own `syncAdmin()`, `handleSignIn()`,
+`handleSignOut()`, and `watchAuthState()` in `cloud-stash.js`. Its
 `watchAuthState()` shows the sign-in gate directly on `user === null`, with no
 anonymous fallback branch. It does still use the shared `initAdminMenu()` for
 the dropdown and `confirmAction()` for its destructive confirmations — only the
 Firebase auth wiring itself is feature-local.
 
 **Rule for future features:** an admin-only feature with no member-facing view
-follows Disk Stash's pattern (its own `watchAuthState()`, no anonymous
+follows Cloud Stash's pattern (its own `watchAuthState()`, no anonymous
 fallback) until `admin-auth.js` gains an option to skip the anonymous sign-in —
 see 8c.
 
@@ -417,7 +417,7 @@ section 5 (decided after the migration). New features must use it too.
 
 ### 8c. Known follow-ups
 
-- **`admin-auth.js` has no skip-anonymous option.** Referenced in 8a — Disk
+- **`admin-auth.js` has no skip-anonymous option.** Referenced in 8a — Cloud
   Stash needs an admin-only auth flow with no anonymous fallback, and
   currently duplicates that flow locally instead. A future version of
   `shared/ui/admin-auth.js` could take an option (e.g. `anonymousFallback:

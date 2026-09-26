@@ -21,10 +21,10 @@
 // - Screenshots: uploaded client-side directly to Cloudinary (unsigned
 //   upload preset), then recorded via the recordBugScreenshot Cloud
 //   Function, which writes to the shared externalAssets/storageUsage
-//   collections (Disk Stash) and sets screenshotUrl on this doc. Bug
+//   collections (Cloud Stash) and sets screenshotUrl on this doc. Bug
 //   Zapper never deletes a Cloudinary asset itself — that only ever
-//   happens through Disk Stash's deleteExternalAsset or its scheduled
-//   sweep, driven by a cleanupRules doc an admin sets up in Disk Stash.
+//   happens through Cloud Stash's deleteExternalAsset or its scheduled
+//   sweep, driven by a cleanupRules doc an admin sets up in Cloud Stash.
 
 import { getFirebaseApp } from "../../shared/firebase-init.js";
 import {
@@ -73,6 +73,7 @@ const ROOT_ID = "bug-zapper-root";
 // live on the preset itself; they must not shrink screenshots, or text
 // becomes unreadable. The client caps uploads at 10 MB / 3840px.
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
+// Known naming leftover from before the Disk Stash → Cloud Stash rename; left as "disk-stash" on purpose (renaming the Cloudinary preset would break live uploads).
 const CLOUDINARY_UPLOAD_PRESET = "disk-stash";
 
 // Matches the comments text.size() <= 1000 check in firestore.rules.
@@ -717,7 +718,7 @@ function activitySkeleton() {
   </div>`;
 }
 
-// Purges are logged against the item whose file was removed (Disk Stash
+// Purges are logged against the item whose file was removed (Cloud Stash
 // manual purge or the scheduled cleanup); details name the field and file.
 function purgeLabel(details = {}) {
   const field = FIELD_NAMES[details.linkedField];
@@ -1148,7 +1149,7 @@ function openDetailModal(reportId) {
           if (note) historyEntry.note = note;
           update.status = v.status;
           update.statusHistory = arrayUnion(historyEntry);
-          // Disk Stash's cleanup rule ages off this doc's screenshot based on
+          // Cloud Stash's cleanup rule ages off this doc's screenshot based on
           // how long it's sat in a given status.
           update.statusChangedAt = serverTimestamp();
         }

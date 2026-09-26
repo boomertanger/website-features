@@ -429,7 +429,7 @@ function activitySkeleton() {
   </div>`;
 }
 
-// Purges are logged against the item whose file was removed (Disk Stash
+// Purges are logged against the item whose file was removed (Cloud Stash
 // manual purge or the scheduled cleanup); details name the field and file.
 function purgeLabel(details = {}) {
   const field = FIELD_NAMES[details.linkedField];

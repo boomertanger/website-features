@@ -1,10 +1,27 @@
-# Feature: Disk Stash
+# Feature: Cloud Stash
 
 ## Goal
 Shared admin tool for monitoring and safely cleaning up external file
 storage (Cloudinary), used by any feature that stores files — not just
 Bug Zapper. Reads/manages a generic `externalAssets` collection so it
 works for every current and future writer without redesign.
+
+## Naming (renamed from Disk Stash)
+This feature was called Disk Stash until the Cloud Stash rename. Code,
+docs, the display name, the Squarespace page slug (`cloud-stash`) and the
+log feature keys (`cloud-stash` in `activityLog`, `cloudStash` in
+`adminLog`, matching each log's existing style) all use the new name.
+These keep the old name or a generic one **on purpose**:
+- The Cloudinary upload preset `disk-stash` (used by Bug Zapper's
+  `CLOUDINARY_UPLOAD_PRESET`): renaming it in Cloudinary would break live
+  uploads for no real benefit.
+- The shared collections `externalAssets`, `storageUsage`, `cleanupRules`
+  and the Cloud Functions `deleteExternalAsset` / `scheduledAssetCleanup`:
+  they're generic storage plumbing, not named after this page.
+
+Log entries written before the rename (`disk-stash` / `diskStash`) are
+removed by `functions/scripts/purge-old-feature-log-entries.js`, which
+deletes them permanently rather than relabelling them.
 
 ## Who sees it
 Admin only. MemberSpace's Admin plan (`PLANS.ADMIN`) only gates whether
@@ -13,14 +30,14 @@ requires signing in with a Google account on `adminAllowlist`, the same
 pattern Feature Lab established (`syncAdminStatus` + `admins/{uid}`).
 
 ## Where it lives
-Squarespace page slug: `disk-stash`. Built on the shared `bt-ui` kit
+Squarespace page slug: `cloud-stash`. Built on the shared `bt-ui` kit
 (`shared/bt-ui.css`, `shared/ui/*.js`) — see `docs/design-system.md` for
 the component/token reference and `CLAUDE.md` for the rules this feature
-follows. This feature's own CSS (`disk-stash.css`) keeps only the
+follows. This feature's own CSS (`cloud-stash.css`) keeps only the
 blinking dot on the wordmark's disk icon; everything else (layout, cards,
 table, meter, buttons, forms, the admin sign-in/out controls) is shared.
 
-### Embed snippets (disk-stash page, Code Block)
+### Embed snippets (cloud-stash page, Code Block)
 
 **Staging** uses the staging loader from `docs/design-system.md` §1: it
 looks up the newest `dev` commit on every page load and loads this
@@ -28,9 +45,9 @@ feature's files pinned to it, so the Code Block never needs editing after
 a push (hard-refresh to pick up a new commit; the corner badge shows which
 commit is running). Paste the template from §1 with:
 
-- `FEATURE_CSS` → `features/disk-stash/disk-stash.css`
-- `FEATURE_JS` → `features/disk-stash/disk-stash.js`
-- `ROOT_ID` → `disk-stash-root`
+- `FEATURE_CSS` → `features/cloud-stash/cloud-stash.css`
+- `FEATURE_JS` → `features/cloud-stash/cloud-stash.js`
+- `ROOT_ID` → `cloud-stash-root`
 
 Filled in:
 
@@ -38,12 +55,12 @@ Filled in:
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<div id="disk-stash-root"></div>
+<div id="cloud-stash-root"></div>
 <script type="module">
   // Boomertanger staging loader: always runs the newest dev commit.
   const REPO = "boomertanger/website-features";
-  const CSS = ["shared/bt-ui.css", "features/disk-stash/disk-stash.css"];
-  const JS = "features/disk-stash/disk-stash.js";
+  const CSS = ["shared/bt-ui.css", "features/cloud-stash/cloud-stash.css"];
+  const JS = "features/cloud-stash/cloud-stash.js";
   let sha = "dev", note = "fallback";
   try {
     const r = await fetch(`https://api.github.com/repos/${REPO}/commits/dev`, { headers: { Accept: "application/vnd.github.sha" }, cache: "no-store" });
@@ -68,9 +85,9 @@ Inter font links and `shared/bt-ui.css@1` load once site-wide from
 Squarespace Header Code Injection, so the Code Block is just:
 
 ```html
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/disk-stash/disk-stash.css">
-<div id="disk-stash-root"></div>
-<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/disk-stash/disk-stash.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/cloud-stash/cloud-stash.css">
+<div id="cloud-stash-root"></div>
+<script type="module" src="https://cdn.jsdelivr.net/gh/boomertanger/website-features@1/features/cloud-stash/cloud-stash.js"></script>
 ```
 
 ## Data model
@@ -142,7 +159,7 @@ needed to write this; it's config, not user data):
   path as the manual button.
 - `functions/lib/externalAssets.js` exports `recordAssetCreated()` for
   any feature's own Cloud Function to call right after a successful
-  Cloudinary upload — Disk Stash doesn't own asset *creation*, only
+  Cloudinary upload — Cloud Stash doesn't own asset *creation*, only
   deletion and display, but ships this helper so every writer stays
   consistent with the schema above.
 
@@ -191,7 +208,7 @@ needed to write this; it's config, not user data):
       Zapper shape (`bugReports`, `status`, `statusChangedAt`) is declared in
       `firestore.indexes.json`; add any new shape there too.
 - [x] Match values are case-sensitive (`"fixed"` never matches `"Fixed"`).
-      For known collection/field pairs (`RULE_TARGETS` in `disk-stash.js`)
+      For known collection/field pairs (`RULE_TARGETS` in `cloud-stash.js`)
       the Add rule form offers the exact stored values as a dropdown.
 - [ ] Multiple `externalAssets` for the same `linkedDoc` (shouldn't happen
       in the current one-asset-per-doc model, but nothing enforces it) —
@@ -231,7 +248,7 @@ needed to write this; it's config, not user data):
   firebase functions:secrets:set CLOUDINARY_API_SECRET --project staging
   # repeat with --project production
   ```
-- The `disk-stash` Squarespace page itself (create it, note its page ID
+- The `cloud-stash` Squarespace page itself (create it, note its page ID
   if anything beyond the embed needs it).
 - Bug Zapper's actual field names, once it's built, need to line up with
   `linkedDoc.field` / the `cleanupRules` shape above — flag this when

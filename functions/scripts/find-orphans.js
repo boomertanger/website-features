@@ -20,7 +20,7 @@
 //   3. externalAssets whose linkedDoc is missing
 // --delete removes ONLY 1 and 2. Orphaned externalAssets are reported, never
 // deleted here: they still have a live Cloudinary file, so they must go
-// through Disk Stash's deleteExternalAsset (Cloudinary first, then Firestore).
+// through Cloud Stash's deleteExternalAsset (Cloudinary first, then Firestore).
 
 const fs = require("fs");
 const path = require("path");
@@ -137,7 +137,7 @@ async function main() {
     console.log(`   externalAssets/${o.id}   ${o.publicId}   ${o.sizeBytes ?? "?"} bytes   -> ${o.linked} missing`);
   }
   if (assets.orphans.length) {
-    console.log("   Purge these from Disk Stash (deleteExternalAsset), never directly here.");
+    console.log("   Purge these from Cloud Stash (deleteExternalAsset), never directly here.");
   }
 
   if (!args.delete) {

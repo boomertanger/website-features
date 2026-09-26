@@ -3,6 +3,11 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Rename Disk Stash to Cloud Stash (code, docs, display name). The
+  Cloudinary upload preset name `disk-stash`, and the generic
+  externalAssets/storageUsage/cleanupRules collections and
+  deleteExternalAsset/scheduledAssetCleanup function names, are
+  unchanged on purpose — see features/cloud-stash/README.md.
 - Add `disk-stash` feature: admin-only dashboard for the shared
   `externalAssets` storage collection — tracked-storage usage bar, asset
   list with a manual purge action, and admin-editable auto-cleanup rules.

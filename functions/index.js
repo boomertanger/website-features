@@ -109,8 +109,8 @@ exports.syncAdminStatus = onCall(async (request) => {
   return { isAdmin: false };
 });
 
-// ---------- Disk Stash: shared external-storage admin ----------
-// See /features/disk-stash/README.md for the full contract. This is the
+// ---------- Cloud Stash: shared external-storage admin ----------
+// See /features/cloud-stash/README.md for the full contract. This is the
 // ONLY place that deletes a Cloudinary asset — no feature, including Bug
 // Zapper, should ever call Cloudinary's delete API itself. Every path here
 // deletes from Cloudinary FIRST and only touches Firestore once that
@@ -156,7 +156,7 @@ async function logExpireAt(db) {
   return admin.firestore.Timestamp.fromMillis(Date.now() + days * 24 * 60 * 60 * 1000);
 }
 
-// feature: "bugZapper" | "featureLab" | "diskStash"; action: "edit" | "delete" | "purge".
+// feature: "bugZapper" | "featureLab" | "cloudStash"; action: "edit" | "delete" | "purge".
 // actorUid null + actorName "Automatic" for scheduled actions.
 async function adminLogEntry(db, { feature, action, itemPath, itemTitle, actorUid, actorName, reason, changes, snapshot, details }) {
   const entry = {
@@ -196,7 +196,7 @@ function textSnapshot(data, fields) {
 //      events today, but any future one must carry reportId to be cleaned)
 //   2. the item doc AND every subcollection under it (recursiveDelete)
 // Events go first so a retry after a partial failure still finds the item.
-// Disk Stash's "asset_purged" events are deliberately NOT removed: they're
+// Cloud Stash's "asset_purged" events are deliberately NOT removed: they're
 // the purge audit trail and store no linked doc id anyway.
 // functions/scripts/find-orphans.js mirrors this ACTIVITY_LINKS map.
 const ACTIVITY_LINKS = {
@@ -239,7 +239,7 @@ async function deleteItemCompletely(collectionName, docId) {
 /**
  * Callable from Bug Zapper's client right after a successful Cloudinary
  * upload. Records the asset in the shared externalAssets/storageUsage
- * collections (Disk Stash's contract) and sets screenshotUrl on the
+ * collections (Cloud Stash's contract) and sets screenshotUrl on the
  * bug report doc. This is the ONLY path that ever writes screenshotUrl —
  * Firestore rules refuse client writes to that field directly.
  */
@@ -380,7 +380,7 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
   await batch.commit();
 
   await db.collection("activityLog").add({
-    feature: "disk-stash",
+    feature: "cloud-stash",
     type: "asset_purged",
     summary: `Purged a ${asset.feature} asset (${asset.publicId})`,
     link: null,
@@ -413,7 +413,7 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
       };
     }
     await writeAdminLog({
-      feature: "diskStash",
+      feature: "cloudStash",
       action: "purge",
       itemPath,
       itemTitle,
@@ -426,7 +426,7 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
   return { ok: true };
 }
 
-// Callable from the Disk Stash admin UI's manual "Purge" button.
+// Callable from the Cloud Stash admin UI's manual "Purge" button.
 exports.deleteExternalAsset = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) => {
   if (!(await isCallerAdmin(request.auth))) {
     throw new HttpsError("permission-denied", "Admins only.");
@@ -450,9 +450,9 @@ exports.deleteExternalAsset = onCall({ secrets: CLOUDINARY_SECRETS }, async (req
 // Why this can't just be a client-side Firestore delete: if the report
 // has a screenshot, deleting the bugReports doc directly would leave its
 // Cloudinary asset (and its externalAssets record) orphaned — exactly
-// the failure mode Disk Stash's safe-delete path exists to prevent. This
+// the failure mode Cloud Stash's safe-delete path exists to prevent. This
 // function always cleans up the asset first (via the same
-// performAssetDeletion used by Disk Stash's manual purge and scheduled
+// performAssetDeletion used by Cloud Stash's manual purge and scheduled
 // sweep), and only deletes the report doc once that's done — or
 // immediately, if there was never a screenshot to begin with.
 //
@@ -496,7 +496,7 @@ exports.deleteBugReport = onCall({ secrets: CLOUDINARY_SECRETS }, async (request
 
   for (const assetDoc of assetsSnap.docs) {
     // Cloudinary delete + externalAssets/storageUsage cleanup first,
-    // same safe path as Disk Stash's manual purge button. If this
+    // same safe path as Cloud Stash's manual purge button. If this
     // throws, the report is NOT deleted, so nothing is left half-done.
     await performAssetDeletion(assetDoc.id, creds);
   }
@@ -682,7 +682,7 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
   };
 
   // Replace: the client already uploaded the new file to Cloudinary (on
-  // Save). Record it FIRST, so it's tracked by Disk Stash no matter what
+  // Save). Record it FIRST, so it's tracked by Cloud Stash no matter what
   // happens next; every failure below rolls it back (Cloudinary + record).
   let newAssetId = null;
   if (shot && shot.action === "replace") {
@@ -803,7 +803,7 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
         await performAssetDeletion(assetId, creds, { clearLinkedField: false });
       } catch (e) {
         console.error(`adminEditItem: old asset ${assetId} wasn't removed`, e);
-        warnings.push("The old screenshot couldn't be removed; purge it from Disk Stash.");
+        warnings.push("The old screenshot couldn't be removed; purge it from Cloud Stash.");
       }
     }
   }

@@ -1,16 +1,16 @@
-/* features/disk-stash/disk-stash.css
+/* features/cloud-stash/cloud-stash.css
    Feature-specific styling only — everything else (tokens, layout,
    dashboard components) lives in shared/bt-ui.css. Keeps just the
    blinking dot on the wordmark's disk icon; its fill is a var(--bt-*)
-   token (set inline in disk-stash.js), so it always matches the shared
+   token (set inline in cloud-stash.js), so it always matches the shared
    palette with no raw colors here. */
 
-@keyframes ds-blip {
+@keyframes cs-blip {
   0%, 60%, 100% { opacity: 1; transform: scale(1); }
   30% { opacity: 0.2; transform: scale(2.4); }
 }
 
-#disk-stash-root .ds-disk-blip {
-  animation: ds-blip 1.8s ease-in-out infinite;
+#cloud-stash-root .cs-disk-blip {
+  animation: cs-blip 1.8s ease-in-out infinite;
   transform-origin: 22px 22.5px;
 }

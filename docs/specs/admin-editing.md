@@ -28,7 +28,7 @@ Item doc gains: `editedAt` (timestamp), `editCount` (number).
 `adminLog/{id}` — Cloud-Function-only writes, admin-only reads:
 ```
 {
-  feature: "bugZapper" | "featureLab" | "diskStash",
+  feature: "bugZapper" | "featureLab" | "cloudStash",
   action: "edit" | "delete" | "purge",
   itemPath: "bugReports/abc123",
   itemTitle: string,                      // snapshot at time of action
