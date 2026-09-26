@@ -146,9 +146,13 @@ service cloud.firestore {
     // Config only, no real data at stake — admins can edit these directly.
     // The scheduled cleanup function (functions/index.js) reads whatever is
     // enabled here and still deletes only via the shared safe-delete path.
+    // create/update validate the new doc; delete gets its own line because
+    // a delete has no request.resource (a combined "write" rule errored on
+    // it, so admins could never delete a rule).
     match /cleanupRules/{ruleId} {
       allow read: if isAdmin();
-      allow write: if isAdmin()
+      allow delete: if isAdmin();
+      allow create, update: if isAdmin()
         && request.resource.data.feature is string
         && request.resource.data.collection is string
         && request.resource.data.matchField is string

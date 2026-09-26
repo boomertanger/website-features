@@ -240,6 +240,45 @@ function renderAssets() {
   `;
 }
 
+// Collections whose files Disk Stash can clean up, with the EXACT values
+// stored in each match field. Firestore matching is case-sensitive, so a
+// rule for "fixed" never matches a report whose status is "Fixed"; offering
+// these as a dropdown keeps the stored match value identical to the data.
+// Keep in sync with the owning feature (bug-zapper.js STATUS_META /
+// SEVERITY_META and its priority options). Fields not listed stay free text.
+const RULE_TARGETS = {
+  bugReports: {
+    feature: "bugZapper",
+    matchFields: {
+      status: ["Open", "In progress", "Fixed", "Won't fix", "Can't reproduce", "Duplicate"],
+      severity: ["Cosmetic", "Minor", "Major", "Critical"],
+      priority: ["Low", "Normal", "High", "Urgent"],
+    },
+    ageFields: ["statusChangedAt", "createdAt"],
+  },
+};
+
+function knownMatchValues(collectionName, matchField) {
+  return RULE_TARGETS[collectionName?.trim()]?.matchFields[matchField?.trim()] ?? null;
+}
+
+// Select with the exact stored values when they're known, else free text.
+function matchValueControl(collectionName, matchField, current = "") {
+  const known = knownMatchValues(collectionName, matchField);
+  if (known) {
+    return `<select id="ds-f-matchValue" name="matchValue" class="bt-select" required>
+      <option value="" ${known.includes(current) ? "" : "selected"} disabled>Choose a value</option>
+      ${known.map((v) => `<option value="${escapeHtml(v)}" ${v === current ? "selected" : ""}>${escapeHtml(v)}</option>`).join("")}
+    </select>
+    <span class="bt-hint">Exact values stored in ${escapeHtml(collectionName.trim())}.${escapeHtml(matchField.trim())}.</span>`;
+  }
+  return `<input id="ds-f-matchValue" name="matchValue" class="bt-input" required value="${escapeHtml(current)}" placeholder="Exact stored value (case-sensitive)">`;
+}
+
+function datalist(id, values) {
+  return `<datalist id="${id}">${values.map((v) => `<option value="${escapeHtml(v)}"></option>`).join("")}</datalist>`;
+}
+
 function renderRules() {
   const items = state.rules.length
     ? `<div class="bt-items">${state.rules
@@ -266,10 +305,10 @@ function renderRules() {
       <form id="ds-add-rule-form" class="bt-form">
         <div class="bt-form-grid">
           <div class="bt-field"><label class="bt-label" for="ds-f-feature">Feature key</label><input id="ds-f-feature" name="feature" class="bt-input" required placeholder="bugZapper"></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-collection">Collection</label><input id="ds-f-collection" name="collection" class="bt-input" required placeholder="bugReports"></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-matchField">Match field</label><input id="ds-f-matchField" name="matchField" class="bt-input" required placeholder="status"></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-matchValue">Match value</label><input id="ds-f-matchValue" name="matchValue" class="bt-input" required placeholder="fixed"></div>
-          <div class="bt-field"><label class="bt-label" for="ds-f-ageField">Age field</label><input id="ds-f-ageField" name="ageField" class="bt-input" required placeholder="statusUpdatedAt"></div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-collection">Collection</label><input id="ds-f-collection" name="collection" class="bt-input" required placeholder="bugReports" list="ds-l-collection">${datalist("ds-l-collection", Object.keys(RULE_TARGETS))}</div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-matchField">Match field</label><input id="ds-f-matchField" name="matchField" class="bt-input" required placeholder="status" list="ds-l-matchField"><datalist id="ds-l-matchField"></datalist></div>
+          <div class="bt-field" id="ds-f-matchValue-field"><label class="bt-label" for="ds-f-matchValue">Match value</label>${matchValueControl("", "")}</div>
+          <div class="bt-field"><label class="bt-label" for="ds-f-ageField">Age field</label><input id="ds-f-ageField" name="ageField" class="bt-input" required placeholder="statusChangedAt" list="ds-l-ageField"><datalist id="ds-l-ageField"></datalist></div>
           <div class="bt-field"><label class="bt-label" for="ds-f-ageThresholdDays">Age threshold (days)</label><input id="ds-f-ageThresholdDays" name="ageThresholdDays" type="number" min="1" class="bt-input" required placeholder="60"></div>
         </div>
         <p id="ds-rule-error" class="bt-error" hidden></p>
@@ -373,17 +412,45 @@ function attachBodyHandlers() {
 
   const addForm = state.root.querySelector("#ds-add-rule-form");
   if (addForm) {
+    const collectionInput = addForm.querySelector("#ds-f-collection");
+    const matchFieldInput = addForm.querySelector("#ds-f-matchField");
+    const featureInput = addForm.querySelector("#ds-f-feature");
+    const valueField = addForm.querySelector("#ds-f-matchValue-field");
+    let shownKnown = null;
+    const syncRuleForm = () => {
+      const target = RULE_TARGETS[collectionInput.value.trim()];
+      addForm.querySelector("#ds-l-matchField").innerHTML = target
+        ? Object.keys(target.matchFields).map((f) => `<option value="${escapeHtml(f)}"></option>`).join("")
+        : "";
+      addForm.querySelector("#ds-l-ageField").innerHTML = target
+        ? target.ageFields.map((f) => `<option value="${escapeHtml(f)}"></option>`).join("")
+        : "";
+      if (target && !featureInput.value.trim()) featureInput.value = target.feature;
+      // Swap free text <-> dropdown only when the known list changes, so
+      // typing elsewhere never wipes a chosen value.
+      const known = knownMatchValues(collectionInput.value, matchFieldInput.value);
+      if (known !== shownKnown) {
+        shownKnown = known;
+        const current = addForm.querySelector("#ds-f-matchValue").value;
+        valueField.innerHTML = `<label class="bt-label" for="ds-f-matchValue">Match value</label>${matchValueControl(collectionInput.value, matchFieldInput.value, current)}`;
+      }
+    };
+    [collectionInput, matchFieldInput].forEach((el) => {
+      el.addEventListener("input", syncRuleForm);
+      el.addEventListener("change", syncRuleForm);
+    });
+
     addForm.addEventListener("submit", async (e) => {
       e.preventDefault();
       const data = Object.fromEntries(new FormData(addForm).entries());
       const errorEl = state.root.querySelector("#ds-rule-error");
       try {
         await addDoc(collection(db, "cleanupRules"), {
-          feature: data.feature,
-          collection: data.collection,
-          matchField: data.matchField,
-          matchValue: data.matchValue,
-          ageField: data.ageField,
+          feature: data.feature.trim(),
+          collection: data.collection.trim(),
+          matchField: data.matchField.trim(),
+          matchValue: knownMatchValues(data.collection, data.matchField) ? data.matchValue : data.matchValue.trim(),
+          ageField: data.ageField.trim(),
           ageThresholdDays: parseInt(data.ageThresholdDays, 10),
           enabled: true,
           createdAt: serverTimestamp(),

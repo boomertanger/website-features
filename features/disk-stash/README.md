@@ -185,7 +185,14 @@ needed to write this; it's config, not user data):
       new rule shape runs, expect a `failed-precondition` in the function
       logs with a direct console link to create the index. Same one-time
       shape as the Eventarc propagation delay already noted in
-      `custom-instructions.md`, not a real bug.
+      `custom-instructions.md`, not a real bug. The function catches that
+      error and carries on to the next rule, so the run still reports
+      success: check the logs when a rule seems to do nothing. The Bug
+      Zapper shape (`bugReports`, `status`, `statusChangedAt`) is declared in
+      `firestore.indexes.json`; add any new shape there too.
+- [x] Match values are case-sensitive (`"fixed"` never matches `"Fixed"`).
+      For known collection/field pairs (`RULE_TARGETS` in `disk-stash.js`)
+      the Add rule form offers the exact stored values as a dropdown.
 - [ ] Multiple `externalAssets` for the same `linkedDoc` (shouldn't happen
       in the current one-asset-per-doc model, but nothing enforces it) —
       the scheduled sweep purges all of them.

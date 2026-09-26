@@ -15,6 +15,14 @@
         { "fieldPath": "itemPath", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "bugReports",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "status", "order": "ASCENDING" },
+        { "fieldPath": "statusChangedAt", "order": "ASCENDING" }
+      ]
     }
   ],
   "fieldOverrides": []
