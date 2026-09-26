@@ -69,17 +69,23 @@ const ROOT_ID = "bug-zapper-root";
 
 // ---------- Cloudinary (see README) ----------
 // "disk-stash" is the shared UNSIGNED upload preset on cloud nz4usqtz.
-// Any server-side size/format limits live on the preset itself (the
-// client-side compression below is a first pass, not the real limit).
+// Any server-side size/format limits (and any incoming transformation)
+// live on the preset itself; they must not shrink screenshots, or text
+// becomes unreadable. The client caps uploads at 10 MB / 3840px.
 const CLOUDINARY_CLOUD_NAME = "nz4usqtz";
 const CLOUDINARY_UPLOAD_PRESET = "disk-stash";
 
 // Matches the comments text.size() <= 1000 check in firestore.rules.
 const COMMENT_MAX_LENGTH = 1000;
 
-const MAX_ORIGINAL_FILE_BYTES = 15 * 1024 * 1024; // sanity cap before we even try to compress
-const COMPRESS_MAX_WIDTH = 1280;
-const COMPRESS_QUALITY = 0.75;
+// Screenshots must stay sharp enough to read text. Anything up to
+// MAX_SCREENSHOT_EDGE on its longest side is uploaded as the original file,
+// untouched. Only larger images are scaled down (PNG stays PNG, anything
+// else becomes a high-quality JPEG).
+const MAX_ORIGINAL_FILE_BYTES = 15 * 1024 * 1024; // sanity cap before we even try to read it
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // what we send to Cloudinary
+const MAX_SCREENSHOT_EDGE = 3840;
+const JPEG_QUALITY = 0.92;
 
 // The bolt's yellow is Bug Zapper's one feature-unique color (declared in
 // bug-zapper.css as --bz-bolt); every other fill below is a shared --bt-*
@@ -408,30 +414,48 @@ function renderList() {
 
 // ---------- Screenshot upload ----------
 
-function compressImage(file, maxWidth = COMPRESS_MAX_WIDTH, quality = COMPRESS_QUALITY) {
+function loadImage(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     const reader = new FileReader();
     reader.onerror = () => reject(new Error("Couldn't read that file."));
     reader.onload = () => {
       img.onerror = () => reject(new Error("Couldn't read that image."));
-      img.onload = () => {
-        const scale = Math.min(1, maxWidth / img.width);
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx = canvas.getContext("2d");
-        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
-        canvas.toBlob(
-          (blob) => (blob ? resolve(blob) : reject(new Error("Compression failed."))),
-          "image/jpeg",
-          quality
-        );
-      };
+      img.onload = () => resolve(img);
       img.src = reader.result;
     };
     reader.readAsDataURL(file);
   });
+}
+
+// Returns { blob, filename } ready to upload. The original file is kept
+// as-is unless its longest side is over MAX_SCREENSHOT_EDGE.
+async function prepareScreenshot(file) {
+  const img = await loadImage(file);
+  const longest = Math.max(img.width, img.height);
+  let blob = file;
+  if (longest > MAX_SCREENSHOT_EDGE) {
+    const scale = MAX_SCREENSHOT_EDGE / longest;
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(img.width * scale);
+    canvas.height = Math.round(img.height * scale);
+    const ctx = canvas.getContext("2d");
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    const isPng = file.type === "image/png";
+    blob = await new Promise((resolve, reject) =>
+      canvas.toBlob(
+        (b) => (b ? resolve(b) : reject(new Error("Couldn't resize that image."))),
+        isPng ? "image/png" : "image/jpeg",
+        isPng ? undefined : JPEG_QUALITY
+      )
+    );
+  }
+  if (blob.size > MAX_UPLOAD_BYTES) {
+    throw new Error("That image is over 10 MB — try a smaller screenshot.");
+  }
+  const ext = blob.type === "image/png" ? "png" : blob.type === "image/jpeg" ? "jpg" : (file.name.split(".").pop() || "img");
+  return { blob, filename: `screenshot.${ext}` };
 }
 
 // Returns an error message for a picked file, or "" if it can be uploaded.
@@ -441,16 +465,16 @@ function screenshotFileError(file) {
   return "";
 }
 
-// Compresses and uploads to Cloudinary (unsigned preset). Returns the
+// Prepares (see prepareScreenshot) and uploads to Cloudinary (unsigned preset). Returns the
 // details recordBugScreenshot / adminEditItem need to track the asset.
 async function uploadToCloudinary(file) {
   const problem = screenshotFileError(file);
   if (problem) throw new Error(problem);
 
-  const compressed = await compressImage(file);
+  const { blob, filename } = await prepareScreenshot(file);
 
   const formData = new FormData();
-  formData.append("file", compressed, "screenshot.jpg");
+  formData.append("file", blob, filename);
   formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
   formData.append("folder", "bug-zapper");
 
@@ -523,7 +547,7 @@ function openSubmitModal() {
         <input type="file" id="bz-screenshot-input" accept="image/*" style="display:none;">
         <button type="button" id="bz-screenshot-trigger" class="bz-dropzone">
           <span id="bz-screenshot-filename">Click to choose an image</span>
-          <div class="bt-hint">JPG or PNG, resized automatically before upload. Max 5MB after resize.</div>
+          <div class="bt-hint">JPG or PNG, up to 10 MB. Uploaded at full resolution (images over 3840px are scaled down).</div>
         </button>
       </div>
 
@@ -725,7 +749,8 @@ function screenshotThumb(url) {
   return thumbHtml({
     // Transformed at display time only; screenshotUrl stays as stored.
     src: cloudinaryUrl(url, "w_900,c_limit,f_auto,q_auto"),
-    full: cloudinaryUrl(url, "f_auto,q_auto"),
+    // Full resolution, best quality: no width limit, so text stays readable.
+    full: cloudinaryUrl(url, "f_auto,q_auto:best"),
     alt: "Screenshot of the bug",
   });
 }

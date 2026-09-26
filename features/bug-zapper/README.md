@@ -34,6 +34,10 @@ dropzone, the "bit me too" row).
    (`CLOUDINARY_UPLOAD_PRESET` in `bug-zapper.js`). Until it was set, the
    constant held a placeholder, so every screenshot upload failed with
    "Upload preset not found" while the report itself still saved.
+   Screenshots upload at full resolution (the original file, unless its
+   longest side is over 3840px; up to 10 MB), so the preset must not have
+   an incoming transformation that downsizes or recompresses them, and its
+   max file size must allow 10 MB.
 2. **Merge `functions-addition.js`** into `functions/index.js` — adds
    `recordBugScreenshot`, the only path allowed to set `screenshotUrl`.
 3. **Merge `firestore-rules-addition.txt`** into `firestore.rules` — adds
