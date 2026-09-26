@@ -16,7 +16,7 @@ const ICON = {
   comment: '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>',
   plus: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>',
   trash: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"></path><path d="M10 11v6M14 11v6"></path><path d="M9 6V4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2"></path></svg>',
-  disk: '<svg class="kit-disk-icon" viewBox="0 0 32 32" overflow="visible" aria-hidden="true"><ellipse cx="16" cy="9" rx="10" ry="4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></ellipse><path d="M6 9v14c0 2.2 4.5 4 10 4s10-1.8 10-4V9" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path><path d="M6 16c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path><circle class="kit-disk-blip" cx="22" cy="22.5" r="1.8" fill="var(--bt-title)"></circle></svg>',
+  cloud: '<svg viewBox="0 0 32 32" overflow="visible" aria-hidden="true"><path d="M9 21a5.5 5.5 0 0 1-.6-10.97A6.5 6.5 0 0 1 21 8.5a5 5 0 0 1 .5 9.98" fill="none" stroke="var(--bt-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path><rect x="10" y="19" width="3" height="6" rx="1" fill="var(--bt-primary)"></rect><rect x="14.5" y="16" width="3" height="9" rx="1" fill="var(--bt-primary)"></rect><rect x="19" y="18" width="3" height="7" rx="1" fill="var(--bt-primary)"></rect><rect class="kit-bar-glow" x="10" y="19" width="3" height="6" rx="1" fill="var(--bt-title)"></rect><rect class="kit-bar-glow" x="14.5" y="16" width="3" height="9" rx="1" fill="var(--bt-title)" style="animation-delay:.35s"></rect><rect class="kit-bar-glow" x="19" y="18" width="3" height="7" rx="1" fill="var(--bt-title)" style="animation-delay:.7s"></rect></svg>',
   x: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>',
   kit: '<svg viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="3" width="11" height="11" rx="2.5" fill="var(--bt-primary)"></rect><rect x="18" y="3" width="11" height="11" rx="5.5" fill="var(--bt-title)"></rect><rect x="3" y="18" width="11" height="11" rx="5.5" fill="var(--bt-text)"></rect><rect x="18" y="18" width="11" height="11" rx="2.5" fill="none" stroke="var(--bt-primary)" stroke-width="2"></rect></svg>',
   // Animated on purpose: the pulse ring bursts well past the 32px icon box,
@@ -301,7 +301,7 @@ function dashBody() {
   if (dash.access === "gate") {
     return `
     <div class="bt-logged-out">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.cloud}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
       <p class="bt-logged-out-text">Sign in with the Google account on the admin allowlist to manage stored files.</p>
       <button type="button" class="bt-signin-btn" data-dash-signin>Sign in as Admin</button>
@@ -325,7 +325,7 @@ function dashboardHtml() {
   return `
   <div class="bt-root" id="kit-dash">
     <div class="bt-topbar">
-      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.disk}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
+      <div class="bt-wordmark"><span class="bt-wordmark-icon">${ICON.cloud}</span><span class="bt-wordmark-text">CLOUD<span class="bt-wordmark-accent">STASH</span></span></div>
       <div class="bt-topnav">${adminBlock()}</div>
     </div>
     <div data-dash-body>${dashBody()}</div>

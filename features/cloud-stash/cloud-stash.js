@@ -63,11 +63,14 @@ const BUFFER_BYTES = 20 * 1024 ** 3; // pause new uploads at 20 GB
 
 const WORDMARK_ICON =
   '<svg viewBox="0 0 32 32" overflow="visible" aria-hidden="true">' +
-  '<ellipse cx="16" cy="9" rx="10" ry="4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></ellipse>' +
-  '<path d="M6 9v14c0 2.2 4.5 4 10 4s10-1.8 10-4V9" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
-  '<path d="M6 16c0 2.2 4.5 4 10 4s10-1.8 10-4" fill="none" stroke="var(--bt-primary)" stroke-width="2"></path>' +
-  '<circle class="cs-disk-blip" cx="22" cy="22.5" r="1.8" fill="var(--bt-title)"></circle>' +
-  "</svg>";
+  '<path d="M9 21a5.5 5.5 0 0 1-.6-10.97A6.5 6.5 0 0 1 21 8.5a5 5 0 0 1 .5 9.98" fill="none" stroke="var(--bt-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"></path>' +
+  '<rect x="10" y="19" width="3" height="6" rx="1" fill="var(--bt-primary)"></rect>' +
+  '<rect x="14.5" y="16" width="3" height="9" rx="1" fill="var(--bt-primary)"></rect>' +
+  '<rect x="19" y="18" width="3" height="7" rx="1" fill="var(--bt-primary)"></rect>' +
+  '<rect class="cs-bar-glow" x="10" y="19" width="3" height="6" rx="1" fill="var(--bt-title)"></rect>' +
+  '<rect class="cs-bar-glow" x="14.5" y="16" width="3" height="9" rx="1" fill="var(--bt-title)" style="animation-delay:.35s"></rect>' +
+  '<rect class="cs-bar-glow" x="19" y="18" width="3" height="7" rx="1" fill="var(--bt-title)" style="animation-delay:.7s"></rect>' +
+  '</svg>';
 const PLUS_ICON =
   '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>';
 const X_ICON =

@@ -34,7 +34,7 @@ Squarespace page slug: `cloud-stash`. Built on the shared `bt-ui` kit
 (`shared/bt-ui.css`, `shared/ui/*.js`) — see `docs/design-system.md` for
 the component/token reference and `CLAUDE.md` for the rules this feature
 follows. This feature's own CSS (`cloud-stash.css`) keeps only the
-blinking dot on the wordmark's disk icon; everything else (layout, cards,
+sweeping highlight on the wordmark's cloud-and-bars icon; everything else (layout, cards,
 table, meter, buttons, forms, the admin sign-in/out controls) is shared.
 
 ### Embed snippets (cloud-stash page, Code Block)
