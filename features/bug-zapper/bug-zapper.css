@@ -95,6 +95,29 @@
   cursor: pointer;
 }
 
+/* ---------- Report ID row (detail dialog, admin panel) ----------
+   Report ID + copy button on the left, the duplicate hint beside it. When
+   there isn't room for both, the hint wraps onto its own line below. */
+
+.bt-portal[data-feature="bug-zapper"] .bz-id-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bt-space-2) var(--bt-space-4);
+}
+
+.bt-portal[data-feature="bug-zapper"] .bz-id {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--bt-space-2);
+  min-width: 0;
+}
+
+.bt-portal[data-feature="bug-zapper"] .bz-id-row .bt-hint {
+  flex: 1 1 calc(var(--bt-space-16) * 4);
+}
+
 /* ---------- "Bit me too" row (detail dialog) ---------- */
 
 .bt-portal[data-feature="bug-zapper"] .bz-metoo-row {

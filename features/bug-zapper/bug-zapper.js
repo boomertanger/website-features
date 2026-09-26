@@ -761,14 +761,6 @@ function adminPanelHtml(report, notice) {
     <div class="bt-admin-panel">
       <span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>
       ${notice ? `<p class="bt-error">${escapeHtml(notice)}</p>` : ""}
-      <div class="bt-field">
-        <span class="bt-label" id="bz-report-id-label">Report ID</span>
-        <div style="display:flex;align-items:center;gap:var(--bt-space-2);flex-wrap:wrap">
-          <span class="bt-code" id="bz-report-id" aria-labelledby="bz-report-id-label">${escapeHtml(report.id)}</span>
-          <button type="button" id="bz-copy-id" class="bt-icon-btn bt-icon-btn--sm" aria-label="Copy report ID" title="Copy report ID">${COPY_ICON}</button>
-          <span id="bz-copy-status" class="bt-meta" aria-live="polite"></span>
-        </div>
-      </div>
       <div class="bt-form-grid">
         <div class="bt-field">
           <label class="bt-label" for="bz-status-select">Status</label>
@@ -791,8 +783,16 @@ function adminPanelHtml(report, notice) {
         <div class="bt-field">
           <label class="bt-label" for="bz-dup-input">Duplicate of (report id)</label>
           <input type="text" id="bz-dup-input" class="bt-input" value="${escapeHtml(report.duplicateOf ?? "")}" placeholder="paste the original report's ID">
-          <span class="bt-hint">Open the original report and use the copy button next to its Report ID above.</span>
         </div>
+      </div>
+      <div class="bz-id-row">
+        <div class="bz-id">
+          <span class="bt-label" id="bz-report-id-label">Report ID</span>
+          <span class="bt-code" id="bz-report-id" aria-labelledby="bz-report-id-label">${escapeHtml(report.id)}</span>
+          <button type="button" id="bz-copy-id" class="bt-icon-btn bt-icon-btn--sm" aria-label="Copy report ID" title="Copy report ID">${COPY_ICON}</button>
+          <span id="bz-copy-status" class="bt-meta" aria-live="polite"></span>
+        </div>
+        <span class="bt-hint">Open the original report and use the copy button next to its Report ID.</span>
       </div>
       <div class="bt-field">
         <label class="bt-label" for="bz-note-input">Note (optional, added to history)</label>
