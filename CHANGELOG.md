@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Admin panel (Bug Zapper + Feature Lab): save button right-aligned in a `.bt-form-actions` row; Admin activity follows it directly.
 - Rename Disk Stash to Cloud Stash (code, docs, display name). The
   Cloudinary upload preset name `disk-stash`, and the generic
   externalAssets/storageUsage/cleanupRules collections and

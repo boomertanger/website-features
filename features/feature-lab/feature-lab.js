@@ -486,7 +486,7 @@ function adminPanelHtml(request) {
         <span class="bt-hint">A note is saved with a status change.</span>
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      <div class="bt-form-actions"><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
       <div class="bt-modal-section">
         <p class="bt-section-label">Admin activity</p>
         <div id="fl-activity" aria-live="polite">${activitySkeleton()}</div>

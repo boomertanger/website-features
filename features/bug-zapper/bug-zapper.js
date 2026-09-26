@@ -800,7 +800,7 @@ function adminPanelHtml(report, notice) {
         <span class="bt-hint">A note is saved with a status change.</span>
       </div>
       <p id="bz-admin-error" class="bt-error" hidden></p>
-      <div><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      <div class="bt-form-actions"><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
       <div class="bt-modal-section">
         <p class="bt-section-label">Admin activity</p>
         <div id="bz-activity" aria-live="polite">${activitySkeleton()}</div>
