@@ -482,11 +482,13 @@ function adminPanelHtml(request) {
       </div>
       <div class="bt-field">
         <label class="bt-label" for="fl-note-input">Note (optional, added to history)</label>
-        <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500" disabled></textarea>
-        <span class="bt-hint">A note is saved with a status change.</span>
+        <textarea id="fl-note-input" class="bt-textarea" rows="2" maxlength="500"></textarea>
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
-      <div class="bt-form-actions"><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      <div class="fl-save">
+        <p class="bt-hint">A note is saved with a status change.</p>
+        <div class="bt-form-actions"><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
+      </div>
       <div class="bt-modal-section">
         <p class="bt-section-label">Admin activity</p>
         <div id="fl-activity" aria-live="polite">${activitySkeleton()}</div>
@@ -719,7 +721,6 @@ function openDetailModal(requestId) {
       const refresh = () => {
         const v = read();
         const statusChanged = v.status !== request.status;
-        noteInput.disabled = !statusChanged;
         saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null));
       };
       [statusSel, prioritySel].forEach((el) => {

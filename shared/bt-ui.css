@@ -554,6 +554,7 @@
   box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22);
 }
 .bt-root:not(#_) .bt-input[aria-invalid="true"], .bt-root:not(#_) .bt-textarea[aria-invalid="true"] { border-color: var(--bt-danger); }
+.bt-root:not(#_) .bt-input:disabled, .bt-root:not(#_) .bt-textarea:disabled, .bt-root:not(#_) .bt-select:disabled { opacity: 0.55; cursor: not-allowed; }
 .bt-root:not(#_) .bt-hint { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-error { font-size: var(--bt-text-md); color: var(--bt-danger-text); }
 
@@ -778,6 +779,7 @@
   animation: bt-rise 0.18s ease-out;
 }
 .bt-root:not(#_) .bt-modal--wide { max-width: 680px; }
+.bt-root:not(#_) .bt-modal:focus, .bt-root:not(#_) .bt-modal:focus-visible { outline: none; }
 .bt-root:not(#_) .bt-modal-header { display: flex; align-items: flex-start; justify-content: space-between; gap: var(--bt-space-4); }
 /* Title + optional subtitle travel together, 6px apart (modalHeader(title, subtitle)).
    Detail views put "Reported by … on …" in the subtitle slot. */

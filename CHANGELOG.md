@@ -3,6 +3,9 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Admin panel (Bug Zapper + Feature Lab): the note field is always typeable (it was disabled until the status changed, so clicks focused the dialog and lit it purple); it's still saved only with a real status change.
+- Admin panel: the note hint sits right-aligned directly above the right-aligned save button; Admin activity follows.
+- bt-ui: dialogs no longer show a focus ring on themselves, and disabled inputs, textareas and selects look disabled.
 - Admin panel (Bug Zapper + Feature Lab): save button right-aligned in a `.bt-form-actions` row; Admin activity follows it directly.
 - Rename Disk Stash to Cloud Stash (code, docs, display name). The
   Cloudinary upload preset name `disk-stash`, and the generic

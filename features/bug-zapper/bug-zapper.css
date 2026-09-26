@@ -130,3 +130,16 @@
   border: 1px solid var(--bt-border);
   border-radius: var(--bt-radius-md);
 }
+
+/* ---------- Admin panel save row (detail dialog) ----------
+   The note hint sits right-aligned, just above the right-aligned save button. */
+
+.bt-portal[data-feature="bug-zapper"] .bz-save {
+  display: flex;
+  flex-direction: column;
+  gap: var(--bt-space-2);
+}
+
+.bt-portal[data-feature="bug-zapper"] .bz-save .bt-hint {
+  text-align: right;
+}
