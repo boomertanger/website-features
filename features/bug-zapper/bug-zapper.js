@@ -658,7 +658,9 @@ function historyHtml(history) {
   if (history.length === 0) return `<p class="bt-meta">No history yet.</p>`;
   return `<div class="bt-history">${history
     .map((h) => {
-      const meta = STATUS_META[h.status] ?? STATUS_META.Open;
+      // Note-only entries (kind "note") have no status: neutral gray dot.
+      const isNote = h.kind === "note";
+      const meta = isNote ? { label: "Note added", tone: "gray" } : STATUS_META[h.status] ?? STATUS_META.Open;
       return `
       <div class="bt-history-item">
         <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--${meta.tone}"></span><span class="bt-history-rule"></span></div>
@@ -800,7 +802,7 @@ function adminPanelHtml(report, notice) {
       </div>
       <p id="bz-admin-error" class="bt-error" hidden></p>
       <div class="bz-save">
-        <p class="bt-hint">A note is saved with a status change.</p>
+        <p class="bt-hint">Notes appear in the history.</p>
         <div class="bt-form-actions"><button type="button" id="bz-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
       </div>
       <div class="bt-modal-section">
@@ -1122,14 +1124,18 @@ function openDetailModal(reportId) {
         duplicateOf: dupInput.value.trim() || null,
       });
       let saving = false;
+      // Save enables for a real status / priority / duplicate-of change, or
+      // a non-blank note (which is saved on its own as a "note" history
+      // entry). Never for an empty save.
       const refresh = () => {
         const v = read();
         const statusChanged = v.status !== report.status;
         saveBtn.disabled = saving || !(statusChanged
           || v.priority !== (report.priority ?? null)
-          || v.duplicateOf !== (report.duplicateOf ?? null));
+          || v.duplicateOf !== (report.duplicateOf ?? null)
+          || !!noteInput.value.trim());
       };
-      [statusSel, prioritySel, dupInput].forEach((el) => {
+      [statusSel, prioritySel, dupInput, noteInput].forEach((el) => {
         el.addEventListener("input", refresh);
         el.addEventListener("change", refresh);
       });
@@ -1140,19 +1146,27 @@ function openDetailModal(reportId) {
         const update = {};
         if (v.priority !== (report.priority ?? null)) update.priority = v.priority;
         if (v.duplicateOf !== (report.duplicateOf ?? null)) update.duplicateOf = v.duplicateOf;
+        const note = noteInput.value.trim();
         if (v.status !== report.status) {
           const historyEntry = {
             status: v.status,
             changedBy: state.memberName || "Admin",
             changedAt: new Date().toISOString(),
           };
-          const note = noteInput.value.trim();
           if (note) historyEntry.note = note;
           update.status = v.status;
           update.statusHistory = arrayUnion(historyEntry);
           // Cloud Stash's cleanup rule ages off this doc's screenshot based on
           // how long it's sat in a given status.
           update.statusChangedAt = serverTimestamp();
+        } else if (note) {
+          // Note on its own: status and statusChangedAt stay as they are.
+          update.statusHistory = arrayUnion({
+            kind: "note",
+            note,
+            changedBy: state.memberName || "Admin",
+            changedAt: new Date().toISOString(),
+          });
         }
 
         saving = true;
@@ -1161,7 +1175,10 @@ function openDetailModal(reportId) {
         saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
         try {
           await updateDoc(doc(db, "bugReports", reportId), update);
-          close();
+          // Stay open and re-render with the saved data: the new history
+          // entry shows up and the note field comes back empty.
+          report = (await loadLatest().catch(() => null)) ?? report;
+          showView();
         } catch (err) {
           console.error("Failed to save admin changes", err);
           errorEl.textContent = "Couldn't save changes — you may need to sign in again.";

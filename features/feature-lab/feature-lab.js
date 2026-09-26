@@ -486,7 +486,7 @@ function adminPanelHtml(request) {
       </div>
       <p id="fl-admin-error" class="bt-error" hidden></p>
       <div class="fl-save">
-        <p class="bt-hint">A note is saved with a status change.</p>
+        <p class="bt-hint">Notes appear in the history.</p>
         <div class="bt-form-actions"><button type="button" id="fl-admin-save" class="bt-btn bt-btn--admin" disabled>Save changes</button></div>
       </div>
       <div class="bt-modal-section">
@@ -500,7 +500,9 @@ function historyHtml(history) {
   if (history.length === 0) return `<p class="bt-meta">No history yet.</p>`;
   return `<div class="bt-history">${history
     .map((h) => {
-      const meta = STATUS_META[h.status] ?? STATUS_META.submitted;
+      // Note-only entries (kind "note") have no status: neutral gray dot.
+      const isNote = h.kind === "note";
+      const meta = isNote ? { label: "Note added", tone: "gray" } : STATUS_META[h.status] ?? STATUS_META.submitted;
       return `
       <div class="bt-history-item">
         <div class="bt-history-line"><span class="bt-history-dot bt-history-dot--${meta.tone}"></span><span class="bt-history-rule"></span></div>
@@ -708,10 +710,10 @@ function openDetailModal(requestId) {
     // Admin controls (only present in the DOM if state.isAdmin)
     const saveBtn = modal.querySelector("#fl-admin-save");
     if (saveBtn) {
-      // Enabled only when status or priority differ from the saved request;
-      // a history entry (and its note) is written only on a real status
-      // change. firestore.rules enforces the same thing, so a double-click
-      // can't add a duplicate history entry.
+      // Enabled for a real status or priority change, or a non-blank note
+      // (saved on its own as a "note" history entry). Never an empty save.
+      // firestore.rules enforces the same thing, so a double-click can't add
+      // a duplicate status entry.
       const statusSel = modal.querySelector("#fl-status-select");
       const prioritySel = modal.querySelector("#fl-priority-select");
       const noteInput = modal.querySelector("#fl-note-input");
@@ -721,9 +723,9 @@ function openDetailModal(requestId) {
       const refresh = () => {
         const v = read();
         const statusChanged = v.status !== request.status;
-        saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null));
+        saveBtn.disabled = saving || !(statusChanged || v.priority !== (request.priority ?? null) || !!noteInput.value.trim());
       };
-      [statusSel, prioritySel].forEach((el) => {
+      [statusSel, prioritySel, noteInput].forEach((el) => {
         el.addEventListener("input", refresh);
         el.addEventListener("change", refresh);
       });
@@ -733,16 +735,24 @@ function openDetailModal(requestId) {
         const v = read();
         const update = { updatedAt: serverTimestamp() };
         if (v.priority !== (request.priority ?? null)) update.priority = v.priority;
+        const note = noteInput.value.trim();
         if (v.status !== request.status) {
           const historyEntry = {
             status: v.status,
             changedBy: state.memberName || "Admin",
             changedAt: new Date().toISOString(),
           };
-          const note = noteInput.value.trim();
           if (note) historyEntry.note = note;
           update.status = v.status;
           update.statusHistory = arrayUnion(historyEntry);
+        } else if (note) {
+          // Note on its own: status stays as it is.
+          update.statusHistory = arrayUnion({
+            kind: "note",
+            note,
+            changedBy: state.memberName || "Admin",
+            changedAt: new Date().toISOString(),
+          });
         }
 
         saving = true;
@@ -751,7 +761,10 @@ function openDetailModal(requestId) {
         saveBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>Saving…`;
         try {
           await updateDoc(doc(db, "featureRequests", requestId), update);
-          close();
+          // Stay open and re-render with the saved data: the new history
+          // entry shows up and the note field comes back empty.
+          request = (await loadLatest().catch(() => null)) ?? request;
+          showView();
         } catch (err) {
           console.error("Failed to save admin changes", err);
           errorEl.textContent = "Couldn't save changes — you may need to sign in again.";

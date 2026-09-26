@@ -11,15 +11,44 @@ service cloud.firestore {
     // statusHistory may grow (by exactly one entry) only when status really
     // changes, and status may change only with that entry. Rejects a "save"
     // whose new status equals the current one (e.g. a double-click), so a
-    // duplicate history entry can't be written. Priority / duplicateOf-only
-    // saves leave both untouched and still pass.
+    // duplicate status entry can't be written. Priority / duplicateOf-only
+    // saves leave both untouched and still pass. The one other way history
+    // may grow is an admin note on its own (isNoteOnlyEntry).
     function isConsistentStatusChange() {
       let before = resource.data;
       let after = request.resource.data;
       let beforeHistory = before.get('statusHistory', []);
       let afterHistory = after.get('statusHistory', []);
       return (after.status == before.status && afterHistory == beforeHistory)
-        || (after.status != before.status && afterHistory.size() == beforeHistory.size() + 1);
+        || (after.status != before.status && afterHistory.size() == beforeHistory.size() + 1)
+        || isNoteOnlyEntry(before, after, beforeHistory, afterHistory);
+    }
+
+    // A note saved without a status change: status and statusChangedAt stay
+    // put (Cloud Stash cleanup rules age off statusChangedAt), the existing
+    // history is kept as is, and exactly one entry is appended with only
+    // { kind: "note", note (1-500 chars, the note field's limit), changedBy,
+    // changedAt }.
+    function isNoteOnlyEntry(before, after, beforeHistory, afterHistory) {
+      let n = beforeHistory.size();
+      return after.status == before.status
+        && after.get('statusChangedAt', null) == before.get('statusChangedAt', null)
+        && afterHistory.size() == n + 1
+        && afterHistory[0:n] == beforeHistory
+        && afterHistory[n] is map
+        && afterHistory[n].keys().hasOnly(['kind', 'note', 'changedBy', 'changedAt'])
+        && afterHistory[n].kind == 'note'
+        && afterHistory[n].note is string
+        && afterHistory[n].note.size() >= 1
+        && afterHistory[n].note.size() <= 500
+        && afterHistory[n].changedBy is string
+        && afterHistory[n].changedAt is string;
+    }
+
+    // An admin panel save must actually change one of the fields the panel
+    // manages; a write that changes nothing (or only updatedAt) is refused.
+    function adminPanelChanges(fields) {
+      return request.resource.data.diff(resource.data).affectedKeys().hasAny(fields);
     }
 
     // editedAt / editCount are set ONLY by the adminEditItem Cloud Function
@@ -190,7 +219,8 @@ service cloud.firestore {
         && request.resource.data.description == resource.data.description
         && request.resource.data.requesterId == resource.data.requesterId
         && request.resource.data.requesterName == resource.data.requesterName
-        && isConsistentStatusChange())
+        && isConsistentStatusChange()
+        && adminPanelChanges(['status', 'priority', 'statusHistory']))
         || isSingleVoteToggle()
         || isFeatureCommentCountBump());
 
@@ -330,7 +360,8 @@ service cloud.firestore {
             && request.resource.data.meTooBy == resource.data.meTooBy
             && request.resource.data.get('screenshotUrl', null) == resource.data.get('screenshotUrl', null)
             && request.resource.data.commentCount == resource.data.commentCount
-            && isConsistentStatusChange()));
+            && isConsistentStatusChange()
+            && adminPanelChanges(['status', 'priority', 'duplicateOf', 'statusHistory'])));
 
       match /comments/{commentId} {
         allow read: if request.auth != null
