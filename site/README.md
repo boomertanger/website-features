@@ -52,6 +52,18 @@ is plain HTML/CSS from `src/components/SiteFooter.astro`; `src/scripts/footer.js
 handles the sound toggle and the contact Show buttons (addresses are joined in the
 browser, never in the HTML).
 
+The game is `src/scripts/tap-the-splat/` (plain ES modules, ported from the
+prototype): `engine.js` (state, clock, meter, penalties, input), `rounds.js`,
+`bug.js` (firefly), `tools.js` (hammer, cutters, plug/cord, breaker), `bomb.js`,
+`chase.js`, `end.js`, `sounds.js` (Web Audio synthesis, no audio files),
+`art.js`, and `tap-the-splat.css`. The footer script imports `index.js` only on
+the first splat tap, and it attaches the game stylesheet itself (a plain CSS
+import would be hoisted into every page). `audio-unlock.js` is the one piece in
+the idle bundle: it unlocks Web Audio inside that first tap for iOS.
+`game-api.js` holds the data stubs (`getBoard`, `submitRun`, `vote`, `getVotes`;
+TODO milestone 2): staging shows the sample boards as PREVIEW DATA to members
+(`?as=member`); production hides the leaderboard and shows no vote totals.
+
 Open TODOs: the social profile URLs (all `#`) and follower counts (typed in until
 the growth collector exists); the footer links show the vanity domains but go to
 internal paths until the redirects exist in Cloudflare (`_todoDomains`), and

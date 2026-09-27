@@ -1373,10 +1373,10 @@
 .bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-tts-link--club .bt-tts-link-label::after { content: " · backstage"; color: var(--bt-green); font-weight: 800; }
 
 /* Contact (Show reveals each address) and Follow; appear after the pull chain */
-.bt-root:not(#_) .bt-tts-cf { display: grid; grid-template-columns: auto auto; justify-content: center; gap: 56px; max-width: 1000px; max-height: 0; margin: 0 auto; overflow: hidden; opacity: 0; transform: translateY(16px); text-align: center;
+.bt-root:not(#_) .bt-tts-cf { display: grid; grid-template-columns: minmax(0, auto) minmax(0, auto); justify-content: center; gap: 56px; max-width: 1000px; max-height: 0; margin: 0 auto; overflow: hidden; opacity: 0; transform: translateY(16px); text-align: center;
   transition: max-height 500ms ease, opacity 400ms ease 150ms, transform 500ms cubic-bezier(.2, .9, .3, 1.3) 150ms; }
-.bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 220px; margin-top: 10px; opacity: 1; transform: none; }
-.bt-root:not(#_) .bt-tts-mails { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
+.bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 320px; margin-top: 10px; opacity: 1; transform: none; }
+.bt-root:not(#_) .bt-tts-mails { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
 .bt-root:not(#_) .bt-tts-mail { display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px 7px 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: color-mix(in srgb, var(--bt-surface) 55%, var(--bt-bg)); font-size: var(--bt-text-md); color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-tts-mail b { font-weight: 600; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-tts-mail.is-open b, .bt-root:not(#_) .bt-site-footer .bt-tts-mail.is-open a { color: var(--bt-text); }
@@ -1404,11 +1404,12 @@
   .bt-root:not(#_) .bt-site-footer a.bt-tts-link { gap: 7px; padding: 7px 8px; }
   .bt-root:not(#_) .bt-tts-link-icon { width: 24px; height: 24px; }
   .bt-root:not(#_) .bt-tts-cf { grid-template-columns: 1fr; gap: 18px; }
-  .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 320px; }
-  .bt-root:not(#_) .bt-tts-mails, .bt-root:not(#_) .bt-tts-follow { flex-wrap: wrap; }
+  .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 420px; }
+  .bt-root:not(#_) .bt-tts-follow { flex-wrap: wrap; }
 }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .bt-tts { padding: 14px 14px 16px; overflow: visible; }
+  /* visible downwards (the leaderboard may hang below), clipped sideways (the end card's splatter is wider than a phone) */
+  .bt-root:not(#_) .bt-tts { padding: 14px 14px 16px; overflow: visible; overflow-x: clip; }
   .bt-root:not(#_) .bt-tts-top { z-index: 30; }
   .bt-root:not(#_) .bt-tts-meter-bar { width: 80px; }
   .bt-root:not(#_) .bt-tts-lb { position: static; }

@@ -14,7 +14,8 @@ const TITLE = "Tap the Splat";
 const DRIPS = { 1: [12, 0, 4.2], 4: [8, 1.6, 5], 6: [14, 0.8, 4.6], 8: [10, 2.4, 5.4], 11: [13, 1.2, 4.8] };
 
 // Wordmark letters: the game puts the bomb in the first O and loosens A, G and R.
-const [w1, w2] = site.wordmark.map((w) => w.toUpperCase());
+// Natural case in the HTML (screen readers say one word); CSS uppercases it.
+const [w1, w2] = site.wordmark;
 const tanger = [...w2];
 
 // Tagline: the pull chain hangs from the middle word ("horror").
@@ -64,9 +65,8 @@ const links = site.domains.map((d, i) => {
           <Mascot decorative />
         </button>
         <div class="bt-tts-wm">
-          <span class="bt-sr-only">{site.name}</span>
-          <span aria-hidden="true"><span>{w1[0]}</span><span class="bt-tts-o">{w1[1]}</span><span>{w1.slice(2)}</span><span class="bt-tts-tanger" data-tts-g="tanger" role="button" tabindex="-1" aria-disabled="true">{tanger.map((ch, i) =>
-            i === 0 ? <span class="bt-tts-t1">{ch}</span> : <span data-l={i % 2 ? i : undefined}>{ch}</span>)}</span></span>
+          <span>{w1[0]}</span><span class="bt-tts-o">{w1[1]}</span><span>{w1.slice(2)}</span><span class="bt-tts-tanger" data-tts-g="tanger" role="button" tabindex="-1" aria-disabled="true">{tanger.map((ch, i) =>
+            i === 0 ? <span class="bt-tts-t1">{ch}</span> : <span data-l={i % 2 ? i : undefined}>{ch}</span>)}</span>
         </div>
         <span class="bt-tts-tag" data-tts-g="tag">{tagWords.map((w, i) => (
           <>{i > 0 && " "}{i === 0 ? <><span class="bt-tts-b">{w[0]}</span>{w.slice(1)}</> : i === chainAt ? <span class="bt-tts-hr">{w}</span> : w}</>

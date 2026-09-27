@@ -1,6 +1,8 @@
 // Tap the Splat footer, idle state (docs/specs/tap-the-splat.md).
-// Plain page script: the sound toggle and the contact Show buttons. The game
-// itself is not loaded here.
+// Plain page script: the sound toggle, the contact Show buttons, and two lazy
+// hooks. The game (JS + CSS) loads with a dynamic import on the first splat tap;
+// the members-only leaderboard loads its own small module on the trophy button.
+import { getAudio } from "./tap-the-splat/audio-unlock.js";
 
 const SOUND_KEY = "bt-tts-sound";
 
@@ -48,5 +50,31 @@ if (root) {
     } catch {
       btn.textContent = "Copy";
     }
+  });
+
+  // The game: nothing game-related loads before the first splat tap.
+  const splat = root.querySelector('[data-tts-g="splat"]');
+  let loading = false;
+  const firstTap = async () => {
+    if (loading) return;
+    loading = true;
+    // iOS only starts Web Audio inside a tap, and the import below is async.
+    if (root.dataset.sound !== "off") getAudio();
+    try {
+      const { startGame } = await import("./tap-the-splat/index.js");
+      splat.removeEventListener("click", firstTap);
+      await startGame(root);
+    } catch (err) {
+      loading = false;
+      console.error("Tap the Splat failed to load", err);
+    }
+  };
+  splat.addEventListener("click", firstTap);
+
+  // Leaderboard (members; staging only until milestone 2).
+  const lbWrap = root.querySelector("[data-lb-wrap]");
+  lbWrap?.querySelector("[data-lb]").addEventListener("click", async () => {
+    const { toggle } = await import("./tap-the-splat/leaderboard.js");
+    toggle(lbWrap);
   });
 }

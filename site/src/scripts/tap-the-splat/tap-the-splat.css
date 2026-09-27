@@ -1,0 +1,312 @@
+/* Tap the Splat: game-only styles, loaded with the game module on the first splat
+   tap. The idle footer lives in shared/bt-ui.css (.bt-tts). Ported from the approved
+   prototype (docs/design/mockups/tap-the-splat.html); its defaults only: white board
+   shown while playing, classic bomb, bones-and-skull chain, firefly, splatter end.
+
+   Feature colours: the game's props (bone, steel, brass, fire, the arcade board)
+   have no kit equivalent, so each is declared ONCE here as a --tts-* property
+   (CLAUDE.md rule 3) and referenced by name everywhere else, including the SVG art
+   in art.js. */
+.bt-root:not(#_) .bt-tts {
+  --tts-white: #fff;
+  --tts-black: #000;
+  --tts-shade: rgba(0, 0, 0, 0.6);
+  --tts-shade-deep: rgba(0, 0, 0, 0.7);
+  /* arcade board */
+  --tts-board: #07070a;
+  --tts-board-edge: #25252c;
+  --tts-board-inset: rgba(0, 0, 0, 0.9);
+  --tts-board-label: #6f6f7a;
+  --tts-board-digits: #f4f4f6;
+  --tts-board-glow: rgba(255, 255, 255, 0.55);
+  --tts-board-glow-soft: rgba(255, 255, 255, 0.25);
+  /* skull and bone chain */
+  --tts-bone: #e9e1cf;
+  --tts-bone-2: #cfc5ae;
+  --tts-bone-edge: #8d846f;
+  --tts-socket: #1a1a1a;
+  /* outlet, plug, cord */
+  --tts-plate: #e8e3d8;
+  --tts-plate-edge: #9c968a;
+  --tts-plate-face: #d9d3c6;
+  --tts-plate-face-edge: #b1aa9c;
+  --tts-slot: #2a2a2a;
+  --tts-prong: #c9c9cf;
+  --tts-plug: #26262b;
+  --tts-plug-edge: #444;
+  --tts-cord: #1b1b1f;
+  --tts-cord-edge: #3a3a40;
+  /* hammer and cutters */
+  --tts-wood: #9a6b3f;
+  --tts-wood-edge: #5e3f22;
+  --tts-steel: #8f96a3;
+  --tts-steel-edge: #4d525c;
+  --tts-steel-dark: #6f7682;
+  --tts-steel-shine: #c9ced8;
+  --tts-jaw: #b8bec9;
+  --tts-jaw-2: #aab1bd;
+  --tts-jaw-edge: #5a606b;
+  --tts-grip: #d23b3b;
+  --tts-grip-2: #e24b4b;
+  --tts-grip-edge: #7a1d1d;
+  --tts-pivot: #e2e5ea;
+  /* breaker */
+  --tts-box: #2b2d33;
+  --tts-box-edge: #555a64;
+  --tts-box-slot: #15161a;
+  --tts-box-slot-edge: #40444c;
+  --tts-lever: #d8dbe2;
+  --tts-lever-edge: #8a8f99;
+  --tts-led-on: #39ff6a;
+  --tts-led-off: #3a0b0b;
+  /* firefly */
+  --tts-ff-wing: rgba(230, 255, 200, 0.35);
+  --tts-ff-body: #3b2b1a;
+  --tts-ff-head: #2a1d10;
+  --tts-ff-light: #d9ff4d;
+  --tts-ff-glow: #d6ff5c;
+  --tts-ff-glow-2: #9cff3a;
+  /* bomb, fuse, fire */
+  --tts-bomb-hi: #9a9aa3;
+  --tts-bomb-mid: #3a3a42;
+  --tts-bomb-dark: #111114;
+  --tts-bomb-shine: rgba(255, 255, 255, 0.55);
+  --tts-cap: #555;
+  --tts-cap-hi: #aaa;
+  --tts-rope: #cdb68a;
+  --tts-rope-cut: #7d705a;
+  --tts-braid: #6d5634;
+  --tts-smoke: #9a9aa2;
+  --tts-spark: #fff3b0;
+  --tts-flash: #fff6d0;
+  --tts-fire: #ffb020;
+  --tts-fire-2: #ff6a00;
+  --tts-shard-0: var(--tts-fire);
+  --tts-shard-1: var(--tts-fire-2);
+  --tts-shard-2: var(--bt-red);
+  --tts-shard-3: var(--tts-spark);
+  /* TANGER power cut and loose letters */
+  --tts-dead: #3b3b3f;
+  --tts-loose: #c98b1e;
+  --tts-warm-1: #6b5320;
+  --tts-warm-2: #ffcf6b;
+  --tts-warm-3: #ffe2a3;
+  --tts-warm-4: #fff0c9;
+  /* Play again: dark text on the green button */
+  --tts-play-text: #06140a;
+}
+/* Phones play the grid version; the engine reads this. */
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-tts { --bt-tts-phone: 1; } }
+
+/* ---- Top bar: TIME / PENALTY board (only while playing), meter bump, toast ---- */
+.bt-root:not(#_) .bt-tts-arcade { position: relative; display: inline-flex; gap: 6px; font-family: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace; user-select: none; transition: opacity 350ms, transform 400ms cubic-bezier(.2, .9, .3, 1.3); }
+.bt-root:not(#_) .bt-tts[data-phase="idle"] .bt-tts-arcade { opacity: 0; transform: translateY(-6px) scale(.9); pointer-events: none; }
+.bt-root:not(#_) .bt-tts-cell { position: relative; padding: 4px 9px 5px; border-radius: 5px; background: var(--tts-board); border: 1px solid var(--tts-board-edge); box-shadow: inset 0 0 10px var(--tts-board-inset); }
+.bt-root:not(#_) .bt-tts-cell-lab { display: block; font-family: var(--bt-font); font-size: 8px; font-weight: 800; letter-spacing: .2em; text-transform: uppercase; color: var(--tts-board-label); }
+.bt-root:not(#_) .bt-tts-num { position: relative; display: block; font-size: 17px; font-weight: 800; letter-spacing: .14em; line-height: 1.1; color: var(--tts-board-digits); text-shadow: 0 0 5px var(--tts-board-glow), 0 0 12px var(--tts-board-glow-soft); }
+.bt-root:not(#_) .bt-tts-num.is-big { font-size: 19px; }
+.bt-root:not(#_) .bt-tts-ghost { position: absolute; inset: 0; opacity: .1; text-shadow: none; }
+.bt-root:not(#_) .bt-tts-meter.is-bump .bt-tts-meter-bar { animation: bt-tts-bump 380ms ease; }
+@keyframes bt-tts-bump { 40% { transform: scale(1.18); } }
+.bt-root:not(#_) .bt-tts-toast { position: absolute; left: 50%; top: 58px; z-index: 50; transform: translateX(-50%); padding: 6px 12px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 300ms; }
+.bt-root:not(#_) .bt-tts-toast.is-shown { opacity: 1; }
+.bt-root:not(#_) .bt-tts-minus { position: absolute; z-index: 60; transform: translate(-50%, -50%); font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 900; color: var(--bt-red); pointer-events: none; animation: bt-tts-float 900ms ease-out forwards; }
+.bt-root:not(#_) .bt-tts-thunk { position: absolute; z-index: 56; transform: translate(-50%, -50%); font-size: 12px; font-weight: 900; letter-spacing: .06em; color: var(--bt-title); pointer-events: none; animation: bt-tts-float 700ms ease-out forwards; }
+@keyframes bt-tts-float { 0% { opacity: 0; margin-top: 0; } 15% { opacity: 1; } 100% { opacity: 0; margin-top: -26px; } }
+
+/* ---- Links during play: marks, dark links, the hot (bloody) link ---- */
+.bt-root:not(#_) .bt-tts.is-collapsing a.bt-tts-link { transition-delay: 0ms; }
+.bt-root:not(#_) .bt-tts-link-mark { position: absolute; top: -5px; right: -5px; width: 12px; height: 12px; border-radius: 50%; background: var(--bt-red); box-shadow: 0 0 6px var(--bt-red); transform: scale(0); transition: transform 300ms cubic-bezier(.2, .9, .3, 1.6); }
+.bt-root:not(#_) .bt-tts a.bt-tts-link.is-got { border-color: color-mix(in srgb, var(--bt-red) 45%, var(--bt-border)); }
+.bt-root:not(#_) .bt-tts-link.is-got .bt-tts-link-mark { transform: scale(1); }
+.bt-root:not(#_) .bt-tts[data-dark="1"] a.bt-tts-link { filter: brightness(.25) saturate(.3); transition: filter 400ms, border-color 200ms, box-shadow 300ms; }
+.bt-root:not(#_) .bt-tts[data-dark="1"] a.bt-tts-link.is-got { filter: none; border-color: var(--bt-red); box-shadow: 0 0 14px color-mix(in srgb, var(--bt-red) 40%, transparent); }
+.bt-root:not(#_) .bt-tts[data-dark="1"] .bt-tts-link-mark { display: none; }
+.bt-root:not(#_) .bt-tts[data-phase="chase"] a.bt-tts-link { filter: brightness(.45); }
+.bt-root:not(#_) .bt-tts[data-phase="chase"] .bt-tts-link-mark { transform: scale(0); }
+.bt-root:not(#_) .bt-tts a.bt-tts-link.is-hot { filter: none; cursor: crosshair; border-color: var(--bt-red); background: linear-gradient(90deg, color-mix(in srgb, var(--bt-red) 45%, var(--bt-bg)), color-mix(in srgb, var(--bt-red) 18%, var(--bt-bg))); box-shadow: 0 0 22px color-mix(in srgb, var(--bt-red) 55%, transparent); animation: bt-tts-hotpop 250ms cubic-bezier(.2, .9, .3, 1.6); }
+.bt-root:not(#_) .bt-tts a.bt-tts-link.is-hot :is(.bt-tts-link-label, .bt-tts-link-domain) { color: var(--bt-text); }
+@keyframes bt-tts-hotpop { from { transform: scale(.85); } }
+.bt-root:not(#_) .bt-tts a.bt-tts-link.is-caught { animation: bt-tts-caught 350ms ease-out; }
+@keyframes bt-tts-caught { 50% { transform: scale(1.08); box-shadow: 0 0 30px var(--bt-red); } }
+
+/* ---- The firefly and the zap ---- */
+.bt-root:not(#_) .bt-tts-bug { position: absolute; left: 0; top: 0; z-index: 40; width: 26px; height: 26px; pointer-events: none; }
+.bt-root:not(#_) .bt-tts-bug svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 6px var(--tts-ff-glow)) drop-shadow(0 0 14px var(--tts-ff-glow-2)); }
+.bt-root:not(#_) .bt-tts-bug .wing { transform-box: fill-box; transform-origin: 50% 100%; animation: bt-tts-flap 60ms linear infinite alternate; }
+@keyframes bt-tts-flap { from { transform: scaleY(1); } to { transform: scaleY(.3); } }
+.bt-root:not(#_) .bt-tts-bug::after { content: ""; position: absolute; left: 30%; top: 55%; width: 10px; height: 10px; border-radius: 50%; background: var(--tts-ff-light); filter: blur(6px); opacity: .7; animation: bt-tts-ffpulse 900ms ease-in-out infinite; }
+@keyframes bt-tts-ffpulse { 50% { opacity: .25; transform: scale(.7); } }
+.bt-root:not(#_) .bt-tts-bug.is-dead { opacity: 0; transition: transform 700ms cubic-bezier(.5, 0, 1, .6), opacity 700ms; }
+.bt-root:not(#_) .bt-tts-tag.is-zap { animation: bt-tts-zap 520ms ease-out; }
+@keyframes bt-tts-zap {
+  0% { color: var(--tts-white); text-shadow: 0 0 10px var(--tts-white), 0 0 22px var(--bt-primary), 0 0 50px var(--bt-primary); }
+  25% { color: var(--bt-primary); text-shadow: none; }
+  40% { color: var(--tts-white); text-shadow: 0 0 12px var(--tts-white), 0 0 30px var(--bt-neon), 0 0 60px var(--bt-primary); }
+  100% { color: var(--bt-primary); } }
+.bt-root:not(#_) .bt-tts-zapspark { position: absolute; z-index: 41; width: 40px; height: 40px; margin: -20px 0 0 -20px; border-radius: 50%; background: radial-gradient(circle, var(--tts-white), var(--bt-primary-soft) 30%, transparent 70%); pointer-events: none; animation: bt-tts-flash 450ms ease-out forwards; }
+@keyframes bt-tts-flash { from { transform: scale(.1); opacity: 1; } to { transform: scale(2.2); opacity: 0; } }
+/* The broken tagline flickers its words only (colour, not opacity), so the chain stays solid. */
+.bt-root:not(#_) .bt-tts[data-flicker="1"] .bt-tts-tag { animation: bt-tts-broken 2.4s infinite; }
+@keyframes bt-tts-broken {
+  0%, 100% { color: var(--bt-primary); }
+  5% { color: color-mix(in srgb, var(--bt-primary) 18%, var(--bt-bg)); text-shadow: none; } 7% { color: var(--bt-primary); }
+  9% { color: color-mix(in srgb, var(--bt-primary) 25%, var(--bt-bg)); text-shadow: none; } 11% { color: var(--bt-primary); }
+  42%, 48% { color: color-mix(in srgb, var(--bt-primary) 15%, var(--bt-bg)); text-shadow: none; } 50% { color: var(--bt-primary); }
+  51% { color: color-mix(in srgb, var(--bt-primary) 40%, var(--bt-bg)); } 53% { color: var(--bt-primary); }
+  82% { color: color-mix(in srgb, var(--bt-primary) 20%, var(--bt-bg)); text-shadow: none; } 83% { color: var(--bt-primary); } }
+
+/* ---- Bones-and-skull pull chain: springy drop and pendulum swing ---- */
+.bt-root:not(#_) .bt-tts-chain { position: absolute; left: 50%; top: calc(100% + 2px); z-index: 5; width: 22px; height: 0; margin-left: -11px; overflow: visible; pointer-events: none; transition: height 700ms cubic-bezier(.3, 1.4, .5, 1); }
+.bt-root:not(#_) .bt-tts[data-chain="1"] .bt-tts-chain { height: 70px; pointer-events: auto; transition: none; transform-origin: 50% 0; animation: bt-tts-chaindrop 1100ms cubic-bezier(.3, .6, .4, 1) both, bt-tts-chainswing 1800ms ease-out 700ms both; }
+.bt-root:not(#_) .bt-tts[data-chain="1"] .bt-tts-chain.is-pull { animation: bt-tts-pull 700ms cubic-bezier(.3, 1.6, .5, 1); }
+.bt-root:not(#_) .bt-tts[data-chain="done"] .bt-tts-chain { height: 0; transition: height 500ms ease-in 300ms; }
+@keyframes bt-tts-chaindrop { 0% { height: 0; } 45% { height: 92px; } 62% { height: 58px; } 76% { height: 78px; } 88% { height: 66px; } 100% { height: 70px; } }
+@keyframes bt-tts-chainswing { 0% { transform: rotate(0); } 15% { transform: rotate(9deg); } 35% { transform: rotate(-7deg); } 55% { transform: rotate(4deg); } 75% { transform: rotate(-2deg); } 100% { transform: rotate(0); } }
+@keyframes bt-tts-pull { 0% { transform: translateY(0); } 25% { transform: translateY(16px); } 100% { transform: translateY(0); } }
+.bt-root:not(#_) .bt-tts-chain-links { position: absolute; left: 50%; top: 0; bottom: 18px; width: 12px; margin-left: -6px; opacity: 0; transition: opacity 200ms 100ms;
+  background: radial-gradient(ellipse 5px 3px at 50% 30%, var(--tts-bone) 60%, transparent 64%) 0 0 / 12px 9px repeat-y, radial-gradient(ellipse 2px 3px at 50% 75%, var(--tts-bone-2) 60%, transparent 64%) 0 0 / 12px 9px repeat-y; }
+.bt-root:not(#_) .bt-tts-chain-handle { position: absolute; left: 50%; bottom: -2px; display: block; width: 22px; height: 26px; margin-left: -11px; padding: 0; border: 0; background: none; cursor: pointer; opacity: 0; transition: opacity 200ms 350ms; }
+.bt-root:not(#_) .bt-tts-chain-handle svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bt-root:not(#_) .bt-tts[data-chain="1"] :is(.bt-tts-chain-links, .bt-tts-chain-handle) { opacity: 1; }
+
+/* ---- TANGER: power cut, power up, loose letters, DANGER ---- */
+.bt-root:not(#_) .bt-tts[data-tstate="dead"] .bt-tts-tanger { color: var(--tts-dead); text-shadow: none; }
+.bt-root:not(#_) .bt-tts[data-tstate="glow"] .bt-tts-tanger { cursor: pointer; animation: bt-tts-powerup 950ms cubic-bezier(.5, 0, .3, 1) forwards, bt-tts-glowhold 2.4s ease-in-out 950ms infinite; }
+@keyframes bt-tts-powerup {
+  0% { color: var(--tts-dead); text-shadow: none; }
+  30% { color: var(--tts-warm-1); text-shadow: 0 0 4px color-mix(in srgb, var(--bt-title) 20%, transparent); }
+  70% { color: var(--tts-warm-2); text-shadow: 0 0 10px var(--bt-title), 0 0 22px var(--bt-title); }
+  100% { color: var(--tts-warm-3); text-shadow: var(--bt-glow-gold); } }
+@keyframes bt-tts-glowhold {
+  0%, 100% { color: var(--tts-warm-3); text-shadow: var(--bt-glow-gold); }
+  50% { color: var(--tts-warm-4); text-shadow: 0 0 12px var(--bt-title), 0 0 30px var(--bt-title), 0 0 52px color-mix(in srgb, var(--bt-title) 70%, transparent); } }
+.bt-root:not(#_) .bt-tts[data-tstate="shake"] .bt-tts-tanger span { animation: bt-tts-tremble 260ms infinite; }
+.bt-root:not(#_) .bt-tts[data-tstate="shake"] .bt-tts-tanger span:nth-child(2n) { animation-delay: -130ms; }
+.bt-root:not(#_) .bt-tts[data-tstate="shake"] .bt-tts-tanger span.is-loose { animation: none; color: var(--tts-loose); }
+.bt-root:not(#_) .bt-tts[data-tstate="shake"]:not(.is-holding) .bt-tts-tanger span.is-loose { cursor: pointer; }
+@keyframes bt-tts-tremble { 0% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(1px, -1px) rotate(1.5deg); } 50% { transform: translate(-1px, 1px) rotate(-1deg); } 75% { transform: translate(1px, 1px) rotate(.5deg); } }
+.bt-root:not(#_) .bt-tts[data-tstate="danger"] .bt-tts-tanger { color: var(--bt-red); cursor: pointer; animation: bt-tts-danger 1.6s infinite; }
+@keyframes bt-tts-danger {
+  0%, 100% { text-shadow: var(--bt-glow-red); }
+  45% { text-shadow: 0 0 4px var(--bt-red); }
+  50% { text-shadow: none; opacity: .75; }
+  55% { text-shadow: 0 0 12px var(--bt-red), 0 0 30px var(--bt-red); opacity: 1; } }
+
+/* ---- Plug, cord, outlet, breaker, tools ---- */
+.bt-root:not(#_) .bt-tts-outlet { position: absolute; z-index: 6; width: 34px; height: 46px; opacity: 0; transform: scale(.6); pointer-events: none; transition: opacity 300ms, transform 400ms cubic-bezier(.2, .9, .3, 1.5); }
+.bt-root:not(#_) .bt-tts[data-plug] .bt-tts-outlet { opacity: 1; transform: none; }
+.bt-root:not(#_) .bt-tts-outlet.is-hot { filter: drop-shadow(0 0 8px var(--bt-title)); }
+.bt-root:not(#_) .bt-tts-outlet svg, .bt-root:not(#_) .bt-tts-plug svg, .bt-root:not(#_) .bt-tts-breaker svg, .bt-root:not(#_) .bt-tts-tool svg { display: block; width: 100%; height: 100%; }
+.bt-root:not(#_) .bt-tts-plug { position: absolute; z-index: 12; width: 22px; height: 30px; margin: -15px 0 0 -11px; opacity: 0; pointer-events: none; touch-action: none; cursor: grab; transition: opacity 300ms; }
+.bt-root:not(#_) .bt-tts[data-plug] .bt-tts-plug { opacity: 1; pointer-events: auto; }
+.bt-root:not(#_) .bt-tts-plug.is-dragging { cursor: grabbing; }
+.bt-root:not(#_) .bt-tts[data-plug="in"] .bt-tts-plug { cursor: default; }
+.bt-root:not(#_) .bt-tts-cord { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.bt-root:not(#_) .bt-tts-cord path { fill: none; stroke: var(--tts-cord); stroke-width: 4; stroke-linecap: round; filter: drop-shadow(0 1px 0 var(--tts-cord-edge)); }
+.bt-root:not(#_) .bt-tts-breaker { position: absolute; z-index: 12; width: 34px; height: 48px; margin: -24px 0 0 -17px; padding: 0; border: 0; background: none; cursor: pointer; opacity: 0; transform: scale(.5); pointer-events: none; transition: opacity 300ms, transform 450ms cubic-bezier(.2, .9, .3, 1.6); }
+.bt-root:not(#_) .bt-tts[data-breaker] .bt-tts-breaker { opacity: 1; transform: none; pointer-events: auto; }
+.bt-root:not(#_) .bt-tts[data-breaker="on"] .bt-tts-breaker:hover { filter: drop-shadow(0 0 8px color-mix(in srgb, var(--bt-title) 70%, transparent)); }
+.bt-root:not(#_) .bt-tts-breaker .lever { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 180ms cubic-bezier(.3, 1.6, .5, 1); }
+.bt-root:not(#_) .bt-tts-breaker .led { fill: var(--tts-led-on); }
+.bt-root:not(#_) .bt-tts[data-breaker="off"] .bt-tts-breaker .lever { transform: scaleY(-1) translateY(-2px); }
+.bt-root:not(#_) .bt-tts[data-breaker="off"] .bt-tts-breaker .led { fill: var(--tts-led-off); }
+.bt-root:not(#_) .bt-tts[data-breaker="gone"] .bt-tts-breaker { opacity: 0; transform: scale(.6); pointer-events: none; transition-delay: 400ms; }
+.bt-root:not(#_) .bt-tts-tool { position: absolute; z-index: 55; width: 40px; height: 40px; margin: -20px 0 0 -20px; padding: 0; border: 0; background: none; cursor: pointer; opacity: 0; pointer-events: none; transform: scale(.4) rotate(-30deg); transition: opacity 300ms, transform 450ms cubic-bezier(.2, .9, .3, 1.6); }
+.bt-root:not(#_) .bt-tts-tool.is-shown { opacity: 1; pointer-events: auto; transform: none; animation: bt-tts-bob 1.6s ease-in-out infinite; }
+@keyframes bt-tts-bob { 50% { transform: translateY(-4px) rotate(4deg); } }
+.bt-root:not(#_) .bt-tts-tool.is-held { transition: none; animation: none; pointer-events: none; transform: rotate(-20deg); filter: drop-shadow(0 6px 8px var(--tts-shade)); }
+.bt-root:not(#_) .bt-tts-tool.is-swing svg { transform-origin: 80% 80%; animation: bt-tts-swing 220ms ease-out; }
+@keyframes bt-tts-swing { 40% { transform: rotate(-50deg); } }
+.bt-root:not(#_) .bt-tts-tool.is-snip :is(.jaw1, .jaw2) { transform-box: fill-box; transform-origin: 100% 50%; }
+.bt-root:not(#_) .bt-tts-tool.is-snip .jaw1 { animation: bt-tts-jaw1 200ms ease-out; }
+.bt-root:not(#_) .bt-tts-tool.is-snip .jaw2 { animation: bt-tts-jaw2 200ms ease-out; }
+@keyframes bt-tts-jaw1 { 50% { transform: rotate(-18deg); } }
+@keyframes bt-tts-jaw2 { 50% { transform: rotate(18deg); } }
+/* Holding a tool hides the pointer over the play area (the tool is the cursor). */
+.bt-root:not(#_) .bt-tts.is-holding .bt-tts-stage, .bt-root:not(#_) .bt-tts.is-holding .bt-tts-stage * { cursor: none; }
+
+/* ---- The classic bomb in the first O and its braided fuse ---- */
+.bt-root:not(#_) .bt-tts-bomb { position: absolute; left: 50%; top: 52%; z-index: 4; width: .44em; height: .44em; margin: -.2em 0 0 -.22em; padding: 0; border: 0; border-radius: 50%; cursor: pointer; transform: scale(0); transition: transform 400ms cubic-bezier(.2, .9, .3, 1.6);
+  background: radial-gradient(circle at 34% 30%, var(--tts-bomb-hi) 0 6%, var(--tts-bomb-mid) 22%, var(--tts-bomb-dark) 58%, var(--tts-black)); box-shadow: 0 0 0 1px var(--tts-black), inset -2px -3px 6px var(--tts-shade-deep); }
+.bt-root:not(#_) .bt-tts-bomb::before { content: ""; position: absolute; left: 50%; top: -.07em; width: .14em; height: .08em; margin-left: -.07em; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, var(--tts-cap), var(--tts-cap-hi), var(--tts-cap)); }
+.bt-root:not(#_) .bt-tts-bomb::after { content: ""; position: absolute; left: 22%; top: 18%; width: 22%; height: 14%; border-radius: 50%; background: var(--tts-bomb-shine); transform: rotate(-30deg); }
+.bt-root:not(#_) .bt-tts[data-bomb="1"] .bt-tts-bomb { transform: scale(1); }
+.bt-root:not(#_) .bt-tts[data-fuse="cut"] .bt-tts-bomb { transform: scale(0); transition-delay: 500ms; }
+.bt-root:not(#_) .bt-tts-fuse { position: absolute; right: 50%; bottom: calc(48% + .2em); z-index: 5; width: 3.4em; height: 2.2em; overflow: visible; pointer-events: none; opacity: 0; transition: opacity 300ms; }
+.bt-root:not(#_) .bt-tts[data-bomb="1"] .bt-tts-fuse { opacity: 1; }
+.bt-root:not(#_) .bt-tts[data-fuse="cut"] .bt-tts-fuse { opacity: 0; transition: opacity 400ms 400ms; }
+.bt-root:not(#_) .bt-tts-fuse .f-mk { stroke: var(--tts-white); }
+.bt-root:not(#_) .bt-tts-fuse .f-rope { fill: none; stroke: var(--tts-rope); stroke-width: 5; stroke-linecap: round; }
+.bt-root:not(#_) .bt-tts[data-fuse="cut"] .bt-tts-fuse .f-rope { stroke: var(--tts-rope-cut); }
+.bt-root:not(#_) .bt-tts-fuse .f-braid { fill: none; stroke: var(--tts-braid); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 2 3.2; }
+.bt-root:not(#_) .bt-tts-fuse .f-hit { fill: none; stroke: transparent; stroke-width: 30; stroke-linecap: round; pointer-events: stroke; cursor: crosshair; }
+.bt-root:not(#_) .bt-tts.is-cutters .bt-tts-fuse .f-hit { cursor: none; }
+.bt-root:not(#_) .bt-tts-fuse .f-spark { fill: var(--tts-spark); filter: drop-shadow(0 0 4px var(--tts-fire)) drop-shadow(0 0 10px var(--tts-fire-2)); }
+.bt-root:not(#_) .bt-tts-fuse .f-spark2 { fill: none; stroke: var(--tts-fire); stroke-width: 2; opacity: .8; transform-box: fill-box; transform-origin: center; animation: bt-tts-sparkle 160ms infinite; }
+@keyframes bt-tts-sparkle { 50% { transform: scale(1.6) rotate(45deg); opacity: .3; } }
+.bt-root:not(#_) .bt-tts[data-fuse="cut"] .bt-tts-fuse :is(.f-spark, .f-spark2) { display: none; }
+.bt-root:not(#_) .bt-tts-fuse .f-smoke { fill: var(--tts-smoke); transform-box: fill-box; transform-origin: center; animation: bt-tts-smoke 900ms ease-out forwards; }
+@keyframes bt-tts-smoke { from { opacity: .6; transform: translate(0, 0) scale(.6); } to { opacity: 0; transform: translate(var(--sx), -26px) scale(2.2); } }
+.bt-root:not(#_) .bt-tts-fuse .f-ember { fill: var(--tts-fire); transform-box: fill-box; animation: bt-tts-ember 500ms ease-out forwards; }
+@keyframes bt-tts-ember { to { transform: translate(var(--ex), var(--ey)); opacity: 0; } }
+.bt-root:not(#_) .bt-tts-fuse .f-cut { fill: var(--tts-white); opacity: 0; }
+.bt-root:not(#_) .bt-tts[data-fuse="cut"] .bt-tts-fuse .f-cut { animation: bt-tts-cutflash 400ms ease-out; }
+@keyframes bt-tts-cutflash { 30% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---- Explosion, shake, blackout ---- */
+.bt-root:not(#_) .bt-tts-boom { position: absolute; left: 0; top: 0; z-index: 30; width: 0; height: 0; pointer-events: none; }
+.bt-root:not(#_) .bt-tts-boom .flash { position: absolute; left: -160px; top: -160px; width: 320px; height: 320px; border-radius: 50%; background: radial-gradient(circle, var(--tts-flash), var(--tts-fire) 25%, var(--bt-red) 50%, transparent 70%); animation: bt-tts-flash 700ms ease-out forwards; }
+.bt-root:not(#_) .bt-tts-boom b { position: absolute; left: -5px; top: -5px; width: 10px; height: 10px; border-radius: 50%; background: var(--c); animation: bt-tts-shard 900ms cubic-bezier(.1, .8, .3, 1) forwards; }
+@keyframes bt-tts-shard { to { transform: translate(var(--tx), var(--ty)) scale(.2); opacity: 0; } }
+.bt-root:not(#_) .bt-tts.is-shake .bt-tts-stage { animation: bt-tts-shake 500ms; }
+@keyframes bt-tts-shake { 10%, 50%, 90% { transform: translate(-6px, 3px); } 30%, 70% { transform: translate(6px, -3px); } }
+.bt-root:not(#_) .bt-tts.is-blackout .bt-tts-stage { animation: bt-tts-blackout 500ms ease-out; }
+@keyframes bt-tts-blackout { 0% { filter: brightness(1); } 20% { filter: brightness(.2); } 35% { filter: brightness(.8); } 50% { filter: brightness(.3); } 100% { filter: brightness(1); } }
+
+/* ---- Finish: the splat pulses (no hint text) ---- */
+.bt-root:not(#_) .bt-tts[data-finish="1"] .bt-tts-splat img { filter: brightness(1.2) saturate(1.5); animation: bt-tts-pulse 900ms ease-in-out infinite; }
+
+/* ---- End screen (splatter): the card floats on the splatter, the play area dims ---- */
+.bt-root:not(#_) .bt-tts-veil { position: absolute; inset: 0; z-index: 39; background: var(--bt-scrim-strong); backdrop-filter: blur(2px); opacity: 0; pointer-events: none; transition: opacity 300ms; }
+.bt-root:not(#_) .bt-tts[data-end] .bt-tts-veil { opacity: 1; pointer-events: auto; cursor: pointer; }
+.bt-root:not(#_) .bt-tts[data-end] .bt-tts-stage { position: relative; z-index: 44; }
+.bt-root:not(#_) .bt-tts[data-end] :is(.bt-tts-hub, a.bt-tts-link) { filter: brightness(.22) blur(2px); pointer-events: none; transition: filter 300ms; }
+/* Dimmed links are not links while the card is up: a click there closes it. */
+.bt-root:not(#_) .bt-tts[data-end][data-links="1"] a.bt-tts-link { pointer-events: none; }
+.bt-root:not(#_) .bt-tts-end { position: absolute; left: 50%; top: 50%; z-index: 45; width: min(400px, 92%); padding: 34px 22px 18px; text-align: center; opacity: 0; pointer-events: none; transform: translate(-50%, -50%) scale(.92); transition: opacity 300ms, transform 400ms cubic-bezier(.2, .9, .3, 1.3); }
+.bt-root:not(#_) .bt-tts-end::before { content: ""; position: absolute; inset: -40px -70px; z-index: -1; background: url(/images/blood-splatter.webp) center / contain no-repeat; filter: brightness(.55) saturate(1.3); }
+.bt-root:not(#_) .bt-tts[data-end] .bt-tts-end { opacity: 1; pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%) scale(1); }
+.bt-root:not(#_) .bt-tts-end :is(button, a) { cursor: pointer; }
+.bt-root:not(#_) .bt-tts-end h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; color: var(--bt-text); text-shadow: 0 2px 10px var(--tts-black); }
+.bt-root:not(#_) .bt-tts[data-end="win"] .bt-tts-end h3 { color: var(--bt-title); }
+.bt-root:not(#_) .bt-tts-end-big { margin: 10px 0 2px; font-size: 52px; font-weight: 900; line-height: 1; color: var(--bt-text); text-shadow: 0 3px 14px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-sub, .bt-root:not(#_) .bt-tts-end-place, .bt-root:not(#_) .bt-tts-end-note { color: var(--bt-text); font-size: var(--bt-text-md); text-shadow: 0 1px 6px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-place { margin-top: 4px; }
+.bt-root:not(#_) .bt-tts-end-note { margin-bottom: 8px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-tts-end-dev { display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--bt-text-faint); text-shadow: none; }
+.bt-root:not(#_) .bt-tts-end-preview { margin-left: 4px; white-space: nowrap; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bt-title); }
+.bt-root:not(#_) .bt-tts-end-fb { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0 12px; }
+.bt-root:not(#_) .bt-tts-end-fb button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 700; }
+.bt-root:not(#_) .bt-tts-end-fb button:hover { border-color: var(--bt-primary); }
+.bt-root:not(#_) .bt-tts-end-fb button.is-done { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .bt-tts-end-fb button span { color: var(--bt-text-faint); font-weight: 600; }
+.bt-root:not(#_) .bt-tts-end-fb button span:empty { display: none; }
+.bt-root:not(#_) .bt-site-footer .bt-tts-end a.bt-btn--primary { color: var(--bt-text); }
+/* Play again: solid green (a recorded exception, design-system.md §8f) */
+.bt-root:not(#_) .bt-tts-end .bt-tts-play { margin-top: 12px; background: var(--bt-green); border: 1px solid var(--bt-green); color: var(--tts-play-text); font-weight: 800; }
+.bt-root:not(#_) .bt-tts-end .bt-tts-play:hover { filter: brightness(1.1); box-shadow: 0 0 16px color-mix(in srgb, var(--bt-green) 45%, transparent); }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-tts[data-phase="idle"] .bt-tts-arcade { display: none; }
+  .bt-root:not(#_) .bt-tts-num { font-size: 14px; }
+  /* The chain hangs in front of the link grid. */
+  .bt-root:not(#_) .bt-tts-chain { z-index: 20; }
+  /* The end card sits over the splat area. */
+  .bt-root:not(#_) .bt-tts-end, .bt-root:not(#_) .bt-tts[data-end] .bt-tts-end { top: 0; width: calc(100% - 8px); transform: translate(-50%, 0) scale(1); }
+  .bt-root:not(#_) .bt-tts[data-end] .bt-tts-stage { min-height: 380px; }
+}
+
+/* Reduced motion: bt-ui.css already ends every animation and transition inside a
+   .bt-root at once; the firefly flies three times as fast (bug.js). The game stays
+   playable (the +1s floats vanish at once; the PENALTY board still counts). */
