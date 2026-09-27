@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- assets: mascot artwork (shared/assets/mascot.svg), real favicon (site/public/favicon.svg) and the approved header/footer mockup (docs/design/mockups/header-footer-final.html).
 - Cloudflare Pages project 'boomertanger' connected (root site/, dev = preview/staging, main paused until launch).
 - site: new Astro site in site/ (static, Node 22, Cloudflare Pages): base layout, header, Live Beacon, phone tab bar, footer, home page (hero 3B stories carousel, 4C/6A layout) with ?as= / ?live= preview mode on non-production builds, placeholder pages and a 404. No Firebase yet; member content is preview data.
 - bt-ui: Site shell components for the new site (header, nav, Live Beacon, tab bar, footer, stories hero carousel, tiles, member strip, join card, pill switches, Boom Board, pinboard notes, Boom Board / Warm Fuzzies wordmarks), shared/ui/hero-carousel.js and shared/ui/pill-switch.js; modal.js prefers --bt-header-h when the page sets it.
