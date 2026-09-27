@@ -1,0 +1,52 @@
+---
+// Boom Board (members only): Boom / Everyone filter, composer, posts. PREVIEW DATA.
+import board from "../../data/preview-board.json";
+import member from "../../data/preview-member.json";
+import site from "../../data/site.json";
+import BoomBoardIcon from "./BoomBoardIcon.astro";
+import PreviewTag from "./PreviewTag.astro";
+---
+<div class="bt-tile bt-tile--board" data-board data-filter="boom">
+  <div class="bt-bb-head">
+    <div>
+      <span class="bt-mark bt-mark--sm"><BoomBoardIcon /><span><span class="bt-mark-w1">Boom</span><span class="bt-mark-w2">Board</span></span></span>
+    </div>
+    <span class="bt-bb-head-end"><PreviewTag /><a href="/club">Open the board</a></span>
+  </div>
+  <div class="bt-pills" role="group" aria-label="Filter posts" data-attr="filter" data-board-filter>
+    <button type="button" class="is-on" data-value="boom" data-tone="gold"><span class="bt-pills-av" aria-hidden="true">{site.logoMark}</span>Boom<span class="bt-pills-n">{board.counts.boom}</span></button>
+    <button type="button" data-value="crowd">Everyone<span class="bt-pills-n">{board.counts.crowd}</span></button>
+  </div>
+  <div class="bt-bb-compose">
+    <span class="bt-avatar-sm" aria-hidden="true">{member.initials}</span>
+    <span class="bt-bb-compose-ph">Say something to Boomer or the club…</span>
+    <span class="bt-bb-compose-to">To: Everyone ▾</span>
+  </div>
+  <div class="bt-bb-list">
+    {board.posts.map((post) => (
+      <div class:list={["bt-bb-post", post.pinned && "bt-bb-post--pinned"]} data-kind={post.kind}>
+        <div class="bt-bb-post-hd">
+          <span class:list={["bt-bb-av", post.boss && "bt-bb-av--boss"]} aria-hidden="true">{post.initials}</span>
+          <b>{post.author}</b>
+          <span class="bt-bb-meta">{post.meta}</span>
+          <span class:list={["bt-bb-flag", post.pinned && "bt-bb-flag--pin"]}>{post.flag}</span>
+        </div>
+        {post.quote && <div class="bt-bb-quote">{post.quote}</div>}
+        <p>{post.text}</p>
+        {post.image && <div class="bt-bb-img">{post.image}</div>}
+        <div class="bt-bb-post-ft">
+          <span>{post.reactions}</span>
+          {post.replied && <span class="bt-bb-replied"><i aria-hidden="true">{site.logoMark}</i>Boomer replied</span>}
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
+<script>
+  import { initPillSwitch } from "../../../../shared/ui/pill-switch.js";
+  document.querySelectorAll<HTMLElement>("[data-board-filter]").forEach((group) => {
+    const board = group.closest<HTMLElement>("[data-board]");
+    if (board) initPillSwitch(group, { target: board, attr: "filter" });
+  });
+</script>

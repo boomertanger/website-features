@@ -1,0 +1,44 @@
+---
+// Next livestream tile (wide). Title and time from site.json; the
+// "what to expect" list and live numbers are PREVIEW DATA.
+import site from "../../data/site.json";
+import preview from "../../data/preview-home.json";
+import PreviewTag from "./PreviewTag.astro";
+import { formatStreamTime } from "../../lib/time.js";
+
+const { title, startsAt } = site.nextStream;
+const long = formatStreamTime(startsAt, "long", site.timezone);
+const p = preview.nextStream;
+---
+<div class="bt-tile bt-tile--hot bt-tile--next bt-wide">
+  <div class="bt-tile-head">
+    <h3>
+      <span class="bt-when-off">Next livestream</span>
+      <span class="bt-live-tag bt-when-live"><i></i><span class="bt-when-public">Live now</span><span class="bt-when-backstage">Backstage now</span></span>
+    </h3>
+    <a href="/schedule">All the details</a>
+  </div>
+  <div class="bt-ns">
+    <div class="bt-ns-art">{p.art}</div>
+    <div>
+      <h4>{title}</h4>
+      <div class="bt-ns-when">
+        <span class="bt-when-off"><time data-stream-time="long" datetime={startsAt}>{long}</time> your time</span>
+        <span class="bt-when-live">{p.live}</span>
+      </div>
+      <div class="bt-mini-cd bt-when-off" data-countdown={startsAt} data-countdown-style="mini" aria-label="Time until the stream">
+        <span data-cd="days">0d</span><span data-cd="hours">00h</span><span data-cd="minutes">00m</span>
+      </div>
+      <ul class="bt-expect">
+        {p.expect.map((line) => <li>{line}</li>)}
+      </ul>
+      <div class="bt-btn-row">
+        <a class="bt-btn bt-btn--primary bt-btn--sm bt-when-off" href="/schedule">Remind me</a>
+        <a class="bt-btn bt-btn--secondary bt-btn--sm bt-when-off" href="/schedule">Add to calendar</a>
+        <a class="bt-btn bt-btn--primary bt-btn--sm bt-when-live" href="/live">Watch now</a>
+        <a class="bt-btn bt-btn--secondary bt-btn--sm bt-when-live" href="/live">Check in</a>
+        <PreviewTag />
+      </div>
+    </div>
+  </div>
+</div>

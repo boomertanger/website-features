@@ -1,0 +1,5 @@
+---
+// Marks tiles filled from data/preview-*.json. Shown on staging and previews only.
+import { isProduction } from "../../lib/env.js";
+---
+{!isProduction && <span class="bt-badge bt-badge--gray" title="Placeholder content from site/src/data/preview-*.json">Preview data</span>}

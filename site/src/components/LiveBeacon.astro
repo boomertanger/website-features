@@ -1,0 +1,12 @@
+---
+// Live Beacon. Offline: "Next stream · Thu 7 PM" from site data. Public (red
+// glow) and backstage (green glow) come from data-live on <body>.
+import site from "../data/site.json";
+import { formatStreamTime } from "../lib/time.js";
+
+const { startsAt, game } = site.nextStream;
+const short = formatStreamTime(startsAt, "short", site.timezone);
+---
+<a class="bt-beacon bt-when-off" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Next stream<span class="bt-beacon-sub"><time data-stream-time="short" datetime={startsAt}>{short}</time></span></a>
+<a class="bt-beacon bt-beacon--public bt-when-public" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Live<span class="bt-beacon-sub">{game}</span></a>
+<a class="bt-beacon bt-beacon--backstage bt-when-backstage" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Backstage<span class="bt-beacon-sub">Members only</span></a>

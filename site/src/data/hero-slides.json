@@ -1,0 +1,73 @@
+{
+  "_about": "Hero carousel slides, in order. Template shape: { id, type: poster | template | stream, label, kicker, title, body, buttons: [{ label, href, style }], media, mood, startsAt, endsAt, audience }. 'label' is the short segment name under each story bar. Slides outside startsAt/endsAt are skipped (at build and again in the browser). audience: all | visitor | signed-in. The stream slide's live-state wording lives in the Hero component; its offline title and countdown come from site.json nextStream.",
+  "slides": [
+    {
+      "id": "welcome",
+      "type": "poster",
+      "label": "Welcome",
+      "kicker": null,
+      "title": "Boomertanger",
+      "body": "The main horror hub. Streams, games and the community behind them.",
+      "buttons": [
+        { "label": "Join the club", "href": "/account", "style": "primary" },
+        { "label": "See the schedule", "href": "/schedule", "style": "secondary" }
+      ],
+      "media": null,
+      "mood": "poster",
+      "startsAt": null,
+      "endsAt": null,
+      "audience": "all"
+    },
+    {
+      "id": "hub",
+      "type": "template",
+      "label": "The hub",
+      "kicker": "Community",
+      "title": "The main horror hub",
+      "body": "Help plan the week: vote on Friday's game, suggest what I play next and check the Game Vault.",
+      "buttons": [
+        { "label": "Vote on Friday's game", "href": "/games", "style": "primary" },
+        { "label": "Browse the Game Vault", "href": "/games", "style": "secondary" }
+      ],
+      "media": null,
+      "mood": "hub",
+      "startsAt": null,
+      "endsAt": null,
+      "audience": "all"
+    },
+    {
+      "id": "stream",
+      "type": "stream",
+      "label": "Stream",
+      "kicker": "Next stream",
+      "title": null,
+      "body": "Set a reminder so you don't miss check-in.",
+      "buttons": [
+        { "label": "Remind me", "href": "/schedule", "style": "primary" },
+        { "label": "See the schedule", "href": "/schedule", "style": "secondary" }
+      ],
+      "media": { "placeholder": "Last stream highlight" },
+      "mood": "stream",
+      "startsAt": null,
+      "endsAt": null,
+      "audience": "all"
+    },
+    {
+      "id": "merch-night-shift",
+      "type": "template",
+      "label": "Merch drop",
+      "kicker": "New in the shop",
+      "title": "Night Shift hoodie",
+      "body": "Glow-in-the-dark print, limited run. Sub Club members get early access this week.",
+      "buttons": [
+        { "label": "Shop the drop", "href": "/shop", "style": "primary" },
+        { "label": "See all merch", "href": "/shop", "style": "secondary" }
+      ],
+      "media": { "placeholder": "Product photo" },
+      "mood": "gold",
+      "startsAt": "2026-09-20T00:00:00-07:00",
+      "endsAt": "2026-10-31T23:59:00-07:00",
+      "audience": "all"
+    }
+  ]
+}

@@ -1,0 +1,30 @@
+---
+// Footer: brand blurb, Watch links, Contact addresses, legal row.
+import Logo from "./Logo.astro";
+import site from "../data/site.json";
+
+const year = new Date().getFullYear();
+---
+<footer class="bt-site-footer">
+  <div class="bt-footer-cols">
+    <div class="bt-footer-brand">
+      <Logo />
+      <p>{site.tagline}</p>
+    </div>
+    <div class="bt-footer-col">
+      <p class="bt-label">Watch</p>
+      <!-- TODO: social URLs are '#' placeholders until the real profile links are known (site.json _todoSocials). -->
+      {site.socials.map((s) => <a href={s.url}>{s.label}</a>)}
+    </div>
+    <div class="bt-footer-col">
+      <p class="bt-label">Contact</p>
+      {site.contacts.map((c) => <a href={`mailto:${c.email}`}>{c.email.split("@")[0]}@</a>)}
+    </div>
+  </div>
+  <div class="bt-footer-legal">
+    <span>© {year} {site.legalName}</span>
+    <a href="/privacy">Privacy</a>
+    <a href="/terms">Terms</a>
+    <a href="/account#your-data">Your data</a>
+  </div>
+</footer>

@@ -1,0 +1,13 @@
+{
+  "_note": "PREVIEW DATA: placeholder Boom Board posts for the milestone 1 home page (members only). kind: boom (Boomer's posts) | crowd (everyone else).",
+  "counts": { "boom": 3, "crowd": 9 },
+  "posts": [
+    { "kind": "boom", "author": "Boomertanger", "initials": "BT", "boss": true, "meta": "Pinned", "flag": "Pinned", "pinned": true, "text": "Night 12 is Thursday. Drop your best Granny survival tips and I'll try the top one live.", "reactions": "💀 64 · 💬 23" },
+    { "kind": "boom", "author": "Boomertanger", "initials": "BT", "boss": true, "meta": "1h", "flag": "Reply", "quote": "CryptRat: Can we get a Granny speedrun night?", "text": "Speedrun night is happening Oct 9. Loser reads chat's worst puns, and I intend to lose.", "reactions": "🔥 40 · 💬 12" },
+    { "kind": "boom", "author": "Boomertanger", "initials": "BT", "boss": true, "meta": "Yesterday", "flag": "Update", "text": "Hoodie restock is Friday. Sub Club gets first dibs Thursday night.", "reactions": "🎃 27 · 💬 6" },
+    { "kind": "crowd", "author": "CryptRat", "initials": "CR", "meta": "2h", "flag": "To Boomer", "text": "Can we get a Granny speedrun night? Loser reads chat's worst puns.", "reactions": "🔥 18 · 💬 5", "replied": true },
+    { "kind": "crowd", "author": "Vexa", "initials": "VX", "meta": "3h", "flag": "Everyone", "text": "Anyone up for Outlast Trials co-op Saturday? Need two more.", "reactions": "🙋 7 · 💬 4" },
+    { "kind": "crowd", "author": "GhoulKid", "initials": "GK", "meta": "5h", "flag": "Everyone", "text": "Made fan art of night 11. Granny deserves a vacation.", "image": "Fan art", "reactions": "🔥 41 · 💬 9" },
+    { "kind": "crowd", "author": "NightOwl", "initials": "NB", "meta": "Yesterday", "flag": "To Boomer", "text": "First time catching a stream live. The jump at 2:14 had me screaming.", "reactions": "😂 12 · 💬 2", "replied": true }
+  ]
+}

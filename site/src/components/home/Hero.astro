@@ -1,0 +1,108 @@
+---
+// Home hero: stories carousel (variation 3B). Slides come from
+// data/hero-slides.json; behavior from shared/ui/hero-carousel.js.
+import LiveBeacon from "../LiveBeacon.astro";
+import site from "../../data/site.json";
+import heroData from "../../data/hero-slides.json";
+import preview from "../../data/preview-home.json";
+import { formatStreamTime } from "../../lib/time.js";
+
+const now = Date.now();
+const inWindow = (s) =>
+  (!s.startsAt || Date.parse(s.startsAt) <= now) && (!s.endsAt || Date.parse(s.endsAt) >= now);
+const slides = heroData.slides.filter(inWindow);
+
+const { title: streamTitle, startsAt } = site.nextStream;
+const streamDay = formatStreamTime(startsAt, "day", site.timezone);
+const btn = (style) => `bt-btn bt-btn--${style === "primary" ? "primary" : style === "ghost" ? "ghost" : "secondary"}`;
+---
+<section class="bt-hero" tabindex="0" aria-label="Highlights" data-hero>
+  <span class="bt-hero-pin">Pinned while live</span>
+  <div class="bt-hero-viewport">
+    <div class="bt-hero-track">
+      {slides.map((s) => (
+        <div
+          class="bt-hero-slide"
+          data-title={s.label}
+          data-mood={s.mood}
+          data-stream={s.type === "stream" ? "" : undefined}
+          data-starts={s.startsAt ?? undefined}
+          data-ends={s.endsAt ?? undefined}
+          data-audience={s.audience ?? "all"}
+        >
+          <div class="bt-hero-inner">
+            {s.type === "poster" && (
+              <>
+                <div class="bt-hero-mark" aria-hidden="true">{site.logoMark}</div>
+                <h2 class="bt-hero-poster-title">{s.title}</h2>
+                <p>{s.body}</p>
+                <div class="bt-hero-status"><LiveBeacon /></div>
+                <div class="bt-hero-cta">
+                  {s.buttons.map((b) => <a class={btn(b.style)} href={b.href}>{b.label}</a>)}
+                </div>
+              </>
+            )}
+
+            {s.type === "template" && (
+              <div class:list={["bt-hero-tpl", !s.media && "bt-hero-tpl--text"]}>
+                <div>
+                  {s.kicker && <span class="bt-hero-kicker"><span class="bt-hero-kicker-pip"></span>{s.kicker}</span>}
+                  <h2 class="bt-hero-title">{s.title}</h2>
+                  <p>{s.body}</p>
+                  <div class="bt-hero-cta">
+                    {s.buttons.map((b) => <a class={btn(b.style)} href={b.href}>{b.label}</a>)}
+                  </div>
+                </div>
+                {s.media && (
+                  <div class="bt-hero-media">
+                    {s.media.src ? <img src={s.media.src} alt={s.media.alt ?? ""} /> : s.media.placeholder}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {s.type === "stream" && (
+              <div class="bt-hero-split">
+                <div>
+                  <span class="bt-hero-kicker bt-when-public">Live now on Twitch, YouTube and TikTok</span>
+                  <span class="bt-hero-kicker bt-when-backstage">Backstage, members only</span>
+                  <span class="bt-hero-kicker bt-when-off">{s.kicker}</span>
+                  <h2 class="bt-hero-title bt-when-live">{streamTitle}</h2>
+                  <h2 class="bt-hero-title bt-when-off"><time data-stream-time="day" datetime={startsAt}>{streamDay}</time></h2>
+                  <p class="bt-when-live">Check in to earn points and enter tonight's drawing.</p>
+                  <p class="bt-when-off">{streamTitle}. {s.body}</p>
+                  <div class="bt-countdown bt-when-off" data-countdown={startsAt} data-countdown-style="full" aria-label="Time until the stream">
+                    <div><strong data-cd="days">0</strong><span>days</span></div>
+                    <div><strong data-cd="hours">00</strong><span>hours</span></div>
+                    <div><strong data-cd="minutes">00</strong><span>min</span></div>
+                  </div>
+                  <div class="bt-hero-cta">
+                    <a class="bt-btn bt-btn--primary bt-when-live" href="/live">Open the Control Room</a>
+                    <a class="bt-btn bt-btn--secondary bt-when-live" href="/live">Check in</a>
+                    {s.buttons.map((b) => <a class={`${btn(b.style)} bt-when-off`} href={b.href}>{b.label}</a>)}
+                  </div>
+                </div>
+                <div class="bt-hero-player bt-hero-player--public bt-when-public">
+                  <span class="bt-beacon bt-beacon--public"><span class="bt-beacon-dot"></span>Live</span>
+                  Stream player
+                  <span class="bt-hero-viewers">{preview.nextStream.playerPublic}</span>
+                </div>
+                <div class="bt-hero-player bt-hero-player--backstage bt-when-backstage">
+                  <span class="bt-beacon bt-beacon--backstage"><span class="bt-beacon-dot"></span>Backstage</span>
+                  Members-only player
+                  <span class="bt-hero-viewers">{preview.nextStream.playerBackstage}</span>
+                </div>
+                <div class="bt-hero-player bt-when-off">{s.media?.placeholder ?? ""}</div>
+              </div>
+            )}
+          </div>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>
+
+<script>
+  import { initHeroCarousel } from "../../../../shared/ui/hero-carousel.js";
+  document.querySelectorAll<HTMLElement>("[data-hero]").forEach((hero) => initHeroCarousel(hero));
+</script>

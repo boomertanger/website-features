@@ -1,0 +1,19 @@
+---
+// Latest updates. PREVIEW DATA.
+import preview from "../../data/preview-home.json";
+import PreviewTag from "./PreviewTag.astro";
+---
+<div class="bt-tile">
+  <div class="bt-tile-head">
+    <h3>Latest updates</h3>
+    <PreviewTag />
+  </div>
+  <div>
+    {preview.updates.map((u) => (
+      <div class="bt-upd">
+        <span class="bt-upd-ic" aria-hidden="true">{u.icon}</span>
+        <div><strong>{u.text}</strong><span>{u.when}</span></div>
+      </div>
+    ))}
+  </div>
+</div>

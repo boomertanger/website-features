@@ -2,3 +2,8 @@
 *.log
 .env
 node_modules/
+
+# New site (site/)
+site/node_modules/
+site/dist/
+site/.astro/

@@ -1,0 +1,15 @@
+---
+// Placeholder page body: page title plus a "Coming soon" card, from kit components.
+interface Props { title: string; lead?: string }
+const { title, lead } = Astro.props;
+---
+<div class="bt-zone">
+  <div class="bt-page-intro">
+    <h1 class="bt-title">{title}</h1>
+    {lead && <p class="bt-subtitle">{lead}</p>}
+  </div>
+  <div class="bt-card">
+    <div class="bt-card-head"><h2 class="bt-card-title">Coming soon</h2></div>
+    <p class="bt-section-text">This part of the new site isn't built yet. <slot>Check back soon, or head <a href="/">home</a> for what's on now.</slot></p>
+  </div>
+</div>

@@ -1,0 +1,69 @@
+---
+// Home (approved mockup: hero 3B, below-the-hero 4C/6A).
+// Visitors: join card, then Next livestream (wide), Get involved, Latest updates.
+// Members (preview): welcome strip, left bento (Next livestream wide, to-dos,
+// updates, Warm Fuzzies wide) and the sticky Boom Board; on phones a
+// For you / Boom Board pill switch.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import Hero from "../components/home/Hero.astro";
+import NextStreamTile from "../components/home/NextStreamTile.astro";
+import TodoTile from "../components/home/TodoTile.astro";
+import UpdatesTile from "../components/home/UpdatesTile.astro";
+import WarmFuzziesTile from "../components/home/WarmFuzziesTile.astro";
+import BoomBoard from "../components/home/BoomBoard.astro";
+import BoomBoardIcon from "../components/home/BoomBoardIcon.astro";
+import PreviewTag from "../components/home/PreviewTag.astro";
+import site from "../data/site.json";
+import member from "../data/preview-member.json";
+import home from "../data/preview-home.json";
+---
+<BaseLayout overlayHeader>
+  <h1 class="bt-sr-only">{site.name}</h1>
+  <Hero />
+
+  <div class="bt-zone" data-view="you">
+    <div class="bt-member-strip bt-when-signed-in">
+      <span class="bt-member-strip-av" aria-hidden="true">{member.initials}</span>
+      <div>
+        <h3>Welcome back, {member.name}</h3>
+        <div class="bt-member-strip-sub">{member.sub} <PreviewTag /></div>
+      </div>
+      <div class="bt-member-stats">
+        {member.stats.map((s) => <div><strong>{s.value}</strong><span>{s.label}</span></div>)}
+      </div>
+    </div>
+
+    <div class="bt-join-card bt-when-visitor">
+      <div>
+        <h3>{home.join.title}</h3>
+        <ul>{home.join.perks.map((perk) => <li>{perk}</li>)}</ul>
+      </div>
+      <a class="bt-btn bt-btn--primary" href={home.join.button.href}>{home.join.button.label}</a>
+    </div>
+
+    <div class="bt-pills bt-pills--view" role="group" aria-label="Show" data-attr="view" data-view-switch>
+      <button type="button" class="is-on" data-value="you">For you</button>
+      <button type="button" data-value="board"><BoomBoardIcon size={20} />Boom Board</button>
+    </div>
+
+    <div class="bt-home-grid">
+      <div class="bt-home-left">
+        <NextStreamTile />
+        <TodoTile />
+        <UpdatesTile />
+        <WarmFuzziesTile />
+      </div>
+      <div class="bt-home-right bt-when-signed-in">
+        <BoomBoard />
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import { initPillSwitch } from "../../../shared/ui/pill-switch.js";
+  document.querySelectorAll<HTMLElement>("[data-view-switch]").forEach((group) => {
+    const zone = group.closest<HTMLElement>(".bt-zone");
+    if (zone) initPillSwitch(group, { target: zone, attr: "view" });
+  });
+</script>

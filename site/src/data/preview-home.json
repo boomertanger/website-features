@@ -1,0 +1,35 @@
+{
+  "_note": "PREVIEW DATA: placeholder tile content for the milestone 1 home page. Replaced by the site and member summary documents later.",
+  "nextStream": {
+    "art": "Game art",
+    "expect": [
+      "Check-in opens 15 minutes before",
+      "Giveaway entry counts tonight",
+      "Voted by the community, 46% of 214 votes"
+    ],
+    "live": "Started 42 min ago · 128 watching",
+    "playerPublic": "128 watching · 41 checked in",
+    "playerBackstage": "23 members watching"
+  },
+  "todos": {
+    "member": [
+      { "text": "Vote on Friday's game", "action": { "label": "Vote", "href": "/games", "style": "secondary" } },
+      { "text": "Your question is #4 in the queue", "action": { "label": "View", "href": "/live", "style": "ghost" } },
+      { "text": "Check in Thursday for the giveaway", "action": { "label": "Remind", "href": "/schedule", "style": "ghost" } }
+    ],
+    "visitor": [
+      { "text": "Vote on Friday's game", "action": { "label": "Vote", "href": "/games", "style": "secondary" } },
+      { "text": "Ask a question for the next stream", "action": { "label": "Ask", "href": "/live", "style": "ghost" } }
+    ]
+  },
+  "updates": [
+    { "icon": "🎃", "text": "Night Shift hoodie drop is live, members first", "when": "2h ago" },
+    { "icon": "📼", "text": "Night 11 recap and clips posted", "when": "Yesterday" },
+    { "icon": "🗳️", "text": "Friday's game vote is open until Wed", "when": "Yesterday" }
+  ],
+  "join": {
+    "title": "Join the club, free",
+    "perks": ["Vote on what I play", "Earn points and badges", "Enter giveaways"],
+    "button": { "label": "Join free", "href": "/account" }
+  }
+}

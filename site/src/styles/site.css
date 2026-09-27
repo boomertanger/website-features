@@ -1,0 +1,71 @@
+/* site/src/styles/site.css — page-level layout for the new site only.
+   Components live in shared/bt-ui.css ("Site shell" section). Page layout may
+   use @media (docs/design-system.md §8d); components keep container queries.
+   Tokens only: no raw colors. */
+
+/* Safe areas (viewport-fit=cover), as in the approved mockup. The root has no
+   background, so the body's (--bt-bg) paints the canvas behind this padding. */
+:root {
+  padding-top: env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  scroll-padding-top: env(safe-area-inset-top, 0px);
+  color-scheme: dark;
+}
+
+/* Header height: dialogs (shared/ui/modal.js) and the header both read it. */
+@media (max-width: 640px) {
+  .bt-root.bt-site:not(#_) { --bt-header-h: 56px; }
+}
+
+/* Main area focus target for the skip link: no ring on the whole region. */
+.bt-root:not(#_) .bt-site-main:focus { outline: none; }
+
+/* Skip link: hidden until focused. */
+.bt-root:not(#_) .bt-skip {
+  position: absolute; left: var(--bt-space-3); top: var(--bt-space-3); z-index: 20;
+  padding: var(--bt-space-2) var(--bt-space-3); border-radius: var(--bt-radius-sm);
+  background: var(--bt-surface); border: 1px solid var(--bt-primary); color: var(--bt-text);
+  transform: translateY(-200%);
+}
+.bt-root:not(#_) .bt-skip:focus { transform: none; text-decoration: none; }
+
+/* Visually hidden, still read by screen readers. */
+.bt-root:not(#_) .bt-sr-only {
+  position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+}
+
+/* Phone tab bar: fixed to the bottom of the screen, phones only. It sits
+   outside .bt-site-frame so the frame's container doesn't capture it. */
+.bt-root:not(#_) .bt-tabbar.bt-site-tabbar { display: none; }
+.bt-root:not(#_) .bt-menu-sheet.bt-site-more { display: none; }
+@media (max-width: 640px) {
+  .bt-root:not(#_) .bt-tabbar.bt-site-tabbar { display: grid; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; }
+  .bt-root:not(#_) .bt-site-frame { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  .bt-root:not(#_) .bt-menu-sheet.bt-site-more {
+    display: flex; position: fixed; left: 0; right: 0; z-index: 39;
+    bottom: calc(66px + env(safe-area-inset-bottom, 0px));
+    border-radius: var(--bt-radius-xl) var(--bt-radius-xl) 0 0;
+  }
+}
+
+/* Staging / preview chip (never rendered in production). */
+.bt-root:not(#_) .bt-preview-chip {
+  position: fixed; left: var(--bt-space-3); bottom: var(--bt-space-3); z-index: 60;
+  display: flex; flex-wrap: wrap; align-items: center; gap: var(--bt-space-1h) var(--bt-space-3);
+  max-width: calc(100vw - 2 * var(--bt-space-3));
+  padding: var(--bt-space-2) var(--bt-space-3); border-radius: var(--bt-radius-lg);
+  background: var(--bt-surface); border: 1px dashed var(--bt-title); box-shadow: var(--bt-shadow-dropdown);
+  font-size: var(--bt-text-xs); color: var(--bt-text-muted);
+}
+.bt-root:not(#_) .bt-preview-chip b { color: var(--bt-title); text-transform: uppercase; letter-spacing: 0.06em; }
+.bt-root:not(#_) .bt-preview-chip a { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-preview-chip a.is-on { color: var(--bt-text); font-weight: 700; text-decoration: underline; }
+.bt-root:not(#_) .bt-preview-note { color: var(--bt-text-faint); }
+@media (max-width: 640px) {
+  .bt-root:not(#_) .bt-preview-chip { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
+  .bt-root:not(#_) .bt-preview-note { display: none; }
+}
+
+/* Placeholder pages: the page title block and a Coming soon card. */
+.bt-root:not(#_) .bt-page-intro { display: flex; flex-direction: column; gap: var(--bt-space-2); padding-top: var(--bt-space-4); }

@@ -1,0 +1,32 @@
+---
+// Staging / preview only (never rendered in production): a small fixed chip
+// showing the current ?as= and ?live= preview values, with links to flip them.
+---
+<aside class="bt-preview-chip" aria-label="Preview controls" data-preview-chip>
+  <b>Preview</b>
+  <span class="bt-preview-group" data-param="as" data-values="visitor,member,admin">as</span>
+  <span class="bt-preview-group" data-param="live" data-values="off,public,backstage">live</span>
+  <span class="bt-preview-note">Member content is preview data</span>
+</aside>
+
+<script is:inline>
+  (function () {
+    var chip = document.querySelector("[data-preview-chip]");
+    if (!chip) return;
+    var body = document.body;
+    var current = { as: body.dataset.auth, live: body.dataset.live };
+    chip.querySelectorAll(".bt-preview-group").forEach(function (group) {
+      var param = group.dataset.param;
+      group.dataset.values.split(",").forEach(function (value) {
+        var url = new URL(location.href);
+        url.searchParams.set(param, value);
+        var a = document.createElement("a");
+        a.href = url.pathname + url.search + url.hash;
+        a.textContent = value;
+        if (current[param] === value) { a.className = "is-on"; a.setAttribute("aria-current", "true"); }
+        group.appendChild(document.createTextNode(" "));
+        group.appendChild(a);
+      });
+    });
+  })();
+</script>

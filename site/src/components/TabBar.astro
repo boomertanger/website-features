@@ -1,0 +1,56 @@
+---
+// Phone tab bar: Home, Schedule, raised Live, Games, More. The raised Live
+// glows by data-live and shows the next stream time while offline. "More"
+// opens a sheet with the rest of the navigation.
+import site from "../data/site.json";
+import { navItems, moreItems, isCurrent, hasModule } from "../lib/nav.js";
+import { formatStreamTime } from "../lib/time.js";
+
+const path = Astro.url.pathname;
+const byId = Object.fromEntries(navItems.map((i) => [i.id, i]));
+const tabs = ["home", "schedule"].filter(hasModule).map((id) => byId[id]);
+const after = ["games"].filter(hasModule).map((id) => byId[id]);
+const liveOn = hasModule("live");
+const { startsAt } = site.nextStream;
+const short = formatStreamTime(startsAt, "short", site.timezone);
+---
+<nav class="bt-tabbar bt-site-tabbar" aria-label="Main (tabs)">
+  {tabs.map((t) => (
+    <a href={t.href} aria-current={isCurrent(t.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${t.icon}`} /></svg>{t.label}</a>
+  ))}
+  {liveOn && (
+    <a class="bt-tab-raised" href="/live" aria-label="Live" aria-current={isCurrent("/live", path) ? "page" : undefined}>
+      <span class="bt-tab-raise"><svg aria-hidden="true"><use href="#i-live" /></svg></span>
+      <span class="bt-when-live">Live</span>
+      <span class="bt-tab-next bt-when-off"><time data-stream-time="short" datetime={startsAt}>{short}</time></span>
+    </a>
+  )}
+  {after.map((t) => (
+    <a href={t.href} aria-current={isCurrent(t.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${t.icon}`} /></svg>{t.label}</a>
+  ))}
+  <button type="button" aria-expanded="false" aria-controls="bt-more-sheet" data-more-toggle><svg aria-hidden="true"><use href="#i-more" /></svg>More</button>
+</nav>
+<div class="bt-menu-sheet bt-site-more" id="bt-more-sheet" hidden>
+  {moreItems.map((i) => (
+    <a href={i.href} aria-current={isCurrent(i.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>{i.label}</a>
+  ))}
+</div>
+
+<script>
+  const toggle = document.querySelector<HTMLButtonElement>("[data-more-toggle]");
+  const sheet = document.getElementById("bt-more-sheet");
+  if (toggle && sheet) {
+    const set = (open: boolean) => {
+      sheet.hidden = !open;
+      toggle.setAttribute("aria-expanded", String(open));
+    };
+    toggle.addEventListener("click", () => set(sheet.hidden));
+    document.addEventListener("keydown", (e) => {
+      if (e.key === "Escape" && !sheet.hidden) { set(false); toggle.focus(); }
+    });
+    document.addEventListener("click", (e) => {
+      const t = e.target as Node;
+      if (!sheet.hidden && !sheet.contains(t) && !toggle.contains(t)) set(false);
+    });
+  }
+</script>

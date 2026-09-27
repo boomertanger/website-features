@@ -1,0 +1,23 @@
+---
+// Members: "Your to-dos". Visitors: "Get involved". PREVIEW DATA.
+import preview from "../../data/preview-home.json";
+import PreviewTag from "./PreviewTag.astro";
+
+const btn = (style) => `bt-btn bt-btn--${style} bt-btn--sm`;
+---
+<div class="bt-tile">
+  <div class="bt-tile-head">
+    <h3><span class="bt-when-signed-in">Your to-dos</span><span class="bt-when-visitor">Get involved</span></h3>
+    <PreviewTag />
+  </div>
+  <div class="bt-when-signed-in">
+    {preview.todos.member.map((t) => (
+      <div class="bt-todo"><span class="bt-todo-dot"></span>{t.text}<a class={btn(t.action.style)} href={t.action.href}>{t.action.label}</a></div>
+    ))}
+  </div>
+  <div class="bt-when-visitor">
+    {preview.todos.visitor.map((t) => (
+      <div class="bt-todo"><span class="bt-todo-dot"></span>{t.text}<a class={btn(t.action.style)} href={t.action.href}>{t.action.label}</a></div>
+    ))}
+  </div>
+</div>

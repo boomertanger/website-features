@@ -1,0 +1,25 @@
+---
+// Warm Fuzzies (6A: pinned-note wall). Members only. PREVIEW DATA.
+import fuzzies from "../../data/preview-fuzzies.json";
+import WarmFuzziesIcon from "./WarmFuzziesIcon.astro";
+import PreviewTag from "./PreviewTag.astro";
+---
+<div class="bt-tile bt-tile--fuzz bt-wide bt-when-signed-in">
+  <div class="bt-bb-head">
+    <div>
+      <span class="bt-mark bt-mark--fuzzies bt-mark--sm"><WarmFuzziesIcon /><span><span class="bt-mark-w1">Warm</span><span class="bt-mark-w2">Fuzzies</span></span></span>
+      <div class="bt-bb-sub">Short notes to lift someone up. Kindness only.</div>
+    </div>
+    <button type="button" class="bt-btn bt-btn--primary bt-btn--sm">+ Send a warm fuzzy</button>
+  </div>
+  <div class="bt-notes">
+    {fuzzies.notes.map((n) => (
+      <div class={`bt-note bt-note--${n.tone}`}>
+        <div class="bt-note-to">To {n.to}</div>
+        <p>{n.text}</p>
+        <div class="bt-note-from"><span>From {n.from}</span><span>🫶 {n.hearts}</span></div>
+      </div>
+    ))}
+  </div>
+  <div class="bt-notes-rule">{fuzzies.rule} <PreviewTag /></div>
+</div>

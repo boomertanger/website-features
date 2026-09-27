@@ -1,0 +1,67 @@
+---
+// One layout for every page: header, main, footer (+ phone tab bar).
+// <body> is the page's bt-root (.bt-site: see docs/design-system.md §8d).
+// Kit imported at build time, then the site's page-level CSS.
+import "../../../shared/bt-ui.css";
+import "../styles/site.css";
+import IconSprite from "../components/IconSprite.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import SiteFooter from "../components/SiteFooter.astro";
+import TabBar from "../components/TabBar.astro";
+import PreviewChip from "../components/PreviewChip.astro";
+import site from "../data/site.json";
+import { isProduction, firebaseEnv } from "../lib/env.js";
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** Home: the header sits over the hero. */
+  overlayHeader?: boolean;
+}
+const { title, description = site.tagline, overlayHeader = false } = Astro.props;
+const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tagline}`;
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="dark" />
+    <title>{pageTitle}</title>
+    <meta name="description" content={description} />
+    {!isProduction && <meta name="robots" content="noindex,nofollow" />}
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bt-root bt-site" data-live={site.liveState} data-auth="visitor" data-env={firebaseEnv}>
+    {!isProduction && (
+      <script is:inline>
+        // Preview switches (staging and previews only): ?as=visitor|member|admin
+        // and ?live=off|public|backstage set data-auth / data-live on <body>
+        // before anything renders, the same way the mockup does.
+        (function () {
+          var p = new URLSearchParams(location.search), b = document.body;
+          var as = p.get("as"), live = p.get("live");
+          if (["visitor", "member", "admin"].indexOf(as) >= 0) b.dataset.auth = as;
+          if (["off", "public", "backstage"].indexOf(live) >= 0) b.dataset.live = live;
+        })();
+      </script>
+    )}
+    <IconSprite />
+    <div class="bt-site-frame">
+      <a class="bt-skip" href="#main">Skip to content</a>
+      <SiteHeader overlay={overlayHeader} />
+      <main id="main" class="bt-site-main" tabindex="-1">
+        <slot />
+      </main>
+      <SiteFooter />
+    </div>
+    <TabBar />
+    {!isProduction && <PreviewChip />}
+    <script>
+      import "../scripts/stream-time.js";
+    </script>
+  </body>
+</html>

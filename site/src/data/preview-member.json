@@ -1,0 +1,12 @@
+{
+  "_note": "PREVIEW DATA: placeholder member content for the milestone 1 shell (shown with ?as=member or ?as=admin on staging). Replaced by real account data later.",
+  "name": "NightOwl",
+  "initials": "NB",
+  "sub": "Check-in opens Thursday 6:45 PM",
+  "stats": [
+    { "value": "320", "label": "Points" },
+    { "value": "3", "label": "Streak" },
+    { "value": "5", "label": "Badges" },
+    { "value": "#14", "label": "Rank" }
+  ]
+}

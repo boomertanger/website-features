@@ -1,0 +1,31 @@
+{
+  "_about": "Shaped like the future Firestore document sites/{siteId} (docs/specs/foundation.md). Components read brand strings and links from here; nothing brand-specific is hard-coded in components.",
+  "siteId": "boomertanger",
+  "name": "Boomertanger",
+  "logoText": "BOOMERTANGER",
+  "logoMark": "BT",
+  "_todoLogo": "TODO: replace the BT placeholder mark with the mascot artwork (site header, footer, hero poster).",
+  "tagline": "The main horror hub. Streams, games and the community behind them.",
+  "legalName": "Boomertanger LLC",
+  "timezone": "America/Los_Angeles",
+  "_todoTimezone": "TODO: confirm the stream schedule's home timezone. Times render in each viewer's own timezone in the browser; this is only the no-JavaScript fallback.",
+  "nextStream": {
+    "title": "Granny Gauntlet, night 12",
+    "game": "Granny",
+    "startsAt": "2026-10-01T19:00:00-07:00"
+  },
+  "liveState": "off",
+  "socials": [
+    { "id": "twitch", "label": "Twitch", "url": "#" },
+    { "id": "youtube", "label": "YouTube", "url": "#" },
+    { "id": "tiktok", "label": "TikTok", "url": "#" },
+    { "id": "instagram", "label": "Instagram", "url": "#" }
+  ],
+  "_todoSocials": "TODO: social profile URLs aren't known yet; every url above is a '#' placeholder.",
+  "contacts": [
+    { "id": "business", "email": "business@boomertanger.com" },
+    { "id": "fanmail", "email": "fanmail@boomertanger.com" },
+    { "id": "support", "email": "support@boomertanger.com" }
+  ],
+  "modules": ["live", "schedule", "games", "streams", "shop", "club"]
+}

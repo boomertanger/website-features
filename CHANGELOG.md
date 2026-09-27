@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: new Astro site in site/ (static, Node 22, Cloudflare Pages): base layout, header, Live Beacon, phone tab bar, footer, home page (hero 3B stories carousel, 4C/6A layout) with ?as= / ?live= preview mode on non-production builds, placeholder pages and a 404. No Firebase yet; member content is preview data.
 - bt-ui: Site shell components for the new site (header, nav, Live Beacon, tab bar, footer, stories hero carousel, tiles, member strip, join card, pill switches, Boom Board, pinboard notes, Boom Board / Warm Fuzzies wordmarks), shared/ui/hero-carousel.js and shared/ui/pill-switch.js; modal.js prefers --bt-header-h when the page sets it.
 - docs: foundation spec (docs/specs/foundation.md) and the approved home page and slide library mockups (docs/design/mockups/).
 - Admin panel (Bug Zapper + Feature Lab): a note can be saved on its own, as a "Note added" history entry (gray dot); status and statusChangedAt stay put. Save enables for a status / priority / duplicate-of change or a non-blank note; the dialog stays open after saving and the note field clears.
