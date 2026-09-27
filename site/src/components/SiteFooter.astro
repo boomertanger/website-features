@@ -1,69 +1,116 @@
 ---
-// Footer G4 with G3 cards (docs/design/mockups/header-footer-final.html):
-// logo + intro, domain cards, Contact and Follow, legal row.
-import Logo from "./Logo.astro";
+// Footer: Tap the Splat, idle state (docs/specs/tap-the-splat.md, approved prototype
+// docs/design/mockups/tap-the-splat.html). Plain HTML/CSS until the first splat tap,
+// when scripts/footer.js loads the game. The eight links and Contact / Follow are
+// real links from the start (hidden until the game reveals them, or focused).
 import Mascot from "./Mascot.astro";
 import site from "../data/site.json";
+import { isProduction } from "../lib/env.js";
 
 const year = new Date().getFullYear();
 
-// Icon tile color per card, as kit tokens (from the mockup).
+// Title letters; these carry a drip (length px, delay s, duration s), by index.
+const TITLE = "Tap the Splat";
+const DRIPS = { 1: [12, 0, 4.2], 4: [8, 1.6, 5], 6: [14, 0.8, 4.6], 8: [10, 2.4, 5.4], 11: [13, 1.2, 4.8] };
+
+// Wordmark letters: the game puts the bomb in the first O and loosens A, G and R.
+const [w1, w2] = site.wordmark.map((w) => w.toUpperCase());
+const tanger = [...w2];
+
+// Tagline: the pull chain hangs from the middle word ("horror").
+const tagWords = site.footerTagline.split(" ");
+const chainAt = Math.floor(tagWords.length / 2);
+
+// Ring angles (degrees) per link: live, events, games, tv | club, plus, shop, monthly.
+const RING = [247.5, 202.5, 157.5, 112.5, 292.5, 337.5, 22.5, 67.5];
+// Icon tone per link, as kit tokens.
 const tones = { live: "red", cal: "title", game: "text-muted", film: "red", club: "primary-soft", plus: "title", bag: "blue", news: "green" };
-// The .live card lights up while live (public), the .club card while backstage.
-const badges = { live: "Live now", club: "Backstage" };
+const round = (n) => Math.round(n * 1000) / 1000;
+const links = site.domains.map((d, i) => {
+  const a = (RING[i % RING.length] * Math.PI) / 180;
+  const tld = d.domain.split(".").pop();
+  return {
+    ...d,
+    mod: tld === "live" ? "bt-tts-link--live" : tld === "club" ? "bt-tts-link--club" : null,
+    // --fx/--fy: place on the ring; --dx/--dy: where the phone grid pops in from.
+    style: `--i:${i};--fx:${round(Math.cos(a))};--fy:${round(Math.sin(a))};--dx:${(i % 4 - 1.5) * -60};--dy:${(Math.floor(i / 4) - 0.5) * -40};--bt-tts-tone:var(--bt-${tones[d.icon] ?? "title"})`,
+  };
+});
 ---
-<footer class="bt-site-footer">
-  <div class="bt-footer-top">
-    <Logo />
-    <p>Find me everywhere. Every link below is its own easy-to-share address.</p>
-  </div>
-
-  <!-- TODO: the hrefs switch to the vanity domains once their redirects exist in Cloudflare (site.json _todoDomains). -->
-  <nav class="bt-domains" aria-label="Find me everywhere">
-    {site.domains.map((d) => {
-      const tld = d.domain.split(".").pop();
-      const badge = badges[tld];
-      return (
-        <a class:list={["bt-domain", badge && `bt-domain--${tld}`]} href={d.href} style={`--bt-domain-tone: var(--bt-${tones[d.icon] ?? "title"})`}>
-          {badge && <span class="bt-domain-badge">{badge}</span>}
-          <span class="bt-domain-icon"><svg aria-hidden="true" focusable="false"><use href={`#i-${d.icon}`} /></svg></span>
-          <span class="bt-domain-text">
-            <span class="bt-domain-label">{d.label}</span>
-            <span class="bt-domain-name">{d.domain}</span>
-            <span class="bt-domain-desc">{d.description}</span>
-          </span>
-          <span class="bt-domain-chev" aria-hidden="true">›</span>
-        </a>
-      );
-    })}
-  </nav>
-
-  <div class="bt-footer-bottom">
-    <div>
-      <p class="bt-label">Contact</p>
-      <dl class="bt-footer-kv">
-        {site.contacts.map((c) => (
-          <>
-            <dt>{c.label}</dt>
-            <dd><a href={`mailto:${c.email}`}>{c.email}</a></dd>
-          </>
-        ))}
-      </dl>
+<footer class="bt-site-footer bt-tts-footer">
+  <div class="bt-tts" data-tts data-phase="idle">
+    <div class="bt-tts-top">
+      <p class="bt-tts-title"><span class="bt-sr-only">{TITLE}</span><span aria-hidden="true" style="display:contents">{[...TITLE.toUpperCase()].map((ch, i) =>
+        ch === " " ? <span class="bt-tts-lt bt-tts-gap"></span>
+        : DRIPS[i] ? <span class="bt-tts-lt" data-drip style={`--len:${DRIPS[i][0]}px;--dl:${DRIPS[i][1]}s;--dur:${DRIPS[i][2]}s`}>{ch}</span>
+        : <span class="bt-tts-lt">{ch}</span>)}</span></p>
+      <div class="bt-tts-meter" role="meter" aria-label="Completion" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+        <span class="bt-tts-meter-bar"><i class="bt-tts-meter-fill"></i></span><span class="bt-tts-meter-pct">0%</span>
+      </div>
+      <span class="bt-tts-spacer"></span>
+      <button type="button" class="bt-tts-sound" data-snd aria-pressed="true" aria-label="Sound">🔊</button>
+      <!-- TODO: milestone 2: real leaderboards (accounts + Cloud Functions). Until then staging shows PREVIEW DATA to members; production hides the button. -->
+      {!isProduction && (
+        <div class="bt-tts-lb bt-when-signed-in" data-lb-wrap>
+          <button type="button" class="bt-tts-lb-btn" data-lb aria-expanded="false" aria-label="Leaderboard">🏆</button>
+        </div>
+      )}
     </div>
-    <div>
-      <p class="bt-label">Follow</p>
-      <!-- TODO: social URLs are '#' placeholders until the real profile links are known (site.json _todoSocials). -->
-      <div class="bt-footer-follow">
-        {site.socials.map((s) => <a href={s.url}>{s.label}</a>)}
+
+    <div class="bt-tts-stage">
+      <div class="bt-tts-hub">
+        <button type="button" class="bt-tts-splat" data-tts-g="splat" aria-label="Tap the splat">
+          <img src="/images/blood-splatter.webp" alt="" width="500" height="286" loading="lazy" decoding="async" />
+          <Mascot decorative />
+        </button>
+        <div class="bt-tts-wm">
+          <span class="bt-sr-only">{site.name}</span>
+          <span aria-hidden="true"><span>{w1[0]}</span><span class="bt-tts-o">{w1[1]}</span><span>{w1.slice(2)}</span><span class="bt-tts-tanger" data-tts-g="tanger" role="button" tabindex="-1" aria-disabled="true">{tanger.map((ch, i) =>
+            i === 0 ? <span class="bt-tts-t1">{ch}</span> : <span data-l={i % 2 ? i : undefined}>{ch}</span>)}</span></span>
+        </div>
+        <span class="bt-tts-tag" data-tts-g="tag">{tagWords.map((w, i) => (
+          <>{i > 0 && " "}{i === 0 ? <><span class="bt-tts-b">{w[0]}</span>{w.slice(1)}</> : i === chainAt ? <span class="bt-tts-hr">{w}</span> : w}</>
+        ))}</span>
+      </div>
+
+      <!-- TODO: the hrefs switch to the vanity domains once their redirects exist in Cloudflare (site.json _todoDomains). -->
+      <nav class="bt-tts-links" aria-label="Find me everywhere">
+        {links.map((d, i) => (
+          <a class:list={["bt-tts-link", d.mod]} href={d.href} data-i={i} style={d.style}>
+            <span class="bt-tts-link-icon"><svg aria-hidden="true" focusable="false"><use href={`#i-${d.icon}`} /></svg></span>
+            <span class="bt-tts-link-text"><span class="bt-tts-link-label">{d.label}</span><span class="bt-tts-link-domain">{d.domain}</span></span>
+          </a>
+        ))}
+      </nav>
+    </div>
+
+    <div class="bt-tts-cf">
+      <div>
+        <p class="bt-label">Contact</p>
+        <div class="bt-tts-mails" data-mail-domain={site.emailDomain}>
+          {site.contacts.map((c) => (
+            <span class="bt-tts-mail"><b>{c.label}</b><button type="button" data-mail-user={c.user} aria-label={`Show the ${c.label.toLowerCase()} email address`}>Show</button></span>
+          ))}
+        </div>
+      </div>
+      <div>
+        <p class="bt-label">Follow</p>
+        <!-- TODO: social URLs are '#' and the counts are typed in until the growth collector exists (site.json _todoSocials). -->
+        <div class="bt-tts-follow">
+          {site.socials.map((s) => <a href={s.url}><b>{s.label}</b><span>{s.count}</span></a>)}
+        </div>
       </div>
     </div>
   </div>
 
   <div class="bt-footer-legal">
     <span class="bt-footer-sign"><Mascot decorative />© {year} {site.legalName}</span>
-    <span class="bt-spacer"></span>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/account#your-data">Your data</a>
   </div>
 </footer>
+
+<script>
+  import "../scripts/footer.js";
+</script>

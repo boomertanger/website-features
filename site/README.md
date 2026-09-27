@@ -47,9 +47,15 @@ with links to flip them. Example: `/?as=member&live=public`.
 The logo is the mascot (`src/components/Mascot.astro`, inline SVG built from
 `shared/assets/mascot.svg`) plus the split wordmark; see design-system.md §8e.
 
-Open TODOs: the social profile URLs (all `#`); the footer domain cards link to
-internal paths until the vanity-domain redirects exist in Cloudflare
-(`_todoDomains`), and Horror Gaming Monthly (boomertang.com) isn't built yet;
+The footer is Tap the Splat (spec `docs/specs/tap-the-splat.md`): the idle footer
+is plain HTML/CSS from `src/components/SiteFooter.astro`; `src/scripts/footer.js`
+handles the sound toggle and the contact Show buttons (addresses are joined in the
+browser, never in the HTML).
+
+Open TODOs: the social profile URLs (all `#`) and follower counts (typed in until
+the growth collector exists); the footer links show the vanity domains but go to
+internal paths until the redirects exist in Cloudflare (`_todoDomains`), and
+Horror Monthly (boomertang.com) isn't built yet;
 the stream schedule's home timezone (times show in each viewer's own timezone;
 `site.json` `timezone` is only the no-JavaScript fallback).
 

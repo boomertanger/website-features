@@ -3,6 +3,7 @@
   "siteId": "boomertanger",
   "name": "Boomertanger",
   "wordmark": ["Boomer", "tanger"],
+  "footerTagline": "Built for horror gaming",
   "tagline": "The main horror hub. Streams, games and the community behind them.",
   "legalName": "Boomertanger LLC",
   "timezone": "America/Los_Angeles",
@@ -14,27 +15,29 @@
   },
   "liveState": "off",
   "socials": [
-    { "id": "twitch", "label": "Twitch", "url": "#" },
-    { "id": "youtube", "label": "YouTube", "url": "#" },
-    { "id": "tiktok", "label": "TikTok", "url": "#" },
-    { "id": "instagram", "label": "Instagram", "url": "#" }
+    { "id": "tiktok", "label": "TikTok", "url": "#", "count": "9.5K followers" },
+    { "id": "youtube", "label": "YouTube", "url": "#", "count": "820 subscribers" },
+    { "id": "twitch", "label": "Twitch", "url": "#", "count": "654 followers" },
+    { "id": "instagram", "label": "Instagram", "url": "#", "count": "Follow" }
   ],
-  "_todoSocials": "TODO: social profile URLs aren't known yet; every url above is a '#' placeholder.",
+  "_todoSocials": "TODO: social profile URLs are not known yet (every url is a # placeholder). TODO: follower counts are typed in by hand until the growth collector writes them.",
+  "emailDomain": "boomertanger.com",
   "contacts": [
-    { "id": "business", "label": "Business", "email": "business@boomertanger.com" },
-    { "id": "fanmail", "label": "Fan mail", "email": "fanmail@boomertanger.com" },
-    { "id": "support", "label": "Support", "email": "support@boomertanger.com" }
+    { "id": "business", "label": "Business", "user": "business" },
+    { "id": "fanmail", "label": "Fan mail", "user": "fanmail" },
+    { "id": "support", "label": "Support", "user": "support" }
   ],
+  "_aboutContacts": "The footer never prints these addresses in the HTML: each Show button joins user + @ + emailDomain in the browser.",
   "domains": [
-    { "domain": "boomertanger.live", "label": "Watch me live", "description": "Live now or next up, with chat", "icon": "live", "href": "/live" },
-    { "domain": "boomertanger.events", "label": "My schedule", "description": "This week's streams and votes", "icon": "cal", "href": "/schedule" },
-    { "domain": "boomertanger.games", "label": "What I'm playing", "description": "Every horror game I've played", "icon": "game", "href": "/games" },
-    { "domain": "boomertanger.tv", "label": "Watch my vids", "description": "Past streams and clips", "icon": "film", "href": "/streams" },
-    { "domain": "boomertanger.club", "label": "Fan Club", "description": "Free members, Boom Board", "icon": "club", "href": "/club" },
-    { "domain": "boomertanger.plus", "label": "Sub Club", "description": "Paid perks and backstage", "icon": "plus", "href": "/club" },
-    { "domain": "boomertanger.shop", "label": "Merch store", "description": "Hoodies, tees and drops", "icon": "bag", "href": "/shop" },
-    { "domain": "boomertang.com", "label": "Horror Gaming Monthly", "description": "The monthly roundup", "icon": "news", "href": "#" }
+    { "domain": "boomertanger.live", "label": "Watch me live", "icon": "live", "href": "/live" },
+    { "domain": "boomertanger.events", "label": "My schedule", "icon": "cal", "href": "/schedule" },
+    { "domain": "boomertanger.games", "label": "What I'm playing", "icon": "game", "href": "/games" },
+    { "domain": "boomertanger.tv", "label": "Watch my vids", "icon": "film", "href": "/streams" },
+    { "domain": "boomertanger.club", "label": "Fan Club", "icon": "club", "href": "/club" },
+    { "domain": "boomertanger.plus", "label": "Sub Club", "icon": "plus", "href": "/club" },
+    { "domain": "boomertanger.shop", "label": "Merch store", "icon": "bag", "href": "/shop" },
+    { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
   ],
-  "_todoDomains": "TODO: the cards show the vanity domains but link to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. boomertang.com (Horror Gaming Monthly) isn't built yet, so its href is #.",
+  "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
   "modules": ["live", "schedule", "games", "streams", "shop", "club"]
 }
