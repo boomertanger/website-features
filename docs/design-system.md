@@ -85,6 +85,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
 | Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
 | Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
+| Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -341,19 +342,27 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - **Tab bar (phones):** `nav.bt-tabbar` (5 columns) > links; the center `.bt-tab-raised` >
   `.bt-tab-raise` (glows by `data-live`) + "Live" or `.bt-tab-next` (next stream time).
   "More" opens a `.bt-menu-sheet`.
-- **Footer (G4 with G3 cards, `docs/design/mockups/header-footer-final.html`):**
-  `.bt-site-footer` > `.bt-footer-top` (logo lockup + intro line) > `.bt-domains` >
-  `a.bt-domain [--live|--club]` > `.bt-domain-badge`, `.bt-domain-icon` (tile; icon color
-  from `--bt-domain-tone`, a `var(--bt-*)` set on the card), `.bt-domain-text` >
-  `.bt-domain-label`, `.bt-domain-name` (gold domain), `.bt-domain-desc`; then
-  `.bt-domain-chev` (›). Cards are rounded rectangles (never pills): 4 across, 2 at
-  ≤ 1024px, and at ≤ 640px a one-column list with the chevron and no description.
-  Live-aware: while public, `--live` gets a red border and a "Live now" badge; while
-  backstage, `--club` gets a green border and a "Backstage" badge (uppercase via CSS).
-  Then `.bt-footer-bottom` (two columns, one on phones): Contact = `.bt-label` +
-  `dl.bt-footer-kv` (dt purpose, dd mailto link); Follow = `.bt-label` +
-  `.bt-footer-follow` (platform buttons labeled by name). Last, `.bt-footer-legal` >
-  `.bt-footer-sign` (18px mascot + ©), `.bt-spacer`, legal links.
+- **Footer: Tap the Splat (`docs/specs/tap-the-splat.md`, prototype
+  `docs/design/mockups/tap-the-splat.html`):** replaces the G4 footer. The idle footer is
+  plain HTML/CSS: `footer.bt-site-footer.bt-tts-footer` > `.bt-tts[data-phase]` (the
+  play area) > `.bt-tts-top` (`.bt-tts-title` blood-drip letters `.bt-tts-lt`, drips on
+  those with `data-drip` and `--len/--dl/--dur`; `.bt-tts-meter` (green, `role="meter"`);
+  `.bt-tts-spacer`; `.bt-tts-sound`; `.bt-tts-lb` members-only trophy with the
+  `.bt-tts-lb-list` popover) > `.bt-tts-stage` > `.bt-tts-hub` (`.bt-tts-splat` button:
+  splatter image + mascot, pulsing on hover; `.bt-tts-wm` one span per letter, TANGER in
+  `.bt-tts-tanger`; `.bt-tts-tag` in `--bt-primary` with `--bt-glow-primary`) +
+  `nav.bt-tts-links` > `a.bt-tts-link [--live|--club]` (`--fx/--fy` place it on the
+  ring, `--bt-tts-tone` colours the icon); then `.bt-tts-cf` (Contact `.bt-tts-mails` >
+  `.bt-tts-mail` with a Show button; Follow `.bt-tts-follow` tiles with counts); then
+  `.bt-footer-legal` > `.bt-footer-sign` (18px mascot + ©) and legal links, centered.
+  Links and Contact / Follow are in the HTML from the start, hidden until
+  `[data-links="1"]` / `[data-cf="1"]` (set by the game) or keyboard focus inside them.
+  The ring sizes itself with `cqw` so it fits the container; ≤ 1024px tightens the cards
+  and the wordmark and stacks Contact over Follow; ≤ 640px the links become a 2-column
+  grid under the hub (visually hidden, still read and focusable, until revealed) and the
+  play area clips sideways overflow. Game-only pieces and states (`.bt-tts-arcade`,
+  chain, bomb, tools, end card, `.is-got` / `.is-hot` links) live in the game stylesheet
+  (`site/src/scripts/tap-the-splat/tap-the-splat.css`), loaded with the game.
 - **Hero carousel (stories):** `.bt-hero` (`tabindex="0"`) > `.bt-hero-pin` +
   `.bt-hero-viewport` > `.bt-hero-track` > `.bt-hero-slide[data-title][data-mood]`
   (`data-stream`, `data-starts`/`data-ends`, `data-audience`) > `.bt-hero-inner`.
@@ -524,6 +533,9 @@ section 5 (decided after the migration). New features must use it too.
   shell components (§5) live in `bt-ui.css`, but `shared/ui-kit/` hasn't been
   updated to render them, so the kit page isn't yet the visual source of
   truth for them (the mockup is). Update the published UI Kit page.
+- **Add these to the published UI Kit page:** the mascot (`.bt-mascot`, `--aware`), the
+  R4 logo lockup (`.bt-logo`), the Tap the Splat idle footer (`.bt-tts`, §5) and the new
+  tokens (`--bt-blood*`, `--bt-glow-*`, `--bt-shadow-text`, `--bt-shadow-drop`).
 
 ### 8d. New site shell (Astro on Cloudflare Pages)
 
@@ -568,3 +580,34 @@ differences:
   colors, so they're brand tokens (`--bt-mascot-*`), not status colors, and never
   change with a theme. The live-aware stripes read the same `data-live` attribute as
   the Live Beacon and the `?live=` preview switch.
+
+### 8f. Tap the Splat footer
+
+- **Exception: Tap the Splat's completion meter and Play again button use green
+  (otherwise admin-only).** Approved in the prototype: green reads as progress and "go"
+  in the game, and neither control is an admin action. It's `--bt-green` (the status
+  green, not the `--bt-admin-*` greens) and stays limited to those two controls.
+- **The footer is the game.** The G4 footer (domain cards, labeled contact list) is
+  retired; `docs/design/mockups/header-footer-final.html` stays as the header reference.
+  Nothing says "game": visitors who only want links can stop after round 3, the links are
+  real links in the HTML (hidden until revealed, or focused), and the header nav covers
+  the same pages.
+- **Contact addresses never appear in the HTML.** Each Show button joins `user` + `@` +
+  `emailDomain` from `site.json` in the browser, then offers Copy.
+- **The game loads only on the first splat tap** (a dynamic import). The game module
+  attaches its own stylesheet, because a CSS import inside a dynamically imported module
+  is hoisted into every page by the build. The only game-adjacent code in the idle
+  bundle is the Web Audio unlock, which iOS requires inside the tap itself.
+- **Game colours are feature properties.** The props (bone, steel, brass, fire, the
+  arcade board) have no kit equivalent, so each is declared once as a `--tts-*`
+  property at the top of the game stylesheet (CLAUDE.md rule 3) and used by name,
+  including in the SVG art. The title red, glows and shadows that the idle footer
+  shares are kit tokens (§3).
+- **The end screen is an in-place card, not a modal.** As approved it floats on the
+  splatter over the dimmed play area and closes on any non-button click, so it doesn't
+  use `openModal()`. Hidden game pieces are `inert`.
+- **Meter steps follow the spec table** (power cut 52 / 57, DANGER 73 / 76 / 85, +1.4
+  per catch), where the prototype's code used 50 / 55, 72 / 75 / 84 and +1.5.
+- **Leaderboard and votes wait for accounts.** Until milestone 2 the trophy is rendered
+  only on non-production builds (members only, sample rows labelled PREVIEW DATA), and
+  votes are visual only (remembered per browser).
