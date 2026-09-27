@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- bt-ui: mascot component (.bt-mascot, live-aware lens stripes) with brand tokens --bt-mascot-head/-lens/-stripe/-stripe-edge, the R4 logo lockup (split wordmark, TANGER hover shimmer), the G4 footer with G3 domain cards (4 across, a one-column list on phones, live-aware .live / .club cards), --bt-shadow-lift and --bt-logo-shine; design-system.md §5 and §8e.
 - assets: mascot artwork (shared/assets/mascot.svg), real favicon (site/public/favicon.svg) and the approved header/footer mockup (docs/design/mockups/header-footer-final.html).
 - Cloudflare Pages project 'boomertanger' connected (root site/, dev = preview/staging, main paused until launch).
 - site: new Astro site in site/ (static, Node 22, Cloudflare Pages): base layout, header, Live Beacon, phone tab bar, footer, home page (hero 3B stories carousel, 4C/6A layout) with ?as= / ?live= preview mode on non-production builds, placeholder pages and a 404. No Firebase yet; member content is preview data.

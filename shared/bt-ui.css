@@ -1115,12 +1115,20 @@
   --bt-green-glow-strong: rgba(var(--bt-green-rgb), 0.55);
   --bt-green-glow-soft: rgba(var(--bt-green-rgb), 0.18);
   --bt-primary-glow: rgba(var(--bt-primary-rgb), 0.25);
-  --bt-gold-glow: rgba(var(--bt-gold-rgb), 0.18);         /* poster logo mark */
+  --bt-gold-glow: rgba(var(--bt-gold-rgb), 0.18);         /* poster mascot halo */
   --bt-scrim: rgba(0, 0, 0, 0.35);                        /* dark wash on tinted notes */
   --bt-scrim-strong: rgba(0, 0, 0, 0.55);                 /* chip over a player */
   --bt-shadow-note: 0 10px 22px rgba(0, 0, 0, 0.45);
   --bt-shadow-pin: 0 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 0 rgba(0, 0, 0, 0.25);
   --bt-header-h: 64px;                                    /* site header height (56px on phones) */
+  --bt-shadow-lift: 0 8px 20px rgba(0, 0, 0, 0.4);        /* footer domain card on hover */
+  /* Mascot artwork (shared/assets/mascot.svg). Brand colors from the logo
+     itself: the head stays black and the lines use --bt-title. */
+  --bt-mascot-head: #000;
+  --bt-mascot-lens: #1b1464;
+  --bt-mascot-stripe: #4c186b;
+  --bt-mascot-stripe-edge: #fff;
+  --bt-logo-shine: #fff;                                  /* TANGER hover shimmer highlight */
 }
 
 /* ---- Page root and frame ---- */
@@ -1147,10 +1155,34 @@
 .bt-root:not(#_):not(:is([data-auth="visitor"], [data-auth="visitor"] *)) .bt-when-visitor,
 .bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin { display: none; }
 
-/* ---- Logo (placeholder mark until the mascot artwork lands) ---- */
-.bt-root:not(#_) .bt-logo { display: flex; align-items: center; gap: 10px; color: var(--bt-text); font-weight: 800; letter-spacing: 0.02em; font-size: var(--bt-text-lg); white-space: nowrap; text-decoration: none; }
-.bt-root:not(#_) .bt-logo:hover { text-decoration: none; }
-.bt-root:not(#_) .bt-logo-mark { width: 34px; height: 34px; border-radius: 50%; border: 2px solid var(--bt-title); display: grid; place-items: center; color: var(--bt-title); font-size: 11px; font-weight: 800; flex: none; }
+/* ---- Mascot (inline SVG built from shared/assets/mascot.svg; site/src/components/Mascot.astro) ----
+   <svg class="bt-mascot [bt-mascot--aware]" viewBox="30 92 145 162"> with the artwork's
+   own part classes: .m-hd head, .m-ln lines, .m-th thin lines, .m-gl lens, .m-sp lens
+   stripes. Size it by width (default 36px); the height follows the artwork. The head's
+   thick black stroke closes the hairline gaps between the head and its outlines. */
+.bt-root:not(#_) .bt-mascot { display: block; width: 36px; height: auto; aspect-ratio: 145 / 162; flex: none; overflow: visible; transition: filter 300ms; }
+.bt-root:not(#_) .bt-mascot .m-hd { fill: var(--bt-mascot-head); stroke: var(--bt-mascot-head); stroke-width: 10; stroke-linejoin: round; }
+.bt-root:not(#_) .bt-mascot .m-ln { fill: none; stroke: var(--bt-title); stroke-width: 4.93; stroke-miterlimit: 10; stroke-linejoin: round; }
+.bt-root:not(#_) .bt-mascot .m-th { fill: none; stroke: var(--bt-title); stroke-width: 2.46; }
+.bt-root:not(#_) .bt-mascot .m-gl { fill: var(--bt-mascot-lens); stroke: var(--bt-title); stroke-width: 4.93; stroke-linejoin: round; }
+.bt-root:not(#_) .bt-mascot .m-sp { fill: var(--bt-mascot-stripe); stroke: var(--bt-mascot-stripe-edge); stroke-width: 2.46; transition: stroke 300ms; }
+/* Aware: while live, the lens stripes turn red (public) or green (backstage) and glow. */
+.bt-root:not(#_):is([data-live="public"], [data-live="public"] *) .bt-mascot--aware .m-sp { stroke: var(--bt-red); }
+.bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-mascot--aware .m-sp { stroke: var(--bt-green); }
+.bt-root:not(#_):is([data-live="public"], [data-live="public"] *) .bt-mascot--aware { filter: drop-shadow(0 0 6px var(--bt-red-glow-strong)); }
+.bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-mascot--aware { filter: drop-shadow(0 0 6px var(--bt-green-glow-strong)); }
+
+/* ---- Logo lockup (R4): aware mascot + split wordmark, BOOMER off-white, TANGER gold ---- */
+.bt-root:not(#_) .bt-logo { display: inline-flex; align-items: center; gap: 10px; color: var(--bt-text); white-space: nowrap; text-decoration: none; }
+.bt-root:not(#_) .bt-logo:hover { color: var(--bt-text); text-decoration: none; }
+.bt-root:not(#_) .bt-logo-text { font-weight: 800; font-size: var(--bt-text-xl); letter-spacing: 0.03em; line-height: 1; text-transform: uppercase; }
+/* TANGER: a light sweeps across on hover/focus (a transition, not a loop). */
+.bt-root:not(#_) .bt-logo-w2 { color: var(--bt-title); background: linear-gradient(100deg, var(--bt-title) 40%, var(--bt-logo-shine) 50%, var(--bt-title) 60%) 100% 0 / 250% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: background-position 900ms ease; }
+.bt-root:not(#_) .bt-logo:is(:hover, :focus-visible) .bt-logo-w2 { background-position: -20% 0; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-mascot, .bt-root:not(#_) .bt-mascot .m-sp, .bt-root:not(#_) .bt-logo-w2 { transition: none; }
+  .bt-root:not(#_) .bt-logo:is(:hover, :focus-visible) .bt-logo-w2 { background-position: 100% 0; }
+}
 
 /* ---- Site header ---- */
 .bt-root:not(#_) .bt-site-header { display: flex; align-items: center; gap: 20px; height: var(--bt-header-h); padding: 0 var(--bt-gutter); background: var(--bt-bg); border-bottom: 1px solid var(--bt-border); position: relative; z-index: 5; }
@@ -1187,9 +1219,8 @@
 @container bt (max-width: 640px) {
   /* Phones: logo + compact account; navigation moves to the tab bar. */
   .bt-root:not(#_) .bt-site-header { gap: 10px; padding: 0 16px; }
-  .bt-root:not(#_) .bt-site-header .bt-logo { font-size: var(--bt-text-base); }
-  .bt-root:not(#_) .bt-site-header .bt-logo-text { display: inline; }
-  .bt-root:not(#_) .bt-site-header .bt-logo-mark { width: 30px; height: 30px; font-size: 10px; }
+  .bt-root:not(#_) .bt-site-header .bt-logo-text { display: inline; font-size: 15px; }
+  .bt-root:not(#_) .bt-site-header .bt-logo .bt-mascot { width: 30px; }
   .bt-root:not(#_) .bt-site-header .bt-nav,
   .bt-root:not(#_) .bt-site-header .bt-beacon-slot,
   .bt-root:not(#_) .bt-account--wide { display: none; }
@@ -1230,19 +1261,65 @@
 .bt-root:not(#_) .bt-menu-sheet a svg { width: 22px; height: 22px; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-menu-sheet a[aria-current="page"] svg { color: var(--bt-primary); }
 
-/* ---- Footer ---- */
-.bt-root:not(#_) .bt-site-footer { border-top: 1px solid var(--bt-border); padding: 28px var(--bt-gutter) 24px; background: var(--bt-bg); }
-.bt-root:not(#_) .bt-footer-cols { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 24px; }
-.bt-root:not(#_) .bt-footer-brand p { color: var(--bt-text-muted); margin-top: 10px; font-size: var(--bt-text-md); line-height: 1.5; max-width: 34ch; }
-.bt-root:not(#_) .bt-footer-col a { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-md); padding: 4px 0; }
-.bt-root:not(#_) .bt-footer-col a:hover { color: var(--bt-text); }
-.bt-root:not(#_) .bt-footer-legal { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
-.bt-root:not(#_) .bt-footer-legal a { color: var(--bt-text-faint); }
-.bt-root:not(#_) .bt-footer-legal a:hover { color: var(--bt-text); }
+/* ---- Footer (G4 with G3 cards; docs/design/mockups/header-footer-final.html) ----
+   .bt-footer-top (logo + intro) > .bt-domains (domain cards) > .bt-footer-bottom
+   (Contact .bt-footer-kv, Follow .bt-footer-follow) > .bt-footer-legal. */
+.bt-root:not(#_) .bt-site-footer { border-top: 1px solid var(--bt-border); padding: 32px var(--bt-gutter) 22px; background: var(--bt-bg); }
+.bt-root:not(#_) .bt-site-footer a { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-site-footer a:hover { color: var(--bt-text); }
+.bt-root:not(#_) .bt-site-footer a.bt-logo { color: var(--bt-text); }
+.bt-root:not(#_) .bt-footer-top { margin-bottom: 16px; }
+.bt-root:not(#_) .bt-footer-top p { color: var(--bt-text-muted); font-size: var(--bt-text-md); margin-top: 8px; }
+
+/* Domain cards: roomy rounded rectangles; a one-column list with a chevron on phones.
+   Live-aware: .bt-domain--live lights red while public, .bt-domain--club green while backstage. */
+.bt-root:not(#_) .bt-domains { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.bt-root:not(#_) .bt-site-footer a.bt-domain { position: relative; display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; min-width: 0; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: linear-gradient(90deg, var(--bt-primary-bg), var(--bt-surface) 70%); color: var(--bt-text); text-decoration: none; transition: transform 150ms, border-color 150ms, box-shadow 150ms; }
+.bt-root:not(#_) .bt-site-footer a.bt-domain:hover { border-color: var(--bt-primary); transform: translateY(-2px); box-shadow: var(--bt-shadow-lift); text-decoration: none; }
+.bt-root:not(#_) .bt-domain-icon { width: 40px; height: 40px; border-radius: var(--bt-radius-md); background: var(--bt-bg); display: grid; place-items: center; flex: none; color: var(--bt-domain-tone, var(--bt-title)); }
+.bt-root:not(#_) .bt-domain-icon svg { width: 18px; height: 18px; }
+.bt-root:not(#_) .bt-domain-text { display: block; min-width: 0; }
+.bt-root:not(#_) .bt-domain-label { display: block; font-size: var(--bt-text-md); color: var(--bt-text); font-weight: 700; line-height: 1.2; }
+.bt-root:not(#_) .bt-domain-name { display: block; font-size: var(--bt-text-xs); color: var(--bt-title); font-weight: 600; margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-domain-desc { display: block; font-size: var(--bt-text-xs); color: var(--bt-text-faint); margin-top: 4px; line-height: 1.35; }
+.bt-root:not(#_) .bt-domain-chev { display: none; }
+.bt-root:not(#_) .bt-domain-badge { display: none; position: absolute; top: -8px; right: 12px; font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; line-height: 1.4; padding: 1px 7px; border-radius: var(--bt-radius-full); background: var(--bt-red); color: var(--bt-text); }
+.bt-root:not(#_):is([data-live="public"], [data-live="public"] *) .bt-site-footer a.bt-domain--live { border-color: var(--bt-red); box-shadow: 0 0 16px var(--bt-red-glow); }
+.bt-root:not(#_):is([data-live="public"], [data-live="public"] *) .bt-domain--live .bt-domain-badge { display: block; }
+.bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-site-footer a.bt-domain--club { border-color: var(--bt-green); box-shadow: 0 0 16px var(--bt-green-glow); }
+.bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-domain--club .bt-domain-badge { display: block; background: var(--bt-green); color: var(--bt-bg); }
+
+/* Contact (labeled rows) and Follow (platform buttons) */
+.bt-root:not(#_) .bt-footer-bottom { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; margin-top: 22px; }
+.bt-root:not(#_) .bt-footer-kv { display: grid; grid-template-columns: 90px minmax(0, 1fr); gap: 6px 12px; font-size: var(--bt-text-md); margin: 10px 0 0; }
+.bt-root:not(#_) .bt-footer-kv dt { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-footer-kv dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-footer-follow { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+.bt-root:not(#_) .bt-site-footer .bt-footer-follow a { display: inline-flex; align-items: center; padding: 7px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 600; text-decoration: none; }
+.bt-root:not(#_) .bt-site-footer .bt-footer-follow a:hover { border-color: var(--bt-primary); text-decoration: none; }
+
+/* Legal row: tiny mascot signs off */
+.bt-root:not(#_) .bt-footer-legal { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 18px; margin-top: 22px; padding-top: 16px; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-site-footer .bt-footer-legal a { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-site-footer .bt-footer-legal a:hover { color: var(--bt-text); }
+.bt-root:not(#_) .bt-footer-sign { display: inline-flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .bt-footer-sign .bt-mascot { width: 18px; }
+.bt-root:not(#_) .bt-footer-legal .bt-spacer { flex: 1; }
+
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .bt-domains { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .bt-site-footer { padding: 24px 16px 20px; }
-  .bt-root:not(#_) .bt-footer-cols { grid-template-columns: 1fr 1fr; }
-  .bt-root:not(#_) .bt-footer-brand { grid-column: 1 / -1; }
+  .bt-root:not(#_) .bt-site-footer { padding: 26px 16px 20px; }
+  .bt-root:not(#_) .bt-domains { grid-template-columns: 1fr; gap: 6px; }
+  .bt-root:not(#_) .bt-site-footer a.bt-domain { align-items: center; padding: 10px 12px; border-radius: var(--bt-radius-md); }
+  .bt-root:not(#_) .bt-domain-desc { display: none; }
+  .bt-root:not(#_) .bt-domain-chev { display: block; margin-left: auto; color: var(--bt-text-faint); font-size: 18px; line-height: 1; }
+  .bt-root:not(#_) .bt-footer-bottom { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-site-footer a.bt-domain { transition: none; }
+  .bt-root:not(#_) .bt-site-footer a.bt-domain:hover { transform: none; }
 }
 
 /* ---- Hero carousel, stories mode (3B) — behavior: shared/ui/hero-carousel.js ---- */
@@ -1262,7 +1339,7 @@
 .bt-root:not(#_) .bt-hero-slide[data-mood="gold"] { background: radial-gradient(90% 100% at 90% 30%, var(--bt-gold-bg), transparent 65%), var(--bt-bg); }
 
 /* Poster slide */
-.bt-root:not(#_) .bt-hero-mark { width: 104px; height: 104px; border-radius: 50%; border: 3px solid var(--bt-title); margin: 0 auto 16px; display: grid; place-items: center; color: var(--bt-title); font-weight: 800; font-size: 24px; box-shadow: 0 0 60px var(--bt-gold-glow); }
+.bt-root:not(#_) .bt-hero-slide .bt-mascot.bt-hero-mascot { width: 112px; margin: 0 auto 18px; filter: drop-shadow(0 0 28px var(--bt-gold-glow)); }
 .bt-root:not(#_) .bt-hero-poster-title { font-size: 58px; font-weight: 800; letter-spacing: 0.04em; text-transform: uppercase; line-height: 1; color: var(--bt-title); width: fit-content; max-width: 100%; margin: 0 auto; background: var(--bt-title-gradient); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; }
 .bt-root:not(#_) .bt-hero-slide[data-mood="poster"] p { color: var(--bt-text-muted); margin: 12px auto 0; max-width: 46ch; line-height: 1.5; }
 .bt-root:not(#_) .bt-hero-status { margin-top: 16px; display: flex; justify-content: center; }
@@ -1312,7 +1389,7 @@
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bt-hero-slide { padding: 96px 16px 56px; }
-  .bt-root:not(#_) .bt-hero-mark { width: 78px; height: 78px; font-size: 18px; }
+  .bt-root:not(#_) .bt-hero-slide .bt-mascot.bt-hero-mascot { width: 80px; margin-bottom: 14px; }
   .bt-root:not(#_) .bt-hero-poster-title { font-size: 32px; }
   .bt-root:not(#_) .bt-hero-tpl, .bt-root:not(#_) .bt-hero-split { grid-template-columns: 1fr; gap: 18px; }
   .bt-root:not(#_) .bt-hero-title { font-size: 30px; }
@@ -1403,6 +1480,7 @@
 .bt-root:not(#_) .bt-pills-n { font-size: 10px; font-weight: 800; border-radius: var(--bt-radius-full); padding: 1px 7px; background: var(--bt-primary); color: var(--bt-text); }
 .bt-root:not(#_) .bt-pills button[data-tone="gold"] .bt-pills-n { background: var(--bt-title); color: var(--bt-bg); }
 .bt-root:not(#_) .bt-pills-av { width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 8px; font-weight: 800; background: var(--bt-gold-bg); color: var(--bt-title); border: 1px solid var(--bt-title); }
+.bt-root:not(#_) .bt-pills-av .bt-mascot { width: 12px; }
 .bt-root:not(#_) .bt-pills--view { display: none; background: var(--bt-surface); }
 .bt-root:not(#_) .bt-pills--view button { padding: 9px 0; gap: 6px; }
 
@@ -1489,6 +1567,7 @@
 .bt-root:not(#_) .bt-bb-post-ft { display: flex; gap: 12px; align-items: center; font-size: var(--bt-text-xs); color: var(--bt-text-muted); font-weight: 600; }
 .bt-root:not(#_) .bt-bb-replied { margin-left: auto; color: var(--bt-title); display: inline-flex; align-items: center; gap: 5px; }
 .bt-root:not(#_) .bt-bb-replied i { width: 16px; height: 16px; border-radius: 50%; background: var(--bt-gold-bg); border: 1px solid var(--bt-title); font-size: 8px; font-style: normal; display: grid; place-items: center; color: var(--bt-title); font-weight: 800; }
+.bt-root:not(#_) .bt-bb-replied i .bt-mascot { width: 10px; }
 /* Boom / Everyone filter: [data-board][data-filter] hides the other kind */
 .bt-root:not(#_) [data-board][data-filter="boom"] [data-kind="crowd"],
 .bt-root:not(#_) [data-board][data-filter="crowd"] [data-kind="boom"] { display: none; }

@@ -83,7 +83,8 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
 | Radii | `radius-sm`(8) `md`(10) `lg`(12) `xl`(16) `full` |
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
-| Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
+| Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
+| Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -314,23 +315,49 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `visitor | member | admin` on the page root (or any ancestor). Show/hide with
   `.bt-when-off` `.bt-when-live` `.bt-when-public` `.bt-when-backstage`
   `.bt-when-visitor` `.bt-when-signed-in` (member or admin) `.bt-when-admin`.
+- **Mascot:** `svg.bt-mascot [.bt-mascot--aware]` (`viewBox="30 92 145 162"`), inline so
+  CSS can style it; the site renders it with `site/src/components/Mascot.astro`
+  (props `size`, `aware`, `label`, `decorative`) from `shared/assets/mascot.svg`. Parts keep
+  the artwork's classes: `.m-hd` head (`--bt-mascot-head`, with a thick same-color stroke
+  that closes the hairline gaps around the head), `.m-ln` / `.m-th` lines (`--bt-title`),
+  `.m-gl` lens (`--bt-mascot-lens`), `.m-sp` lens stripes (`--bt-mascot-stripe`, edged
+  `--bt-mascot-stripe-edge`). Size it by `width` (default 36px); the height follows the
+  artwork. `--aware`: while `data-live` is `public` the stripe edges turn `--bt-red` with a
+  soft red glow, `backstage` turns them `--bt-green`. Used next to the wordmark it's
+  decorative (`aria-hidden`); alone it's `role="img"` with an `aria-label`.
+- **Logo lockup (R4):** `a.bt-logo` > `.bt-mascot.bt-mascot--aware` + `.bt-logo-text` >
+  `.bt-logo-w1` (BOOMER, off-white) + `.bt-logo-w2` (TANGER, `--bt-title`). On hover or
+  focus a light sweeps across TANGER once (a 900ms background-position transition, not a
+  loop; none under reduced motion). Header, footer top, same markup.
 - **Header:** `.bt-site-header [--overlay]` (overlay = transparent, over the home hero) >
-  `.bt-logo` (`.bt-logo-mark` + `.bt-logo-text`), `.bt-nav` (links with
+  `.bt-logo` (the R4 lockup), `.bt-nav` (links with
   `aria-current="page"`), `.bt-spacer`, `.bt-beacon-slot`, `.bt-account.bt-account--wide`
   and `.bt-account.bt-account--compact` (phones). Account: `.bt-account-btn` +
-  `.bt-avatar-sm`; green `.bt-admin-link` for admins. ≤ 1024px: mark-only logo, no
-  beacon subtitle, nav scrolls if tight. ≤ 640px: nav and beacon hide (the tab bar takes over).
+  `.bt-avatar-sm`; green `.bt-admin-link` for admins. ≤ 1024px: mascot-only logo, no
+  beacon subtitle, nav scrolls if tight. ≤ 640px: nav and beacon hide (the tab bar takes
+  over); the wordmark comes back at 15px with a 30px mascot.
 - **Live Beacon:** `.bt-beacon [--public|--backstage]` > `.bt-beacon-dot` + label +
   `.bt-beacon-sub`. Offline shows the next stream time; public glows red, backstage green.
 - **Tab bar (phones):** `nav.bt-tabbar` (5 columns) > links; the center `.bt-tab-raised` >
   `.bt-tab-raise` (glows by `data-live`) + "Live" or `.bt-tab-next` (next stream time).
   "More" opens a `.bt-menu-sheet`.
-- **Footer:** `.bt-site-footer` > `.bt-footer-cols` (`.bt-footer-brand`, `.bt-footer-col`
-  with a `.bt-label` heading) + `.bt-footer-legal`.
+- **Footer (G4 with G3 cards, `docs/design/mockups/header-footer-final.html`):**
+  `.bt-site-footer` > `.bt-footer-top` (logo lockup + intro line) > `.bt-domains` >
+  `a.bt-domain [--live|--club]` > `.bt-domain-badge`, `.bt-domain-icon` (tile; icon color
+  from `--bt-domain-tone`, a `var(--bt-*)` set on the card), `.bt-domain-text` >
+  `.bt-domain-label`, `.bt-domain-name` (gold domain), `.bt-domain-desc`; then
+  `.bt-domain-chev` (›). Cards are rounded rectangles (never pills): 4 across, 2 at
+  ≤ 1024px, and at ≤ 640px a one-column list with the chevron and no description.
+  Live-aware: while public, `--live` gets a red border and a "Live now" badge; while
+  backstage, `--club` gets a green border and a "Backstage" badge (uppercase via CSS).
+  Then `.bt-footer-bottom` (two columns, one on phones): Contact = `.bt-label` +
+  `dl.bt-footer-kv` (dt purpose, dd mailto link); Follow = `.bt-label` +
+  `.bt-footer-follow` (platform buttons labeled by name). Last, `.bt-footer-legal` >
+  `.bt-footer-sign` (18px mascot + ©), `.bt-spacer`, legal links.
 - **Hero carousel (stories):** `.bt-hero` (`tabindex="0"`) > `.bt-hero-pin` +
   `.bt-hero-viewport` > `.bt-hero-track` > `.bt-hero-slide[data-title][data-mood]`
   (`data-stream`, `data-starts`/`data-ends`, `data-audience`) > `.bt-hero-inner`.
-  Moods: `poster` `hub` `stream` `gold`. Poster: `.bt-hero-mark`,
+  Moods: `poster` `hub` `stream` `gold`. Poster: `.bt-mascot.bt-hero-mascot` (112px, 80 on phones),
   `.bt-hero-poster-title`, `.bt-hero-status`. Template: `.bt-hero-tpl [--text]` >
   `.bt-hero-kicker` (+ `.bt-hero-kicker-pip`), `.bt-hero-title`, `p`, `.bt-hero-cta`,
   optional `.bt-hero-media`. Stream: `.bt-hero-split`, `.bt-countdown`,
@@ -530,3 +557,14 @@ differences:
   `data-auth`, the same way the mockup does it; on staging and previews the
   `?live=` and `?as=` preview switches set them.
 
+### 8e. Logo
+
+- **Logo: mascot + split wordmark (R4); mascot head stays black, lines use
+  `--bt-title`, lens colors are brand tokens.** Chosen from the header options in
+  `docs/design/mockups/header-footer-final.html`. The artwork
+  (`shared/assets/mascot.svg`, favicon `site/public/favicon.svg`) is the source; the
+  site inlines its shapes so the lines follow the gold token and the lens stripes can
+  react to the live state. The head's black and the lens purples are the logo's own
+  colors, so they're brand tokens (`--bt-mascot-*`), not status colors, and never
+  change with a theme. The live-aware stripes read the same `data-live` attribute as
+  the Live Beacon and the `?live=` preview switch.
