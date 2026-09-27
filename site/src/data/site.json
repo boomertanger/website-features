@@ -2,9 +2,7 @@
   "_about": "Shaped like the future Firestore document sites/{siteId} (docs/specs/foundation.md). Components read brand strings and links from here; nothing brand-specific is hard-coded in components.",
   "siteId": "boomertanger",
   "name": "Boomertanger",
-  "logoText": "BOOMERTANGER",
-  "logoMark": "BT",
-  "_todoLogo": "TODO: replace the BT placeholder mark with the mascot artwork (site header, footer, hero poster).",
+  "wordmark": ["Boomer", "tanger"],
   "tagline": "The main horror hub. Streams, games and the community behind them.",
   "legalName": "Boomertanger LLC",
   "timezone": "America/Los_Angeles",
@@ -23,9 +21,20 @@
   ],
   "_todoSocials": "TODO: social profile URLs aren't known yet; every url above is a '#' placeholder.",
   "contacts": [
-    { "id": "business", "email": "business@boomertanger.com" },
-    { "id": "fanmail", "email": "fanmail@boomertanger.com" },
-    { "id": "support", "email": "support@boomertanger.com" }
+    { "id": "business", "label": "Business", "email": "business@boomertanger.com" },
+    { "id": "fanmail", "label": "Fan mail", "email": "fanmail@boomertanger.com" },
+    { "id": "support", "label": "Support", "email": "support@boomertanger.com" }
   ],
+  "domains": [
+    { "domain": "boomertanger.live", "label": "Watch me live", "description": "Live now or next up, with chat", "icon": "live", "href": "/live" },
+    { "domain": "boomertanger.events", "label": "My schedule", "description": "This week's streams and votes", "icon": "cal", "href": "/schedule" },
+    { "domain": "boomertanger.games", "label": "What I'm playing", "description": "Every horror game I've played", "icon": "game", "href": "/games" },
+    { "domain": "boomertanger.tv", "label": "Watch my vids", "description": "Past streams and clips", "icon": "film", "href": "/streams" },
+    { "domain": "boomertanger.club", "label": "Fan Club", "description": "Free members, Boom Board", "icon": "club", "href": "/club" },
+    { "domain": "boomertanger.plus", "label": "Sub Club", "description": "Paid perks and backstage", "icon": "plus", "href": "/club" },
+    { "domain": "boomertanger.shop", "label": "Merch store", "description": "Hoodies, tees and drops", "icon": "bag", "href": "/shop" },
+    { "domain": "boomertang.com", "label": "Horror Gaming Monthly", "description": "The monthly roundup", "icon": "news", "href": "#" }
+  ],
+  "_todoDomains": "TODO: the cards show the vanity domains but link to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. boomertang.com (Horror Gaming Monthly) isn't built yet, so its href is #.",
   "modules": ["live", "schedule", "games", "streams", "shop", "club"]
 }

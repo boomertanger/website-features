@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: R4 header logo (live-aware mascot + BOOMER/TANGER wordmark with hover shimmer; mascot-only on tablets), large mascot on the hero poster slide and in the Boom Board avatars, the real favicon, and the G4 footer: logo + intro, eight domain cards from site.json domains (internal links until the vanity-domain redirects exist), Contact and Follow, and a mascot-signed legal row. site.json: logoMark/logoText replaced by wordmark; contacts get labels.
 - bt-ui: mascot component (.bt-mascot, live-aware lens stripes) with brand tokens --bt-mascot-head/-lens/-stripe/-stripe-edge, the R4 logo lockup (split wordmark, TANGER hover shimmer), the G4 footer with G3 domain cards (4 across, a one-column list on phones, live-aware .live / .club cards), --bt-shadow-lift and --bt-logo-shine; design-system.md §5 and §8e.
 - assets: mascot artwork (shared/assets/mascot.svg), real favicon (site/public/favicon.svg) and the approved header/footer mockup (docs/design/mockups/header-footer-final.html).
 - Cloudflare Pages project 'boomertanger' connected (root site/, dev = preview/staging, main paused until launch).

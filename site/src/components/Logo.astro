@@ -1,7 +1,10 @@
 ---
+// Logo lockup R4 (docs/design-system.md §5, §8e): live-aware mascot + split
+// wordmark, BOOMER off-white, TANGER gold with a hover shimmer.
+import Mascot from "./Mascot.astro";
 import site from "../data/site.json";
 ---
 <a class="bt-logo" href="/" aria-label={`${site.name} home`}>
-  <!-- TODO: replace this placeholder mark with the mascot artwork (see site.json _todoLogo). -->
-  <span class="bt-logo-mark" aria-hidden="true">{site.logoMark}</span><span class="bt-logo-text" aria-hidden="true">{site.logoText}</span>
+  <Mascot aware decorative />
+  <span class="bt-logo-text" aria-hidden="true"><span class="bt-logo-w1">{site.wordmark[0]}</span><span class="bt-logo-w2">{site.wordmark[1]}</span></span>
 </a>

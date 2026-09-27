@@ -44,10 +44,14 @@ with links to flip them. Example: `/?as=member&live=public`.
 | `src/data/hero-slides.json` | Hero slides (template shape: kicker, title, body, buttons, media, mood, startsAt/endsAt, audience). |
 | `src/data/preview-*.json` | PREVIEW DATA for member tiles, to-dos, updates, the Boom Board and Warm Fuzzies. |
 
-Open TODOs: the mascot logo artwork (the "BT" circle is a placeholder), the
-social profile URLs (all `#`), and the stream schedule's home timezone
-(times show in each viewer's own timezone; `site.json` `timezone` is only the
-no-JavaScript fallback).
+The logo is the mascot (`src/components/Mascot.astro`, inline SVG built from
+`shared/assets/mascot.svg`) plus the split wordmark; see design-system.md §8e.
+
+Open TODOs: the social profile URLs (all `#`); the footer domain cards link to
+internal paths until the vanity-domain redirects exist in Cloudflare
+(`_todoDomains`), and Horror Gaming Monthly (boomertang.com) isn't built yet;
+the stream schedule's home timezone (times show in each viewer's own timezone;
+`site.json` `timezone` is only the no-JavaScript fallback).
 
 ## Cloudflare Pages
 

@@ -1,0 +1,34 @@
+---
+// The mascot as inline SVG, so bt-ui can style it (.bt-mascot: gold lines,
+// live-aware lens stripes). Built at build time from the artwork file
+// shared/assets/mascot.svg: its shapes are copied in, minus the root <svg>
+// and the c2pa <metadata> block. Size it with CSS width; `size` (px) is for
+// one-off spots. Next to the wordmark it's decorative, so pass `decorative`.
+import artwork from "../../../shared/assets/mascot.svg?raw";
+
+interface Props {
+  size?: number;
+  aware?: boolean;
+  label?: string;
+  decorative?: boolean;
+  class?: string;
+}
+const { size, aware = false, label = "Boomertanger", decorative = false, class: extra } = Astro.props;
+
+const shapes = artwork
+  .replace(/<metadata[\s\S]*?<\/metadata>/, "")
+  .replace(/^[\s\S]*?<svg[^>]*>/, "")
+  .replace(/<\/svg>\s*$/, "")
+  .trim();
+const viewBox = artwork.match(/<svg[^>]*\bviewBox="([^"]+)"/)?.[1] ?? "30 92 145 162";
+const a11y = decorative || !label ? { "aria-hidden": "true" } : { role: "img", "aria-label": label };
+---
+<svg
+  class:list={["bt-mascot", aware && "bt-mascot--aware", extra]}
+  viewBox={viewBox}
+  xmlns="http://www.w3.org/2000/svg"
+  focusable="false"
+  style={size ? `width: ${size}px` : undefined}
+  {...a11y}
+  set:html={shapes}
+/>

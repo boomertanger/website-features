@@ -1,28 +1,67 @@
 ---
-// Footer: brand blurb, Watch links, Contact addresses, legal row.
+// Footer G4 with G3 cards (docs/design/mockups/header-footer-final.html):
+// logo + intro, domain cards, Contact and Follow, legal row.
 import Logo from "./Logo.astro";
+import Mascot from "./Mascot.astro";
 import site from "../data/site.json";
 
 const year = new Date().getFullYear();
+
+// Icon tile color per card, as kit tokens (from the mockup).
+const tones = { live: "red", cal: "title", game: "text-muted", film: "red", club: "primary-soft", plus: "title", bag: "blue", news: "green" };
+// The .live card lights up while live (public), the .club card while backstage.
+const badges = { live: "Live now", club: "Backstage" };
 ---
 <footer class="bt-site-footer">
-  <div class="bt-footer-cols">
-    <div class="bt-footer-brand">
-      <Logo />
-      <p>{site.tagline}</p>
-    </div>
-    <div class="bt-footer-col">
-      <p class="bt-label">Watch</p>
-      <!-- TODO: social URLs are '#' placeholders until the real profile links are known (site.json _todoSocials). -->
-      {site.socials.map((s) => <a href={s.url}>{s.label}</a>)}
-    </div>
-    <div class="bt-footer-col">
+  <div class="bt-footer-top">
+    <Logo />
+    <p>Find me everywhere. Every link below is its own easy-to-share address.</p>
+  </div>
+
+  <!-- TODO: the hrefs switch to the vanity domains once their redirects exist in Cloudflare (site.json _todoDomains). -->
+  <nav class="bt-domains" aria-label="Find me everywhere">
+    {site.domains.map((d) => {
+      const tld = d.domain.split(".").pop();
+      const badge = badges[tld];
+      return (
+        <a class:list={["bt-domain", badge && `bt-domain--${tld}`]} href={d.href} style={`--bt-domain-tone: var(--bt-${tones[d.icon] ?? "title"})`}>
+          {badge && <span class="bt-domain-badge">{badge}</span>}
+          <span class="bt-domain-icon"><svg aria-hidden="true" focusable="false"><use href={`#i-${d.icon}`} /></svg></span>
+          <span class="bt-domain-text">
+            <span class="bt-domain-label">{d.label}</span>
+            <span class="bt-domain-name">{d.domain}</span>
+            <span class="bt-domain-desc">{d.description}</span>
+          </span>
+          <span class="bt-domain-chev" aria-hidden="true">›</span>
+        </a>
+      );
+    })}
+  </nav>
+
+  <div class="bt-footer-bottom">
+    <div>
       <p class="bt-label">Contact</p>
-      {site.contacts.map((c) => <a href={`mailto:${c.email}`}>{c.email.split("@")[0]}@</a>)}
+      <dl class="bt-footer-kv">
+        {site.contacts.map((c) => (
+          <>
+            <dt>{c.label}</dt>
+            <dd><a href={`mailto:${c.email}`}>{c.email}</a></dd>
+          </>
+        ))}
+      </dl>
+    </div>
+    <div>
+      <p class="bt-label">Follow</p>
+      <!-- TODO: social URLs are '#' placeholders until the real profile links are known (site.json _todoSocials). -->
+      <div class="bt-footer-follow">
+        {site.socials.map((s) => <a href={s.url}>{s.label}</a>)}
+      </div>
     </div>
   </div>
+
   <div class="bt-footer-legal">
-    <span>© {year} {site.legalName}</span>
+    <span class="bt-footer-sign"><Mascot decorative />© {year} {site.legalName}</span>
+    <span class="bt-spacer"></span>
     <a href="/privacy">Privacy</a>
     <a href="/terms">Terms</a>
     <a href="/account#your-data">Your data</a>

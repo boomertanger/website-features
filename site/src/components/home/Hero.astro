@@ -2,6 +2,7 @@
 // Home hero: stories carousel (variation 3B). Slides come from
 // data/hero-slides.json; behavior from shared/ui/hero-carousel.js.
 import LiveBeacon from "../LiveBeacon.astro";
+import Mascot from "../Mascot.astro";
 import site from "../../data/site.json";
 import heroData from "../../data/hero-slides.json";
 import preview from "../../data/preview-home.json";
@@ -33,7 +34,7 @@ const btn = (style) => `bt-btn bt-btn--${style === "primary" ? "primary" : style
           <div class="bt-hero-inner">
             {s.type === "poster" && (
               <>
-                <div class="bt-hero-mark" aria-hidden="true">{site.logoMark}</div>
+                <Mascot class="bt-hero-mascot" decorative />
                 <h2 class="bt-hero-poster-title">{s.title}</h2>
                 <p>{s.body}</p>
                 <div class="bt-hero-status"><LiveBeacon /></div>
