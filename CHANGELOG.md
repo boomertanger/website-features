@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: foundation spec (docs/specs/foundation.md) and the approved home page and slide library mockups (docs/design/mockups/).
 - Admin panel (Bug Zapper + Feature Lab): a note can be saved on its own, as a "Note added" history entry (gray dot); status and statusChangedAt stay put. Save enables for a status / priority / duplicate-of change or a non-blank note; the dialog stays open after saving and the note field clears.
 - firestore.rules: allow the note-only history entry (kind "note", 1-500 chars, status and statusChangedAt unchanged) and reject admin-panel writes that change nothing.
 - Admin panel (Bug Zapper + Feature Lab): the note field is always typeable (it was disabled until the status changed, so clicks focused the dialog and lit it purple); it's still saved only with a real status change.
