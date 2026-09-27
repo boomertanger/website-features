@@ -24,8 +24,11 @@ const MAX_OFFSET_RATIO = 0.35; // never push a dialog below 35% of the screen
 
 function placeBackdrop(backdrop) {
   const gap = parseFloat(getComputedStyle(backdrop).getPropertyValue("--bt-modal-gap")) || 24;
-  const header = document.querySelector(SITE_HEADER_SELECTOR);
-  let headerBottom = 0;
+  // The new site (site/) sets --bt-header-h on <body>; prefer it. Squarespace
+  // pages never set it on <body>, so they keep measuring #header as before.
+  const headerVar = parseFloat(getComputedStyle(document.body).getPropertyValue("--bt-header-h"));
+  const header = Number.isFinite(headerVar) && headerVar > 0 ? null : document.querySelector(SITE_HEADER_SELECTOR);
+  let headerBottom = Number.isFinite(headerVar) && headerVar > 0 ? headerVar : 0;
   if (header) {
     const r = header.getBoundingClientRect();
     // Scroll-back slides the header up out of view; only count what's visible.

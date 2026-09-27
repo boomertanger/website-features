@@ -6,12 +6,31 @@ before touching any feature's markup or CSS.
 ## Repo layout
 - `shared/` — code used by every feature
   - `bt-ui.css` — the shared UI kit (tokens, Squarespace guard rails, all components)
-  - `ui/dom.js`, `ui/modal.js`, `ui/confirm.js`, `ui/admin-menu.js`, `ui/admin-auth.js`
+  - `ui/dom.js`, `ui/modal.js`, `ui/confirm.js`, `ui/admin-menu.js`, `ui/admin-auth.js`,
+    `ui/hero-carousel.js`, `ui/pill-switch.js` (site shell)
   - `ui-kit/` — the UI Kit reference page (renders every component)
   - `firebase-init.js`, `memberspace-helper.js`
 - `features/<name>/` — one folder per feature: `<name>.js`, `<name>.css`, `README.md`
 - `functions/`, `firestore.rules` — backend (separate deploys; see below)
+- `site/` — the new Astro site (see "New site" below)
+- `docs/specs/`, `docs/design/mockups/` — confirmed specs and approved mockups
 - Branches: `dev` = work in progress, `main` = production-ready. Never tag from `dev`.
+
+## New site (site/)
+The new Astro site lives in `site/` (Cloudflare Pages). Read `docs/specs/foundation.md`
+first, and `docs/design-system.md` §5 "Site shell" and §8d before changing it.
+- Same kit, imported at build time from `shared/` (never jsDelivr). New shared pieces go
+  in `shared/bt-ui.css` / `shared/ui/`, not in `site/`.
+- `<body class="bt-root bt-site">` is the page root; the `bt` container is
+  `.bt-site-frame`. States: `data-live` and `data-auth` on body, `.bt-when-*` helpers.
+- Page layout may use `@media` (site CSS only); components keep container queries.
+- Brand strings and links come from `site/src/data/site.json` (the future
+  `sites/{siteId}` document), never hard-coded in components.
+- `PUBLIC_FIREBASE_ENV` (default `staging`): anything but `production` adds noindex and
+  the `?as=` / `?live=` preview switches. Member content is PREVIEW DATA from
+  `site/src/data/preview-*.json` until accounts exist.
+- Don't touch `features/`, `functions/`, `firestore.rules` or the Squarespace loader from
+  site work; the old staging pages must keep working.
 
 ## UI rules (non-negotiable)
 1. **Use `bt-ui`.** Every feature root carries `class="bt-root"` (add it from JS at init

@@ -83,6 +83,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
 | Radii | `radius-sm`(8) `md`(10) `lg`(12) `xl`(16) `full` |
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
+| Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -304,17 +305,74 @@ names) — the one monospace exception. `.bt-switch` = `<button role="switch"
 aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-title`,
 `.bt-item-actions`) + `.bt-item-desc`. `.bt-fineprint`.
 
+**Site shell (new site, `site/`)** — ported from `docs/design/mockups/home-5c-refined.html`
+(hero 3B, home 4C/6A). All in the "Site shell (new site, Sept 2026)" section of bt-ui.css.
+- **Page root:** `<body class="bt-root bt-site" data-live data-auth>` > `.bt-site-frame`
+  (the `bt` size container: header, `.bt-site-main`, footer). Fixed pieces (tab bar,
+  dialog portals) sit outside the frame. See §8d for why.
+- **States:** `data-live` = `off | public | backstage`, `data-auth` =
+  `visitor | member | admin` on the page root (or any ancestor). Show/hide with
+  `.bt-when-off` `.bt-when-live` `.bt-when-public` `.bt-when-backstage`
+  `.bt-when-visitor` `.bt-when-signed-in` (member or admin) `.bt-when-admin`.
+- **Header:** `.bt-site-header [--overlay]` (overlay = transparent, over the home hero) >
+  `.bt-logo` (`.bt-logo-mark` + `.bt-logo-text`), `.bt-nav` (links with
+  `aria-current="page"`), `.bt-spacer`, `.bt-beacon-slot`, `.bt-account.bt-account--wide`
+  and `.bt-account.bt-account--compact` (phones). Account: `.bt-account-btn` +
+  `.bt-avatar-sm`; green `.bt-admin-link` for admins. ≤ 1024px: mark-only logo, no
+  beacon subtitle, nav scrolls if tight. ≤ 640px: nav and beacon hide (the tab bar takes over).
+- **Live Beacon:** `.bt-beacon [--public|--backstage]` > `.bt-beacon-dot` + label +
+  `.bt-beacon-sub`. Offline shows the next stream time; public glows red, backstage green.
+- **Tab bar (phones):** `nav.bt-tabbar` (5 columns) > links; the center `.bt-tab-raised` >
+  `.bt-tab-raise` (glows by `data-live`) + "Live" or `.bt-tab-next` (next stream time).
+  "More" opens a `.bt-menu-sheet`.
+- **Footer:** `.bt-site-footer` > `.bt-footer-cols` (`.bt-footer-brand`, `.bt-footer-col`
+  with a `.bt-label` heading) + `.bt-footer-legal`.
+- **Hero carousel (stories):** `.bt-hero` (`tabindex="0"`) > `.bt-hero-pin` +
+  `.bt-hero-viewport` > `.bt-hero-track` > `.bt-hero-slide[data-title][data-mood]`
+  (`data-stream`, `data-starts`/`data-ends`, `data-audience`) > `.bt-hero-inner`.
+  Moods: `poster` `hub` `stream` `gold`. Poster: `.bt-hero-mark`,
+  `.bt-hero-poster-title`, `.bt-hero-status`. Template: `.bt-hero-tpl [--text]` >
+  `.bt-hero-kicker` (+ `.bt-hero-kicker-pip`), `.bt-hero-title`, `p`, `.bt-hero-cta`,
+  optional `.bt-hero-media`. Stream: `.bt-hero-split`, `.bt-countdown`,
+  `.bt-hero-player [--public|--backstage]` + `.bt-hero-viewers`. The segment bars
+  (`.bt-hero-stories`) are built by `hero-carousel.js`.
+- **Home zone and tiles:** `.bt-zone[data-view]` > `.bt-home-grid` > `.bt-home-left`
+  (children `.bt-wide` span two columns) + `.bt-home-right` (sticky). Visitors get one
+  column with three tiles in a row. `.bt-tile [--hot|--next|--board|--fuzz]` >
+  `.bt-tile-head`. Next livestream: `.bt-ns` > `.bt-ns-art` + `h4`, `.bt-ns-when`,
+  `.bt-mini-cd`, `.bt-expect`, `.bt-btn-row`; `.bt-live-tag`. Updates: `.bt-upd` >
+  `.bt-upd-ic`. To-dos: `.bt-todo` > `.bt-todo-dot`.
+- **Member strip / join card:** `.bt-member-strip` > `.bt-member-strip-av`, `h3`,
+  `.bt-member-strip-sub`, `.bt-member-stats`. `.bt-join-card` (visitors).
+- **Pill switches:** `.bt-pills[data-attr]` > `button[data-value]` (`.is-on`,
+  `data-tone="gold"`, `.bt-pills-n` count, `.bt-pills-av`). `.bt-pills--view` is the
+  phone-only For you / Boom Board switch (signed-in only). Behavior: `pill-switch.js`.
+- **Boom Board:** `.bt-mark` (`.bt-mark-w1` BOOM + `.bt-mark-w2` BOARD, `--sm`) with the
+  animated `.bt-bb-icon` (bubble, burst, ring, dots). `[data-board][data-filter]`
+  (`boom` hides `[data-kind="crowd"]`, `crowd` hides `[data-kind="boom"]`) >
+  `.bt-bb-head`, `.bt-bb-compose` (`-ph`, `-to`), `.bt-bb-list` > `.bt-bb-post
+  [--pinned]` > `.bt-bb-post-hd` (`.bt-bb-av [--boss]`, `b`, `.bt-bb-meta`, `.bt-bb-flag
+  [--pin]`), `.bt-bb-quote`, `p`, `.bt-bb-img`, `.bt-bb-post-ft` (+ `.bt-bb-replied`).
+- **Warm Fuzzies:** `.bt-mark.bt-mark--fuzzies` (pink FUZZIES) with the animated
+  `.bt-wf-icon` (beating fuzzy heart, sparks). `.bt-notes` > `.bt-note
+  [--primary|--teal|--pink|--blue|--lime|--boss]` (tilted pinboard notes; Boomer's are
+  `--boss`, gold) > `.bt-note-to`, `p`, `.bt-note-from`; `.bt-notes-rule`.
+- Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
+  autoplay.
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
 | `dom.js` | `escapeHtml(str)`, `formatDate(value)` (Timestamp/Date/ms/ISO → "Sep 12, 2026"), `initials(name)`, `levelBars(n, of)` |
-| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, requestClose, setBeforeClose, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` go through `requestClose()` (runs the `setBeforeClose` guard); `close()` always closes; focus trap + restore; body scroll lock; positions below the measured Squarespace `#header`. |
+| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, requestClose, setBeforeClose, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` go through `requestClose()` (runs the `setBeforeClose` guard); `close()` always closes; focus trap + restore; body scroll lock; positions below `--bt-header-h` when `<body>` sets it (the new site), otherwise below the measured Squarespace `#header`. |
 | `confirm.js` | `confirmAction({ title, message, confirmLabel, busyLabel, danger, feature, onConfirm })` → `Promise<boolean>`. Locks everything while `onConfirm` runs; shows the error and re-enables if it throws. |
 | `admin-menu.js` | `initAdminMenu(root)` → `{ close, sync }`; `LOGIN_ICON`, `SIGNOUT_ICON`, `SHIELD_ICON`, `PENCIL_ICON` |
 | `admin-auth.js` | Extracted from the identical admin code in Bug Zapper and Feature Lab (see §7). |
 | `effects.js` | `initRowSpotlight(root)` — one delegated pointermove listener; sets `--bt-mx`/`--bt-my` on the hovered `.bt-row--clickable`. |
 | `composer.js` | `composerHtml(opts)`, `initComposer(el, { onSubmit, busyLabel })` → `{ focus, reset }` |
 | `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
+| `hero-carousel.js` | `initHeroCarousel(hero, { duration = 7000, stateRoot = document.body })` → `{ go, destroy }`. Stories bars, 7 s per slide, pause on hover / focus / hidden tab, swipe, tap zones on narrow screens (never on links or buttons), arrow keys, no autoplay under reduced motion, live-first pinning of the `data-stream` slide while `data-live` isn't `off`, drops slides outside `data-starts`/`data-ends` or for another `data-audience`. |
+| `pill-switch.js` | `initPillSwitch(group, { target, attr, onChange })` → `{ set }`. Marks the chosen `button[data-value]` `.is-on` / `aria-pressed` and writes `data-{attr}` on the target. |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 
@@ -435,3 +493,40 @@ section 5 (decided after the migration). New features must use it too.
   callback only reports `{ user, isAdmin }`; it doesn't own this DOM
   toggling. A small shared helper (in `admin-auth.js` or `admin-menu.js`)
   could take this over.
+- **The published UI Kit page doesn't show the site shell yet.** The Site
+  shell components (§5) live in `bt-ui.css`, but `shared/ui-kit/` hasn't been
+  updated to render them, so the kit page isn't yet the visual source of
+  truth for them (the mockup is). Update the published UI Kit page.
+
+### 8d. New site shell (Astro on Cloudflare Pages)
+
+The new site lives in `site/` (spec: `docs/specs/foundation.md`). It imports
+the kit at build time and follows the same rules as features, with these
+differences:
+
+- **Page layout may use `@media`; components keep container queries.** Only
+  page-level layout (the fixed tab bar, `--bt-header-h`, the preview chip) uses
+  `@media` in the site's own CSS. Components still respond to the `bt`
+  container with the standard widths (1024 / 640 / 420).
+- **The whole page is a bt-root.** `<body class="bt-root bt-site">` carries the
+  tokens, guard rails and state attributes. `.bt-site` switches off the root's
+  container, overflow clipping, width cap and radius, because a size container
+  is the containing block for `position: fixed` descendants (the tab bar and
+  every dialog portal would be placed against the whole document, not the
+  screen) and `overflow: hidden` on body stops the page scrolling. The `bt`
+  container is `.bt-site-frame` inside it. Features keep their own
+  `class="bt-root"` for portability.
+- **`--bt-header-h`.** The layout sets it on `<body>` (64px, 56px on phones) and
+  the header uses it for its height. `modal.js` places dialogs below it when set,
+  and falls back to measuring Squarespace's `#header` when it isn't, so the
+  Squarespace pages behave exactly as before.
+- **The kit is imported at build time** (`import "../../shared/bt-ui.css"` in the
+  base layout), not loaded from jsDelivr. Shared JS modules are imported the
+  same way.
+- **The header owns the account area** (Log in / Join free, or the member's
+  avatar and a green Admin link). The Squarespace footer script that injects a
+  LOG IN link doesn't apply to the new site.
+- Header states come from data attributes on the page root, `data-live` and
+  `data-auth`, the same way the mockup does it; on staging and previews the
+  `?live=` and `?as=` preview switches set them.
+
