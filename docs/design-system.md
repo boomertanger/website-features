@@ -79,13 +79,14 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Admin (restricted, not destructive) | `admin-text` `admin-accent` `admin-tint` `admin-panel-bg` `admin-panel-border` `admin-tag` |
 | Admin (added) | `admin-btn-text` (dark text on the admin button) · `admin-neon` / `admin-neon-rgb` (bright neon green hover) |
 | Status/level tones | `blue` `gold` `pink` `red` `green` `lime` `gray` (each with `-bg`) · `teal` spare · `amber` = alias of `gold`. `--bt-green` is now #3ccf6e, deliberately distinct from the admin greens. |
-| Spacing | `space-0h`(2) `1`(4) `1h`(6) `2`(8) `3`(12) `4`(16) `5`(20) `6`(24) `8`(32) `12`(48) `16`(64) · `gutter` (32, 20 when narrow) |
+| Spacing | `space-0h`(2) `1`(4) `1h`(6) `2`(8) `3`(12) `4`(16) `5`(20) `6`(24) `8`(32) `12`(48) `16`(64) · `gutter` (32, 20 when narrow) · `content-max` (1216: the site's content width inside the gutters; the home `.bt-zone` is `content-max` + 2 gutters, `.bt-hero-inner` and the footer's game bar and legal row cap at it) |
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
 | Radii | `radius-sm`(8) `md`(10) `lg`(12) `xl`(16) `full` |
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
 | Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
 | Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
 | Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
+| Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -363,6 +364,18 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   play area clips sideways overflow. Game-only pieces and states (`.bt-tts-arcade`,
   chain, bomb, tools, end card, `.is-got` / `.is-hot` links) live in the game stylesheet
   (`site/src/scripts/tap-the-splat/tap-the-splat.css`), loaded with the game.
+  **L3 look ("spotlight, aligned"; above 640px only, phones keep the plain look):** the
+  footer is `--bt-footer-bg` with a 1px `--bt-border` hairline across its full width on
+  top, the play area paints `--bt-footer-spot` over it, and `.bt-tts-top` is a HUD strip
+  (`--bt-hud-bg`, 1px `--bt-hud-edge`, `radius-lg`, `--bt-hud-inset`, 10px 16px padding).
+  The game bar and `.bt-footer-legal` both cap at `--bt-content-max` inside the gutters
+  (the legal row with `margin-inline: max(gutter, (100% - content-max) / 2)`), so their
+  edges line up with the home bento cards at every width. Stage 390px (520px with the
+  links out). **Phone game bar:** a grid; row 1 = title, meter (stretches), sound; row 2
+  = the TIME / PENALTY clocks (only while playing) and the round leaderboard button
+  directly under the sound button. The leaderboard popover has # / Member / Date / Time
+  columns (`.bt-tts-lb-row.is-hd` headings, `.t` date, `.s` time); on phones, opening it
+  grows the play area so all ten rows can be scrolled to.
 - **Hero carousel (stories):** `.bt-hero` (`tabindex="0"`) > `.bt-hero-pin` +
   `.bt-hero-viewport` > `.bt-hero-track` > `.bt-hero-slide[data-title][data-mood]`
   (`data-stream`, `data-starts`/`data-ends`, `data-audience`) > `.bt-hero-inner`.
@@ -534,8 +547,10 @@ section 5 (decided after the migration). New features must use it too.
   updated to render them, so the kit page isn't yet the visual source of
   truth for them (the mockup is). Update the published UI Kit page.
 - **Add these to the published UI Kit page:** the mascot (`.bt-mascot`, `--aware`), the
-  R4 logo lockup (`.bt-logo`), the Tap the Splat idle footer (`.bt-tts`, §5) and the new
-  tokens (`--bt-blood*`, `--bt-glow-*`, `--bt-shadow-text`, `--bt-shadow-drop`).
+  R4 logo lockup (`.bt-logo`), the Tap the Splat idle footer (`.bt-tts`, §5) with its L3
+  look and the phone game bar, and the new tokens (`--bt-blood*`, `--bt-glow-*`,
+  `--bt-shadow-text`, `--bt-shadow-drop`, `--bt-content-max`, `--bt-footer-bg`,
+  `--bt-footer-spot`, `--bt-hud-*`, `--bt-shadow-splat`).
 
 ### 8d. New site shell (Astro on Cloudflare Pages)
 
@@ -587,6 +602,18 @@ differences:
   (otherwise admin-only).** Approved in the prototype: green reads as progress and "go"
   in the game, and neither control is an admin action. It's `--bt-green` (the status
   green, not the `--bt-admin-*` greens) and stays limited to those two controls.
+- **Footer: L3 spotlight, game bar and legal row share `--bt-content-max`.** Chosen from
+  the footer-look variations in the prototype (L0 current, L1 framed stage, L2 blood drip
+  edge, L3 spotlight, L4 wall, L5 light). On desktop and tablets the footer goes
+  near-black with a soft cone of light on the splat, a full-width hairline mirrors the
+  header's bottom border, and the game bar becomes a HUD strip. The game bar and the
+  legal row use the same content width as the page above, from one token that the home
+  zone and hero use too (1216px, the width the home page already had), so the edges line
+  up exactly instead of running to the screen edges. Phones keep the plain look.
+- **The clock never pauses (v7).** The firefly's flight counts toward the time; it's
+  bounded (one S-shaped path, 2.6 to 5 s) instead of the old 2 to 5 wandering loops with
+  the clock paused. Under reduced motion it glides flatter over the same duration, so
+  times stay comparable.
 - **The footer is the game.** The G4 footer (domain cards, labeled contact list) is
   retired; `docs/design/mockups/header-footer-final.html` stays as the header reference.
   Nothing says "game": visitors who only want links can stop after round 3, the links are
