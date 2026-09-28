@@ -382,5 +382,57 @@ service cloud.firestore {
         allow update, delete: if false;
       }
     }
+
+    // ---------- Accounts (docs/specs/accounts.md "Rules") ----------
+    // Deny by default. Every document below is written ONLY by Cloud Functions
+    // (functions/lib/accounts, Admin SDK); no client may write any of them.
+    // Site roles come from the ID token's custom claims, mirrored from
+    // sites/{siteId}/members/{uid}.roles: { roles: { boomertanger: ["admin"] } }.
+    function hasSiteRole(siteId, role) {
+      return request.auth != null
+        && request.auth.token.get('roles', {}).get(siteId, []).hasAny([role]);
+    }
+
+    // Site settings (name, tagline, socials, modules, ownerUid): public.
+    match /sites/{siteId} {
+      allow read: if true;
+      allow write: if false;
+
+      // Site membership (roles, joinedAt): the member and site admins.
+      match /members/{uid} {
+        allow read: if request.auth != null
+          && (request.auth.uid == uid || hasSiteRole(siteId, 'admin'));
+        allow write: if false;
+      }
+
+      // Public profile (handle, display name, avatar, opted-in platform names).
+      match /profiles/{uid} {
+        allow read: if true;
+        allow write: if false;
+      }
+    }
+
+    // Account doc: only its owner reads it. Preferences change through the
+    // updatePrefs callable, so there are no client writes at all. Birth month and
+    // year live in private/age, which no client can read or write.
+    match /users/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if false;
+
+      match /private/{docId} {
+        allow read, write: if false;
+      }
+    }
+
+    // Handle -> uid (unique handles): public so profiles can be looked up.
+    match /handles/{handle} {
+      allow read: if true;
+      allow write: if false;
+    }
+
+    // Platform account -> uid: server only.
+    match /platformLinks/{linkId} {
+      allow read, write: if false;
+    }
   }
 }

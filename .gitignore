@@ -1,6 +1,9 @@
 .DS_Store
 *.log
 .env
+# functions/.env holds public function params only (the Twitch client ID); secrets
+# go in Secret Manager, never here.
+!functions/.env
 node_modules/
 
 # New site (site/)

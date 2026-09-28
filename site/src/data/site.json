@@ -39,5 +39,9 @@
     { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
   ],
   "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
-  "modules": ["live", "schedule", "games", "streams", "shop", "club"]
+  "modules": ["live", "schedule", "games", "streams", "shop", "club"],
+  "termsVersion": "2026-09-28",
+  "_aboutTerms": "Version of the Terms and Privacy Policy that signup records. Bump it when either changes: seed-site.js copies it into sites/{siteId}, and completeSignup only accepts the current one.",
+  "twitchClientId": "59qwrarfotu1bcpzrbc5w6ksw0v6yb",
+  "_aboutTwitch": "Public client ID of the Twitch app for Twitch sign-in and linking (same value as functions/.env). The secret is in Secret Manager, never here."
 }

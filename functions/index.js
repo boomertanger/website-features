@@ -876,3 +876,8 @@ exports.scheduledAssetCleanup = onSchedule(
     }
   }
 );
+
+// ---------- Accounts (docs/specs/accounts.md) ----------
+// Sign-in, signup, profiles, handles, Twitch, roles. Lives in lib/accounts/ and
+// reuses the adminLog helper above for role changes (feature "accounts").
+Object.assign(exports, require("./lib/accounts")({ adminLogEntry }));
