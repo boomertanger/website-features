@@ -38,11 +38,13 @@ Later (milestone 2b): data export, account deletion (screens exist in the mockup
 - `site/src/lib/firebase.ts`: modular Firebase from npm; picks the staging or production config from `PUBLIC_FIREBASE_ENV` (configs copied from shared/firebase-init.js, which stays unchanged for the Squarespace features).
 - `site/src/lib/auth.ts`: auth state store (loading / signed out / needs signup / signed in / verified), used by the header, account page, verify banner, footer game (Join free opens the dialog) and home member strip.
 - Dialogs use bt-ui `openModal()`; the S2 split layout becomes a kit variant (`.bt-modal--split`).
-- Routes: `/account`, `/auth/twitch/callback`, `/auth/email-link`.
+- Routes: `/account`, `/auth/action`, `/auth/twitch/callback`, `/auth/email-link`.
 - Preview mode (`?as=member`) stays on non-production builds, but a real signed-in user always wins.
 
 ## Emails
-Firebase's built-in templates for verification, password reset and sign-in links (sender name "Boomertanger"). Custom sending domain later.
+Firebase's built-in email templates for verification, password reset and sign-in links (sender name "Boomertanger"). Custom sending domain later.
+
+The links open our own page, `/auth/action`, not Firebase's plain hosted one: in the Firebase console, Authentication → Templates → (edit a template) → **Customize action URL** = `https://staging.boomertanger.com/auth/action` (one setting per project; production gets its own domain at launch). The page handles `verifyEmail` (confirms, clears the verify banner at once, Continue returns to the page the email came from), `resetPassword` (choose a new password with Show/Hide, then Sign in), `recoverEmail` (undo an email change, offer a password reset), `verifyAndChangeEmail`, and hands `signIn` links on to `/auth/email-link`. Expired or used links get a clear message (and, for verification, a Send a new link button). With the action URL set, email links always open on staging, even when testing on localhost.
 
 ## Rules: manual test checklist
 The repo has no Firestore rules test setup yet (the emulator needs Java 11+), so check these in the Firebase console's Rules Playground (Firestore → Rules → Rules Playground) after each rules deploy. "Signed in" = Authenticated with a test uid; add `roles: { boomertanger: ["admin"] }` under custom claims for the admin rows.

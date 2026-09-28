@@ -1,0 +1,165 @@
+---
+// Our own page for Firebase's email action links, instead of the plain hosted one
+// on firebaseapp.com. Set it once per project in the Firebase console:
+// Authentication > Templates > (edit) > Customize action URL =
+//   https://staging.boomertanger.com/auth/action   (production: its own domain, later)
+// Modes (?mode=...&oobCode=...&continueUrl=...):
+//   verifyEmail            confirm the address, then back to where they were
+//   resetPassword          choose a new password (Show / Hide), then sign in
+//   recoverEmail           undo an email change ("that wasn't me"), offer a reset
+//   verifyAndChangeEmail   confirm a new address
+//   signIn                 an email sign-in link: handed on to /auth/email-link
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AuthStatus from "../../components/AuthStatus.astro";
+---
+<BaseLayout title="Account" noindex>
+  <AuthStatus title="One moment" message="Checking your link…">
+    <form class="bt-stack" data-reset hidden novalidate>
+      <div class="bt-field">
+        <label class="bt-label" for="ac-pw">New password</label>
+        <div class="bt-password"><input class="bt-input" id="ac-pw" type="password" autocomplete="new-password" placeholder="8+ characters" required /><button type="button" class="bt-password-toggle" data-pw-toggle aria-controls="ac-pw" aria-pressed="false" aria-label="Show password">Show</button></div>
+      </div>
+      <div class="bt-notice bt-notice--error" role="alert" data-err hidden></div>
+      <button type="submit" class="bt-btn bt-btn--primary bt-btn--block">Save new password</button>
+    </form>
+  </AuthStatus>
+</BaseLayout>
+
+<script>
+  import {
+    applyActionCode, checkActionCode, verifyPasswordResetCode, confirmPasswordReset, sendPasswordResetEmail,
+  } from "firebase/auth";
+  import { auth } from "../../lib/firebase";
+  import { refresh, whenReady, sendVerification } from "../../lib/auth";
+  import { messageFor } from "../../lib/errors";
+  import { safeReturn } from "../../lib/twitch";
+
+  const q = new URLSearchParams(location.search);
+  const mode = q.get("mode"), code = q.get("oobCode") || "";
+
+  const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
+  const title = $("[data-auth-title]"), msg = $("[data-auth-msg]"), actions = $("[data-auth-actions]");
+
+  /** Where a Continue button goes: the continueUrl if it's on this site, else the account page. */
+  function continueTo(fallback = "/account") {
+    try {
+      const u = new URL(q.get("continueUrl") || "", location.origin);
+      if (u.origin === location.origin) return safeReturn(u.pathname + u.search + u.hash);
+    } catch { /* not a URL */ }
+    return fallback;
+  }
+
+  /** Title, message and buttons: [label, href | onClick, primary?]. */
+  function show(t: string, m: string, buttons: Array<[string, string | (() => void), boolean?]> = []) {
+    title.textContent = t;
+    msg.textContent = m;
+    actions.replaceChildren(...buttons.map(([label, target, primary]) => {
+      const el = typeof target === "string" ? Object.assign(document.createElement("a"), { href: target }) : Object.assign(document.createElement("button"), { type: "button" });
+      el.className = `bt-btn ${primary ? "bt-btn--primary" : "bt-btn--secondary"}`;
+      el.textContent = label;
+      if (typeof target !== "string") el.addEventListener("click", target);
+      return el;
+    }));
+    actions.hidden = !buttons.length;
+  }
+  const expired = (err: unknown) => ["auth/invalid-action-code", "auth/expired-action-code"].includes((err as { code?: string })?.code || "");
+
+  async function run() {
+    // Keep the one-time code out of the address bar and history.
+    history.replaceState(null, "", "/auth/action");
+    if (!code || !mode) return show("That link isn't complete", "Open the link straight from the email, or ask for a new one.", [["Back to the site", "/"]]);
+    try {
+      if (mode === "verifyEmail") return await verifyEmail();
+      if (mode === "resetPassword") return await resetPassword();
+      if (mode === "recoverEmail") return await recoverEmail();
+      if (mode === "verifyAndChangeEmail") return await changeEmail();
+      show("That link isn't one we know", "Open the link straight from the email, or ask for a new one.", [["Back to the site", "/"]]);
+    } catch (err) {
+      console.error(err);
+      if (expired(err)) return show("That link has expired", "It may have been used already. Ask for a new one.", [["Back to the site", "/"]]);
+      show("Something went wrong", messageFor(err, "That link didn't work. Please try again."), [["Back to the site", "/"]]);
+    }
+  }
+
+  async function verifyEmail() {
+    try {
+      await applyActionCode(auth, code);
+    } catch (err) {
+      if (!expired(err)) throw err;
+      // Used already, or too old. If this browser is signed in and still unverified, offer a new one.
+      const s = await whenReady();
+      await s.user?.reload().catch(() => {});
+      if (s.user?.emailVerified) return show("Your email is verified", "You're all set.", [["Continue", continueTo(), true]]);
+      const again: Array<[string, string | (() => void), boolean?]> = s.user?.email
+        ? [["Send a new link", async () => {
+            try { await sendVerification(); show("New link sent", `Check ${s.user!.email} for a fresh verification email.`, [["Back to the site", "/"]]); }
+            catch (e) { show("Couldn't send it", messageFor(e), [["Back to the site", "/"]]); }
+          }, true]]
+        : [];
+      return show("That link has expired", "It may have been used already. Ask for a new one below or from your account page.", [...again, ["Your account", "/account"]]);
+    }
+    // Signed in here? Pick up the verified status now, so the banner goes at once.
+    const s = await whenReady();
+    if (s.user) { await s.user.reload().catch(() => {}); await s.user.getIdToken(true).catch(() => {}); await refresh(); }
+    show("Your email is verified", "You're all set: check-ins, votes and posts are open to you.", [["Continue", continueTo(), true]]);
+  }
+
+  async function resetPassword() {
+    let email: string;
+    try { email = await verifyPasswordResetCode(auth, code); } catch (err) {
+      if (!expired(err)) throw err;
+      return show("That reset link has expired", "It may have been used already. Ask for a new one from the sign-in window (Forgot password?).", [["Back to the site", "/"]]);
+    }
+    show("Choose a new password", `For ${email}.`);
+    const form = $<HTMLFormElement>("[data-reset]"), pw = $<HTMLInputElement>("#ac-pw"), err = $("[data-err]");
+    form.hidden = false;
+    pw.focus();
+    $("[data-pw-toggle]").addEventListener("click", (ev) => {
+      const t = ev.currentTarget as HTMLButtonElement, on = pw.type === "password";
+      pw.type = on ? "text" : "password"; t.textContent = on ? "Hide" : "Show";
+      t.setAttribute("aria-pressed", String(on)); t.setAttribute("aria-label", on ? "Hide password" : "Show password");
+    });
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      err.hidden = true;
+      if (pw.value.length < 8) { err.textContent = "Use at least 8 characters for your password."; err.hidden = false; return; }
+      const btn = form.querySelector<HTMLButtonElement>('[type="submit"]')!;
+      btn.disabled = true;
+      try {
+        await confirmPasswordReset(auth, code, pw.value);
+        form.hidden = true;
+        show("Password changed", "Sign in with your new password.", [["Sign in", "/account", true]]);
+        actions.querySelector("a")?.setAttribute("data-signin", "signin");
+      } catch (e) {
+        err.textContent = expired(e) ? "That reset link has expired. Ask for a new one from the sign-in window." : messageFor(e);
+        err.hidden = false;
+        btn.disabled = false;
+      }
+    });
+  }
+
+  async function recoverEmail() {
+    const info = await checkActionCode(auth, code);
+    const restored = info.data.email || "";
+    await applyActionCode(auth, code);
+    show("Your email is back", `Your account's email is ${restored} again. If you didn't make the change, reset your password too.`, [
+      ["Reset my password", async () => {
+        try { await sendPasswordResetEmail(auth, restored); show("Reset link sent", `Check ${restored} for a link to choose a new password.`, [["Back to the site", "/"]]); }
+        catch (e) { show("Couldn't send it", messageFor(e), [["Back to the site", "/"]]); }
+      }, true],
+      ["Back to the site", "/"],
+    ]);
+  }
+
+  async function changeEmail() {
+    const info = await checkActionCode(auth, code);
+    await applyActionCode(auth, code);
+    const s = await whenReady();
+    if (s.user) { await s.user.reload().catch(() => {}); await refresh({ forceToken: true }); }
+    show("New email confirmed", `Your account now uses ${info.data.email || "your new address"}.`, [["Continue", continueTo(), true]]);
+  }
+
+  // Email sign-in links carry the same shape; that page already knows what to do.
+  if (mode === "signIn") location.replace("/auth/email-link" + location.search);
+  else void run();
+</script>

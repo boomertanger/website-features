@@ -1,16 +1,25 @@
 ---
-// Body of the auth return pages (/auth/twitch/callback, /auth/email-link): a
-// status card the page script fills in (message, optional email form, actions).
+// Body of the auth return pages (/auth/action, /auth/twitch/callback,
+// /auth/email-link): one centred card with the splat and mascot, a gold title and
+// a status line the page script fills in, then an optional slot (a form) and
+// actions. Hooks: [data-auth-title], [data-auth-msg], [data-auth-actions] (with
+// [data-auth-back]). Kit piece: .bt-auth-card (shared/bt-ui.css).
+import Mascot from "./Mascot.astro";
+
 interface Props { title: string; message: string }
 const { title, message } = Astro.props;
 ---
 <div class="bt-zone">
-  <div class="bt-page-intro"><h1 class="bt-title">{title}</h1></div>
-  <div class="bt-card" style="max-width:520px">
-    <p class="bt-section-text" role="status" data-auth-msg>{message}</p>
+  <div class="bt-card bt-auth-card">
+    <div class="bt-auth-card-art" aria-hidden="true">
+      <img src="/images/blood-splatter.webp" alt="" width="500" height="286" decoding="async" />
+      <Mascot decorative />
+    </div>
+    <h1 class="bt-title" data-auth-title>{title}</h1>
+    <p class="bt-auth-card-msg" role="status" data-auth-msg>{message}</p>
     <slot />
-    <div class="bt-row-split" data-auth-actions hidden>
-      <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/" data-auth-back>Back to the site</a>
+    <div class="bt-row-center" data-auth-actions hidden>
+      <a class="bt-btn bt-btn--secondary" href="/" data-auth-back>Back to the site</a>
     </div>
   </div>
 </div>

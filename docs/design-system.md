@@ -361,7 +361,10 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-steps-label` + `.bt-steps` > `i[.is-on]`; `.bt-bday` (month + year selects);
   `.bt-handle-input` (the @ prefix) + `.bt-field-state [--ok|--bad]` (checking = plain);
   `.bt-profile-preview` with `.bt-avatar-md`; `label.bt-check` > `input[type=checkbox]` +
-  text. **Banners** under the header: `.bt-account-banner` (gold) for verify-your-email
+  text. **Auth return pages** (`/auth/action`, `/auth/email-link`,
+  `/auth/twitch/callback`, via `site/src/components/AuthStatus.astro`):
+  `.bt-card.bt-auth-card` > `.bt-auth-card-art` (splat + mascot), `h1.bt-title`,
+  `.bt-auth-card-msg`, an optional `.bt-stack` form, `.bt-row-center` actions. **Banners** under the header: `.bt-account-banner` (gold) for verify-your-email
   and finish-signup; while one shows, an overlay header joins the flow. **Avatar menu:**
   `.bt-account-wrap` > button + `.bt-account-menu[role=menu]` (`.bt-account-menu-who`,
   links, `a.is-admin` green, `hr`, sign-out button). **Account page (A2):**

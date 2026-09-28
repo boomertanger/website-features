@@ -1844,6 +1844,20 @@
 .bt-root:not(#_) .bt-notice--ok { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); background: var(--bt-lime-bg); color: var(--bt-text); }
 .bt-root:not(#_) .bt-notice .bt-btn { margin-top: 8px; }
 
+/* Auth return pages (/auth/action, /auth/email-link, /auth/twitch/callback):
+   .bt-card.bt-auth-card > .bt-auth-card-art (splat img + .bt-mascot), h1.bt-title,
+   .bt-auth-card-msg, then an optional .bt-stack form and a .bt-row-center of actions. */
+.bt-root:not(#_) .bt-auth-card { display: flex; flex-direction: column; align-items: center; gap: var(--bt-space-4); width: 100%; max-width: 460px; margin: var(--bt-space-8) auto; padding: 28px 26px; text-align: center;
+  background: radial-gradient(120% 60% at 50% 0%, color-mix(in srgb, var(--bt-red) 14%, transparent), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .bt-auth-card-art { position: relative; display: grid; place-items: center; width: 200px; height: 115px; margin-bottom: -6px; }
+.bt-root:not(#_) .bt-auth-card-art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: brightness(1.05) saturate(1.3); }
+.bt-root:not(#_) .bt-auth-card-art .bt-mascot { position: relative; width: 54px; margin-top: -8px; filter: drop-shadow(var(--bt-shadow-drop)); }
+.bt-root:not(#_) .bt-auth-card .bt-title { font-size: var(--bt-text-2xl); }
+.bt-root:not(#_) .bt-auth-card-msg { font-size: var(--bt-text-base); line-height: var(--bt-leading-body); color: var(--bt-text-muted); overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-auth-card .bt-stack { width: 100%; text-align: left; }
+.bt-root:not(#_) .bt-auth-card .bt-row-center .bt-btn { min-width: 160px; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-auth-card { margin: var(--bt-space-4) auto; padding: 22px 18px; } }
+
 /* Signup steps: .bt-steps-label + .bt-steps > i[.is-on]; birthday grid */
 .bt-root:not(#_) .bt-steps-label { font-size: var(--bt-text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-steps { display: flex; gap: 6px; margin-top: 6px; }
