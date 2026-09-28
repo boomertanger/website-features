@@ -1,8 +1,11 @@
 ---
 // Our own page for Firebase's email action links, instead of the plain hosted one
-// on firebaseapp.com. Set it once per project in the Firebase console:
-// Authentication > Templates > (edit) > Customize action URL =
-//   https://staging.boomertanger.com/auth/action   (production: its own domain, later)
+// on firebaseapp.com. It takes over once the project's action URL points here
+// (Firebase console: Authentication > Templates > Customize action URL), or once we
+// send auth emails ourselves with links to it. On boomertanger-staging, Firebase
+// currently refuses that setting (EMAIL_TEMPLATE_UPDATE_NOT_ALLOWED), so verification
+// and reset links still open Firebase's page; their CONTINUE comes back to the site.
+// Email sign-in links already come through /auth/email-link.
 // Modes (?mode=...&oobCode=...&continueUrl=...):
 //   verifyEmail            confirm the address, then back to where they were
 //   resetPassword          choose a new password (Show / Hide), then sign in
@@ -30,7 +33,7 @@ import AuthStatus from "../../components/AuthStatus.astro";
     applyActionCode, checkActionCode, verifyPasswordResetCode, confirmPasswordReset, sendPasswordResetEmail,
   } from "firebase/auth";
   import { auth } from "../../lib/firebase";
-  import { refresh, whenReady, sendVerification } from "../../lib/auth";
+  import { refresh, whenReady, sendVerification, continueSettings } from "../../lib/auth";
   import { messageFor } from "../../lib/errors";
   import { safeReturn } from "../../lib/twitch";
 
@@ -40,8 +43,10 @@ import AuthStatus from "../../components/AuthStatus.astro";
   const $ = <T extends Element = HTMLElement>(s: string) => document.querySelector<T>(s)!;
   const title = $("[data-auth-title]"), msg = $("[data-auth-msg]"), actions = $("[data-auth-actions]");
 
-  /** Where a Continue button goes: the continueUrl if it's on this site, else the account page. */
+  /** Where a Continue button goes: ?next= (our own links), else a same-site continueUrl, else the account page. */
   function continueTo(fallback = "/account") {
+    const next = q.get("next");
+    if (next) return safeReturn(next);
     try {
       const u = new URL(q.get("continueUrl") || "", location.origin);
       if (u.origin === location.origin) return safeReturn(u.pathname + u.search + u.hash);
@@ -144,7 +149,7 @@ import AuthStatus from "../../components/AuthStatus.astro";
     await applyActionCode(auth, code);
     show("Your email is back", `Your account's email is ${restored} again. If you didn't make the change, reset your password too.`, [
       ["Reset my password", async () => {
-        try { await sendPasswordResetEmail(auth, restored); show("Reset link sent", `Check ${restored} for a link to choose a new password.`, [["Back to the site", "/"]]); }
+        try { await sendPasswordResetEmail(auth, restored, continueSettings("/account")); show("Reset link sent", `Check ${restored} for a link to choose a new password.`, [["Back to the site", "/"]]); }
         catch (e) { show("Couldn't send it", messageFor(e), [["Back to the site", "/"]]); }
       }, true],
       ["Back to the site", "/"],

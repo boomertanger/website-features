@@ -117,11 +117,21 @@ export async function signOut() {
   await fbSignOut(auth);
 }
 
-/** Sends the verification email; the link comes back to the account page. */
+/**
+ * Where the CONTINUE button on Firebase's email-link page goes afterwards (the
+ * verification and reset links open Firebase's hosted page on this project: its
+ * action URL can't be changed, Firebase refuses email template updates here). With
+ * a custom action URL or our own email sending, the links would open /auth/action.
+ */
+export const continueSettings = (path = "/account") => ({
+  url: `${location.origin}${path.startsWith("/auth/") ? "/account" : path}`,
+});
+
+/** Sends the verification email; Firebase's page then continues back to this page. */
 export async function sendVerification() {
   const user = auth.currentUser;
   if (!user) throw new Error("Not signed in");
-  await sendEmailVerification(user, { url: `${location.origin}/account` });
+  await sendEmailVerification(user, continueSettings(location.pathname + location.search));
 }
 
 // Initials for an avatar: the first two letters of the display name (or handle).

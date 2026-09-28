@@ -16,7 +16,7 @@ import {
   sendSignInLinkToEmail, sendPasswordResetEmail, signOut,
 } from "firebase/auth";
 import { auth } from "../../lib/firebase";
-import { refresh, getAuthState, sendVerification, initialsOf } from "../../lib/auth";
+import { refresh, getAuthState, sendVerification, initialsOf, continueSettings } from "../../lib/auth";
 import { call } from "../../lib/call";
 import { messageFor, reasonOf } from "../../lib/errors";
 import { startTwitch } from "../../lib/twitch";
@@ -344,7 +344,7 @@ export function openSignIn({ screen, mode = "join" }: { screen?: Screen; mode?: 
         draft.email = email;
         run(async () => {
           if (!EMAIL_RE.test(email)) throw badEmail();
-          await sendPasswordResetEmail(auth, email);
+          await sendPasswordResetEmail(auth, email, continueSettings("/account"));
           const ok = $("[data-ok]")!;
           ok.textContent = `If there's an account for ${email}, a reset link is on its way. Check your inbox.`;
           ok.hidden = false;
