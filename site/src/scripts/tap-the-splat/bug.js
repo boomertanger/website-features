@@ -1,40 +1,28 @@
-// Round 2: the firefly. It wanders in on a random 2 to 5 loop path (the clock is
-// paused for the whole flight, so a long flight never costs anyone), hits the B
-// of "Built", the tagline zaps and starts to flicker, and the skull pull chain
-// drops at the same moment.
+// Round 2: the firefly. It flies in on an S-shaped path (random height, flipping
+// up or down) that lasts 2.6 to 5 seconds, hits the B of "Built", the tagline
+// zaps and starts to flicker, and the skull pull chain drops at the same moment.
+// The clock keeps running: the flight counts toward the time.
 import { FIREFLY } from "./art.js";
 
 export function flyBug(G) {
   const { root, S } = G;
-  G.phase("bug"); G.pause();
+  G.phase("bug");
   const b = document.createElement("span");
   b.className = "bt-tts-bug"; b.innerHTML = FIREFLY; root.append(b);
 
-  const W = root.offsetWidth, st = G.playRect(), T = G.rel(G.$(".bt-tts-b"), 0.3, 0.5);
-  const top = st.y - st.h / 2 + 30, bot = st.y + st.h / 2 - 30;
-  const n = 2 + Math.floor(Math.random() * 4);
-  const pts = [{ x: -40, y: top + Math.random() * (bot - top) }];
-  for (let i = 0; i < n; i++) pts.push({ x: 60 + Math.random() * (W - 120), y: top + Math.random() * (bot - top) });
-  pts.push({ x: T.x - 70, y: T.y - 30 }, { x: T.x - 10, y: T.y });
-
-  // Catmull-Rom through the points, sampled and walked at a constant speed.
-  const P = [pts[0], ...pts, pts[pts.length - 1]];
-  const cr = (a, b2, c, d, t) => { const t2 = t * t, t3 = t2 * t; return 0.5 * ((2 * b2) + (-a + c) * t + (2 * a - 5 * b2 + 4 * c - d) * t2 + (-a + 3 * b2 - 3 * c + d) * t3); };
-  const seg = (i, t) => ({ x: cr(P[i - 1].x, P[i].x, P[i + 1].x, P[i + 2].x, t), y: cr(P[i - 1].y, P[i].y, P[i + 1].y, P[i + 2].y, t) });
-  const samples = [];
-  for (let i = 1; i < P.length - 2; i++) for (let k = 0; k < 40; k++) samples.push(seg(i, k / 40));
-  samples.push(pts[pts.length - 1]);
-  const dist = [0];
-  for (let i = 1; i < samples.length; i++) dist.push(dist[i - 1] + Math.hypot(samples[i].x - samples[i - 1].x, samples[i].y - samples[i - 1].y));
-  // Reduced motion: the same path, flown three times as fast.
-  const total = dist[dist.length - 1], speed = G.reduced() ? 900 : 300, D = (total / speed) * 1000, t0 = performance.now();
-  let px = samples[0].x, py = samples[0].y, j = 0;
+  const T = G.rel(G.$(".bt-tts-b"), 0.3, 0.5), st = G.playRect();
+  const sx = -40, sy = T.y - 20 + (Math.random() * 60 - 30), tx = T.x - 10, ty = T.y;
+  const room = Math.min(T.y - (st.y - st.h / 2) - 20, (st.y + st.h / 2) - T.y - 20, 130);
+  // S height (random, flips up or down); reduced motion flies a gentle glide instead.
+  // The duration stays the same either way, so times stay comparable.
+  const A = (G.reduced() ? 0.25 : 1) * Math.max(40, room * (0.55 + Math.random() * 0.45)) * (Math.random() < 0.5 ? 1 : -1);
+  const loops = 1 + Math.random() * 0.6;                 // one S, sometimes a bit more
+  const D = 2600 + Math.random() * 2400, t0 = performance.now();
+  let px = sx, py = sy;
   const step = (t) => {
-    const k = Math.min(1, (t - t0) / D), d = k * total;
-    while (j < dist.length - 2 && dist[j + 1] < d) j++;
-    const f = (d - dist[j]) / Math.max(1e-6, dist[j + 1] - dist[j]);
-    const x = samples[j].x + (samples[j + 1].x - samples[j].x) * f + Math.sin(t / 90) * 3;
-    const y = samples[j].y + (samples[j + 1].y - samples[j].y) * f + Math.cos(t / 70) * 3;
+    const k = Math.min(1, (t - t0) / D), e = k < 0.5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+    const x = sx + (tx - sx) * e + Math.sin(t / 110) * 2.5;
+    const y = sy + (ty - sy) * k + A * Math.sin(k * Math.PI * 2 * loops) * (1 - Math.pow(k, 3)) + Math.cos(t / 80) * 2.5;
     const ang = (Math.atan2(y - py, x - px) * 180) / Math.PI; px = x; py = y;
     b.style.transform = `translate(${x - 13}px, ${y - 13}px) rotate(${ang}deg)`;
     if (k < 1) S.raf = requestAnimationFrame(step); else hit(G, b, x, y);
@@ -44,7 +32,7 @@ export function flyBug(G) {
 
 function hit(G, b, x, y) {
   const { root, SFX } = G;
-  G.resume(); SFX.zap();
+  SFX.zap();
   const s = document.createElement("span");
   s.className = "bt-tts-zapspark"; s.style.left = x + 8 + "px"; s.style.top = y + "px";
   root.append(s); setTimeout(() => s.remove(), 500);

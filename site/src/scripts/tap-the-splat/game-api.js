@@ -8,17 +8,18 @@
 // there and votes are visual only).
 import { isProduction } from "../../lib/env.js";
 
+// [member, seconds, date of the run]
 const PREVIEW_BOARDS = {
-  desktop: [["CryptRat", 41.31], ["Hexxy", 44.82], ["Vexa", 47.25], ["Dredd", 49.90], ["RavenByte", 52.64], ["GhoulKid", 55.13], ["Mortis", 58.47], ["NoLights", 63.72], ["Wisp", 71.08], ["Banshee", 79.55]],
-  mobile: [["Vexa", 52.10], ["Wisp", 57.44], ["GhoulKid", 61.03], ["Banshee", 64.90], ["Hexxy", 68.21], ["Mortis", 73.66], ["NoLights", 77.02], ["Dredd", 81.35], ["CryptRat", 85.70], ["RavenByte", 92.18]],
+  desktop: [["CryptRat", 41.31, "2026-09-26"], ["Hexxy", 44.82, "2026-09-27"], ["Vexa", 47.25, "2026-09-24"], ["Dredd", 49.90, "2026-09-27"], ["RavenByte", 52.64, "2026-09-22"], ["GhoulKid", 55.13, "2026-09-25"], ["Mortis", 58.47, "2026-09-21"], ["NoLights", 63.72, "2026-09-26"], ["Wisp", 71.08, "2026-09-23"], ["Banshee", 79.55, "2026-09-20"]],
+  mobile: [["Vexa", 52.10, "2026-09-27"], ["Wisp", 57.44, "2026-09-26"], ["GhoulKid", 61.03, "2026-09-24"], ["Banshee", 64.90, "2026-09-27"], ["Hexxy", 68.21, "2026-09-23"], ["Mortis", 73.66, "2026-09-25"], ["NoLights", 77.02, "2026-09-22"], ["Dredd", 81.35, "2026-09-21"], ["CryptRat", 85.70, "2026-09-26"], ["RavenByte", 92.18, "2026-09-20"]],
 };
 const PREVIEW_VOTES = { liked: 128, wantMore: 94 };
 
-/** Top 10 for "desktop" or "mobile": { preview, rows: [{ name, secs }] }, or null (none yet). */
+/** Top 10 for "desktop" or "mobile": { preview, rows: [{ name, secs, date }] } (date: YYYY-MM-DD), or null (none yet). */
 export async function getBoard(device) {
   // TODO: milestone 2: read sites/{siteId}/games/tapTheSplat/boards/{device}.
   if (isProduction) return null;
-  return { preview: true, rows: (PREVIEW_BOARDS[device] || []).map(([name, secs]) => ({ name, secs })) };
+  return { preview: true, rows: (PREVIEW_BOARDS[device] || []).map(([name, secs, date]) => ({ name, secs, date })) };
 }
 
 /** A finished run: { device, secs, penalties, completed, reached }. Not stored yet. */

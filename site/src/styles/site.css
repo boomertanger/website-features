@@ -42,6 +42,8 @@
 @media (max-width: 640px) {
   .bt-root:not(#_) .bt-tabbar.bt-site-tabbar { display: grid; position: fixed; left: 0; right: 0; bottom: 0; z-index: 40; }
   .bt-root:not(#_) .bt-site-frame { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  /* The footer game scrolls to the footer's bottom; stop above the tab bar. */
+  .bt-root:not(#_) .bt-site-footer { scroll-margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
   .bt-root:not(#_) .bt-menu-sheet.bt-site-more {
     display: flex; position: fixed; left: 0; right: 0; z-index: 39;
     bottom: calc(66px + env(safe-area-inset-bottom, 0px));

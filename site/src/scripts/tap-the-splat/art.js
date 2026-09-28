@@ -4,7 +4,8 @@
 
 const f = (fill, stroke, sw) => `style="fill:var(--tts-${fill})${stroke ? `;stroke:var(--tts-${stroke})` : ""}"${sw ? ` stroke-width="${sw}"` : ""}`;
 
-export const FUSE_PATH = "M8 14 C 30 2, 44 34, 64 20 S 96 2, 104 30 S 130 58, 150 40 S 178 30, 186 58 S 196 78, 198 86";
+// The fuse ends at the bomb's cap (bottom-right corner of the viewBox).
+export const FUSE_PATH = "M8 14 C 30 2, 44 34, 64 20 S 96 2, 104 30 S 130 58, 150 40 S 178 30, 188 62 S 199 84, 200 92";
 
 const SKULL = `<svg viewBox="0 0 22 26" aria-hidden="true"><path d="M11 3c5 0 8 3.4 8 7.6 0 2.6-1.2 4.2-2.6 5.2v3.2c0 .8-.7 1.5-1.5 1.5H7.1c-.8 0-1.5-.7-1.5-1.5v-3.2C4.2 14.8 3 13.2 3 10.6 3 6.4 6 3 11 3z" ${f("bone", "bone-edge", ".8")}/><circle cx="8" cy="11" r="2.2" ${f("socket")}/><circle cx="14" cy="11" r="2.2" ${f("socket")}/><path d="M11 13.3l-1.1 2h2.2z" ${f("socket")}/><path d="M8.3 20.4v-2.2M11 20.4v-2.2M13.7 20.4v-2.2" style="fill:none;stroke:var(--tts-bone-edge)" stroke-width=".8"/></svg>`;
 
@@ -20,7 +21,7 @@ export const FIREFLY = `<svg viewBox="0 0 26 26" aria-hidden="true"><ellipse cla
 
 const BREAKER = `<svg viewBox="0 0 34 48" aria-hidden="true"><rect x="1" y="1" width="32" height="46" rx="4" ${f("box", "box-edge", "1.2")}/><rect x="7" y="8" width="20" height="30" rx="3" ${f("box-slot", "box-slot-edge", "1")}/><g class="lever"><rect x="12" y="10" width="10" height="14" rx="2.5" ${f("lever", "lever-edge", "1")}/></g><circle class="led" cx="17" cy="42" r="2"/><text x="17" y="35" font-size="5" text-anchor="middle" font-family="monospace" ${f("lever-edge")}>ON</text></svg>`;
 
-const fuse = (gid) => `<svg class="bt-tts-fuse" viewBox="0 0 200 90" aria-hidden="true"><defs><mask id="bt-tts-fm-${gid}" maskUnits="userSpaceOnUse"><path class="f-mk" d="${FUSE_PATH}" stroke-width="9" fill="none" stroke-linecap="round"/></mask></defs><g mask="url(#bt-tts-fm-${gid})"><path class="f-rope" d="${FUSE_PATH}"/><path class="f-braid" d="${FUSE_PATH}"/></g><path class="f-hit" data-tts-g="fuse" d="${FUSE_PATH}"/><g class="f-fx"></g><circle class="f-cut" r="9"/><circle class="f-spark" r="4.5"/><g class="f-sparkg"><path class="f-spark2" d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2Z"/></g></svg>`;
+const fuse = (gid) => `<svg class="bt-tts-fuse" viewBox="0 0 200 90" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><defs><mask id="bt-tts-fm-${gid}" maskUnits="userSpaceOnUse"><path class="f-mk" d="${FUSE_PATH}" stroke-width="9" fill="none" stroke-linecap="round"/></mask></defs><g mask="url(#bt-tts-fm-${gid})"><path class="f-rope" d="${FUSE_PATH}"/><path class="f-braid" d="${FUSE_PATH}"/></g><path class="f-hit" data-tts-g="fuse" d="${FUSE_PATH}"/><g class="f-fx"></g><circle class="f-cut" r="9"/><circle class="f-spark" r="4.5"/><g class="f-sparkg"><path class="f-spark2" d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2Z"/></g></svg>`;
 
 const html = (s) => { const t = document.createElement("template"); t.innerHTML = s.trim(); return t.content; };
 

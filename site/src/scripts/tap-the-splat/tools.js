@@ -54,7 +54,7 @@ export function showBreaker(G) {
 const cordAnchor = (G) => G.rel(G.$(".bt-tts-tanger span:last-child"), 0.5, 0.92);
 function drawCord(G, p) {
   const a = cordAnchor(G), sag = Math.max(30, Math.hypot(p.x - a.x, p.y - a.y) * 0.35);
-  G.$(".bt-tts-cord path").setAttribute("d", `M${a.x},${a.y} C ${a.x},${a.y + sag} ${p.x},${p.y + 14 + sag * 0.6} ${p.x},${p.y + 12}`);
+  G.$(".bt-tts-cord path").setAttribute("d", `M${a.x},${a.y} C ${a.x},${a.y + sag} ${p.x},${p.y + 14 + sag * 0.6} ${p.x},${p.y + 13}`);
 }
 function freeSpot(G, xr, yr, avoid) {
   const cards = G.cards().map((c) => G.rel(c)), hub = G.rel(G.$(".bt-tts-splat")), far = G.isPhone() ? 150 : 260;

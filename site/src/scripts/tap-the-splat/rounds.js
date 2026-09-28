@@ -4,12 +4,13 @@
 import { showBreaker, startPlug, showTool, dropTool } from "./tools.js";
 import { startBomb } from "./bomb.js";
 
-// Round 3: pull the skull. Flicker stops, the chain goes, Contact and Follow appear.
+// Round 3: pull the skull. Flicker stops, the chain goes, Contact and Follow appear
+// and the page scrolls to the bottom of the footer.
 export function pullChain(G) {
   const { SFX } = G, ch = G.$(".bt-tts-chain");
   SFX.chainpull(); ch.classList.add("is-pull");
   G.progress(20); G.phase("post-chain"); G.setA("flicker", null);
-  G.later(() => { ch.classList.remove("is-pull"); G.setA("chain", "done"); G.enable(ch, false); G.setA("cf", "1"); SFX.clink(); }, 650);
+  G.later(() => { ch.classList.remove("is-pull"); G.setA("chain", "done"); G.enable(ch, false); G.setA("cf", "1"); SFX.clink(); G.toBottom(560); }, 650);
   G.later(() => showBreaker(G), 1600);
 }
 

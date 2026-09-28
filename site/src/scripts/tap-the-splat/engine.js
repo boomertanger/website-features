@@ -23,7 +23,7 @@ export function createGame(root) {
   const gid = ++GID;
   mountPieces(root, gid);
 
-  const S = { phase: "idle", pen: 0, paused: 0, pauseAt: 0, prog: 0, t0: 0, got: new Set(), timers: [], raf: 0, clock: 0, catches: 0, hot: null, held: null, loose: new Set(), cutWarned: false, device: "desktop", sock: null, plugP: null, fuseK: 0 };
+  const S = { phase: "idle", pen: 0, prog: 0, t0: 0, got: new Set(), timers: [], raf: 0, clock: 0, catches: 0, hot: null, held: null, loose: new Set(), cutWarned: false, device: "desktop", sock: null, plugP: null, fuseK: 0 };
   const $ = (s) => root.querySelector(s), $$ = (s) => [...root.querySelectorAll(s)];
   const { SFX, hissStart, hissStop } = createSounds(root);
 
@@ -48,10 +48,10 @@ export function createGame(root) {
     fmtTime,
   };
 
-  /** Run time in seconds: wall clock minus firefly pauses, plus penalties. */
-  G.elapsed = () => { const now = performance.now(); return (now - S.t0 - S.paused - (S.pauseAt ? now - S.pauseAt : 0)) / 1000 + S.pen; };
-  G.pause = () => { S.pauseAt = performance.now(); };
-  G.resume = () => { if (S.pauseAt) { S.paused += performance.now() - S.pauseAt; S.pauseAt = 0; } };
+  /** Run time in seconds: wall clock plus penalties. The clock never pauses. */
+  G.elapsed = () => (performance.now() - S.t0) / 1000 + S.pen;
+  /** Smooth scroll so the bottom of the footer is in view (first tap, after the chain). */
+  G.toBottom = (ms = 520) => G.later(() => (root.closest("footer") || root).scrollIntoView({ block: "end", behavior: G.reduced() ? "auto" : "smooth" }), ms);
 
   const meter = $(".bt-tts-meter");
   G.draw = () => {
@@ -89,7 +89,7 @@ export function createGame(root) {
   G.reset = () => {
     G.clearTimers(); cancelAnimationFrame(S.raf); G.stopClock(); hissStop();
     ["links", "flicker", "chain", "cf", "tstate", "bomb", "fuse", "end", "finish", "plug", "breaker", "dark"].forEach((k) => G.setA(k, null));
-    Object.assign(S, { pen: 0, paused: 0, pauseAt: 0, prog: 0, catches: 0, hot: null, endAt: null });
+    Object.assign(S, { pen: 0, prog: 0, catches: 0, hot: null, endAt: null });
     S.got.clear(); S.loose.clear();
     dropTool(G); G.phase("idle"); G.draw();
     $("[data-tm]").textContent = "0:00.00";
@@ -108,7 +108,7 @@ export function createGame(root) {
     S.t0 = performance.now(); S.device = G.isPhone() ? "mobile" : "desktop";
     G.phase("p1"); G.setA("links", "1"); G.progress(5);
     G.stopClock(); S.clock = setInterval(() => { $("[data-tm]").textContent = fmtTime(G.elapsed()); }, 47);
-    G.later(() => flyBug(G), 1100);
+    G.later(() => flyBug(G), 1100); G.toBottom();
   };
 
   /** Tapping the splat mid-game (or closing an end screen): collapse back to idle. */
