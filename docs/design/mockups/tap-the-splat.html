@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Tap the Splat v6</title>
+<title>Footer look variations</title>
 <meta name="color-scheme" content="dark">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -2395,6 +2395,134 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
   .bt-root:not(#_) .g-lb .list { max-height: none; }
 }
 </style>
+<style>
+/* more breathing room around the splat */
+.bt-root:not(#_) .g-stage { height: 390px; }
+.bt-root:not(#_) .game[data-links="1"] .g-stage { height: 520px; }
+.bt-root:not(#_) .g-hub { top: 195px; }
+.bt-root:not(#_) .game[data-links="1"] .g-hub { top: 258px; }
+.bt-root:not(#_) .g-ring .qd { top: calc(258px + var(--y) * 1px - 21px); }
+/* leaderboard date column */
+.bt-root:not(#_) .g-lb .list { width: 300px; }
+.bt-root:not(#_) .g-lb .row { grid-template-columns: 20px 1fr 52px 62px; }
+.bt-root:not(#_) .g-lb .row.hd { font-size: 9px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bt-text-faint); border-top: 0; padding-bottom: 2px; }
+.bt-root:not(#_) .g-lb .row.hd .s { color: var(--bt-text-faint); }
+.bt-root:not(#_) .g-lb .row .s { text-align: right; }
+.bt-root:not(#_) .g-lb .row .t { font-size: 11px; }
+/* fuse meets the bomb */
+.bt-root:not(#_) .g-fuse { bottom: calc(48% + .17em); right: calc(50% - .01em); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .g-hub, .bt-root:not(#_) .game[data-links="1"] .g-hub { margin-top: 34px !important; margin-bottom: 26px; }
+  /* sound + trophy top right */
+  .bt-root:not(#_) .g-top { display: grid; grid-template-columns: 1fr auto auto; align-items: center; gap: 10px 8px; }
+  .bt-root:not(#_) .g-top .g-title { grid-column: 1; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-sound { grid-column: 2; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-lb { grid-column: 3; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-meter { grid-column: 1 / -1; grid-row: 2; }
+  .bt-root:not(#_) .g-top .g-arcade { grid-column: 1 / -1; grid-row: 3; justify-self: start; }
+  .bt-root:not(#_) .g-top .sp { display: none; }
+  .bt-root:not(#_) .g-lb .list { width: auto; }
+}
+</style>
+<style>.bt-root:not(#_) .game[data-plug="in"] .g-cord { z-index: 7; }</style>
+<style>@container bt (max-width: 640px) { .bt-root:not(#_) .g-stage, .bt-root:not(#_) .game[data-links="1"] .g-stage { height: auto; } .bt-root:not(#_) .g-meter .bar { width: 160px; } }</style>
+<style>
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .g-top { grid-template-columns: auto 1fr auto; gap: 10px; }
+  .bt-root:not(#_) .g-top .g-title { grid-column: 1; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-meter { grid-column: 2; grid-row: 1; justify-self: stretch; gap: 6px; }
+  .bt-root:not(#_) .g-top .g-meter .bar { width: auto; flex: 1; min-width: 40px; }
+  .bt-root:not(#_) .g-top .g-meter .pct { min-width: 30px; font-size: 12px; }
+  .bt-root:not(#_) .g-top .g-sound { grid-column: 3; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-lb { grid-column: 3; grid-row: 2; justify-self: center; }
+  .bt-root:not(#_) .g-top .g-lb > button { width: 32px; height: 32px; padding: 0; justify-content: center; border-radius: 50%; }
+  .bt-root:not(#_) .g-top .g-arcade { grid-column: 1 / 3; grid-row: 2; }
+  .bt-root:not(#_) .game[data-clock="play"][data-phase="idle"] .g-top .g-arcade { display: none; }
+  .bt-root:not(#_) .g-title.tB { font-size: 17px; }
+}
+</style>
+<style>
+/* power-up: one smooth rise to a steady glow, no pulsing (plain rgba so every browser interpolates it) */
+.bt-root:not(#_) .game[data-tstate="glow"] .g-tanger { animation: powerup2 1100ms cubic-bezier(.45,0,.25,1) forwards; }
+.bt-root:not(#_) .game[data-tstate="glow"] .g-tanger span { transition: none; }
+@keyframes powerup2 {
+  0%   { color: rgb(59, 59, 63);   text-shadow: 0 0 0 rgba(255, 161, 0, 0), 0 0 0 rgba(255, 161, 0, 0), 0 0 0 rgba(255, 161, 0, 0); }
+  35%  { color: rgb(120, 92, 36);  text-shadow: 0 0 4px rgba(255, 161, 0, .25), 0 0 8px rgba(255, 161, 0, .1), 0 0 0 rgba(255, 161, 0, 0); }
+  70%  { color: rgb(255, 200, 90); text-shadow: 0 0 8px rgba(255, 161, 0, .75), 0 0 18px rgba(255, 161, 0, .5), 0 0 30px rgba(255, 161, 0, .25); }
+  100% { color: rgb(255, 228, 170); text-shadow: 0 0 10px rgba(255, 161, 0, .95), 0 0 26px rgba(255, 161, 0, .8), 0 0 46px rgba(255, 161, 0, .5); }
+}
+</style>
+<style>
+/* ===== Footer look variations (desktop only; phones keep the current look) ===== */
+@container bt (min-width: 641px) {
+  /* shared: keep the top bar on the page's content width, not the screen edges */
+  .bt-root:not(#_) .game[data-look]:not([data-look="l0"]) .g-top { max-width: 1180px; margin-left: auto; margin-right: auto; }
+  .bt-root:not(#_) .game[data-look]:not([data-look="l0"]) > .g-stage, .bt-root:not(#_) .game[data-look]:not([data-look="l0"]) > .g-cf, .bt-root:not(#_) .game[data-look]:not([data-look="l0"]) > .g-ring-phone { position: relative; z-index: 1; }
+  .bt-root:not(#_) .game[data-look]:not([data-look="l0"]) > .g-top { position: relative; z-index: 6; }
+  .bt-root:not(#_) .game[data-look]:not([data-look="l0"])::before, .bt-root:not(#_) .game[data-look]:not([data-look="l0"])::after { content: ""; position: absolute; pointer-events: none; z-index: 0; }
+
+  /* L1 contained stage: the game sits in a framed panel on the content width */
+  .bt-root:not(#_) .game[data-look="l1"] { padding-top: 30px; padding-bottom: 30px; }
+  .bt-root:not(#_) .game[data-look="l1"]::before { inset: 12px max(var(--bt-gutter), calc(50% - 610px)); border-radius: 28px; border: 1px solid var(--bt-border-2);
+    background: radial-gradient(55% 45% at 50% 48%, rgba(255, 31, 45, .10), transparent 70%), linear-gradient(180deg, rgba(255,255,255,.025), rgba(255,255,255,0) 40%), #0b0b0c;
+    box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 30px 60px rgba(0,0,0,.45); }
+  .bt-root:not(#_) .game[data-look="l1"] .g-top { padding: 6px 26px 0; }
+
+  /* L2 blood drip edge: a darker basement with a dripping top border and a glow behind the splat */
+  .bt-root:not(#_) .game[data-look="l2"] { background: #070707; padding-top: 56px; }
+  .bt-root:not(#_) .game[data-look="l2"]::before { left: 0; right: 0; top: 0; height: 48px; background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22240%22%20height%3D%2248%22%20viewBox%3D%220%200%20240%2048%22%3E%3Cg%20fill%3D%22%23b3121b%22%3E%3Crect%20width%3D%22240%22%20height%3D%227%22/%3E%3Cpath%20d%3D%22M4.8%205%20L5.8%2010%20Q8%2015.5%2010.2%2010%20L11.2%205%20Z%22/%3E%3Ccircle%20cx%3D%228%22%20cy%3D%2211%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M22.8%205%20L23.8%2022%20Q26%2027.5%2028.2%2022%20L29.2%205%20Z%22/%3E%3Ccircle%20cx%3D%2226%22%20cy%3D%2223%22%20r%3D%222.6%22/%3E%3Cpath%20d%3D%22M36.8%205%20L37.8%208%20Q40%2013.5%2042.2%208%20L43.2%205%20Z%22/%3E%3Ccircle%20cx%3D%2240%22%20cy%3D%229%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M54.8%205%20L55.8%2034%20Q58%2039.5%2060.2%2034%20L61.2%205%20Z%22/%3E%3Ccircle%20cx%3D%2258%22%20cy%3D%2235%22%20r%3D%222.6%22/%3E%3Cpath%20d%3D%22M70.8%205%20L71.8%2012%20Q74%2017.5%2076.2%2012%20L77.2%205%20Z%22/%3E%3Ccircle%20cx%3D%2274%22%20cy%3D%2213%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M88.8%205%20L89.8%2018%20Q92%2023.5%2094.2%2018%20L95.2%205%20Z%22/%3E%3Ccircle%20cx%3D%2292%22%20cy%3D%2219%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M106.8%205%20L107.8%2040%20Q110%2045.5%20112.2%2040%20L113.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22110%22%20cy%3D%2241%22%20r%3D%222.6%22/%3E%3Cpath%20d%3D%22M124.8%205%20L125.8%2010%20Q128%2015.5%20130.2%2010%20L131.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22128%22%20cy%3D%2211%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M142.8%205%20L143.8%2024%20Q146%2029.5%20148.2%2024%20L149.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22146%22%20cy%3D%2225%22%20r%3D%222.6%22/%3E%3Cpath%20d%3D%22M156.8%205%20L157.8%208%20Q160%2013.5%20162.2%208%20L163.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22160%22%20cy%3D%229%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M174.8%205%20L175.8%2030%20Q178%2035.5%20180.2%2030%20L181.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22178%22%20cy%3D%2231%22%20r%3D%222.6%22/%3E%3Cpath%20d%3D%22M192.8%205%20L193.8%2014%20Q196%2019.5%20198.2%2014%20L199.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22196%22%20cy%3D%2215%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M210.8%205%20L211.8%2020%20Q214%2025.5%20216.2%2020%20L217.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22214%22%20cy%3D%2221%22%20r%3D%222.1%22/%3E%3Cpath%20d%3D%22M226.8%205%20L227.8%209%20Q230%2014.5%20232.2%209%20L233.2%205%20Z%22/%3E%3Ccircle%20cx%3D%22230%22%20cy%3D%2210%22%20r%3D%222.1%22/%3E%3C/g%3E%3Crect%20width%3D%22240%22%20height%3D%222%22%20fill%3D%22%23ff2a36%22%20opacity%3D%22.5%22/%3E%3C/svg%3E") repeat-x 0 0 / 240px 48px; filter: drop-shadow(0 3px 4px rgba(0,0,0,.6)); }
+  .bt-root:not(#_) .game[data-look="l2"]::after { left: 50%; top: 42%; width: 900px; height: 560px; transform: translate(-50%, -50%); background: radial-gradient(closest-side, rgba(200, 16, 30, .16), rgba(120, 10, 20, .06) 55%, transparent 100%); }
+
+  /* L3 spotlight: pitch black with a cone of light on the splat and a HUD strip for the game bar */
+  .bt-root:not(#_) .game[data-look="l3"] { background: #040404; }
+  .bt-root:not(#_) .game[data-look="l3"]::before { left: 50%; top: 0; width: 1000px; height: 100%; transform: translateX(-50%); background: radial-gradient(38% 70% at 50% 0%, rgba(255, 236, 214, .09), rgba(255, 236, 214, .03) 45%, transparent 75%); }
+  .bt-root:not(#_) .game[data-look="l3"]::after { left: 10%; right: 10%; bottom: 58px; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent); }
+  .bt-root:not(#_) .game[data-look="l3"] .g-top { padding: 10px 16px; border: 1px solid #1d1d22; border-radius: 12px; background: linear-gradient(180deg, #0d0d10, #08080a); box-shadow: inset 0 1px 0 rgba(255,255,255,.03); }
+  .bt-root:not(#_) .game[data-look="l3"] .g-splat img { filter: brightness(1.12) saturate(1.4) drop-shadow(0 18px 30px rgba(0,0,0,.8)); }
+
+  /* L4 wall: the splat looks sprayed on a dark concrete wall */
+  .bt-root:not(#_) .game[data-look="l4"] { background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22160%22%20height%3D%22160%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.9%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20values%3D%220%200%200%200%201%20%200%200%200%200%201%20%200%200%200%200%201%20%200%200%200%20.09%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22160%22%20height%3D%22160%22%20filter%3D%22url%28%23n%29%22/%3E%3C/svg%3E"), radial-gradient(120% 90% at 50% 40%, #1d1c1f, #111013 70%, #0a0a0b); }
+  .bt-root:not(#_) .game[data-look="l4"]::before { inset: 0; background: repeating-linear-gradient(0deg, transparent 0 63px, rgba(0,0,0,.35) 63px 65px), repeating-linear-gradient(90deg, transparent 0 127px, rgba(0,0,0,.22) 127px 129px); opacity: .5; -webkit-mask: radial-gradient(70% 80% at 50% 45%, #000 30%, transparent 85%); mask: radial-gradient(70% 80% at 50% 45%, #000 30%, transparent 85%); }
+  .bt-root:not(#_) .game[data-look="l4"]::after { inset: 0; box-shadow: inset 0 40px 60px -30px #000, inset 0 -40px 60px -30px #000; }
+  .bt-root:not(#_) .game[data-look="l4"] .g-splat img { filter: brightness(1.0) saturate(1.25); mix-blend-mode: normal; }
+
+  /* L5 light (bone paper): an honest test of a light footer */
+  .bt-root:not(#_) .game[data-look="l5"] { --bt-bg: #ebe4d6; --bt-surface: #f5f0e6; --bt-surface-2: #e2d9c7; --bt-border: #d3c8b2; --bt-border-2: #c4b79c; --bt-text: #1b1714; --bt-text-muted: #5b5146; --bt-text-faint: #8a7d6c; --bt-title: #a45f00; --bt-primary: #6d28d9; --bt-primary-soft: #5b21b6; --bt-primary-bg: rgba(109,40,217,.1);
+    background: url("data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A//www.w3.org/2000/svg%22%20width%3D%22160%22%20height%3D%22160%22%3E%3Cfilter%20id%3D%22n%22%3E%3CfeTurbulence%20type%3D%22fractalNoise%22%20baseFrequency%3D%22.85%22%20numOctaves%3D%223%22%20stitchTiles%3D%22stitch%22/%3E%3CfeColorMatrix%20values%3D%220%200%200%200%200%20%200%200%200%200%200%20%200%200%200%200%200%20%200%200%200%20.12%200%22/%3E%3C/filter%3E%3Crect%20width%3D%22160%22%20height%3D%22160%22%20filter%3D%22url%28%23n%29%22/%3E%3C/svg%3E"), #ebe4d6; color: var(--bt-text); }
+  .bt-root:not(#_) .game[data-look="l5"] .g-wm { text-shadow: none; color: #16120f; }
+  .bt-root:not(#_) .game[data-look="l5"] .g-tag { text-shadow: none; }
+  .bt-root:not(#_) .game[data-look="l5"] .g-title.tB { color: #c1121f; text-shadow: none; }
+  .bt-root:not(#_) .game[data-look="l5"] .g-splat img { filter: saturate(1.2) contrast(1.05); }
+  .bt-root:not(#_) .game[data-look="l5"] .qd { background: #f7f2e9; border-color: #d8ccb6; box-shadow: 0 2px 6px rgba(60,40,20,.08); }
+  .bt-root:not(#_) .game[data-look="l5"] .qd .ic { background: #ece3d3; }
+  .bt-root:not(#_) .game[data-look="l5"] .g-arcade .cell { box-shadow: none; }
+}
+</style><style>
+@container bt (min-width: 641px) {
+  .bt-root:not(#_) footer:has(.game[data-look="l2"]) { background: #070707; }
+  .bt-root:not(#_) footer:has(.game[data-look="l3"]) { background: #040404; }
+  .bt-root:not(#_) footer:has(.game[data-look="l4"]) { background: #0a0a0b; }
+  .bt-root:not(#_) footer:has(.game[data-look="l5"]) { background: #ebe4d6; }
+  .bt-root:not(#_) footer:has(.game[data-look="l5"]) .legal { border-color: #d3c8b2; color: #8a7d6c; }
+  .bt-root:not(#_) footer:has(.game[data-look="l5"]) .legal a { color: #8a7d6c; }
+}
+</style>
+<style>@container bt (min-width: 641px) { .bt-root:not(#_) .game[data-look="l3"]::after { display: none; } .bt-root:not(#_) .game[data-look="l3"]::before { background: radial-gradient(40% 72% at 50% 0%, rgba(255, 236, 214, .12), rgba(255, 236, 214, .04) 45%, transparent 75%); } }</style>
+<style>
+.bt-root:not(#_).frame-desktop, .bt-root:not(#_).frame-phone { --bt-content-max: 900px; }
+.bt-root:not(#_) .demo-wrap { max-width: var(--bt-content-max); margin: 0 auto; }
+.bt-root:not(#_) .demo-grid { display: grid; grid-template-columns: 1fr 1fr 1.2fr; gap: 14px; }
+.bt-root:not(#_) .demo-grid .bt-card { min-height: 70px; }
+.bt-root:not(#_) .ft-demo { padding-top: 26px; padding-bottom: 34px; min-height: 0; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .demo-grid { grid-template-columns: 1fr; } }
+@container bt (min-width: 641px) {
+  /* L3 aligned: the game bar and legal row share the bento content width; hairline bookend at the top */
+  .bt-root:not(#_) .game[data-look="l3"]:not([data-look="l0"]) .g-top { max-width: var(--bt-content-max); box-sizing: border-box; }
+  .bt-root:not(#_) footer:has(.game[data-look="l3"]) { border-top: 1px solid var(--bt-border); }
+  .bt-root:not(#_) footer:has(.game[data-look="l3"]) > div:last-child { max-width: var(--bt-content-max); margin-left: auto; margin-right: auto; padding-left: 0 !important; padding-right: 0 !important; }
+  .bt-root:not(#_) .game[data-look="l3"] { padding-top: 26px; }
+}
+</style>
 <body data-live="off" data-auth="member" data-view="both">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -2416,19 +2544,19 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
 
 <div class="bt-root page">
   <header class="pg-intro">
-    <h1 class="bt-title">Tap the Splat v6</h1>
-    <p>Time to the hundredth, separate desktop and mobile leaderboards, the chain drops the moment the bug hits (so everyone can reach Contact and Follow), a breaker switch that starts the game only if you want to play, a cord that runs from the R to a plug below with the outlet somewhere above, three win/lose screen styles, a brighter pulsing splat and a redder title.</p>
+    <h1 class="bt-title">Footer look variations</h1>
+    <p>Six takes on the footer's look on desktop (phones keep today's look). Every new option also pins the game bar to the page's content width instead of the screen edges. Switch Footer look in the pinned bar, and tap the splat to see each one expanded.</p>
   </header>
   <div class="pg-controls" role="group" aria-label="Preview controls">
     
-    <div class="pg-ctl"><span class="bt-label">Scoreboard</span><button class="bt-chip bt-chip--small is-active" data-gcol="white">White</button><button class="bt-chip bt-chip--small" data-gcol="yellow">Yellow</button></div><div class="pg-ctl"><span class="bt-label">Bomb</span><button class="bt-chip bt-chip--small is-active" data-gbomb="classic">Classic</button><button class="bt-chip bt-chip--small" data-gbomb="count">Countdown</button><button class="bt-chip bt-chip--small" data-gbomb="heat">Heating up</button></div><div class="pg-ctl"><span class="bt-label">Chain</span><button class="bt-chip bt-chip--small" data-gchain="cA">Ball chain</button><button class="bt-chip bt-chip--small" data-gchain="cB">Pull cord</button><button class="bt-chip bt-chip--small is-active" data-gchain="cC">Bones and skull</button></div><div class="pg-ctl"><span class="bt-label">Bug</span><button class="bt-chip bt-chip--small" data-gbug="fly">Fly</button><button class="bt-chip bt-chip--small is-active" data-gbug="firefly">Firefly</button></div><div class="pg-ctl"><span class="bt-label">Clock</span><button class="bt-chip bt-chip--small is-active" data-gclock="play">Only while playing</button><button class="bt-chip bt-chip--small" data-gclock="always">Always</button></div><div class="pg-ctl"><span class="bt-label">End screen</span><button class="bt-chip bt-chip--small" data-gmodal="m1">Classic</button><button class="bt-chip bt-chip--small" data-gmodal="m2">Arcade</button><button class="bt-chip bt-chip--small is-active" data-gmodal="m3">Splatter</button></div><div class="pg-ctl"><span class="bt-label">Viewer</span><button class="bt-chip bt-chip--small" data-set="auth" data-val="out">Visitor</button><button class="bt-chip bt-chip--small is-active" data-set="auth" data-val="member">Member</button></div><div class="pg-ctl"><span class="bt-label">Jump to</span><button class="bt-chip bt-chip--small" data-gj="reset">Reset</button><button class="bt-chip bt-chip--small" data-gj="bug">Bug</button><button class="bt-chip bt-chip--small" data-gj="chain">Chain</button><button class="bt-chip bt-chip--small" data-gj="links">Breaker</button><button class="bt-chip bt-chip--small" data-gj="plug">Plug</button><button class="bt-chip bt-chip--small" data-gj="hammer">Hammer</button><button class="bt-chip bt-chip--small" data-gj="danger">Danger</button><button class="bt-chip bt-chip--small" data-gj="chase">Final round</button><button class="bt-chip bt-chip--small" data-gj="win">Win screen</button><button class="bt-chip bt-chip--small" data-gj="lose">Lose screen</button></div>
+    <div class="pg-ctl"><span class="bt-label">Footer look</span><button class="bt-chip bt-chip--small" data-glook="l0">L0 Current</button><button class="bt-chip bt-chip--small" data-glook="l1">L1 Framed stage</button><button class="bt-chip bt-chip--small" data-glook="l2">L2 Blood drip edge</button><button class="bt-chip bt-chip--small is-active" data-glook="l3">L3 Spotlight (aligned)</button><button class="bt-chip bt-chip--small" data-glook="l4">L4 Concrete wall</button><button class="bt-chip bt-chip--small" data-glook="l5">L5 Light</button></div><div class="pg-ctl"><span class="bt-label">Scoreboard</span><button class="bt-chip bt-chip--small" data-gcol="white">White</button><button class="bt-chip bt-chip--small is-active" data-gcol="yellow">Yellow</button></div><div class="pg-ctl"><span class="bt-label">Bomb</span><button class="bt-chip bt-chip--small is-active" data-gbomb="classic">Classic</button><button class="bt-chip bt-chip--small" data-gbomb="count">Countdown</button><button class="bt-chip bt-chip--small" data-gbomb="heat">Heating up</button></div><div class="pg-ctl"><span class="bt-label">Chain</span><button class="bt-chip bt-chip--small" data-gchain="cA">Ball chain</button><button class="bt-chip bt-chip--small" data-gchain="cB">Pull cord</button><button class="bt-chip bt-chip--small is-active" data-gchain="cC">Bones and skull</button></div><div class="pg-ctl"><span class="bt-label">Bug</span><button class="bt-chip bt-chip--small" data-gbug="fly">Fly</button><button class="bt-chip bt-chip--small is-active" data-gbug="firefly">Firefly</button></div><div class="pg-ctl"><span class="bt-label">Clock</span><button class="bt-chip bt-chip--small is-active" data-gclock="play">Only while playing</button><button class="bt-chip bt-chip--small" data-gclock="always">Always</button></div><div class="pg-ctl"><span class="bt-label">End screen</span><button class="bt-chip bt-chip--small" data-gmodal="m1">Classic</button><button class="bt-chip bt-chip--small" data-gmodal="m2">Arcade</button><button class="bt-chip bt-chip--small is-active" data-gmodal="m3">Splatter</button></div><div class="pg-ctl"><span class="bt-label">Viewer</span><button class="bt-chip bt-chip--small" data-set="auth" data-val="out">Visitor</button><button class="bt-chip bt-chip--small is-active" data-set="auth" data-val="member">Member</button></div><div class="pg-ctl"><span class="bt-label">Jump to</span><button class="bt-chip bt-chip--small" data-gj="reset">Reset</button><button class="bt-chip bt-chip--small" data-gj="bug">Bug</button><button class="bt-chip bt-chip--small" data-gj="chain">Chain</button><button class="bt-chip bt-chip--small" data-gj="links">Breaker</button><button class="bt-chip bt-chip--small" data-gj="plug">Plug</button><button class="bt-chip bt-chip--small" data-gj="hammer">Hammer</button><button class="bt-chip bt-chip--small" data-gj="danger">Danger</button><button class="bt-chip bt-chip--small" data-gj="chase">Final round</button><button class="bt-chip bt-chip--small" data-gj="win">Win screen</button><button class="bt-chip bt-chip--small" data-gj="lose">Lose screen</button></div>
     <div class="pg-ctl"><span class="bt-label">View</span><button class="bt-chip bt-chip--small is-active" data-set="view" data-val="both">Side by side</button><button class="bt-chip bt-chip--small" data-set="view" data-val="phone">Phone</button><button class="bt-chip bt-chip--small" data-set="view" data-val="desktop">Desktop</button></div>
   </div>
   <section class="opt">
     <div class="opt-frames">
       <div><p class="frame-cap">Desktop</p><div class="frame-scroll"><div class="bt-root frame-desktop">
         <div class="bt-site-header"><span data-hdr-slot></span><nav class="bt-nav" aria-label="Main" data-slot="nav"></nav><span class="bt-spacer"></span><span data-slot="beacon"></span><div class="bt-account" data-slot="account"></div></div>
-        <div class="ft-demo"><h2 class="bt-title">Page content</h2><p>Scroll down to the footer.</p></div>
+        <div class="ft-demo"><div class="demo-wrap"><div class="demo-grid"><div class="bt-card"><h3 class="bt-card-title">Your to-dos</h3><p class="faint">Bento card</p></div><div class="bt-card"><h3 class="bt-card-title">Latest updates</h3><p class="faint">Bento card</p></div><div class="bt-card"><h3 class="bt-card-title">Boom Board</h3><p class="faint">Bento card</p></div></div></div></div>
         <div data-ftr-slot></div>
       </div></div></div>
       <div><p class="frame-cap">Phone</p><div class="bt-root frame-phone">
@@ -2711,7 +2839,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
   </div>`; };
 
   // =================== TAP THE SPLAT v2 ===================
-  let gColor = "white", gBomb = "classic", gChain = "cC", gBug = "firefly";
+  let gColor = "yellow", gBomb = "classic", gChain = "cC", gBug = "firefly";
   // ---- audio (synthesized, no files) ----
   const AU = { ctx: null, on: true, hiss: null };
   const silentWav = () => { const n = 4410, b = new ArrayBuffer(44 + n * 2), v = new DataView(b), w = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
@@ -2762,7 +2890,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
 
   const RING2 = [247.5, 202.5, 157.5, 112.5, 292.5, 337.5, 22.5, 67.5];
   const gRing2 = () => RING2.map((deg, i) => { const a = deg * Math.PI / 180; return qdX(i, `<span class="mark"></span>`, [Math.round(Math.cos(a) * 365), Math.round(Math.sin(a) * 196)]); }).join("");
-  const FUSE2 = "M8 14 C 30 2, 44 34, 64 20 S 96 2, 104 30 S 130 58, 150 40 S 178 30, 186 58 S 196 78, 198 86";
+  const FUSE2 = "M8 14 C 30 2, 44 34, 64 20 S 96 2, 104 30 S 130 58, 150 40 S 178 30, 188 62 S 199 84, 200 92";
   const DRIPS = { 1: [12, 0, 4.2], 4: [8, 1.6, 5], 6: [14, .8, 4.6], 8: [10, 2.4, 5.4], 11: [13, 1.2, 4.8] };
   const titleDrip = () => `<div class="g-title tB">${[..."TAP THE SPLAT"].map((ch, i) => ch === " " ? `<span class="lt sp1"></span>` : DRIPS[i] ? `<span class="lt" data-d style="--len:${DRIPS[i][0]}px;--dl:${DRIPS[i][1]}s;--dur:${DRIPS[i][2]}s">${ch}</span>` : `<span class="lt">${ch}</span>`).join("")}</div>`;
   const SKULL = `<svg viewBox="0 0 22 26"><path d="M11 3c5 0 8 3.4 8 7.6 0 2.6-1.2 4.2-2.6 5.2v3.2c0 .8-.7 1.5-1.5 1.5H7.1c-.8 0-1.5-.7-1.5-1.5v-3.2C4.2 14.8 3 13.2 3 10.6 3 6.4 6 3 11 3z" fill="#e9e1cf" stroke="#8d846f" stroke-width=".8"/><circle cx="8" cy="11" r="2.2" fill="#1a1a1a"/><circle cx="14" cy="11" r="2.2" fill="#1a1a1a"/><path d="M11 13.3l-1.1 2h2.2z" fill="#1a1a1a"/><path d="M8.3 20.4v-2.2M11 20.4v-2.2M13.7 20.4v-2.2" stroke="#8d846f" stroke-width=".8"/></svg>`;
@@ -2772,13 +2900,13 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
   const CUTTERS = `<svg viewBox="0 0 40 40"><g class="jaw1"><path d="M20 20 L6 11 L3 14 L18 22z" fill="#b8bec9" stroke="#5a606b" stroke-width="1"/></g><g class="jaw2"><path d="M20 20 L6 29 L3 26 L18 18z" fill="#aab1bd" stroke="#5a606b" stroke-width="1"/></g><path d="M20 19 C 26 16, 32 10, 37 9 L38 12 C 33 14, 27 19, 22 21z" fill="#d23b3b" stroke="#7a1d1d" stroke-width="1"/><path d="M20 21 C 26 24, 32 30, 37 31 L38 28 C 33 26, 27 21, 22 19z" fill="#e24b4b" stroke="#7a1d1d" stroke-width="1"/><circle cx="20" cy="20" r="2.4" fill="#e2e5ea" stroke="#5a606b"/></svg>`;
   const BUG_FLY = `<svg viewBox="0 0 26 26"><ellipse class="wing" cx="10" cy="9" rx="5" ry="3.5" fill="rgba(200,220,255,.55)" stroke="rgba(255,255,255,.5)" stroke-width=".5"/><ellipse class="wing" cx="15" cy="9" rx="5" ry="3.5" fill="rgba(200,220,255,.45)" stroke="rgba(255,255,255,.5)" stroke-width=".5"/><ellipse cx="13" cy="15" rx="5" ry="6" fill="#1d1d22"/><circle cx="18" cy="12" r="3.2" fill="#2a2a30"/><circle cx="19.4" cy="11" r="1.4" fill="#b3261e"/><path d="M9 18l-3 3M11 20l-2 3M15 20l1 3" stroke="#111" stroke-width=".9"/></svg>`;
   const BUG_FF = `<svg viewBox="0 0 26 26"><ellipse class="wing" cx="10" cy="9" rx="5" ry="3.5" fill="rgba(230,255,200,.35)"/><ellipse class="wing" cx="15" cy="9" rx="5" ry="3.5" fill="rgba(230,255,200,.3)"/><ellipse cx="12" cy="14" rx="4" ry="5" fill="#3b2b1a"/><ellipse cx="11" cy="18.5" rx="3.6" ry="3.4" fill="#d9ff4d"/><circle cx="16.5" cy="11" r="2.6" fill="#2a1d10"/></svg>`;
-  const LB2 = [["CryptRat", 41.31], ["Hexxy", 44.82], ["Vexa", 47.25], ["Dredd", 49.90], ["RavenByte", 52.64], ["GhoulKid", 55.13], ["Mortis", 58.47], ["NoLights", 63.72], ["Wisp", 71.08], ["Banshee", 79.55]];
-  const LBM = [["Vexa", 52.10], ["Wisp", 57.44], ["GhoulKid", 61.03], ["Banshee", 64.90], ["Hexxy", 68.21], ["Mortis", 73.66], ["NoLights", 77.02], ["Dredd", 81.35], ["CryptRat", 85.70], ["RavenByte", 92.18]];
+  const LB2 = [["CryptRat", 41.31, "Sep 26"], ["Hexxy", 44.82, "Sep 27"], ["Vexa", 47.25, "Sep 24"], ["Dredd", 49.90, "Sep 27"], ["RavenByte", 52.64, "Sep 22"], ["GhoulKid", 55.13, "Sep 25"], ["Mortis", 58.47, "Sep 21"], ["NoLights", 63.72, "Sep 26"], ["Wisp", 71.08, "Sep 23"], ["Banshee", 79.55, "Sep 20"]];
+  const LBM = [["Vexa", 52.10, "Sep 27"], ["Wisp", 57.44, "Sep 26"], ["GhoulKid", 61.03, "Sep 24"], ["Banshee", 64.90, "Sep 27"], ["Hexxy", 68.21, "Sep 23"], ["Mortis", 73.66, "Sep 25"], ["NoLights", 77.02, "Sep 22"], ["Dredd", 81.35, "Sep 21"], ["CryptRat", 85.70, "Sep 26"], ["RavenByte", 92.18, "Sep 20"]];
   const fmtTT = (s) => Math.floor(s / 60) + ":" + (s % 60).toFixed(2).padStart(5, "0");
-  const lb2 = () => `<div class="g-lb when-in" data-open="0" data-dev="d"><button data-lb>🏆</button><div class="list"><div class="cap">Top 10 · members only</div><div class="tabs"><button class="on" data-dev-tab="d">🖥 Desktop</button><button data-dev-tab="m">📱 Mobile</button></div>${[["lbd", LB2], ["lbm", LBM]].map(([c, L]) => `<div class="${c}">${L.map(([n, s], k) => `<div class="row"><b>${k + 1}</b><span>${n}</span><span class="t"></span><span class="s">${fmtTT(s)}</span></div>`).join("")}</div>`).join("")}</div></div>`;
+  const lb2 = () => `<div class="g-lb when-in" data-open="0" data-dev="d"><button data-lb>🏆</button><div class="list"><div class="cap">Top 10 · members only</div><div class="tabs"><button class="on" data-dev-tab="d">🖥 Desktop</button><button data-dev-tab="m">📱 Mobile</button></div>${[["lbd", LB2], ["lbm", LBM]].map(([c, L]) => `<div class="${c}"><div class="row hd"><b>#</b><span>Member</span><span class="t">Date</span><span class="s">Time</span></div>${L.map(([n, s, d], k) => `<div class="row"><b>${k + 1}</b><span>${n}</span><span class="t">${d}</span><span class="s">${fmtTT(s)}</span></div>`).join("")}</div>`).join("")}</div></div>`;
   const BREAKER = `<svg viewBox="0 0 34 48"><rect x="1" y="1" width="32" height="46" rx="4" fill="#2b2d33" stroke="#555a64" stroke-width="1.2"/><rect x="7" y="8" width="20" height="30" rx="3" fill="#15161a" stroke="#40444c"/><g class="lever"><rect x="12" y="10" width="10" height="14" rx="2.5" fill="#d8dbe2" stroke="#8a8f99"/></g><circle class="led" cx="17" cy="42" r="2" fill="#39ff6a"/><text x="17" y="35" font-size="5" text-anchor="middle" fill="#8a8f99" font-family="monospace">ON</text></svg>`;
-  let gModal = "m3", gClock = "play";
-  const game2HTML = () => `<div class="game bomb-${gBomb}" data-phase="idle" data-clock="${gClock}">
+  let gModal = "m3", gClock = "play", gLook = "l3";
+  const game2HTML = () => `<div class="game bomb-${gBomb}" data-phase="idle" data-clock="${gClock}" data-look="${gLook}">
     <div class="g-top">${titleDrip()}<div class="g-meter"><span class="bar"><i></i></span><span class="pct">0%</span></div><span class="sp"></span>
       <div class="g-arcade ${gColor}"><span class="cell sc"><span class="lab">TIME</span><span class="num big"><span class="gh">8:88.88</span><span data-tm>0:00.00</span></span></span><span class="cell"><span class="lab">PENALTY</span><span class="num"><span class="gh">+88s</span><span data-pen>+0s</span></span></span></div>
       <button class="g-sound" data-snd aria-label="Sound on">${AU.on ? "🔊" : "🔇"}</button>${lb2()}</div>
@@ -2786,7 +2914,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     <div class="g-stage">
       <div class="g-hub">
         <div style="position:relative"><button class="g-splat" data-g="splat" aria-label="Tap the splat"><img src="${SPLAT}" alt="">${mascot()}</button></div>
-        <div class="g-wm"><span>B</span><span class="ob">O<span class="g-countdown"></span><button class="g-bomb" data-g="bomb" aria-label="Bomb">${gBomb === "count" ? '<span class="led"></span>' : ""}</button><svg class="g-fuse" viewBox="0 0 200 90" aria-hidden="true"><defs><mask id="fm_ID" maskUnits="userSpaceOnUse"><path class="mk" d="${FUSE2}" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/></mask></defs><g mask="url(#fm_ID)"><path class="rope" d="${FUSE2}"/><path class="braid" d="${FUSE2}"/></g><path class="hit" data-g="fuse" d="${FUSE2}"/><g class="fx"></g><circle class="cut-flash" r="9"/><circle class="spark" r="4.5"/><g class="sparkg"><path class="spark2" d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2Z"/></g></svg></span><span>OMER</span><span class="g-tanger" data-g="tanger" role="button" tabindex="-1"><span class="t1">T</span><span data-l="1">A</span><span>N</span><span data-l="3">G</span><span>E</span><span data-l="5">R</span></span></div>
+        <div class="g-wm"><span>B</span><span class="ob">O<span class="g-countdown"></span><button class="g-bomb" data-g="bomb" aria-label="Bomb">${gBomb === "count" ? '<span class="led"></span>' : ""}</button><svg class="g-fuse" viewBox="0 0 200 90" preserveAspectRatio="xMaxYMax meet" aria-hidden="true"><defs><mask id="fm_ID" maskUnits="userSpaceOnUse"><path class="mk" d="${FUSE2}" stroke="#fff" stroke-width="9" fill="none" stroke-linecap="round"/></mask></defs><g mask="url(#fm_ID)"><path class="rope" d="${FUSE2}"/><path class="braid" d="${FUSE2}"/></g><path class="hit" data-g="fuse" d="${FUSE2}"/><g class="fx"></g><circle class="cut-flash" r="9"/><circle class="spark" r="4.5"/><g class="sparkg"><path class="spark2" d="M0 -8 L2 -2 L8 0 L2 2 L0 8 L-2 2 L-8 0 L-2 -2Z"/></g></svg></span><span>OMER</span><span class="g-tanger" data-g="tanger" role="button" tabindex="-1"><span class="t1">T</span><span data-l="1">A</span><span>N</span><span data-l="3">G</span><span>E</span><span data-l="5">R</span></span></div>
         <span class="g-tag" data-g="tag" role="button" tabindex="0"><span class="bB">B</span>uilt for <span class="hr">horror<span class="g-chain ${gChain}"><span class="links"></span><span class="handle" data-g="chain" role="button" tabindex="0" aria-label="Pull the chain">${gChain === "cC" ? SKULL : "<i></i>"}</span></span></span> gaming</span>
       </div>
       <div class="g-ring">${gRing2()}</div>
@@ -2841,31 +2969,25 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     const start = () => {
       reset(); ac(); SFX.splat(); S.t0 = performance.now(); phase("p1"); setA("links", "1"); add(100, 5);
       stopClock(); S.clock = setInterval(() => { $("[data-tm]").textContent = fmtT(elapsedS()); }, 47);
-      later(flyBug, 1100);
+      later(flyBug, 1100); toBottom();
     };
     // --- round 1b: the bug ---
     const flyBug = () => {
-      phase("bug"); S.pauseAt = performance.now();
+      phase("bug");
       const b = document.createElement("span"); b.className = "g-bug" + (gBug === "firefly" ? " firefly" : ""); b.innerHTML = gBug === "firefly" ? BUG_FF : BUG_FLY; g.appendChild(b);
-      const W = g.offsetWidth, st = rel($(".g-stage")), T = rel($(".bB"), .3, .5);
-      const top = st.y - st.h / 2 + 30, bot = st.y + st.h / 2 - 30;
-      const n = 2 + Math.floor(Math.random() * 4);            // 2 to 5 wandering loops: some runs are longer
-      const pts = [{ x: -40, y: top + Math.random() * (bot - top) }];
-      for (let i = 0; i < n; i++) pts.push({ x: 60 + Math.random() * (W - 120), y: top + Math.random() * (bot - top) });
-      pts.push({ x: T.x - 70, y: T.y - 30 }, { x: T.x - 10, y: T.y });
-      const P = [pts[0], ...pts, pts[pts.length - 1]];
-      const cr = (a, b2, c, d, t) => { const t2 = t * t, t3 = t2 * t; return .5 * ((2 * b2) + (-a + c) * t + (2 * a - 5 * b2 + 4 * c - d) * t2 + (-a + 3 * b2 - 3 * c + d) * t3); };
-      const seg = (i, t) => ({ x: cr(P[i - 1].x, P[i].x, P[i + 1].x, P[i + 2].x, t), y: cr(P[i - 1].y, P[i].y, P[i + 1].y, P[i + 2].y, t) });
-      const samples = []; for (let i = 1; i < P.length - 2; i++) for (let k = 0; k < 40; k++) samples.push(seg(i, k / 40)); samples.push(pts[pts.length - 1]);
-      const dist = [0]; for (let i = 1; i < samples.length; i++) dist.push(dist[i - 1] + Math.hypot(samples[i].x - samples[i - 1].x, samples[i].y - samples[i - 1].y));
-      const total = dist[dist.length - 1], speed = 300, D = total / speed * 1000, t0 = performance.now(); let px = samples[0].x, py = samples[0].y, j2 = 0;
-      const step = (t) => { const k = Math.min(1, (t - t0) / D), d = k * total; while (j2 < dist.length - 2 && dist[j2 + 1] < d) j2++;
-        const f = (d - dist[j2]) / Math.max(1e-6, dist[j2 + 1] - dist[j2]); const x = samples[j2].x + (samples[j2 + 1].x - samples[j2].x) * f + Math.sin(t / 90) * 3, y = samples[j2].y + (samples[j2 + 1].y - samples[j2].y) * f + Math.cos(t / 70) * 3;
+      const T = rel($(".bB"), .3, .5), st = rel($(".g-stage")), sx = -40, sy = T.y - 20 + (Math.random() * 60 - 30), tx = T.x - 10, ty = T.y;
+      const room = Math.min(T.y - (st.y - st.h / 2) - 20, (st.y + st.h / 2) - T.y - 20, 130);
+      const A = Math.max(40, room * (.55 + Math.random() * .45)) * (Math.random() < .5 ? 1 : -1);   // S height (random, flips up/down)
+      const loops = 1 + Math.random() * .6;                                                           // one S, sometimes a bit more
+      const D = 2600 + Math.random() * 2400, t0 = performance.now();                                  // 2.6 to 5 seconds, never longer
+      let px = sx, py = sy;
+      const step = (t) => { const k = Math.min(1, (t - t0) / D), e2 = k < .5 ? 2 * k * k : 1 - Math.pow(-2 * k + 2, 2) / 2;
+        const x = sx + (tx - sx) * e2 + Math.sin(t / 110) * 2.5, y = sy + (ty - sy) * k + A * Math.sin(k * Math.PI * 2 * loops) * (1 - Math.pow(k, 3)) + Math.cos(t / 80) * 2.5;
         const ang = Math.atan2(y - py, x - px) * 180 / Math.PI; px = x; py = y; b.style.transform = `translate(${x - 13}px, ${y - 13}px) rotate(${ang}deg)`;
         if (k < 1) S.raf = requestAnimationFrame(step); else hit(b, x, y); };
       S.raf = requestAnimationFrame(step);
     };
-    const hit = (b, x, y) => { if (S.pauseAt) { S.paused += performance.now() - S.pauseAt; S.pauseAt = 0; } SFX.zap(); const s = document.createElement("span"); s.className = "zapspark"; s.style.left = x + 8 + "px"; s.style.top = y + "px"; g.appendChild(s); setTimeout(() => s.remove(), 500); const tag = $(".g-tag"); tag.classList.remove("zap"); void tag.offsetWidth; tag.classList.add("zap"); b.classList.add("dead"); b.style.transform += " translate(-10px, 70px) rotate(160deg)"; setTimeout(() => b.remove(), 800); later(() => { setA("flicker", "1"); tag.classList.remove("zap"); phase("chainwait"); add(0, 10); setA("chain", "1"); SFX.clink(); }, 560); };
+    const hit = (b, x, y) => { SFX.zap(); const s = document.createElement("span"); s.className = "zapspark"; s.style.left = x + 8 + "px"; s.style.top = y + "px"; g.appendChild(s); setTimeout(() => s.remove(), 500); const tag = $(".g-tag"); tag.classList.remove("zap"); void tag.offsetWidth; tag.classList.add("zap"); b.classList.add("dead"); b.style.transform += " translate(-10px, 70px) rotate(160deg)"; setTimeout(() => b.remove(), 800); later(() => { setA("flicker", "1"); tag.classList.remove("zap"); phase("chainwait"); add(0, 10); setA("chain", "1"); SFX.clink(); }, 560); };
     // --- plug and cord ---
     const showBreaker = () => {
       phase("breaker"); const W = g.offsetWidth, st = rel($(".g-stage")), br = $(".g-breaker");
@@ -2874,7 +2996,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     };
     const cordAnchor = () => rel($(".g-tanger span:last-child"), .5, .92);
     const drawCord = (p) => { const a = cordAnchor(); const dx = p.x - a.x, dy = p.y - a.y, sag = Math.max(30, Math.hypot(dx, dy) * .35);
-      $(".g-cord path").setAttribute("d", `M${a.x},${a.y} C ${a.x},${a.y + sag} ${p.x},${p.y + 14 + sag * .6} ${p.x},${p.y + 12}`); };
+      $(".g-cord path").setAttribute("d", `M${a.x},${a.y} C ${a.x},${a.y + sag} ${p.x},${p.y + 14 + sag * .6} ${p.x},${p.y + 13}`); };
     const freeSpot = (xr, yr, avoid) => { const cardRects = (isPhone() ? $$(".g-ring-phone .qd") : $$(".g-ring .qd")).map((c) => rel(c)); const hub = rel($(".g-splat"));
       for (let tries = 0; tries < 60; tries++) { const x = xr[0] + Math.random() * (xr[1] - xr[0]), y = yr[0] + Math.random() * (yr[1] - yr[0]);
         const hitCard = cardRects.some((r) => Math.abs(x - r.x) < r.w / 2 + 26 && Math.abs(y - r.y) < r.h / 2 + 30);
@@ -2895,7 +3017,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
       pl.addEventListener("pointerdown", (ev) => { if (S.phase !== "plug") return; drag = true; pl.setPointerCapture(ev.pointerId); pl.classList.add("dragging"); ev.preventDefault(); });
       pl.addEventListener("pointermove", (ev) => { if (!drag) return; const p = pointer(ev); S.plugP = p; pl.style.left = p.x + "px"; pl.style.top = p.y + "px"; drawCord(p); $(".g-outlet").classList.toggle("hot", Math.hypot(p.x - S.sock.x, p.y - S.sock.y) < 38); });
       pl.addEventListener("pointerup", () => { if (!drag) return; drag = false; pl.classList.remove("dragging"); $(".g-outlet").classList.remove("hot"); const p = S.plugP;
-        if (Math.hypot(p.x - S.sock.x, p.y - S.sock.y) < 38) { const s = S.sock; pl.style.left = s.x + "px"; pl.style.top = s.y + 4 + "px"; drawCord({ x: s.x, y: s.y + 4 }); setA("plug", "in"); SFX.plug(); SFX.powerup(); add(150, 50); setA("tstate", "glow"); phase("glowclick"); } });
+        if (Math.hypot(p.x - S.sock.x, p.y - S.sock.y) < 38) { const s = S.sock; pl.style.left = s.x + "px"; pl.style.top = s.y + 4 + "px"; S.plugged = true; drawCord({ x: s.x, y: s.y + 4 }); setA("plug", "in"); SFX.plug(); SFX.powerup(); add(150, 50); setA("tstate", "glow"); phase("glowclick"); } });
     };
     // --- hammer ---
     const startHammer = () => { phase("hammer"); setA("tstate", "shake"); SFX.crumble();
@@ -2959,6 +3081,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     const onChase = (t) => { const i = idx(t); if (i === S.hot) { S.timers.forEach(clearTimeout); S.timers = []; t.classList.remove("hot"); t.classList.add("caught"); setTimeout(() => t.classList.remove("caught"), 360); SFX.blip(S.catches); S.catches++; add(0, 84 + S.catches * 1.5);
         if (S.catches >= 10) { S.hot = null; phase("finish"); setA("finish", "1"); SFX.sting(); } else later(nextHot, 170); }
       else { SFX.buzz(); end("lose", "Wrong one.", "Only the bloody link counts."); } };
+    const toBottom = (ms = 520) => setTimeout(() => { const f = g.closest("footer") || g; if (f.scrollIntoView) f.scrollIntoView({ block: "end", behavior: "smooth" }); }, ms);
     const tapOut = (quiet) => { SFX.splat(); const p = Math.round(S.prog); g.classList.add("collapsing"); reset(); later(() => g.classList.remove("collapsing"), 700); if (!quiet) toast(`Tapped out at ${p}%`); };
     // --- input ---
     g.addEventListener("pointermove", (ev) => { if (S.held) { const t = tool(S.held), p = pointer(ev); t.style.left = p.x + 16 + "px"; t.style.top = p.y - 14 + "px"; } });
@@ -2966,7 +3089,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
       const t = ev.target.closest("[data-g], .qd, [data-fb], [data-lb], [data-snd], [data-tool], .g-tanger span, .show-list button, .fol a, .g-plug");
       if (t && t.matches("[data-snd]")) { AU.on = !AU.on; document.querySelectorAll("[data-snd]").forEach((b) => b.textContent = AU.on ? "🔊" : "🔇"); if (!AU.on) hissStop(); return; }
       if (ev.target.closest("[data-dev-tab]")) { const b = ev.target.closest("[data-dev-tab]"), lb = b.closest(".g-lb"); lb.dataset.dev = b.dataset.devTab; lb.querySelectorAll("[data-dev-tab]").forEach((x) => x.classList.toggle("on", x === b)); return; }
-      if (t && t.matches("[data-lb]")) { const lb = t.parentElement; lb.dataset.open = lb.dataset.open === "1" ? "0" : "1"; return; }
+      if (t && t.matches("[data-lb]")) { const lb = t.parentElement; lb.dataset.open = lb.dataset.open === "1" ? "0" : "1"; const list = lb.querySelector(".list"); g.style.paddingBottom = lb.dataset.open === "1" && isPhone() ? (list.offsetHeight + 40) + "px" : ""; return; }
       if (t && t.matches("[data-fb]")) { if (!t.classList.contains("done")) { t.classList.add("done"); const c = t.querySelector("span"); c.textContent = +c.textContent + 1; SFX.click(); } return; }
       if (t && (t.matches(".show-list button") || t.matches(".fol a"))) return;
       if (S.phase === "over" && g.hasAttribute("data-end") && !ev.target.closest("button, a")) { setA("end", null); return tapOut(true); }
@@ -2991,7 +3114,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
       if (k === "again") return start();
       if (k === "splat") { if (S.phase === "idle" || S.phase === "over") return start(); if (S.phase === "finish") { SFX.splat(); add(0, 100); return end("win", "You beat Tap the Splat", ""); } return tapOut(); }
       if (false && k === "tag") { SFX.click(); setA("flicker", null); add(100, 12); phase("chainwait"); later(() => { setA("chain", "1"); SFX.clink(); }, 250); return; }
-      if (k === "chain" && S.phase === "chainwait") { ev.stopPropagation(); SFX.chainpull(); const ch = $(".g-chain"); ch.classList.add("pull"); add(0, 20); phase("post-chain"); setA("flicker", null); later(() => { ch.classList.remove("pull"); setA("chain", "done"); setA("cf", "1"); SFX.clink(); }, 650); later(showBreaker, 1600); return; }
+      if (k === "chain" && S.phase === "chainwait") { ev.stopPropagation(); SFX.chainpull(); const ch = $(".g-chain"); ch.classList.add("pull"); add(0, 20); phase("post-chain"); setA("flicker", null); later(() => { ch.classList.remove("pull"); setA("chain", "done"); setA("cf", "1"); SFX.clink(); toBottom(560); }, 650); later(showBreaker, 1600); return; }
       if (k === "tanger" && S.phase === "glowclick") { SFX.click(); setA("tstate", null); setA("plug", null); $(".g-cord path").setAttribute("d", ""); add(50, 55); later(startHammer, 1200); return; }
       if (k === "tanger" && S.phase === "danger") { SFX.click(); setA("tstate", null); $(".t1").textContent = "T"; add(50, 72); later(startBomb, 350); return; }
       if (k === "breaker" && S.phase === "breaker") { SFX.kachunk(); setA("breaker", "off"); g.classList.add("blackout"); setTimeout(() => g.classList.remove("blackout"), 520); setA("dark", "1"); add(0, 25); phase("links"); later(() => setA("breaker", "gone"), 500); return; }
@@ -3039,13 +3162,13 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     document.querySelectorAll("[data-show-inline]").forEach((b) => b.addEventListener("click", () => { b.textContent = "business@boomertanger.com · Copy"; }));
     document.querySelectorAll("[data-reveal-mail]").forEach((b) => b.addEventListener("click", () => { const sh = b.parentElement; const v = sh.querySelector("[data-v]"); if (!sh.classList.contains("open")) { v.textContent = b.dataset.revealMail + "@boomertanger.com"; sh.classList.add("open"); b.textContent = "Copy"; } else { b.textContent = "Copied"; } }));
     document.querySelectorAll(".game").forEach(initGame2);
-    document.querySelector("[data-hdr-name]").textContent = "Time is the score"; document.querySelector("[data-hdr-desc]").textContent = "The green meter shows how far through the game you are. The arcade board shows your time, and every miss-click adds a second. The clock pauses while the firefly wanders in, so a long flight never costs anyone. Only finished runs get a time; the leaderboard ranks fastest first.";
+    document.querySelector("[data-hdr-name]").textContent = "Time is the score"; document.querySelector("[data-hdr-desc]").textContent = "The green meter shows how far through the game you are. The arcade board shows your time, and every miss-click adds a second. The firefly's flight (up to 5 seconds) counts toward your time. Only finished runs get a time; the leaderboard ranks fastest first.";
     document.querySelector("[data-ftr-name]").textContent = "Page load"; document.querySelector("[data-ftr-desc]").textContent = "The footer loads as plain HTML (splatter, name, links). The game code, about the size of a small image, only downloads when someone taps the splat, so it costs nothing for everyone else.";
     
   };
   const toFooter = () => document.querySelectorAll(".frame-phone .phone-body").forEach((p) => { p.scrollTop = p.querySelector("[data-ftr-slot]").offsetTop - 10; });
   const pick = (key, set) => document.querySelectorAll(`[data-${key}]`).forEach((b) => b.addEventListener("click", () => { set(b.dataset[key]); document.querySelectorAll(`[data-${key}]`).forEach((x) => x.classList.toggle("is-active", x === b)); render(); toFooter(); }));
-  pick("gcol", (v) => gColor = v); pick("gmodal", (v) => gModal = v); pick("gclock", (v) => gClock = v); pick("gbomb", (v) => gBomb = v); pick("gchain", (v) => gChain = v); pick("gbug", (v) => gBug = v);
+  pick("gcol", (v) => gColor = v); pick("gmodal", (v) => gModal = v); pick("gclock", (v) => gClock = v); pick("glook", (v) => gLook = v); pick("gbomb", (v) => gBomb = v); pick("gchain", (v) => gChain = v); pick("gbug", (v) => gBug = v);
   document.querySelectorAll("[data-gj]").forEach((b) => b.addEventListener("click", () => { document.querySelectorAll(".game").forEach((g) => g._jump(b.dataset.gj)); toFooter(); }));
   render();
 })();
