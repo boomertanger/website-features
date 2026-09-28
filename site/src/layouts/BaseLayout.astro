@@ -35,7 +35,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   </head>
-  <body class="bt-root bt-site" data-live={site.liveState} data-auth="visitor" data-env={firebaseEnv}>
+  <body class="bt-root bt-site" data-live={site.liveState} data-auth="visitor" data-auth-state="loading" data-env={firebaseEnv}>
     {!isProduction && (
       <script is:inline>
         // Preview switches (staging and previews only): ?as=visitor|member|admin
@@ -62,6 +62,10 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     {!isProduction && <PreviewChip />}
     <script>
       import "../scripts/stream-time.js";
+      // Real auth state (lib/auth.ts): runs after the ?as= preview script above,
+      // and a signed-in member always wins over it.
+      import { startAuth } from "../lib/auth";
+      startAuth();
     </script>
   </body>
 </html>
