@@ -46,6 +46,19 @@ Firebase's built-in email templates for verification, password reset and sign-in
 
 The links open our own page, `/auth/action`, not Firebase's plain hosted one: in the Firebase console, Authentication → Templates → (edit a template) → **Customize action URL** = `https://staging.boomertanger.com/auth/action` (one setting per project; production gets its own domain at launch). The page handles `verifyEmail` (confirms, clears the verify banner at once, Continue returns to the page the email came from), `resetPassword` (choose a new password with Show/Hide, then Sign in), `recoverEmail` (undo an email change, offer a password reset), `verifyAndChangeEmail`, and hands `signIn` links on to `/auth/email-link`. Expired or used links get a clear message (and, for verification, a Send a new link button). With the action URL set, email links always open on staging, even when testing on localhost.
 
+## Setup per project (one-time)
+Everything a Firebase project needs before accounts work. All of these are done for **staging** (`boomertanger-staging`); do the same for **production** (`boomertanger-prod`) before launch, in this order.
+
+1. **Auth providers** (Firebase console → Authentication → Sign-in method): Email/Password with Email link (passwordless) turned on, and Google. One account per email address (the default).
+2. **Authorized domains** (Authentication → Settings): the site's domains (staging: `staging.boomertanger.com`, plus `localhost` for local testing). The web API key's allowed websites (Google Cloud → APIs & Services → Credentials) must include the same domains.
+3. **Twitch app** (Twitch developer console, the app with the client ID in `site.json` and `functions/.env`): Client Type Confidential, and OAuth Redirect URLs for every domain's `/auth/twitch/callback`. Add the production callback to `TWITCH_REDIRECTS` in `functions/lib/accounts/index.js` too.
+4. **Twitch secret:** `firebase functions:secrets:set TWITCH_CLIENT_SECRET --project <alias>` (the user runs it; the secret never goes in chat or the repo). A function stays pinned to the secret version it was deployed with, so redeploy `twitchAuth` after setting a new version. To check it without revealing it, send a fake code to Twitch's token endpoint: "Invalid authorization code" means the secret is right, "invalid client secret" means it isn't.
+5. **Custom tokens (Twitch sign-in):** in Google Cloud → IAM & Admin → Service accounts → the **Default compute service account** (`<project number>-compute@developer.gserviceaccount.com`) → **Principals with access** → Grant access: principal = that same service account, role = **Service Account Token Creator**. Without it `twitchAuth` fails at the last step with `iam.serviceAccounts.signBlob` denied, and members see "Twitch sign-in didn't work". The IAM Credentials API must be enabled (it was on staging). The grant can take a few minutes to apply.
+6. **Deploy** rules, then functions: `firebase deploy --project <alias> --only firestore:rules`, then `--only functions`.
+7. **Site settings:** `node scripts/seed-site.js --project <alias>` (dry run), then with `--apply`.
+8. **Email action URL** (Authentication → Templates → edit → Customize action URL): the site's `/auth/action` (see "Emails").
+9. **Owner:** the owner signs in once and finishes signup; then `node scripts/set-owner.js --project <alias> --uid <uid>` (dry run), then with `--apply`.
+
 ## Rules: manual test checklist
 The repo has no Firestore rules test setup yet (the emulator needs Java 11+), so check these in the Firebase console's Rules Playground (Firestore → Rules → Rules Playground) after each rules deploy. "Signed in" = Authenticated with a test uid; add `roles: { boomertanger: ["admin"] }` under custom claims for the admin rows.
 
