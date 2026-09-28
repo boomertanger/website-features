@@ -1,0 +1,16 @@
+---
+// Body of the auth return pages (/auth/twitch/callback, /auth/email-link): a
+// status card the page script fills in (message, optional email form, actions).
+interface Props { title: string; message: string }
+const { title, message } = Astro.props;
+---
+<div class="bt-zone">
+  <div class="bt-page-intro"><h1 class="bt-title">{title}</h1></div>
+  <div class="bt-card" style="max-width:520px">
+    <p class="bt-section-text" role="status" data-auth-msg>{message}</p>
+    <slot />
+    <div class="bt-row-split" data-auth-actions hidden>
+      <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/" data-auth-back>Back to the site</a>
+    </div>
+  </div>
+</div>

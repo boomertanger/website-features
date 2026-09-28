@@ -23,9 +23,9 @@ import home from "../data/preview-home.json";
 
   <div class="bt-zone" data-view="you">
     <div class="bt-member-strip bt-when-signed-in">
-      <span class="bt-member-strip-av" aria-hidden="true">{member.initials}</span>
+      <span class="bt-member-strip-av" aria-hidden="true" data-me="avatar">{member.initials}</span>
       <div>
-        <h3>Welcome back, {member.name}</h3>
+        <h3>Welcome back, <span data-me="displayName">{member.name}</span></h3>
         <div class="bt-member-strip-sub">{member.sub} <PreviewTag /></div>
       </div>
       <div class="bt-member-stats">

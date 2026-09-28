@@ -78,7 +78,7 @@ async function main() {
     rolesChangedAt: admin.firestore.FieldValue.serverTimestamp(),
   });
   await batch.commit();
-  console.log("\nWritten. The member's admin claim arrives within a minute; they may need to sign out and back in.");
+  console.log("\nWritten. The admin claim arrives within a minute; the site picks it up on the member's next page load.");
 }
 
 main().catch((err) => {

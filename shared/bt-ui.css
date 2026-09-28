@@ -1152,6 +1152,15 @@
   --bt-hud-edge: #1d1d22;
   --bt-hud-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   --bt-shadow-splat: 0 18px 30px rgba(0, 0, 0, 0.8);      /* filter: drop-shadow() under the splat in the spotlight */
+  /* Sign-in providers and linked platforms: their own brand colors (tiles only). */
+  --bt-brand-google: #4285f4;
+  --bt-brand-google-tile: #fff;
+  --bt-brand-twitch: #9146ff;
+  --bt-brand-youtube: #ff0033;
+  --bt-brand-tiktok: #111;
+  --bt-brand-tiktok-edge: #333;
+  --bt-brand-email: #3a3a44;
+  --bt-on-brand: #fff;                                    /* letters on a brand tile */
 }
 
 /* ---- Page root and frame ---- */
@@ -1177,6 +1186,13 @@
 .bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-when-signed-in,
 .bt-root:not(#_):not(:is([data-auth="visitor"], [data-auth="visitor"] *)) .bt-when-visitor,
 .bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin { display: none; }
+/* Auth state: data-auth-state on the page root (site/src/lib/auth.ts) =
+   loading | signedOut | needsSignup | unverified | verified. While loading, the
+   account area shows its skeleton; mid-signup, its Finish signup button. */
+.bt-root:not(#_):not([data-auth-state="loading"]) .bt-when-auth-loading,
+.bt-root:not(#_):not([data-auth-state="needsSignup"]) .bt-when-needs-signup,
+.bt-root:not(#_):not([data-auth-state="unverified"]) .bt-when-unverified,
+.bt-root:not(#_):is([data-auth-state="loading"], [data-auth-state="needsSignup"]) .bt-account :is(.bt-when-visitor, .bt-when-signed-in, .bt-when-admin) { display: none; }
 
 /* ---- Mascot (inline SVG built from shared/assets/mascot.svg; site/src/components/Mascot.astro) ----
    <svg class="bt-mascot [bt-mascot--aware]" viewBox="30 92 145 162"> with the artwork's
@@ -1212,6 +1228,9 @@
 .bt-root:not(#_) .bt-site-header .bt-spacer { flex: 1; }
 /* Home: the header sits over the hero */
 .bt-root:not(#_) .bt-site-header--overlay { position: absolute; top: 0; left: 0; right: 0; background: transparent; border-bottom-color: transparent; z-index: 6; }
+/* While an account banner shows under the header (verify email, finish signup), the
+   overlay header joins the flow so the banner isn't hidden beneath it. */
+.bt-root:not(#_):is([data-auth-state="unverified"], [data-auth-state="needsSignup"]) .bt-site-header--overlay { position: relative; background: var(--bt-bg); border-bottom-color: var(--bt-border); }
 
 /* Main navigation */
 .bt-root:not(#_) .bt-nav { display: flex; align-items: center; gap: 2px; min-width: 0; }
@@ -1746,5 +1765,149 @@
 .bt-root:not(#_) .bt-note--boss { background: color-mix(in srgb, var(--bt-title) 26%, var(--bt-surface-2)); --bt-note-tilt: -.5deg; --bt-note-pin: var(--bt-red); outline: 1px solid var(--bt-title); }
 .bt-root:not(#_) .bt-notes-rule { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bt-note { transition: none; } }
+
+/* ---- Accounts (docs/specs/accounts.md, docs/design/mockups/accounts.html: S2 sign-in, A2 account page) ---- */
+
+/* Sign-in dialog, S2 "split with pitch": openModal({ variant: "split" }) >
+   .bt-modal-art (.bt-modal-splat > img + .bt-mascot, .bt-modal-wordmark, .bt-modal-reasons)
+   + .bt-modal-body (the form; .bt-modal-x closes). Phones: the splat and mascot stack over
+   the wordmark and the reasons hide. */
+.bt-root:not(#_) .bt-modal--split { max-width: 760px; padding: 0; overflow: hidden; display: grid; grid-template-columns: 300px minmax(0, 1fr); gap: 0; }
+.bt-root:not(#_) .bt-modal-art { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 26px 22px; text-align: center; border-right: 1px solid var(--bt-border);
+  background: radial-gradient(120% 80% at 50% 20%, color-mix(in srgb, var(--bt-red) 18%, transparent), transparent 60%), var(--bt-bg); }
+.bt-root:not(#_) .bt-modal-splat { position: relative; display: grid; place-items: center; width: 230px; height: 132px; }
+.bt-root:not(#_) .bt-modal-splat img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; filter: brightness(1.05) saturate(1.3); }
+.bt-root:not(#_) .bt-modal-splat .bt-mascot { position: relative; width: 62px; margin-top: -10px; filter: drop-shadow(var(--bt-shadow-drop)); }
+.bt-root:not(#_) .bt-modal-wordmark { position: relative; margin-top: -14px; font-size: var(--bt-text-xl); font-weight: 900; letter-spacing: 0.03em; line-height: 1.2; text-transform: uppercase; color: var(--bt-text); }
+.bt-root:not(#_) .bt-modal-wordmark span { color: var(--bt-title); }
+.bt-root:not(#_) .bt-modal-reasons { display: grid; gap: 9px; margin: 8px 0 0; padding: 0; list-style: none; text-align: left; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-modal-reasons li { display: flex; align-items: flex-start; gap: 10px; }
+.bt-root:not(#_) .bt-modal-reasons li > span:first-child { display: grid; place-items: center; width: 22px; height: 22px; flex: none; border-radius: 50%; font-size: var(--bt-text-sm); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .bt-modal-body { position: relative; display: flex; flex-direction: column; gap: var(--bt-space-4); min-width: 0; padding: 26px; }
+.bt-root:not(#_) .bt-modal--split .bt-modal-heading { padding-right: 28px; }
+.bt-root:not(#_) .bt-modal-x { position: absolute; top: 14px; right: 14px; z-index: 2; }
+/* A plain vertical stack with the dialog body's spacing (a screen, a form). */
+.bt-root:not(#_) .bt-stack { display: flex; flex-direction: column; gap: var(--bt-space-4); min-width: 0; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-modal--split { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-modal-art { gap: 0; padding: 14px 16px 12px; border-right: 0; border-bottom: 1px solid var(--bt-border); }
+  .bt-root:not(#_) .bt-modal-splat { width: 210px; height: 120px; }
+  .bt-root:not(#_) .bt-modal-splat .bt-mascot { width: 56px; margin-top: -8px; }
+  .bt-root:not(#_) .bt-modal-wordmark { margin-top: -20px; font-size: var(--bt-text-2xl); }
+  .bt-root:not(#_) .bt-modal-reasons { display: none; }
+  .bt-root:not(#_) .bt-modal-body { padding: 18px; }
+}
+
+/* Provider buttons: .bt-providers > button.bt-provider > .bt-provider-icon--google|--twitch|--email */
+.bt-root:not(#_) .bt-providers { display: flex; flex-direction: column; gap: 10px; }
+.bt-root:not(#_) .bt-provider { display: flex; align-items: center; justify-content: center; gap: 10px; width: 100%; padding: 11px 14px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border-2); background: var(--bt-surface-2); color: var(--bt-text); font-size: var(--bt-text-base); font-weight: 700; cursor: pointer; }
+.bt-root:not(#_) .bt-provider:hover:not(:disabled) { border-color: var(--bt-primary); }
+.bt-root:not(#_) .bt-provider:disabled { opacity: 0.6; cursor: progress; }
+.bt-root:not(#_) .bt-provider-icon, .bt-root:not(#_) .bt-platform-icon { display: grid; place-items: center; flex: none; font-weight: 900; color: var(--bt-on-brand); }
+.bt-root:not(#_) .bt-provider-icon { width: 22px; height: 22px; border-radius: 6px; font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .bt-platform-icon { width: 34px; height: 34px; border-radius: 9px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-provider-icon--google, .bt-root:not(#_) .bt-platform-icon--google { background: var(--bt-brand-google-tile); color: var(--bt-brand-google); }
+.bt-root:not(#_) .bt-provider-icon--twitch, .bt-root:not(#_) .bt-platform-icon--twitch { background: var(--bt-brand-twitch); }
+.bt-root:not(#_) .bt-provider-icon--email, .bt-root:not(#_) .bt-platform-icon--email { background: var(--bt-brand-email); }
+.bt-root:not(#_) .bt-platform-icon--youtube { background: var(--bt-brand-youtube); }
+.bt-root:not(#_) .bt-platform-icon--tiktok { background: var(--bt-brand-tiktok); border: 1px solid var(--bt-brand-tiktok-edge); }
+
+/* Small pieces of the dialog: "or" divider, fine print, text-link buttons, notices */
+.bt-root:not(#_) .bt-or { display: flex; align-items: center; gap: 10px; font-size: var(--bt-text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-or::before, .bt-root:not(#_) .bt-or::after { content: ""; flex: 1; height: 1px; background: var(--bt-border); }
+.bt-root:not(#_) .bt-fine { font-size: var(--bt-text-xs); line-height: 1.5; text-align: center; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-fine--left { text-align: left; }
+.bt-root:not(#_) .bt-fine a, .bt-root:not(#_) .bt-link-btn { color: var(--bt-primary-soft); }
+.bt-root:not(#_) .bt-link-btn { align-self: flex-start; padding: 0; border: 0; background: none; font-size: var(--bt-text-md); font-weight: 600; cursor: pointer; }
+.bt-root:not(#_) .bt-link-btn:hover { text-decoration: underline; }
+.bt-root:not(#_) .bt-row-split { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.bt-root:not(#_) .bt-row-center { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 10px; }
+.bt-root:not(#_) .bt-modal-icon { font-size: 40px; line-height: 1.1; text-align: center; }
+.bt-root:not(#_) .bt-center { text-align: center; }
+.bt-root:not(#_) .bt-notice { padding: 10px 12px; border-radius: var(--bt-radius-md); font-size: var(--bt-text-md); line-height: 1.45; border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-notice--error { border-color: color-mix(in srgb, var(--bt-danger) 55%, transparent); background: var(--bt-danger-bg); color: var(--bt-danger-text); }
+.bt-root:not(#_) .bt-notice--ok { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); background: var(--bt-lime-bg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-notice .bt-btn { margin-top: 8px; }
+
+/* Signup steps: .bt-steps-label + .bt-steps > i[.is-on]; birthday grid */
+.bt-root:not(#_) .bt-steps-label { font-size: var(--bt-text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-steps { display: flex; gap: 6px; margin-top: 6px; }
+.bt-root:not(#_) .bt-steps i { flex: 1; height: 4px; border-radius: 4px; background: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-steps i.is-on { background: var(--bt-primary); }
+.bt-root:not(#_) .bt-bday { display: grid; grid-template-columns: 1.4fr 1fr; gap: 10px; }
+
+/* Handle field: .bt-handle-input (@ prefix) + .bt-field-state--ok|--bad|--checking */
+.bt-root:not(#_) .bt-handle-input { position: relative; }
+.bt-root:not(#_) .bt-handle-input::before { content: "@"; position: absolute; left: 12px; top: 50%; transform: translateY(-50%); font-weight: 700; color: var(--bt-text-faint); pointer-events: none; }
+.bt-root:not(#_) .bt-handle-input .bt-input { width: 100%; padding-left: 28px; }
+.bt-root:not(#_) .bt-field-state { display: flex; align-items: center; gap: 6px; min-height: 18px; margin-top: 6px; font-size: var(--bt-text-sm); font-weight: 600; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-field-state--ok { color: var(--bt-lime); }
+.bt-root:not(#_) .bt-field-state--bad { color: var(--bt-danger-text); }
+.bt-root:not(#_) .bt-field-state .bt-link-btn { font-size: inherit; }
+
+/* Avatars (initials or an opted-in photo) and the profile preview */
+.bt-root:not(#_) .bt-avatar-md, .bt-root:not(#_) .bt-avatar-xl { display: grid; place-items: center; flex: none; overflow: hidden; border-radius: 50%; border: 2px solid var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-primary-soft); font-weight: 800; }
+.bt-root:not(#_) .bt-avatar-md { width: 44px; height: 44px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-avatar-xl { width: 72px; height: 72px; font-size: 22px; }
+.bt-root:not(#_) :is(.bt-avatar-sm, .bt-avatar-md, .bt-avatar-xl, .bt-member-strip-av) img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.bt-root:not(#_) .bt-profile-preview { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: var(--bt-bg); }
+.bt-root:not(#_) .bt-profile-preview b { display: block; }
+.bt-root:not(#_) .bt-profile-preview small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+
+/* Checkbox row: label.bt-check > input[type=checkbox] + text */
+.bt-root:not(#_) .bt-check { display: flex; align-items: flex-start; gap: 10px; font-size: var(--bt-text-md); line-height: 1.45; color: var(--bt-text-muted); cursor: pointer; }
+.bt-root:not(#_) .bt-check input { appearance: none; -webkit-appearance: none; display: grid; place-items: center; flex: none; width: 18px; height: 18px; margin: 1px 0 0; border-radius: 4px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); cursor: pointer; }
+.bt-root:not(#_) .bt-check input:checked { background: var(--bt-primary); border-color: var(--bt-primary); }
+.bt-root:not(#_) .bt-check input:checked::after { content: "✓"; font-size: var(--bt-text-sm); font-weight: 800; line-height: 1; color: var(--bt-text); }
+.bt-root:not(#_) .bt-check input:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+
+/* Banners under the header: verify your email, finish signup (.bt-when-unverified / .bt-when-needs-signup) */
+.bt-root:not(#_) .bt-account-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; padding: 10px var(--bt-gutter); border-bottom: 1px solid color-mix(in srgb, var(--bt-title) 35%, transparent); background: var(--bt-gold-bg); font-size: var(--bt-text-md); color: var(--bt-text); }
+.bt-root:not(#_) .bt-account-banner .bt-spacer { flex: 1; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-account-banner { padding: 10px 16px; } }
+
+/* Header: loading skeleton and the avatar menu (.bt-account-menu, a popover under the button) */
+.bt-root:not(#_) .bt-account-skel { width: 118px; height: 34px; border-radius: var(--bt-radius-full); }
+.bt-root:not(#_) .bt-account--compact .bt-account-skel { width: 34px; }
+.bt-root:not(#_) .bt-account-wrap { position: relative; }
+.bt-root:not(#_) button.bt-account-btn { cursor: pointer; font: inherit; font-size: var(--bt-text-md); font-weight: 600; }
+.bt-root:not(#_) .bt-account-menu { position: absolute; right: 0; top: calc(100% + 8px); z-index: var(--bt-z-dropdown); width: 240px; padding: 8px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: var(--bt-surface); box-shadow: var(--bt-shadow-dropdown); text-align: left; }
+.bt-root:not(#_) .bt-account-menu-who { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; padding: 8px; border-bottom: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-account-menu-who .bt-avatar-md { width: 36px; height: 36px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-account-menu-who b { display: block; color: var(--bt-text); }
+.bt-root:not(#_) .bt-account-menu-who small { display: block; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-account-menu :is(a, button) { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 8px; border: 0; border-radius: var(--bt-radius-sm); background: none; color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-md); font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
+.bt-root:not(#_) .bt-account-menu :is(a, button):hover { background: var(--bt-surface-2); color: var(--bt-text); text-decoration: none; }
+.bt-root:not(#_) .bt-account-menu a.is-admin { color: var(--bt-admin-text); }
+.bt-root:not(#_) .bt-account-menu hr { margin: 6px 0; border: 0; border-top: 1px solid var(--bt-border); }
+
+/* Account page (A2): .bt-account-page > nav.bt-account-tabs (role=tablist) + .bt-account-panes >
+   section.bt-account-pane > .bt-card with .bt-set-row rows. Phones: the tabs become a
+   swipeable pill row. */
+.bt-root:not(#_) .bt-account-page { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px; align-items: start; max-width: 980px; }
+.bt-root:not(#_) .bt-account-tabs { position: sticky; top: calc(var(--bt-header-h) + 10px); display: flex; flex-direction: column; gap: 2px; }
+.bt-root:not(#_) .bt-account-tabs a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--bt-radius-md); color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 600; text-decoration: none; }
+.bt-root:not(#_) .bt-account-tabs a:hover { color: var(--bt-text); text-decoration: none; }
+.bt-root:not(#_) .bt-account-tabs a[aria-selected="true"] { background: var(--bt-primary-bg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-account-panes, .bt-root:not(#_) .bt-account-pane { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.bt-root:not(#_) .bt-set-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 12px 0; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-card-head + .bt-set-row, .bt-root:not(#_) .bt-card-head + p + .bt-set-row { border-top: 0; }
+.bt-root:not(#_) .bt-set-row-main { flex: 1; min-width: 160px; }
+.bt-root:not(#_) .bt-set-row-main b { display: block; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-set-row-main small { display: block; margin-top: 2px; font-size: var(--bt-text-sm); color: var(--bt-text-faint); overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-set-row-form { display: flex; flex-wrap: wrap; gap: 8px; width: 100%; }
+.bt-root:not(#_) .bt-set-row-form .bt-input, .bt-root:not(#_) .bt-set-row-form .bt-handle-input { flex: 1 1 200px; min-width: 0; }
+.bt-root:not(#_) .bt-pill-ok, .bt-root:not(#_) .bt-pill-warn { padding: 3px 9px; border-radius: var(--bt-radius-full); font-size: var(--bt-text-xs); font-weight: 700; white-space: nowrap; }
+.bt-root:not(#_) .bt-pill-ok { background: var(--bt-lime-bg); color: var(--bt-lime); }
+.bt-root:not(#_) .bt-pill-warn { background: var(--bt-gold-bg); color: var(--bt-title); }
+.bt-root:not(#_) .bt-card.bt-card--danger { border-color: color-mix(in srgb, var(--bt-danger) 55%, transparent); }
+.bt-root:not(#_) .bt-card--danger .bt-card-title { color: var(--bt-danger-text); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-account-page { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-account-tabs { position: static; flex-direction: row; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+  .bt-root:not(#_) .bt-account-tabs::-webkit-scrollbar { display: none; }
+  .bt-root:not(#_) .bt-account-tabs a { flex: none; padding: 7px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; scroll-snap-align: start; }
+  .bt-root:not(#_) .bt-account-tabs a[aria-selected="true"] { border-color: var(--bt-primary); }
+}
 
 /* ================= END Site shell ================= */

@@ -40,6 +40,12 @@
   ],
   "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
   "modules": ["live", "schedule", "games", "streams", "shop", "club"],
+  "signInReasons": [
+    { "icon": "🗳", "text": "Vote on what I play next" },
+    { "icon": "🏆", "text": "Earn points, badges and leaderboard spots" },
+    { "icon": "💬", "text": "Post on the Boom Board and send Warm Fuzzies" },
+    { "icon": "🎁", "text": "Enter giveaways drawn live on stream" }
+  ],
   "termsVersion": "2026-09-28",
   "_aboutTerms": "Version of the Terms and Privacy Policy that signup records. Bump it when either changes: seed-site.js copies it into sites/{siteId}, and completeSignup only accepts the current one.",
   "twitchClientId": "59qwrarfotu1bcpzrbc5w6ksw0v6yb",

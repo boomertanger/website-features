@@ -48,7 +48,7 @@ assert.equal(v.initialsOf("🦇"), "?");
 process.env.GCLOUD_PROJECT ||= "boomertanger-staging";
 process.env.FIREBASE_CONFIG ||= JSON.stringify({ projectId: process.env.GCLOUD_PROJECT });
 const fns = require("../index.js");
-for (const name of ["checkHandle", "completeSignup", "changeHandle", "updateProfile", "updatePrefs", "twitchAuth", "unlinkPlatform", "signOutEverywhere", "setMemberRole", "mirrorMemberRoles", "syncAdminStatus", "adminEditItem"]) {
+for (const name of ["checkHandle", "completeSignup", "abandonSignup", "changeHandle", "updateProfile", "updatePrefs", "twitchAuth", "unlinkPlatform", "signOutEverywhere", "setMemberRole", "mirrorMemberRoles", "syncAdminStatus", "adminEditItem"]) {
   assert.ok(fns[name], `missing export ${name}`);
 }
 console.log("accounts checks passed");

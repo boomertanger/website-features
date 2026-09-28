@@ -8,7 +8,8 @@ const VOTES_KEY = "bt-tts-votes";
 const readVotes = () => { try { return JSON.parse(localStorage.getItem(VOTES_KEY)) || {}; } catch { return {}; } };
 const saveVotes = (v) => { try { localStorage.setItem(VOTES_KEY, JSON.stringify(v)); } catch { /* not saved */ } };
 
-const JOIN = `<a class="bt-btn bt-btn--primary bt-btn--sm" href="/account">Join free to get on the leaderboard</a>`;
+// Opens the sign-in dialog (scripts/account/ui.ts handles every [data-signin]).
+const JOIN = `<a class="bt-btn bt-btn--primary bt-btn--sm" href="/account" data-signin>Join free to get on the leaderboard</a>`;
 
 export function showEnd(G, kind, title = "", sub = "") {
   const { S } = G;

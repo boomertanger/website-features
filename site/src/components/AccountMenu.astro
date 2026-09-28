@@ -1,0 +1,18 @@
+---
+// The header avatar menu (docs/design/mockups/accounts.html "Avatar menu"):
+// My profile, Account settings, Linked accounts, green Admin tools for admins,
+// Sign out. Opened and closed by scripts/account/ui.ts; [data-me] is filled there.
+import member from "../data/preview-member.json";
+---
+<div class="bt-account-menu" role="menu" hidden>
+  <div class="bt-account-menu-who">
+    <span class="bt-avatar-md" aria-hidden="true" data-me="avatar">{member.initials}</span>
+    <div><b data-me="displayName">{member.name}</b><small data-me="handle">@{member.name.toLowerCase()}</small></div>
+  </div>
+  <a role="menuitem" href="/account#profile">👤 My profile</a>
+  <a role="menuitem" href="/account#signin">⚙️ Account settings</a>
+  <a role="menuitem" href="/account#linked">🔗 Linked accounts</a>
+  <a role="menuitem" class="is-admin bt-when-admin" href="/admin">🛡 Admin tools</a>
+  <hr />
+  <button type="button" role="menuitem" data-signout>↩ Sign out</button>
+</div>

@@ -81,6 +81,22 @@ module.exports = function accounts({ adminLogEntry }) {
     return free >= 0 ? tries[free] : null;
   }
 
+  // Removes everything a started-but-unfinished signup left behind (a Twitch link
+  // record, the partial account doc, the Firebase Auth user), so an under-13 visitor
+  // leaves nothing saved. Never touches an account that finished signing up.
+  async function purgePreSignup(uid) {
+    const user = await refs(uid).user.get();
+    if (user.get("signedUpAt")) return false;
+    const links = await db.collection("platformLinks").where("uid", "==", uid).get();
+    const batch = db.batch();
+    links.docs.forEach((d) => batch.delete(d.ref));
+    batch.delete(refs(uid).age);
+    batch.delete(refs(uid).user);
+    await batch.commit();
+    await auth.deleteUser(uid).catch((err) => { if (err.code !== "auth/user-not-found") throw err; });
+    return true;
+  }
+
   async function currentTermsVersion() {
     const site = await db.doc(`sites/${SITE_ID}`).get();
     return site.get("termsVersion") || TERMS_VERSION_FALLBACK;
@@ -107,7 +123,10 @@ module.exports = function accounts({ adminLogEntry }) {
     const birthYear = d.birthYear, birthMonth = d.birthMonth, now = new Date();
     if (!v.validBirth(birthYear, birthMonth, now)) throw fail("invalid-argument", "Pick your birth month and year.", "birthday");
     const age = v.conservativeAge(birthYear, birthMonth, now);
-    if (age < 13) throw fail("failed-precondition", "You need to be 13 or older to create an account.", "under13");
+    if (age < 13) {
+      await purgePreSignup(uid);
+      throw fail("failed-precondition", "You need to be 13 or older to create an account.", "under13");
+    }
 
     const handle = v.normalizeHandle(d.handle);
     const shape = v.handleShape(handle);
@@ -140,6 +159,14 @@ module.exports = function accounts({ adminLogEntry }) {
       });
     });
     return { handle, displayName, ageBand: v.ageBand(age) };
+  });
+
+  // ---------- abandonSignup() ----------
+  // The birthday step said under 13 (the site checks first, so the server never
+  // sees the birthday): delete the half-made account and everything tied to it.
+  const abandonSignup = onCall(async (request) => {
+    const uid = requireAuth(request);
+    return { removed: await purgePreSignup(uid) };
   });
 
   // ---------- changeHandle(handle): once every 30 days ----------
@@ -424,7 +451,7 @@ module.exports = function accounts({ adminLogEntry }) {
     }));
   });
 
-  return { checkHandle, completeSignup, changeHandle, updateProfile, updatePrefs, twitchAuth, unlinkPlatform, signOutEverywhere, setMemberRole, mirrorMemberRoles };
+  return { checkHandle, completeSignup, abandonSignup, changeHandle, updateProfile, updatePrefs, twitchAuth, unlinkPlatform, signOutEverywhere, setMemberRole, mirrorMemberRoles };
 };
 
 module.exports.SITE_ID = SITE_ID;

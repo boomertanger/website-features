@@ -31,6 +31,7 @@ export interface Account {
   ageBand?: "13-17" | "18+";
   prefs?: { showLinked?: boolean; useProviderPhoto?: boolean; reminders?: boolean };
   handleChangedAt?: { toDate(): Date };
+  claimsUpdatedAt?: { toMillis(): number };   // set when the server changes the member's role claims
   linked?: { twitch?: { id: string; login: string; displayName?: string } };
 }
 export interface AuthState {
@@ -76,13 +77,7 @@ let loadSeq = 0;
 async function load(user: User | null, forceToken = false) {
   const seq = ++loadSeq;
   if (!user) return publish({ ...EMPTY, status: "signedOut" });
-  let roles: string[] = [];
   let account: Account | null = null, profile: Profile | null = null, readOk = true;
-  try {
-    const token = await user.getIdTokenResult(forceToken);
-    const claimed = (token.claims.roles as Record<string, unknown> | undefined)?.[SITE_ID];
-    roles = Array.isArray(claimed) ? claimed.filter((r): r is string => typeof r === "string") : [];
-  } catch (err) { console.error("auth: couldn't read the ID token", err); }
   try {
     const { db, doc, getDoc } = await import("./db");   // only once someone is signed in
     const [a, p] = await Promise.all([
@@ -95,6 +90,16 @@ async function load(user: User | null, forceToken = false) {
     readOk = false;
     console.error("auth: couldn't read the account", err);
   }
+  // Roles from the token's claims. When the server changed them after this token
+  // was issued (users/{uid}.claimsUpdatedAt), fetch a fresh token first.
+  let roles: string[] = [];
+  try {
+    let token = await user.getIdTokenResult(forceToken);
+    const changed = account?.claimsUpdatedAt?.toMillis?.() ?? 0;
+    if (!forceToken && changed > Date.parse(token.issuedAtTime)) token = await user.getIdTokenResult(true);
+    const claimed = (token.claims.roles as Record<string, unknown> | undefined)?.[SITE_ID];
+    roles = Array.isArray(claimed) ? claimed.filter((r): r is string => typeof r === "string") : [];
+  } catch (err) { console.error("auth: couldn't read the ID token", err); }
   if (seq !== loadSeq) return;   // a newer sign-in/out won
   // Only a confirmed missing signup sends someone to the signup steps; a failed
   // read keeps them signed in rather than asking them to sign up again.

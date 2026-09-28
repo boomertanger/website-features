@@ -1,9 +1,13 @@
 ---
 // Site header: logo, main navigation, Live Beacon, account area.
-// The account buttons aren't wired up yet (accounts come in a later
-// milestone); signed-in states are previewed with ?as=member / ?as=admin.
+// Account states (docs/specs/accounts.md, screen 9) come from <body data-auth-state>
+// (lib/auth.ts): a skeleton while loading, Log in / Join free (open the sign-in
+// dialog), Finish signup mid-signup, or the avatar menu (green Admin for admins).
+// The member's name and avatar are filled in by scripts/account/ui.ts ([data-me]);
+// until then (and with the ?as= preview on staging) the preview member shows.
 import Logo from "./Logo.astro";
 import LiveBeacon from "./LiveBeacon.astro";
+import AccountMenu from "./AccountMenu.astro";
 import member from "../data/preview-member.json";
 import { navItems, isCurrent } from "../lib/nav.js";
 
@@ -21,15 +25,29 @@ const path = Astro.url.pathname;
   <span class="bt-spacer"></span>
   <span class="bt-beacon-slot"><LiveBeacon /></span>
   <div class="bt-account bt-account--wide">
+    <span class="bt-skeleton bt-account-skel bt-when-auth-loading" aria-hidden="true"></span>
+    <button type="button" class="bt-btn bt-btn--primary bt-btn--sm bt-when-needs-signup" data-signin="signup">Finish signup</button>
     <span class="bt-account bt-when-visitor">
-      <a class="bt-btn bt-btn--ghost bt-btn--sm" href="/account">Log in</a>
-      <a class="bt-btn bt-btn--primary bt-btn--sm" href="/account">Join free</a>
+      <a class="bt-btn bt-btn--ghost bt-btn--sm" href="/account" data-signin>Log in</a>
+      <a class="bt-btn bt-btn--primary bt-btn--sm" href="/account" data-signin>Join free</a>
     </span>
-    <a class="bt-admin-link bt-when-admin" href="/account">Admin</a>
-    <a class="bt-account-btn bt-when-signed-in" href="/account"><span class="bt-avatar-sm" aria-hidden="true">{member.initials}</span>{member.name}</a>
+    <a class="bt-admin-link bt-when-admin" href="/admin">Admin</a>
+    <div class="bt-account-wrap bt-when-signed-in" data-account-menu>
+      <button type="button" class="bt-account-btn" aria-haspopup="menu" aria-expanded="false">
+        <span class="bt-avatar-sm" aria-hidden="true" data-me="avatar">{member.initials}</span><span data-me="displayName">{member.name}</span> ▾
+      </button>
+      <AccountMenu />
+    </div>
   </div>
   <div class="bt-account bt-account--compact">
-    <a class="bt-btn bt-btn--primary bt-btn--sm bt-when-visitor" href="/account">Join</a>
-    <a class="bt-account-btn bt-when-signed-in" href="/account" style="padding:3px" aria-label="Account"><span class="bt-avatar-sm" aria-hidden="true">{member.initials}</span></a>
+    <span class="bt-skeleton bt-account-skel bt-when-auth-loading" aria-hidden="true"></span>
+    <button type="button" class="bt-btn bt-btn--primary bt-btn--sm bt-when-needs-signup" data-signin="signup">Finish</button>
+    <a class="bt-btn bt-btn--primary bt-btn--sm bt-when-visitor" href="/account" data-signin>Join</a>
+    <div class="bt-account-wrap bt-when-signed-in" data-account-menu>
+      <button type="button" class="bt-account-btn" style="padding:3px" aria-haspopup="menu" aria-expanded="false" aria-label="Account">
+        <span class="bt-avatar-sm" aria-hidden="true" data-me="avatar">{member.initials}</span>
+      </button>
+      <AccountMenu />
+    </div>
   </div>
 </header>

@@ -1,0 +1,64 @@
+---
+// The email sign-in link lands here. Same browser: the address was remembered when
+// the link was sent. Another device: the member types it once to confirm.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AuthStatus from "../../components/AuthStatus.astro";
+---
+<BaseLayout title="Sign in" noindex>
+  <AuthStatus title="Sign in" message="Signing you in…">
+    <form class="bt-stack" data-confirm hidden>
+      <div class="bt-field"><label class="bt-label" for="el-email">Your email</label><input class="bt-input" id="el-email" type="email" autocomplete="email" required /></div>
+      <div><button type="submit" class="bt-btn bt-btn--primary">Sign in</button></div>
+    </form>
+  </AuthStatus>
+</BaseLayout>
+
+<script>
+  import { isSignInWithEmailLink, signInWithEmailLink } from "firebase/auth";
+  import { auth } from "../../lib/firebase";
+  import { refresh, getAuthState } from "../../lib/auth";
+  import { messageFor } from "../../lib/errors";
+  import { safeReturn } from "../../lib/twitch";
+  import { CONTINUE_KEY, EMAIL_FOR_LINK_KEY, RETURN_KEY } from "../../lib/auth-keys";
+
+  const msg = document.querySelector<HTMLElement>("[data-auth-msg]")!;
+  const actions = document.querySelector<HTMLElement>("[data-auth-actions]")!;
+  const form = document.querySelector<HTMLFormElement>("[data-confirm]")!;
+  const read = (k: string) => { try { return localStorage.getItem(k); } catch { return null; } };
+  const drop = (k: string) => { try { localStorage.removeItem(k); } catch { /* none */ } };
+  const link = location.href;
+
+  async function finish(email: string) {
+    msg.textContent = "Signing you in…";
+    form.hidden = true;
+    try {
+      await signInWithEmailLink(auth, email, link);
+      drop(EMAIL_FOR_LINK_KEY);
+      const back = safeReturn(read(RETURN_KEY));
+      drop(RETURN_KEY);
+      await refresh();
+      if (getAuthState().status === "needsSignup") { try { sessionStorage.setItem(CONTINUE_KEY, "1"); } catch { /* the banner still offers it */ } }
+      location.replace(back);
+    } catch (err) {
+      msg.textContent = messageFor(err, "That link didn't work. Ask for a new one from the sign-in window.");
+      actions.hidden = false;
+    }
+  }
+
+  if (!isSignInWithEmailLink(auth, link)) {
+    msg.textContent = "This isn't a valid sign-in link. Ask for a new one from the sign-in window.";
+    actions.hidden = false;
+  } else {
+    history.replaceState(null, "", "/auth/email-link");   // keep the one-time code out of history
+    const email = read(EMAIL_FOR_LINK_KEY);
+    if (email) void finish(email);
+    else {
+      msg.textContent = "Opened on another device? Confirm the email address you asked for the link with.";
+      form.hidden = false;
+      form.addEventListener("submit", (ev) => {
+        ev.preventDefault();
+        void finish((document.getElementById("el-email") as HTMLInputElement).value.trim());
+      });
+    }
+  }
+</script>

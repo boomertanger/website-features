@@ -9,6 +9,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import TabBar from "../components/TabBar.astro";
 import PreviewChip from "../components/PreviewChip.astro";
+import Mascot from "../components/Mascot.astro";
 import site from "../data/site.json";
 import { isProduction, firebaseEnv } from "../lib/env.js";
 
@@ -17,8 +18,10 @@ interface Props {
   description?: string;
   /** Home: the header sits over the hero. */
   overlayHeader?: boolean;
+  /** Keep this page out of search everywhere (auth callbacks, admin). */
+  noindex?: boolean;
 }
-const { title, description = site.tagline, overlayHeader = false } = Astro.props;
+const { title, description = site.tagline, overlayHeader = false, noindex = false } = Astro.props;
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tagline}`;
 ---
 <!doctype html>
@@ -29,7 +32,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     <meta name="color-scheme" content="dark" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
-    {!isProduction && <meta name="robots" content="noindex,nofollow" />}
+    {(noindex || !isProduction) && <meta name="robots" content="noindex,nofollow" />}
     <link rel="icon" href="/favicon.svg?v=mascot" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -53,12 +56,27 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     <div class="bt-site-frame">
       <a class="bt-skip" href="#main">Skip to content</a>
       <SiteHeader overlay={overlayHeader} />
+      <!-- Account banners (docs/specs/accounts.md screen 8): shown by <body data-auth-state>. -->
+      <div class="bt-account-banner bt-when-unverified" data-verify-banner>
+        <span data-verify-email>✉️ Check your inbox: verify your email to check in, vote and post.</span>
+        <span data-verify-noemail hidden>✉️ Add an email to your account to check in, vote and post.</span>
+        <span class="bt-spacer"></span>
+        <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-verify-email data-verify-resend>Resend email</button>
+        <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/account#signin" data-verify-noemail hidden>Add an email</a>
+      </div>
+      <div class="bt-account-banner bt-when-needs-signup">
+        <span>Almost there: finish creating your account to join in.</span>
+        <span class="bt-spacer"></span>
+        <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="signup">Finish signup</button>
+      </div>
       <main id="main" class="bt-site-main" tabindex="-1">
         <slot />
       </main>
       <SiteFooter />
     </div>
     <TabBar />
+    <!-- The mascot for script-built UI (the sign-in dialog clones it). -->
+    <template id="bt-mascot-tpl"><Mascot decorative /></template>
     {!isProduction && <PreviewChip />}
     <script>
       import "../scripts/stream-time.js";
@@ -66,6 +84,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       // and a signed-in member always wins over it.
       import { startAuth } from "../lib/auth";
       startAuth();
+      import "../scripts/account/ui";
     </script>
   </body>
 </html>

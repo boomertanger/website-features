@@ -1,0 +1,57 @@
+---
+// Twitch comes back here (both modes: sign in and link). The page swaps the code
+// for a sign-in (twitchAuth callable) and returns to where the member started.
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import AuthStatus from "../../../components/AuthStatus.astro";
+---
+<BaseLayout title="Twitch" noindex>
+  <AuthStatus title="Twitch" message="Talking to Twitch…" />
+</BaseLayout>
+
+<script>
+  import { signInWithCustomToken } from "firebase/auth";
+  import { auth } from "../../../lib/firebase";
+  import { refresh, whenReady, getAuthState } from "../../../lib/auth";
+  import { call } from "../../../lib/call";
+  import { messageFor } from "../../../lib/errors";
+  import { takeTwitchFlow, safeReturn, TWITCH_CALLBACK } from "../../../lib/twitch";
+  import { CONTINUE_KEY } from "../../../lib/auth-keys";
+
+  const msg = document.querySelector<HTMLElement>("[data-auth-msg]")!;
+  const actions = document.querySelector<HTMLElement>("[data-auth-actions]")!;
+  const back = document.querySelector<HTMLAnchorElement>("[data-auth-back]")!;
+  const fail = (text: string, href = "/", label = "Back to the site") => {
+    msg.textContent = text; back.href = href; back.textContent = label; actions.hidden = false;
+  };
+
+  (async () => {
+    const q = new URLSearchParams(location.search);
+    const flow = takeTwitchFlow();
+    // Don't leave the one-time code in the address bar or history.
+    history.replaceState(null, "", TWITCH_CALLBACK);
+    const home = flow?.mode === "link" ? "/account#linked" : safeReturn(flow?.returnTo);
+    if (q.get("error")) return fail("Twitch sign-in was cancelled.", home, "Go back");
+    if (!flow || !q.get("code") || q.get("state") !== flow.state) return fail("That Twitch sign-in expired. Please start again.", home, "Go back");
+    const redirectUri = location.origin + TWITCH_CALLBACK;
+    try {
+      if (flow.mode === "link") {
+        const s = await whenReady();
+        if (!s.user) return fail("Sign in first, then link Twitch from your account page.", "/account", "Go to your account");
+        msg.textContent = "Linking your Twitch account…";
+        await call("twitchAuth", { code: q.get("code"), redirectUri, mode: "link" });
+        location.replace("/account?linked=twitch#linked");
+        return;
+      }
+      msg.textContent = "Signing you in with Twitch…";
+      const { token } = await call<{ token: string }>("twitchAuth", { code: q.get("code"), redirectUri, mode: "signin" });
+      await signInWithCustomToken(auth, token);
+      await refresh();
+      if (getAuthState().status === "needsSignup") { try { sessionStorage.setItem(CONTINUE_KEY, "1"); } catch { /* the banner still offers it */ } }
+      location.replace(safeReturn(flow.returnTo));
+    } catch (err) {
+      const text = messageFor(err, "Twitch sign-in didn't work. Please try again.");
+      if (flow.mode === "link") location.replace(`/account?linkError=${encodeURIComponent(text)}#linked`);
+      else fail(text, safeReturn(flow.returnTo), "Go back");
+    }
+  })();
+</script>
