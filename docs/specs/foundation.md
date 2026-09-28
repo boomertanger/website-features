@@ -227,15 +227,17 @@ These are the screens and states the mockups need to cover.
 
 Each step is testable on staging before the next starts.
 
-1. Astro project in `site/`, Cloudflare Pages with `main` and `dev`, staging.boomertanger.com, Cloudflare Access.
-2. Base layout: header, footer, navigation, bt-ui changes, placeholder home page.
-3. Site settings document and owner setup.
-4. Google and email sign-in, email verification, account page shell.
-5. Signup steps: age screen, handle, terms; public profiles.
-6. Roles, claims and the admin member view.
-7. Twitch login; Twitch and YouTube linking.
-8. App Check and rules hardening.
-9. Data export and account deletion.
+1. ✅ Astro project in `site/`, Cloudflare Pages with `main` and `dev`, staging.boomertanger.com, Cloudflare Access.
+2. ✅ Base layout: header, footer, navigation, bt-ui changes, placeholder home page.
+3. ✅ Site settings document and owner setup (milestone 2: `seed-site.js`, `set-owner.js`).
+4. ✅ Google and email sign-in, email verification, account page (milestone 2).
+5. ✅ Signup steps: age screen, handle, terms; public profiles (milestone 2).
+6. ✅ Roles and claims (milestone 2: `setMemberRole`, `mirrorMemberRoles`). The admin member view UI moves to milestone 2b.
+7. ✅ Twitch login and Twitch linking (milestone 2). YouTube linking moves to milestone 2b (it needs Google's OAuth verification); TikTok later.
+8. Milestone 2b: App Check and rules hardening.
+9. Milestone 2b: data export and account deletion (the screens exist; the buttons say "coming soon").
+
+Milestone 2 is specified in `docs/specs/accounts.md`.
 
 After the foundation, the proposed order is: growth data collector (so history starts early), Live Beacon and the Control Room shell, existing feature ports, then plans and billing.
 

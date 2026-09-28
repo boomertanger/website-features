@@ -87,6 +87,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
 | Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
+| Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -335,9 +336,39 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-logo` (the R4 lockup), `.bt-nav` (links with
   `aria-current="page"`), `.bt-spacer`, `.bt-beacon-slot`, `.bt-account.bt-account--wide`
   and `.bt-account.bt-account--compact` (phones). Account: `.bt-account-btn` +
-  `.bt-avatar-sm`; green `.bt-admin-link` for admins. ≤ 1024px: mascot-only logo, no
+  `.bt-avatar-sm` (a `button` opening `.bt-account-menu`); green `.bt-admin-link` for
+  admins; `.bt-skeleton.bt-account-skel` while auth loads; a Finish signup button
+  mid-signup (see Accounts below). ≤ 1024px: mascot-only logo, no
   beacon subtitle, nav scrolls if tight. ≤ 640px: nav and beacon hide (the tab bar takes
   over); the wordmark comes back at 15px with a 30px mascot.
+- **Accounts (`docs/specs/accounts.md`, mockup `docs/design/mockups/accounts.html`, S2 +
+  A2):** state comes from `<body data-auth-state>` = `loading | signedOut | needsSignup |
+  unverified | verified` (site/src/lib/auth.ts) with helpers `.bt-when-auth-loading`,
+  `.bt-when-needs-signup`, `.bt-when-unverified`; while loading or mid-signup the
+  `.bt-account` area hides its visitor / signed-in / admin pieces. Any `[data-signin]`
+  element opens the sign-in dialog (`data-signin="signup"` resumes the signup steps).
+  **Sign-in dialog:** `openModal({ variant: "split" })` → `.bt-modal.bt-modal--split` >
+  `.bt-modal-art` (`.bt-modal-splat` img + `.bt-mascot`, `.bt-modal-wordmark` with a gold
+  `span`, `.bt-modal-reasons` li > icon `span` + text) + `.bt-modal-body` (`.bt-modal-x`
+  close, then the screen as a `.bt-stack`). ≤ 640px: one column, the splat and mascot
+  stacked over the wordmark, reasons hidden. Inside: `.bt-providers` >
+  `button.bt-provider` > `.bt-provider-icon--google|--twitch|--email`; `.bt-or` divider;
+  `.bt-fine [--left]` small print; `.bt-link-btn` text buttons; `.bt-row-split` /
+  `.bt-row-center`; `.bt-modal-icon` (big emoji); `.bt-notice [--error|--ok]`. Signup:
+  `.bt-steps-label` + `.bt-steps` > `i[.is-on]`; `.bt-bday` (month + year selects);
+  `.bt-handle-input` (the @ prefix) + `.bt-field-state [--ok|--bad]` (checking = plain);
+  `.bt-profile-preview` with `.bt-avatar-md`; `label.bt-check` > `input[type=checkbox]` +
+  text. **Banners** under the header: `.bt-account-banner` (gold) for verify-your-email
+  and finish-signup; while one shows, an overlay header joins the flow. **Avatar menu:**
+  `.bt-account-wrap` > button + `.bt-account-menu[role=menu]` (`.bt-account-menu-who`,
+  links, `a.is-admin` green, `hr`, sign-out button). **Account page (A2):**
+  `.bt-account-page` > `nav.bt-account-tabs[role=tablist]` > `a[role=tab][aria-selected]`
+  + `.bt-account-panes` > `section.bt-account-pane[role=tabpanel]` > `.bt-card` with
+  `.bt-set-row` (`.bt-set-row-main` > `b` + `small`; actions; an inline
+  `form.bt-set-row-form`), `.bt-platform-icon--twitch|--youtube|--tiktok|--google|--email`,
+  `.bt-pill-ok` / `.bt-pill-warn`, `.bt-switch[role=switch]`, `.bt-card--danger`. ≤ 640px:
+  the tabs become a swipeable pill row. Avatars: `.bt-avatar-md` (44px) and
+  `.bt-avatar-xl` (72px) show initials or an opted-in photo (`img`).
 - **Live Beacon:** `.bt-beacon [--public|--backstage]` > `.bt-beacon-dot` + label +
   `.bt-beacon-sub`. Offline shows the next stream time; public glows red, backstage green.
 - **Tab bar (phones):** `nav.bt-tabbar` (5 columns) > links; the center `.bt-tab-raised` >
@@ -413,7 +444,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | Module | Exports |
 |---|---|
 | `dom.js` | `escapeHtml(str)`, `formatDate(value)` (Timestamp/Date/ms/ISO → "Sep 12, 2026"), `initials(name)`, `levelBars(n, of)` |
-| `modal.js` | `openModal({ content, title, wide, feature, onClose })` → `{ modal, close, requestClose, setBeforeClose, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` go through `requestClose()` (runs the `setBeforeClose` guard); `close()` always closes; focus trap + restore; body scroll lock; positions below `--bt-header-h` when `<body>` sets it (the new site), otherwise below the measured Squarespace `#header`. |
+| `modal.js` | `openModal({ content, title, wide, variant, feature, onClose })` (`variant` adds `bt-modal--<variant>`, e.g. `"split"`) → `{ modal, close, requestClose, setBeforeClose, setDismissible }`; `modalHeader(titleHtml, subtitleHtml = "", toolsHtml = "")`; `CLOSE_ICON`. Escape/backdrop/`[data-bt-close]` go through `requestClose()` (runs the `setBeforeClose` guard); `close()` always closes; focus trap + restore; body scroll lock; positions below `--bt-header-h` when `<body>` sets it (the new site), otherwise below the measured Squarespace `#header`. |
 | `confirm.js` | `confirmAction({ title, message, confirmLabel, busyLabel, danger, feature, onConfirm })` → `Promise<boolean>`. Locks everything while `onConfirm` runs; shows the error and re-enables if it throws. |
 | `admin-menu.js` | `initAdminMenu(root)` → `{ close, sync }`; `LOGIN_ICON`, `SIGNOUT_ICON`, `SHIELD_ICON`, `PENCIL_ICON` |
 | `admin-auth.js` | Extracted from the identical admin code in Bug Zapper and Feature Lab (see §7). |
@@ -551,6 +582,13 @@ section 5 (decided after the migration). New features must use it too.
   look and the phone game bar, and the new tokens (`--bt-blood*`, `--bt-glow-*`,
   `--bt-shadow-text`, `--bt-shadow-drop`, `--bt-content-max`, `--bt-footer-bg`,
   `--bt-footer-spot`, `--bt-hud-*`, `--bt-shadow-splat`).
+- **Add the accounts pieces to the published UI Kit page:** `.bt-modal--split`, provider
+  buttons and platform tiles, handle field states, steps, checkbox rows, avatars md / xl,
+  `.bt-account-banner`, `.bt-account-menu`, `.bt-account-page` tabs and `.bt-set-row`, the
+  auth-state helpers and the `--bt-brand-*` / `--bt-on-brand` tokens.
+- **No Firestore rules tests yet.** The emulator needs Java 11+; until a rules test setup
+  exists, the accounts rules are checked by hand with the checklist in
+  `docs/specs/accounts.md`.
 
 ### 8d. New site shell (Astro on Cloudflare Pages)
 
@@ -638,3 +676,26 @@ differences:
 - **Leaderboard and votes wait for accounts.** Until milestone 2 the trophy is rendered
   only on non-production builds (members only, sample rows labelled PREVIEW DATA), and
   votes are visual only (remembered per browser).
+
+### 8g. Accounts
+
+- **Accounts: S2 sign-in, A2 account page.** Chosen in `docs/design/mockups/accounts.html`
+  (S1 classic, S2 split with pitch, S3 splatter; A1 one column, A2 tabs). S2 puts the
+  splatter, mascot, wordmark and four reasons to join beside the form, so the same dialog
+  sells the club to new visitors and signs members back in; on phones the art shrinks to
+  the splat and mascot stacked over the wordmark. A2 keeps each part of the account
+  behind a tab (a swipeable pill row on phones). The split layout is a kit variant of the
+  standard dialog (`openModal({ variant: "split" })`), not a hand-rolled modal.
+- **One dialog for sign-in and signup.** Google, Twitch and email are the same buttons
+  for new and returning members; new members continue in the same dialog through
+  birthday, handle and terms. Redirect sign-ins (Twitch, email link) come back to the
+  page they started from and reopen the signup steps there.
+- **Brand colors live on the provider tiles only.** Google, Twitch, YouTube, TikTok and
+  the email tile use their own colors (`--bt-brand-*`), declared once as tokens; the
+  buttons around them are ordinary kit buttons.
+- **The account area shows the auth state, never a guess.** While Firebase restores the
+  session the header shows a skeleton instead of flashing Log in; mid-signup it offers
+  Finish signup. A real signed-in member always wins over the `?as=` preview switch.
+- **Nothing about accounts is written from the browser.** Profiles, handles, roles and
+  preferences change only through Cloud Functions; the rules give clients read access to
+  their own docs and public profiles, and no writes.
