@@ -3,8 +3,10 @@
 // demand by scripts/account/ui.ts the first time someone clicks a [data-signin]
 // button, so the popup sign-in code never ships on a page by default.
 //
-// Screens: signin, email, link (sent), forgot, then for new members birthday,
-// under13, handle, terms. The same dialog stays open from the first click to the
+// E1 (docs/design/mockups/email-flows.html): the dialog opens in a mode, a Join free
+// | Sign in pill at the top. Join free buttons open "join", Log in opens "signin";
+// switching keeps the typed email. Then link (sent) and forgot, and for new members
+// birthday, under13, handle, terms. The same dialog stays open from the first click to the
 // finished account.
 import { openModal, CLOSE_ICON } from "../../../../shared/ui/modal.js";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
@@ -22,7 +24,8 @@ import { createHandleChecker, cleanHandle, type HandleState } from "../../lib/ha
 import { wordmark, signInReasons, termsVersion } from "../../data/site.json";
 import { UNDER13_KEY, EMAIL_FOR_LINK_KEY, RETURN_KEY } from "../../lib/auth-keys";
 
-export type Screen = "signin" | "email" | "link" | "forgot" | "birthday" | "under13" | "handle" | "terms";
+export type Screen = "join" | "signin" | "link" | "forgot" | "birthday" | "under13" | "handle" | "terms";
+export type Mode = "join" | "signin";
 
 const RESEND_SECONDS = 30;
 const MONTHS = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
@@ -49,15 +52,17 @@ const head = (title: string, sub: string) =>
 const steps = (n: number) =>
   `<div><div class="bt-steps-label">Step ${n} of 3</div><div class="bt-steps" aria-hidden="true">${[1, 2, 3].map((i) => `<i class="${i <= n ? "is-on" : ""}"></i>`).join("")}</div></div>`;
 const errBox = `<div class="bt-notice bt-notice--error" role="alert" data-err hidden></div>`;
-const fine = `<p class="bt-fine">By continuing you agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>. You must be 13 or older.</p>`;
+const fine = `<p class="bt-fine">By joining you agree to the <a href="/terms" target="_blank">Terms</a> and <a href="/privacy" target="_blank">Privacy Policy</a>. You must be 13 or older.</p>`;
+const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const badEmail = () => Object.assign(new Error("bad email"), { code: "auth/invalid-email" });
 
 interface Draft { email: string; month: number | null; year: number | null; handle: string; displayName: string; handleOk: boolean; terms: boolean; reminders: boolean }
 
 let open: { go: (s: Screen) => void } | null = null;
 
-export function openSignIn({ screen }: { screen?: Screen } = {}) {
+export function openSignIn({ screen, mode = "join" }: { screen?: Screen; mode?: Mode } = {}) {
   const now = getAuthState();
-  const start: Screen = screen ?? (now.status === "needsSignup" ? "birthday" : "signin");
+  const start: Screen = screen ?? (now.status === "needsSignup" ? "birthday" : mode);
   if (open) return open.go(start);
   if (now.user && now.status !== "needsSignup" && !screen) { location.href = "/account"; return; }
 
@@ -83,6 +88,8 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
   let resendTimer = 0;
 
   const showErr = (msg: string | null) => { const e = $("[data-err]"); if (!e) return; e.textContent = msg || ""; e.hidden = !msg; };
+  /** For messages with an action inside (e.g. "Sign in instead"); only our own markup. */
+  const showErrHtml = (html: string) => { const e = $("[data-err]"); if (!e) return; e.innerHTML = html; e.hidden = false; };
   const busy = (on: boolean) => {
     body.setAttribute("aria-busy", String(on));
     body.querySelectorAll<HTMLButtonElement | HTMLInputElement | HTMLSelectElement>("button, input, select").forEach((el) => {
@@ -93,38 +100,49 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
   const run = async (fn: () => Promise<void>) => { showErr(null); busy(true); try { await fn(); } catch (err) { showErr(messageFor(err)); } finally { if (body.isConnected) busy(false); } };
 
   // ---- screens ----
-  const SCREENS: Record<Screen, () => string> = {
-    signin: () => `${head("Welcome to the club", "Sign in, or create a free account in seconds.")}
-      <div class="bt-providers">
-        <button type="button" class="bt-provider" data-act="google"><span class="bt-provider-icon bt-provider-icon--google" aria-hidden="true">G</span>Continue with Google</button>
-        <button type="button" class="bt-provider" data-act="twitch"><span class="bt-provider-icon bt-provider-icon--twitch" aria-hidden="true">Tw</span>Continue with Twitch</button>
-        <button type="button" class="bt-provider" data-go="email"><span class="bt-provider-icon bt-provider-icon--email" aria-hidden="true">@</span>Continue with email</button>
+  // The E1 pieces the Join and Sign in tabs share.
+  const modeTabs = (mode: Mode) => `<div class="bt-pills bt-pills--mode" role="tablist" aria-label="Join or sign in">${(["join", "signin"] as Mode[]).map((k) =>
+    `<button type="button" role="tab" data-mode="${k}" aria-selected="${k === mode}" tabindex="${k === mode ? 0 : -1}"${k === mode ? ' class="is-on"' : ""}>${k === "join" ? "Join free" : "Sign in"}</button>`).join("")}</div>`;
+  const providers = `<div class="bt-providers bt-providers--row">
+        <button type="button" class="bt-provider" data-act="google"><span class="bt-provider-icon bt-provider-icon--google" aria-hidden="true">G</span>Google</button>
+        <button type="button" class="bt-provider" data-act="twitch"><span class="bt-provider-icon bt-provider-icon--twitch" aria-hidden="true">Tw</span>Twitch</button>
       </div>
-      <div class="bt-notice" role="alert" data-blocked hidden>Your browser blocked the Google window. Allow pop-ups for this site, or try again:<br /><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-act="google">Try Google again</button></div>
-      ${errBox}${fine}<p class="bt-fine">Already a member? Same buttons. We'll recognise you.</p>`,
-    email: () => `${head("Continue with email", "New here? We'll create your account.")}
-      <form class="bt-stack" data-form="email" novalidate>
-        <div class="bt-field"><label class="bt-label" for="bt-si-email">Email</label><input class="bt-input" id="bt-si-email" name="email" type="email" autocomplete="email" required value="${escapeHtml(draft.email)}" /></div>
-        <div class="bt-field"><label class="bt-label" for="bt-si-pw">Password</label><input class="bt-input" id="bt-si-pw" name="password" type="password" autocomplete="current-password" required />
-          <div class="bt-row-split"><button type="button" class="bt-link-btn" data-go="forgot">Forgot password?</button><span class="bt-fine">8+ characters</span></div></div>
+      <div class="bt-notice" role="alert" data-blocked hidden>Your browser blocked the Google window. Allow pop-ups for this site, or try again:<br /><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-act="google">Try Google again</button></div>`;
+  const emailField = () => `<div class="bt-field"><label class="bt-label" for="bt-si-email">Email</label><input class="bt-input" id="bt-si-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required value="${escapeHtml(draft.email)}" /></div>`;
+  const passwordInput = (autocomplete: string, placeholder: string) =>
+    `<div class="bt-password"><input class="bt-input" id="bt-si-pw" name="password" type="password" autocomplete="${autocomplete}"${placeholder ? ` placeholder="${placeholder}"` : ""} required /><button type="button" class="bt-password-toggle" data-pw-toggle aria-controls="bt-si-pw" aria-pressed="false" aria-label="Show password">Show</button></div>`;
+
+  const SCREENS: Record<Screen, () => string> = {
+    join: () => `${modeTabs("join")}${head("Join the club", "Free, and it takes a minute.")}${providers}
+      <div class="bt-or">or with email</div>
+      <form class="bt-stack" data-form="join" novalidate>
+        ${emailField()}
+        <div class="bt-field"><label class="bt-label" for="bt-si-pw">Create a password</label>${passwordInput("new-password", "8+ characters")}</div>
         ${errBox}
-        <button type="submit" class="bt-btn bt-btn--primary bt-btn--block">Continue</button>
+        <button type="submit" class="bt-btn bt-btn--primary bt-btn--block">Create account</button>
+      </form>${fine}`,
+    signin: () => `${modeTabs("signin")}${head("Welcome back", "Sign in to your account.")}${providers}
+      <div class="bt-or">or with email</div>
+      <form class="bt-stack" data-form="signin" novalidate>
+        ${emailField()}
+        <div class="bt-field"><label class="bt-label" for="bt-si-pw">Password</label>${passwordInput("current-password", "")}
+          <div class="bt-row-split"><button type="button" class="bt-link-btn" data-go="forgot">Forgot password?</button><button type="button" class="bt-link-btn" data-act="sendlink">Email me a link instead</button></div></div>
+        ${errBox}
+        <button type="submit" class="bt-btn bt-btn--primary bt-btn--block">Sign in</button>
       </form>
-      <div class="bt-or">or</div>
-      <button type="button" class="bt-btn bt-btn--secondary bt-btn--block" data-act="sendlink">Email me a sign-in link instead</button>
-      <button type="button" class="bt-link-btn" data-go="signin">← Other ways to sign in</button>`,
+      <p class="bt-fine">New here? <button type="button" class="bt-link-btn" data-mode="join">Join free</button></p>`,
     link: () => `${head("Check your email", `We sent a sign-in link to ${escapeHtml(mask(draft.email))}.`)}
       <div class="bt-modal-icon" aria-hidden="true">✉️</div>
       <p class="bt-center bt-modal-subtitle">Open it on this device to sign in.</p>
       ${errBox}
-      <div class="bt-row-center"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="resend" disabled>Resend in 0:${RESEND_SECONDS}</button><button type="button" class="bt-link-btn" data-go="email">Use a password instead</button></div>`,
+      <div class="bt-row-center"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="resend" disabled>Resend in 0:${RESEND_SECONDS}</button><button type="button" class="bt-link-btn" data-go="signin">Use a password instead</button></div>`,
     forgot: () => `${head("Reset your password", "We'll email you a link to choose a new one.")}
       <form class="bt-stack" data-form="forgot" novalidate>
         <div class="bt-field"><label class="bt-label" for="bt-si-remail">Email</label><input class="bt-input" id="bt-si-remail" name="email" type="email" autocomplete="email" required value="${escapeHtml(draft.email)}" /></div>
         ${errBox}<div class="bt-notice bt-notice--ok" role="status" data-ok hidden></div>
         <button type="submit" class="bt-btn bt-btn--primary bt-btn--block">Send reset link</button>
       </form>
-      <button type="button" class="bt-link-btn" data-go="email">← Back</button>`,
+      <button type="button" class="bt-link-btn" data-go="signin">← Back to sign in</button>`,
     birthday: () => {
       const y = new Date().getFullYear();
       return `${head("When's your birthday?", "We ask everyone. It keeps the club safe and follows the law.")}${steps(1)}
@@ -165,7 +183,8 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
     clearInterval(resendTimer);
     body.innerHTML = SCREENS[screen]();
     wire(screen);
-    const first = body.querySelector<HTMLElement>("input:not([type=checkbox]), select, .bt-provider, button:not([disabled])");
+    const first = body.querySelector<HTMLElement>('[role="tab"][aria-selected="true"]')
+      ?? body.querySelector<HTMLElement>("input:not([type=checkbox]), select, .bt-provider, button:not([disabled])");
     requestAnimationFrame(() => first?.focus());
   }
 
@@ -202,7 +221,7 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
 
   async function sendLink() {
     const email = draft.email.trim();
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw Object.assign(new Error("bad email"), { code: "auth/invalid-email" });
+    if (!EMAIL_RE.test(email)) throw badEmail();
     await sendSignInLinkToEmail(auth, email, { url: `${location.origin}/auth/email-link`, handleCodeInApp: true });
     store.set(EMAIL_FOR_LINK_KEY, email);
     store.set(RETURN_KEY, location.pathname + location.search);
@@ -235,7 +254,30 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
       go(b.dataset.go as Screen);
     }));
 
-    if (screen === "signin") {
+    if (screen === "join" || screen === "signin") {
+      const emailIn = $<HTMLInputElement>("#bt-si-email")!, pwIn = $<HTMLInputElement>("#bt-si-pw")!;
+      emailIn.addEventListener("input", () => { draft.email = emailIn.value.trim(); });
+
+      // The pill: switching tabs keeps whatever email was typed.
+      body.querySelectorAll<HTMLElement>("[data-mode]").forEach((btn) => btn.addEventListener("click", () => {
+        draft.email = emailIn.value.trim();
+        if (btn.dataset.mode !== screen) go(btn.dataset.mode as Mode);
+      }));
+      body.querySelector<HTMLElement>('[role="tablist"]')?.addEventListener("keydown", (ev) => {
+        if (ev.key !== "ArrowLeft" && ev.key !== "ArrowRight") return;
+        ev.preventDefault();
+        draft.email = emailIn.value.trim();
+        go(screen === "join" ? "signin" : "join");
+      });
+
+      $("[data-pw-toggle]")!.addEventListener("click", (ev) => {
+        const t = ev.currentTarget as HTMLButtonElement, show = pwIn.type === "password";
+        pwIn.type = show ? "text" : "password";
+        t.textContent = show ? "Hide" : "Show";
+        t.setAttribute("aria-pressed", String(show));
+        t.setAttribute("aria-label", show ? "Hide password" : "Show password");
+      });
+
       body.querySelectorAll('[data-act="google"]').forEach((b) => b.addEventListener("click", () => run(async () => {
         ($("[data-blocked]") as HTMLElement).hidden = true;
         const provider = new GoogleAuthProvider();
@@ -250,39 +292,42 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
         }
         await afterSignIn();
       })));
-      $('[data-act="twitch"]')?.addEventListener("click", () => {
+      $('[data-act="twitch"]')!.addEventListener("click", () => {
         store.set(RETURN_KEY, location.pathname + location.search);
         startTwitch("signin");
       });
-    }
 
-    if (screen === "email") {
-      $<HTMLFormElement>('[data-form="email"]')!.addEventListener("submit", (ev) => {
+      $<HTMLFormElement>("[data-form]")!.addEventListener("submit", (ev) => {
         ev.preventDefault();
-        const f = ev.currentTarget as HTMLFormElement;
-        const email = (f.elements.namedItem("email") as HTMLInputElement).value.trim();
-        const pw = (f.elements.namedItem("password") as HTMLInputElement).value;
+        const email = emailIn.value.trim(), pw = pwIn.value;
         draft.email = email;
-        run(async () => {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw Object.assign(new Error("bad email"), { code: "auth/invalid-email" });
-          if (!pw) throw Object.assign(new Error("Enter your password."), { code: "bt/msg" });
-          try {
-            // New email = new account (8+ characters); a known one signs in.
-            if (pw.length < 8) throw Object.assign(new Error("short"), { code: "bt/short" });
-            await createUserWithEmailAndPassword(auth, email, pw);
-          } catch (err) {
-            const code = (err as { code?: string }).code;
-            if (code !== "auth/email-already-in-use" && code !== "bt/short") throw err;
-            try { await signInWithEmailAndPassword(auth, email, pw); } catch (e2) {
-              if (code === "bt/short" && (e2 as { code?: string }).code === "auth/invalid-credential") throw Object.assign(new Error("Passwords are at least 8 characters."), { code: "bt/msg" });
-              throw e2;
+        if (screen === "join") {
+          run(async () => {
+            if (!EMAIL_RE.test(email)) throw badEmail();
+            if (pw.length < 8) throw Object.assign(new Error("short"), { code: "auth/weak-password" });
+            try {
+              await createUserWithEmailAndPassword(auth, email, pw);
+            } catch (err) {
+              if ((err as { code?: string }).code !== "auth/email-already-in-use") throw err;
+              // The only clear case: this email already has an account (password or not).
+              showErrHtml(`You already have an account with this email. <button type="button" class="bt-link-btn" data-mode="signin">Sign in instead</button>, or use Google if that's how you joined.`);
+              $('[data-err] [data-mode="signin"]')!.addEventListener("click", () => go("signin"));
+              return;
             }
-          }
-          await afterSignIn();
-        });
+            await afterSignIn();   // new accounts go on to the signup steps
+          });
+        } else {
+          run(async () => {
+            if (!EMAIL_RE.test(email)) throw badEmail();
+            if (!pw) throw Object.assign(new Error("Enter your password."), { code: "bt/msg" });
+            await signInWithEmailAndPassword(auth, email, pw);
+            await afterSignIn();
+          });
+        }
       });
-      $('[data-act="sendlink"]')!.addEventListener("click", () => {
-        draft.email = $<HTMLInputElement>("#bt-si-email")!.value.trim();
+
+      $('[data-act="sendlink"]')?.addEventListener("click", () => {
+        draft.email = emailIn.value.trim();
         run(async () => { await sendLink(); go("link"); startResendCooldown(); });
       });
     }
@@ -298,7 +343,7 @@ export function openSignIn({ screen }: { screen?: Screen } = {}) {
         const email = ($<HTMLInputElement>("#bt-si-remail")!).value.trim();
         draft.email = email;
         run(async () => {
-          if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) throw Object.assign(new Error("bad email"), { code: "auth/invalid-email" });
+          if (!EMAIL_RE.test(email)) throw badEmail();
           await sendPasswordResetEmail(auth, email);
           const ok = $("[data-ok]")!;
           ok.textContent = `If there's an account for ${email}, a reset link is on its way. Check your inbox.`;

@@ -3,8 +3,9 @@
 
 const AUTH: Record<string, string> = {
   "auth/invalid-email": "That email address doesn't look right.",
-  "auth/invalid-credential": "That email and password don't match. If you signed up with Google or Twitch, use that button, or reset your password.",
-  "auth/wrong-password": "That password doesn't match. Try again, or reset it.",
+  "auth/invalid-credential": "That email and password don't match. If you joined with Google or Twitch, use that button, or reset your password.",
+  "auth/user-not-found": "That email and password don't match. If you joined with Google or Twitch, use that button, or reset your password.",
+  "auth/wrong-password": "That email and password don't match. If you joined with Google or Twitch, use that button, or reset your password.",
   "auth/user-disabled": "This account has been turned off. Contact support if that's a mistake.",
   "auth/too-many-requests": "Too many tries. Wait a minute and try again.",
   "auth/network-request-failed": "You seem to be offline. Check your connection and try again.",

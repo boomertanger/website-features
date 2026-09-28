@@ -39,7 +39,7 @@ const btn = (style) => `bt-btn bt-btn--${style === "primary" ? "primary" : style
                 <p>{s.body}</p>
                 <div class="bt-hero-status"><LiveBeacon /></div>
                 <div class="bt-hero-cta">
-                  {s.buttons.map((b) => <a class={btn(b.style)} href={b.href}>{b.label}</a>)}
+                  {s.buttons.map((b) => <a class={btn(b.style)} href={b.href} data-signin={b.signin}>{b.label}</a>)}
                 </div>
               </>
             )}
@@ -51,7 +51,7 @@ const btn = (style) => `bt-btn bt-btn--${style === "primary" ? "primary" : style
                   <h2 class="bt-hero-title">{s.title}</h2>
                   <p>{s.body}</p>
                   <div class="bt-hero-cta">
-                    {s.buttons.map((b) => <a class={btn(b.style)} href={b.href}>{b.label}</a>)}
+                    {s.buttons.map((b) => <a class={btn(b.style)} href={b.href} data-signin={b.signin}>{b.label}</a>)}
                   </div>
                 </div>
                 {s.media && (
@@ -80,7 +80,7 @@ const btn = (style) => `bt-btn bt-btn--${style === "primary" ? "primary" : style
                   <div class="bt-hero-cta">
                     <a class="bt-btn bt-btn--primary bt-when-live" href="/live">Open the Control Room</a>
                     <a class="bt-btn bt-btn--secondary bt-when-live" href="/live">Check in</a>
-                    {s.buttons.map((b) => <a class={`${btn(b.style)} bt-when-off`} href={b.href}>{b.label}</a>)}
+                    {s.buttons.map((b) => <a class={`${btn(b.style)} bt-when-off`} href={b.href} data-signin={b.signin}>{b.label}</a>)}
                   </div>
                 </div>
                 <div class="bt-hero-player bt-hero-player--public bt-when-public">

@@ -351,7 +351,10 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-modal-art` (`.bt-modal-splat` img + `.bt-mascot`, `.bt-modal-wordmark` with a gold
   `span`, `.bt-modal-reasons` li > icon `span` + text) + `.bt-modal-body` (`.bt-modal-x`
   close, then the screen as a `.bt-stack`). ≤ 640px: one column, the splat and mascot
-  stacked over the wordmark, reasons hidden. Inside: `.bt-providers` >
+  stacked over the wordmark, reasons hidden. E1 first screen: `.bt-pills.bt-pills--mode`
+  (`role=tablist`, Join free | Sign in; `data-signin="join|signin"` picks the tab it
+  opens on), `.bt-providers.bt-providers--row` (Google and Twitch side by side),
+  `.bt-password` > input + `.bt-password-toggle` (Show / Hide). Inside: `.bt-providers` >
   `button.bt-provider` > `.bt-provider-icon--google|--twitch|--email`; `.bt-or` divider;
   `.bt-fine [--left]` small print; `.bt-link-btn` text buttons; `.bt-row-split` /
   `.bt-row-center`; `.bt-modal-icon` (big emoji); `.bt-notice [--error|--ok]`. Signup:
@@ -686,8 +689,10 @@ differences:
   the splat and mascot stacked over the wordmark. A2 keeps each part of the account
   behind a tab (a swipeable pill row on phones). The split layout is a kit variant of the
   standard dialog (`openModal({ variant: "split" })`), not a hand-rolled modal.
-- **One dialog for sign-in and signup.** Google, Twitch and email are the same buttons
-  for new and returning members; new members continue in the same dialog through
+- **One dialog, two explicit modes (E1).** The dialog opens on a Join free or Sign in
+  tab (chosen in `docs/design/mockups/email-flows.html`), because with Firebase's email
+  enumeration protection a single Continue can't tell a wrong password from an email
+  that belongs to a Google account. New members continue in the same dialog through
   birthday, handle and terms. Redirect sign-ins (Twitch, email link) come back to the
   page they started from and reopen the signup steps there.
 - **Brand colors live on the provider tiles only.** Google, Twitch, YouTube, TikTok and

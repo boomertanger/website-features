@@ -1812,6 +1812,21 @@
 .bt-root:not(#_) .bt-platform-icon--youtube { background: var(--bt-brand-youtube); }
 .bt-root:not(#_) .bt-platform-icon--tiktok { background: var(--bt-brand-tiktok); border: 1px solid var(--bt-brand-tiktok-edge); }
 
+/* E1 sign-in: the Join free | Sign in pill (.bt-pills.bt-pills--mode, role=tablist),
+   Google and Twitch side by side (.bt-providers--row), and a password field with a
+   Show / Hide toggle (.bt-password > input + .bt-password-toggle). */
+.bt-root:not(#_) .bt-pills--mode button { font-weight: 800; }
+/* In the dialog the pill stops short of the close button in the corner. */
+.bt-root:not(#_) .bt-modal--split .bt-pills--mode { margin-right: 40px; }
+.bt-root:not(#_) .bt-pills--mode button.is-on { box-shadow: inset 0 0 0 1px var(--bt-primary); }
+.bt-root:not(#_) .bt-pills--mode button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-providers--row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.bt-root:not(#_) .bt-providers--row .bt-provider { gap: 8px; padding: 10px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-password { position: relative; }
+.bt-root:not(#_) .bt-password .bt-input { width: 100%; padding-right: 58px; }
+.bt-root:not(#_) .bt-password-toggle { position: absolute; right: 8px; top: 50%; transform: translateY(-50%); padding: 4px 6px; border: 0; border-radius: var(--bt-radius-sm); background: none; color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; cursor: pointer; }
+.bt-root:not(#_) .bt-password-toggle:hover { color: var(--bt-text); }
+
 /* Small pieces of the dialog: "or" divider, fine print, text-link buttons, notices */
 .bt-root:not(#_) .bt-or { display: flex; align-items: center; gap: 10px; font-size: var(--bt-text-xs); font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-or::before, .bt-root:not(#_) .bt-or::after { content: ""; flex: 1; height: 1px; background: var(--bt-border); }

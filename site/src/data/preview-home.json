@@ -30,6 +30,6 @@
   "join": {
     "title": "Join the club, free",
     "perks": ["Vote on what I play", "Earn points and badges", "Enter giveaways"],
-    "button": { "label": "Join free", "href": "/account" }
+    "button": { "label": "Join free", "href": "/account", "signin": "join" }
   }
 }

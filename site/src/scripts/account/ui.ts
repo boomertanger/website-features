@@ -1,6 +1,7 @@
 // Account UI on every page (small; the sign-in dialog loads on demand):
-//   [data-signin]          opens the sign-in dialog (Log in, Join free, Tap the Splat's
-//                          Join free); data-signin="signup" resumes the signup steps
+//   [data-signin]          opens the sign-in dialog: "join" (every Join free button, the
+//                          default) on the Join tab, "signin" (Log in) on the Sign in
+//                          tab, "signup" resumes the signup steps
 //   [data-me="..."]        filled from the signed-in member: displayName, handle,
 //                          avatar (initials or opted-in photo), email
 //   [data-account-menu]    the header avatar button and its menu
@@ -11,16 +12,17 @@ import { escapeHtml } from "../../../../shared/ui/dom.js";
 
 import { CONTINUE_KEY } from "../../lib/auth-keys";
 
-async function openDialog(screen?: "birthday") {
+async function openDialog(kind = "") {
   const { openSignIn } = await import("./dialog");
-  openSignIn(screen ? { screen } : {});
+  if (kind === "signup") openSignIn({ screen: "birthday" });
+  else openSignIn({ mode: kind === "signin" ? "signin" : "join" });
 }
 
 document.addEventListener("click", (ev) => {
   const t = (ev.target as Element | null)?.closest<HTMLElement>("[data-signin]");
   if (!t) return;
   ev.preventDefault();
-  void openDialog(t.dataset.signin === "signup" ? "birthday" : undefined);
+  void openDialog(t.dataset.signin);
 });
 
 // ---- member details ----
@@ -81,5 +83,5 @@ if (banner) {
 whenReady().then((s) => {
   let resume = false;
   try { resume = sessionStorage.getItem(CONTINUE_KEY) === "1"; sessionStorage.removeItem(CONTINUE_KEY); } catch { /* none */ }
-  if (resume && s.status === "needsSignup") void openDialog("birthday");
+  if (resume && s.status === "needsSignup") void openDialog("signup");
 });

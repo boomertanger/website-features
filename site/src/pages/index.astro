@@ -38,7 +38,7 @@ import home from "../data/preview-home.json";
         <h3>{home.join.title}</h3>
         <ul>{home.join.perks.map((perk) => <li>{perk}</li>)}</ul>
       </div>
-      <a class="bt-btn bt-btn--primary" href={home.join.button.href}>{home.join.button.label}</a>
+      <a class="bt-btn bt-btn--primary" href={home.join.button.href} data-signin={home.join.button.signin}>{home.join.button.label}</a>
     </div>
 
     <div class="bt-pills bt-pills--view" role="group" aria-label="Show" data-attr="view" data-view-switch>

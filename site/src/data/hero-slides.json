@@ -1,5 +1,5 @@
 {
-  "_about": "Hero carousel slides, in order. Template shape: { id, type: poster | template | stream, label, kicker, title, body, buttons: [{ label, href, style }], media, mood, startsAt, endsAt, audience }. 'label' is the short segment name under each story bar. Slides outside startsAt/endsAt are skipped (at build and again in the browser). audience: all | visitor | signed-in. The stream slide's live-state wording lives in the Hero component; its offline title and countdown come from site.json nextStream.",
+  "_about": "Hero carousel slides, in order. Template shape: { id, type: poster | template | stream, label, kicker, title, body, buttons: [{ label, href, style, signin? }] (signin: 'join' or 'signin' opens the sign-in dialog on that tab instead of following href), media, mood, startsAt, endsAt, audience }. 'label' is the short segment name under each story bar. Slides outside startsAt/endsAt are skipped (at build and again in the browser). audience: all | visitor | signed-in. The stream slide's live-state wording lives in the Hero component; its offline title and countdown come from site.json nextStream.",
   "slides": [
     {
       "id": "welcome",
@@ -9,7 +9,7 @@
       "title": "Boomertanger",
       "body": "The main horror hub. Streams, games and the community behind them.",
       "buttons": [
-        { "label": "Join the club", "href": "/account", "style": "primary" },
+        { "label": "Join the club", "href": "/account", "style": "primary", "signin": "join" },
         { "label": "See the schedule", "href": "/schedule", "style": "secondary" }
       ],
       "media": null,
