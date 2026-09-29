@@ -81,3 +81,9 @@ The repo has no Firestore rules test setup yet (the emulator needs Java 11+), so
 | 15 | get / create | `platformLinks/twitch_123` | signed in (admin claim) | deny |
 | 16 | get | `sites/boomertanger/anythingElse/x` | signed in (admin claim) | deny (not opened yet) |
 | 17 | get | `bugReports/…`, `featureRequests/…`, `adminLog/…` | as before | unchanged (Bug Zapper, Feature Lab, Cloud Stash rules untouched) |
+| 18 | get | `sites/boomertanger/games/tapTheSplat` | unauthenticated | allow (Boom Arcade, `arcade-step1.md` §6) |
+| 19 | get | `sites/boomertanger/games/tapTheSplat/versions/v1/boards/e1_desktop_all` | unauthenticated | allow |
+| 20 | get | `sites/boomertanger/games/tapTheSplat/versions/v1/runs/x` | signed in (admin claim) | deny |
+| 21 | create / update | `sites/boomertanger/games/tapTheSplat/versions/v1/boards/e1_desktop_all` | signed in (admin claim) | deny |
+| 22 | get | `sites/boomertanger/games/tapTheSplat/versions/v1/counters/0` | signed in (admin claim) | deny |
+| 23 | get | `sites/boomertanger/private/arcadeSalt` | signed in (admin claim) | deny |

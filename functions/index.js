@@ -881,3 +881,8 @@ exports.scheduledAssetCleanup = onSchedule(
 // Sign-in, signup, profiles, handles, Twitch, roles. Lives in lib/accounts/ and
 // reuses the adminLog helper above for role changes (feature "accounts").
 Object.assign(exports, require("./lib/accounts")({ adminLogEntry }));
+
+// ---------- Boom Arcade (docs/specs/arcade-step1.md) ----------
+// Runs, boards and votes for every game (startRun, finishRun, voteRun), the
+// 5-minute stats rollup and the profile-name sync. Lives in lib/arcade/.
+Object.assign(exports, require("./lib/arcade")());

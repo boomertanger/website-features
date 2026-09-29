@@ -23,7 +23,38 @@
         { "fieldPath": "status", "order": "ASCENDING" },
         { "fieldPath": "statusChangedAt", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "bests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "device", "order": "ASCENDING" },
+        { "fieldPath": "epoch", "order": "ASCENDING" },
+        { "fieldPath": "allTime.secs", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "bests",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "device", "order": "ASCENDING" },
+        { "fieldPath": "week.key", "order": "ASCENDING" },
+        { "fieldPath": "week.secs", "order": "ASCENDING" }
+      ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "runs",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "rateLimits",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    }
+  ]
 }

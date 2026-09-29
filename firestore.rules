@@ -410,6 +410,43 @@ service cloud.firestore {
         allow read: if true;
         allow write: if false;
       }
+
+      // ---------- Boom Arcade (docs/specs/arcade-step1.md §6) ----------
+      // Written ONLY by Cloud Functions (functions/lib/arcade). Games, versions,
+      // bests and boards are public (the footer's leaderboard is open to guests);
+      // runs and counters are server only.
+      match /games/{gameId} {
+        allow read: if true;
+        allow write: if false;
+
+        match /versions/{v} {
+          allow read: if true;
+          allow write: if false;
+
+          match /bests/{id} {
+            allow read: if true;
+            allow write: if false;
+          }
+          match /boards/{id} {
+            allow read: if true;
+            allow write: if false;
+          }
+          match /runs/{runId} {
+            allow read, write: if false;
+          }
+          match /counters/{shard} {
+            allow read, write: if false;
+          }
+        }
+      }
+
+      // startRun's hourly counts and the daily salt for visitor IP keys: server only.
+      match /rateLimits/{key} {
+        allow read, write: if false;
+      }
+      match /private/{docId} {
+        allow read, write: if false;
+      }
     }
 
     // Account doc: only its owner reads it. Preferences change through the
