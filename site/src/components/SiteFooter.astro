@@ -50,9 +50,9 @@ const links = site.domains.map((d, i) => {
       </div>
       <span class="bt-tts-spacer"></span>
       <button type="button" class="bt-tts-sound" data-snd aria-pressed="true" aria-label="Sound">🔊</button>
-      <!-- TODO: milestone 2: real leaderboards (accounts + Cloud Functions). Until then staging shows PREVIEW DATA to members; production hides the button. -->
+      <!-- Everyone can open the leaderboard (guests see what they're missing); only members' completed runs are on it. TODO: real leaderboards (runs via Cloud Functions). Until then staging shows PREVIEW DATA; production hides the button. -->
       {!isProduction && (
-        <div class="bt-tts-lb bt-when-signed-in" data-lb-wrap>
+        <div class="bt-tts-lb" data-lb-wrap>
           <button type="button" class="bt-tts-lb-btn" data-lb aria-expanded="false" aria-label="Leaderboard">🏆</button>
         </div>
       )}

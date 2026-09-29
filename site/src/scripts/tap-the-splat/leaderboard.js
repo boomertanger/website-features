@@ -1,4 +1,5 @@
-// Tap the Splat leaderboard popover (members only): top 10 per device, with
+// Tap the Splat leaderboard popover: open to everyone (guests see what they're
+// missing, with a Join free prompt), but only members' completed runs are on it. Top 10 per device, with
 // separate Desktop and Mobile boards because phones play a different game.
 // Loaded by the footer's trophy button; no game code comes with it.
 import { getBoard } from "./game-api.js";
@@ -35,9 +36,10 @@ function build(wrap) {
   const list = document.createElement("div");
   list.className = "bt-tts-lb-list";
   list.id = "bt-tts-lb-list";
-  list.innerHTML = `<div class="bt-tts-lb-cap">Top 10 · members only<span class="bt-tts-lb-preview" data-lb-preview>Preview data</span></div>
+  list.innerHTML = `<div class="bt-tts-lb-cap">Top 10 · members' runs<span class="bt-tts-lb-preview" data-lb-preview>Preview data</span></div>
     <div class="bt-tts-lb-tabs" role="tablist" aria-label="Board">${DEVICES.map(([d, label]) => `<button type="button" role="tab" data-dev="${d}" aria-selected="false">${label}</button>`).join("")}</div>
-    <div role="tabpanel" data-lb-rows></div>`;
+    <div role="tabpanel" data-lb-rows></div>
+    <p class="bt-tts-lb-join bt-when-visitor">Only members make the board. <a href="/account" data-signin="join">Join free</a></p>`;
   list.addEventListener("click", (ev) => { const b = ev.target.closest("[data-dev]"); if (b) render(list, b.dataset.dev); });
   wrap.append(list);
   const btn = wrap.querySelector("[data-lb]");

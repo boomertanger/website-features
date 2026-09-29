@@ -679,9 +679,12 @@ differences:
   use `openModal()`. Hidden game pieces are `inert`.
 - **Meter steps follow the spec table** (power cut 52 / 57, DANGER 73 / 76 / 85, +1.4
   per catch), where the prototype's code used 50 / 55, 72 / 75 / 84 and +1.5.
-- **Leaderboard and votes wait for accounts.** Until milestone 2 the trophy is rendered
-  only on non-production builds (members only, sample rows labelled PREVIEW DATA), and
-  votes are visual only (remembered per browser).
+- **Leaderboard and votes wait for accounts.** Until real runs are stored the trophy is
+  rendered only on non-production builds (sample rows labelled PREVIEW DATA), and votes
+  are visual only (remembered per browser).
+- **The leaderboard is open to guests.** Everyone can open it, to see what they're
+  missing; only members' completed runs are on it, and guests get a Join free prompt
+  under the rows (`.bt-tts-lb-join`).
 
 ### 8g. Accounts
 

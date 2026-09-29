@@ -1358,6 +1358,9 @@
 .bt-root:not(#_) .bt-tts-lb-row.is-hd { padding-bottom: 2px; font-size: 9px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-tts-lb-row.is-hd :is(.t, .s) { font-size: inherit; font-weight: inherit; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-tts-lb-row.is-hd + .bt-tts-lb-row { border-top: 0; }
+/* Guests: a Join free prompt under the rows (only members make the board). */
+.bt-root:not(#_) .bt-tts-lb-join { margin-top: 8px; padding-top: 8px; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-muted); text-align: center; }
+.bt-root:not(#_) .bt-site-footer .bt-tts-lb-join a { color: var(--bt-primary-soft); font-weight: 700; }
 .bt-root:not(#_) .bt-tts-lb-empty { padding: 6px 0; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
 
 /* Stage and hub: generous space around the splat, taller while the links are out */

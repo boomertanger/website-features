@@ -13,8 +13,8 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 - Phones keep the current footer look unchanged.
 
 ## Layout (idle)
-- Game bar: "TAP THE SPLAT" in bright blood red (`--bt-blood`) with blood drips hanging from specific letters; green completion meter; TIME and PENALTY panels (yellow digits) hidden until play starts; sound toggle; members-only leaderboard button.
-- Phones: the game bar is one row: title, completion meter (the bar shrinks to fit, down to about 24 px), sound, and the leaderboard button for members (visitors have no trophy, so their bar is a little longer). The TIME / PENALTY clocks take a second row while playing.
+- Game bar: "TAP THE SPLAT" in bright blood red (`--bt-blood`) with blood drips hanging from specific letters; green completion meter; TIME and PENALTY panels (yellow digits) hidden until play starts; sound toggle; leaderboard button (everyone can open it).
+- Phones: the game bar is one row: title, completion meter (the bar shrinks to fit, down to about 24 px), sound, and the leaderboard button. The TIME / PENALTY clocks take a second row while playing.
 - Centre: bright red splatter (pulses on hover), mascot, wordmark, tagline in `--bt-primary` with neon glow. Generous space above and below the splat.
 
 ## Rounds and completion %
@@ -33,7 +33,7 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 
 ## Timing and scoring
 - Time is the only score, shown m:ss.cc. Every miss-click in the play area adds 1 s ("+1s" floats up; PENALTY counts them). The clock never pauses.
-- Only completed runs get on the leaderboard. Separate Desktop and Mobile boards; columns: #, Member, Date, Time. On phones, opening the leaderboard grows the footer so all ten rows can be scrolled to.
+- Only members' completed runs get on the leaderboard, but everyone can open it: guests see the board (what they're missing) with "Only members make the board. Join free" under the rows, which opens the sign-in dialog on its Join tab. Separate Desktop and Mobile boards; columns: #, Member, Date, Time. On phones, opening the leaderboard grows the footer so all ten rows can be scrolled to.
 - Tapping the splat mid-game taps out: everything collapses to idle, "Tapped out at N%" toast, clock stops and resets.
 
 ## End screens (splatter style)

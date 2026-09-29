@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: Tap the Splat leaderboard is open to guests: everyone gets the trophy button and can see the board (what they're missing); only members' completed runs are on it, and guests see "Only members make the board. Join free" under the rows (opens the Join tab). Still PREVIEW DATA on staging and hidden in production until real runs are stored. bt-ui: .bt-tts-lb-join.
 - site: Tap the Splat: the breaker switch appears in a gap of the link ring on desktop too, like the hammer, cutters and outlet, instead of near the play-area edges (phones unchanged).
 - site: Tap the Splat: a gooey, sloppy splat sound for starting and tapping out (soft wet slap and low thump, a resonant "shlop" sweeping down with a wet wobble, a smaller second squelch, 3-5 goo bubbles and a sticky tail; no bright clicks; slightly different every time), replacing the crisp noise-and-ticks splat.
 - site: Tap the Splat: the outlet in the power-cut round appears in a gap of the link ring on desktop, like the hammer and cutters (one far from the plug; phones unchanged). The ring gaps are now measured from the ring's own centre (the stage middle at --bt-tts-cy) rather than the hub's box, which sat a little off it.
