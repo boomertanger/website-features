@@ -4,29 +4,34 @@
 const clampX = (G, x, pad = 30) => Math.min(G.root.offsetWidth - pad, Math.max(pad, x));
 const pick = (spots) => spots[Math.floor(Math.random() * spots.length)];
 
-// The link ring's radii as they are right now: --bt-tts-rx / --bt-tts-ry are CSS
-// expressions (min() with cqw) in shared/bt-ui.css, so they're measured, not copied.
-function ringRadii(G) {
-  const probe = document.createElement("span");
-  probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:var(--bt-tts-rx);height:var(--bt-tts-ry)";
-  G.$(".bt-tts-stage").append(probe);
-  const r = { rx: probe.offsetWidth, ry: probe.offsetHeight };
+// The link ring as it is right now, in game-root coordinates: its centre (the middle of
+// the stage, --bt-tts-cy from its top: the same place bt-ui.css puts the hub and the
+// cards) and radii (--bt-tts-rx / --bt-tts-ry are min()/cqw expressions, so they're
+// measured, not copied).
+function ring(G) {
+  const stage = G.$(".bt-tts-stage"), probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;left:0;top:0;visibility:hidden;pointer-events:none;width:var(--bt-tts-rx);height:var(--bt-tts-ry);margin-top:var(--bt-tts-cy)";
+  stage.append(probe);
+  const st = G.rel(stage), cy = parseFloat(getComputedStyle(probe).marginTop);
+  const r = { x: st.x, y: st.y - st.h / 2 + cy, rx: probe.offsetWidth, ry: probe.offsetHeight };
   probe.remove();
   return r;
 }
 
+// The four gaps of the link ring (desktop): right, left, top and bottom middle, each
+// with a random jitter (+-12 px; less for the bigger outlet). Never over a link or at
+// the screen edge.
+function ringGaps(G, jitter = 12) {
+  const { x, y, rx, ry } = ring(G), j = () => (Math.random() * 2 - 1) * jitter;
+  return [[x + rx + j(), y + j()], [x - rx + j(), y + j()], [x + j(), y - ry + j()], [x + j(), y + ry + j()]];
+}
+
 // ---- hammer and cutters ----
-// Desktop: in a gap of the link ring (right, left, top or bottom middle of the ring
-// around the hub centre, +-12 px), never over a link or at the edge. Phones: the
-// top corners of the play area (tap to pick up, then tap the target).
+// Desktop: in a gap of the link ring. Phones: the top corners of the play area (tap to
+// pick up, then tap the target).
 export function showTool(G, name) {
   const t = G.$(`[data-tool="${name}"]`), W = G.root.offsetWidth, st = G.rel(G.$(".bt-tts-stage"));
-  let spots;
-  if (G.isPhone()) spots = [[W - 40, st.y - st.h / 2 + 40], [40, st.y - st.h / 2 + 40]];
-  else {
-    const hub = G.rel(G.$(".bt-tts-hub")), { rx, ry } = ringRadii(G), j = () => Math.random() * 24 - 12;
-    spots = [[hub.x + rx + j(), hub.y + j()], [hub.x - rx + j(), hub.y + j()], [hub.x + j(), hub.y - ry + j()], [hub.x + j(), hub.y + ry + j()]];
-  }
+  const spots = G.isPhone() ? [[W - 40, st.y - st.h / 2 + 40], [40, st.y - st.h / 2 + 40]] : ringGaps(G);
   const [x, y] = pick(spots);
   t.style.left = x + "px"; t.style.top = y + "px";
   t.classList.add("is-shown"); G.enable(t, true); G.SFX.pick();
@@ -65,9 +70,9 @@ export function showBreaker(G) {
 }
 
 // ---- plug and cord (round 6) ----
-// The cord runs from the bottom of the R to the plug, lying at a random spot
-// below the wordmark; the outlet sits at a random spot above, far from the plug
-// and never over a link.
+// The cord runs from the bottom of the R to the plug, lying at a random spot below
+// the wordmark. The outlet: on desktop in a gap of the link ring (like the tools), one
+// far from the plug; on phones a random spot above, far from the plug, never over a link.
 const cordAnchor = (G) => G.rel(G.$(".bt-tts-tanger span:last-child"), 0.5, 0.92);
 function drawCord(G, p) {
   const a = cordAnchor(G), sag = Math.max(30, Math.hypot(p.x - a.x, p.y - a.y) * 0.35);
@@ -90,7 +95,9 @@ export function startPlug(G) {
   const wm = G.rel(G.$(".bt-tts-wm")), tag = G.rel(G.$(".bt-tts-tag")), W = G.root.offsetWidth, st = G.playRect();
   const below = [tag.y + 40, Math.min(st.y + st.h / 2 - 20, tag.y + 150)], above = [st.y - st.h / 2 + 30, wm.y - 50];
   const xr = G.isPhone() ? [30, W - 30] : [clampX(G, W / 2 - 360), clampX(G, W / 2 + 360)];
-  const p = freeSpot(G, xr, below, null), so = freeSpot(G, xr, above, p);
+  const p = freeSpot(G, xr, below, null);
+  const far = ringGaps(G, 3).filter(([x, y]) => Math.hypot(x - p.x, y - p.y) > 260).map(([x, y]) => ({ x, y }));
+  const so = !G.isPhone() && far.length ? pick(far) : freeSpot(G, xr, above, p);
   const o = G.$(".bt-tts-outlet"), pl = G.$(".bt-tts-plug");
   o.style.left = so.x - 17 + "px"; o.style.top = so.y - 23 + "px"; S.sock = { x: so.x, y: so.y - 6 };
   pl.style.left = p.x + "px"; pl.style.top = p.y + "px"; S.plugP = p;
