@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: Tap the Splat: the breaker switch appears in a gap of the link ring on desktop too, like the hammer, cutters and outlet, instead of near the play-area edges (phones unchanged).
 - site: Tap the Splat: a gooey, sloppy splat sound for starting and tapping out (soft wet slap and low thump, a resonant "shlop" sweeping down with a wet wobble, a smaller second squelch, 3-5 goo bubbles and a sticky tail; no bright clicks; slightly different every time), replacing the crisp noise-and-ticks splat.
 - site: Tap the Splat: the outlet in the power-cut round appears in a gap of the link ring on desktop, like the hammer and cutters (one far from the plug; phones unchanged). The ring gaps are now measured from the ring's own centre (the stage middle at --bt-tts-cy) rather than the hub's box, which sat a little off it.
 - site: Tap the Splat fixes (approved prototype docs/design/mockups/tap-the-splat.html updated; spec updated): on desktop the hammer and wire cutters appear in a gap of the link ring (right, left, top or bottom middle around the hub, +-12 px jitter, using the ring's measured --bt-tts-rx / --bt-tts-ry, never over a link or at the edge); phones keep their spots. Phone game bar in one row (title, meter shrinking to ~24 px, sound, the leaderboard button for members), with the clocks on a second row while playing. End screens ignore every click and tap for 2 s after opening and show their buttons dimmed until then, so follow-up clicks from the last round can't close them.

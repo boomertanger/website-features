@@ -58,12 +58,12 @@ export function dropTool(G) {
 }
 
 // ---- breaker (the gate before the link round) ----
+// Desktop: in a gap of the link ring, like the tools and the outlet (small jitter: it's
+// about the outlet's size). Phones: a top corner of the play area.
 export function showBreaker(G) {
   G.phase("breaker");
   const W = G.root.offsetWidth, st = G.rel(G.$(".bt-tts-stage")), top = st.y - st.h / 2, br = G.$(".bt-tts-breaker");
-  const spots = G.isPhone()
-    ? [[W - 30, top + 30], [30, top + 30]]
-    : [[40, st.y - 150], [40, st.y + 40], [W - 40, st.y - 150], [W - 40, st.y + 40], [W / 2 - 330, top + 34], [W / 2 + 330, top + 34]];
+  const spots = G.isPhone() ? [[W - 30, top + 30], [30, top + 30]] : ringGaps(G, 3);
   const [x, y] = pick(spots);
   br.style.left = clampX(G, x) + "px"; br.style.top = y + "px";
   G.setA("breaker", "on"); G.enable(br, true); G.SFX.pick();
