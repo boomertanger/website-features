@@ -3,6 +3,7 @@
 // data-sound="off" on the game root (saved per browser by scripts/footer.js).
 import { getAudio } from "./audio-unlock.js";
 import { doomOrgan } from "./sounds/doom-organ.js";
+import { playSlop } from "./sounds/slop-custom.js";
 
 export function createSounds(root) {
   const on = () => root.dataset.sound !== "off";
@@ -69,7 +70,10 @@ export function createSounds(root) {
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   const SFX = {
-    // Gooey, sloppy splat (start and tap out): a soft wet slap and low thump, a resonant
+    // Starting and stopping the game (tap the splat to start, tap it again to tap out):
+    // the slop plop (sounds/slop-custom.js, values as approved). Silent when sound is off.
+    slop: () => { const c = ac(); if (c) playSlop(c, c.destination); },
+    // Gooey, sloppy splat (the finish tap, before the fanfare): a soft wet slap and low thump, a resonant
     // "shlop" sweeping down, a smaller second squelch, a few goo bubbles and a sticky
     // tail. Dark and wet on purpose: no bright clicks. Varies a little every time.
     splat: () => {

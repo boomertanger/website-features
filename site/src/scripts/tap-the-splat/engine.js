@@ -105,7 +105,7 @@ export function createGame(root) {
   };
 
   G.start = () => {
-    G.reset(); SFX.splat();
+    G.reset(); SFX.slop();
     S.t0 = performance.now(); S.device = G.isPhone() ? "mobile" : "desktop";
     G.phase("p1"); G.setA("links", "1"); G.progress(5);
     G.stopClock(); S.clock = setInterval(() => { $("[data-tm]").textContent = fmtTime(G.elapsed()); }, 47);
@@ -114,7 +114,7 @@ export function createGame(root) {
 
   /** Tapping the splat mid-game (or closing an end screen): collapse back to idle. */
   G.tapOut = (quiet) => {
-    SFX.splat();
+    SFX.slop();
     const p = Math.round(S.prog);
     root.classList.add("is-collapsing"); G.reset();
     G.later(() => root.classList.remove("is-collapsing"), 700);

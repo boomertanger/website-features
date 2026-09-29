@@ -20,7 +20,7 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 ## Rounds and completion %
 | # | Round | Player action | Meter |
 |---|---|---|---|
-| 1 | Start | Tap the splat (splat sound). Links fan out in an ellipse (phones: 2-column grid). Clock starts. Page scrolls smoothly to the bottom of the footer. | 5% |
+| 1 | Start | Tap the splat (slop sound). Links fan out in an ellipse (phones: 2-column grid). Clock starts. Page scrolls smoothly to the bottom of the footer. | 5% |
 | 2 | Firefly | Automatic. A glowing firefly flies an S-shaped path (random height and direction) lasting 2.6–5 s, then hits the B of "Built". The flight counts toward the time. Tagline zaps bright, then flickers (words only, via colour, not opacity), and the skull pull chain drops at the same moment with a springy bounce and pendulum swing. | 10% |
 | 3 | Pull chain | Pull the skull handle. Flicker stops, chain disappears, Contact and Follow appear; page scrolls to the bottom. | 20% |
 | 4 | Breaker | A breaker switch appears in a gap of the link ring (desktop, like the hammer, cutters and outlet; phones: a top corner of the play area). Ignored = links work normally. Flip it (KACHUNK) = lights flicker out and all eight links go dark. | 25% |
@@ -43,7 +43,7 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 - Buttons: "▲ I liked it", "🕹 Make more games" (once per person), solid green "Play again".
 
 ## Sound (Web Audio synthesis, no files)
-Splat (gooey and sloppy: a soft wet slap, a resonant downward "shlop" with a wet wobble, goo bubbles and a sticky tail; no bright clicks; varies slightly each time), zap, chain clinks and pull, KACHUNK, rising power-up zap, blocky crumble, hammer thunk, fuse hiss, snip, explosion (about 1 s: a sharp crack, a roaring blast sweeping down, crackling debris, a rumbling tail), doom organ on lose screens (sounds/doom-organ.js: a sagging dissonant organ chord over a low bass, about 2.2 s; the only lose sound, no buzz: "Missed one." and "Wrong one." play it as the card appears; "Boom." plays it about 1 s after the explosion, as the card appears), catch blips, sting, victory fanfare, buzz (DANGER only), penalty blip. Toggle in the bar; preference in localStorage. iOS: unlock on first touch; `navigator.audioSession.type = "playback"`.
+Slop (start and tap out: sounds/slop-custom.js from Slop lab, values as approved; a heavy low thump, a wet squelch with bubbles, a short sticky pull and a cafeteria echo, about 1.7 s), splat (the finish tap only; gooey and sloppy: a soft wet slap, a resonant downward "shlop" with a wet wobble, goo bubbles and a sticky tail; no bright clicks; varies slightly each time), zap, chain clinks and pull, KACHUNK, rising power-up zap, blocky crumble, hammer thunk, fuse hiss, snip, explosion (about 1 s: a sharp crack, a roaring blast sweeping down, crackling debris, a rumbling tail), doom organ on lose screens (sounds/doom-organ.js: a sagging dissonant organ chord over a low bass, about 2.2 s; the only lose sound, no buzz: "Missed one." and "Wrong one." play it as the card appears; "Boom." plays it about 1 s after the explosion, as the card appears), catch blips, sting, victory fanfare, buzz (DANGER only), penalty blip. Toggle in the bar; preference in localStorage. iOS: unlock on first touch; `navigator.audioSession.type = "playback"`.
 
 ## Accessibility, motion, performance
 - Real buttons (or role=button with keyboard support); links remain normal links outside the game; the header nav covers the same pages.
