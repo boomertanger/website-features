@@ -2,7 +2,7 @@
 
 Status: concept approved (September 2026). This is the anchor document for every Arcade chat and spec. Detailed specs (games and runs, leaderboards, Studio, Workshop) build on it and must not contradict it; if one needs to, update this file first.
 
-Related: `docs/specs/foundation.md` (site, accounts, data model rules), `docs/specs/accounts.md`, `docs/specs/tap-the-splat.md`, mockups `docs/design/mockups/arcade-info.html` (approved: layout 1 "Guided scroll") and `docs/design/mockups/end-screen-variations.html` (layout and tone not chosen yet).
+Related: `docs/specs/foundation.md` (site, accounts, data model rules), `docs/specs/accounts.md`, `docs/specs/tap-the-splat.md`, mockups `docs/design/mockups/arcade-info.html` (approved: layout 1 "Guided scroll") and `docs/design/mockups/end-screen-variations.html` (chosen: layout 2 "Play first", Spooky wording; see `docs/specs/arcade-step1.md` §1). Step 1: `docs/specs/arcade-step1.md`, mockup `docs/design/mockups/arcade-step1-screens.html`.
 
 ## 1. What it is
 A section of boomertanger.com where people play horror point-and-click puzzle games, compete on leaderboards, and help decide what gets built next. Games grow version by version, shaped by the community. Tagline on the info page: "Horror games, built with you."
@@ -34,6 +34,7 @@ Rejected names, for the record: "Game owner" (clashes with the site owner role),
 - `/arcade/studio` — pitches for new games.
 - `/arcade/leaderboards` — cross-game overview.
 - Leaderboard names link to public profiles (badges, Keeper history). Profiles exist from the accounts work; they need a public view.
+- The Arcade pages are members only, except `/arcade/how-it-works` (the public pitch page). Visitors see a members-only gate that opens the Join dialog; the gate is display-only (the pages carry no member data). The footer game stays public: anyone can play it on every page (`arcade-step1.md` §3, D9, D10).
 
 ## 4. Life cycles (shown on the info page and Workshop pages)
 New game: Pitch → Community vote → Greenlit → Workshop plans v1 → Playtest → Release.
@@ -77,7 +78,7 @@ New version (Workshop cycle bar, 8 stages, colored with the site-wide status col
 - Time is the score (m:ss.cc); miss-clicks add seconds; only finished runs by members make the board; Desktop and Mobile boards are separate.
 - Votes: 👍 thumbs up (not the site's up arrow) because visitors see this game first. One vote per button per run, unlocking again on the next play. Show run counts too ("8.4K runs · 612 finished").
 - End screen titles are always gold, for every result; the big time stays.
-- Visitors see a teaser: "More games for members · Soon — horror point-and-click puzzles, leaderboards and badges. Join free to play them first." Members see "More games coming. You'll play them first. Got an idea for v2? Suggest it."
+- The footer game's end screen shows a teaser. Visitors: "More games for members · Soon — horror point-and-click puzzles, leaderboards and badges. Join free to play them first." Members: "More games coming · Soon — You'll play them first.", plus "Got an idea for v2? Suggest it" only while the version's Workshop is open (`arcade-step1.md` §1).
 - Versions: players only ever see major versions; builds are internal; balance patches restart or annotate boards.
 - Conversation is threaded (Draft board), not real-time chat. Live chat only if members ask for it later.
 - Safety: some members are 13–17. All Workshop and Studio conversation is public and moderated; Keepers are 18+ to start; no private messaging in the Arcade.
@@ -90,10 +91,10 @@ New version (Workshop cycle bar, 8 stages, colored with the site-wide status col
 5. Playtest betas via the version picker.
 
 ## 10. Open questions
-- End screen: layout (1 Tidied, 2 Play first [recommended], 3 Scorecard, 4 Minimal) and wording tone (Plain, Spooky [recommended], Taunting).
+- ~~End screen: layout and wording tone.~~ Decided: layout 2 "Play first", Spooky wording (`arcade-step1.md` §1, D0).
 - Which badge unlocks pitching (e.g. "finished any game").
 - How long a version cycle stage lasts, and who can advance it (Keeper proposes, owner approves?).
-- Weekly board reset day and timezone (assumed America/Los_Angeles).
+- ~~Weekly board reset day and timezone.~~ Decided: Monday 00:00 America/Los_Angeles (`arcade-step1.md` D6).
 - Whether leaderboards show during a balance patch transition as "restart" or "note" by default.
 
 ## 11. Pending small fix to include in the first build

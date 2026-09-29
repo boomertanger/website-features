@@ -33,14 +33,16 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 
 ## Timing and scoring
 - Time is the only score, shown m:ss.cc. Every miss-click in the play area adds 1 s ("+1s" floats up; PENALTY counts them). The clock never pauses.
-- Only members' completed runs get on the leaderboard, but everyone can open it: guests see the board (what they're missing) with "Only members make the board. Join free" under the rows, which opens the sign-in dialog on its Join tab. Separate Desktop and Mobile boards; columns: #, Member, Date, Time. On phones, opening the leaderboard grows the footer so all ten rows can be scrolled to.
-- Tapping the splat mid-game taps out: everything collapses to idle, "Tapped out at N%" toast, clock stops and resets.
+- Only members' completed runs (verified email) get on the leaderboard, but everyone can open it: guests see the board (what they're missing) with "Only members make the board. Join free" under the rows, which opens the sign-in dialog on its Join tab. Separate Desktop and Mobile boards; columns: #, Member, Date, Time. On phones, opening the leaderboard grows the footer so all ten rows can be scrolled to.
+- Tapping the splat mid-game taps out: everything collapses to idle, "Tapped out at N%" toast (below the game bar, above the splat), clock stops and resets.
 
 ## End screens (splatter style)
 - Card on the blood splatter, centred on the play area (phones: top of the play area, scrolled into view); play area dims behind it. No close button: any click that is not a button closes it and collapses to idle. For the first 2 seconds after it opens (win or lose), it ignores all clicks and taps (on the card and the dimmed play area) and its buttons show dimmed, then fade in, so quick follow-up clicks from the last round can't close it by accident.
-- Win: "YOU BEAT TAP THE SPLAT", big time, "100% complete · includes Ns of miss-click penalties" / "no miss-clicks", Desktop/Mobile run label. Members: leaderboard placement. Visitors: "Completed runs by members make the leaderboard." + Join free.
-- Lose (Boom. / Missed one. / Wrong one.): big time so far, "… You made it N% of the way.", "Only completed runs make the leaderboard.", Join free for visitors.
-- Buttons: "▲ I liked it", "🕹 Make more games" (once per person), solid green "Play again".
+- Layout 2 "Play first", Spooky wording (Boom Arcade step 1; full wording, placement lines and states in `docs/specs/arcade-step1.md` §1). Every result, top to bottom: gold title, big time, one line, pills (Desktop or Mobile, v1, +Ns penalties or "no miss-clicks" on wins), solid green Play again, placement line, the two vote buttons with counts, run counts ("8.4K runs · 612 finished", from `games/tapTheSplat.stats`), teaser card.
+- Titles: You survived (win), It got away (missed), Wrong one (wrong link), Boom (bomb).
+- Votes: "👍 I liked it" and "🎮 Make more games", each once per run (locked after pressing, unlocking on the next play), with counts. This replaces the old "▲ I liked it" / once-per-person rule.
+- Placement: members see their board place, a personal best that didn't place, or why the run isn't on the board (verify email, finish signup, losses). Visitors see "Finished runs by members go on the leaderboard."; their "See leaderboard" and the teaser's Join free open the sign-in dialog on its Join tab, because the Arcade pages are members only.
+- A run the server didn't record (offline, start failed, refused build) says "This run wasn't recorded." with no votes or placement.
 
 ## Sound (Web Audio synthesis, no files)
 Slop (start and tap out: sounds/slop-custom.js from Slop lab, values as approved; a heavy low thump, a wet squelch with bubbles, a short sticky pull and a cafeteria echo, about 1.7 s), splat (the finish tap only; gooey and sloppy: a soft wet slap, a resonant downward "shlop" with a wet wobble, goo bubbles and a sticky tail; no bright clicks; varies slightly each time), zap, chain clinks and pull, KACHUNK, rising power-up zap, blocky crumble, hammer thunk, fuse hiss, snip, explosion (about 1 s: a sharp crack, a roaring blast sweeping down, crackling debris, a rumbling tail), doom organ on lose screens (sounds/doom-organ.js: a sagging dissonant organ chord over a low bass, about 2.2 s; the only lose sound, no buzz: "Missed one." and "Wrong one." play it as the card appears; "Boom." plays it about 1 s after the explosion, as the card appears), catch blips, sting, victory fanfare, buzz (DANGER only), penalty blip. Toggle in the bar; preference in localStorage. iOS: unlock on first touch; `navigator.audioSession.type = "playback"`.
@@ -50,13 +52,13 @@ Slop (start and tap out: sounds/slop-custom.js from Slop lab, values as approved
 - prefers-reduced-motion: animations shortened; the game stays playable.
 - The idle footer is plain HTML/CSS; the game module loads with a dynamic import on the first splat tap.
 
-## Data (milestone 2: accounts + Cloud Functions)
-- Runs: `sites/{siteId}/games/tapTheSplat/runs/{runId}` via `startRun` / `finishRun` callables (server timing checks, members only, best time per member per device).
-- Boards per device, written only by functions; weekly and all-time.
-- Feedback counters "liked" and "wantMore", one vote per member or browser.
-- `trackEvent("tapTheSplat", "round:N")` for drop-off.
-- Until then: leaderboard shows PREVIEW DATA on non-production builds only and is hidden in production; votes are visual only.
+## Data (Boom Arcade step 1; details in `docs/specs/arcade-step1.md` §4–§6)
+- Everything lives under `sites/boomertanger/games/tapTheSplat` and is written only by Cloud Functions: the game doc (with rolled-up `stats`), `versions/v1` (build 1.0, checks), `versions/v1/runs/{runId}`, `bests/{uid}_{device}`, `boards/e{epoch}_{device}_{period}` (top 100, weekly and all-time), `counters/{0-9}`.
+- Every run, visitor or member, goes through the shared callables: `startRun` at the first splat tap (without blocking the clock), `finishRun` at the end (server timing and split checks), `voteRun` for the two votes. Tap-outs are stored but not counted.
+- Only passing wins by signed-up members with a verified email reach the boards; one row per member per board (their best), ties go to the earlier run. Weeks start Monday 00:00 America/Los_Angeles.
+- Drop-off comes from stored runs (`reached`, `splits`), so there's no `trackEvent`.
+- The leaderboard popover reads the real board doc in every environment (no more PREVIEW DATA; the trophy shows in production too).
 
 ## Design system notes (§8)
-- Exception: the completion meter and Play again button use green (otherwise admin-only).
+- Exception: the completion meter and Play again button use green (otherwise admin-only); the Arcade's Play now joins it (§8h).
 - Tokens: `--bt-blood`, glow tokens (red, green, gold, primary), mascot brand tokens, footer spotlight background, shared `--bt-content-max`.

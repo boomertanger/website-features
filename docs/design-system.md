@@ -710,3 +710,33 @@ differences:
 - **Nothing about accounts is written from the browser.** Profiles, handles, roles and
   preferences change only through Cloud Functions; the rules give clients read access to
   their own docs and public profiles, and no writes.
+
+### 8h. Boom Arcade
+
+Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
+`docs/design/mockups/arcade-step1-screens.html` (lobby 1 Marquee, Play tab 1 Split).
+
+- **The Arcade uses the feature top-bar pattern.** Every Arcade page puts the kit's
+  `.bt-topbar` + `.bt-wordmark` under the site header: an animated joystick icon, BOOM +
+  accent ARCADE (like BUGZAPPER), and links (Games, Leaderboards, How it works) on the
+  right, hidden on phones. The wordmark links to `/arcade`; no breadcrumbs. Game pages
+  add real link tabs (`.bt-page-tabs`: Play, Leaderboards, later Workshop), each with its
+  own URL.
+- **A game's name uses the game's own logo lettering; every other page title stays
+  gold.** On the game card, the Play tab and the leaderboards, a game's title is
+  `.bt-game-logo` wrapping that game's lettering (for Tap the Splat, the footer's
+  `.bt-tts-title` letters and drips, shared from one place). Lobby, Leaderboards and the
+  gate keep the gold `.bt-title`.
+- **Play now joins the §8f green exception.** The Arcade's Play now is the same solid
+  green as the game's Play again (`.bt-btn--go`, `--bt-green`), because both mean "start
+  the game". It stays limited to those two controls and the completion meter.
+- **The Arcade is members only, and the gate is display-only.** One Arcade layout takes
+  a `membersOnly` flag (every page except How it works). For visitors it renders the
+  members-only gate instead of the page, and opens the Join dialog once per visit. The
+  pages are static and carry no member data, and the boards stay public-read (the footer
+  popover is open to guests, §8f), so the gate is a sales screen, not protection. While
+  the auth state loads it shows a skeleton, never a flash of the gate.
+- **`--bt-lamp` is the shared lamp yellow.** `#ffd400` (+ `--bt-lamp-rgb`), used by the
+  Arcade's marquee lights, is the same yellow as Bug Zapper's bolt. Bug Zapper still
+  declares its own `--bz-bolt` (features/ isn't touched from site work); it moves to
+  `--bt-lamp` when Bug Zapper is ported.
