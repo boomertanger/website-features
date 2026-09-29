@@ -5,20 +5,20 @@
 const CATCHES = 10;
 
 export function nextHot(G) {
-  const { S, SFX } = G, cards = G.cards();
+  const { S } = G, cards = G.cards();
   cards.forEach((c) => c.classList.remove("is-hot"));
   let i;
   do { i = Math.floor(Math.random() * cards.length); } while (i === S.hot);
   S.hot = i; cards[i].classList.add("is-hot");
   const win = Math.max(600, 1400 - S.catches * 85);
   G.later(() => {
-    if (S.phase === "chase" && S.hot === i) { SFX.buzz(); G.end("lose", "Missed one.", "The blood moved on without you."); }
+    if (S.phase === "chase" && S.hot === i) G.end("lose", "Missed one.", "The blood moved on without you.");
   }, win);
 }
 
 export function onChase(G, c) {
   const { S, SFX } = G;
-  if (G.idx(c) !== S.hot) { SFX.buzz(); return G.end("lose", "Wrong one.", "Only the bloody link counts."); }
+  if (G.idx(c) !== S.hot) return G.end("lose", "Wrong one.", "Only the bloody link counts.");
   G.clearTimers();
   c.classList.remove("is-hot"); c.classList.add("is-caught");
   setTimeout(() => c.classList.remove("is-caught"), 360);

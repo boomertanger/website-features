@@ -60,8 +60,8 @@ export function showEnd(G, kind, title = "", sub = "") {
   G.later(() => root.classList.add("is-end-ready"), END_GRACE_MS);
   const card = G.$(".bt-tts-end");
   G.enable(card, true);
-  // Win: the victory fanfare. Lose: the doom organ as the card appears (the bomb's
-  // explosion has already played, about 1 s earlier; a miss keeps its short buzz).
+  // Win: the victory fanfare. Lose: the doom organ as the card appears, the only lose
+  // sound (the bomb's explosion has already played, about 1 s earlier).
   if (win) setTimeout(G.SFX.victory, 250);
   else G.SFX.doom();
   setTimeout(() => {

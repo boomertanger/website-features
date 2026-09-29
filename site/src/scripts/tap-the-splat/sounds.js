@@ -55,6 +55,17 @@ export function createSounds(root) {
     g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
     o.connect(lp).connect(g).connect(c.destination); o.start(t); o.stop(t + d + 0.02);
   };
+  // A roar: noise through a lowpass sweeping down (from -> to Hz), sharp attack, long fade.
+  const blast = (d, from, to, v, delay = 0) => {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, n = c.createBufferSource(), b = c.createBuffer(1, Math.ceil(c.sampleRate * d), c.sampleRate), ch = b.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    n.buffer = b;
+    const f = c.createBiquadFilter(); f.type = "lowpass"; f.Q.value = 1.2;
+    f.frequency.setValueAtTime(from, t); f.frequency.exponentialRampToValueAtTime(to, t + d);
+    const g = c.createGain(); g.gain.setValueAtTime(v, t); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    n.connect(f).connect(g).connect(c.destination); n.start(t); n.stop(t + d + 0.02);
+  };
   const rnd = (a, b) => a + Math.random() * (b - a);
 
   const SFX = {
@@ -109,7 +120,16 @@ export function createSounds(root) {
     hum: () => tone(90, 0.5, "sawtooth", 0.04),
     thunk: () => { noise(0.08, 500, 0.5); tone(170, 0.1, "square", 0.14, 70); },
     snip: () => { noise(0.04, 5000, 0.35, "highpass"); tone(2600, 0.03, "square", 0.08); tone(1800, 0.04, "square", 0.06, null, 0.05); },
-    boom: () => { noise(1.4, 260, 0.9); tone(70, 1.1, "sine", 0.6, 28); noise(0.5, 1200, 0.3, "lowpass", 0.05); },
+    // The bomb going off: a sharp crack, a roaring blast whose lowpass sweeps down as it
+    // fades, crackling debris and a rumbling tail (not just a low thump). About 1 s, so
+    // it's done before the doom organ starts on the "Boom." card.
+    boom: () => {
+      noise(0.05, 2500, 0.8, "highpass");
+      blast(0.9, 5000, 180, 0.9);
+      tone(rnd(90, 110), 0.5, "sawtooth", 0.18, 35);
+      for (let i = 0; i < 14; i++) noise(rnd(0.02, 0.05), rnd(1500, 5000), rnd(0.12, 0.25), "bandpass", rnd(0.08, 0.75));
+      noise(1.0, 140, 0.35, "lowpass", 0.1);
+    },
     blip: (k = 0) => tone(820 + k * 45, 0.07, "square", 0.09),
     // Lose screens ("Boom.", "Missed one.", "Wrong one."): the doom organ
     // (sounds/doom-organ.js, values as approved). Same output as every other sound, and
