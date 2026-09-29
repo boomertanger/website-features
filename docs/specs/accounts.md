@@ -57,7 +57,7 @@ Everything a Firebase project needs before accounts work. All of these are done 
 6. **Deploy** rules, then functions: `firebase deploy --project <alias> --only firestore:rules`, then `--only functions`.
 7. **Site settings:** `node scripts/seed-site.js --project <alias>` (dry run), then with `--apply`.
 8. **Email action URL** (Authentication → Templates → edit → Customize action URL): the site's `/auth/action` (see "Emails"). Not possible on staging so far (Firebase refuses template updates there); try it on production, or send auth emails ourselves later.
-9. **Owner:** the owner signs in once and finishes signup; then `node scripts/set-owner.js --project <alias> --uid <uid>` (dry run), then with `--apply`.
+9. **Owner:** the owner signs in once and finishes signup; then `node scripts/set-owner.js --project <alias> --uid <uid>` (dry run), then with `--apply`. To move ownership later (and give the owner a reserved handle such as @boomertanger, demoting the previous admin), use `node scripts/transfer-owner.js --project <alias> --to <email> [--handle <handle>] [--demote <email>]` (dry run, then `--apply`).
 
 ## Rules: manual test checklist
 The repo has no Firestore rules test setup yet (the emulator needs Java 11+), so check these in the Firebase console's Rules Playground (Firestore → Rules → Rules Playground) after each rules deploy. "Signed in" = Authenticated with a test uid; add `roles: { boomertanger: ["admin"] }` under custom claims for the admin rows.
