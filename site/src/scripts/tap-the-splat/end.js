@@ -9,6 +9,8 @@ const readVotes = () => { try { return JSON.parse(localStorage.getItem(VOTES_KEY
 const saveVotes = (v) => { try { localStorage.setItem(VOTES_KEY, JSON.stringify(v)); } catch { /* not saved */ } };
 
 // Opens the sign-in dialog (scripts/account/ui.ts handles every [data-signin]).
+export const END_GRACE_MS = 2000;
+
 const JOIN = `<a class="bt-btn bt-btn--primary bt-btn--sm" href="/account" data-signin="join">Join free to get on the leaderboard</a>`;
 
 export function showEnd(G, kind, title = "", sub = "") {
@@ -50,6 +52,12 @@ export function showEnd(G, kind, title = "", sub = "") {
   getVotes().then((v) => G.$$("[data-c]").forEach((c) => { c.textContent = v ? String(v[c.dataset.c] + (done[c.dataset.c] ? 1 : 0)) : ""; }));
 
   G.setA("end", kind);
+  // Grace period: for 2 s the card ignores every click and tap (engine.js), so quick
+  // follow-up clicks from the last round can't close it; then its buttons fade in.
+  const { root } = G;
+  S.endShownAt = performance.now();
+  root.classList.remove("is-end-ready");
+  G.later(() => root.classList.add("is-end-ready"), END_GRACE_MS);
   const card = G.$(".bt-tts-end");
   G.enable(card, true);
   if (win) setTimeout(G.SFX.victory, 250);

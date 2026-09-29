@@ -2523,6 +2523,22 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
   .bt-root:not(#_) .game[data-look="l3"] { padding-top: 26px; }
 }
 </style>
+<style>
+/* end screen: buttons wake up after the 2 s grace period */
+.bt-root:not(#_) .game[data-end]:not(.end-ready) .g-end button, .bt-root:not(#_) .game[data-end]:not(.end-ready) .g-end a { pointer-events: none; opacity: .35; }
+.bt-root:not(#_) .g-end button, .bt-root:not(#_) .g-end a { transition: opacity 300ms; }
+.bt-root:not(#_) .game[data-end]:not(.end-ready) .g-end, .bt-root:not(#_) .game[data-end]:not(.end-ready) .g-veil { cursor: default; }
+@container bt (max-width: 640px) {
+  /* one top row: title, meter (shrinks), sound, trophy (members) */
+  .bt-root:not(#_) .g-top { grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 8px; }
+  .bt-root:not(#_) .g-top .g-title { grid-column: 1; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-meter { grid-column: 2; grid-row: 1; min-width: 0; }
+  .bt-root:not(#_) .g-top .g-meter .bar { min-width: 24px; }
+  .bt-root:not(#_) .g-top .g-sound { grid-column: 3; grid-row: 1; }
+  .bt-root:not(#_) .g-top .g-lb { grid-column: 4; grid-row: 1; justify-self: end; }
+  .bt-root:not(#_) .g-top .g-arcade { grid-column: 1 / -1; grid-row: 2; }
+}
+</style>
 <body data-live="off" data-auth="member" data-view="both">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
   <defs>
@@ -2954,7 +2970,10 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
     const isPhone = () => getComputedStyle($(".g-ring")).display === "none";
     const tool = (name) => $(`[data-tool="${name}"]`);
     const dropTool = () => { $$(".g-tool").forEach((t) => t.classList.remove("shown", "held")); S.held = null; g.classList.remove("holding", "cutters-held"); };
-    const spots = () => { const W = g.offsetWidth, stage = rel($(".g-stage")); return isPhone() ? [[W - 40, stage.y - stage.h / 2 + 40], [40, stage.y - stage.h / 2 + 40]] : [[46, stage.y - 110], [46, stage.y + 120], [W - 46, stage.y - 110], [W - 46, stage.y + 120]]; };
+    // tools land in the gaps of the link ring (left, right, top, bottom middle), never at the screen edges
+    const spots = () => { const W = g.offsetWidth, stage = rel($(".g-stage")); if (isPhone()) return [[W - 40, stage.y - stage.h / 2 + 40], [40, stage.y - stage.h / 2 + 40]];
+      const hub = rel($(".g-hub")), cx = hub.x, cy = hub.y, j = () => Math.random() * 24 - 12;
+      return [[cx + 365 + j(), cy + j()], [cx - 365 + j(), cy + j()], [cx + j(), cy - 196 + j()], [cx + j(), cy + 196 + j()]]; };
     const showTool = (name) => { const t = tool(name), sp = spots(), [x, y] = sp[Math.floor(Math.random() * sp.length)]; t.style.left = x + "px"; t.style.top = y + "px"; t.classList.add("shown"); SFX.pick(); };
     const stopClock = () => clearInterval(S.clock);
     const reset = () => {
@@ -3075,6 +3094,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
       $("[data-end-place]").innerHTML = win
         ? (member ? (place <= 10 ? `You placed <b>#${place}</b> on the ${dev === "m" ? "mobile" : "desktop"} leaderboard.` : "Not quite top 10. Go again!") : `<div class="note">Completed runs by members make the leaderboard.</div>${join}`)
         : `<div class="note">Only completed runs make the leaderboard.</div>${member ? "" : join}`;
+      S.endAt = performance.now(); g.classList.remove("end-ready"); setTimeout(() => g.classList.add("end-ready"), 2000);
       setA("end", kind); if (win) setTimeout(SFX.victory, 250);
       setTimeout(() => { const el = $(".g-end"); if (el && el.scrollIntoView) el.scrollIntoView({ block: "center", behavior: "smooth" }); }, 60);
     };
@@ -3092,6 +3112,7 @@ body[data-live="backstage"] .bt-root:not(#_) .qd.is-club .l::after { content: " 
       if (t && t.matches("[data-lb]")) { const lb = t.parentElement; lb.dataset.open = lb.dataset.open === "1" ? "0" : "1"; const list = lb.querySelector(".list"); g.style.paddingBottom = lb.dataset.open === "1" && isPhone() ? (list.offsetHeight + 40) + "px" : ""; return; }
       if (t && t.matches("[data-fb]")) { if (!t.classList.contains("done")) { t.classList.add("done"); const c = t.querySelector("span"); c.textContent = +c.textContent + 1; SFX.click(); } return; }
       if (t && (t.matches(".show-list button") || t.matches(".fol a"))) return;
+      if (S.phase === "over" && g.hasAttribute("data-end") && performance.now() - (S.endAt || 0) < 2000) return;
       if (S.phase === "over" && g.hasAttribute("data-end") && !ev.target.closest("button, a")) { setA("end", null); return tapOut(true); }
       const active = !["idle", "over", "finish"].includes(S.phase);
       if (t && t.matches("[data-tool]")) { if (!t.classList.contains("shown")) return; S.held = t.dataset.tool; t.classList.add("held"); g.classList.add("holding"); if (S.held === "cutters") { g.classList.add("cutters-held"); S.prog = Math.max(S.prog, 75); draw(); } SFX.pick(); return; }

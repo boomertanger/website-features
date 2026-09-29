@@ -300,13 +300,18 @@
 .bt-root:not(#_) .bt-tts-end-fb button span { color: var(--bt-text-faint); font-weight: 600; }
 .bt-root:not(#_) .bt-tts-end-fb button span:empty { display: none; }
 .bt-root:not(#_) .bt-site-footer .bt-tts-end a.bt-btn--primary { color: var(--bt-text); }
+/* The first 2 s after an end card appears (engine.js ignores input): its buttons are
+   dimmed and inert, then fade in (.is-end-ready). */
+.bt-root:not(#_) .bt-tts-end :is(button, a) { transition: opacity 300ms, filter 160ms, box-shadow 160ms; }
+.bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) .bt-tts-end :is(button, a) { opacity: .35; pointer-events: none; }
+.bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) :is(.bt-tts-end, .bt-tts-veil) { cursor: default; }
 /* Play again: solid green (a recorded exception, design-system.md §8f) */
 .bt-root:not(#_) .bt-tts-end .bt-tts-play { margin-top: 12px; background: var(--bt-green); border: 1px solid var(--bt-green); color: var(--tts-play-text); font-weight: 800; }
 .bt-root:not(#_) .bt-tts-end .bt-tts-play:hover { filter: brightness(1.1); box-shadow: 0 0 16px color-mix(in srgb, var(--bt-green) 45%, transparent); }
 
 @container bt (max-width: 640px) {
-  /* The clocks take row 2 of the game bar, left of the leaderboard button. */
-  .bt-root:not(#_) .bt-tts-arcade { grid-column: 1 / 3; grid-row: 2; justify-self: start; }
+  /* The clocks take row 2 of the game bar, under the one-row title / meter / sound / trophy. */
+  .bt-root:not(#_) .bt-tts-arcade { grid-column: 1 / -1; grid-row: 2; justify-self: start; }
   .bt-root:not(#_) .bt-tts[data-phase="idle"] .bt-tts-arcade { display: none; }
   .bt-root:not(#_) .bt-tts-num { font-size: 14px; }
   /* The chain hangs in front of the link grid. */

@@ -4,12 +4,29 @@
 const clampX = (G, x, pad = 30) => Math.min(G.root.offsetWidth - pad, Math.max(pad, x));
 const pick = (spots) => spots[Math.floor(Math.random() * spots.length)];
 
+// The link ring's radii as they are right now: --bt-tts-rx / --bt-tts-ry are CSS
+// expressions (min() with cqw) in shared/bt-ui.css, so they're measured, not copied.
+function ringRadii(G) {
+  const probe = document.createElement("span");
+  probe.style.cssText = "position:absolute;visibility:hidden;pointer-events:none;width:var(--bt-tts-rx);height:var(--bt-tts-ry)";
+  G.$(".bt-tts-stage").append(probe);
+  const r = { rx: probe.offsetWidth, ry: probe.offsetHeight };
+  probe.remove();
+  return r;
+}
+
 // ---- hammer and cutters ----
+// Desktop: in a gap of the link ring (right, left, top or bottom middle of the ring
+// around the hub centre, +-12 px), never over a link or at the edge. Phones: the
+// top corners of the play area (tap to pick up, then tap the target).
 export function showTool(G, name) {
   const t = G.$(`[data-tool="${name}"]`), W = G.root.offsetWidth, st = G.rel(G.$(".bt-tts-stage"));
-  const spots = G.isPhone()
-    ? [[W - 40, st.y - st.h / 2 + 40], [40, st.y - st.h / 2 + 40]]
-    : [[46, st.y - 110], [46, st.y + 120], [W - 46, st.y - 110], [W - 46, st.y + 120]];
+  let spots;
+  if (G.isPhone()) spots = [[W - 40, st.y - st.h / 2 + 40], [40, st.y - st.h / 2 + 40]];
+  else {
+    const hub = G.rel(G.$(".bt-tts-hub")), { rx, ry } = ringRadii(G), j = () => Math.random() * 24 - 12;
+    spots = [[hub.x + rx + j(), hub.y + j()], [hub.x - rx + j(), hub.y + j()], [hub.x + j(), hub.y - ry + j()], [hub.x + j(), hub.y + ry + j()]];
+  }
   const [x, y] = pick(spots);
   t.style.left = x + "px"; t.style.top = y + "px";
   t.classList.add("is-shown"); G.enable(t, true); G.SFX.pick();

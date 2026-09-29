@@ -8,7 +8,7 @@ import * as rounds from "./rounds.js";
 import { flyBug } from "./bug.js";
 import { explode, cutFuse } from "./bomb.js";
 import { onChase } from "./chase.js";
-import { showEnd, onFeedback } from "./end.js";
+import { showEnd, onFeedback, END_GRACE_MS } from "./end.js";
 import { pickTool, dropTool, moveHeldTool, initPlug } from "./tools.js";
 import { fmtTime } from "./format.js";
 
@@ -89,6 +89,7 @@ export function createGame(root) {
   G.reset = () => {
     G.clearTimers(); cancelAnimationFrame(S.raf); G.stopClock(); hissStop();
     ["links", "flicker", "chain", "cf", "tstate", "bomb", "fuse", "end", "finish", "plug", "breaker", "dark"].forEach((k) => G.setA(k, null));
+    root.classList.remove("is-end-ready");
     Object.assign(S, { pen: 0, prog: 0, catches: 0, hot: null, endAt: null });
     S.got.clear(); S.loose.clear();
     dropTool(G); G.phase("idle"); G.draw();
@@ -126,6 +127,8 @@ export function createGame(root) {
   root.addEventListener("click", (ev) => {
     // The idle footer script owns the sound toggle, the leaderboard and Contact / Follow.
     if (ev.target.closest("[data-snd], [data-lb-wrap], .bt-tts-cf")) return;
+    // The end card's first 2 s: ignore everything on it and the dimmed play area.
+    if (S.phase === "over" && root.hasAttribute("data-end") && performance.now() - (S.endShownAt || 0) < END_GRACE_MS) { ev.preventDefault(); return; }
     const t = ev.target.closest("[data-tts-g], .bt-tts-link, [data-fb], [data-tool], .bt-tts-tanger span, .bt-tts-plug");
     if (t?.matches("[data-fb]")) return onFeedback(G, t);
     if (S.phase === "over" && root.hasAttribute("data-end") && !ev.target.closest("button, a")) { G.setA("end", null); return G.tapOut(true); }
