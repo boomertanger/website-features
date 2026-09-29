@@ -2,6 +2,7 @@
 // ported from the approved prototype. Sound is on unless the footer's toggle set
 // data-sound="off" on the game root (saved per browser by scripts/footer.js).
 import { getAudio } from "./audio-unlock.js";
+import { doomOrgan } from "./sounds/doom-organ.js";
 
 export function createSounds(root) {
   const on = () => root.dataset.sound !== "off";
@@ -110,6 +111,10 @@ export function createSounds(root) {
     snip: () => { noise(0.04, 5000, 0.35, "highpass"); tone(2600, 0.03, "square", 0.08); tone(1800, 0.04, "square", 0.06, null, 0.05); },
     boom: () => { noise(1.4, 260, 0.9); tone(70, 1.1, "sine", 0.6, 28); noise(0.5, 1200, 0.3, "lowpass", 0.05); },
     blip: (k = 0) => tone(820 + k * 45, 0.07, "square", 0.09),
+    // Lose screens ("Boom.", "Missed one.", "Wrong one."): the doom organ
+    // (sounds/doom-organ.js, values as approved). Same output as every other sound, and
+    // like them it doesn't play when sound is off (ac() is null then).
+    doom: () => { const c = ac(); if (c) doomOrgan(c, c.destination); },
     buzz: () => { tone(120, 0.45, "sawtooth", 0.2, 70); tone(125, 0.45, "sawtooth", 0.15, 72); },
     minus: () => tone(220, 0.06, "square", 0.06, 160),
     pick: () => tone(500, 0.08, "triangle", 0.12, 900),

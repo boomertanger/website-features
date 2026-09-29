@@ -233,8 +233,10 @@
 /* Holding a tool hides the pointer over the play area (the tool is the cursor). */
 .bt-root:not(#_) .bt-tts.is-holding .bt-tts-stage, .bt-root:not(#_) .bt-tts.is-holding .bt-tts-stage * { cursor: none; }
 
-/* ---- The classic bomb in the first O and its braided fuse ---- */
-.bt-root:not(#_) .bt-tts-bomb { position: absolute; left: 50%; top: 52%; z-index: 4; width: .44em; height: .44em; margin: -.2em 0 0 -.22em; padding: 0; border: 0; border-radius: 50%; cursor: pointer; transform: scale(0); transition: transform 400ms cubic-bezier(.2, .9, .3, 1.6);
+/* ---- The classic bomb in the first O and its braided fuse ----
+   The bomb sits above the fuse (z 6 over 5): the fuse reaches the bomb and its 30 px
+   click area would otherwise cover it, turning a click on the bomb into a fuse click. */
+.bt-root:not(#_) .bt-tts-bomb { position: absolute; left: 50%; top: 52%; z-index: 6; width: .44em; height: .44em; margin: -.2em 0 0 -.22em; padding: 0; border: 0; border-radius: 50%; cursor: pointer; transform: scale(0); transition: transform 400ms cubic-bezier(.2, .9, .3, 1.6);
   background: radial-gradient(circle at 34% 30%, var(--tts-bomb-hi) 0 6%, var(--tts-bomb-mid) 22%, var(--tts-bomb-dark) 58%, var(--tts-black)); box-shadow: 0 0 0 1px var(--tts-black), inset -2px -3px 6px var(--tts-shade-deep); }
 .bt-root:not(#_) .bt-tts-bomb::before { content: ""; position: absolute; left: 50%; top: -.07em; width: .14em; height: .08em; margin-left: -.07em; border-radius: 2px 2px 0 0; background: linear-gradient(90deg, var(--tts-cap), var(--tts-cap-hi), var(--tts-cap)); }
 .bt-root:not(#_) .bt-tts-bomb::after { content: ""; position: absolute; left: 22%; top: 18%; width: 22%; height: 14%; border-radius: 50%; background: var(--tts-bomb-shine); transform: rotate(-30deg); }
