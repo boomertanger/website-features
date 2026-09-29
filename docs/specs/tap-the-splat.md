@@ -43,7 +43,7 @@ The site footer is a hidden point-and-click puzzle game. Nothing says "game": th
 - Buttons: "▲ I liked it", "🕹 Make more games" (once per person), solid green "Play again".
 
 ## Sound (Web Audio synthesis, no files)
-Splat squelch, zap, chain clinks and pull, KACHUNK, rising power-up zap, blocky crumble, hammer thunk, fuse hiss, snip, boom, catch blips, sting, victory fanfare, buzz, penalty blip. Toggle in the bar; preference in localStorage. iOS: unlock on first touch; `navigator.audioSession.type = "playback"`.
+Splat (gooey and sloppy: a soft wet slap, a resonant downward "shlop" with a wet wobble, goo bubbles and a sticky tail; no bright clicks; varies slightly each time), zap, chain clinks and pull, KACHUNK, rising power-up zap, blocky crumble, hammer thunk, fuse hiss, snip, boom, catch blips, sting, victory fanfare, buzz, penalty blip. Toggle in the bar; preference in localStorage. iOS: unlock on first touch; `navigator.audioSession.type = "playback"`.
 
 ## Accessibility, motion, performance
 - Real buttons (or role=button with keyboard support); links remain normal links outside the game; the header nav covers the same pages.

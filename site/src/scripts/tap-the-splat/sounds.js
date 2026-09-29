@@ -29,8 +29,46 @@ export function createSounds(root) {
     n.connect(f).connect(g).connect(c.destination); n.start(t);
   };
 
+  // A wet squelch: noise through a resonant band-pass that sweeps down (from -> to Hz),
+  // with a fast wobble on the filter (wob Hz, depth Hz) so it sounds wet, not hissy.
+  const squelch = (d, from, to, v, { q = 7, wob = 16, depth = 160, delay = 0 } = {}) => {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, n = c.createBufferSource(), b = c.createBuffer(1, Math.ceil(c.sampleRate * d), c.sampleRate), ch = b.getChannelData(0);
+    for (let i = 0; i < ch.length; i++) ch[i] = Math.random() * 2 - 1;
+    n.buffer = b;
+    const f = c.createBiquadFilter(); f.type = "bandpass"; f.Q.value = q;
+    f.frequency.setValueAtTime(from, t); f.frequency.exponentialRampToValueAtTime(to, t + d);
+    const lfo = c.createOscillator(), lg = c.createGain(); lfo.frequency.value = wob; lg.gain.value = depth;
+    lfo.connect(lg).connect(f.frequency);
+    const g = c.createGain();
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.012); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    n.connect(f).connect(g).connect(c.destination);
+    n.start(t); lfo.start(t); n.stop(t + d + 0.02); lfo.stop(t + d + 0.02);
+  };
+  // A goo bubble: a short muffled tone that drops in pitch ("blup").
+  const blup = (f, to, d, v, delay) => {
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + delay, o = c.createOscillator(), lp = c.createBiquadFilter(), g = c.createGain();
+    o.type = "sine"; o.frequency.setValueAtTime(f, t); o.frequency.exponentialRampToValueAtTime(to, t + d);
+    lp.type = "lowpass"; lp.frequency.value = 900;
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.008); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    o.connect(lp).connect(g).connect(c.destination); o.start(t); o.stop(t + d + 0.02);
+  };
+  const rnd = (a, b) => a + Math.random() * (b - a);
+
   const SFX = {
-    splat: () => { noise(0.09, 2400, 0.55, "bandpass"); noise(0.35, 500, 0.6); tone(140, 0.18, "sine", 0.45, 38); [0.06, 0.11, 0.17, 0.24].forEach((d, i) => { noise(0.03, 3000 + i * 700, 0.18, "bandpass", d); tone(900 + Math.random() * 900, 0.03, "sine", 0.05, 400, d); }); },
+    // Gooey, sloppy splat (start and tap out): a soft wet slap and low thump, a resonant
+    // "shlop" sweeping down, a smaller second squelch, a few goo bubbles and a sticky
+    // tail. Dark and wet on purpose: no bright clicks. Varies a little every time.
+    splat: () => {
+      noise(0.07, 1100, 0.42, "lowpass");
+      tone(rnd(100, 120), 0.2, "sine", 0.5, 38);
+      squelch(rnd(0.3, 0.36), rnd(1300, 1600), rnd(220, 280), 0.6, { q: 6.5, wob: rnd(14, 19), depth: 180 });
+      squelch(rnd(0.2, 0.26), rnd(850, 1000), rnd(180, 220), 0.32, { q: 9, wob: rnd(20, 26), depth: 120, delay: rnd(0.1, 0.14) });
+      const bubbles = 3 + Math.floor(Math.random() * 3);
+      for (let i = 0; i < bubbles; i++) blup(rnd(480, 760), rnd(130, 210), rnd(0.06, 0.1), rnd(0.07, 0.12), rnd(0.13, 0.5));
+      noise(0.38, 320, 0.13, "lowpass", 0.24);
+    },
     powerup: () => {
       const c = ac(); if (!c) return;
       const t = c.currentTime, o = c.createOscillator(), o2 = c.createOscillator(), f = c.createBiquadFilter(), g2 = c.createGain();
