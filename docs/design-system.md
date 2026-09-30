@@ -185,7 +185,14 @@ passed sections (`.is-past`) gold, the current one (`aria-current="true"`) a glo
 dot, the line filling to it (`--bt-toc-fill`). At ≤ 640px it becomes a swipeable chip row
 with a thin gold progress bar above it (`--bt-toc-prog`). Behavior: `shared/ui/toc.js`
 (`initToc(nav)` follows the scroll with an IntersectionObserver; `initToc(nav, { observe:
-false }).set(i)` for demos). The page places it (sticky); the kit styles it.
+false }).set(i)` for demos). The current stop is the last section whose top has passed a
+line 30% down the screen (the last one on screen at the very bottom; a menu click sets it at
+once), so it works for tall sections and for short targets like Markdown `h2`s. Long text
+pages use the shared `site/src/components/TocLayout.astro` (`items: [id, label][]`): the
+sticky rail in a left column, the content on the right, the chip row at ≤ 640px, and
+jumps landing below the header (`scroll-margin-top` from `--bt-header-h`). How it works,
+Terms and Privacy use it; the legal pages build their items at build time from the
+Markdown's own `h2`s (`getHeadings()`, depth 2).
 
 **Chapter heading: `.bt-chapter`** (D2), for the top-level sections of long pages:
 `<header class="bt-chapter">` > `p.bt-chapter-eyebrow` (gold mono "01 · Chapter", a fading
@@ -893,3 +900,6 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   `data-n`). Terms and Privacy use D2 numbering through `.bt-prose--chapters`. D3
   (`.bt-chapter--ember`) is kept for special moments: game pages, launches. D1
   (`.bt-chapter--bar`) is there for quieter pages.
+- **Long text pages get the progress-rail menu** through the shared `TocLayout`: How it works,
+  Terms and Privacy. The menu shows the plain section names; on Terms and Privacy the
+  headings themselves carry the "01 · Section" numbering (`.bt-prose--chapters`).

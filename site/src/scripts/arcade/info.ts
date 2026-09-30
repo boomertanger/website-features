@@ -1,6 +1,5 @@
-// How it works (arcade-info.html layout 1): the version-cycle stages are tabs, and the
-// "On this page" menu is the kit's .bt-toc (shared/ui/toc.js). No Firestore reads.
-import { initTocs } from "../../../../shared/ui/toc.js";
+// How it works (arcade-info.html layout 1): the version-cycle stages are tabs. The "On
+// this page" menu comes from TocLayout.astro. No Firestore reads.
 
 const steps = [...document.querySelectorAll<HTMLButtonElement>("[data-stage]")];
 const details = [...document.querySelectorAll<HTMLElement>("[data-stage-detail]")];
@@ -22,6 +21,3 @@ document.querySelector(".ai-steps")?.addEventListener("keydown", (ev) => {
   e.preventDefault();
   show((next + steps.length) % steps.length, true);
 });
-
-// The side menu: the kit's progress rail follows the scroll.
-initTocs();

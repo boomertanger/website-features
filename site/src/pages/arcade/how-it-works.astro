@@ -3,12 +3,14 @@
 // (docs/design/mockups/arcade-info.html), adjusted per arcade-step1.md §3: for visitors
 // "Enter the Arcade" and "Join free" open the Join dialog; for members "Enter the Arcade"
 // goes to /arcade and Join free hides. "Try Tap the Splat" scrolls to the footer game.
-// The side menu is the kit's .bt-toc progress rail (shared/ui/toc.js) and each section
+// The side menu and two columns come from the shared TocLayout (the kit's .bt-toc
+// progress rail, shared/ui/toc.js), and each section
 // opens with a numbered chapter heading (trying the D4 .bt-chapter--ghost; the eyebrow
 // stays in the markup, so going back to the default is just the class).
 // No Firestore reads (§3), so the hero has no live counts, and nothing claims the v2
 // Workshop is open (it opens in build step 3).
 import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
 
 const JOIN_TITLE = "Join to enter the Arcade";
 const STAGES = [
@@ -24,11 +26,7 @@ const STAGES = [
 const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["s-grow", "How games grow"], ["s-versions", "Versions"], ["s-roles", "Roles"], ["s-badges", "Badges"], ["s-fair", "Fair play"], ["s-words", "Glossary"], ["s-faq", "FAQ"]];
 ---
 <ArcadeLayout title="How the Boom Arcade works" description="Horror games, built with you: what's inside the Boom Arcade, how games are born and grow, and the rules every board follows." membersOnly={false} section="how">
-  <div class="ai-wrap">
-    <nav class="bt-toc ai-nav" aria-label="On this page">
-      <span class="bt-toc-rail" aria-hidden="true"></span><span class="bt-toc-fill" aria-hidden="true"></span>
-      {NAV.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
-    </nav>
+  <TocLayout items={NAV}>
     <div class="ai-main">
       <section class="ai-hero" aria-labelledby="h-hero">
         <span class="ai-kicker">Boom Arcade</span>
@@ -198,7 +196,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
         </div>
       </section>
     </div>
-  </div>
+  </TocLayout>
 </ArcadeLayout>
 
 <script>
