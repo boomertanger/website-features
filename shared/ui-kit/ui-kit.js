@@ -12,6 +12,7 @@ import { BA_ICON, ttsLogoHtml, boombotIcon } from "../ui/arcade.js";
 import { initSegNav } from "../ui/seg-nav.js";
 import { initToc } from "../ui/toc.js";
 import { initSpotlights } from "../ui/spotlight.js";
+import { cycleWheelHtml, initCycleWheels } from "../ui/cycle-wheel.js";
 
 const KIT_VERSION = "dev";
 
@@ -832,8 +833,29 @@ function navHtml() {
 
     <p class="kit-sub">Wordmark power-on: .bt-wordmark--power, Gold shine. Hover or focus: ARCADE switches from the resting purple to gold with a warm glow while one sheen crosses it (the same move as TANGER on the main logo), BOOM gets a faint white glow, the lamp comes fully on and the stick wiggles once. Touch screens play it once as it scrolls into view. Reduced motion: gold with no sheen and no wiggle. Left: at rest (hover it); right: frozen lit (.is-lit).</p>
     <div class="kit-row">${arcadeMark()}${arcadeMark(true)}</div>
+
+    <p class="kit-sub">Cycle wheel: .bt-cycle-wheel (shared/ui/cycle-wheel.js: cycleWheelHtml() builds it from stage data, initCycleWheels(root) wires it). A version's stages round a ring in --bt-cycle-1..8 (decorative only, never a status): future stages faint, finished ones half strength, the chosen one full colour, lifted and glowing. The segments are a tablist (arrow keys, Home, End), the card is the tabpanel, Play goes round the wheel every 2.6 s and stops on any other interaction. Wheel above the card at 900px and below. Reduced motion: colour and glow only.</p>
+    <div class="kit-stack">
+      <p class="kit-note">Full: title, Play, badge and the loop note, at stage 1</p>
+      ${cycleWheelHtml({ id: "kit-cw-a", title: "Tap the Splat · v2", badge: `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span>`, stages: KIT_STAGES, note: "After Thanks and badges, the next cycle opens." })}
+      <p class="kit-note">Mid-cycle (stage 5, In development): stages 1-4 finished, half strength</p>
+      ${cycleWheelHtml({ id: "kit-cw-b", title: "Tap the Splat · v3", badge: `<span class="bt-badge bt-badge--green"><span class="bt-badge-dot"></span>Building</span>`, stages: KIT_STAGES, current: 4, play: false })}
+      <p class="kit-note">Last stage, no top row: the next arrow is disabled</p>
+      ${cycleWheelHtml({ id: "kit-cw-c", stages: KIT_STAGES, current: 7, play: false })}
+    </div>
   </section>`;
 }
+
+const KIT_STAGES = [
+  ["Ideas open", "Anyone can post ideas for the next version on the Draft board, and comment and vote on others.", "All members"],
+  ["Shortlist", "The Keeper merges duplicates and picks the strongest ideas for a vote, with a short reason for each.", "Keeper"],
+  ["Vote", "Members vote on the shortlist. The results guide the plan, they don't dictate it.", "All members"],
+  ["Plan locked", "The Keeper writes the plan and Boomertanger approves it. This is what gets built.", "Keeper + Boomertanger"],
+  ["In development", "Boomertanger builds the version. The Keeper posts progress updates on the Draft board.", "Boomertanger"],
+  ["Playtest", "Members play the beta from the version picker and report bugs or balance problems.", "All members"],
+  ["Release", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"],
+  ["Thanks and badges", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"],
+].map(([name, text, who]) => ({ name, text, who }));
 
 function arcadeHtml() {
   const soon = `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>`;
@@ -916,6 +938,7 @@ function init() {
   mount.querySelectorAll("[data-kit-seg]").forEach((n) => initSegNav(n));
   mount.querySelectorAll("[data-kit-toc]").forEach((n) => initToc(n, { observe: false }).set(+n.dataset.kitToc));
   initSpotlights(mount);
+  initCycleWheels(mount);
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {

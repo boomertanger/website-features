@@ -13,18 +13,36 @@ import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { cycleWheelHtml } from "../../../../shared/ui/cycle-wheel.js";
 
 const JOIN_TITLE = "Join to enter the Arcade";
-const STAGES = [
-  ["Ideas open", "blue", "Anyone can post ideas for the next version on the Draft board, and comment and vote on others.", "All members"],
-  ["Shortlist", "teal", "The Keeper merges duplicates and picks the strongest ideas for a vote, with a short reason for each.", "Keeper"],
-  ["Vote", "teal", "Members vote on the shortlist. The results guide the plan, they don't dictate it.", "All members"],
-  ["Plan locked", "gold", "The Keeper writes the plan and Boomertanger approves it. This is what gets built.", "Keeper + Boomertanger"],
-  ["In development", "green", "Boomertanger builds the version. The Keeper posts progress updates on the Draft board.", "Boomertanger"],
-  ["Playtest", "green", "Members play the beta from the version picker and report bugs or balance problems.", "All members"],
-  ["Release", "lime", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"],
-  ["Thanks and badges", "lime", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"],
+// Sections 2 and 3 (docs/design/mockups/how-it-works-sections-2-3.html): the journey ("After")
+// and the kit's cycle wheel (3C, stage colours from --bt-cycle-1..8, palette 1 Spectrum).
+const JOURNEY = [
+  ["💡", "Pitch", "A member with a gamer badge pitches a new game in the Studio."],
+  ["🗳", "Community vote", "Members vote and discuss. The best pitches rise."],
+  ["✅", "Greenlit", "Boomertanger picks a pitch to build. It becomes a real game."],
+  ["🛠", "Workshop", "The new game gets its own Workshop, and v1 is planned there."],
+  ["🧪", "Playtest", "Members try the beta first and report what's broken or boring."],
+  ["🚀", "Release", "v1 drops in the Arcade, with its own leaderboards."],
 ];
+const STAGES = [
+  ["Ideas open", "Anyone can post ideas for the next version on the Draft board, and comment and vote on others.", "All members"],
+  ["Shortlist", "The Keeper merges duplicates and picks the strongest ideas for a vote, with a short reason for each.", "Keeper"],
+  ["Vote", "Members vote on the shortlist. The results guide the plan, they don't dictate it.", "All members"],
+  ["Plan locked", "The Keeper writes the plan and Boomertanger approves it. This is what gets built.", "Keeper + Boomertanger"],
+  ["In development", "Boomertanger builds the version. The Keeper posts progress updates on the Draft board.", "Boomertanger"],
+  ["Playtest", "Members play the beta from the version picker and report bugs or balance problems.", "All members"],
+  ["Release", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"],
+  ["Thanks and badges", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"],
+];
+const WHEEL = cycleWheelHtml({
+  id: "ai-cycle",
+  title: "Tap the Splat · v2",
+  badge: `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span>`,
+  stages: STAGES.map(([name, text, who]) => ({ name, text, who })),
+  note: "After Thanks and badges, the next cycle opens.",
+});
 // Section 1, What's inside (option A "Stage", docs/design/mockups/how-it-works-round-2.html):
 // doors link somewhere (Games, Leaderboards); Soon parts are plain cards.
 const PARTS = [
@@ -142,13 +160,10 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-born">How a game is born</h2>
           <p class="bt-chapter-lede">From a pitch in the Arcade Studio to a game you can play.</p>
         </header>
-        <ol class="ai-track">
-          <li><b>Pitch</b><span>A member with a gamer badge pitches a new game in the Studio.</span></li>
-          <li><b>Community vote</b><span>Members vote and discuss. The best pitches rise.</span></li>
-          <li><b>Greenlit</b><span>Boomertanger picks a pitch to build. It becomes a real game.</span></li>
-          <li><b>Workshop</b><span>The new game gets its own Workshop, and v1 is planned there.</span></li>
-          <li><b>Playtest</b><span>Members try the beta first and report what's broken or boring.</span></li>
-          <li><b>Release</b><span>v1 drops in the Arcade, with its own leaderboards.</span></li>
+        <ol class="ai-jr" data-journey>
+          {JOURNEY.map(([ic, t, d], i) => (
+            <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>
+          ))}
         </ol>
       </section>
 
@@ -156,23 +171,9 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
         <header class="bt-chapter bt-chapter--ghost" data-n="03">
           <p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-grow">How a game grows</h2>
-          <p class="bt-chapter-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page. Tap a stage.</p>
+          <p class="bt-chapter-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page.</p>
         </header>
-        <div class="ai-cycle">
-          <div class="ai-cycle-top"><b>Tap the Splat · v2</b><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span></div>
-          <div class="ai-steps" role="tablist" aria-label="Version cycle stages">
-            {STAGES.map(([name, tone], i) => <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} aria-controls="ai-detail" data-stage={i} style={`--c:var(--bt-${tone})`}>{name}</button>)}
-          </div>
-          <div class="ai-detail" id="ai-detail" role="tabpanel" aria-live="polite">
-            {STAGES.map(([name, tone, text, who], i) => (
-              <div data-stage-detail={i} hidden={i !== 0} style="display:contents">
-                <h4>{name} <span class={`bt-badge bt-badge--${tone}`}><span class="bt-badge-dot"></span>Stage {i + 1} of 8</span></h4>
-                <p>{text}</p>
-                <span class="ai-who">Led by: {who}</span>
-              </div>
-            ))}
-          </div>
-        </div>
+        <Fragment set:html={WHEEL} />
       </section>
 
       <section class="ai-sec" id="s-versions" aria-labelledby="h-versions">

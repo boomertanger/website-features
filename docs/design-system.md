@@ -96,7 +96,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Footer Contact + Follow (added) | one colour per badge: `contact-business` (`title`), `contact-fanmail` (`pink`), `contact-support` (`teal`), `follow-tiktok` (#25f4ee), `follow-youtube` (#ff0000), `follow-twitch` (`brand-twitch`), `follow-instagram` (#ff0069) · `pw-cable` (#2e2a33, an unlit cable) `pw-ring-bg` (#0b0a10) `pw-ring-edge` (#2a2530, an unlit ring) `pw-arc` (#fff, the lightning and ring flash) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
-| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) |
+| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -227,6 +227,22 @@ the pointer inside the card; `shared/ui/spotlight.js` (`initSpotlights(root)`) s
 id): a yellow head (`--bt-lamp` to `--bt-title`), a dark visor, `--bt-neon` eyes that blink now
 and then, a `--bt-blood` antenna knob. `.is-thinking` (on it or a parent) scans the eyes and
 blinks the antenna while it "types". Still under reduced motion.
+
+**Cycle wheel: `.bt-cycle-wheel`** (`shared/ui/cycle-wheel.js`; mockup
+`docs/design/mockups/how-it-works-sections-2-3.html`, 3C): a version's stages as segments
+round a ring. `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` builds
+the markup from `stages: [{ name, text, who }]` (render it at build time, so the names and
+texts are in the HTML), `initCycleWheels(root)` wires it. Stage i takes `--bt-cycle-(i+1)`:
+future stages faint, finished ones (`.is-done`) half strength, the chosen one full colour,
+lifted and glowing; the centre reads "Stage / 0N / of 8 stages" in its colour, and a dashed
+arrow runs from the last stage back to the first. The card beside it (no side bar: a 1px
+border in the stage colour with a soft glow, a black body with a faint wash of the colour)
+shows the title with a "Stage N of 8" chip, the text, "Led by" as a chip, and prev / next
+arrows (disabled at the ends). The segments are a tablist (roving tabindex, `aria-selected`,
+each named "Stage N: name"; Arrow keys wrap, Home / End), the card holds one tabpanel per
+stage. Play goes round the wheel (2.6 s a stage) and stops on any other interaction. Wheel
+left, card right; above the card at ≤ 900px. Reduced motion: colour and glow only, and Play
+steps without animating. How it works uses it; the Workshop pages will too.
 
 **Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
 ≤ 640px), with the same gradient.
@@ -583,6 +599,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
 | `hero-carousel.js` | `initHeroCarousel(hero, { duration = 7000, stateRoot = document.body })` → `{ go, destroy }`. Stories bars, 7 s per slide, pause on hover / focus / hidden tab, swipe, tap zones on narrow screens (never on links or buttons), arrow keys, no autoplay under reduced motion, live-first pinning of the `data-stream` slide while `data-live` isn't `off`, drops slides outside `data-starts`/`data-ends` or for another `data-audience`. |
 | `pill-switch.js` | `initPillSwitch(group, { target, attr, onChange })` → `{ set }`. Marks the chosen `button[data-value]` `.is-on` / `aria-pressed` and writes `data-{attr}` on the target. |
+| `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 
@@ -926,6 +943,15 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   the HTML, visually hidden once the chips take over) and 9A Ask BOOMBOT (question bubbles
   as buttons, answers in the HTML from the start; the typing dots are visual only). These
   use a 900px container breakpoint for the flow and medals, as specified for this page.
+- **How it works, sections 2 and 3** (`docs/design/mockups/how-it-works-sections-2-3.html`):
+  2 is the journey ("After"; the circles on their own line above the cards, the line filling
+  gold up to the step; 3 columns at ≤ 900px, a vertical path on phones) and 3 is the kit's
+  `.bt-cycle-wheel` with palette 1 "Spectrum". The journey also uses the page's 900px
+  breakpoint.
+- **The cycle colours are decorative stage colours only.** `--bt-cycle-1` … `--bt-cycle-8`
+  mark where a stage sits in the cycle, hot to cool; they never mean a status (badges keep
+  their tone maps, §8b). Stage 1 is a scarlet (#ff3b3b), not the kit's danger red, which
+  stays reserved for "this deletes something".
 - **Every feature wordmark gets its own hover "power-on" when it's ported**, built on
   `.bt-wordmark--power`: a word-level shine on its accent word (its own lit colour, one sheen
   crossing) plus its icon's moment: Bug Zapper's bolt crackles, Cloud Stash's cloud rains,

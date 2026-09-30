@@ -101,25 +101,49 @@
 .bt-root:not(#_) .ai-hero .bt-title { margin: 6px 0 10px; }
 .bt-root:not(#_) .ai-hero p { max-width: 52ch; margin: 0 0 20px; color: var(--bt-text); font-size: var(--bt-text-lg); }
 .bt-root:not(#_) :is(.ai-acts) { display: flex; flex-wrap: wrap; gap: 10px; }
-.bt-root:not(#_) .ai-who { margin-top: auto; padding-top: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
-.bt-root:not(#_) .ai-track { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; padding: 0; counter-reset: s; }
-.bt-root:not(#_) .ai-track li { position: relative; padding: 14px 12px 12px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-surface); list-style: none; counter-increment: s; }
-.bt-root:not(#_) .ai-track li::before { content: counter(s); position: absolute; top: -10px; left: 12px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 11px; font-weight: 900; }
-.bt-root:not(#_) .ai-track b { display: block; margin: 4px 0 2px; font-size: var(--bt-text-base); }
-.bt-root:not(#_) .ai-track span { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
-.bt-root:not(#_) .ai-cycle { padding: 18px; border: 1px solid var(--bt-border); border-radius: 18px; background: var(--bt-surface); }
-.bt-root:not(#_) .ai-cycle-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
-.bt-root:not(#_) .ai-cycle-top b { font-size: var(--bt-text-lg); }
-.bt-root:not(#_) .ai-steps { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
-.bt-root:not(#_) .ai-steps button { position: relative; padding: 16px 2px 0; border: 0; background: none; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; line-height: 1.3; text-align: center; cursor: pointer; }
-.bt-root:not(#_) .ai-steps button::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; border-radius: 6px; background: var(--bt-surface-2); box-shadow: inset 0 0 0 1px var(--bt-border-2); }
-.bt-root:not(#_) .ai-steps button.is-done::before { background: var(--c); box-shadow: none; opacity: 0.55; }
-.bt-root:not(#_) .ai-steps button[aria-selected="true"]::before { background: var(--c); box-shadow: 0 0 12px var(--c); }
-.bt-root:not(#_) .ai-steps button:is([aria-selected="true"], :hover) { color: var(--bt-text); }
-.bt-root:not(#_) .ai-detail { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 16px; margin-top: 16px; padding: 14px 16px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-bg); }
-.bt-root:not(#_) .ai-detail h4 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-lg); }
-.bt-root:not(#_) .ai-detail p { grid-column: 1 / -1; margin: 0; color: var(--bt-text-muted); }
-.bt-root:not(#_) .ai-detail .ai-who { grid-column: 1 / -1; }
+/* Section 2, the journey (how-it-works-sections-2-3.html "After"): six circles on their own
+   line above the cards, each joined to its card by a stem. The line fills gold up to the
+   hovered / focused / tapped step (--p, set by info.ts); passed steps stay lit. */
+.bt-root:not(#_) .ai-jr { --p: 0; position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 58px 0 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .ai-jr::before, .bt-root:not(#_) .ai-jr::after { content: ""; position: absolute; z-index: 1; top: -29px; left: 29px; height: 2px; margin-top: -1px; border-radius: 2px; pointer-events: none; }
+.bt-root:not(#_) .ai-jr::before { right: calc((100% - 50px) / 6 - 29px); background: var(--bt-border-2); }
+.bt-root:not(#_) .ai-jr::after { width: calc(var(--p) * ((100% - 50px) / 6 + 10px)); background: linear-gradient(90deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 70%, var(--bt-blood))); box-shadow: 0 0 10px rgba(var(--bt-gold-rgb), 0.6); transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .ai-jr li { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 4px; padding: 16px 14px 14px; border: 1px solid var(--bt-border); border-radius: 16px; background: var(--bt-surface); cursor: default; outline: none; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s, background 0.25s; }
+.bt-root:not(#_) .ai-jr li:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .ai-jr li::before { content: ""; position: absolute; top: -14px; left: 28px; width: 2px; height: 14px; background: var(--bt-border-2); transition: background 0.3s; }
+.bt-root:not(#_) .ai-jr li:is(.is-on, .is-past)::before { background: rgba(var(--bt-gold-rgb), 0.6); }
+.bt-root:not(#_) .ai-jr-num { position: absolute; z-index: 3; top: -44px; left: 14px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 13px; font-weight: 900; box-shadow: 0 0 0 4px var(--bt-bg); transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.4, 1), box-shadow 0.3s, background 0.3s; }
+.bt-root:not(#_) .ai-jr-num::after { content: ""; position: absolute; inset: -4px; border: 2px solid var(--bt-title); border-radius: 50%; opacity: 0; pointer-events: none; }
+.bt-root:not(#_) .ai-jr-ic { position: absolute; top: 12px; right: 12px; font-size: 18px; opacity: 0.35; filter: grayscale(0.7); transition: opacity 0.3s, filter 0.3s, transform 0.35s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.bt-root:not(#_) .ai-jr b { padding-right: 24px; font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .ai-jr-t { color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+.bt-root:not(#_) .ai-jr[data-active] li:not(.is-past, .is-on) .ai-jr-num { background: color-mix(in srgb, var(--bt-title) 55%, var(--bt-surface-2)); }
+.bt-root:not(#_) .ai-jr li.is-past .ai-jr-num { box-shadow: 0 0 0 4px var(--bt-bg), 0 0 12px rgba(var(--bt-gold-rgb), 0.45); }
+.bt-root:not(#_) .ai-jr li.is-on { z-index: 3; transform: translateY(-4px); border-color: rgba(var(--bt-gold-rgb), 0.55); background: radial-gradient(90% 80% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); box-shadow: 0 12px 28px var(--bt-lift-shadow), 0 0 22px rgba(var(--bt-gold-rgb), 0.14); }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-num { transform: scale(1.35); background: var(--bt-lamp); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 18px rgba(var(--bt-lamp-rgb), 0.9), 0 0 36px rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-num::after { animation: ai-jr-ring 1.2s ease-out infinite; }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-ic { opacity: 1; filter: none; transform: scale(1.25) rotate(-8deg); }
+@keyframes ai-jr-ring { 0% { opacity: 0.9; transform: scale(0.9); } 100% { opacity: 0; transform: scale(1.9); } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.ai-jr li, .ai-jr-num, .ai-jr-ic, .ai-jr::after) { transition: none; }
+  .bt-root:not(#_) .ai-jr li.is-on, .bt-root:not(#_) .ai-jr li.is-on :is(.ai-jr-num, .ai-jr-ic) { transform: none; }
+  .bt-root:not(#_) .ai-jr li.is-on .ai-jr-num::after { animation: none; }
+}
+/* 900px is this page's breakpoint for the journey (design-system.md §8h). */
+@container bt (max-width: 900px) and (min-width: 641px) {
+  .bt-root:not(#_) .ai-jr { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 58px; }
+  .bt-root:not(#_) .ai-jr::before, .bt-root:not(#_) .ai-jr::after { display: none; }
+}
+/* Phones: a vertical path, the circles on the line beside the cards, filling downward. */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-jr { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; padding-left: 30px; }
+  .bt-root:not(#_) .ai-jr li::before { display: none; }
+  .bt-root:not(#_) .ai-jr::before { top: 20px; bottom: 20px; left: 14px; right: auto; width: 2px; height: auto; margin: 0; }
+  .bt-root:not(#_) .ai-jr::after { top: 20px; left: 14px; width: 2px; height: calc(var(--p) * (100% - 40px) / 5); margin: 0; transition: height 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+  .bt-root:not(#_) .ai-jr li { padding: 14px 44px 14px 18px; }
+  .bt-root:not(#_) .ai-jr-num { top: 50%; left: -31px; margin-top: -15px; }
+  .bt-root:not(#_) .ai-jr li.is-on { transform: translateX(3px); }
+}
 .bt-root:not(#_) .ai-gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; border-top: 1px solid var(--bt-border); }
 .bt-root:not(#_) .ai-gloss div { padding: 12px 0; border-bottom: 1px solid var(--bt-border); }
 .bt-root:not(#_) .ai-gloss dt { color: var(--bt-title); font-size: var(--bt-text-base); font-weight: 800; }
@@ -415,13 +439,8 @@
   .bt-root:not(#_) .ai-flip:is(:hover, :focus-visible, .is-flipped) .ai-face--back { opacity: 1; }
 }
 
-@container bt (max-width: 1024px) {
-  .bt-root:not(#_) .ai-track { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 18px; }
-}
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ai-hero { padding: 26px 18px; }
   .bt-root:not(#_) :is(.ai-stage, .ai-gloss) { grid-template-columns: minmax(0, 1fr); }
-  .bt-root:not(#_) .ai-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .bt-root:not(#_) .ai-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; }
 }
 .bt-root:not(#_) .ar-skel-av { width: 28px; height: 28px; border-radius: 50%; }

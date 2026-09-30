@@ -1,3 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How it works: sections 2 and 3, refined</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: dark; }
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 80px); background: #0f0f0f; }
+body { margin: 0; background: #0f0f0f; padding: 24px 16px 80px; }
+</style>
+<style>
+/* ===== shared/bt-ui.css (dev 334c69f) ===== */
 /* shared/bt-ui.css — Boomertanger shared UI kit
    Loaded ONCE, site-wide, from Squarespace Header Code Injection.
    Every rule is scoped under .bt-root, so plain Squarespace pages are untouched.
@@ -1076,93 +1093,6 @@
   .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible), .bt-root:not(#_) :is(.bt-card--door, .bt-spotlight):hover .bt-icon-tile--lg, .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) .bt-card-go svg { transform: none; }
 }
 
-/* ================= BOOMBOT, the Arcade's helper robot =================
-   shared/ui/arcade.js BOOMBOT_ICON / boombotIcon(uid) (docs/design-system.md §8h: for help
-   and FAQ answers; never a real person or Boomertanger). Sizes with width/height. Its eyes
-   blink now and then; .is-thinking (on it or an ancestor) makes the eyes scan and the
-   antenna blink while it "types". Reduced motion: still. */
-.bt-root:not(#_) .bt-boombot { display: block; flex: none; width: 38px; height: 38px; overflow: visible; }
-.bt-root:not(#_) .bt-boombot .h0 { stop-color: var(--bt-lamp); }
-.bt-root:not(#_) .bt-boombot .h1 { stop-color: var(--bt-title); }
-.bt-root:not(#_) .bt-boombot .b-head { stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.2; }
-.bt-root:not(#_) .bt-boombot .b-ear { fill: color-mix(in srgb, var(--bt-title) 75%, var(--bt-bg)); }
-.bt-root:not(#_) .bt-boombot .b-ant { stroke: var(--bt-text-muted); stroke-width: 1.6; stroke-linecap: round; }
-.bt-root:not(#_) .bt-boombot .b-knob { fill: var(--bt-blood); filter: drop-shadow(0 0 3px rgba(var(--bt-blood-rgb), 0.8)); }
-.bt-root:not(#_) .bt-boombot .b-visor { fill: var(--bt-bg); }
-.bt-root:not(#_) .bt-boombot .b-eye { fill: var(--bt-neon); filter: drop-shadow(0 0 2.5px rgba(var(--bt-primary-rgb), 1)); transform-box: fill-box; transform-origin: center; animation: bt-bb-blink 4.5s ease-in-out infinite; }
-.bt-root:not(#_) .bt-boombot .b-mouth { stroke: color-mix(in srgb, var(--bt-title) 45%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; }
-.bt-root:not(#_) .is-thinking .bt-boombot .b-eyes, .bt-root:not(#_) .bt-boombot.is-thinking .b-eyes { animation: bt-bb-scan 0.9s ease-in-out infinite; }
-.bt-root:not(#_) .is-thinking .bt-boombot .b-knob, .bt-root:not(#_) .bt-boombot.is-thinking .b-knob { animation: bt-bb-knob 0.45s steps(1, end) infinite; }
-@keyframes bt-bb-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-@keyframes bt-bb-scan { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
-@keyframes bt-bb-knob { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.35; } }
-@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bt-boombot * { animation: none !important; } }
-
-/* ================= Cycle wheel: a version's stages round a ring =================
-   shared/ui/cycle-wheel.js cycleWheelHtml() builds it, initCycleWheels(root) wires it
-   (docs/design-system.md §5; mockup docs/design/mockups/how-it-works-sections-2-3.html, 3C).
-   Segments take --bt-cycle-1..8 (decorative only): future stages faint, finished ones
-   (.is-done) half strength, the chosen one (aria-selected) full colour, lifted and glowing.
-   The wheel's --c is the chosen stage's colour: the centre number and the card use it.
-   Wheel left, card right; at <= 900px the wheel sits above the card. Reduced motion:
-   colour and glow only. */
-.bt-root:not(#_) .bt-cycle-wheel { padding: 20px; border: 1px solid var(--bt-border); border-radius: 20px; background: var(--bt-surface); }
-.bt-root:not(#_) .bt-cycle-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
-.bt-root:not(#_) .bt-cycle-title { font-size: var(--bt-text-lg); font-weight: 800; }
-.bt-root:not(#_) .bt-cycle-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bt-root:not(#_) .bt-cycle-play { display: inline-flex; align-items: center; gap: 6px; }
-.bt-root:not(#_) :is(.bt-cycle-play, .bt-cycle-nav) svg { width: 13px; height: 13px; }
-.bt-root:not(#_) .bt-cycle-body { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 28px; align-items: center; }
-.bt-root:not(#_) .bt-cycle-dial { display: block; width: 100%; height: auto; overflow: visible; }
-.bt-root:not(#_) .bt-cycle-seg { cursor: pointer; outline: none; }
-.bt-root:not(#_) .bt-cycle-seg path { fill: color-mix(in srgb, var(--c) 20%, var(--bt-surface-2)); stroke: var(--bt-bg); stroke-width: 3; transform-origin: 190px 190px; transition: fill 0.3s, filter 0.3s, transform 0.35s cubic-bezier(0.3, 1.4, 0.4, 1); }
-.bt-root:not(#_) .bt-cycle-seg:hover path { fill: color-mix(in srgb, var(--c) 45%, var(--bt-surface-2)); }
-.bt-root:not(#_) .bt-cycle-seg.is-done path { fill: color-mix(in srgb, var(--c) 50%, var(--bt-bg)); }
-.bt-root:not(#_) .bt-cycle-seg[aria-selected="true"] path { fill: var(--c); transform: scale(1.06); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--c) 70%, transparent)); }
-.bt-root:not(#_) .bt-cycle-seg:focus-visible path { stroke: var(--bt-primary); }
-.bt-root:not(#_) .bt-cycle-n { font-size: 15px; font-weight: 900; fill: color-mix(in srgb, var(--c) 60%, var(--bt-text)); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
-.bt-root:not(#_) .bt-cycle-seg.is-done .bt-cycle-n { fill: var(--bt-text); }
-.bt-root:not(#_) .bt-cycle-seg[aria-selected="true"] .bt-cycle-n { fill: var(--bt-bg); }
-.bt-root:not(#_) .bt-cycle-lb { font-size: 11px; font-weight: 700; fill: var(--bt-text-faint); dominant-baseline: central; pointer-events: none; transition: fill 0.3s; }
-.bt-root:not(#_) .bt-cycle-seg:is(:hover, [aria-selected="true"]) .bt-cycle-lb { fill: var(--bt-text); }
-.bt-root:not(#_) .bt-cycle-hub { fill: var(--bt-bg); stroke: var(--bt-border-2); }
-.bt-root:not(#_) .bt-cycle-big { font-size: 38px; font-weight: 900; fill: var(--c); text-anchor: middle; transition: fill 0.3s; }
-.bt-root:not(#_) .bt-cycle-k { font-size: 11px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; fill: var(--bt-text-faint); text-anchor: middle; }
-.bt-root:not(#_) .bt-cycle-loop { fill: none; stroke: var(--bt-cycle-1); stroke-width: 2; stroke-dasharray: 3 4; opacity: 0.7; }
-.bt-root:not(#_) .bt-cycle-loop-head { fill: var(--bt-cycle-1); opacity: 0.8; }
-.bt-root:not(#_) .bt-cycle-side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-/* The stage card: a full border in the stage colour with a soft glow, a black body with a
-   faint wash of the colour from the top-left. */
-.bt-root:not(#_) .bt-cycle-card { position: relative; padding: 16px 18px; border: 1px solid var(--c); border-radius: 14px; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--c) 12%, transparent), transparent 60%), var(--bt-bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent), 0 0 30px color-mix(in srgb, var(--c) 22%, transparent), 0 14px 30px var(--bt-lift-shadow); transition: border-color 0.3s, box-shadow 0.3s, background 0.3s; }
-.bt-root:not(#_) .bt-cycle-panel { display: flex; flex-direction: column; gap: 8px; border-radius: 8px; }
-.bt-root:not(#_) .bt-cycle-panel:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; }
-.bt-root:not(#_) .bt-cycle-panel.is-in > * { animation: bt-cycle-in 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
-@keyframes bt-cycle-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
-.bt-root:not(#_) .bt-cycle-name { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; padding-right: 84px; font-size: var(--bt-text-xl); }
-.bt-root:not(#_) .bt-cycle-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); font-size: var(--bt-text-xs); font-weight: 800; }
-.bt-root:not(#_) .bt-cycle-chip::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
-.bt-root:not(#_) .bt-cycle-text { margin: 0; color: var(--bt-text); line-height: 1.55; }
-.bt-root:not(#_) .bt-cycle-who { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
-.bt-root:not(#_) .bt-cycle-lead { display: inline-flex; align-items: center; padding: 3px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); background: var(--bt-surface-2); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 700; }
-.bt-root:not(#_) .bt-cycle-nav { position: absolute; top: 14px; right: 14px; display: flex; gap: 6px; }
-.bt-root:not(#_) .bt-cycle-nav button { width: 34px; height: 34px; display: grid; place-items: center; padding: 0; border: 1px solid var(--bt-border-2); border-radius: 10px; background: var(--bt-surface); color: var(--bt-text-muted); cursor: pointer; }
-.bt-root:not(#_) .bt-cycle-nav button:hover:not(:disabled) { border-color: var(--bt-primary); color: var(--bt-text); }
-.bt-root:not(#_) .bt-cycle-nav button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-.bt-root:not(#_) .bt-cycle-nav button:disabled { opacity: 0.35; cursor: default; }
-.bt-root:not(#_) .bt-cycle-note { display: flex; align-items: center; gap: 8px; margin: 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
-.bt-root:not(#_) .bt-cycle-note i { flex: none; width: 18px; height: 0; border-top: 2px dashed var(--bt-cycle-1); opacity: 0.8; }
-@container bt (max-width: 900px) {
-  .bt-root:not(#_) .bt-cycle-body { grid-template-columns: minmax(0, 1fr); justify-items: center; }
-  .bt-root:not(#_) .bt-cycle-dial { max-width: 360px; }
-  .bt-root:not(#_) .bt-cycle-side { width: 100%; }
-}
-@container bt (max-width: 640px) { .bt-root:not(#_) .bt-cycle-wheel { padding: 16px; } }
-@media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) .bt-cycle-wheel * { transition: none !important; }
-  .bt-root:not(#_) .bt-cycle-panel.is-in > * { animation: none; }
-  .bt-root:not(#_) .bt-cycle-seg[aria-selected="true"] path { transform: none; }
-}
-
 /* ================= BEGIN DASHBOARD COMPONENTS =================
    Added for dashboard-style features (Cloud Stash, Alert Center).
    Self-contained block: nothing above depends on it. */
@@ -1418,17 +1348,6 @@
   --bt-lamp: #ffd400;
   --bt-lamp-rgb: 255, 212, 0;
   --bt-game-spot: rgba(var(--bt-blood-rgb), 0.14);
-  /* The version cycle's eight stage colours (.bt-cycle-wheel, palette 1 "Spectrum" in
-     docs/design/mockups/how-it-works-sections-2-3.html): hot to cool, decorative only, never
-     a status (design-system.md §8h). Stage 1 is a scarlet, not the kit's danger red. */
-  --bt-cycle-1: #ff3b3b;
-  --bt-cycle-2: #ff8a1f;
-  --bt-cycle-3: #ffd400;
-  --bt-cycle-4: #7ed957;
-  --bt-cycle-5: #2fcf6a;
-  --bt-cycle-6: #1fc7a4;
-  --bt-cycle-7: #1fb2d6;
-  --bt-cycle-8: #4f7cff;
   /* Navigation and wordmark power-on (docs/design/mockups/arcade-styling-ideas.html). */
   --bt-seg-shadow: rgba(0, 0, 0, 0.4);                    /* under the seg-nav's lit pill */
   --bt-wm-glow: 0 0 8px rgba(255, 255, 255, 0.35);        /* a lit wordmark letter */
@@ -2445,3 +2364,371 @@
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* ================= END Site shell ================= */
+
+</style>
+<style>
+/* ===== Mockup chrome ===== */
+.bt-root.page:not(#_) { max-width: 1180px; border-radius: 0; overflow: visible; background: transparent; }
+.bt-root:not(#_) .pg-intro { max-width: 80ch; padding: 4px 0 20px; }
+.bt-root:not(#_) .pg-intro p { color: var(--bt-text-muted); line-height: var(--bt-leading-body); margin-top: 12px; }
+.bt-root:not(#_) .pg-bar { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 10px 14px; margin: 0 0 32px; background: var(--bt-surface); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .pg-ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.bt-root:not(#_) .pg-ctl .bt-label { margin: 0 6px 0 0; }
+.bt-root:not(#_) .v-sec { margin: 0 0 64px; scroll-margin-top: 80px; }
+.bt-root:not(#_) .v-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+.bt-root:not(#_) .v-letter { font-size: var(--bt-text-3xl); font-weight: 900; color: var(--bt-title); line-height: 1; }
+.bt-root:not(#_) .v-name { font-size: 24px; font-weight: 800; }
+.bt-root:not(#_) .v-desc { color: var(--bt-text-muted); line-height: var(--bt-leading-body); max-width: 84ch; margin: 0 0 14px; }
+.bt-root:not(#_) .v-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.bt-root:not(#_) .v-rec { font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-primary-soft); background: var(--bt-primary-bg); border: 1px solid var(--bt-primary); border-radius: var(--bt-radius-full); padding: 1px 7px; margin-left: 6px; }
+.bt-root:not(#_) .v-stage { border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-bg); padding: 32px 32px 36px; }
+body[data-w="phone"] .bt-root:not(#_) .v-stage { max-width: 390px; margin: 0 auto; padding: 22px 16px 26px; border-radius: 28px; }
+.bt-root:not(#_) .v-cq { container-type: inline-size; container-name: bt; }
+.bt-root:not(#_) .v-why { margin-top: 16px; padding: 16px 18px; border: 1px solid var(--bt-primary); background: var(--bt-primary-bg); border-radius: var(--bt-radius-lg); line-height: var(--bt-leading-body); max-width: 94ch; }
+.bt-root:not(#_) .v-why ul { margin: 6px 0 0; padding-left: 18px; }
+.bt-root:not(#_) .v-why li + li { margin-top: 4px; }
+.bt-root:not(#_) .sec-body { margin-top: 18px; }
+
+/* ===== BEFORE (as on staging) ===== */
+.bt-root:not(#_) .ai-track { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 8px; margin: 12px 0 0; padding: 0; counter-reset: s; }
+.bt-root:not(#_) .ai-track li { position: relative; padding: 14px 12px 12px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-surface); list-style: none; counter-increment: s; }
+.bt-root:not(#_) .ai-track li::before { content: counter(s); position: absolute; top: -10px; left: 12px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 11px; font-weight: 900; }
+.bt-root:not(#_) .ai-track b { display: block; margin: 4px 0 2px; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .ai-track span { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+.bt-root:not(#_) .ai-cycle { padding: 18px; border: 1px solid var(--bt-border); border-radius: 18px; background: var(--bt-surface); }
+.bt-root:not(#_) .ai-cycle-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
+.bt-root:not(#_) .ai-cycle-top b { font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .ai-steps { display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); gap: 4px; }
+.bt-root:not(#_) .ai-steps button { position: relative; padding: 16px 2px 0; border: 0; background: none; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; line-height: 1.3; text-align: center; cursor: pointer; font-family: inherit; }
+.bt-root:not(#_) .ai-steps button::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 6px; border-radius: 6px; background: var(--bt-surface-2); box-shadow: inset 0 0 0 1px var(--bt-border-2); }
+.bt-root:not(#_) .ai-steps button.is-done::before { background: var(--c); box-shadow: none; opacity: 0.55; }
+.bt-root:not(#_) .ai-steps button[aria-selected="true"]::before { background: var(--c); box-shadow: 0 0 12px var(--c); }
+.bt-root:not(#_) .ai-steps button:is([aria-selected="true"], :hover) { color: var(--bt-text); }
+.bt-root:not(#_) .ai-detail { display: grid; gap: 6px 16px; margin-top: 16px; padding: 14px 16px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-bg); }
+.bt-root:not(#_) .ai-detail h4 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .ai-detail p { margin: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .ai-who { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .ai-track { grid-template-columns: repeat(2, minmax(0, 1fr)); row-gap: 18px; } .bt-root:not(#_) .ai-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; } }
+
+/* ===== AFTER, section 2: the journey ===== */
+.bt-root:not(#_) .jr { position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 58px 0 0; padding: 0; list-style: none; --p: 0; }
+/* the track through the circles: from the first circle's centre to the last one's */
+.bt-root:not(#_) .jr::before, .bt-root:not(#_) .jr::after { content: ""; position: absolute; top: -29px; height: 2px; margin-top: -1px; left: 29px; border-radius: 2px; pointer-events: none; z-index: 1; }
+.bt-root:not(#_) .jr::before { right: calc((100% - 50px) / 6 - 29px); background: var(--bt-border-2); }
+.bt-root:not(#_) .jr::after { width: calc(var(--p) * ((100% - 50px) / 6 + 10px)); background: linear-gradient(90deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 70%, var(--bt-ember, #ff5a1f))); box-shadow: 0 0 10px rgba(var(--bt-gold-rgb), .6); transition: width .45s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .jr li { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 4px; padding: 16px 14px 14px; border: 1px solid var(--bt-border); border-radius: 16px; background: var(--bt-surface); transition: transform .25s ease, border-color .25s, box-shadow .25s, background .25s; }
+.bt-root:not(#_) .jr .num { z-index: 3; position: absolute; top: -44px; left: 14px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 13px; font-weight: 900; box-shadow: 0 0 0 4px var(--bt-bg); transition: transform .35s cubic-bezier(.3,1.6,.4,1), box-shadow .3s, background .3s; }
+.bt-root:not(#_) .jr li::before { content: ""; position: absolute; top: -14px; left: 28px; width: 2px; height: 14px; background: var(--bt-border-2); transition: background .3s; }
+.bt-root:not(#_) .jr li.is-on::before, .bt-root:not(#_) .jr li.is-past::before { background: rgba(var(--bt-gold-rgb), .6); }
+.bt-root:not(#_) .jr .num::after { content: ""; position: absolute; inset: -4px; border-radius: 50%; border: 2px solid var(--bt-title); opacity: 0; pointer-events: none; }
+.bt-root:not(#_) .jr .sic { position: absolute; top: 12px; right: 12px; font-size: 18px; opacity: .35; filter: grayscale(.7); transition: opacity .3s, filter .3s, transform .35s cubic-bezier(.3,1.6,.4,1); }
+.bt-root:not(#_) .jr b { font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .jr span.t { color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+.bt-root:not(#_) .jr li.is-past .num { background: var(--bt-title); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 12px rgba(var(--bt-gold-rgb), .45); }
+.bt-root:not(#_) .jr li:not(.is-past):not(.is-on) .num { background: color-mix(in srgb, var(--bt-title) 55%, var(--bt-surface-2)); }
+.bt-root:not(#_) .jr:not([data-active]) li .num { background: var(--bt-title); }
+.bt-root:not(#_) .jr li.is-on { z-index: 3; transform: translateY(-4px); border-color: rgba(var(--bt-gold-rgb), .55); background: radial-gradient(90% 80% at 0% 0%, rgba(var(--bt-gold-rgb), .1), transparent 60%), var(--bt-surface); box-shadow: 0 12px 28px rgba(0,0,0,.45), 0 0 22px rgba(var(--bt-gold-rgb), .14); }
+.bt-root:not(#_) .jr li.is-on .num { transform: scale(1.35); background: var(--bt-lamp); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 18px rgba(var(--bt-lamp-rgb), .9), 0 0 36px rgba(var(--bt-gold-rgb), .5); }
+.bt-root:not(#_) .jr li.is-on .num::after { animation: jr-ring 1.2s ease-out infinite; }
+.bt-root:not(#_) .jr li.is-on .sic { opacity: 1; filter: none; transform: scale(1.25) rotate(-8deg); }
+@keyframes jr-ring { 0% { opacity: .9; transform: scale(.9); } 100% { opacity: 0; transform: scale(1.9); } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .jr li, .bt-root:not(#_) .jr .num, .bt-root:not(#_) .jr .sic, .bt-root:not(#_) .jr::after { transition: none !important; } .bt-root:not(#_) .jr li.is-on { transform: none; } .bt-root:not(#_) .jr li.is-on .num { transform: none; } .bt-root:not(#_) .jr li.is-on .num::after { animation: none; } }
+@container bt (max-width: 900px) and (min-width: 641px) { .bt-root:not(#_) .jr { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 58px; } .bt-root:not(#_) .jr::before, .bt-root:not(#_) .jr::after { display: none; } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .jr { grid-template-columns: 1fr; gap: 12px; padding-left: 30px; margin-top: 14px; }
+  .bt-root:not(#_) .jr li::before { display: none; }
+  .bt-root:not(#_) .jr::before { left: 14px; right: auto; top: 20px; bottom: 20px; width: 2px; height: auto; margin: 0; }
+  .bt-root:not(#_) .jr::after { left: 14px; top: 20px; width: 2px; height: calc(var(--p) * (100% - 40px) / 5); margin: 0; transition: height .45s cubic-bezier(.3,.7,.2,1); }
+  .bt-root:not(#_) .jr li { padding: 14px 44px 14px 18px; }
+  .bt-root:not(#_) .jr .num { top: 50%; left: -31px; margin-top: -15px; }
+  .bt-root:not(#_) .jr li { padding-top: 14px; }
+  .bt-root:not(#_) .jr li.is-on { transform: translateX(3px); }
+}
+
+/* ===== Section 3: shared detail panel + controls ===== */
+.bt-root:not(#_) .cy { padding: 20px; border: 1px solid var(--bt-border); border-radius: 20px; background: var(--bt-surface); }
+.bt-root:not(#_) .cy-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 18px; }
+.bt-root:not(#_) .cy-top b { font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .cy-top-r { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bt-root:not(#_) .cy-play { display: inline-flex; align-items: center; gap: 6px; }
+.bt-root:not(#_) .cy-play svg, .bt-root:not(#_) .cy-nav svg { width: 13px; height: 13px; }
+.bt-root:not(#_) .cy-detail { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 16px 18px; border: 1px solid var(--bt-border); border-left: 3px solid var(--c); border-radius: 14px; background: var(--bt-bg); }
+.bt-root:not(#_) .cy-detail h4 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .cy-detail p { grid-column: 1 / -1; margin: 0; color: var(--bt-text); line-height: 1.55; }
+.bt-root:not(#_) .cy-who { grid-column: 1 / -1; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .chip { display: inline-flex; align-items: center; gap: 6px; font-weight: 700; font-size: var(--bt-text-sm); color: var(--bt-text); background: var(--bt-surface-2); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); padding: 3px 10px; }
+.bt-root:not(#_) .cy-nav { display: flex; gap: 6px; grid-row: 1; grid-column: 2; }
+.bt-root:not(#_) .cy-nav button { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 10px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text-muted); cursor: pointer; }
+.bt-root:not(#_) .cy-nav button:hover:not(:disabled) { border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .cy-nav button:disabled { opacity: .35; cursor: default; }
+.bt-root:not(#_) .cy-in { animation: cy-in .3s cubic-bezier(.3,.7,.2,1); }
+@keyframes cy-in { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+.bt-root:not(#_) [data-s] { cursor: pointer; }
+.bt-root:not(#_) [data-s]:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .cy-in { animation: none; } .bt-root:not(#_) .cy * { transition: none !important; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .cy { padding: 16px; } .bt-root:not(#_) .cy-detail { grid-template-columns: 1fr; } .bt-root:not(#_) .cy-nav { grid-row: auto; grid-column: 1; justify-content: flex-end; } }
+
+/* ===== 3A Segmented track: one control, a lit pill glides to the chosen stage ===== */
+.bt-root:not(#_) .sg { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); padding: 5px; margin-bottom: 16px; border-radius: 16px; background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .sg-ind { position: absolute; top: 5px; bottom: 5px; border-radius: 12px; background: linear-gradient(180deg, color-mix(in srgb, var(--c) 22%, var(--bt-surface-2)), var(--bt-surface)); border: 1px solid color-mix(in srgb, var(--c) 70%, transparent); box-shadow: 0 0 20px color-mix(in srgb, var(--c) 30%, transparent), inset 0 1px 0 rgba(255,255,255,.06); transition: left .35s cubic-bezier(.3,.7,.2,1), width .35s cubic-bezier(.3,.7,.2,1), border-color .3s, box-shadow .3s; pointer-events: none; }
+.bt-root:not(#_) .sg button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-height: 64px; padding: 10px 4px; border: 0; background: none; border-radius: 12px; font: inherit; font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-muted); text-align: center; line-height: 1.25; transition: color .2s, background .2s; }
+.bt-root:not(#_) .sg button:hover { color: var(--bt-text); background: rgba(255,255,255,.03); }
+.bt-root:not(#_) .sg button .d { width: 8px; height: 8px; border-radius: 50%; background: var(--bt-border-2); transition: background .3s, box-shadow .3s; }
+.bt-root:not(#_) .sg button.is-done .d { background: color-mix(in srgb, var(--c) 60%, transparent); }
+.bt-root:not(#_) .sg button[aria-selected="true"] { color: var(--bt-text); }
+.bt-root:not(#_) .sg button[aria-selected="true"] .d { background: var(--c); box-shadow: 0 0 10px var(--c); }
+.bt-root:not(#_) .sg .sep { position: absolute; top: 18px; bottom: 18px; width: 1px; background: var(--bt-border); pointer-events: none; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sg { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 4px; } .bt-root:not(#_) .sg .sep { display: none; } }
+
+/* ===== 3B Stepper: numbered nodes on a line ===== */
+.bt-root:not(#_) .sp { position: relative; display: grid; grid-template-columns: repeat(8, minmax(0, 1fr)); margin: 4px 0 18px; }
+.bt-root:not(#_) .sp::before, .bt-root:not(#_) .sp .sp-fill { content: ""; position: absolute; top: 19px; left: calc(100% / 16); height: 3px; border-radius: 3px; }
+.bt-root:not(#_) .sp::before { right: calc(100% / 16); background: var(--bt-border-2); }
+.bt-root:not(#_) .sp .sp-fill { width: calc(var(--p, 0) * 100% / 8); background: linear-gradient(90deg, var(--bt-blue), var(--bt-teal), var(--bt-gold), var(--bt-green), var(--bt-lime)); background-size: calc(700% / 8 * 8 / 7) 100%; transition: width .45s cubic-bezier(.3,.7,.2,1); box-shadow: 0 0 10px rgba(46, 196, 182, .35); }
+.bt-root:not(#_) .sp button { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 4px 8px; border: 0; background: none; border-radius: 12px; font: inherit; font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-muted); text-align: center; line-height: 1.25; }
+.bt-root:not(#_) .sp .nd { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; font-size: var(--bt-text-md); font-weight: 900; background: var(--bt-bg); border: 2px solid var(--bt-border-2); color: var(--bt-text-muted); transition: transform .3s cubic-bezier(.3,1.5,.4,1), background .3s, border-color .3s, box-shadow .3s, color .3s; }
+.bt-root:not(#_) .sp button:hover { color: var(--bt-text); }
+.bt-root:not(#_) .sp button:hover .nd { border-color: var(--c); transform: scale(1.08); }
+.bt-root:not(#_) .sp button.is-done .nd { background: color-mix(in srgb, var(--c) 25%, var(--bt-bg)); border-color: color-mix(in srgb, var(--c) 70%, transparent); color: var(--bt-text); }
+.bt-root:not(#_) .sp button.is-done .nd::before { content: "✓"; }
+.bt-root:not(#_) .sp button.is-done .nd span { display: none; }
+.bt-root:not(#_) .sp button[aria-selected="true"] { color: var(--bt-text); }
+.bt-root:not(#_) .sp button[aria-selected="true"] .nd { transform: scale(1.18); background: var(--c); border-color: var(--c); color: var(--bt-bg); box-shadow: 0 0 0 5px color-mix(in srgb, var(--c) 20%, transparent), 0 0 22px color-mix(in srgb, var(--c) 60%, transparent); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sp { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-top: 6px; } .bt-root:not(#_) .sp button { flex: 0 0 25%; scroll-snap-align: start; } .bt-root:not(#_) .sp::before, .bt-root:not(#_) .sp .sp-fill { display: none; } }
+
+/* ===== 3C Cycle wheel: the cycle as a loop ===== */
+.bt-root:not(#_) .wh { display: grid; grid-template-columns: 380px minmax(0, 1fr); gap: 28px; align-items: center; }
+.bt-root:not(#_) .wh-svg { width: 100%; height: auto; overflow: visible; }
+.bt-root:not(#_) .wh-seg { cursor: pointer; }
+.bt-root:not(#_) .wh-seg path { fill: var(--bt-surface-2); stroke: var(--bt-bg); stroke-width: 3; transition: fill .3s, filter .3s, transform .35s cubic-bezier(.3,1.4,.4,1); transform-origin: 190px 190px; }
+.bt-root:not(#_) .wh-seg:hover path { fill: color-mix(in srgb, var(--c) 40%, var(--bt-surface-2)); }
+.bt-root:not(#_) .wh-seg.is-done path { fill: color-mix(in srgb, var(--c) 45%, var(--bt-bg)); }
+.bt-root:not(#_) .wh-seg[aria-selected="true"] path { fill: var(--c); transform: scale(1.06); filter: drop-shadow(0 0 12px color-mix(in srgb, var(--c) 70%, transparent)); }
+.bt-root:not(#_) .wh-seg:focus { outline: none; }
+.bt-root:not(#_) .wh-seg:focus-visible path { stroke: var(--bt-primary); }
+.bt-root:not(#_) .wh-seg text.n { font-size: 15px; font-weight: 900; fill: var(--bt-text-muted); text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.bt-root:not(#_) .wh-seg[aria-selected="true"] text.n { fill: var(--bt-bg); }
+.bt-root:not(#_) .wh-seg.is-done text.n { fill: var(--bt-text); }
+.bt-root:not(#_) .wh-seg text.lb { font-size: 11px; font-weight: 700; fill: var(--bt-text-faint); dominant-baseline: central; pointer-events: none; transition: fill .3s; }
+.bt-root:not(#_) .wh-seg[aria-selected="true"] text.lb, .bt-root:not(#_) .wh-seg:hover text.lb { fill: var(--bt-text); }
+.bt-root:not(#_) .wh-core { fill: var(--bt-bg); stroke: var(--bt-border-2); }
+.bt-root:not(#_) .wh-c1 { font-size: 38px; font-weight: 900; fill: var(--cc, var(--bt-text)); text-anchor: middle; }
+.bt-root:not(#_) .wh-c2 { font-size: 11px; font-weight: 800; letter-spacing: .12em; fill: var(--bt-text-faint); text-anchor: middle; text-transform: uppercase; }
+.bt-root:not(#_) .wh-loop { fill: none; stroke: var(--bt-lime); stroke-width: 2; stroke-dasharray: 3 4; opacity: .7; }
+.bt-root:not(#_) .wh-loop-h { fill: var(--bt-lime); opacity: .8; }
+.bt-root:not(#_) .wh-side { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .wh-note { font-size: var(--bt-text-sm); color: var(--bt-text-faint); display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .wh-note i { width: 18px; height: 0; border-top: 2px dashed var(--bt-lime); opacity: .8; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .wh { grid-template-columns: 1fr; justify-items: center; } .bt-root:not(#_) .wh-svg { max-width: 360px; } .bt-root:not(#_) .wh-side { width: 100%; } }
+
+
+/* ===== Wheel palettes (each would become 8 declared --bt-cycle-* tokens) ===== */
+.bt-root:not(#_) .cy[data-pal="spectrum"] { --p0: #ff3b3b; --p1: #ff8a1f; --p2: #ffd400; --p3: #7ed957; --p4: #2fcf6a; --p5: #1fc7a4; --p6: #1fb2d6; --p7: #4f7cff; }
+.bt-root:not(#_) .cy[data-pal="brand"] { --p0: var(--bt-blood); --p1: #ff5a1f; --p2: var(--bt-title); --p3: var(--bt-lamp); --p4: var(--bt-lime); --p5: var(--bt-teal); --p6: var(--bt-primary-hover); --p7: var(--bt-pink); }
+.bt-root:not(#_) .cy[data-pal="phases"] { --p0: #b98aff; --p1: #a56bff; --p2: #9146ff; --p3: #7a2cff; --p4: #ffb52e; --p5: #ff8f1f; --p6: #6be07a; --p7: #2fcf8f; }
+.bt-root:not(#_) .cy[data-pal="dawn"] { --p0: #5b3bd6; --p1: #8a3fd9; --p2: #c043c9; --p3: #ee4f9b; --p4: #ff6b5e; --p5: #ff9442; --p6: #ffc23d; --p7: #ffe45c; }
+.bt-root:not(#_) .cy[data-pal="status"] { --p0: var(--bt-blue); --p1: var(--bt-teal); --p2: var(--bt-teal); --p3: var(--bt-gold); --p4: var(--bt-green); --p5: var(--bt-green); --p6: var(--bt-lime); --p7: var(--bt-lime); }
+.bt-root:not(#_) .cy[data-pal="neon"] { --p0: #ff2e88; --p1: #ff4fd8; --p2: #c04bff; --p3: #7b5cff; --p4: #3d8bff; --p5: #19c3ff; --p6: #19ffd1; --p7: #b6ff3b; }
+.bt-root:not(#_) .pal { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.bt-root:not(#_) .pal button { display: inline-flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .pal .sw8 { display: inline-flex; height: 10px; border-radius: 5px; overflow: hidden; }
+.bt-root:not(#_) .pal .sw8 i { width: 9px; height: 10px; }
+/* the stage card: full border in the stage colour, black body with a faint wash of it */
+.bt-root:not(#_) .wh .cy-detail { border: 1px solid var(--c); border-left-width: 1px; background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--c) 12%, transparent), transparent 60%), var(--bt-bg); box-shadow: 0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent), 0 0 30px color-mix(in srgb, var(--c) 22%, transparent), 0 14px 30px rgba(0,0,0,.45); transition: border-color .3s, box-shadow .3s, background .3s; }
+.bt-root:not(#_) .stg { display: inline-flex; align-items: center; gap: 6px; font-size: var(--bt-text-xs); font-weight: 800; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 40%, transparent); border-radius: var(--bt-radius-full); padding: 3px 10px; }
+.bt-root:not(#_) .stg::before { content: ""; width: 6px; height: 6px; border-radius: 50%; background: var(--c); }
+/* show every segment in its own colour: future faint, done half, chosen full */
+.bt-root:not(#_) .wh-seg path { fill: color-mix(in srgb, var(--c) 20%, var(--bt-surface-2)); }
+.bt-root:not(#_) .wh-seg:hover path { fill: color-mix(in srgb, var(--c) 45%, var(--bt-surface-2)); }
+.bt-root:not(#_) .wh-seg.is-done path { fill: color-mix(in srgb, var(--c) 50%, var(--bt-bg)); }
+.bt-root:not(#_) .wh-seg[aria-selected="true"] path { fill: var(--c); }
+.bt-root:not(#_) .wh-seg text.n { fill: color-mix(in srgb, var(--c) 60%, var(--bt-text)); }
+.bt-root:not(#_) .wh-loop { stroke: var(--p0); } .bt-root:not(#_) .wh-loop-h { fill: var(--p0); }
+.bt-root:not(#_) .wh-note i { border-top-color: var(--p0); }
+/* ===== 3D Timeline list: every stage visible; the chosen one opens in place ===== */
+.bt-root:not(#_) .tl { position: relative; display: flex; flex-direction: column; gap: 6px; padding-left: 34px; }
+.bt-root:not(#_) .tl::before { content: ""; position: absolute; left: 13px; top: 18px; bottom: 18px; width: 2px; background: linear-gradient(180deg, var(--bt-blue), var(--bt-teal) 25%, var(--bt-gold) 45%, var(--bt-green) 65%, var(--bt-lime)); opacity: .35; border-radius: 2px; }
+.bt-root:not(#_) .tl-i { position: relative; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-bg); transition: border-color .25s, box-shadow .25s, background .25s; }
+.bt-root:not(#_) .tl-i::before { content: ""; position: absolute; left: -27px; top: 17px; width: 12px; height: 12px; border-radius: 50%; background: var(--bt-bg); border: 2px solid color-mix(in srgb, var(--c) 70%, transparent); transition: all .3s; }
+.bt-root:not(#_) .tl-i.is-done::before { background: color-mix(in srgb, var(--c) 70%, transparent); }
+.bt-root:not(#_) .tl-i:has([aria-expanded="true"])::before { width: 16px; height: 16px; left: -29px; top: 15px; background: var(--c); border-color: var(--c); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 20%, transparent), 0 0 14px var(--c); }
+.bt-root:not(#_) .tl-i:has([aria-expanded="true"]) { border-color: color-mix(in srgb, var(--c) 60%, transparent); background: color-mix(in srgb, var(--c) 6%, var(--bt-bg)); box-shadow: 0 0 22px color-mix(in srgb, var(--c) 16%, transparent); }
+.bt-root:not(#_) .tl-h { display: flex; align-items: center; gap: 12px; width: 100%; padding: 12px 14px; border: 0; background: none; color: var(--bt-text-muted); font: inherit; font-weight: 700; text-align: left; border-radius: 14px; }
+.bt-root:not(#_) .tl-h:hover { color: var(--bt-text); }
+.bt-root:not(#_) .tl-h .n { width: 24px; font-size: var(--bt-text-sm); font-weight: 900; color: color-mix(in srgb, var(--c) 85%, var(--bt-text)); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .tl-h .nm { flex: 1; color: inherit; }
+.bt-root:not(#_) .tl-h[aria-expanded="true"] { color: var(--bt-text); }
+.bt-root:not(#_) .tl-h .chip { font-size: var(--bt-text-xs); color: var(--bt-text-muted); }
+.bt-root:not(#_) .tl-b { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .tl-h[aria-expanded="true"] + .tl-b { grid-template-rows: 1fr; }
+.bt-root:not(#_) .tl-b > div { overflow: hidden; }
+.bt-root:not(#_) .tl-b p { margin: 0; padding: 0 14px 14px 50px; color: var(--bt-text); line-height: 1.55; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .tl-h .chip { display: none; } .bt-root:not(#_) .tl-b p { padding-left: 14px; } }
+
+/* ===== 3E Swimlanes: who leads each stage, and the hand-offs ===== */
+.bt-root:not(#_) .sw { position: relative; display: grid; grid-template-columns: 130px repeat(8, minmax(0, 1fr)); grid-template-rows: auto repeat(3, 58px); gap: 0; margin-bottom: 16px; border: 1px solid var(--bt-border); border-radius: 16px; overflow: hidden; background: var(--bt-bg); }
+.bt-root:not(#_) .sw-lane { grid-column: 1; display: flex; align-items: center; gap: 8px; padding: 0 12px; font-size: var(--bt-text-sm); font-weight: 800; color: var(--bt-text-muted); border-top: 1px solid var(--bt-border); background: var(--bt-surface); }
+.bt-root:not(#_) .sw-lane span { font-size: 16px; }
+.bt-root:not(#_) .sw-hd { grid-row: 1; display: flex; align-items: flex-end; justify-content: center; padding: 10px 4px 8px; font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--bt-text-faint); text-align: center; line-height: 1.25; }
+.bt-root:not(#_) .sw-col { grid-row: 1 / -1; position: relative; border: 0; background: none; padding: 0; font: inherit; border-left: 1px solid var(--bt-border); transition: background .25s; }
+.bt-root:not(#_) .sw-col:hover { background: rgba(255,255,255,.025); }
+.bt-root:not(#_) .sw-col[aria-selected="true"] { background: color-mix(in srgb, var(--c) 10%, transparent); box-shadow: inset 0 3px 0 var(--c); }
+.bt-root:not(#_) .sw-col[aria-selected="true"] + .sw-hd, .bt-root:not(#_) .sw-hd.is-on { color: var(--bt-text); }
+.bt-root:not(#_) .sw-row { grid-column: 2 / -1; border-top: 1px solid var(--bt-border); pointer-events: none; }
+.bt-root:not(#_) .sw-dot { position: relative; z-index: 2; align-self: center; justify-self: center; width: 30px; height: 30px; border-radius: 10px; display: grid; place-items: center; font-size: var(--bt-text-xs); font-weight: 900; color: var(--bt-bg); background: color-mix(in srgb, var(--c) 70%, var(--bt-surface-2)); pointer-events: none; transition: transform .3s cubic-bezier(.3,1.5,.4,1), box-shadow .3s, background .3s; }
+.bt-root:not(#_) .sw-dot.is-on { background: var(--c); transform: scale(1.2); box-shadow: 0 0 0 4px color-mix(in srgb, var(--c) 22%, transparent), 0 0 18px var(--c); }
+.bt-root:not(#_) .sw-dot.is-wide { width: 30px; height: calc(100% - 20px); align-self: stretch; margin: 10px 0; }
+.bt-root:not(#_) .sw-svg { position: absolute; z-index: 1; left: 130px; right: 0; bottom: 0; pointer-events: none; }
+.bt-root:not(#_) .sw-svg path { fill: none; stroke: var(--bt-border-2); stroke-width: 2; stroke-dasharray: 4 4; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .sw { grid-template-columns: 96px repeat(8, minmax(0, 1fr)); } .bt-root:not(#_) .sw-svg { left: 96px; } .bt-root:not(#_) .sw-hd { font-size: 9px; } .bt-root:not(#_) .sw-lane { font-size: var(--bt-text-xs); padding: 0 8px; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sw { grid-template-columns: 34px repeat(8, minmax(0, 1fr)); } .bt-root:not(#_) .sw-svg { left: 34px; } .bt-root:not(#_) .sw-lane b { display: none; } .bt-root:not(#_) .sw-lane { justify-content: center; padding: 0; } .bt-root:not(#_) .sw-hd { writing-mode: vertical-rl; transform: rotate(180deg); height: 96px; justify-content: flex-start; align-items: center; padding: 8px 0; } .bt-root:not(#_) .sw-dot { width: 22px; height: 22px; border-radius: 7px; font-size: 10px; } .bt-root:not(#_) .sw-dot.is-wide { width: 22px; } }
+</style>
+</head>
+<body data-w="desk">
+<div class="bt-root page">
+  <header class="pg-intro">
+    <h1 class="bt-title">Sections 2 and 3, refined</h1>
+    <p>Section 2: the refined journey, now with the line kept behind the steps. Section 3: five new directions. Hover, click, and try the arrow keys.</p>
+  </header>
+  <div class="pg-bar">
+    <div class="pg-ctl"><span class="bt-label">Width</span><button class="bt-chip bt-chip--small is-active" data-w="desk">Desktop</button><button class="bt-chip bt-chip--small" data-w="phone">Phone</button></div>
+    <div class="pg-ctl"><a class="bt-chip bt-chip--small" href="#s2">Section 2</a><a class="bt-chip bt-chip--small" href="#s3">Section 3</a></div>
+  </div>
+
+  <section class="v-sec" id="s2"><div class="v-head"><span class="v-letter">2</span><span class="v-name">How a game is born</span></div>
+    <p class="v-desc">Hover the steps from left to right.</p>
+    <div class="v-tabs" data-group="s2"><button class="bt-chip bt-chip--small" data-g="s2" data-v="before">Before</button><button class="bt-chip bt-chip--small is-active" data-g="s2" data-v="after">After</button></div>
+    <div class="v-stage v-cq" id="stage-s2"></div>
+    <div class="v-why"><b>What changed</b><ul>
+      <li><b>The circles pop:</b> the hovered step's number grows, turns bright lamp-yellow, glows and sends out a pulsing ring.</li>
+      <li><b>A journey line:</b> the circles now sit on their own line above the cards, joined to each card by a short stem, so the line is always fully visible and never crosses a circle or a card and fills gold up to the step you're on, and the steps you've passed stay lit, so it reads as one path from pitch to release instead of six separate boxes.</li>
+      <li><b>Each step has an icon</b> (💡 🗳 ✅ 🛠 🧪 🚀) that's quiet at rest and comes alive with the step.</li>
+      <li>The step card lifts with a warm gold edge, and the circles are a little bigger so they read as the heroes.</li>
+      <li>Phones: a vertical path with the circles on the line, filling downward as you tap.</li>
+    </ul></div>
+  </section>
+
+  <section class="v-sec" id="s3"><div class="v-head"><span class="v-letter">3</span><span class="v-name">How a game grows: the cycle wheel</span></div>
+    <p class="v-desc">The stage card has lost its side bar: it now lights up all the way round in the chosen stage's colour, on a black body with a faint wash of that colour. Pick a colour set below, then click round the wheel or press Play.</p>
+    <div class="v-tabs pal" data-group="s3"></div>
+    <div class="v-stage v-cq" id="stage-s3"></div>
+    <p class="v-desc" id="note-s3" style="margin-top:12px"></p>
+    <div class="v-why"><p><b>Recommend 1, Spectrum.</b> It's your idea with the hues spaced evenly, so every stage is clearly its own colour and the wheel reads as one smooth journey from hot to cool. One tweak from your list: stage 1 is a warm scarlet rather than the kit's red, because the kit keeps that red for "this deletes something".</p><p>3 Phases is the most informative (you see planning, building and shipping as three arcs), and 4 Night to dawn is the most atmospheric. These colours are decorative only; the badges elsewhere on the site keep their status meanings.</p></div>
+  </section>
+</div>
+<script>
+(function () {
+  const STEPS = [["💡", "Pitch", "A member with a gamer badge pitches a new game in the Studio."], ["🗳", "Community vote", "Members vote and discuss. The best pitches rise."], ["✅", "Greenlit", "Boomertanger picks a pitch to build. It becomes a real game."], ["🛠", "Workshop", "The new game gets its own Workshop, and v1 is planned there."], ["🧪", "Playtest", "Members try the beta first and report what's broken or boring."], ["🚀", "Release", "v1 drops in the Arcade, with its own leaderboards."]];
+  const STAGES = [["Ideas open", "blue", "Anyone can post ideas for the next version on the Draft board, and comment and vote on others.", "All members"], ["Shortlist", "teal", "The Keeper merges duplicates and picks the strongest ideas for a vote, with a short reason for each.", "Keeper"], ["Vote", "teal", "Members vote on the shortlist. The results guide the plan, they don't dictate it.", "All members"], ["Plan locked", "gold", "The Keeper writes the plan and Boomertanger approves it. This is what gets built.", "Keeper + Boomertanger"], ["In development", "green", "Boomertanger builds the version. The Keeper posts progress updates on the Draft board.", "Boomertanger"], ["Playtest", "green", "Members play the beta from the version picker and report bugs or balance problems.", "All members"], ["Release", "lime", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"], ["Thanks and badges", "lime", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"]];
+  const head = (n, t, l) => `<header class="bt-chapter bt-chapter--ghost" data-n="${n}"><p class="bt-chapter-eyebrow" aria-hidden="true">${n} · Chapter</p><h2 class="bt-chapter-title">${t}</h2><p class="bt-chapter-lede">${l}</p></header>`;
+  const CHEV = (d) => `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="${d}"/></svg>`;
+  const mode = { s2: "after", s3: "c" };
+
+  function renderS2() {
+    const st = document.getElementById("stage-s2");
+    const body = mode.s2 === "before"
+      ? `<ol class="ai-track">${STEPS.map(([, t, d]) => `<li><b>${t}</b><span>${d}</span></li>`).join("")}</ol>`
+      : `<ol class="jr">${STEPS.map(([ic, t, d], i) => `<li data-i="${i}" tabindex="0"><span class="num" aria-hidden="true">${i + 1}</span><span class="sic" aria-hidden="true">${ic}</span><b>${t}</b><span class="t">${d}</span></li>`).join("")}</ol>`;
+    st.innerHTML = head("02", "How a game is born", "From a pitch in the Arcade Studio to a game you can play.") + `<div class="sec-body">${body}</div>`;
+    const jr = st.querySelector(".jr"); if (!jr) return;
+    const items = [...jr.children];
+    const set = (i) => { if (i < 0) { jr.removeAttribute("data-active"); jr.style.setProperty("--p", 0); items.forEach((li) => li.classList.remove("is-on", "is-past")); return; } jr.dataset.active = i; jr.style.setProperty("--p", i); items.forEach((li, j) => { li.classList.toggle("is-on", j === i); li.classList.toggle("is-past", j < i); }); };
+    items.forEach((li, i) => { li.addEventListener("mouseenter", () => set(i)); li.addEventListener("focus", () => set(i)); li.addEventListener("click", () => set(i)); });
+    jr.addEventListener("mouseleave", () => set(-1));
+  }
+
+  let timer = null;
+  let PAL = "spectrum";
+  const PALS = [["spectrum", "1 Spectrum", "Your idea, tuned: red → orange → yellow → three greens drifting to teal → blue. Hot and raw at the start, cool and calm once it ships."], ["brand", "2 Brand heat", "Built only from the site's own colours: blood red, ember, gold, lamp yellow, lime, teal, purple, pink. Every stage is a colour you already see elsewhere."], ["phases", "3 Phases", "Three families, one per phase: purples while ideas are planned (1–4), ambers while it's built (5–6), greens when it ships (7–8). The wheel reads as three arcs."], ["dawn", "4 Night to dawn", "A sunrise: deep violet (an idea in the dark) through magenta, coral and orange to bright morning yellow at release. Moody and very on-theme."], ["neon", "5 Arcade neon", "Arcade-cabinet neon: hot pink, magenta, violet, electric blue, cyan, aqua, acid green. The loudest option."], ["status", "6 Status colours", "Today's colours: the site-wide status badges (blue new, teal review, gold planned, green in progress, lime done)."]];
+  const OPTS3 = {
+    before: "Before",
+    a: "A Segmented track",
+    b: "B Stepper",
+    c: "C Cycle wheel",
+    d: "D Timeline list",
+    e: "E Swimlanes"
+  };
+  const NOTES3 = {
+    a: "Style variation. One continuous track, like the Arcade's top-bar tabs: a lit pill glides to the stage you pick, taking that stage's colour. The whole segment is the button, and the track reads as a single control.",
+    b: "Style variation. Numbered nodes on a line, the same visual language as section 2's journey: finished stages turn into ticks, the chosen one grows and glows, and the line fills with the cycle's colours up to it.",
+    c: "New concept: it's a cycle, so show it as one. Eight segments around a ring, with the dashed arrow from Thanks and badges back to Ideas open showing that it loops forever. The chosen segment lifts out and glows; the centre shows its number. Play goes round the wheel.",
+    d: "New concept: no hidden content. All eight stages are listed on a coloured line with who leads each; the chosen one opens right where it is. Nothing to aim at, great on phones, and scannable at a glance.",
+    e: "New concept: who does what, when. Three lanes (Members, Keeper, Boomertanger) and eight stages; each stage's marker sits in the lane that leads it, so you can see the hand-offs (Plan locked spans the Keeper and Boomertanger). Click a column for the details."
+  };
+  const LANES = [["👥", "Members"], ["🗝", "Keeper"], ["🦍", "Boomertanger"]];
+  const LANE_OF = [[0], [1], [0], [1, 2], [2], [0], [0], [0]];
+  function detailHTML(i) {
+    const [n, tone, t, w] = STAGES[i];
+    return `<h4 class="cy-in">${n} <span class="stg">Stage ${i + 1} of 8</span></h4><div class="cy-nav"><button type="button" data-prev aria-label="Previous stage"${i === 0 ? " disabled" : ""}>${CHEV("M10 3.5L5.5 8l4.5 4.5")}</button><button type="button" data-next aria-label="Next stage"${i === 7 ? " disabled" : ""}>${CHEV("M6 3.5L10.5 8 6 12.5")}</button></div><p class="cy-in">${t}</p><span class="cy-who cy-in">Led by <span class="chip">${w}</span></span>`;
+  }
+  function wheelSVG() {
+    const C = 190, R1 = 150, R0 = 92, RL = 172, gap = 2.2;
+    const pt = (r, a) => [C + r * Math.sin(a * Math.PI / 180), C - r * Math.cos(a * Math.PI / 180)];
+    const segs = STAGES.map(([n, tone], i) => {
+      const a0 = i * 45 + gap, a1 = (i + 1) * 45 - gap;
+      const [x0, y0] = pt(R1, a0), [x1, y1] = pt(R1, a1), [x2, y2] = pt(R0, a1), [x3, y3] = pt(R0, a0);
+      const mid = i * 45 + 22.5, [nx, ny] = pt((R0 + R1) / 2, mid), [lx, ly] = pt(RL, mid);
+      const anchor = mid > 5 && mid < 175 ? "start" : mid > 185 && mid < 355 ? "end" : "middle";
+      const words = n.split(" "), lines = n.length > 11 ? [words.slice(0, Math.ceil(words.length / 2)).join(" "), words.slice(Math.ceil(words.length / 2)).join(" ")] : [n];
+      return `<g class="wh-seg" data-s="${i}" role="tab" tabindex="-1" aria-selected="false" aria-label="${n}" style="--c:var(--p${i})"><path d="M${x0} ${y0} A${R1} ${R1} 0 0 1 ${x1} ${y1} L${x2} ${y2} A${R0} ${R0} 0 0 0 ${x3} ${y3} Z"/><text class="n" x="${nx}" y="${ny}">${i + 1}</text>${lines.map((l, k) => `<text class="lb" x="${lx}" y="${ly + (k - (lines.length - 1) / 2) * 13}" text-anchor="${anchor}">${l}</text>`).join("")}</g>`;
+    }).join("");
+    const [ax, ay] = pt(R0 - 12, 350), [bx, by] = pt(R0 - 12, 10);
+    return `<svg class="wh-svg" viewBox="-40 -10 460 400" role="tablist" aria-label="Version cycle stages">${segs}<circle class="wh-core" cx="${C}" cy="${C}" r="${R0 - 20}"/><path class="wh-loop" d="M${ax} ${ay} A${R0 - 12} ${R0 - 12} 0 0 1 ${bx} ${by}"/><path class="wh-loop-h" d="M${bx + 4} ${by} l-7 -4 l0 8 z"/><text class="wh-c1" x="${C}" y="${C + 10}" id="whn">01</text><text class="wh-c2" x="${C}" y="${C + 34}">of 8 stages</text><text class="wh-c2" x="${C}" y="${C - 30}">Stage</text></svg>`;
+  }
+  function renderS3() {
+    clearInterval(timer); timer = null;
+    const st = document.getElementById("stage-s3");
+    const lede = "After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page.";
+    document.getElementById("note-s3").textContent = PALS.find((p) => p[0] === PAL)[2];
+    if (mode.s3 === "before") {
+      st.innerHTML = head("03", "How a game grows", lede + " Tap a stage.") + `<div class="sec-body"><div class="ai-cycle"><div class="ai-cycle-top"><b>Tap the Splat · v2</b><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span></div><div class="ai-steps" role="tablist">${STAGES.map(([n, tone], i) => `<button type="button" role="tab" aria-selected="${i === 2}" data-b="${i}" class="${i < 2 ? "is-done" : ""}" style="--c:var(--bt-${tone})">${n}</button>`).join("")}</div><div class="ai-detail" id="bd"></div></div></div>`;
+      const show = (i) => { const [n, tone, t, w] = STAGES[i]; st.querySelector("#bd").innerHTML = `<h4>${n} <span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>Stage ${i + 1} of 8</span></h4><p>${t}</p><span class="ai-who">Led by: ${w}</span>`; st.querySelectorAll(".ai-steps button").forEach((b, j) => { b.setAttribute("aria-selected", String(j === i)); b.classList.toggle("is-done", j < i); }); };
+      st.querySelectorAll(".ai-steps button").forEach((b) => b.addEventListener("click", () => show(+b.dataset.b)));
+      show(2); return;
+    }
+    const v = mode.s3;
+    let sel;
+    if (v === "a") sel = `<div class="sg" role="tablist" aria-label="Version cycle stages"><span class="sg-ind" aria-hidden="true"></span>${STAGES.map(([n, tone], i) => `${i ? '<span class="sep" aria-hidden="true" style="left:calc(5px + ' + i + ' * (100% - 10px) / 8)"></span>' : ""}<button type="button" role="tab" data-s="${i}" aria-selected="false" tabindex="-1" style="--c:var(--bt-${tone})"><span class="d" aria-hidden="true"></span><span>${n}</span></button>`).join("")}</div>`;
+    if (v === "b") sel = `<div class="sp" role="tablist" aria-label="Version cycle stages"><span class="sp-fill" aria-hidden="true"></span>${STAGES.map(([n, tone], i) => `<button type="button" role="tab" data-s="${i}" aria-selected="false" tabindex="-1" style="--c:var(--bt-${tone})"><span class="nd" aria-hidden="true"><span>${i + 1}</span></span><span>${n}</span></button>`).join("")}</div>`;
+    if (v === "d") sel = `<div class="tl">${STAGES.map(([n, tone, t, w], i) => `<div class="tl-i" style="--c:var(--bt-${tone})"><button type="button" class="tl-h" data-s="${i}" aria-expanded="false"><span class="n">0${i + 1}</span><span class="nm">${n}</span><span class="chip">${w}</span></button><div class="tl-b"><div><p>${t}</p></div></div></div>`).join("")}</div>`;
+    if (v === "e") {
+      const cols = STAGES.map(([n, tone], i) => `<button type="button" class="sw-col" role="tab" data-s="${i}" aria-selected="false" tabindex="-1" aria-label="${n}" style="grid-column:${i + 2}; --c:var(--bt-${tone})"></button><div class="sw-hd" style="grid-column:${i + 2}; pointer-events:none" data-hd="${i}">${n}</div>`).join("");
+      const lanes = LANES.map(([ic, l], r) => `<div class="sw-lane" style="grid-row:${r + 2}"><span aria-hidden="true">${ic}</span><b>${l}</b></div><div class="sw-row" style="grid-row:${r + 2}"></div>`).join("");
+      const dots = STAGES.map(([n, tone], i) => { const ls = LANE_OF[i]; return ls.length > 1 ? `<span class="sw-dot is-wide" data-dot="${i}" style="grid-column:${i + 2}; grid-row:${ls[0] + 2} / span ${ls.length}; --c:var(--bt-${tone})">${i + 1}</span>` : `<span class="sw-dot" data-dot="${i}" style="grid-column:${i + 2}; grid-row:${ls[0] + 2}; --c:var(--bt-${tone})">${i + 1}</span>`; }).join("");
+      sel = `<div class="sw" role="tablist" aria-label="Version cycle stages by who leads them">${cols}${lanes}${dots}</div>`;
+    }
+    const wheel = v === "c";
+    const detail = `<div class="cy-detail" id="cyd" role="tabpanel"></div>`;
+    const body = wheel ? `<div class="wh">${wheelSVG()}<div class="wh-side">${detail}<span class="wh-note"><i></i>After Thanks and badges, the next cycle opens.</span></div></div>` : v === "d" ? sel : sel + detail;
+    st.innerHTML = head("03", "How a game grows", lede) + `<div class="sec-body"><div class="cy" data-pal="${PAL}"><div class="cy-top"><b>Tap the Splat · v2</b><div class="cy-top-r"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm cy-play" data-play>${CHEV("M5 3.5v9l7-4.5z")}<span>Play</span></button><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span></div></div>${body}</div></div>`;
+    const tabs = [...st.querySelectorAll("[data-s]")], det = st.querySelector("#cyd"), play = st.querySelector("[data-play]");
+    let cur = 0;
+    const show = (i, focus) => {
+      cur = (i + 8) % 8;
+      tabs.forEach((b, j) => { const on = j === cur; if (v === "d") b.setAttribute("aria-expanded", String(on)); else { b.setAttribute("aria-selected", String(on)); b.setAttribute("tabindex", on ? "0" : "-1"); } b.classList.toggle("is-done", j < cur); (b.closest(".tl-i") || b).classList.toggle("is-done", j < cur); });
+      if (det) { det.style.setProperty("--c", `var(--p${cur})`); det.innerHTML = detailHTML(cur); det.querySelector("[data-prev]").onclick = () => { stop(); show(cur - 1); }; det.querySelector("[data-next]").onclick = () => { stop(); show(cur + 1); }; }
+      if (v === "a") { const ind = st.querySelector(".sg-ind"), b = tabs[cur]; ind.style.left = b.offsetLeft + "px"; ind.style.width = b.offsetWidth + "px"; ind.style.top = b.offsetTop + "px"; ind.style.height = b.offsetHeight + "px"; ind.style.bottom = "auto"; ind.style.setProperty("--c", `var(--bt-${STAGES[cur][1]})`); }
+      if (v === "b") { st.querySelector(".sp").style.setProperty("--p", cur); const row = st.querySelector(".sp"); if (row.scrollWidth > row.clientWidth) row.scrollTo({ left: tabs[cur].offsetLeft - 8, behavior: "smooth" }); }
+      if (v === "c") { const t = st.querySelector("#whn"); t.textContent = "0" + (cur + 1); t.style.setProperty("--cc", `var(--p${cur})`); }
+      if (v === "e") { st.querySelectorAll("[data-dot]").forEach((d) => d.classList.toggle("is-on", +d.dataset.dot === cur)); st.querySelectorAll("[data-hd]").forEach((d) => d.classList.toggle("is-on", +d.dataset.hd === cur)); }
+      if (focus) tabs[cur].focus();
+    };
+    const stop = () => { if (timer) { clearInterval(timer); timer = null; play.innerHTML = `${CHEV("M5 3.5v9l7-4.5z")}<span>Play</span>`; } };
+    play.addEventListener("click", () => { if (timer) { stop(); return; } if (cur === 7) show(0); play.innerHTML = `${CHEV("M5 3.5v9M11 3.5v9")}<span>Pause</span>`; timer = setInterval(() => { if (cur === 7 && v !== "c") { stop(); return; } show(cur + 1); }, 2600); });
+    tabs.forEach((b, i) => {
+      b.addEventListener("click", () => { stop(); show(i); });
+      b.addEventListener("keydown", (e) => { const k = e.key; if (["ArrowRight", "ArrowDown"].includes(k)) { e.preventDefault(); stop(); show(cur + 1, true); } else if (["ArrowLeft", "ArrowUp"].includes(k)) { e.preventDefault(); stop(); show(cur - 1, true); } else if (k === "Enter" || k === " ") { if (b.tagName !== "BUTTON") { e.preventDefault(); stop(); show(i); } } });
+    });
+    show(0);
+    window.addEventListener("resize", () => { if (mode.s3 === "a") show(cur); }, { once: true });
+  }
+  document.querySelectorAll("[data-g]").forEach((b) => b.addEventListener("click", () => { mode[b.dataset.g] = b.dataset.v; document.querySelectorAll(`[data-g="${b.dataset.g}"]`).forEach((x) => x.classList.toggle("is-active", x === b)); b.dataset.g === "s2" ? renderS2() : renderS3(); }));
+  document.querySelectorAll("[data-w]").forEach((b) => b.addEventListener("click", () => { document.body.dataset.w = b.dataset.w; document.querySelectorAll("[data-w]").forEach((x) => x.classList.toggle("is-active", x === b)); }));
+  const g3 = document.querySelector('[data-group="s3"]');
+  const drawPals = () => { g3.innerHTML = PALS.map(([k, l]) => `<button class="bt-chip bt-chip--small${PAL === k ? " is-active" : ""}" data-pal-b="${k}"><span class="sw8 cy" data-pal="${k}" style="padding:0;border:0;background:none">${[0,1,2,3,4,5,6,7].map((i) => `<i style="background:var(--p${i})"></i>`).join("")}</span>${l}${k === "spectrum" ? '<span class="v-rec">Recommended</span>' : ""}</button>`).join(""); g3.querySelectorAll("[data-pal-b]").forEach((b) => b.addEventListener("click", () => { PAL = b.dataset.palB; drawPals(); const cy = document.querySelector("#stage-s3 .cy"); if (cy) cy.dataset.pal = PAL; document.getElementById("note-s3").textContent = PALS.find((p) => p[0] === PAL)[2]; })); };
+  drawPals();
+  renderS2(); renderS3();
+})();
+</script>
+</body>
+</html>
