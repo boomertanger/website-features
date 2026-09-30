@@ -86,6 +86,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
 | Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
 | Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
+| Footer Contact + Follow (added) | one colour per badge: `contact-business` (`title`), `contact-fanmail` (`pink`), `contact-support` (`teal`), `follow-tiktok` (#25f4ee), `follow-youtube` (#ff0000), `follow-twitch` (`brand-twitch`), `follow-instagram` (#ff0069) · `pw-cable` (#2e2a33, an unlit cable) `pw-ring-bg` (#0b0a10) `pw-ring-edge` (#2a2530, an unlit ring) `pw-arc` (#fff, the lightning and ring flash) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
 | Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) |
@@ -391,13 +392,18 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   splatter image + mascot, pulsing on hover; `.bt-tts-wm` one span per letter, TANGER in
   `.bt-tts-tanger`; `.bt-tts-tag` in `--bt-primary` with `--bt-glow-primary`) +
   `nav.bt-tts-links` > `a.bt-tts-link [--live|--club]` (`--fx/--fy` place it on the
-  ring, `--bt-tts-tone` colours the icon); then `.bt-tts-cf` (Contact `.bt-tts-mails` >
-  `.bt-tts-mail` with a Show button; Follow `.bt-tts-follow` tiles with counts); then
+  ring, `--bt-tts-tone` colours the icon); then `.bt-tts-cf[data-power]` (Contact + Follow,
+  "Shared power": `svg.bt-tts-pw-svg` cable overlay + two `.bt-tts-pw-col[data-pw-col]` >
+  `.bt-label`, `.bt-tts-pw-row` > `.bt-tts-pw-b[data-pw]` (`.bt-tts-pw-ring` icon, `b` label,
+  then `.bt-tts-pw-show` on Contact or `.bt-tts-pw-n` count + `.bt-tts-pw-u` unit on Follow;
+  `.is-on` powered, `.is-swing`), Contact's `.bt-tts-pw-readout` (aria-live) with
+  `.bt-tts-pw-mail` lines); then
   `.bt-footer-legal` > `.bt-footer-sign` (18px mascot + ©) and legal links, centered.
   Links and Contact / Follow are in the HTML from the start, hidden until
   `[data-links="1"]` / `[data-cf="1"]` (set by the game) or keyboard focus inside them.
   The ring sizes itself with `cqw` so it fits the container; ≤ 1024px tightens the cards
-  and the wordmark and stacks Contact over Follow; ≤ 640px the links become a 2-column
+  and the wordmark and shrinks the badges (Contact and Follow stay side by side); ≤ 640px
+  Contact stacks over Follow, each with its own node, and the links become a 2-column
   grid under the hub (visually hidden, still read and focusable, until revealed) and the
   play area clips sideways overflow. Game-only pieces and states (`.bt-tts-arcade`,
   chain, bomb, tools, end card, `.is-got` / `.is-hot` links) live in the game stylesheet
@@ -689,6 +695,23 @@ differences:
   the same pages.
 - **Contact addresses never appear in the HTML.** Each Show button joins `user` + `@` +
   `emailDomain` from `site.json` in the browser, then offers Copy.
+- **Footer Contact + Follow: Shared power (hanging cables, lightning on Show).** Chosen in
+  `docs/design/mockups/footer-power.html` (1 Follow only, 2 Shared power, 3 Two circuits).
+  One glowing node (`--bt-title`) where the chain hung feeds a hanging cable to all seven
+  badges, Contact left and Follow right, same size and baseline, so the two halves read as
+  one wired-up machine instead of neighbours; phones give each section its own node and
+  short cables. Cables come in from above onto the top of their own ring, so they never
+  cross a badge. The power-up (sparks about 150 ms apart, cables lit in each badge colour,
+  ring flash, one swing, counts ticking up from 0) runs each time Contact and Follow
+  appear; Show strikes a jagged bolt (a new shape each time) down that cable and decodes
+  the address. Follow uses the platforms' official icons (Simple Icons, one colour) and
+  colours; Contact uses plain line icons. One colour token per badge (`--bt-contact-*`,
+  `--bt-follow-*`). The effect code (`scripts/tap-the-splat/power.js`) loads with the game
+  or on the first Show or focus, and the sway runs only while the section is on screen.
+  Reduced motion shows the final state (lit, final numbers) with no sparks, sway, swing,
+  lightning or scramble. Counts come from the growth collector's `public/socials`
+  (`docs/specs/growth-collector.md`); one older than 7 days shows Follow. Twitch has a
+  hidden LIVE hook (`[data-live-hook]`) for the Live Beacon.
 - **The game loads only on the first splat tap** (a dynamic import). The game module
   attaches its own stylesheet, because a CSS import inside a dynamically imported module
   is hoisted into every page by the build. The only game-adjacent code in the idle
