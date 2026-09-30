@@ -11,9 +11,14 @@ import { onChase } from "./chase.js";
 import { showEnd, onFeedback, END_GRACE_MS } from "./end.js";
 import { pickTool, dropTool, moveHeldTool, initPlug } from "./tools.js";
 import { fmtTime } from "./format.js";
+import { startRun, submitRun } from "./game-api.js";
 
 let GID = 0;
 
+
+// The phase that starts each of the 10 rounds (tap-the-splat.md): its start time is
+// that round's split (wall-clock seconds since the first tap, for finishRun's checks).
+const ROUND_PHASES = ["p1", "bug", "chainwait", "breaker", "links", "plug", "hammer", "danger", "chase", "finish"];
 
 // Phases where the links behave as normal links (before the breaker is flipped,
 // or when no game is running).
@@ -23,7 +28,7 @@ export function createGame(root) {
   const gid = ++GID;
   mountPieces(root, gid);
 
-  const S = { phase: "idle", pen: 0, prog: 0, t0: 0, got: new Set(), timers: [], raf: 0, clock: 0, catches: 0, hot: null, held: null, loose: new Set(), cutWarned: false, device: "desktop", sock: null, plugP: null, fuseK: 0 };
+  const S = { phase: "idle", pen: 0, prog: 0, t0: 0, got: new Set(), timers: [], raf: 0, clock: 0, catches: 0, hot: null, held: null, loose: new Set(), cutWarned: false, device: "desktop", run: null, splits: [], sock: null, plugP: null, fuseK: 0 };
   const $ = (s) => root.querySelector(s), $$ = (s) => [...root.querySelectorAll(s)];
   const { SFX, hissStart, hissStop } = createSounds(root);
 
@@ -48,8 +53,10 @@ export function createGame(root) {
     fmtTime,
   };
 
+  /** Wall-clock seconds since the first tap. */
+  G.wall = () => (performance.now() - S.t0) / 1000;
   /** Run time in seconds: wall clock plus penalties. The clock never pauses. */
-  G.elapsed = () => (performance.now() - S.t0) / 1000 + S.pen;
+  G.elapsed = () => G.wall() + S.pen;
   /** Smooth scroll so the bottom of the footer is in view (first tap, after the chain). */
   G.toBottom = (ms = 520) => G.later(() => (root.closest("footer") || root).scrollIntoView({ block: "end", behavior: G.reduced() ? "auto" : "smooth" }), ms);
 
@@ -80,6 +87,8 @@ export function createGame(root) {
   const tanger = $(".bt-tts-tanger");
   G.phase = (p) => {
     S.phase = p; G.setA("phase", p);
+    const r = ROUND_PHASES.indexOf(p);
+    if (r >= 0 && S.splits.length === r) S.splits.push(Math.floor(G.wall() * 100) / 100);
     const live = p === "glowclick" || p === "danger";
     tanger.tabIndex = live ? 0 : -1;
     tanger.setAttribute("aria-disabled", String(!live));
@@ -90,7 +99,7 @@ export function createGame(root) {
     G.clearTimers(); cancelAnimationFrame(S.raf); G.stopClock(); hissStop();
     ["links", "flicker", "chain", "cf", "tstate", "bomb", "fuse", "end", "finish", "plug", "breaker", "dark"].forEach((k) => G.setA(k, null));
     root.classList.remove("is-end-ready");
-    Object.assign(S, { pen: 0, prog: 0, catches: 0, hot: null, endAt: null });
+    Object.assign(S, { pen: 0, prog: 0, catches: 0, hot: null, endAt: null, splits: [] });
     S.got.clear(); S.loose.clear();
     dropTool(G); G.phase("idle"); G.draw();
     $("[data-tm]").textContent = "0:00.00";
@@ -107,6 +116,8 @@ export function createGame(root) {
   G.start = () => {
     G.reset(); SFX.slop();
     S.t0 = performance.now(); S.device = G.isPhone() ? "mobile" : "desktop";
+    // The run is recorded from this tap; startRun doesn't hold up the clock.
+    S.run = startRun(S.device);
     G.phase("p1"); G.setA("links", "1"); G.progress(5);
     G.stopClock(); S.clock = setInterval(() => { $("[data-tm]").textContent = fmtTime(G.elapsed()); }, 47);
     G.later(() => flyBug(G), 1100); G.toBottom();
@@ -116,12 +127,16 @@ export function createGame(root) {
   G.tapOut = (quiet) => {
     SFX.slop();
     const p = Math.round(S.prog);
+    // A tap-out mid-run is stored but not counted (an end card's run is already submitted).
+    if (S.run && !S.run.finished) submitRun(S.run, { result: "tappedOut", secs: G.elapsed(), penalties: S.pen, reached: Math.min(99, p), splits: S.splits.slice() });
+    S.run = null;
     root.classList.add("is-collapsing"); G.reset();
     G.later(() => root.classList.remove("is-collapsing"), 700);
     if (!quiet) G.toast(`Tapped out at ${p}%`);
   };
 
-  G.end = (kind, title, sub) => showEnd(G, kind, title, sub);
+  /** Ends the run: kind is "win", "missed", "wrong" or "boom". */
+  G.end = (kind) => showEnd(G, kind);
 
   // ---- input ----
   root.addEventListener("click", (ev) => {

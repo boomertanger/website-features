@@ -40,15 +40,20 @@ export function mountPieces(root, gid) {
 
   $(".bt-tts-o").append(html(`<button type="button" class="bt-tts-bomb" data-tts-g="bomb" aria-label="Bomb" tabindex="-1"></button>${fuse(gid)}`));
 
+  // End card, layout 2 "Play first" (arcade-step1.md §1); the toast sits at the top of
+  // the stage: below the game bar, above the splat.
+  $(".bt-tts-stage").append(html(`<div class="bt-tts-toast" role="status"></div>`));
   $(".bt-tts-stage").append(html(`<section class="bt-tts-end" aria-live="polite" inert>
-    <h3 data-end-title></h3><div class="bt-tts-end-big" data-end-score></div><div class="bt-tts-end-sub" data-end-sub></div>
-    <div class="bt-tts-end-fb"><button type="button" data-fb="liked">▲ I liked it <span data-c="liked"></span></button><button type="button" data-fb="wantMore">🕹 Make more games <span data-c="wantMore"></span></button></div>
+    <h3 data-end-title></h3><div class="bt-tts-end-big" data-end-score></div><p class="bt-tts-end-sub" data-end-sub></p>
+    <div class="bt-tts-end-pills" data-end-pills></div>
+    <button type="button" class="bt-btn bt-tts-play" data-tts-g="again">Play again</button>
     <div class="bt-tts-end-place" data-end-place></div>
-    <button type="button" class="bt-btn bt-btn--sm bt-tts-play" data-tts-g="again">Play again</button>
+    <div class="bt-tts-end-fb" data-end-fb hidden><button type="button" data-fb="liked">👍 I liked it <span data-c="liked"></span></button><button type="button" data-fb="wantMore">🎮 Make more games <span data-c="wantMore"></span></button></div>
+    <div class="bt-tts-end-proof" data-end-proof></div>
+    <div data-end-tease></div>
   </section>`));
 
-  root.append(html(`<div class="bt-tts-toast" role="status"></div>
-    <div class="bt-tts-veil"></div>
+  root.append(html(`<div class="bt-tts-veil"></div>
     <svg class="bt-tts-cord" aria-hidden="true"><path/></svg>
     <span class="bt-tts-outlet" aria-hidden="true">${OUTLET}</span>
     <span class="bt-tts-plug" aria-label="Plug">${PLUG}</span>

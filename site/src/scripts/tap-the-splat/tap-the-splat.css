@@ -114,7 +114,7 @@
 .bt-root:not(#_) .bt-tts-ghost { position: absolute; inset: 0; opacity: .1; text-shadow: none; }
 .bt-root:not(#_) .bt-tts-meter.is-bump .bt-tts-meter-bar { animation: bt-tts-bump 380ms ease; }
 @keyframes bt-tts-bump { 40% { transform: scale(1.18); } }
-.bt-root:not(#_) .bt-tts-toast { position: absolute; left: 50%; top: 58px; z-index: 50; transform: translateX(-50%); padding: 6px 12px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 300ms; }
+.bt-root:not(#_) .bt-tts-toast { position: absolute; left: 50%; top: 8px; z-index: 50; transform: translateX(-50%); padding: 6px 12px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; white-space: nowrap; opacity: 0; pointer-events: none; transition: opacity 300ms; }
 .bt-root:not(#_) .bt-tts-toast.is-shown { opacity: 1; }
 .bt-root:not(#_) .bt-tts-minus { position: absolute; z-index: 60; transform: translate(-50%, -50%); font-family: ui-monospace, Menlo, monospace; font-size: 13px; font-weight: 900; color: var(--bt-red); pointer-events: none; animation: bt-tts-float 900ms ease-out forwards; }
 .bt-root:not(#_) .bt-tts-thunk { position: absolute; z-index: 56; transform: translate(-50%, -50%); font-size: 12px; font-weight: 900; letter-spacing: .06em; color: var(--bt-title); pointer-events: none; animation: bt-tts-float 700ms ease-out forwards; }
@@ -287,20 +287,31 @@
 .bt-root:not(#_) .bt-tts-end::before { content: ""; position: absolute; inset: -40px -70px; z-index: -1; background: url(/images/blood-splatter.webp) center / contain no-repeat; filter: brightness(.55) saturate(1.3); }
 .bt-root:not(#_) .bt-tts[data-end] .bt-tts-end { opacity: 1; pointer-events: auto; cursor: pointer; transform: translate(-50%, -50%) scale(1); }
 .bt-root:not(#_) .bt-tts-end :is(button, a) { cursor: pointer; }
-.bt-root:not(#_) .bt-tts-end h3 { font-size: 22px; font-weight: 900; letter-spacing: .04em; text-transform: uppercase; color: var(--bt-text); text-shadow: 0 2px 10px var(--tts-black); }
-.bt-root:not(#_) .bt-tts[data-end="win"] .bt-tts-end h3 { color: var(--bt-title); }
-.bt-root:not(#_) .bt-tts-end-big { margin: 10px 0 2px; font-size: 52px; font-weight: 900; line-height: 1; color: var(--bt-text); text-shadow: 0 3px 14px var(--tts-black); }
-.bt-root:not(#_) .bt-tts-end-sub, .bt-root:not(#_) .bt-tts-end-place, .bt-root:not(#_) .bt-tts-end-note { color: var(--bt-text); font-size: var(--bt-text-md); text-shadow: 0 1px 6px var(--tts-black); }
-.bt-root:not(#_) .bt-tts-end-place { margin-top: 4px; }
-.bt-root:not(#_) .bt-tts-end-note { margin-bottom: 8px; font-size: var(--bt-text-sm); }
-.bt-root:not(#_) .bt-tts-end-dev { display: inline-block; margin-top: 2px; padding: 2px 8px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); font-size: 10px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--bt-text-faint); text-shadow: none; }
-.bt-root:not(#_) .bt-tts-end-preview { margin-left: 4px; white-space: nowrap; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bt-title); }
-.bt-root:not(#_) .bt-tts-end-fb { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin: 16px 0 12px; }
-.bt-root:not(#_) .bt-tts-end-fb button { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 700; }
+/* End card, layout 2 "Play first" (arcade-step1.md §1): gold title, big time, one
+   line, pills, Play again, placement, votes, run counts, teaser. */
+.bt-root:not(#_) .bt-tts-end h3 { font-size: 24px; font-weight: 900; letter-spacing: .05em; text-transform: uppercase; color: var(--bt-title); text-shadow: 0 2px 10px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-big { margin: 8px 0 6px; font-size: 56px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; color: var(--bt-text); text-shadow: 0 3px 14px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-sub { max-width: 34ch; margin: 0 auto; color: var(--bt-text); font-size: var(--bt-text-md); text-shadow: 0 1px 6px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-pills { display: flex; flex-wrap: wrap; justify-content: center; gap: 6px; margin-top: 10px; }
+.bt-root:not(#_) .bt-tts-end-pills span { padding: 3px 9px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-tts-end-place { min-height: 1.5em; margin-top: 12px; color: var(--bt-text); font-size: var(--bt-text-md); text-shadow: 0 1px 6px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-place b { color: var(--bt-title); }
+.bt-root:not(#_) .bt-tts-end :is(.bt-tts-end-place, .bt-tts-end-tease) a:not(.bt-btn) { color: var(--bt-primary-soft); font-weight: 700; }
+.bt-root:not(#_) .bt-tts-end-fb { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
+.bt-root:not(#_) .bt-tts-end-fb button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 800; }
 .bt-root:not(#_) .bt-tts-end-fb button:hover { border-color: var(--bt-primary); }
-.bt-root:not(#_) .bt-tts-end-fb button.is-done { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
-.bt-root:not(#_) .bt-tts-end-fb button span { color: var(--bt-text-faint); font-weight: 600; }
+.bt-root:not(#_) .bt-tts-end-fb button.is-done { border-color: var(--bt-title); background: var(--bt-gold-bg); cursor: default; }
+.bt-root:not(#_) .bt-tts-end-fb button span { color: var(--bt-text-muted); font-weight: 700; }
+.bt-root:not(#_) .bt-tts-end-fb button.is-done span { color: var(--bt-title); }
 .bt-root:not(#_) .bt-tts-end-fb button span:empty { display: none; }
+.bt-root:not(#_) .bt-tts-end-proof { margin-top: 8px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); text-shadow: 0 1px 4px var(--tts-black); }
+.bt-root:not(#_) .bt-tts-end-proof:empty { display: none; }
+.bt-root:not(#_) .bt-tts-end-tease { display: flex; align-items: center; gap: 12px; max-width: 340px; margin: 14px auto 0; padding: 12px 14px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-primary); background: var(--tts-shade-deep); text-align: left; }
+.bt-root:not(#_) .bt-tts-end-tease .ic { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--bt-primary-bg); font-size: 20px; }
+.bt-root:not(#_) .bt-tts-end-tease b { display: block; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-tts-end-tease small { display: block; margin-top: 2px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.4; }
+.bt-root:not(#_) .bt-tts-end-tease .soon { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: var(--bt-title); color: var(--bt-bg); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; vertical-align: 1px; }
+.bt-root:not(#_) .bt-tts-end-tease .bt-btn { margin-left: auto; flex: none; }
 .bt-root:not(#_) .bt-site-footer .bt-tts-end a.bt-btn--primary { color: var(--bt-text); }
 /* The first 2 s after an end card appears (engine.js ignores input): its buttons are
    dimmed and inert, then fade in (.is-end-ready). */
@@ -308,7 +319,7 @@
 .bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) .bt-tts-end :is(button, a) { opacity: .35; pointer-events: none; }
 .bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) :is(.bt-tts-end, .bt-tts-veil) { cursor: default; }
 /* Play again: solid green (a recorded exception, design-system.md §8f) */
-.bt-root:not(#_) .bt-tts-end .bt-tts-play { margin-top: 12px; background: var(--bt-green); border: 1px solid var(--bt-green); color: var(--tts-play-text); font-weight: 800; }
+.bt-root:not(#_) .bt-tts-end .bt-tts-play { min-width: 200px; margin-top: 14px; padding: 13px 22px; background: var(--bt-green); border: 1px solid var(--bt-green); color: var(--tts-play-text); font-size: var(--bt-text-lg); font-weight: 800; }
 .bt-root:not(#_) .bt-tts-end .bt-tts-play:hover { filter: brightness(1.1); box-shadow: 0 0 16px color-mix(in srgb, var(--bt-green) 45%, transparent); }
 
 @container bt (max-width: 640px) {
@@ -320,7 +331,8 @@
   .bt-root:not(#_) .bt-tts-chain { z-index: 20; }
   /* The end card sits over the splat area. */
   .bt-root:not(#_) .bt-tts-end, .bt-root:not(#_) .bt-tts[data-end] .bt-tts-end { top: 0; width: calc(100% - 8px); transform: translate(-50%, 0) scale(1); }
-  .bt-root:not(#_) .bt-tts[data-end] .bt-tts-stage { min-height: 380px; }
+  .bt-root:not(#_) .bt-tts[data-end] .bt-tts-stage { min-height: 520px; }
+  .bt-root:not(#_) .bt-tts-end-big { font-size: 48px; }
 }
 
 /* Reduced motion: bt-ui.css already ends every animation and transition inside a

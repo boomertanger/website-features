@@ -1345,7 +1345,6 @@
 .bt-root:not(#_) .bt-tts-lb-btn:hover { border-color: var(--bt-primary); color: var(--bt-text); }
 .bt-root:not(#_) .bt-tts-lb-list { position: absolute; right: 0; top: calc(100% + 6px); z-index: 20; width: 300px; padding: 10px 12px; border-radius: var(--bt-radius-lg); background: var(--bt-surface); border: 1px solid var(--bt-border-2); box-shadow: var(--bt-shadow-dropdown); text-align: left; }
 .bt-root:not(#_) .bt-tts-lb-cap { margin-bottom: 6px; font-size: 10px; font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; color: var(--bt-text-faint); }
-.bt-root:not(#_) .bt-tts-lb-preview { margin-left: 6px; color: var(--bt-title); }
 .bt-root:not(#_) .bt-tts-lb-tabs { display: flex; gap: 4px; margin-bottom: 8px; }
 .bt-root:not(#_) .bt-tts-lb-tabs button { flex: 1; padding: 4px 0; border-radius: var(--bt-radius-sm); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); font-size: 11px; font-weight: 700; cursor: pointer; }
 .bt-root:not(#_) .bt-tts-lb-tabs button[aria-selected="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }

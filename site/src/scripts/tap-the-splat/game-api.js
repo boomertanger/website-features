@@ -1,44 +1,101 @@
-// Tap the Splat data: stubs until there are accounts and Cloud Functions.
-// TODO: milestone 2 (accounts + Cloud Functions, docs/specs/tap-the-splat.md "Data"):
-//   runs via startRun / finishRun callables (server timing checks, members only,
-//   one best time per member per device), per-device board summary docs written
-//   only by functions, and two feedback counters with one vote per member/browser.
-// Until then: non-production builds get the prototype's sample rows, labelled
-// PREVIEW DATA; production gets nothing (the leaderboard button isn't rendered
-// there and votes are visual only).
-import { isProduction } from "../../lib/env.js";
+// Tap the Splat data (docs/specs/arcade-step1.md §4, §5): runs through the shared
+// Arcade callables (startRun, finishRun, voteRun), boards and counts read from
+// sites/{siteId}/games/tapTheSplat. Only the game bundle and the leaderboard
+// popover import this, so idle pages never load it. Firestore Lite (lib/db.ts)
+// comes with it; the Functions SDK (lib/call.ts) loads on the first run.
+import { db, doc, getDoc, SITE_ID } from "../../lib/db";
+import { reasonOf } from "../../lib/errors";
 
-// [member, seconds, date of the run]
-const PREVIEW_BOARDS = {
-  desktop: [["CryptRat", 41.31, "2026-09-26"], ["Hexxy", 44.82, "2026-09-27"], ["Vexa", 47.25, "2026-09-24"], ["Dredd", 49.90, "2026-09-27"], ["RavenByte", 52.64, "2026-09-22"], ["GhoulKid", 55.13, "2026-09-25"], ["Mortis", 58.47, "2026-09-21"], ["NoLights", 63.72, "2026-09-26"], ["Wisp", 71.08, "2026-09-23"], ["Banshee", 79.55, "2026-09-20"]],
-  mobile: [["Vexa", 52.10, "2026-09-27"], ["Wisp", 57.44, "2026-09-26"], ["GhoulKid", 61.03, "2026-09-24"], ["Banshee", 64.90, "2026-09-27"], ["Hexxy", 68.21, "2026-09-23"], ["Mortis", 73.66, "2026-09-25"], ["NoLights", 77.02, "2026-09-22"], ["Dredd", 81.35, "2026-09-21"], ["CryptRat", 85.70, "2026-09-26"], ["RavenByte", 92.18, "2026-09-20"]],
-};
-const PREVIEW_VOTES = { liked: 128, wantMore: 94 };
+export const GAME_ID = "tapTheSplat";
+/** This build of the game (versions/{v}.acceptedBuilds must list it). */
+export const BUILD = "1.0";
 
-/** Top 10 for "desktop" or "mobile": { preview, rows: [{ name, secs, date }] } (date: YYYY-MM-DD), or null (none yet). */
-export async function getBoard(device) {
-  // TODO: milestone 2: read sites/{siteId}/games/tapTheSplat/boards/{device}.
-  if (isProduction) return null;
-  return { preview: true, rows: (PREVIEW_BOARDS[device] || []).map(([name, secs, date]) => ({ name, secs, date })) };
+const call = async (name, data) => (await import("../../lib/call")).call(name, data);
+const gameRef = () => doc(db, "sites", SITE_ID, "games", GAME_ID);
+
+// The game and current version docs change rarely: read once, keep for a minute.
+let infoCache = null;
+/** { game, version, v } for the current version, or null when unreadable. */
+export async function getInfo({ fresh = false } = {}) {
+  if (!fresh && infoCache && Date.now() - infoCache.at < 60000) return infoCache.value;
+  const value = (async () => {
+    const g = await getDoc(gameRef());
+    if (!g.exists()) return null;
+    const game = g.data(), v = game.currentVersion || "v1";
+    const s = await getDoc(doc(db, "sites", SITE_ID, "games", GAME_ID, "versions", v));
+    return { game, v, version: s.exists() ? s.data() : {} };
+  })().catch((err) => { console.error("tts: couldn't read the game", err); infoCache = null; return null; });
+  infoCache = { at: Date.now(), value };
+  return value;
 }
 
-/** A finished run: { device, secs, penalties, completed, reached }. Not stored yet. */
-export async function submitRun(run) {
-  // TODO: milestone 2: startRun at the first tap, finishRun here (members only).
-  void run;
-  return { stored: false };
-}
-
-/** Feedback: kind is "liked" or "wantMore". Not stored yet (visual only). */
-export async function vote(kind) {
-  // TODO: milestone 2: one vote per member or browser, running totals.
-  void kind;
-  return { stored: false };
-}
-
-/** Feedback totals: { preview, liked, wantMore }, or null (none yet). */
+/** Rolled-up counts for the current version: { runs, finished, liked, wantMore }, or null (not rolled up yet). */
 export async function getVotes() {
-  // TODO: milestone 2: read the two counters.
-  if (isProduction) return null;
-  return { preview: true, ...PREVIEW_VOTES };
+  const s = (await getInfo({ fresh: true }))?.game?.stats;
+  return s && typeof s.runs === "number" ? s : null;
+}
+
+/**
+ * The all-time (or weekly: period "2026-W40") board for "desktop" or "mobile":
+ * { rows: [{ uid, name, handle, secs, penalties, date }] } (date: a Date), or null when unreadable.
+ */
+export async function getBoard(device, period = "all") {
+  const info = await getInfo();
+  if (!info) return null;
+  const id = `e${info.version.boardEpoch || 1}_${device}_${period}`;
+  try {
+    const s = await getDoc(doc(db, "sites", SITE_ID, "games", GAME_ID, "versions", info.v, "boards", id));
+    const rows = s.exists() ? s.get("rows") || [] : [];
+    return { rows: rows.map((r) => ({ uid: r.uid, name: r.displayName || r.handle || "?", handle: r.handle, secs: r.secs, penalties: r.penalties, date: r.at?.toDate?.() ?? null })) };
+  } catch (err) {
+    console.error("tts: couldn't read the board", err);
+    return null;
+  }
+}
+
+/**
+ * Starts a run at the first splat tap without blocking it (the clock starts
+ * locally). Returns a handle for submitRun and vote; its `started` promise resolves
+ * to { runId, runKey?, version } or { error: reason }.
+ */
+export function startRun(device) {
+  const run = { device, voted: {}, finished: false };
+  run.started = call("startRun", { gameId: GAME_ID, device, build: BUILD })
+    .then((r) => ({ runId: r.runId, runKey: r.runKey ?? null, version: r.version || "v1" }))
+    .catch((err) => { console.warn("tts: startRun failed", err); return { error: reasonOf(err) || "offline" }; });
+  return run;
+}
+
+/**
+ * Finishes a run: { result, secs, penalties, reached, splits }. Awaits a pending
+ * start. Resolves to { recorded: true, version, counted, onBoard, personalBest,
+ * rank: { all, week }, reason } or { recorded: false, refresh } (never throws).
+ */
+export async function submitRun(run, { result, secs, penalties, reached, splits }) {
+  if (!run || run.finished) return { recorded: false, refresh: false };
+  run.finished = true;
+  const s = await run.started;
+  if (!s.runId) return { recorded: false, refresh: s.error === "build" };
+  try {
+    const out = await call("finishRun", { runId: s.runId, ...(s.runKey ? { runKey: s.runKey } : {}), result, secs, penalties, reached, splits });
+    run.recorded = result !== "tappedOut";
+    return { recorded: true, version: s.version, ...out };
+  } catch (err) {
+    console.warn("tts: finishRun failed", err);
+    return { recorded: false, refresh: reasonOf(err) === "build" };
+  }
+}
+
+/** A vote on a recorded, ended run: kind "liked" or "wantMore", once per kind per run. */
+export async function vote(run, kind) {
+  if (!run?.recorded || run.voted[kind]) return { stored: false };
+  run.voted[kind] = true;
+  const s = await run.started;
+  try {
+    const r = await call("voteRun", { runId: s.runId, ...(s.runKey ? { runKey: s.runKey } : {}), kind });
+    return { stored: !!r?.counted };
+  } catch (err) {
+    console.warn("tts: voteRun failed", err);
+    return { stored: false };
+  }
 }

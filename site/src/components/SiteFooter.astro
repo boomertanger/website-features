@@ -5,7 +5,6 @@
 // real links from the start (hidden until the game reveals them, or focused).
 import Mascot from "./Mascot.astro";
 import site from "../data/site.json";
-import { isProduction } from "../lib/env.js";
 
 const year = new Date().getFullYear();
 
@@ -50,12 +49,10 @@ const links = site.domains.map((d, i) => {
       </div>
       <span class="bt-tts-spacer"></span>
       <button type="button" class="bt-tts-sound" data-snd aria-pressed="true" aria-label="Sound">🔊</button>
-      <!-- Everyone can open the leaderboard (guests see what they're missing); only members' completed runs are on it. TODO: real leaderboards (runs via Cloud Functions). Until then staging shows PREVIEW DATA; production hides the button. -->
-      {!isProduction && (
-        <div class="bt-tts-lb" data-lb-wrap>
-          <button type="button" class="bt-tts-lb-btn" data-lb aria-expanded="false" aria-label="Leaderboard">🏆</button>
-        </div>
-      )}
+      <!-- Everyone can open the leaderboard (guests see what they're missing); only members' finished runs are on it (docs/specs/arcade-step1.md). -->
+      <div class="bt-tts-lb" data-lb-wrap>
+        <button type="button" class="bt-tts-lb-btn" data-lb aria-expanded="false" aria-label="Leaderboard">🏆</button>
+      </div>
     </div>
 
     <div class="bt-tts-stage">

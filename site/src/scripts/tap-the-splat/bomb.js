@@ -48,7 +48,7 @@ export function explode(G) {
     return `<b style="--tx:${Math.cos(a) * d}px;--ty:${Math.sin(a) * d}px;--c:var(--tts-shard-${k % 4})"></b>`;
   }).join("");
   root.classList.add("is-shake"); G.setA("bomb", null); G.setA("fuse", null); G.phase("over"); G.stopClock();
-  setTimeout(() => { root.classList.remove("is-shake"); G.end("lose", "Boom.", "The bomb went off."); }, 1000);
+  setTimeout(() => { root.classList.remove("is-shake"); G.end("boom"); }, 1000);
 }
 
 export function cutFuse(G, ev) {

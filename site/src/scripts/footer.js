@@ -1,7 +1,7 @@
 // Tap the Splat footer, idle state (docs/specs/tap-the-splat.md).
 // Plain page script: the sound toggle, the contact Show buttons, and two lazy
 // hooks. The game (JS + CSS) loads with a dynamic import on the first splat tap;
-// the members-only leaderboard loads its own small module on the trophy button.
+// the leaderboard popover loads its own small module on the trophy button.
 import { getAudio } from "./tap-the-splat/audio-unlock.js";
 
 const SOUND_KEY = "bt-tts-sound";
@@ -71,7 +71,7 @@ if (root) {
   };
   splat.addEventListener("click", firstTap);
 
-  // Leaderboard (members; staging only until milestone 2).
+  // Leaderboard popover (open to everyone; real boards, arcade-step1.md).
   const lbWrap = root.querySelector("[data-lb-wrap]");
   lbWrap?.querySelector("[data-lb]").addEventListener("click", async () => {
     const { toggle } = await import("./tap-the-splat/leaderboard.js");

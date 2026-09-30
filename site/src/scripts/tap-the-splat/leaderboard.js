@@ -1,13 +1,14 @@
 // Tap the Splat leaderboard popover: open to everyone (guests see what they're
-// missing, with a Join free prompt), but only members' completed runs are on it. Top 10 per device, with
-// separate Desktop and Mobile boards because phones play a different game.
+// missing, with a Join free prompt), but only members' finished runs are on it. Top 10
+// per device from the current version's all-time board doc, with separate Desktop and
+// Mobile boards because phones play a different game.
 // Loaded by the footer's trophy button; no game code comes with it.
 import { getBoard } from "./game-api.js";
 import { fmtTime } from "./format.js";
 
 const DEVICES = [["desktop", "🖥 Desktop"], ["mobile", "📱 Mobile"]];
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]);
-const day = (iso) => (iso ? new Date(iso + "T12:00:00Z").toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" }) : "");
+const day = (d) => (d ? d.toLocaleDateString("en-US", { month: "short", day: "numeric" }) : "");
 const HEAD = `<div class="bt-tts-lb-row is-hd" aria-hidden="true"><b>#</b><span>Member</span><span class="t">Date</span><span class="s">Time</span></div>`;
 
 async function render(list, device) {
@@ -15,8 +16,7 @@ async function render(list, device) {
   const rows = board?.rows ?? [];
   list.querySelector("[data-lb-rows]").innerHTML = rows.length
     ? HEAD + rows.slice(0, 10).map((r, k) => `<div class="bt-tts-lb-row"><b>${k + 1}</b><span>${esc(r.name)}</span><span class="t">${day(r.date)}</span><span class="s">${fmtTime(r.secs)}</span></div>`).join("")
-    : `<div class="bt-tts-lb-empty">No completed runs yet.</div>`;
-  list.querySelector("[data-lb-preview]").hidden = !board?.preview;
+    : `<div class="bt-tts-lb-empty">${board ? "No finished runs yet." : "Couldn't load the board. Try again in a moment."}</div>`;
   list.querySelectorAll("[data-dev]").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.dev === device)));
   grow(list);
 }
@@ -36,7 +36,7 @@ function build(wrap) {
   const list = document.createElement("div");
   list.className = "bt-tts-lb-list";
   list.id = "bt-tts-lb-list";
-  list.innerHTML = `<div class="bt-tts-lb-cap">Top 10 · members' runs<span class="bt-tts-lb-preview" data-lb-preview>Preview data</span></div>
+  list.innerHTML = `<div class="bt-tts-lb-cap">Top 10 · all time · members' runs</div>
     <div class="bt-tts-lb-tabs" role="tablist" aria-label="Board">${DEVICES.map(([d, label]) => `<button type="button" role="tab" data-dev="${d}" aria-selected="false">${label}</button>`).join("")}</div>
     <div role="tabpanel" data-lb-rows></div>
     <p class="bt-tts-lb-join bt-when-visitor">Only members make the board. <a href="/account" data-signin="join">Join free</a></p>`;

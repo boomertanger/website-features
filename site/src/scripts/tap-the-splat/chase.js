@@ -12,13 +12,13 @@ export function nextHot(G) {
   S.hot = i; cards[i].classList.add("is-hot");
   const win = Math.max(600, 1400 - S.catches * 85);
   G.later(() => {
-    if (S.phase === "chase" && S.hot === i) G.end("lose", "Missed one.", "The blood moved on without you.");
+    if (S.phase === "chase" && S.hot === i) G.end("missed");
   }, win);
 }
 
 export function onChase(G, c) {
   const { S, SFX } = G;
-  if (G.idx(c) !== S.hot) return G.end("lose", "Wrong one.", "Only the bloody link counts.");
+  if (G.idx(c) !== S.hot) return G.end("wrong");
   G.clearTimers();
   c.classList.remove("is-hot"); c.classList.add("is-caught");
   setTimeout(() => c.classList.remove("is-caught"), 360);
