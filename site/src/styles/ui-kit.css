@@ -44,7 +44,9 @@
 .bt-root:not(#_) .lk-type-row small { color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
 
 /* The shared kit mounts full width inside the stage; its sections sit flush. */
-.bt-root:not(#_) .lk-stage #bt-ui-kit { border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden; }
+/* The kit mount is a .bt-root (margin: 0 auto, and a size container with no intrinsic width),
+   so in this flex column it must be told to fill the width. */
+.bt-root:not(#_) .lk-stage #bt-ui-kit { width: 100%; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden; }
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .lk-type-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }

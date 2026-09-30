@@ -16,8 +16,6 @@
 
 /* ---- Top bar: the page content width, like .bt-zone ---- */
 .bt-root:not(#_) .ar-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding-top: var(--bt-space-6); }
-.bt-root:not(#_) .ar-bar .bt-btn { text-decoration: none; }
-.bt-root:not(#_) .ar-bar .bt-btn[aria-current="page"] { color: var(--bt-text); background: var(--bt-surface-2); }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ar-bar { padding: 16px 16px 14px; }
   .bt-root:not(#_) .ar-barlinks { display: none; }
@@ -96,17 +94,14 @@
 
 /* ---- How it works (arcade-info.html layout 1 "Guided scroll") ---- */
 .bt-root:not(#_) .ai-wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding: 28px var(--bt-gutter) 56px; }
-.bt-root:not(#_) .ai-nav { position: sticky; top: calc(var(--bt-header-h, 64px) + 16px); align-self: start; display: flex; flex-direction: column; gap: 2px; }
-.bt-root:not(#_) .ai-nav a { padding: 7px 10px; border-left: 2px solid transparent; border-radius: var(--bt-radius-md); color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 600; text-decoration: none; }
-.bt-root:not(#_) .ai-nav a:hover { color: var(--bt-text); background: var(--bt-surface); }
-.bt-root:not(#_) .ai-nav a.is-on { color: var(--bt-text); border-left-color: var(--bt-primary); background: var(--bt-primary-bg); }
+/* The side menu is the kit's .bt-toc; the page only places it. */
+.bt-root:not(#_) .ai-nav { position: sticky; top: calc(var(--bt-header-h, 64px) + 16px); align-self: start; }
 .bt-root:not(#_) .ai-main { display: flex; flex-direction: column; gap: 44px; min-width: 0; }
 .bt-root:not(#_) .ai-sec { scroll-margin-top: calc(var(--bt-header-h, 64px) + 24px); }
-.bt-root:not(#_) .ai-sec > .bt-heading { margin: 0 0 6px; }
-.bt-root:not(#_) .ai-lede { max-width: 64ch; margin: 0 0 16px; color: var(--bt-text-muted); }
 .bt-root:not(#_) .ai-hero { position: relative; overflow: hidden; padding: 40px 32px; border: 1px solid var(--bt-border); border-radius: 22px; background: radial-gradient(70% 90% at 85% 10%, var(--bt-game-spot), transparent 60%), radial-gradient(60% 80% at 10% 100%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
 .bt-root:not(#_) .ai-kicker { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bt-text-faint); }
-.bt-root:not(#_) .ai-hero .bt-title { margin: 6px 0 10px; font-size: 44px; }
+
+.bt-root:not(#_) .ai-hero .bt-title { margin: 6px 0 10px; }
 .bt-root:not(#_) .ai-hero p { max-width: 52ch; margin: 0 0 20px; color: var(--bt-text); font-size: var(--bt-text-lg); }
 .bt-root:not(#_) :is(.ai-acts) { display: flex; flex-wrap: wrap; gap: 10px; }
 .bt-root:not(#_) .ai-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
@@ -174,11 +169,10 @@
 }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ai-wrap { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px 16px 40px; }
-  .bt-root:not(#_) .ai-nav { top: var(--bt-header-h, 56px); z-index: 3; flex-direction: row; gap: 4px; margin: 0 -16px; padding: 8px 16px; overflow-x: auto; background: var(--bt-bg); scrollbar-width: none; }
-  .bt-root:not(#_) .ai-nav a { padding: 6px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; }
-  .bt-root:not(#_) .ai-nav a.is-on { border-color: var(--bt-primary); }
+  .bt-root:not(#_) .ai-nav { top: var(--bt-header-h, 56px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); }
+  /* A jump from the menu lands below the sticky chip row, not under it. */
+  .bt-root:not(#_) .ai-sec { scroll-margin-top: calc(var(--bt-header-h, 56px) + 72px); }
   .bt-root:not(#_) .ai-hero { padding: 26px 18px; }
-  .bt-root:not(#_) .ai-hero .bt-title { font-size: 32px; }
   .bt-root:not(#_) :is(.ai-grid, .ai-ver, .ai-rules, .ai-gloss) { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .ai-track { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bt-root:not(#_) .ai-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; }

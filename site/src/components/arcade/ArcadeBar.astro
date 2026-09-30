@@ -1,12 +1,15 @@
 ---
 // The Arcade's feature top bar (docs/specs/arcade-step1.md §7, design-system.md §8h):
 // the kit's .bt-topbar + .bt-wordmark (joystick, BOOM + accent ARCADE) linking to
-// /arcade, and Games / Leaderboards / How it works on the right (hidden on phones and
-// on the members-only gate). No breadcrumbs.
+// /arcade, with the .bt-wordmark--power hover (the letters light one by one, the lamp
+// comes on, the stick wiggles once), and Games / Leaderboards / How it works on the
+// right as a .bt-seg-nav (hidden on phones and on the members-only gate). No breadcrumbs.
 import { BA_ICON } from "../../../../shared/ui/arcade.js";
 
 interface Props { section?: "games" | "lb" | "how" | null }
 const { section = null } = Astro.props;
+// Letters for the power-on, numbered across both words so they light one by one.
+const W1 = [..."BOOM"], W2 = [..."ARCADE"];
 const links = [
   { id: "games", label: "Games", href: "/arcade" },
   { id: "lb", label: "Leaderboards", href: "/arcade/leaderboards" },
@@ -14,13 +17,13 @@ const links = [
 ];
 ---
 <div class="bt-topbar ar-bar">
-  <a class="bt-wordmark" href="/arcade" aria-label="Boom Arcade">
+  <a class="bt-wordmark bt-wordmark--power" href="/arcade" aria-label="Boom Arcade">
     <span class="bt-wordmark-icon" set:html={BA_ICON} />
-    <span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span>
+    <span class="bt-wordmark-text" aria-hidden="true">{W1.map((ch, i) => <span class="bt-wm-lt" style={`--i:${i}`}>{ch}</span>)}<span class="bt-wordmark-accent">{W2.map((ch, i) => <span class="bt-wm-lt" style={`--i:${W1.length + i}`}>{ch}</span>)}</span></span>
   </a>
-  <nav class="bt-topnav ar-barlinks" aria-label="Arcade">
+  <nav class="bt-seg-nav ar-barlinks" aria-label="Arcade">
     {links.map((l) => (
-      <a class="bt-btn bt-btn--ghost bt-btn--sm" href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
+      <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
     ))}
   </nav>
 </div>

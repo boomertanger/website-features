@@ -9,6 +9,8 @@ import { initRowSpotlight } from "../ui/effects.js";
 import { composerHtml, initComposer } from "../ui/composer.js";
 import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
 import { BA_ICON, ttsLogoHtml } from "../ui/arcade.js";
+import { initSegNav } from "../ui/seg-nav.js";
+import { initToc } from "../ui/toc.js";
 
 const KIT_VERSION = "dev";
 
@@ -764,6 +766,7 @@ function pageHtml() {
       </div>
     </div>
   </section>
+${navHtml()}
 ${arcadeHtml()}`;
 }
 
@@ -780,6 +783,47 @@ function kitBoard({ mini = false, me = 0, pin = false, n = 5 } = {}) {
   const head = mini ? "" : `<thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col" class="bt-board-date">Date</th><th scope="col">Time</th></tr></thead>`;
   return `<table class="bt-board${mini ? " bt-board--mini" : ""}">${head}<tbody>${rows}${gap}</tbody></table>`;
 }
+// ---------- Navigation, headings and wordmark power-on (docs/design/mockups/arcade-styling-ideas.html) ----------
+
+/** The Boom Arcade wordmark with the .bt-wordmark--power hover (letters numbered across both words). */
+function arcadeMark() {
+  const lt = (w, from) => [...w].map((ch, i) => `<span class="bt-wm-lt" style="--i:${from + i}">${ch}</span>`).join("");
+  return `<a class="bt-wordmark bt-wordmark--power" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${BA_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">${lt("BOOM", 0)}<span class="bt-wordmark-accent">${lt("ARCADE", 4)}</span></span></a>`;
+}
+const KIT_TOC = ["What's inside", "How games are born", "How games grow", "Versions", "Roles", "Badges", "Fair play"];
+const kitToc = (at) => `<nav class="bt-toc" aria-label="On this page (demo)" data-kit-toc="${at}"><span class="bt-toc-rail" aria-hidden="true"></span><span class="bt-toc-fill" aria-hidden="true"></span>${KIT_TOC.map((t, i) => `<a href="#kit-toc-${i}">${t}</a>`).join("")}</nav>`;
+const kitSeg = (cur, live = true) => `<nav class="bt-seg-nav"${live ? " data-kit-seg" : ""} aria-label="Arcade (demo)">${["Games", "Leaderboards", "How it works"].map((t, i) => `<a href="#"${i === cur ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav>`;
+function navHtml() {
+  return `
+  <section class="kit-section" id="kit-nav-patterns">
+    <h2 class="kit-h">Navigation, headings and wordmarks</h2>
+    <p class="kit-p">Most of these live in their hover and focus states: point at them or tab through. Under reduced motion nothing moves; only the colours change (the pill jumps instead of gliding, the letters light without the flash, the stick stays still).</p>
+
+    <p class="kit-sub">Buttons (A2): primary lifts 1px with a purple glow; secondary lifts and lights up. Disabled buttons don't react. Link-buttons never underline (ghost stays underlined on purpose).</p>
+    <div class="kit-row"><a class="bt-btn bt-btn--primary" href="#">Enter the Arcade</a><a class="bt-btn bt-btn--secondary" href="#">Try Tap the Splat</a><button type="button" class="bt-btn bt-btn--primary" disabled>Disabled</button><button type="button" class="bt-btn bt-btn--secondary" disabled>Disabled</button><a class="bt-btn bt-btn--ghost" href="#">Ghost link</a></div>
+
+    <p class="kit-sub">Top tabs: .bt-seg-nav (B3), with shared/ui/seg-nav.js. The lit pill glides to the hovered or focused tab and settles on the current one.</p>
+    <div class="kit-stack">${kitSeg(0)}${kitSeg(2)}</div>
+    <p class="kit-note">Without the script (below) only the current tab is lit, with the same pill and tick.</p>
+    <div class="kit-row">${kitSeg(1, false)}</div>
+
+    <p class="kit-sub">Side menu: .bt-toc progress rail (C3), with shared/ui/toc.js following the scroll. Shown at the first, third and last stop. At 640px and below it becomes a swipeable chip row with a thin gold progress bar.</p>
+    <div class="kit-grid-2">${kitToc(0)}${kitToc(2)}${kitToc(6)}</div>
+
+    <p class="kit-sub">Chapter heading: .bt-chapter (D2), for the top-level sections of long pages. Panels and cards keep .bt-heading.</p>
+    <div class="kit-stack">
+      <header class="bt-chapter"><p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p><h2 class="bt-chapter-title">What's inside</h2><p class="bt-chapter-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p></header>
+      <header class="bt-chapter"><p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p><h2 class="bt-chapter-title">Glossary</h2></header>
+    </div>
+
+    <p class="kit-sub">Hero title: .bt-title.bt-title--hero (40px, 28px at 640px and below). Page titles stay the only gradient heading.</p>
+    <div class="kit-stack"><h1 class="bt-title bt-title--hero">Horror games, built with you</h1><h1 class="bt-title">Page title (for comparison)</h1></div>
+
+    <p class="kit-sub">Wordmark power-on: .bt-wordmark--power (E3). Hover or focus: the letters light one by one (45ms apart) with a yellow flash, the lamp comes fully on, the stick wiggles once. At rest the joystick is still.</p>
+    <div class="kit-row">${arcadeMark()}</div>
+  </section>`;
+}
+
 function arcadeHtml() {
   const soon = `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>`;
   const art = `<div class="bt-game-art"><img src="${KIT_MASCOT}" alt="" width="96" height="96"></div>`;
@@ -792,7 +836,7 @@ function arcadeHtml() {
     <h2 class="kit-h">Boom Arcade</h2>
     <p class="kit-p">The Arcade's pieces (<span class="kit-code">docs/specs/arcade-step1.md</span> §8). Every Arcade page uses the feature top bar with the joystick wordmark; a game's name uses the game's own lettering (<span class="kit-code">.bt-game-logo</span>), and every other title stays gold. Narrow the window to see the phone versions: the tabs become pills and the board drops the Date column and @handles. The game art here shows the mascot only; the site adds the splat.</p>
     <p class="kit-sub">Top bar (.bt-topbar, .bt-wordmark, .bt-ba-icon; static under reduced motion)</p>
-    <div class="bt-topbar"><a class="bt-wordmark" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${BA_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span></a><nav class="bt-topnav" aria-label="Arcade"><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#" aria-current="page">Games</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">Leaderboards</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">How it works</a></nav></div>
+    <div class="bt-topbar">${arcadeMark()}<nav class="bt-topnav" aria-label="Arcade"><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#" aria-current="page">Games</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">Leaderboards</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">How it works</a></nav></div>
     <p class="kit-sub">Game logo (.bt-game-logo--lg page title, --sm on cards) and page tabs (.bt-page-tabs)</p>
     <div class="kit-stack"><div>${ttsLogoHtml("lg")}</div><div>${ttsLogoHtml("sm")}</div>${tabs(0)}${tabs(1)}</div>
     <p class="kit-sub">Go button (.bt-btn--go: Play now and Play again, the §8f green exception)</p>
@@ -858,6 +902,8 @@ function init() {
 
   menu = initAdminMenu(preview);
   initRowSpotlight(mount);
+  mount.querySelectorAll("[data-kit-seg]").forEach((n) => initSegNav(n));
+  mount.querySelectorAll("[data-kit-toc]").forEach((n) => initToc(n, { observe: false }).set(+n.dataset.kitToc));
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {

@@ -5,6 +5,9 @@
 // - [data-resend]: resend the verification email (the "verify your email" notices).
 import { whenReady, sendVerification } from "../../lib/auth";
 import { playNow } from "./play-now";
+import { initSegNavs } from "../../../../shared/ui/seg-nav.js";
+
+initSegNavs();   // the top bar's Games / Leaderboards / How it works
 
 const GATE_KEY = "bt-arcade-join-shown";
 

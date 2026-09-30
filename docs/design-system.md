@@ -165,6 +165,43 @@ on hover. Use it for EVERY admin-only action button across the site (Add
 rule, Save rule, Save status in admin panels, etc.) so green buttons always
 mean "admin action". Purple primary stays for member-facing actions.
 
+**Button hovers (A2, docs/design/mockups/arcade-styling-ideas.html).** `.bt-btn--primary`
+lifts 1px with a purple glow; `.bt-btn--secondary` lifts 1px and lights up (border
+`--bt-primary`, background `--bt-primary-bg`, text `--bt-text`). Disabled buttons don't
+react. Link-buttons (`a.bt-btn`, except `--ghost`, which stays underlined on purpose) and
+wordmarks never underline on hover. Reduced motion: no lift, only the colours change.
+
+**Top tabs: `.bt-seg-nav`** (B3). `<nav class="bt-seg-nav" aria-label="…">` > `a`
+(`aria-current="page"` on the current one): one dark rounded track; a lit pill with a small
+glowing purple tick glides to the hovered or focused tab and settles back on the current
+one. Behavior: `shared/ui/seg-nav.js` (`initSegNav(nav)` / `initSegNavs(root)`) adds and
+moves one shared `.bt-seg-nav-pill`; without it the current tab is lit on its own. Used for
+the Arcade top-bar links (hidden on phones).
+
+**Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
+page">` > `.bt-toc-rail`, `.bt-toc-fill`, `a[href="#section"]`: stops on a vertical line,
+passed sections (`.is-past`) gold, the current one (`aria-current="true"`) a glowing purple
+dot, the line filling to it (`--bt-toc-fill`). At ≤ 640px it becomes a swipeable chip row
+with a thin gold progress bar above it (`--bt-toc-prog`). Behavior: `shared/ui/toc.js`
+(`initToc(nav)` follows the scroll with an IntersectionObserver; `initToc(nav, { observe:
+false }).set(i)` for demos). The page places it (sticky); the kit styles it.
+
+**Chapter heading: `.bt-chapter`** (D2), for the top-level sections of long pages:
+`<header class="bt-chapter">` > `p.bt-chapter-eyebrow` (gold mono "01 · Chapter", a fading
+gold rule; `aria-hidden`), `h2.bt-chapter-title` (28px, tight tracking), `p.bt-chapter-lede`.
+Number chapters to match the side menu. Panels and cards keep `.bt-heading`.
+
+**Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
+≤ 640px), with the same gradient.
+
+**Wordmark power-on: `.bt-wordmark--power`** (E3), a feature wordmark's hover and focus
+effect: `.bt-wordmark-text` letters wrapped in `span.bt-wm-lt` with `--i` numbered across
+both words; they light one by one (45ms apart) with a lamp-yellow flash that settles to
+white (`--bt-wm-glow`) and, in `.bt-wordmark-accent`, neon purple. Each feature adds its own
+icon effect under `.bt-wordmark--power:is(:hover, :focus-visible)`; the Boom Arcade
+joystick (`.bt-ba-icon`) turns its lamp fully on and wiggles the stick once, and is still at
+rest (no idle loop). Reduced motion: the letters just change colour; the stick stays still.
+
 **Chips:** `.bt-chip` (+ `.is-active`, `aria-pressed`), `.bt-chip--small`. Inside
 `.bt-sortbar`, active chips are purple-tinted.
 
@@ -479,6 +516,9 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-tease-ic`, `.bt-tease-txt` (`b` + Soon badge, `small`), optional `.bt-btn`. Play now's
   cue on the footer: `.bt-tts[data-cue]` pulses the splat and shows `.bt-tts-cue`. Page grids
   (lobby row, Play tab split, gate, How it works) live in `site/src/styles/arcade.css`.
+- **Boom Arcade top bar:** the wordmark is a `.bt-wordmark--power` and the links a
+  `.bt-seg-nav` (see above). How it works uses `.bt-toc`, `.bt-chapter` and
+  `.bt-title--hero`.
 - **Prose** (legal pages): `<article class="bt-prose">` around rendered Markdown
   (`site/src/content/legal/*.md`). Its `h1` is the gold page title and its `h2`s are
   section headings (they share the `.bt-title` and `.bt-heading` rules); the paragraph
@@ -823,3 +863,12 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   for 5 minutes, and board ids come from `games/{gameId}.boardEpoch` (a mirror of the
   version doc's, arcade-step1.md §4), so moving between pages costs only the bests,
   boards and rank count each page lists.
+- **Styling ideas: A2, B3, C3, D2, E3** (`docs/design/mockups/arcade-styling-ideas.html`):
+  button hovers that lift, the `.bt-seg-nav` top tabs, the `.bt-toc` progress rail, the
+  `.bt-chapter` heading and the `.bt-wordmark--power` hover. Page titles stay the only
+  gradient heading (plus `.bt-title--hero` on hero banners); `.bt-chapter` is for the
+  top-level sections of long pages, and panels and cards keep `.bt-heading`.
+- **Every feature wordmark gets its own hover "power-on" when it's ported.** Each builds on
+  `.bt-wordmark--power` (letters lighting one by one) and adds its icon's moment: Bug
+  Zapper's bolt crackles, Cloud Stash's cloud rains, Feature Lab's flask bubbles. The icons
+  rest when not hovered. `features/` isn't touched until each port.

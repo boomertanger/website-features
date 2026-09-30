@@ -3,6 +3,8 @@
 // (docs/design/mockups/arcade-info.html), adjusted per arcade-step1.md §3: for visitors
 // "Enter the Arcade" and "Join free" open the Join dialog; for members "Enter the Arcade"
 // goes to /arcade and Join free hides. "Try Tap the Splat" scrolls to the footer game.
+// The side menu is the kit's .bt-toc progress rail (shared/ui/toc.js) and each section
+// opens with a numbered .bt-chapter heading.
 // No Firestore reads (§3), so the hero has no live counts, and nothing claims the v2
 // Workshop is open (it opens in build step 3).
 import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
@@ -22,25 +24,29 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
 ---
 <ArcadeLayout title="How the Boom Arcade works" description="Horror games, built with you: what's inside the Boom Arcade, how games are born and grow, and the rules every board follows." membersOnly={false} section="how">
   <div class="ai-wrap">
-    <nav class="ai-nav" aria-label="On this page">
-      {NAV.map(([id, label], i) => <a href={`#${id}`} class:list={[i === 0 && "is-on"]}>{label}</a>)}
+    <nav class="bt-toc ai-nav" aria-label="On this page">
+      <span class="bt-toc-rail" aria-hidden="true"></span><span class="bt-toc-fill" aria-hidden="true"></span>
+      {NAV.map(([id, label]) => <a href={`#${id}`}>{label}</a>)}
     </nav>
     <div class="ai-main">
       <section class="ai-hero" aria-labelledby="h-hero">
         <span class="ai-kicker">Boom Arcade</span>
-        <h1 class="bt-title" id="h-hero">Horror games, built with you</h1>
+        <h1 class="bt-title bt-title--hero" id="h-hero">Horror games, built with you</h1>
         <p>Horror point-and-click puzzle games for members. Chase the leaderboards and help decide what gets built next. Every game grows version by version, shaped by the people who play it. Not a member yet? Try Tap the Splat free.</p>
         <div class="ai-acts">
           <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Enter the Arcade</a>
           <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/arcade">Enter the Arcade</a>
           <a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
-          <button type="button" class="bt-btn bt-btn--ghost" data-play-now>Try Tap the Splat</button>
+          <button type="button" class="bt-btn bt-btn--secondary" data-play-now>Try Tap the Splat</button>
         </div>
       </section>
 
       <section class="ai-sec" id="s-inside" aria-labelledby="h-inside">
-        <h2 class="bt-heading" id="h-inside">What's inside</h2>
-        <p class="ai-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-inside">What's inside</h2>
+          <p class="bt-chapter-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p>
+        </header>
         <div class="ai-grid">
           <div class="bt-card"><span class="ai-ic" aria-hidden="true">🕹</span><h3 class="bt-card-title">Games</h3><p>Horror point-and-click puzzle games you play in your browser. Pick a version and go.</p><span class="ai-who">Members only · Tap the Splat is free for everyone</span></div>
           <div class="bt-card"><span class="ai-ic" aria-hidden="true">🏆</span><h3 class="bt-card-title">Leaderboards</h3><p>Fastest finished runs for every game, per version, with separate Desktop and Mobile boards. Weekly and all-time.</p><span class="ai-who">Members appear on the boards</span></div>
@@ -50,8 +56,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-born" aria-labelledby="h-born">
-        <h2 class="bt-heading" id="h-born">How a game is born</h2>
-        <p class="ai-lede">From a pitch in the Arcade Studio to a game you can play.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-born">How a game is born</h2>
+          <p class="bt-chapter-lede">From a pitch in the Arcade Studio to a game you can play.</p>
+        </header>
         <ol class="ai-track">
           <li><b>Pitch</b><span>A member with a gamer badge pitches a new game in the Studio.</span></li>
           <li><b>Community vote</b><span>Members vote and discuss. The best pitches rise.</span></li>
@@ -63,8 +72,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-grow" aria-labelledby="h-grow">
-        <h2 class="bt-heading" id="h-grow">How a game grows</h2>
-        <p class="ai-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page. Tap a stage.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-grow">How a game grows</h2>
+          <p class="bt-chapter-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page. Tap a stage.</p>
+        </header>
         <div class="ai-cycle">
           <div class="ai-cycle-top"><b>Tap the Splat · v2</b><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span></div>
           <div class="ai-steps" role="tablist" aria-label="Version cycle stages">
@@ -83,8 +95,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-versions" aria-labelledby="h-versions">
-        <h2 class="bt-heading" id="h-versions">Versions and patches</h2>
-        <p class="ai-lede">You'll always pick a version like v1 or v2. Behind the scenes, fixes are numbered too, so nothing gets lost.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">04 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-versions">Versions and patches</h2>
+          <p class="bt-chapter-lede">You'll always pick a version like v1 or v2. Behind the scenes, fixes are numbered too, so nothing gets lost.</p>
+        </header>
         <div class="ai-ver">
           <div class="bt-card"><span class="ai-tag ai-tag--gold">v1</span><h3 class="bt-card-title">Version</h3><p>A full release of a game. What you pick to play, and what every leaderboard tracks. New versions add or change real things.</p></div>
           <div class="bt-card"><span class="ai-tag">v1.8</span><h3 class="bt-card-title">Patch</h3><p>A fix after release: a bug, a sound, a glitch. You'll still see "v1"; the patch number is kept with every run for the record.</p></div>
@@ -94,8 +109,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-roles" aria-labelledby="h-roles">
-        <h2 class="bt-heading" id="h-roles">Who does what</h2>
-        <p class="ai-lede">Everyone plays. Some members help steer.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">05 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-roles">Who does what</h2>
+          <p class="bt-chapter-lede">Everyone plays. Some members help steer.</p>
+        </header>
         <div class="ai-roles">
           <div class="ai-role"><span class="ai-av" aria-hidden="true">🎮</span><div><b>Players</b><span>Play, post on the Draft board, vote on ideas, playtest betas.</span></div><span class="bt-badge bt-badge--gray">All members</span></div>
           <div class="ai-role"><span class="ai-av" aria-hidden="true">💡</span><div><b>Pitchers</b><span>Pitch brand-new games in the Arcade Studio.</span></div><span class="bt-badge bt-badge--blue">Gamer badge</span></div>
@@ -106,8 +124,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-badges" aria-labelledby="h-badges">
-        <h2 class="bt-heading" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
-        <p class="ai-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">06 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
+          <p class="bt-chapter-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
+        </header>
         <div class="ai-badges">
           <div class="ai-bdg" style="--c:var(--bt-red)"><div class="ai-medal" aria-hidden="true">🩸</div><b>Splat finisher</b><span>Finished Tap the Splat v1</span><div class="ai-unl">Unlocks pitching</div></div>
           <div class="ai-bdg" style="--c:var(--bt-gold)"><div class="ai-medal" aria-hidden="true">🏆</div><b>Top 10 · v1</b><span>Reached a v1 top 10</span><div class="ai-unl">Contest entry</div></div>
@@ -117,8 +138,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-fair" aria-labelledby="h-fair">
-        <h2 class="bt-heading" id="h-fair">Fair play</h2>
-        <p class="ai-lede">The rules every game and leaderboard follows.</p>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">07 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-fair">Fair play</h2>
+          <p class="bt-chapter-lede">The rules every game and leaderboard follows.</p>
+        </header>
         <div class="ai-rules">
           <div><span class="ai-n" aria-hidden="true">⏱</span><div><b>Time is the score</b><span>Fastest finished run wins. Miss-clicks add penalty seconds.</span></div></div>
           <div><span class="ai-n" aria-hidden="true">🏁</span><div><b>Only finished runs by members count</b><span>Close calls don't make the board, but they do count as runs played.</span></div></div>
@@ -130,7 +154,10 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-words" aria-labelledby="h-words">
-        <h2 class="bt-heading" id="h-words">Glossary</h2>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-words">Glossary</h2>
+        </header>
         <dl class="ai-gloss">
           <div><dt>Boom Arcade</dt><dd>The whole section: all games, leaderboards, the Studio and Workshops.</dd></div>
           <div><dt>Arcade Studio</dt><dd>Where new games are pitched and greenlit.</dd></div>
@@ -148,7 +175,10 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec ai-faq" id="s-faq" aria-labelledby="h-faq">
-        <h2 class="bt-heading" id="h-faq">FAQ</h2>
+        <header class="bt-chapter">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">09 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-faq">FAQ</h2>
+        </header>
         <details><summary>Do I need an account to play?</summary><p>Tap the Splat is free for everyone, as a taste of the Arcade. Every other game is for members: join free to play them, save your runs, get on the leaderboards, vote on ideas and earn badges.</p></details>
         <details><summary>Why doesn't my time show on the leaderboard?</summary><p>Only finished runs by members with a verified email count, and each device has its own board. Check you're looking at the right version and at Desktop or Mobile.</p></details>
         <details><summary>How do I become a Keeper?</summary><p>Keepers are chosen from mods who volunteer when a new version's cycle opens. Keep being helpful in the Workshop; that's how mods get noticed.</p></details>
