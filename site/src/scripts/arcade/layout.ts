@@ -6,8 +6,10 @@
 import { whenReady, sendVerification } from "../../lib/auth";
 import { playNow } from "./play-now";
 import { initSegNavs } from "../../../../shared/ui/seg-nav.js";
+import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
 
-initSegNavs();   // the top bar's Games / Leaderboards / How it works
+initSegNavs();          // the top bar's Games / Leaderboards / How it works
+initPowerWordmarks();   // touch screens: the BOOMARCADE gold shine plays once as it comes into view
 
 const GATE_KEY = "bt-arcade-join-shown";
 

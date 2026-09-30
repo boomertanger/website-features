@@ -225,13 +225,19 @@ the pointer inside the card; `shared/ui/spotlight.js` (`initSpotlights(root)`) s
 **Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
 ≤ 640px), with the same gradient.
 
-**Wordmark power-on: `.bt-wordmark--power`** (E3), a feature wordmark's hover and focus
-effect: `.bt-wordmark-text` letters wrapped in `span.bt-wm-lt` with `--i` numbered across
-both words; they light one by one (45ms apart) with a lamp-yellow flash that settles to
-white (`--bt-wm-glow`) and, in `.bt-wordmark-accent`, neon purple. Each feature adds its own
-icon effect under `.bt-wordmark--power:is(:hover, :focus-visible)`; the Boom Arcade
-joystick (`.bt-ba-icon`) turns its lamp fully on and wiggles the stick once, and is still at
-rest (no idle loop). Reduced motion: the letters just change colour; the stick stays still.
+**Wordmark power-on: `.bt-wordmark--power`**, a feature wordmark's hover and focus effect,
+word-level (no per-letter spans): `.bt-wordmark-text` > the first word + `.bt-wordmark-accent`.
+The accent word is filled with a moving gradient: it rests in its colour, and on
+`:is(:hover, :focus-visible, .is-lit)` it switches to its lit colour while one sheen crosses
+it (the gradient move `.bt-logo-w2`, TANGER, makes on the main logo); the first word gets the
+faint white glow (`--bt-wm-glow`). Because the accent is gradient-filled its glow is a
+`filter: drop-shadow`, never a text-shadow (that would paint over the fill). Each feature adds
+its icon effect under the same selector: the Boom Arcade joystick (`.bt-ba-icon`) turns its
+lamp fully on and wiggles the stick once, and rests otherwise. Boom Arcade's is "Gold shine"
+(`docs/design/mockups/boomarcade-electric-gold.html`, option 5): ARCADE rests purple and lights
+gold (`--bt-title`). Touch screens (`hover: none`) play it once when the wordmark first
+scrolls into view (`shared/ui/wordmark.js`, `initPowerWordmarks()`, adds `.is-lit` for 1.8 s).
+Reduced motion: the colour change and glow only, with no sheen and no wiggle.
 
 **Chips:** `.bt-chip` (+ `.is-active`, `aria-pressed`), `.bt-chip--small`. Inside
 `.bt-sortbar`, active chips are purple-tinted.
@@ -900,10 +906,14 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   gradient heading (plus `.bt-title--hero` on hero banners), set in Inter 900 (the hero with a
   tight 1.05 line-height, as in the mockup; the site loads Inter up to 900); `.bt-chapter` is for the
   top-level sections of long pages, and panels and cards keep `.bt-heading`.
-- **Every feature wordmark gets its own hover "power-on" when it's ported.** Each builds on
-  `.bt-wordmark--power` (letters lighting one by one) and adds its icon's moment: Bug
-  Zapper's bolt crackles, Cloud Stash's cloud rains, Feature Lab's flask bubbles. The icons
-  rest when not hovered. `features/` isn't touched until each port.
+- **The Arcade wordmark rests purple and lights gold on hover** ("Gold shine"): ARCADE switches
+  to `--bt-title` as one sheen crosses it, deliberately echoing TANGER on the main logo, so
+  the two logos on the site share one hover. It replaces the letter-by-letter power-on.
+- **Every feature wordmark gets its own hover "power-on" when it's ported**, built on
+  `.bt-wordmark--power`: a word-level shine on its accent word (its own lit colour, one sheen
+  crossing) plus its icon's moment: Bug Zapper's bolt crackles, Cloud Stash's cloud rains,
+  Feature Lab's flask bubbles. The icons rest when not hovered. `features/` isn't touched
+  until each port.
 - **Chapter headings: D2 is the default.** `.bt-chapter` (the numbered eyebrow) is the
   standard for long pages. How it works is trying D4 (`.bt-chapter--ghost`, numerals from
   `data-n`). Terms and Privacy use D2 numbering through `.bt-prose--chapters`. D3

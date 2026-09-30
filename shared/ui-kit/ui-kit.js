@@ -786,10 +786,9 @@ function kitBoard({ mini = false, me = 0, pin = false, n = 5 } = {}) {
 }
 // ---------- Navigation, headings and wordmark power-on (docs/design/mockups/arcade-styling-ideas.html) ----------
 
-/** The Boom Arcade wordmark with the .bt-wordmark--power hover (letters numbered across both words). */
-function arcadeMark() {
-  const lt = (w, from) => [...w].map((ch, i) => `<span class="bt-wm-lt" style="--i:${from + i}">${ch}</span>`).join("");
-  return `<a class="bt-wordmark bt-wordmark--power" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${BA_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">${lt("BOOM", 0)}<span class="bt-wordmark-accent">${lt("ARCADE", 4)}</span></span></a>`;
+/** The Boom Arcade wordmark with the .bt-wordmark--power hover (Gold shine). `lit` freezes it lit. */
+function arcadeMark(lit = false) {
+  return `<a class="bt-wordmark bt-wordmark--power${lit ? " is-lit" : ""}" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${BA_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span></a>`;
 }
 const KIT_TOC = ["What's inside", "How games are born", "How games grow", "Versions", "Roles", "Badges", "Fair play"];
 const kitToc = (at) => `<nav class="bt-toc" aria-label="On this page (demo)" data-kit-toc="${at}"><span class="bt-toc-rail" aria-hidden="true"></span><span class="bt-toc-fill" aria-hidden="true"></span>${KIT_TOC.map((t, i) => `<a href="#kit-toc-${i}">${t}</a>`).join("")}</nav>`;
@@ -828,8 +827,8 @@ function navHtml() {
       <div class="bt-card bt-spotlight bt-spotlight--gold"><span class="bt-icon-tile--lg bt-icon-tile--soon" aria-hidden="true">💡</span><h3>Arcade Studio <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h3><p class="kit-p">A plain card: no lift, no arrow.</p></div>
     </div>
 
-    <p class="kit-sub">Wordmark power-on: .bt-wordmark--power (E3). Hover or focus: the letters light one by one (45ms apart) with a yellow flash, the lamp comes fully on, the stick wiggles once. At rest the joystick is still.</p>
-    <div class="kit-row">${arcadeMark()}</div>
+    <p class="kit-sub">Wordmark power-on: .bt-wordmark--power, Gold shine. Hover or focus: ARCADE switches from the resting purple to gold with a warm glow while one sheen crosses it (the same move as TANGER on the main logo), BOOM gets a faint white glow, the lamp comes fully on and the stick wiggles once. Touch screens play it once as it scrolls into view. Reduced motion: gold with no sheen and no wiggle. Left: at rest (hover it); right: frozen lit (.is-lit).</p>
+    <div class="kit-row">${arcadeMark()}${arcadeMark(true)}</div>
   </section>`;
 }
 
