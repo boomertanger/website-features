@@ -11,6 +11,7 @@
 // Workshop is open (it opens in build step 3).
 import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
 
 const JOIN_TITLE = "Join to enter the Arcade";
 const STAGES = [
@@ -22,6 +23,24 @@ const STAGES = [
   ["Playtest", "green", "Members play the beta from the version picker and report bugs or balance problems.", "All members"],
   ["Release", "lime", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"],
   ["Thanks and badges", "lime", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"],
+];
+// Section 1, What's inside (option A "Stage", docs/design/mockups/how-it-works-round-2.html):
+// doors link somewhere (Games, Leaderboards); Soon parts are plain cards.
+const PARTS = [
+  { k: "games", ic: "🕹", t: "Games", d: "Horror point-and-click puzzle games you play in your browser. Pick a version and go.", who: "Members only · Tap the Splat is free for everyone", href: "/arcade", go: "Enter the Arcade" },
+  { k: "lb", ic: "🏆", t: "Leaderboards", d: "Fastest finished runs for every game, per version, with separate Desktop and Mobile boards. Weekly and all-time.", who: "Members appear on the boards", href: "/arcade/leaderboards", go: "See the boards" },
+  { k: "studio", ic: "💡", t: "Arcade Studio", d: "Where new games are born. Pitch an idea for a brand-new game, vote on others, and watch the greenlit ones get built.", who: "Pitching unlocks with a gamer badge" },
+  { k: "shop", ic: "🛠", t: "Workshops", d: "Each game's own space for its next version: the Draft board for ideas and talk, the Keeper, and the version cycle.", who: "All members can post and vote" },
+];
+// Section 4, Versions and patches (option A "Linked"): the line's stops (label, kind, % along,
+// caption) and the three cartridges. Hovering a card lights its stops; a stop lifts its card.
+const STOPS: [string, "ver" | "patch" | "bal", number, string?][] = [["v1", "ver", 3, "Version"], ["v1.1", "patch", 15], ["v1.2", "patch", 23], ["v1.3", "patch", 31], ["v1.4 ⚖", "bal", 44, "Balance patch"], ["v1.5", "patch", 57], ["v1.6", "patch", 65], ["v1.7", "patch", 73], ["v1.8", "patch", 83, "Patch"], ["v2", "ver", 97, "New version"]];
+let patchIndex = 0;
+const STOP_ITEMS = STOPS.map(([lab, kind, at, cap]) => ({ lab, kind, at, cap, i: kind === "patch" ? patchIndex++ : 0 }));
+const CARTS = [
+  { kind: "ver", v: "v1", type: "Release", t: "Version", d: "A full release of a game. What you pick to play, and what every leaderboard tracks. New versions add or change real things." },
+  { kind: "patch", v: "v1.8", type: "Fix", t: "Patch", d: "A fix after release: a bug, a sound, a glitch. You'll still see \"v1\"; the patch number is kept with every run for the record." },
+  { kind: "bal", v: "v1.4", type: "Balance ⚖", t: "Balance patch", d: "A fix that changes how hard the game is (a faster fuse, a longer window). The board either restarts or shows a note, so times stay fair." },
 ];
 const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["s-grow", "How games grow"], ["s-versions", "Versions"], ["s-roles", "Roles"], ["s-badges", "Badges"], ["s-fair", "Fair play"], ["s-words", "Glossary"], ["s-faq", "FAQ"]];
 ---
@@ -46,11 +65,29 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-inside">What's inside</h2>
           <p class="bt-chapter-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p>
         </header>
-        <div class="ai-grid">
-          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🕹</span><h3 class="bt-card-title">Games</h3><p>Horror point-and-click puzzle games you play in your browser. Pick a version and go.</p><span class="ai-who">Members only · Tap the Splat is free for everyone</span></div>
-          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🏆</span><h3 class="bt-card-title">Leaderboards</h3><p>Fastest finished runs for every game, per version, with separate Desktop and Mobile boards. Weekly and all-time.</p><span class="ai-who">Members appear on the boards</span></div>
-          <div class="bt-card"><span class="ai-ic" aria-hidden="true">💡</span><h3 class="bt-card-title">Arcade Studio</h3><p>Where new games are born. Pitch an idea for a brand-new game, vote on others, and watch the greenlit ones get built.</p><span class="ai-who">Pitching unlocks with a gamer badge</span></div>
-          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🛠</span><h3 class="bt-card-title">Workshops</h3><p>Each game's own space for its next version: the Draft board for ideas and talk, the Keeper, and the version cycle.</p><span class="ai-who">All members can post and vote</span></div>
+        <div class="ai-stage">
+          {PARTS.map((p) => {
+            const Tag = p.href ? "a" : "div";
+            return (
+              <Tag class:list={["bt-card ai-part bt-spotlight", p.href ? "bt-card--door" : "bt-spotlight--gold is-soon"]} href={p.href}>
+                <div class={`ai-scene ai-scene--${p.k}`} aria-hidden="true">
+                  {p.k === "games" && <><img src="/images/blood-splatter.webp" alt="" width="500" height="286" decoding="async" loading="lazy" /><Mascot decorative /></>}
+                  {p.k === "lb" && <><div class="ai-pod"><i>2</i><i>1</i><i>3</i></div><span class="ai-pod-time">0:36.94</span></>}
+                  {p.k === "studio" && <div class="ai-pitch"><div>🏚 Haunted elevator<span class="ai-votes">▲<b>48</b><em>49</em></span></div><div>🎎 The dollhouse<span class="ai-votes">▲<b>31</b></span></div></div>}
+                  {p.k === "shop" && <div class="ai-kb"><div><b>Ideas</b><span></span></div><div><b>Voting</b><span></span></div><div><b>Planned</b><span class="done"></span></div><i class="ai-kb-mover"></i></div>}
+                </div>
+                <span class:list={["bt-icon-tile--lg ai-part-ic", !p.href && "bt-icon-tile--soon"]} aria-hidden="true">{p.ic}</span>
+                <div class="ai-part-copy">
+                  <h3>{p.t}{!p.href && <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>}</h3>
+                  <p>{p.d}</p>
+                  <div class="ai-part-foot">
+                    <span class="ai-who-chip">{p.who}</span>
+                    {p.go && <span class="bt-card-go">{p.go}<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg></span>}
+                  </div>
+                </div>
+              </Tag>
+            );
+          })}
         </div>
       </section>
 
@@ -99,12 +136,25 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-versions">Versions and patches</h2>
           <p class="bt-chapter-lede">You'll always pick a version like v1 or v2. Behind the scenes, fixes are numbered too, so nothing gets lost.</p>
         </header>
-        <div class="ai-ver">
-          <div class="bt-card"><span class="ai-tag ai-tag--gold">v1</span><h3 class="bt-card-title">Version</h3><p>A full release of a game. What you pick to play, and what every leaderboard tracks. New versions add or change real things.</p></div>
-          <div class="bt-card"><span class="ai-tag">v1.8</span><h3 class="bt-card-title">Patch</h3><p>A fix after release: a bug, a sound, a glitch. You'll still see "v1"; the patch number is kept with every run for the record.</p></div>
-          <div class="bt-card"><span class="ai-tag ai-tag--pink">v1.4 ⚖</span><h3 class="bt-card-title">Balance patch</h3><p>A fix that changes how hard the game is (a faster fuse, a longer window). The board either restarts or shows a note, so times stay fair.</p></div>
+        <div class="ai-linked" data-hl="">
+          <div class="ai-ln" role="img" aria-label="Timeline: v1 released, then patches v1.1 to v1.8, with a balance patch at v1.4, then v2">
+            <span class="ai-ln-bar"></span><span class="ai-ln-seg" style="left:15%;width:68%"></span>
+            {STOP_ITEMS.map((st) => (
+              <div class={`ai-st ai-st--${st.kind}`} data-kind={st.kind} style={`left:${st.at}%;--i:${st.i}`}>
+                <span class="ai-st-lab">{st.lab}</span><span class="ai-st-dot"></span><span class="ai-st-ring"></span>{st.cap && <span class="ai-st-cap">{st.cap}</span>}
+              </div>
+            ))}
+          </div>
+          <div class="ai-ct-grid">
+            {CARTS.map((c) => (
+              <div class={`ai-ct ai-ct--${c.kind}`} data-kind={c.kind}>
+                <div class="ai-ct-label"><span class="ai-ct-v">{c.v}</span><span class="ai-ct-type">{c.type}</span></div>
+                <div class="ai-ct-body"><h3>{c.t}</h3><p>{c.d}</p></div>
+                <div class="ai-ct-grip" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+              </div>
+            ))}
+          </div>
         </div>
-        <div class="ai-ex"><span>Example:</span><code>v1</code><span>released →</span><code>v1.1 … v1.8</code><span>bug fixes →</span><code>v2</code><span>new version with its own leaderboards</span></div>
       </section>
 
       <section class="ai-sec" id="s-roles" aria-labelledby="h-roles">

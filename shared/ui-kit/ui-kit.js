@@ -11,6 +11,7 @@ import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
 import { BA_ICON, ttsLogoHtml } from "../ui/arcade.js";
 import { initSegNav } from "../ui/seg-nav.js";
 import { initToc } from "../ui/toc.js";
+import { initSpotlights } from "../ui/spotlight.js";
 
 const KIT_VERSION = "dev";
 
@@ -821,6 +822,12 @@ function navHtml() {
     <p class="kit-sub">Hero title: .bt-title.bt-title--hero (40px, 28px at 640px and below). Page titles stay the only gradient heading.</p>
     <div class="kit-stack"><h1 class="bt-title bt-title--hero">Horror games, built with you</h1><h1 class="bt-title">Page title (for comparison)</h1></div>
 
+    <p class="kit-sub">Door card: .bt-card.bt-card--door (a card that IS a link), with .bt-card-go, .bt-icon-tile--lg and .bt-spotlight. Hover or focus: it lifts 3px with a purple border and glow, the arrow slides, the icon tilts, and a soft glow follows the pointer (pointer devices only). Plain cards (Soon) stay put, with the gold tile and a faint gold spotlight.</p>
+    <div class="kit-grid-2">
+      <a class="bt-card bt-card--door bt-spotlight" href="#"><span class="bt-icon-tile--lg" aria-hidden="true">🕹</span><h3>Games</h3><p class="kit-p">A card that goes somewhere.</p><span class="bt-card-go">Enter the Arcade<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
+      <div class="bt-card bt-spotlight bt-spotlight--gold"><span class="bt-icon-tile--lg bt-icon-tile--soon" aria-hidden="true">💡</span><h3>Arcade Studio <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h3><p class="kit-p">A plain card: no lift, no arrow.</p></div>
+    </div>
+
     <p class="kit-sub">Wordmark power-on: .bt-wordmark--power (E3). Hover or focus: the letters light one by one (45ms apart) with a yellow flash, the lamp comes fully on, the stick wiggles once. At rest the joystick is still.</p>
     <div class="kit-row">${arcadeMark()}</div>
   </section>`;
@@ -906,6 +913,7 @@ function init() {
   initRowSpotlight(mount);
   mount.querySelectorAll("[data-kit-seg]").forEach((n) => initSegNav(n));
   mount.querySelectorAll("[data-kit-toc]").forEach((n) => initToc(n, { observe: false }).set(+n.dataset.kitToc));
+  initSpotlights(mount);
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {

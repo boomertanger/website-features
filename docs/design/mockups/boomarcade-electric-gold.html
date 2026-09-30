@@ -1,3 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>BOOMARCADE: Electric and Gold, no letter animation</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: dark; }
+html { background: #0f0f0f; }
+body { margin: 0; background: #0f0f0f; padding: 24px 16px 80px; }
+</style>
+<style>
+/* ===== shared/bt-ui.css (dev 1c775c1) ===== */
 /* shared/bt-ui.css — Boomertanger shared UI kit
    Loaded ONCE, site-wide, from Squarespace Header Code Injection.
    Every rule is scoped under .bt-root, so plain Squarespace pages are untouched.
@@ -1040,38 +1057,6 @@
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wordmark-accent .bt-wm-lt { color: var(--bt-neon); text-shadow: 0 0 12px rgba(var(--bt-primary-rgb), 0.9); }
 }
 
-/* ================= Door cards, big icon tiles, spotlight =================
-   From docs/design/mockups/how-it-works-round-2.html (section 1 "Stage").
-   .bt-card--door       a card that IS a link (<a class="bt-card bt-card--door">): on hover and
-                        focus it lifts 3px with a purple border and glow, and its .bt-card-go
-                        arrow link slides. Only for cards that go somewhere; plain cards stay put.
-   .bt-card-go          the arrow link line inside a door ("Enter the Arcade" + arrow svg).
-   .bt-icon-tile--lg    the 64px glowing icon tile: purple for live things, --soon gold-tinted.
-   .bt-spotlight        a soft glow that follows the pointer inside a card (purple; --gold faint
-                        gold for Soon cards). Behavior: shared/ui/spotlight.js sets --mx / --my;
-                        pointer devices only, nothing on touch or under reduced motion. */
-.bt-root:not(#_) .bt-card--door { color: inherit; text-decoration: none; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s; }
-.bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) { transform: translateY(-3px); border-color: rgba(var(--bt-primary-rgb), 0.7); box-shadow: 0 14px 34px var(--bt-lift-shadow), 0 0 0 1px rgba(var(--bt-primary-rgb), 0.35), 0 0 30px var(--bt-primary-glow); text-decoration: none; }
-.bt-root:not(#_) .bt-card--door:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 3px; }
-.bt-root:not(#_) .bt-card-go { display: inline-flex; align-items: center; gap: 6px; color: var(--bt-primary-soft); font-size: var(--bt-text-md); font-weight: 700; }
-.bt-root:not(#_) .bt-card-go svg { width: 14px; height: 14px; transition: transform 0.2s ease; }
-.bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) .bt-card-go svg { transform: translateX(4px); }
-
-.bt-root:not(#_) .bt-icon-tile--lg { flex: none; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 20px; font-size: 32px; background: radial-gradient(circle at 35% 28%, rgba(var(--bt-primary-rgb), 0.55), rgba(var(--bt-primary-rgb), 0.14) 72%); box-shadow: inset 0 0 0 1px rgba(var(--bt-primary-rgb), 0.4), 0 8px 24px var(--bt-lift-shadow); transition: transform 0.35s cubic-bezier(.3, .7, .2, 1), box-shadow 0.3s; }
-.bt-root:not(#_) .bt-icon-tile--lg.bt-icon-tile--soon { background: radial-gradient(circle at 35% 28%, rgba(var(--bt-gold-rgb), 0.3), rgba(var(--bt-gold-rgb), 0.06) 72%); box-shadow: inset 0 0 0 1px rgba(var(--bt-gold-rgb), 0.3), 0 8px 24px var(--bt-lift-shadow); }
-.bt-root:not(#_) :is(.bt-card--door, .bt-spotlight):hover .bt-icon-tile--lg { transform: translateY(-3px) rotate(-6deg) scale(1.06); }
-
-.bt-root:not(#_) .bt-spotlight { position: relative; }
-.bt-root:not(#_) .bt-spotlight::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--bt-primary-rgb), 0.16), transparent 60%); }
-.bt-root:not(#_) .bt-spotlight.bt-spotlight--gold::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--bt-gold-rgb), 0.09), transparent 60%); }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .bt-root:not(#_) .bt-spotlight:hover::before { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) :is(.bt-card--door, .bt-icon-tile--lg, .bt-card-go svg) { transition: none; }
-  .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible), .bt-root:not(#_) :is(.bt-card--door, .bt-spotlight):hover .bt-icon-tile--lg, .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) .bt-card-go svg { transform: none; }
-}
-
 /* ================= BEGIN DASHBOARD COMPONENTS =================
    Added for dashboard-style features (Cloud Stash, Alert Center).
    Self-contained block: nothing above depends on it. */
@@ -1330,7 +1315,6 @@
   /* Navigation and wordmark power-on (docs/design/mockups/arcade-styling-ideas.html). */
   --bt-seg-shadow: rgba(0, 0, 0, 0.4);                    /* under the seg-nav's lit pill */
   --bt-wm-glow: 0 0 8px rgba(255, 255, 255, 0.35);        /* a lit wordmark letter */
-  --bt-lift-shadow: rgba(0, 0, 0, 0.5);                   /* under a lifted card or icon tile */
   /* Sign-in providers and linked platforms: their own brand colors (tiles only). */
   --bt-brand-google: #4285f4;
   --bt-brand-google-tile: #fff;
@@ -2343,3 +2327,93 @@
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* ================= END Site shell ================= */
+
+</style>
+<style>
+.bt-root.page:not(#_) { max-width: 1100px; border-radius: 0; overflow: visible; background: transparent; }
+.bt-root:not(#_) .pg-intro { max-width: 78ch; padding: 4px 0 24px; }
+.bt-root:not(#_) .pg-intro p { color: var(--bt-text-muted); line-height: var(--bt-leading-body); margin-top: 12px; }
+.bt-root:not(#_) .opt { border: 1px solid var(--bt-border); background: var(--bt-bg); border-radius: var(--bt-radius-xl); padding: 16px; margin-bottom: 14px; }
+.bt-root:not(#_) .opt.is-rec { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary), 0 0 24px var(--bt-primary-glow); }
+.bt-root:not(#_) .opt-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+.bt-root:not(#_) .opt-n { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: var(--bt-text-md); font-weight: 800; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); }
+.bt-root:not(#_) .tag { font-size: var(--bt-text-xs); font-weight: 700; border-radius: var(--bt-radius-full); padding: 2px 8px; }
+.bt-root:not(#_) .tag--rec { color: var(--bt-primary-soft); background: var(--bt-primary-bg); border: 1px solid var(--bt-primary); }
+.bt-root:not(#_) .tag--now { color: var(--bt-text-faint); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+@container bt (max-width: 760px) { .bt-root:not(#_) .row { grid-template-columns: 1fr; } }
+.bt-root:not(#_) .cell { position: relative; height: 110px; border-radius: var(--bt-radius-lg); background: var(--bt-surface); border: 1px solid var(--bt-border); display: grid; place-items: center; }
+.bt-root:not(#_) .cell--bar { background: var(--bt-bg); border-color: var(--bt-border); }
+.bt-root:not(#_) .cell .cap { position: absolute; top: 8px; left: 10px; font-size: var(--bt-text-2xs); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .note { margin: 12px 2px 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; }
+.bt-root:not(#_) .why { margin-top: 20px; padding: 16px 18px; border: 1px solid var(--bt-primary); background: var(--bt-primary-bg); border-radius: var(--bt-radius-lg); line-height: var(--bt-leading-body); }
+.bt-root:not(#_) .why p { margin: 0; } .bt-root:not(#_) .why p + p { margin-top: 8px; }
+.bt-root:not(#_) .ctx { display: flex; align-items: center; justify-content: space-between; gap: 16px; width: calc(100% - 24px); padding: 0 12px; }
+.bt-root:not(#_) .ctx-nav { display: flex; gap: 14px; font-size: var(--bt-text-md); color: var(--bt-text-muted); font-weight: 600; }
+
+/* ===== Word-level variants: no letter animation; the joystick still moves ===== */
+.bt-root:not(#_) .wm:hover { text-decoration: none; }
+.bt-root:not(#_) .wm .bt-wordmark-text { overflow: visible; }
+.bt-root:not(#_) .wm .bt-wordmark-accent { transition: color .3s ease, text-shadow .3s ease; }
+.bt-root:not(#_) .wm .w-boom { transition: text-shadow .3s ease; }
+/* lit = hovered (.live) or frozen (.is-lit) */
+.bt-root:not(#_) .wm:is(.is-lit, .live:hover) .w-boom { text-shadow: var(--bt-wm-glow); }
+.bt-root:not(#_) .wm:is(.is-lit, .live:hover) .bt-wordmark-accent { color: var(--lit); text-shadow: var(--lit-sh); }
+.bt-root:not(#_) .wm:is(.is-lit, .live:hover) .bt-ba-icon .lamp { opacity: 1; filter: drop-shadow(0 0 5px rgba(var(--bt-lamp-rgb), 1)); }
+.bt-root:not(#_) .wm:is(.is-lit, .live:hover) .bt-ba-icon .halo { opacity: 1; fill: rgba(var(--bt-lamp-rgb), .45); }
+.bt-root:not(#_) .wm.live:hover .bt-ba-icon .stick { animation: bt-ba-wiggle-once .9s ease-in-out; }
+/* the two colours */
+.bt-root:not(#_) .elec { --lit: var(--bt-primary-hover); --lit-rgb: var(--bt-primary-rgb); --lit-sh: 0 0 1px rgba(var(--bt-primary-rgb), .9), 0 0 12px rgba(var(--bt-primary-rgb), .55), 0 0 30px rgba(var(--bt-primary-rgb), .3); }
+.bt-root:not(#_) .gold { --lit: var(--bt-title); --lit-rgb: var(--bt-gold-rgb); --lit-sh: 0 0 12px rgba(var(--bt-gold-rgb), .5), 0 0 28px rgba(var(--bt-gold-rgb), .25); }
+.bt-root:not(#_) .elec { --lit-f: drop-shadow(0 0 6px rgba(var(--bt-primary-rgb), .7)) drop-shadow(0 0 16px rgba(var(--bt-primary-rgb), .35)); }
+.bt-root:not(#_) .gold { --lit-f: drop-shadow(0 0 6px rgba(var(--bt-gold-rgb), .55)) drop-shadow(0 0 16px rgba(var(--bt-gold-rgb), .25)); }
+/* gradient-filled words glow with a filter (a text-shadow would paint over the fill) */
+.bt-root:not(#_) :is(.shine, .charge) .bt-wordmark-accent { text-shadow: none !important; filter: drop-shadow(0 0 0 transparent); }
+.bt-root:not(#_) :is(.shine, .charge):is(.is-lit, .live:hover) .bt-wordmark-accent { filter: var(--lit-f); }
+/* Fade: the word simply switches on */
+/* Shine: after it switches on, one sheen crosses the word (like TANGER in the site logo) */
+.bt-root:not(#_) .shine .bt-wordmark-accent { background: linear-gradient(100deg, var(--c) 36%, var(--bt-logo-shine) 47%, var(--bt-logo-shine) 53%, var(--c) 64%) 100% 0 / 260% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: background-position 1100ms cubic-bezier(.4,0,.2,1), filter .3s ease; --c: var(--bt-primary); }
+.bt-root:not(#_) .shine:is(.is-lit, .live:hover) .bt-wordmark-accent { --c: var(--lit); background-position: -20% 0; }
+/* Charge: the glow builds up from the lamp's side, as if the lamp powers the word */
+.bt-root:not(#_) .charge .bt-wordmark-accent { background: linear-gradient(90deg, var(--lit) 0 50%, var(--bt-primary) 50% 100%) 100% 0 / 200% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; transition: background-position .45s cubic-bezier(.5,0,.2,1), filter .3s ease .3s; }
+.bt-root:not(#_) .charge:is(.is-lit, .live:hover) .bt-wordmark-accent { background-position: 0 0; }
+/* Two-tone: BOOM warms to gold while ARCADE turns electric */
+.bt-root:not(#_) .duo:is(.is-lit, .live:hover) .w-boom { color: var(--bt-title); text-shadow: 0 0 12px rgba(var(--bt-gold-rgb), .45); transition: color .3s ease, text-shadow .3s ease; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .wm .bt-wordmark-accent, .bt-root:not(#_) .wm .w-boom { transition: none !important; }
+  .bt-root:not(#_) .wm.live:hover .bt-ba-icon .stick { animation: none; }
+}
+</style>
+</head>
+<body>
+<div class="bt-root page">
+  <header class="pg-intro">
+    <h1 class="bt-title">Electric and Gold</h1>
+    <p>No letter animation: the whole word changes at once. The joystick still wiggles and its lamp lights up. For each option: at rest, frozen lit, and live on the top bar's dark background (hover it).</p>
+  </header>
+  <div id="opts"></div>
+  <div class="why">
+    <p><b>Recommend 2, Electric shine.</b> ARCADE switches on to the bright purple and one sheen of light crosses it, exactly the way TANGER shines when you hover the main Boomertanger logo. The Arcade keeps its purple, and both logos on the site now "speak" the same hover. It's quick and plays once, so it never gets tiring in the nav.</p>
+    <p>If you'd rather have the warmth of gold, 5 Gold shine is that same move in TANGER's own colour, the closest link between the two brands. 6 Two-tone is the boldest: BOOM goes gold while ARCADE goes electric.</p>
+  </div>
+</div>
+<script>
+(function () {
+  const ICON = `<svg class="bt-ba-icon" viewBox="0 0 48 48" aria-hidden="true" focusable="false"><defs><radialGradient id="bt-ba-knob" cx="36%" cy="30%" r="72%"><stop offset="0" class="k0"/><stop offset=".35" class="k1"/><stop offset="1" class="k2"/></radialGradient></defs><path class="base" d="M10 31h28l5 7.5V41a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-2.5z"/><path class="top" d="M10 31h28l5 7.5H5z"/><circle class="halo" cx="31" cy="36" r="6"/><circle class="lamp" cx="31" cy="36" r="3.6"/><circle class="btn2" cx="38.2" cy="36.6" r="1.8"/><g class="stick"><ellipse class="boot" cx="17" cy="33.6" rx="5" ry="1.9"/><path class="shaft" d="M17 33V17"/><circle class="knob" cx="17" cy="13" r="7.2" fill="url(#bt-ba-knob)"/></g></svg>`;
+  let uid = 0;
+  const icon = () => ICON.replace(/bt-ba-knob/g, "k" + (++uid));
+  const wm = (cls) => `<a class="bt-wordmark wm ${cls}" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${icon()}</span><span class="bt-wordmark-text" aria-hidden="true"><span class="w-boom">BOOM</span><span class="bt-wordmark-accent">ARCADE</span></span></a>`;
+  const OPTS = [
+    ["1", "Electric fade", "ARCADE switches on to the bright purple with a crisp glow; BOOM gets a faint white glow. Nothing else moves.", "elec", ""],
+    ["2", "Electric shine", "Switches on to the bright purple, then one sheen of light crosses the word, the same move TANGER makes on the main logo.", "elec shine", "rec"],
+    ["3", "Electric charge", "The bright purple fills ARCADE from left to right, like the lamp is powering it up, then the glow blooms.", "elec charge", ""],
+    ["4", "Gold fade", "ARCADE switches on to gold with a warm glow. Nothing else moves.", "gold", ""],
+    ["5", "Gold shine", "Switches on to gold and a sheen crosses it: exactly TANGER's hover on the main logo, in TANGER's colour.", "gold shine", ""],
+    ["6", "Two-tone", "BOOM warms to gold while ARCADE turns electric purple. The boldest, most \"lit marquee\" option.", "elec duo", ""]
+  ];
+  document.getElementById("opts").innerHTML = OPTS.map(([n, t, d, cls, flag]) => `<div class="opt${flag === "rec" ? " is-rec" : ""}"><div class="opt-top"><span class="opt-n">${n}</span><b>${t}</b>${flag === "rec" ? '<span class="tag tag--rec">Recommended</span>' : ""}${flag === "now" ? '<span class="tag tag--now">Now</span>' : ""}</div><div class="row"><div class="cell"><span class="cap">At rest</span>${wm(cls)}</div><div class="cell"><span class="cap">Lit</span>${wm(cls + " is-lit")}</div><div class="cell cell--bar"><span class="cap">Live · hover me</span>${wm(cls + " live")}</div></div><p class="note">${d}</p></div>`).join("");
+  document.querySelectorAll("a.wm").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+})();
+</script>
+</body>
+</html>

@@ -213,6 +213,15 @@ variants hide it, so switching is just the class:
 long Markdown page: a CSS counter numbers every `h2` with a D2 eyebrow ("01 · Section", gold
 mono, a fading gold rule) and gives it the chapter title size. The Markdown isn't touched.
 
+**Door card: `.bt-card.bt-card--door`** (docs/design/mockups/how-it-works-round-2.html): a
+card that is a link (`<a class="bt-card bt-card--door">`). On hover and focus it lifts 3px
+with a purple border and glow, and its arrow link `.bt-card-go` (text + arrow svg) slides.
+Only for cards that go somewhere; a plain `.bt-card` stays put. `.bt-icon-tile--lg` is the
+64px glowing icon tile (purple for live things, `--soon` gold-tinted for Soon), tilting on
+the card's hover. `.bt-spotlight` (+ `--gold` for Soon cards) is a soft glow that follows
+the pointer inside the card; `shared/ui/spotlight.js` (`initSpotlights(root)`) sets
+`--mx`/`--my`. Pointer devices only; nothing on touch or under reduced motion.
+
 **Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
 ≤ 640px), with the same gradient.
 
