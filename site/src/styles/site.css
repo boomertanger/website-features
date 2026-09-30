@@ -44,6 +44,8 @@
   .bt-root:not(#_) .bt-site-frame { padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
   /* The footer game scrolls to the footer's bottom; stop above the tab bar. */
   .bt-root:not(#_) .bt-site-footer { scroll-margin-bottom: calc(72px + env(safe-area-inset-bottom, 0px)); }
+  /* A revealed contact address scrolls in above the tab bar too. */
+  .bt-root:not(#_) .bt-tts-pw-mail { scroll-margin-bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
   .bt-root:not(#_) .bt-menu-sheet.bt-site-more {
     display: flex; position: fixed; left: 0; right: 0; z-index: 39;
     bottom: calc(66px + env(safe-area-inset-bottom, 0px));

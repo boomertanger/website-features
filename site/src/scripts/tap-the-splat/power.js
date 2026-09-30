@@ -193,8 +193,12 @@ export function initPower(root) {
     line.append(text);
     readout.append(line);
     lines.set(badge, { line, text, address });
+    // Keep the new line in view (e.g. the third address below the fold): scroll just
+    // enough, and only if it isn't fully visible already.
+    requestAnimationFrame(() => line.scrollIntoView({ block: "nearest", inline: "nearest", behavior: reduced() ? "auto" : "smooth" }));
     badge.classList.add("is-on");
     w?.w.classList.add("lit");
+    btn.dataset.showLabel ??= btn.getAttribute("aria-label") || "";
     btn.textContent = "Copy";
     btn.classList.add("is-copy");
     btn.setAttribute("aria-label", `Copy ${address}`);
@@ -261,6 +265,22 @@ export function initPower(root) {
     show(btn, badge, `${btn.dataset.mailUser}@${row.dataset.mailDomain}`, w);
   }
 
+  // When the footer collapses back to idle (the splat tapped, a tap-out, an end card
+  // closed) every revealed address leaves the page, the buttons go back to Show and any
+  // typing, pulse or Copied timers are cancelled, so Contact starts fresh next time.
+  function resetContacts() {
+    timers.forEach(clearTimeout); timers.clear();
+    pulses?.replaceChildren();
+    readout.replaceChildren();
+    lines.clear();
+    cf.querySelectorAll("[data-mail-user]").forEach((btn) => {
+      btn.textContent = "Show";
+      btn.classList.remove("is-copy", "is-done");
+      if (btn.dataset.showLabel != null) { btn.setAttribute("aria-label", btn.dataset.showLabel); delete btn.dataset.showLabel; }
+    });
+    cf.querySelectorAll(".bt-tts-pw-ring").forEach((r) => r.classList.remove("is-bloom", "is-ripple"));
+  }
+
   // ---- when to power up ----
   // After the chain pull the game scrolls to the bottom of the footer (G.toBottom, about
   // 0.56 s later). The power-up waits until that scroll has finished (scrollend, or 150 ms
@@ -300,7 +320,13 @@ export function initPower(root) {
     if (cf.matches(":focus-within") && root.dataset.cf !== "1") powerUp();   // keyboard: no scroll to wait for
     else armPowerUp();
   };
-  new MutationObserver(check).observe(root, { attributes: true, attributeFilter: ["data-cf"] });
+  let wasOpen = root.dataset.cf === "1";
+  new MutationObserver(() => {
+    const open = root.dataset.cf === "1";
+    if (wasOpen && !open) resetContacts();   // the footer collapsed (not just focus leaving)
+    wasOpen = open;
+    check();
+  }).observe(root, { attributes: true, attributeFilter: ["data-cf"] });
   cf.addEventListener("focusin", check);
   cf.addEventListener("focusout", () => setTimeout(check, 0));
   new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); sync(); }).observe(cf);
