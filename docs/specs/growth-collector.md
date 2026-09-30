@@ -12,7 +12,7 @@ schedule exported from `functions/index.js`. Related: `accounts.md` (Twitch app,
 | --- | --- | --- |
 | Twitch | Helix `GET /channels/followers?broadcaster_id=…&first=1` with an app access token (client credentials, the accounts Twitch app: `TWITCH_CLIENT_ID` param + `TWITCH_CLIENT_SECRET`). The broadcaster id is looked up once from `TWITCH_LOGIN` (`GET /users?login=`) and kept in `private/growthConfig`. | `followers` (total) |
 | YouTube | Data API `channels.list?part=statistics&id=YOUTUBE_CHANNEL_ID` with `YOUTUBE_API_KEY` (1 quota unit per run). | `subscribers`, `views`, `videos`. YouTube rounds public subscriber counts to 3 significant figures (and can hide them: `subscribers: null`). |
-| TikTok | Built, switched off. Login Kit OAuth (scopes `user.info.basic,user.info.stats,video.list`); each run refreshes the access token (the refresh token rotates and is saved), then `GET /v2/user/info/?fields=follower_count` and `POST /v2/video/list/` (`max_count: 1`). | `followers`, `latestVideoAt` (the newest video's `create_time`, ISO) |
+| TikTok | Until the API is approved (after launch): typed in by an admin (§5b). Then: built, switched off until connected. Login Kit OAuth (scopes `user.info.basic,user.info.stats,video.list`); each run refreshes the access token (the refresh token rotates and is saved), then `GET /v2/user/info/?fields=follower_count` and `POST /v2/video/list/` (`max_count: 1`). | `followers`, `latestVideoAt` (the newest video's `create_time`, ISO), `source` (`api` or `manual`) |
 | Instagram | Not collected. | The badge shows "Follow". |
 
 Channel and account ids (public): YouTube `UCM3E9VJ9nmXE0sKDavHblFA`, Twitch `boomertanger`
@@ -28,8 +28,8 @@ Channel and account ids (public): YouTube `UCM3E9VJ9nmXE0sKDavHblFA`, Twitch `bo
 
 | Path | Holds | Read |
 | --- | --- | --- |
-| `growthDaily/{YYYY-MM-DD}` (Los Angeles date) | `twitch: { followers } \| null`, `youtube: { subscribers, views, videos } \| null`, `tiktok: { followers, latestVideoAt } \| null`, `collectedAt`, `errors: [{ platform, message }]`. A second run the same day replaces the doc. | site admins |
-| `public/socials` | `twitch: { followers, updatedAt }`, `youtube: { subscribers, views, videos, updatedAt }`, `tiktok: { followers, latestVideoAt, updatedAt } \| null`, `instagram: { followers: null, updatedAt: null }`, `youtubeGoal: 1000` | everyone |
+| `growthDaily/{YYYY-MM-DD}` (Los Angeles date) | `twitch: { followers } \| null`, `youtube: { subscribers, views, videos } \| null`, `tiktok: { followers, latestVideoAt, source: "api" } \| { followers, source: "manual" } \| null`, `collectedAt`, `errors: [{ platform, message }]`. A second run the same day replaces the doc. | site admins |
+| `public/socials` | `twitch: { followers, updatedAt }`, `youtube: { subscribers, views, videos, updatedAt }`, `tiktok: { followers, latestVideoAt, source, updatedAt } \| null`, `instagram: { followers: null, updatedAt: null }`, `youtubeGoal: 1000` | everyone |
 | `private/growthConfig` | `twitchLogin`, `twitchBroadcasterId` | nobody |
 | `private/tiktokAuth` | `accessToken`, `accessExpiresAt`, `refreshToken`, `refreshExpiresAt`, `openId`, `scope`, `connectedBy`, `connectedAt` | nobody |
 
@@ -37,7 +37,7 @@ Channel and account ids (public): YouTube `UCM3E9VJ9nmXE0sKDavHblFA`, Twitch `bo
 
 - Each platform runs on its own. A failing platform adds `{ platform, message }` to that day's `errors` and keeps its last good value (and its `updatedAt`) in `public/socials`.
 - The footer hides a count whose `updatedAt` is older than 7 days: the badge shows "Follow".
-- TikTok not connected, or its client key or secret not set: skipped quietly (no error, `tiktok: null`).
+- TikTok not connected, or its client key or secret not set: the API is skipped quietly (no error). If an admin has typed in a count (§5b), the collector carries the latest manual value into the day's history (`source: "manual"`) so the history stays continuous; otherwise `tiktok: null`. The summary keeps the manual value's own `updatedAt`, so the 7-day rule still applies to it.
 
 ## 5. TikTok connect (owner only, switched off until TikTok approves the app)
 
@@ -47,6 +47,12 @@ Channel and account ids (public): YouTube `UCM3E9VJ9nmXE0sKDavHblFA`, Twitch `bo
 4. `tiktokStatus` (owner only) tells /admin whether TikTok is configured and connected.
 
 To switch TikTok on: register the redirect URIs in the TikTok app, then set `TIKTOK_CLIENT_KEY` in `functions/.env` and `tiktokClientKey` in `site/src/data/site.json`, run `firebase functions:secrets:set TIKTOK_CLIENT_SECRET --project <alias>` with the real secret, redeploy functions, and press Connect TikTok.
+
+## 5b. Manual TikTok count (temporary, until the TikTok API is approved)
+
+- /admin shows owners and site admins a card "TikTok followers (manual)": a number field, today's date (Los Angeles) and Save. It shows when the count was last saved ("3 days ago"), a reminder once it's older than 5 days, and that the footer shows Follow once it's older than 7.
+- Save calls `setManualTikTok({ followers })`: owner or admin only (checked on the server), a whole number from 0 to 100,000,000. It writes `growthDaily/{today}.tiktok = { followers, source: "manual" }` (merge) and `public/socials.tiktok = { followers, latestVideoAt: null, source: "manual", updatedAt }`, and an `adminLog` entry (feature `growth`, action `manualTikTok`, `changes.followers { before, after }`).
+- Once TikTok is connected the API wins: the callable refuses (`tiktokConnected`), the collector writes `source: "api"` values, and the card shows "Connected, updated automatically" instead of the form (it reads `public/socials.tiktok.source`).
 
 ## 6. Rules
 

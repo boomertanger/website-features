@@ -97,7 +97,7 @@ async function tiktok({ fetchFn, cfg, authRef, auth }) {
     method: "POST", headers: { ...headers, "Content-Type": "application/json" }, body: JSON.stringify({ max_count: 1 }),
   }, "tiktok videos");
   const created = vids?.data?.videos?.[0]?.create_time;
-  return { followers, latestVideoAt: typeof created === "number" ? new Date(created * 1000).toISOString() : null };
+  return { followers, latestVideoAt: typeof created === "number" ? new Date(created * 1000).toISOString() : null, source: "api" };
 }
 
 /**
@@ -126,26 +126,35 @@ async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now =
 
   const at = Timestamp.fromMillis(now);
   const day = dayKey(now);
+  const prev = summarySnap.exists ? summarySnap.data() : {};
+  // TikTok not connected: carry the owner's latest manual count forward into the day's
+  // history (source "manual"), so the history stays continuous. The summary keeps its
+  // updatedAt, so the 7-day staleness rule still applies to it.
+  const manual = tt?.skipped && prev.tiktok?.source === "manual" && typeof prev.tiktok.followers === "number" ? prev.tiktok : null;
   const daily = {
     twitch: tw ? { followers: tw.followers } : null,
     youtube: yt ? { subscribers: yt.subscribers, views: yt.views, videos: yt.videos } : null,
-    tiktok: tt && !tt.skipped ? { followers: tt.followers, latestVideoAt: tt.latestVideoAt } : null,
+    tiktok: tt && !tt.skipped ? { followers: tt.followers, latestVideoAt: tt.latestVideoAt, source: "api" }
+      : manual ? { followers: manual.followers, source: "manual" } : null,
     collectedAt: at,
     errors,
   };
   // Public summary: only platforms that succeeded move; the rest keep their last good value.
-  const prev = summarySnap.exists ? summarySnap.data() : {};
   const summary = {
     twitch: tw ? { followers: tw.followers, updatedAt: at } : prev.twitch ?? null,
     youtube: yt ? { subscribers: yt.subscribers, views: yt.views, videos: yt.videos, updatedAt: at } : prev.youtube ?? null,
-    tiktok: tt && !tt.skipped ? { followers: tt.followers, latestVideoAt: tt.latestVideoAt, updatedAt: at } : prev.tiktok ?? null,
+    tiktok: tt && !tt.skipped ? { followers: tt.followers, latestVideoAt: tt.latestVideoAt, source: "api", updatedAt: at } : prev.tiktok ?? null,
     instagram: prev.instagram ?? { followers: null, updatedAt: null },
     youtubeGoal: YOUTUBE_GOAL,
   };
   if (!dryRun) {
     await Promise.all([site.collection("growthDaily").doc(day).set(daily), summaryRef.set(summary)]);
   }
-  return { day, daily, summary, tiktok: tt?.skipped ? "off" : tt ? "ok" : "error" };
+  return { day, daily, summary, tiktok: tt?.skipped ? (manual ? "manual" : "off") : tt ? "ok" : "error" };
 }
 
-module.exports = { collect, tiktokToken, dayKey, TZ, YOUTUBE_GOAL };
+/** The owner's manual TikTok count (until the API is approved): 0 to 100,000,000 followers. */
+const MANUAL_TIKTOK_MAX = 100000000;
+const validManualFollowers = (n) => Number.isInteger(n) && n >= 0 && n <= MANUAL_TIKTOK_MAX;
+
+module.exports = { collect, tiktokToken, dayKey, validManualFollowers, MANUAL_TIKTOK_MAX, TZ, YOUTUBE_GOAL };

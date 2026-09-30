@@ -3,7 +3,7 @@
 // (lib/growth/collect.js) with a fake fetch and an in-memory Firestore. No network,
 // no credentials.   npm run check   (or node scripts/check-growth.js)
 const assert = require("assert/strict");
-const { collect, dayKey } = require("../lib/growth/collect");
+const { collect, dayKey, validManualFollowers } = require("../lib/growth/collect");
 
 // ---- in-memory Firestore (just what collect() uses) ----
 function memDb(seed = {}) {
@@ -71,8 +71,23 @@ const NOW = Date.UTC(2026, 8, 30, 12, 0, 0);
   // TikTok connected: the refresh token rotates and is saved; counts come through.
   db = memDb({ "sites/s/private/tiktokAuth": { refreshToken: "r1" } });
   out = await collect({ db, siteId: "s", cfg: { ...cfg, tiktokClientKey: "ck", tiktokClientSecret: "x".repeat(20) }, fetchFn: fakeFetch(), now: NOW, Timestamp });
-  assert.deepEqual(out.daily.tiktok, { followers: 9496, latestVideoAt: new Date(1790000000 * 1000).toISOString() });
+  assert.deepEqual(out.daily.tiktok, { followers: 9496, latestVideoAt: new Date(1790000000 * 1000).toISOString(), source: "api" });
   assert.equal(db.store.get("sites/s/private/tiktokAuth").refreshToken, "r2");
+
+  // Not connected, with a manual count: carried into the day's history, summary untouched.
+  db = memDb({ "sites/s/public/socials": { tiktok: { followers: 9500, source: "manual", updatedAt: { ms: NOW - 3 * 86400000 } } } });
+  out = await collect({ db, siteId: "s", cfg, fetchFn: fakeFetch(), now: NOW, Timestamp });
+  assert.deepEqual(out.daily.tiktok, { followers: 9500, source: "manual" });
+  assert.equal(out.tiktok, "manual");
+  assert.equal(db.store.get("sites/s/public/socials").tiktok.updatedAt.ms, NOW - 3 * 86400000);
+  // Connected: the API value wins over the manual one.
+  db = memDb({ "sites/s/public/socials": { tiktok: { followers: 9500, source: "manual" } }, "sites/s/private/tiktokAuth": { refreshToken: "r1" } });
+  out = await collect({ db, siteId: "s", cfg: { ...cfg, tiktokClientKey: "ck", tiktokClientSecret: "x".repeat(20) }, fetchFn: fakeFetch(), now: NOW, Timestamp });
+  assert.equal(out.daily.tiktok.source, "api");
+  assert.equal(db.store.get("sites/s/public/socials").tiktok.followers, 9496);
+  // Manual counts: whole numbers from 0 to 100,000,000.
+  for (const ok of [0, 9500, 100000000]) assert.ok(validManualFollowers(ok), String(ok));
+  for (const bad of [-1, 1.5, 100000001, NaN, "9500"]) assert.ok(!validManualFollowers(bad), String(bad));
 
   // A dry run writes nothing at all.
   db = memDb();

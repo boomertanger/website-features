@@ -4,6 +4,8 @@
 //   runGrowthCollectorNow    owner-only callable, for testing
 //   tiktokConnect            owner-only callable: swaps the Login Kit code for tokens
 //   tiktokStatus             owner-only callable: is TikTok set up and connected?
+//   setManualTikTok          admin-only callable: today's TikTok count, typed in until
+//                            the TikTok API is approved (refused once TikTok is connected)
 // Params (functions/.env, public): TWITCH_CLIENT_ID (shared with accounts),
 // TWITCH_LOGIN, YOUTUBE_CHANNEL_ID, TIKTOK_CLIENT_KEY (empty until TikTok approves).
 // Secrets (firebase functions:secrets:set NAME --project <alias>): TWITCH_CLIENT_SECRET
@@ -12,7 +14,7 @@ const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
-const { collect, tiktokToken, TZ } = require("./collect");
+const { collect, tiktokToken, dayKey, validManualFollowers, TZ } = require("./collect");
 
 const SITE_ID = "boomertanger";
 const TWITCH_CLIENT_ID = defineString("TWITCH_CLIENT_ID");
@@ -52,7 +54,7 @@ const config = () => ({
   tiktokClientSecret: tiktokSecret(),
 });
 
-module.exports = function growth() {
+module.exports = function growth({ adminLogEntry }) {
   const db = admin.firestore();
   const Timestamp = admin.firestore.Timestamp;
 
@@ -62,6 +64,16 @@ module.exports = function growth() {
     if (!uid) throw fail("unauthenticated", "Sign in first.", "signIn");
     const site = await db.doc(`sites/${SITE_ID}`).get();
     if (!site.exists || site.get("ownerUid") !== uid) throw fail("permission-denied", "Only the site owner can do that.", "owner");
+    return uid;
+  }
+
+  /** The owner or a site admin (members/{uid}.roles), checked on the server. */
+  async function requireAdmin(request) {
+    const uid = request.auth?.uid;
+    if (!uid) throw fail("unauthenticated", "Sign in first.", "signIn");
+    const [site, member] = await Promise.all([db.doc(`sites/${SITE_ID}`).get(), db.doc(`sites/${SITE_ID}/members/${uid}`).get()]);
+    const ok = site.get("ownerUid") === uid || (member.get("roles") || []).includes("admin");
+    if (!ok) throw fail("permission-denied", "Only site admins can do that.", "notAdmin");
     return uid;
   }
 
@@ -110,5 +122,30 @@ module.exports = function growth() {
     return { ok: true };
   });
 
-  return { collectGrowthDaily, runGrowthCollectorNow, tiktokStatus, tiktokConnect };
+  // setManualTikTok({ followers }): writes today's growthDaily tiktok and public/socials.tiktok
+  // (source "manual") and an adminLog entry. Refused once TikTok is connected (the API wins).
+  const setManualTikTok = onCall(async (request) => {
+    const uid = await requireAdmin(request);
+    const followers = Number(request.data?.followers);
+    if (!validManualFollowers(followers)) throw fail("invalid-argument", "Enter a whole number from 0 to 100,000,000.", "followers");
+    const site = db.doc(`sites/${SITE_ID}`);
+    const auth = await site.collection("private").doc("tiktokAuth").get();
+    if (auth.exists && auth.get("refreshToken")) throw fail("failed-precondition", "TikTok is connected, so its count updates automatically.", "tiktokConnected");
+    const now = Timestamp.now(), day = dayKey(now.toMillis());
+    const summaryRef = site.collection("public").doc("socials");
+    const prev = (await summaryRef.get()).get("tiktok") || null;
+    const profile = await site.collection("profiles").doc(uid).get();
+    const batch = db.batch();
+    batch.set(site.collection("growthDaily").doc(day), { tiktok: { followers, source: "manual" } }, { merge: true });
+    batch.set(summaryRef, { tiktok: { followers, latestVideoAt: null, source: "manual", updatedAt: now } }, { merge: true });
+    batch.set(db.collection("adminLog").doc(), await adminLogEntry(db, {
+      feature: "growth", action: "manualTikTok", itemPath: `sites/${SITE_ID}/public/socials`, itemTitle: "TikTok followers",
+      actorUid: uid, actorName: profile.exists ? `@${profile.get("handle")}` : (request.auth.token.email || "Admin"),
+      changes: { followers: { before: prev?.followers ?? null, after: followers } }, details: { day },
+    }));
+    await batch.commit();
+    return { ok: true, day, followers };
+  });
+
+  return { collectGrowthDaily, runGrowthCollectorNow, tiktokStatus, tiktokConnect, setManualTikTok };
 };

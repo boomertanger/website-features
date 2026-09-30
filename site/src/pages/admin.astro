@@ -10,6 +10,21 @@ import ComingSoon from "../components/ComingSoon.astro";
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
     The admin member view (member list, member detail with role controls) arrives in milestone 2b. Roles can be set with the setMemberRole function until then.
   </ComingSoon>
+  <!-- Temporary: the TikTok count by hand until the TikTok API is approved (after launch). -->
+  <div class="bt-zone" data-tiktok-manual hidden>
+    <div class="bt-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">TikTok followers (manual)</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
+      <p class="bt-section-text" data-tm-connected hidden>Connected, updated automatically.</p>
+      <form class="bt-stack" data-tm-form novalidate>
+        <div class="bt-field">
+          <label class="bt-label" for="bt-tm-n">Followers today, <span data-tm-today></span></label>
+          <input class="bt-input" id="bt-tm-n" name="followers" type="number" inputmode="numeric" min="0" max="100000000" step="1" required />
+        </div>
+        <div class="bt-row-center"><button type="submit" class="bt-btn bt-btn--primary">Save</button></div>
+        <p class="bt-fine" data-tm-last role="status"></p>
+      </form>
+    </div>
+  </div>
   <div class="bt-zone" data-owner-tools hidden>
     <div class="bt-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Growth collector</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
@@ -25,10 +40,52 @@ import ComingSoon from "../components/ComingSoon.astro";
 </BaseLayout>
 
 <script>
-  // Owner check for display only: the callables check the owner on the server.
+  // Owner and admin checks are for display only: the callables check on the server.
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";
+
+  // ---- TikTok followers (manual), until the API is approved (docs/specs/growth-collector.md §5b) ----
+  const DAY_MS = 86400000;
+  const laDate = (d = new Date()) => new Intl.DateTimeFormat("en-US", { timeZone: "America/Los_Angeles", weekday: "short", month: "short", day: "numeric", year: "numeric" }).format(d);
+  async function manualTikTok(db: any, doc: any, getDoc: any, SITE_ID: string) {
+    const card = document.querySelector<HTMLElement>("[data-tiktok-manual]")!;
+    const form = card.querySelector<HTMLFormElement>("[data-tm-form]")!;
+    const input = form.querySelector<HTMLInputElement>("input")!;
+    const last = form.querySelector<HTMLElement>("[data-tm-last]")!;
+    card.querySelector<HTMLElement>("[data-tm-today]")!.textContent = laDate();
+    card.hidden = false;
+    const showLast = (followers: number | null, at: Date | null) => {
+      if (followers == null || !at) { last.textContent = "No count saved yet. The footer shows Follow until there is one."; return; }
+      const days = Math.floor((Date.now() - at.getTime()) / DAY_MS);
+      const when = days <= 0 ? "today" : days === 1 ? "1 day ago" : `${days} days ago`;
+      last.textContent = `Last saved ${when}: ${followers.toLocaleString("en-US")} followers.`
+        + (days >= 7 ? " The footer now shows Follow instead of the count (older than 7 days). Save today's count to bring it back."
+          : days > 5 ? " Reminder: update it soon; the footer hides counts older than 7 days." : "");
+    };
+    const socials = await getDoc(doc(db, "sites", SITE_ID, "public", "socials"));
+    const tt = socials.exists() ? socials.get("tiktok") : null;
+    if (tt?.source === "api") {
+      form.hidden = true;
+      card.querySelector<HTMLElement>("[data-tm-connected]")!.hidden = false;
+      return;
+    }
+    if (typeof tt?.followers === "number") input.value = String(tt.followers);
+    showLast(tt?.followers ?? null, tt?.updatedAt?.toDate?.() ?? null);
+    form.addEventListener("submit", async (ev) => {
+      ev.preventDefault();
+      const n = Number(input.value);
+      if (input.value === "" || !Number.isInteger(n) || n < 0 || n > 100000000) { last.textContent = "Enter a whole number from 0 to 100,000,000."; input.focus(); return; }
+      const btn = form.querySelector<HTMLButtonElement>("button")!;
+      btn.disabled = true;
+      try {
+        const { call } = await import("../lib/call");
+        await call("setManualTikTok", { followers: n });
+        showLast(n, new Date());
+      } catch (err) { last.textContent = messageFor(err); }
+      finally { btn.disabled = false; }
+    });
+  }
 
   const box = document.querySelector<HTMLElement>("[data-owner-tools]")!;
   const status = box.querySelector<HTMLElement>("[data-tiktok-status]")!;
@@ -40,7 +97,9 @@ import ComingSoon from "../components/ComingSoon.astro";
     if (!s.user) return;
     const { db, doc, getDoc, SITE_ID } = await import("../lib/db");
     const site = await getDoc(doc(db, "sites", SITE_ID));
-    if (site.get("ownerUid") !== s.user.uid) return;
+    const isOwner = site.get("ownerUid") === s.user.uid;
+    if (isOwner || s.isAdmin) manualTikTok(db, doc, getDoc, SITE_ID);
+    if (!isOwner) return;
     box.hidden = false;
     const { call } = await import("../lib/call");
     try {
