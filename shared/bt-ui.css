@@ -1154,7 +1154,7 @@
   --bt-shadow-splat: 0 18px 30px rgba(0, 0, 0, 0.8);      /* filter: drop-shadow() under the splat in the spotlight */
   /* Footer Contact + Follow, "Shared power" (docs/design/mockups/footer-power.html): one
      colour per badge (the platforms' own brand colours for Follow), the dark cable, the
-     unlit ring and the white of a lightning strike or ring flash. */
+     unlit ring and the white of the Show / Copy pulse and the ring flash. */
   --bt-contact-business: var(--bt-title);
   --bt-contact-fanmail: var(--bt-pink);
   --bt-contact-support: var(--bt-teal);
@@ -1433,7 +1433,9 @@
 /* Contact + Follow, "Shared power": one row of round badges (Contact left, Follow right)
    fed by cables from one glowing node where the chain hung (phones: a node per section).
    .bt-tts-pw-svg is the cable overlay; site/src/scripts/tap-the-splat/power.js draws it,
-   runs the power-up (.bt-tts-pw-b.is-on) and the lightning on Show. */
+   runs the power-up (.bt-tts-pw-b.is-on) and Show / Copy, style A "Pulse and type"
+   (docs/design/mockups/contact-copy.html): a pulse down the cable, the ring blooms, the
+   address types into a readout line; Copy lights it, pulses back up, ripples, tags it. */
 .bt-root:not(#_) .bt-tts-cf { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; max-width: 1000px; max-height: 0; margin: 0 auto; padding: 0 12px; overflow: hidden; opacity: 0; transform: translateY(16px); text-align: center;
   transition: max-height 500ms ease, opacity 400ms ease 150ms, transform 500ms cubic-bezier(.2, .9, .3, 1.3) 150ms; }
 .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 360px; margin-top: 10px; padding-bottom: 12px; opacity: 1; transform: none; }
@@ -1456,28 +1458,49 @@
 .bt-root:not(#_) .bt-tts-pw-b.is-on .bt-tts-pw-ring svg { opacity: 1; }
 .bt-root:not(#_) .bt-tts-pw-b.is-swing { animation: bt-tts-pw-swing 1.6s ease-out; }
 .bt-root:not(#_) .bt-tts-pw-b:is(:hover, :focus-within) .bt-tts-pw-ring { transform: translateY(-3px) scale(1.04); box-shadow: 0 0 24px var(--pw-c); }
-.bt-root:not(#_) .bt-tts-pw-ring.is-struck { animation: bt-tts-pw-strike 500ms; }
 @keyframes bt-tts-pw-flash { 30% { border-color: var(--bt-pw-arc); box-shadow: 0 0 26px var(--pw-c); transform: scale(1.08); } }
-@keyframes bt-tts-pw-strike { 35% { border-color: var(--bt-pw-arc); box-shadow: 0 0 30px var(--pw-c); } }
 @keyframes bt-tts-pw-swing { 20% { transform: rotate(4deg); } 45% { transform: rotate(-2.5deg); } 70% { transform: rotate(1.2deg); } }
 .bt-root:not(#_) .bt-tts-pw-b b { margin-top: 3px; font-size: var(--bt-text-md); font-weight: 700; }
 .bt-root:not(#_) .bt-tts-pw-n { font-size: 17px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .bt-tts-pw-u { font-size: var(--bt-text-2xs); font-weight: 700; color: var(--bt-text-faint); white-space: nowrap; }
 .bt-root:not(#_) .bt-tts-pw-live { padding: 1px 6px; border-radius: 4px; background: var(--bt-red); color: var(--bt-text); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
 .bt-root:not(#_) .bt-tts-pw-show { margin-top: 4px; padding: 3px 10px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; }
-.bt-root:not(#_) .bt-tts-pw-show:hover { border-color: var(--bt-primary); color: var(--bt-text); }
-.bt-root:not(#_) .bt-tts-pw-readout { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
-.bt-root:not(#_) .bt-tts-pw-mail { --pw-c: var(--bt-text-muted); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-md); color: var(--pw-c); text-shadow: 0 0 8px color-mix(in srgb, var(--pw-c) 60%, transparent); overflow-wrap: anywhere; }
-.bt-root:not(#_) .bt-site-footer .bt-tts-pw-mail a { color: inherit; }
+.bt-root:not(#_) .bt-tts-pw-show:hover { border-color: var(--pw-c); color: var(--bt-text); }
+.bt-root:not(#_) .bt-tts-pw-show.is-copy { border-color: color-mix(in srgb, var(--pw-c) 60%, transparent); color: var(--bt-text); }
+.bt-root:not(#_) .bt-tts-pw-show.is-done { border-color: var(--pw-c); background: var(--pw-c); color: var(--bt-bg); }
+.bt-root:not(#_) .bt-tts-pw-readout { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; }
+/* Readout lines (one per contact shown, stacked): a rounded panel tinted in the contact's
+   colour, monospace, with a blinking cursor while it types and a tag beside it on Copy. */
+.bt-root:not(#_) .bt-tts-pw-mail { --pw-c: var(--bt-text-muted); position: relative; max-width: 100%; padding: 6px 12px; border: 1px solid color-mix(in srgb, var(--pw-c) 45%, transparent); border-radius: var(--bt-radius-md); background: color-mix(in srgb, var(--pw-c) 8%, var(--bt-pw-ring-bg)); color: var(--bt-text); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-base); overflow-wrap: anywhere; user-select: text; }
+.bt-root:not(#_) .bt-tts-pw-mail .ch { transition: color 90ms, text-shadow 90ms; }
+.bt-root:not(#_) .bt-tts-pw-mail .ch.is-lit { color: var(--bt-pw-arc); text-shadow: 0 0 8px var(--pw-c); }
+.bt-root:not(#_) .bt-tts-pw-cursor { display: inline-block; width: 8px; height: 1.05em; margin-left: 1px; vertical-align: -2px; background: var(--pw-c); animation: bt-tts-pw-blink 800ms steps(1) infinite; }
+@keyframes bt-tts-pw-blink { 50% { opacity: 0; } }
+.bt-root:not(#_) .bt-tts-pw-tag { position: absolute; left: calc(100% + 10px); top: 50%; padding: 3px 9px; border-radius: var(--bt-radius-full); background: var(--pw-c); color: var(--bt-bg); font-family: var(--bt-font); font-size: var(--bt-text-xs); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; white-space: nowrap; opacity: 0; transform: translate(-6px, -50%) scale(0.9); pointer-events: none; }
+.bt-root:not(#_) .bt-tts-pw-tag.is-shown { animation: bt-tts-pw-tag 1.6s ease-out forwards; }
+.bt-root:not(#_) .bt-tts-pw-tag.is-hint { text-transform: none; letter-spacing: 0; }
+.bt-root:not(#_) .bt-tts-pw-tag.is-hint.is-shown { animation-duration: 3.2s; }
+@keyframes bt-tts-pw-tag-sm { 12% { opacity: 1; transform: translate(0, -50%) scale(1); } 75% { opacity: 1; transform: translate(0, -50%) scale(1); } 100% { opacity: 0; transform: translate(0, -80%) scale(1); } }
+@keyframes bt-tts-pw-tag { 12% { opacity: 1; transform: translate(0, -50%) scale(1); } 75% { opacity: 1; transform: translate(0, -50%) scale(1); } 100% { opacity: 0; transform: translate(6px, -50%) scale(1); } }
+/* The pulse: a short bright dash that runs down the cable (Show) or back up it (Copy). */
+.bt-root:not(#_) .bt-tts-pw-svg .pulse { fill: none; stroke: var(--bt-pw-arc); stroke-width: 5; stroke-linecap: round; stroke-dasharray: 14 100; stroke-dashoffset: 14; filter: drop-shadow(0 0 6px var(--pw-c)) drop-shadow(0 0 14px var(--pw-c)); animation: bt-tts-pw-pulse 650ms cubic-bezier(.45, 0, .2, 1) forwards; }
+.bt-root:not(#_) .bt-tts-pw-svg .pulse.up { animation-name: bt-tts-pw-pulse-up; }
+@keyframes bt-tts-pw-pulse { from { stroke-dashoffset: 14; } to { stroke-dashoffset: -100; } }
+@keyframes bt-tts-pw-pulse-up { from { stroke-dashoffset: -100; } to { stroke-dashoffset: 14; } }
+/* The ring blooms when the pulse arrives, and ripples on Copy. */
+.bt-root:not(#_) .bt-tts-pw-ring { position: relative; }
+.bt-root:not(#_) .bt-tts-pw-ring.is-bloom { animation: bt-tts-pw-bloom 600ms ease-out; }
+@keyframes bt-tts-pw-bloom { 30% { transform: scale(1.1); border-color: var(--bt-pw-arc); box-shadow: 0 0 34px var(--pw-c), inset 0 0 18px var(--pw-c); } }
+.bt-root:not(#_) .bt-tts-pw-ring::after { content: ""; position: absolute; inset: -2px; border: 2px solid var(--pw-c); border-radius: 50%; opacity: 0; pointer-events: none; }
+.bt-root:not(#_) .bt-tts-pw-ring.is-ripple::after { animation: bt-tts-pw-ripple 700ms ease-out; }
+@keyframes bt-tts-pw-ripple { from { opacity: 0.9; transform: scale(1); } to { opacity: 0; transform: scale(1.8); } }
 .bt-root:not(#_) .bt-tts-pw-svg .w { fill: none; stroke: var(--bt-pw-cable); stroke-width: 3; stroke-linecap: round; transition: stroke 500ms; }
 .bt-root:not(#_) .bt-tts-pw-svg .w.lit { stroke: color-mix(in srgb, var(--pw-c) 70%, var(--bt-pw-cable)); filter: drop-shadow(0 0 3px var(--pw-c)); }
 .bt-root:not(#_) .bt-tts-pw-svg .sp { fill: none; stroke: var(--pw-c); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 7 100; stroke-dashoffset: 7; opacity: 0; filter: drop-shadow(0 0 5px var(--pw-c)); }
 .bt-root:not(#_) .bt-tts-pw-svg .sp.run { animation: bt-tts-pw-spark 850ms linear forwards; }
 .bt-root:not(#_) .bt-tts-pw-svg .node { fill: var(--bt-title); filter: drop-shadow(0 0 6px var(--bt-title)); }
-.bt-root:not(#_) .bt-tts-pw-svg .arc { fill: none; stroke: var(--bt-pw-arc); stroke-width: 2.5; stroke-linejoin: bevel; filter: drop-shadow(0 0 4px var(--pw-c)) drop-shadow(0 0 10px var(--pw-c)); animation: bt-tts-pw-arc 380ms steps(1) forwards; }
 @keyframes bt-tts-pw-spark { 0% { opacity: 1; stroke-dashoffset: 7; } 94% { opacity: 1; } 100% { opacity: 0; stroke-dashoffset: -100; } }
-@keyframes bt-tts-pw-arc { 0% { opacity: 1; } 25% { opacity: 0; } 40% { opacity: 1; } 65% { opacity: 0.2; } 80% { opacity: 1; } 100% { opacity: 0; } }
-@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) :is(.bt-tts-pw-b, .bt-tts-pw-ring, .bt-tts-pw-svg .arc, .bt-tts-pw-svg .sp) { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) :is(.bt-tts-pw-b, .bt-tts-pw-ring, .bt-tts-pw-ring::after, .bt-tts-pw-svg .pulse, .bt-tts-pw-svg .sp, .bt-tts-pw-cursor) { animation: none; } }
 
 /* Legal row under the play area: tiny mascot signs off, centered */
 .bt-root:not(#_) .bt-footer-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 18px; margin: 0 var(--bt-gutter); padding: 16px 0 18px; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
@@ -1547,6 +1570,9 @@
   .bt-root:not(#_) .bt-tts-pw-ring { width: 52px; height: 52px; }
   .bt-root:not(#_) .bt-tts-pw-ring svg { width: 24px; height: 24px; }
   .bt-root:not(#_) .bt-tts-pw-goal { display: none; }
+  /* No room beside the line: the tag sits on its top-right corner. */
+  .bt-root:not(#_) .bt-tts-pw-tag { left: auto; right: 8px; top: 0; transform: translate(0, -50%) scale(0.9); }
+  .bt-root:not(#_) .bt-tts-pw-tag.is-shown { animation-name: bt-tts-pw-tag-sm; }
   .bt-root:not(#_) .bt-footer-legal { margin: 0 16px; }
 }
 /* Play now's cue (Boom Arcade, D2): <div class="bt-tts" data-cue> pulses the splat and shows

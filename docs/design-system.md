@@ -707,7 +707,7 @@ differences:
   the same pages.
 - **Contact addresses never appear in the HTML.** Each Show button joins `user` + `@` +
   `emailDomain` from `site.json` in the browser, then offers Copy.
-- **Footer Contact + Follow: Shared power (hanging cables, lightning on Show).** Chosen in
+- **Footer Contact + Follow: Shared power (hanging cables; Show is "Pulse and type").** Chosen in
   `docs/design/mockups/footer-power.html` (1 Follow only, 2 Shared power, 3 Two circuits).
   One glowing node (`--bt-title`) where the chain hung feeds a hanging cable to all seven
   badges, Contact left and Follow right, same size and baseline, so the two halves read as
@@ -715,15 +715,29 @@ differences:
   short cables. Cables come in from above onto the top of their own ring, so they never
   cross a badge. The power-up (sparks about 150 ms apart, cables lit in each badge colour,
   ring flash, one swing, counts ticking up from 0) runs each time Contact and Follow
-  appear; Show strikes a jagged bolt (a new shape each time) down that cable and decodes
-  the address. Follow uses the platforms' official icons (Simple Icons, one colour) and
+  appear, and after the chain pull it waits until the page has stopped scrolling and the
+  section is on screen. Follow uses the platforms' official icons (Simple Icons, one colour) and
   colours; Contact uses plain line icons. One colour token per badge (`--bt-contact-*`,
   `--bt-follow-*`). The effect code (`scripts/tap-the-splat/power.js`) loads with the game
   or on the first Show or focus, and the sway runs only while the section is on screen.
   Reduced motion shows the final state (lit, final numbers) with no sparks, sway, swing,
-  lightning or scramble. Counts come from the growth collector's `public/socials`
+  pulses or typing. Counts come from the growth collector's `public/socials`
   (`docs/specs/growth-collector.md`); one older than 7 days shows Follow. Twitch has a
   hidden LIVE hook (`[data-live-hook]`) for the Live Beacon.
+- **Contact: "Pulse and type" replaces the lightning.** Chosen in
+  `docs/design/mockups/contact-copy.html` (A Pulse and type, over the ticket, ink and
+  envelope styles). The same cables carry the signal down on Show (a soft pulse, the ring
+  blooms, the address types into a tinted monospace readout line with a cursor) and back up
+  on Copy (the characters light, the ring ripples, a COPIED tag, a solid "Copied ✓" button),
+  so Contact keeps the footer's power story, and the address stays plain, readable text.
+  A failed clipboard write says "Press and hold to copy" and selects the address. The
+  lightning bolt and the scramble are gone.
+- **The Contact + Follow power-up waits for the scroll.** The chain pull scrolls the page
+  to the footer's bottom; starting the sparks mid-scroll meant they ran off screen. It now
+  starts once the scroll has ended (`scrollend`, or 150 ms without scroll events) and at
+  least 60% of the section is visible, 200 ms later; a safety net starts it 1.5 s after the
+  pull if the section is on screen at all, or when it comes into view. Details:
+  `docs/specs/tap-the-splat.md` "Contact + Follow".
 - **The game loads only on the first splat tap** (a dynamic import). The game module
   attaches its own stylesheet, because a CSS import inside a dynamically imported module
   is hoisted into every page by the build. The only game-adjacent code in the idle

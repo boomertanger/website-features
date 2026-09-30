@@ -3,13 +3,15 @@
 // every badge (phones: a node per section). When Contact and Follow appear (the chain
 // pull sets data-cf, or keyboard focus reveals them) sparks run down each cable in
 // turn, each cable lights in its badge colour, the ring flashes and the badge swings
-// once, and the follow counts tick up. Show strikes lightning down that badge's cable
-// and decodes the address into the readout line; the button then copies it.
+// once, and the follow counts tick up; after the chain pull it waits for the page to
+// stop scrolling. Show sends a pulse down that badge's cable and types the address into
+// the readout ("Pulse and type", docs/design/mockups/contact-copy.html); Copy sends it
+// back up and confirms.
 //
 // Loaded with the game (index.js) or by the idle footer on the first Show / focus, so
 // idle pages never load it. The sway runs only while the section is powered and on
 // screen. Reduced motion: everything is powered on at once with the final numbers; no
-// sparks, sway, swing, lightning or scramble.
+// sparks, sway, swing, pulses or typing (Copy still confirms "Copied ✓").
 const SVG = "http://www.w3.org/2000/svg";
 const STALE_MS = 7 * 24 * 60 * 60 * 1000;   // older counts show "Follow"
 const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -58,7 +60,7 @@ export function initPower(root) {
   };
   // The paths are built once; a resize (the section opening, the readout growing, the
   // window) only moves their end points, so running sparks and strikes carry on.
-  let arcs = null;
+  let pulses = null;
   function build() {
     const cols = [...cf.querySelectorAll("[data-pw-col]")];
     nodes = phone() ? cols.map(() => ({ x: 0, y: 0 })) : [{ x: 0, y: 0 }];
@@ -76,9 +78,9 @@ export function initPower(root) {
       }
     });
     nodes.forEach((n) => { n.el = document.createElementNS(SVG, "circle"); n.el.setAttribute("class", "node"); n.el.setAttribute("r", "6"); svg.append(n.el); });
-    arcs = document.createElementNS(SVG, "g");
-    arcs.setAttribute("class", "arcs");
-    svg.append(arcs);
+    pulses = document.createElementNS(SVG, "g");
+    pulses.setAttribute("class", "pulses");
+    svg.append(pulses);
     built = phone();
   }
   let built = null;
@@ -160,77 +162,149 @@ export function initPower(root) {
     sync();
   }
 
-  // ---- Show: lightning down the cable, the address decodes into the readout ----
-  const jag = (a, b) => {
-    let d = `M${a.x.toFixed(0)} ${a.y.toFixed(0)}`;
-    const n = 7;
-    for (let s = 1; s <= n; s++) {
-      const t = s / n;
-      const x = a.x + (b.x - a.x) * t + (s < n ? Math.random() * 40 - 20 : 0);
-      const y = a.y + (b.y - a.y) * t + (s < n ? Math.random() * 16 - 8 : 0);
-      d += ` L${x.toFixed(0)} ${y.toFixed(0)}`;
-    }
-    return d;
-  };
-  const GLYPHS = "!<>-_\\/[]{}=+*^?#%@01";
+  // ---- Show and Copy, style A "Pulse and type" (docs/design/mockups/contact-copy.html) ----
+  // Show: a soft pulse runs down the cable from the node (650 ms), the ring blooms, and the
+  // address types into a readout line (28 ms a character) with a cursor that goes 0.9 s
+  // after. Copy: the characters light left to right, the pulse runs back up the cable, the
+  // ring ripples, a COPIED tag pops beside the line and the button confirms "Copied ✓".
+  const PULSE_MS = 650, TYPE_MS = 28;
+  const lines = new Map();   // badge -> { line, text, address }
+  function pulse(w, up = false) {
+    if (!w || reduced()) return;
+    const p = document.createElementNS(SVG, "path");
+    p.setAttribute("class", "pulse" + (up ? " up" : ""));
+    p.setAttribute("pathLength", "100");
+    p.setAttribute("d", w.w.getAttribute("d") || "");
+    p.style.setProperty("--pw-c", w.c);
+    pulses?.append(p);
+    later(() => p.remove(), PULSE_MS + 150);
+  }
+  function ringFx(badge, cls) {
+    if (reduced()) return;
+    const ring = badge.querySelector(".bt-tts-pw-ring");
+    ring.classList.remove(cls); void ring.offsetWidth; ring.classList.add(cls);
+  }
+  function show(btn, badge, address, w) {
+    const line = document.createElement("div");
+    line.className = "bt-tts-pw-mail";
+    line.style.setProperty("--pw-c", w?.c || colorOf(badge));
+    const text = document.createElement("span");
+    text.className = "bt-tts-pw-mail-text";
+    line.append(text);
+    readout.append(line);
+    lines.set(badge, { line, text, address });
+    badge.classList.add("is-on");
+    w?.w.classList.add("lit");
+    btn.textContent = "Copy";
+    btn.classList.add("is-copy");
+    btn.setAttribute("aria-label", `Copy ${address}`);
+    if (reduced()) { text.textContent = address; return; }
+    pulse(w);
+    later(() => ringFx(badge, "is-bloom"), PULSE_MS - 90);
+    const cursor = document.createElement("span");
+    cursor.className = "bt-tts-pw-cursor";
+    cursor.setAttribute("aria-hidden", "true");
+    line.append(cursor);
+    let k = 0;
+    const type = () => {
+      k++;
+      const s = document.createElement("span");
+      s.className = "ch";
+      s.textContent = address[k - 1];
+      text.append(s);
+      if (k < address.length) later(type, TYPE_MS);
+      else later(() => cursor.remove(), 900);
+    };
+    later(type, PULSE_MS - 30);
+  }
+  function copied(btn, badge, entry, w) {
+    const { line, text, address } = entry;
+    // The whole address is there even if Copy comes mid-typing.
+    if (text.textContent !== address) { text.replaceChildren(...[...address].map((ch) => Object.assign(document.createElement("span"), { className: "ch", textContent: ch }))); line.querySelector(".bt-tts-pw-cursor")?.remove(); }
+    const tag = (label, cls = "") => {
+      let t = line.querySelector(".bt-tts-pw-tag");
+      if (!t) { t = document.createElement("span"); t.className = "bt-tts-pw-tag"; t.setAttribute("aria-hidden", "true"); line.append(t); }
+      t.textContent = label;
+      t.className = `bt-tts-pw-tag ${cls}`;
+      void t.offsetWidth; t.classList.add("is-shown");
+    };
+    const ok = () => {
+      if (!reduced()) {
+        [...text.children].forEach((s, i) => later(() => { s.classList.add("is-lit"); later(() => s.classList.remove("is-lit"), 260); }, i * 14));
+        pulse(w, true);
+        later(() => ringFx(badge, "is-ripple"), PULSE_MS - 90);
+      }
+      tag("Copied");
+      btn.textContent = "Copied ✓";
+      btn.classList.add("is-done");
+      later(() => { btn.textContent = "Copy"; btn.classList.remove("is-done"); }, 1800);
+    };
+    const failed = () => {
+      // No clipboard (or it was refused): the text stays selectable; select it for them.
+      const sel = getSelection(), r = document.createRange();
+      r.selectNodeContents(text); sel?.removeAllRanges(); sel?.addRange(r);
+      tag("Press and hold to copy", "is-hint");
+    };
+    try {
+      if (!navigator.clipboard?.writeText) return failed();
+      navigator.clipboard.writeText(address).then(ok, failed);
+    } catch { failed(); }
+  }
   function reveal(btn) {
     const badge = btn.closest(".bt-tts-pw-b");
     const row = btn.closest("[data-mail-domain]");
     if (!badge || !row) return;
-    const address = `${btn.dataset.mailUser}@${row.dataset.mailDomain}`;
-    if (btn.dataset.revealed) {
-      navigator.clipboard?.writeText(address).then(() => { btn.textContent = "Copied"; }, () => { btn.textContent = "Copy"; });
-      return;
-    }
-    btn.dataset.revealed = "1";
-    btn.textContent = "Copy";
-    btn.setAttribute("aria-label", `Copy ${address}`);
     if (!wires.length) layout();
     const w = wires.find((x) => x.el === badge);
-    const ring = badge.querySelector(".bt-tts-pw-ring");
-    if (w && !reduced()) {
-      const arc = document.createElementNS(SVG, "path");
-      arc.setAttribute("class", "arc");
-      arc.style.setProperty("--pw-c", w.c);
-      arc.setAttribute("d", jag(w.node, { x: w.x, y: w.y + 3 }));
-      arcs?.replaceChildren(arc);
-      ring.classList.remove("is-struck"); void ring.offsetWidth; ring.classList.add("is-struck");
-    }
-    badge.classList.add("is-on");
-    w?.w.classList.add("lit");
-    let line = readout.querySelector(`[data-for="${badge.dataset.pw}"]`);
-    if (!line) {
-      line = document.createElement("div");
-      line.className = "bt-tts-pw-mail";
-      line.dataset.for = badge.dataset.pw;
-      line.style.setProperty("--pw-c", w?.c || colorOf(badge));
-      readout.append(line);
-    }
-    const done = () => {
-      const a = document.createElement("a");
-      a.href = `mailto:${address}`;
-      a.textContent = address;
-      line.replaceChildren(a);
-    };
-    if (reduced()) return done();
-    let f = 0;
-    const total = 18;
-    const tick = () => {
-      f++;
-      line.textContent = [...address].map((ch, i) => (i < (f / total) * address.length ? ch : GLYPHS[Math.floor(Math.random() * GLYPHS.length)])).join("");
-      if (f < total) requestAnimationFrame(tick); else done();
-    };
-    later(tick, 180);
+    const entry = lines.get(badge);
+    if (entry) return copied(btn, badge, entry, w);
+    show(btn, badge, `${btn.dataset.mailUser}@${row.dataset.mailDomain}`, w);
   }
 
-  // ---- when to run ----
+  // ---- when to power up ----
+  // After the chain pull the game scrolls to the bottom of the footer (G.toBottom, about
+  // 0.56 s later). The power-up waits until that scroll has finished (scrollend, or 150 ms
+  // without scroll events) and at least 60% of the section is on screen, then starts
+  // 200 ms later. Safety net: 1.5 s after the pull it starts anyway if the section is on
+  // screen at all; otherwise as soon as it comes into view. Keyboard focus powers up at once.
+  let ratio = 0, arm = null;
+  new IntersectionObserver((es) => {
+    ratio = es[es.length - 1].intersectionRatio;
+    arm?.onView();
+  }, { threshold: [0, 0.6, 1] }).observe(cf);
+  function disarm() { if (!arm) return; arm.stop(); arm = null; }
+  function armPowerUp() {
+    disarm();
+    let settled = false, started = false, idle = 0, sawScroll = false;
+    const ts = [];
+    const go = () => { if (started) return; started = true; ts.push(setTimeout(() => { arm = null; stopListening(); if (shown()) powerUp(); }, 200)); };
+    const settle = () => { settled = true; if (ratio >= 0.6) go(); };
+    const onScroll = () => { sawScroll = true; settled = false; clearTimeout(idle); idle = setTimeout(settle, 150); };
+    const onEnd = () => { if (sawScroll) { clearTimeout(idle); settle(); } };
+    const stopListening = () => { removeEventListener("scroll", onScroll); removeEventListener("scrollend", onEnd); clearTimeout(idle); };
+    addEventListener("scroll", onScroll, { passive: true });
+    if ("onscrollend" in window) addEventListener("scrollend", onEnd);
+    // No scroll at all (already at the bottom): settled once the game's scroll would have begun.
+    ts.push(setTimeout(() => { if (!sawScroll) settle(); }, 800));
+    let late = false;
+    ts.push(setTimeout(() => { late = true; if (ratio > 0) go(); }, 1500));
+    arm = {
+      onView: () => { if ((settled || late) && ratio >= 0.6) go(); },
+      stop: () => { ts.forEach(clearTimeout); stopListening(); },
+    };
+  }
   const shown = () => root.dataset.cf === "1" || cf.matches(":focus-within");
-  const check = () => { if (shown() && !powered) powerUp(); else if (!shown() && powered) powerDown(); };
+  const check = () => {
+    if (!shown()) { disarm(); if (powered) powerDown(); return; }
+    if (powered || arm) return;
+    if (cf.matches(":focus-within") && root.dataset.cf !== "1") powerUp();   // keyboard: no scroll to wait for
+    else armPowerUp();
+  };
   new MutationObserver(check).observe(root, { attributes: true, attributeFilter: ["data-cf"] });
   cf.addEventListener("focusin", check);
   cf.addEventListener("focusout", () => setTimeout(check, 0));
   new IntersectionObserver((es) => { visible = es.some((e) => e.isIntersecting); sync(); }).observe(cf);
-  new ResizeObserver(() => { if (powered) layout(); }).observe(cf);
+  new ResizeObserver(() => { if (wires.length) layout(); }).observe(cf);
   document.addEventListener("visibilitychange", sync);
   check();
 
