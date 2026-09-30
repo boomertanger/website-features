@@ -9,6 +9,7 @@ import SiteHeader from "../components/SiteHeader.astro";
 import SiteFooter from "../components/SiteFooter.astro";
 import TabBar from "../components/TabBar.astro";
 import PreviewChip from "../components/PreviewChip.astro";
+import AccountBanners from "../components/account/AccountBanners.astro";
 import Mascot from "../components/Mascot.astro";
 import site from "../data/site.json";
 import { isProduction, firebaseEnv } from "../lib/env.js";
@@ -56,19 +57,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     <div class="bt-site-frame">
       <a class="bt-skip" href="#main">Skip to content</a>
       <SiteHeader overlay={overlayHeader} />
-      <!-- Account banners (docs/specs/accounts.md screen 8): shown by <body data-auth-state>. -->
-      <div class="bt-account-banner bt-when-unverified" data-verify-banner>
-        <span data-verify-email>✉️ Check your inbox: verify your email to check in, vote and post.</span>
-        <span data-verify-noemail hidden>✉️ Add an email to your account to check in, vote and post.</span>
-        <span class="bt-spacer"></span>
-        <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-verify-email data-verify-resend>Resend email</button>
-        <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/account#signin" data-verify-noemail hidden>Add an email</a>
-      </div>
-      <div class="bt-account-banner bt-when-needs-signup">
-        <span>Almost there: finish creating your account to join in.</span>
-        <span class="bt-spacer"></span>
-        <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="signup">Finish signup</button>
-      </div>
+      <AccountBanners />
       <main id="main" class="bt-site-main" tabindex="-1">
         <slot />
       </main>

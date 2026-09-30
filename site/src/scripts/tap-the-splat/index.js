@@ -16,6 +16,14 @@ function loadStyles() {
   return styles;
 }
 
+/** Creates the game on the footer's play area (once) without starting a run (the live UI kit). */
+export async function loadGame(root) {
+  await loadStyles();
+  root._ttsGame ??= createGame(root);
+  initPower(root);
+  return root._ttsGame;
+}
+
 /** Creates the game on the footer's play area (once) and starts a run. */
 export async function startGame(root) {
   await loadStyles();

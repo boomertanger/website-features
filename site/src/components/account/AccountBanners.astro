@@ -1,0 +1,20 @@
+---
+// Account banners under the header (docs/specs/accounts.md screen 8): verify your email
+// (or add one, for Twitch accounts with none) and finish signup. BaseLayout renders them
+// for <body data-auth-state> to show (scripts/account/ui.ts drives Resend); the live UI
+// kit renders them with preview, always visible and not wired up.
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
+---
+<div class:list={["bt-account-banner", !preview && "bt-when-unverified"]} data-verify-banner={preview ? undefined : ""}>
+  <span data-verify-email>✉️ Check your inbox: verify your email to check in, vote and post.</span>
+  <span data-verify-noemail hidden>✉️ Add an email to your account to check in, vote and post.</span>
+  <span class="bt-spacer"></span>
+  <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-verify-email data-verify-resend>Resend email</button>
+  <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/account#signin" data-verify-noemail hidden>Add an email</a>
+</div>
+<div class:list={["bt-account-banner", !preview && "bt-when-needs-signup"]}>
+  <span>Almost there: finish creating your account to join in.</span>
+  <span class="bt-spacer"></span>
+  <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="signup">Finish signup</button>
+</div>

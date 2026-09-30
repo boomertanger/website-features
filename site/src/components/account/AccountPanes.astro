@@ -1,0 +1,153 @@
+---
+// The account page's A2 tabs and panes (docs/specs/accounts.md screen 10): Profile,
+// Linked accounts, Sign-in methods, Privacy, Your data. /account renders it hidden until
+// a member is signed in (scripts/account/page.ts fills and drives it); the live UI kit
+// (/dev/ui-kit) renders it with preview, visible and static.
+interface Props { preview?: boolean }
+const { preview = false } = Astro.props;
+
+const TABS = [
+  ["profile", "Profile"],
+  ["linked", "Linked accounts"],
+  ["signin", "Sign-in methods"],
+  ["privacy", "Privacy"],
+  ["data", "Your data"],
+];
+const PRIVACY = [
+  ["showLinked", "Show my linked accounts on my profile", "Off by default"],
+  ["useProviderPhoto", "Use my Google photo as my avatar", "Otherwise your initials are shown"],
+  ["reminders", "Stream reminder emails", "A heads-up when a stream is about to start"],
+];
+---
+<div class="bt-account-page" data-acct-when={preview ? undefined : "member"} hidden={!preview}>
+  <nav class="bt-account-tabs" role="tablist" aria-label="Account sections">
+    {TABS.map(([id, label], i) => (
+      <a href={`#${id}`} role="tab" id={`tab-${id}`} aria-controls={`pane-${id}`} aria-selected={i === 0 ? "true" : "false"} data-tab={id}>{label}</a>
+    ))}
+  </nav>
+  <div class="bt-account-panes">
+    <div class="bt-notice bt-notice--error" role="alert" data-page-err hidden></div>
+    <div class="bt-notice bt-notice--ok" role="status" data-page-ok hidden></div>
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-profile" aria-labelledby="tab-profile">
+      <div class="bt-card">
+        <div class="bt-card-head"><h2 class="bt-card-title">Profile</h2></div>
+        <div class="bt-set-row">
+          <span class="bt-avatar-xl" aria-hidden="true" data-me="avatar"></span>
+          <div class="bt-set-row-main"><b data-me="displayName"></b><small><span data-me="handle"></span> · <span data-joined></span></small></div>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-edit="name">Edit profile</button>
+          <form class="bt-set-row-form" data-form="name" hidden>
+            <label class="bt-sr-only" for="acct-name">Display name</label>
+            <input class="bt-input" id="acct-name" maxlength="30" autocomplete="nickname" required />
+            <button type="submit" class="bt-btn bt-btn--primary bt-btn--sm">Save</button>
+            <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-cancel>Cancel</button>
+          </form>
+        </div>
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b>Handle</b><small><span data-me="handle"></span> · <span data-handle-when></span></small></div>
+          <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-edit="handle">Change</button>
+          <form class="bt-set-row-form" data-form="handle" hidden>
+            <div class="bt-handle-input"><label class="bt-sr-only" for="acct-handle">New handle</label><input class="bt-input" id="acct-handle" maxlength="20" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="acct-hstate" /></div>
+            <button type="submit" class="bt-btn bt-btn--primary bt-btn--sm" disabled>Save</button>
+            <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-cancel>Cancel</button>
+            <div class="bt-field-state" id="acct-hstate" data-hstate aria-live="polite" style="width:100%"></div>
+          </form>
+        </div>
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b>Email</b><small data-email-line></small></div>
+          <span class="bt-pill-ok" data-email-ok hidden>Verified</span>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-verify-now hidden>Resend verification</button>
+          <a class="bt-btn bt-btn--secondary bt-btn--sm" href="#signin" data-add-email hidden>Add an email</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-linked" aria-labelledby="tab-linked" hidden>
+      <div class="bt-card">
+        <div class="bt-card-head"><h2 class="bt-card-title">Linked accounts</h2></div>
+        <p class="bt-section-text">Link where you watch, so your points count wherever you are. Only you see these unless you turn on "Show my linked accounts" under Privacy.</p>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--twitch" aria-hidden="true">Tw</span>
+          <div class="bt-set-row-main"><b>Twitch</b><small data-twitch-line>Not linked</small></div>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-twitch-link>Link</button>
+          <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-twitch-unlink hidden>Unlink</button>
+        </div>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--youtube" aria-hidden="true">YT</span>
+          <div class="bt-set-row-main"><b>YouTube</b><small>Coming soon</small></div>
+          <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" disabled>Link</button>
+        </div>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--tiktok" aria-hidden="true">TT</span>
+          <div class="bt-set-row-main"><b>TikTok</b><small>Coming soon</small></div>
+          <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" disabled>Link</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-signin" aria-labelledby="tab-signin" hidden>
+      <div class="bt-card">
+        <div class="bt-card-head"><h2 class="bt-card-title">Sign-in methods</h2></div>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--google" aria-hidden="true">G</span>
+          <div class="bt-set-row-main"><b>Google</b><small data-google-line>Not connected</small></div>
+          <span class="bt-pill-ok" data-google-ok hidden>Connected</span>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-google-add>Add</button>
+        </div>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--email" aria-hidden="true">@</span>
+          <div class="bt-set-row-main"><b>Email and password</b><small data-password-line>Not set up</small></div>
+          <span class="bt-pill-ok" data-password-ok hidden>Connected</span>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-edit="password">Add</button>
+          <form class="bt-set-row-form" data-form="password" hidden>
+            <label class="bt-sr-only" for="acct-pw-email">Email</label>
+            <input class="bt-input" id="acct-pw-email" type="email" autocomplete="email" placeholder="Email" data-pw-email />
+            <label class="bt-sr-only" for="acct-pw">New password</label>
+            <input class="bt-input" id="acct-pw" type="password" autocomplete="new-password" minlength="8" placeholder="Password (8+ characters)" required />
+            <button type="submit" class="bt-btn bt-btn--primary bt-btn--sm">Save</button>
+            <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-cancel>Cancel</button>
+          </form>
+        </div>
+        <div class="bt-set-row">
+          <span class="bt-platform-icon bt-platform-icon--twitch" aria-hidden="true">Tw</span>
+          <div class="bt-set-row-main"><b>Twitch</b><small data-twitch-signin-line>Link Twitch under Linked accounts to sign in with it</small></div>
+          <span class="bt-pill-ok" data-twitch-ok hidden>Connected</span>
+        </div>
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b>Sign out everywhere</b><small>Ends your sessions on every device (others within the hour)</small></div>
+          <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-signout-all>Sign out everywhere</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-privacy" aria-labelledby="tab-privacy" hidden>
+      <div class="bt-card">
+        <div class="bt-card-head"><h2 class="bt-card-title">Privacy</h2></div>
+        {PRIVACY.map(([key, label, hint]) => (
+          <div class="bt-set-row">
+            <div class="bt-set-row-main"><b id={`pref-${key}`}>{label}</b><small>{hint}</small></div>
+            <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby={`pref-${key}`} data-pref={key}></button>
+          </div>
+        ))}
+      </div>
+    </section>
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-data" aria-labelledby="tab-data" hidden>
+      <span id="your-data"></span>
+      <div class="bt-card">
+        <div class="bt-card-head"><h2 class="bt-card-title">Your data</h2></div>
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b>Download my data</b><small>Everything tied to your account, as one file. Coming soon.</small></div>
+          <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" disabled>Download</button>
+        </div>
+      </div>
+      <div class="bt-card bt-card--danger">
+        <div class="bt-card-head"><h2 class="bt-card-title">Delete account</h2></div>
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b>Delete my account</b><small>7 days to change your mind, then permanent. Coming soon; until then, use Support under Contact at the bottom of the page.</small></div>
+          <button type="button" class="bt-btn bt-btn--danger bt-btn--sm" disabled>Delete account</button>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>

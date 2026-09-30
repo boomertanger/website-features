@@ -23,6 +23,7 @@ import { startTwitch } from "../../lib/twitch";
 import { createHandleChecker, cleanHandle, type HandleState } from "../../lib/handle-check";
 import { wordmark, signInReasons, termsVersion } from "../../data/site.json";
 import { UNDER13_KEY, EMAIL_FOR_LINK_KEY, RETURN_KEY } from "../../lib/auth-keys";
+import { isProduction } from "../../lib/env.js";
 
 export type Screen = "join" | "signin" | "link" | "forgot" | "birthday" | "under13" | "handle" | "terms";
 export type Mode = "join" | "signin";
@@ -60,8 +61,12 @@ interface Draft { email: string; month: number | null; year: number | null; hand
 
 let open: { go: (s: Screen) => void } | null = null;
 
-/** Opens the sign-in dialog. `title` replaces the Join tab's heading ("Join the club"), e.g. "Join to enter the Arcade". */
-export function openSignIn({ screen, mode = "join", title }: { screen?: Screen; mode?: Mode; title?: string } = {}) {
+/**
+ * Opens the sign-in dialog. `title` replaces the Join tab's heading ("Join the club"),
+ * e.g. "Join to enter the Arcade". `previewError` (non-production builds only, for the
+ * live UI kit at /dev/ui-kit) shows that message in the first screen's error line.
+ */
+export function openSignIn({ screen, mode = "join", title, previewError }: { screen?: Screen; mode?: Mode; title?: string; previewError?: string } = {}) {
   const now = getAuthState();
   const start: Screen = screen ?? (now.status === "needsSignup" ? "birthday" : mode);
   if (open) return open.go(start);
@@ -417,4 +422,5 @@ export function openSignIn({ screen, mode = "join", title }: { screen?: Screen; 
 
   open = { go };
   go(start);
+  if (previewError && !isProduction) showErr(previewError);
 }

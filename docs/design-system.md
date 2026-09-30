@@ -1,7 +1,14 @@
 # Boomertanger design system (`bt-ui`)
 
-The UI Kit page (`shared/ui-kit/`) renders every component below in every state —
-it's the visual source of truth. This document is the written one.
+The live UI kit at **`/dev/ui-kit`** on the new site (staging and previews only; a 404
+in production) renders every component below in every state with the real site CSS and
+components — it's the visual source of truth. It mounts the Squarespace-era kit page
+(`shared/ui-kit/`) as its "Shared kit" part and adds the site shell: tokens read from
+the live CSS variables, the logo and mascot in every live state, the footer game, Contact
++ Follow, the sign-in dialog and signup steps, the account pieces and the home tiles,
+with a desktop / tablet / phone switcher for the container queries. Source:
+`site/src/pages/dev/[kit].astro`, `site/src/scripts/dev/ui-kit.ts`. This document is the
+written one.
 
 ## 1. Loading
 
@@ -608,7 +615,7 @@ section 5 (decided after the migration). New features must use it too.
   callback only reports `{ user, isAdmin }`; it doesn't own this DOM
   toggling. A small shared helper (in `admin-auth.js` or `admin-menu.js`)
   could take this over.
-- **The published UI Kit page doesn't show the site shell yet.** The Site
+- **Done: the site shell is on the live kit (`/dev/ui-kit`).** Kept for history: The Site
   shell components (§5) live in `bt-ui.css`, but `shared/ui-kit/` hasn't been
   updated to render them, so the kit page isn't yet the visual source of
   truth for them (the mockup is). Update the published UI Kit page. (The Boom

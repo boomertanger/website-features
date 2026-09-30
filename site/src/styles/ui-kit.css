@@ -1,0 +1,58 @@
+/* site/src/styles/ui-kit.css — layout of the live UI kit page (/dev/ui-kit) only.
+   The components themselves come from shared/bt-ui.css. Tokens only: no raw colors.
+   The preview stage is its own "bt" container, so the width switcher drives every
+   component's container queries; the page layout around it may use @media (§8d). */
+
+.bt-root:not(#_) .lk-wrap { display: grid; grid-template-columns: 210px minmax(0, 1fr); gap: 28px; width: 100%; max-width: calc(1440px + 2 * var(--bt-gutter)); margin: 0 auto; padding: 24px var(--bt-gutter) 56px; }
+.bt-root:not(#_) .lk-nav { position: sticky; top: calc(var(--bt-header-h, 64px) + 16px); align-self: start; display: flex; flex-direction: column; gap: 2px; max-height: calc(100vh - var(--bt-header-h, 64px) - 32px); overflow-y: auto; scrollbar-width: thin; }
+.bt-root:not(#_) .lk-nav a { padding: 6px 10px; border-left: 2px solid transparent; border-radius: var(--bt-radius-md); color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 600; text-decoration: none; }
+.bt-root:not(#_) .lk-nav a:hover { color: var(--bt-text); background: var(--bt-surface); }
+.bt-root:not(#_) .lk-nav a.is-on { color: var(--bt-text); border-left-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .lk-nav-sep { margin: 12px 10px 4px; font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .lk-main { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+.bt-root:not(#_) .lk-head { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .lk-width { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-top: 4px; }
+
+.bt-root:not(#_) .lk-stage { container: bt / inline-size; width: 100%; margin: 0 auto; transition: max-width 250ms; }
+.bt-root:not(#_) .lk-stage[data-w="tablet"] { max-width: 820px; }
+.bt-root:not(#_) .lk-stage[data-w="phone"] { max-width: 390px; }
+.bt-root:not(#_) .lk-stage:not([data-w="desktop"]) { outline: 1px dashed var(--bt-border-2); outline-offset: 8px; }
+
+.bt-root:not(#_) .lk-sec { display: flex; flex-direction: column; gap: 14px; padding: 28px 0; border-top: 1px solid var(--bt-border); scroll-margin-top: calc(var(--bt-header-h, 64px) + 16px); }
+.bt-root:not(#_) .lk-sec:first-child { border-top: 0; padding-top: 8px; }
+.bt-root:not(#_) .lk-sub { margin-top: 6px; font-size: var(--bt-text-base); font-weight: 700; }
+.bt-root:not(#_) .lk-note { max-width: 72ch; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; }
+.bt-root:not(#_) :is(.lk-note, .lk-code, .lk-token, .lk-type-row) code, .bt-root:not(#_) .lk-code { font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-sm); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .lk-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+.bt-root:not(#_) .lk-item { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bt-root:not(#_) .lk-demo { position: relative; padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); min-width: 0; }
+.bt-root:not(#_) .lk-demo--row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.bt-root:not(#_) .lk-demo--flush { padding: 0; overflow: hidden; }
+.bt-root:not(#_) .lk-name { font-size: var(--bt-text-md); font-weight: 700; }
+.bt-root:not(#_) .lk-code { display: block; overflow-wrap: anywhere; }
+
+.bt-root:not(#_) .lk-tokens { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 8px; }
+.bt-root:not(#_) .lk-token { display: grid; grid-template-columns: 28px minmax(0, 1fr); column-gap: 10px; align-items: center; padding: 8px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); }
+.bt-root:not(#_) .lk-token code { overflow-wrap: anywhere; }
+.bt-root:not(#_) .lk-token small { grid-column: 2; color: var(--bt-text-faint); font-size: var(--bt-text-xs); overflow-wrap: anywhere; }
+.bt-root:not(#_) .lk-token--plain { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .lk-token--plain small { grid-column: 1; }
+.bt-root:not(#_) .lk-swatch { grid-row: span 2; width: 28px; height: 28px; border-radius: var(--bt-radius-sm); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .lk-other { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.bt-root:not(#_) .lk-type { display: flex; flex-direction: column; gap: 6px; }
+.bt-root:not(#_) .lk-type-row { display: grid; grid-template-columns: minmax(0, 1fr) 200px 120px; gap: 12px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lk-type-row small { color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+
+/* The shared kit mounts full width inside the stage; its sections sit flush. */
+.bt-root:not(#_) .lk-stage #bt-ui-kit { border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lk-type-row { grid-template-columns: minmax(0, 1fr); gap: 2px; }
+}
+@media (max-width: 900px) {
+  .bt-root:not(#_) .lk-wrap { grid-template-columns: minmax(0, 1fr); gap: 12px; padding: 16px 16px 40px; }
+  .bt-root:not(#_) .lk-nav { top: var(--bt-header-h, 56px); z-index: 5; flex-direction: row; max-height: none; margin: 0 -16px; padding: 8px 16px; overflow-x: auto; overflow-y: visible; background: var(--bt-bg); }
+  .bt-root:not(#_) .lk-nav a { padding: 6px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; }
+  .bt-root:not(#_) .lk-nav a.is-on { border-color: var(--bt-primary); }
+  .bt-root:not(#_) .lk-nav-sep { display: none; }
+}

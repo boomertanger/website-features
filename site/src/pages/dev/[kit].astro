@@ -1,0 +1,179 @@
+---
+// /dev/ui-kit: the live UI kit (docs/design-system.md). Every component in every state,
+// drawn with the real site CSS (shared/bt-ui.css) and the real components and scripts,
+// never copies: the Squarespace-era kit page (shared/ui-kit/ui-kit.js) mounts inside it,
+// the site's own components render here, and the footer game, Contact + Follow and the
+// sign-in dialog are driven live. Non-production builds only: production builds no page
+// (a 404), and it's noindex everywhere.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Logo from "../../components/Logo.astro";
+import LiveBeacon from "../../components/LiveBeacon.astro";
+import Mascot from "../../components/Mascot.astro";
+import AccountBanners from "../../components/account/AccountBanners.astro";
+import AccountPanes from "../../components/account/AccountPanes.astro";
+import BoomBoard from "../../components/home/BoomBoard.astro";
+import NextStreamTile from "../../components/home/NextStreamTile.astro";
+import TodoTile from "../../components/home/TodoTile.astro";
+import UpdatesTile from "../../components/home/UpdatesTile.astro";
+import WarmFuzziesTile from "../../components/home/WarmFuzziesTile.astro";
+import { isProduction } from "../../lib/env.js";
+import "../../../../shared/ui-kit/ui-kit.css";
+import "../../styles/ui-kit.css";
+
+export function getStaticPaths() {
+  return isProduction ? [] : [{ params: { kit: "ui-kit" } }];
+}
+
+const LIVE = [["off", "Offline: next stream"], ["public", "Live (public): red glow"], ["backstage", "Backstage: green glow"]];
+const SITE_SECTIONS = [
+  ["tokens", "Tokens"],
+  ["brand", "Logo and mascot"],
+  ["footer", "Footer game"],
+  ["power", "Contact + Follow"],
+  ["signin", "Sign-in dialog"],
+  ["account", "Account"],
+  ["home", "Home tiles"],
+];
+---
+<BaseLayout title="UI kit" noindex>
+  <div class="lk-wrap">
+    <nav class="lk-nav" aria-label="Kit sections" data-kit-nav>
+      {SITE_SECTIONS.map(([id, label], i) => <a href={`#${id}`} class:list={[i === 0 && "is-on"]}>{label}</a>)}
+      <span class="lk-nav-sep" aria-hidden="true">Shared kit</span>
+      <!-- The shared kit's own sections are added here by scripts/dev/ui-kit.ts. -->
+    </nav>
+
+    <div class="lk-main">
+      <header class="lk-head">
+        <h1 class="bt-title">UI kit</h1>
+        <p class="bt-subtitle">The live kit: every component drawn with the real site CSS and components. Under each one: the class or component to use. Staging and previews only.</p>
+        <div class="lk-width" role="group" aria-label="Preview width" data-kit-width>
+          <button type="button" class="bt-chip bt-chip--small is-active" aria-pressed="true" data-w="desktop">Desktop</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-w="tablet">Tablet (820)</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-w="phone">Phone (390)</button>
+          <span class="bt-meta" data-kit-width-readout></span>
+        </div>
+      </header>
+
+      <!-- The stage is its own "bt" container, so the width switcher drives every
+           container query inside it. -->
+      <div class="lk-stage" data-kit-stage data-w="desktop">
+
+        <section class="lk-sec" id="tokens" aria-labelledby="h-tokens">
+          <h2 class="bt-heading" id="h-tokens">Tokens</h2>
+          <p class="lk-note">Read from the real CSS variables on this page (every <code>--bt-*</code> declared in <code>shared/bt-ui.css</code>), not a list kept by hand.</p>
+          <h3 class="lk-sub">Colours</h3>
+          <div class="lk-tokens" data-kit-colors></div>
+          <h3 class="lk-sub">Type</h3>
+          <div class="lk-type" data-kit-type></div>
+          <h3 class="lk-sub">Spacing, radii and the rest</h3>
+          <div class="lk-other" data-kit-other></div>
+        </section>
+
+        <section class="lk-sec" id="brand" aria-labelledby="h-brand">
+          <h2 class="bt-heading" id="h-brand">Logo and mascot</h2>
+          <div class="lk-grid">
+            {LIVE.map(([state, label]) => (
+              <div class="lk-item">
+                <div class="lk-demo lk-demo--row" data-live={state}><Logo /><LiveBeacon /></div>
+                <p class="lk-name">R4 lockup + Live Beacon, {label}</p>
+                <code class="lk-code">&lt;Logo /&gt; &lt;LiveBeacon /&gt; · data-live="{state}"</code>
+              </div>
+            ))}
+            <div class="lk-item">
+              <div class="lk-demo lk-demo--row"><Mascot size={56} decorative /><Mascot size={56} aware decorative /></div>
+              <p class="lk-name">Mascot, plain and aware</p>
+              <code class="lk-code">&lt;Mascot /&gt; · &lt;Mascot aware /&gt; (.bt-mascot, --aware)</code>
+            </div>
+          </div>
+        </section>
+
+        <section class="lk-sec" id="footer" aria-labelledby="h-footer">
+          <h2 class="bt-heading" id="h-footer">Footer game</h2>
+          <p class="lk-note">These drive the page's real footer (<code>SiteFooter.astro</code>, <code>.bt-tts</code>; game in <code>scripts/tap-the-splat/</code>). Each button loads the game if needed and scrolls down to it.</p>
+          <div class="lk-item">
+            <div class="lk-demo lk-demo--row" data-kit-footer>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-end="win">End: You survived</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-end="missed">End: It got away</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-end="wrong">End: Wrong one</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-end="boom">End: Boom</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-toast>Tapped-out toast</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-bar>Game bar while playing</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-lb>Leaderboard popover</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-play-now>Play now cue</button>
+            </div>
+            <p class="lk-name">Game bar, end screens (layout 2), toast, leaderboard popover, Play now cue</p>
+            <code class="lk-code">.bt-tts-top, .bt-tts-end, .bt-tts-toast, .bt-tts-lb-list, .bt-tts[data-cue]</code>
+          </div>
+          <p class="lk-note">There's no general toast component in the kit; the game's <code>.bt-tts-toast</code> is the only one.</p>
+        </section>
+
+        <section class="lk-sec" id="power" aria-labelledby="h-power">
+          <h2 class="bt-heading" id="h-power">Contact + Follow ("Shared power")</h2>
+          <div class="lk-item">
+            <div class="lk-demo lk-demo--row">
+              <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-kit-power>▶ Replay the power-up</button>
+            </div>
+            <p class="lk-name">Hanging cables, power-up, lightning on Show (in the page's footer)</p>
+            <code class="lk-code">.bt-tts-cf[data-power] &gt; .bt-tts-pw-col &gt; .bt-tts-pw-row &gt; .bt-tts-pw-b · scripts/tap-the-splat/power.js</code>
+          </div>
+        </section>
+
+        <section class="lk-sec" id="signin" aria-labelledby="h-signin">
+          <h2 class="bt-heading" id="h-signin">Sign-in dialog (S2 / E1)</h2>
+          <p class="lk-note">The real dialog (<code>scripts/account/dialog.ts</code>, <code>openSignIn()</code> through <code>openModal(&#123; variant: "split" &#125;)</code>): Join free and Sign in tabs, Google and Twitch provider buttons, the email form, and the signup steps with the live handle check. Signed in, the Join and Sign in buttons go to /account instead. The under-13 screen isn't here: opening it blocks signup in this browser.</p>
+          <div class="lk-item">
+            <div class="lk-demo lk-demo--row">
+              <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-kit-dialog="join">Join free</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="signin">Sign in</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="join" data-kit-title="Join to enter the Arcade">Join, Arcade title</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="join" data-kit-error="That email already has an account. Sign in with it instead.">Join, error</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="signin" data-kit-error="That email and password don't match. If you joined with Google or Twitch, use that button, or reset your password.">Sign in, error</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="forgot">Forgot password</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="birthday">Step: birthday</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="handle">Step: handle (live check)</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-dialog="terms">Step: terms</button>
+            </div>
+            <p class="lk-name">Dialog, tabs, providers, signup steps, handle field states, error line</p>
+            <code class="lk-code">.bt-modal--split, .bt-pills--mode, .bt-providers--row .bt-provider, .bt-password, .bt-steps, .bt-handle-input (handle field states), .bt-notice--error</code>
+          </div>
+        </section>
+
+        <section class="lk-sec" id="account" aria-labelledby="h-account">
+          <h2 class="bt-heading" id="h-account">Account</h2>
+          <div class="lk-item">
+            <div class="lk-demo lk-demo--flush"><AccountBanners preview /></div>
+            <p class="lk-name">Verify-your-email and finish-signup banners</p>
+            <code class="lk-code">&lt;AccountBanners /&gt; (.bt-account-banner; .bt-when-unverified, .bt-when-needs-signup)</code>
+          </div>
+          <div class="lk-item">
+            <div class="lk-demo"><AccountPanes preview /></div>
+            <p class="lk-name">Account page tabs (A2) and settings rows</p>
+            <code class="lk-code">&lt;AccountPanes /&gt; (.bt-account-tabs, .bt-account-pane, .bt-set-row, .bt-card--danger)</code>
+          </div>
+        </section>
+
+        <section class="lk-sec" id="home" aria-labelledby="h-home">
+          <h2 class="bt-heading" id="h-home">Home tiles</h2>
+          <div class="lk-grid">
+            <div class="lk-item"><div class="lk-demo"><NextStreamTile /></div><p class="lk-name">Next stream</p><code class="lk-code">&lt;NextStreamTile /&gt; (.bt-tile--next, .bt-ns)</code></div>
+            <div class="lk-item"><div class="lk-demo"><UpdatesTile /></div><p class="lk-name">Updates</p><code class="lk-code">&lt;UpdatesTile /&gt; (.bt-upd)</code></div>
+            <div class="lk-item"><div class="lk-demo"><TodoTile /></div><p class="lk-name">To-dos</p><code class="lk-code">&lt;TodoTile /&gt; (.bt-todo)</code></div>
+            <div class="lk-item"><div class="lk-demo"><WarmFuzziesTile /></div><p class="lk-name">Warm Fuzzies</p><code class="lk-code">&lt;WarmFuzziesTile /&gt; (.bt-mark--fuzzies, .bt-notes)</code></div>
+          </div>
+          <div class="lk-item"><div class="lk-demo"><BoomBoard /></div><p class="lk-name">Boom Board</p><code class="lk-code">&lt;BoomBoard /&gt; (.bt-mark, .bt-bb-*)</code></div>
+        </section>
+
+        <section class="lk-sec" id="shared" aria-labelledby="h-shared">
+          <h2 class="bt-heading" id="h-shared">Shared kit</h2>
+          <p class="lk-note">The Squarespace-era kit page (<code>shared/ui-kit/ui-kit.js</code>), mounted as is: buttons (including admin green and danger red), chips, status and level badges, forms, dialogs (<code>openModal</code>, <code>confirmAction</code>), list rows and their states, dashboard cards, tables, meters and switches, detail blocks, and the Boom Arcade pieces.</p>
+          <div id="bt-ui-kit"></div>
+        </section>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/dev/ui-kit";
+</script>
