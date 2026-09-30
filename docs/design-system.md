@@ -96,7 +96,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Footer Contact + Follow (added) | one colour per badge: `contact-business` (`title`), `contact-fanmail` (`pink`), `contact-support` (`teal`), `follow-tiktok` (#25f4ee), `follow-youtube` (#ff0000), `follow-twitch` (`brand-twitch`), `follow-instagram` (#ff0069) · `pw-cable` (#2e2a33, an unlit cable) `pw-ring-bg` (#0b0a10) `pw-ring-edge` (#2a2530, an unlit ring) `pw-arc` (#fff, the lightning and ring flash) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
-| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `rank-4` (light steel) and `rank-5` (graphite), mixed from `text-muted` and `surface-2`, for ranks 4 and 5 (numbers in `text-muted`; never purple, which means clickable) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
+| Boom Arcade (added) | `rank-1` … `rank-5`, one rank set for every board and the podium: 1 gold (`title`), 2 silver (#dfe4ee), 3 ember orange (#f0441c, the end of `title-gradient`), 4 dark graphite (mixed from `text-muted` and `surface-2`; numbers on it in `text-muted`), 5 pink (`pink`); never purple, which means clickable. `rank-silver` and `rank-bronze` stay as aliases of `rank-2` and `rank-3` · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -602,7 +602,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-game-stats` (`b` counts), `.bt-game-me` (your best), `.bt-game-acts`.
   `.bt-btn--go` is the green Play now / Play again (§8f). Leaderboards:
   `.bt-tile.bt-board-card` [> `.bt-tile-head`] > `table.bt-board [--mini]` > `tr[data-r]`
-  (1–3 gold, silver, bronze) [`.is-me`] > `td.bt-board-rank`, `.bt-board-who`
+  (1–3 gold, silver, orange: `--bt-rank-1` … `--bt-rank-3`, the same set the podium uses) [`.is-me`] > `td.bt-board-rank`, `.bt-board-who`
   (`.bt-avatar-sm` + name + `small` @handle), `td.bt-board-date`, `td.bt-board-time`;
   `tr.bt-board-gap` then your pinned row when you're past the rows shown;
   `.bt-board-foot` (Showing N of M, Show more, not on this board, verify email);
@@ -989,11 +989,12 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   joystick Games, trophy Leaderboards, question mark How it works; no words) that hides on
   a long scroll down (not within the first screen) and shows after a short scroll up, the
   page's chip row moving up with it. Nothing else on the Arcade pages is sticky; anything
-  that becomes sticky offsets by `--bt-sticky-top`.
-- **The podium shows the top five** (How it works' Leaderboards card): 4 · 2 · 1 · 3 · 5, 38px
-  bars rising from the middle out. Ranks 4 and 5 are greys (`--bt-rank-4`, `--bt-rank-5`), not
-  purple. The members-only
-  gate's bar has no links and doesn't stick. The site header is never sticky.
+  that becomes sticky offsets by `--bt-sticky-top`. The members-only gate's bar has no links
+  and doesn't stick. The site header is never sticky.
+- **The podium shows the top five** (How it works' Leaderboards card): 4 · 2 · 1 · 3 · 5, 34px
+  bars with 6px gaps rising from the middle out, in the shared rank colours (`--bt-rank-1` …
+  `--bt-rank-5`: gold, silver, orange, dark grey, pink; never purple). Only 1 glows. The
+  leaderboard tables use the same set, so their #3 is orange too.
 - **How it works, sections 2 and 3** (`docs/design/mockups/how-it-works-sections-2-3.html`):
   2 is the journey ("After"; the circles on their own line above the cards, the line filling
   gold up to the step; 3 columns at ≤ 900px, a vertical path on phones) and 3 is the kit's

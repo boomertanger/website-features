@@ -1474,15 +1474,16 @@
   --bt-pw-ring-bg: #0b0a10;
   --bt-pw-ring-edge: #2a2530;
   --bt-pw-arc: #fff;
-  /* Boom Arcade (arcade-step1.md §8): rank metals for #2 and #3 (#1 is --bt-title),
-     the lamp yellow (shared with Bug Zapper's bolt, design-system.md §8h) and the red
+  /* Boom Arcade (arcade-step1.md §8): the rank colours, one set for every board and the
+     podium (gold, silver, orange, dark grey, pink), the lamp yellow (shared with Bug Zapper's bolt, design-system.md §8h) and the red
      spotlight behind game art. */
-  --bt-rank-silver: #dfe4ee;
-  --bt-rank-bronze: #d58b52;
-  /* Ranks 4 and 5 (the How it works podium): greys mixed from the kit's own, never purple,
-     which means clickable. Their numbers use --bt-text-muted. */
-  --bt-rank-4: color-mix(in srgb, var(--bt-text-muted) 62%, var(--bt-surface-2));   /* light steel */
-  --bt-rank-5: color-mix(in srgb, var(--bt-text-muted) 34%, var(--bt-surface-2));   /* graphite */
+  --bt-rank-1: var(--bt-title);                            /* gold */
+  --bt-rank-2: #dfe4ee;                                    /* silver */
+  --bt-rank-3: #f0441c;                                    /* ember orange: the end of --bt-title-gradient */
+  --bt-rank-4: color-mix(in srgb, var(--bt-text-muted) 40%, var(--bt-surface-2));   /* dark graphite; numbers on it use --bt-text-muted */
+  --bt-rank-5: var(--bt-pink);                             /* pink */
+  --bt-rank-silver: var(--bt-rank-2);                      /* aliases, kept so nothing breaks */
+  --bt-rank-bronze: var(--bt-rank-3);
   --bt-lamp: #ffd400;
   --bt-lamp-rgb: 255, 212, 0;
   --bt-game-spot: rgba(var(--bt-blood-rgb), 0.14);
@@ -2367,7 +2368,7 @@
    .bt-game-card    a .bt-tile for one game: .bt-game-art (splat + mascot) beside .bt-game-body
                     (.bt-game-name, .bt-game-tag, .bt-game-stats, .bt-game-me, .bt-game-acts);
                     --compact stacks the art on top; .is-soon dims a game that is not out yet
-   .bt-board        leaderboard table: tr[data-r="1|2|3"] gold / silver / bronze ranks, tr.is-me (your row),
+   .bt-board        leaderboard table: tr[data-r="1|2|3"] gold / silver / orange ranks (--bt-rank-1..3), tr.is-me (your row),
                     tr.bt-board-gap (the dots before your pinned row), --mini (top 3 cards);
                     cells .bt-board-rank, .bt-board-who (avatar + name + small @handle), .bt-board-date,
                     .bt-board-time; .bt-board-card is the .bt-tile that holds one, .bt-board-foot its
@@ -2428,9 +2429,9 @@
 .bt-root:not(#_) .bt-board :is(th, td):last-child { text-align: right; padding-right: 12px; }
 .bt-root:not(#_) .bt-board-rank { font-weight: 800; font-variant-numeric: tabular-nums; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-board tr:is([data-r="1"], [data-r="2"], [data-r="3"]) .bt-board-rank { font-size: var(--bt-text-lg); }
-.bt-root:not(#_) .bt-board tr[data-r="1"] .bt-board-rank { color: var(--bt-title); }
-.bt-root:not(#_) .bt-board tr[data-r="2"] .bt-board-rank { color: var(--bt-rank-silver); }
-.bt-root:not(#_) .bt-board tr[data-r="3"] .bt-board-rank { color: var(--bt-rank-bronze); }
+.bt-root:not(#_) .bt-board tr[data-r="1"] .bt-board-rank { color: var(--bt-rank-1); }
+.bt-root:not(#_) .bt-board tr[data-r="2"] .bt-board-rank { color: var(--bt-rank-2); }
+.bt-root:not(#_) .bt-board tr[data-r="3"] .bt-board-rank { color: var(--bt-rank-3); }
 .bt-root:not(#_) .bt-board-who { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden; }
 .bt-root:not(#_) .bt-board-who > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-root:not(#_) .bt-board-who small { margin-left: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }

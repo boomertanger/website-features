@@ -352,8 +352,8 @@ const SWATCHES = [
     ["Admin text", "--bt-admin-text"], ["Admin accent", "--bt-admin-accent"], ["Admin tint", "--bt-admin-tint"],
     ["Panel background", "--bt-admin-panel-bg"], ["Panel border", "--bt-admin-panel-border"], ["Admin tag", "--bt-admin-tag"],
   ]],
-  ["Boom Arcade ranks (1 is the title gold; 4 and 5 are greys, never purple)", [
-    ["Rank 1 (title)", "--bt-title"], ["Rank 2 silver", "--bt-rank-silver"], ["Rank 3 bronze", "--bt-rank-bronze"], ["Rank 4", "--bt-rank-4"], ["Rank 5", "--bt-rank-5"],
+  ["Boom Arcade ranks (one set for boards and the podium; rank-silver / rank-bronze are aliases of 2 / 3)", [
+    ["Rank 1 gold", "--bt-rank-1"], ["Rank 2 silver", "--bt-rank-2"], ["Rank 3 orange", "--bt-rank-3"], ["Rank 4 dark grey", "--bt-rank-4"], ["Rank 5 pink", "--bt-rank-5"],
   ]],
   ["Status", [
     ["Amber", "--bt-amber"], ["Blue", "--bt-blue"], ["Teal", "--bt-teal"], ["Green", "--bt-green"], ["Gray", "--bt-gray"], ["Red", "--bt-red"],
