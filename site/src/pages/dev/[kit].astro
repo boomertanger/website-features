@@ -17,6 +17,7 @@ import TodoTile from "../../components/home/TodoTile.astro";
 import UpdatesTile from "../../components/home/UpdatesTile.astro";
 import WarmFuzziesTile from "../../components/home/WarmFuzziesTile.astro";
 import { isProduction } from "../../lib/env.js";
+import { Content as TermsText } from "../../content/legal/terms.md";
 import "../../../../shared/ui-kit/ui-kit.css";
 import "../../styles/ui-kit.css";
 
@@ -33,6 +34,7 @@ const SITE_SECTIONS = [
   ["signin", "Sign-in dialog"],
   ["account", "Account"],
   ["home", "Home tiles"],
+  ["prose", "Prose (legal)"],
 ];
 ---
 <BaseLayout title="UI kit" noindex>
@@ -162,6 +164,15 @@ const SITE_SECTIONS = [
             <div class="lk-item"><div class="lk-demo"><WarmFuzziesTile /></div><p class="lk-name">Warm Fuzzies</p><code class="lk-code">&lt;WarmFuzziesTile /&gt; (.bt-mark--fuzzies, .bt-notes)</code></div>
           </div>
           <div class="lk-item"><div class="lk-demo"><BoomBoard /></div><p class="lk-name">Boom Board</p><code class="lk-code">&lt;BoomBoard /&gt; (.bt-mark, .bt-bb-*)</code></div>
+        </section>
+
+        <section class="lk-sec" id="prose" aria-labelledby="h-prose">
+          <h2 class="bt-heading" id="h-prose">Prose (legal pages)</h2>
+          <div class="lk-item">
+            <div class="lk-demo lk-demo--scroll"><article class="bt-prose"><TermsText /></article></div>
+            <p class="lk-name">Long-form Markdown: page title, Last updated line, section headings, lists, kept line breaks</p>
+            <code class="lk-code">&lt;article class="bt-prose"&gt;&lt;Content /&gt;&lt;/article&gt; · /privacy, /terms</code>
+          </div>
         </section>
 
         <section class="lk-sec" id="shared" aria-labelledby="h-shared">

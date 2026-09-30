@@ -1,7 +1,12 @@
 ---
+// Terms of Service, rendered from site/src/content/legal/terms.md exactly as written
+// (the "[effective date]" placeholder stays until launch). Non-production builds are
+// noindex through BaseLayout; production is indexable.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ComingSoon from "../components/ComingSoon.astro";
+import { Content } from "../content/legal/terms.md";
 ---
-<BaseLayout title="Terms">
-  <ComingSoon title="Terms" />
+<BaseLayout title="Terms of Service" description="The rules for using Boomertanger: accounts, community rules, games and leaderboards, and your content.">
+  <div class="bt-zone">
+    <article class="bt-prose"><Content /></article>
+  </div>
 </BaseLayout>

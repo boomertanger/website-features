@@ -217,7 +217,7 @@
 
 /* ================= Headings & text ================= */
 
-.bt-root:not(#_) .bt-title {
+.bt-root:not(#_) .bt-title, .bt-root:not(#_) .bt-prose > h1 {
   font-size: var(--bt-text-3xl);
   font-weight: 700;
   line-height: 1.15;
@@ -230,7 +230,7 @@
 /* Gold-to-ember gradient through the letters (page title only). Browsers
    without text clipping keep the solid gold above. */
 @supports ((-webkit-background-clip: text) or (background-clip: text)) {
-  .bt-root:not(#_) .bt-title {
+  .bt-root:not(#_) .bt-title, .bt-root:not(#_) .bt-prose > h1 {
     background: var(--bt-title-gradient);
     -webkit-background-clip: text;
     background-clip: text;
@@ -837,7 +837,7 @@
   .bt-root:not(#_) .bt-list,
   .bt-root:not(#_) .bt-logged-out { --bt-gutter: 20px; }
   .bt-root:not(#_) .bt-topbar { padding-top: var(--bt-space-6); gap: var(--bt-space-3); }
-  .bt-root:not(#_) .bt-title { font-size: 26px; }
+  .bt-root:not(#_) .bt-title, .bt-root:not(#_) .bt-prose > h1 { font-size: 26px; }
 
   /* Rows restack into cards */
   .bt-root:not(#_) .bt-row { flex-direction: column; align-items: stretch; gap: 10px; }
@@ -929,7 +929,7 @@
    3  .bt-heading      card/section  18px bold off-white, normal case, gold tick
    4  .bt-section-label  label       12px uppercase faint
    Gold is reserved for levels 1–2 so it keeps its punch. */
-.bt-root:not(#_) .bt-heading, .bt-root:not(#_) .bt-card-title {
+.bt-root:not(#_) .bt-heading, .bt-root:not(#_) .bt-card-title, .bt-root:not(#_) .bt-prose > h2 {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -939,7 +939,7 @@
   color: var(--bt-text);
 }
 /* Gold tick: ties level-3 headings to the gold page title without gold text. */
-.bt-root:not(#_) .bt-heading::before, .bt-root:not(#_) .bt-card-title::before {
+.bt-root:not(#_) .bt-heading::before, .bt-root:not(#_) .bt-card-title::before, .bt-root:not(#_) .bt-prose > h2::before {
   content: "";
   width: 4px;
   height: 1.1em;
@@ -2143,5 +2143,23 @@
   .bt-root:not(#_) .bt-board-who .bt-avatar-sm { display: none; }
   .bt-root:not(#_) .bt-tease { padding: 12px; gap: 10px; }
 }
+
+/* ---- Prose: long-form text written in Markdown (legal pages) ----
+   <article class="bt-prose"> around rendered Markdown. Its h1 is the gold page title
+   (.bt-title) and its h2s are section headings (.bt-heading), shared with those rules
+   above; the paragraph right after the h1 is the "Last updated" line. Line breaks inside
+   a paragraph are kept (addresses), and the measure stays readable. */
+.bt-root:not(#_) .bt-prose { display: flex; flex-direction: column; max-width: 70ch; color: var(--bt-text); font-size: var(--bt-text-lg); line-height: var(--bt-leading-body); }
+.bt-root:not(#_) .bt-prose > h1 { margin: 0 0 var(--bt-space-2); }
+.bt-root:not(#_) .bt-prose > h1 + p { margin: 0 0 var(--bt-space-6); color: var(--bt-text-muted); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-prose > h1 + p strong { font-weight: 600; }
+.bt-root:not(#_) .bt-prose > h2 { margin: var(--bt-space-8) 0 var(--bt-space-3); font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .bt-prose p { margin: 0 0 var(--bt-space-4); white-space: pre-line; }
+.bt-root:not(#_) .bt-prose :is(ul, ol) { margin: 0 0 var(--bt-space-4); padding-left: 1.3em; }
+.bt-root:not(#_) .bt-prose li { margin: 0 0 var(--bt-space-2); padding-left: var(--bt-space-1); }
+.bt-root:not(#_) .bt-prose li::marker { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-prose strong { color: var(--bt-text); font-weight: 700; }
+.bt-root:not(#_) .bt-prose a { overflow-wrap: anywhere; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* ================= END Site shell ================= */

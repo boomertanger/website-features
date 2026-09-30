@@ -56,3 +56,4 @@
   .bt-root:not(#_) .lk-nav a.is-on { border-color: var(--bt-primary); }
   .bt-root:not(#_) .lk-nav-sep { display: none; }
 }
+.bt-root:not(#_) .lk-demo--scroll { max-height: 420px; overflow-y: auto; }

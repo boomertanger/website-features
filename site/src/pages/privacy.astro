@@ -1,7 +1,12 @@
 ---
+// Privacy Policy, rendered from site/src/content/legal/privacy.md exactly as written
+// (the "[effective date]" placeholder stays until launch). Non-production builds are
+// noindex through BaseLayout; production is indexable.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ComingSoon from "../components/ComingSoon.astro";
+import { Content } from "../content/legal/privacy.md";
 ---
-<BaseLayout title="Privacy">
-  <ComingSoon title="Privacy" />
+<BaseLayout title="Privacy Policy" description="What Boomertanger collects, how it's used, and the choices you have.">
+  <div class="bt-zone">
+    <article class="bt-prose"><Content /></article>
+  </div>
 </BaseLayout>

@@ -479,6 +479,11 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-tease-ic`, `.bt-tease-txt` (`b` + Soon badge, `small`), optional `.bt-btn`. Play now's
   cue on the footer: `.bt-tts[data-cue]` pulses the splat and shows `.bt-tts-cue`. Page grids
   (lobby row, Play tab split, gate, How it works) live in `site/src/styles/arcade.css`.
+- **Prose** (legal pages): `<article class="bt-prose">` around rendered Markdown
+  (`site/src/content/legal/*.md`). Its `h1` is the gold page title and its `h2`s are
+  section headings (they share the `.bt-title` and `.bt-heading` rules); the paragraph
+  after the `h1` is the "Last updated" line; line breaks inside a paragraph are kept, and
+  the measure is 70ch. Markdown renders as written (`smartypants: false`).
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 

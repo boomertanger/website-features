@@ -4,6 +4,8 @@ import { defineConfig } from "astro/config";
 // Static output (no SSR adapter); Cloudflare Pages serves site/dist.
 export default defineConfig({
   output: "static",
+  // Markdown (the legal pages) renders exactly as written: no curly quotes or dashes.
+  markdown: { smartypants: false },
   vite: {
     server: {
       // The kit lives in ../shared (repo root); let the dev server read it.
