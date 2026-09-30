@@ -8,7 +8,7 @@ import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON, PENCIL_ICON } fro
 import { initRowSpotlight } from "../ui/effects.js";
 import { composerHtml, initComposer } from "../ui/composer.js";
 import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
-import { BA_ICON, ttsLogoHtml } from "../ui/arcade.js";
+import { BA_ICON, ttsLogoHtml, boombotIcon } from "../ui/arcade.js";
 import { initSegNav } from "../ui/seg-nav.js";
 import { initToc } from "../ui/toc.js";
 import { initSpotlights } from "../ui/spotlight.js";
@@ -826,6 +826,9 @@ function navHtml() {
       <a class="bt-card bt-card--door bt-spotlight" href="#"><span class="bt-icon-tile--lg" aria-hidden="true">🕹</span><h3>Games</h3><p class="kit-p">A card that goes somewhere.</p><span class="bt-card-go">Enter the Arcade<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span></a>
       <div class="bt-card bt-spotlight bt-spotlight--gold"><span class="bt-icon-tile--lg bt-icon-tile--soon" aria-hidden="true">💡</span><h3>Arcade Studio <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h3><p class="kit-p">A plain card: no lift, no arrow.</p></div>
     </div>
+
+    <p class="kit-sub">BOOMBOT: .bt-boombot (shared/ui/arcade.js BOOMBOT_ICON, or boombotIcon(uid) when a page shows more than one). The Arcade's helper character for help and FAQ answers; never a real person or Boomertanger. Its eyes blink now and then; .is-thinking (on it or a parent) scans the eyes and blinks the antenna while it "types". Still under reduced motion.</p>
+    <div class="kit-row"><span style="display:inline-flex;gap:14px;align-items:center">${boombotIcon("kit-bb-a").replace('class="bt-boombot"', 'class="bt-boombot" style="width:56px;height:56px"')}<span class="kit-note">At rest</span></span><span class="is-thinking" style="display:inline-flex;gap:14px;align-items:center">${boombotIcon("kit-bb-b").replace('class="bt-boombot"', 'class="bt-boombot" style="width:56px;height:56px"')}<span class="kit-note">.is-thinking</span></span></div>
 
     <p class="kit-sub">Wordmark power-on: .bt-wordmark--power, Gold shine. Hover or focus: ARCADE switches from the resting purple to gold with a warm glow while one sheen crosses it (the same move as TANGER on the main logo), BOOM gets a faint white glow, the lamp comes fully on and the stick wiggles once. Touch screens play it once as it scrolls into view. Reduced motion: gold with no sheen and no wiggle. Left: at rest (hover it); right: frozen lit (.is-lit).</p>
     <div class="kit-row">${arcadeMark()}${arcadeMark(true)}</div>

@@ -222,6 +222,12 @@ the card's hover. `.bt-spotlight` (+ `--gold` for Soon cards) is a soft glow tha
 the pointer inside the card; `shared/ui/spotlight.js` (`initSpotlights(root)`) sets
 `--mx`/`--my`. Pointer devices only; nothing on touch or under reduced motion.
 
+**BOOMBOT: `.bt-boombot`**, the Arcade's helper robot (`shared/ui/arcade.js` `BOOMBOT_ICON`, or
+`boombotIcon(uid)` when a page shows more than one, since each copy needs its own gradient
+id): a yellow head (`--bt-lamp` to `--bt-title`), a dark visor, `--bt-neon` eyes that blink now
+and then, a `--bt-blood` antenna knob. `.is-thinking` (on it or a parent) scans the eyes and
+blinks the antenna while it "types". Still under reduced motion.
+
 **Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
 ≤ 640px), with the same gradient.
 
@@ -909,6 +915,17 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 - **The Arcade wordmark rests purple and lights gold on hover** ("Gold shine"): ARCADE switches
   to `--bt-title` as one sheen crosses it, deliberately echoing TANGER on the main logo, so
   the two logos on the site share one hover. It replaces the letter-by-letter power-on.
+- **BOOMBOT is the Arcade's helper character.** A small yellow robot used for help and FAQ
+  answers (How it works' "Ask BOOMBOT"), always labelled BOOMBOT. It's never presented as a
+  real person or as Boomertanger, and it doesn't speak for Boomertanger; answers are the
+  site's written help text.
+- **How it works, sections 5-9** (`docs/design/mockups/how-it-works-sections-5-9.html`): 5A
+  Flow (role cards with arrows that light on hover, real text in reading order), 6A Flip
+  medals (buttons; a cross-fade instead of the turn under reduced motion), 7A House rules
+  (a placard with a lit header and an ordered list), 8B Term chips (the full `<dl>` stays in
+  the HTML, visually hidden once the chips take over) and 9A Ask BOOMBOT (question bubbles
+  as buttons, answers in the HTML from the start; the typing dots are visual only). These
+  use a 900px container breakpoint for the flow and medals, as specified for this page.
 - **Every feature wordmark gets its own hover "power-on" when it's ported**, built on
   `.bt-wordmark--power`: a word-level shine on its accent word (its own lit colour, one sheen
   crossing) plus its icon's moment: Bug Zapper's bolt crackles, Cloud Stash's cloud rains,

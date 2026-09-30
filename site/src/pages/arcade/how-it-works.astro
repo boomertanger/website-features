@@ -12,6 +12,7 @@
 import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
 
 const JOIN_TITLE = "Join to enter the Arcade";
 const STAGES = [
@@ -41,6 +42,50 @@ const CARTS = [
   { kind: "ver", v: "v1", type: "Release", t: "Version", d: "A full release of a game. What you pick to play, and what every leaderboard tracks. New versions add or change real things." },
   { kind: "patch", v: "v1.8", type: "Fix", t: "Patch", d: "A fix after release: a bug, a sound, a glitch. You'll still see \"v1\"; the patch number is kept with every run for the record." },
   { kind: "bal", v: "v1.4", type: "Balance ⚖", t: "Balance patch", d: "A fix that changes how hard the game is (a faster fuse, a longer window). The board either restarts or shows a note, so times stay fair." },
+];
+// Sections 5-9 (docs/design/mockups/how-it-works-sections-5-9.html: 5A Flow, 6A Flip medals,
+// 7A House rules, 8B Term chips, 9A Ask BOOMBOT).
+const ROLES = {
+  pl: { ic: "🎮", t: "Players", d: "Play, post on the Draft board, vote on ideas, playtest betas.", badge: ["gray", "All members"] },
+  kp: { ic: "🗝", t: "Keeper", d: "The volunteer product manager for one version: sorts ideas, runs the vote, writes the plan, posts updates. The role ends at release.", badge: ["gold", "One per version"] },
+  bt: { ic: "", t: "Boomertanger", d: "Greenlights games, approves each version's plan, and builds the games.", badge: ["pink", "Final say"] },
+  pi: { ic: "💡", t: "Pitchers", d: "Pitch brand-new games in the Arcade Studio.", badge: ["blue", "Gamer badge"] },
+  md: { ic: "🛡", t: "Mods", d: "Keep every space friendly and safe. Keepers are chosen from mods who volunteer. They look after every space above.", badge: ["teal", "Mod team"] },
+};
+const BADGES = [
+  { ic: "🩸", t: "Splat finisher", sub: "Finished Tap the Splat v1", how: "Finish Tap the Splat v1 once, any time.", un: "Unlocks pitching", c: "red" },
+  { ic: "🏆", t: "Top 10 · v1", sub: "Reached a v1 top 10", how: "Place in a v1 all-time top 10, on Desktop or Mobile.", un: "Contest entry", c: "gold" },
+  { ic: "💡", t: "Idea shipped", sub: "Your idea made it into a release", how: "Post an idea on a Draft board that makes it into a release.", un: "Credited in notes", c: "teal" },
+  { ic: "🗝", t: "Keeper of v2", sub: "Led a version from ideas to release", how: "Be the Keeper who takes a version from ideas to release.", un: "Forever on profile", c: "primary" },
+];
+const RULES = [
+  ["⏱", "Time is the score", "Fastest finished run wins. Miss-clicks add penalty seconds."],
+  ["🏁", "Only finished runs by members count", "Close calls don't make the board, but they do count as runs played."],
+  ["🖥", "Desktop and Mobile are separate", "Mouse and touch play differently, so each gets its own board."],
+  ["🔒", "Runs are checked", "The server checks every run. Impossible times are removed."],
+  ["👍", "One vote per run", "Like a game or ask for more once per play. It unlocks again next run."],
+  ["🤝", "Be kind in the Workshop", "Critique ideas, not people. Mods keep every space safe."],
+];
+const TERMS = [
+  ["Arcade Studio", "Where new games are pitched and greenlit."],
+  ["Balance patch", "A fix that changes difficulty; the board restarts or gets a note."],
+  ["Boom Arcade", "The whole section: all games, leaderboards, the Studio and Workshops."],
+  ["Draft board", "The Workshop's message board, where ideas are posted and discussed."],
+  ["Greenlit", "A pitch Boomertanger chose to build."],
+  ["Keeper", "The volunteer who leads one version, from ideas to release."],
+  ["Patch", "A behind-the-scenes fix, like v1.8. You still see v1."],
+  ["Pitch", "An idea for a brand-new game."],
+  ["Playtest", "The members-first beta of the next version."],
+  ["Run", "One play of a game, win or lose."],
+  ["Version", "A full release, like v1 or v2. What you play and what boards track."],
+  ["Workshop", "A game's space for its next version."],
+];
+const FAQS = [
+  ["Do I need an account to play?", "Tap the Splat is free for everyone, as a taste of the Arcade. Every other game is for members: join free to play them, save your runs, get on the leaderboards, vote on ideas and earn badges."],
+  ["Why doesn't my time show on the leaderboard?", "Only finished runs by members with a verified email count, and each device has its own board. Check you're looking at the right version and at Desktop or Mobile."],
+  ["How do I become a Keeper?", "Keepers are chosen from mods who volunteer when a new version's cycle opens. Keep being helpful in the Workshop; that's how mods get noticed."],
+  ["What happens to my v1 time when v2 comes out?", "It stays on the v1 board forever. v2 gets fresh boards, so everyone starts even."],
+  ["Can I pitch a game right away?", "Pitching unlocks with a gamer badge, like finishing a game. It keeps the Studio full of ideas from people who play."],
 ];
 const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["s-grow", "How games grow"], ["s-versions", "Versions"], ["s-roles", "Roles"], ["s-badges", "Badges"], ["s-fair", "Fair play"], ["s-words", "Glossary"], ["s-faq", "FAQ"]];
 ---
@@ -163,12 +208,28 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-roles">Who does what</h2>
           <p class="bt-chapter-lede">Everyone plays. Some members help steer.</p>
         </header>
-        <div class="ai-roles">
-          <div class="ai-role"><span class="ai-av" aria-hidden="true">🎮</span><div><b>Players</b><span>Play, post on the Draft board, vote on ideas, playtest betas.</span></div><span class="bt-badge bt-badge--gray">All members</span></div>
-          <div class="ai-role"><span class="ai-av" aria-hidden="true">💡</span><div><b>Pitchers</b><span>Pitch brand-new games in the Arcade Studio.</span></div><span class="bt-badge bt-badge--blue">Gamer badge</span></div>
-          <div class="ai-role"><span class="ai-av" aria-hidden="true">🗝</span><div><b>Keeper</b><span>The volunteer product manager for one version: sorts ideas, runs the vote, writes the plan, posts updates. The role ends at release.</span></div><span class="bt-badge bt-badge--gold">One per version</span></div>
-          <div class="ai-role"><span class="ai-av" aria-hidden="true">🛡</span><div><b>Mods</b><span>Keep every space friendly and safe. Keepers are chosen from mods who volunteer.</span></div><span class="bt-badge bt-badge--teal">Mod team</span></div>
-          <div class="ai-role"><span class="ai-av" aria-hidden="true">🦍</span><div><b>Boomertanger</b><span>Greenlights games, approves each version's plan, and builds the games.</span></div><span class="bt-badge bt-badge--pink">Final say</span></div>
+        <div class="ai-flow">
+          {(["pl", "a1", "kp", "a2", "bt", "pi", "a3"] as const).map((k) => {
+            if (k === "a1") return <div class="ai-arr ai-arr--1" data-links="pl kp" aria-hidden="true"><span>Ideas and votes</span><i><b></b></i></div>;
+            if (k === "a2") return <div class="ai-arr ai-arr--2" data-links="kp bt" aria-hidden="true"><span>The plan</span><i><b></b></i></div>;
+            if (k === "a3") return <div class="ai-arr ai-arr--3" data-links="pi bt" aria-hidden="true"><span>Pitches for new games</span><i><b></b></i></div>;
+            const r = ROLES[k];
+            return (
+              <div class={`bt-card ai-node ai-node--${k}`} data-role={k}>
+                <div class="ai-node-top">
+                  {k === "bt" ? <Mascot decorative /> : <span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{r.ic}</span>}
+                  <span class={`bt-badge bt-badge--${r.badge[0]}`}>{r.badge[1]}</span>
+                </div>
+                <h3>{r.t}</h3>
+                <p>{r.d}</p>
+              </div>
+            );
+          })}
+          <div class="bt-card ai-node ai-node--md" data-role="md">
+            <span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{ROLES.md.ic}</span>
+            <div class="ai-node-txt"><h3>{ROLES.md.t}</h3><p>{ROLES.md.d}</p></div>
+            <span class={`bt-badge bt-badge--${ROLES.md.badge[0]}`}>{ROLES.md.badge[1]}</span>
+          </div>
         </div>
       </section>
 
@@ -178,11 +239,15 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
           <p class="bt-chapter-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
         </header>
-        <div class="ai-badges">
-          <div class="ai-bdg" style="--c:var(--bt-red)"><div class="ai-medal" aria-hidden="true">🩸</div><b>Splat finisher</b><span>Finished Tap the Splat v1</span><div class="ai-unl">Unlocks pitching</div></div>
-          <div class="ai-bdg" style="--c:var(--bt-gold)"><div class="ai-medal" aria-hidden="true">🏆</div><b>Top 10 · v1</b><span>Reached a v1 top 10</span><div class="ai-unl">Contest entry</div></div>
-          <div class="ai-bdg" style="--c:var(--bt-teal)"><div class="ai-medal" aria-hidden="true">💡</div><b>Idea shipped</b><span>Your idea made it into a release</span><div class="ai-unl">Credited in notes</div></div>
-          <div class="ai-bdg" style="--c:var(--bt-primary)"><div class="ai-medal" aria-hidden="true">🗝</div><b>Keeper of v2</b><span>Led a version from ideas to release</span><div class="ai-unl">Forever on profile</div></div>
+        <div class="ai-medals">
+          {BADGES.map((b) => (
+            <button type="button" class={`ai-flip ai-flip--${b.c}`} aria-label={`${b.t}: ${b.sub}. How to earn: ${b.how} Unlocks: ${b.un}.`}>
+              <span class="ai-flip-in">
+                <span class="ai-face" aria-hidden="true"><span class="ai-medal">{b.ic}</span><b>{b.t}</b><span class="ai-face-sub">{b.sub}</span><span class="ai-flip-hint">Hover or tap to flip</span></span>
+                <span class="ai-face ai-face--back" aria-hidden="true"><span class="ai-back-k">How to earn</span><span class="ai-back-v">{b.how}</span><span class="ai-back-k">Unlocks</span><span class="ai-unl">{b.un}</span></span>
+              </span>
+            </button>
+          ))}
         </div>
       </section>
 
@@ -192,13 +257,13 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-fair">Fair play</h2>
           <p class="bt-chapter-lede">The rules every game and leaderboard follows.</p>
         </header>
-        <div class="ai-rules">
-          <div><span class="ai-n" aria-hidden="true">⏱</span><div><b>Time is the score</b><span>Fastest finished run wins. Miss-clicks add penalty seconds.</span></div></div>
-          <div><span class="ai-n" aria-hidden="true">🏁</span><div><b>Only finished runs by members count</b><span>Close calls don't make the board, but they do count as runs played.</span></div></div>
-          <div><span class="ai-n" aria-hidden="true">🖥</span><div><b>Desktop and Mobile are separate</b><span>Mouse and touch play differently, so each gets its own board.</span></div></div>
-          <div><span class="ai-n" aria-hidden="true">🔒</span><div><b>Runs are checked</b><span>The server checks every run. Impossible times are removed.</span></div></div>
-          <div><span class="ai-n" aria-hidden="true">👍</span><div><b>One vote per run</b><span>Like a game or ask for more once per play. It unlocks again next run.</span></div></div>
-          <div><span class="ai-n" aria-hidden="true">🤝</span><div><b>Be kind in the Workshop</b><span>Critique ideas, not people. Mods keep every space safe.</span></div></div>
+        <div class="ai-placard">
+          <div class="ai-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="ai-house">
+            {RULES.map(([ic, t, d], i) => (
+              <li class="ai-house-rule"><span class="ai-house-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
+            ))}
+          </ol>
         </div>
       </section>
 
@@ -207,32 +272,29 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-words">Glossary</h2>
         </header>
-        <dl class="ai-gloss">
-          <div><dt>Boom Arcade</dt><dd>The whole section: all games, leaderboards, the Studio and Workshops.</dd></div>
-          <div><dt>Arcade Studio</dt><dd>Where new games are pitched and greenlit.</dd></div>
-          <div><dt>Pitch</dt><dd>An idea for a brand-new game.</dd></div>
-          <div><dt>Greenlit</dt><dd>A pitch Boomertanger chose to build.</dd></div>
-          <div><dt>Workshop</dt><dd>A game's space for its next version.</dd></div>
-          <div><dt>Draft board</dt><dd>The Workshop's message board, where ideas are posted and discussed.</dd></div>
-          <div><dt>Keeper</dt><dd>The volunteer who leads one version, from ideas to release.</dd></div>
-          <div><dt>Version</dt><dd>A full release, like v1 or v2. What you play and what boards track.</dd></div>
-          <div><dt>Patch</dt><dd>A behind-the-scenes fix, like v1.8. You still see v1.</dd></div>
-          <div><dt>Balance patch</dt><dd>A fix that changes difficulty; the board restarts or gets a note.</dd></div>
-          <div><dt>Playtest</dt><dd>The members-first beta of the next version.</dd></div>
-          <div><dt>Run</dt><dd>One play of a game, win or lose.</dd></div>
-        </dl>
+        <div class="ai-gloss-wrap" data-gloss>
+          <dl class="ai-gloss">
+            {TERMS.map(([t, d]) => <div><dt>{t}</dt><dd>{d}</dd></div>)}
+          </dl>
+        </div>
       </section>
 
-      <section class="ai-sec ai-faq" id="s-faq" aria-labelledby="h-faq">
+      <section class="ai-sec" id="s-faq" aria-labelledby="h-faq">
         <header class="bt-chapter bt-chapter--ghost" data-n="09">
           <p class="bt-chapter-eyebrow" aria-hidden="true">09 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-faq">FAQ</h2>
         </header>
-        <details><summary>Do I need an account to play?</summary><p>Tap the Splat is free for everyone, as a taste of the Arcade. Every other game is for members: join free to play them, save your runs, get on the leaderboards, vote on ideas and earn badges.</p></details>
-        <details><summary>Why doesn't my time show on the leaderboard?</summary><p>Only finished runs by members with a verified email count, and each device has its own board. Check you're looking at the right version and at Desktop or Mobile.</p></details>
-        <details><summary>How do I become a Keeper?</summary><p>Keepers are chosen from mods who volunteer when a new version's cycle opens. Keep being helpful in the Workshop; that's how mods get noticed.</p></details>
-        <details><summary>What happens to my v1 time when v2 comes out?</summary><p>It stays on the v1 board forever. v2 gets fresh boards, so everyone starts even.</p></details>
-        <details><summary>Can I pitch a game right away?</summary><p>Pitching unlocks with a gamer badge, like finishing a game. It keeps the Studio full of ideas from people who play.</p></details>
+        <div class="ai-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="ai-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ai-ans-${i}`} data-q={i}><span class="ai-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="ai-a" id={`ai-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="ai-a-av" set:html={boombotIcon(`bt-bb-${i}`)} />
+                <div class="ai-bub"><small>BOOMBOT</small><span class="ai-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="ai-a-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
       </section>
 
       <section class="ai-cta" aria-labelledby="h-cta">

@@ -40,3 +40,96 @@ document.querySelector(".ai-steps")?.addEventListener("keydown", (ev) => {
   e.preventDefault();
   show((next + steps.length) % steps.length, true);
 });
+
+// ---- Sections 5-9 (docs/design/mockups/how-it-works-sections-5-9.html) ----
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+// 5 Who does what: hovering a role (a tap on touch) lights its arrows and dims unrelated roles.
+const flow = document.querySelector<HTMLElement>(".ai-flow");
+if (flow) {
+  const nodes = [...flow.querySelectorAll<HTMLElement>(".ai-node")];
+  const arrows = [...flow.querySelectorAll<HTMLElement>(".ai-arr")];
+  let current = "";
+  const light = (role = "") => {
+    current = role;
+    const lit = new Set([role]);
+    arrows.forEach((a) => {
+      const ends = (a.dataset.links || "").split(" ");
+      const hit = !!role && role !== "md" && ends.includes(role);
+      a.classList.toggle("is-on", hit);
+      if (hit) ends.forEach((e) => lit.add(e));
+    });
+    nodes.forEach((n) => {
+      const r = n.dataset.role || "";
+      n.classList.toggle("is-on", !!role && r === role);
+      n.classList.toggle("is-dim", !!role && role !== "md" && r !== "md" && !lit.has(r));
+    });
+  };
+  nodes.forEach((n) => {
+    n.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") light(n.dataset.role); });
+    n.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") light(""); });
+    n.addEventListener("click", () => light(current === n.dataset.role ? "" : n.dataset.role));
+  });
+}
+
+// 6 Badges: hover or focus flips a medal (CSS); a tap toggles it.
+document.querySelectorAll<HTMLButtonElement>(".ai-flip").forEach((b) => {
+  b.addEventListener("click", () => b.classList.toggle("is-flipped"));
+});
+
+// 8 Glossary: the <dl> becomes term chips and one gold definition card (the list stays for
+// screen readers and search, visually hidden). Starts on "Boom Arcade".
+const gloss = document.querySelector<HTMLElement>("[data-gloss]");
+if (gloss) {
+  const terms = [...gloss.querySelectorAll("dl > div")].map((d) => [d.querySelector("dt")!.textContent!, d.querySelector("dd")!.textContent!]);
+  const chips = document.createElement("div");
+  chips.className = "ai-gc-chips";
+  chips.setAttribute("role", "group");
+  chips.setAttribute("aria-label", "Terms");
+  const card = document.createElement("div");
+  card.className = "ai-gc-card";
+  card.setAttribute("aria-live", "polite");
+  const show = (i: number) => {
+    card.innerHTML = "";
+    const inner = document.createElement("div");
+    if (!reduced()) inner.className = "ai-gc-in";
+    const k = Object.assign(document.createElement("span"), { className: "k", textContent: "Glossary" });
+    const h = Object.assign(document.createElement("h3"), { textContent: terms[i][0] });
+    const p = Object.assign(document.createElement("p"), { textContent: terms[i][1] });
+    inner.append(k, h, p);
+    card.append(inner);
+    chips.querySelectorAll("button").forEach((b, j) => b.setAttribute("aria-pressed", String(j === i)));
+  };
+  terms.forEach(([t], i) => {
+    const b = Object.assign(document.createElement("button"), { type: "button", textContent: t });
+    b.addEventListener("click", () => show(i));
+    b.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") show(i); });
+    chips.append(b);
+  });
+  gloss.append(chips, card);
+  gloss.classList.add("is-enhanced");
+  show(Math.max(0, terms.findIndex(([t]) => t === "Boom Arcade")));
+}
+
+// 9 FAQ, Ask BOOMBOT: one answer open at a time (the first on load). Opening one shows
+// 650 ms of "typing" (visual only; the answer is in the HTML and only visually hidden),
+// with BOOMBOT's eyes scanning and antenna blinking. Skipped under reduced motion.
+const questions = [...document.querySelectorAll<HTMLButtonElement>(".ai-q")];
+let typing = 0;
+questions.forEach((q) => q.addEventListener("click", () => {
+  const opening = q.getAttribute("aria-expanded") !== "true";
+  clearTimeout(typing);
+  questions.forEach((other) => {
+    const on = opening && other === q;
+    other.setAttribute("aria-expanded", String(on));
+    const a = document.getElementById(other.getAttribute("aria-controls")!)!;
+    a.hidden = !on;
+    a.classList.remove("is-thinking");
+    if (!on) return;
+    const text = a.querySelector<HTMLElement>(".ai-a-text")!;
+    text.classList.remove("ai-gc-in");
+    if (reduced()) return;
+    a.classList.add("is-thinking");
+    typing = window.setTimeout(() => { a.classList.remove("is-thinking"); text.classList.add("ai-gc-in"); }, 650);
+  });
+}));

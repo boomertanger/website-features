@@ -1,3 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How it works: sections 5 to 9</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: dark; }
+html { scroll-padding-top: calc(env(safe-area-inset-top, 0px) + 80px); background: #0f0f0f; }
+body { margin: 0; background: #0f0f0f; padding: 24px 16px 80px; }
+</style>
+<style>
+/* ===== shared/bt-ui.css (dev 1c775c1) ===== */
 /* shared/bt-ui.css — Boomertanger shared UI kit
    Loaded ONCE, site-wide, from Squarespace Header Code Injection.
    Every rule is scoped under .bt-root, so plain Squarespace pages are untouched.
@@ -939,12 +956,9 @@
                        huge outlined numeral from data-n behind the title.
    .bt-prose--chapters numbers a prose page's h2s with a counter as D2 eyebrows ("01 · Section").
    .bt-title--hero     the hero-banner size of the page title (40px, 28px at <= 640px).
-   .bt-wordmark--power a feature wordmark's hover "power-on", word-level: the accent word lights
-                       up with one sheen crossing it (the move TANGER makes on the main logo)
-                       and each feature adds its own icon effect. Boom Arcade (Gold shine,
-                       docs/design/mockups/boomarcade-electric-gold.html): ARCADE rests purple
-                       and lights gold, the lamp comes fully on, the stick wiggles once. Touch
-                       screens play it once as it scrolls into view (shared/ui/wordmark.js).
+   .bt-wordmark--power a feature wordmark's hover "power-on": letters (.bt-wm-lt, --i) light
+                       one by one; each feature adds its own icon effect (Boom Arcade: the
+                       joystick lamp and one stick wiggle).
    Reduced motion: no movement, only the colour changes. */
 
 .bt-root:not(#_) .bt-seg-nav { position: relative; display: inline-flex; align-items: center; gap: 0; padding: 4px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-bg); }
@@ -1006,16 +1020,16 @@
 
 .bt-root:not(#_) .bt-title.bt-title--hero { font-size: 40px; line-height: 1.05; }
 
-.bt-root:not(#_) .bt-wordmark--power .bt-wordmark-text { overflow: visible; transition: text-shadow 0.3s ease; }   /* the glow isn't clipped */
-/* The accent word is gradient-filled (a sheen band sits in the gradient), so its glow is a
-   drop-shadow filter: a text-shadow would paint over the fill. */
-.bt-root:not(#_) .bt-wordmark--power .bt-wordmark-accent { --wm-c: var(--bt-primary); text-shadow: none; background: linear-gradient(100deg, var(--wm-c) 36%, var(--bt-logo-shine) 47%, var(--bt-logo-shine) 53%, var(--wm-c) 64%) 100% 0 / 260% 100%; -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; filter: drop-shadow(0 0 0 transparent); transition: background-position 1100ms cubic-bezier(.4, 0, .2, 1), filter 0.3s ease; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-wordmark-text { text-shadow: var(--bt-wm-glow); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-wordmark-accent { --wm-c: var(--bt-title); background-position: -20% 0; filter: drop-shadow(0 0 6px rgba(var(--bt-gold-rgb), 0.55)) drop-shadow(0 0 16px rgba(var(--bt-gold-rgb), 0.25)); }
+.bt-root:not(#_) .bt-wordmark--power .bt-wm-lt { display: inline-block; transition: color 0.2s, text-shadow 0.2s; }
+.bt-root:not(#_) .bt-wordmark--power .bt-wordmark-text { overflow: visible; }   /* the letters' glow isn't clipped */
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wm-lt { animation: bt-wm-bulb 0.5s ease-out both; animation-delay: calc(var(--i, 0) * 45ms); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wordmark-accent .bt-wm-lt { animation-name: bt-wm-bulb-accent; }
+@keyframes bt-wm-bulb { 0% { text-shadow: none; } 40% { color: var(--bt-lamp); text-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), 0.9); } 100% { color: var(--bt-text); text-shadow: var(--bt-wm-glow); } }
+@keyframes bt-wm-bulb-accent { 0% { text-shadow: none; } 40% { color: var(--bt-lamp); text-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), 0.9); } 100% { color: var(--bt-neon); text-shadow: 0 0 12px rgba(var(--bt-primary-rgb), 0.9); } }
 /* Boom Arcade's icon effect: the lamp fully on, one stick wiggle. */
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-ba-icon .stick { animation: bt-ba-wiggle-once 0.9s ease-in-out; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-ba-icon .lamp { opacity: 1; filter: drop-shadow(0 0 5px rgba(var(--bt-lamp-rgb), 1)); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-ba-icon .halo { opacity: 1; fill: rgba(var(--bt-lamp-rgb), 0.45); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-ba-icon .stick { animation: bt-ba-wiggle-once 0.9s ease-in-out; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-ba-icon .lamp { opacity: 1; filter: drop-shadow(0 0 5px rgba(var(--bt-lamp-rgb), 1)); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-ba-icon .halo { opacity: 1; fill: rgba(var(--bt-lamp-rgb), 0.45); }
 @keyframes bt-ba-wiggle-once { 0%, 100% { transform: rotate(0); } 15% { transform: rotate(-17deg); } 35% { transform: rotate(15deg); } 55% { transform: rotate(-9deg); } 75% { transform: rotate(4deg); } }
 
 @container bt (max-width: 640px) {
@@ -1037,66 +1051,11 @@
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .bt-btn:is(:hover, :focus-visible):not(:disabled) { transform: none; }
   .bt-root:not(#_) :is(.bt-seg-nav-pill, .bt-toc-fill, .bt-toc a::before) { transition: none; }
-  /* Gold with no sheen and no wiggle. */
-  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-ba-icon .stick { animation: none; }
-  .bt-root:not(#_) .bt-wordmark--power .bt-wordmark-accent { transition: filter 0.3s ease; }
-  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-wordmark-accent { background-position: 100% 0; }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) :is(.bt-wm-lt, .bt-ba-icon .stick) { animation: none; }
   .bt-root:not(#_) .bt-chapter--ember .bt-chapter-title::after { animation: none; height: 8px; }   /* a still drop */
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wm-lt { color: var(--bt-text); text-shadow: var(--bt-wm-glow); }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wordmark-accent .bt-wm-lt { color: var(--bt-neon); text-shadow: 0 0 12px rgba(var(--bt-primary-rgb), 0.9); }
 }
-
-/* ================= Door cards, big icon tiles, spotlight =================
-   From docs/design/mockups/how-it-works-round-2.html (section 1 "Stage").
-   .bt-card--door       a card that IS a link (<a class="bt-card bt-card--door">): on hover and
-                        focus it lifts 3px with a purple border and glow, and its .bt-card-go
-                        arrow link slides. Only for cards that go somewhere; plain cards stay put.
-   .bt-card-go          the arrow link line inside a door ("Enter the Arcade" + arrow svg).
-   .bt-icon-tile--lg    the 64px glowing icon tile: purple for live things, --soon gold-tinted.
-   .bt-spotlight        a soft glow that follows the pointer inside a card (purple; --gold faint
-                        gold for Soon cards). Behavior: shared/ui/spotlight.js sets --mx / --my;
-                        pointer devices only, nothing on touch or under reduced motion. */
-.bt-root:not(#_) .bt-card--door { color: inherit; text-decoration: none; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s; }
-.bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) { transform: translateY(-3px); border-color: rgba(var(--bt-primary-rgb), 0.7); box-shadow: 0 14px 34px var(--bt-lift-shadow), 0 0 0 1px rgba(var(--bt-primary-rgb), 0.35), 0 0 30px var(--bt-primary-glow); text-decoration: none; }
-.bt-root:not(#_) .bt-card--door:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 3px; }
-.bt-root:not(#_) .bt-card-go { display: inline-flex; align-items: center; gap: 6px; color: var(--bt-primary-soft); font-size: var(--bt-text-md); font-weight: 700; }
-.bt-root:not(#_) .bt-card-go svg { width: 14px; height: 14px; transition: transform 0.2s ease; }
-.bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) .bt-card-go svg { transform: translateX(4px); }
-
-.bt-root:not(#_) .bt-icon-tile--lg { flex: none; width: 64px; height: 64px; display: grid; place-items: center; border-radius: 20px; font-size: 32px; background: radial-gradient(circle at 35% 28%, rgba(var(--bt-primary-rgb), 0.55), rgba(var(--bt-primary-rgb), 0.14) 72%); box-shadow: inset 0 0 0 1px rgba(var(--bt-primary-rgb), 0.4), 0 8px 24px var(--bt-lift-shadow); transition: transform 0.35s cubic-bezier(.3, .7, .2, 1), box-shadow 0.3s; }
-.bt-root:not(#_) .bt-icon-tile--lg.bt-icon-tile--soon { background: radial-gradient(circle at 35% 28%, rgba(var(--bt-gold-rgb), 0.3), rgba(var(--bt-gold-rgb), 0.06) 72%); box-shadow: inset 0 0 0 1px rgba(var(--bt-gold-rgb), 0.3), 0 8px 24px var(--bt-lift-shadow); }
-.bt-root:not(#_) :is(.bt-card--door, .bt-spotlight):hover .bt-icon-tile--lg { transform: translateY(-3px) rotate(-6deg) scale(1.06); }
-
-.bt-root:not(#_) .bt-spotlight { position: relative; }
-.bt-root:not(#_) .bt-spotlight::before { content: ""; position: absolute; inset: 0; z-index: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity 0.3s; background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--bt-primary-rgb), 0.16), transparent 60%); }
-.bt-root:not(#_) .bt-spotlight.bt-spotlight--gold::before { background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(var(--bt-gold-rgb), 0.09), transparent 60%); }
-@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-  .bt-root:not(#_) .bt-spotlight:hover::before { opacity: 1; }
-}
-@media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) :is(.bt-card--door, .bt-icon-tile--lg, .bt-card-go svg) { transition: none; }
-  .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible), .bt-root:not(#_) :is(.bt-card--door, .bt-spotlight):hover .bt-icon-tile--lg, .bt-root:not(#_) .bt-card--door:is(:hover, :focus-visible) .bt-card-go svg { transform: none; }
-}
-
-/* ================= BOOMBOT, the Arcade's helper robot =================
-   shared/ui/arcade.js BOOMBOT_ICON / boombotIcon(uid) (docs/design-system.md §8h: for help
-   and FAQ answers; never a real person or Boomertanger). Sizes with width/height. Its eyes
-   blink now and then; .is-thinking (on it or an ancestor) makes the eyes scan and the
-   antenna blink while it "types". Reduced motion: still. */
-.bt-root:not(#_) .bt-boombot { display: block; flex: none; width: 38px; height: 38px; overflow: visible; }
-.bt-root:not(#_) .bt-boombot .h0 { stop-color: var(--bt-lamp); }
-.bt-root:not(#_) .bt-boombot .h1 { stop-color: var(--bt-title); }
-.bt-root:not(#_) .bt-boombot .b-head { stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.2; }
-.bt-root:not(#_) .bt-boombot .b-ear { fill: color-mix(in srgb, var(--bt-title) 75%, var(--bt-bg)); }
-.bt-root:not(#_) .bt-boombot .b-ant { stroke: var(--bt-text-muted); stroke-width: 1.6; stroke-linecap: round; }
-.bt-root:not(#_) .bt-boombot .b-knob { fill: var(--bt-blood); filter: drop-shadow(0 0 3px rgba(var(--bt-blood-rgb), 0.8)); }
-.bt-root:not(#_) .bt-boombot .b-visor { fill: var(--bt-bg); }
-.bt-root:not(#_) .bt-boombot .b-eye { fill: var(--bt-neon); filter: drop-shadow(0 0 2.5px rgba(var(--bt-primary-rgb), 1)); transform-box: fill-box; transform-origin: center; animation: bt-bb-blink 4.5s ease-in-out infinite; }
-.bt-root:not(#_) .bt-boombot .b-mouth { stroke: color-mix(in srgb, var(--bt-title) 45%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; }
-.bt-root:not(#_) .is-thinking .bt-boombot .b-eyes, .bt-root:not(#_) .bt-boombot.is-thinking .b-eyes { animation: bt-bb-scan 0.9s ease-in-out infinite; }
-.bt-root:not(#_) .is-thinking .bt-boombot .b-knob, .bt-root:not(#_) .bt-boombot.is-thinking .b-knob { animation: bt-bb-knob 0.45s steps(1, end) infinite; }
-@keyframes bt-bb-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(0.1); } }
-@keyframes bt-bb-scan { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
-@keyframes bt-bb-knob { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.35; } }
-@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bt-boombot * { animation: none !important; } }
 
 /* ================= BEGIN DASHBOARD COMPONENTS =================
    Added for dashboard-style features (Cloud Stash, Alert Center).
@@ -1356,7 +1315,6 @@
   /* Navigation and wordmark power-on (docs/design/mockups/arcade-styling-ideas.html). */
   --bt-seg-shadow: rgba(0, 0, 0, 0.4);                    /* under the seg-nav's lit pill */
   --bt-wm-glow: 0 0 8px rgba(255, 255, 255, 0.35);        /* a lit wordmark letter */
-  --bt-lift-shadow: rgba(0, 0, 0, 0.5);                   /* under a lifted card or icon tile */
   /* Sign-in providers and linked platforms: their own brand colors (tiles only). */
   --bt-brand-google: #4285f4;
   --bt-brand-google-tile: #fff;
@@ -2369,3 +2327,421 @@
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* ================= END Site shell ================= */
+
+</style>
+<style>
+/* ===== Mockup chrome ===== */
+.bt-root.page:not(#_) { max-width: 1180px; border-radius: 0; overflow: visible; background: transparent; }
+.bt-root:not(#_) .pg-intro { max-width: 80ch; padding: 4px 0 20px; }
+.bt-root:not(#_) .pg-intro p { color: var(--bt-text-muted); line-height: var(--bt-leading-body); margin-top: 12px; }
+.bt-root:not(#_) .pg-bar { position: sticky; top: 0; z-index: 40; display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; padding: 10px 14px; margin: 0 0 32px; background: var(--bt-surface); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .pg-ctl { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.bt-root:not(#_) .pg-ctl .bt-label { margin: 0 6px 0 0; }
+.bt-root:not(#_) .v-sec { margin: 0 0 72px; scroll-margin-top: 80px; }
+.bt-root:not(#_) .v-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+.bt-root:not(#_) .v-letter { font-size: var(--bt-text-3xl); font-weight: 900; color: var(--bt-title); line-height: 1; }
+.bt-root:not(#_) .v-name { font-size: 24px; font-weight: 800; }
+.bt-root:not(#_) .v-desc { color: var(--bt-text-muted); line-height: var(--bt-leading-body); max-width: 82ch; margin: 0 0 16px; }
+.bt-root:not(#_) .v-tabs { display: flex; flex-wrap: wrap; gap: 8px; margin: 0 0 14px; }
+.bt-root:not(#_) .v-rec { font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-primary-soft); background: var(--bt-primary-bg); border: 1px solid var(--bt-primary); border-radius: var(--bt-radius-full); padding: 1px 7px; margin-left: 6px; }
+.bt-root:not(#_) .v-stage { border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-bg); padding: 32px 32px 36px; }
+body[data-w="phone"] .bt-root:not(#_) .v-stage { max-width: 390px; margin: 0 auto; padding: 22px 16px 26px; border-radius: 28px; }
+.bt-root:not(#_) .v-cq { container-type: inline-size; container-name: bt; }
+.bt-root:not(#_) .v-note { margin: 12px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; max-width: 92ch; }
+.bt-root:not(#_) .v-why { margin-top: 16px; padding: 16px 18px; border: 1px solid var(--bt-primary); background: var(--bt-primary-bg); border-radius: var(--bt-radius-lg); line-height: var(--bt-leading-body); max-width: 94ch; }
+.bt-root:not(#_) .v-why p { margin: 0; } .bt-root:not(#_) .v-why p + p { margin-top: 8px; }
+.bt-root:not(#_) .sec-body { margin-top: 18px; }
+
+/* ===== Shared language from sections 1 and 4 ===== */
+.bt-root:not(#_) .tile { position: relative; overflow: hidden; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: linear-gradient(180deg, rgba(255,255,255,.02), transparent 40%), var(--bt-surface); transition: transform .25s ease, border-color .25s, box-shadow .25s; }
+.bt-root:not(#_) .tile:hover { border-color: var(--bt-border-2); }
+.bt-root:not(#_) .ic { width: 52px; height: 52px; flex: none; border-radius: 16px; display: grid; place-items: center; font-size: 25px; background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--c, var(--bt-primary)) 60%, transparent), color-mix(in srgb, var(--c, var(--bt-primary)) 14%, transparent) 72%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c, var(--bt-primary)) 45%, transparent), 0 8px 22px rgba(0,0,0,.45); transition: transform .35s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .tile:hover .ic, .bt-root:not(#_) .node.is-on .ic { transform: translateY(-2px) rotate(-6deg) scale(1.06); }
+.bt-root:not(#_) .spot .tile::before { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(240px circle at var(--mx, 50%) var(--my, 50%), color-mix(in srgb, var(--c, var(--bt-primary)) 16%, transparent), transparent 60%); }
+.bt-root:not(#_) .spot .tile:hover::before { opacity: 1; }
+.bt-root:not(#_) .tile > * { position: relative; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .ic, .bt-root:not(#_) .tile { transition: none !important; } .bt-root:not(#_) .tile:hover .ic, .bt-root:not(#_) .node.is-on .ic { transform: none; } }
+
+/* ===== 5A Flow ===== */
+.bt-root:not(#_) .flow { display: grid; grid-template-columns: minmax(0, 1fr) 90px minmax(0, 1fr) 90px minmax(0, 1fr); grid-template-rows: auto auto; row-gap: 18px; align-items: stretch; }
+.bt-root:not(#_) .node { display: flex; flex-direction: column; gap: 8px; padding: 18px; }
+.bt-root:not(#_) .node h3 { margin: 0; font-size: var(--bt-text-lg); font-weight: 800; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bt-root:not(#_) .node p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .node-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; }
+.bt-root:not(#_) .node.is-on { border-color: color-mix(in srgb, var(--c) 60%, transparent); box-shadow: 0 0 26px color-mix(in srgb, var(--c) 22%, transparent); }
+.bt-root:not(#_) .node.is-dim { opacity: .5; }
+.bt-root:not(#_) .n-boss { border-color: rgba(var(--bt-gold-rgb), .35); background: radial-gradient(90% 80% at 100% 0%, rgba(var(--bt-gold-rgb), .1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .arr { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: center; gap: 6px; }
+.bt-root:not(#_) .arr i { position: relative; display: block; width: 100%; height: 2px; background: var(--bt-border-2); border-radius: 2px; transition: background .3s, box-shadow .3s; }
+.bt-root:not(#_) .arr i::after { content: ""; position: absolute; right: -1px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; transform: rotate(45deg); color: var(--bt-border-2); transition: color .3s; }
+.bt-root:not(#_) .arr i b { position: absolute; top: -3px; left: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-lamp); box-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), .9); opacity: 0; }
+.bt-root:not(#_) .arr span { font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--bt-text-faint); text-align: center; line-height: 1.3; transition: color .3s; }
+.bt-root:not(#_) .arr.is-on i { background: var(--bt-lamp); box-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), .6); }
+.bt-root:not(#_) .arr.is-on i::after { color: var(--bt-lamp); }
+.bt-root:not(#_) .arr.is-on span { color: var(--bt-lamp); }
+.bt-root:not(#_) .arr.is-on i b { animation: fl-run 1s linear infinite; }
+@keyframes fl-run-v { 0% { top: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: calc(100% - 8px); opacity: 0; } }
+@keyframes fl-run { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+.bt-root:not(#_) .n-pl { grid-column: 1; grid-row: 1; } .bt-root:not(#_) .a-1 { grid-column: 2; grid-row: 1; } .bt-root:not(#_) .n-kp { grid-column: 3; grid-row: 1; } .bt-root:not(#_) .a-2 { grid-column: 4; grid-row: 1; } .bt-root:not(#_) .n-bt { grid-column: 5; grid-row: 1 / span 2; }
+.bt-root:not(#_) .n-pi { grid-column: 1; grid-row: 2; } .bt-root:not(#_) .a-3 { grid-column: 2 / span 3; grid-row: 2; }
+.bt-root:not(#_) .n-bt { justify-content: center; }
+.bt-root:not(#_) .n-bt .node-top { flex-direction: column-reverse; align-items: flex-start; gap: 12px; }
+.bt-root:not(#_) .n-bt .mascot { width: 92px; margin: 4px 0 2px; filter: drop-shadow(0 0 14px rgba(var(--bt-gold-rgb), .35)); }
+.bt-root:not(#_) .node.mods { grid-column: 1 / -1; grid-row: 3; display: flex; flex-direction: row; align-items: center; gap: 16px; padding: 14px 18px; border-style: dashed; }
+.bt-root:not(#_) .mods p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; flex: 1; }
+.bt-root:not(#_) .mods h3 { margin: 0 0 2px; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .mods-txt { flex: 1; min-width: 0; }
+.bt-root:not(#_) .mods-rail { position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--bt-teal), transparent); opacity: .5; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .arr.is-on i b { animation: none; } }
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .flow { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+  .bt-root:not(#_) .flow > * { grid-column: 1 !important; grid-row: auto !important; }
+  .bt-root:not(#_) .arr { flex-direction: row; height: 46px; justify-content: flex-start; padding-left: 44px; gap: 12px; }
+  .bt-root:not(#_) .arr i { width: 2px; height: 100%; order: -1; }
+  .bt-root:not(#_) .arr span { text-align: left; }
+  .bt-root:not(#_) .arr i::after { right: auto; left: 50%; top: auto; bottom: -1px; margin: 0 0 0 -4px; transform: rotate(135deg); }
+  .bt-root:not(#_) .arr i b { left: -3px !important; }
+  .bt-root:not(#_) .arr.is-on i b { animation-name: fl-run-v; }
+  .bt-root:not(#_) .n-pl { order: 1; } .bt-root:not(#_) .a-1 { order: 2; } .bt-root:not(#_) .n-kp { order: 3; } .bt-root:not(#_) .a-2 { order: 4; } .bt-root:not(#_) .n-bt { order: 5; } .bt-root:not(#_) .a-3 { order: 6; } .bt-root:not(#_) .n-pi { order: 7; }
+  .bt-root:not(#_) .a-3 i::after { bottom: auto; top: -1px; transform: rotate(-45deg); }
+  .bt-root:not(#_) .a-3.is-on i b { animation-direction: reverse; }
+  .bt-root:not(#_) .node.mods { order: 8; margin-top: 16px; flex-wrap: wrap; }
+}
+/* ===== 5B Role cards ===== */
+.bt-root:not(#_) .roles { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .roles .tile { grid-column: span 2; display: flex; flex-direction: column; gap: 8px; padding: 18px; }
+.bt-root:not(#_) .roles .tile:nth-child(4), .bt-root:not(#_) .roles .tile:nth-child(5) { grid-column: span 3; }
+.bt-root:not(#_) .roles h3 { margin: 4px 0 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .roles p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .roles .tile:nth-child(5) { flex-direction: row; align-items: center; gap: 16px; border-color: rgba(var(--bt-gold-rgb), .35); background: radial-gradient(80% 90% at 100% 50%, rgba(var(--bt-gold-rgb), .12), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .roles .mascot { width: 76px; flex: none; filter: drop-shadow(0 0 14px rgba(var(--bt-gold-rgb), .35)); transition: transform .4s cubic-bezier(.3,1.4,.4,1); }
+.bt-root:not(#_) .roles .tile:hover .mascot { transform: rotate(-6deg) scale(1.08); }
+@container bt (max-width: 900px) { .bt-root:not(#_) .roles { grid-template-columns: 1fr 1fr; } .bt-root:not(#_) .roles .tile, .bt-root:not(#_) .roles .tile:nth-child(4) { grid-column: span 1; } .bt-root:not(#_) .roles .tile:nth-child(5) { grid-column: span 2; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .node.mods { flex-direction: column; align-items: flex-start; } .bt-root:not(#_) .roles { grid-template-columns: 1fr; } .bt-root:not(#_) .roles .tile, .bt-root:not(#_) .roles .tile:nth-child(n) { grid-column: auto; } }
+
+/* ===== 6A Flip medals ===== */
+.bt-root:not(#_) .medals { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .flip { perspective: 900px; height: 230px; cursor: pointer; border: 0; padding: 0; background: none; font: inherit; color: inherit; text-align: center; }
+.bt-root:not(#_) .flip-in { position: relative; height: 100%; transform-style: preserve-3d; transition: transform .6s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .flip:hover .flip-in, .bt-root:not(#_) .flip:focus-visible .flip-in, .bt-root:not(#_) .flip.is-flipped .flip-in { transform: rotateY(180deg); }
+.bt-root:not(#_) .flip:focus-visible { outline: none; }
+.bt-root:not(#_) .flip:focus-visible .face { outline: 2px solid var(--bt-primary); outline-offset: 3px; }
+.bt-root:not(#_) .face { position: absolute; inset: 0; backface-visibility: hidden; -webkit-backface-visibility: hidden; border-radius: var(--bt-radius-xl); border: 1px solid var(--bt-border); background: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%), var(--bt-surface); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px; overflow: hidden; }
+.bt-root:not(#_) .face--back { transform: rotateY(180deg); border-color: color-mix(in srgb, var(--c) 55%, transparent); background: radial-gradient(80% 70% at 50% 100%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), var(--bt-surface); justify-content: center; }
+.bt-root:not(#_) .medal { position: relative; width: 84px; height: 84px; border-radius: 50%; display: grid; place-items: center; font-size: 34px; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 70%, white 10%), color-mix(in srgb, var(--c) 30%, var(--bt-bg)) 70%); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 0 6px color-mix(in srgb, var(--c) 70%, transparent), 0 0 26px color-mix(in srgb, var(--c) 40%, transparent); overflow: hidden; }
+.bt-root:not(#_) .medal::after { content: ""; position: absolute; inset: -20%; background: linear-gradient(115deg, transparent 40%, rgba(255,255,255,.55) 50%, transparent 60%); transform: translateX(-100%); }
+.bt-root:not(#_) .flip:hover .medal::after { animation: md-shine .8s ease-out; }
+@keyframes md-shine { to { transform: translateX(100%); } }
+.bt-root:not(#_) .face b { font-size: var(--bt-text-lg); font-weight: 800; margin-top: 8px; }
+.bt-root:not(#_) .face .sub { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .face .flip-hint { position: absolute; bottom: 10px; font-size: var(--bt-text-2xs); color: var(--bt-text-faint); letter-spacing: .06em; text-transform: uppercase; }
+.bt-root:not(#_) .back-k { font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .back-v { color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.45; margin-bottom: 8px; }
+.bt-root:not(#_) .unl { display: inline-flex; align-items: center; gap: 6px; font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: var(--bt-radius-full); padding: 4px 10px; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .flip-in { transition: none; } .bt-root:not(#_) .flip:hover .medal::after { animation: none; } }
+@container bt (max-width: 900px) { .bt-root:not(#_) .medals { grid-template-columns: 1fr 1fr; } }
+/* ===== 6B Trophy shelf ===== */
+.bt-root:not(#_) .shelf { position: relative; padding: 70px 10px 0; }
+.bt-root:not(#_) .shelf-row { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; position: relative; z-index: 1; }
+.bt-root:not(#_) .shelf-ledge { height: 14px; margin: -6px -10px 0; border-radius: 4px; background: linear-gradient(180deg, var(--bt-surface-2), var(--bt-bg)); border: 1px solid var(--bt-border-2); box-shadow: 0 14px 30px rgba(0,0,0,.6), 0 -30px 60px -20px rgba(var(--bt-gold-rgb), .12); }
+.bt-root:not(#_) .trophy { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding-bottom: 12px; text-align: center; cursor: default; }
+.bt-root:not(#_) .trophy .medal { transition: transform .4s cubic-bezier(.3,1.4,.4,1); }
+.bt-root:not(#_) .trophy:hover .medal { transform: translateY(-10px) scale(1.06); }
+.bt-root:not(#_) .trophy:hover .medal::after { animation: md-shine .8s ease-out; }
+.bt-root:not(#_) .trophy b { font-size: var(--bt-text-md); font-weight: 800; margin-top: 6px; }
+.bt-root:not(#_) .trophy .unl { font-size: var(--bt-text-2xs); }
+.bt-root:not(#_) .tip { position: absolute; bottom: calc(100% - 2px); left: 50%; width: 200px; margin-left: -100px; padding: 10px 12px; border-radius: 12px; background: var(--bt-surface-2); border: 1px solid color-mix(in srgb, var(--c) 50%, transparent); font-size: var(--bt-text-sm); color: var(--bt-text); line-height: 1.45; opacity: 0; transform: translateY(6px); transition: opacity .2s, transform .25s; pointer-events: none; z-index: 3; box-shadow: 0 10px 24px rgba(0,0,0,.5); }
+.bt-root:not(#_) .trophy:hover .tip { opacity: 1; transform: translateY(-14px); }
+.bt-root:not(#_) .shelf-cap { margin-top: 14px; font-size: var(--bt-text-sm); color: var(--bt-text-faint); text-align: center; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .shelf { padding-top: 10px; } .bt-root:not(#_) .shelf-row { grid-template-columns: 1fr 1fr; row-gap: 22px; } .bt-root:not(#_) .tip { display: none; } .bt-root:not(#_) .trophy .sub { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-sm); } }
+.bt-root:not(#_) .trophy .sub { display: none; }
+
+/* ===== 7A House rules placard ===== */
+.bt-root:not(#_) .placard { border-radius: var(--bt-radius-xl); border: 1px solid var(--bt-border-2); background: repeating-linear-gradient(180deg, rgba(255,255,255,.012) 0 1px, transparent 1px 4px), var(--bt-surface); overflow: hidden; }
+.bt-root:not(#_) .placard-head { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; background: linear-gradient(180deg, rgba(var(--bt-lamp-rgb), .08), transparent), var(--bt-bg); border-bottom: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .placard-head b { font-size: var(--bt-text-md); font-weight: 900; letter-spacing: .28em; text-transform: uppercase; color: var(--bt-lamp); text-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), .55); }
+.bt-root:not(#_) .placard-head i { width: 7px; height: 7px; border-radius: 50%; background: var(--bt-lamp); box-shadow: 0 0 8px rgba(var(--bt-lamp-rgb), .9); animation: pl-blink 1.6s steps(1, end) infinite; }
+.bt-root:not(#_) .placard-head i:last-child { animation-delay: .8s; }
+@keyframes pl-blink { 0%, 50% { opacity: 1; } 51%, 100% { opacity: .25; } }
+.bt-root:not(#_) .rules { display: grid; grid-template-columns: 1fr 1fr; }
+.bt-root:not(#_) .rule { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 4px 14px; padding: 18px 22px; border-top: 1px solid var(--bt-border); transition: background .25s; }
+.bt-root:not(#_) .rule:nth-child(-n+2) { border-top: 0; }
+.bt-root:not(#_) .rule:nth-child(odd) { border-right: 1px solid var(--bt-border); }
+.bt-root:not(#_) .rule .rn { grid-row: span 2; font-size: 34px; font-weight: 900; line-height: 1; color: transparent; -webkit-text-stroke: 1px rgba(var(--bt-gold-rgb), .55); letter-spacing: -.03em; transition: color .25s, text-shadow .25s; }
+.bt-root:not(#_) .rule b { font-size: var(--bt-text-base); font-weight: 800; display: flex; gap: 8px; align-items: center; }
+.bt-root:not(#_) .rule span { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .rule:hover { background: rgba(var(--bt-gold-rgb), .04); }
+.bt-root:not(#_) .rule:hover .rn { color: var(--bt-title); -webkit-text-stroke-color: var(--bt-title); text-shadow: 0 0 16px rgba(var(--bt-gold-rgb), .45); }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .placard-head i { animation: none; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .rules { grid-template-columns: 1fr; } .bt-root:not(#_) .rule:nth-child(odd) { border-right: 0; } .bt-root:not(#_) .rule:nth-child(2) { border-top: 1px solid var(--bt-border); } .bt-root:not(#_) .rule { grid-template-columns: 44px minmax(0,1fr); padding: 16px; } .bt-root:not(#_) .rule .rn { font-size: 28px; } }
+/* ===== 7B Icon cards ===== */
+.bt-root:not(#_) .rcards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .rcards .tile { padding: 18px; display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .rcards b { font-size: var(--bt-text-lg); font-weight: 800; margin-top: 6px; }
+.bt-root:not(#_) .rcards span:not(.ic) { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .rcards { grid-template-columns: 1fr 1fr; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .rcards { grid-template-columns: 1fr; } }
+
+/* ===== 8A Searchable index ===== */
+.bt-root:not(#_) .gl-tools { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; }
+.bt-root:not(#_) .gl-search { position: relative; flex: 1; min-width: 220px; max-width: 360px; }
+.bt-root:not(#_) .gl-search svg { position: absolute; left: 12px; top: 50%; width: 16px; height: 16px; margin-top: -8px; color: var(--bt-text-faint); pointer-events: none; }
+.bt-root:not(#_) .gl-search .bt-input { padding-left: 36px; width: 100%; }
+.bt-root:not(#_) .gl-az { display: flex; gap: 4px; flex-wrap: wrap; }
+.bt-root:not(#_) .gl-az button { font: inherit; font-size: var(--bt-text-sm); font-weight: 800; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--bt-border); background: var(--bt-surface); color: var(--bt-text-muted); cursor: pointer; }
+.bt-root:not(#_) .gl-az button:hover { color: var(--bt-text); border-color: var(--bt-primary); }
+.bt-root:not(#_) .gl-az button.is-on { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .gl-az button:disabled { opacity: .3; cursor: default; border-color: var(--bt-border); }
+.bt-root:not(#_) .gl-list { display: grid; grid-template-columns: 1fr 1fr; gap: 0 28px; }
+.bt-root:not(#_) .gl-grp { break-inside: avoid; }
+.bt-root:not(#_) .gl-item { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 2px 12px; padding: 12px 0; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .gl-item .lt { grid-row: span 2; font-size: var(--bt-text-xl); font-weight: 900; color: var(--bt-text-faint); line-height: 1.2; }
+.bt-root:not(#_) .gl-item dt { font-weight: 800; color: var(--bt-title); }
+.bt-root:not(#_) .gl-item dd { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .gl-item mark { background: rgba(var(--bt-gold-rgb), .22); color: var(--bt-text); border-radius: 3px; padding: 0 2px; }
+.bt-root:not(#_) .gl-empty { grid-column: 1 / -1; padding: 22px 0; color: var(--bt-text-muted); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .gl-list { grid-template-columns: 1fr; } .bt-root:not(#_) .gl-search { max-width: none; } .bt-root:not(#_) .gl-az { display: none; } }
+/* ===== 8B Term chips + definition card ===== */
+.bt-root:not(#_) .gc { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.bt-root:not(#_) .gc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .gc-chips button { font: inherit; font-size: var(--bt-text-md); font-weight: 700; padding: 8px 14px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text-muted); cursor: pointer; transition: all .2s; }
+.bt-root:not(#_) .gc-chips button:hover { color: var(--bt-text); border-color: var(--bt-primary); }
+.bt-root:not(#_) .gc-chips button.is-on { color: var(--bt-bg); background: var(--bt-title); border-color: var(--bt-title); box-shadow: 0 0 16px rgba(var(--bt-gold-rgb), .4); }
+.bt-root:not(#_) .gc-card { position: sticky; top: 90px; padding: 22px; border-radius: var(--bt-radius-xl); border: 1px solid rgba(var(--bt-gold-rgb), .35); background: radial-gradient(80% 80% at 0% 0%, rgba(var(--bt-gold-rgb), .1), transparent 60%), var(--bt-surface); min-height: 150px; }
+.bt-root:not(#_) .gc-card .k { font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .1em; text-transform: uppercase; color: var(--bt-text-faint); }
+.bt-root:not(#_) .gc-card h3 { margin: 6px 0 8px; font-size: 26px; font-weight: 900; color: var(--bt-title); }
+.bt-root:not(#_) .gc-card p { margin: 0; color: var(--bt-text); line-height: 1.6; }
+.bt-root:not(#_) .gc-anim { animation: gc-in .35s cubic-bezier(.3,.7,.2,1); }
+@keyframes gc-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .gc-anim { animation: none; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .gc { grid-template-columns: 1fr; } .bt-root:not(#_) .gc-card { position: static; order: -1; } }
+
+/* ===== 9A Ask Boomertanger (chat) ===== */
+.bt-root:not(#_) .chat { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.bt-root:not(#_) .q { align-self: flex-end; display: flex; align-items: center; gap: 10px; max-width: 86%; font: inherit; font-size: var(--bt-text-base); font-weight: 700; text-align: left; color: var(--bt-text); padding: 12px 16px; border-radius: 18px 18px 4px 18px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); cursor: pointer; transition: border-color .2s, background .2s, transform .2s; }
+.bt-root:not(#_) .q:hover { border-color: var(--bt-primary); transform: translateX(-2px); }
+.bt-root:not(#_) .q[aria-expanded="true"] { background: var(--bt-primary); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .q .qi { flex: none; font-size: var(--bt-text-xs); font-weight: 800; color: var(--bt-primary-soft); }
+.bt-root:not(#_) .q[aria-expanded="true"] .qi { color: var(--bt-text); }
+.bt-root:not(#_) .a { display: none; align-self: flex-start; gap: 10px; max-width: 86%; align-items: flex-end; }
+.bt-root:not(#_) .a.is-open { display: flex; }
+.bt-root:not(#_) .a .av { width: 48px; height: 48px; flex: none; border-radius: 50%; display: grid; place-items: center; background: radial-gradient(circle, rgba(var(--bt-blood-rgb), .25), var(--bt-bg) 70%); border: 1px solid var(--bt-border-2); overflow: hidden; }
+.bt-root:not(#_) .a .av svg { width: 30px; }
+.bt-root:not(#_) .a .bub { padding: 12px 16px; border-radius: 18px 18px 18px 4px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text); line-height: 1.55; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .a .bub small { display: block; font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--bt-title); margin-bottom: 4px; }
+.bt-root:not(#_) .typing { display: inline-flex; gap: 4px; padding: 4px 0; }
+.bt-root:not(#_) .typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--bt-text-muted); animation: ty 1s ease-in-out infinite; }
+.bt-root:not(#_) .typing i:nth-child(2) { animation-delay: .15s; } .bt-root:not(#_) .typing i:nth-child(3) { animation-delay: .3s; }
+@keyframes ty { 0%, 100% { transform: translateY(0); opacity: .4; } 50% { transform: translateY(-4px); opacity: 1; } }
+.bt-root:not(#_) .chat-in { animation: gc-in .3s cubic-bezier(.3,.7,.2,1); }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .typing i, .bt-root:not(#_) .chat-in { animation: none; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .q, .bt-root:not(#_) .a { max-width: 96%; } }
+
+/* BOOMBOT avatar */
+.bt-root:not(#_) .bot { width: 38px; height: 38px; flex: none; display: block; overflow: visible; }
+.bt-root:not(#_) .bot .b-head { fill: url(#bb-head); stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.2; }
+.bt-root:not(#_) .bot .b-ear { fill: color-mix(in srgb, var(--bt-title) 75%, var(--bt-bg)); }
+.bt-root:not(#_) .bot .b-ant { stroke: var(--bt-text-muted); stroke-width: 1.6; stroke-linecap: round; }
+.bt-root:not(#_) .bot .b-knob { fill: var(--bt-blood); filter: drop-shadow(0 0 3px rgba(var(--bt-blood-rgb), .8)); }
+.bt-root:not(#_) .bot .b-visor { fill: var(--bt-bg); }
+.bt-root:not(#_) .bot .b-eye { fill: var(--bt-neon); filter: drop-shadow(0 0 2.5px rgba(var(--bt-primary-rgb), 1)); transform-box: fill-box; transform-origin: center; animation: bb-blink 4.5s ease-in-out infinite; }
+.bt-root:not(#_) .bot .b-mouth { stroke: color-mix(in srgb, var(--bt-title) 45%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .bot .h0 { stop-color: var(--bt-lamp); } .bt-root:not(#_) .bot .h1 { stop-color: var(--bt-title); }
+.bt-root:not(#_) .a.is-typing .bot .b-eyes { animation: bb-scan .9s ease-in-out infinite; }
+.bt-root:not(#_) .a.is-typing .bot .b-knob { animation: bb-knob .45s steps(1, end) infinite; }
+@keyframes bb-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
+@keyframes bb-scan { 0%, 100% { transform: translateX(-2px); } 50% { transform: translateX(2px); } }
+@keyframes bb-knob { 0%, 50% { opacity: 1; } 51%, 100% { opacity: .35; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bot * { animation: none !important; } }
+.bt-root:not(#_) .a .av { background: radial-gradient(circle at 50% 60%, rgba(var(--bt-lamp-rgb), .16), var(--bt-bg) 70%); }
+/* ===== 9B Refined accordion ===== */
+.bt-root:not(#_) .acc { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .acc-i { border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); overflow: hidden; transition: border-color .25s, box-shadow .25s; }
+.bt-root:not(#_) .acc-i.is-open { border-color: rgba(var(--bt-primary-rgb), .6); box-shadow: inset 3px 0 0 var(--bt-primary), 0 0 22px var(--bt-primary-glow); }
+.bt-root:not(#_) .acc-q { display: flex; align-items: center; gap: 14px; width: 100%; padding: 16px 18px; font: inherit; font-weight: 700; font-size: var(--bt-text-base); color: var(--bt-text); background: none; border: 0; text-align: left; cursor: pointer; }
+.bt-root:not(#_) .acc-q:hover { background: rgba(255,255,255,.02); }
+.bt-root:not(#_) .acc-q .n { font-size: var(--bt-text-sm); font-weight: 800; color: var(--bt-title); font-variant-numeric: tabular-nums; width: 26px; }
+.bt-root:not(#_) .acc-q .pm { margin-left: auto; position: relative; width: 26px; height: 26px; border-radius: 8px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); flex: none; transition: transform .3s, background .3s; }
+.bt-root:not(#_) .acc-q .pm::before, .bt-root:not(#_) .acc-q .pm::after { content: ""; position: absolute; left: 50%; top: 50%; width: 10px; height: 2px; margin: -1px 0 0 -5px; background: var(--bt-primary-soft); border-radius: 2px; }
+.bt-root:not(#_) .acc-q .pm::after { transform: rotate(90deg); }
+.bt-root:not(#_) .acc-i.is-open .pm { transform: rotate(135deg); background: var(--bt-primary); }
+.bt-root:not(#_) .acc-i.is-open .pm::before, .bt-root:not(#_) .acc-i.is-open .pm::after { background: var(--bt-text); }
+.bt-root:not(#_) .acc-a { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .acc-i.is-open .acc-a { grid-template-rows: 1fr; }
+.bt-root:not(#_) .acc-a > div { overflow: hidden; }
+.bt-root:not(#_) .acc-a p { margin: 0; padding: 0 18px 18px 58px; color: var(--bt-text-muted); line-height: 1.6; max-width: 70ch; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .acc-a, .bt-root:not(#_) .pm { transition: none; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .acc-a p { padding-left: 18px; } }
+</style>
+</head>
+<body data-w="desk">
+<div class="bt-root page">
+  <header class="pg-intro">
+    <h1 class="bt-title">How it works: sections 5 to 9</h1>
+    <p>Two ideas for each section, in the same language as the new sections 1 and 4: big glowing icon tiles, the cursor spotlight, and things that respond when you point at them. Sections deliberately vary their shape (a diagram, collectibles, a placard, an index, a conversation) so the page has rhythm instead of five more card grids. Hover and click everything; switch Desktop and Phone in the bar.</p>
+  </header>
+  <div class="pg-bar">
+    <div class="pg-ctl"><span class="bt-label">Width</span><button class="bt-chip bt-chip--small is-active" data-w="desk">Desktop</button><button class="bt-chip bt-chip--small" data-w="phone">Phone</button></div>
+    <div class="pg-ctl"><a class="bt-chip bt-chip--small" href="#s5">5 Roles</a><a class="bt-chip bt-chip--small" href="#s6">6 Badges</a><a class="bt-chip bt-chip--small" href="#s7">7 Fair play</a><a class="bt-chip bt-chip--small" href="#s8">8 Glossary</a><a class="bt-chip bt-chip--small" href="#s9">9 FAQ</a></div>
+  </div>
+
+  <section class="v-sec" id="s5"><div class="v-head"><span class="v-letter">5</span><span class="v-name">Who does what</span></div>
+    <p class="v-desc">Today: five rows in a list. The roles relate to each other (ideas flow from players to the Keeper to Boomertanger), and a list can't show that.</p>
+    <div class="v-tabs" data-group="s5"></div><div class="v-stage v-cq" id="stage-s5"></div><p class="v-note" id="note-s5"></p>
+    <div class="v-why"><p><b>Chosen: A, Flow.</b> It shows how the Arcade actually works: players' ideas go to the Keeper, who takes a plan to Boomertanger; pitchers go straight to Boomertanger with new games; and the mods watch over all of it. Hover a role and its arrows light up with a little signal running along them, the same "point at it and it explains itself" idea as the linked timeline in section 4. On phones it becomes a top-to-bottom flow.</p></div>
+  </section>
+
+  <section class="v-sec" id="s6"><div class="v-head"><span class="v-letter">6</span><span class="v-name">Badges</span></div>
+    <p class="v-desc">Today: four small cards. Badges are collectibles, so they should feel like objects you want.</p>
+    <div class="v-tabs" data-group="s6"></div><div class="v-stage v-cq" id="stage-s6"></div><p class="v-note" id="note-s6"></p>
+    <div class="v-why"><p><b>Chosen: A, Flip medals.</b> Each badge is a glossy medal with a shine; hover (or tap on a phone) and it flips to show how you earn it and what it unlocks. The flip makes them feel collectible and keeps the front clean. B's trophy shelf is lovely too, but its details only live in hover tooltips, which phones don't have.</p></div>
+  </section>
+
+  <section class="v-sec" id="s7"><div class="v-head"><span class="v-letter">7</span><span class="v-name">Fair play</span></div>
+    <p class="v-desc">Today: six small icon rows. These are the rules of the house, so they can look like it.</p>
+    <div class="v-tabs" data-group="s7"></div><div class="v-stage v-cq" id="stage-s7"></div><p class="v-note" id="note-s7"></p>
+    <div class="v-why"><p><b>Chosen: A, House rules.</b> The rules as the instruction placard on an arcade cabinet: a lit "House rules" header with blinking bulbs and six numbered rules, their outlined gold numbers lighting up as you point at them. It's a change of shape after the medals, and the outlined numbers echo the chapter numerals. B keeps the card grid from section 1 if you'd rather everything match.</p></div>
+  </section>
+
+  <section class="v-sec" id="s8"><div class="v-head"><span class="v-letter">8</span><span class="v-name">Glossary</span></div>
+    <p class="v-desc">Today: twelve terms in two columns. A glossary gets used to look one word up.</p>
+    <div class="v-tabs" data-group="s8"></div><div class="v-stage v-cq" id="stage-s8"></div><p class="v-note" id="note-s8"></p>
+    <div class="v-why"><p><b>Chosen: B, Term chips.</b> (A for reference:) Type and the list narrows as you go, with the match highlighted; the letter buttons jump to a letter. It's alphabetical, grouped by first letter like a real index, and it keeps working as the Arcade adds words. Everything stays visible when you're not searching.</p></div>
+  </section>
+
+  <section class="v-sec" id="s9"><div class="v-head"><span class="v-letter">9</span><span class="v-name">FAQ</span></div>
+    <p class="v-desc">Today: a plain accordion.</p>
+    <div class="v-tabs" data-group="s9"></div><div class="v-stage v-cq" id="stage-s9"></div><p class="v-note" id="note-s9"></p>
+    <div class="v-why"><p><b>Chosen: A, Ask BOOMBOT.</b> The questions are yours, as chat bubbles; tap one and BOOMBOT, a yellow robot with glowing purple eyes and a red antenna knob (the same red as the joystick), "thinks" for a moment, then answers. It's the friendliest way to end the page and it sounds like the brand, not a help centre. It's still an accordion underneath (buttons, one open at a time, readable by screen readers). B is the polished classic if you'd rather keep it quiet.</p></div>
+  </section>
+</div>
+
+<script>
+(function () {
+  const MASCOT_IN = `<path class="m-hd" fill="#000" stroke="#000" stroke-width="10" d="M46.93,154.29s-.34-20.19,14.53-36.58c8.21-9.05,21.21-18.67,41.08-19.16,23.28-.58,39.12,16.05,43.21,20.98,13.84,16.66,13.06,35.54,13.06,35.54,0,0,12.77,4.35,11.81,18.12-1.24,17.69-21.24,18.56-21.24,18.56l1.84,11.13-9.92-3.77-4.74,22.55-5.32-5.13-12.97,16.11-27.82,18.97-3.48-19.21-12.97-13.02-11.42-19.79-9.29,1.84,1.06-9.97s-20.52-2.13-20.56-19.94c-.03-12.48,13.15-17.23,13.15-17.23h0Z"/> <path class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" d="M146.66,155.61c11.28-1.41,20.64,6.58,21.39,15.12.82,9.27-8.48,19.47-20.91,18.5"/> <path class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" d="M57.16,188.84c-12.43.98-21.72-9.23-20.91-18.5.75-8.54,10.11-16.53,21.39-15.12"/> <path class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" d="M155.92,157.03c2.93-27.39-22.38-53.93-49.11-55.93-29.75-2.23-57.88,22.34-57.88,55.13"/> <polygon class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" points="57.16 146.38 63.6 147.12 70.85 128.77 75.44 129.57 88.53 124.67 104.47 109.78 108.41 119.86 114.79 116.71 116.51 121.13 131.95 134.32 138.87 144.65 148.3 143.13 144.38 159.35 150.83 173.91 145.64 184.42 148.03 199.05 139.51 195.76 135.07 216.66 130.99 212.81 116.61 230.78 92.23 247.38 89.17 231.14 75.98 217.79 63.92 196.88 56.16 198.33 57.69 184.02 51.64 173.91 59.28 160.08 57.16 146.38"/> <polygon class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" points="108.01 221.65 123.09 202.21 117.21 189.16 102.38 174.07 86.92 189.23 80.23 202.28 89.75 217.04 108.01 221.65"/> <line class="m-ln" fill="none" stroke="#ffa100" stroke-width="4.93" stroke-miterlimit="10" stroke-linejoin="round" x1="85.77" y1="210.96" x2="122.19" y2="203.25"/> <line class="m-th" fill="none" stroke="#ffa100" stroke-width="2.46" x1="98.85" y1="188.79" x2="97.58" y2="195.37"/> <line class="m-th" fill="none" stroke="#ffa100" stroke-width="2.46" x1="105.78" y1="188.72" x2="107.05" y2="195.3"/> <polygon class="m-gl" fill="#1b1464" stroke="#ffa100" stroke-width="4.93" stroke-linejoin="round" points="102.38 174.07 86.92 189.23 71.1 184.18 64.12 174.29 67.73 166.35 80.63 157.37 101.94 157.34 123.49 157.3 136.39 166.28 139.87 174.02 133.03 184.11 117.21 189.16 102.38 174.07"/> <line class="m-sp" fill="#4c186b" stroke="#fff" stroke-width="2.46" x1="94.17" y1="167.44" x2="81.55" y2="179.5"/> <line class="m-sp" fill="#4c186b" stroke="#fff" stroke-width="2.46" x1="83.98" y1="166.38" x2="77.96" y2="172.05"/> <line class="m-sp" fill="#4c186b" stroke="#fff" stroke-width="2.46" x1="130.55" y1="169.99" x2="118.72" y2="181.56"/> <line class="m-sp" fill="#4c186b" stroke="#fff" stroke-width="2.46" x1="121.57" y1="167.4" x2="115.72" y2="173.18"/>`;
+  const mascot = (cls) => `<svg class="${cls}" viewBox="30 92 145 162" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" focusable="false">${MASCOT_IN}</svg>`;
+  const BOT = (id) => `<svg class="bot" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><defs><linearGradient id="${id}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="h0"/><stop offset="1" class="h1"/></linearGradient></defs><path class="b-ant" d="M20 9V4.5"/><circle class="b-knob" cx="20" cy="3.6" r="2.6"/><rect class="b-ear" x="2.4" y="17" width="3.4" height="9" rx="1.6"/><rect class="b-ear" x="34.2" y="17" width="3.4" height="9" rx="1.6"/><rect class="b-head" x="5.5" y="9" width="29" height="25" rx="8" style="fill:url(#${id})"/><rect class="b-visor" x="9.5" y="14.5" width="21" height="10.5" rx="5.2"/><g class="b-eyes"><rect class="b-eye" x="13" y="17.2" width="4.4" height="5" rx="2.2"/><rect class="b-eye" x="22.6" y="17.2" width="4.4" height="5" rx="2.2"/></g><path class="b-mouth" d="M15.5 29.5h9M17 29.5v0M20 29.5v0"/></svg>`;
+  const SOON = `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>`;
+  const head = (n, t, l, extra = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${n}"><p class="bt-chapter-eyebrow" aria-hidden="true">${n} · Chapter</p><h2 class="bt-chapter-title">${t}${extra}</h2>${l ? `<p class="bt-chapter-lede">${l}</p>` : ""}</header>`;
+
+  /* ---------- 5 ---------- */
+  const R = {
+    pl: ["🎮", "Players", "Play, post on the Draft board, vote on ideas, playtest betas.", "gray", "All members", "var(--bt-blue)"],
+    pi: ["💡", "Pitchers", "Pitch brand-new games in the Arcade Studio.", "blue", "Gamer badge", "var(--bt-blue)"],
+    kp: ["🗝", "Keeper", "The volunteer product manager for one version: sorts ideas, runs the vote, writes the plan, posts updates. The role ends at release.", "gold", "One per version", "var(--bt-gold)"],
+    md: ["🛡", "Mods", "Keep every space friendly and safe. Keepers are chosen from mods who volunteer.", "teal", "Mod team", "var(--bt-teal)"],
+    bt: ["🦍", "Boomertanger", "Greenlights games, approves each version's plan, and builds the games.", "pink", "Final say", "var(--bt-gold)"]
+  };
+  const bdg = (k) => `<span class="bt-badge bt-badge--${R[k][3]}">${R[k][4]}</span>`;
+  const S5 = {
+    a: ["A Flow", "A diagram of how ideas travel. Hover a role and its arrows light up with a signal running along them; the other roles dim.", () => {
+      const node = (k, cls) => { const [ic, t, d, , , c] = R[k]; return `<div class="tile node ${cls}" data-role="${k}" style="--c:${c}"><div class="node-top">${k === "bt" ? mascot("mascot") : `<span class="ic" aria-hidden="true">${ic}</span>`}${bdg(k)}</div><h3>${t}</h3><p>${d}</p></div>`; };
+      const arr = (cls, label, links) => `<div class="arr ${cls}" data-links="${links}" aria-hidden="true"><span>${label}</span><i><b></b></i></div>`;
+      const [mi, mt, mdsc, , , mc] = R.md;
+      return `<div class="flow spot" role="img" aria-label="Players send ideas and votes to the Keeper; the Keeper takes the plan to Boomertanger; Pitchers pitch new games straight to Boomertanger; Mods look after every space.">${node("pl", "n-pl")}${arr("a-1", "Ideas and votes", "pl kp")}${node("kp", "n-kp")}${arr("a-2", "The plan", "kp bt")}${node("bt", "n-bt n-boss")}${node("pi", "n-pi")}${arr("a-3", "Pitches for new games", "pi bt")}<div class="tile node mods" data-role="md" style="--c:${mc}"><span class="mods-rail"></span><span class="ic" aria-hidden="true">${mi}</span><div class="mods-txt"><h3>${mt}</h3><p>${mdsc} They look after every space above.</p></div>${bdg("md")}</div></div>`;
+    }],
+    b: ["B Role cards", "Five even cards with the big icon tiles and the spotlight; Boomertanger gets the wide gold card with the mascot.", () => `<div class="roles spot">${["pl", "pi", "kp", "md", "bt"].map((k) => { const [ic, t, d, , , c] = R[k]; if (k === "bt") return `<div class="tile" style="--c:${c}">${mascot("mascot")}<div><div class="node-top" style="margin-bottom:6px"><h3 style="margin:0">${t}</h3>${bdg(k)}</div><p>${d}</p></div></div>`; return `<div class="tile" style="--c:${c}"><div class="node-top"><span class="ic" aria-hidden="true">${ic}</span>${bdg(k)}</div><h3>${t}</h3><p>${d}</p></div>`; }).join("")}</div>`]
+  };
+
+  /* ---------- 6 ---------- */
+  const B = [["🩸", "Splat finisher", "Finished Tap the Splat v1", "Finish Tap the Splat v1 once, any time.", "Unlocks pitching", "var(--bt-red)"], ["🏆", "Top 10 · v1", "Reached a v1 top 10", "Place in a v1 all-time top 10, on Desktop or Mobile.", "Contest entry", "var(--bt-gold)"], ["💡", "Idea shipped", "Your idea made it into a release", "Post an idea on a Draft board that makes it into a release.", "Credited in notes", "var(--bt-teal)"], ["🗝", "Keeper of v2", "Led a version from ideas to release", "Be the Keeper who takes a version from ideas to release.", "Forever on profile", "var(--bt-primary)"]];
+  const S6 = {
+    a: ["A Flip medals", "Hover a medal (tap on phones) and it flips to show how to earn it and what it unlocks. A shine crosses the medal as it turns.", () => `<div class="medals">${B.map(([ic, t, s, how, un, c]) => `<button type="button" class="flip" style="--c:${c}" aria-label="${t}: ${how} ${un}."><div class="flip-in"><div class="face"><span class="medal" aria-hidden="true">${ic}</span><b>${t}</b><span class="sub">${s}</span><span class="flip-hint">Hover to flip</span></div><div class="face face--back"><span class="back-k">How to earn</span><span class="back-v">${how}</span><span class="back-k">Unlocks</span><span class="unl">${un}</span></div></div></button>`).join("")}</div>`],
+    b: ["B Trophy shelf", "The four medals stand on a lit shelf, like a trophy case. Hover one and it lifts, shines, and a card above it tells you how to earn it.", () => `<div class="shelf"><div class="shelf-row">${B.map(([ic, t, s, how, un, c]) => `<div class="trophy" style="--c:${c}"><div class="tip">${how}</div><span class="medal" aria-hidden="true">${ic}</span><b>${t}</b><span class="sub">${how}</span><span class="unl">${un}</span></div>`).join("")}</div><div class="shelf-ledge" aria-hidden="true"></div><p class="shelf-cap">Badges arrive with public profiles.</p></div>`]
+  };
+
+  /* ---------- 7 ---------- */
+  const F = [["⏱", "Time is the score", "Fastest finished run wins. Miss-clicks add penalty seconds."], ["🏁", "Only finished runs by members count", "Close calls don't make the board, but they do count as runs played."], ["🖥", "Desktop and Mobile are separate", "Mouse and touch play differently, so each gets its own board."], ["🔒", "Runs are checked", "The server checks every run. Impossible times are removed."], ["👍", "One vote per run", "Like a game or ask for more once per play. It unlocks again next run."], ["🤝", "Be kind in the Workshop", "Critique ideas, not people. Mods keep every space safe."]];
+  const S7 = {
+    a: ["A House rules", "An arcade cabinet's instruction placard: a lit header with blinking bulbs, six numbered rules, and outlined gold numbers that light up as you point at them.", () => `<div class="placard"><div class="placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div><ol class="rules" style="list-style:none;margin:0;padding:0">${F.map(([ic, t, d], i) => `<li class="rule"><span class="rn" aria-hidden="true">0${i + 1}</span><b>${t} <span aria-hidden="true" style="font-size:15px">${ic}</span></b><span>${d}</span></li>`).join("")}</ol></div>`],
+    b: ["B Icon cards", "Six cards with the big icon tiles and the spotlight, matching section 1.", () => `<div class="rcards spot">${F.map(([ic, t, d]) => `<div class="tile"><span class="ic" aria-hidden="true">${ic}</span><b>${t}</b><span>${d}</span></div>`).join("")}</div>`]
+  };
+
+  /* ---------- 8 ---------- */
+  const G = [["Arcade Studio", "Where new games are pitched and greenlit."], ["Balance patch", "A fix that changes difficulty; the board restarts or gets a note."], ["Boom Arcade", "The whole section: all games, leaderboards, the Studio and Workshops."], ["Draft board", "The Workshop's message board, where ideas are posted and discussed."], ["Greenlit", "A pitch Boomertanger chose to build."], ["Keeper", "The volunteer who leads one version, from ideas to release."], ["Patch", "A behind-the-scenes fix, like v1.8. You still see v1."], ["Pitch", "An idea for a brand-new game."], ["Playtest", "The members-first beta of the next version."], ["Run", "One play of a game, win or lose."], ["Version", "A full release, like v1 or v2. What you play and what boards track."], ["Workshop", "A game's space for its next version."]];
+  const S8 = {
+    a: ["A Searchable index", "Try typing \"patch\" or \"vote\". The letters jump to a letter (click it again to show all).", () => `<div class="gl"><div class="gl-tools"><label class="gl-search"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="7" cy="7" r="5"/><path d="M11 11l3.5 3.5"/></svg><input class="bt-input" type="search" placeholder="Find a term" aria-label="Find a term" data-gl-q></label><div class="gl-az" role="group" aria-label="Jump to letter">${"ABCDGKPRVW".split("").map((l) => `<button type="button" data-gl-l="${l}">${l}</button>`).join("")}</div></div><dl class="gl-list" data-gl-list></dl></div>`],
+    b: ["B Term chips", "Every term as a chip; pick one and its definition appears in the gold card. Quick to browse, but only one definition shows at a time.", () => `<div class="gc"><div class="gc-chips" role="group" aria-label="Terms">${G.map(([t], i) => `<button type="button" data-gc="${i}"${i === 2 ? ' class="is-on"' : ""}>${t}</button>`).join("")}</div><div class="gc-card" aria-live="polite" data-gc-card></div></div>`]
+  };
+
+  /* ---------- 9 ---------- */
+  const Q = [["Do I need an account to play?", "Tap the Splat is free for everyone, as a taste of the Arcade. Every other game is for members: join free to play them, save your runs, get on the leaderboards, vote on ideas and earn badges."], ["Why doesn't my time show on the leaderboard?", "Only finished runs by members with a verified email count, and each device has its own board. Check you're looking at the right version and at Desktop or Mobile."], ["How do I become a Keeper?", "Keepers are chosen from mods who volunteer when a new version's cycle opens. Keep being helpful in the Workshop; that's how mods get noticed."], ["What happens to my v1 time when v2 comes out?", "It stays on the v1 board forever. v2 gets fresh boards, so everyone starts even."], ["Can I pitch a game right away?", "Pitching unlocks with a gamer badge, like finishing a game. It keeps the Studio full of ideas from people who play."]];
+  const S9 = {
+    a: ["A Ask BOOMBOT", "Tap a question: BOOMBOT, the Arcade's little robot, scans for a moment (its eyes dart, its antenna blinks), then answers. One answer open at a time.", () => `<div class="chat">${Q.map(([q, a], i) => `<button type="button" class="q" aria-expanded="false" aria-controls="ans-${i}" data-q="${i}"><span class="qi">Q${i + 1}</span>${q}</button><div class="a" id="ans-${i}" role="region"><span class="av">${BOT("bb-" + i)}</span><div class="bub" data-a="${i}"></div></div>`).join("")}</div>`],
+    b: ["B Refined accordion", "Numbered questions; the plus turns into a cross, the open answer slides down smoothly and gets a purple edge. One open at a time.", () => `<div class="acc">${Q.map(([q, a], i) => `<div class="acc-i${i === 0 ? " is-open" : ""}"><button type="button" class="acc-q" aria-expanded="${i === 0}"><span class="n">0${i + 1}</span>${q}<span class="pm" aria-hidden="true"></span></button><div class="acc-a"><div><p>${a}</p></div></div></div>`).join("")}</div>`]
+  };
+
+  const SECS = {
+    s5: [S5, "05", "Who does what", "Everyone plays. Some members help steer.", ""],
+    s6: [S6, "06", "Badges", "Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.", " " + SOON],
+    s7: [S7, "07", "Fair play", "The rules every game and leaderboard follows.", ""],
+    s8: [S8, "08", "Glossary", "", ""],
+    s9: [S9, "09", "FAQ", "", ""]
+  };
+  const pick = { s5: "a", s6: "a", s7: "a", s8: "b", s9: "a" }; const CHOSEN = { s5: "a", s6: "a", s7: "a", s8: "b", s9: "a" };
+  function render(g) {
+    const [set, n, t, l, extra] = SECS[g];
+    document.querySelector(`[data-group="${g}"]`).innerHTML = Object.entries(set).map(([k, [lab]]) => `<button class="bt-chip bt-chip--small${pick[g] === k ? " is-active" : ""}" data-g="${g}" data-v="${k}">${lab}${k === CHOSEN[g] ? '<span class="v-rec">Chosen</span>' : ""}</button>`).join("");
+    const st = document.getElementById("stage-" + g);
+    st.innerHTML = head(n, t, l, extra) + `<div class="sec-body">${set[pick[g]][2]()}</div>`;
+    document.getElementById("note-" + g).textContent = set[pick[g]][1];
+    document.querySelectorAll(`[data-g="${g}"]`).forEach((b) => b.onclick = () => { pick[g] = b.dataset.v; render(g); });
+    wire(st);
+  }
+  function wire(st) {
+    st.querySelectorAll(".spot .tile").forEach((t) => t.addEventListener("pointermove", (e) => { const r = t.getBoundingClientRect(); t.style.setProperty("--mx", (e.clientX - r.left) + "px"); t.style.setProperty("--my", (e.clientY - r.top) + "px"); }));
+    /* 5A flow highlight */
+    const flow = st.querySelector(".flow");
+    if (flow) {
+      const nodes = [...flow.querySelectorAll(".node")], arrs = [...flow.querySelectorAll(".arr")];
+      const on = (role) => { const lit = new Set([role]); arrs.forEach((a) => { const l = a.dataset.links.split(" "); const hit = role === "md" ? false : l.includes(role); a.classList.toggle("is-on", hit); if (hit) l.forEach((x) => lit.add(x)); }); nodes.forEach((n) => { n.classList.toggle("is-on", n.dataset.role === role); n.classList.toggle("is-dim", role !== "md" && !lit.has(n.dataset.role) && n.dataset.role !== "md"); }); };
+      const off = () => { arrs.forEach((a) => a.classList.remove("is-on")); nodes.forEach((n) => n.classList.remove("is-on", "is-dim")); };
+      nodes.forEach((n) => { n.addEventListener("mouseenter", () => on(n.dataset.role)); n.addEventListener("mouseleave", off); });
+    }
+    /* 6A flip on tap */
+    st.querySelectorAll(".flip").forEach((f) => f.addEventListener("click", () => f.classList.toggle("is-flipped")));
+    /* 8A index */
+    const list = st.querySelector("[data-gl-list]");
+    if (list) {
+      const q = st.querySelector("[data-gl-q]"); let letter = "";
+      const draw = () => {
+        const term = q.value.trim().toLowerCase();
+        const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        const hl = (s) => term ? s.replace(new RegExp(esc(term), "ig"), (m) => `<mark>${m}</mark>`) : s;
+        const hits = G.filter(([t, d]) => (!letter || t[0] === letter) && (!term || (t + " " + d).toLowerCase().includes(term)));
+        let last = "";
+        list.innerHTML = hits.length ? hits.map(([t, d]) => { const L = t[0]; const show = L !== last; last = L; return `<div class="gl-item"><span class="lt" aria-hidden="true">${show ? L : ""}</span><dt>${hl(t)}</dt><dd>${hl(d)}</dd></div>`; }).join("") : `<p class="gl-empty">No terms match "${q.value}". Try a shorter word.</p>`;
+        st.querySelectorAll("[data-gl-l]").forEach((b) => { b.classList.toggle("is-on", b.dataset.glL === letter); });
+      };
+      q.addEventListener("input", draw);
+      st.querySelectorAll("[data-gl-l]").forEach((b) => b.addEventListener("click", () => { letter = letter === b.dataset.glL ? "" : b.dataset.glL; draw(); }));
+      draw();
+    }
+    /* 8B chips */
+    const card = st.querySelector("[data-gc-card]");
+    if (card) {
+      const show = (i) => { card.innerHTML = `<div class="gc-anim"><span class="k">Glossary</span><h3>${G[i][0]}</h3><p>${G[i][1]}</p></div>`; st.querySelectorAll("[data-gc]").forEach((b) => b.classList.toggle("is-on", +b.dataset.gc === i)); };
+      st.querySelectorAll("[data-gc]").forEach((b) => { b.addEventListener("click", () => show(+b.dataset.gc)); b.addEventListener("mouseenter", () => show(+b.dataset.gc)); });
+      show(2);
+    }
+    /* 9A chat */
+    const qs = [...st.querySelectorAll(".q")];
+    if (qs.length) {
+      let timer;
+      const open = (i) => {
+        clearTimeout(timer);
+        qs.forEach((b, j) => { const on = j === i && b.getAttribute("aria-expanded") !== "true"; b.setAttribute("aria-expanded", String(on)); const a = st.querySelector("#ans-" + j); a.classList.toggle("is-open", on); if (on) { const bub = a.querySelector(".bub"); const reduce = matchMedia("(prefers-reduced-motion: reduce)").matches; const fill = () => { bub.innerHTML = `<small>BOOMBOT</small>${Q[j][1]}`; bub.classList.add("chat-in"); a.classList.remove("is-typing"); }; if (reduce) fill(); else { bub.innerHTML = `<span class="typing" aria-label="Typing"><i></i><i></i><i></i></span>`; a.classList.add("chat-in", "is-typing"); timer = setTimeout(fill, 650); } } });
+      };
+      qs.forEach((b, i) => b.addEventListener("click", () => open(i)));
+      open(0);
+    }
+    /* 9B accordion */
+    const acc = [...st.querySelectorAll(".acc-i")];
+    acc.forEach((it) => it.querySelector(".acc-q").addEventListener("click", () => { const was = it.classList.contains("is-open"); acc.forEach((x) => { x.classList.remove("is-open"); x.querySelector(".acc-q").setAttribute("aria-expanded", "false"); }); if (!was) { it.classList.add("is-open"); it.querySelector(".acc-q").setAttribute("aria-expanded", "true"); } }));
+  }
+  document.querySelectorAll("[data-w]").forEach((b) => b.addEventListener("click", () => { document.body.dataset.w = b.dataset.w; document.querySelectorAll("[data-w]").forEach((x) => x.classList.toggle("is-active", x === b)); }));
+  Object.keys(SECS).forEach(render);
+})();
+</script>
+</body>
+</html>
