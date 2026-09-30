@@ -4,25 +4,36 @@
 // /arcade, with the .bt-wordmark--power hover (Gold shine: ARCADE lights gold as a sheen
 // crosses it, like TANGER on the main logo; the lamp comes on, the stick wiggles once), and
 // Games / Leaderboards / How it works on the
-// right as a .bt-seg-nav (hidden on phones and on the members-only gate). No breadcrumbs.
+// right as a .bt-seg-nav (hidden on the members-only gate). No breadcrumbs.
+// The bar is a .bt-sticky-bar (docs/design/mockups/podium-sticky-gap.html §3, §4 B): on desktop
+// it sticks and slims down (with a reading-progress line on TocLayout pages); on phones it's a
+// 46px bar with an icon-only switch (.bt-seg-nav--icons) that hides on scroll down. The gate
+// page's bar has no links and doesn't stick (arcade.css). Wired in scripts/arcade/layout.ts.
 import { BA_ICON } from "../../../../shared/ui/arcade.js";
 
 interface Props { section?: "games" | "lb" | "how" | null }
 const { section = null } = Astro.props;
 const links = [
-  { id: "games", label: "Games", href: "/arcade" },
-  { id: "lb", label: "Leaderboards", href: "/arcade/leaderboards" },
-  { id: "how", label: "How it works", href: "/arcade/how-it-works" },
+  { id: "games", label: "Games", href: "/arcade", icon: "joystick" },
+  { id: "lb", label: "Leaderboards", href: "/arcade/leaderboards", icon: "trophy" },
+  { id: "how", label: "How it works", href: "/arcade/how-it-works", icon: "help" },
 ];
 ---
-<div class="bt-topbar ar-bar">
-  <a class="bt-wordmark bt-wordmark--power" href="/arcade" aria-label="Boom Arcade">
-    <span class="bt-wordmark-icon" set:html={BA_ICON} />
-    <span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span>
-  </a>
-  <nav class="bt-seg-nav ar-barlinks" aria-label="Arcade">
-    {links.map((l) => (
-      <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
-    ))}
-  </nav>
+<div class="bt-sticky-bar ar-dock" data-ar-dock>
+  <div class="bt-topbar ar-bar">
+    <a class="bt-wordmark bt-wordmark--power" href="/arcade" aria-label="Boom Arcade">
+      <span class="bt-wordmark-icon" set:html={BA_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span>
+    </a>
+    <nav class="bt-seg-nav ar-barlinks" aria-label="Arcade">
+      {links.map((l) => (
+        <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
+      ))}
+    </nav>
+    <nav class="bt-seg-nav bt-seg-nav--icons ar-barico" aria-label="Arcade">
+      {links.map((l) => (
+        <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>
+      ))}
+    </nav>
+  </div>
 </div>

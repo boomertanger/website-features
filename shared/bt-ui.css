@@ -112,6 +112,8 @@
 
   /* Layers */
   --bt-z-dropdown: 20;
+  --bt-z-sticky: 4;        /* a stuck feature bar: above page content (a phone chip row is 3), below
+                              the site header (5) and its menus, the tab bar, dialogs and the lightbox */
   --bt-z-modal: 999999;
 
   /* Modal position: modal.js measures the Squarespace header's bottom edge
@@ -1043,6 +1045,58 @@
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-wordmark-accent { background-position: 100% 0; }
   .bt-root:not(#_) .bt-chapter--ember .bt-chapter-title::after { animation: none; height: 8px; }   /* a still drop */
 }
+
+/* ---- Sticky feature bar: .bt-sticky-bar (shared/ui/sticky-bar.js initStickyBar) ----
+   docs/design/mockups/podium-sticky-gap.html §3 (desktop) and §4 B (phones). A wrapper round a
+   feature's .bt-topbar that sticks at the top of the screen; the site header above it still
+   scrolls away. The JS adds:
+     .is-stuck   once it reaches the top: a slim bar (--bt-sticky-bar-h: 52px, 46px at <= 640px)
+                 on the page black at 85% with a blur behind it, a soft shadow and a bottom
+                 border; the wordmark and a .bt-seg-nav get a little smaller
+     .bt-sticky-bar-progress  (optional) a 2px gold-to-purple reading-progress line along its
+                 bottom edge while stuck (scroll-driven animation via .is-timeline; a JS fallback sets --bt-read)
+     .is-hidden  phones only: slid up out of view while scrolling down
+   and writes --bt-sticky-top on <body> (the bar's height while stuck and shown, else 0).
+   On phones the bar is always 46px. Reduced motion: no transitions and it never hides. */
+.bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-h: 52px; position: sticky; top: 0; z-index: var(--bt-z-sticky); border-bottom: 1px solid transparent; transition: background-color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .bt-sticky-sentinel { height: 1px; margin-bottom: -1px; pointer-events: none; }
+.bt-root:not(#_) .bt-sticky-bar > .bt-topbar { transition: padding 0.25s; }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck { background: color-mix(in srgb, var(--bt-bg) 85%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); box-shadow: 0 8px 24px var(--bt-lift-shadow); border-bottom-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck > .bt-topbar { height: calc(var(--bt-sticky-bar-h) - 1px); padding-top: 0; padding-bottom: 0; border-bottom-color: transparent; }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-wordmark { font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-wordmark :is(svg, .bt-ba-icon) { width: 28px; height: 28px; }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-seg-nav:not(.bt-seg-nav--icons) { padding: 2px; }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-seg-nav:not(.bt-seg-nav--icons) a { padding: 6px 14px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-seg-nav-pill { top: 2px; bottom: 2px; }
+.bt-root:not(#_) .bt-sticky-bar-progress { position: absolute; left: 0; right: 0; bottom: -1px; height: 2px; background: linear-gradient(90deg, var(--bt-title), var(--bt-primary)); box-shadow: 0 0 8px rgba(var(--bt-gold-rgb), 0.5); transform: scaleX(var(--bt-read, 0)); transform-origin: 0 50%; opacity: 0; pointer-events: none; transition: opacity 0.25s; }
+.bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-sticky-bar-progress { opacity: 1; }
+/* .is-timeline: the browser has scroll-driven animations (sticky-bar.js checks), so CSS runs the line. */
+.bt-root:not(#_) .bt-sticky-bar-progress.is-timeline { animation: bt-read linear both; }
+/* A rule of its own: minifiers fold a timeline into the animation shorthand, which browsers reject. */
+.bt-root:not(#_) .bt-sticky-bar .bt-sticky-bar-progress.is-timeline { animation-duration: auto; animation-timeline: scroll(root); }
+@keyframes bt-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-h: 46px; }
+  .bt-root:not(#_) .bt-sticky-bar > .bt-topbar { height: calc(var(--bt-sticky-bar-h) - 1px); padding: 0 12px 0 14px; gap: 10px; }
+  .bt-root:not(#_) .bt-sticky-bar .bt-wordmark { font-size: var(--bt-text-lg); gap: 7px; }
+  .bt-root:not(#_) .bt-sticky-bar .bt-wordmark :is(svg, .bt-ba-icon), .bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-wordmark :is(svg, .bt-ba-icon) { width: 24px; height: 24px; }
+  .bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-wordmark { font-size: var(--bt-text-lg); }
+  .bt-root:not(#_) .bt-sticky-bar.is-hidden { transform: translateY(calc(-100% - 32px)); }   /* the shadow goes too */
+  .bt-root:not(#_) .bt-sticky-bar-progress { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-sticky-bar, .bt-sticky-bar > .bt-topbar) { transition: none; }
+  .bt-root:not(#_) .bt-sticky-bar.is-hidden { transform: none; }
+}
+
+/* ---- Icon-only seg nav: .bt-seg-nav--icons (the Arcade bar on phones) ----
+   The same track and lit pill as .bt-seg-nav, with an icon per link and no text at all. Each
+   link carries aria-label and title with its name and is at least 44 x 36px; the current one
+   (aria-current="page") gets the lit background and the purple underline. */
+.bt-root:not(#_) .bt-seg-nav--icons { padding: 2px; }
+.bt-root:not(#_) .bt-seg-nav--icons a { display: grid; place-items: center; min-width: 44px; height: 36px; padding: 0 10px; }
+.bt-root:not(#_) .bt-seg-nav--icons svg { display: block; width: 20px; height: 20px; }
+.bt-root:not(#_) .bt-seg-nav--icons .bt-seg-nav-pill { top: 2px; bottom: 2px; }
 
 /* ================= Door cards, big icon tiles, spotlight =================
    From docs/design/mockups/how-it-works-round-2.html (section 1 "Stage").

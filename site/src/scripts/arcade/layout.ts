@@ -7,9 +7,18 @@ import { whenReady, sendVerification } from "../../lib/auth";
 import { playNow } from "./play-now";
 import { initSegNavs } from "../../../../shared/ui/seg-nav.js";
 import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
+import { initStickyBar } from "../../../../shared/ui/sticky-bar.js";
 
 initSegNavs();          // the top bar's Games / Leaderboards / How it works
 initPowerWordmarks();   // touch screens: the BOOMARCADE gold shine plays once as it comes into view
+
+// The sticky BOOMARCADE bar: slim on desktop (a reading-progress line on TocLayout pages),
+// hide-on-scroll on phones. The gate's bar doesn't stick, so re-check when auth settles.
+const dock = document.querySelector<HTMLElement>("[data-ar-dock]");
+if (dock) {
+  const bar = initStickyBar(dock, { progress: !!document.querySelector(".tl-wrap") });
+  new MutationObserver(() => bar.sync()).observe(document.body, { attributes: true, attributeFilter: ["data-auth-state"] });
+}
 
 const GATE_KEY = "bt-arcade-join-shown";
 

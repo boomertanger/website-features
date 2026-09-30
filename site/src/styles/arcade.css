@@ -11,14 +11,17 @@
 .bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .ar[data-members-only] .ar-gate { display: flex; }
 .bt-root:is([data-auth-state="verified"], [data-auth-state="unverified"]):not(#_) .ar[data-members-only] .ar-page { display: block; }
 /* The gate's bar has no links; mid-signup only Finish signup shows. */
-.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .ar[data-members-only] .ar-barlinks { display: none; }
+.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .ar[data-members-only] :is(.ar-barlinks, .ar-barico) { display: none; }
+/* The gate's bar has no links, so it doesn't stick (sticky-bar.js checks position). */
+.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .ar[data-members-only] .ar-dock { position: relative; }
 .bt-root[data-auth-state="needsSignup"]:not(#_) .ar-gate-visitor { display: none; }
 
 /* ---- Top bar: the page content width, like .bt-zone ---- */
 .bt-root:not(#_) .ar-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding-top: var(--bt-space-6); }
+.bt-root:not(#_) .ar-barico { display: none; }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .ar-bar { padding: 16px 16px 14px; }
   .bt-root:not(#_) .ar-barlinks { display: none; }
+  .bt-root:not(#_) .ar-barico { display: inline-flex; }
 }
 
 /* ---- Skeleton (auth loading) and gate ---- */

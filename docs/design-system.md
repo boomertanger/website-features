@@ -188,6 +188,26 @@ phone chip rows touch it (`top: var(--bt-sticky-top)`), and scroll-margins on ph
 chip row's height. Used by `.tl-nav`, the UI Kit page's `.lk-nav`, the glossary card,
 `.bt-account-tabs` and `.bt-home-right`. `--bt-header-h` is only the header's own height.
 
+**Sticky feature bar: `.bt-sticky-bar`** (`shared/ui/sticky-bar.js` `initStickyBar(bar, {
+progress })`; mockup `docs/design/mockups/podium-sticky-gap.html` §3 and §4 B). A wrapper round
+a feature's `.bt-topbar` that sticks at `top: 0` (`--bt-z-sticky`: above page content, below
+the header's menus, the tab bar, dialogs and the lightbox); the site header above still
+scrolls away. An IntersectionObserver sentinel adds `.is-stuck` when it reaches the top: a slim
+52px bar (`--bt-sticky-bar-h`) on the page black at 85% with a blur, a soft shadow and a
+bottom border, the wordmark and seg nav a little smaller, and with `progress: true` a 2px
+gold-to-purple reading-progress line (`.bt-sticky-bar-progress`; CSS scroll-driven animation,
+a rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to its height. At ≤ 640px
+it's always a 46px bar and hides on scroll down (`.is-hidden`, past 120px and more than 8px
+down), coming back on any scroll up, near the top and whenever focus is inside;
+`--bt-sticky-top` is 46px while shown, 0 while hidden, so a chip row slides up with it.
+Reduced motion: it never hides.
+
+**Icon-only seg nav: `.bt-seg-nav--icons`**: the `.bt-seg-nav` track and lit pill with an
+icon per link (IconSprite symbols in the tab bar's line style) and no text at all, not even
+on the current one. Each link has `aria-label` and `title` with its name and is at least
+44 × 36px; the current one (`aria-current="page"`) gets the lit background and the purple
+underline.
+
 **Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
 page">` > `.bt-toc-rail`, `.bt-toc-fill`, `a[href="#section"]`: stops on a vertical line,
 passed sections (`.is-past`) gold, the current one (`aria-current="true"`) a glowing purple
@@ -953,6 +973,13 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   the HTML, visually hidden once the chips take over) and 9A Ask BOOMBOT (question bubbles
   as buttons, answers in the HTML from the start; the typing dots are visual only). These
   use a 900px container breakpoint for the flow and medals, as specified for this page.
+- **The BOOMARCADE bar sticks** (`docs/design/mockups/podium-sticky-gap.html` §3, §4 B): on
+  desktop (> 640px) it's a `.bt-sticky-bar` that slims to 52px when it reaches the top, with a
+  reading-progress line on TocLayout pages (How it works), and the side menu tucks in under it.
+  On phones it's a 46px bar with the wordmark and an icon-only switch (`.bt-seg-nav--icons`:
+  joystick Games, trophy Leaderboards, question mark How it works; no words) that hides on
+  scroll down and shows on scroll up, the page's chip row moving up with it. The members-only
+  gate's bar has no links and doesn't stick. The site header is never sticky.
 - **How it works, sections 2 and 3** (`docs/design/mockups/how-it-works-sections-2-3.html`):
   2 is the journey ("After"; the circles on their own line above the cards, the line filling
   gold up to the step; 3 columns at ≤ 900px, a vertical path on phones) and 3 is the kit's

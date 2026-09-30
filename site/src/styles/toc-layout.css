@@ -11,7 +11,9 @@
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .tl-wrap { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px 16px 40px; }
-  .bt-root:not(#_) .tl-nav { top: var(--bt-sticky-top, 0px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); }
+  /* Follows the Arcade's hide-on-scroll bar up and down (--bt-sticky-top 46px or 0). */
+  .bt-root:not(#_) .tl-nav { top: var(--bt-sticky-top, 0px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); transition: top 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
   /* ...and below the sticky chip row too. */
   .bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 72px); }
 }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .tl-nav { transition: none; } }
