@@ -96,7 +96,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Footer Contact + Follow (added) | one colour per badge: `contact-business` (`title`), `contact-fanmail` (`pink`), `contact-support` (`teal`), `follow-tiktok` (#25f4ee), `follow-youtube` (#ff0000), `follow-twitch` (`brand-twitch`), `follow-instagram` (#ff0069) · `pw-cable` (#2e2a33, an unlit cable) `pw-ring-bg` (#0b0a10) `pw-ring-edge` (#2a2530, an unlit ring) `pw-arc` (#fff, the lightning and ring flash) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
-| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
+| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `rank-4` (light steel) and `rank-5` (graphite), mixed from `text-muted` and `surface-2`, for ranks 4 and 5 (numbers in `text-muted`; never purple, which means clickable) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -192,20 +192,26 @@ chip row's height. Used by `.tl-nav`, the UI Kit page's `.lk-nav`, the glossary 
 progress })`; mockup `docs/design/mockups/podium-sticky-gap.html` §3 and §4 B). A wrapper round
 a feature's `.bt-topbar` that sticks at `top: 0` (`--bt-z-sticky`: above page content, below
 the header's menus, the tab bar, dialogs and the lightbox); the site header above still
-scrolls away. An IntersectionObserver sentinel adds `.is-stuck` when it reaches the top: a slim
-52px bar (`--bt-sticky-bar-h`) on the page black at 85% with a blur, a soft shadow and a
-bottom border, the wordmark and seg nav a little smaller, and with `progress: true` a 2px
-gold-to-purple reading-progress line (`.bt-sticky-bar-progress`; CSS scroll-driven animation,
-a rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to its height. At ≤ 640px
-it's always a 46px bar and hides on scroll down (`.is-hidden`, past 120px and more than 8px
-down), coming back on any scroll up, near the top and whenever focus is inside;
-`--bt-sticky-top` is 46px while shown, 0 while hidden, so a chip row slides up with it.
-Reduced motion: it never hides.
+scrolls away. Its parent must span the whole page (the site's is in BaseLayout's `bar` slot,
+in the frame), or it only sticks while the parent is on screen. Desktop: 76px at rest
+(`--bt-sticky-bar-rest`, seg-nav links 8 × 16px padding). A sentinel adds `.is-stuck` when it
+reaches the top: a slim 60px bar (`--bt-sticky-bar-h`, links 7 × 15px) on the page black at
+85% with a blur, a soft shadow and a bottom border, the wordmark a little smaller. A 16px
+`margin-bottom` gives back the lost height (height and margin move with the same timing),
+and it un-sticks only after scrolling 40px back up past the stick point (hysteresis), so a
+notched wheel can't make it shake. With `progress: true` a 2px gold-to-purple
+reading-progress line (`.bt-sticky-bar-progress`; CSS scroll-driven animation, a
+rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to 60px. At ≤ 640px it's
+always a 56px bar; it never hides within the first screen (scrollY < 60% of the viewport
+height), then hides (`.is-hidden`) after 200px of continuous downward scroll (any upward
+scroll resets the count) and comes back after 24px up, and whenever focus is inside;
+`--bt-sticky-top` is 56px while shown, 0 while hidden, so a chip row slides up with it. The
+thresholds are constants at the top of `sticky-bar.js`. Reduced motion: it never hides.
 
 **Icon-only seg nav: `.bt-seg-nav--icons`**: the `.bt-seg-nav` track and lit pill with an
 icon per link (IconSprite symbols in the tab bar's line style) and no text at all, not even
 on the current one. Each link has `aria-label` and `title` with its name and is at least
-44 × 36px; the current one (`aria-current="page"`) gets the lit background and the purple
+44 × 40px; the current one (`aria-current="page"`) gets the lit background and the purple
 underline.
 
 **Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
@@ -973,12 +979,20 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   the HTML, visually hidden once the chips take over) and 9A Ask BOOMBOT (question bubbles
   as buttons, answers in the HTML from the start; the typing dots are visual only). These
   use a 900px container breakpoint for the flow and medals, as specified for this page.
-- **The BOOMARCADE bar sticks** (`docs/design/mockups/podium-sticky-gap.html` §3, §4 B): on
-  desktop (> 640px) it's a `.bt-sticky-bar` that slims to 52px when it reaches the top, with a
-  reading-progress line on TocLayout pages (How it works), and the side menu tucks in under it.
-  On phones it's a 46px bar with the wordmark and an icon-only switch (`.bt-seg-nav--icons`:
+- **The BOOMARCADE bar sticks on every Arcade page** (`docs/design/mockups/podium-sticky-gap.html`
+  §3, §4 B; sizes and thresholds from `podium-sticky-round-2.html`): /arcade, the leaderboards,
+  the game page and its leaderboards, and How it works. It's rendered in BaseLayout's `bar`
+  slot (the site frame, outside `<main>`) so it stays stuck to the end of the page. On
+  desktop (> 640px) it's a `.bt-sticky-bar`, 76px at rest, that slims to 60px when it reaches
+  the top without moving the page, with a reading-progress line on TocLayout pages only (How
+  it works), and the side menu tucks in under it. On phones it's a 56px bar with the wordmark and an icon-only switch (`.bt-seg-nav--icons`:
   joystick Games, trophy Leaderboards, question mark How it works; no words) that hides on
-  scroll down and shows on scroll up, the page's chip row moving up with it. The members-only
+  a long scroll down (not within the first screen) and shows after a short scroll up, the
+  page's chip row moving up with it. Nothing else on the Arcade pages is sticky; anything
+  that becomes sticky offsets by `--bt-sticky-top`.
+- **The podium shows the top five** (How it works' Leaderboards card): 4 · 2 · 1 · 3 · 5, 38px
+  bars rising from the middle out. Ranks 4 and 5 are greys (`--bt-rank-4`, `--bt-rank-5`), not
+  purple. The members-only
   gate's bar has no links and doesn't stick. The site header is never sticky.
 - **How it works, sections 2 and 3** (`docs/design/mockups/how-it-works-sections-2-3.html`):
   2 is the journey ("After"; the circles on their own line above the cards, the line filling

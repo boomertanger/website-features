@@ -58,6 +58,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       <a class="bt-skip" href="#main">Skip to content</a>
       <SiteHeader overlay={overlayHeader} />
       <AccountBanners />
+      <!-- A section's sticky bar (the Arcade's): here in the frame, not inside <main>, so it
+           stays stuck to the end of the page, footer included. -->
+      <slot name="bar" />
       <main id="main" class="bt-site-main" tabindex="-1">
         <slot />
       </main>

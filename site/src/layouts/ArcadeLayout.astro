@@ -5,7 +5,8 @@
 // gate and mid-signup members get it with Finish signup. It's display-only: the pages
 // are static and carry no member data (their scripts read Firestore after sign-in).
 // <body data-auth-state> (lib/auth.ts) picks what shows, so there's never a flash of
-// the gate while auth loads (a skeleton instead).
+// the gate while auth loads (a skeleton instead). The Arcade bar goes in BaseLayout's "bar"
+// slot (the site frame) so it stays stuck on every Arcade page, footer included.
 import BaseLayout from "./BaseLayout.astro";
 import ArcadeBar from "../components/arcade/ArcadeBar.astro";
 import Mascot from "../components/Mascot.astro";
@@ -20,8 +21,8 @@ interface Props {
 const { title, description, membersOnly = true, section = null } = Astro.props;
 ---
 <BaseLayout title={title} description={description}>
+  <ArcadeBar slot="bar" section={section} membersOnly={membersOnly} />
   <div class="ar" data-members-only={membersOnly ? "" : undefined}>
-    <ArcadeBar section={section} />
     {membersOnly && (
       <>
         <div class="bt-zone ar-skel" aria-hidden="true">

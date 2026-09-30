@@ -11,15 +11,15 @@
 // page's bar has no links and doesn't stick (arcade.css). Wired in scripts/arcade/layout.ts.
 import { BA_ICON } from "../../../../shared/ui/arcade.js";
 
-interface Props { section?: "games" | "lb" | "how" | null }
-const { section = null } = Astro.props;
+interface Props { section?: "games" | "lb" | "how" | null; membersOnly?: boolean }
+const { section = null, membersOnly = false } = Astro.props;
 const links = [
   { id: "games", label: "Games", href: "/arcade", icon: "joystick" },
   { id: "lb", label: "Leaderboards", href: "/arcade/leaderboards", icon: "trophy" },
   { id: "how", label: "How it works", href: "/arcade/how-it-works", icon: "help" },
 ];
 ---
-<div class="bt-sticky-bar ar-dock" data-ar-dock>
+<div class="bt-sticky-bar ar-dock" data-ar-dock data-members-only={membersOnly ? "" : undefined}>
   <div class="bt-topbar ar-bar">
     <a class="bt-wordmark bt-wordmark--power" href="/arcade" aria-label="Boom Arcade">
       <span class="bt-wordmark-icon" set:html={BA_ICON} />
