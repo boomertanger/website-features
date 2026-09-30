@@ -1050,19 +1050,19 @@
    docs/design/mockups/podium-sticky-gap.html §3 (desktop) and §4 B (phones). A wrapper round a
    feature's .bt-topbar that sticks at the top of the screen; the site header above it still
    scrolls away. Put it where its parent spans the whole page (the site frame), or it only
-   sticks while its parent is on screen. Desktop: 76px at rest (--bt-sticky-bar-rest). The JS adds:
+   sticks while its parent is on screen. Desktop: 80px at rest (--bt-sticky-bar-rest). The JS adds:
      .is-stuck   once it reaches the top (and drops it only after scrolling back 40px past that
-                 point, so it can't shake): a slim 60px bar (--bt-sticky-bar-h) on the page black
+                 point, so it can't shake): a slim 66px bar (--bt-sticky-bar-h) on the page black
                  at 85% with a blur behind it, a soft shadow and a bottom border; the wordmark
                  and a .bt-seg-nav get a little smaller, and a margin-bottom gives back the
-                 16px it lost, so nothing below it moves
+                 14px it lost, so nothing below it moves
      .bt-sticky-bar-progress  (optional) a 2px gold-to-purple reading-progress line along its
                  bottom edge while stuck (scroll-driven animation via .is-timeline; a JS fallback sets --bt-read)
      .is-hidden  phones only: slid up out of view while scrolling down
    and writes --bt-sticky-top on <body> (the bar's height while stuck and shown, else 0).
-   On phones the bar is always 56px (no slimming). Reduced motion: no transitions and it never
+   On phones the bar is always 62px (no slimming). Reduced motion: no transitions and it never
    hides. */
-.bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 76px; --bt-sticky-bar-h: 60px; --bt-sticky-ease: 0.25s cubic-bezier(0.3, 0.7, 0.2, 1); position: sticky; top: 0; z-index: var(--bt-z-sticky); margin-bottom: 0; border-bottom: 1px solid transparent; transition: margin-bottom var(--bt-sticky-ease), background-color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 80px; --bt-sticky-bar-h: 66px; --bt-sticky-ease: 0.25s cubic-bezier(0.3, 0.7, 0.2, 1); position: sticky; top: 0; z-index: var(--bt-z-sticky); margin-bottom: 0; border-bottom: 1px solid transparent; transition: margin-bottom var(--bt-sticky-ease), background-color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
 .bt-root:not(#_) .bt-sticky-sentinel { height: 1px; margin-bottom: -1px; pointer-events: none; }
 /* The height and the margin move together (same timing), so the total never changes. */
 .bt-root:not(#_) .bt-sticky-bar > .bt-topbar { height: calc(var(--bt-sticky-bar-rest) - 1px); padding-top: 0; padding-bottom: 0; transition: height var(--bt-sticky-ease); }
@@ -1082,7 +1082,7 @@
 .bt-root:not(#_) .bt-sticky-bar .bt-sticky-bar-progress.is-timeline { animation-duration: auto; animation-timeline: scroll(root); }
 @keyframes bt-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 56px; --bt-sticky-bar-h: 56px; }
+  .bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 62px; --bt-sticky-bar-h: 62px; }
   .bt-root:not(#_) .bt-sticky-bar > .bt-topbar { padding: 0 10px 0 16px; gap: 10px; }
   .bt-root:not(#_) .bt-sticky-bar .bt-wordmark { font-size: var(--bt-text-lg); gap: 8px; }
   .bt-root:not(#_) .bt-sticky-bar .bt-wordmark :is(svg, .bt-ba-icon), .bt-root:not(#_) .bt-sticky-bar.is-stuck .bt-wordmark :is(svg, .bt-ba-icon) { width: 26px; height: 26px; }
@@ -1097,10 +1097,10 @@
 
 /* ---- Icon-only seg nav: .bt-seg-nav--icons (the Arcade bar on phones) ----
    The same track and lit pill as .bt-seg-nav, with an icon per link and no text at all. Each
-   link carries aria-label and title with its name and is 44 x 40px; the current one
+   link carries aria-label and title with its name and is 44 x 44px; the current one
    (aria-current="page") gets the lit background and the purple underline. */
 .bt-root:not(#_) .bt-seg-nav--icons { gap: 2px; padding: 3px; }
-.bt-root:not(#_) .bt-seg-nav--icons a { display: grid; place-items: center; width: 44px; height: 40px; padding: 0; }
+.bt-root:not(#_) .bt-seg-nav--icons a { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; }
 .bt-root:not(#_) .bt-seg-nav--icons svg { display: block; width: 20px; height: 20px; }
 .bt-root:not(#_) .bt-seg-nav--icons .bt-seg-nav-pill { top: 3px; bottom: 3px; }
 

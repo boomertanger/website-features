@@ -193,25 +193,25 @@ progress })`; mockup `docs/design/mockups/podium-sticky-gap.html` §3 and §4 B)
 a feature's `.bt-topbar` that sticks at `top: 0` (`--bt-z-sticky`: above page content, below
 the header's menus, the tab bar, dialogs and the lightbox); the site header above still
 scrolls away. Its parent must span the whole page (the site's is in BaseLayout's `bar` slot,
-in the frame), or it only sticks while the parent is on screen. Desktop: 76px at rest
+in the frame), or it only sticks while the parent is on screen. Desktop: 80px at rest
 (`--bt-sticky-bar-rest`, seg-nav links 8 × 16px padding). A sentinel adds `.is-stuck` when it
-reaches the top: a slim 60px bar (`--bt-sticky-bar-h`, links 7 × 15px) on the page black at
-85% with a blur, a soft shadow and a bottom border, the wordmark a little smaller. A 16px
+reaches the top: a slim 66px bar (`--bt-sticky-bar-h`, links 7 × 15px; the extra height is room above and below them) on the page black at
+85% with a blur, a soft shadow and a bottom border, the wordmark a little smaller. A 14px
 `margin-bottom` gives back the lost height (height and margin move with the same timing),
 and it un-sticks only after scrolling 40px back up past the stick point (hysteresis), so a
 notched wheel can't make it shake. With `progress: true` a 2px gold-to-purple
 reading-progress line (`.bt-sticky-bar-progress`; CSS scroll-driven animation, a
-rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to 60px. At ≤ 640px it's
-always a 56px bar; it never hides within the first screen (scrollY < 60% of the viewport
+rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to 66px. At ≤ 640px it's
+always a 62px bar (icon buttons 44 × 44); it never hides within the first screen (scrollY < 60% of the viewport
 height), then hides (`.is-hidden`) after 200px of continuous downward scroll (any upward
 scroll resets the count) and comes back after 24px up, and whenever focus is inside;
-`--bt-sticky-top` is 56px while shown, 0 while hidden, so a chip row slides up with it. The
+`--bt-sticky-top` is 62px while shown, 0 while hidden, so a chip row slides up with it. The
 thresholds are constants at the top of `sticky-bar.js`. Reduced motion: it never hides.
 
 **Icon-only seg nav: `.bt-seg-nav--icons`**: the `.bt-seg-nav` track and lit pill with an
 icon per link (IconSprite symbols in the tab bar's line style) and no text at all, not even
 on the current one. Each link has `aria-label` and `title` with its name and is at least
-44 × 40px; the current one (`aria-current="page"`) gets the lit background and the purple
+44 × 44px; the current one (`aria-current="page"`) gets the lit background and the purple
 underline.
 
 **Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
@@ -983,9 +983,9 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   §3, §4 B; sizes and thresholds from `podium-sticky-round-2.html`): /arcade, the leaderboards,
   the game page and its leaderboards, and How it works. It's rendered in BaseLayout's `bar`
   slot (the site frame, outside `<main>`) so it stays stuck to the end of the page. On
-  desktop (> 640px) it's a `.bt-sticky-bar`, 76px at rest, that slims to 60px when it reaches
+  desktop (> 640px) it's a `.bt-sticky-bar`, 80px at rest, that slims to 66px when it reaches
   the top without moving the page, with a reading-progress line on TocLayout pages only (How
-  it works), and the side menu tucks in under it. On phones it's a 56px bar with the wordmark and an icon-only switch (`.bt-seg-nav--icons`:
+  it works), and the side menu tucks in under it. On phones it's a 62px bar with the wordmark and an icon-only switch (`.bt-seg-nav--icons`:
   joystick Games, trophy Leaderboards, question mark How it works; no words) that hides on
   a long scroll down (not within the first screen) and shows after a short scroll up, the
   page's chip row moving up with it. Nothing else on the Arcade pages is sticky; anything
