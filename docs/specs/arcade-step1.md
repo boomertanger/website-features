@@ -79,6 +79,10 @@ Out: public profiles and badges (step 2; board names are plain text until then),
 4. Increments one random counter shard (runs; finished on a win). Tap-outs skip this.
 5. Returns `{ counted, onBoard, personalBest, rank: { all, week }, reason }`.
 
+*Time checks use the wall clock.* `secs` is wall-clock time plus miss-click penalties, so the serverSecs and minSecs checks compare `secs − penalties` (the wall-clock part), not `secs`. `splits` are wall-clock seconds at each round start, so "each ≤ secs" means each ≤ `secs − penalties`.
+
+*Run ids.* `runId` is `gameId/version/docId`. The server validates it strictly before trusting it: exactly 3 segments, a known `gameId` (its game doc exists), a `version` that exists under that game, and a `docId` in the format `startRun` creates (a 20-character Firestore auto-id). Knowing an id proves nothing. `finishRun` and `voteRun` always check ownership on the run's `uid` or `runKeyHash`, never on the id alone.
+
 **`voteRun({ runId, runKey?, kind })`** — `liked` or `wantMore`, once per kind on an ended run (not a tap-out) by the same caller; increments a shard.
 
 **Background:** `rollupArcadeStats` (every 5 minutes) sums each live version's shards into `games/{gameId}.stats` and rotates `private/arcadeSalt` once a day. `syncArcadeNames` (trigger on `sites/{siteId}/profiles/{uid}`) rewrites that member's `bests` and their rows on the current all-time and weekly boards when handle or displayName changes.

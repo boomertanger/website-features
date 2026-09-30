@@ -78,8 +78,12 @@ const GAMES = [{
   }],
 }];
 
+// Firestore hands maps back with their keys reordered, so compare with sorted keys.
+const stable = (v) => JSON.stringify(v, (_, x) => (x && typeof x === "object" && !Array.isArray(x)
+  ? Object.fromEntries(Object.keys(x).sort().map((k) => [k, x[k]])) : x));
+
 function diff(label, current, next) {
-  const changed = Object.keys(next).filter((k) => JSON.stringify(current[k] ?? null) !== JSON.stringify(next[k]));
+  const changed = Object.keys(next).filter((k) => stable(current[k] ?? null) !== stable(next[k]));
   console.log(`\n${label} (${Object.keys(current).length ? "exists" : "new"})`);
   if (!changed.length) console.log("  Nothing to change.");
   for (const k of changed) console.log(`  ${k}: ${JSON.stringify(current[k] ?? null)} -> ${JSON.stringify(next[k])}`);

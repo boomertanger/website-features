@@ -91,12 +91,14 @@ module.exports = function arcade() {
   }
 
   // Loads a run and checks the caller started it (same uid, or the visitor's runKey).
+  // The id alone proves nothing: the game and version must exist, and ownership is
+  // always checked on the run's uid or runKey hash.
   async function ownRun(request, runId, runKey) {
     const id = L.parseRunId(runId);
     if (!id) throw fail("invalid-argument", "Unknown run.", "runId");
     const ref = versionRef(id.gameId, id.version).collection("runs").doc(id.docId);
-    const snap = await ref.get();
-    if (!snap.exists) throw fail("not-found", "Unknown run.", "runId");
+    const [game, version, snap] = await db.getAll(gameRef(id.gameId), versionRef(id.gameId, id.version), ref);
+    if (!game.exists || !version.exists || !snap.exists) throw fail("not-found", "Unknown run.", "runId");
     const run = snap.data();
     const mine = run.uid
       ? request.auth?.uid === run.uid

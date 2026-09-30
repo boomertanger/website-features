@@ -7,9 +7,11 @@ const assert = require("assert/strict");
 const L = require("../lib/arcade/logic");
 
 // ---------- run ids ----------
-assert.deepEqual(L.parseRunId("tapTheSplat/v1/abc123"), { gameId: "tapTheSplat", version: "v1", docId: "abc123" });
+const AUTO = "Ab3dEf6hIj9lMn2pQr5t";   // 20 chars, like a Firestore auto-id
+assert.deepEqual(L.parseRunId(`tapTheSplat/v1/${AUTO}`), { gameId: "tapTheSplat", version: "v1", docId: AUTO });
 assert.equal(L.runPath("tapTheSplat", "v1", "x"), "tapTheSplat/v1/x");
-for (const bad of ["", "a/b", "a/b/c/d", "a/../c", "a/b/c d", null, 42]) assert.equal(L.parseRunId(bad), null, String(bad));
+for (const bad of ["", "a/b", "a/b/c/d", "a/../c", "a/b/c d", "tapTheSplat/v1/abc123", `tapTheSplat/v1/${AUTO}x`,
+  `tapTheSplat/v1/${AUTO.slice(0, 19)}_`, `tapTheSplat/v1/${AUTO}/x`, `/v1/${AUTO}`, null, 42]) assert.equal(L.parseRunId(bad), null, String(bad));
 
 // ---------- weeks: Monday 00:00 America/Los_Angeles ----------
 const utc = (iso) => new Date(iso).getTime();

@@ -17,13 +17,16 @@ const ms = (at) => (at == null ? 0 : typeof at === "number" ? at : at.toMillis ?
 
 // ---------- run ids ----------
 // The client only ever sees "gameId/version/docId", so finishRun and voteRun can
-// find the run from the one id startRun handed back.
+// find the run from the one id startRun handed back. The format check is strict
+// (exactly 3 segments, docId a Firestore auto-id as startRun creates); ownRun still
+// confirms the game and version exist and checks ownership on uid or runKey.
 const ID_RE = /^[A-Za-z0-9_-]{1,40}$/;
+const AUTO_ID_RE = /^[A-Za-z0-9]{20}$/;
 function runPath(gameId, version, docId) { return `${gameId}/${version}/${docId}`; }
 function parseRunId(runId) {
   if (typeof runId !== "string" || runId.length > 140) return null;
   const parts = runId.split("/");
-  if (parts.length !== 3 || !parts.every((p) => ID_RE.test(p))) return null;
+  if (parts.length !== 3 || !ID_RE.test(parts[0]) || !ID_RE.test(parts[1]) || !AUTO_ID_RE.test(parts[2])) return null;
   const [gameId, version, docId] = parts;
   return { gameId, version, docId };
 }
