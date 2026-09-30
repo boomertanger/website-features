@@ -8,6 +8,7 @@ import { initAdminMenu, LOGIN_ICON, SIGNOUT_ICON, SHIELD_ICON, PENCIL_ICON } fro
 import { initRowSpotlight } from "../ui/effects.js";
 import { composerHtml, initComposer } from "../ui/composer.js";
 import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
+import { BA_ICON, ttsLogoHtml } from "../ui/arcade.js";
 
 const KIT_VERSION = "dev";
 
@@ -761,6 +762,59 @@ function pageHtml() {
         <div class="bt-modal-section"><p class="bt-section-label">Comments</p>${commentsHtml()}</div>
         <div class="bt-modal-section"><p class="bt-section-label">History</p>${historyHtml()}</div>
       </div>
+    </div>
+  </section>
+${arcadeHtml()}`;
+}
+
+// ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
+
+const KIT_MASCOT = new URL("../assets/mascot.svg", import.meta.url).href;
+const ARCADE_NAMES = [["CryptRat", "cryptrat"], ["Hexxy", "hexxy"], ["Vexa", "vexa"], ["NightOwl", "nightowl"], ["Dredd", "dredd"], ["RavenByte", "ravenbyte"]];
+const kitTime = (s) => `${Math.floor(s / 60)}:${(s % 60).toFixed(2).padStart(5, "0")}`;
+const kitInitials = (name) => name.replace(/[^A-Z]/g, "").slice(0, 2) || name.slice(0, 2).toUpperCase();
+function kitBoard({ mini = false, me = 0, pin = false, n = 5 } = {}) {
+  const tr = (r, [name, handle], secs, isMe) => `<tr data-r="${r}"${isMe ? ' class="is-me"' : ""}><td class="bt-board-rank">${r}</td><td><span class="bt-board-who"><span class="bt-avatar-sm" aria-hidden="true">${kitInitials(name)}</span><span>${name}${mini ? "" : `<small>@${handle}</small>`}</span></span></td>${mini ? "" : `<td class="bt-board-date">Oct ${r + 1}</td>`}<td class="bt-board-time">${kitTime(secs)}</td></tr>`;
+  const rows = ARCADE_NAMES.slice(0, n).map((p, i) => tr(i + 1, p, 36.94 + i * 1.6 + i * i * 0.2, me === i + 1)).join("");
+  const gap = pin ? `<tr class="bt-board-gap" aria-hidden="true"><td colspan="${mini ? 3 : 4}">···</td></tr>${tr(312, ["NightOwl", "nightowl"], 81.4, true)}` : "";
+  const head = mini ? "" : `<thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col" class="bt-board-date">Date</th><th scope="col">Time</th></tr></thead>`;
+  return `<table class="bt-board${mini ? " bt-board--mini" : ""}">${head}<tbody>${rows}${gap}</tbody></table>`;
+}
+function arcadeHtml() {
+  const soon = `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>`;
+  const art = `<div class="bt-game-art"><img src="${KIT_MASCOT}" alt="" width="96" height="96"></div>`;
+  const stats = `<div class="bt-game-stats"><span><b>8.4K</b> runs</span><span><b>612</b> finished</span><span>👍 <b>1.2K</b></span></div>`;
+  const me = `<div class="bt-game-me"><span class="bt-meta">Your best</span><span>🖥 Desktop <b>0:43.02</b></span><span class="bt-meta">📱 Mobile: no run yet</span></div>`;
+  const acts = `<div class="bt-game-acts"><button type="button" class="bt-btn bt-btn--go">Play now</button><a class="bt-btn bt-btn--secondary" href="#">Leaderboards</a></div>`;
+  const tabs = (cur) => `<nav class="bt-page-tabs" aria-label="Game"><a href="#"${cur === 0 ? ' aria-current="page"' : ""}>Play</a><a href="#"${cur === 1 ? ' aria-current="page"' : ""}>Leaderboards</a></nav>`;
+  return `
+  <section class="kit-section" id="kit-arcade">
+    <h2 class="kit-h">Boom Arcade</h2>
+    <p class="kit-p">The Arcade's pieces (<span class="kit-code">docs/specs/arcade-step1.md</span> §8). Every Arcade page uses the feature top bar with the joystick wordmark; a game's name uses the game's own lettering (<span class="kit-code">.bt-game-logo</span>), and every other title stays gold. Narrow the window to see the phone versions: the tabs become pills and the board drops the Date column and @handles. The game art here shows the mascot only; the site adds the splat.</p>
+    <p class="kit-sub">Top bar (.bt-topbar, .bt-wordmark, .bt-ba-icon; static under reduced motion)</p>
+    <div class="bt-topbar"><a class="bt-wordmark" href="#" aria-label="Boom Arcade"><span class="bt-wordmark-icon">${BA_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">BOOM<span class="bt-wordmark-accent">ARCADE</span></span></a><nav class="bt-topnav" aria-label="Arcade"><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#" aria-current="page">Games</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">Leaderboards</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#">How it works</a></nav></div>
+    <p class="kit-sub">Game logo (.bt-game-logo--lg page title, --sm on cards) and page tabs (.bt-page-tabs)</p>
+    <div class="kit-stack"><div>${ttsLogoHtml("lg")}</div><div>${ttsLogoHtml("sm")}</div>${tabs(0)}${tabs(1)}</div>
+    <p class="kit-sub">Go button (.bt-btn--go: Play now and Play again, the §8f green exception)</p>
+    <div class="kit-row"><button type="button" class="bt-btn bt-btn--go">Play now</button><button type="button" class="bt-btn bt-btn--go bt-btn--sm">Play now</button></div>
+    <p class="kit-sub">Game card: marquee, compact with no runs yet, soon (.bt-game-card, --compact, .is-soon)</p>
+    <article class="bt-tile bt-game-card">${art}<div class="bt-game-body"><div class="kit-row"><span class="bt-badge bt-badge--lime"><span class="bt-badge-dot"></span>New</span><span class="bt-badge bt-badge--gray">v1</span></div><h2 class="bt-game-name">${ttsLogoHtml("sm")}</h2><p class="bt-game-tag">A horror puzzle hidden in the footer of every page. Ten traps, one splat, your fastest clean run.</p>${stats}${me}${acts}</div></article>
+    <div class="kit-grid-2">
+      <article class="bt-tile bt-game-card bt-game-card--compact">${art}<div class="bt-game-body"><div class="kit-row"><span class="bt-badge bt-badge--gray">v1</span></div><h2 class="bt-game-name">${ttsLogoHtml("sm")}</h2><div class="bt-game-stats"><span>No runs yet. Be the first.</span></div><div class="bt-game-me"><span class="bt-meta">No finished runs yet. Your best times show here.</span></div>${acts}</div></article>
+      <article class="bt-tile bt-game-card bt-game-card--compact is-soon"><div class="bt-game-art"><span class="bt-game-art-soon" aria-hidden="true">🔒</span></div><div class="bt-game-body"><div class="kit-row">${soon}</div><h2 class="bt-game-name">Game 2</h2><p class="bt-game-tag">Pitched and voted on in the Arcade Studio.</p></div></article>
+    </div>
+    <p class="kit-sub">Leaderboard (.bt-board): your row in the top 100, pinned under a gap row (unverified footer), mini top 3, empty and not on this board</p>
+    <div class="kit-grid-2">
+      <div class="bt-tile bt-board-card">${kitBoard({ me: 4 })}<div class="bt-board-foot"><span class="bt-meta">Showing 25 of 100</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm">Show more</button></div></div>
+      <div class="bt-tile bt-board-card">${kitBoard({ pin: true, n: 3 })}<div class="bt-board-foot"><span>Verify your email to get on the board.</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm">Resend email</button></div></div>
+      <div class="bt-tile bt-board-card"><div class="bt-tile-head"><h3>Top 3 · Desktop · all time</h3><a href="#">Full leaderboard</a></div>${kitBoard({ mini: true, n: 3 })}</div>
+      <div class="bt-tile bt-board-card"><div class="bt-board-empty"><b>No finished runs this week yet</b><span>Be the first on the desktop board.</span><button type="button" class="bt-btn bt-btn--go">Play now</button></div><div class="bt-board-foot"><span>You're not on this board yet. Finish a run on a computer to get on it.</span><button type="button" class="bt-btn bt-btn--go bt-btn--sm">Play now</button></div></div>
+    </div>
+    <p class="kit-sub">Teaser (.bt-tease for visitors and members, --stack in a narrow column)</p>
+    <div class="kit-stack">
+      <div class="bt-tease"><span class="bt-tease-ic" aria-hidden="true">🕹</span><span class="bt-tease-txt"><b>More games for members ${soon}</b><small>Horror point-and-click puzzles, leaderboards and badges. Join free to play them first.</small></span><a class="bt-btn bt-btn--primary bt-btn--sm" href="#">Join free</a></div>
+      <div class="bt-tease"><span class="bt-tease-ic" aria-hidden="true">🕹</span><span class="bt-tease-txt"><b>More games coming ${soon}</b><small>You'll play them first.</small></span></div>
+      <div class="kit-narrow"><div class="bt-tease bt-tease--stack"><span class="bt-tease-ic" aria-hidden="true">🕹</span><span class="bt-tease-txt"><b>More games coming ${soon}</b><small>You'll play them first.</small></span></div></div>
     </div>
   </section>`;
 }

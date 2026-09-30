@@ -42,7 +42,7 @@ export async function getVotes() {
 export async function getBoard(device, period = "all") {
   const info = await getInfo();
   if (!info) return null;
-  const id = `e${info.version.boardEpoch || 1}_${device}_${period}`;
+  const id = `e${info.game.boardEpoch || info.version.boardEpoch || 1}_${device}_${period}`;
   try {
     const s = await getDoc(doc(db, "sites", SITE_ID, "games", GAME_ID, "versions", info.v, "boards", id));
     const rows = s.exists() ? s.get("rows") || [] : [];

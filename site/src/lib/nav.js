@@ -6,6 +6,7 @@ const MODULE_PAGES = {
   live: { label: "Live", href: "/live", icon: "live" },
   schedule: { label: "Schedule", href: "/schedule", icon: "cal" },
   games: { label: "Games", href: "/games", icon: "game" },
+  arcade: { label: "Arcade", href: "/arcade", icon: "joystick" },
   streams: { label: "Streams", href: "/streams", icon: "film" },
   shop: { label: "Shop", href: "/shop", icon: "bag" },
   club: { label: "Club", href: "/club", icon: "club" },
@@ -26,3 +27,5 @@ export const moreItems = navItems.filter((i) => !TAB_IDS.includes(i.id));
 
 const clean = (p) => (p.length > 1 ? p.replace(/\/+$/, "") : p);
 export const isCurrent = (href, pathname) => clean(href) === clean(pathname);
+/** The nav item a page belongs to: its own, or the section it sits under (/arcade/...). */
+export const isInSection = (href, pathname) => href !== "/" && clean(pathname).startsWith(clean(href) + "/");

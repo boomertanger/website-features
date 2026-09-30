@@ -1,7 +1,8 @@
 // Account UI on every page (small; the sign-in dialog loads on demand):
 //   [data-signin]          opens the sign-in dialog: "join" (every Join free button, the
 //                          default) on the Join tab, "signin" (Log in) on the Sign in
-//                          tab, "signup" resumes the signup steps
+//                          tab, "signup" resumes the signup steps; an optional
+//                          data-signin-title replaces the Join tab's heading
 //   [data-me="..."]        filled from the signed-in member: displayName, handle,
 //                          avatar (initials or opted-in photo), email
 //   [data-account-menu]    the header avatar button and its menu
@@ -12,17 +13,17 @@ import { escapeHtml } from "../../../../shared/ui/dom.js";
 
 import { CONTINUE_KEY } from "../../lib/auth-keys";
 
-async function openDialog(kind = "") {
+export async function openDialog(kind = "", title?: string) {
   const { openSignIn } = await import("./dialog");
   if (kind === "signup") openSignIn({ screen: "birthday" });
-  else openSignIn({ mode: kind === "signin" ? "signin" : "join" });
+  else openSignIn({ mode: kind === "signin" ? "signin" : "join", title });
 }
 
 document.addEventListener("click", (ev) => {
   const t = (ev.target as Element | null)?.closest<HTMLElement>("[data-signin]");
   if (!t) return;
   ev.preventDefault();
-  void openDialog(t.dataset.signin);
+  void openDialog(t.dataset.signin, t.dataset.signinTitle);
 });
 
 // ---- member details ----

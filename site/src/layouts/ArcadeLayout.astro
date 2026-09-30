@@ -1,0 +1,54 @@
+---
+// One layout for every Arcade page (docs/specs/arcade-step1.md §3, §7): the site
+// shell, the Arcade top bar, then the page. With membersOnly (every page except How
+// it works) the page shows only to signed-up members; visitors get the members-only
+// gate and mid-signup members get it with Finish signup. It's display-only: the pages
+// are static and carry no member data (their scripts read Firestore after sign-in).
+// <body data-auth-state> (lib/auth.ts) picks what shows, so there's never a flash of
+// the gate while auth loads (a skeleton instead).
+import BaseLayout from "./BaseLayout.astro";
+import ArcadeBar from "../components/arcade/ArcadeBar.astro";
+import Mascot from "../components/Mascot.astro";
+import "../styles/arcade.css";
+
+interface Props {
+  title: string;
+  description?: string;
+  membersOnly?: boolean;
+  section?: "games" | "lb" | "how" | null;
+}
+const { title, description, membersOnly = true, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <div class="ar" data-members-only={membersOnly ? "" : undefined}>
+    <ArcadeBar section={section} />
+    {membersOnly && (
+      <>
+        <div class="bt-zone ar-skel" aria-hidden="true">
+          <span class="bt-skeleton ar-skel-title"></span>
+          <span class="bt-skeleton ar-skel-line"></span>
+          <span class="bt-skeleton ar-skel-card"></span>
+        </div>
+        <section class="bt-zone ar-gate" aria-labelledby="ar-gate-title">
+          <div class="ar-gate-art" aria-hidden="true"><img src="/images/blood-splatter.webp" alt="" width="500" height="286" decoding="async" /><Mascot decorative /></div>
+          <h1 class="bt-title" id="ar-gate-title">Members only</h1>
+          <p class="ar-gate-lead">The Boom Arcade is for members: horror puzzle games, their leaderboards, and a say in what gets built next. Joining is free.</p>
+          <div class="ar-gate-acts ar-gate-visitor">
+            <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to enter the Arcade">Join free</a>
+            <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>
+          </div>
+          <div class="ar-gate-acts bt-when-needs-signup">
+            <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+          </div>
+          <a class="ar-gate-more" href="/arcade/how-it-works">See what's inside</a>
+          <p class="ar-faint">Just want to play? Tap the splat at the bottom of any page.</p>
+        </section>
+      </>
+    )}
+    <div class="ar-page"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/arcade/layout";
+</script>

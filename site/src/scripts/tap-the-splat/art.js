@@ -46,7 +46,7 @@ export function mountPieces(root, gid) {
   $(".bt-tts-stage").append(html(`<section class="bt-tts-end" aria-live="polite" inert>
     <h3 data-end-title></h3><div class="bt-tts-end-big" data-end-score></div><p class="bt-tts-end-sub" data-end-sub></p>
     <div class="bt-tts-end-pills" data-end-pills></div>
-    <button type="button" class="bt-btn bt-tts-play" data-tts-g="again">Play again</button>
+    <button type="button" class="bt-btn bt-btn--go bt-tts-play" data-tts-g="again">Play again</button>
     <div class="bt-tts-end-place" data-end-place></div>
     <div class="bt-tts-end-fb" data-end-fb hidden><button type="button" data-fb="liked">👍 I liked it <span data-c="liked"></span></button><button type="button" data-fb="wantMore">🎮 Make more games <span data-c="wantMore"></span></button></div>
     <div class="bt-tts-end-proof" data-end-proof></div>

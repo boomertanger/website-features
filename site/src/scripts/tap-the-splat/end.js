@@ -45,10 +45,11 @@ function placement(out, device, win) {
   }
 }
 
+const SOON = `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>`;
 function teaser(member, workshopOpen) {
   return member
-    ? `<div class="bt-tts-end-tease"><span class="ic" aria-hidden="true">🕹</span><span><b>More games coming <span class="soon">Soon</span></b><small>You'll play them first.${workshopOpen ? ` Got an idea for v2? <a href="/arcade/tap-the-splat/workshop">Suggest it</a>` : ""}</small></span></div>`
-    : `<div class="bt-tts-end-tease"><span class="ic" aria-hidden="true">🕹</span><span><b>More games for members <span class="soon">Soon</span></b><small>Horror point-and-click puzzles, leaderboards and badges. Join free to play them first.</small></span><a class="bt-btn bt-btn--primary bt-btn--sm" href="/account" data-signin="join">Join free</a></div>`;
+    ? `<div class="bt-tease"><span class="bt-tease-ic" aria-hidden="true">🕹</span><span class="bt-tease-txt"><b>More games coming ${SOON}</b><small>You'll play them first.${workshopOpen ? ` Got an idea for v2? <a href="/arcade/tap-the-splat/workshop">Suggest it</a>` : ""}</small></span></div>`
+    : `<div class="bt-tease"><span class="bt-tease-ic" aria-hidden="true">🕹</span><span class="bt-tease-txt"><b>More games for members ${SOON}</b><small>Horror point-and-click puzzles, leaderboards and badges. Join free to play them first.</small></span><a class="bt-btn bt-btn--primary bt-btn--sm" href="/account" data-signin="join">Join free</a></div>`;
 }
 
 export function showEnd(G, kind) {

@@ -60,7 +60,8 @@ interface Draft { email: string; month: number | null; year: number | null; hand
 
 let open: { go: (s: Screen) => void } | null = null;
 
-export function openSignIn({ screen, mode = "join" }: { screen?: Screen; mode?: Mode } = {}) {
+/** Opens the sign-in dialog. `title` replaces the Join tab's heading ("Join the club"), e.g. "Join to enter the Arcade". */
+export function openSignIn({ screen, mode = "join", title }: { screen?: Screen; mode?: Mode; title?: string } = {}) {
   const now = getAuthState();
   const start: Screen = screen ?? (now.status === "needsSignup" ? "birthday" : mode);
   if (open) return open.go(start);
@@ -113,7 +114,7 @@ export function openSignIn({ screen, mode = "join" }: { screen?: Screen; mode?: 
     `<div class="bt-password"><input class="bt-input" id="bt-si-pw" name="password" type="password" autocomplete="${autocomplete}"${placeholder ? ` placeholder="${placeholder}"` : ""} required /><button type="button" class="bt-password-toggle" data-pw-toggle aria-controls="bt-si-pw" aria-pressed="false" aria-label="Show password">Show</button></div>`;
 
   const SCREENS: Record<Screen, () => string> = {
-    join: () => `${modeTabs("join")}${head("Join the club", "Free, and it takes a minute.")}${providers}
+    join: () => `${modeTabs("join")}${head(escapeHtml(title || "Join the club"), "Free, and it takes a minute.")}${providers}
       <div class="bt-or">or with email</div>
       <form class="bt-stack" data-form="join" novalidate>
         ${emailField()}

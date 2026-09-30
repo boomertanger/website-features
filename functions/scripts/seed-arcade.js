@@ -52,6 +52,9 @@ const GAMES = [{
     tagline: "A horror puzzle hidden in the footer of every page. Ten traps, one splat, your fastest clean run.",
     status: "live",
     currentVersion: "v1",
+    // Mirrors versions/{currentVersion}.boardEpoch (rollupArcadeStats keeps it in sync),
+    // so pages build board ids from the game doc alone.
+    boardEpoch: 1,
     sortOrder: 1,
     playsIn: "footer",
     news: [

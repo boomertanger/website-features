@@ -1,0 +1,52 @@
+---
+// /arcade/tap-the-splat: the Play tab, layout 1 "Split" (docs/specs/arcade-step1.md §3,
+// §7). Members only. The game lives in the footer: Play now scrolls there and cues the
+// splat (D2). Your best and the top 3 fill in after sign-in (scripts/arcade/play.ts).
+import ArcadeLayout from "../../../layouts/ArcadeLayout.astro";
+import GameHeader from "../../../components/arcade/GameHeader.astro";
+import Mascot from "../../../components/Mascot.astro";
+---
+<ArcadeLayout title="Tap the Splat · Boom Arcade" description="A horror puzzle hidden in the footer of every page." section="games">
+  <div class="bt-zone">
+    <GameHeader tab="play" />
+    <div class="ar-split">
+      <article class="bt-tile bt-game-card bt-game-card--compact">
+        <div class="bt-game-art"><img src="/images/blood-splatter.webp" alt="" width="500" height="286" decoding="async" /><Mascot decorative /></div>
+        <div class="bt-game-body">
+          <p class="bt-game-tag">The game lives in the footer of every page. Play now takes you there.</p>
+          <div class="bt-game-acts"><button type="button" class="bt-btn bt-btn--go ar-play-now" data-play-now>Play now</button></div>
+          <hr class="ar-rule" />
+          <span class="bt-label">How to play</span>
+          <ul class="ar-howto">
+            <li><span aria-hidden="true">🩸</span><span><b>Tap the splat</b> at the bottom of any page to start.</span></li>
+            <li><span aria-hidden="true">🔦</span><span><b>Beat every trap.</b> What comes next is for you to find out.</span></li>
+            <li><span aria-hidden="true">⏱</span><span><b>Time is your score.</b> Each miss-click adds 1 second.</span></li>
+            <li><span aria-hidden="true">🏆</span><span><b>Finish to count.</b> Members' finished runs make the board.</span></li>
+          </ul>
+        </div>
+      </article>
+      <div class="ar-side">
+        <div class="bt-card">
+          <h3 class="bt-card-title">Your best</h3>
+          <div class="ar-bests" data-bests aria-busy="true"><span class="bt-skeleton ar-skel-line"></span></div>
+          <div class="ar-verify bt-when-unverified">
+            <p class="bt-notice">Verify your email to get on the board.</p>
+            <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-resend>Resend email</button>
+          </div>
+        </div>
+        <div class="bt-tile bt-board-card">
+          <div class="bt-tile-head"><h3>Top 3 · Desktop · all time</h3><a href="/arcade/tap-the-splat/leaderboards?device=desktop&period=all">Full leaderboard</a></div>
+          <div data-top3 aria-busy="true"><div class="ar-board-rows"><span class="bt-skeleton ar-skel-line"></span><span class="bt-skeleton ar-skel-line"></span><span class="bt-skeleton ar-skel-line"></span></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="bt-tease">
+      <span class="bt-tease-ic" aria-hidden="true">🕹</span>
+      <span class="bt-tease-txt"><b>More games coming <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></b><small>You'll play them first.</small></span>
+    </div>
+  </div>
+</ArcadeLayout>
+
+<script>
+  import "../../../scripts/arcade/play";
+</script>

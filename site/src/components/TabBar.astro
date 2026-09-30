@@ -3,7 +3,7 @@
 // glows by data-live and shows the next stream time while offline. "More"
 // opens a sheet with the rest of the navigation.
 import site from "../data/site.json";
-import { navItems, moreItems, isCurrent, hasModule } from "../lib/nav.js";
+import { navItems, moreItems, isCurrent, isInSection, hasModule } from "../lib/nav.js";
 import { formatStreamTime } from "../lib/time.js";
 
 const path = Astro.url.pathname;
@@ -32,7 +32,7 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
 </nav>
 <div class="bt-menu-sheet bt-site-more" id="bt-more-sheet" hidden>
   {moreItems.map((i) => (
-    <a href={i.href} aria-current={isCurrent(i.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>{i.label}</a>
+    <a href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>{i.label}</a>
   ))}
 </div>
 

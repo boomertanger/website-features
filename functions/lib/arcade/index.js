@@ -260,20 +260,23 @@ module.exports = function arcade() {
   });
 
   // ---------- rollupArcadeStats (every 5 minutes) ----------
-  // Sums each live game's current-version shards into games/{gameId}.stats, and
-  // rotates private/arcadeSalt once a day.
+  // Sums each live game's current-version shards into games/{gameId}.stats, keeps
+  // games/{gameId}.boardEpoch equal to the current version's (pages build board ids
+  // from the game doc alone), and rotates private/arcadeSalt once a day.
   const rollupArcadeStats = onSchedule({ schedule: "every 5 minutes", timeZone: L.WEEK_TZ }, async () => {
     const games = await site.collection("games").where("status", "==", "live").get();
     for (const game of games.docs) {
       const v = game.get("currentVersion");
       if (!v) continue;
-      const shards = await versionRef(game.id, v).collection("counters").get();
+      const [shards, version] = await Promise.all([versionRef(game.id, v).collection("counters").get(), versionRef(game.id, v).get()]);
       const sum = { runs: 0, finished: 0, liked: 0, wantMore: 0 };
       shards.docs.forEach((s) => Object.keys(sum).forEach((k) => { sum[k] += s.get(k) || 0; }));
       const prev = game.get("stats") || {};
-      if (Object.keys(sum).some((k) => prev[k] !== sum[k])) {
-        await game.ref.update({ stats: { ...sum, updatedAt: Timestamp.now() } });
-      }
+      const epoch = version.get("boardEpoch") || 1;
+      const update = {};
+      if (Object.keys(sum).some((k) => prev[k] !== sum[k])) update.stats = { ...sum, updatedAt: Timestamp.now() };
+      if (game.get("boardEpoch") !== epoch) update.boardEpoch = epoch;
+      if (Object.keys(update).length) await game.ref.update(update);
     }
     const saltSnap = await saltRef.get();
     if (!saltSnap.exists || saltSnap.get("day") !== L.dayKey(Date.now())) {

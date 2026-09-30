@@ -1,0 +1,22 @@
+---
+// /arcade/leaderboards (docs/specs/arcade-step1.md §3, §7, D8): every game's all-time
+// top 3 per device, light on purpose. Members only; filled by scripts/arcade/all-boards.ts.
+import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
+---
+<ArcadeLayout title="Leaderboards · Boom Arcade" description="The fastest finished runs in every Boom Arcade game." section="lb">
+  <div class="bt-zone">
+    <div class="ar-head">
+      <h1 class="bt-title">Leaderboards</h1>
+      <p class="bt-subtitle">The fastest finished runs in every game, all time.</p>
+    </div>
+    <div class="ar-games" data-all-boards aria-busy="true"><span class="bt-skeleton ar-skel-card"></span></div>
+    <div class="bt-tease">
+      <span class="bt-tease-ic" aria-hidden="true">🕹</span>
+      <span class="bt-tease-txt"><b>More games coming <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></b><small>You'll play them first.</small></span>
+    </div>
+  </div>
+</ArcadeLayout>
+
+<script>
+  import "../../scripts/arcade/all-boards";
+</script>

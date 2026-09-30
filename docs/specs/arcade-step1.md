@@ -50,7 +50,7 @@ Out: public profiles and badges (step 2; board names are plain text until then),
 
 | Path | Holds | Read |
 | --- | --- | --- |
-| `games/{gameId}` | title, slug, tagline, status (`live` / `soon` / `hidden`), currentVersion (`v1`), sortOrder, playsIn (`footer`), `stats` {runs, finished, liked, wantMore, updatedAt} for the current version, `news` [{title, text, at}] | everyone |
+| `games/{gameId}` | title, slug, tagline, status (`live` / `soon` / `hidden`), currentVersion (`v1`), boardEpoch (mirror, below), sortOrder, playsIn (`footer`), `stats` {runs, finished, liked, wantMore, updatedAt} for the current version, `news` [{title, text, at}] | everyone |
 | `…/versions/{v}` | label, status (`released` or a cycle stage), releasedAt, currentBuild (`1.0`), acceptedBuilds (`["1.0"]`), boardEpoch (1), boardNote (null), `checks` {minSecs: {desktop: 26, mobile: 31}, slackSecs: 3, maxRunMins: 30}, workshopOpen (false), keeperUid (null), plan (null), releaseNotes | everyone |
 | `…/versions/{v}/runs/{runId}` | uid or null, runKeyHash (visitors), device, build, epoch, startedAt, finishedAt, result (`win` / `missed` / `wrong` / `boom` / `tappedOut`), secs, penalties, reached, splits, serverSecs, `checks` {ok, reasons}, `voted` {liked, wantMore}, onBoard, expireAt (+180 days) | nobody |
 | `…/versions/{v}/bests/{uid}_{device}` | uid, device, epoch, handle, displayName, `allTime` {secs, penalties, runId, at}, `week` {key, secs, penalties, runId, at} | everyone |
@@ -59,6 +59,7 @@ Out: public profiles and badges (step 2; board names are plain text until then),
 | `sites/boomertanger/rateLimits/{key}` | count, expireAt (+1 day) | nobody |
 | `sites/boomertanger/private/arcadeSalt` | value, day (rotated daily; the old value is destroyed) | nobody |
 
+- `games/{gameId}.boardEpoch` mirrors `versions/{currentVersion}.boardEpoch`, so pages build board ids (`e{epoch}_{device}_{period}`) from the game doc alone and stay within the §3 reads. `seed-arcade.js` writes both and `rollupArcadeStats` copies it every 5 minutes; any future balance-patch tool must update both in one write.
 - `runs` counts wins and losses; tap-outs are stored but not counted; `finished` counts wins.
 - One row per member per board (their best). Ties: the earlier run ranks higher.
 - Rank beyond the top 100: a count aggregation on `bests` (times faster + 1). Indexes: (device ASC, epoch ASC, allTime.secs ASC) and (device ASC, week.key ASC, week.secs ASC).

@@ -1,0 +1,33 @@
+---
+// /arcade: the lobby, layout 1 "Marquee" (docs/specs/arcade-step1.md §3, §7). Members
+// only. Filled after sign-in by scripts/arcade/lobby.ts (games query + the member's bests).
+import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
+---
+<ArcadeLayout title="Boom Arcade" description="Horror games, built with you." section="games">
+  <div class="bt-zone">
+    <div class="ar-head">
+      <h1 class="bt-title">Games</h1>
+      <p class="bt-subtitle">Horror games, built with you. Play, chase the boards, and help decide what gets built next.</p>
+    </div>
+    <div data-lobby-games aria-busy="true"><span class="bt-skeleton ar-skel-card"></span></div>
+    <div class="ar-row">
+      <div class="bt-tile">
+        <div class="bt-tile-head"><h3>What's new</h3></div>
+        <ul class="ar-news" data-lobby-news><li><span class="bt-skeleton ar-skel-line"></span></li></ul>
+      </div>
+      <div class="bt-tile">
+        <div class="bt-tile-head"><h3>Workshops</h3><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></div>
+        <p class="ar-tile-text">Each game gets a Workshop where members plan its next version. Tap the Splat v2 opens first.</p>
+        <a class="ar-tile-link" href="/arcade/how-it-works#s-grow">How games grow</a>
+      </div>
+      <div class="bt-tease bt-tease--stack">
+        <span class="bt-tease-ic" aria-hidden="true">🕹</span>
+        <span class="bt-tease-txt"><b>More games coming <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></b><small>You'll play them first.</small></span>
+      </div>
+    </div>
+  </div>
+</ArcadeLayout>
+
+<script>
+  import "../../scripts/arcade/lobby";
+</script>

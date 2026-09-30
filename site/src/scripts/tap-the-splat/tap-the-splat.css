@@ -98,8 +98,6 @@
   --tts-power-glow-1: 0 0 4px rgba(255, 161, 0, 0.25), 0 0 8px rgba(255, 161, 0, 0.1), 0 0 0 rgba(255, 161, 0, 0);
   --tts-power-glow-2: 0 0 8px rgba(255, 161, 0, 0.75), 0 0 18px rgba(255, 161, 0, 0.5), 0 0 30px rgba(255, 161, 0, 0.25);
   --tts-power-glow-3: 0 0 10px rgba(255, 161, 0, 0.95), 0 0 26px rgba(255, 161, 0, 0.8), 0 0 46px rgba(255, 161, 0, 0.5);
-  /* Play again: dark text on the green button */
-  --tts-play-text: #06140a;
 }
 /* Phones play the grid version; the engine reads this. */
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-tts { --bt-tts-phone: 1; } }
@@ -296,7 +294,7 @@
 .bt-root:not(#_) .bt-tts-end-pills span { padding: 3px 9px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-tts-end-place { min-height: 1.5em; margin-top: 12px; color: var(--bt-text); font-size: var(--bt-text-md); text-shadow: 0 1px 6px var(--tts-black); }
 .bt-root:not(#_) .bt-tts-end-place b { color: var(--bt-title); }
-.bt-root:not(#_) .bt-tts-end :is(.bt-tts-end-place, .bt-tts-end-tease) a:not(.bt-btn) { color: var(--bt-primary-soft); font-weight: 700; }
+.bt-root:not(#_) .bt-tts-end :is(.bt-tts-end-place, .bt-tease) a:not(.bt-btn) { color: var(--bt-primary-soft); font-weight: 700; }
 .bt-root:not(#_) .bt-tts-end-fb { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 12px; }
 .bt-root:not(#_) .bt-tts-end-fb button { display: inline-flex; align-items: center; gap: 7px; padding: 8px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--tts-shade); color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 800; }
 .bt-root:not(#_) .bt-tts-end-fb button:hover { border-color: var(--bt-primary); }
@@ -306,21 +304,18 @@
 .bt-root:not(#_) .bt-tts-end-fb button span:empty { display: none; }
 .bt-root:not(#_) .bt-tts-end-proof { margin-top: 8px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); text-shadow: 0 1px 4px var(--tts-black); }
 .bt-root:not(#_) .bt-tts-end-proof:empty { display: none; }
-.bt-root:not(#_) .bt-tts-end-tease { display: flex; align-items: center; gap: 12px; max-width: 340px; margin: 14px auto 0; padding: 12px 14px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-primary); background: var(--tts-shade-deep); text-align: left; }
-.bt-root:not(#_) .bt-tts-end-tease .ic { width: 38px; height: 38px; flex: none; display: grid; place-items: center; border-radius: 10px; background: var(--bt-primary-bg); font-size: 20px; }
-.bt-root:not(#_) .bt-tts-end-tease b { display: block; font-size: var(--bt-text-md); }
-.bt-root:not(#_) .bt-tts-end-tease small { display: block; margin-top: 2px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.4; }
-.bt-root:not(#_) .bt-tts-end-tease .soon { display: inline-block; margin-left: 6px; padding: 1px 6px; border-radius: 4px; background: var(--bt-title); color: var(--bt-bg); font-size: 10px; font-weight: 900; letter-spacing: .1em; text-transform: uppercase; vertical-align: 1px; }
-.bt-root:not(#_) .bt-tts-end-tease .bt-btn { margin-left: auto; flex: none; }
+/* The kit's .bt-tease, set on the splatter: a solid dark card with the primary edge. */
+.bt-root:not(#_) .bt-tts-end .bt-tease { max-width: 360px; margin: 14px auto 0; padding: 12px 14px; border: 1px solid var(--bt-primary); background: var(--tts-shade-deep); text-align: left; }
+.bt-root:not(#_) .bt-tts-end .bt-tease-ic { width: 38px; height: 38px; background: var(--bt-primary-bg); font-size: 20px; }
+.bt-root:not(#_) .bt-tts-end .bt-tease-txt small { font-size: var(--bt-text-sm); }
 .bt-root:not(#_) .bt-site-footer .bt-tts-end a.bt-btn--primary { color: var(--bt-text); }
 /* The first 2 s after an end card appears (engine.js ignores input): its buttons are
    dimmed and inert, then fade in (.is-end-ready). */
 .bt-root:not(#_) .bt-tts-end :is(button, a) { transition: opacity 300ms, filter 160ms, box-shadow 160ms; }
 .bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) .bt-tts-end :is(button, a) { opacity: .35; pointer-events: none; }
 .bt-root:not(#_) .bt-tts[data-end]:not(.is-end-ready) :is(.bt-tts-end, .bt-tts-veil) { cursor: default; }
-/* Play again: solid green (a recorded exception, design-system.md §8f) */
-.bt-root:not(#_) .bt-tts-end .bt-tts-play { min-width: 200px; margin-top: 14px; padding: 13px 22px; background: var(--bt-green); border: 1px solid var(--bt-green); color: var(--tts-play-text); font-size: var(--bt-text-lg); font-weight: 800; }
-.bt-root:not(#_) .bt-tts-end .bt-tts-play:hover { filter: brightness(1.1); box-shadow: 0 0 16px color-mix(in srgb, var(--bt-green) 45%, transparent); }
+/* Play again: the kit's green .bt-btn--go (design-system.md §8f), bigger on the card. */
+.bt-root:not(#_) .bt-tts-end .bt-tts-play { min-width: 200px; margin-top: 14px; padding: 13px 22px; font-size: var(--bt-text-lg); }
 
 @container bt (max-width: 640px) {
   /* The clocks take row 2 of the game bar, under the one-row title / meter / sound / trophy. */

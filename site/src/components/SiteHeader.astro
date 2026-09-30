@@ -9,7 +9,7 @@ import Logo from "./Logo.astro";
 import LiveBeacon from "./LiveBeacon.astro";
 import AccountMenu from "./AccountMenu.astro";
 import member from "../data/preview-member.json";
-import { navItems, isCurrent } from "../lib/nav.js";
+import { navItems, isCurrent, isInSection } from "../lib/nav.js";
 
 interface Props { overlay?: boolean }
 const { overlay = false } = Astro.props;
@@ -19,7 +19,7 @@ const path = Astro.url.pathname;
   <Logo />
   <nav class="bt-nav" aria-label="Main">
     {navItems.map((item) => (
-      <a href={item.href} aria-current={isCurrent(item.href, path) ? "page" : undefined}>{item.label}</a>
+      <a href={item.href} aria-current={isCurrent(item.href, path) || isInSection(item.href, path) ? "page" : undefined}>{item.label}</a>
     ))}
   </nav>
   <span class="bt-spacer"></span>

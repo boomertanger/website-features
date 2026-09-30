@@ -1,0 +1,18 @@
+---
+// A game page's header (docs/specs/arcade-step1.md §7): the game's own logo lettering
+// as the page title, the version badge and counts (filled after sign-in), and the
+// link tabs (Play, Leaderboards; Workshop joins in step 3).
+import { ttsLogoHtml } from "../../../../shared/ui/arcade.js";
+
+interface Props { tab: "play" | "leaderboards" }
+const { tab } = Astro.props;
+const base = "/arcade/tap-the-splat";
+---
+<div class="ar-head">
+  <h1 class="ar-h1" set:html={ttsLogoHtml("lg")} />
+  <div class="ar-meta" data-game-meta><span class="bt-badge bt-badge--gray">v1</span></div>
+</div>
+<nav class="bt-page-tabs" aria-label="Tap the Splat">
+  <a href={base} aria-current={tab === "play" ? "page" : undefined}>Play</a>
+  <a href={`${base}/leaderboards`} aria-current={tab === "leaderboards" ? "page" : undefined}>Leaderboards</a>
+</nav>

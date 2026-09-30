@@ -88,6 +88,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
+| Boom Arcade (added) | `rank-silver` (#dfe4ee) and `rank-bronze` (#d58b52), the #2 and #3 ranks on a board (#1 is `title`) · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) |
 
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
 Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
@@ -443,6 +444,28 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-wf-icon` (beating fuzzy heart, sparks). `.bt-notes` > `.bt-note
   [--primary|--teal|--pink|--blue|--lime|--boss]` (tilted pinboard notes; Boomer's are
   `--boss`, gold) > `.bt-note-to`, `p`, `.bt-note-from`; `.bt-notes-rule`.
+- **Boom Arcade** (`docs/specs/arcade-step1.md` §7, §8; UI Kit "Boom Arcade"). Every Arcade
+  page: `.bt-topbar` > `a.bt-wordmark` (`.bt-wordmark-icon` > `.bt-ba-icon`, the animated
+  joystick from `shared/ui/arcade.js` `BA_ICON`; `.bt-wordmark-text` BOOM +
+  `.bt-wordmark-accent` ARCADE) + `.bt-topnav` (ghost `.bt-btn--sm` links, `aria-current`).
+  Game pages: `nav.bt-page-tabs` > `a[aria-current="page"]` (real link tabs; a pill row at
+  ≤ 640px; `.bt-account-tabs` is separate). A game's title is `.bt-game-logo`
+  (`--lg` page title 36px / 28px on phones, `--sm` 22px); Tap the Splat's is
+  `.bt-tts-title.bt-game-logo` from `ttsLogoHtml()`, the same letters and drips as the
+  footer (`--bt-drip-scale` lengthens the drips). `.bt-tile.bt-game-card
+  [--compact] [.is-soon]` > `.bt-game-art` (splat img + `.bt-mascot`, or
+  `.bt-game-art-soon`) + `.bt-game-body` > badges, `.bt-game-name`, `.bt-game-tag`,
+  `.bt-game-stats` (`b` counts), `.bt-game-me` (your best), `.bt-game-acts`.
+  `.bt-btn--go` is the green Play now / Play again (§8f). Leaderboards:
+  `.bt-tile.bt-board-card` [> `.bt-tile-head`] > `table.bt-board [--mini]` > `tr[data-r]`
+  (1–3 gold, silver, bronze) [`.is-me`] > `td.bt-board-rank`, `.bt-board-who`
+  (`.bt-avatar-sm` + name + `small` @handle), `td.bt-board-date`, `td.bt-board-time`;
+  `tr.bt-board-gap` then your pinned row when you're past the rows shown;
+  `.bt-board-foot` (Showing N of M, Show more, not on this board, verify email);
+  `.bt-board-empty`. Phones drop the Date column and @handles. `.bt-tease [--stack]` >
+  `.bt-tease-ic`, `.bt-tease-txt` (`b` + Soon badge, `small`), optional `.bt-btn`. Play now's
+  cue on the footer: `.bt-tts[data-cue]` pulses the splat and shows `.bt-tts-cue`. Page grids
+  (lobby row, Play tab split, gate, How it works) live in `site/src/styles/arcade.css`.
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
@@ -582,7 +605,8 @@ section 5 (decided after the migration). New features must use it too.
 - **The published UI Kit page doesn't show the site shell yet.** The Site
   shell components (§5) live in `bt-ui.css`, but `shared/ui-kit/` hasn't been
   updated to render them, so the kit page isn't yet the visual source of
-  truth for them (the mockup is). Update the published UI Kit page.
+  truth for them (the mockup is). Update the published UI Kit page. (The Boom
+  Arcade pieces are on it: its "Boom Arcade" section.)
 - **Add these to the published UI Kit page:** the mascot (`.bt-mascot`, `--aware`), the
   R4 logo lockup (`.bt-logo`), the Tap the Splat idle footer (`.bt-tts`, §5) with its L3
   look and the phone game bar, and the new tokens (`--bt-blood*`, `--bt-glow-*`,
@@ -744,3 +768,9 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   Arcade's marquee lights, is the same yellow as Bug Zapper's bolt. Bug Zapper still
   declares its own `--bz-bolt` (features/ isn't touched from site work); it moves to
   `--bt-lamp` when Bug Zapper is ported.
+- **Arcade pages read after sign-in, within the §3 budget.** Each page's script waits for
+  a signed-up member (`onMember()` in `site/src/scripts/arcade/data.ts`) before loading
+  Firestore Lite (`lib/db.ts`). The games list and game docs are kept in sessionStorage
+  for 5 minutes, and board ids come from `games/{gameId}.boardEpoch` (a mirror of the
+  version doc's, arcade-step1.md §4), so moving between pages costs only the bests,
+  boards and rank count each page lists.

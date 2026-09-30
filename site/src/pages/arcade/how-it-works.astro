@@ -1,0 +1,175 @@
+---
+// /arcade/how-it-works: the public pitch page (D10), approved layout 1 "Guided scroll"
+// (docs/design/mockups/arcade-info.html), adjusted per arcade-step1.md §3: for visitors
+// "Enter the Arcade" and "Join free" open the Join dialog; for members "Enter the Arcade"
+// goes to /arcade and Join free hides. "Try Tap the Splat" scrolls to the footer game.
+// No Firestore reads (§3), so the hero has no live counts, and nothing claims the v2
+// Workshop is open (it opens in build step 3).
+import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
+
+const JOIN_TITLE = "Join to enter the Arcade";
+const STAGES = [
+  ["Ideas open", "blue", "Anyone can post ideas for the next version on the Draft board, and comment and vote on others.", "All members"],
+  ["Shortlist", "teal", "The Keeper merges duplicates and picks the strongest ideas for a vote, with a short reason for each.", "Keeper"],
+  ["Vote", "teal", "Members vote on the shortlist. The results guide the plan, they don't dictate it.", "All members"],
+  ["Plan locked", "gold", "The Keeper writes the plan and Boomertanger approves it. This is what gets built.", "Keeper + Boomertanger"],
+  ["In development", "green", "Boomertanger builds the version. The Keeper posts progress updates on the Draft board.", "Boomertanger"],
+  ["Playtest", "green", "Members play the beta from the version picker and report bugs or balance problems.", "All members"],
+  ["Release", "lime", "The new version drops with fresh leaderboards and release notes crediting every idea used.", "Everyone"],
+  ["Thanks and badges", "lime", "Contributors, playtesters and the Keeper earn badges. The Keeper's term ends, and the next cycle opens.", "Everyone"],
+];
+const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["s-grow", "How games grow"], ["s-versions", "Versions"], ["s-roles", "Roles"], ["s-badges", "Badges"], ["s-fair", "Fair play"], ["s-words", "Glossary"], ["s-faq", "FAQ"]];
+---
+<ArcadeLayout title="How the Boom Arcade works" description="Horror games, built with you: what's inside the Boom Arcade, how games are born and grow, and the rules every board follows." membersOnly={false} section="how">
+  <div class="ai-wrap">
+    <nav class="ai-nav" aria-label="On this page">
+      {NAV.map(([id, label], i) => <a href={`#${id}`} class:list={[i === 0 && "is-on"]}>{label}</a>)}
+    </nav>
+    <div class="ai-main">
+      <section class="ai-hero" aria-labelledby="h-hero">
+        <span class="ai-kicker">Boom Arcade</span>
+        <h1 class="bt-title" id="h-hero">Horror games, built with you</h1>
+        <p>Horror point-and-click puzzle games for members. Chase the leaderboards and help decide what gets built next. Every game grows version by version, shaped by the people who play it. Not a member yet? Try Tap the Splat free.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Enter the Arcade</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/arcade">Enter the Arcade</a>
+          <a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+          <button type="button" class="bt-btn bt-btn--ghost" data-play-now>Try Tap the Splat</button>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-inside" aria-labelledby="h-inside">
+        <h2 class="bt-heading" id="h-inside">What's inside</h2>
+        <p class="ai-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p>
+        <div class="ai-grid">
+          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🕹</span><h3 class="bt-card-title">Games</h3><p>Horror point-and-click puzzle games you play in your browser. Pick a version and go.</p><span class="ai-who">Members only · Tap the Splat is free for everyone</span></div>
+          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🏆</span><h3 class="bt-card-title">Leaderboards</h3><p>Fastest finished runs for every game, per version, with separate Desktop and Mobile boards. Weekly and all-time.</p><span class="ai-who">Members appear on the boards</span></div>
+          <div class="bt-card"><span class="ai-ic" aria-hidden="true">💡</span><h3 class="bt-card-title">Arcade Studio</h3><p>Where new games are born. Pitch an idea for a brand-new game, vote on others, and watch the greenlit ones get built.</p><span class="ai-who">Pitching unlocks with a gamer badge</span></div>
+          <div class="bt-card"><span class="ai-ic" aria-hidden="true">🛠</span><h3 class="bt-card-title">Workshops</h3><p>Each game's own space for its next version: the Draft board for ideas and talk, the Keeper, and the version cycle.</p><span class="ai-who">All members can post and vote</span></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-born" aria-labelledby="h-born">
+        <h2 class="bt-heading" id="h-born">How a game is born</h2>
+        <p class="ai-lede">From a pitch in the Arcade Studio to a game you can play.</p>
+        <ol class="ai-track">
+          <li><b>Pitch</b><span>A member with a gamer badge pitches a new game in the Studio.</span></li>
+          <li><b>Community vote</b><span>Members vote and discuss. The best pitches rise.</span></li>
+          <li><b>Greenlit</b><span>Boomertanger picks a pitch to build. It becomes a real game.</span></li>
+          <li><b>Workshop</b><span>The new game gets its own Workshop, and v1 is planned there.</span></li>
+          <li><b>Playtest</b><span>Members try the beta first and report what's broken or boring.</span></li>
+          <li><b>Release</b><span>v1 drops in the Arcade, with its own leaderboards.</span></li>
+        </ol>
+      </section>
+
+      <section class="ai-sec" id="s-grow" aria-labelledby="h-grow">
+        <h2 class="bt-heading" id="h-grow">How a game grows</h2>
+        <p class="ai-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page. Tap a stage.</p>
+        <div class="ai-cycle">
+          <div class="ai-cycle-top"><b>Tap the Splat · v2</b><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Opens soon</span></div>
+          <div class="ai-steps" role="tablist" aria-label="Version cycle stages">
+            {STAGES.map(([name, tone], i) => <button type="button" role="tab" aria-selected={i === 0 ? "true" : "false"} tabindex={i === 0 ? 0 : -1} aria-controls="ai-detail" data-stage={i} style={`--c:var(--bt-${tone})`}>{name}</button>)}
+          </div>
+          <div class="ai-detail" id="ai-detail" role="tabpanel" aria-live="polite">
+            {STAGES.map(([name, tone, text, who], i) => (
+              <div data-stage-detail={i} hidden={i !== 0} style="display:contents">
+                <h4>{name} <span class={`bt-badge bt-badge--${tone}`}><span class="bt-badge-dot"></span>Stage {i + 1} of 8</span></h4>
+                <p>{text}</p>
+                <span class="ai-who">Led by: {who}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-versions" aria-labelledby="h-versions">
+        <h2 class="bt-heading" id="h-versions">Versions and patches</h2>
+        <p class="ai-lede">You'll always pick a version like v1 or v2. Behind the scenes, fixes are numbered too, so nothing gets lost.</p>
+        <div class="ai-ver">
+          <div class="bt-card"><span class="ai-tag ai-tag--gold">v1</span><h3 class="bt-card-title">Version</h3><p>A full release of a game. What you pick to play, and what every leaderboard tracks. New versions add or change real things.</p></div>
+          <div class="bt-card"><span class="ai-tag">v1.8</span><h3 class="bt-card-title">Patch</h3><p>A fix after release: a bug, a sound, a glitch. You'll still see "v1"; the patch number is kept with every run for the record.</p></div>
+          <div class="bt-card"><span class="ai-tag ai-tag--pink">v1.4 ⚖</span><h3 class="bt-card-title">Balance patch</h3><p>A fix that changes how hard the game is (a faster fuse, a longer window). The board either restarts or shows a note, so times stay fair.</p></div>
+        </div>
+        <div class="ai-ex"><span>Example:</span><code>v1</code><span>released →</span><code>v1.1 … v1.8</code><span>bug fixes →</span><code>v2</code><span>new version with its own leaderboards</span></div>
+      </section>
+
+      <section class="ai-sec" id="s-roles" aria-labelledby="h-roles">
+        <h2 class="bt-heading" id="h-roles">Who does what</h2>
+        <p class="ai-lede">Everyone plays. Some members help steer.</p>
+        <div class="ai-roles">
+          <div class="ai-role"><span class="ai-av" aria-hidden="true">🎮</span><div><b>Players</b><span>Play, post on the Draft board, vote on ideas, playtest betas.</span></div><span class="bt-badge bt-badge--gray">All members</span></div>
+          <div class="ai-role"><span class="ai-av" aria-hidden="true">💡</span><div><b>Pitchers</b><span>Pitch brand-new games in the Arcade Studio.</span></div><span class="bt-badge bt-badge--blue">Gamer badge</span></div>
+          <div class="ai-role"><span class="ai-av" aria-hidden="true">🗝</span><div><b>Keeper</b><span>The volunteer product manager for one version: sorts ideas, runs the vote, writes the plan, posts updates. The role ends at release.</span></div><span class="bt-badge bt-badge--gold">One per version</span></div>
+          <div class="ai-role"><span class="ai-av" aria-hidden="true">🛡</span><div><b>Mods</b><span>Keep every space friendly and safe. Keepers are chosen from mods who volunteer.</span></div><span class="bt-badge bt-badge--teal">Mod team</span></div>
+          <div class="ai-role"><span class="ai-av" aria-hidden="true">🦍</span><div><b>Boomertanger</b><span>Greenlights games, approves each version's plan, and builds the games.</span></div><span class="bt-badge bt-badge--pink">Final say</span></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-badges" aria-labelledby="h-badges">
+        <h2 class="bt-heading" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
+        <p class="ai-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
+        <div class="ai-badges">
+          <div class="ai-bdg" style="--c:var(--bt-red)"><div class="ai-medal" aria-hidden="true">🩸</div><b>Splat finisher</b><span>Finished Tap the Splat v1</span><div class="ai-unl">Unlocks pitching</div></div>
+          <div class="ai-bdg" style="--c:var(--bt-gold)"><div class="ai-medal" aria-hidden="true">🏆</div><b>Top 10 · v1</b><span>Reached a v1 top 10</span><div class="ai-unl">Contest entry</div></div>
+          <div class="ai-bdg" style="--c:var(--bt-teal)"><div class="ai-medal" aria-hidden="true">💡</div><b>Idea shipped</b><span>Your idea made it into a release</span><div class="ai-unl">Credited in notes</div></div>
+          <div class="ai-bdg" style="--c:var(--bt-primary)"><div class="ai-medal" aria-hidden="true">🗝</div><b>Keeper of v2</b><span>Led a version from ideas to release</span><div class="ai-unl">Forever on profile</div></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-fair" aria-labelledby="h-fair">
+        <h2 class="bt-heading" id="h-fair">Fair play</h2>
+        <p class="ai-lede">The rules every game and leaderboard follows.</p>
+        <div class="ai-rules">
+          <div><span class="ai-n" aria-hidden="true">⏱</span><div><b>Time is the score</b><span>Fastest finished run wins. Miss-clicks add penalty seconds.</span></div></div>
+          <div><span class="ai-n" aria-hidden="true">🏁</span><div><b>Only finished runs by members count</b><span>Close calls don't make the board, but they do count as runs played.</span></div></div>
+          <div><span class="ai-n" aria-hidden="true">🖥</span><div><b>Desktop and Mobile are separate</b><span>Mouse and touch play differently, so each gets its own board.</span></div></div>
+          <div><span class="ai-n" aria-hidden="true">🔒</span><div><b>Runs are checked</b><span>The server checks every run. Impossible times are removed.</span></div></div>
+          <div><span class="ai-n" aria-hidden="true">👍</span><div><b>One vote per run</b><span>Like a game or ask for more once per play. It unlocks again next run.</span></div></div>
+          <div><span class="ai-n" aria-hidden="true">🤝</span><div><b>Be kind in the Workshop</b><span>Critique ideas, not people. Mods keep every space safe.</span></div></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-words" aria-labelledby="h-words">
+        <h2 class="bt-heading" id="h-words">Glossary</h2>
+        <dl class="ai-gloss">
+          <div><dt>Boom Arcade</dt><dd>The whole section: all games, leaderboards, the Studio and Workshops.</dd></div>
+          <div><dt>Arcade Studio</dt><dd>Where new games are pitched and greenlit.</dd></div>
+          <div><dt>Pitch</dt><dd>An idea for a brand-new game.</dd></div>
+          <div><dt>Greenlit</dt><dd>A pitch Boomertanger chose to build.</dd></div>
+          <div><dt>Workshop</dt><dd>A game's space for its next version.</dd></div>
+          <div><dt>Draft board</dt><dd>The Workshop's message board, where ideas are posted and discussed.</dd></div>
+          <div><dt>Keeper</dt><dd>The volunteer who leads one version, from ideas to release.</dd></div>
+          <div><dt>Version</dt><dd>A full release, like v1 or v2. What you play and what boards track.</dd></div>
+          <div><dt>Patch</dt><dd>A behind-the-scenes fix, like v1.8. You still see v1.</dd></div>
+          <div><dt>Balance patch</dt><dd>A fix that changes difficulty; the board restarts or gets a note.</dd></div>
+          <div><dt>Playtest</dt><dd>The members-first beta of the next version.</dd></div>
+          <div><dt>Run</dt><dd>One play of a game, win or lose.</dd></div>
+        </dl>
+      </section>
+
+      <section class="ai-sec ai-faq" id="s-faq" aria-labelledby="h-faq">
+        <h2 class="bt-heading" id="h-faq">FAQ</h2>
+        <details><summary>Do I need an account to play?</summary><p>Tap the Splat is free for everyone, as a taste of the Arcade. Every other game is for members: join free to play them, save your runs, get on the leaderboards, vote on ideas and earn badges.</p></details>
+        <details><summary>Why doesn't my time show on the leaderboard?</summary><p>Only finished runs by members with a verified email count, and each device has its own board. Check you're looking at the right version and at Desktop or Mobile.</p></details>
+        <details><summary>How do I become a Keeper?</summary><p>Keepers are chosen from mods who volunteer when a new version's cycle opens. Keep being helpful in the Workshop; that's how mods get noticed.</p></details>
+        <details><summary>What happens to my v1 time when v2 comes out?</summary><p>It stays on the v1 board forever. v2 gets fresh boards, so everyone starts even.</p></details>
+        <details><summary>Can I pitch a game right away?</summary><p>Pitching unlocks with a gamer badge, like finishing a game. It keeps the Studio full of ideas from people who play.</p></details>
+      </section>
+
+      <section class="ai-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Ready to play?</h2>
+        <p class="bt-when-visitor">Join free to play every game. Tap the Splat's first Workshop opens soon.</p>
+        <p class="bt-when-signed-in">Every game, its leaderboards and what's coming next are in the Arcade.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/arcade">Enter the Arcade</a>
+          <button type="button" class="bt-btn bt-btn--secondary" data-play-now>Try Tap the Splat</button>
+        </div>
+      </section>
+    </div>
+  </div>
+</ArcadeLayout>
+
+<script>
+  import "../../scripts/arcade/info";
+</script>

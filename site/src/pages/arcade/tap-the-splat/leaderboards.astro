@@ -1,0 +1,26 @@
+---
+// /arcade/tap-the-splat/leaderboards (docs/specs/arcade-step1.md §3, §7): one board at a
+// time (?device=desktop|mobile, ?period=week|all). Members only; filled by
+// scripts/arcade/board.ts.
+import ArcadeLayout from "../../../layouts/ArcadeLayout.astro";
+import GameHeader from "../../../components/arcade/GameHeader.astro";
+---
+<ArcadeLayout title="Tap the Splat leaderboards · Boom Arcade" description="The fastest finished Tap the Splat runs, Desktop and Mobile, weekly and all-time." section="games">
+  <div class="bt-zone">
+    <GameHeader tab="leaderboards" />
+    <div class="ar-filters">
+      <div class="ar-filters-l">
+        <div class="bt-pills" role="group" aria-label="Device" data-pick="device"></div>
+        <div class="bt-pills" role="group" aria-label="Period" data-pick="period">
+          <button type="button" data-val="week">This week</button><button type="button" data-val="all">All time</button>
+        </div>
+      </div>
+      <span class="ar-faint" data-board-meta></span>
+    </div>
+    <div class="bt-tile bt-board-card" data-board aria-live="polite"></div>
+  </div>
+</ArcadeLayout>
+
+<script>
+  import "../../../scripts/arcade/board";
+</script>
