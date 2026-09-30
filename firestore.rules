@@ -447,6 +447,19 @@ service cloud.firestore {
       match /private/{docId} {
         allow read, write: if false;
       }
+
+      // ---------- Growth collector (docs/specs/growth-collector.md) ----------
+      // Written ONLY by Cloud Functions (functions/lib/growth). The daily history is
+      // for site admins; the footer's summary (public/socials) is public. TikTok
+      // tokens live in private/tiktokAuth (no client access, above).
+      match /growthDaily/{day} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /public/{docId} {
+        allow read: if true;
+        allow write: if false;
+      }
     }
 
     // Account doc: only its owner reads it. Preferences change through the

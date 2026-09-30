@@ -1,6 +1,8 @@
 ---
 // Admin tools (the green header link and the avatar menu's Admin tools). The admin
 // member view with role controls is milestone 2b (docs/specs/accounts.md "Later").
+// The owner also gets the growth collector's tools (docs/specs/growth-collector.md):
+// Connect TikTok and Run the collector now.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ComingSoon from "../components/ComingSoon.astro";
 ---
@@ -8,4 +10,55 @@ import ComingSoon from "../components/ComingSoon.astro";
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
     The admin member view (member list, member detail with role controls) arrives in milestone 2b. Roles can be set with the setMemberRole function until then.
   </ComingSoon>
+  <div class="bt-zone" data-owner-tools hidden>
+    <div class="bt-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Growth collector</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
+      <p class="bt-section-text">Follower and subscriber counts for the footer's Follow badges, collected every day at 5 am Pacific.</p>
+      <div class="bt-row-center">
+        <button type="button" class="bt-btn bt-btn--secondary" data-run-growth>Run the collector now</button>
+        <button type="button" class="bt-btn bt-btn--primary" data-connect-tiktok>Connect TikTok</button>
+      </div>
+      <p class="bt-fine" data-tiktok-status role="status"></p>
+      <p class="bt-fine" data-growth-result role="status"></p>
+    </div>
+  </div>
 </BaseLayout>
+
+<script>
+  // Owner check for display only: the callables check the owner on the server.
+  import { whenReady } from "../lib/auth";
+  import { messageFor } from "../lib/errors";
+  import { startTikTok, tiktokReady } from "../lib/tiktok";
+
+  const box = document.querySelector<HTMLElement>("[data-owner-tools]")!;
+  const status = box.querySelector<HTMLElement>("[data-tiktok-status]")!;
+  const result = box.querySelector<HTMLElement>("[data-growth-result]")!;
+  const connect = box.querySelector<HTMLButtonElement>("[data-connect-tiktok]")!;
+  const runBtn = box.querySelector<HTMLButtonElement>("[data-run-growth]")!;
+
+  whenReady().then(async (s) => {
+    if (!s.user) return;
+    const { db, doc, getDoc, SITE_ID } = await import("../lib/db");
+    const site = await getDoc(doc(db, "sites", SITE_ID));
+    if (site.get("ownerUid") !== s.user.uid) return;
+    box.hidden = false;
+    const { call } = await import("../lib/call");
+    try {
+      const st = await call<{ configured: boolean; connected: boolean }>("tiktokStatus");
+      const justConnected = new URLSearchParams(location.search).get("tiktok") === "connected";
+      if (!tiktokReady() || !st.configured) { connect.disabled = true; status.textContent = "TikTok: waiting for TikTok to approve the app (its client key and secret aren't set yet). The collector skips TikTok until then."; }
+      else if (st.connected) { connect.textContent = "Reconnect TikTok"; status.textContent = justConnected ? "TikTok connected. The next run will collect it." : "TikTok is connected."; }
+      else status.textContent = "TikTok isn't connected yet.";
+    } catch (err) { status.textContent = messageFor(err); }
+    connect.addEventListener("click", () => startTikTok());
+    runBtn.addEventListener("click", async () => {
+      runBtn.disabled = true; result.textContent = "Collecting…";
+      try {
+        const r = await call<{ day: string; summary: Record<string, any>; errors: { platform: string; message: string }[]; tiktok: string }>("runGrowthCollectorNow");
+        const tw = r.summary.twitch?.followers, yt = r.summary.youtube?.subscribers;
+        result.textContent = `Collected ${r.day}: Twitch ${tw ?? "—"} followers, YouTube ${yt ?? "—"} subscribers, TikTok ${r.tiktok}.` + (r.errors.length ? ` Errors: ${r.errors.map((e) => `${e.platform} (${e.message})`).join("; ")}` : "");
+      } catch (err) { result.textContent = messageFor(err); }
+      finally { runBtn.disabled = false; }
+    });
+  });
+</script>

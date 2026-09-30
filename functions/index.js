@@ -886,3 +886,8 @@ Object.assign(exports, require("./lib/accounts")({ adminLogEntry }));
 // Runs, boards and votes for every game (startRun, finishRun, voteRun), the
 // 5-minute stats rollup and the profile-name sync. Lives in lib/arcade/.
 Object.assign(exports, require("./lib/arcade")());
+
+// ---------- Growth collector (docs/specs/growth-collector.md) ----------
+// Daily Twitch / YouTube (and, once connected, TikTok) counts for the footer's Follow
+// badges: the 05:00 Los Angeles schedule, an owner-only run-now callable, TikTok connect.
+Object.assign(exports, require("./lib/growth")());

@@ -1,0 +1,39 @@
+---
+// TikTok comes back here after the owner's Connect TikTok on /admin. The page hands
+// the code to the tiktokConnect callable (owner only), then returns to /admin.
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import AuthStatus from "../../../components/AuthStatus.astro";
+---
+<BaseLayout title="TikTok" noindex>
+  <AuthStatus title="TikTok" message="Talking to TikTok…" />
+</BaseLayout>
+
+<script>
+  import { whenReady } from "../../../lib/auth";
+  import { call } from "../../../lib/call";
+  import { messageFor } from "../../../lib/errors";
+  import { takeTikTokState, TIKTOK_CALLBACK } from "../../../lib/tiktok";
+
+  const msg = document.querySelector<HTMLElement>("[data-auth-msg]")!;
+  const actions = document.querySelector<HTMLElement>("[data-auth-actions]")!;
+  const back = document.querySelector<HTMLAnchorElement>("[data-auth-back]")!;
+  const fail = (text: string) => { msg.textContent = text; back.href = "/admin"; back.textContent = "Back to admin tools"; actions.hidden = false; };
+
+  (async () => {
+    const q = new URLSearchParams(location.search);
+    const state = takeTikTokState();
+    // Don't leave the one-time code in the address bar or history.
+    history.replaceState(null, "", TIKTOK_CALLBACK);
+    if (q.get("error")) return fail("Connecting TikTok was cancelled.");
+    if (!state || !q.get("code") || q.get("state") !== state) return fail("That TikTok connection expired. Start again from admin tools.");
+    const s = await whenReady();
+    if (!s.user) return fail("Sign in as the site owner first, then connect TikTok from admin tools.");
+    try {
+      msg.textContent = "Connecting TikTok…";
+      await call("tiktokConnect", { code: q.get("code"), redirectUri: location.origin + TIKTOK_CALLBACK });
+      location.replace("/admin?tiktok=connected");
+    } catch (err) {
+      fail(messageFor(err, "TikTok didn't connect. Please try again."));
+    }
+  })();
+</script>

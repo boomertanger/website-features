@@ -49,5 +49,7 @@
   "termsVersion": "2026-09-28",
   "_aboutTerms": "Version of the Terms and Privacy Policy that signup records. Bump it when either changes: seed-site.js copies it into sites/{siteId}, and completeSignup only accepts the current one.",
   "twitchClientId": "59qwrarfotu1bcpzrbc5w6ksw0v6yb",
+  "tiktokClientKey": "",
+  "_aboutTikTok": "Public client key of the TikTok Login Kit app, for the owner's Connect TikTok on /admin (same value as functions/.env TIKTOK_CLIENT_KEY). Empty until TikTok approves the app; the secret is in Secret Manager, never here.",
   "_aboutTwitch": "Public client ID of the Twitch app for Twitch sign-in and linking (same value as functions/.env). The secret is in Secret Manager, never here."
 }
