@@ -105,7 +105,8 @@ the site-wide badge system in §5 and are never purple.
 ## 4. Heading ladder
 | Level | Class | Look |
 |---|---|---|
-| 1 Page title | `.bt-title` | 32px bold UPPERCASE (26px narrow), gold-to-ember gradient through the letters (solid gold fallback). One per page. The element sizes to its text (`fit-content`) so the gradient spans the words. |
+| 1 Page title | `.bt-title` | 32px black (Inter 900) UPPERCASE (26px narrow), gold-to-ember gradient through the letters (solid gold fallback). One per page. The element sizes to its text (`fit-content`) so the gradient spans the words. |
+| 1 Hero title | `.bt-title.bt-title--hero` | the page title at hero-banner size: 40px (28px at ≤ 640px), Inter 900, line-height 1.05. |
 | 2 Dialog title | `.bt-modal-title` | 20px bold gold UPPERCASE |
 | 3 Card / section | `.bt-heading` or `.bt-card-title` | 18px bold off-white, normal case, gold tick before it |
 | 4 Label | `.bt-section-label` and `.bt-label` | ONE style for both form labels and read-only section labels: 12px semibold UPPERCASE, 0.06em tracking, muted color. |
@@ -866,7 +867,8 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 - **Styling ideas: A2, B3, C3, D2, E3** (`docs/design/mockups/arcade-styling-ideas.html`):
   button hovers that lift, the `.bt-seg-nav` top tabs, the `.bt-toc` progress rail, the
   `.bt-chapter` heading and the `.bt-wordmark--power` hover. Page titles stay the only
-  gradient heading (plus `.bt-title--hero` on hero banners); `.bt-chapter` is for the
+  gradient heading (plus `.bt-title--hero` on hero banners), set in Inter 900 (the hero with a
+  tight 1.05 line-height, as in the mockup; the site loads Inter up to 900); `.bt-chapter` is for the
   top-level sections of long pages, and panels and cards keep `.bt-heading`.
 - **Every feature wordmark gets its own hover "power-on" when it's ported.** Each builds on
   `.bt-wordmark--power` (letters lighting one by one) and adds its icon's moment: Bug
