@@ -90,7 +90,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Type | `text-2xs`(10) `xs`(11) `sm`(12) `md`(13) `base`(14) `lg`(16) `xl`(18) `2xl`(20) `3xl`(32) · `leading-body` 1.6 |
 | Radii | `radius-sm`(8) `md`(10) `lg`(12) `xl`(16) `full` |
 | Effects | `shadow-dropdown` `shadow-admin-inset` `backdrop` · `z-dropdown`(20) `z-modal`(999999) · `modal-gap` (32/24/16) |
-| Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) |
+| Site shell (added) | `red-rgb` `green-rgb` `gold-rgb` (triplets for `rgba(var(--x), a)`) · glows `red-glow` / `-strong` / `-soft`, `green-glow` / `-strong` / `-soft`, `primary-glow`, `gold-glow` · `scrim` `scrim-strong` · `shadow-note` `shadow-pin` `shadow-lift` · `header-h` (site header height: 64, 56 on phones; the layout sets it) · `sticky-top` (the height of whatever is stuck at the top of the screen right now, 0 by default; every sticky offset uses it, §5 "Sticky offsets") |
 | Mascot (brand, added) | `mascot-head` (#000) `mascot-lens` (#1b1464) `mascot-stripe` (#4c186b) `mascot-stripe-edge` (#fff): the logo artwork's own colors; the mascot's lines use `title` · `logo-shine` (#fff, the TANGER hover shimmer highlight) |
 | Tap the Splat (added) | `blood` (#ff1f2d, the bright title red) `blood-rgb` `blood-drip` (#e0141b) `blood-edge` (#5a0006) `blood-glow` · shadow lists ready for `text-shadow` / `box-shadow`: `glow-red` `glow-green` `glow-gold` `glow-primary` (not the same as the single-colour `red-glow` etc.) · `shadow-text` (big wordmark over the splat) `shadow-drop` (a `drop-shadow()` under the splat mascot) |
 | Footer Contact + Follow (added) | one colour per badge: `contact-business` (`title`), `contact-fanmail` (`pink`), `contact-support` (`teal`), `follow-tiktok` (#25f4ee), `follow-youtube` (#ff0000), `follow-twitch` (`brand-twitch`), `follow-instagram` (#ff0069) · `pw-cable` (#2e2a33, an unlit cable) `pw-ring-bg` (#0b0a10) `pw-ring-edge` (#2a2530, an unlit ring) `pw-arc` (#fff, the lightning and ring flash) |
@@ -178,6 +178,15 @@ glowing purple tick glides to the hovered or focused tab and settles back on the
 one. Behavior: `shared/ui/seg-nav.js` (`initSegNav(nav)` / `initSegNavs(root)`) adds and
 moves one shared `.bt-seg-nav-pill`; without it the current tab is lit on its own. Used for
 the Arcade top-bar links (hidden on phones).
+
+**Sticky offsets: `--bt-sticky-top`.** The site header is not sticky; it scrolls away. So a
+sticky element never offsets by `--bt-header-h`: every sticky `top` and every
+`scroll-margin-top` uses `--bt-sticky-top`, the height of whatever is stuck at the top of the
+screen right now (0 by default; the Arcade's sticky bar sets it while it's stuck or shown).
+Desktop side menus and sticky cards sit 16px below it (`calc(var(--bt-sticky-top) + 16px)`);
+phone chip rows touch it (`top: var(--bt-sticky-top)`), and scroll-margins on phones add the
+chip row's height. Used by `.tl-nav`, the UI Kit page's `.lk-nav`, the glossary card,
+`.bt-account-tabs` and `.bt-home-right`. `--bt-header-h` is only the header's own height.
 
 **Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
 page">` > `.bt-toc-rail`, `.bt-toc-fill`, `a[href="#section"]`: stops on a vertical line,
@@ -759,7 +768,8 @@ differences:
 - **`--bt-header-h`.** The layout sets it on `<body>` (64px, 56px on phones) and
   the header uses it for its height. `modal.js` places dialogs below it when set,
   and falls back to measuring Squarespace's `#header` when it isn't, so the
-  Squarespace pages behave exactly as before.
+  Squarespace pages behave exactly as before. It's the header's height only:
+  sticky elements offset by `--bt-sticky-top`, never by the header height (§5).
 - **The kit is imported at build time** (`import "../../shared/bt-ui.css"` in the
   base layout), not loaded from jsDelivr. Shared JS modules are imported the
   same way.

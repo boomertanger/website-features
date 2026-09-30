@@ -171,14 +171,17 @@
 .bt-root:not(#_) .ai-scene--games .bt-mascot { position: absolute; top: 50%; left: 50%; width: 48px; transform: translate(-50%, -58%); transition: transform 0.4s; }
 .bt-root:not(#_) .ai-part:hover .ai-scene--games img { transform: scale(1.12) rotate(-6deg); filter: drop-shadow(0 0 18px rgba(var(--bt-blood-rgb), 0.45)); }
 .bt-root:not(#_) .ai-part:hover .ai-scene--games .bt-mascot { transform: translate(-50%, -62%) scale(1.08); }
-/* Leaderboards: the podium springs up. */
-.bt-root:not(#_) .ai-scene--lb { background: radial-gradient(60% 80% at 50% 100%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), var(--bt-footer-bg); }
-.bt-root:not(#_) .ai-pod { display: flex; align-items: flex-end; gap: 8px; height: 76%; }
-.bt-root:not(#_) .ai-pod i { width: 40px; display: flex; justify-content: center; padding-top: 5px; border-radius: 8px 8px 3px 3px; color: var(--bt-bg); font-size: 14px; font-style: normal; font-weight: 900; transform: scaleY(0.72); transform-origin: bottom; transition: transform 0.5s cubic-bezier(.3, 1.4, .4, 1); }
-.bt-root:not(#_) .ai-pod i:nth-child(1) { height: 64%; background: linear-gradient(180deg, var(--bt-rank-silver), color-mix(in srgb, var(--bt-rank-silver) 55%, var(--bt-bg))); transition-delay: 0.05s; }
-.bt-root:not(#_) .ai-pod i:nth-child(2) { height: 92%; background: linear-gradient(180deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 55%, var(--bt-bg))); box-shadow: 0 0 20px rgba(var(--bt-gold-rgb), 0.35); }
-.bt-root:not(#_) .ai-pod i:nth-child(3) { height: 46%; background: linear-gradient(180deg, var(--bt-rank-bronze), color-mix(in srgb, var(--bt-rank-bronze) 55%, var(--bt-bg))); transition-delay: 0.1s; }
-.bt-root:not(#_) .ai-part:hover .ai-pod i { transform: scaleY(1); }
+/* Leaderboards: the podium rises (podium-sticky-gap.html §1 "Fix"). The bars are drawn at
+   their real size (so the numbers are never squashed) inside a clipped box with a floor line;
+   at rest each is sunk partly below the floor and on hover / focus they rise, gold first. */
+.bt-root:not(#_) .ai-scene--lb { place-items: end center; background: radial-gradient(60% 80% at 50% 100%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), var(--bt-footer-bg); }
+.bt-root:not(#_) .ai-pod { position: relative; display: flex; align-items: flex-end; gap: 8px; height: 112px; margin-bottom: 14px; padding: 0 14px; overflow: hidden; }
+.bt-root:not(#_) .ai-pod::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--bt-border-2) 15%, var(--bt-border-2) 85%, transparent); }
+.bt-root:not(#_) .ai-pod i { flex: none; width: 44px; display: flex; justify-content: center; padding-top: 5px; border-radius: 8px 8px 3px 3px; color: var(--bt-bg); font-size: 14px; font-style: normal; font-weight: 900; transform: translateY(var(--rest)); transition: transform 0.55s cubic-bezier(.3, 1.35, .4, 1); }
+.bt-root:not(#_) .ai-pod i:nth-child(1) { --rest: 26px; height: 72px; background: linear-gradient(180deg, var(--bt-rank-silver), color-mix(in srgb, var(--bt-rank-silver) 55%, var(--bt-bg))); transition-delay: 0.06s; }
+.bt-root:not(#_) .ai-pod i:nth-child(2) { --rest: 34px; height: 104px; background: linear-gradient(180deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 55%, var(--bt-bg))); box-shadow: 0 0 20px rgba(var(--bt-gold-rgb), 0.35); }
+.bt-root:not(#_) .ai-pod i:nth-child(3) { --rest: 20px; height: 54px; background: linear-gradient(180deg, var(--bt-rank-bronze), color-mix(in srgb, var(--bt-rank-bronze) 55%, var(--bt-bg))); transition-delay: 0.12s; }
+.bt-root:not(#_) .ai-part:is(:hover, :focus-visible, :focus-within) .ai-pod i { transform: translateY(0); }
 .bt-root:not(#_) .ai-pod-time { position: absolute; top: 10px; right: 12px; padding: 2px 9px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface-2); color: var(--bt-title); font-size: var(--bt-text-sm); font-weight: 800; font-variant-numeric: tabular-nums; transition: transform 0.3s, box-shadow 0.3s; }
 .bt-root:not(#_) .ai-part:hover .ai-pod-time { transform: scale(1.08); box-shadow: 0 0 14px rgba(var(--bt-gold-rgb), 0.4); }
 /* Arcade Studio: the top pitch straightens and gets a vote (48 -> 49). */
@@ -361,7 +364,7 @@
 .bt-root:not(#_) .ai-gc-chips button { padding: 8px 14px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-md); font-weight: 700; cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s; }
 .bt-root:not(#_) .ai-gc-chips button:hover { border-color: var(--bt-primary); color: var(--bt-text); }
 .bt-root:not(#_) .ai-gc-chips button[aria-pressed="true"] { border-color: var(--bt-title); background: var(--bt-title); color: var(--bt-bg); box-shadow: 0 0 16px rgba(var(--bt-gold-rgb), 0.4); }
-.bt-root:not(#_) .ai-gc-card { position: sticky; top: calc(var(--bt-header-h, 64px) + 26px); min-height: 150px; padding: 22px; border: 1px solid rgba(var(--bt-gold-rgb), 0.35); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 80% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .ai-gc-card { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 16px); min-height: 150px; padding: 22px; border: 1px solid rgba(var(--bt-gold-rgb), 0.35); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 80% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
 .bt-root:not(#_) .ai-gc-card .k { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
 .bt-root:not(#_) .ai-gc-card h3 { margin: 6px 0 8px; color: var(--bt-title); font-size: 26px; font-weight: 900; }
 .bt-root:not(#_) .ai-gc-card p { margin: 0; color: var(--bt-text); line-height: 1.6; }

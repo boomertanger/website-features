@@ -1,3 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Podium, sticky Arcade bar, phone menu gap</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: dark; }
+html { background: #0f0f0f; }
+body { margin: 0; background: #0f0f0f; padding: 24px 16px 80px; }
+</style>
+<style>
+/* ===== shared/bt-ui.css (dev 8068a23) ===== */
 /* shared/bt-ui.css — Boomertanger shared UI kit
    Loaded ONCE, site-wide, from Squarespace Header Code Injection.
    Every rule is scoped under .bt-root, so plain Squarespace pages are untouched.
@@ -1366,10 +1383,6 @@
   --bt-shadow-note: 0 10px 22px rgba(0, 0, 0, 0.45);
   --bt-shadow-pin: 0 2px 4px rgba(0, 0, 0, 0.6), inset -2px -2px 0 rgba(0, 0, 0, 0.25);
   --bt-header-h: 64px;                                    /* site header height (56px on phones) */
-  /* The height of whatever is stuck at the top of the screen right now (0 when nothing is;
-     the Arcade's sticky bar sets it). Every sticky top and scroll-margin-top offsets by this,
-     never by --bt-header-h: the site header scrolls away (design-system.md §5 "Sticky"). */
-  --bt-sticky-top: 0px;
   --bt-shadow-lift: 0 8px 20px rgba(0, 0, 0, 0.4);        /* footer domain card on hover */
   /* Mascot artwork (shared/assets/mascot.svg). Brand colors from the logo
      itself: the head stays black and the lines use --bt-title. */
@@ -2019,7 +2032,7 @@
 .bt-root:not(#_) .bt-home-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .bt-root:not(#_) .bt-home-left { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
 .bt-root:not(#_) .bt-home-left > .bt-wide { grid-column: span 2; }
-.bt-root:not(#_) .bt-home-right { position: sticky; top: calc(var(--bt-sticky-top) + 12px); }
+.bt-root:not(#_) .bt-home-right { position: sticky; top: 12px; }
 .bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-home-grid { grid-template-columns: 1fr; }
 .bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-home-left { grid-template-columns: 2fr 1fr 1fr; }
 .bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-home-left > .bt-wide { grid-column: auto; }
@@ -2270,7 +2283,7 @@
    section.bt-account-pane > .bt-card with .bt-set-row rows. Phones: the tabs become a
    swipeable pill row. */
 .bt-root:not(#_) .bt-account-page { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 22px; align-items: start; max-width: 980px; }
-.bt-root:not(#_) .bt-account-tabs { position: sticky; top: calc(var(--bt-sticky-top) + 16px); display: flex; flex-direction: column; gap: 2px; }
+.bt-root:not(#_) .bt-account-tabs { position: sticky; top: calc(var(--bt-header-h) + 10px); display: flex; flex-direction: column; gap: 2px; }
 .bt-root:not(#_) .bt-account-tabs a { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: var(--bt-radius-md); color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 600; text-decoration: none; }
 .bt-root:not(#_) .bt-account-tabs a:hover { color: var(--bt-text); text-decoration: none; }
 .bt-root:not(#_) .bt-account-tabs a[aria-selected="true"] { background: var(--bt-primary-bg); color: var(--bt-text); }
@@ -2449,3 +2462,214 @@
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* ================= END Site shell ================= */
+
+</style>
+<style>
+.bt-root.page:not(#_) { max-width: 1180px; border-radius: 0; overflow: visible; background: transparent; }
+.bt-root:not(#_) .pg-intro { max-width: 80ch; padding: 4px 0 20px; }
+.bt-root:not(#_) .pg-intro p { color: var(--bt-text-muted); line-height: var(--bt-leading-body); margin-top: 12px; }
+.bt-root:not(#_) .v-sec { margin: 0 0 64px; }
+.bt-root:not(#_) .v-head { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
+.bt-root:not(#_) .v-letter { font-size: var(--bt-text-3xl); font-weight: 900; color: var(--bt-title); line-height: 1; }
+.bt-root:not(#_) .v-name { font-size: 24px; font-weight: 800; }
+.bt-root:not(#_) .v-desc { color: var(--bt-text-muted); line-height: var(--bt-leading-body); max-width: 84ch; margin: 0 0 16px; }
+.bt-root:not(#_) .v-why { margin-top: 16px; padding: 16px 18px; border: 1px solid var(--bt-primary); background: var(--bt-primary-bg); border-radius: var(--bt-radius-lg); line-height: var(--bt-leading-body); max-width: 94ch; }
+.bt-root:not(#_) .v-why p { margin: 0; } .bt-root:not(#_) .v-why p + p { margin-top: 8px; }
+.bt-root:not(#_) .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+@container bt (max-width: 760px) { .bt-root:not(#_) .pair { grid-template-columns: 1fr; } }
+.bt-root:not(#_) .cap { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: var(--bt-text-sm); font-weight: 700; color: var(--bt-text-muted); }
+.bt-root:not(#_) .tag { font-size: var(--bt-text-xs); font-weight: 700; border-radius: var(--bt-radius-full); padding: 2px 8px; }
+.bt-root:not(#_) .tag--now { color: var(--bt-text-faint); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .tag--fix { color: var(--bt-primary-soft); background: var(--bt-primary-bg); border: 1px solid var(--bt-primary); }
+
+/* ===== 1. Podium ===== */
+.bt-root:not(#_) .card { position: relative; overflow: hidden; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); cursor: pointer; transition: transform .25s, border-color .25s, box-shadow .25s; }
+.bt-root:not(#_) .card:hover { transform: translateY(-3px); border-color: rgba(var(--bt-primary-rgb), .7); box-shadow: 0 14px 34px rgba(0,0,0,.5), 0 0 30px var(--bt-primary-glow); }
+.bt-root:not(#_) .scene { position: relative; height: 150px; display: grid; place-items: end center; background: radial-gradient(60% 80% at 50% 100%, rgba(var(--bt-gold-rgb), .12), transparent 70%), var(--bt-footer-bg); border-bottom: 1px solid var(--bt-border); }
+.bt-root:not(#_) .time { position: absolute; top: 10px; right: 12px; font-size: var(--bt-text-sm); font-weight: 800; color: var(--bt-title); background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); padding: 2px 9px; font-variant-numeric: tabular-nums; transition: transform .3s, box-shadow .3s; }
+.bt-root:not(#_) .card:hover .time { transform: scale(1.08); box-shadow: 0 0 14px rgba(var(--bt-gold-rgb), .4); }
+.bt-root:not(#_) .body { padding: 18px 22px 20px; }
+.bt-root:not(#_) .body b { font-size: 20px; font-weight: 800; }
+.bt-root:not(#_) .body p { margin: 6px 0 0; color: var(--bt-text-muted); line-height: 1.5; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bar-i { display: flex; justify-content: center; padding-top: 5px; border-radius: 8px 8px 3px 3px; color: var(--bt-bg); font-size: 14px; font-style: normal; font-weight: 900; }
+.bt-root:not(#_) .b1 { background: linear-gradient(180deg, var(--bt-rank-silver), color-mix(in srgb, var(--bt-rank-silver) 55%, var(--bt-bg))); }
+.bt-root:not(#_) .b2 { background: linear-gradient(180deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 55%, var(--bt-bg))); box-shadow: 0 0 20px rgba(var(--bt-gold-rgb), .35); }
+.bt-root:not(#_) .b3 { background: linear-gradient(180deg, var(--bt-rank-bronze), color-mix(in srgb, var(--bt-rank-bronze) 55%, var(--bt-bg))); }
+/* Now: the bars are squashed at rest, which squashes the numbers */
+.bt-root:not(#_) .pod-now { display: flex; align-items: flex-end; gap: 8px; height: 76%; margin-bottom: 0; align-self: center; }
+.bt-root:not(#_) .pod-now i { width: 40px; transform: scaleY(.72); transform-origin: bottom; transition: transform .5s cubic-bezier(.3,1.4,.4,1); }
+.bt-root:not(#_) .pod-now .b1 { height: 64%; } .bt-root:not(#_) .pod-now .b2 { height: 92%; } .bt-root:not(#_) .pod-now .b3 { height: 46%; }
+.bt-root:not(#_) .card:hover .pod-now i { transform: scaleY(1); }
+/* Fixed: real-size bars rise out of a floor; nothing is ever squashed */
+.bt-root:not(#_) .pod-fix { position: relative; display: flex; align-items: flex-end; gap: 8px; height: 112px; padding: 0 14px; overflow: hidden; margin-bottom: 14px; }
+.bt-root:not(#_) .pod-fix::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; border-radius: 3px; background: linear-gradient(90deg, transparent, var(--bt-border-2) 15%, var(--bt-border-2) 85%, transparent); }
+.bt-root:not(#_) .pod-fix i { width: 44px; transform: translateY(var(--rest)); transition: transform .55s cubic-bezier(.3,1.35,.4,1); }
+.bt-root:not(#_) .pod-fix .b1 { height: 72px; --rest: 26px; transition-delay: .06s; }
+.bt-root:not(#_) .pod-fix .b2 { height: 104px; --rest: 34px; }
+.bt-root:not(#_) .pod-fix .b3 { height: 54px; --rest: 20px; transition-delay: .12s; }
+.bt-root:not(#_) .card:hover .pod-fix i { transform: translateY(0); }
+.bt-root:not(#_) .pod-fix .b2::after { content: ""; position: absolute; inset: -2px; border-radius: inherit; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .pod-fix i, .bt-root:not(#_) .card { transition: none; } .bt-root:not(#_) .card:hover { transform: none; } }
+
+/* ===== 2 + 3. Scroll demos ===== */
+.bt-root:not(#_) .demo { position: relative; height: 480px; overflow-y: auto; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-bg); container-type: inline-size; container-name: bt; scrollbar-width: thin; }
+.bt-root:not(#_) .demo--phone { width: 360px; height: 560px; border-radius: 28px; margin: 0 auto; }
+.bt-root:not(#_) .d-site { height: 56px; display: flex; align-items: center; gap: 18px; padding: 0 20px; border-bottom: 1px solid var(--bt-border); background: var(--bt-bg); font-weight: 800; }
+.bt-root:not(#_) .d-site span { color: var(--bt-title); }
+.bt-root:not(#_) .d-site nav { display: flex; gap: 14px; font-size: var(--bt-text-sm); color: var(--bt-text-muted); font-weight: 600; }
+.bt-root:not(#_) .d-site .sp { flex: 1; }
+.bt-root:not(#_) .d-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 20px; border-bottom: 1px solid var(--bt-border); background: var(--bt-bg); }
+.bt-root:not(#_) .d-mark { display: inline-flex; align-items: center; gap: 8px; font-size: 20px; font-weight: 800; letter-spacing: .02em; transition: font-size .25s; }
+.bt-root:not(#_) .d-mark i { width: 26px; height: 26px; border-radius: 8px; background: radial-gradient(circle at 40% 35%, var(--bt-blood), color-mix(in srgb, var(--bt-blood) 30%, var(--bt-bg))); transition: width .25s, height .25s; }
+.bt-root:not(#_) .d-mark b { color: var(--bt-primary); font-weight: 800; }
+.bt-root:not(#_) .d-seg { display: flex; padding: 4px; border-radius: 99px; background: var(--bt-bg); border: 1px solid var(--bt-border-2); font-size: var(--bt-text-sm); font-weight: 600; color: var(--bt-text-muted); transition: padding .25s; }
+.bt-root:not(#_) .d-seg span { padding: 6px 14px; border-radius: 99px; }
+.bt-root:not(#_) .d-seg span.on { background: var(--bt-surface-2); color: var(--bt-text); box-shadow: inset 0 -2px 0 var(--bt-primary); }
+/* the sticky Arcade bar and its condensed state */
+.bt-root:not(#_) .d-bar--sticky { position: sticky; top: 0; z-index: 5; transition: padding .25s, background .25s, box-shadow .25s, border-color .25s; }
+.bt-root:not(#_) .d-bar--sticky.is-stuck { padding: 8px 20px; background: color-mix(in srgb, var(--bt-bg) 82%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); box-shadow: 0 8px 24px rgba(0,0,0,.45); border-bottom-color: var(--bt-border-2); }
+.bt-root:not(#_) .d-bar--sticky.is-stuck .d-mark { font-size: 16px; }
+.bt-root:not(#_) .d-bar--sticky.is-stuck .d-mark i { width: 20px; height: 20px; }
+.bt-root:not(#_) .d-bar--sticky.is-stuck .d-seg { padding: 2px; }
+.bt-root:not(#_) .d-prog { position: absolute; left: 0; bottom: -1px; height: 2px; width: var(--rp, 0%); background: linear-gradient(90deg, var(--bt-title), var(--bt-primary)); box-shadow: 0 0 8px rgba(var(--bt-gold-rgb), .5); opacity: 0; transition: opacity .25s; }
+.bt-root:not(#_) .d-bar--sticky.is-stuck .d-prog { opacity: 1; }
+.bt-root:not(#_) .d-body { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 24px; padding: 20px; }
+.bt-root:not(#_) .d-toc { position: sticky; top: var(--stk); align-self: start; display: flex; flex-direction: column; gap: 4px; font-size: var(--bt-text-sm); font-weight: 600; color: var(--bt-text-muted); }
+.bt-root:not(#_) .d-toc span { padding: 5px 10px; border-radius: 8px; }
+.bt-root:not(#_) .d-toc span.on { color: var(--bt-text); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .d-main h3 { margin: 0 0 8px; font-size: 22px; font-weight: 800; }
+.bt-root:not(#_) .d-main .blk { height: 120px; border-radius: 14px; border: 1px solid var(--bt-border); background: var(--bt-surface); margin-bottom: 26px; }
+/* phone */
+.bt-root:not(#_) .demo--phone .d-site nav { display: none; }
+.bt-root:not(#_) .demo--phone .d-bar { padding: 14px 16px; }
+.bt-root:not(#_) .demo--phone .d-body { grid-template-columns: 1fr; padding: 16px; gap: 14px; }
+.bt-root:not(#_) .p-chips { position: sticky; z-index: 4; margin: 0 -16px; padding: 11px 16px 8px; background: var(--bt-bg) linear-gradient(90deg, var(--bt-title) 0 var(--cp, 15%), var(--bt-border-2) var(--cp, 15%)) 0 0 / 100% 3px no-repeat; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.bt-root:not(#_) .p-chips span { white-space: nowrap; font-size: var(--bt-text-sm); font-weight: 600; color: var(--bt-text-muted); border: 1px solid var(--bt-border); border-radius: 99px; padding: 5px 11px; }
+.bt-root:not(#_) .p-chips span.on { color: var(--bt-text); border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .p-chips--bug { top: 56px; }
+.bt-root:not(#_) .p-chips--fix { top: 0; }
+.bt-root:not(#_) .gapnote { position: absolute; left: 50%; transform: translateX(-50%); font-size: var(--bt-text-xs); color: var(--bt-red); font-weight: 700; }
+.bt-root:not(#_) .hint { text-align: center; font-size: var(--bt-text-xs); color: var(--bt-text-faint); margin-top: 8px; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .d-bar--sticky, .bt-root:not(#_) .d-mark, .bt-root:not(#_) .d-mark i, .bt-root:not(#_) .d-seg { transition: none; } }
+
+/* ===== 4. Phone Arcade bar ideas ===== */
+.bt-root:not(#_) .m-top { position: sticky; top: 0; z-index: 6; }
+.bt-root:not(#_) .m-bar { position: relative; z-index: 2; display: flex; align-items: center; gap: 10px; height: 46px; padding: 0 12px 0 14px; background: color-mix(in srgb, var(--bt-bg) 86%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-bottom: 1px solid var(--bt-border-2); transition: transform .3s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .m-top.is-hidden .m-bar { transform: translateY(-100%); }
+.bt-root:not(#_) .m-top.is-hidden .p-chips { transform: translateY(-46px); }
+.bt-root:not(#_) .m-top .p-chips { position: relative; z-index: 1; margin: 0; transition: transform .3s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .m-mark { display: inline-flex; align-items: center; gap: 7px; font-size: 15px; font-weight: 800; letter-spacing: .02em; }
+.bt-root:not(#_) .m-mark i { width: 18px; height: 18px; border-radius: 6px; background: radial-gradient(circle at 40% 35%, var(--bt-blood), color-mix(in srgb, var(--bt-blood) 30%, var(--bt-bg))); }
+.bt-root:not(#_) .m-mark b { color: var(--bt-primary); font-weight: 800; margin-left: -7px; }
+/* A: section switcher */
+.bt-root:not(#_) .m-sw { margin-left: auto; display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px 0 12px; border-radius: 99px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text); font: inherit; font-size: var(--bt-text-sm); font-weight: 700; cursor: pointer; }
+.bt-root:not(#_) .m-sw svg { width: 12px; height: 12px; transition: transform .25s; }
+.bt-root:not(#_) .m-sw[aria-expanded="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .m-sw[aria-expanded="true"] svg { transform: rotate(180deg); }
+.bt-root:not(#_) .m-menu { position: absolute; right: 10px; top: 52px; width: 230px; padding: 6px; border-radius: 16px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); box-shadow: 0 18px 40px rgba(0,0,0,.6); opacity: 0; transform: translateY(-6px) scale(.98); transform-origin: top right; pointer-events: none; transition: opacity .2s, transform .2s; z-index: 7; }
+.bt-root:not(#_) .m-menu.is-open { opacity: 1; transform: none; pointer-events: auto; }
+.bt-root:not(#_) .m-menu a { display: flex; align-items: center; gap: 10px; padding: 10px 10px; border-radius: 11px; color: var(--bt-text-muted); font-weight: 700; font-size: var(--bt-text-md); text-decoration: none; }
+.bt-root:not(#_) .m-menu a span.ic { width: 30px; height: 30px; display: grid; place-items: center; border-radius: 9px; background: var(--bt-surface-2); font-size: 15px; }
+.bt-root:not(#_) .m-menu a small { display: block; font-weight: 500; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .m-menu a:hover { background: var(--bt-surface-2); color: var(--bt-text); text-decoration: none; }
+.bt-root:not(#_) .m-menu a[aria-current="page"] { color: var(--bt-text); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .m-menu a[aria-current="page"] span.ic { background: var(--bt-primary); }
+/* B: mini segmented icons */
+.bt-root:not(#_) .m-seg { margin-left: auto; display: flex; padding: 3px; border-radius: 99px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); }
+.bt-root:not(#_) .m-seg a { display: inline-flex; align-items: center; gap: 5px; height: 28px; padding: 0 9px; border-radius: 99px; font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-muted); text-decoration: none; }
+.bt-root:not(#_) .m-seg a .l { display: none; }
+.bt-root:not(#_) .m-seg a[aria-current="page"] { background: var(--bt-surface-2); color: var(--bt-text); box-shadow: inset 0 -2px 0 var(--bt-primary); }
+.bt-root:not(#_) .m-seg a[aria-current="page"] .l { display: inline; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .m-bar, .bt-root:not(#_) .m-top .p-chips, .bt-root:not(#_) .m-menu { transition: none; } }
+</style>
+</head>
+<body>
+<div class="bt-root page">
+  <header class="pg-intro">
+    <h1 class="bt-title">Podium, sticky bar, phone gap</h1>
+    <p>Three fixes, each with the current version beside the fix. Hover the podium cards; scroll inside the page frames.</p>
+  </header>
+
+  <section class="v-sec">
+    <div class="v-head"><span class="v-letter">1</span><span class="v-name">The podium, without the squish</span></div>
+    <p class="v-desc">Hover both cards and watch the numbers.</p>
+    <div class="pair">
+      <div><div class="cap"><span class="tag tag--now">Now</span>Squashed at rest, stretched on hover</div><div class="card"><div class="scene" style="place-items:center"><div class="pod-now"><i class="bar-i b1">2</i><i class="bar-i b2">1</i><i class="bar-i b3">3</i></div><span class="time">0:36.94</span></div><div class="body"><b>🏆 Leaderboards</b><p>Fastest finished runs for every game, per version, with separate Desktop and Mobile boards.</p></div></div></div>
+      <div><div class="cap"><span class="tag tag--fix">Fix</span>Real-size bars rising out of a floor</div><div class="card"><div class="scene"><div class="pod-fix"><i class="bar-i b1">2</i><i class="bar-i b2">1</i><i class="bar-i b3">3</i></div><span class="time">0:36.94</span></div><div class="body"><b>🏆 Leaderboards</b><p>Fastest finished runs for every game, per version, with separate Desktop and Mobile boards.</p></div></div></div>
+    </div>
+    <div class="v-why"><p><b>How the fix works:</b> the bars are always drawn at their real size, so the 1, 2 and 3 are never distorted. At rest they sit partly sunk below a floor line (the podium's base), and on hover they rise out of it one after another, gold first, with a little overshoot. Same "grows on hover" feel, zero squish.</p></div>
+  </section>
+
+  <section class="v-sec">
+    <div class="v-head"><span class="v-letter">2</span><span class="v-name">The gap above the phone menu (a bug)</span></div>
+    <p class="v-desc">Scroll both phone frames down. The site's top bar scrolls away with the page, but the menu chips were told to stop 56px below it, as if it stayed. So an empty strip opens up above them. The same mistake makes the desktop side menu stop lower than it should.</p>
+    <div class="pair">
+      <div><div class="cap"><span class="tag tag--now">Now</span>Stops 56px down: an empty strip</div><div class="demo demo--phone" data-demo="bug"></div><p class="hint">Scroll inside the frame</p></div>
+      <div><div class="cap"><span class="tag tag--fix">Fix</span>Stops at the very top</div><div class="demo demo--phone" data-demo="fix"></div><p class="hint">Scroll inside the frame</p></div>
+    </div>
+    <div class="v-why"><p><b>The fix:</b> one setting, "how much is stuck above me", instead of assuming the site bar stays. On pages where nothing sticks it's 0, so the chips reach the top. Where the Arcade bar sticks (next idea), it's the height of that bar. Every sticky thing on the site (the side menus, the UI Kit's menu, the account tabs, the glossary card) uses the same setting, so this can't come back.</p></div>
+  </section>
+
+  <section class="v-sec">
+    <div class="v-head"><span class="v-letter">3</span><span class="v-name">A sticky BOOMARCADE bar on desktop</span></div>
+    <p class="v-desc">Scroll inside the frame. The site's top bar scrolls away as usual; the BOOMARCADE bar, with its Games / Leaderboards / How it works switch, stays at the top and slims down, with a gold reading-progress line along its bottom edge. The side menu tucks in right under it.</p>
+    <div class="demo" data-demo="sticky"></div>
+    <div class="v-why"><p><b>Recommend yes, on desktop.</b> You're never more than one click from the other Arcade areas, the slim bar takes only about 52px, and the progress line makes long pages like How it works feel shorter. The site's own top bar still scrolls away, so you don't lose two bars' worth of screen.</p><p><b>On phones, no.</b> The Arcade switch is hidden on phones (the bottom tab bar does that job), so a sticky bar would just be a logo taking up screen. On phones the page's menu chips stick to the top instead (the fixed version above).</p></div>
+  </section>
+
+  <section class="v-sec">
+    <div class="v-head"><span class="v-letter">4</span><span class="v-name">A BOOMARCADE bar on phones</span></div>
+    <p class="v-desc">Both use the same trick: the bar sticks, but <b>slides away when you scroll down</b> (you're reading) and <b>slides back the moment you scroll up</b> (you're looking for something). The page's menu chips stay pinned either way, moving up to the top when the bar hides. Scroll down, then flick back up a little.</p>
+    <div class="pair">
+      <div><div class="cap"><span class="tag tag--fix">A</span>Section switcher</div><div class="demo demo--phone" data-demo="ma"></div><p class="hint">Tap "How it works ▾"</p></div>
+      <div><div class="cap"><span class="tag tag--fix">B</span>Mini icon switch</div><div class="demo demo--phone" data-demo="mb"></div><p class="hint">🕹 🏆 ❓ with the current one labelled</p></div>
+    </div>
+    <div class="v-why"><p><b>Recommend A, Section switcher.</b> The bar says where you are ("How it works") and tapping it opens a small menu of the three Arcade areas, each with an icon and a one-line description. It fits comfortably at phone width, reads clearly, and grows gracefully if the Arcade gains a fourth area (the Studio). With the hide-on-scroll-down behaviour, it costs no reading space.</p><p>B is the most compact, but icons alone don't explain themselves, and three segments leave no room for a fourth.</p></div>
+  </section>
+</div>
+<script>
+(function () {
+  const secs = ["What's inside", "How games are born", "How games grow", "Versions", "Roles", "Badges", "Fair play"];
+  const blocks = secs.map((s) => `<h3>${s}</h3><div class="blk"></div>`).join("");
+  const phone = (bug) => `<div class="d-site">BOOMER<span>TANGER</span></div><div class="d-bar"><span class="d-mark"><i></i>BOOM<b>ARCADE</b></span></div><div class="d-body"><div class="p-chips ${bug ? "p-chips--bug" : "p-chips--fix"}">${secs.map((s, i) => `<span${i === 0 ? ' class="on"' : ""}>${s}</span>`).join("")}</div><div class="d-main">${blocks}</div></div>`;
+  const desk = `<div class="d-site">BOOMER<span>TANGER</span><nav><span>Home</span><span>Live</span><span>Games</span><span>Arcade</span><span>Shop</span></nav><span class="sp"></span></div><div class="d-bar d-bar--sticky"><span class="d-mark"><i></i>BOOM<b>ARCADE</b></span><span class="d-seg"><span>Games</span><span>Leaderboards</span><span class="on">How it works</span></span><span class="d-prog"></span></div><div class="d-body" style="--stk: 68px"><div class="d-toc">${secs.map((s, i) => `<span${i === 0 ? ' class="on"' : ""}>${s}</span>`).join("")}</div><div class="d-main">${blocks}</div></div>`;
+  document.querySelectorAll("[data-demo]").forEach((d) => {
+    const k = d.dataset.demo;
+    d.innerHTML = k === "sticky" ? desk : phone(k === "bug");
+    const heads = [...d.querySelectorAll(".d-main h3")], marks = [...d.querySelectorAll(".d-toc span, .p-chips span")];
+    const bar = d.querySelector(".d-bar--sticky");
+    d.addEventListener("scroll", () => {
+      if (bar) { bar.classList.toggle("is-stuck", d.scrollTop > 56); bar.style.setProperty("--rp", Math.min(100, d.scrollTop / (d.scrollHeight - d.clientHeight) * 100) + "%"); }
+      let cur = 0; heads.forEach((h, i) => { if (h.offsetTop - d.scrollTop < 140) cur = i; });
+      marks.forEach((m, i) => m.classList.toggle("on", i === cur));
+      const chips = d.querySelector(".p-chips"); if (chips) chips.style.setProperty("--cp", Math.round((cur + 1) / secs.length * 100) + "%");
+    });
+  });
+
+  const CHEV = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 6l4 4 4-4"/></svg>`;
+  const mphone = (kind) => {
+    const sw = kind === "ma"
+      ? `<button type="button" class="m-sw" aria-expanded="false" aria-haspopup="true">How it works${CHEV}</button><div class="m-menu" role="menu"><a href="#" role="menuitem"><span class="ic">🕹</span><span>Games<small>Every game in the Arcade</small></span></a><a href="#" role="menuitem"><span class="ic">🏆</span><span>Leaderboards<small>Fastest runs, every game</small></span></a><a href="#" role="menuitem" aria-current="page"><span class="ic">❓</span><span>How it works<small>You're here</small></span></a></div>`
+      : `<nav class="m-seg" aria-label="Arcade"><a href="#" aria-label="Games">🕹<span class="l">Games</span></a><a href="#" aria-label="Leaderboards">🏆<span class="l">Leaderboards</span></a><a href="#" aria-current="page">❓<span class="l">How it works</span></a></nav>`;
+    return `<div class="d-site">BOOMER<span>TANGER</span></div><div class="m-top"><div class="m-bar"><span class="m-mark"><i></i>BOOM <b>ARCADE</b></span>${sw}</div><div class="p-chips" style="padding:11px 16px 8px">${secs.map((s, i) => `<span${i === 0 ? ' class="on"' : ""}>${s}</span>`).join("")}</div></div><div class="d-body" style="padding-top:8px"><div class="d-main">${blocks}</div></div>`;
+  };
+  document.querySelectorAll('[data-demo="ma"], [data-demo="mb"]').forEach((d) => {
+    d.innerHTML = mphone(d.dataset.demo);
+    const top = d.querySelector(".m-top"), heads = [...d.querySelectorAll(".d-main h3")], chips = [...d.querySelectorAll(".p-chips span")], row = d.querySelector(".p-chips");
+    let last = 0;
+    d.addEventListener("scroll", () => {
+      const y = d.scrollTop, down = y > last + 2, up = y < last - 2;
+      if (down && y > 120) top.classList.add("is-hidden"); else if (up || y < 60) top.classList.remove("is-hidden");
+      last = y;
+      let cur = 0; heads.forEach((h, i) => { if (h.offsetTop - y < 160) cur = i; });
+      chips.forEach((c, i) => c.classList.toggle("on", i === cur)); row.style.setProperty("--cp", Math.round((cur + 1) / secs.length * 100) + "%");
+      const m = d.querySelector(".m-menu"); if (m && m.classList.contains("is-open") && down) { m.classList.remove("is-open"); d.querySelector(".m-sw").setAttribute("aria-expanded", "false"); }
+    });
+    const sw = d.querySelector(".m-sw");
+    if (sw) sw.addEventListener("click", () => { const m = d.querySelector(".m-menu"); const open = !m.classList.contains("is-open"); m.classList.toggle("is-open", open); sw.setAttribute("aria-expanded", String(open)); });
+    d.querySelectorAll("a").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+  });
+})();
+</script>
+</body>
+</html>

@@ -3,14 +3,15 @@
    this file only places it. Tokens only: no raw colors. */
 
 .bt-root:not(#_) .tl-wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding: 28px var(--bt-gutter) 56px; }
-.bt-root:not(#_) .tl-nav { position: sticky; top: calc(var(--bt-header-h, 64px) + 16px); align-self: start; }
+.bt-root:not(#_) .tl-nav { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 16px); align-self: start; }
 .bt-root:not(#_) .tl-main { min-width: 0; }
-/* A jump from the menu lands below the header, not under it. */
-.bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-header-h, 64px) + 24px); }
+/* Sticky offsets use --bt-sticky-top (what's stuck at the top right now), never the header
+   height: the site header scrolls away. A jump from the menu lands just below it. */
+.bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 24px); }
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .tl-wrap { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px 16px 40px; }
-  .bt-root:not(#_) .tl-nav { top: var(--bt-header-h, 56px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); }
+  .bt-root:not(#_) .tl-nav { top: var(--bt-sticky-top, 0px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); }
   /* ...and below the sticky chip row too. */
-  .bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-header-h, 56px) + 72px); }
+  .bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 72px); }
 }
