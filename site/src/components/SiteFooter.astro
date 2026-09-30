@@ -6,6 +6,7 @@
 import Mascot from "./Mascot.astro";
 import site from "../data/site.json";
 import { TTS_TITLE, ttsLetters } from "../../../shared/ui/arcade.js";
+import { PLATFORM_ICONS, CONTACT_ICONS } from "../data/footer-icons.js";
 
 const year = new Date().getFullYear();
 
@@ -78,20 +79,39 @@ const links = site.domains.map((d, i) => {
       </nav>
     </div>
 
-    <div class="bt-tts-cf">
-      <div>
+    <!-- Contact + Follow, "Shared power" (docs/design/mockups/footer-power.html): one row of
+         badges fed by hanging cables from a node where the chain hung. The cables and the
+         power-up are drawn by scripts/tap-the-splat/power.js (loaded with the game). The
+         addresses are joined in the browser on Show, never in the HTML; the counts come
+         from sites/{siteId}/public/socials (the growth collector). -->
+    <div class="bt-tts-cf" data-power>
+      <svg class="bt-tts-pw-svg" aria-hidden="true" focusable="false"></svg>
+      <div class="bt-tts-pw-col" data-pw-col="contact">
         <p class="bt-label">Contact</p>
-        <div class="bt-tts-mails" data-mail-domain={site.emailDomain}>
+        <div class="bt-tts-pw-row" data-mail-domain={site.emailDomain}>
           {site.contacts.map((c) => (
-            <span class="bt-tts-mail"><b>{c.label}</b><button type="button" data-mail-user={c.user} aria-label={`Show the ${c.label.toLowerCase()} email address`}>Show</button></span>
+            <div class="bt-tts-pw-b" data-pw={c.id}>
+              <span class="bt-tts-pw-ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true" focusable="false" set:html={CONTACT_ICONS[c.id] ?? ""} /></span>
+              <b>{c.label}</b>
+              <button type="button" class="bt-tts-pw-show" data-mail-user={c.user} aria-label={`Show the ${c.label.toLowerCase()} email address`}>Show</button>
+            </div>
           ))}
         </div>
+        <div class="bt-tts-pw-readout" aria-live="polite" data-pw-readout></div>
       </div>
-      <div>
+      <div class="bt-tts-pw-col" data-pw-col="follow">
         <p class="bt-label">Follow</p>
-        <!-- TODO: social URLs are '#' and the counts are typed in until the growth collector exists (site.json _todoSocials). -->
-        <div class="bt-tts-follow">
-          {site.socials.map((s) => <a href={s.url}><b>{s.label}</b><span>{s.count}</span></a>)}
+        <!-- TODO: social URLs are '#' until they're known (site.json _todoSocials). -->
+        <div class="bt-tts-pw-row">
+          {site.socials.map((s) => (
+            <a class="bt-tts-pw-b" href={s.url} data-pw={s.id} data-social={s.id}>
+              <span class="bt-tts-pw-ring"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d={PLATFORM_ICONS[s.id]} /></svg></span>
+              <b>{s.label}</b>
+              <span class="bt-tts-pw-n" data-count>Follow</span>
+              <span class="bt-tts-pw-u" data-unit>&nbsp;</span>
+              {s.id === "twitch" && <span class="bt-tts-pw-live" data-live-hook hidden>Live</span>}
+            </a>
+          ))}
         </div>
       </div>
     </div>

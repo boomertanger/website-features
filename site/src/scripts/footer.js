@@ -1,6 +1,6 @@
 // Tap the Splat footer, idle state (docs/specs/tap-the-splat.md).
-// Plain page script: the sound toggle, the contact Show buttons, and two lazy
-// hooks. The game (JS + CSS) loads with a dynamic import on the first splat tap;
+// Plain page script: the sound toggle and lazy hooks for the game, Contact + Follow
+// and the leaderboard. The game (JS + CSS) loads with a dynamic import on the first splat tap;
 // the leaderboard popover loads its own small module on the trophy button.
 import { getAudio } from "./tap-the-splat/audio-unlock.js";
 
@@ -26,31 +26,25 @@ if (root) {
     root.dispatchEvent(new CustomEvent("bt-tts:sound", { detail: { on } }));
   });
 
-  // Contact: each address is joined here, so it never appears in the HTML.
-  // First click shows it (as a mailto link), then the button copies it.
-  const mails = root.querySelector("[data-mail-domain]");
-  mails?.addEventListener("click", async (ev) => {
+  // Contact + Follow ("Shared power", scripts/tap-the-splat/power.js). Its code comes
+  // with the game; without a game running (keyboard focus reveals the section) the first
+  // Show or focus loads it here. Show joins the address in the browser, so it never
+  // appears in the HTML, then the same button copies it.
+  const cf = root.querySelector("[data-power]");
+  const power = () => import("./tap-the-splat/power.js").then((m) => m.initPower(root));
+  cf?.addEventListener("click", async (ev) => {
     const btn = ev.target.closest("[data-mail-user]");
     if (!btn) return;
-    const row = btn.parentElement;
-    const address = `${btn.dataset.mailUser}@${mails.dataset.mailDomain}`;
-    if (!row.classList.contains("is-open")) {
-      const link = document.createElement("a");
-      link.href = `mailto:${address}`;
-      link.textContent = address;
-      row.querySelector("b").replaceChildren(link);
-      row.classList.add("is-open");
-      btn.textContent = "Copy";
-      btn.setAttribute("aria-label", `Copy ${address}`);
-      return;
-    }
     try {
-      await navigator.clipboard.writeText(address);
-      btn.textContent = "Copied";
-    } catch {
-      btn.textContent = "Copy";
+      (await power()).reveal(btn);
+    } catch (err) {
+      // The effect failed to load: show the address plainly.
+      console.error("footer: power effects failed to load", err);
+      const address = `${btn.dataset.mailUser}@${btn.closest("[data-mail-domain]").dataset.mailDomain}`;
+      cf.querySelector("[data-pw-readout]").textContent = address;
     }
   });
+  cf?.addEventListener("focusin", () => { power().catch(() => {}); }, { once: true });
 
   // The game: nothing game-related loads before the first splat tap.
   const splat = root.querySelector('[data-tts-g="splat"]');

@@ -15,12 +15,12 @@
   },
   "liveState": "off",
   "socials": [
-    { "id": "tiktok", "label": "TikTok", "url": "#", "count": "9.5K followers" },
-    { "id": "youtube", "label": "YouTube", "url": "#", "count": "820 subscribers" },
-    { "id": "twitch", "label": "Twitch", "url": "#", "count": "654 followers" },
-    { "id": "instagram", "label": "Instagram", "url": "#", "count": "Follow" }
+    { "id": "tiktok", "label": "TikTok", "url": "#" },
+    { "id": "youtube", "label": "YouTube", "url": "#" },
+    { "id": "twitch", "label": "Twitch", "url": "#" },
+    { "id": "instagram", "label": "Instagram", "url": "#" }
   ],
-  "_todoSocials": "TODO: social profile URLs are not known yet (every url is a # placeholder). TODO: follower counts are typed in by hand until the growth collector writes them.",
+  "_todoSocials": "TODO: social profile URLs are not known yet (every url is a # placeholder). Follower counts come from sites/{siteId}/public/socials (the growth collector, docs/specs/growth-collector.md).",
   "emailDomain": "boomertanger.com",
   "contacts": [
     { "id": "business", "label": "Business", "user": "business" },

@@ -1152,6 +1152,20 @@
   --bt-hud-edge: #1d1d22;
   --bt-hud-inset: inset 0 1px 0 rgba(255, 255, 255, 0.03);
   --bt-shadow-splat: 0 18px 30px rgba(0, 0, 0, 0.8);      /* filter: drop-shadow() under the splat in the spotlight */
+  /* Footer Contact + Follow, "Shared power" (docs/design/mockups/footer-power.html): one
+     colour per badge (the platforms' own brand colours for Follow), the dark cable, the
+     unlit ring and the white of a lightning strike or ring flash. */
+  --bt-contact-business: var(--bt-title);
+  --bt-contact-fanmail: var(--bt-pink);
+  --bt-contact-support: var(--bt-teal);
+  --bt-follow-tiktok: #25f4ee;
+  --bt-follow-youtube: #ff0000;
+  --bt-follow-twitch: var(--bt-brand-twitch);
+  --bt-follow-instagram: #ff0069;
+  --bt-pw-cable: #2e2a33;
+  --bt-pw-ring-bg: #0b0a10;
+  --bt-pw-ring-edge: #2a2530;
+  --bt-pw-arc: #fff;
   /* Boom Arcade (arcade-step1.md §8): rank metals for #2 and #3 (#1 is --bt-title),
      the lamp yellow (shared with Bug Zapper's bolt, design-system.md §8h) and the red
      spotlight behind game art. */
@@ -1318,7 +1332,7 @@
      .bt-tts-top (.bt-tts-title drip letters, .bt-tts-meter, .bt-tts-spacer, .bt-tts-sound, .bt-tts-lb)
      .bt-tts-stage > .bt-tts-hub (.bt-tts-splat > img + .bt-mascot, .bt-tts-wm, .bt-tts-tag)
                    + nav.bt-tts-links > a.bt-tts-link [--live|--club]
-     .bt-tts-cf (Contact .bt-tts-mails, Follow .bt-tts-follow)
+     .bt-tts-cf (Contact + Follow, "Shared power": .bt-tts-pw-svg cables, .bt-tts-pw-col > .bt-tts-pw-row > .bt-tts-pw-b)
    then .bt-footer-legal.
    The eight links and Contact / Follow are real HTML from the start, invisible until the
    game reveals them ([data-links="1"], [data-cf="1"]); keyboard focus reveals them too. */
@@ -1416,20 +1430,54 @@
 .bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-tts-link--club .bt-tts-link-label::after { content: " · backstage"; color: var(--bt-green); font-weight: 800; }
 
 /* Contact (Show reveals each address) and Follow; appear after the pull chain */
-.bt-root:not(#_) .bt-tts-cf { display: grid; grid-template-columns: minmax(0, auto) minmax(0, auto); justify-content: center; gap: 56px; max-width: 1000px; max-height: 0; margin: 0 auto; overflow: hidden; opacity: 0; transform: translateY(16px); text-align: center;
+/* Contact + Follow, "Shared power": one row of round badges (Contact left, Follow right)
+   fed by cables from one glowing node where the chain hung (phones: a node per section).
+   .bt-tts-pw-svg is the cable overlay; site/src/scripts/tap-the-splat/power.js draws it,
+   runs the power-up (.bt-tts-pw-b.is-on) and the lightning on Show. */
+.bt-root:not(#_) .bt-tts-cf { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; max-width: 1000px; max-height: 0; margin: 0 auto; padding: 0 12px; overflow: hidden; opacity: 0; transform: translateY(16px); text-align: center;
   transition: max-height 500ms ease, opacity 400ms ease 150ms, transform 500ms cubic-bezier(.2, .9, .3, 1.3) 150ms; }
-.bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 320px; margin-top: 10px; opacity: 1; transform: none; }
-.bt-root:not(#_) .bt-tts-mails { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; margin-top: 10px; }
-.bt-root:not(#_) .bt-tts-mail { display: inline-flex; align-items: center; gap: 8px; padding: 7px 10px 7px 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: color-mix(in srgb, var(--bt-surface) 55%, var(--bt-bg)); font-size: var(--bt-text-md); color: var(--bt-text-muted); }
-.bt-root:not(#_) .bt-tts-mail b { font-weight: 600; color: var(--bt-text-muted); }
-.bt-root:not(#_) .bt-tts-mail.is-open b, .bt-root:not(#_) .bt-site-footer .bt-tts-mail.is-open a { color: var(--bt-text); }
-.bt-root:not(#_) .bt-tts-mail button { padding: 3px 9px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: none; color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 800; cursor: pointer; }
-.bt-root:not(#_) .bt-tts-mail button:hover { border-color: var(--bt-primary); color: var(--bt-text); }
-.bt-root:not(#_) .bt-tts-follow { display: flex; justify-content: center; gap: 8px; margin-top: 10px; }
-.bt-root:not(#_) .bt-site-footer .bt-tts-follow a { display: flex; flex-direction: column; align-items: flex-start; min-width: 92px; padding: 8px 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: color-mix(in srgb, var(--bt-surface) 55%, var(--bt-bg)); text-decoration: none; transition: border-color 160ms, background 160ms; }
-.bt-root:not(#_) .bt-site-footer .bt-tts-follow a:hover { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
-.bt-root:not(#_) .bt-tts-follow b { font-size: var(--bt-text-md); color: var(--bt-text); }
-.bt-root:not(#_) .bt-tts-follow span { margin-top: 2px; font-size: var(--bt-text-2xs); font-weight: 700; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 360px; margin-top: 10px; padding-bottom: 12px; opacity: 1; transform: none; }
+.bt-root:not(#_) .bt-tts-pw-svg { position: absolute; inset: 0; z-index: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none; }
+.bt-root:not(#_) .bt-tts-pw-col { position: relative; z-index: 1; min-width: 0; }
+.bt-root:not(#_) .bt-tts-pw-col > .bt-label { display: block; margin: 0; }
+.bt-root:not(#_) .bt-tts-pw-row { display: flex; justify-content: center; gap: 14px; margin-top: 64px; }
+.bt-root:not(#_) .bt-tts-pw-b { --pw-c: var(--bt-text-faint); display: flex; flex-direction: column; align-items: center; gap: 3px; width: 92px; color: var(--bt-text); text-decoration: none; transform-origin: 50% 0; }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="business"] { --pw-c: var(--bt-contact-business); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="fanmail"] { --pw-c: var(--bt-contact-fanmail); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="support"] { --pw-c: var(--bt-contact-support); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="tiktok"] { --pw-c: var(--bt-follow-tiktok); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="youtube"] { --pw-c: var(--bt-follow-youtube); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="twitch"] { --pw-c: var(--bt-follow-twitch); }
+.bt-root:not(#_) .bt-tts-pw-b[data-pw="instagram"] { --pw-c: var(--bt-follow-instagram); }
+.bt-root:not(#_) .bt-site-footer a.bt-tts-pw-b, .bt-root:not(#_) .bt-site-footer a.bt-tts-pw-b:hover { color: var(--bt-text); text-decoration: none; }
+.bt-root:not(#_) .bt-tts-pw-ring { width: 62px; height: 62px; display: grid; place-items: center; border-radius: 50%; border: 2px solid var(--bt-pw-ring-edge); background: var(--bt-pw-ring-bg); color: var(--pw-c); transition: transform 160ms, box-shadow 200ms, border-color 300ms; }
+.bt-root:not(#_) .bt-tts-pw-ring svg { width: 28px; height: 28px; opacity: 0.25; transition: opacity 250ms; }
+.bt-root:not(#_) .bt-tts-pw-b.is-on .bt-tts-pw-ring { border-color: var(--pw-c); box-shadow: 0 0 14px color-mix(in srgb, var(--pw-c) 55%, transparent), inset 0 0 12px color-mix(in srgb, var(--pw-c) 22%, transparent); animation: bt-tts-pw-flash 600ms; }
+.bt-root:not(#_) .bt-tts-pw-b.is-on .bt-tts-pw-ring svg { opacity: 1; }
+.bt-root:not(#_) .bt-tts-pw-b.is-swing { animation: bt-tts-pw-swing 1.6s ease-out; }
+.bt-root:not(#_) .bt-tts-pw-b:is(:hover, :focus-within) .bt-tts-pw-ring { transform: translateY(-3px) scale(1.04); box-shadow: 0 0 24px var(--pw-c); }
+.bt-root:not(#_) .bt-tts-pw-ring.is-struck { animation: bt-tts-pw-strike 500ms; }
+@keyframes bt-tts-pw-flash { 30% { border-color: var(--bt-pw-arc); box-shadow: 0 0 26px var(--pw-c); transform: scale(1.08); } }
+@keyframes bt-tts-pw-strike { 35% { border-color: var(--bt-pw-arc); box-shadow: 0 0 30px var(--pw-c); } }
+@keyframes bt-tts-pw-swing { 20% { transform: rotate(4deg); } 45% { transform: rotate(-2.5deg); } 70% { transform: rotate(1.2deg); } }
+.bt-root:not(#_) .bt-tts-pw-b b { margin-top: 3px; font-size: var(--bt-text-md); font-weight: 700; }
+.bt-root:not(#_) .bt-tts-pw-n { font-size: 17px; font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-tts-pw-u { font-size: var(--bt-text-2xs); font-weight: 700; color: var(--bt-text-faint); white-space: nowrap; }
+.bt-root:not(#_) .bt-tts-pw-live { padding: 1px 6px; border-radius: 4px; background: var(--bt-red); color: var(--bt-text); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-tts-pw-show { margin-top: 4px; padding: 3px 10px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; }
+.bt-root:not(#_) .bt-tts-pw-show:hover { border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .bt-tts-pw-readout { display: flex; flex-direction: column; align-items: center; gap: 4px; margin-top: 12px; }
+.bt-root:not(#_) .bt-tts-pw-mail { --pw-c: var(--bt-text-muted); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-md); color: var(--pw-c); text-shadow: 0 0 8px color-mix(in srgb, var(--pw-c) 60%, transparent); overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-site-footer .bt-tts-pw-mail a { color: inherit; }
+.bt-root:not(#_) .bt-tts-pw-svg .w { fill: none; stroke: var(--bt-pw-cable); stroke-width: 3; stroke-linecap: round; transition: stroke 500ms; }
+.bt-root:not(#_) .bt-tts-pw-svg .w.lit { stroke: color-mix(in srgb, var(--pw-c) 70%, var(--bt-pw-cable)); filter: drop-shadow(0 0 3px var(--pw-c)); }
+.bt-root:not(#_) .bt-tts-pw-svg .sp { fill: none; stroke: var(--pw-c); stroke-width: 3.5; stroke-linecap: round; stroke-dasharray: 7 100; stroke-dashoffset: 7; opacity: 0; filter: drop-shadow(0 0 5px var(--pw-c)); }
+.bt-root:not(#_) .bt-tts-pw-svg .sp.run { animation: bt-tts-pw-spark 850ms linear forwards; }
+.bt-root:not(#_) .bt-tts-pw-svg .node { fill: var(--bt-title); filter: drop-shadow(0 0 6px var(--bt-title)); }
+.bt-root:not(#_) .bt-tts-pw-svg .arc { fill: none; stroke: var(--bt-pw-arc); stroke-width: 2.5; stroke-linejoin: bevel; filter: drop-shadow(0 0 4px var(--pw-c)) drop-shadow(0 0 10px var(--pw-c)); animation: bt-tts-pw-arc 380ms steps(1) forwards; }
+@keyframes bt-tts-pw-spark { 0% { opacity: 1; stroke-dashoffset: 7; } 94% { opacity: 1; } 100% { opacity: 0; stroke-dashoffset: -100; } }
+@keyframes bt-tts-pw-arc { 0% { opacity: 1; } 25% { opacity: 0; } 40% { opacity: 1; } 65% { opacity: 0.2; } 80% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) :is(.bt-tts-pw-b, .bt-tts-pw-ring, .bt-tts-pw-svg .arc, .bt-tts-pw-svg .sp) { animation: none; } }
 
 /* Legal row under the play area: tiny mascot signs off, centered */
 .bt-root:not(#_) .bt-footer-legal { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 6px 18px; margin: 0 var(--bt-gutter); padding: 16px 0 18px; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
@@ -1459,9 +1507,8 @@
   .bt-root:not(#_) .bt-tts-splat .bt-mascot { width: 72px; }
   .bt-root:not(#_) .bt-site-footer a.bt-tts-link { gap: 7px; padding: 7px 8px; }
   .bt-root:not(#_) .bt-tts-link-icon { width: 24px; height: 24px; }
-  .bt-root:not(#_) .bt-tts-cf { grid-template-columns: 1fr; gap: 18px; }
-  .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 420px; }
-  .bt-root:not(#_) .bt-tts-follow { flex-wrap: wrap; }
+  .bt-root:not(#_) .bt-tts-pw-row { gap: 8px; }
+  .bt-root:not(#_) .bt-tts-pw-b { width: 80px; }
 }
 @container bt (max-width: 640px) {
   /* visible downwards (the leaderboard may hang below), clipped sideways (the end card's splatter is wider than a phone) */
@@ -1492,11 +1539,14 @@
   .bt-root:not(#_) .bt-tts[data-links="1"] a.bt-tts-link { animation: bt-tts-pop 420ms cubic-bezier(.2, .9, .3, 1.35) both; animation-delay: calc(var(--i) * 45ms + 80ms); }
   .bt-root:not(#_) .bt-tts-link-label { font-size: 11.5px; }
   .bt-root:not(#_) .bt-tts-link-domain { font-size: 9.5px; }
-  .bt-root:not(#_) .bt-tts-cf { grid-template-columns: 1fr; gap: 14px; }
-  .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 480px; }
-  .bt-root:not(#_) .bt-tts-mails { display: grid; grid-template-columns: 1fr; }
-  .bt-root:not(#_) .bt-tts-mail { justify-content: space-between; }
-  .bt-root:not(#_) .bt-tts-follow { display: grid; grid-template-columns: 1fr 1fr; }
+  .bt-root:not(#_) .bt-tts-cf { grid-template-columns: minmax(0, 1fr); gap: 34px; padding: 0; }
+  .bt-root:not(#_) .bt-tts:is([data-cf="1"], :has(.bt-tts-cf:focus-within)) .bt-tts-cf { max-height: 640px; }
+  .bt-root:not(#_) .bt-tts-pw-row { gap: 6px; margin-top: 54px; }
+  .bt-root:not(#_) .bt-tts-pw-b { width: 84px; }
+  .bt-root:not(#_) [data-pw-col="follow"] .bt-tts-pw-b { width: 80px; }
+  .bt-root:not(#_) .bt-tts-pw-ring { width: 52px; height: 52px; }
+  .bt-root:not(#_) .bt-tts-pw-ring svg { width: 24px; height: 24px; }
+  .bt-root:not(#_) .bt-tts-pw-goal { display: none; }
   .bt-root:not(#_) .bt-footer-legal { margin: 0 16px; }
 }
 /* Play now's cue (Boom Arcade, D2): <div class="bt-tts" data-cue> pulses the splat and shows

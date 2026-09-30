@@ -4,6 +4,7 @@
 // <head> by the build and load before anyone plays.
 import cssUrl from "./tap-the-splat.css?url";
 import { createGame } from "./engine.js";
+import { initPower } from "./power.js";
 
 let styles;
 function loadStyles() {
@@ -19,6 +20,7 @@ function loadStyles() {
 export async function startGame(root) {
   await loadStyles();
   root._ttsGame ??= createGame(root);
+  initPower(root);   // Contact + Follow powers up when the chain pull reveals it
   root._ttsGame.start();
   return root._ttsGame;
 }
