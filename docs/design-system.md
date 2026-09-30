@@ -191,6 +191,20 @@ false }).set(i)` for demos). The page places it (sticky); the kit styles it.
 `<header class="bt-chapter">` > `p.bt-chapter-eyebrow` (gold mono "01 · Chapter", a fading
 gold rule; `aria-hidden`), `h2.bt-chapter-title` (28px, tight tracking), `p.bt-chapter-lede`.
 Number chapters to match the side menu. Panels and cards keep `.bt-heading`.
+Variants (D1-D4 in the mockup), all on the same markup; the eyebrow stays in it and the
+variants hide it, so switching is just the class:
+- `.bt-chapter` (D2, the default): the numbered eyebrow above.
+- `.bt-chapter--bar` (D1): no eyebrow; the `.bt-heading` gold bar before the title, at
+  chapter size. Quiet pages, short sections.
+- `.bt-chapter--ember` (D3): no eyebrow; an uppercase 900 title in the page-title gradient,
+  a gold-to-blood bar and an occasional blood drip from it (a still drop under reduced
+  motion). Special moments only.
+- `.bt-chapter--ghost` (D4): no eyebrow; a huge outlined numeral from `data-n` ("01", "02"…)
+  behind the title, with the title and lede offset to clear it; smaller at ≤ 640px.
+
+**Numbered prose sections: `.bt-prose--chapters`**, on the `<article class="bt-prose">` of a
+long Markdown page: a CSS counter numbers every `h2` with a D2 eyebrow ("01 · Section", gold
+mono, a fading gold rule) and gives it the chapter title size. The Markdown isn't touched.
 
 **Hero title: `.bt-title.bt-title--hero`**: the page title at hero-banner size (40px, 28px at
 ≤ 640px), with the same gradient.
@@ -874,3 +888,8 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
   `.bt-wordmark--power` (letters lighting one by one) and adds its icon's moment: Bug
   Zapper's bolt crackles, Cloud Stash's cloud rains, Feature Lab's flask bubbles. The icons
   rest when not hovered. `features/` isn't touched until each port.
+- **Chapter headings: D2 is the default.** `.bt-chapter` (the numbered eyebrow) is the
+  standard for long pages. How it works is trying D4 (`.bt-chapter--ghost`, numerals from
+  `data-n`). Terms and Privacy use D2 numbering through `.bt-prose--chapters`. D3
+  (`.bt-chapter--ember`) is kept for special moments: game pages, launches. D1
+  (`.bt-chapter--bar`) is there for quieter pages.

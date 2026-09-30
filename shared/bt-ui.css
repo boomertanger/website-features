@@ -933,6 +933,11 @@
                        shared/ui/toc.js (follows the scroll).
    .bt-chapter         top-level sections of long pages: gold mono "01 · Chapter" eyebrow with
                        a fading rule, a 28px tight heading, the lede (panels keep .bt-heading).
+                       Variants on the same markup (the eyebrow stays in it, hidden):
+                       --bar (D1) a gold bar before the title; --ember (D3) an uppercase gradient
+                       title with a gold-to-blood bar and an occasional blood drip; --ghost (D4) a
+                       huge outlined numeral from data-n behind the title.
+   .bt-prose--chapters numbers a prose page's h2s with a counter as D2 eyebrows ("01 · Section").
    .bt-title--hero     the hero-banner size of the page title (40px, 28px at <= 640px).
    .bt-wordmark--power a feature wordmark's hover "power-on": letters (.bt-wm-lt, --i) light
                        one by one; each feature adds its own icon effect (Boom Arcade: the
@@ -970,6 +975,31 @@
 .bt-root:not(#_) .bt-chapter-eyebrow::after { content: ""; flex: 1; height: 1px; background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.6), rgba(var(--bt-gold-rgb), 0) 70%); }
 .bt-root:not(#_) .bt-chapter-title { margin: 0; font-size: 28px; font-weight: 800; letter-spacing: -0.015em; line-height: 1.15; color: var(--bt-text); }
 .bt-root:not(#_) .bt-chapter-lede { max-width: 60ch; margin: 6px 0 0; color: var(--bt-text-muted); line-height: 1.55; }
+/* The variants keep the eyebrow in the markup (switching is just the class) but hide it. */
+.bt-root:not(#_) :is(.bt-chapter--bar, .bt-chapter--ember, .bt-chapter--ghost) .bt-chapter-eyebrow { display: none; }
+/* --bar (D1): the gold bar of .bt-heading, at chapter size. */
+.bt-root:not(#_) .bt-chapter--bar .bt-chapter-title { display: flex; align-items: center; gap: 12px; }
+.bt-root:not(#_) .bt-chapter--bar .bt-chapter-title::before { content: ""; flex: none; width: 5px; height: 1.05em; border-radius: 3px; background: var(--bt-title); }
+/* --ember (D3): the page-title gradient, a gold-to-blood bar, and a drop that runs from it now and then. */
+.bt-root:not(#_) .bt-chapter--ember .bt-chapter-title { position: relative; align-self: flex-start; padding-left: 16px; font-weight: 900; letter-spacing: 0.01em; text-transform: uppercase; color: var(--bt-title); }
+@supports ((-webkit-background-clip: text) or (background-clip: text)) {
+  .bt-root:not(#_) .bt-chapter--ember .bt-chapter-title { background: var(--bt-title-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+}
+.bt-root:not(#_) .bt-chapter--ember .bt-chapter-title::before { content: ""; position: absolute; left: 0; top: 0.12em; width: 5px; height: 0.95em; border-radius: 3px; background: linear-gradient(180deg, var(--bt-title), var(--bt-blood)); }
+.bt-root:not(#_) .bt-chapter--ember .bt-chapter-title::after { content: ""; position: absolute; left: 1px; top: 1.05em; width: 3px; height: 0; border-radius: 0 0 3px 3px; background: var(--bt-blood); animation: bt-chapter-drip 4.2s ease-in 1s infinite; }
+@keyframes bt-chapter-drip { 0% { height: 0; opacity: 1; } 55% { height: 14px; opacity: 1; } 75% { height: 16px; opacity: 0; } 100% { height: 0; opacity: 0; } }
+/* --ghost (D4): a huge outlined numeral (data-n) behind the title; title and lede clear it. */
+.bt-root:not(#_) .bt-chapter--ghost { position: relative; padding: 18px 0 0 4px; }
+.bt-root:not(#_) .bt-chapter--ghost::before { content: attr(data-n); position: absolute; left: -6px; top: -18px; z-index: 0; font-size: 92px; font-weight: 900; line-height: 1; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1px rgba(var(--bt-gold-rgb), 0.28); pointer-events: none; }
+.bt-root:not(#_) .bt-chapter--ghost :is(.bt-chapter-title, .bt-chapter-lede) { position: relative; z-index: 1; padding-left: 76px; }
+.bt-root:not(#_) .bt-chapter--ghost .bt-chapter-title { font-size: 30px; letter-spacing: -0.02em; }
+
+/* Prose pages with numbered sections (legal pages): each h2 gets a D2 eyebrow from a counter
+   and the chapter title size. The eyebrow's fading rule is a background line that starts
+   just after its "01 · Section" text. */
+.bt-root:not(#_) .bt-prose--chapters { counter-reset: bt-prose-ch; }
+.bt-root:not(#_) .bt-prose.bt-prose--chapters > h2 { counter-increment: bt-prose-ch; display: block; font-size: 28px; font-weight: 800; letter-spacing: -0.015em; line-height: 1.15; }
+.bt-root:not(#_) .bt-prose.bt-prose--chapters > h2::before { content: counter(bt-prose-ch, decimal-leading-zero) " · Section"; display: block; width: auto; height: auto; margin: 0 0 8px; border-radius: 0; color: var(--bt-title); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-sm); font-weight: 700; letter-spacing: 0.12em; line-height: 1.4; text-transform: uppercase; background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.6), rgba(var(--bt-gold-rgb), 0) 70%) right center / calc(100% - 12ch - 1.44em - 12px) 1px no-repeat; }
 
 .bt-root:not(#_) .bt-title.bt-title--hero { font-size: 40px; line-height: 1.05; }
 
@@ -987,6 +1017,10 @@
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bt-title.bt-title--hero { font-size: 28px; }
+  .bt-root:not(#_) .bt-chapter--ghost::before { top: -10px; font-size: 64px; }
+  .bt-root:not(#_) .bt-chapter--ghost :is(.bt-chapter-title, .bt-chapter-lede) { padding-left: 54px; }
+  .bt-root:not(#_) .bt-chapter--ghost .bt-chapter-title { font-size: 24px; }
+  .bt-root:not(#_) .bt-prose.bt-prose--chapters > h2 { font-size: 24px; }
   /* The progress rail becomes a swipeable chip row with a thin gold progress bar above it. */
   /* The bar is the row's own background, so it stays put while the chips scroll. */
   .bt-root:not(#_) .bt-toc { flex-direction: row; flex-wrap: nowrap; gap: 6px; padding: 11px 0 0; overflow-x: auto; scrollbar-width: none; background: linear-gradient(90deg, var(--bt-title) 0 var(--bt-toc-prog, 0%), var(--bt-border-2) var(--bt-toc-prog, 0%)) 0 0 / 100% 3px no-repeat; }
@@ -1001,6 +1035,7 @@
   .bt-root:not(#_) .bt-btn:is(:hover, :focus-visible):not(:disabled) { transform: none; }
   .bt-root:not(#_) :is(.bt-seg-nav-pill, .bt-toc-fill, .bt-toc a::before) { transition: none; }
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) :is(.bt-wm-lt, .bt-ba-icon .stick) { animation: none; }
+  .bt-root:not(#_) .bt-chapter--ember .bt-chapter-title::after { animation: none; height: 8px; }   /* a still drop */
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wm-lt { color: var(--bt-text); text-shadow: var(--bt-wm-glow); }
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible) .bt-wordmark-accent .bt-wm-lt { color: var(--bt-neon); text-shadow: 0 0 12px rgba(var(--bt-primary-rgb), 0.9); }
 }

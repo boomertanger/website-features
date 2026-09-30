@@ -4,7 +4,8 @@
 // "Enter the Arcade" and "Join free" open the Join dialog; for members "Enter the Arcade"
 // goes to /arcade and Join free hides. "Try Tap the Splat" scrolls to the footer game.
 // The side menu is the kit's .bt-toc progress rail (shared/ui/toc.js) and each section
-// opens with a numbered .bt-chapter heading.
+// opens with a numbered chapter heading (trying the D4 .bt-chapter--ghost; the eyebrow
+// stays in the markup, so going back to the default is just the class).
 // No Firestore reads (§3), so the hero has no live counts, and nothing claims the v2
 // Workshop is open (it opens in build step 3).
 import ArcadeLayout from "../../layouts/ArcadeLayout.astro";
@@ -42,7 +43,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-inside" aria-labelledby="h-inside">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="01">
           <p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-inside">What's inside</h2>
           <p class="bt-chapter-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p>
@@ -56,7 +57,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-born" aria-labelledby="h-born">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="02">
           <p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-born">How a game is born</h2>
           <p class="bt-chapter-lede">From a pitch in the Arcade Studio to a game you can play.</p>
@@ -72,7 +73,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-grow" aria-labelledby="h-grow">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="03">
           <p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-grow">How a game grows</h2>
           <p class="bt-chapter-lede">After release, every game keeps evolving. Each new version runs through the same cycle, shown on the game's Workshop page. Tap a stage.</p>
@@ -95,7 +96,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-versions" aria-labelledby="h-versions">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="04">
           <p class="bt-chapter-eyebrow" aria-hidden="true">04 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-versions">Versions and patches</h2>
           <p class="bt-chapter-lede">You'll always pick a version like v1 or v2. Behind the scenes, fixes are numbered too, so nothing gets lost.</p>
@@ -109,7 +110,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-roles" aria-labelledby="h-roles">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="05">
           <p class="bt-chapter-eyebrow" aria-hidden="true">05 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-roles">Who does what</h2>
           <p class="bt-chapter-lede">Everyone plays. Some members help steer.</p>
@@ -124,7 +125,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-badges" aria-labelledby="h-badges">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="06">
           <p class="bt-chapter-eyebrow" aria-hidden="true">06 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
           <p class="bt-chapter-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
@@ -138,7 +139,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-fair" aria-labelledby="h-fair">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="07">
           <p class="bt-chapter-eyebrow" aria-hidden="true">07 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-fair">Fair play</h2>
           <p class="bt-chapter-lede">The rules every game and leaderboard follows.</p>
@@ -154,7 +155,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec" id="s-words" aria-labelledby="h-words">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="08">
           <p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-words">Glossary</h2>
         </header>
@@ -175,7 +176,7 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
       </section>
 
       <section class="ai-sec ai-faq" id="s-faq" aria-labelledby="h-faq">
-        <header class="bt-chapter">
+        <header class="bt-chapter bt-chapter--ghost" data-n="09">
           <p class="bt-chapter-eyebrow" aria-hidden="true">09 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-faq">FAQ</h2>
         </header>

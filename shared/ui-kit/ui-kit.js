@@ -810,11 +810,13 @@ function navHtml() {
     <p class="kit-sub">Side menu: .bt-toc progress rail (C3), with shared/ui/toc.js following the scroll. Shown at the first, third and last stop. At 640px and below it becomes a swipeable chip row with a thin gold progress bar.</p>
     <div class="kit-grid-2">${kitToc(0)}${kitToc(2)}${kitToc(6)}</div>
 
-    <p class="kit-sub">Chapter heading: .bt-chapter (D2), for the top-level sections of long pages. Panels and cards keep .bt-heading.</p>
-    <div class="kit-stack">
-      <header class="bt-chapter"><p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p><h2 class="bt-chapter-title">What's inside</h2><p class="bt-chapter-lede">Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs.</p></header>
-      <header class="bt-chapter"><p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p><h2 class="bt-chapter-title">Glossary</h2></header>
-    </div>
+    <p class="kit-sub">Chapter headings: .bt-chapter and its variants (D1-D4), for the top-level sections of long pages. Same markup for all four (the eyebrow stays in it; the variants hide it), so switching is just the class. Panels and cards keep .bt-heading.</p>
+    ${[
+      ["bt-chapter", "D2, the default: gold mono eyebrow with a fading rule. Use it for long pages."],
+      ["bt-chapter bt-chapter--bar", "D1: the .bt-heading gold bar at chapter size, no eyebrow. Quiet pages and short sections."],
+      ["bt-chapter bt-chapter--ember", "D3: uppercase gradient title, gold-to-blood bar, an occasional blood drip (still under reduced motion). Special moments: game pages, launches."],
+      ["bt-chapter bt-chapter--ghost", "D4: a huge outlined numeral from data-n behind the title (smaller on phones). Being tried on How it works."],
+    ].map(([cls, when]) => `<div class="kit-stack"><p class="kit-note"><span class="kit-code">.${cls.split(" ").pop()}</span> · ${when}</p>${[["01", "What's inside", "Four parts, one arcade. Every game gets its own Play, Leaderboards and Workshop tabs."], ["02", "How a game is born", "From a pitch in the Arcade Studio to a game you can play."]].map(([n, t, l]) => `<header class="${cls}" data-n="${n}"><p class="bt-chapter-eyebrow" aria-hidden="true">${n} · Chapter</p><h2 class="bt-chapter-title">${t}</h2><p class="bt-chapter-lede">${l}</p></header>`).join("")}</div>`).join("")}
 
     <p class="kit-sub">Hero title: .bt-title.bt-title--hero (40px, 28px at 640px and below). Page titles stay the only gradient heading.</p>
     <div class="kit-stack"><h1 class="bt-title bt-title--hero">Horror games, built with you</h1><h1 class="bt-title">Page title (for comparison)</h1></div>
