@@ -36,7 +36,6 @@
 .bt-root:not(#_) .ar-gate-art .bt-mascot { position: absolute; top: 50%; left: 50%; width: 58px; transform: translate(-50%, -58%); }
 .bt-root:not(#_) .ar-gate-lead { color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
 .bt-root:not(#_) .ar-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
-.bt-root:not(#_) .ar-gate-more { font-weight: 600; }
 
 /* ---- Shared page pieces ---- */
 .bt-root:not(#_) .ar-page > .bt-zone { gap: 24px; }

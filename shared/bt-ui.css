@@ -2513,4 +2513,21 @@
 .bt-root:not(#_) .bt-prose a { overflow-wrap: anywhere; }
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
+/* Keyhole link: the members-only gate's "Peek inside" invitation (design-system.md §8h:
+   a deliberate exception to "purple = clickable", lamp yellow, gate only). */
+.bt-root:not(#_) .bt-keyhole-link { position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 10px 18px 10px 12px; border-radius: 99px; border: 1px solid rgba(var(--bt-lamp-rgb), 0.35); background: radial-gradient(70% 140% at 0% 50%, rgba(var(--bt-lamp-rgb), 0.14), transparent 70%), var(--bt-surface); color: var(--bt-text); font-weight: 800; text-decoration: none; transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s; }
+.bt-root:not(#_) .bt-keyhole-link small { font-size: inherit; font-weight: 600; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-keyhole-icon { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .bt-keyhole-icon svg { position: relative; z-index: 1; width: 18px; height: 18px; }
+.bt-root:not(#_) .bt-keyhole-icon svg path { fill: var(--bt-lamp); filter: drop-shadow(0 0 4px rgba(var(--bt-lamp-rgb), 0.9)); animation: bt-keyhole-flicker 3.4s steps(1, end) infinite; }
+.bt-root:not(#_) .bt-keyhole-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--bt-lamp-rgb), 0.35), transparent 65%); opacity: 0.6; transition: opacity 0.3s, transform 0.3s; }
+.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) { transform: translateY(-2px); border-color: rgba(var(--bt-lamp-rgb), 0.7); box-shadow: 0 0 26px rgba(var(--bt-lamp-rgb), 0.25); }
+.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) .bt-keyhole-icon::after { opacity: 1; transform: scale(1.5); }
+.bt-root:not(#_) .bt-keyhole-link:focus-visible { outline: 2px solid var(--bt-lamp); outline-offset: 3px; }
+@keyframes bt-keyhole-flicker { 0%, 88%, 100% { opacity: 1; } 90% { opacity: 0.35; } 92% { opacity: 1; } 94% { opacity: 0.5; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-keyhole-icon svg path { animation: none; }
+  .bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) { transform: none; }
+}
+
 /* ================= END Site shell ================= */

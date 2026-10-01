@@ -41,7 +41,10 @@ const { title, description, membersOnly = true, section = null } = Astro.props;
           <div class="ar-gate-acts bt-when-needs-signup">
             <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
           </div>
-          <a class="ar-gate-more" href="/arcade/how-it-works">See what's inside</a>
+          <a class="bt-keyhole-link" href="/arcade/how-it-works" aria-label="Peek inside: how the Arcade works (no account needed)">
+            <span class="bt-keyhole-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-2.4 9.4L8 21h8l-1.6-8.6A5 5 0 0 0 12 3z"/></svg></span>
+            <span aria-hidden="true">Peek inside <small>· no account needed</small></span>
+          </a>
           <p class="ar-faint">Just want to play? Tap the splat at the bottom of any page.</p>
         </section>
       </>

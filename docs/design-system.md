@@ -943,6 +943,14 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 - **Play now joins the §8f green exception.** The Arcade's Play now is the same solid
   green as the game's Play again (`.bt-btn--go`, `--bt-green`), because both mean "start
   the game". It stays limited to those two controls and the completion meter.
+- **Exception: the keyhole link is lamp yellow, not purple.** The members-only gate's
+  "Peek inside · no account needed" pill (`.bt-keyhole-link`, approved in
+  `docs/design/mockups/gate-see-inside.html`, option C) is a deliberate exception to
+  "purple = clickable", alongside the green Play again exception above. It uses
+  `--bt-lamp` (a flickering keyhole, a faint wash and a thin border), only for the gate's
+  peek-inside invitation to /arcade/how-it-works; don't use it for other links. Hover and
+  focus lift it 2px and spill the light; reduced motion keeps the brighter border and glow
+  but drops the flicker and the lift.
 - **The Arcade is members only, and the gate is display-only.** One Arcade layout takes
   a `membersOnly` flag (every page except How it works). For visitors it renders the
   members-only gate instead of the page, and opens the Join dialog once per visit. The
