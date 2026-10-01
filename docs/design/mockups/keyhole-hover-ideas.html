@@ -1,3 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Keyhole link: hover ideas</title>
+<meta name="color-scheme" content="dark">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root { box-sizing: border-box; padding-top: env(safe-area-inset-top, 0px); padding-bottom: env(safe-area-inset-bottom, 0px); color-scheme: dark; }
+html { background: #0f0f0f; }
+body { margin: 0; background: #0f0f0f; padding: 24px 16px 80px; }
+</style>
+<style>
+/* ===== shared/bt-ui.css (dev 5eb9d55) ===== */
 /* shared/bt-ui.css — Boomertanger shared UI kit
    Loaded ONCE, site-wide, from Squarespace Header Code Injection.
    Every rule is scoped under .bt-root, so plain Squarespace pages are untouched.
@@ -156,10 +173,7 @@
 .bt-root:not(#_) svg { overflow: visible; flex: none; }
 .bt-root:not(#_) button { font: inherit; color: inherit; margin: 0; }
 .bt-root:not(#_) a { color: var(--bt-primary); text-decoration: none; }
-/* Only plain text links underline on hover: links with no class, links in .bt-prose, and
-   classed text-style links that opt in with .bt-link. Component links (keyhole, cards, nav)
-   decide their own hover. */
-.bt-root:not(#_) :is(a:not([class]), .bt-prose a, a.bt-link):hover { text-decoration: underline; }
+.bt-root:not(#_) a:hover { text-decoration: underline; }
 /* Link-buttons and wordmarks never underline (ghost buttons stay underlined on purpose). */
 .bt-root:not(#_) a.bt-btn:not(.bt-btn--ghost):hover, .bt-root:not(#_) a.bt-wordmark:hover, .bt-root:not(#_) .bt-wordmark a:hover { text-decoration: none; }
 .bt-root:not(#_) :focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
@@ -2517,24 +2531,146 @@
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-prose { font-size: var(--bt-text-base); } }
 
 /* Keyhole link: the members-only gate's "Peek inside" invitation (design-system.md §8h:
-   a deliberate exception to "purple = clickable", warm amber, gate only). Hover and focus:
-   "door ajar", a wedge of amber light swings open across the pill. */
-.bt-root:not(#_) .bt-keyhole-link { position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 10px 18px 10px 12px; border-radius: 99px; border: 1px solid rgba(var(--bt-gold-rgb), 0.4); background: radial-gradient(70% 140% at 0% 50%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), var(--bt-surface); color: var(--bt-text); font-weight: 800; text-decoration: none; overflow: hidden; isolation: isolate; transition: border-color 0.25s, box-shadow 0.25s; }
-.bt-root:not(#_) .bt-keyhole-link::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(var(--bt-gold-rgb), 0.34), rgba(var(--bt-gold-rgb), 0.12) 45%, transparent 75%); clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); transition: clip-path 0.5s cubic-bezier(0.3, 0.7, 0.2, 1); }
-.bt-root:not(#_) .bt-keyhole-link small { font-size: inherit; font-weight: 600; color: var(--bt-text-muted); transition: color 0.25s; }
-.bt-root:not(#_) .bt-keyhole-icon { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bt-bg); border: 1px solid var(--bt-border-2); transition: background 0.25s, border-color 0.25s; }
+   a deliberate exception to "purple = clickable", lamp yellow, gate only). */
+.bt-root:not(#_) .bt-keyhole-link { position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 10px 18px 10px 12px; border-radius: 99px; border: 1px solid rgba(var(--bt-lamp-rgb), 0.35); background: radial-gradient(70% 140% at 0% 50%, rgba(var(--bt-lamp-rgb), 0.14), transparent 70%), var(--bt-surface); color: var(--bt-text); font-weight: 800; text-decoration: none; transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s; }
+.bt-root:not(#_) .bt-keyhole-link small { font-size: inherit; font-weight: 600; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-keyhole-icon { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
 .bt-root:not(#_) .bt-keyhole-icon svg { position: relative; z-index: 1; width: 18px; height: 18px; }
-.bt-root:not(#_) .bt-keyhole-icon svg path { fill: var(--bt-title); filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.9)); animation: bt-keyhole-flicker 3.4s steps(1, end) infinite; }
-.bt-root:not(#_) .bt-keyhole-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--bt-gold-rgb), 0.32), transparent 65%); opacity: 0.6; }
-.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible)::before { clip-path: polygon(0 0, 92% 0, 72% 100%, 0 100%); }
-.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) { border-color: rgba(var(--bt-gold-rgb), 0.8); box-shadow: 0 0 26px rgba(var(--bt-gold-rgb), 0.22); }
-.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) .bt-keyhole-icon { background: color-mix(in srgb, var(--bt-title) 22%, var(--bt-bg)); border-color: rgba(var(--bt-gold-rgb), 0.6); }
-.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) small { color: var(--bt-text); }
-.bt-root:not(#_) .bt-keyhole-link:focus-visible { outline: 2px solid var(--bt-title); outline-offset: 3px; }
+.bt-root:not(#_) .bt-keyhole-icon svg path { fill: var(--bt-lamp); filter: drop-shadow(0 0 4px rgba(var(--bt-lamp-rgb), 0.9)); animation: bt-keyhole-flicker 3.4s steps(1, end) infinite; }
+.bt-root:not(#_) .bt-keyhole-icon::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--bt-lamp-rgb), 0.35), transparent 65%); opacity: 0.6; transition: opacity 0.3s, transform 0.3s; }
+.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) { transform: translateY(-2px); border-color: rgba(var(--bt-lamp-rgb), 0.7); box-shadow: 0 0 26px rgba(var(--bt-lamp-rgb), 0.25); }
+.bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) .bt-keyhole-icon::after { opacity: 1; transform: scale(1.5); }
+.bt-root:not(#_) .bt-keyhole-link:focus-visible { outline: 2px solid var(--bt-lamp); outline-offset: 3px; }
 @keyframes bt-keyhole-flicker { 0%, 88%, 100% { opacity: 1; } 90% { opacity: 0.35; } 92% { opacity: 1; } 94% { opacity: 0.5; } }
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .bt-keyhole-icon svg path { animation: none; }
-  .bt-root:not(#_) :is(.bt-keyhole-link, .bt-keyhole-link::before, .bt-keyhole-icon, .bt-keyhole-link small) { transition: none; }
+  .bt-root:not(#_) .bt-keyhole-link:is(:hover, :focus-visible) { transform: none; }
 }
 
 /* ================= END Site shell ================= */
+
+</style>
+<style>
+.bt-root.page:not(#_) { max-width: 1100px; border-radius: 0; overflow: visible; background: transparent; }
+.bt-root:not(#_) .pg-intro { max-width: 80ch; padding: 4px 0 20px; }
+.bt-root:not(#_) .pg-intro p { color: var(--bt-text-muted); line-height: var(--bt-leading-body); margin-top: 12px; }
+.bt-root:not(#_) .grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+@container bt (max-width: 760px) { .bt-root:not(#_) .grid { grid-template-columns: 1fr; } }
+.bt-root:not(#_) .opt { border: 1px solid var(--bt-border); background: var(--bt-bg); border-radius: var(--bt-radius-xl); padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .opt.is-rec { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary), 0 0 24px var(--bt-primary-glow); }
+.bt-root:not(#_) .opt-top { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bt-root:not(#_) .opt-n { width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center; font-size: var(--bt-text-md); font-weight: 800; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); }
+.bt-root:not(#_) .tag { font-size: var(--bt-text-xs); font-weight: 700; border-radius: var(--bt-radius-full); padding: 2px 8px; }
+.bt-root:not(#_) .tag--rec { color: var(--bt-primary-soft); background: var(--bt-primary-bg); border: 1px solid var(--bt-primary); }
+.bt-root:not(#_) .tag--now { color: var(--bt-text-faint); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .stage { position: relative; height: 150px; border-radius: var(--bt-radius-lg); background: var(--bt-bg); border: 1px solid var(--bt-border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; }
+.bt-root:not(#_) .stage .hint { position: absolute; bottom: 8px; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .note { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; }
+.bt-root:not(#_) .why { margin-top: 18px; padding: 16px 18px; border: 1px solid var(--bt-primary); background: var(--bt-primary-bg); border-radius: var(--bt-radius-lg); line-height: var(--bt-leading-body); }
+.bt-root:not(#_) .why p { margin: 0; } .bt-root:not(#_) .why p + p { margin-top: 8px; }
+
+/* ===== the pill, shared ===== */
+.bt-root:not(#_) .kh { position: relative; display: inline-flex; align-items: center; gap: 12px; padding: 10px 18px 10px 12px; border-radius: 99px; border: 1px solid rgba(var(--bt-gold-rgb), .4); background: radial-gradient(70% 140% at 0% 50%, rgba(var(--bt-gold-rgb), .12), transparent 70%), var(--bt-surface); color: var(--bt-text); font-weight: 800; text-decoration: none; overflow: hidden; isolation: isolate; transition: border-color .25s, box-shadow .25s, transform .25s; }
+.bt-root:not(#_) .kh:hover, .bt-root:not(#_) .kh:focus-visible { text-decoration: none; }
+.bt-root:not(#_) .kh small { font-size: inherit; font-weight: 600; color: var(--bt-text-muted); transition: color .25s; }
+.bt-root:not(#_) .kh:focus-visible { outline: 2px solid var(--bt-title); outline-offset: 3px; }
+.bt-root:not(#_) .ki { position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .ki svg { position: relative; z-index: 1; width: 18px; height: 18px; overflow: visible; }
+.bt-root:not(#_) .ki .hole { fill: var(--bt-title); filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), .9)); animation: kh-flicker 3.4s steps(1, end) infinite; }
+.bt-root:not(#_) .ki::after { content: ""; position: absolute; inset: -6px; border-radius: 50%; background: radial-gradient(circle, rgba(var(--bt-gold-rgb), .32), transparent 65%); opacity: .6; transition: opacity .3s, transform .3s; }
+@keyframes kh-flicker { 0%, 88%, 100% { opacity: 1; } 90% { opacity: .35; } 92% { opacity: 1; } 94% { opacity: .5; } }
+.bt-root:not(#_) .arr { width: 0; overflow: hidden; display: inline-grid; place-items: center; transition: width .25s, margin .25s; margin-left: -6px; }
+.bt-root:not(#_) .arr svg { width: 15px; height: 15px; }
+
+/* 0 Now (staging): lemon wash (reads olive) and the kit underline on hover */
+.bt-root:not(#_) .k0 { border-color: rgba(var(--bt-lamp-rgb), .35); background: radial-gradient(70% 140% at 0% 50%, rgba(var(--bt-lamp-rgb), .14), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .k0 .ki .hole { fill: var(--bt-lamp); filter: drop-shadow(0 0 4px rgba(var(--bt-lamp-rgb), .9)); }
+.bt-root:not(#_) .k0:hover { text-decoration: underline; transform: translateY(-2px); border-color: rgba(var(--bt-lamp-rgb), .7); box-shadow: 0 0 26px rgba(var(--bt-lamp-rgb), .25); }
+
+/* 1 Warm light: the same idea, amber not lemon; the light spills and the arrow slides in */
+.bt-root:not(#_) .k1:is(:hover, :focus-visible) { transform: translateY(-2px); border-color: rgba(var(--bt-gold-rgb), .8); box-shadow: 0 0 28px rgba(var(--bt-gold-rgb), .28); }
+.bt-root:not(#_) .k1:is(:hover, :focus-visible) .ki::after { opacity: 1; transform: scale(1.6); }
+.bt-root:not(#_) .k1:is(:hover, :focus-visible) small { color: var(--bt-text); }
+.bt-root:not(#_) .k1:is(:hover, :focus-visible) .arr { width: 16px; margin-left: 0; }
+
+/* 2 Door ajar: a wedge of warm light swings open across the pill */
+.bt-root:not(#_) .k2::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, rgba(var(--bt-gold-rgb), .34), rgba(var(--bt-gold-rgb), .12) 45%, transparent 75%); clip-path: polygon(0 0, 0 0, 0 100%, 0 100%); transition: clip-path .5s cubic-bezier(.3,.7,.2,1); }
+.bt-root:not(#_) .k2:is(:hover, :focus-visible)::before { clip-path: polygon(0 0, 92% 0, 72% 100%, 0 100%); }
+.bt-root:not(#_) .k2:is(:hover, :focus-visible) { border-color: rgba(var(--bt-gold-rgb), .8); box-shadow: 0 0 26px rgba(var(--bt-gold-rgb), .22); }
+.bt-root:not(#_) .k2:is(:hover, :focus-visible) .ki { background: color-mix(in srgb, var(--bt-title) 22%, var(--bt-bg)); border-color: rgba(var(--bt-gold-rgb), .6); }
+.bt-root:not(#_) .k2:is(:hover, :focus-visible) small { color: var(--bt-text); }
+
+/* 3 Key turns: a key slides into the hole and turns a quarter, then the arrow appears */
+.bt-root:not(#_) .k3 .key { fill: none; stroke: var(--bt-title); stroke-width: 2; stroke-linecap: round; opacity: 0; transform-box: fill-box; transform-origin: 50% 85%; transform: translateY(-8px) rotate(0); transition: opacity .2s, transform .45s cubic-bezier(.3,1.4,.4,1); }
+.bt-root:not(#_) .k3:is(:hover, :focus-visible) .hole { opacity: .25; animation: none; }
+.bt-root:not(#_) .k3:is(:hover, :focus-visible) .key { opacity: 1; transform: translateY(0) rotate(90deg); transition-delay: 0s, .05s; }
+.bt-root:not(#_) .k3:is(:hover, :focus-visible) { transform: translateY(-2px); border-color: rgba(var(--bt-gold-rgb), .8); box-shadow: 0 0 26px rgba(var(--bt-gold-rgb), .22); }
+.bt-root:not(#_) .k3:is(:hover, :focus-visible) .arr { width: 16px; margin-left: 0; transition-delay: .35s; }
+.bt-root:not(#_) .k3:is(:hover, :focus-visible) small { color: var(--bt-text); }
+
+/* 4 Something looks back: an eye appears in the keyhole and glances around */
+.bt-root:not(#_) .k4 .eye { opacity: 0; transition: opacity .25s; }
+.bt-root:not(#_) .k4 .eye .white { fill: var(--bt-text); }
+.bt-root:not(#_) .k4 .eye .iris { fill: var(--bt-blood); }
+.bt-root:not(#_) .k4 .eye .pupil { fill: var(--bt-bg); }
+.bt-root:not(#_) .k4 .eye .look { transform-box: view-box; }
+.bt-root:not(#_) .k4 .eye .lid { fill: var(--bt-bg); transform-box: fill-box; transform-origin: 50% 0; transform: scaleY(0); }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .hole { opacity: 0; animation: none; }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .eye { opacity: 1; }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .eye .look { animation: k4-look 2.2s ease-in-out .25s infinite; }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .eye .lid { animation: k4-blink 2.2s ease-in-out .25s infinite; }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) { border-color: rgba(var(--bt-blood-rgb), .6); box-shadow: 0 0 26px rgba(var(--bt-blood-rgb), .22); }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .ki { border-color: rgba(var(--bt-blood-rgb), .55); }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) .ki::after { background: radial-gradient(circle, rgba(var(--bt-blood-rgb), .35), transparent 65%); opacity: 1; }
+.bt-root:not(#_) .k4:is(:hover, :focus-visible) small { color: var(--bt-text); }
+@keyframes k4-look { 0%, 20% { transform: translateX(0); } 30%, 50% { transform: translateX(-2.2px); } 60%, 80% { transform: translateX(2.2px); } 90%, 100% { transform: translateX(0); } }
+@keyframes k4-blink { 0%, 44%, 50%, 100% { transform: scaleY(0); } 47% { transform: scaleY(1); } }
+
+/* 5 Flashlight: a beam follows your pointer across the pill; the keyhole flares when it's lit */
+.bt-root:not(#_) .k5 { background: var(--bt-surface); border-color: var(--bt-border-2); }
+.bt-root:not(#_) .k5::before { content: ""; position: absolute; inset: 0; z-index: -1; opacity: 0; transition: opacity .25s; background: radial-gradient(90px circle at var(--mx, 20%) var(--my, 50%), rgba(var(--bt-gold-rgb), .32), transparent 70%); }
+.bt-root:not(#_) .k5:is(:hover, :focus-visible)::before { opacity: 1; }
+.bt-root:not(#_) .k5:is(:hover, :focus-visible) { border-color: rgba(var(--bt-gold-rgb), .7); }
+.bt-root:not(#_) .k5:is(:hover, :focus-visible) .ki::after { opacity: 1; transform: scale(1.5); }
+.bt-root:not(#_) .k5:is(:hover, :focus-visible) small { color: var(--bt-text); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .kh, .bt-root:not(#_) .kh *, .bt-root:not(#_) .kh::before { transition: none !important; animation: none !important; }
+  .bt-root:not(#_) .kh:hover { transform: none !important; }
+}
+</style>
+</head>
+<body>
+<div class="bt-root page">
+  <header class="pg-intro">
+    <h1 class="bt-title">Keyhole link: hover ideas</h1>
+    <p>None of these underline. All use warm amber light instead of lemon yellow, which mixed with the dark background into the olive green you noticed. Hover each pill (and move around inside 5).</p>
+  </header>
+  <div class="grid" id="grid"></div>
+  <div class="why">
+    <p><b>Recommend 3, Key turns.</b> At rest it's the glowing keyhole you picked; point at it and a key slides into the lock and turns, then a little arrow appears. It's a tiny story that says "this opens something", which is exactly the invitation you want, and it's charming without being creepy for a first-time visitor.</p>
+    <p>4 is the most horror (something looks back at you through the keyhole, with a blood-red iris that glances around and blinks); it's brilliant for the brand, if you're happy to give visitors a little jump. 2 is the most elegant, 1 the simplest fix of what you have.</p>
+  </div>
+</div>
+<script>
+(function () {
+  const HOLE = `<path class="hole" d="M12 3a5 5 0 0 0-2.4 9.4L8 21h8l-1.6-8.6A5 5 0 0 0 12 3z"/>`;
+  const KEY = `<g class="key"><circle cx="12" cy="6.5" r="3.2"/><path d="M12 9.7V20M12 15.5h3M12 18.5h2.2"/></g>`;
+  const EYE = `<g class="eye"><ellipse class="white" cx="12" cy="11" rx="8" ry="5.2"/><g class="look"><circle class="iris" cx="12" cy="11" r="3.4"/><circle class="pupil" cx="12" cy="11" r="1.4"/></g><rect class="lid" x="3.5" y="5.6" width="17" height="10.8" rx="5"/></g>`;
+  const ARROW = `<span class="arr" aria-hidden="true"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>`;
+  const pill = (cls, inner, arrow) => `<a class="kh ${cls}" href="#" aria-label="Peek inside: how the Arcade works (no account needed)"><span class="ki" aria-hidden="true"><svg viewBox="0 0 24 24">${inner}</svg></span>Peek inside <small>· no account needed</small>${arrow ? ARROW : ""}</a>`;
+  const O = [
+    ["0", "Now (staging)", "Lemon-yellow wash (reads olive on the dark background) and the kit's underline on hover.", pill("k0", HOLE), "now"],
+    ["1", "Warm light", "Your pill, fixed: amber instead of lemon. On hover the light spills out of the keyhole, the text brightens and an arrow slides in.", pill("k1", HOLE, true)],
+    ["2", "Door ajar", "A wedge of warm light swings open across the pill, like a door opening onto a lit room.", pill("k2", HOLE)],
+    ["3", "Key turns", "A key slides into the keyhole and turns a quarter, then the arrow appears. A tiny story: this unlocks something.", pill("k3", HOLE + KEY, true), "rec"],
+    ["4", "Something looks back", "The keyhole goes dark and an eye with a blood-red iris appears in it, glancing left and right and blinking. Very horror.", pill("k4", HOLE + EYE)],
+    ["5", "Flashlight", "Move around inside the pill: a warm beam follows your pointer, and the keyhole flares when it's lit.", pill("k5", HOLE)]
+  ];
+  document.getElementById("grid").innerHTML = O.map(([n, t, d, html, f]) => `<div class="opt${f === "rec" ? " is-rec" : ""}"><div class="opt-top"><span class="opt-n">${n}</span><b>${t}</b>${f === "rec" ? '<span class="tag tag--rec">Recommended</span>' : ""}${f === "now" ? '<span class="tag tag--now">Now</span>' : ""}</div><div class="stage">${html}<span class="hint">Hover me</span></div><p class="note">${d}</p></div>`).join("");
+  document.querySelectorAll(".kh").forEach((a) => a.addEventListener("click", (e) => e.preventDefault()));
+  document.querySelectorAll(".k5").forEach((a) => a.addEventListener("pointermove", (e) => { const r = a.getBoundingClientRect(); a.style.setProperty("--mx", (e.clientX - r.left) + "px"); a.style.setProperty("--my", (e.clientY - r.top) + "px"); }));
+})();
+</script>
+</body>
+</html>

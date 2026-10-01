@@ -847,7 +847,7 @@ function navHtml() {
       ${cycleWheelHtml({ id: "kit-cw-c", stages: KIT_STAGES, current: 7, play: false })}
     </div>
 
-    <p class="kit-sub">Keyhole link: .bt-keyhole-link (a round dark .bt-keyhole-icon holding a lamp-yellow keyhole that flickers every few seconds, bold text and a muted small). A deliberate exception to "purple = clickable": lamp yellow, used only for the members-only gate's peek-inside invitation (design-system.md §8h). Hover and focus: lifts 2px, the border brightens and the light spills out; lamp focus ring. Reduced motion: no flicker, no lift; the brighter border and glow stay. Always give it an aria-label.</p>
+    <p class="kit-sub">Keyhole link: .bt-keyhole-link (a round dark .bt-keyhole-icon holding a warm amber keyhole (--bt-title) that flickers every few seconds, bold text and a muted small). A deliberate exception to "purple = clickable": warm amber, used only for the members-only gate's peek-inside invitation (design-system.md §8h). Hover and focus, "door ajar": a wedge of amber light swings open across the pill from the left, the border brightens with a soft glow, the keyhole's circle warms and "· no account needed" brightens; no lift, no underline. Reduced motion: no flicker; the light appears without the swing. Always give it an aria-label.</p>
     <div class="kit-row">
       <a class="bt-keyhole-link" href="#" aria-label="Peek inside: how the Arcade works (no account needed)"><span class="bt-keyhole-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-2.4 9.4L8 21h8l-1.6-8.6A5 5 0 0 0 12 3z"/></svg></span><span aria-hidden="true">Peek inside <small>· no account needed</small></span></a>
     </div>

@@ -950,14 +950,18 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 - **Play now joins the §8f green exception.** The Arcade's Play now is the same solid
   green as the game's Play again (`.bt-btn--go`, `--bt-green`), because both mean "start
   the game". It stays limited to those two controls and the completion meter.
-- **Exception: the keyhole link is lamp yellow, not purple.** The members-only gate's
+- **Exception: the keyhole link is warm amber, not purple.** The members-only gate's
   "Peek inside · no account needed" pill (`.bt-keyhole-link`, approved in
-  `docs/design/mockups/gate-see-inside.html`, option C) is a deliberate exception to
-  "purple = clickable", alongside the green Play again exception above. It uses
-  `--bt-lamp` (a flickering keyhole, a faint wash and a thin border), only for the gate's
+  `docs/design/mockups/keyhole-hover-ideas.html`, option 2 "Door ajar", after
+  `gate-see-inside.html` option C) is a deliberate exception to "purple = clickable",
+  alongside the green Play again exception above. It uses the amber gold (`--bt-title` /
+  `--bt-gold-rgb`: a flickering keyhole, a faint wash and a thin border), not `--bt-lamp`,
+  whose lemon wash read as olive green on the dark background. Only for the gate's
   peek-inside invitation to /arcade/how-it-works; don't use it for other links. Hover and
-  focus lift it 2px and spill the light; reduced motion keeps the brighter border and glow
-  but drops the flicker and the lift.
+  focus: a wedge of amber light swings open across the pill from the left (clip-path, about
+  0.5s), the border brightens with a soft glow, the keyhole's circle warms and the muted
+  text brightens; no lift, no underline. Reduced motion: no flicker, and the light appears
+  without the swing.
 - **The Arcade is members only, and the gate is display-only.** One Arcade layout takes
   a `membersOnly` flag (every page except How it works). For visitors it renders the
   members-only gate instead of the page, and opens the Join dialog once per visit. The
