@@ -156,7 +156,10 @@
 .bt-root:not(#_) svg { overflow: visible; flex: none; }
 .bt-root:not(#_) button { font: inherit; color: inherit; margin: 0; }
 .bt-root:not(#_) a { color: var(--bt-primary); text-decoration: none; }
-.bt-root:not(#_) a:hover { text-decoration: underline; }
+/* Only plain text links underline on hover: links with no class, links in .bt-prose, and
+   classed text-style links that opt in with .bt-link. Component links (keyhole, cards, nav)
+   decide their own hover. */
+.bt-root:not(#_) :is(a:not([class]), .bt-prose a, a.bt-link):hover { text-decoration: underline; }
 /* Link-buttons and wordmarks never underline (ghost buttons stay underlined on purpose). */
 .bt-root:not(#_) a.bt-btn:not(.bt-btn--ghost):hover, .bt-root:not(#_) a.bt-wordmark:hover, .bt-root:not(#_) .bt-wordmark a:hover { text-decoration: none; }
 .bt-root:not(#_) :focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }

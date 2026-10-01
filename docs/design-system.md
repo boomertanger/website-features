@@ -172,6 +172,13 @@ lifts 1px with a purple glow; `.bt-btn--secondary` lifts 1px and lights up (bord
 react. Link-buttons (`a.bt-btn`, except `--ghost`, which stays underlined on purpose) and
 wordmarks never underline on hover. Reduced motion: no lift, only the colours change.
 
+**Link underline rule.** The hover underline is for plain text links only: an `<a>` with no
+class, any link inside `.bt-prose`, and the opt-in `.bt-link` class for a text-style link
+that has to carry a class (e.g. `.ar-tile-link`, `.bt-lightbox-link`). Component links
+(`.bt-keyhole-link`, `.bt-card--door`, nav, tabs, buttons, wordmarks) never get the global
+underline; give them their own hover. `.bt-btn--ghost` keeps its deliberate always-on
+underline.
+
 **Top tabs: `.bt-seg-nav`** (B3). `<nav class="bt-seg-nav" aria-label="…">` > `a`
 (`aria-current="page"` on the current one): one dark rounded track; a lit pill with a small
 glowing purple tick glides to the hovered or focused tab and settles back on the current

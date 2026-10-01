@@ -51,7 +51,7 @@ export function openLightbox({ src, alt = "" }) {
   portal.innerHTML = `
     <div class="bt-lightbox" role="dialog" aria-modal="true" aria-label="${alt ? alt.replace(/"/g, "&quot;") : "Image"}">
       <div class="bt-lightbox-bar">
-        <a class="bt-lightbox-link" href="${src.replace(/"/g, "&quot;")}" target="_blank" rel="noopener">Open original</a>
+        <a class="bt-lightbox-link bt-link" href="${src.replace(/"/g, "&quot;")}" target="_blank" rel="noopener">Open original</a>
         <button type="button" class="bt-lightbox-close" aria-label="Close">${ICON_X}</button>
       </div>
       <div class="bt-lightbox-stage"><img class="bt-lightbox-img" src="${src.replace(/"/g, "&quot;")}" alt="${alt.replace(/"/g, "&quot;")}"></div>
