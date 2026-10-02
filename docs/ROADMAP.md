@@ -7,7 +7,7 @@ Last updated: 2026-09-30. Every planning chat reads this file first and proposes
 |---|---|---|---|
 | 1 | Boom Arcade (step 1: foundations + Tap the Splat v1 for real) | Done (step 1) | Arcade |
 | 2 | 404 page | In progress | 404 page |
-| 3 | Game Vault | Next | Games and streams |
+| 3 | Game Vault | In progress | Games and streams |
 | 4 | Schedule Planner | Later | Games and streams |
 | 5 | Live Beacon and Control Room | Later | Games and streams |
 | 6 | Stream Library | Later | Games and streams |
@@ -53,6 +53,7 @@ Kickoff: see the 404 kickoff message, or "Start workstream 2 (404 page) from doc
 ### 3. Game Vault
 Goal: every horror game on the channel at /games (boomertanger.games redirects here): cover art, tags, the owner's rating, how often and when it was last streamed, status (playing, finished, abandoned, wishlist), admin editing. Also design the stream object here (see above), since games and streams reference each other. Member game suggestions and votes are built with the Schedule Planner.
 Naming: Game Vault games are games Boomertanger streams; Boom Arcade games are games people play on the site. Keep the terms separate.
+Specs: `docs/specs/game-vault.md` and `docs/specs/stream-object.md` (both confirmed 2026-10-02); mockups `docs/design/mockups/game-vault-mockups.html` and `game-vault-round-2.html`. Parts 1 to 4 (docs, backend logic, wiring and staging deploy, scripts) come first; the site pages are part 5.
 Kickoff: "Start workstream 3 (Game Vault) from docs/ROADMAP.md."
 
 ### 4. Schedule Planner
