@@ -300,11 +300,13 @@ exports.recordBugScreenshot = onCall(async (request) => {
 // Cloudinary's Admin API treats "already gone" as success (not an error),
 // which is what we want: a resource that was somehow already deleted
 // shouldn't block clearing the Firestore side.
-async function cloudinaryDelete({ publicId, resourceType, cloudName, apiKey, apiSecret }) {
+// type: the delivery type the file was uploaded with ("upload" by default; the Game Vault's
+// pending cover suggestions are "authenticated").
+async function cloudinaryDelete({ publicId, resourceType, type = "upload", cloudName, apiKey, apiSecret }) {
   const basicAuth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
   const url =
     `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}` +
-    `/resources/${encodeURIComponent(resourceType)}/upload` +
+    `/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(type)}` +
     `?public_ids[]=${encodeURIComponent(publicId)}`;
 
   const res = await fetch(url, {
@@ -352,6 +354,7 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
   await cloudinaryDelete({
     publicId: asset.publicId,
     resourceType: asset.resourceType || "image",
+    type: asset.deliveryType || "upload",
     ...cloudinaryCreds,
   });
 
@@ -652,6 +655,10 @@ async function linkedAssetIds(db, collectionName, docId) {
 }
 
 exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) => {
+  // The Game Vault's kind is gated on the site's roles (admin or owner), not on admins/{uid};
+  // it lives in lib/vault/edit.js and has its own field rules.
+  if (request.data?.feature === "vaultGame") return vaultModule.editVaultGame(request);
+
   // 1. Verify admin.
   if (!(await isCallerAdmin(request.auth))) {
     throw new HttpsError("permission-denied", "Admins only.");
@@ -891,3 +898,18 @@ Object.assign(exports, require("./lib/arcade")());
 // Daily Twitch / YouTube (and, once connected, TikTok) counts for the footer's Follow
 // badges: the 05:00 Los Angeles schedule, an owner-only run-now callable, TikTok connect.
 Object.assign(exports, require("./lib/growth")({ adminLogEntry }));
+
+// ---------- Game Vault and the stream object (docs/specs/game-vault.md, docs/specs/stream-object.md) ----------
+// Vault callables and schedules (lib/vault) and the stats trigger for streams (lib/streams).
+// Covers go through the one Cloudinary delete path above (performAssetDeletion), and the
+// vaultGame kind of adminEditItem is handled in lib/vault/edit.js.
+const vaultModule = require("./lib/vault")({
+  adminLogEntry,
+  performAssetDeletion,
+  cloudinaryDelete,
+  recordAssetCreated,
+  cloudSecrets: CLOUDINARY_SECRETS,
+  cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+});
+Object.assign(exports, vaultModule.functions);
+Object.assign(exports, require("./lib/streams")({ adminLogEntry }));

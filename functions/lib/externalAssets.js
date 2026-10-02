@@ -25,6 +25,8 @@ const admin = require("firebase-admin");
  * @param {number} params.sizeBytes - the uploaded file's size, for storageUsage tracking.
  * @param {string} params.linkedCollection - the Firestore collection of the doc this asset belongs to.
  * @param {string} params.linkedDocId - that doc's id.
+ * @param {"upload"|"authenticated"} [params.deliveryType] - Cloudinary delivery type; defaults to "upload".
+ *   The safe-delete function needs it to delete a private (authenticated) file.
  * @param {string} params.linkedField - the field on that doc holding this asset's URL
  *   (e.g. "screenshotUrl"). REQUIRED — the safe-delete function reads this to know
  *   which field to clear when the asset is purged. Without it, deleting the asset
@@ -36,6 +38,7 @@ async function recordAssetCreated({
   url,
   publicId,
   resourceType = "image",
+  deliveryType = "upload",
   feature,
   sizeBytes,
   linkedCollection,
@@ -63,6 +66,7 @@ async function recordAssetCreated({
       url,
       publicId,
       resourceType,
+      ...(deliveryType !== "upload" ? { deliveryType } : {}),
       feature,
       sizeBytes,
       linkedDoc: {

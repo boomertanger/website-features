@@ -41,6 +41,14 @@
         { "fieldPath": "week.key", "order": "ASCENDING" },
         { "fieldPath": "week.secs", "order": "ASCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "gameIds", "arrayConfig": "CONTAINS" },
+        { "fieldPath": "actualStart", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
@@ -52,6 +60,24 @@
     },
     {
       "collectionGroup": "rateLimits",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "vaultCache",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "vaultLimits",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "vaultNotices",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []
