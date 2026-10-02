@@ -115,7 +115,7 @@ module.exports = function makeStore({ adminLogEntry }) {
       { streamCount: g.stats?.streamCount, minutes: g.stats?.minutes, lastStreamedAt: g.stats?.lastStreamedAt },
       { streamCount: g.legacy?.streamCount, minutes: g.legacy?.minutes, lastStreamedAt: g.legacy?.lastStreamedAt },
     );
-    return {
+    const c = {
       slug: id,
       title: g.title,
       sortTitle: g.sortTitle,
@@ -138,6 +138,8 @@ module.exports = function makeStore({ adminLogEntry }) {
       added: msOf(g.createdAt),
       statusAt: msOf(g.statusChangedAt),
     };
+    // Firestore refuses undefined; a field a game lacks becomes null in the card.
+    return Object.fromEntries(Object.entries(c).map(([k, v]) => [k, v === undefined ? null : v]));
   }
 
   /** Rebuilds the summary doc from every non-hidden game. Warns in the logs above 700 KB. */
