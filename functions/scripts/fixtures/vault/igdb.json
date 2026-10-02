@@ -1,0 +1,143 @@
+{
+  "_note": "Hand-built in IGDB's v4 response shape (game_type / game_status expanded, external_game_source as a number). NOT recorded from the live API: run scripts/vault-smoke.js to compare the real shape. The Steam fixtures next to this file ARE recorded.",
+  "games": [
+    {
+      "id": 1001, "name": "Granny: Chapter Two", "slug": "granny-chapter-two", "url": "https://www.igdb.com/games/granny-chapter-two",
+      "summary": "Escape the house in five days. Granny is listening.", "first_release_date": 1594080000,
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "alternative_names": [{ "name": "Granny 2" }, { "name": "Granny Chapter 2" }],
+      "cover": { "image_id": "co2granny" },
+      "themes": [{ "name": "Horror" }, { "name": "Survival" }, { "name": "Stealth" }],
+      "genres": [{ "name": "Puzzle" }, { "name": "Adventure" }],
+      "player_perspectives": [{ "name": "First person" }], "game_modes": [{ "name": "Single player" }],
+      "involved_companies": [{ "developer": true, "publisher": false, "company": { "name": "DVloper" } }, { "developer": false, "publisher": true, "company": { "name": "DVloper" } }],
+      "age_ratings": [{ "organization": 1, "rating_category": 9, "rating_content_descriptions": [{ "description": "Blood" }, { "description": "Fantasy Violence" }] }],
+      "external_games": [{ "uid": "1205040", "external_game_source": 1 }, { "uid": "512345", "external_game_source": 14 }],
+      "websites": [{ "url": "https://www.dvloper.com/", "type": 1 }]
+    },
+    {
+      "id": 1002, "name": "Silent Hill 2", "slug": "silent-hill-2", "url": "https://www.igdb.com/games/silent-hill-2",
+      "summary": "A letter from his dead wife draws James to Silent Hill.", "first_release_date": 1728604800,
+      "game_type": { "id": 8, "type": "Remake" }, "game_status": { "id": 0, "status": "Released" },
+      "alternative_names": [{ "name": "SH2" }, { "name": "Silent Hill 2 Remake" }],
+      "cover": { "image_id": "co2sh2" },
+      "themes": [{ "name": "Horror" }, { "name": "Survival" }],
+      "player_perspectives": [{ "name": "Third person" }], "game_modes": [{ "name": "Single player" }],
+      "involved_companies": [{ "developer": true, "publisher": false, "company": { "name": "Bloober Team" } }, { "developer": false, "publisher": true, "company": { "name": "Konami" } }],
+      "age_ratings": [{ "organization": 1, "rating_category": 11, "rating_content_descriptions": [{ "description": "Blood and Gore" }, { "description": "Intense Violence" }, { "description": "Sexual Themes" }] }],
+      "external_games": [{ "uid": "2124490", "external_game_source": 1 }]
+    },
+    {
+      "id": 1003, "name": "Silent Hill 2: Deluxe Edition", "slug": "silent-hill-2-deluxe-edition",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" }, "version_parent": 1002,
+      "themes": [{ "name": "Horror" }], "external_games": [{ "uid": "9999001", "external_game_source": 1 }]
+    },
+    {
+      "id": 1004, "name": "Silent Hill 2 Game of the Year Edition", "slug": "silent-hill-2-goty",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 1005, "name": "Lethal Company", "slug": "lethal-company", "summary": "A co-op horror about scavenging abandoned moons.", "first_release_date": 1700006400,
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 4, "status": "Early Access" },
+      "cover": { "image_id": "co2lethal" },
+      "themes": [{ "name": "Horror" }, { "name": "Science fiction" }],
+      "player_perspectives": [{ "name": "First person" }], "game_modes": [{ "name": "Multiplayer" }, { "name": "Co-operative" }],
+      "involved_companies": [{ "developer": true, "publisher": true, "company": { "name": "Zeekerss" } }],
+      "external_games": [{ "uid": "1966720", "external_game_source": 1 }]
+    },
+    {
+      "id": 2001, "name": "Resident Evil Village: Extra Content Shop All Access Voucher", "slug": "re-village-voucher",
+      "game_type": { "id": 1, "type": "DLC" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }], "external_games": [{ "uid": "1456361", "external_game_source": 1 }]
+    },
+    {
+      "id": 2002, "name": "Horror Soundtrack Bundle", "slug": "horror-soundtrack-bundle",
+      "game_type": { "id": 3, "type": "Bundle" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2003, "name": "Dead Space: Expansion Pack", "slug": "dead-space-expansion-pack",
+      "game_type": { "id": 2, "type": "Expansion" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2004, "name": "Amnesia Mod Collection", "slug": "amnesia-mod-collection",
+      "game_type": { "id": 5, "type": "Mod" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2005, "name": "Haunted Hollow: Standalone Chapter", "slug": "haunted-hollow-standalone",
+      "game_type": { "id": 4, "type": "Standalone Expansion" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2006, "name": "Dark Hours: Episode 1", "slug": "dark-hours-ep1",
+      "game_type": { "id": 6, "type": "Episode" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2007, "name": "Nightfall Remaster", "slug": "nightfall-remaster",
+      "game_type": { "id": 9, "type": "Remaster" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 2008, "name": "Crypt Keeper Update 1.5", "slug": "crypt-keeper-update",
+      "game_type": { "id": 14, "type": "Update" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 3001, "name": "Midnight Desire", "slug": "midnight-desire",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }, { "name": "Erotic" }]
+    },
+    {
+      "id": 3002, "name": "Hell Carnage", "slug": "hell-carnage", "summary": "Rip and tear through a gory hellscape.",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }, { "name": "Action" }],
+      "age_ratings": [{ "organization": 1, "rating_category": 12, "rating_content_descriptions": [{ "description": "Blood and Gore" }, { "description": "Intense Violence" }, { "description": "Strong Language" }] }]
+    },
+    {
+      "id": 3003, "name": "Crimson Room", "slug": "crimson-room",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }],
+      "age_ratings": [{ "organization": 1, "rating_category": 13, "rating_content_descriptions": [{ "description": "Strong Sexual Content" }, { "description": "Nudity" }] }]
+    },
+    {
+      "id": 3004, "name": "Haunted Shithouse", "slug": "haunted-shithouse",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 3005, "name": "Velvet Kiss", "slug": "velvet-kiss",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }],
+      "age_ratings": [{ "organization": 2, "rating_category": 3, "rating_content_descriptions": [{ "description": "Sex" }] }]
+    },
+    {
+      "id": 3006, "name": "Dating Dread", "slug": "dating-dread",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Horror" }],
+      "age_ratings": [{ "organization": 1, "rating_category": 11, "rating_content_descriptions": [{ "description": "Sexual Content" }, { "description": "Sexual Themes" }, { "description": "Blood and Gore" }] }]
+    },
+    {
+      "id": 4001, "name": "Cozy Farm Valley", "slug": "cozy-farm-valley",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Fantasy" }, { "name": "Simulation" }], "cover": { "image_id": "co2farm" }
+    },
+    {
+      "id": 5001, "name": "Whispers Below", "slug": "whispers-below",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 6, "status": "Cancelled" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 5002, "name": "Project Gloom", "slug": "project-gloom",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 7, "status": "Rumored" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 5003, "name": "The Long Dark Hallway", "slug": "the-long-dark-hallway", "first_release_date": 1893456000,
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
+      "id": 6001, "name": "Elden Ring", "slug": "elden-ring",
+      "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
+      "themes": [{ "name": "Fantasy" }, { "name": "Action" }], "cover": { "image_id": "co2elden" },
+      "external_games": [{ "uid": "1245620", "external_game_source": 1 }]
+    }
+  ],
+  "timeToBeat": [
+    { "game_id": 1001, "hastily": 7200, "normally": 18000 },
+    { "game_id": 1002, "hastily": 36000, "normally": 54000 }
+  ]
+}

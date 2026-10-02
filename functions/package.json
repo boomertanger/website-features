@@ -6,7 +6,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "check": "node scripts/check-accounts.js && node scripts/check-arcade.js && node scripts/check-growth.js"
+    "check": "node scripts/check-accounts.js && node scripts/check-arcade.js && node scripts/check-growth.js && node scripts/check-vault.js && node scripts/check-vault-search.js && node scripts/check-streams.js"
   },
   "dependencies": {
     "firebase-admin": "^12.6.0",
