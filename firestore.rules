@@ -543,7 +543,7 @@ service cloud.firestore {
       // only once the season is live or ended AND the node is revealed (the scheduler sets
       // revealed at its unlock time), so drafts and future chapters never reach a browser;
       // queries must filter on revealed == true. Progress and streaks: their member only.
-      // Standings, boards and activity types: public. Ideas, events and hunts (the medals and
+      // Standings, boards and activity types: public; ideas: mods and admins. Events and hunts (the medals and
       // where they hide) are closed: pages get a hunt's medals for one path from factoryHuntMedals.
       match /factory/{rootId} {
         allow read, write: if false;
@@ -595,8 +595,10 @@ service cloud.firestore {
           allow read: if request.auth != null && request.auth.uid == uid;
           allow write: if false;
         }
+        // The idea library: mods and admins only (custom claims); admins edit through factoryIdeaSave.
         match /ideas/{ideaId} {
-          allow read, write: if false;
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
         }
         match /events/{key} {
           allow read, write: if false;

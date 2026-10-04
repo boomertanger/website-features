@@ -2,7 +2,7 @@
 // emulator (scripts/check-factory-engine.js). Supports what lib/factory uses: doc / collection
 // paths, get, create (fails if it exists), set (with merge), update (dotted keys), delete,
 // where "==" / "<" / ">" / "in", orderBy, limit, count(), getAll, runTransaction (run straight
-// through), and the FieldValue sentinels increment, serverTimestamp and delete.
+// through), and the FieldValue sentinels increment, serverTimestamp, delete and arrayUnion.
 const admin = require("firebase-admin");
 
 const clone = (v) => (v && typeof v === "object" && !isSentinel(v) && !(v instanceof admin.firestore.Timestamp) ? (Array.isArray(v) ? v.map(clone) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clone(x)]))) : v);
@@ -12,6 +12,7 @@ function sentinelKind(v) {
   if (/Increment/.test(n)) return "increment";
   if (/ServerTimestamp/.test(n)) return "serverTimestamp";
   if (/Delete/.test(n)) return "delete";
+  if (/ArrayUnion/.test(n)) return "arrayUnion";
   return n;
 }
 const operand = (v) => v.operand ?? v._operand ?? v.incrementBy ?? Object.values(v).find((x) => typeof x === "number");
@@ -22,6 +23,7 @@ function applyValue(cur, v) {
   if (k === "increment") return (typeof cur === "number" ? cur : 0) + operand(v);
   if (k === "serverTimestamp") return admin.firestore.Timestamp.now();
   if (k === "delete") return undefined;
+  if (k === "arrayUnion") return [...new Set([...(Array.isArray(cur) ? cur : []), ...v.elements])];
   throw new Error(`fake-firestore: unsupported sentinel ${k}`);
 }
 function merge(target, patch) {
@@ -73,6 +75,7 @@ function makeDb() {
     orderBy(f, dir = "asc") { return new Query(this.path, this.filters, [f, dir], this.lim); }
     limit(n) { return new Query(this.path, this.filters, this.order, n); }
     select() { return this; }
+    async add(d) { const r = this.doc(); await r.set(d); return r; }
     _docs() {
       const depth = this.path.split("/").length + 1;
       let out = [...store.entries()].filter(([p]) => p.startsWith(`${this.path}/`) && p.split("/").length === depth).map(([p, d]) => new Snap(new DocRef(p), d));

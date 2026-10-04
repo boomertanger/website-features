@@ -921,5 +921,12 @@ Object.assign(exports, require("./lib/rewards")({ adminLogEntry }));
 
 // ---------- Fun Factory (docs/specs/fun-factory.md) ----------
 // Seasons, campaigns and activities. Features record actions through lib/factory/record.js
-// (recordFactoryEvent, internal); these are the member callables (check-in, visits, medal hunts).
-Object.assign(exports, require("./lib/factory")());
+// (recordFactoryEvent, internal); these are the member callables (check-in, visits, medal hunts),
+// the scheduler, and the builder's callables (season art goes through the Cloudinary path above).
+Object.assign(exports, require("./lib/factory")({
+  adminLogEntry,
+  recordAssetCreated,
+  performAssetDeletion,
+  cloudSecrets: CLOUDINARY_SECRETS,
+  cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+}));

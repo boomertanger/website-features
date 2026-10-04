@@ -164,5 +164,67 @@ for (const a of data.activities) {
   if (a.params?.action) assert.ok(types.get(a.type).actions.includes(a.params.action), `${a.title}: action ${a.params.action}`);
 }
 assert.ok(!data.activities.some((a) => a.type === "vault" && /rate/i.test(a.instructions)), "no vault idea asks to rate");
+// The idea seed gives every idea a stable, unique id.
+const { ideasFrom } = require("./seed-factory-ideas");
+const seeded = ideasFrom(data);
+assert.equal(new Set(seeded.map(([id]) => id)).size, seeded.length, "unique idea ids");
+assert.ok(seeded.every(([id]) => /^[a-z]+-[a-z0-9-]+$/.test(id)), "idea ids are slugs");
 
-console.log("check-factory: ok");
+// ---------- builder stage checks (lib/factory/checks.js) and the site's copy ----------
+const C = require("../lib/factory/checks");
+const W = 7 * 86400000;
+const s0 = Date.parse("2027-01-11T06:00:00Z");   // Monday 00:00 CST
+function draft(over = {}) {
+  const chapters = [0, 3, 6, 10].map((wk, i) => ({ id: `c${i + 1}`, order: i + 1, name: `Chapter ${i + 1}`, unlockAt: s0 + wk * W }));
+  const campaigns = [], activities = [];
+  for (const ch of chapters) {
+    campaigns.push({ id: `${ch.id}-d`, chapterId: ch.id, name: "Daily", cadence: "daily", audience: "all" }, { id: `${ch.id}-w`, chapterId: ch.id, name: "Weekly", cadence: "weekly", audience: "all" }, { id: `${ch.id}-s`, chapterId: ch.id, name: "Story", cadence: "story", audience: "all" });
+    activities.push({ id: `${ch.id}-d1`, campaignId: `${ch.id}-d`, title: "Clock in", typeId: "checkin", target: 1, xp: 10, repeat: "daily" });
+    activities.push({ id: `${ch.id}-w1`, campaignId: `${ch.id}-w`, title: "Splat run", typeId: "arcade", params: { action: "finish" }, target: 3, xp: 60, repeat: "weekly" });
+    activities.push({ id: `${ch.id}-s1`, campaignId: `${ch.id}-s`, title: `Story ${ch.id}`, typeId: "visit", target: 3, xp: 150 });
+  }
+  campaigns.push({ id: "m", chapterId: "c1", name: "Milestones", cadence: "milestone", audience: "all" });
+  activities.push({ id: "m1", campaignId: "m", title: "Ten check-ins", typeId: "checkin", target: 10, xp: 250 });
+  campaigns.push({ id: "crew", chapterId: "c1", name: "Mod patrol", cadence: "weekly", audience: "crew" });
+  activities.push({ id: "crew1", campaignId: "crew", title: "Patrol", typeId: "badges", target: 1, xp: 500, repeat: "weekly" });
+  return { season: { id: "s2", name: "Vaultbreakers", pitch: "Crack it open.", art: { url: "https://x/y.png" }, startsAt: s0, endsAt: s0 + 13 * W, badgeId: "season-s2", status: "draft" }, chapters, campaigns, activities, ...over };
+}
+const TYPES = { checkin: true, visit: true, medals: true, profile: true, arcade: true, badges: true, vault: true, ratings: false };
+const ctx = { types: TYPES, others: [{ id: "s1", name: "Dark Signal", status: "ended", startsAt: s0 - 14 * W, endsAt: s0 - W }], now: s0 - 10 * W };
+let r = C.stageChecks(draft(), ctx);
+// Budget: daily 10 x 91 days, weekly 60 x 13 weeks, 4 x 150 story, 250 milestone; the crew campaign doesn't count.
+assert.deepEqual(r.budget.byCadence, { daily: 910, weekly: 780, story: 600, milestone: 250, event: 0 });
+assert.equal(r.budget.total, 2540);
+assert.equal(r.stages.find((x) => x.key === "rewards").checks[0].state, "warn");   // below 3,000: a warning...
+assert.equal(r.readyToSubmit, true);                                                 // ...that doesn't block
+assert.deepEqual(r.stages.map((x) => x.state), ["done", "done", "done", "done", "done", "done", "now", "todo"]);
+const T = (t) => { const c = draft(); t(c); return C.stageChecks(c, ctx); };
+const stage = (res, k) => res.stages.find((x) => x.key === k);
+assert.equal(stage(T((c) => { c.season.art = null; }), "theme").ok, false);
+assert.equal(stage(T((c) => { c.season.name = "dark signal"; }), "theme").ok, false);   // used before, any case
+assert.equal(stage(T((c) => { c.chapters = c.chapters.slice(0, 1); c.campaigns = c.campaigns.filter((x) => x.chapterId === "c1"); }), "chapters").ok, false);
+assert.equal(stage(T((c) => { c.chapters[0].unlockAt += 86400000; }), "chapters").ok, false);   // a gap at the start
+assert.equal(stage(T((c) => { c.chapters[2].name = " "; }), "chapters").ok, false);
+assert.equal(stage(T((c) => { c.campaigns = c.campaigns.filter((x) => x.id !== "c3-s"); c.activities = c.activities.filter((a) => a.campaignId !== "c3-s"); }), "campaigns").ok, false);
+assert.equal(stage(T((c) => { for (let i = 0; i < 4; i++) c.campaigns.push({ id: `x${i}`, chapterId: "c2", name: `X${i}`, cadence: "event", audience: "all" }); }), "campaigns").ok, false);   // 7 in a chapter
+assert.equal(stage(T((c) => { c.activities = c.activities.filter((a) => a.id !== "c2-w1"); }), "activities").ok, false);
+assert.equal(stage(T((c) => { c.activities[0].typeId = "ratings"; }), "activities").ok, false);
+assert.equal(stage(T((c) => { c.activities.push({ id: "dup", campaignId: "c1-d", title: "Clock in", typeId: "visit", target: 2, xp: 5 }); }), "activities").ok, false);
+assert.equal(stage(T((c) => { c.season.badgeId = null; }), "rewards").ok, false);
+assert.equal(stage(T((c) => { c.activities.filter((a) => a.repeat === "weekly" && a.id !== "crew1").forEach((a) => { a.xp = 130; }); }), "rewards").checks[0].state, "ok");   // weekly 130 x 13 brings it to 3,450
+assert.equal(stage(T((c) => { c.season.startsAt = null; }), "schedule").ok, false);
+const clashCtx = { ...ctx, others: [...ctx.others, { id: "s3", name: "Other", status: "scheduled", startsAt: s0 + 12 * W, endsAt: s0 + 20 * W }] };
+assert.equal(stage(C.stageChecks(draft(), clashCtx), "schedule").ok, false);
+assert.equal(stage(C.stageChecks(draft(), { ...clashCtx, others: [{ ...clashCtx.others[1], status: "draft" }] }), "schedule").ok, true);   // drafts don't block
+assert.equal(stage(T((c) => { c.campaigns.push({ id: "ev", chapterId: "c2", name: "Full moon", cadence: "event", audience: "all", opensAt: s0 + 4 * W, closesAt: s0 + 7 * W }); c.activities.push({ id: "ev1", campaignId: "ev", title: "Moon", typeId: "medals", target: 1, xp: 100 }); }), "schedule").ok, false);   // past its chapter's end
+assert.equal(stage(T((c) => { c.campaigns.push({ id: "ev", chapterId: "c2", name: "Full moon", cadence: "event", audience: "all", opensAt: s0 + 4 * W, closesAt: s0 + 4 * W + 3 * 86400000 }); c.activities.push({ id: "ev1", campaignId: "ev", title: "Moon", typeId: "medals", target: 1, xp: 100 }); }), "schedule").ok, true);
+assert.equal(T((c) => { c.season.status = "live"; }).stages.find((x) => x.key === "live").state, "done");
+
+// The site's copy gives the same answers.
+import(require("url").pathToFileURL(path.join(__dirname, "../../site/src/lib/factory-checks.js")).href).then((S) => {
+  const cases = [draft(), ...[(c) => { c.season.art = null; }, (c) => { c.chapters[0].unlockAt += 86400000; }, (c) => { c.activities.filter((a) => a.repeat === "weekly" && a.id !== "crew1").forEach((a) => { a.xp = 130; }); }, (c) => { c.season.status = "review"; }, (c) => { c.season.status = "live"; }].map((t) => { const c = draft(); t(c); return c; })];
+  for (const c of cases) for (const x of [ctx, clashCtx]) assert.deepEqual(S.stageChecks(c, x), C.stageChecks(c, x), "site copy of the stage checks");
+  assert.deepEqual(S.STAGES, C.STAGES);
+  assert.deepEqual(S.BUDGET, C.BUDGET);
+  console.log("check-factory: ok");
+}).catch((e) => { console.error(e); process.exit(1); });

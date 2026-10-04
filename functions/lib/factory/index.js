@@ -8,7 +8,8 @@
 //   factoryClaimMedal({ medalId, token })   one claim per member per medal
 //   factoryStreakSweep                00:10 Central: missed check-ins spend streak savers, or break the streak
 //   factoryTick                       every 5 minutes: go live, reveal, roll the boards, end the season (./season.js)
-// Every callable needs a signed-up member and is rate-limited per hour (rateLimits/{key}, the
+// The builder's callables (mods and admins) are in ./builder.js and come back from here too.
+// Every member callable needs a signed-up member and is rate-limited per hour (rateLimits/{key}, the
 // Arcade's pattern). Callable errors carry details.reason, like the other features.
 const crypto = require("crypto");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
@@ -18,6 +19,7 @@ const L = require("./logic");
 const { makeFactory } = require("./record");
 const { makeStreaks } = require("./streaks");
 const { makeSeason } = require("./season");
+const builder = require("./builder");
 
 const SITE_ID = "boomertanger";
 const LIMITS = { checkin: 30, visit: 120, hunt: 240, claim: 60 };   // per member per hour
@@ -26,7 +28,7 @@ const fail = (code, message, reason, extra = {}) => new HttpsError(code, message
 const sha256 = (s) => crypto.createHash("sha256").update(s).digest("hex");
 const hourKey = (now) => new Date(now).toISOString().slice(0, 13).replace(/\D/g, "");
 
-module.exports = function factory() {
+module.exports = function factory(deps = {}) {
   const db = admin.firestore();
   const { Timestamp } = admin.firestore;
   const F = makeFactory({ db });
@@ -166,7 +168,7 @@ module.exports = function factory() {
     if (log.length) console.log(`factoryTick: ${log.join("; ")}`);
   });
 
-  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal, factoryStreakSweep, factoryTick };
+  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal, factoryStreakSweep, factoryTick, ...builder(deps) };
 };
 
 module.exports.SITE_ID = SITE_ID;

@@ -17,6 +17,7 @@
 //        grantBadge if the activity has a badgeId; adds the same XP to standings/{uid}.seasonXp
 //        (never for admins); a campaign whose activities are all done pays its bonus once per period.
 //     5. respects the season's optional dailyXpCap (factory XP per Central day).
+//     Activities whose type an admin switched off don't count.
 //   Never throws for a member's action: problems are logged and the feature carries on.
 //   Returns { counted, completed: [activityIds], reason }.
 const admin = require("firebase-admin");
@@ -70,14 +71,17 @@ function makeFactory({ db = admin.firestore(), grant = null } = {}) {
     let value = null;
     if (!snap.empty) {
       const s = snap.docs[0];
-      const [campaigns, activities] = await Promise.all([
+      const [campaigns, activities, types] = await Promise.all([
         R.campaigns(s.id).where("revealed", "==", true).get(),
         R.activities(s.id).where("revealed", "==", true).get(),
+        R.types.get(),
       ]);
+      // A type an admin switched off stops counting (factoryTypeToggle); earned XP stays.
+      const off = new Set(types.docs.filter((d) => d.get("enabled") === false).map((d) => d.id));
       value = {
         season: { id: s.id, ...s.data() },
         campaigns: new Map(campaigns.docs.map((d) => [d.id, { id: d.id, ...d.data() }])),
-        activities: activities.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => a.enabled !== false),
+        activities: activities.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => a.enabled !== false && !off.has(a.typeId)),
       };
     }
     cache = { at: now, value };
