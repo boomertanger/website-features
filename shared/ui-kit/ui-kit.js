@@ -21,6 +21,7 @@ import { initCmd, litText } from "../ui/cmd.js";
 import { initShelves } from "../ui/shelf.js";
 import { timelineHtml, initTimelines } from "../ui/timeline.js";
 import { initDeck, flyOut } from "../ui/deck.js";
+import { medalHtml, RARITY } from "../ui/medal.js";
 
 const KIT_VERSION = "dev";
 
@@ -781,7 +782,8 @@ function pageHtml() {
   </section>
 ${navHtml()}
 ${arcadeHtml()}
-${vaultKitHtml()}`;
+${vaultKitHtml()}
+${trophyKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -1070,6 +1072,25 @@ function init() {
     const row = e.target.closest?.("[data-row]");
     if (row && e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(state.rows.find((x) => x.id === row.dataset.row)); }
   });
+}
+
+// ---------- Trophy Room kit pieces (docs/specs/rewards.md §12) ----------
+function trophyKitHtml() {
+  const faces = ["🕯", "💬", "🎃", "🐾", "👁"];
+  const rarities = [1, 2, 3, 4, 5].map((r) => `<div class="kit-stack" style="align-items:center;gap:8px">${medalHtml({ emoji: faces[r - 1], rarity: r, label: `${RARITY[r].name} badge` })}<span class="bt-badge bt-badge--${RARITY[r].tone}">${levelBars(r, 5)}${RARITY[r].name}</span></div>`).join("");
+  return `
+  <section class="kit-section" id="kit-trophy-room">
+    <h2 class="kit-h">Trophy Room</h2>
+    <p class="kit-p">The Trophy Room's pieces (<span class="kit-code">docs/specs/rewards.md</span>, design-system.md §8j). A badge is a coin: the ring is its rarity, the face its art. Rarity uses the level ladder plus gray, never purple or green. Hover a medal: a shine sweeps across it. Reduced motion: no spin, no shine.</p>
+    <p class="kit-sub">Medal: .bt-medal with data-rarity 1 to 5 (Common gray, Uncommon blue, Rare gold notched, Epic pink with a glow and an inner ring, Legendary red/ember with a spinning ring), each with its rarity badge: .bt-badge + levelBars(n, 5), the five-step .bt-level--5</p>
+    <div class="kit-row" style="gap:28px;align-items:flex-end">${rarities}</div>
+    <p class="kit-sub">Secret (data-secret: a dark dashed silhouette until it's earned), and commissioned art (img.bt-medal-art on the face; the emoji stays as the fallback). shared/ui/medal.js medalHtml({ emoji, art, rarity, size, secret, label })</p>
+    <div class="kit-row" style="gap:24px;align-items:center">${medalHtml({ rarity: 5, secret: true, label: "Secret badge" })}${medalHtml({ rarity: 3, secret: true, label: "Secret badge" })}${medalHtml({ emoji: "🗝", art: KIT_MASCOT, rarity: 4, label: "Badge with art" })}</div>
+    <p class="kit-sub">Sizes: --bt-medal-size (here 28px, 48px, 72px default and 96px)</p>
+    <div class="kit-row" style="gap:24px;align-items:center">${[28, 48, 0, 96].map((s) => medalHtml({ emoji: "👁", rarity: 5, size: s || undefined })).join("")}</div>
+    <p class="kit-sub">Signal bars on their own: .bt-level--5, levels 1 to 5</p>
+    <div class="kit-row" style="gap:18px">${[1, 2, 3, 4, 5].map((n) => `<span style="color:var(--bt-text)">${levelBars(n, 5)}</span>`).join("")}</div>
+  </section>`;
 }
 
 // ---------- Game Vault kit pieces (docs/specs/game-vault.md §9) ----------

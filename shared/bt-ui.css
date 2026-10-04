@@ -383,6 +383,46 @@
 .bt-root:not(#_) .bt-level i:nth-child(3) { height: 9px; }
 .bt-root:not(#_) .bt-level i:nth-child(4) { height: 11px; }
 .bt-root:not(#_) .bt-level i.is-on { opacity: 1; }
+/* .bt-level--5: five steps (the Trophy Room's rarity, Common to Legendary); levelBars(n, 5) adds it. */
+.bt-root:not(#_) .bt-level--5 i:nth-child(1) { height: 3px; }
+.bt-root:not(#_) .bt-level--5 i:nth-child(2) { height: 5px; }
+.bt-root:not(#_) .bt-level--5 i:nth-child(3) { height: 7px; }
+.bt-root:not(#_) .bt-level--5 i:nth-child(4) { height: 9px; }
+.bt-root:not(#_) .bt-level--5 i:nth-child(5) { height: 11px; }
+
+/* ---- Medal: .bt-medal (the Trophy Room's badges; docs/specs/rewards.md, design-system.md §8j) ----
+   A coin: .bt-medal-ring (the rarity) + .bt-medal-face (the art). Size: --bt-medal-size (72px).
+   data-rarity 1-5: 1 gray, 2 blue, 3 gold notched, 4 pink with a glow and an inner ring,
+   5 red/ember with an animated conic ring and a glow. data-secret: a dark dashed silhouette with
+   "?" until it's earned. The face holds an emoji, or commissioned art as img.bt-medal-art (the
+   emoji stays as the fallback). The shine sweeps across the face on hover (of the medal, or of a
+   .bt-medal-host around it). Reduced motion: no spin, no shine. shared/ui/medal.js medalHtml(). */
+@property --bt-medal-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.bt-root:not(#_) .bt-medal { --bt-medal-size: 72px; --rc: var(--bt-gray); position: relative; display: inline-block; flex: none; width: var(--bt-medal-size); height: var(--bt-medal-size); }
+.bt-root:not(#_) .bt-medal[data-rarity="1"] { --rc: color-mix(in srgb, var(--bt-gray) 75%, var(--bt-bg)); }
+.bt-root:not(#_) .bt-medal[data-rarity="2"] { --rc: var(--bt-blue); }
+.bt-root:not(#_) .bt-medal[data-rarity="3"] { --rc: var(--bt-gold); }
+.bt-root:not(#_) .bt-medal[data-rarity="4"] { --rc: var(--bt-pink); filter: drop-shadow(0 0 calc(var(--bt-medal-size) * 0.12) color-mix(in srgb, var(--bt-pink) 45%, transparent)); }
+.bt-root:not(#_) .bt-medal[data-rarity="5"] { --rc: var(--bt-red); filter: drop-shadow(0 0 calc(var(--bt-medal-size) * 0.16) color-mix(in srgb, var(--bt-rank-3) 55%, transparent)); }
+.bt-root:not(#_) :is(.bt-medal-ring, .bt-medal-face) { position: absolute; border-radius: 50%; }
+.bt-root:not(#_) .bt-medal-ring { inset: 0; background: var(--rc); }
+.bt-root:not(#_) .bt-medal[data-rarity="3"] .bt-medal-ring { background: repeating-conic-gradient(var(--rc) 0 9deg, color-mix(in srgb, var(--rc) 55%, var(--bt-bg)) 9deg 15deg); }
+.bt-root:not(#_) .bt-medal[data-rarity="5"] .bt-medal-ring { background: conic-gradient(from var(--bt-medal-a), var(--bt-red), var(--bt-rank-3), var(--bt-title), var(--bt-rank-3), var(--bt-red)); animation: bt-medal-spin 4s linear infinite; }
+@keyframes bt-medal-spin { to { --bt-medal-a: 360deg; } }
+.bt-root:not(#_) .bt-medal-face { inset: calc(var(--bt-medal-size) * 0.075); display: grid; place-items: center; overflow: hidden; background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--rc) 50%, var(--bt-surface-2)), color-mix(in srgb, var(--rc) 10%, var(--bt-bg)) 74%); font-size: calc(var(--bt-medal-size) * 0.42); line-height: 1; }
+.bt-root:not(#_) .bt-medal[data-rarity="4"] .bt-medal-face, .bt-root:not(#_) .bt-medal[data-rarity="5"] .bt-medal-face { box-shadow: inset 0 0 0 calc(var(--bt-medal-size) * 0.03) var(--bt-bg), inset 0 0 0 calc(var(--bt-medal-size) * 0.055) color-mix(in srgb, var(--rc) 80%, transparent); }
+.bt-root:not(#_) .bt-medal-art { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; object-fit: cover; }
+.bt-root:not(#_) .bt-medal-face::after { content: ""; position: absolute; inset: -20%; z-index: 2; background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--bt-logo-shine) 50%, transparent) 50%, transparent 60%); transform: translateX(-100%); pointer-events: none; }
+.bt-root:not(#_) :is(.bt-medal:hover, .bt-medal-host:is(:hover, :focus-visible)) .bt-medal-face::after { animation: bt-medal-shine 0.8s ease-out; }
+@keyframes bt-medal-shine { to { transform: translateX(100%); } }
+.bt-root:not(#_) .bt-medal[data-secret] { --rc: var(--bt-border-2); filter: none; }
+.bt-root:not(#_) .bt-medal[data-secret] .bt-medal-ring { background: repeating-conic-gradient(var(--bt-border-2) 0 6deg, transparent 6deg 12deg); animation: none; }
+.bt-root:not(#_) .bt-medal[data-secret] .bt-medal-face { background: radial-gradient(circle at 50% 40%, var(--bt-surface-2), var(--bt-bg) 75%); box-shadow: none; color: var(--bt-text-faint); font-size: calc(var(--bt-medal-size) * 0.36); font-weight: 900; }
+.bt-root:not(#_) .bt-medal[data-secret] .bt-medal-art { display: none; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-medal[data-rarity="5"] .bt-medal-ring { animation: none; }
+  .bt-root:not(#_) :is(.bt-medal:hover, .bt-medal-host:is(:hover, :focus-visible)) .bt-medal-face::after { animation: none; }
+}
 
 .bt-root:not(#_) .bt-count {
   display: inline-flex;
