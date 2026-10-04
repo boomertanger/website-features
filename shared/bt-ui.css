@@ -487,6 +487,116 @@
   .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-face--back { opacity: 1; }
 }
 
+/* ---- Stepper, drawer and lanes (the Fun Factory builder, docs/specs/fun-factory.md §7) ----
+   .bt-stepper    stages as machines on an assembly line (shared/ui/stepper.js stepperHtml): every
+                  machine is a button.bt-stepper-step (.bt-stepper-mach icon, .bt-stepper-n "Stage 3",
+                  b name, .bt-stepper-s status line); a conveyor (.bt-stepper-belt) runs under them, gold
+                  (.bt-stepper-done) up to the current stage, where a crate (.bt-stepper-crate) sits. States:
+                  .is-done (gold lamp) .is-now (blinking lamp) .is-todo, and .is-open (the stage on screen).
+                  --bt-stepper-n (stages) and --bt-stepper-at (the current index) place the belt and crate.
+                  Phones: a sideways scroll strip (keepOpenInView keeps the open stage in sight).
+                  --rail: a vertical list with progress rings (.bt-stepper-ring --v 0-100), for side panels.
+   .bt-drawer     a sticky side panel of ideas: .bt-drawer-head (b, small, tools), .bt-drawer-list
+                  (scrolls) of .bt-drawer-item (b, button, p, .bt-drawer-meta; .is-waiting, .is-used),
+                  .bt-drawer-tip, .bt-drawer-foot. .bt-drawer-layout puts content and drawer side by side;
+                  below 1024px the drawer stacks under the content.
+   .bt-lanes      week columns with labelled lanes: .bt-lanes-row (.bt-lanes-lab + bars), the first
+                  row .bt-lanes-row--weeks with .bt-lanes-wk headers. Bars: .bt-lanes-bar with
+                  --c (colour) and grid-column "start / span len" (start counts the label column as 1).
+                  --bt-lanes-weeks sets the columns. Scrolls sideways when narrow.
+   (.bt-lanes, not .bt-timeline: that name is the Vault's dots-on-a-line timeline.)
+   Reduced motion: the belt stands still, the lamp doesn't blink, the crate jumps. */
+.bt-root:not(#_) .bt-stepper { --bt-stepper-n: 8; --bt-stepper-at: 0; position: relative; overflow-x: auto; padding: 4px 2px 6px; scrollbar-width: thin; }
+.bt-root:not(#_) .bt-stepper-in { position: relative; min-width: calc(var(--bt-stepper-n) * 100px); }
+.bt-root:not(#_) .bt-stepper-list { position: relative; display: grid; grid-template-columns: repeat(var(--bt-stepper-n), minmax(0, 1fr)); gap: 8px; margin: 0; padding: 0 0 4px; list-style: none; }
+.bt-root:not(#_) .bt-stepper-belt, .bt-root:not(#_) .bt-stepper-done { position: absolute; left: calc(50% / var(--bt-stepper-n)); top: 79px; height: 10px; border-radius: 6px; }
+.bt-root:not(#_) .bt-stepper-belt { right: calc(50% / var(--bt-stepper-n)); background: repeating-linear-gradient(90deg, var(--bt-border-2) 0 10px, var(--bt-surface-2) 10px 20px); box-shadow: inset 0 0 0 1px var(--bt-border); animation: bt-stepper-belt 1.2s linear infinite; }
+.bt-root:not(#_) .bt-stepper-done { width: calc(var(--bt-stepper-at) * 100% / var(--bt-stepper-n)); background: repeating-linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.9) 0 10px, rgba(var(--bt-gold-rgb), 0.55) 10px 20px); box-shadow: 0 0 10px rgba(var(--bt-gold-rgb), 0.45); }
+@keyframes bt-stepper-belt { to { background-position: 20px 0; } }
+.bt-root:not(#_) .bt-stepper-crate { position: absolute; z-index: 2; top: 58px; left: calc((var(--bt-stepper-at) + 0.5) * 100% / var(--bt-stepper-n)); min-width: 26px; height: 22px; margin-left: -13px; padding: 0 4px; display: grid; place-items: center; box-sizing: border-box; border-radius: 4px; background: linear-gradient(180deg, var(--bt-title), var(--bt-rank-3)); box-shadow: 0 4px 10px var(--bt-lift-shadow), inset 0 0 0 1px color-mix(in srgb, var(--bt-bg) 30%, transparent); color: var(--bt-bg); font-size: 9px; font-weight: 900; transition: left 0.6s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bt-stepper-step { position: relative; z-index: 1; width: 100%; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; }
+.bt-root:not(#_) .bt-stepper-step:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; border-radius: var(--bt-radius-md); }
+.bt-root:not(#_) .bt-stepper-mach { position: relative; width: 74px; height: 74px; display: grid; place-items: center; border-radius: 16px 16px 8px 8px; background: linear-gradient(180deg, var(--bt-surface-2), var(--bt-bg)); box-shadow: inset 0 0 0 1px var(--bt-border-2), 0 8px 18px var(--bt-lift-shadow); font-size: 28px; transition: transform 0.25s, box-shadow 0.25s; }
+.bt-root:not(#_) .bt-stepper-mach::before { content: ""; position: absolute; top: 7px; right: 8px; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-border-2); }
+.bt-root:not(#_) .bt-stepper-step.is-done .bt-stepper-mach { box-shadow: inset 0 0 0 1px rgba(var(--bt-gold-rgb), 0.5), 0 8px 18px var(--bt-lift-shadow); }
+.bt-root:not(#_) .bt-stepper-step.is-done .bt-stepper-mach::before { background: var(--bt-title); box-shadow: 0 0 6px var(--bt-title); }
+.bt-root:not(#_) .bt-stepper-step.is-now .bt-stepper-mach { box-shadow: inset 0 0 0 2px var(--bt-lamp), 0 0 24px rgba(var(--bt-lamp-rgb), 0.3); transform: translateY(-3px); }
+.bt-root:not(#_) .bt-stepper-step.is-now .bt-stepper-mach::before { background: var(--bt-lamp); box-shadow: 0 0 8px var(--bt-lamp); animation: bt-stepper-blink 1.2s steps(1, end) infinite; }
+@keyframes bt-stepper-blink { 50% { opacity: 0.2; } }
+.bt-root:not(#_) .bt-stepper-step.is-todo .bt-stepper-mach { opacity: 0.6; }
+.bt-root:not(#_) .bt-stepper-step.is-open .bt-stepper-mach { outline: 2px solid var(--bt-primary); outline-offset: 3px; }
+.bt-root:not(#_) .bt-stepper-step:hover .bt-stepper-mach { transform: translateY(-3px); }
+.bt-root:not(#_) .bt-stepper-ring { display: none; }
+.bt-root:not(#_) .bt-stepper-n { margin-top: 22px; color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-stepper-step > b { font-size: var(--bt-text-md); font-weight: 800; }
+.bt-root:not(#_) .bt-stepper-s { color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-stepper-step.is-done .bt-stepper-s { color: var(--bt-title); }
+.bt-root:not(#_) .bt-stepper-step.is-now .bt-stepper-s { color: var(--bt-lamp); }
+/* The rail: a vertical list with progress rings */
+.bt-root:not(#_) .bt-stepper--rail { overflow: visible; padding: 8px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-in { min-width: 0; }
+.bt-root:not(#_) .bt-stepper--rail :is(.bt-stepper-belt, .bt-stepper-done, .bt-stepper-crate, .bt-stepper-mach, .bt-stepper-n) { display: none; }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-list { display: flex; flex-direction: column; gap: 4px; padding: 0; }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-step { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 0 10px; align-items: center; padding: 8px; border-radius: var(--bt-radius-md); color: var(--bt-text-muted); text-align: left; }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-step:hover { background: var(--bt-surface-2); color: var(--bt-text); }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-step.is-open { background: var(--bt-primary-bg); color: var(--bt-text); box-shadow: inset 0 0 0 1px var(--bt-primary); }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-ring { grid-row: span 2; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: conic-gradient(var(--bt-title) calc(var(--v) * 1%), var(--bt-surface-2) 0); font-size: 10px; font-weight: 900; color: var(--bt-text); }
+.bt-root:not(#_) .bt-stepper--rail .is-now .bt-stepper-ring { background: conic-gradient(var(--bt-lamp) calc(var(--v) * 1%), var(--bt-surface-2) 0); }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-ring span { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-surface); }
+.bt-root:not(#_) .bt-stepper--rail .bt-stepper-s { font-size: var(--bt-text-xs); }
+
+/* Drawer */
+.bt-root:not(#_) .bt-drawer-layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 16px; align-items: start; }
+.bt-root:not(#_) .bt-drawer { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 12px); display: flex; flex-direction: column; gap: 10px; max-height: min(720px, calc(100vh - var(--bt-sticky-top, 0px) - 24px)); min-width: 0; padding: 14px; box-sizing: border-box; border: 1px solid rgba(var(--bt-lamp-rgb), 0.3); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 40% at 50% 0%, rgba(var(--bt-lamp-rgb), 0.07), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .bt-drawer-head { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bt-root:not(#_) .bt-drawer-head b { font-size: var(--bt-text-base); font-weight: 900; }
+.bt-root:not(#_) .bt-drawer-head small { display: block; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 600; }
+.bt-root:not(#_) .bt-drawer-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.bt-root:not(#_) .bt-drawer-list { display: flex; flex-direction: column; gap: 6px; min-height: 0; overflow-y: auto; margin: 0 -6px; padding: 0 6px 4px; }
+.bt-root:not(#_) .bt-drawer-group { margin: 6px 0 0; }
+.bt-root:not(#_) .bt-drawer-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); transition: border-color 0.2s; }
+.bt-root:not(#_) .bt-drawer-item:hover { border-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-drawer-item > b { font-size: var(--bt-text-md); font-weight: 800; min-width: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-drawer-item > :is(.bt-btn, .bt-badge) { grid-row: 1; grid-column: 2; }
+.bt-root:not(#_) .bt-drawer-item > p { grid-column: 1 / -1; margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-xs); line-height: 1.45; }
+.bt-root:not(#_) .bt-drawer-meta { grid-column: 1 / -1; display: flex; gap: 4px; flex-wrap: wrap; }
+.bt-root:not(#_) .bt-drawer-item.is-waiting { opacity: 0.55; border-style: dashed; }
+.bt-root:not(#_) .bt-drawer-item.is-used { border-color: rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .bt-drawer-tip { padding: 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .bt-drawer-tip b { color: var(--bt-text); }
+.bt-root:not(#_) .bt-drawer-foot { margin: 0; color: var(--bt-text-faint); font-size: var(--bt-text-xs); line-height: 1.45; }
+
+/* Lanes (a week timeline) */
+.bt-root:not(#_) .bt-lanes { --bt-lanes-weeks: 13; --bt-lanes-lab: 150px; overflow-x: auto; scrollbar-width: thin; }
+.bt-root:not(#_) .bt-lanes-in { display: flex; flex-direction: column; gap: 3px; min-width: calc(var(--bt-lanes-lab) + var(--bt-lanes-weeks) * 34px); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .bt-lanes-row { display: grid; grid-template-columns: var(--bt-lanes-lab) repeat(var(--bt-lanes-weeks), minmax(34px, 1fr)); align-items: center; min-height: 26px; }
+.bt-root:not(#_) .bt-lanes-wk { padding: 4px 0; border-left: 1px solid var(--bt-border); color: var(--bt-text-faint); font-size: var(--bt-text-2xs); text-align: center; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-lanes-lab { grid-column: 1; padding: 5px 8px 5px 0; color: var(--bt-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-lanes-lab.is-head { color: var(--bt-text); font-weight: 800; }
+.bt-root:not(#_) .bt-lanes-bar { --c: var(--bt-title); grid-row: 1; margin: 2px 1px; padding: 4px 6px; border-radius: 6px; background: color-mix(in srgb, var(--c) 30%, var(--bt-surface-2)); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 60%, transparent); color: var(--bt-text); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-lanes-row > .bt-lanes-lab { grid-row: 1; }
+.bt-root:not(#_) .bt-lanes-now { position: relative; }
+
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .bt-drawer-layout { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-drawer { position: static; max-height: none; }
+  .bt-root:not(#_) .bt-drawer-list { max-height: 480px; }
+  .bt-root:not(#_) .bt-stepper--rail .bt-stepper-list { flex-direction: row; overflow-x: auto; }
+  .bt-root:not(#_) .bt-stepper--rail .bt-stepper-list > li { flex: none; width: 170px; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-stepper-in { min-width: calc(var(--bt-stepper-n) * 92px); }
+  .bt-root:not(#_) .bt-stepper-mach { width: 60px; height: 60px; font-size: 24px; }
+  .bt-root:not(#_) .bt-stepper-belt, .bt-root:not(#_) .bt-stepper-done { top: 65px; }
+  .bt-root:not(#_) .bt-stepper-crate { top: 44px; }
+  .bt-root:not(#_) .bt-lanes { --bt-lanes-lab: 110px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-stepper-belt, .bt-root:not(#_) .bt-stepper-step.is-now .bt-stepper-mach::before { animation: none; }
+  .bt-root:not(#_) .bt-stepper-crate, .bt-root:not(#_) .bt-stepper-mach, .bt-root:not(#_) .bt-drawer-item { transition: none; }
+  .bt-root:not(#_) :is(.bt-stepper-step:hover, .bt-stepper-step.is-now) .bt-stepper-mach { transform: none; }
+}
+
 /* ---- Medal: .bt-medal (the Trophy Room's badges; docs/specs/rewards.md, design-system.md §8j) ----
    A coin: .bt-medal-ring (the rarity) + .bt-medal-face (the art). Size: --bt-medal-size (72px).
    data-rarity 1-5: 1 gray, 2 blue, 3 gold notched, 4 pink with a glow and an inner ring,

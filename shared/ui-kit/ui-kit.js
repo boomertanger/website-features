@@ -25,6 +25,8 @@ import { medalHtml, RARITY } from "../ui/medal.js";
 import { initFlipCards } from "../ui/flip-card.js";
 import { initChat } from "../ui/chat.js";
 import { toast } from "../ui/toast.js";
+import { stepperHtml, keepOpenInView } from "../ui/stepper.js";
+import { lanesHtml } from "../ui/lanes.js";
 
 const KIT_VERSION = "dev";
 
@@ -788,7 +790,8 @@ ${arcadeHtml()}
 ${vaultKitHtml()}
 ${trophyKitHtml()}
 ${storyKitHtml()}
-${toastKitHtml()}`;
+${toastKitHtml()}
+${factoryKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -970,6 +973,7 @@ function init() {
   initVaultKit(mount);
   initFlipCards(mount);
   initChat(mount);
+  initFactoryKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
@@ -1098,6 +1102,50 @@ function storyKitHtml() {
     <p class="kit-sub">Chat (Ask BOOMBOT): .bt-chat with button.bt-chat-q questions and .bt-chat-a answers (shared/ui/chat.js: one open at a time, 650 ms of typing). Click a question</p>
     <div class="bt-chat">${qa.map(([q, a], i) => `<button type="button" class="bt-chat-q" aria-expanded="${i === 0}" aria-controls="kit-ans-${i}"><span class="bt-chat-qi" aria-hidden="true">Q${i + 1}</span>${q}</button><div class="bt-chat-a" id="kit-ans-${i}" role="region" aria-label="BOOMBOT's answer: ${q}"${i ? " hidden" : ""}><span class="bt-chat-av">${boombotIcon(`kit-chat-bb-${i}`)}</span><div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">${a}</span></div></div>`).join("")}</div>
   </section>`;
+}
+
+// ---------- Stepper, drawer and lanes (the Fun Factory builder) ----------
+const KIT_FF_STAGES = [
+  ["theme", "🎨", "Theme", "done", "Done", 100], ["chapters", "📖", "Chapters", "done", "4 chapters", 100], ["campaigns", "🗂", "Campaigns", "done", "16 campaigns", 100],
+  ["activities", "⚙️", "Activities", "now", "9 of 16 filled", 56], ["rewards", "🏅", "Rewards", "todo", "1 warning", 40], ["schedule", "📅", "Schedule", "todo", "3 of 3 checks", 100],
+  ["review", "🔍", "Review", "todo", "After 1 to 6", 0], ["live", "🚀", "Live", "todo", "Jan 11", 0],
+].map(([key, icon, label, state, status, pct]) => ({ key, icon, label, state, status, pct }));
+function factoryKitHtml() {
+  const idea = (t, p, meta, extra = "") => `<div class="bt-drawer-item${extra}"><b>${t}</b>${extra.includes("waiting") ? `<span class="bt-badge bt-badge--gray">Needs Control Room</span>` : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm">${extra.includes("used") ? "Used" : "Use"}</button>`}${p ? `<p>${p}</p>` : ""}${meta ? `<div class="bt-drawer-meta">${meta}</div>` : ""}</div>`;
+  const tag = (t, c = "gray") => `<span class="bt-badge bt-badge--${c}">${t}</span>`;
+  return `
+  <section class="kit-section" id="kit-factory">
+    <h2 class="kit-h">Stepper, drawer and lanes</h2>
+    <p class="kit-p">The Fun Factory builder's pieces (docs/specs/fun-factory.md §7). Reusable for any multi-stage editor. Reduced motion: the belt stands still and the lamp doesn't blink.</p>
+    <p class="kit-sub">Stepper: .bt-stepper, the assembly line (shared/ui/stepper.js stepperHtml). Machines are buttons (data-step); .is-done gold lamp, .is-now blinking lamp, .is-todo, .is-open. Click a machine. Phones: a sideways strip that keeps the open stage in view</p>
+    <div data-kit-stepper>${stepperHtml({ steps: KIT_FF_STAGES, open: "activities", crate: "S2", label: "Season stages" })}</div>
+    <p class="kit-sub">.bt-stepper--rail: the compact form with progress rings, for narrow side panels</p>
+    <div>${stepperHtml({ steps: KIT_FF_STAGES, open: "activities", rail: true, label: "Season stages (rail)" })}</div>
+    <p class="kit-sub">Drawer: .bt-drawer in a .bt-drawer-layout (content + a sticky 320px panel; stacks under the content below 1024px). Items: .bt-drawer-item with .is-used and .is-waiting</p>
+    <div class="bt-drawer-layout">
+      <div class="bt-card"><div class="bt-card-head"><h3 class="bt-card-title">The panel's content</h3></div><p class="bt-section-text">The drawer sits beside whatever is being edited and offers ideas for it.</p></div>
+      <aside class="bt-drawer" aria-label="Ideas"><div class="bt-drawer-head"><div><b>Idea library</b><small>20 season themes</small></div><div class="bt-drawer-tools"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm">🎲 Inspire me</button></div></div>
+        <div class="bt-drawer-list">${idea("📡 Dark Signal", "A strange broadcast is leaking into the stream. Trace it to its source.", tag("tech") + tag("mystery") + tag("Used in S01", "gold"), " is-used")}${idea("🗝 Vaultbreakers", "The vault is sealed. The community cracks it open, one key at a time.", tag("heist") + tag("puzzle"))}${idea("Check in to the stream", "Enter today's stream code while live.", tag("Stream presence") + tag("+25 XP", "gold"), " is-waiting")}<div class="bt-drawer-tip"><b>Chapters of 3 weeks</b> keep a steady drumbeat.</div></div>
+        <p class="bt-drawer-foot">Waiting ideas light up when their feature ships.</p></aside>
+    </div>
+    <p class="kit-sub">Lanes: .bt-lanes, week columns with labelled lanes and bars (shared/ui/lanes.js lanesHtml). Not .bt-timeline, which is the Vault's dots on a line</p>
+    ${lanesHtml({ weeks: 13, label: "Season timeline", rows: [
+      { label: "Chapters", head: true, bars: [{ from: 0, len: 3, text: "Ch 1" }, { from: 3, len: 3, text: "Ch 2" }, { from: 6, len: 4, text: "Ch 3" }, { from: 10, len: 3, text: "Ch 4" }] },
+      { label: "Recover the Lost Keys", bars: [{ from: 0, len: 13, text: "Story · open all season", color: "rank-3" }] },
+      { label: "Daily + Weekly", bars: [{ from: 0, len: 13, text: "Swap each chapter", color: "blue" }] },
+      { label: "Full Moon Event", bars: [{ from: 5, len: 1, text: "Feb 13", color: "teal" }] },
+    ] })}
+  </section>`;
+}
+function initFactoryKit(mount) {
+  const box = mount.querySelector("[data-kit-stepper]");
+  if (!box) return;
+  box.addEventListener("click", (e) => {
+    const b = e.target.closest("[data-step]");
+    if (!b) return;
+    box.innerHTML = stepperHtml({ steps: KIT_FF_STAGES, open: b.dataset.step, crate: "S2", label: "Season stages" });
+    keepOpenInView(box);
+  });
 }
 
 // ---------- Toast ----------

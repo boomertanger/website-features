@@ -630,6 +630,27 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
+**Stepper, drawer and lanes** (the Fun Factory builder, `docs/specs/fun-factory.md` §7; reusable for
+any multi-stage editor).
+- **Stepper: `.bt-stepper`**, the assembly line (`shared/ui/stepper.js` `stepperHtml({ steps, open, crate,
+  rail })`, `keepOpenInView(el)`). Each stage is a `button.bt-stepper-step[data-step]` (`.bt-stepper-mach`
+  icon, `.bt-stepper-n` "Stage 3", `b` name, `.bt-stepper-s` status line) on a conveyor
+  (`.bt-stepper-belt`), gold (`.bt-stepper-done`) up to the current stage, where the crate
+  (`.bt-stepper-crate`) sits. States `.is-done` (gold lamp), `.is-now` (blinking lamp), `.is-todo`, and
+  `.is-open` (`aria-current="step"`) for the stage on screen. `--bt-stepper-n` and `--bt-stepper-at` place
+  the belt and crate. Phones: a sideways strip; call `keepOpenInView` after opening a stage.
+  `.bt-stepper--rail`: a vertical list with progress rings (`.bt-stepper-ring`, `--v` 0 to 100) for narrow
+  side panels; a row of cards below 1024px. Reduced motion: the belt stands still, no blinking.
+- **Drawer: `.bt-drawer`**, a sticky side panel of ideas in a `.bt-drawer-layout` (content plus a 320px
+  panel; below 1024px it stacks under the content): `.bt-drawer-head` (`b`, `small`, `.bt-drawer-tools`),
+  `.bt-drawer-list` (scrolls) of `.bt-drawer-item` (`b`, a button or a "Needs …" badge, `p`,
+  `.bt-drawer-meta` badges; `.is-used`, `.is-waiting`), `.bt-drawer-group` labels, `.bt-drawer-tip`,
+  `.bt-drawer-foot`.
+- **Lanes: `.bt-lanes`**, a week timeline with labelled lanes (`shared/ui/lanes.js` `lanesHtml({ weeks,
+  rows })`): a header row of `.bt-lanes-wk`, then `.bt-lanes-row`s with `.bt-lanes-lab` (`.is-head`) and
+  `.bt-lanes-bar`s (`--c` colour, `grid-column: start / span len`, the label being column 1). Scrolls
+  sideways when narrow. Named lanes because `.bt-timeline` is the Vault's dots on a line.
+
 **Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500 })`,
 returns dismiss). A short confirmation at the bottom of the screen, above the tab bar on phones
 (full width at ≤ 640px). It renders in its own `.bt-root.bt-toast-host` on `<body>`, like a modal
@@ -736,6 +757,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `cmd.js` | `initCmd({ input, mount, groups, onChoose, foot })` → `{ refresh, close }`; `litText(text, indexes, esc)` |
 | `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
 | `flip-card.js` · `chat.js` | `initFlipCards(root)` · `initChat(root)` |
+| `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
