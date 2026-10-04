@@ -13,6 +13,14 @@ import { initSegNav } from "../ui/seg-nav.js";
 import { initToc } from "../ui/toc.js";
 import { initSpotlights } from "../ui/spotlight.js";
 import { cycleWheelHtml, initCycleWheels } from "../ui/cycle-wheel.js";
+import { coverHtml, initCoverFallbacks } from "../ui/cover.js";
+import { initTilt } from "../ui/tilt.js";
+import { initCountUp } from "../ui/count-up.js";
+import { dialHtml, initDials } from "../ui/dial.js";
+import { initCmd, litText } from "../ui/cmd.js";
+import { initShelves } from "../ui/shelf.js";
+import { timelineHtml, initTimelines } from "../ui/timeline.js";
+import { initDeck, flyOut } from "../ui/deck.js";
 
 const KIT_VERSION = "dev";
 
@@ -772,7 +780,8 @@ function pageHtml() {
     </div>
   </section>
 ${navHtml()}
-${arcadeHtml()}`;
+${arcadeHtml()}
+${vaultKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -951,6 +960,7 @@ function init() {
   mount.querySelectorAll("[data-kit-toc]").forEach((n) => initToc(n, { observe: false }).set(+n.dataset.kitToc));
   initSpotlights(mount);
   initCycleWheels(mount);
+  initVaultKit(mount);
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {
@@ -1060,6 +1070,125 @@ function init() {
     const row = e.target.closest?.("[data-row]");
     if (row && e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(state.rows.find((x) => x.id === row.dataset.row)); }
   });
+}
+
+// ---------- Game Vault kit pieces (docs/specs/game-vault.md §9) ----------
+// Covers here are the mascot fallback and the kit's mascot as an uploaded picture: no stand-in
+// cover art, no sample games from the mockups.
+const VK_IC = {
+  search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+  plus: '<svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>',
+  filter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
+  people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 11a3 3 0 1 0 0-6M21 20c0-2.6-1.6-4.2-4-4.8"/></svg>',
+};
+function vaultKitHtml() {
+  const pic = { source: "upload", url: KIT_MASCOT };
+  const badge = (tone, label) => `<span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>${label}</span>`;
+  const score = (n) => (n == null ? '<span class="bt-score-none">Not rated</span>' : `<span class="bt-score" aria-label="Score ${n} out of 10"><b>${n}</b><small>/10</small></span>`);
+  const card = ({ title, cover = null, tone = "gold", status = "Wishlist", n = null, meta = "", dimmed = false, overlay = false, tags = "" }) => `<a class="bt-cover-card${dimmed ? " bt-cover-card--dimmed" : ""}" href="#" onclick="return false">${coverHtml(cover, { tilt: true, over: overlay ? `<span class="bt-cover-on bt-cover-on--top">${badge(tone, status)}</span>${n != null ? `<span class="bt-cover-on bt-cover-on--bottom">${score(n)}</span>` : ""}` : "" })}<div class="bt-cover-card-body"><div class="bt-cover-card-title">${title}</div>${overlay ? "" : `<div class="bt-cover-card-row">${badge(tone, status)}${score(n)}</div>`}${meta ? `<div class="bt-cover-card-meta">${meta}</div>` : ""}${tags}</div></a>`;
+  const pick = (title, small, right, extra = "") => `<button type="button" class="bt-pick"${extra}>${coverHtml(null, { cls: "bt-cover--sm" })}<span class="bt-pick-main"><b>${title}</b><small>${small}</small></span>${right}</button>`;
+  const shelfCards = Array.from({ length: 7 }, (_, i) => card({ title: `Cover card ${i + 1}`, cover: i % 3 ? null : pic, n: i % 2 ? null : 8, meta: "On a shelf" })).join("");
+  const ranked = [1, 2, 3, 4].map((i) => `<div class="bt-ranked" style="--rk:var(--bt-rank-${i})"><span class="bt-rank" aria-label="Number ${i}">${i}</span><div class="bt-stack" style="gap:8px">${card({ title: `Most wanted ${i}`, meta: `${10 - i} want it` })}<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm">I want this too</button></div></div>`).join("");
+  const tl = timelineHtml({
+    label: "Every stream",
+    points: [
+      { at: 0.04, size: 24, legacy: true, title: "Before the site", lines: ["4 streams, 9 h", "Counted, not listed one by one"], aria: "4 streams before the site, 9 hours" },
+      { at: 0.3, size: 18, title: "Aug 29", lines: ["2 h 10 m"], aria: "Aug 29, 2 hours 10 minutes" },
+      { at: 0.58, size: 22, title: "Sep 5", lines: ["3 h 5 m"], aria: "Sep 5, 3 hours 5 minutes" },
+      { at: 0.86, size: 20, title: "Sep 12", lines: ["2 h 40 m", "Finished it"], aria: "Sep 12, 2 hours 40 minutes, finished it", flag: "🏁" },
+    ],
+    site: { at: 0.14, label: "Site opens" }, ends: ["Mar 2025", "Sep 2026"],
+    keys: [{ label: "A stream (size = length)" }, { cls: "is-legacy", label: "Before the site" }, { flag: "🏁", label: "Finished it" }],
+  });
+  const deckCard = (anim = "") => `<article class="bt-deck-card ${anim}">${coverHtml(null)}<div class="bt-deck-body"><h3>A queued add</h3><div class="bt-meta">On Steam and IGDB</div><ul class="bt-deck-checks"><li>Found it</li><li>Not already in the Vault</li><li>A full game</li><li class="is-flag">No horror theme on IGDB</li></ul><div class="bt-deck-acts"><button type="button" class="bt-btn bt-btn--admin" data-kit-deck="approve">Approve <kbd>A</kbd></button><button type="button" class="bt-btn bt-btn--secondary" data-kit-deck="reject">Reject <kbd>R</kbd></button><button type="button" class="bt-btn bt-btn--ghost" data-kit-deck="skip">Skip <kbd>S</kbd></button></div></div></article>`;
+  return `
+  <section class="kit-section" id="kit-vault-pieces">
+    <h2 class="kit-h">Covers, search and triage</h2>
+    <p class="kit-p">The Game Vault's kit pieces (<span class="kit-code">docs/specs/game-vault.md</span> §9), reusable anywhere: covers and cover cards, scores and the score dial, tags, the search field and its command panel, filter tokens, menus, the sheet, lookup picks, the dropzone, tilt and glare, count-up, shelves, the timeline and the triage deck.</p>
+
+    <p class="kit-sub">Covers: .bt-cover (3:4; an image, or the mascot when a game has none), --sm thumb; shared/ui/cover.js builds the IGDB or Steam URL at display time</p>
+    <div class="kit-row" style="align-items:flex-end"><div style="width:150px">${coverHtml(pic)}</div><div style="width:150px">${coverHtml(null)}</div>${coverHtml(null, { cls: "bt-cover--sm" })}</div>
+
+    <p class="kit-sub">Cover cards in a .bt-cover-grid: default, overlay (status and score on the art), --dimmed, with tags. Hover a cover: it tilts and catches the light ([data-tilt] + .bt-glare, pointer devices only)</p>
+    <div class="bt-cover-grid">${card({ title: "A finished game", cover: pic, tone: "lime", status: "Finished", n: 9, meta: "6 streams, last Sep 12" })}${card({ title: "Overlay", cover: pic, tone: "green", status: "Playing", n: 8, overlay: true, meta: "23 streams" })}${card({ title: "Dimmed (abandoned)", tone: "gray", status: "Abandoned", n: 5, dimmed: true, meta: "3 streams, last Apr 4" })}${card({ title: "Community pick", meta: "Not streamed yet, 6 want it", tags: `<div class="bt-tags"><span class="bt-tag">${VK_IC.people}Community pick</span><span class="bt-tag">Early access</span></div>` })}</div>
+
+    <p class="kit-sub">Score: .bt-score, --lg, .bt-score-pips, .bt-score-none · Score dial: .bt-dial (shared/ui/dial.js), ten segments lighting in Boomer's gold as it scrolls in; --sm</p>
+    <div class="kit-row" style="align-items:center;gap:24px">${score(8)}<span class="bt-score bt-score--lg"><b>9</b><small>/10</small></span><span class="bt-score-pips" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<i${i < 7 ? ' class="is-on"' : ""}></i>`).join("")}</span>${score(null)}${dialHtml(9)}${dialHtml(4, { size: "sm", caption: "" })}</div>
+
+    <p class="kit-sub">Tags: .bt-tag in .bt-tags (a/button.bt-tag is clickable) · Tokens: .bt-token, a removable active filter · Chip count .bt-chip-n and .bt-chip--menu (closed, open)</p>
+    <div class="kit-row"><span class="bt-tag">First person</span><a class="bt-tag" href="#" onclick="return false">Co-op</a><span class="bt-tag">${VK_IC.people}Community pick</span><button type="button" class="bt-token">Co-op<i aria-hidden="true">×</i></button><button type="button" class="bt-token">Community picks<i aria-hidden="true">×</i></button></div>
+    <div class="kit-row"><button type="button" class="bt-chip bt-chip--small is-active">All<span class="bt-chip-n">15</span></button><button type="button" class="bt-chip bt-chip--small">Playing<span class="bt-chip-n">2</span></button><button type="button" class="bt-chip bt-chip--small bt-chip--menu" aria-expanded="false">Tags</button><button type="button" class="bt-chip bt-chip--small bt-chip--menu" aria-expanded="true">Length</button></div>
+
+    <p class="kit-sub">Search: .bt-search (empty with the / key, with a clear button), --lg · Command panel: .bt-cmd (shared/ui/cmd.js) with matched letters, a suggested filter and the action row; type in the field below (arrows, Enter, Esc)</p>
+    <div class="kit-stack" style="gap:12px;max-width:620px">
+      <label class="bt-search">${VK_IC.search}<input class="bt-input" type="search" placeholder="Steam link or game name" aria-label="Search (demo)"><span class="bt-search-key" aria-hidden="true">/</span></label>
+      <label class="bt-search">${VK_IC.search}<input class="bt-input" type="search" value="granny" aria-label="Search with text (demo)"><button type="button" class="bt-search-clear" aria-label="Clear">×</button></label>
+      <div style="position:relative"><label class="bt-search bt-search--lg">${VK_IC.search}<input class="bt-input" type="search" data-kit-cmd placeholder="Try “sh”" aria-label="Command panel demo"><span class="bt-search-key" aria-hidden="true">/</span></label><div data-kit-cmd-mount></div></div>
+    </div>
+
+    <p class="kit-sub">Popover: .bt-popover (tag menu) · Sheet: .bt-sheet (the phone Filters sheet)</p>
+    <div class="kit-row" style="align-items:flex-start;gap:24px">
+      <div class="bt-popover" style="position:relative" role="group" aria-label="Tags (demo)">${["First person", "Co-op", "Psychological"].map((t, i) => `<label class="bt-check"><input type="checkbox"${i === 1 ? " checked" : ""}><span>${t}</span><span class="bt-popover-n">${8 - i * 2}</span></label>`).join("")}<div class="bt-popover-foot"><button type="button" class="bt-link-btn">Clear</button><button type="button" class="bt-btn bt-btn--primary bt-btn--sm">Show 4 games</button></div></div>
+      <div class="bt-sheet" style="width:320px"><span class="bt-sheet-grip"></span><div class="bt-sheet-head"><b>Filters</b></div><div class="bt-sheet-group"><span class="bt-label">Length</span><div class="bt-sheet-chips"><button type="button" class="bt-chip bt-chip--small">Short</button><button type="button" class="bt-chip bt-chip--small is-active">Medium</button><button type="button" class="bt-chip bt-chip--small">Long</button></div></div><div class="bt-sheet-actions"><button type="button" class="bt-btn bt-btn--secondary">Clear</button><button type="button" class="bt-btn bt-btn--primary">Show 4 games</button></div></div>
+    </div>
+
+    <p class="kit-sub">Lookup picks: .bt-pick-list of .bt-pick (pick, chosen with aria-pressed, already there .is-in) · Dropzone: .bt-dropzone (rest, a file dragged over: .is-over)</p>
+    <div class="kit-row" style="align-items:flex-start;gap:24px">
+      <div class="bt-pick-list" style="width:360px">${pick("A game", "2017, a studio", '<span class="bt-pick-act">Pick</span>')}${pick("The chosen one", "2021, a studio", '<span class="bt-pick-act">Selected</span>', ' aria-pressed="true"')}<button type="button" class="bt-pick is-in">${coverHtml(null, { cls: "bt-cover--sm" })}<span class="bt-pick-main"><b>Already there</b><small>2019, a studio</small></span><span class="bt-tag">In the Vault</span></button></div>
+      <div class="kit-stack" style="gap:10px;width:260px"><div class="bt-dropzone" tabindex="0"><span>Drop a JPG, PNG or WebP</span><span><b>or choose a file</b></span></div><div class="bt-dropzone is-over"><span>Drop it here</span></div></div>
+    </div>
+
+    <p class="kit-sub">Count-up: [data-count-to] counts up once as it scrolls in (shared/ui/count-up.js)</p>
+    <div class="kit-row" style="gap:28px;font-size:30px;font-weight:900"><b data-count-to="61">61</b><b data-count-to="148" data-suffix=" h">148 h</b></div>
+
+    <p class="kit-sub">Shelf: .bt-shelf with its head and arrows (shared/ui/shelf.js); --ranked with outlined .bt-rank numerals in --bt-rank-1…</p>
+    <div data-shelf-wrap><div class="bt-shelf-head"><div><h3 class="bt-heading">A shelf</h3><p>Swipe, or use the arrows.</p></div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 7</button></div></div><div class="bt-shelf">${shelfCards}</div></div>
+    <div data-shelf-wrap><div class="bt-shelf bt-shelf--ranked">${ranked}</div></div>
+
+    <p class="kit-sub">Timeline: .bt-timeline (shared/ui/timeline.js). Dots sized by length, a hollow dot for history before the site, a flag; hover or focus a dot</p>
+    <div class="bt-card" style="max-width:720px">${tl}</div>
+
+    <p class="kit-sub">Triage deck: .bt-deck (shared/ui/deck.js). Click, or focus the deck and press A, R or S; the card flies off and comes back here</p>
+    <div class="bt-deck-count"><span><b>1</b> of 3 to check</span><span class="bt-deck-prog"><i class="is-done"></i><i></i><i></i></span></div>
+    <div class="bt-deck" tabindex="0" data-kit-deck-wrap aria-label="Demo deck. Press A to approve, R to reject, S to skip"><span class="bt-deck-ghost"></span><span class="bt-deck-ghost"></span>${deckCard()}</div>
+  </section>`;
+}
+
+function initVaultKit(mount) {
+  initTilt();
+  initDials(mount);
+  initCountUp(mount);
+  initShelves(mount);
+  initTimelines(mount);
+  initCoverFallbacks();
+  const input = mount.querySelector("[data-kit-cmd]");
+  if (input) {
+    const titles = ["Silent Hill 2", "Signalis", "Still Wakes the Deep", "Shadows of Doubt"];
+    initCmd({
+      input, mount: mount.querySelector("[data-kit-cmd-mount]"),
+      groups: (q) => {
+        const hits = titles.map((t) => [t, t.toLowerCase().indexOf(q.toLowerCase())]).filter(([, i]) => i >= 0);
+        return [
+          { label: "Results", items: hits.map(([t, i]) => ({ value: t, html: `${coverHtml(null, { cls: "bt-cover--sm" })}<b>${litText(t, Array.from({ length: q.length }, (_, k) => i + k), escapeHtml)}</b><small>a studio</small>` })) },
+          { label: "Filters", items: q.length > 1 ? [{ value: "filter", html: `<span class="bt-cmd-ic">${VK_IC.filter}</span><b>Only Survival horror games</b><small>4 games</small>` }] : [] },
+          { label: "Not here?", items: [{ value: "add", html: `<span class="bt-cmd-ic">${VK_IC.plus}</span><b>Add “${escapeHtml(q)}”</b>` }] },
+        ];
+      },
+      onChoose: (v) => { input.value = v === "add" || v === "filter" ? "" : v; },
+    });
+  }
+  const deck = mount.querySelector("[data-kit-deck-wrap]");
+  if (deck) {
+    const act = async (kind) => {
+      await flyOut(deck.querySelector(".bt-deck-card"), kind);
+      const card = deck.querySelector(".bt-deck-card");
+      card.classList.remove("is-out-right", "is-out-left", "is-in");
+      void card.offsetWidth;
+      if (!matchMedia("(prefers-reduced-motion: reduce)").matches) card.classList.add("is-in");
+    };
+    initDeck(deck, { onKey: act });
+    deck.addEventListener("click", (e) => { const b = e.target.closest("[data-kit-deck]"); if (b) act(b.dataset.kitDeck); });
+  }
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
