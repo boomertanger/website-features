@@ -1,8 +1,8 @@
 // /u/{handle}, a member's public profile (docs/specs/rewards.md §11). Reads handles/{handle}, then
 // the profile, the badges they hold and their trophies (all public), plus the badge catalog
 // (cached 5 minutes). Anyone can view it, signed in or not.
-// The role tag: roles live in members/{uid}, which only the member and admins can read, so the
-// tag shows on your own profile (from your sign-in) or from a public profile.role when one exists.
+// The role tag is profiles/{uid}.roleTag (fan, sub, mod, admin), the public copy of the member's
+// highest role that functions keep in step; your own profile falls back to your sign-in's roles.
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { initFlipCards } from "../../../../shared/ui/flip-card.js";
@@ -20,10 +20,11 @@ function handleFromUrl() {
   return (fromPath || new URLSearchParams(location.search).get("handle") || "").replace(/^@/, "");
 }
 
-const ROLE_TAG: [string, string, string][] = [["admin", "teal", "Admin"], ["mod", "teal", "Mod"], ["vip", "gray", "VIP"], ["sub", "gold", "Sub Club"]];
-function roleTag(roles: string[]) {
-  const r = ROLE_TAG.find(([k]) => roles.includes(k));
-  return r ? `<span class="bt-badge bt-badge--${r[1]}">${r[2]}</span>` : `<span class="bt-badge bt-badge--gray">Fan Club</span>`;
+const ROLE_TAG: Record<string, [string, string]> = { admin: ["teal", "Admin"], mod: ["teal", "Mod"], sub: ["gold", "Sub Club"], fan: ["gray", "Fan Club"] };
+const tagFromRoles = (roles: string[]) => (["admin", "mod", "sub"].find((k) => roles.includes(k)) ?? "fan");
+function roleTag(tag: string) {
+  const [tone, label] = ROLE_TAG[tag] ?? ROLE_TAG.fan;
+  return `<span class="bt-badge bt-badge--${tone}">${label}</span>`;
 }
 
 function notFound(handle: string) {
@@ -60,7 +61,7 @@ async function main() {
     if (!profile) return notFound(handle);
     const byId = new Map(badges.map((b) => [b.id, b]));
     const isMe = me.user?.uid === uid;
-    const roles = isMe ? me.roles : profile.role ? [profile.role] : [];
+    const tag = profile.roleTag ?? (isMe ? tagFromRoles(me.roles) : null);
     const p = progress(profile.xp);
     const pins = profile.showcase.filter((id) => held.has(id) && byId.has(id));
     const featured = byId.get(profile.featuredBadge ?? pins[0] ?? "") ?? null;
@@ -89,7 +90,7 @@ async function main() {
           <div class="tr-prof-id">
             <h1 class="tr-pf-name">${esc(name)}</h1>
             <span class="tr-pf-handle">@${esc(profile.handle)}${profile.joinedAt ? ` · joined ${profile.joinedAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}` : ""}</span>
-            <div class="tr-tags">${isMe || profile.role ? roleTag(roles) : ""}${persona}<span class="bt-tag">Lv ${p.level} · ${esc(p.rank)}</span></div>
+            <div class="tr-tags">${tag ? roleTag(tag) : ""}${persona}<span class="bt-tag">Lv ${p.level} · ${esc(p.rank)}</span></div>
           </div>
           ${isMe ? `<a class="bt-btn bt-btn--secondary bt-btn--sm tr-pf-edit" href="/account#rewards">Edit trophy case</a>` : ""}
         </div>

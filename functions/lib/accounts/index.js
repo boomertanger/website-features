@@ -6,6 +6,7 @@
 //   users/{uid}/private/age           birthYear, birthMonth, adultAt (no client access at all)
 //   handles/{handle}                  { uid }: handles are unique across the platform
 //   sites/{siteId}/members/{uid}      roles, joinedAt, rolesChangedBy
+//   (profiles/{uid}.roleTag is the public copy of the highest role: fan, sub, mod, admin)
 //   sites/{siteId}/profiles/{uid}     public: handle, displayName, avatar, badges, platforms
 //   platformLinks/twitch_{id}         { uid, login }: one Twitch account links to one site account
 //
@@ -156,6 +157,7 @@ module.exports = function accounts({ adminLogEntry }) {
         handle, displayName,
         avatar: { type: "initials", initials: v.initialsOf(displayName) },
         badges: [], platforms: {}, joinedAt: stamp,   // linked platforms stay private until showLinked is on
+        roleTag: v.roleTagFor(member.exists ? member.get("roles") : []),   // the role trigger re-checks it (owner = admin)
       });
     });
     return { handle, displayName, ageBand: v.ageBand(age) };
@@ -417,13 +419,15 @@ module.exports = function accounts({ adminLogEntry }) {
     return { ok: true };
   });
 
-  // ---------- mirror roles into custom claims ----------
+  // ---------- mirror roles into custom claims and the public role tag ----------
   // sites/{siteId}/members/{uid}.roles -> claims { roles: { [siteId]: [...] } }, then
-  // users/{uid}.claimsUpdatedAt so the site refreshes the member's ID token.
+  // users/{uid}.claimsUpdatedAt so the site refreshes the member's ID token. Also keeps
+  // profiles/{uid}.roleTag (the highest role, shown on /u/{handle}) in step, on every write.
   const mirrorMemberRoles = onDocumentWritten("sites/{siteId}/members/{uid}", async (event) => {
     const { siteId, uid } = event.params;
     const before = event.data.before.exists ? (event.data.before.get("roles") || []) : [];
     const after = event.data.after.exists ? (event.data.after.get("roles") || []) : [];
+    if (event.data.after.exists) await syncRoleTag(siteId, uid, after);
     if (sameRoles(before, after)) return;
 
     let user;
@@ -450,6 +454,14 @@ module.exports = function accounts({ adminLogEntry }) {
       changes: { roles: { before: [...before].sort(), after: [...after].sort() } },
     }));
   });
+
+  /** profiles/{uid}.roleTag from the member's roles (only when the profile exists and the tag changed). */
+  async function syncRoleTag(siteId, uid, roles) {
+    const profileRef = db.doc(`sites/${siteId}/profiles/${uid}`);
+    const [site, profile] = await Promise.all([db.doc(`sites/${siteId}`).get(), profileRef.get()]);
+    const tag = v.roleTagFor(roles, { isOwner: site.get("ownerUid") === uid });
+    if (profile.exists && profile.get("roleTag") !== tag) await profileRef.update({ roleTag: tag });
+  }
 
   return { checkHandle, completeSignup, abandonSignup, changeHandle, updateProfile, updatePrefs, twitchAuth, unlinkPlatform, signOutEverywhere, setMemberRole, mirrorMemberRoles };
 };

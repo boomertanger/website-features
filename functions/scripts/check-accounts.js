@@ -17,6 +17,15 @@ for (const r of ["boomertanger", "boomer", "admin", "mod", "mods", "support", "s
 for (const bad of ["shit99", "f_u_c_k", "xxbitchxx", "big_dick", "rape_fan"]) assert.equal(shape(bad), "reserved", bad);
 for (const fine of ["grapefan", "peacock22", "torpedo", "classic_ass_mod_x".replace("_ass", ""), "badminton", "swanky", "cocktail_hour", "sussex"]) assert.equal(shape(fine), "ok", fine);
 
+// Public role tag: the highest of admin > mod > sub > fan; the owner is admin.
+assert.equal(v.roleTagFor([]), "fan");
+assert.equal(v.roleTagFor(undefined), "fan");
+assert.equal(v.roleTagFor(["sub"]), "sub");
+assert.equal(v.roleTagFor(["mod", "sub"]), "mod");
+assert.equal(v.roleTagFor(["mod", "admin"]), "admin");
+assert.equal(v.roleTagFor(["vip"]), "fan");
+assert.equal(v.roleTagFor([], { isOwner: true }), "admin");
+
 assert.equal(v.cleanDisplayName("  Night   Owl "), "Night Owl");
 assert.equal(v.cleanDisplayName(""), null);
 assert.equal(v.cleanDisplayName("x".repeat(31)), null);

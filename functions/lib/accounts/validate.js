@@ -68,4 +68,15 @@ function initialsOf(name) {
   return (src.slice(0, 2) || "?").toUpperCase();
 }
 
-module.exports = { HANDLE_RE, normalizeHandle, handleShape, isProfane, cleanDisplayName, conservativeAge, adultAtMs, ageBand, validBirth, initialsOf };
+/**
+ * The public role tag on a profile (sites/{siteId}/profiles/{uid}.roleTag): the highest of
+ * admin > mod > sub > fan. Every member is at least "fan" (Fan Club, free). The owner counts as admin.
+ */
+const ROLE_TAGS = ["admin", "mod", "sub", "fan"];
+function roleTagFor(roles, { isOwner = false } = {}) {
+  const r = Array.isArray(roles) ? roles : [];
+  if (isOwner) return "admin";
+  return ROLE_TAGS.find((t) => t !== "fan" && r.includes(t)) || "fan";
+}
+
+module.exports = { ROLE_TAGS, roleTagFor, HANDLE_RE, normalizeHandle, handleShape, isProfane, cleanDisplayName, conservativeAge, adultAtMs, ageBand, validBirth, initialsOf };

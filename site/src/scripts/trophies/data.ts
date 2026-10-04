@@ -2,7 +2,7 @@
 // (collections and badges) changes rarely, so it's kept in sessionStorage for 5 minutes, like the
 // Arcade's games list; a member's own badges, trophies and profile are read fresh.
 //   sites/{siteId}/collections, badges              the catalog (public)
-//   sites/{siteId}/profiles/{uid}                    xp, level, rank, showcase, featuredBadge, persona
+//   sites/{siteId}/profiles/{uid}                    xp, level, rank, showcase, featuredBadge, persona, roleTag
 //   sites/{siteId}/profiles/{uid}/badges, trophies   what a member holds (public)
 //   handles/{handle}                                 handle -> uid (public)
 import type { BadgeDoc, Held } from "./card";
@@ -13,7 +13,7 @@ export interface Trophy { id: string; kind: string; place: number | null; label:
 export interface RewardProfile {
   uid: string; handle: string; displayName: string; avatar?: { type: string; initials?: string; url?: string } | null;
   xp: number; showcase: string[]; featuredBadge: string | null; persona: string | null; joinedAt: Date | null;
-  role: string | null;   // a public role tag, if one is ever mirrored onto the profile (roles live in members/{uid})
+  roleTag: string | null;   // fan, sub, mod or admin: the public copy of the highest role (functions keep it in step)
 }
 
 const lib = () => import("../../lib/db");
@@ -88,7 +88,7 @@ function toProfile(uid: string, x: Record<string, any>): RewardProfile {
     uid, handle: String(x.handle ?? ""), displayName: String(x.displayName ?? x.handle ?? ""), avatar: x.avatar ?? null,
     xp: Number(x.xp) || 0, showcase: Array.isArray(x.showcase) ? x.showcase.filter((v: unknown) => typeof v === "string") : [],
     featuredBadge: typeof x.featuredBadge === "string" ? x.featuredBadge : null, persona: typeof x.persona === "string" ? x.persona : null,
-    joinedAt: toDate(x.joinedAt), role: typeof x.role === "string" ? x.role : null,
+    joinedAt: toDate(x.joinedAt), roleTag: typeof x.roleTag === "string" ? x.roleTag : null,
   };
 }
 
