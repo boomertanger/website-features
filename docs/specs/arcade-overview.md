@@ -94,7 +94,7 @@ New version (Workshop cycle bar, 8 stages, colored with the site-wide status col
 - ~~End screen: layout and wording tone.~~ Decided: layout 2 "Play first", Spooky wording (`arcade-step1.md` §1, D0).
 - Which badge unlocks pitching (e.g. "finished any game").
 - How long a version cycle stage lasts, and who can advance it (Keeper proposes, owner approves?).
-- ~~Weekly board reset day and timezone.~~ Decided: Monday 00:00 America/Los_Angeles (`arcade-step1.md` D6).
+- ~~Weekly board reset day and timezone.~~ Decided: Monday 00:00 America/Chicago (`arcade-step1.md` D6; Pacific until Oct 2026).
 - Whether leaderboards show during a balance patch transition as "restart" or "note" by default.
 
 ## 11. Pending small fix to include in the first build

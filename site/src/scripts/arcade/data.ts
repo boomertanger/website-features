@@ -126,8 +126,8 @@ export async function countRank(g: Game, device: Device, period: Period, secs: n
   return (await getCount(q)).data().count + 1;
 }
 
-// ---- weeks: Monday 00:00 America/Los_Angeles, keyed by ISO week (functions/lib/arcade/logic.js) ----
-const WEEK_TZ = "America/Los_Angeles";
+// ---- weeks: Monday 00:00 America/Chicago (Central), keyed by ISO week (functions/lib/arcade/logic.js) ----
+const WEEK_TZ = "America/Chicago";
 export function weekKey(at: Date): string {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: WEEK_TZ, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(at);
   const get = (t: string) => +parts.find((p) => p.type === t)!.value;

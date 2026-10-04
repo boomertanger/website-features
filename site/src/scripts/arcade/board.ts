@@ -39,7 +39,7 @@ let pin: (Row & { r: number }) | null = null;
 
 function paint() {
   const { device, period } = state;
-  meta.textContent = `${game!.currentVersion} · ${period === "week" ? "This week · Resets Monday 12 am PT" : "All time"}`;
+  meta.textContent = `${game!.currentVersion} · ${period === "week" ? "This week · Resets Monday 12 am CT" : "All time"}`;
   if (!rows.length) {
     card.innerHTML = `<div class="bt-board-empty"><b>No finished runs ${period === "week" ? "this week" : ""} yet</b><span>Be the first on the ${device} board.</span>${playBtn()}</div>`;
     if (!verified) card.insertAdjacentHTML("beforeend", verifyFoot());

@@ -63,7 +63,7 @@ Out: public profiles and badges (step 2; board names are plain text until then),
 - `runs` counts wins and losses; tap-outs are stored but not counted; `finished` counts wins.
 - One row per member per board (their best). Ties: the earlier run ranks higher.
 - Rank beyond the top 100: a count aggregation on `bests` (times faster + 1). Indexes: (device ASC, epoch ASC, allTime.secs ASC) and (device ASC, week.key ASC, week.secs ASC).
-- Weeks start Monday 00:00 in `site.json` timezone (America/Los_Angeles); key by ISO week of the finish time in that zone.
+- Weeks start Monday 00:00 in `site.json` timezone (America/Chicago, Central; Pacific until Oct 2026); key by ISO week of the finish time in that zone.
 - Retention: TTL on `runs.expireAt` (180 days, D5) and `rateLimits.expireAt`, as `fieldOverrides` with `"ttl": true` in `firestore.indexes.json`. Bests and boards are kept.
 
 ## 5. Server (`functions/lib/arcade/`, added to `index.js` exports without moving anything)
@@ -104,7 +104,7 @@ Every Arcade page: site header, then the kit's feature top bar (`.bt-topbar` + `
 | --- | --- | --- |
 | Lobby | Gold title "Games", subtitle; marquee game card (art, New + v1 badges, game logo, tagline, counts, your best, Play now + Leaderboards); row: What's new (`games.news`), Workshops (Soon), teaser | loading (skeleton card), counts not yet rolled up (hidden), no runs yet |
 | Play tab | Game logo title, v1 + counts, tabs; left: art, "The game lives in the footer of every page. Play now takes you there.", Play now, How to play (4 lines); right: Your best (Desktop, Mobile: time and "#5 all-time · #3 this week"), Top 3 Desktop all-time; teaser | loading, no runs, one device only, unverified (notice under Your best) |
-| Leaderboards tab | Device and Period pills (current device first), meta line ("v1 · This week · Resets Monday 12 am PT" / "v1 · All time"), board (# / Member / Date / Time; 25 rows + Show more up to 100), own row highlighted, or pinned below a gap row when outside the top 100; footer line | loading (skeleton rows), empty ("No finished runs this week yet" + Play now), in top 100, outside, not on this board ("Finish a run on a computer / your phone to get on it"), unverified (verify + Resend) |
+| Leaderboards tab | Device and Period pills (current device first), meta line ("v1 · This week · Resets Monday 12 am CT" / "v1 · All time"), board (# / Member / Date / Time; 25 rows + Show more up to 100), own row highlighted, or pinned below a gap row when outside the top 100; footer line | loading (skeleton rows), empty ("No finished runs this week yet" + Play now), in top 100, outside, not on this board ("Finish a run on a computer / your phone to get on it"), unverified (verify + Resend) |
 | All leaderboards | Gold title "Leaderboards", subtitle; one card per game: logo, v1, Desktop and Mobile top 3, Full leaderboard link; teaser | loading, empty board |
 | Members-only gate | BOOMARCADE bar without links, splat + mascot, gold "Members only", one line, Join free + Log in (open the dialog on Join / Sign in), "See what's inside" (How it works), "Just want to play? Tap the splat at the bottom of any page." The dialog opens once per visit (sessionStorage) on the Join tab titled "Join to enter the Arcade"; closing leaves the gate | visitor, needsSignup (Finish signup), loading (skeleton) |
 | End screen | §1 | win + 3 losses × visitor / member placed / personal best not placed / unverified / not recorded / votes locked |
@@ -131,7 +131,7 @@ Offline or startRun failed → plays, "not recorded". startRun slower than early
 | D3 | Verified email required to appear on a board |
 | D4 | Claiming a visitor's run after joining: later, its own step |
 | D5 | Raw runs kept 180 days |
-| D6 | Weekly reset Monday 00:00 America/Los_Angeles |
+| D6 | Weekly reset Monday 00:00 America/Chicago (moved from Pacific in Oct 2026 with the Trophy Room: one site clock) |
 | D7 | Play now is green like Play again (§8f exception extended) |
 | D8 | The all-games leaderboard page ships in step 1, light |
 | D9 | The Arcade is members only, with a gate that opens the Join dialog; the footer game stays public |

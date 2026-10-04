@@ -59,7 +59,7 @@ const GAMES = [{
     playsIn: "footer",
     news: [
       { title: "Tap the Splat v1 is live", text: "Real leaderboards, Desktop and Mobile", at: "2026-10-01" },
-      { title: "Weekly boards reset Mondays", text: "12 am Pacific · All-time boards stay", at: "2026-10-01" },
+      { title: "Weekly boards reset Mondays", text: "12 am Central · All-time boards stay", at: "2026-10-01" },
     ],
   },
   versions: [{

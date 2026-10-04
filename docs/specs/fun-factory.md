@@ -37,7 +37,7 @@ Rules:
 - A campaign can give a completion bonus (XP and/or a badge) on top of its activities.
 - The season badge goes to everyone who finishes the season's Story campaigns.
 
-Clock: one site clock, **America/Chicago (Central)**, for Fun Factory and the Arcade (daily reset 00:00, weekly Monday 00:00). The Arcade's weekly boards move from Pacific to Central in a small separate change.
+Clock: one site clock, **America/Chicago (Central)**, for Fun Factory and the Arcade (daily reset 00:00, weekly Monday 00:00). The Arcade's weekly boards moved from Pacific to Central with Trophy Room part 1 (Oct 2026).
 
 ## 4. Activities and activity types
 An activity is a rule over one **activity type**: "Do <type> <target> times (with these parameters)", for example "Rate 3 games in the Game Vault" or "Find 5 hidden medals".

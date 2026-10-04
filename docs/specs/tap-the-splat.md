@@ -60,7 +60,7 @@ Slop (start and tap out: sounds/slop-custom.js from Slop lab, values as approved
 ## Data (Boom Arcade step 1; details in `docs/specs/arcade-step1.md` §4–§6)
 - Everything lives under `sites/boomertanger/games/tapTheSplat` and is written only by Cloud Functions: the game doc (with rolled-up `stats`), `versions/v1` (build 1.0, checks), `versions/v1/runs/{runId}`, `bests/{uid}_{device}`, `boards/e{epoch}_{device}_{period}` (top 100, weekly and all-time), `counters/{0-9}`.
 - Every run, visitor or member, goes through the shared callables: `startRun` at the first splat tap (without blocking the clock), `finishRun` at the end (server timing and split checks), `voteRun` for the two votes. Tap-outs are stored but not counted.
-- Only passing wins by signed-up members with a verified email reach the boards; one row per member per board (their best), ties go to the earlier run. Weeks start Monday 00:00 America/Los_Angeles.
+- Only passing wins by signed-up members with a verified email reach the boards; one row per member per board (their best), ties go to the earlier run. Weeks start Monday 00:00 America/Chicago (Central).
 - Drop-off comes from stored runs (`reached`, `splits`), so there's no `trackEvent`.
 - The leaderboard popover reads the real board doc in every environment (no more PREVIEW DATA; the trophy shows in production too).
 

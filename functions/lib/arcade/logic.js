@@ -8,7 +8,7 @@ const VOTE_KINDS = ["liked", "wantMore"];
 const BOARD_SIZE = 100;
 const MAX_SPLITS = 10;           // one per round (Tap the Splat has 10)
 const FIREFLY_MIN_SECS = 2.6;    // round 2's flight is 2.6 to 5 s (tap-the-splat.md)
-const WEEK_TZ = "America/Los_Angeles";
+const WEEK_TZ = "America/Chicago";   // the site clock (docs/specs/fun-factory.md §3); was Pacific until Oct 2026
 
 const isNum = (n) => typeof n === "number" && Number.isFinite(n);
 const isInt = (n) => Number.isInteger(n);
@@ -33,7 +33,7 @@ function parseRunId(runId) {
 const validId = (s) => typeof s === "string" && ID_RE.test(s);
 
 // ---------- weeks ----------
-// Weeks start Monday 00:00 in America/Los_Angeles; the key is the ISO week of the
+// Weeks start Monday 00:00 in America/Chicago (Central); the key is the ISO week of the
 // finish time's local date there, e.g. "2026-W40".
 function localDate(at, tz = WEEK_TZ) {
   const parts = new Intl.DateTimeFormat("en-US", { timeZone: tz, year: "numeric", month: "2-digit", day: "2-digit" }).formatToParts(new Date(ms(at)));

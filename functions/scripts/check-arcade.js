@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 // functions/scripts/check-arcade.js: quick checks for the pure Boom Arcade helpers
-// (lib/arcade/logic.js): run checks, week keys in America/Los_Angeles, board insert
+// (lib/arcade/logic.js): run checks, week keys in America/Chicago, board insert
 // and trim to 100, tie order and ranks, plus the new exports. No credentials needed.
 //   npm run check      (or node scripts/check-arcade.js)
 const assert = require("assert/strict");
@@ -13,16 +13,19 @@ assert.equal(L.runPath("tapTheSplat", "v1", "x"), "tapTheSplat/v1/x");
 for (const bad of ["", "a/b", "a/b/c/d", "a/../c", "a/b/c d", "tapTheSplat/v1/abc123", `tapTheSplat/v1/${AUTO}x`,
   `tapTheSplat/v1/${AUTO.slice(0, 19)}_`, `tapTheSplat/v1/${AUTO}/x`, `/v1/${AUTO}`, null, 42]) assert.equal(L.parseRunId(bad), null, String(bad));
 
-// ---------- weeks: Monday 00:00 America/Los_Angeles ----------
+// ---------- weeks: Monday 00:00 America/Chicago ----------
 const utc = (iso) => new Date(iso).getTime();
-assert.equal(L.weekKey(utc("2026-09-28T07:00:00Z")), "2026-W40");   // Mon 00:00 PDT
-assert.equal(L.weekKey(utc("2026-09-28T06:59:59Z")), "2026-W39");   // Sun 23:59 PDT
-assert.equal(L.weekKey(utc("2026-10-04T23:00:00Z")), "2026-W40");   // Sun 16:00 PDT
-assert.equal(L.weekKey(utc("2026-11-02T08:00:00Z")), "2026-W45");   // Mon 00:00 PST (after DST ends)
-assert.equal(L.weekKey(utc("2026-11-02T07:59:00Z")), "2026-W44");
+assert.equal(L.WEEK_TZ, "America/Chicago");
+assert.equal(L.weekKey(utc("2026-09-28T05:00:00Z")), "2026-W40");   // Mon 00:00 CDT
+assert.equal(L.weekKey(utc("2026-09-28T04:59:59Z")), "2026-W39");   // Sun 23:59 CDT
+assert.equal(L.weekKey(utc("2026-09-28T06:30:00Z")), "2026-W40");   // Mon 01:30 CDT (Sun 23:30 in Pacific: the old boundary)
+assert.equal(L.weekKey(utc("2026-10-04T23:00:00Z")), "2026-W40");   // Sun 18:00 CDT
+assert.equal(L.weekKey(utc("2026-11-02T06:00:00Z")), "2026-W45");   // Mon 00:00 CST (after DST ends)
+assert.equal(L.weekKey(utc("2026-11-02T05:59:00Z")), "2026-W44");
 assert.equal(L.weekKey(utc("2027-01-01T12:00:00Z")), "2026-W53");   // ISO year: Fri Jan 1 2027 belongs to 2026-W53
-assert.equal(L.weekKey(utc("2027-01-04T08:00:00Z")), "2027-W01");
-assert.equal(L.dayKey(utc("2026-09-30T06:30:00Z")), "2026-09-29");  // still the 29th in LA
+assert.equal(L.weekKey(utc("2027-01-04T06:00:00Z")), "2027-W01");
+assert.equal(L.dayKey(utc("2026-09-30T04:30:00Z")), "2026-09-29");  // still the 29th in Chicago
+assert.equal(L.dayKey(utc("2026-09-30T05:30:00Z")), "2026-09-30");
 
 // ---------- boards ----------
 const row = (uid, secs, at) => ({ uid, handle: uid, displayName: uid, secs, penalties: 0, at });
