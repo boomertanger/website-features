@@ -8,3 +8,8 @@
 /games/queue/   /games/queue/  200
 /games/:slug    /games/view/   200
 /games/:slug/   /games/view/   200
+
+# Member profiles (docs/specs/rewards.md §11): every /u/{handle} is the one client-rendered profile
+# page (/u/view/, which reads the handle from the address).
+/u/:handle      /u/view/       200
+/u/:handle/     /u/view/       200

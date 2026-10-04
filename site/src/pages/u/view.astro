@@ -1,0 +1,24 @@
+---
+// /u/{handle}, a member's public profile (docs/specs/rewards.md §11): avatar, handle, role tag,
+// persona, level and rank, the trophy case (pins, the first is featured), counts, every badge they
+// hold grouped by collection, and their trophies. Anyone can view it. Cloudflare Pages serves this
+// page for every /u/{handle} (public/_redirects); scripts/profile/view.ts reads the handle from the
+// address (or ?handle= when the page is opened at /u/view/ directly, as in local previews).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TrophyOrder from "../../components/trophies/TrophyOrder.astro";
+import "../../styles/trophies.css";
+---
+<BaseLayout title="Member profile">
+  <div class="bt-zone tr-pf" data-pf aria-busy="true">
+    <div class="tr-pf-skel" aria-hidden="true">
+      <div class="bt-skeleton-row"><span class="bt-skeleton" style="width:88px;height:88px;border-radius:50%"></span><span class="bt-skeleton-lines"><span class="bt-skeleton" style="height:22px;width:40%"></span><span class="bt-skeleton" style="height:14px;width:60%"></span></span></div>
+      <span class="bt-skeleton tr-card-skel"></span>
+    </div>
+    <noscript><p class="bt-empty-title">Profiles need JavaScript to load.</p></noscript>
+  </div>
+  <TrophyOrder />
+</BaseLayout>
+
+<script>
+  import "../../scripts/profile/view";
+</script>

@@ -2514,7 +2514,7 @@
                     --compact stacks the art on top; .is-soon dims a game that is not out yet
    .bt-board        leaderboard table: tr[data-r="1|2|3"] gold / silver / orange ranks (--bt-rank-1..3), tr.is-me (your row),
                     tr.bt-board-gap (the dots before your pinned row), --mini (top 3 cards);
-                    cells .bt-board-rank, .bt-board-who (avatar + name + small @handle), .bt-board-date,
+                    cells .bt-board-rank, .bt-board-who (avatar + name, a link to /u/{handle} when there is one, + small @handle), .bt-board-date,
                     .bt-board-time; .bt-board-card is the .bt-tile that holds one, .bt-board-foot its
                     footer line, .bt-board-empty its empty state
    .bt-tease        a "more is coming" strip: .bt-tease-ic, .bt-tease-txt (b + small), optional .bt-btn; --stack
@@ -2579,6 +2579,8 @@
 .bt-root:not(#_) .bt-board-who { display: flex; align-items: center; gap: 10px; min-width: 0; overflow: hidden; }
 .bt-root:not(#_) .bt-board-who > span:last-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-root:not(#_) .bt-board-who small { margin-left: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-board-who a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .bt-board-who a:hover { color: var(--bt-primary-soft); text-decoration: underline; }
 .bt-root:not(#_) .bt-board-date { white-space: nowrap; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
 .bt-root:not(#_) .bt-board-time { font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bt-root:not(#_) .bt-board tr.is-me td { background: var(--bt-primary-bg); }

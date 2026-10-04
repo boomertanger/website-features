@@ -437,3 +437,34 @@
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .tr-pick { transition: none; }
 }
+
+/* ===== Member profile (/u/{handle}; scripts/profile/view.ts) ===== */
+.bt-root:not(#_) .tr-pf { gap: 16px; padding-bottom: 48px; }
+.bt-root:not(#_) .tr-pf-skel { display: flex; flex-direction: column; gap: 16px; }
+.bt-root:not(#_) .tr-pf-none { align-items: center; text-align: center; padding: 48px 16px; }
+.bt-root:not(#_) .tr-pf-none p { max-width: 44ch; margin: 0 auto 8px; color: var(--bt-text-muted); }
+.bt-root:not(#_) .tr-pf-none-art { display: flex; justify-content: center; margin-bottom: 6px; }
+.bt-root:not(#_) .tr-pf-head .tr-prof-top { align-items: center; }
+.bt-root:not(#_) .tr-av--lg { width: 88px; height: 88px; font-size: 30px; }
+.bt-root:not(#_) .tr-av--lg .bt-medal { right: -6px; bottom: -6px; }
+.bt-root:not(#_) .tr-pf-name { margin: 0; color: var(--bt-text); font-size: var(--bt-text-2xl); font-weight: 900; line-height: 1.15; overflow-wrap: anywhere; }
+.bt-root:not(#_) .tr-pf-handle { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .tr-pf-edit { align-self: flex-start; margin-left: auto; }
+.bt-root:not(#_) .tr-pf-sec { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .tr-pf .tr-pins { margin: 0; list-style: none; }
+.bt-root:not(#_) .tr-pin.is-featured .bt-medal { filter: drop-shadow(0 0 10px rgba(var(--bt-gold-rgb), 0.45)); }
+.bt-root:not(#_) .tr-pf-shelf { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 20px; margin: 0; padding: 18px 16px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: radial-gradient(60% 90% at 50% 100%, rgba(var(--bt-gold-rgb), 0.1), transparent 70%), var(--bt-bg); list-style: none; }
+.bt-root:not(#_) .tr-pf-shelf .tr-cup { --cc: var(--bt-text-faint); --w: 48px; max-width: 140px; }
+.bt-root:not(#_) .tr-pf-shelf .tr-cup--1 { --cc: var(--bt-rank-1); --w: 60px; }
+.bt-root:not(#_) .tr-pf-shelf .tr-cup--2 { --cc: var(--bt-rank-2); --w: 54px; }
+.bt-root:not(#_) .tr-pf-shelf .tr-cup--3 { --cc: var(--bt-rank-3); --w: 50px; }
+.bt-root:not(#_) .tr-pf-group { display: flex; flex-direction: column; gap: 10px; }
+.bt-root:not(#_) .tr-pf-group + .tr-pf-group { margin-top: 8px; }
+.bt-root:not(#_) .tr-pf-group h3 { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .tr-pf-group h3 small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); font-weight: 700; font-variant-numeric: tabular-nums; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .tr-pf-head .tr-prof-top { flex-wrap: wrap; }
+  .bt-root:not(#_) .tr-av--lg { width: 72px; height: 72px; font-size: 24px; }
+  .bt-root:not(#_) .tr-pf-edit { margin-left: 0; }
+  .bt-root:not(#_) .tr-pf-head .tr-prof-id { flex: 1; }
+}

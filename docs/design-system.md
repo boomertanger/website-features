@@ -612,7 +612,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   `.bt-btn--go` is the green Play now / Play again (§8f). Leaderboards:
   `.bt-tile.bt-board-card` [> `.bt-tile-head`] > `table.bt-board [--mini]` > `tr[data-r]`
   (1–3 gold, silver, orange: `--bt-rank-1` … `--bt-rank-3`, the same set the podium uses) [`.is-me`] > `td.bt-board-rank`, `.bt-board-who`
-  (`.bt-avatar-sm` + name + `small` @handle), `td.bt-board-date`, `td.bt-board-time`;
+  (`.bt-avatar-sm` + name, an `a` to `/u/{handle}` when the member has a handle, + `small` @handle), `td.bt-board-date`, `td.bt-board-time`;
   `tr.bt-board-gap` then your pinned row when you're past the rows shown;
   `.bt-board-foot` (Showing N of M, Show more, not on this board, verify email);
   `.bt-board-empty`. Phones drop the Date column and @handles. `.bt-tease [--stack]` >

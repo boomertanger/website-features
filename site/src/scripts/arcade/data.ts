@@ -143,9 +143,9 @@ export function weekKey(at: Date): string {
 const day = (d: Date | null, period: Period) => (d ? d.toLocaleDateString("en-US", period === "week" ? { weekday: "short" } : { month: "short", day: "numeric" }) : "");
 const initials = (name: string) => (name.replace(/[^\p{L}\p{N}]/gu, "").slice(0, 2) || "?").toUpperCase();
 
-/** A .bt-board table. `pin` is the member's own row shown under a gap when they're further down. */
+/** A .bt-board table (names link to the member's profile, /u/{handle}). `pin` is the member's own row shown under a gap when they're further down. */
 export function boardHtml(rows: (Row & { r: number })[], { mini = false, meUid = "", pin = null as (Row & { r: number }) | null, period = "all" as Period } = {}) {
-  const tr = (x: Row & { r: number }) => `<tr data-r="${x.r}"${x.uid === meUid ? ' class="is-me"' : ""}><td class="bt-board-rank">${x.r}</td><td><span class="bt-board-who"><span class="bt-avatar-sm" aria-hidden="true">${esc(initials(x.name))}</span><span>${esc(x.name)}${!mini && x.handle ? `<small>@${esc(x.handle)}</small>` : ""}</span></span></td>${mini ? "" : `<td class="bt-board-date">${day(x.at, period)}</td>`}<td class="bt-board-time">${fmtTime(x.secs)}</td></tr>`;
+  const tr = (x: Row & { r: number }) => `<tr data-r="${x.r}"${x.uid === meUid ? ' class="is-me"' : ""}><td class="bt-board-rank">${x.r}</td><td><span class="bt-board-who"><span class="bt-avatar-sm" aria-hidden="true">${esc(initials(x.name))}</span><span>${x.handle ? `<a href="/u/${encodeURIComponent(x.handle)}">${esc(x.name)}</a>` : esc(x.name)}${!mini && x.handle ? `<small>@${esc(x.handle)}</small>` : ""}</span></span></td>${mini ? "" : `<td class="bt-board-date">${day(x.at, period)}</td>`}<td class="bt-board-time">${fmtTime(x.secs)}</td></tr>`;
   const head = mini ? "" : `<thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col" class="bt-board-date">Date</th><th scope="col">Time</th></tr></thead>`;
   const gap = pin ? `<tr class="bt-board-gap" aria-hidden="true"><td colspan="${mini ? 3 : 4}">···</td></tr>${tr(pin)}` : "";
   return `<table class="bt-board${mini ? " bt-board--mini" : ""}">${head}<tbody>${rows.map(tr).join("")}${gap}</tbody></table>`;

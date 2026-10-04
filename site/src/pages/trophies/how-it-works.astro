@@ -13,6 +13,7 @@ import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
 import { RANKS, XP_BY_RARITY, xpForLevel, PERSONAS, PERSONA_ICONS } from "../../lib/rewards.js";
 import { badgeCardHtml, rarityBadge as rbadge } from "../../scripts/trophies/card";
+import { TR_CUP as CUP } from "../../scripts/trophies/art";
 import catalog from "../../../../functions/data/trophy-room-badges.json";
 
 const JOIN_TITLE = "Join to start your collection";
@@ -71,7 +72,6 @@ const TRO = [
   ["🎉", "Contests", "pink", "Place in a contest or community game night.", "Whenever one runs"],
   ["🛡", "Mod MVP", "teal", "Boomertanger picks the mod who went above and beyond.", "Every month · crew only"],
 ];
-const CUP = `<svg viewBox="0 0 64 72" aria-hidden="true"><path fill="currentColor" d="M16 4h32v6h10a2 2 0 0 1 2 2v6c0 9-6.5 15.5-15.4 16.6A16 16 0 0 1 35 42.6V52h7a3 3 0 0 1 3 3v3H19v-3a3 3 0 0 1 3-3h7v-9.4a16 16 0 0 1-9.6-8C10.5 33.5 4 27 4 18v-6a2 2 0 0 1 2-2h10zm0 11H9v3c0 5.6 3.4 10 8.4 11.3A16 16 0 0 1 16 22zm32 0v7a16 16 0 0 1-1.4 7.3C51.6 28 55 23.6 55 18v-3z"/><rect x="14" y="60" width="36" height="8" rx="2" fill="currentColor" opacity=".7"/><path class="tr-cup-glint" d="M25 12v14"/></svg>`;
 
 const XP = [["A Fun Factory daily", "+10 to 25"], ["A Fun Factory weekly", "+50 to 100"], ["A badge", "+10 to 250, by rarity"], ["A trophy", "+75 to 150, by place"], ["Supporter badges", "No XP"]];
 const pos = (l: number) => ((l - 1) / 49) * 100;

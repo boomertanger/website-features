@@ -13,6 +13,7 @@ export interface Trophy { id: string; kind: string; place: number | null; label:
 export interface RewardProfile {
   uid: string; handle: string; displayName: string; avatar?: { type: string; initials?: string; url?: string } | null;
   xp: number; showcase: string[]; featuredBadge: string | null; persona: string | null; joinedAt: Date | null;
+  role: string | null;   // a public role tag, if one is ever mirrored onto the profile (roles live in members/{uid})
 }
 
 const lib = () => import("../../lib/db");
@@ -87,7 +88,7 @@ function toProfile(uid: string, x: Record<string, any>): RewardProfile {
     uid, handle: String(x.handle ?? ""), displayName: String(x.displayName ?? x.handle ?? ""), avatar: x.avatar ?? null,
     xp: Number(x.xp) || 0, showcase: Array.isArray(x.showcase) ? x.showcase.filter((v: unknown) => typeof v === "string") : [],
     featuredBadge: typeof x.featuredBadge === "string" ? x.featuredBadge : null, persona: typeof x.persona === "string" ? x.persona : null,
-    joinedAt: toDate(x.joinedAt),
+    joinedAt: toDate(x.joinedAt), role: typeof x.role === "string" ? x.role : null,
   };
 }
 
