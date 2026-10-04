@@ -1139,3 +1139,24 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
 - **"I want this too" is remembered per browser.** The server never shows who wants what, so
   the button remembers the games you pressed in this browser; pressing again elsewhere is
   harmless (the server counts each member once).
+
+### 8j. Trophy Room
+
+Spec: `docs/specs/rewards.md` (§14 decisions, Oct 3, 2026); mockup
+`docs/design/mockups/trophy-room-how-it-works.html`. (The workstream prompt called this §8i; §8i
+was already the Game Vault, so the Trophy Room is §8j.)
+
+- **Badges are coins.** `.bt-medal`: a ring (the rarity) and a face (the art). Commissioned art
+  supplies the face only (`.bt-medal-art`), with an emoji fallback until it arrives; the rarity
+  ring is added in code. The tombstone shape may be used later for one special set.
+- **Rarity tones: gray, blue, gold, pink, red/ember**, Common to Legendary, each with 1 to 5
+  signal bars (`.bt-level--5`). Gold is notched, pink glows with an inner ring, red/ember has an
+  animated conic ring. **Never purple** (clickable) **or green** (staff), so a rarity never reads
+  as a link or an admin control.
+- **Roles and personas are identity tags, not badges.** Club, Sub, VIP, Mod and Admin come from
+  the plan or role, and one persona is chosen (Gamer, Viewer, Lurker, Streamer, Creator); they're
+  shown as tags, never collected, ranked or given a rarity: nobody "earns" Admin, and paid
+  shouldn't read as rarer.
+- **Boards: mods race on the season board with members; admins are on no boards.** Mods also have
+  the crew board (Mod MVP). Crew members don't win member giveaways.
+- **Supporter badges give no XP** and never appear on leaderboards.

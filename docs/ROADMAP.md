@@ -1,6 +1,6 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-09-30. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-04. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -11,7 +11,8 @@ Last updated: 2026-09-30. Every planning chat reads this file first and proposes
 | 4 | Schedule Planner | Later | Games and streams |
 | 5 | Live Beacon and Control Room | Later | Games and streams |
 | 6 | Stream Library | Later | Games and streams |
-| 7 | Badges | Later | Community services |
+| 7 | Trophy Room (rewards) | In progress | Community services |
+| 7b | Fun Factory | Next | Community services |
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
 | 9 | Mod Machina | Later | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
@@ -19,7 +20,7 @@ Last updated: 2026-09-30. Every planning chat reads this file first and proposes
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 
-Why this order: Game Vault → Schedule Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. Badges come before Mod Machina and Contests because both depend on them, and the Arcade needs them for pitching. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
+Why this order: Game Vault → Schedule Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Fun Factory is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
 ## Done (on staging)
 - Foundation: Astro on Cloudflare Pages, home page design, header, mascot logo (R4).
@@ -73,10 +74,17 @@ Goal: finished stream objects at /tv (boomertanger.tv redirects here): look up a
 Depends on: Control Room.
 Kickoff: "Start workstream 6 (Stream Library) from docs/ROADMAP.md."
 
-### 7. Badges
-Goal: the shared badge service: stable badge IDs, game scope, levels, awarding (by functions), display on profiles, and an eligibility check other services call ("does member X hold badge Y?"). Includes public profiles.
-Used by: Arcade Studio (pitching), Contests (entry pools), Mod Machina (Keeper eligibility).
-Kickoff: "Start workstream 7 (Badges) from docs/ROADMAP.md."
+### 7. Trophy Room (rewards)
+Goal: the shared rewards service: badges (5 rarities, 9 collections), trophies, XP, levels and ranks, one append-only ledger, the showcase and persona, crew awards, and an eligibility check other services call ("does member X hold badge Y?"). Includes the profile trophy case.
+Spec: [docs/specs/rewards.md](specs/rewards.md) (confirmed 2026-10-03); mockup `docs/design/mockups/trophy-room-how-it-works.html`; starter catalog `functions/data/trophy-room-badges.json` (90 badges). Part 1: docs, kit pieces (`.bt-medal`, `.bt-level--5`), the rewards backend and the Arcade's switch to Central time; part 2: the pages.
+Used by: Fun Factory, Arcade Studio (pitching), Contests (entry pools), Mod Machina (Keeper eligibility).
+Kickoff: "Start workstream 7 (Trophy Room) from docs/ROADMAP.md."
+
+### 7b. Fun Factory
+Goal: quarterly seasons of chapters, campaigns and activities that pay XP, badges and trophies through the Trophy Room; the idea library, the builder with a stage tracker, the member season pass and leaderboard, hidden medal hunts, How it works and the builder guide.
+Spec: [docs/specs/fun-factory.md](specs/fun-factory.md); mockups `docs/design/mockups/fun-factory-how-it-works.html` and `fun-factory-screens.html`.
+Depends on: Trophy Room (7).
+Kickoff: "Start workstream 7b (Fun Factory) from docs/ROADMAP.md."
 
 ### 8. Accounts part 2b
 Goal: App Check, a signup challenge (Turnstile), rate limits, download my data, account deletion, the admin member list, automated rules tests (needs Java 11+ for the emulator), backups and budget alerts.
@@ -106,6 +114,18 @@ Kickoff: "Start workstream 12 (Contests) from docs/ROADMAP.md."
 ### 13. Launch and legal
 Goal: production Firebase setup, domains and redirects for all 12 domains, custom email sending domain, final privacy and terms, the TikTok app review, go-live on main.
 Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
+
+## Fun Factory hooks
+Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
+- [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5).
+- [ ] Schedule votes: Schedule Planner (4).
+- [ ] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10).
+- [ ] Feature Lab activities and The Architect badge (an idea that ships): porting (10).
+- [ ] Moderation activities and crew awards by mods: Mod Machina (9).
+- [ ] Contests: Contests (12).
+- [ ] Polls, comments, shout-outs, clips and Discord: not planned yet.
+
+Rule: every future feature spec gets a **"Fun Factory and Trophy Room hooks"** section listing what it can reward (activity types, automatic badges) and the event it fires, so the hook is built with the feature.
 
 ## Deadlines
 - MemberSpace: turn off auto-renew before 2026-10-20 (it renews 2026-10-31). Nobody uses it and nothing live depends on it, so it doesn't need renewing.
