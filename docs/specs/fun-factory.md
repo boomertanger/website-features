@@ -46,19 +46,21 @@ Fields: title, instructions, link (where to go), type, target, parameters (a gam
 
 **Activity type list** (`activityTypes`): each type has an event key, a name, a description, its parameters, the workstream that provides it, and an on/off switch. The builder only offers types that are on.
 
+A type can cover several **actions**, passed as the `action` parameter: an activity that sets `action` (or any other parameter) only counts events with the same value; one that leaves it out counts them all. Seeded from `functions/data/fun-factory-ideas.json` by `functions/scripts/seed-factory-types.js`.
+
 Available for v1:
 | Type | Source |
 |---|---|
 | Daily check-in (streaks count too) | Fun Factory |
 | Visit pages (site tour) | Fun Factory |
 | Find hidden medals | Fun Factory |
-| Complete your profile, link accounts | Accounts |
-| Play / finish an Arcade game, beat your best, place on a board | Boom Arcade |
-| Earn a badge (any, by collection, by rarity) | Trophy Room |
-| Rate a game, add to wishlist | Game Vault (if shipped first) |
+| Complete your profile, link accounts (`profile`: avatar, persona, link) | Accounts |
+| Play / finish an Arcade game, beat your best, place on a board (`arcade`: play, finish, best, board; gameId) | Boom Arcade |
+| Earn a badge (`badges`: any, by collection, by rarity) | Trophy Room |
+| Game Vault (`vault`): **want** ("I want this too" turned on for a wishlist game; once per game per member, ever), **add** (a game you added gets into the Vault, directly or when a mod approves it; rejected adds never count), **cover** (a mod approves your cover suggestion) | Game Vault |
 | Report a bug, bug confirmed; post an idea, vote on ideas | Bug Zapper, Feature Lab (after the port) |
 
-Waiting (greyed out in the library, "Needs …"): stream presence, stream check-ins and stream streaks, and live drops (Control Room), vote on the schedule and crew sign-ups (Schedule Planner), polls, comments and replies, shout-outs, favourites, clips, Discord.
+Waiting (greyed out in the library, "Needs …"): rating games (`ratings`, needs Member ratings: members can't rate games yet), stream presence, stream check-ins and stream streaks, and live drops (Control Room), vote on the schedule and crew sign-ups (Schedule Planner), polls, comments and replies, shout-outs, favourites, clips, Discord.
 
 ## 5. How progress is counted
 1. A feature's Cloud Function, in the same call that does the action, calls `recordFactoryEvent(uid, type, params, ref)`. Site-only actions use small callables: `factoryCheckIn`, `factoryVisit`, `factoryClaimMedal`.
@@ -102,16 +104,18 @@ Builder tools: Inspire me (shuffle three), filter by tag, "used before" marker, 
 - `/factory/builder/guide`: the builder manual for mods and admins.
 - The feature top bar pattern (a factory icon, FUN + accent FACTORY), members-only gate like the Arcade's.
 
-## 9. Data model (sites/boomertanger/factory/…)
+## 9. Data model (sites/boomertanger/factory/main/…)
+Firestore paths alternate collection and document, so everything hangs off one container doc, `sites/boomertanger/factory/main` (Oct 2026). The paths below are relative to it.
 - `seasons/{seasonId}`: number, name, pitch, art, startsAt, endsAt, status, stage checks, dailyXpCap, createdBy, publishedBy.
 - `seasons/{s}/chapters/{chapterId}`: order, name, blurb, art, unlockAt, revealed (set by the scheduler; public read only when revealed).
 - `seasons/{s}/campaigns/{campaignId}`: chapterId, name, cadence, audience, opensAt, closesAt, order, bonus {xp, badgeId}, revealed.
 - `seasons/{s}/activities/{activityId}`: campaignId, title, instructions, link, typeId, target, params, xp, badgeId, repeat, revealed.
 - `seasons/{s}/hunts/{huntId}/medals/{medalId}`: path, position, hint. Tokens server-only.
-- `seasons/{s}/progress/{uid}`: per-activity count, period, completedAt; streak. Readable by its member only.
+- `seasons/{s}/progress/{uid}`: per-activity count, period, completedAt; the day's factory XP (for the cap); completed campaigns. Readable by its member only.
+- `streaks/{uid}`: the daily check-in streak (current, best, lastDay, savers, saversCap); never resets with the season. Readable by its member only.
 - `seasons/{s}/standings/{uid}` and `seasons/{s}/boards/{all|sub|crew}`: season XP; boards pre-built top 100 (as the Arcade does). Public read.
 - `activityTypes/{typeId}`, `ideas/{ideaId}` (kind, text, tags, typeId, suggested values, uses, addedBy). Ideas readable by crew only.
-- Events: `events/{key}` (type, uid, params, at), TTL 120 days, server only.
+- Events: `events/{type:ref:uid}` (type, uid, params, at), TTL 120 days (`expireAt`), server only.
 - Drafts live in the same docs with status Draft; rules hide anything not revealed from members, and all writes go through callables.
 
 ## 10. Functions

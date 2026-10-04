@@ -536,6 +536,76 @@ service cloud.firestore {
         }
       }
 
+      // ---------- Fun Factory (docs/specs/fun-factory.md §9) ----------
+      // Everything lives under one container doc, factory/main (Firestore paths alternate
+      // collection / document). Written ONLY by Cloud Functions (functions/lib/factory); no
+      // client writes anywhere. A season and its chapters, campaigns and activities are public
+      // only once the season is live or ended AND the node is revealed (the scheduler sets
+      // revealed at its unlock time), so drafts and future chapters never reach a browser;
+      // queries must filter on revealed == true. Progress and streaks: their member only.
+      // Standings, boards and activity types: public. Ideas, events and hunts (the medals and
+      // where they hide) are closed: pages get a hunt's medals for one path from factoryHuntMedals.
+      match /factory/{rootId} {
+        allow read, write: if false;
+
+        match /seasons/{seasonId} {
+          allow read: if resource.data.status in ['live', 'ended'] && resource.data.revealed == true;
+          allow write: if false;
+
+          function seasonPublic() {
+            let s = get(/databases/$(database)/documents/sites/$(siteId)/factory/$(rootId)/seasons/$(seasonId)).data;
+            return s.status in ['live', 'ended'] && s.revealed == true;
+          }
+          match /chapters/{chapterId} {
+            allow read: if resource.data.revealed == true && seasonPublic();
+            allow write: if false;
+          }
+          match /campaigns/{campaignId} {
+            allow read: if resource.data.revealed == true && seasonPublic();
+            allow write: if false;
+          }
+          match /activities/{activityId} {
+            allow read: if resource.data.revealed == true && seasonPublic();
+            allow write: if false;
+          }
+          match /progress/{uid} {
+            allow read: if request.auth != null && request.auth.uid == uid;
+            allow write: if false;
+          }
+          match /standings/{uid} {
+            allow read: if true;
+            allow write: if false;
+          }
+          match /boards/{boardId} {
+            allow read: if true;
+            allow write: if false;
+          }
+          match /hunts/{huntId} {
+            allow read, write: if false;
+            match /medals/{medalId} {
+              allow read, write: if false;
+            }
+          }
+        }
+        match /activityTypes/{typeId} {
+          allow read: if true;
+          allow write: if false;
+        }
+        match /streaks/{uid} {
+          allow read: if request.auth != null && request.auth.uid == uid;
+          allow write: if false;
+        }
+        match /ideas/{ideaId} {
+          allow read, write: if false;
+        }
+        match /events/{key} {
+          allow read, write: if false;
+        }
+        match /private/{docId} {
+          allow read, write: if false;
+        }
+      }
+
       // ---------- The stream object (docs/specs/stream-object.md §4) ----------
       // Everyone reads a published stream (clients query with published == true); staff read
       // every stream and its private/* (the owner's draft). No client writes anywhere.

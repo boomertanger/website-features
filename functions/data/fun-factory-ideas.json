@@ -1,0 +1,1014 @@
+{
+  "version": 1,
+  "note": "Fun Factory activity types and starter idea library (docs/specs/fun-factory.md sections 4 and 6). enabled = live at launch. Vault ideas use actions (want, add, cover); rating ideas wait under the disabled ratings type until members can rate games.",
+  "activityTypes": [
+    {
+      "id": "checkin",
+      "name": "Daily check-in",
+      "enabled": true,
+      "needs": null,
+      "source": "Fun Factory",
+      "description": "Clock in once per Central day on the Fun Factory page.",
+      "actions": [],
+      "params": []
+    },
+    {
+      "id": "visit",
+      "name": "Visit pages",
+      "enabled": true,
+      "needs": null,
+      "source": "Fun Factory",
+      "description": "Visit sections of the site (each section counts once per day; a site tour counts different sections).",
+      "actions": [],
+      "params": [
+        "path"
+      ]
+    },
+    {
+      "id": "medals",
+      "name": "Find hidden medals",
+      "enabled": true,
+      "needs": null,
+      "source": "Fun Factory",
+      "description": "Find medals hidden on site pages during a hunt.",
+      "actions": [],
+      "params": [
+        "huntId"
+      ]
+    },
+    {
+      "id": "profile",
+      "name": "Profile and linked accounts",
+      "enabled": true,
+      "needs": null,
+      "source": "Accounts",
+      "description": "Make the profile yours: a profile picture, a persona, linked accounts.",
+      "actions": [
+        "avatar",
+        "persona",
+        "link"
+      ],
+      "params": [
+        "action"
+      ]
+    },
+    {
+      "id": "arcade",
+      "name": "Boom Arcade",
+      "enabled": true,
+      "needs": null,
+      "source": "Boom Arcade",
+      "description": "Play the Boom Arcade: play a run (any result), finish a run, beat your best, place on a board.",
+      "actions": [
+        "play",
+        "finish",
+        "best",
+        "board"
+      ],
+      "params": [
+        "action",
+        "gameId"
+      ]
+    },
+    {
+      "id": "badges",
+      "name": "Earn badges",
+      "enabled": true,
+      "needs": null,
+      "source": "Trophy Room",
+      "description": "Earn Trophy Room badges: any badge, or one from a collection or of a rarity.",
+      "actions": [
+        "earn"
+      ],
+      "params": [
+        "collection",
+        "rarity"
+      ]
+    },
+    {
+      "id": "vault",
+      "name": "Game Vault",
+      "enabled": true,
+      "needs": null,
+      "source": "Game Vault",
+      "description": "Help build the Game Vault: \"I want this too\" on wishlist games, games you add that make it in, cover suggestions that get approved.",
+      "actions": [
+        "want",
+        "add",
+        "cover"
+      ],
+      "params": [
+        "action"
+      ]
+    },
+    {
+      "id": "ratings",
+      "name": "Member ratings",
+      "enabled": false,
+      "needs": "Member ratings",
+      "description": "Rate games in the Game Vault (members can't rate games yet).",
+      "actions": [],
+      "params": []
+    },
+    {
+      "id": "bugs",
+      "name": "Bug Zapper",
+      "enabled": false,
+      "needs": "Bug Zapper port"
+    },
+    {
+      "id": "lab",
+      "name": "Feature Lab",
+      "enabled": false,
+      "needs": "Feature Lab port"
+    },
+    {
+      "id": "stream",
+      "name": "Stream presence",
+      "enabled": false,
+      "needs": "Control Room"
+    },
+    {
+      "id": "streak",
+      "name": "Stream streaks",
+      "enabled": false,
+      "needs": "Control Room"
+    },
+    {
+      "id": "drop",
+      "name": "Live drops",
+      "enabled": false,
+      "needs": "Control Room"
+    },
+    {
+      "id": "planner",
+      "name": "Schedule votes",
+      "enabled": false,
+      "needs": "Schedule Planner"
+    },
+    {
+      "id": "polls",
+      "name": "Polls",
+      "enabled": false,
+      "needs": "Polls"
+    },
+    {
+      "id": "comments",
+      "name": "Comments",
+      "enabled": false,
+      "needs": "Comments"
+    },
+    {
+      "id": "shout",
+      "name": "Shout-outs",
+      "enabled": false,
+      "needs": "Shout-outs"
+    },
+    {
+      "id": "modtools",
+      "name": "Moderation",
+      "enabled": false,
+      "needs": "Mod Machina"
+    },
+    {
+      "id": "contests",
+      "name": "Contests",
+      "enabled": false,
+      "needs": "Contests"
+    },
+    {
+      "id": "clips",
+      "name": "Clips",
+      "enabled": false,
+      "needs": "Twitch clips"
+    },
+    {
+      "id": "discord",
+      "name": "Discord",
+      "enabled": false,
+      "needs": "Discord link"
+    }
+  ],
+  "themes": [
+    {
+      "name": "Dark Signal",
+      "pitch": "A strange broadcast is leaking into the stream. Trace it to its source.",
+      "tags": [
+        "tech",
+        "mystery"
+      ],
+      "emoji": "📡"
+    },
+    {
+      "name": "Vaultbreakers",
+      "pitch": "The vault is sealed. The community cracks it open, one key at a time.",
+      "tags": [
+        "heist",
+        "puzzle"
+      ],
+      "emoji": "🗝"
+    },
+    {
+      "name": "Neon Depths",
+      "pitch": "A flooded neon city where something down below glows back.",
+      "tags": [
+        "neon",
+        "deep sea"
+      ],
+      "emoji": "🌊"
+    },
+    {
+      "name": "Night Shift",
+      "pitch": "Clock in at a factory that only runs after dark.",
+      "tags": [
+        "factory",
+        "workplace"
+      ],
+      "emoji": "🏭"
+    },
+    {
+      "name": "The Hollow Asylum",
+      "pitch": "The wards of a sanitarium that never really closed.",
+      "tags": [
+        "asylum",
+        "psychological"
+      ],
+      "emoji": "🏚"
+    },
+    {
+      "name": "Cursed Cartridge",
+      "pitch": "An old game cartridge that starts playing you back.",
+      "tags": [
+        "retro",
+        "games"
+      ],
+      "emoji": "👾"
+    },
+    {
+      "name": "Blood Moon Carnival",
+      "pitch": "The carnival only opens under a red moon.",
+      "tags": [
+        "carnival",
+        "clowns"
+      ],
+      "emoji": "🎪"
+    },
+    {
+      "name": "Static Woods",
+      "pitch": "A forest where the old radios still talk.",
+      "tags": [
+        "forest",
+        "folk"
+      ],
+      "emoji": "🌲"
+    },
+    {
+      "name": "The Last Broadcast",
+      "pitch": "Found footage: piece together the final tape.",
+      "tags": [
+        "found footage",
+        "mystery"
+      ],
+      "emoji": "📼"
+    },
+    {
+      "name": "Frostbite Station",
+      "pitch": "A research station at the bottom of the world goes silent.",
+      "tags": [
+        "winter",
+        "sci-fi"
+      ],
+      "emoji": "🧊"
+    },
+    {
+      "name": "Haunted Arcade",
+      "pitch": "After closing time, the machines switch themselves on.",
+      "tags": [
+        "arcade",
+        "retro"
+      ],
+      "emoji": "🕹"
+    },
+    {
+      "name": "The Infection",
+      "pitch": "Something is spreading through the community. Contain it, or join it.",
+      "tags": [
+        "outbreak",
+        "zombies"
+      ],
+      "emoji": "🧟"
+    },
+    {
+      "name": "Witching Hour",
+      "pitch": "Every night at 3 am, the rules change.",
+      "tags": [
+        "occult"
+      ],
+      "emoji": "🕯"
+    },
+    {
+      "name": "Deep Space Distress",
+      "pitch": "A derelict ship answers your call.",
+      "tags": [
+        "sci-fi",
+        "space"
+      ],
+      "emoji": "🛰"
+    },
+    {
+      "name": "Grave Shift",
+      "pitch": "Dig up the secrets buried behind the stream.",
+      "tags": [
+        "graveyard"
+      ],
+      "emoji": "⚰️"
+    },
+    {
+      "name": "The Doll House",
+      "pitch": "Tiny rooms, big secrets, and they're watching.",
+      "tags": [
+        "dolls",
+        "psychological"
+      ],
+      "emoji": "🎎"
+    },
+    {
+      "name": "Sinkhole",
+      "pitch": "The ground opened under town. Something is climbing out.",
+      "tags": [
+        "monster"
+      ],
+      "emoji": "🕳"
+    },
+    {
+      "name": "Pumpkin Rot",
+      "pitch": "Harvest season in a town that feeds on its own.",
+      "tags": [
+        "halloween",
+        "seasonal"
+      ],
+      "emoji": "🎃"
+    },
+    {
+      "name": "Silent Night Terrors",
+      "pitch": "Holiday cheer turns to holiday fear.",
+      "tags": [
+        "holiday",
+        "winter"
+      ],
+      "emoji": "🎄"
+    },
+    {
+      "name": "Summer Camp Slasher",
+      "pitch": "Cabin assignments, campfire stories, and a masked visitor.",
+      "tags": [
+        "summer",
+        "slasher"
+      ],
+      "emoji": "🏕"
+    }
+  ],
+  "chapterNames": [
+    {
+      "theme": "Dark Signal",
+      "names": [
+        "The Awakening",
+        "The Rift Opens",
+        "Interference",
+        "The Final Surge"
+      ]
+    },
+    {
+      "theme": "Vaultbreakers",
+      "names": [
+        "The Vault Stirs",
+        "Lost Keys",
+        "Pressure Plates",
+        "The Breach"
+      ]
+    },
+    {
+      "theme": "Neon Depths",
+      "names": [
+        "Low Tide",
+        "Glow in the Deep",
+        "Pressure Drop",
+        "Abyssal Light"
+      ]
+    },
+    {
+      "theme": "Night Shift",
+      "names": [
+        "First Shift",
+        "Overtime",
+        "The Machine Floor",
+        "Closing Time"
+      ]
+    },
+    {
+      "theme": "The Hollow Asylum",
+      "names": [
+        "Intake",
+        "Ward B",
+        "Lights Out",
+        "Discharge"
+      ]
+    },
+    {
+      "theme": "Cursed Cartridge",
+      "names": [
+        "Insert Cartridge",
+        "Save Corrupted",
+        "Glitch Level",
+        "Game Over?"
+      ]
+    },
+    {
+      "theme": "Blood Moon Carnival",
+      "names": [
+        "Gates Open",
+        "Hall of Mirrors",
+        "The Big Top",
+        "Last Ride"
+      ]
+    },
+    {
+      "theme": "Static Woods",
+      "names": [
+        "Trailhead",
+        "Lost Signal",
+        "Campfire Stories",
+        "The Clearing"
+      ]
+    },
+    {
+      "theme": "The Last Broadcast",
+      "names": [
+        "Tape One",
+        "Tape Two",
+        "Missing Footage",
+        "The Final Tape"
+      ]
+    },
+    {
+      "theme": "Frostbite Station",
+      "names": [
+        "Arrival",
+        "Whiteout",
+        "The Thaw",
+        "Signal Lost"
+      ]
+    },
+    {
+      "theme": "Haunted Arcade",
+      "names": [
+        "Insert Coin",
+        "High Score",
+        "Bonus Round",
+        "Continue?"
+      ]
+    },
+    {
+      "theme": "The Infection",
+      "names": [
+        "Patient Zero",
+        "Outbreak",
+        "Quarantine",
+        "Cure or Consume"
+      ]
+    },
+    {
+      "theme": "Any theme",
+      "names": [
+        "Prologue",
+        "Something Stirs",
+        "Into the Dark",
+        "First Blood",
+        "Rising Dread",
+        "No Turning Back",
+        "Breaking Point",
+        "The Reckoning",
+        "Point of No Return",
+        "Epilogue"
+      ]
+    }
+  ],
+  "campaignNames": [
+    {
+      "cadence": "daily",
+      "audience": "all",
+      "names": [
+        "Daily Ops",
+        "Morning Shift",
+        "Night Rounds",
+        "Roll Call",
+        "Graveyard Shift",
+        "The Daily Grind"
+      ]
+    },
+    {
+      "cadence": "weekly",
+      "audience": "all",
+      "names": [
+        "Weekly Rotations",
+        "The Weekly Haunt",
+        "Seven Nights",
+        "Payday Missions",
+        "Weekend Watch"
+      ]
+    },
+    {
+      "cadence": "story",
+      "audience": "all",
+      "names": [
+        "Storyline",
+        "Investigate the Signal",
+        "Recover the Lost Keys",
+        "Decode the Transmission",
+        "The Case File",
+        "Follow the Trail"
+      ]
+    },
+    {
+      "cadence": "milestone",
+      "audience": "all",
+      "names": [
+        "Milestones",
+        "The Long Haul",
+        "Body Count",
+        "Lifers",
+        "Hall of Fame"
+      ]
+    },
+    {
+      "cadence": "event",
+      "audience": "all",
+      "names": [
+        "Event Drop",
+        "Surprise Drop",
+        "Full Moon Event",
+        "Halloween Hunt",
+        "Anniversary Bash"
+      ]
+    },
+    {
+      "cadence": "any",
+      "audience": "sub",
+      "names": [
+        "Prestige Path",
+        "The Inner Circle",
+        "VIP Lounge"
+      ]
+    },
+    {
+      "cadence": "any",
+      "audience": "crew",
+      "names": [
+        "Mod Patrol",
+        "Night Watch Duty",
+        "Crew Missions",
+        "Keepers of the Peace"
+      ]
+    }
+  ],
+  "activities": [
+    {
+      "title": "Clock in",
+      "instructions": "Press Clock in on the Fun Factory page.",
+      "type": "checkin",
+      "target": 1,
+      "xp": 10,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Play a round",
+      "instructions": "Play any game in the Boom Arcade.",
+      "type": "arcade",
+      "target": 1,
+      "xp": 15,
+      "cadence": "daily",
+      "audience": "all",
+      "params": {
+        "action": "play"
+      }
+    },
+    {
+      "title": "Rate a game",
+      "instructions": "Rate any game in the Game Vault.",
+      "type": "ratings",
+      "target": 1,
+      "xp": 15,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Vote on ideas",
+      "instructions": "Vote on 3 ideas in Feature Lab.",
+      "type": "lab",
+      "target": 3,
+      "xp": 15,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Check in to the stream",
+      "instructions": "Enter today's stream code while live.",
+      "type": "stream",
+      "target": 1,
+      "xp": 25,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Claim a drop",
+      "instructions": "Claim any live drop.",
+      "type": "drop",
+      "target": 1,
+      "xp": 25,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Answer the daily poll",
+      "instructions": "Vote in today's poll.",
+      "type": "polls",
+      "target": 1,
+      "xp": 10,
+      "cadence": "daily",
+      "audience": "all"
+    },
+    {
+      "title": "Five-day shift",
+      "instructions": "Clock in on 5 days this week.",
+      "type": "checkin",
+      "target": 5,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Splat run",
+      "instructions": "Finish Tap the Splat 3 times.",
+      "type": "arcade",
+      "target": 3,
+      "xp": 60,
+      "cadence": "weekly",
+      "audience": "all",
+      "params": {
+        "action": "finish",
+        "gameId": "tapTheSplat"
+      }
+    },
+    {
+      "title": "Personal best",
+      "instructions": "Beat your best time in any Arcade game.",
+      "type": "arcade",
+      "target": 1,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all",
+      "params": {
+        "action": "best"
+      }
+    },
+    {
+      "title": "Vault critic",
+      "instructions": "Rate 3 games in the Game Vault.",
+      "type": "ratings",
+      "target": 3,
+      "xp": 60,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Wishlist voter",
+      "instructions": "Tap I want this too on 3 games on the wishlist.",
+      "type": "vault",
+      "params": {
+        "action": "want"
+      },
+      "target": 3,
+      "xp": 50,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Into the Vault",
+      "instructions": "Add a game that makes it into the Vault.",
+      "type": "vault",
+      "params": {
+        "action": "add"
+      },
+      "target": 1,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Cover artist",
+      "instructions": "Get a cover suggestion approved.",
+      "type": "vault",
+      "params": {
+        "action": "cover"
+      },
+      "target": 1,
+      "xp": 75,
+      "cadence": "story",
+      "audience": "all"
+    },
+    {
+      "title": "Bug hunter",
+      "instructions": "Report a bug in Bug Zapper.",
+      "type": "bugs",
+      "target": 1,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Big idea",
+      "instructions": "Post an idea in Feature Lab.",
+      "type": "lab",
+      "target": 1,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Collector",
+      "instructions": "Earn any badge this week.",
+      "type": "badges",
+      "target": 1,
+      "xp": 50,
+      "cadence": "weekly",
+      "audience": "all",
+      "params": {
+        "action": "earn"
+      }
+    },
+    {
+      "title": "Two-stream week",
+      "instructions": "Be at 2 live streams this week.",
+      "type": "stream",
+      "target": 2,
+      "xp": 100,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Pick the games",
+      "instructions": "Vote on next week's schedule.",
+      "type": "planner",
+      "target": 1,
+      "xp": 50,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Join the conversation",
+      "instructions": "Reply to 3 comments.",
+      "type": "comments",
+      "target": 3,
+      "xp": 50,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Spread the love",
+      "instructions": "Send a shout-out to another member.",
+      "type": "shout",
+      "target": 1,
+      "xp": 40,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Site tour",
+      "instructions": "Visit 6 sections of the site: Games, Arcade, Schedule, Streams, Shop and Trophy Room.",
+      "type": "visit",
+      "target": 6,
+      "xp": 100,
+      "cadence": "story",
+      "audience": "all"
+    },
+    {
+      "title": "Hidden medals",
+      "instructions": "Find the 5 medals hidden around the site.",
+      "type": "medals",
+      "target": 5,
+      "xp": 150,
+      "cadence": "story",
+      "audience": "all"
+    },
+    {
+      "title": "Make it yours",
+      "instructions": "Add a profile picture and pick a persona.",
+      "type": "profile",
+      "target": 2,
+      "xp": 50,
+      "cadence": "story",
+      "audience": "all"
+    },
+    {
+      "title": "Link up",
+      "instructions": "Link your Twitch, YouTube and TikTok accounts.",
+      "type": "profile",
+      "target": 3,
+      "xp": 100,
+      "cadence": "story",
+      "audience": "all",
+      "params": {
+        "action": "link"
+      }
+    },
+    {
+      "title": "Show it off",
+      "instructions": "Pin 3 badges to your trophy case.",
+      "type": "badges",
+      "target": 3,
+      "xp": 50,
+      "cadence": "story",
+      "audience": "all"
+    },
+    {
+      "title": "Finish the season's game",
+      "instructions": "Finish the featured Arcade game once.",
+      "type": "arcade",
+      "target": 1,
+      "xp": 100,
+      "cadence": "story",
+      "audience": "all",
+      "params": {
+        "action": "finish"
+      }
+    },
+    {
+      "title": "Month of shifts",
+      "instructions": "Clock in on 30 days this season.",
+      "type": "checkin",
+      "target": 30,
+      "xp": 250,
+      "cadence": "milestone",
+      "audience": "all"
+    },
+    {
+      "title": "Critic's corner",
+      "instructions": "Rate 50 games in the Game Vault.",
+      "type": "ratings",
+      "target": 50,
+      "xp": 250,
+      "cadence": "milestone",
+      "audience": "all"
+    },
+    {
+      "title": "Arcade rat",
+      "instructions": "Finish 25 Arcade runs.",
+      "type": "arcade",
+      "target": 25,
+      "xp": 200,
+      "cadence": "milestone",
+      "audience": "all",
+      "params": {
+        "action": "finish"
+      }
+    },
+    {
+      "title": "Ten badges",
+      "instructions": "Earn 10 badges this season.",
+      "type": "badges",
+      "target": 10,
+      "xp": 250,
+      "cadence": "milestone",
+      "audience": "all",
+      "params": {
+        "action": "earn"
+      }
+    },
+    {
+      "title": "Exterminator",
+      "instructions": "Get 3 bug reports confirmed.",
+      "type": "bugs",
+      "target": 3,
+      "xp": 250,
+      "cadence": "milestone",
+      "audience": "all"
+    },
+    {
+      "title": "Front row season",
+      "instructions": "Reach a stream streak of 10.",
+      "type": "streak",
+      "target": 10,
+      "xp": 250,
+      "cadence": "milestone",
+      "audience": "all"
+    },
+    {
+      "title": "Pumpkin patch hunt",
+      "instructions": "Find the 7 pumpkins hidden for Halloween.",
+      "type": "medals",
+      "target": 7,
+      "xp": 150,
+      "cadence": "event",
+      "audience": "all"
+    },
+    {
+      "title": "Game night",
+      "instructions": "Take part in a community game night.",
+      "type": "contests",
+      "target": 1,
+      "xp": 150,
+      "cadence": "event",
+      "audience": "all"
+    },
+    {
+      "title": "Anniversary stream",
+      "instructions": "Be there for the anniversary stream.",
+      "type": "stream",
+      "target": 1,
+      "xp": 150,
+      "cadence": "event",
+      "audience": "all"
+    },
+    {
+      "title": "Hidden gems",
+      "instructions": "Rate 10 games nobody else has rated yet.",
+      "type": "ratings",
+      "target": 10,
+      "xp": 150,
+      "cadence": "weekly",
+      "audience": "sub"
+    },
+    {
+      "title": "Inner circle run",
+      "instructions": "Finish the members' beta of the next Arcade version.",
+      "type": "arcade",
+      "target": 1,
+      "xp": 150,
+      "cadence": "story",
+      "audience": "sub",
+      "params": {
+        "action": "finish"
+      }
+    },
+    {
+      "title": "Mod patrol",
+      "instructions": "Complete a moderation sweep of 10 items.",
+      "type": "modtools",
+      "target": 10,
+      "xp": 100,
+      "cadence": "weekly",
+      "audience": "crew"
+    },
+    {
+      "title": "Chapter recap",
+      "instructions": "Write the recap post for this chapter.",
+      "type": "comments",
+      "target": 1,
+      "xp": 150,
+      "cadence": "story",
+      "audience": "crew"
+    },
+    {
+      "title": "Host a micro-event",
+      "instructions": "Run a small community event.",
+      "type": "contests",
+      "target": 1,
+      "xp": 200,
+      "cadence": "event",
+      "audience": "crew"
+    },
+    {
+      "title": "Clip it",
+      "instructions": "Create 3 Twitch clips of the stream.",
+      "type": "clips",
+      "target": 3,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    },
+    {
+      "title": "Discord regular",
+      "instructions": "Post in the Discord on 5 days.",
+      "type": "discord",
+      "target": 5,
+      "xp": 75,
+      "cadence": "weekly",
+      "audience": "all"
+    }
+  ],
+  "rewardNames": [
+    "Signal Tracer",
+    "Vault Cracker",
+    "Night Shift Veteran",
+    "Ward B Survivor",
+    "Final Tape",
+    "Patient Zero",
+    "Ringmaster",
+    "Lost in the Woods",
+    "High Scorer",
+    "Whiteout Survivor",
+    "Glitch Hunter",
+    "Abyss Diver"
+  ]
+}
