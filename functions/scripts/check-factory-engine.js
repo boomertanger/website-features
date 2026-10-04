@@ -3,13 +3,15 @@
 // against an in-memory Firestore (scripts/fixtures/fake-firestore.js) and a recording stand-in for
 // the Trophy Room's grants. Counting, periods, parameters, audiences, the daily cap, campaign
 // bonuses, standings (never admins), distinct visits, duplicate events, and check-in streaks with
-// savers, badges and the nightly sweep. No credentials needed.
+// savers, badges and the nightly sweep, and the scheduler (go live, reveals, boards, season end).
+// No credentials needed.
 //   npm run check      (or node scripts/check-factory-engine.js)
 const assert = require("assert/strict");
 const admin = require("firebase-admin");
 const { makeDb } = require("./fixtures/fake-firestore");
 const { makeFactory } = require("../lib/factory/record");
 const { makeStreaks } = require("../lib/factory/streaks");
+const { makeSeason } = require("../lib/factory/season");
 
 const T = admin.firestore.Timestamp;
 const day = 86400000;
@@ -26,6 +28,11 @@ async function main() {
       const k = `${feature}:${ref}:${uid}`;
       if (ledger.has(k) || !(amount > 0)) return { granted: false, reason: ledger.has(k) ? "paid" : "noXp" };
       ledger.add(k); paid.push({ uid, amount, ref }); return { granted: true };
+    },
+    async grantTrophy(uid, { kind, place, label, ref }) {
+      const k = `trophy:${kind}-${ref}:${uid}`;
+      if (ledger.has(k)) return { granted: false, reason: "paid" };
+      ledger.add(k); paid.push({ uid, trophy: kind, place, label }); return { granted: true };
     },
     async grantBadge(uid, badgeId, { feature, ref }) {
       const k = `${feature}:${ref}:${uid}`;
@@ -156,6 +163,56 @@ async function main() {
   // Sub Club and crew hold 3 savers.
   for (let d = 0; d < 21; d++) out = await K.checkIn("mod", { roles: ["mod"] }, start + d * day);
   assert.deepEqual([out.current, out.savers, out.saversCap], [21, 3, 3]);
+
+  // ---------- the scheduler ----------
+  const Z = makeSeason({ db, grant });
+  NOW = Date.parse("2026-12-01T18:00:00Z");
+  // s00 is still "live" but past its end, so the tick finalizes it; s01 is Scheduled and due.
+  const S1 = `${root}/seasons/s01`;
+  await put(S1, { name: "Season 01", status: "scheduled", revealed: false, startsAt: T.fromMillis(NOW - 60e3), endsAt: T.fromMillis(NOW + 14 * day), badgeId: "season-01-finisher" });
+  await put(`${S1}/chapters/c1`, { order: 1, unlockAt: T.fromMillis(NOW - 60e3), revealed: false });
+  await put(`${S1}/chapters/c2`, { order: 2, unlockAt: T.fromMillis(NOW + 2 * day), revealed: false });
+  await put(`${S1}/campaigns/k1`, { chapterId: "c1", cadence: "story", audience: "all", opensAt: T.fromMillis(NOW - 60e3), revealed: false });
+  await put(`${S1}/campaigns/k2`, { chapterId: "c2", cadence: "story", audience: "all", opensAt: T.fromMillis(NOW - 60e3), revealed: false });   // its chapter isn't open yet
+  await put(`${S1}/activities/x1`, { campaignId: "k1", typeId: "checkin", target: 1, xp: 10, revealed: false });
+  await put(`${S1}/activities/x2`, { campaignId: "k2", typeId: "checkin", target: 1, xp: 10, revealed: false });
+  let log = await Z.tick(NOW);
+  assert.ok(log.includes("s00: ended"), log.join("; "));
+  // s00 ended in October, so the two don't overlap: s01 goes live in the same tick and reveals chapter 1,
+  // its campaign and activity; chapter 2 stays hidden.
+  assert.ok(log.includes("s01: live"), log.join("; "));
+  assert.ok(log.includes("s01: chapter c1") && log.includes("s01: campaign k1") && log.includes("s01: activity x1"));
+  assert.ok(!log.includes("s01: chapter c2") && !log.includes("s01: campaign k2") && !log.includes("s01: activity x2"));
+  assert.equal((await db.doc(S).get()).get("status"), "ended");
+  // s00's results: the fan was 1st (the only member with XP who isn't an admin besides the mod).
+  const trophies = paid.filter((p) => p.trophy);
+  assert.deepEqual(trophies.map((p) => [p.uid, p.trophy, p.place]), [["fan", "season", 1], ["mod", "season", 2]]);
+  assert.equal(trophies[0].label, "1st · Season 00");
+  const board = (await db.doc(`${S}/boards/all`).get()).data();
+  assert.deepEqual(board.rows.map((r) => [r.rank, r.uid]), [[1, "fan"], [2, "mod"]]);
+  assert.equal(board.count, 2);
+  assert.deepEqual((await db.doc(`${S}/boards/crew`).get()).data().rows.map((r) => r.uid), ["mod"]);
+  // Running the end again pays nothing twice.
+  await Z.finalize({ id: "s00", ...(await db.doc(S).get()).data() }, NOW);
+  assert.equal(paid.filter((p) => p.trophy).length, 2);
+  // A season can't go live over another: a Scheduled one overlapping live s01 waits.
+  await put(`${root}/seasons/s02`, { name: "Clash", status: "scheduled", startsAt: T.fromMillis(NOW), endsAt: T.fromMillis(NOW + 30 * day) });
+  log = await Z.tick(NOW + 5 * 60e3);
+  assert.ok(log.includes("s02: can't go live while s01 is live"), log.join("; "));
+  await db.doc(`${root}/seasons/s02`).delete();
+  assert.deepEqual([(await db.doc(S1).get()).get("status"), (await db.doc(S1).get()).get("revealed")], ["live", true]);
+  // Two days on, chapter 2 opens.
+  log = await Z.tick(NOW + 2 * day + 60e3);
+  assert.ok(log.includes("s01: chapter c2") && log.includes("s01: campaign k2") && log.includes("s01: activity x2"));
+  // The season badge goes to whoever finished every Story campaign.
+  NOW += 2 * day + 120e3;
+  F.dropCache();
+  await F.recordFactoryEvent("fan", "checkin", {}, "s01-day");
+  await F.recordFactoryEvent("mod", "checkin", {}, "s01-day");
+  await db.doc(`${S1}/progress/mod`).update({ "camps.k2": null });   // the mod missed one
+  log = await Z.tick(NOW + 15 * day);
+  assert.ok(log.includes("s01: season badge to fan") && !log.includes("s01: season badge to mod"), log.join("; "));
+  assert.ok(log.includes("s01: ended"));
 
   console.log("check-factory-engine: ok");
 }

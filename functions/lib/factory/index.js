@@ -7,6 +7,7 @@
 //                                     claim token (never the other pages' medals)
 //   factoryClaimMedal({ medalId, token })   one claim per member per medal
 //   factoryStreakSweep                00:10 Central: missed check-ins spend streak savers, or break the streak
+//   factoryTick                       every 5 minutes: go live, reveal, roll the boards, end the season (./season.js)
 // Every callable needs a signed-up member and is rate-limited per hour (rateLimits/{key}, the
 // Arcade's pattern). Callable errors carry details.reason, like the other features.
 const crypto = require("crypto");
@@ -16,6 +17,7 @@ const admin = require("firebase-admin");
 const L = require("./logic");
 const { makeFactory } = require("./record");
 const { makeStreaks } = require("./streaks");
+const { makeSeason } = require("./season");
 
 const SITE_ID = "boomertanger";
 const LIMITS = { checkin: 30, visit: 120, hunt: 240, claim: 60 };   // per member per hour
@@ -29,6 +31,7 @@ module.exports = function factory() {
   const { Timestamp } = admin.firestore;
   const F = makeFactory({ db });
   const Streaks = makeStreaks({ db });
+  const Season = makeSeason({ db });
   const R = F.refs;
 
   async function member(request) {
@@ -157,7 +160,13 @@ module.exports = function factory() {
     return { ok: true, claimed: true, counted: r.counted, completed: r.completed || [] };
   });
 
-  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal, factoryStreakSweep };
+  // ---------- factoryTick (every 5 minutes, Central) ----------
+  const factoryTick = onSchedule({ schedule: "every 5 minutes", timeZone: L.TZ, timeoutSeconds: 540 }, async () => {
+    const log = await Season.tick(Date.now());
+    if (log.length) console.log(`factoryTick: ${log.join("; ")}`);
+  });
+
+  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal, factoryStreakSweep, factoryTick };
 };
 
 module.exports.SITE_ID = SITE_ID;
