@@ -114,6 +114,11 @@ for (const b of data.badges) {
   assert.equal(L.badgeXp(b), b.source === "support" ? 0 : L.XP_BY_RARITY[b.rarity], `${b.id}: xp matches its rarity`);
   if (b.crewOnly) assert.equal(b.collection, "crew", `${b.id}: crew-only badges live in Crew`);
 }
+// Boomer's Blessing is given by Boomertanger only: owner-only, so awardBadge refuses admins (canAward "ownerOnly").
+const blessing = data.badges.find((b) => b.id === "boomer-s-blessing");
+assert.equal(blessing?.awardableBy, "owner", "Boomer's Blessing is owner only");
+assert.equal(L.canAward(blessing, { isOwner: false, isAdmin: true }), "ownerOnly");
+assert.equal(L.canAward(blessing, { isOwner: true, isAdmin: true }), null);
 for (const id of ["splat-finisher", "top-10", "multistream-nomad", "pilgrim", "elder", "founder", "bug-finder", "architect"]) assert.ok(ids.has(id), `catalog has ${id}`);
 
 // ---------- the site's mirror (site/src/lib/rewards.js) gives the same answers ----------

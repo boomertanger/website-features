@@ -554,7 +554,7 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": "admin"
+      "awardableBy": "owner"
     },
     {
       "id": "bug-finder",
