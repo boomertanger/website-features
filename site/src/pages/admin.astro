@@ -2,9 +2,11 @@
 // Admin tools (the green header link and the avatar menu's Admin tools). The admin
 // member view with role controls is milestone 2b (docs/specs/accounts.md "Later").
 // The owner also gets the growth collector's tools (docs/specs/growth-collector.md):
-// Connect TikTok and Run the collector now.
+// Connect TikTok and Run the collector now. Admins get the Trophy Room's Award a badge card
+// (docs/specs/rewards.md §10; scripts/admin/award.ts).
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ComingSoon from "../components/ComingSoon.astro";
+import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 ---
 <BaseLayout title="Admin tools" noindex>
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
@@ -25,6 +27,34 @@ import ComingSoon from "../components/ComingSoon.astro";
       </form>
     </div>
   </div>
+  <div class="bt-zone" data-award hidden>
+    <div class="bt-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Award a badge</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
+      <p class="bt-section-text">Give a member a crew-awarded badge, or take one back. Every award and revoke needs a reason, is logged, and adds or removes the badge's XP. You can't award yourself, and you can award 20 a day.</p>
+      <form class="bt-stack" data-award-form novalidate>
+        <div class="bt-field">
+          <label class="bt-label" for="aw-handle">Member's handle</label>
+          <input class="bt-input" id="aw-handle" name="handle" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="@handle" required aria-describedby="aw-who" />
+          <p class="bt-fine bt-fine--left" id="aw-who" data-aw-who aria-live="polite"></p>
+        </div>
+        <div class="bt-field">
+          <label class="bt-label" for="aw-badge">Badge</label>
+          <select class="bt-select" id="aw-badge" name="badge" required aria-describedby="aw-badge-note" disabled><option value="">Loading badges…</option></select>
+          <p class="bt-fine bt-fine--left" id="aw-badge-note" data-aw-note aria-live="polite">Each badge says who can award it. Badges members earn on their own can't be awarded.</p>
+        </div>
+        <div class="bt-field">
+          <label class="bt-label" for="aw-reason">Reason</label>
+          <textarea class="bt-textarea" id="aw-reason" name="reason" maxlength="300" required aria-describedby="aw-count" placeholder="What did they do? The member sees this in their history."></textarea>
+          <p class="bt-fine bt-fine--left" id="aw-count" data-aw-count>10 to 300 characters.</p>
+        </div>
+        <div class="bt-row-center">
+          <button type="submit" class="bt-btn bt-btn--primary" data-aw-award>Award badge</button>
+          <button type="button" class="bt-btn bt-btn--danger" data-aw-revoke>Revoke badge</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <TrophyOrder />
   <div class="bt-zone" data-owner-tools hidden>
     <div class="bt-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Growth collector</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
@@ -41,6 +71,7 @@ import ComingSoon from "../components/ComingSoon.astro";
 
 <script>
   // Owner and admin checks are for display only: the callables check on the server.
+  import "../scripts/admin/award";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";

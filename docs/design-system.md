@@ -630,6 +630,14 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
+**Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500 })`,
+returns dismiss). A short confirmation at the bottom of the screen, above the tab bar on phones
+(full width at ≤ 640px). It renders in its own `.bt-root.bt-toast-host` on `<body>`, like a modal
+portal; the host ignores clicks and each toast takes them. `.bt-toast-ic` (✓, !, i), `.bt-toast-text`,
+`.bt-toast-x`. Errors are `role="alert"`, the rest `role="status"`; a toast stays while it's hovered
+or focused. Use it for the result of an action that doesn't change the page much (an admin award);
+keep inline notices for form errors. Reduced motion: no slide.
+
 **Flip card, placard and chat** (promoted from the Arcade's How it works when the Trophy Room
 became their second user; `docs/specs/rewards.md` §12). Same look and behaviour as before.
 - **Flip card: `.bt-flip`**, a `<button>` medal card that turns over: `.bt-flip-in` >
@@ -728,6 +736,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `cmd.js` | `initCmd({ input, mount, groups, onChoose, foot })` → `{ refresh, close }`; `litText(text, indexes, esc)` |
 | `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
 | `flip-card.js` · `chat.js` | `initFlipCards(root)` · `initChat(root)` |
+| `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
 

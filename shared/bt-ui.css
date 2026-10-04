@@ -884,6 +884,33 @@
 .bt-root:not(#_) .bt-lightbox.is-zoomed .bt-lightbox-img { max-width: none; max-height: none; cursor: zoom-out; margin: auto; }
 .bt-root:not(#_) .bt-lightbox-tip { flex: none; text-align: center; font-size: var(--bt-text-sm); color: var(--bt-text-faint); padding: var(--bt-space-3) var(--bt-space-4) calc(var(--bt-space-4) + env(safe-area-inset-bottom, 0px)); }
 
+/* ================= Toast (portal) =================
+   shared/ui/toast.js toast(message, { kind: ok | error | info, ms }). The host is its own .bt-root
+   on <body> (like a modal portal) pinned to the bottom; it ignores clicks, each .bt-toast takes
+   them. .bt-toast-ic (✓ ! i), .bt-toast-text, .bt-toast-x. Phones: above the tab bar, full width.
+   Reduced motion: no slide. */
+.bt-root.bt-toast-host:not(#_) { position: fixed; left: 0; right: 0; bottom: 0; z-index: var(--bt-z-modal); background: transparent; border-radius: 0; overflow: visible; max-width: none; margin: 0; pointer-events: none; }
+.bt-root:not(#_) .bt-toast-stack { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 0 16px calc(24px + env(safe-area-inset-bottom, 0px)); }
+.bt-root:not(#_) .bt-toast { pointer-events: auto; display: flex; align-items: center; gap: 10px; max-width: 520px; padding: 10px 10px 10px 12px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface-2); color: var(--bt-text); box-shadow: var(--bt-shadow-dropdown); font-size: var(--bt-text-md); line-height: 1.4; animation: bt-toast-in 0.25s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bt-toast.is-leaving { animation: bt-toast-out 0.2s ease-in forwards; }
+.bt-root:not(#_) .bt-toast-ic { flex: none; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-lime-bg); color: var(--bt-lime); font-size: var(--bt-text-sm); font-weight: 900; }
+.bt-root:not(#_) .bt-toast--error { border-color: color-mix(in srgb, var(--bt-danger) 55%, transparent); }
+.bt-root:not(#_) .bt-toast--error .bt-toast-ic { background: var(--bt-danger-bg); color: var(--bt-danger-text); }
+.bt-root:not(#_) .bt-toast--info .bt-toast-ic { background: var(--bt-primary-bg); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .bt-toast-text { flex: 1; min-width: 0; }
+.bt-root:not(#_) .bt-toast-x { flex: none; width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: var(--bt-radius-sm); background: transparent; color: var(--bt-text-faint); font: inherit; font-size: 18px; line-height: 1; cursor: pointer; }
+.bt-root:not(#_) .bt-toast-x:hover { color: var(--bt-text); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-toast-x:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 1px; }
+@keyframes bt-toast-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: none; } }
+@keyframes bt-toast-out { to { opacity: 0; transform: translateY(8px); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-toast-stack { align-items: stretch; padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
+  .bt-root:not(#_) .bt-toast { max-width: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-toast, .bt-toast.is-leaving) { animation: none; }
+}
+
 /* ================= Modal (portal) ================= */
 
 /* The portal is appended to <body> by modal.js and is its own container,

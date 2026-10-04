@@ -24,6 +24,7 @@ import { initDeck, flyOut } from "../ui/deck.js";
 import { medalHtml, RARITY } from "../ui/medal.js";
 import { initFlipCards } from "../ui/flip-card.js";
 import { initChat } from "../ui/chat.js";
+import { toast } from "../ui/toast.js";
 
 const KIT_VERSION = "dev";
 
@@ -786,7 +787,8 @@ ${navHtml()}
 ${arcadeHtml()}
 ${vaultKitHtml()}
 ${trophyKitHtml()}
-${storyKitHtml()}`;
+${storyKitHtml()}
+${toastKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -968,6 +970,7 @@ function init() {
   initVaultKit(mount);
   initFlipCards(mount);
   initChat(mount);
+  mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {
@@ -1094,6 +1097,16 @@ function storyKitHtml() {
     <div class="bt-placard"><div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div><ol class="bt-placard-list">${rules.map(([ic, t, d], i) => `<li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><b>${t} <span aria-hidden="true">${ic}</span></b><span>${d}</span></li>`).join("")}</ol></div>
     <p class="kit-sub">Chat (Ask BOOMBOT): .bt-chat with button.bt-chat-q questions and .bt-chat-a answers (shared/ui/chat.js: one open at a time, 650 ms of typing). Click a question</p>
     <div class="bt-chat">${qa.map(([q, a], i) => `<button type="button" class="bt-chat-q" aria-expanded="${i === 0}" aria-controls="kit-ans-${i}"><span class="bt-chat-qi" aria-hidden="true">Q${i + 1}</span>${q}</button><div class="bt-chat-a" id="kit-ans-${i}" role="region" aria-label="BOOMBOT's answer: ${q}"${i ? " hidden" : ""}><span class="bt-chat-av">${boombotIcon(`kit-chat-bb-${i}`)}</span><div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">${a}</span></div></div>`).join("")}</div>
+  </section>`;
+}
+
+// ---------- Toast ----------
+function toastKitHtml() {
+  return `
+  <section class="kit-section" id="kit-toast">
+    <h2 class="kit-h">Toast</h2>
+    <p class="kit-p">A short confirmation that floats at the bottom of the screen (above the tab bar on phones) and goes away on its own after 4.5 seconds, or stays while hovered or focused. shared/ui/toast.js toast(message, { kind, ms }); it renders in its own .bt-root on body, like a modal. Errors use role="alert", the rest role="status".</p>
+    <div class="kit-row"><button type="button" class="bt-btn bt-btn--secondary" data-kit-toast-kind="ok">Show ok</button><button type="button" class="bt-btn bt-btn--secondary" data-kit-toast-kind="error">Show error</button><button type="button" class="bt-btn bt-btn--secondary" data-kit-toast-kind="info">Show info</button></div>
   </section>`;
 }
 

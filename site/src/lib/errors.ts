@@ -47,7 +47,8 @@ export function messageFor(err: unknown, fallback = "Something went wrong. Try a
   if (reason && REASONS[reason]) return REASONS[reason];
   if (e?.code && AUTH[e.code]) return AUTH[e.code];
   // Callable errors carry a message written for people (HttpsError in our functions).
-  if (e?.code?.startsWith("functions/") && e.message && e.code !== "functions/internal") return e.message;
+  // (The Functions SDK adds the HTTP status, " [403]", to the end; people don't need it.)
+  if (e?.code?.startsWith("functions/") && e.message && e.code !== "functions/internal") return e.message.replace(/ \[\d{3}\]$/, "");
   console.error(err);
   return fallback;
 }
