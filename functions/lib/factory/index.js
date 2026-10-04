@@ -1,18 +1,21 @@
 // Fun Factory Cloud Functions (docs/specs/fun-factory.md §5, §10, §13a). Paths under
 // sites/boomertanger/factory/main/ (§9); the engine is ./record.js, the pure rules ./logic.js.
 //
-//   factoryCheckIn()                  once per Central day: a checkin event and the streak
+//   factoryCheckIn()                  once per Central day: a checkin event and the streak (./streaks.js)
 //   factoryVisit({ path })            a site section (allowlist), once per section per day
 //   factoryHuntMedals({ path })       that page's medals for live hunts, each with a short-lived
 //                                     claim token (never the other pages' medals)
 //   factoryClaimMedal({ medalId, token })   one claim per member per medal
+//   factoryStreakSweep                00:10 Central: missed check-ins spend streak savers, or break the streak
 // Every callable needs a signed-up member and is rate-limited per hour (rateLimits/{key}, the
 // Arcade's pattern). Callable errors carry details.reason, like the other features.
 const crypto = require("crypto");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { makeFactory } = require("./record");
+const { makeStreaks } = require("./streaks");
 
 const SITE_ID = "boomertanger";
 const LIMITS = { checkin: 30, visit: 120, hunt: 240, claim: 60 };   // per member per hour
@@ -25,6 +28,7 @@ module.exports = function factory() {
   const db = admin.firestore();
   const { Timestamp } = admin.firestore;
   const F = makeFactory({ db });
+  const Streaks = makeStreaks({ db });
   const R = F.refs;
 
   async function member(request) {
@@ -47,12 +51,22 @@ module.exports = function factory() {
   }
 
   // ---------- factoryCheckIn() ----------
+  // The streak runs all year (never resets with the season); the checkin event only counts while a
+  // season is live. Returns { day, streak: { current, best, savers, saversCap, already, spent,
+  // earnedSaver, badges }, counted, completed }.
   const factoryCheckIn = onCall(async (request) => {
-    const { uid } = await member(request);
+    const { uid, who } = await member(request);
     await rateLimit(uid, "checkin");
-    const today = L.dayKey(Date.now());
-    const r = await F.recordFactoryEvent(uid, "checkin", {}, today);
-    return { ok: true, day: today, counted: r.counted, completed: r.completed || [] };
+    const now = Date.now(), today = L.dayKey(now);
+    const streak = await Streaks.checkIn(uid, who, now);
+    const r = streak.already ? { counted: false, completed: [] } : await F.recordFactoryEvent(uid, "checkin", {}, today);
+    return { ok: true, day: today, streak, counted: r.counted, completed: r.completed || [] };
+  });
+
+  // ---------- factoryStreakSweep (00:10 Central) ----------
+  const factoryStreakSweep = onSchedule({ schedule: "every day 00:10", timeZone: L.TZ, timeoutSeconds: 540 }, async () => {
+    const r = await Streaks.sweep(Date.now());
+    console.log(`factoryStreakSweep: ${r.checked} late streaks, ${r.kept} kept by savers, ${r.broke} broken`);
   });
 
   // ---------- factoryVisit({ path }) ----------
@@ -143,7 +157,7 @@ module.exports = function factory() {
     return { ok: true, claimed: true, counted: r.counted, completed: r.completed || [] };
   });
 
-  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal };
+  return { factoryCheckIn, factoryVisit, factoryHuntMedals, factoryClaimMedal, factoryStreakSweep };
 };
 
 module.exports.SITE_ID = SITE_ID;

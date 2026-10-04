@@ -2,12 +2,14 @@
 // functions/scripts/check-factory-engine.js: runs the Fun Factory engine (lib/factory/record.js)
 // against an in-memory Firestore (scripts/fixtures/fake-firestore.js) and a recording stand-in for
 // the Trophy Room's grants. Counting, periods, parameters, audiences, the daily cap, campaign
-// bonuses, standings (never admins), distinct visits and duplicate events. No credentials needed.
+// bonuses, standings (never admins), distinct visits, duplicate events, and check-in streaks with
+// savers, badges and the nightly sweep. No credentials needed.
 //   npm run check      (or node scripts/check-factory-engine.js)
 const assert = require("assert/strict");
 const admin = require("firebase-admin");
 const { makeDb } = require("./fixtures/fake-firestore");
 const { makeFactory } = require("../lib/factory/record");
+const { makeStreaks } = require("../lib/factory/streaks");
 
 const T = admin.firestore.Timestamp;
 const day = 86400000;
@@ -127,6 +129,34 @@ async function main() {
   NOW += 20 * day;
   F.dropCache();
   assert.equal((await F.recordFactoryEvent("fan", "checkin", {}, "late")).reason, "noSeason");
+  // ---------- streaks (§13a): no season needed, never reset with the season ----------
+  const K = makeStreaks({ db, grant });
+  const fanWho = { roles: [] };
+  const start = Date.parse("2026-11-01T15:00:00Z");   // through the fall-back weekend
+  let out;
+  for (let d = 0; d < 7; d++) out = await K.checkIn("fan", fanWho, start + d * day);
+  assert.deepEqual([out.current, out.savers, out.earnedSaver], [7, 1, true]);
+  assert.ok(paid.some((p) => p.uid === "fan" && p.badgeId === "streak-day-3") && paid.some((p) => p.badgeId === "streak-day-7"));
+  assert.equal((await K.checkIn("fan", fanWho, start + 6 * day + 3600e3)).already, true);   // twice in a day: once
+  // Missed day 8: the 00:10 sweep on day 9 spends the saver; day 9's check-in carries on.
+  let sw = await K.sweep(start + 8 * day);
+  assert.deepEqual([sw.checked, sw.kept, sw.broke], [1, 1, 0]);
+  let doc = (await db.doc(`${root}/streaks/fan`).get()).data();
+  assert.deepEqual([doc.current, doc.savers, doc.lastDay], [7, 0, "2026-11-08"]);
+  out = await K.checkIn("fan", fanWho, start + 8 * day);
+  assert.deepEqual([out.current, out.best], [8, 8]);
+  // Missed two days with no savers: the sweep breaks it; the next check-in starts again at 1.
+  sw = await K.sweep(start + 11 * day);
+  assert.equal(sw.broke, 1);
+  doc = (await db.doc(`${root}/streaks/fan`).get()).data();
+  assert.deepEqual([doc.current, doc.best, doc.lastDay], [0, 8, null]);
+  assert.equal((await K.sweep(start + 12 * day)).checked, 0);   // broken streaks drop out of the sweep
+  out = await K.checkIn("fan", fanWho, start + 12 * day);
+  assert.deepEqual([out.current, out.best], [1, 8]);
+  // Sub Club and crew hold 3 savers.
+  for (let d = 0; d < 21; d++) out = await K.checkIn("mod", { roles: ["mod"] }, start + d * day);
+  assert.deepEqual([out.current, out.savers, out.saversCap], [21, 3, 3]);
+
   console.log("check-factory-engine: ok");
 }
 
