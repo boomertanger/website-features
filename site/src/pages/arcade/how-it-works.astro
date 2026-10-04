@@ -240,12 +240,12 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-badges">Badges <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h2>
           <p class="bt-chapter-lede">Badges show what you've done, on your public profile, and some of them unlock things: pitching games, entering contests for a game's players, or volunteering as Keeper.</p>
         </header>
-        <div class="ai-medals">
+        <div class="bt-flip-grid">
           {BADGES.map((b) => (
-            <button type="button" class={`ai-flip ai-flip--${b.c}`} aria-label={`${b.t}: ${b.sub}. How to earn: ${b.how} Unlocks: ${b.un}.`}>
-              <span class="ai-flip-in">
-                <span class="ai-face" aria-hidden="true"><span class="ai-medal">{b.ic}</span><b>{b.t}</b><span class="ai-face-sub">{b.sub}</span><span class="ai-flip-hint">Hover or tap to flip</span></span>
-                <span class="ai-face ai-face--back" aria-hidden="true"><span class="ai-back-k">How to earn</span><span class="ai-back-v">{b.how}</span><span class="ai-back-k">Unlocks</span><span class="ai-unl">{b.un}</span></span>
+            <button type="button" class={`bt-flip bt-flip--${b.c}`} aria-label={`${b.t}: ${b.sub}. How to earn: ${b.how} Unlocks: ${b.un}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{b.ic}</span><b>{b.t}</b><span class="bt-flip-sub">{b.sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">{b.how}</span><span class="bt-flip-k">Unlocks</span><span class="bt-flip-tag">{b.un}</span></span>
               </span>
             </button>
           ))}
@@ -258,11 +258,11 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <h2 class="bt-chapter-title" id="h-fair">Fair play</h2>
           <p class="bt-chapter-lede">The rules every game and leaderboard follows.</p>
         </header>
-        <div class="ai-placard">
-          <div class="ai-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
-          <ol class="ai-house">
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
             {RULES.map(([ic, t, d], i) => (
-              <li class="ai-house-rule"><span class="ai-house-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
+              <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
             ))}
           </ol>
         </div>
@@ -285,13 +285,13 @@ const NAV = [["s-inside", "What's inside"], ["s-born", "How games are born"], ["
           <p class="bt-chapter-eyebrow" aria-hidden="true">09 · Chapter</p>
           <h2 class="bt-chapter-title" id="h-faq">FAQ</h2>
         </header>
-        <div class="ai-chat">
+        <div class="bt-chat">
           {FAQS.map(([q, a], i) => (
             <>
-              <button type="button" class="ai-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ai-ans-${i}`} data-q={i}><span class="ai-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
-              <div class="ai-a" id={`ai-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
-                <span class="ai-a-av" set:html={boombotIcon(`bt-bb-${i}`)} />
-                <div class="ai-bub"><small>BOOMBOT</small><span class="ai-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="ai-a-text">{a}</span></div>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ai-ans-${i}`} data-q={i}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`ai-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`bt-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
               </div>
             </>
           ))}

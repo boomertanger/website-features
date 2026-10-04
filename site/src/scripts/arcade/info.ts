@@ -4,6 +4,8 @@
 // the Versions timeline and its cartridges light each other on hover. The "On this page"
 // menu comes from TocLayout.astro. No Firestore reads.
 import { initSpotlights } from "../../../../shared/ui/spotlight.js";
+import { initFlipCards } from "../../../../shared/ui/flip-card.js";
+import { initChat } from "../../../../shared/ui/chat.js";
 import { initCycleWheels } from "../../../../shared/ui/cycle-wheel.js";
 
 initSpotlights(document.querySelector(".ai-stage") ?? document);
@@ -74,10 +76,8 @@ if (flow) {
   });
 }
 
-// 6 Badges: hover or focus flips a medal (CSS); a tap toggles it.
-document.querySelectorAll<HTMLButtonElement>(".ai-flip").forEach((b) => {
-  b.addEventListener("click", () => b.classList.toggle("is-flipped"));
-});
+// 6 Badges: the kit's flip cards (hover or focus flips; a tap toggles).
+initFlipCards();
 
 // 8 Glossary: the <dl> becomes term chips and one gold definition card (the list stays for
 // screen readers and search, visually hidden). Starts on "Boom Arcade".
@@ -113,25 +113,5 @@ if (gloss) {
   show(Math.max(0, terms.findIndex(([t]) => t === "Boom Arcade")));
 }
 
-// 9 FAQ, Ask BOOMBOT: one answer open at a time (the first on load). Opening one shows
-// 650 ms of "typing" (visual only; the answer is in the HTML and only visually hidden),
-// with BOOMBOT's eyes scanning and antenna blinking. Skipped under reduced motion.
-const questions = [...document.querySelectorAll<HTMLButtonElement>(".ai-q")];
-let typing = 0;
-questions.forEach((q) => q.addEventListener("click", () => {
-  const opening = q.getAttribute("aria-expanded") !== "true";
-  clearTimeout(typing);
-  questions.forEach((other) => {
-    const on = opening && other === q;
-    other.setAttribute("aria-expanded", String(on));
-    const a = document.getElementById(other.getAttribute("aria-controls")!)!;
-    a.hidden = !on;
-    a.classList.remove("is-thinking");
-    if (!on) return;
-    const text = a.querySelector<HTMLElement>(".ai-a-text")!;
-    text.classList.remove("ai-gc-in");
-    if (reduced()) return;
-    a.classList.add("is-thinking");
-    typing = window.setTimeout(() => { a.classList.remove("is-thinking"); text.classList.add("ai-gc-in"); }, 650);
-  });
-}));
+// 9 FAQ, Ask BOOMBOT: the kit's chat (one answer open at a time, a moment of "typing").
+initChat();

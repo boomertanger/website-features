@@ -630,6 +630,24 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
+**Flip card, placard and chat** (promoted from the Arcade's How it works when the Trophy Room
+became their second user; `docs/specs/rewards.md` §12). Same look and behaviour as before.
+- **Flip card: `.bt-flip`**, a `<button>` medal card that turns over: `.bt-flip-in` >
+  `.bt-flip-face` (front: `.bt-flip-medal`, `b`, `.bt-flip-sub`, `.bt-flip-hint`) and
+  `.bt-flip-face--back` (`.bt-flip-k` labels, `.bt-flip-v` values, `.bt-flip-tag`). Hover or focus
+  turns it; a tap toggles `.is-flipped` (`shared/ui/flip-card.js` `initFlipCards(root)`). Tones
+  `--red` `--gold` `--teal` `--primary`, or set `--c`. `.bt-flip-grid`: four columns, two at
+  ≤ 900px. Give the button an `aria-label` with both sides (the faces are `aria-hidden`). Reduced
+  motion: it cross-fades to the back.
+- **Placard: `.bt-placard`**, an arcade cabinet's instruction placard: `.bt-placard-head` (two
+  blinking bulbs, a lit title) over `ol.bt-placard-list` of `li.bt-placard-rule`
+  (`.bt-placard-n` outlined numeral, `b`, text); one column at ≤ 640px.
+- **Chat: `.bt-chat`** (Ask BOOMBOT): `button.bt-chat-q` questions (right bubbles,
+  `aria-expanded`, `aria-controls`) and `.bt-chat-a` answers (left bubbles: `.bt-chat-av` with
+  `boombotIcon(uid)`, `.bt-chat-bub` with `small`, `.bt-chat-typing`, `.bt-chat-text`).
+  `shared/ui/chat.js` `initChat(root)`: one open at a time, 650 ms of "typing" (`.is-thinking`);
+  the answers are in the HTML from the start. Reduced motion: no typing.
+
 **Game Vault kit pieces** (`docs/specs/game-vault.md` §9; mockups
 `docs/design/mockups/game-vault-mockups.html` round 1 and `game-vault-round-2.html`). Built
 for the Vault, reusable anywhere; all on the live UI kit page (Covers, search and triage).
@@ -709,6 +727,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `dial.js` | `dialHtml(score, { label, caption, size })`, `initDials(root)` |
 | `cmd.js` | `initCmd({ input, mount, groups, onChoose, foot })` → `{ refresh, close }`; `litText(text, indexes, esc)` |
 | `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
+| `flip-card.js` · `chat.js` | `initFlipCards(root)` · `initChat(root)` |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
 

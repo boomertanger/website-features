@@ -390,6 +390,103 @@
 .bt-root:not(#_) .bt-level--5 i:nth-child(4) { height: 9px; }
 .bt-root:not(#_) .bt-level--5 i:nth-child(5) { height: 11px; }
 
+/* ---- Flip card, placard and chat (promoted from the Arcade's How it works, docs/specs/rewards.md §12) ----
+   .bt-flip       a medal card that turns over: <button class="bt-flip bt-flip--gold"> > .bt-flip-in >
+                  .bt-flip-face (front: .bt-flip-medal, b, .bt-flip-sub, .bt-flip-hint) and
+                  .bt-flip-face.bt-flip-face--back (.bt-flip-k labels, .bt-flip-v values, .bt-flip-tag).
+                  Hover or focus turns it; a tap toggles .is-flipped (shared/ui/flip-card.js). Tones:
+                  --red --gold --teal --primary (or set --c). .bt-flip-grid lays out four (two at 900px).
+                  Reduced motion: it cross-fades to the back instead of turning.
+   .bt-placard    an arcade cabinet's instruction placard: .bt-placard-head (two blinking bulbs and a
+                  lit title) over ol.bt-placard-list of li.bt-placard-rule (.bt-placard-n numeral, b, text).
+   .bt-chat       Ask BOOMBOT: button.bt-chat-q questions (right bubbles, aria-expanded/aria-controls)
+                  and .bt-chat-a answers (left bubbles: .bt-chat-av with the BOOMBOT icon, .bt-chat-bub
+                  with small, .bt-chat-typing dots and .bt-chat-text). One open at a time with 650 ms of
+                  "typing" (shared/ui/chat.js); the answers are in the HTML from the start. */
+.bt-root:not(#_) .bt-flip-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .bt-flip { --c: var(--bt-primary); height: 230px; padding: 0; border: 0; background: none; color: inherit; font: inherit; text-align: center; cursor: pointer; perspective: 900px; }
+.bt-root:not(#_) .bt-flip--red { --c: var(--bt-red); }
+.bt-root:not(#_) .bt-flip--gold { --c: var(--bt-gold); }
+.bt-root:not(#_) .bt-flip--teal { --c: var(--bt-teal); }
+.bt-root:not(#_) .bt-flip--primary { --c: var(--bt-primary); }
+.bt-root:not(#_) .bt-flip-in { position: relative; display: block; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-in { transform: rotateY(180deg); }
+.bt-root:not(#_) .bt-flip:focus-visible { outline: none; }
+.bt-root:not(#_) .bt-flip:focus-visible .bt-flip-face { outline: 2px solid var(--bt-primary); outline-offset: 3px; }
+.bt-root:not(#_) .bt-flip-face { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; padding: 18px; overflow: hidden; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--c) 16%, transparent), transparent 70%), var(--bt-surface); -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.bt-root:not(#_) .bt-flip-face--back { border-color: color-mix(in srgb, var(--c) 55%, transparent); background: radial-gradient(80% 70% at 50% 100%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), var(--bt-surface); transform: rotateY(180deg); }
+.bt-root:not(#_) .bt-flip-medal { position: relative; width: 84px; height: 84px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; font-size: 34px; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 70%, var(--bt-text) 10%), color-mix(in srgb, var(--c) 30%, var(--bt-bg)) 70%); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 0 6px color-mix(in srgb, var(--c) 70%, transparent), 0 0 26px color-mix(in srgb, var(--c) 40%, transparent); }
+.bt-root:not(#_) .bt-flip-medal::after { content: ""; position: absolute; inset: -20%; background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--bt-logo-shine) 55%, transparent) 50%, transparent 60%); transform: translateX(-100%); }
+.bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-medal::after { animation: bt-flip-shine 0.8s ease-out; }
+@keyframes bt-flip-shine { to { transform: translateX(100%); } }
+.bt-root:not(#_) .bt-flip-face > b { margin-top: 8px; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .bt-flip-sub { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-flip-hint { position: absolute; bottom: 10px; color: var(--bt-text-faint); font-size: var(--bt-text-2xs); letter-spacing: 0.06em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-flip-k { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-flip-v { margin-bottom: 8px; color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .bt-flip-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+
+.bt-root:not(#_) .bt-placard { overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 1.2%, transparent) 0 1px, transparent 1px 4px), var(--bt-surface); }
+.bt-root:not(#_) .bt-placard-head { display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px; border-bottom: 1px solid var(--bt-border-2); background: linear-gradient(180deg, rgba(var(--bt-lamp-rgb), 0.08), transparent), var(--bt-bg); }
+.bt-root:not(#_) .bt-placard-head b { color: var(--bt-lamp); font-size: var(--bt-text-md); font-weight: 900; letter-spacing: 0.28em; text-transform: uppercase; text-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), 0.55); }
+.bt-root:not(#_) .bt-placard-head i { width: 7px; height: 7px; border-radius: 50%; background: var(--bt-lamp); box-shadow: 0 0 8px rgba(var(--bt-lamp-rgb), 0.9); animation: bt-placard-bulb 1.6s steps(1, end) infinite; }
+.bt-root:not(#_) .bt-placard-head i:last-child { animation-delay: 0.8s; }
+@keyframes bt-placard-bulb { 0%, 50% { opacity: 1; } 51%, 100% { opacity: 0.25; } }
+.bt-root:not(#_) .bt-placard-list { display: grid; grid-template-columns: 1fr 1fr; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .bt-placard-rule { display: grid; grid-template-columns: 58px minmax(0, 1fr); gap: 4px 14px; padding: 18px 22px; border-top: 1px solid var(--bt-border); transition: background 0.25s; }
+.bt-root:not(#_) .bt-placard-rule:nth-child(-n+2) { border-top: 0; }
+.bt-root:not(#_) .bt-placard-rule:nth-child(odd) { border-right: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-placard-n { grid-row: span 2; color: transparent; font-size: 34px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; -webkit-text-stroke: 1px rgba(var(--bt-gold-rgb), 0.55); transition: color 0.25s, text-shadow 0.25s; }
+.bt-root:not(#_) .bt-placard-rule b { display: flex; align-items: center; gap: 8px; font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .bt-placard-rule > span:last-child { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .bt-placard-rule:hover { background: rgba(var(--bt-gold-rgb), 0.04); }
+.bt-root:not(#_) .bt-placard-rule:hover .bt-placard-n { color: var(--bt-title); -webkit-text-stroke-color: var(--bt-title); text-shadow: 0 0 16px rgba(var(--bt-gold-rgb), 0.45); }
+
+.bt-root:not(#_) .bt-chat { display: flex; flex-direction: column; gap: 10px; max-width: 760px; }
+.bt-root:not(#_) .bt-chat-q { align-self: flex-end; display: flex; align-items: center; gap: 10px; max-width: 86%; padding: 12px 16px; border: 1px solid var(--bt-border-2); border-radius: 18px 18px 4px 18px; background: var(--bt-surface); color: var(--bt-text); font: inherit; font-size: var(--bt-text-base); font-weight: 700; text-align: left; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.2s; }
+.bt-root:not(#_) .bt-chat-q:hover { border-color: var(--bt-primary); transform: translateX(-2px); }
+.bt-root:not(#_) .bt-chat-q[aria-expanded="true"] { border-color: var(--bt-primary); background: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .bt-chat-qi { flex: none; color: var(--bt-primary-soft); font-size: var(--bt-text-xs); font-weight: 800; }
+.bt-root:not(#_) .bt-chat-q[aria-expanded="true"] .bt-chat-qi { color: var(--bt-text); }
+.bt-root:not(#_) .bt-chat-a { align-self: flex-start; display: flex; align-items: flex-end; gap: 10px; max-width: 86%; }
+.bt-root:not(#_) .bt-chat-av { width: 48px; height: 48px; flex: none; display: grid; place-items: center; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: 50%; background: radial-gradient(circle at 50% 60%, rgba(var(--bt-lamp-rgb), 0.16), var(--bt-bg) 70%); }
+.bt-root:not(#_) .bt-chat-av .bt-boombot { width: 30px; height: 30px; }
+.bt-root:not(#_) .bt-chat-bub { padding: 12px 16px; border: 1px solid var(--bt-border-2); border-radius: 18px 18px 18px 4px; background: var(--bt-surface-2); color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.55; }
+.bt-root:not(#_) .bt-chat-bub small { display: block; margin-bottom: 4px; color: var(--bt-title); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-chat-typing { display: none; gap: 4px; padding: 4px 0; }
+.bt-root:not(#_) .bt-chat-typing i { width: 7px; height: 7px; border-radius: 50%; background: var(--bt-text-muted); animation: bt-chat-typing 1s ease-in-out infinite; }
+.bt-root:not(#_) .bt-chat-typing i:nth-child(2) { animation-delay: 0.15s; }
+.bt-root:not(#_) .bt-chat-typing i:nth-child(3) { animation-delay: 0.3s; }
+@keyframes bt-chat-typing { 0%, 100% { transform: translateY(0); opacity: 0.4; } 50% { transform: translateY(-4px); opacity: 1; } }
+/* While BOOMBOT "types" (.is-thinking), the dots show and the answer is only visually hidden. */
+.bt-root:not(#_) .bt-chat-a.is-thinking .bt-chat-typing { display: inline-flex; }
+.bt-root:not(#_) .bt-chat-a.is-thinking .bt-chat-text { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.bt-root:not(#_) .bt-chat-text.bt-chat-in { display: block; }
+.bt-root:not(#_) .bt-chat-in { animation: bt-chat-in 0.35s cubic-bezier(.3, .7, .2, 1); }
+@keyframes bt-chat-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .bt-flip-grid { grid-template-columns: 1fr 1fr; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-placard-list { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-placard-rule:nth-child(odd) { border-right: 0; }
+  .bt-root:not(#_) .bt-placard-rule:nth-child(2) { border-top: 1px solid var(--bt-border); }
+  .bt-root:not(#_) .bt-placard-rule { grid-template-columns: 44px minmax(0, 1fr); padding: 16px; }
+  .bt-root:not(#_) .bt-placard-n { font-size: 28px; }
+  .bt-root:not(#_) :is(.bt-chat-q, .bt-chat-a) { max-width: 96%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* No turn, no bulbs, no typing dots: the medal cross-fades to its back. */
+  .bt-root:not(#_) .bt-placard-head i, .bt-root:not(#_) .bt-chat-typing i, .bt-root:not(#_) .bt-chat-in, .bt-root:not(#_) .bt-flip .bt-flip-medal::after { animation: none; }
+  .bt-root:not(#_) .bt-chat-q:hover { transform: none; }
+  .bt-root:not(#_) .bt-flip-in { transform: none !important; transition: none; }
+  .bt-root:not(#_) .bt-flip-face { -webkit-backface-visibility: visible; backface-visibility: visible; transition: opacity 0.2s; }
+  .bt-root:not(#_) .bt-flip-face--back { transform: none; opacity: 0; }
+  .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-face { opacity: 0; }
+  .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-face--back { opacity: 1; }
+}
+
 /* ---- Medal: .bt-medal (the Trophy Room's badges; docs/specs/rewards.md, design-system.md §8j) ----
    A coin: .bt-medal-ring (the rarity) + .bt-medal-face (the art). Size: --bt-medal-size (72px).
    data-rarity 1-5: 1 gray, 2 blue, 3 gold notched, 4 pink with a glow and an inner ring,

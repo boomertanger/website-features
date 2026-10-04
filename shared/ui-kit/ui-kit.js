@@ -22,6 +22,8 @@ import { initShelves } from "../ui/shelf.js";
 import { timelineHtml, initTimelines } from "../ui/timeline.js";
 import { initDeck, flyOut } from "../ui/deck.js";
 import { medalHtml, RARITY } from "../ui/medal.js";
+import { initFlipCards } from "../ui/flip-card.js";
+import { initChat } from "../ui/chat.js";
 
 const KIT_VERSION = "dev";
 
@@ -783,7 +785,8 @@ function pageHtml() {
 ${navHtml()}
 ${arcadeHtml()}
 ${vaultKitHtml()}
-${trophyKitHtml()}`;
+${trophyKitHtml()}
+${storyKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -963,6 +966,8 @@ function init() {
   initSpotlights(mount);
   initCycleWheels(mount);
   initVaultKit(mount);
+  initFlipCards(mount);
+  initChat(mount);
   applyAdmin();
 
   mount.querySelector("[data-kit-width]").addEventListener("click", (e) => {
@@ -1072,6 +1077,24 @@ function init() {
     const row = e.target.closest?.("[data-row]");
     if (row && e.target === row && (e.key === "Enter" || e.key === " ")) { e.preventDefault(); openDetail(state.rows.find((x) => x.id === row.dataset.row)); }
   });
+}
+
+// ---------- Flip card, placard and chat (promoted from the Arcade's How it works) ----------
+function storyKitHtml() {
+  const flip = (tone, ic, t, sub, how, unl) => `<button type="button" class="bt-flip bt-flip--${tone}" aria-label="${t}: ${sub}. How to earn: ${how} Unlocks: ${unl}."><span class="bt-flip-in"><span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">${ic}</span><b>${t}</b><span class="bt-flip-sub">${sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span><span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">${how}</span><span class="bt-flip-k">Unlocks</span><span class="bt-flip-tag">${unl}</span></span></span></button>`;
+  const rules = [["⏱", "Time is the score", "Fastest finished run wins."], ["🏁", "Only finished runs count", "Close calls count as runs played."], ["🖥", "Desktop and Mobile are separate", "Each gets its own board."], ["🔒", "Runs are checked", "Impossible times are removed."]];
+  const qa = [["How do I earn badges?", "Play, show up for streams and join in. Each badge says how to earn it."], ["What do rarities mean?", "How hard a badge is to get: Common to Legendary, with 1 to 5 bars."]];
+  return `
+  <section class="kit-section" id="kit-story-pieces">
+    <h2 class="kit-h">Flip card, placard and chat</h2>
+    <p class="kit-p">Promoted from the Arcade's How it works (the Trophy Room is the second page to use them). Same look and behaviour; under reduced motion the flip cross-fades, the bulbs and typing dots stop.</p>
+    <p class="kit-sub">Flip card: .bt-flip (hover or focus turns it; a tap toggles .is-flipped, shared/ui/flip-card.js) in a .bt-flip-grid (4 columns, 2 at 900px). Tones --red --gold --teal --primary</p>
+    <div class="bt-flip-grid">${flip("red", "🩸", "Splat finisher", "Finished Tap the Splat", "Finish Tap the Splat once.", "Unlocks pitching")}${flip("gold", "🏆", "Top 10", "Reached a top 10", "Place in an all-time top 10.", "Contest entry")}${flip("teal", "💡", "Idea shipped", "Your idea made it", "Post an idea that ships.", "Credited in notes")}${flip("primary", "🗝", "Keeper", "Led a version", "Take a version to release.", "Forever on profile")}</div>
+    <p class="kit-sub">Placard: .bt-placard with .bt-placard-head (blinking bulbs) over ol.bt-placard-list of li.bt-placard-rule (.bt-placard-n numeral, b, text); one column at 640px</p>
+    <div class="bt-placard"><div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div><ol class="bt-placard-list">${rules.map(([ic, t, d], i) => `<li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><b>${t} <span aria-hidden="true">${ic}</span></b><span>${d}</span></li>`).join("")}</ol></div>
+    <p class="kit-sub">Chat (Ask BOOMBOT): .bt-chat with button.bt-chat-q questions and .bt-chat-a answers (shared/ui/chat.js: one open at a time, 650 ms of typing). Click a question</p>
+    <div class="bt-chat">${qa.map(([q, a], i) => `<button type="button" class="bt-chat-q" aria-expanded="${i === 0}" aria-controls="kit-ans-${i}"><span class="bt-chat-qi" aria-hidden="true">Q${i + 1}</span>${q}</button><div class="bt-chat-a" id="kit-ans-${i}" role="region" aria-label="BOOMBOT's answer: ${q}"${i ? " hidden" : ""}><span class="bt-chat-av">${boombotIcon(`kit-chat-bb-${i}`)}</span><div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">${a}</span></div></div>`).join("")}</div>
+  </section>`;
 }
 
 // ---------- Trophy Room kit pieces (docs/specs/rewards.md §12) ----------
