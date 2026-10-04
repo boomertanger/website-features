@@ -19,6 +19,7 @@ const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const v = require("./validate");
+const factory = require("../factory/record");   // Fun Factory profile events: avatar, link
 
 const SITE_ID = "boomertanger";
 const TERMS_VERSION_FALLBACK = "2026-09-28";   // sites/{siteId}.termsVersion wins (seed-site.js copies it from site.json)
@@ -238,6 +239,7 @@ module.exports = function accounts({ adminLogEntry }) {
     batch.update(r.user, userPatch);
     if (Object.keys(profilePatch).length) batch.update(r.profile, profilePatch);
     await batch.commit();
+    if (photo) await factory.recordFactoryEvent(uid, "profile", { action: "avatar" }, "avatar");
     return { ok: true, photo: !!photo };
   });
 
@@ -307,6 +309,7 @@ module.exports = function accounts({ adminLogEntry }) {
         tx.set(r.user, { linked: { twitch: twitchLinkData(tw, now) } }, { merge: true });
         if (profile.exists && user.get("prefs.showLinked") === true) tx.update(r.profile, { "platforms.twitch": tw.login });
       });
+      await factory.recordFactoryEvent(uid, "profile", { action: "link", platform: "twitch" }, "link-twitch");
       return { linked: { platform: "twitch", login: tw.login } };
     }
 

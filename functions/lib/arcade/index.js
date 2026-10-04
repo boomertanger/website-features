@@ -22,6 +22,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const rewards = require("../rewards/grant");
+const factory = require("../factory/record");
 
 const SITE_ID = "boomertanger";
 const SHARDS = 10;
@@ -245,6 +246,18 @@ module.exports = function arcade() {
       } catch (err) {
         console.error("finishRun: rewards", err);
       }
+    }
+
+    // Fun Factory (docs/specs/fun-factory.md §5): a signed-up member's run counts as played (any
+    // result), finished (a passing win), a new personal best, and placed on a board. Never fails the run.
+    if (uid && profile?.exists) {
+      const p = { gameId: id.gameId };
+      await Promise.all([
+        factory.recordFactoryEvent(uid, "arcade", { action: "play", ...p }, `play-${id.docId}`),
+        result === "win" && checks.ok && factory.recordFactoryEvent(uid, "arcade", { action: "finish", ...p }, `finish-${id.docId}`),
+        out.personalBest && factory.recordFactoryEvent(uid, "arcade", { action: "best", ...p }, `best-${id.docId}`),
+        out.onBoard && factory.recordFactoryEvent(uid, "arcade", { action: "board", ...p }, `board-${id.docId}`),
+      ]);
     }
 
     if (counted) {

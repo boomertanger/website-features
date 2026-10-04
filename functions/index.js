@@ -918,3 +918,8 @@ Object.assign(exports, require("./lib/streams")({ adminLogEntry }));
 // Badges, trophies, XP and levels. Features pay out through lib/rewards/grant.js (internal);
 // these are the member and admin callables, the linked-accounts trigger and the nightly job.
 Object.assign(exports, require("./lib/rewards")({ adminLogEntry }));
+
+// ---------- Fun Factory (docs/specs/fun-factory.md) ----------
+// Seasons, campaigns and activities. Features record actions through lib/factory/record.js
+// (recordFactoryEvent, internal); these are the member callables (check-in, visits, medal hunts).
+Object.assign(exports, require("./lib/factory")());

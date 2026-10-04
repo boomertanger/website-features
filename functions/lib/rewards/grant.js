@@ -99,7 +99,12 @@ function makeGrant({ db = admin.firestore() } = {}) {
         link: "/trophies", actorName: out.handle ? `@${out.handle}` : null, badgeId, rarity: out.badge.rarity,
       });
     }
-    if (out.granted) delete out.badge;
+    if (out.granted) {
+      // Fun Factory (type badges): every badge earned, with its collection and rarity. Lazy require:
+      // the engine pays its own badges through this function.
+      await require("../factory/record").recordFactoryEvent(uid, "badges", { action: "earn", badgeId, collection: out.badge.collection, rarity: out.badge.rarity }, `badge-${badgeId}`);
+      delete out.badge;
+    }
     return out;
   }
 

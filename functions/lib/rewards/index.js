@@ -23,6 +23,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { makeGrant, SITE_ID } = require("./grant");
+const factory = require("../factory/record");   // Fun Factory profile event: persona
 
 const TZ = "America/Chicago";
 const PAGE = 25;
@@ -81,6 +82,7 @@ module.exports = function rewards({ adminLogEntry }) {
     const r = L.checkPersona(request.data?.persona ?? null);
     if (!r.ok) throw fail("invalid-argument", r.reason === "locked" ? "That persona isn't unlocked yet." : "Pick Gamer, Viewer, Lurker, Streamer or Creator.", r.reason);
     await profiles.doc(c.uid).update({ persona: r.persona });
+    if (r.persona) await factory.recordFactoryEvent(c.uid, "profile", { action: "persona" }, "persona");
     return { ok: true, persona: r.persona };
   });
 

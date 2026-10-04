@@ -15,6 +15,9 @@
 //   vaultSweepPendingCovers   daily              removes pending uploads never submitted within 24 hours
 //   vaultRefresh              weekly             re-fetches unreleased and early-access games
 // (adminEditItem's new kind vaultGame is in edit.js; onStreamWritten is in lib/streams.)
+// Fun Factory events (type vault, docs/specs/fun-factory.md §4): want ("I want this too" turned on,
+// once per game per member ever), add (a member's game gets in, directly or approved from the
+// queue; never a rejected one), cover (a member's cover suggestion approved).
 //
 // Callable errors carry details.reason so the site can show the right message.
 const crypto = require("crypto");
@@ -27,6 +30,7 @@ const C = require("./checks");
 const makeStore = require("./store");
 const cloud = require("./cloudinary");
 const { fail, callerInfo, requireVerifiedMember, requireStaff, requireAdmin, sourceError } = require("./common");
+const factory = require("../factory/record");
 const makeEditor = require("./edit");
 
 const DAY_MS = 24 * 60 * 60 * 1000;
@@ -181,6 +185,7 @@ module.exports = function vault(deps) {
       store.digestAdd(made.slug, r.game),
     ]);
     await store.rebuildPublic();
+    await factory.recordFactoryEvent(c.uid, "vault", { action: "add", slug: made.slug }, `add-${made.slug}`, { keep: true });
     return reply({ slug: made.slug, title: r.game.title });
   });
 
@@ -207,6 +212,7 @@ module.exports = function vault(deps) {
     if (g.get("status") !== "wishlist") throw fail("failed-precondition", "Only wishlist games can be wanted.", "notWishlist");
     const wantedCount = await store.setWant(slug, c.uid, on);
     await store.rebuildPublic();
+    if (on) await factory.recordFactoryEvent(c.uid, "vault", { action: "want", slug }, `want-${slug}`, { keep: true });
     return { ok: true, wantedCount, on };
   });
 
@@ -284,6 +290,7 @@ module.exports = function vault(deps) {
       await Promise.all([store.digestAdd(made.slug, item.game), log("queue", item.game.title, made.slug, { result: "approved" })]);
       await store.rebuildPublic();
       await notify(submitterUid, { kind: "add", title: item.game.title, slug: made.slug, decision: "approved", reason: "" });
+      if (submitterUid) await factory.recordFactoryEvent(submitterUid, "vault", { action: "add", slug: made.slug }, `add-${made.slug}`, { keep: true });
       return { ok: true, result: "approved", slug: made.slug };
     }
 
@@ -331,6 +338,7 @@ module.exports = function vault(deps) {
     await store.rebuildPublic();
     await notify(submitterUid, { kind: "cover", title: g.get("title"), slug: item.slug, decision: decision === "approve" ? "approved" : "replaced", reason: "" });
     await log("cover", g.get("title"), item.slug, { result: decision === "approve" ? "approved" : "replaced" });
+    if (decision === "approve" && submitterUid) await factory.recordFactoryEvent(submitterUid, "vault", { action: "cover", slug: item.slug }, `cover-${item.slug}`, { keep: true });
     return { ok: true, result: decision === "approve" ? "approved" : "replaced" };
   });
 
