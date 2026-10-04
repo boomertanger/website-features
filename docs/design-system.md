@@ -98,8 +98,10 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
 | Boom Arcade (added) | `rank-1` … `rank-5`, one rank set for every board and the podium: 1 gold (`title`), 2 silver (#dfe4ee), 3 ember orange (#f0441c, the end of `title-gradient`), 4 dark graphite (mixed from `text-muted` and `surface-2`; numbers on it in `text-muted`), 5 pink (`pink`); never purple, which means clickable. `rank-silver` and `rank-bronze` stay as aliases of `rank-2` and `rank-3` · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
 
+Game Vault kit pieces (added): `ease-glide` (the one glide curve for tilt, shelves, tokens and the command panel) · `glare` (the light a tilted cover catches: a little of `logo-shine`).
+
 Color meaning: purple = clickable. Gold = page and dialog titles (and the level-3 tick).
-Red = destroys data. Admin green (`admin-*`) = admin-only. Status and level badges follow
+Red = destroys data. Admin green (`admin-*`) = staff (mods and admins; widened from admin-only by the Game Vault, §8i). Status and level badges follow
 the site-wide badge system in §5 and are never purple.
 
 ## 4. Heading ladder
@@ -628,6 +630,67 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
+**Game Vault kit pieces** (`docs/specs/game-vault.md` §9; mockups
+`docs/design/mockups/game-vault-mockups.html` round 1 and `game-vault-round-2.html`). Built
+for the Vault, reusable anywhere; all on the live UI kit page (Covers, search and triage).
+- **Cover: `.bt-cover`**, a 3:4 box with an `<img>` or the mascot fallback
+  (`.bt-cover-fallback`); `--sm` is a 48px thumb. `shared/ui/cover.js`:
+  `coverHtml(cover, { cls, alt, over, tilt, size, eager })` builds the IGDB
+  (`t_cover_big` / `t_cover_small`) or Steam (`library_600x900`) URL at display time from
+  `{ source: igdb | steam | upload }`; nothing is copied to our side. `initCoverFallbacks()`
+  swaps an image that fails to load for the mascot.
+- **Cover grid and card: `.bt-cover-grid`** (auto-fill 164px, 140px at ≤ 640, two columns at
+  ≤ 420) of **`.bt-cover-card`** links: `.bt-cover` + `.bt-cover-card-body` (`-title`, two
+  lines; `-row` with a status badge and the score; `-meta`; optional `.bt-tags`).
+  `--dimmed` greys an abandoned game; `.bt-cover-on--top` / `--bottom` put a badge or score
+  on the art. Hover: the purple ring.
+- **Score: `.bt-score`** (`b` value + small `/10`), `--lg`, `.bt-score-pips` (10 `i`,
+  `.is-on`), `.bt-score-none` ("Not rated"). **Score dial: `.bt-dial`**
+  (`shared/ui/dial.js` `dialHtml(score, { label, caption, size })` + `initDials(root)`): ten
+  segments that light one by one in Boomer's gold (`--bt-title`) as it scrolls into view;
+  `--sm`; reduced motion lights them at once.
+- **Tag: `.bt-tag`** (neutral pill; `a`/`button.bt-tag` is clickable, purple on hover) in
+  **`.bt-tags`**. **Token: `.bt-token`**, a removable active filter (purple: it's clickable),
+  `<button>` + `<i>×</i>` + a `.bt-sr-only` "Remove …" label. **`.bt-sr-only`** hides text
+  for everyone but screen readers.
+- **Search: `.bt-search`** (icon + `.bt-input` + `.bt-search-key` showing "/" or
+  `.bt-search-clear`), `--lg` for a page's main search. **Command panel: `.bt-cmd`**
+  (`shared/ui/cmd.js` `initCmd({ input, mount, groups, onChoose })`) under a search field in a
+  `position: relative` wrapper: `.bt-label` groups, `button.bt-cmd-item` options
+  (`aria-selected`), `.bt-cmd-ic` for filter and action rows, `.bt-cmd-foot` with `kbd`. The
+  field is a combobox: ↑ ↓ move, Enter picks, Esc closes. `litText(text, indexes, esc)` wraps
+  matched letters in `<mark>`.
+- **Chip count `.bt-chip-n`** (inside a chip or button) and **`.bt-chip--menu`** (a caret;
+  `aria-expanded`). **Popover: `.bt-popover`** under a chip (checkbox or radio rows with a
+  `.bt-popover-n` count, `.bt-popover-foot`). **Sheet: `.bt-sheet`**, a bottom sheet (grip,
+  head, groups, chips, actions).
+- **Pick list: `.bt-pick-list`** of **`button.bt-pick`** (thumb, `.bt-pick-main` with `b` and
+  `small`, `.bt-pick-act` or a tag); `aria-pressed="true"` when chosen, `.is-in` when it's
+  already there (an `a.bt-pick.is-in` links to it). **Dropzone: `.bt-dropzone`** (`.is-over`
+  while a file is dragged over; keyboard: Enter or Space opens the file picker).
+- **Tilt and glare: `[data-tilt]`** with a `.bt-glare` inside (`shared/ui/tilt.js`
+  `initTilt()`, one delegated listener): the element turns toward the pointer and catches the
+  light. Pointer devices with a fine pointer only; still under reduced motion.
+- **Count-up: `[data-count-to]`** (+ `data-suffix`; `shared/ui/count-up.js` `initCountUp`): a
+  number that counts up once as it scrolls in; its text is the final value without the script.
+- **Shelf: `.bt-shelf`** in a `[data-shelf-wrap]` with `.bt-shelf-head`, `.bt-shelf-tools`
+  and `.bt-shelf-arrows` (`[data-shelf-prev]` / `[data-shelf-next]`; `shared/ui/shelf.js`): a
+  snap rail of cards (168px, 138px on phones; arrows hide on phones). `--ranked` with
+  `.bt-ranked` + `.bt-rank`: outlined numerals in `--rk` (`--bt-rank-1..3` for the top three).
+- **Timeline: `.bt-timeline`** (`shared/ui/timeline.js` `timelineHtml({ points, site, ends,
+  keys, label })` + `initTimelines`): dots on a line sized by value, a hollow `.is-legacy` dot
+  for history before the site, a flag, a coloured stretch for "on the site", tooltips on hover
+  and focus. Built for a game's streams; the Stream Library reuses it.
+- **Triage deck: `.bt-deck`** (`shared/ui/deck.js` `initDeck(deck, { onKey })` +
+  `flyOut(card, kind)`): `.bt-deck-count` / `.bt-deck-prog`, two `.bt-deck-ghost` cards behind
+  one `.bt-deck-card` (cover + `.bt-deck-body`: `h3`, `.bt-deck-checks` with `.is-flag` rows,
+  `.bt-deck-acts`). Approve flies right with a green glow, Reject left; A / R / S work while the
+  deck has focus. Reduced motion: the card just swaps.
+- **Gliding grid** (`shared/ui/flip.js` `flipSwap(container, html)`): items with `data-key`
+  glide to their new places when a list re-renders; new ones fade in.
+- **Store marks** (`shared/ui/brand-icons.js` `brandIcon(key)`): the official Steam, GOG,
+  itch.io and Epic Games Store marks (Simple Icons, CC0), one-colour, for "Where to play".
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -641,6 +704,12 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 | `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
 | `hero-carousel.js` | `initHeroCarousel(hero, { duration = 7000, stateRoot = document.body })` → `{ go, destroy }`. Stories bars, 7 s per slide, pause on hover / focus / hidden tab, swipe, tap zones on narrow screens (never on links or buttons), arrow keys, no autoplay under reduced motion, live-first pinning of the `data-stream` slide while `data-live` isn't `off`, drops slides outside `data-starts`/`data-ends` or for another `data-audience`. |
 | `pill-switch.js` | `initPillSwitch(group, { target, attr, onChange })` → `{ set }`. Marks the chosen `button[data-value]` `.is-on` / `aria-pressed` and writes `data-{attr}` on the target. |
+| `cover.js` | `coverHtml(cover, opts)`, `coverUrl(cover)`, `IGDB_COVER`, `STEAM_COVER`, `mascotFallback()`, `initCoverFallbacks()` |
+| `tilt.js` · `count-up.js` · `flip.js` | `initTilt()` · `initCountUp(root)` · `flipSwap(container, html)` |
+| `dial.js` | `dialHtml(score, { label, caption, size })`, `initDials(root)` |
+| `cmd.js` | `initCmd({ input, mount, groups, onChoose, foot })` → `{ refresh, close }`; `litText(text, indexes, esc)` |
+| `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
+| `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
@@ -1036,3 +1105,37 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 - **Long text pages get the progress-rail menu** through the shared `TocLayout`: How it works,
   Terms and Privacy. The menu shows the plain section names; on Terms and Privacy the
   headings themselves carry the "01 · Section" numbering (`.bt-prose--chapters`).
+
+### 8i. Game Vault
+
+Spec: `docs/specs/game-vault.md` (and `docs/specs/stream-object.md`); mockups
+`docs/design/mockups/game-vault-mockups.html` (round 1) and `game-vault-round-2.html` (round 2:
+A65 C56 B34 D34 E4 F3 G34). Pages: `/games`, `/games/{slug}`, `/games/queue`; feature CSS
+`site/src/styles/game-vault.css` (the door, ledger, tape, stamps, ribbon, lock scene,
+flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
+
+- **Staff green means mods and admins.** The admin green (`--bt-admin-*`, `.bt-btn--admin`) was
+  admin-only; the Vault widens it to staff: the Queue button and count, Approve, Hide and the
+  admin Edit all use it. Mods see the queue and Hide; only admins see Edit and Delete.
+- **Boomer's gold is his own voice.** The score dial lights in `--bt-title`, the colour the site
+  already uses for Boomer's words (titles, verdicts); never a status. Statuses keep their badge
+  tones (Playing green, Finished lime, Abandoned gray, Wishlist gold).
+- **Covers come from IGDB or Steam at display time.** We store only the IGDB image id or the
+  Steam app id and build the URL in the browser (`shared/ui/cover.js`); nothing is copied to
+  our side unless an admin or mod uploads an override (Cloudinary `game-vault/covers`). A game
+  with no art shows the mascot.
+- **The vault door opens once per visit.** The /games hero plays its opening the first time it
+  scrolls into view (`sessionStorage`), never under reduced motion (it's simply open), and a
+  click skips it. After that it rests open.
+- **Member cover suggestions are only for games with no cover** (the mascot), or with an Add it
+  by hand; never to replace an existing cover. They're cropped to 3:4 in the browser, uploaded
+  privately (Cloudinary type authenticated) and seen by staff through 10-minute signed previews.
+- **One read per visit.** /games draws everything from `public/vault`; search and filters run in
+  the browser (`shared/vault-search.js`). A game page reads its own doc and its published,
+  ended streams (filtered on `gameIds` + `published`, sorted in the browser).
+- **Routing.** Cloudflare Pages rewrites `/games/:slug` to the one client-rendered page
+  `/games/view/` (`site/public/_redirects`, status 200); `/games/queue` is matched first and
+  rewritten to itself.
+- **"I want this too" is remembered per browser.** The server never shows who wants what, so
+  the button remembers the games you pressed in this browser; pressing again elsewhere is
+  harmless (the server counts each member once).
