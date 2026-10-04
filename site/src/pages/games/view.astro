@@ -1,0 +1,20 @@
+---
+// /games/{slug}, one Game Vault game (docs/specs/game-vault.md §9; round 2 E4, round 1 E3 edit
+// and the E4 community pick page). Cloudflare Pages serves this page for every /games/{slug}
+// (public/_redirects); scripts/vault/game.ts reads the slug from the address (or ?slug= when the
+// page is opened at /games/view/ directly, as in local previews) and draws the game.
+import VaultLayout from "../../layouts/VaultLayout.astro";
+import { vaultIcon } from "../../scripts/vault/art";
+---
+<VaultLayout title="Game Vault">
+  <div data-game>
+    <div class="gv-body">
+      <div class="gv-loader" role="status"><Fragment set:html={vaultIcon()} /><span>Opening the Vault…</span></div>
+      <noscript><p class="bt-empty-title">The Game Vault needs JavaScript to open.</p></noscript>
+    </div>
+  </div>
+</VaultLayout>
+
+<script>
+  import "../../scripts/vault/game";
+</script>

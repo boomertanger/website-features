@@ -1,0 +1,10 @@
+# Cloudflare Pages redirects and rewrites (https://developers.cloudflare.com/pages/configuration/redirects/).
+# First match wins. A 200 is a rewrite: the address bar keeps the URL, the page at the target is served.
+#
+# Game Vault (docs/specs/game-vault.md §9): every /games/{slug} is the one client-rendered game page
+# (/games/view/, which reads the slug from the address). The queue page is a real page, so it is
+# matched first and rewritten to itself; without that line /games/queue would load as a game.
+/games/queue    /games/queue/  200
+/games/queue/   /games/queue/  200
+/games/:slug    /games/view/   200
+/games/:slug/   /games/view/   200
