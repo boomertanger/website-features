@@ -8,7 +8,7 @@
 //   comingSoon:  the badge's source isn't live yet (a Coming soon flag)
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
 import { levelBars, escapeHtml as esc } from "../../../../shared/ui/dom.js";
-import { badgeXp } from "../../lib/rewards.js";
+import { badgeXp, progress } from "../../lib/rewards.js";
 
 export interface BadgeDoc {
   id: string; name: string; collection: string; rarity: number; source: string; how: string;
@@ -64,4 +64,17 @@ export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Hel
       <span class="bt-flip-k">Collection</span><span class="bt-flip-v">${esc(collName)}${pct ? ` · held by ${pct}` : ""}</span>
       <span class="tr-card-xp">${rarityBadge(r)}<span>${xp ? `+${xp} XP` : "No XP"}</span></span>
     </span></span></button>`;
+}
+
+/** The member's level strip (/trophies links it to /account#rewards; the Rewards tab shows it as is).
+ *  go: false leaves out the "Rewards" arrow. */
+export function meStripHtml(xp: number, held: number, total: number, go = true) {
+  const p = progress(xp);
+  const pct = p.nextXp > p.levelXp ? Math.max(0, Math.min(100, ((p.xp - p.levelXp) / (p.nextXp - p.levelXp)) * 100)) : 100;
+  const n = (v: number) => v.toLocaleString("en-US");
+  return `<span class="tr-me-lv" aria-hidden="true"><small>Lv</small>${p.level}</span>
+    <span class="tr-me-main"><span class="tr-lv-top"><b>Level ${p.level} · ${esc(p.rank)}</b><span>${n(p.xp)} / ${n(p.nextXp)} XP</span></span>
+    <span class="tr-xpbar" style="--v:${pct.toFixed(1)}%"><i></i></span></span>
+    <span class="tr-me-count"><b>${held}</b><small>of ${total} badges</small></span>
+    ${go ? `<span class="tr-me-go">Rewards<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>` : ""}`;
 }

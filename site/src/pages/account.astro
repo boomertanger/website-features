@@ -1,10 +1,12 @@
 ---
 // Account page, A2 tabs (docs/design/mockups/accounts.html; docs/specs/accounts.md
-// screen 10): Profile, Linked accounts, Sign-in methods, Privacy, Your data. Phones:
+// screen 10): Profile, Rewards (the Trophy Room, scripts/account/rewards.ts), Linked accounts, Sign-in methods, Privacy, Your data. Phones:
 // the tabs are a swipeable pill row. Real account data only (the ?as= preview
 // doesn't apply here); scripts/account/page.ts fills and drives it.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AccountPanes from "../components/account/AccountPanes.astro";
+import TrophyOrder from "../components/trophies/TrophyOrder.astro";
+import "../styles/trophies.css";
 
 ---
 <BaseLayout title="Account">
@@ -28,9 +30,11 @@ import AccountPanes from "../components/account/AccountPanes.astro";
     </div>
 
     <AccountPanes />
+    <TrophyOrder />
   </div>
 </BaseLayout>
 
 <script>
   import "../scripts/account/page";
+  import "../scripts/account/rewards";
 </script>

@@ -6,24 +6,13 @@ import { initFlipCards } from "../../../../shared/ui/flip-card.js";
 import { RARITY } from "../../../../shared/ui/medal.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { progress } from "../../lib/rewards.js";
-import { badgeCardHtml, LIVE_SOURCES } from "./card";
+import { badgeCardHtml, meStripHtml, LIVE_SOURCES } from "./card";
 import { loadCatalog, loadHeld, ownProfile, isCrew, onMember } from "./data";
 
 const $ = <T extends HTMLElement>(s: string) => document.querySelector<T>(s)!;
 const grid = $("[data-tr-grid]"), me = $<HTMLAnchorElement>("[data-tr-me]"), filters = $("[data-tr-filters]");
 const head = $("[data-tr-head]"), empty = $("[data-tr-empty]");
 const DEFAULT_COLL = "loyalty";
-
-export function meStripHtml(xp: number, held: number, total: number) {
-  const p = progress(xp);
-  const pct = p.nextXp > p.levelXp ? Math.max(0, Math.min(100, ((p.xp - p.levelXp) / (p.nextXp - p.levelXp)) * 100)) : 100;
-  const n = (v: number) => v.toLocaleString("en-US");
-  return `<span class="tr-me-lv" aria-hidden="true"><small>Lv</small>${p.level}</span>
-    <span class="tr-me-main"><span class="tr-lv-top"><b>Level ${p.level} · ${esc(p.rank)}</b><span>${n(p.xp)} / ${n(p.nextXp)} XP</span></span>
-    <span class="tr-xpbar" style="--v:${pct.toFixed(1)}%"><i></i></span></span>
-    <span class="tr-me-count"><b>${held}</b><small>of ${total} badges</small></span>
-    <span class="tr-me-go">Rewards<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4"/></svg></span>`;
-}
 
 onMember(async (s) => {
   const uid = s.user!.uid;

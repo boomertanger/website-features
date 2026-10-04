@@ -1,6 +1,6 @@
 ---
-// The account page's A2 tabs and panes (docs/specs/accounts.md screen 10): Profile,
-// Linked accounts, Sign-in methods, Privacy, Your data. /account renders it hidden until
+// The account page's A2 tabs and panes (docs/specs/accounts.md screen 10): Profile, Rewards
+// (the Trophy Room, docs/specs/rewards.md §11; scripts/account/rewards.ts), Linked accounts, Sign-in methods, Privacy, Your data. /account renders it hidden until
 // a member is signed in (scripts/account/page.ts fills and drives it); the live UI kit
 // (/dev/ui-kit) renders it with preview, visible and static.
 interface Props { preview?: boolean }
@@ -8,6 +8,7 @@ const { preview = false } = Astro.props;
 
 const TABS = [
   ["profile", "Profile"],
+  ["rewards", "Rewards"],
   ["linked", "Linked accounts"],
   ["signin", "Sign-in methods"],
   ["privacy", "Privacy"],
@@ -59,6 +60,43 @@ const PRIVACY = [
           <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-verify-now hidden>Resend verification</button>
           <a class="bt-btn bt-btn--secondary bt-btn--sm" href="#signin" data-add-email hidden>Add an email</a>
         </div>
+      </div>
+    </section>
+
+    <section class="bt-account-pane tr-rw" role="tabpanel" id="pane-rewards" aria-labelledby="tab-rewards" hidden data-rw>
+      <div class="bt-card" data-rw-loading>
+        <span class="bt-skeleton tr-me-skel"></span>
+        <span class="bt-skeleton tr-rw-skel"></span>
+      </div>
+      <div class="bt-card tr-rw-empty" data-rw-empty hidden>
+        <span class="tr-rw-empty-art" aria-hidden="true" data-rw-empty-art></span>
+        <h2 class="bt-card-title">Your first badge is one game away</h2>
+        <p class="bt-section-text">Finish Tap the Splat once and The Splat Finisher is yours. Every badge you earn shows up here, and you can pin your favourites to your profile.</p>
+        <div class="tr-acts"><button type="button" class="bt-btn bt-btn--go" data-play-now>Play Tap the Splat</button><a class="bt-btn bt-btn--secondary" href="/trophies">See every badge</a></div>
+      </div>
+      <div class="bt-card" data-rw-level hidden>
+        <div class="bt-card-head"><h2 class="bt-card-title">Level</h2><a class="bt-btn bt-btn--ghost bt-btn--sm" href="/trophies">See every badge</a></div>
+        <div class="tr-me tr-me--static" data-rw-me></div>
+        <p class="tr-small" data-rw-next></p>
+      </div>
+      <div class="bt-card" data-rw-case hidden>
+        <div class="bt-card-head"><h2 class="bt-card-title">Trophy case</h2><span class="tr-small" data-rw-limit></span></div>
+        <p class="bt-section-text">Pin your favourite badges to your profile. The first one is your featured badge: it shows next to your name around the site. Drag to reorder, or use the arrows.</p>
+        <ol class="tr-pinlist" data-rw-pins aria-label="Pinned badges, in order"></ol>
+        <span class="bt-label">Your badges</span>
+        <div class="tr-pickgrid" data-rw-pick role="group" aria-label="Your badges: press one to pin or unpin it"></div>
+        <div class="tr-acts"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-rw-save disabled>Save trophy case</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-rw-reset disabled>Undo changes</button></div>
+      </div>
+      <div class="bt-card" data-rw-persona hidden>
+        <div class="bt-card-head"><h2 class="bt-card-title">Persona</h2></div>
+        <p class="bt-section-text">One tag that says who you are, shown on your profile. It isn't earned or ranked.</p>
+        <div class="tr-personas" role="radiogroup" aria-label="Persona" data-rw-personas></div>
+      </div>
+      <div class="bt-card" data-rw-history hidden>
+        <div class="bt-card-head"><h2 class="bt-card-title">History</h2></div>
+        <ol class="tr-hist" data-rw-hist aria-live="polite"></ol>
+        <p class="tr-small" data-rw-hist-empty hidden>Nothing yet. Badges, trophies and XP you earn will be listed here.</p>
+        <div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-rw-more hidden>Show more</button></div>
       </div>
     </section>
 
