@@ -1,0 +1,19 @@
+---
+// One layout for every Game Vault page (docs/specs/game-vault.md §9): the site shell, the
+// sticky GAMEVAULT bar in BaseLayout's "bar" slot (so it stays stuck to the end of the page),
+// then the page. Vault pages are public; member actions check in the scripts.
+import BaseLayout from "./BaseLayout.astro";
+import VaultBar from "../components/vault/VaultBar.astro";
+import "../styles/game-vault.css";
+
+interface Props { title: string; description?: string }
+const { title, description } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <VaultBar slot="bar" />
+  <div class="gv-wrap"><slot /></div>
+</BaseLayout>
+
+<script>
+  import "../scripts/vault/layout";
+</script>

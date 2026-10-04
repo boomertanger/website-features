@@ -1,7 +1,19 @@
 ---
-import BaseLayout from "../layouts/BaseLayout.astro";
-import ComingSoon from "../components/ComingSoon.astro";
+// /games, the Game Vault (docs/specs/game-vault.md; round 2 A65 B34 C56). Everything below the
+// bar is drawn by scripts/vault/page.ts from the one summary doc (public/vault); until it loads
+// the page shows the spinning dial and a wave skeleton, and without JavaScript a plain note.
+import VaultLayout from "../layouts/VaultLayout.astro";
+import { vaultIcon } from "../scripts/vault/art";
 ---
-<BaseLayout title="Games">
-  <ComingSoon title="Games" lead="The Game Vault and the vote on what gets played next." />
-</BaseLayout>
+<VaultLayout title="Game Vault" description="Every horror game on the channel: what Boomer's playing, what he finished, what beat him and what's next.">
+  <div data-vault>
+    <div class="gv-body">
+      <div class="gv-loader" role="status"><Fragment set:html={vaultIcon()} /><span>Opening the Vault…</span></div>
+      <noscript><p class="bt-empty-title">The Game Vault needs JavaScript to open.</p></noscript>
+    </div>
+  </div>
+</VaultLayout>
+
+<script>
+  import "../scripts/vault/page";
+</script>

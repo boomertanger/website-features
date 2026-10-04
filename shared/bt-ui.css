@@ -2606,6 +2606,8 @@
 .bt-root:not(#_) :is(a, button).bt-tag { cursor: pointer; }
 .bt-root:not(#_) :is(a, button).bt-tag:hover { border-color: var(--bt-primary); color: var(--bt-primary-soft); text-decoration: none; }
 .bt-root:not(#_) .bt-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Text for screen readers only (a token's "Remove …", a count's meaning). */
+.bt-root:not(#_) .bt-sr-only { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
 
 .bt-root:not(#_) .bt-search { position: relative; display: flex; flex: 1; align-items: center; min-width: 0; }
 .bt-root:not(#_) .bt-search > svg { position: absolute; left: 14px; width: 18px; height: 18px; color: var(--bt-text-faint); pointer-events: none; }
