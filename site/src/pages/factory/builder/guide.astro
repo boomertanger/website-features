@@ -1,0 +1,126 @@
+---
+// /factory/builder/guide: the builder manual for mods and admins (docs/specs/fun-factory.md §7, §8;
+// fun-factory-screens.html screen 3). TocLayout with ghost chapter headings: Before you start, The 8
+// stages (what to do, what the builder checks, a tip, and each stage's machine), A good season (the
+// recipe), Activity types (live and waiting, from functions/data/fun-factory-ideas.json at build time),
+// Review and publish (the status flow), Changing a live season, and FAQ (.bt-chat). Crew-only gate.
+import FactoryLayout from "../../../layouts/FactoryLayout.astro";
+import TocLayout from "../../../components/TocLayout.astro";
+import { boombotIcon } from "../../../../../shared/ui/arcade.js";
+import { STAGE_ICONS } from "../../../scripts/factory/art";
+import data from "../../../../../functions/data/fun-factory-ideas.json";
+
+const STAGES = [
+  ["theme", "Theme", "Name the season, write a one-line pitch, add mood tags and upload the art.", "Name and pitch filled in · art uploaded · name not used by another season", "Start from Inspire me. The theme sets the tone for every name after it, so pick one with clear words to riff on (signals, keys, tapes)."],
+  ["chapters", "Chapters", "Set the season's dates, then add 2 to 5 chapters with names and unlock dates.", "2 to 5 chapters · the first unlocks on the season's start and the dates leave no gaps · every chapter named", "Ideas matching your theme appear first. Click a chapter name, then Use an idea to replace it."],
+  ["campaigns", "Campaigns", "Give every chapter its campaigns: at least one Daily or Weekly and one Story. Add Milestones once for the whole season.", "A Daily or Weekly in every chapter · a Story in every chapter · 6 campaigns per chapter at most", "Sub Club and Crew campaigns are optional extras; one each per chapter is plenty."],
+  ["activities", "Activities", "Pick a campaign and add its activities: a type, a target and XP. A hidden medal hunt places up to 10 medals on the site's pages.", "Every campaign has at least one activity · every type used is switched on · no duplicates in a chapter", "Mix quick wins with one stretch goal. Write the instructions as a single line someone could follow without asking."],
+  ["rewards", "Rewards", "Check the XP budget and choose the season badge (and any campaign bonuses).", "A budget of 3,000 to 4,000 XP for an all-in member (a warning, not a block) · season badge chosen", "If the budget is high, lower weekly XP first. Dailies are the habit; keep them small and steady."],
+  ["schedule", "Schedule", "See the season on one timeline and fix any dates.", "No overlap with another season · events inside their chapter", "Put events on weekends or around a big stream. Leave a week between seasons."],
+  ["review", "Review", "Mods submit the season. An admin checks the list, then approves and schedules it or sends it back with a note.", "Stages 1 to 6 all green", "Read every activity aloud, and check each chapter has something to do every day."],
+  ["live", "Live", "The season starts on its own. Chapters unlock on their dates, and resets run on Central time.", "Targets and XP of live activities are locked", "If activity drops mid-chapter, add a surprise event."],
+];
+const RECIPE = [
+  ["Chapters", "3 or 4", "", "A new drop every 3 to 4 weeks keeps people checking back."],
+  ["Daily campaign", "1 per chapter, 3 to 4 activities", "10 to 25", "The habit. Two minutes a day."],
+  ["Weekly campaign", "1 per chapter, 3 to 5 activities", "50 to 100", "A reason to come back mid-week."],
+  ["Story campaign", "1 per chapter, 3 to 5 steps", "100 to 150", "The season's theme as a path. Finishing every Story campaign earns the season badge."],
+  ["Milestones", "1 for the season, 3 to 4 activities", "200 to 250", "For the dedicated."],
+  ["Event", "1 or 2 a season", "100 to 150", "A surprise spike."],
+];
+const types = data.activityTypes as { id: string; name: string; enabled: boolean; needs: string | null; source?: string; description?: string }[];
+const live = types.filter((t) => t.enabled), waiting = types.filter((t) => !t.enabled);
+const FLOW = [["Draft", "blue"], ["In review", "teal"], ["Scheduled", "gold"], ["Live", "green"], ["Ended", "lime"]];
+const FAQS = [
+  ["Can I copy last season?", "Yes. Duplicate any season from the season list. The dates and art clear, and everything else becomes a fresh draft."],
+  ["What if an activity's feature breaks mid-season?", "An admin switches that activity type off in the idea library. Its activities stop counting, and everything already earned stays."],
+  ["Can two seasons overlap?", "No. The builder flags it at the Schedule stage, and publishing refuses it."],
+  ["Where do the ideas come from?", "A starter library compiled from Boomertanger's examples. Admins can add their own, and the builder marks ideas used in earlier seasons."],
+  ["Why can't I change a target once it's live?", "Fairness: members who already finished it did it under the old rules. You can still fix titles and instructions, and add new campaigns and events."],
+];
+const NAV: [string, string][] = [["g-start", "Before you start"], ["g-stages", "The 8 stages"], ["g-recipe", "A good season"], ["g-types", "Activity types"], ["g-review", "Review and publish"], ["g-live", "Changing a live season"], ["g-faq", "FAQ"]];
+---
+<FactoryLayout title="Builder guide · Fun Factory" description="How to build a Fun Factory season." crewOnly builder section="guide">
+    <TocLayout items={NAV}>
+      <div class="ff-gmain">
+        <section class="ff-ghero" aria-labelledby="h-g">
+          <span class="ff-kicker">Fun Factory · Builder guide</span>
+          <h1 class="bt-title bt-title--hero" id="h-g">How to build a season</h1>
+          <p>Everything you and the mods need to plan a season, from the first idea to launch day. Follow the eight stages in order; the builder checks your work at each one.</p>
+          <div class="ff-acts"><a class="bt-btn bt-btn--primary" href="/factory/builder">Open the builder</a><a class="bt-btn bt-btn--secondary" href="/factory/builder/ideas">Browse the ideas</a></div>
+        </section>
+
+        <section class="ff-gsec" id="g-start" aria-labelledby="h-g-start">
+          <header class="bt-chapter bt-chapter--ghost" data-n="01"><p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p><h2 class="bt-chapter-title" id="h-g-start">Before you start</h2><p class="bt-chapter-lede">Three things to have in hand.</p></header>
+          <div class="ff-two">
+            <div><h3>You'll need</h3><ul><li>A theme idea, or a few minutes with Inspire me</li><li>The season dates: about 13 weeks, on Central time</li><li>Season art: square, at least 800 by 800 pixels (a placeholder is fine until the artist delivers)</li></ul></div>
+            <div><h3>Who does what</h3><ul><li><b>Mods</b> draft and edit seasons, then submit them</li><li><b>Admins</b> review, approve and schedule, send back, unpublish or end early</li><li>Every save, submit and publish is logged</li></ul></div>
+          </div>
+        </section>
+
+        <section class="ff-gsec" id="g-stages" aria-labelledby="h-g-stages">
+          <header class="bt-chapter bt-chapter--ghost" data-n="02"><p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p><h2 class="bt-chapter-title" id="h-g-stages">The 8 stages</h2><p class="bt-chapter-lede">The assembly line at the top of the builder shows where your season is. Each machine is a stage: a gold light means done, the blinking one is where you are. Click a machine to open it.</p></header>
+          <ol class="ff-stages">
+            {STAGES.map(([k, t, d, c, tip], i) => (
+              <li class="ff-stage"><span class="bt-stepper-mach ff-gmach" aria-hidden="true">{STAGE_ICONS[k]}</span><h3><small>{i + 1}</small>{t}</h3><p>{d}</p>
+                <div class="ff-stage-cols"><div><b>The builder checks</b>{c}</div><div><b>Tip</b>{tip}</div></div></li>
+            ))}
+          </ol>
+        </section>
+
+        <section class="ff-gsec" id="g-recipe" aria-labelledby="h-g-recipe">
+          <header class="bt-chapter bt-chapter--ghost" data-n="03"><p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p><h2 class="bt-chapter-title" id="h-g-recipe">A good season</h2><p class="bt-chapter-lede">A starting recipe. Adjust it once you see how members play.</p></header>
+          <div class="ff-recipe"><table><thead><tr><th scope="col">Piece</th><th scope="col">How many</th><th scope="col">XP each</th><th scope="col">Why</th></tr></thead><tbody>
+            {RECIPE.map(([a, b, c, d]) => <tr><td>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td></tr>)}
+            <tr><td>Total budget</td><td colspan="2">3,000 to 4,000 XP for an all-in member</td><td>Level 8 or 9 from the Fun Factory alone.</td></tr>
+          </tbody></table></div>
+        </section>
+
+        <section class="ff-gsec" id="g-types" aria-labelledby="h-g-types">
+          <header class="bt-chapter bt-chapter--ghost" data-n="04"><p class="bt-chapter-eyebrow" aria-hidden="true">04 · Chapter</p><h2 class="bt-chapter-title" id="h-g-types">Activity types</h2><p class="bt-chapter-lede">What activities can count. New types appear as new parts of the site ship; an admin switches each one on in the idea library.</p></header>
+          <div class="ff-gtypes">
+            <div><h3>Live now <span class="bt-badge bt-badge--green">{live.length}</span></h3><ul>{live.map((t) => <li><span>{t.name}</span><small>{t.source}</small></li>)}</ul></div>
+            <div><h3>Waiting <span class="bt-badge bt-badge--gray">{waiting.length}</span></h3><ul>{waiting.map((t) => <li><span>{t.name}</span><small>needs {t.needs}</small></li>)}</ul></div>
+          </div>
+          <p class="ff-muted ff-gnote">This list is from the starter data. The idea library always shows which types are switched on right now.</p>
+        </section>
+
+        <section class="ff-gsec" id="g-review" aria-labelledby="h-g-review">
+          <header class="bt-chapter bt-chapter--ghost" data-n="05"><p class="bt-chapter-eyebrow" aria-hidden="true">05 · Chapter</p><h2 class="bt-chapter-title" id="h-g-review">Review and publish</h2><p class="bt-chapter-lede">A season's status moves through five steps.</p></header>
+          <div class="ff-flowline">{FLOW.map(([t, c], i) => <>{i > 0 && <i aria-hidden="true">→</i>}<span class={`bt-badge bt-badge--${c}`}><span class="bt-badge-dot"></span>{t}</span></>)}</div>
+          <div class="ff-two">
+            <div><h3>Mods</h3><ul><li>Finish stages 1 to 6 until every check is green</li><li>Press Submit for review</li><li>If an admin sends it back, their note shows at the top of the builder</li></ul></div>
+            <div><h3>Admins</h3><ul><li>Check every stage, then Approve and schedule, or Send back with a note</li><li>Approving turns on the season badge and marks the ideas used</li><li>Only admins publish, unpublish or end a season early</li></ul></div>
+          </div>
+        </section>
+
+        <section class="ff-gsec" id="g-live" aria-labelledby="h-g-live">
+          <header class="bt-chapter bt-chapter--ghost" data-n="06"><p class="bt-chapter-eyebrow" aria-hidden="true">06 · Chapter</p><h2 class="bt-chapter-title" id="h-g-live">Changing a live season</h2><p class="bt-chapter-lede">Once it's live, fairness comes first.</p></header>
+          <div class="ff-two">
+            <div><h3>You can change</h3><ul><li>Titles, instructions and art</li><li>Hunt hints</li><li>New campaigns and surprise events (with their own activities)</li><li>Dates that haven't come yet</li></ul></div>
+            <div><h3>Locked for fairness</h3><ul><li>Targets, XP and repeats of live activities</li><li>Dates that have already passed</li><li>The season's start</li></ul></div>
+          </div>
+        </section>
+
+        <section class="ff-gsec" id="g-faq" aria-labelledby="h-g-faq">
+          <header class="bt-chapter bt-chapter--ghost" data-n="07"><p class="bt-chapter-eyebrow" aria-hidden="true">07 · Chapter</p><h2 class="bt-chapter-title" id="h-g-faq">FAQ</h2></header>
+          <div class="bt-chat">
+            {FAQS.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ff-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`ff-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`ff-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+      </div>
+    </TocLayout>
+</FactoryLayout>
+
+<script>
+  import { initChat } from "../../../../../shared/ui/chat.js";
+  initChat(document);
+</script>
