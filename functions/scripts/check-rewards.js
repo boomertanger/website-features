@@ -116,4 +116,12 @@ for (const b of data.badges) {
 }
 for (const id of ["splat-finisher", "top-10", "multistream-nomad", "pilgrim", "elder", "founder", "bug-finder", "architect"]) assert.ok(ids.has(id), `catalog has ${id}`);
 
-console.log("check-rewards: ok");
+// ---------- the site's mirror (site/src/lib/rewards.js) gives the same answers ----------
+import(require("url").pathToFileURL(path.join(__dirname, "../../site/src/lib/rewards.js")).href).then((S) => {
+  for (const k of ["XP_BY_RARITY", "RANKS", "PERSONAS", "LOCKED_PERSONAS", "SHOWCASE"]) assert.deepEqual(S[k], L[k], `site mirror: ${k}`);
+  for (let xp = 0; xp <= 130000; xp += 37) assert.deepEqual(S.progress(xp), L.progress(xp), `site mirror: progress(${xp})`);
+  for (let lv = 1; lv <= 60; lv++) { assert.equal(S.xpForLevel(lv), L.xpForLevel(lv)); assert.equal(S.rankFor(lv), L.rankFor(lv)); }
+  for (const b of data.badges) assert.equal(S.badgeXp(b), L.badgeXp(b), `site mirror: badgeXp(${b.id})`);
+  for (const roles of [[], ["mod"], ["admin"], ["sub"]]) for (const staging of [false, true]) assert.equal(S.showcaseLimit({ roles, staging }), L.showcaseLimit({ roles, staging }), "site mirror: showcaseLimit");
+  console.log("check-rewards: ok");
+}).catch((e) => { console.error(e); process.exit(1); });

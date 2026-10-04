@@ -1,0 +1,452 @@
+---
+// /trophies/how-it-works: the Trophy Room's public pitch page (docs/specs/rewards.md §11;
+// docs/design/mockups/trophy-room-how-it-works.html, shape 1 Coin). Same frame as the Arcade's
+// How it works: the TocLayout side menu, ghost chapter headings, and the kit's medal, 5-step
+// level bars, flip cards, placard and Ask BOOMBOT. No Firestore reads: section 3's badges come
+// from the starter catalog at build time (functions/data/trophy-room-badges.json, the same file
+// the seed writes), so the page never shows live numbers (no "held by N%"). Everything that
+// looks like a member's data (the hero case, the shelf, the profile and the board rows) is a
+// marked example. Visitors get Join free (the Join dialog); members get See your badges.
+import TrophyLayout from "../../layouts/TrophyLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
+import { levelBars, escapeHtml as esc } from "../../../../shared/ui/dom.js";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { RANKS, XP_BY_RARITY, xpForLevel, PERSONAS, PERSONA_ICONS } from "../../lib/rewards.js";
+import catalog from "../../../../functions/data/trophy-room-badges.json";
+
+const JOIN_TITLE = "Join to start your collection";
+const medal = (emoji: string, rarity: number, size?: number, secret = false) => medalHtml({ emoji, rarity, size, secret });
+const rbadge = (n: number) => `<span class="bt-badge bt-badge--${RARITY[n].tone}">${levelBars(n, 5)}${RARITY[n].name}</span>`;
+const example = `<span class="bt-badge bt-badge--gray tr-example">Example</span>`;
+
+// Rarity guidance (section 2): what each step means. No member counts on this page.
+const RAR = [null,
+  { who: "Most members earn these in their first week.", ex: "lurker-lantern" },
+  { who: "Regulars pick these up within a season.", ex: "seat-warmer" },
+  { who: "Takes real dedication, or being there at the right moment.", ex: "certified-regular" },
+  { who: "Only a small crowd ever earns these.", ex: "find-the-floof" },
+  { who: "A handful of members. Maybe ever.", ex: "everpresent" },
+];
+type Badge = (typeof catalog.badges)[number];
+const byId = new Map<string, Badge>(catalog.badges.map((b) => [b.id, b]));
+const exBadge = (id: string) => byId.get(id) ?? catalog.badges[0];
+
+// The seven ways a badge is earned (sections 3 and 5).
+const SRC: Record<string, { ic: string; t: string; d?: string; ex?: string; c?: string }> = {
+  auto: { ic: "⚙️", t: "Automatic", c: "rank-2", d: "The site spots it and awards it on the spot: a confirmed bug, a shipped idea, a finished game, your membership anniversary.", ex: "Bug Finder · Splat Finisher · The Pilgrim" },
+  stream: { ic: "📡", t: "Stream presence", c: "blue", d: "Link your Twitch account and the site counts the live streams you're in chat for, lurking included. Messages count for the chat badges.", ex: "Seat Warmer · The Early Bird · Chat Titan" },
+  drop: { ic: "⚡", t: "Live drops" },
+  crew: { ic: "🛡", t: "Crew awards", c: "teal", d: "Mods and admins award badges for moments a computer can't judge, always with a written reason.", ex: "Streamer Saves · The Diplomat · Boomer's Blessing" },
+  quest: { ic: "🏁", t: "Contests and hunts", c: "pink", d: "Win a contest, finish a scavenger hunt, or find something hidden on the site.", ex: "Find the Floof · Corgi Quest · The Last Survivor" },
+  factory: { ic: "🏭", t: "Fun Factory", c: "rank-3", d: "Complete seasonal campaigns and missions. Every season brings its own badges.", ex: "Season 01 badge · Site Sleuth" },
+  support: { ic: "💛", t: "Support", c: "gold", d: "Subscribing, gifting and tipping earn Supporter badges as a thank-you. They give no XP and never count on a leaderboard.", ex: "Pocket Change Pal · Boomer Booster" },
+};
+
+// Section 3: every badge in the catalog as a flip card, filtered by the chips in the script.
+const COLLS = catalog.collections.map((c) => ({ ...c, n: catalog.badges.filter((b) => b.collection === c.id).length }));
+const collName = new Map(COLLS.map((c) => [c.id, c.name]));
+const DEFAULT_COLL = "loyalty";
+function card(b: Badge) {
+  const s = SRC[b.source] ?? SRC.auto, tone = RARITY[b.rarity].tone, secret = b.secret?.hint;
+  const noXp = b.source === "support" || b.collection === "supporters";
+  const flags = [b.crewOnly && `<span class="bt-badge bt-badge--teal">Crew</span>`, b.limited && `<span class="bt-badge bt-badge--gold">Limited</span>`, secret && `<span class="bt-badge bt-badge--gray">Secret</span>`].filter(Boolean).join("");
+  const front = secret
+    ? `${medal(b.emoji, b.rarity, 72, true)}<b>???</b>${rbadge(b.rarity)}<span class="tr-hint">"${esc(secret)}"</span>`
+    : `${medal(b.emoji, b.rarity, 72)}<b>${esc(b.name)}</b>${rbadge(b.rarity)}`;
+  const label = secret ? `Secret ${RARITY[b.rarity].name} badge. Hint: ${secret}` : `${b.name}, ${RARITY[b.rarity].name}. How to earn: ${b.how} Earned by: ${s.t}.`;
+  return `<button type="button" class="bt-flip tr-card" style="--c:var(--bt-${tone})" data-coll="${b.collection}" data-rar="${b.rarity}"${b.collection === DEFAULT_COLL ? "" : " hidden"} aria-label="${esc(label)}"><span class="bt-flip-in">
+    <span class="bt-flip-face" aria-hidden="true"><span class="tr-src" title="${s.t}">${s.ic}</span><span class="tr-flags">${flags}</span>${front}</span>
+    <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">
+      <span class="bt-flip-k">${secret ? "Secret badge" : "How to earn"}</span><span class="bt-flip-v">${secret ? "The name and how to earn it stay hidden until it's yours. Follow the hint." : esc(b.how)}</span>
+      <span class="bt-flip-k">Earned by</span><span class="bt-flip-v">${s.ic} ${s.t}</span>
+      <span class="bt-flip-k">Collection</span><span class="bt-flip-v">${esc(collName.get(b.collection) ?? "")}</span>
+      <span class="tr-card-xp">${rbadge(b.rarity)}<span>${noXp ? "No XP" : `+${XP_BY_RARITY[b.rarity]} XP`}</span></span>
+    </span></span></button>`;
+}
+const GRID = catalog.badges.map(card).join("");
+
+const FOUR = [
+  ["🏅", "Badges", "gold", "Proof you did something: showed up, found a bug, survived a boss fight. Each has a rarity from Common to Legendary.", "Yours forever"],
+  ["🏆", "Trophies", "rank-2", "Proof you beat everyone else or got picked: weekly boards, season finishes, contests, Mod MVP.", "Yours forever, with the date"],
+  ["⚡", "XP and levels", "rank-3", "Badges, trophies and Fun Factory missions give XP. XP raises your level and rank.", "Your level never resets"],
+  ["🎟", "Perks", "teal", "What your plan unlocks: more showcase slots, early merch, giveaways, Sub Club campaigns.", "Lasts while you're on the plan"],
+];
+
+// Section 4: the Loyalty ladder (presence steps from the catalog), with an example member at 31 streams.
+const LAD_AT = [1, 10, 25, 50, 100, 200];
+const LAD = catalog.badges.filter((b) => b.ladder?.id === "presence").sort((a, b) => a.ladder!.step - b.ladder!.step);
+const LAD_YOU = 31;
+const MINI = [
+  ["Chat ladder", ["keyboard-rookie", "chat-titan"], "Keyboard Rookie at 100 messages, up to Chat Titan at 10,000."],
+  ["Membership ladder", ["pilgrim", "elder"], "The Pilgrim at one year, The Elder at three."],
+  ["Crew ladder", ["mod-halo", "guardian", "archangel-mod"], "Mod Halo when you join the team, up to Archangel Mod."],
+] as const;
+
+const TRO = [
+  ["🕹", "Weekly boards", "rank-1", "Finish top 3 on a Boom Arcade weekly board, on Desktop or Mobile.", "Every Monday"],
+  ["🏭", "Season finish", "rank-3", "Finish top 3 on the Fun Factory season leaderboard. The top 10 get a plaque.", "Every season"],
+  ["🎉", "Contests", "pink", "Place in a contest or community game night.", "Whenever one runs"],
+  ["🛡", "Mod MVP", "teal", "Boomertanger picks the mod who went above and beyond.", "Every month · crew only"],
+];
+const CUP = `<svg viewBox="0 0 64 72" aria-hidden="true"><path fill="currentColor" d="M16 4h32v6h10a2 2 0 0 1 2 2v6c0 9-6.5 15.5-15.4 16.6A16 16 0 0 1 35 42.6V52h7a3 3 0 0 1 3 3v3H19v-3a3 3 0 0 1 3-3h7v-9.4a16 16 0 0 1-9.6-8C10.5 33.5 4 27 4 18v-6a2 2 0 0 1 2-2h10zm0 11H9v3c0 5.6 3.4 10 8.4 11.3A16 16 0 0 1 16 22zm32 0v7a16 16 0 0 1-1.4 7.3C51.6 28 55 23.6 55 18v-3z"/><rect x="14" y="60" width="36" height="8" rx="2" fill="currentColor" opacity=".7"/><path class="tr-cup-glint" d="M25 12v14"/></svg>`;
+
+const XP = [["A Fun Factory daily", "+10 to 25"], ["A Fun Factory weekly", "+50 to 100"], ["A badge", "+10 to 250, by rarity"], ["A trophy", "+75 to 150, by place"], ["Supporter badges", "No XP"]];
+const pos = (l: number) => ((l - 1) / 49) * 100;
+const YOU = 12.45;
+const ROAD = RANKS.map(([l, n], i) => {
+  const next = RANKS[i + 1];
+  const cls = ["tr-rank", i === 0 && "tr-rank--first", i === RANKS.length - 1 && "tr-rank--last", i % 2 && "tr-rank--lo", l <= YOU && "is-past", l <= YOU && (!next || next[0] > YOU) && "is-here"].filter(Boolean).join(" ");
+  return `<span class="${cls}" style="--at:${pos(l)}%"><b>${n}</b><span>Lv ${l} · ${xpForLevel(l).toLocaleString("en-US")} XP</span><i></i></span>`;
+}).join("");
+const ROAD_LABEL = `Ranks by level: ${RANKS.map(([l, n]) => `${n} at level ${l}`).join(", ")}. Example member at level 12.`;
+
+const PLANS = [
+  { k: "", t: "Fan Club", price: `<b>Free</b>`, tag: ["gray", "Free"], items: ["Earn every badge except Crew", "Trophy case with 3 pinned badges", "Season and Arcade leaderboards", "Member giveaways", "Merch store access"], foot: "Every new member starts here." },
+  { k: "sub", t: "Sub Club", price: `<b>$7.99</b> a month`, tag: ["gold", "Paid"], plus: "Everything in Fan Club, plus", items: ["The Sub Club tag", "6 pinned badges and an animated frame on your featured badge", "Sub Club campaigns in Fun Factory: more ways to earn, never more XP per task", "Early access to merch drops", "Sub Club giveaways"], foot: "Supporter badges come with it too." },
+  { k: "crew", t: "Crew", price: `Mods and admins`, tag: ["teal", "Invite only"], items: ["Free Sub Club while you're on the crew", "Crew badges and Fun Factory crew missions", "Mod MVP trophy every month", "Earliest access to merch drops", "The season leaderboard, plus the crew board for Mod MVP"], foot: "Mods race on the season board with everyone else. Crew members don't win member giveaways." },
+];
+
+const PINS = [["👁", "The Everpresent", 5, "#7"], ["🥽", "VR Vertigo Veteran", 3, "#41"], ["🐾", "Find the Floof", 4, "#3"]] as const;
+const ROWS = [[1, "👁", 5, "@nightjar", "4,920"], [2, "🥽", 3, "@gbo", "4,410"], [3, "🐾", 4, "@skullkid", "3,875"]] as const;
+const ROLE_TAGS = [["gray", "Fan Club"], ["gold", "Sub Club"], ["gray", "VIP"], ["teal", "Mod"], ["teal", "Admin"]];
+
+const RULES = [
+  ["✋", "Earned, never bought", "No badge, XP or level is for sale. Supporter badges say thanks and give no XP."],
+  ["♾", "Badges are forever", "Once it's yours, it stays. Only cheating can take one away, and an admin reviews every case."],
+  ["✍️", "Every award has a reason", "Crew awards come with a written note. Nobody can award a badge to themselves."],
+  ["🔒", "The server keeps score", "Badges, XP and trophies are only given by the site's server. Nothing done in a browser counts."],
+  ["⚖️", "The house doesn't play", "Admins stay off the leaderboards, and no crew member wins a member giveaway."],
+  ["🪦", "Buried means buried", "Limited badges never come back once their window closes."],
+];
+const FAQS = [
+  ["Do my badges reset each season?", "No. Badges, trophies and your lifetime level are permanent. Only season XP starts again at zero when a new Fun Factory season begins."],
+  ["Why should I link my Twitch account?", "It's how the site knows you were at a stream. Without it, the Loyalty, Chat and Hype, and most Stream Moments badges can't find you. The site only counts whether you were in chat and how many messages you sent. It never stores what you type."],
+  ["I missed a live drop. Can I still get it?", "No. Drops only last a few minutes while the stream is live, which is what makes them worth showing off. There's always another one coming."],
+  ["Can a mod give their friends badges?", "Every crew award needs a written reason, mods have a daily limit, every award is logged, and Boomertanger can reverse any of them. Epic and Legendary badges can only be awarded by admins."],
+  ["Does Sub Club earn XP faster?", "No. Every task gives everyone the same XP. Sub Club gets extra campaigns, more trophy case slots and early merch."],
+  ["What happens to a buried badge I already have?", "It stays on your profile forever, marked Buried, with the number of members who got it before it closed."],
+];
+const NAV: [string, string][] = [["s-collect", "What you collect"], ["s-rarity", "Rarity"], ["s-coll", "Collections"], ["s-ladders", "Ladders"], ["s-earn", "How to earn"], ["s-secret", "Secret and limited"], ["s-trophies", "Trophies"], ["s-xp", "XP and levels"], ["s-plans", "Your plan"], ["s-show", "Show it off"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
+const tile = (ic: string, t: string, c: string, d: string, f: string) => `<div class="tr-tile" style="--c:var(--bt-${c})"><span class="tr-ic" aria-hidden="true">${ic}</span><h3>${t}</h3><p>${d}</p><span class="tr-small">${f}</span></div>`;
+---
+<TrophyLayout title="How the Trophy Room works" description="Badges, trophies, XP and levels: what you can collect on Boomertanger, how to earn it, and the rules every reward follows." membersOnly={false} section="how">
+  <TocLayout items={NAV}>
+    <div class="tr-main">
+      <section class="tr-hero" aria-labelledby="h-hero">
+        <div>
+          <span class="tr-kicker">Trophy Room</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Earn it. Show it. Haunt the boards.</h1>
+          <p>Every stream you lurk through, every bug you squash and every boss fight you sit out can earn you a badge. Collect them, level up, win trophies and pin your rarest ones to your profile.</p>
+          <div class="tr-acts">
+            <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+            <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/trophies">See your badges</a>
+            <a class="bt-btn bt-btn--secondary" href="#s-coll">Browse every badge</a>
+          </div>
+        </div>
+        <div class="tr-case" aria-hidden="true">
+          <span class="tr-toast">🏅 New badge · Seat Warmer</span>
+          <div class="tr-case-row" set:html={medal("🐾", 4, 76) + medal("👁", 5, 104) + medal("🪑", 2, 76)} />
+          <div class="tr-case-lv">
+            <div class="tr-lv-top"><b>Level 12 · Night Stalker</b><span>7,140 / 7,800 XP</span></div>
+            <div class="tr-xpbar" style="--v:45%"><i></i></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-collect" aria-labelledby="h-collect">
+        <header class="bt-chapter bt-chapter--ghost" data-n="01">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-collect">What you collect</h2>
+          <p class="bt-chapter-lede">Four kinds of reward. Badges and trophies are yours forever, XP adds up to your level, and perks come with your plan.</p>
+        </header>
+        <div class="tr-four" set:html={FOUR.map(([ic, t, c, d, f]) => tile(ic, t, c, d, f)).join("")} />
+      </section>
+
+      <section class="tr-sec" id="s-rarity" aria-labelledby="h-rarity">
+        <header class="bt-chapter bt-chapter--ghost" data-n="02">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-rarity">Rarity</h2>
+          <p class="bt-chapter-lede">Every badge has one of five rarities. Its ring and its signal bars tell you how hard it was to get, and rarer badges give more XP.</p>
+        </header>
+        <div class="tr-rar">
+          {[1, 2, 3, 4, 5].map((n) => {
+            const ex = exBadge(RAR[n]!.ex);
+            return (
+              <div class="tr-rar-col" tabindex="0" style={`--c:var(--bt-${RARITY[n].tone})`}>
+                <Fragment set:html={medal(ex.emoji, n, 60 + (n - 1) * 8)} />
+                <span class="tr-rar-name"><Fragment set:html={rbadge(n)} /><span class="tr-rar-xp">+{XP_BY_RARITY[n]} XP</span></span>
+                <span class="tr-rar-who">{RAR[n]!.who}</span>
+                <span class="tr-rar-ex">For example<em>{ex.name}</em></span>
+              </div>
+            );
+          })}
+        </div>
+        <p class="tr-note"><span aria-hidden="true">📊</span><span>Every badge also shows <b>how many members hold it</b> and <b>your number</b>: the order you earned it in. The rarer it is, the smaller both get.</span></p>
+      </section>
+
+      <section class="tr-sec" id="s-coll" aria-labelledby="h-coll">
+        <header class="bt-chapter bt-chapter--ghost" data-n="03">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-coll">Collections</h2>
+          <p class="bt-chapter-lede">Badges come in nine collections, one for each way to be part of the community. Hover or tap a badge to see how you earn it.</p>
+        </header>
+        <div class="tr-filters" data-tr-filters>
+          <div class="tr-chips" role="group" aria-label="Collection">
+            <button type="button" class="bt-chip" data-c="all" aria-pressed="false">All <small>{catalog.badges.length}</small></button>
+            {COLLS.map((c) => <button type="button" class:list={["bt-chip", c.id === DEFAULT_COLL && "is-active"]} data-c={c.id} aria-pressed={c.id === DEFAULT_COLL ? "true" : "false"}><span aria-hidden="true">{c.icon}</span>{c.name} <small>{c.n}</small></button>)}
+          </div>
+          <div class="tr-chips" role="group" aria-label="Rarity">
+            <button type="button" class="bt-chip bt-chip--small is-active" data-r="0" aria-pressed="true">Any rarity</button>
+            {[1, 2, 3, 4, 5].map((n) => <button type="button" class="bt-chip bt-chip--small" data-r={n} aria-pressed="false">{RARITY[n].name}</button>)}
+          </div>
+        </div>
+        <div class="tr-coll-head" aria-live="polite">
+          {COLLS.map((c) => <div data-head={c.id} hidden={c.id !== DEFAULT_COLL}><span class="tr-ic" aria-hidden="true">{c.icon}</span><div><h3>{c.name}</h3><p>{c.blurb}</p></div></div>)}
+          <div data-head="all" hidden><span class="tr-ic" aria-hidden="true">🏅</span><div><h3>Every badge</h3><p>{catalog.badges.length} badges in nine collections. Pick a collection to see what it's about.</p></div></div>
+        </div>
+        <div class="tr-grid" data-tr-grid set:html={GRID} />
+        <p class="tr-empty" data-tr-empty hidden></p>
+        <ul class="tr-legend" aria-label="How each badge is earned">
+          {Object.values(SRC).map((s) => <li><span aria-hidden="true">{s.ic}</span> {s.t}</li>)}
+        </ul>
+      </section>
+
+      <section class="tr-sec" id="s-ladders" aria-labelledby="h-ladders">
+        <header class="bt-chapter bt-chapter--ghost" data-n="04">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">04 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-ladders">Ladders</h2>
+          <p class="bt-chapter-lede">Some badges come in a series. Each step is harder and rarer than the last, and your progress to the next one is always on your profile.</p>
+        </header>
+        <div class="tr-lad">
+          <div class="tr-lad-top"><b>Loyalty ladder</b><span>Example: you've been at {LAD_YOU} live streams</span></div>
+          <ol class="tr-steps" style="--p:0.47">
+            {LAD.map((b, i) => {
+              const at = LAD_AT[i] ?? 0, secret = !!b.secret, next = at > LAD_YOU && (LAD_AT[i - 1] ?? 0) <= LAD_YOU;
+              return (
+                <li class:list={[at > LAD_YOU && "is-locked"]}>
+                  <Fragment set:html={medal(b.emoji, b.rarity, 64, secret)} />
+                  <b>{secret ? "???" : b.name}</b>
+                  {next ? <span class="tr-you">{LAD_YOU} / {at} streams</span> : <span>{at} stream{at > 1 ? "s" : ""}{secret ? ", never typing" : ""}</span>}
+                  <Fragment set:html={rbadge(b.rarity)} />
+                </li>
+              );
+            })}
+          </ol>
+        </div>
+        <div class="tr-lads">
+          {MINI.map(([t, ids, d]) => (
+            <div class="tr-mini"><b>{t}</b><div class="tr-mini-row" set:html={ids.map((id) => { const b = exBadge(id); return medal(b.emoji, b.rarity, 40); }).join("<i></i>")} /><p>{d}</p></div>
+          ))}
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-earn" aria-labelledby="h-earn">
+        <header class="bt-chapter bt-chapter--ghost" data-n="05">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">05 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-earn">How to earn</h2>
+          <p class="bt-chapter-lede">Seven ways in. Each badge's icon in section 3 tells you which one it uses.</p>
+        </header>
+        <div class="tr-earn">
+          <div class="tr-tile tr-feat">
+            <span class="tr-ic" aria-hidden="true">⚡</span>
+            <h3>Live drops <span class="bt-badge bt-badge--gold">Be there</span></h3>
+            <p>Something wild happens on stream: a huge jump scare, a crash, a boss finally down. Boomertanger hits the drop button and a badge appears on the site for a few minutes.</p>
+            <div class="tr-drop" role="img" aria-label="Example of a live drop banner: Jump-Scare Witness, claim within five minutes">
+              <Fragment set:html={medal("😱", 1, 56)} />
+              <div class="tr-drop-txt" aria-hidden="true"><span class="tr-drop-k"><i></i>Live drop</span><b>Jump-Scare Witness</b><span class="tr-drop-t">Claim in <b data-tr-drop>4:59</b></span></div>
+              <span class="bt-btn bt-btn--primary tr-drop-btn" aria-hidden="true">Claim</span>
+              <Fragment set:html={example} />
+            </div>
+            <ol class="tr-steps3"><li>Watch live on Twitch, YouTube or TikTok, or keep the site open.</li><li>The banner appears at the top of every page, for signed-in members.</li><li>Press Claim before the timer runs out. Miss it, and it's gone.</li></ol>
+            <span class="tr-ex">Jump-Scare Witness · The Glitchwitness · The Chosen One</span>
+          </div>
+          {(["auto", "stream", "crew", "quest", "factory", "support"] as const).map((k) => {
+            const s = SRC[k];
+            return <div class="tr-tile" style={`--c:var(--bt-${s.c})`}><span class="tr-ic" aria-hidden="true">{s.ic}</span><h3>{s.t}</h3><p>{s.d}</p><span class="tr-ex">{s.ex}</span></div>;
+          })}
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-secret" aria-labelledby="h-secret">
+        <header class="bt-chapter bt-chapter--ghost" data-n="06">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">06 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-secret">Secret and limited badges</h2>
+          <p class="bt-chapter-lede">Some badges hide. Others only exist for a few weeks.</p>
+        </header>
+        <div class="tr-two">
+          <div class="tr-sl">
+            <Fragment set:html={medal("", 5, 88, true)} />
+            <div>
+              <span class="bt-badge bt-badge--gray">Secret</span>
+              <h3>You see a hint, not the badge</h3>
+              <p>Secret badges show as a dark silhouette with one clue. The name, the art and how to earn it appear the moment it's yours.</p>
+              <p class="tr-hint">"Some legends never say a word."</p>
+            </div>
+          </div>
+          <div class="tr-sl">
+            <Fragment set:html={medal("🎃", 3, 88)} />
+            <div>
+              <span class="bt-badge bt-badge--gold">Limited · Oct 1 to 31</span>
+              <h3>Halloween Hauntling 2026</h3>
+              <p>Be at 3 live streams in October. When the window closes, the badge is buried and never comes back. Next year's has a new date and new art.</p>
+              <p class="tr-small">Limited badges show a countdown until they're buried.</p>
+            </div>
+          </div>
+          <div class="tr-buried">
+            <Fragment set:html={medal("☀️", 3, 48)} />
+            <p><b>Buried badges</b> stay on the profiles of everyone who earned them, forever, marked Buried, with how many members got one before the window closed.</p>
+            <span class="bt-badge bt-badge--gray">Buried</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-trophies" aria-labelledby="h-trophies">
+        <header class="bt-chapter bt-chapter--ghost" data-n="07">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">07 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-trophies">Trophies</h2>
+          <p class="bt-chapter-lede">A badge says you did something. A trophy says you beat everyone else, or got picked. Each one is gold, silver or bronze, and dated.</p>
+        </header>
+        <div class="tr-shelf" role="img" aria-label="Example trophy shelf: 2nd place for the week of Sep 28, 1st in Season 01, 3rd in Corgi Quest">
+          <Fragment set:html={example} />
+          <div class="tr-cup tr-cup--2" aria-hidden="true"><Fragment set:html={CUP} /><b>2nd</b><span>Week of Sep 28</span></div>
+          <div class="tr-cup tr-cup--1" aria-hidden="true"><Fragment set:html={CUP} /><b>1st · Season 01</b><span>Dark Signal</span></div>
+          <div class="tr-cup tr-cup--3" aria-hidden="true"><Fragment set:html={CUP} /><b>3rd</b><span>Corgi Quest</span></div>
+        </div>
+        <div class="tr-shelf-board" aria-hidden="true"></div>
+        <div class="tr-tro" set:html={TRO.map(([ic, t, c, d, f]) => tile(ic, t, c, d, f)).join("")} />
+      </section>
+
+      <section class="tr-sec" id="s-xp" aria-labelledby="h-xp">
+        <header class="bt-chapter bt-chapter--ghost" data-n="08">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">08 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-xp">XP and levels</h2>
+          <p class="bt-chapter-lede">Almost everything you do adds XP. XP raises your level, and every few levels you reach a new rank.</p>
+        </header>
+        <div class="tr-xp">
+          <div class="tr-road">
+            <div class="tr-road-track" role="img" aria-label={ROAD_LABEL}>
+              <span class="tr-road-line"></span><span class="tr-road-fill" style={`--v:${pos(YOU)}%`}></span>
+              <Fragment set:html={ROAD} />
+              <span class="tr-you-pin" style={`--v:${pos(YOU)}%`} title="Example: level 12"></span>
+            </div>
+            <div class="tr-split">
+              <div><b>Lifetime level</b><span>Never resets. Your level and rank follow you forever.</span></div>
+              <div><b>Season XP</b><span>Starts at zero each Fun Factory season, so the season leaderboard is a fresh race every quarter.</span></div>
+            </div>
+          </div>
+          <ul class="tr-xp-list" aria-label="Where XP comes from">
+            {XP.map(([a, b]) => <li><span>{a}</span><b>{b}</b></li>)}
+          </ul>
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-plans" aria-labelledby="h-plans">
+        <header class="bt-chapter bt-chapter--ghost" data-n="09">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">09 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-plans">What your plan gets</h2>
+          <p class="bt-chapter-lede">Every member can earn almost every badge. Plans add ways to show off and extra perks, never more XP for the same task.</p>
+        </header>
+        <div class="tr-plans">
+          {PLANS.map((p) => (
+            <div class:list={["tr-plan", p.k && `tr-plan--${p.k}`]}>
+              <div class="tr-plan-top"><h3>{p.t}</h3><span class={`bt-badge bt-badge--${p.tag[0]}`}>{p.tag[1]}</span></div>
+              <span class="tr-price" set:html={p.price} />
+              <ul>{p.plus && <li class="is-plus">{p.plus}</li>}{p.items.map((i) => <li>{i}</li>)}</ul>
+              {p.k === "" && <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>}
+              <span class="tr-small">{p.foot}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-show" aria-labelledby="h-show">
+        <header class="bt-chapter bt-chapter--ghost" data-n="10">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">10 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-show">Show it off</h2>
+          <p class="bt-chapter-lede">Your profile has a trophy case. Pin your favourite badges, and pick one featured badge that follows your name around the site.</p>
+        </header>
+        <div class="tr-show">
+          <div class="tr-prof" aria-label="Example profile" role="group">
+            <div class="tr-prof-top">
+              <span class="tr-av" aria-hidden="true">G<Fragment set:html={medal("🥽", 3, 28)} /></span>
+              <div class="tr-prof-id"><b>@gbo</b><div class="tr-tags"><span class="bt-badge bt-badge--gold">Sub Club</span><span class="bt-tag">🫥 Lurker</span><span class="bt-tag">Lv 12 · Night Stalker</span></div></div>
+              <Fragment set:html={example} />
+            </div>
+            <div><div class="tr-lv-top"><b>Level 12</b><span>7,140 / 7,800 XP</span></div><div class="tr-xpbar" style="--v:45%"><i></i></div></div>
+            <div>
+              <span class="bt-label">Trophy case</span>
+              <div class="tr-pins">
+                {PINS.map(([ic, n, r, s]) => <div class="tr-pin"><Fragment set:html={medal(ic, r, 56)} /><b>{n}</b><span>{s} to earn it</span></div>)}
+                <div class="tr-pin tr-pin--empty"><span class="tr-slot" aria-hidden="true">+</span><b>Sub Club slot</b><span>3 more</span></div>
+              </div>
+            </div>
+            <div class="tr-stats"><div><b>23</b><span>badges</span></div><div><b>2</b><span>trophies</span></div><div><b>12</b><span>level</span></div></div>
+          </div>
+          <div class="tr-side">
+            <div class="tr-side-head"><span class="bt-label">Your featured badge, next to your name</span><Fragment set:html={example} /></div>
+            {ROWS.map(([rk, ic, r, h, xp]) => <div class="tr-row"><span class="tr-rk" style={`color:var(--bt-rank-${rk})`}>{rk}</span><Fragment set:html={medal(ic, r)} />{h}<em>{xp} XP</em></div>)}
+            <div class="tr-id">
+              <h3>Identity tags</h3>
+              <p>Tags show who you are, not what you've earned, so they aren't collected or ranked. Your plan sets your role tag. You pick one persona.</p>
+              <span class="bt-label">Role</span>
+              <div class="tr-tags">{ROLE_TAGS.map(([c, t]) => <span class={`bt-badge bt-badge--${c}`}>{t}</span>)}</div>
+              <span class="bt-label">Persona</span>
+              <div class="tr-tags">{PERSONAS.map((p) => <span class="bt-tag">{PERSONA_ICONS[p as keyof typeof PERSONA_ICONS]} {p}</span>)}</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-fair" aria-labelledby="h-fair">
+        <header class="bt-chapter bt-chapter--ghost" data-n="11">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">11 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-fair">Fair play</h2>
+          <p class="bt-chapter-lede">The rules every badge, trophy and point follows.</p>
+        </header>
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {RULES.map(([ic, t, d], i) => (
+              <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      <section class="tr-sec" id="s-faq" aria-labelledby="h-faq">
+        <header class="bt-chapter bt-chapter--ghost" data-n="12">
+          <p class="bt-chapter-eyebrow" aria-hidden="true">12 · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-faq">FAQ</h2>
+        </header>
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`tr-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`tr-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`tr-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="tr-cta">
+        <h2 class="bt-when-visitor">Start your collection</h2>
+        <h2 class="bt-when-signed-in">Your collection</h2>
+        <p class="bt-when-visitor">Join free and your first badge is one live stream away.</p>
+        <p class="bt-when-signed-in">Every badge you hold, and the ones still out there, are in the Trophy Room.</p>
+        <div class="tr-acts">
+          <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/trophies">See your badges</a>
+          <a class="bt-btn bt-btn--secondary" href="#s-coll">Browse every badge</a>
+        </div>
+      </section>
+    </div>
+  </TocLayout>
+</TrophyLayout>
+
+<script>
+  import "../../scripts/trophies/info";
+</script>
