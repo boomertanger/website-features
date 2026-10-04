@@ -110,6 +110,7 @@ function normalizeIgdb(g) {
     twitchGameId,
     links,
     versionParent: typeof g.version_parent === "number" ? g.version_parent : (g.version_parent?.id ?? null),
+    parentGame: typeof g.parent_game === "number" ? g.parent_game : (g.parent_game?.id ?? null),
     url: g.url || null,
     timeToBeat: null,
   };

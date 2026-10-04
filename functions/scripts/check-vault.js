@@ -123,7 +123,7 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
     const igdbCalls = env.calls.filter((c) => c.url.startsWith("https://api.igdb.com")).length;
     assert.equal(igdbCalls, 4);                       // 2 games + 2 time-to-beat
     assert.ok(env.sleeps.length >= 1 && env.sleeps.every((ms) => ms <= IGDB_MIN_GAP_MS), "calls are spaced 250 ms apart");
-    assert.deepEqual((await env.sources.igdbSearch("granny")).map((g) => g.igdbId), [1001]);
+    assert.deepEqual((await env.sources.igdbSearch("granny")).map((g) => g.igdbId), [1001, 2009]);   // the game and its console port
     assert.equal(await env.sources.igdbGet(999999), null);
     assert.equal((await env.sources.igdbFindBySteam("1205040")).igdbId, 1001);
     assert.equal(await env.sources.igdbFindBySteam("not-a-number"), null);
@@ -226,6 +226,25 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
   assert.equal(r.duplicateSlug, "silent-hill-2");
   assert.equal(states(r).notDuplicate, "fail");
   assert.equal(states(r).fullGame, "skipped");
+
+  // ports fold into their parent game, like editions: by IGDB id and by the port's Steam link
+  r = await run({ igdbId: 2009 });
+  assert.equal(r.decision, "added");
+  assert.equal(r.game.title, "Granny: Chapter Two");
+  assert.equal(r.game.ids.igdb, 1001);
+  assert.equal(states(r).fullGame, "pass");
+  r = await run("9999002");
+  assert.equal(r.decision, "added");
+  assert.equal(r.game.ids.igdb, 1001);
+  assert.ok(r.keys.includes("steam_9999002") && r.keys.includes("igdb_1001"));
+  // …so it is a duplicate once the parent is in
+  r = await run({ igdbId: 2009 }, { keys: { igdb_1001: "granny-chapter-two" } });
+  assert.equal(r.decision, "duplicate");
+  assert.equal(r.duplicateSlug, "granny-chapter-two");
+  // a port with no parent on IGDB is not refused: it's a game of its own
+  r = await run({ igdbId: 2010 });
+  assert.equal(r.decision, "added");
+  assert.equal(r.game.title, "Orphaned Nightmare Port");
 
   // duplicates by each key
   r = await run({ igdbId: 1001 }, { keys: { igdb_1001: "granny-chapter-two" } });

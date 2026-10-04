@@ -94,9 +94,9 @@ async function inputFor(row, sources, titleKey) {
   const hits = await sources.igdbSearch(row.title);
   const key = titleKey(row.title);
   let exact = hits.filter((h) => titleKey(h.name) === key);
-  if (exact.length > 1) {   // editions fold into one game: the one named exactly, or the main record, is the pick
+  if (exact.length > 1) {   // editions and ports fold into one game: the one named exactly, or the main record, is the pick
     const named = exact.filter((h) => h.name.toLowerCase() === row.title.toLowerCase());
-    const mains = exact.filter((h) => !h.versionParent);
+    const mains = exact.filter((h) => !h.versionParent && !(h.gameType === "port" && h.parentGame));
     exact = named.length === 1 ? named : mains.length === 1 ? mains : exact;
   }
   if (exact.length === 1) return { input: { igdbId: exact[0].igdbId } };

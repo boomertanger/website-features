@@ -43,13 +43,14 @@ the game: **Add it by hand** (name + a link, optional cover suggestion), always 
 runs these checks, stopping at the first that decides:
 
 1. **Resolve.** Steam app ID → IGDB via external games. Editions (Deluxe, GOTY) fold into
-   their main game.
+   their main game, and ports (IGDB game type `port`) fold into their parent game.
 2. **Duplicate.** `vaultKeys/igdb_{id}`, `vaultKeys/steam_{appid}` or a normalised title key
    `vaultKeys/title_{key}`. Match → "Already in the Vault", and a +1 is recorded once per
    member (`wants/{uid}`).
 3. **Not a game.** Refused: DLC, non-standalone expansion, bundle, pack, update, mod, fork, or
    a Steam `type` other than `game`. Accepted: main game, remake, remaster, expanded game,
-   standalone expansion, episode, season.
+   standalone expansion, episode, season, port (folded into its parent; a port with no parent
+   counts as a game of its own).
 4. **Not real.** Release status cancelled or rumored: refused.
 5. **Adult content.** Refused if any of: IGDB Erotic theme; IGDB age-rating descriptors for
    strong or explicit sexual content; Steam content descriptors 3 or 4. **Violence and gore

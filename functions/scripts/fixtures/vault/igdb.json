@@ -80,6 +80,15 @@
       "game_type": { "id": 14, "type": "Update" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
     },
     {
+      "id": 2009, "name": "Granny: Chapter Two (Console Port)", "slug": "granny-chapter-two-console",
+      "game_type": { "id": 11, "type": "Port" }, "game_status": { "id": 0, "status": "Released" }, "parent_game": 1001,
+      "themes": [{ "name": "Horror" }], "external_games": [{ "uid": "9999002", "external_game_source": 1 }]
+    },
+    {
+      "id": 2010, "name": "Orphaned Nightmare Port", "slug": "orphaned-nightmare-port",
+      "game_type": { "id": 11, "type": "Port" }, "game_status": { "id": 0, "status": "Released" }, "themes": [{ "name": "Horror" }]
+    },
+    {
       "id": 3001, "name": "Midnight Desire", "slug": "midnight-desire",
       "game_type": { "id": 0, "type": "Main Game" }, "game_status": { "id": 0, "status": "Released" },
       "themes": [{ "name": "Horror" }, { "name": "Erotic" }]

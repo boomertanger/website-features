@@ -44,8 +44,9 @@ const MESSAGES = {
 };
 
 // IGDB game types that count as a game in their own right (§3 step 3). Everything else
-// (dlc, expansion, bundle, mod, port, fork, pack, update) is refused.
-const ACCEPTED_TYPES = new Set(["main_game", "remake", "remaster", "expanded_game", "standalone_expansion", "episode", "season"]);
+// (dlc, expansion, bundle, mod, fork, pack, update) is refused. A port folds into its parent
+// game in resolve(), like an edition; one IGDB gives no parent for stays as a game.
+const ACCEPTED_TYPES = new Set(["main_game", "remake", "remaster", "expanded_game", "standalone_expansion", "episode", "season", "port"]);
 const REFUSED_STATUSES = new Set(["cancelled", "rumored"]);
 const STEAM_ADULT_DESCRIPTORS = [3, 4];   // adult-only sexual content; frequent nudity or sexual content
 // IGDB age-rating descriptors for strong or explicit sexual content. Plain "Sexual Content"
@@ -177,7 +178,7 @@ function buildDrafts({ igdb, steam, cover, origin, handle, now, inputSteamAppId 
   return { game, source, keys };
 }
 
-/** Looks the game up, folding an edition into its main game. Throws SourceError. */
+/** Looks the game up, folding an edition or a port into its main game. Throws SourceError. */
 async function resolve(parsed, sources) {
   let igdb = null, steam = null, igdbFailed = null, steamFailed = null;
   const safe = async (fn, onErr) => { try { return await fn(); } catch (err) { if (err instanceof SourceError && err.kind !== "bad") { onErr(err); return null; } throw err; } };
@@ -193,6 +194,11 @@ async function resolve(parsed, sources) {
   // An edition (Deluxe, GOTY) folds into its main game.
   if (igdb?.versionParent) {
     const parent = await safe(() => sources.igdbGet(igdb.versionParent), (e) => { igdbFailed = e; });
+    if (parent) igdb = parent;
+  }
+  // A port (another platform's version) folds into the game it was ported from.
+  if (igdb?.gameType === "port" && igdb.parentGame) {
+    const parent = await safe(() => sources.igdbGet(igdb.parentGame), (e) => { igdbFailed = e; });
     if (parent) igdb = parent;
   }
   // Steam details (content descriptors) for an IGDB-first lookup.
