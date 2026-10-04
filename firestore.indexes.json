@@ -49,9 +49,25 @@
         { "fieldPath": "gameIds", "arrayConfig": "CONTAINS" },
         { "fieldPath": "actualStart", "order": "DESCENDING" }
       ]
+    },
+    {
+      "collectionGroup": "rewardLedger",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
     }
   ],
   "fieldOverrides": [
+    {
+      "collectionGroup": "badges",
+      "fieldPath": "badgeId",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
     {
       "collectionGroup": "runs",
       "fieldPath": "expireAt",

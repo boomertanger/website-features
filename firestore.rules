@@ -416,10 +416,36 @@ service cloud.firestore {
         }
       }
 
-      // Public profile (handle, display name, avatar, opted-in platform names).
+      // Public profile (handle, display name, avatar, opted-in platform names; the Trophy
+      // Room adds xp, level, rank, showcase, featuredBadge and persona).
       match /profiles/{uid} {
         allow read: if true;
         allow write: if false;
+
+        // Trophy Room: the badges and trophies a member holds are public (reasons stay in the ledger).
+        match /badges/{badgeId} {
+          allow read: if true;
+          allow write: if false;
+        }
+        match /trophies/{trophyId} {
+          allow read: if true;
+          allow write: if false;
+        }
+      }
+
+      // ---------- Trophy Room (docs/specs/rewards.md §9) ----------
+      // Written ONLY by Cloud Functions (functions/lib/rewards). The catalog is public; the
+      // ledger is closed (members read their own history through myRewardHistory).
+      match /badges/{badgeId} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /collections/{collectionId} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /rewardLedger/{key} {
+        allow read, write: if false;
       }
 
       // ---------- Boom Arcade (docs/specs/arcade-step1.md §6) ----------

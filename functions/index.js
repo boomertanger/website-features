@@ -913,3 +913,8 @@ const vaultModule = require("./lib/vault")({
 });
 Object.assign(exports, vaultModule.functions);
 Object.assign(exports, require("./lib/streams")({ adminLogEntry }));
+
+// ---------- Trophy Room (docs/specs/rewards.md) ----------
+// Badges, trophies, XP and levels. Features pay out through lib/rewards/grant.js (internal);
+// these are the member and admin callables, the linked-accounts trigger and the nightly job.
+Object.assign(exports, require("./lib/rewards")({ adminLogEntry }));

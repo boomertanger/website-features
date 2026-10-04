@@ -21,6 +21,7 @@ const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const L = require("./logic");
+const rewards = require("../rewards/grant");
 
 const SITE_ID = "boomertanger";
 const SHARDS = 10;
@@ -233,6 +234,17 @@ module.exports = function arcade() {
       }
     } else {
       await ref.update(base);
+    }
+
+    // Trophy Room: Splat Finisher for a member's first finished Tap the Splat run, Top 10 for
+    // reaching any all-time top 10. Never lets a rewards problem fail the run.
+    if (!block && uid) {
+      try {
+        if (result === "win" && checks.ok && id.gameId === "tapTheSplat") await rewards.grantBadge(uid, "splat-finisher", { feature: "arcade", ref: "splat-finisher" });
+        if (out.rank.all != null && out.rank.all <= 10) await rewards.grantBadge(uid, "top-10", { feature: "arcade", ref: "top-10" });
+      } catch (err) {
+        console.error("finishRun: rewards", err);
+      }
     }
 
     if (counted) {
