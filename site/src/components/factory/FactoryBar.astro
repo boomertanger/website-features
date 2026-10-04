@@ -1,0 +1,39 @@
+---
+// The Fun Factory's feature bar (design-system.md §8h pattern): the kit's .bt-topbar in a .bt-sticky-bar,
+// with the FUNFACTORY .bt-wordmark--power (the windows flicker on and smoke rolls out of the chimney on
+// hover or focus; once on touch as it scrolls in). Member pages link Season, Leaderboard and How it
+// works; builder pages add a teal Builder tag and link Seasons, Idea library and Guide. Icon-only
+// .bt-seg-nav--icons on phones. Wired in scripts/factory/layout.ts.
+import { FF_ICON } from "../../scripts/factory/art";
+
+interface Props { section?: string | null; builder?: boolean; gated?: boolean }
+const { section = null, builder = false, gated = false } = Astro.props;
+const links = builder
+  ? [
+      { id: "seasons", label: "Seasons", href: "/factory/builder", icon: "cal" },
+      { id: "ideas", label: "Idea library", href: "/factory/builder/ideas", icon: "bulb" },
+      { id: "guide", label: "Guide", href: "/factory/builder/guide", icon: "help" },
+    ]
+  : [
+      { id: "season", label: "Season", href: "/factory", icon: "cal" },
+      { id: "leaderboard", label: "Leaderboard", href: "/factory/leaderboard", icon: "trophy" },
+      { id: "how", label: "How it works", href: "/factory/how-it-works", icon: "help" },
+    ];
+---
+<div class="bt-sticky-bar ff-dock" data-ff-dock data-gated={gated ? "" : undefined}>
+  <div class="bt-topbar ff-bar">
+    <div class="ff-brand">
+      <a class="bt-wordmark bt-wordmark--power" href={builder ? "/factory/builder" : "/factory"} aria-label={builder ? "Fun Factory builder" : "Fun Factory"}>
+        <span class="bt-wordmark-icon" set:html={FF_ICON} />
+        <span class="bt-wordmark-text" aria-hidden="true">FUN<span class="bt-wordmark-accent">FACTORY</span></span>
+      </a>
+      {builder && <span class="bt-badge bt-badge--teal ff-tag">Builder</span>}
+    </div>
+    <nav class="bt-seg-nav ff-barlinks" aria-label={builder ? "Fun Factory builder" : "Fun Factory"}>
+      {links.map((l) => <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
+    </nav>
+    <nav class="bt-seg-nav bt-seg-nav--icons ff-barico" aria-label={builder ? "Fun Factory builder" : "Fun Factory"}>
+      {links.map((l) => <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
+    </nav>
+  </div>
+</div>

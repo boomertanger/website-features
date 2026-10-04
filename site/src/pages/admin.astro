@@ -12,6 +12,12 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
     The admin member view (member list, member detail with role controls) arrives in milestone 2b. Roles can be set with the setMemberRole function until then.
   </ComingSoon>
+  <div class="bt-zone" data-ff-link hidden>
+    <a class="bt-card bt-card--door" href="/factory/builder">
+      <div class="bt-card-head"><h2 class="bt-card-title">Fun Factory builder</h2><span class="bt-badge bt-badge--teal">Mods and admins</span></div>
+      <p class="bt-section-text">Plan seasons, review and schedule them, and manage the idea library.</p>
+    </a>
+  </div>
   <!-- Temporary: the TikTok count by hand until the TikTok API is approved (after launch). -->
   <div class="bt-zone" data-tiktok-manual hidden>
     <div class="bt-card">
@@ -126,6 +132,8 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 
   whenReady().then(async (s) => {
     if (!s.user) return;
+    // The Fun Factory builder (mods and admins; the builder checks again).
+    if (s.isAdmin || s.roles.includes("mod")) document.querySelector<HTMLElement>("[data-ff-link]")!.hidden = false;
     const { db, doc, getDoc, SITE_ID } = await import("../lib/db");
     const site = await getDoc(doc(db, "sites", SITE_ID));
     const isOwner = site.get("ownerUid") === s.user.uid;

@@ -1,0 +1,18 @@
+---
+// /factory/builder/ideas: the Fun Factory idea library (docs/specs/fun-factory.md §6). Mods and admins
+// browse, search and filter every idea (themes, chapter names, campaign names, activity ideas, reward
+// names); admins add, edit and retire ideas, and switch activity types on or off. Ideas are readable by
+// crew only (firestore.rules); changes go through factoryIdeaSave and factoryTypeToggle. Filled by
+// scripts/factory/ideas-page.ts.
+import FactoryLayout from "../../../layouts/FactoryLayout.astro";
+---
+<FactoryLayout title="Idea library · Fun Factory" description="The Fun Factory's idea library." crewOnly builder section="ideas" wide>
+  <div class="bt-zone ff-wrap" data-ideas aria-busy="true">
+    <span class="bt-skeleton ff-skel-title"></span>
+    <span class="bt-skeleton ff-skel-card"></span>
+  </div>
+</FactoryLayout>
+
+<script>
+  import "../../../scripts/factory/ideas-page";
+</script>

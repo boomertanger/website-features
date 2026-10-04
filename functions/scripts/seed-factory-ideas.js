@@ -44,7 +44,7 @@ function ideasFrom(data) {
   const add = (kind, label, doc) => out.push([`${kind}-${slug(label)}`, { kind, ...doc }]);
   for (const t of data.themes || []) add("theme", t.name, { name: t.name, pitch: t.pitch || "", tags: t.tags || [], emoji: t.emoji || null });
   for (const g of data.chapterNames || []) for (const n of g.names || []) add("chapter", `${g.theme}-${n}`, { name: n, theme: g.theme || "Any theme" });
-  for (const g of data.campaignNames || []) for (const n of g.names || []) add("campaign", `${g.cadence}-${g.audience}-${n}`, { name: n, cadence: g.cadence, audience: g.audience || "all" });
+  for (const g of data.campaignNames || []) for (const n of g.names || []) add("campaign", `${g.cadence}-${g.audience}-${n}`, { name: n, cadence: g.cadence === "any" ? null : g.cadence, audience: g.audience || "all" });   // "any": a Sub Club or Crew name for any cadence
   for (const a of data.activities || []) add("activity", `${a.type}-${a.title}`, { title: a.title, instructions: a.instructions || "", typeId: a.type, target: a.target, xp: a.xp, cadence: a.cadence, audience: a.audience || "all", params: a.params || {} });
   for (const n of data.rewardNames || []) add("reward", n, { name: n });
   return out;

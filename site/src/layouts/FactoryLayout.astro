@@ -1,0 +1,51 @@
+---
+// One layout for every Fun Factory page (docs/specs/fun-factory.md §8): the site shell, the sticky
+// FUNFACTORY bar in BaseLayout's "bar" slot, then the page. Like the Arcade's and the Trophy Room's:
+//   membersOnly  signed-up members see the page; visitors get the Join gate, mid-signup Finish signup
+//   crewOnly     mods and admins see the page; everyone else gets a short "Crew only" gate
+// Display-only: pages are static and read their data in scripts; the callables check roles on the
+// server. A skeleton shows while auth loads (never a flash of the gate). scripts/factory/layout.ts sets
+// .ff[data-access] = loading | gate | join | signup | page.
+import BaseLayout from "./BaseLayout.astro";
+import FactoryBar from "../components/factory/FactoryBar.astro";
+import "../styles/factory.css";
+
+interface Props { title: string; description?: string; membersOnly?: boolean; crewOnly?: boolean; builder?: boolean; section?: string | null; wide?: boolean }
+const { title, description, membersOnly = false, crewOnly = false, builder = false, section = null, wide = false } = Astro.props;
+const gated = membersOnly || crewOnly;
+---
+<BaseLayout title={title} description={description} noindex={builder}>
+  <FactoryBar slot="bar" section={section} builder={builder} gated={gated} />
+  <div class:list={["ff", wide && "ff--wide"]} data-ff data-access={gated ? "loading" : "page"} data-crew-only={crewOnly ? "" : undefined} data-members-only={membersOnly ? "" : undefined}>
+    {gated && (
+      <>
+        <div class="bt-zone ff-skel" aria-hidden="true">
+          <span class="bt-skeleton ff-skel-title"></span>
+          <span class="bt-skeleton ff-skel-line"></span>
+          <span class="bt-skeleton ff-skel-card"></span>
+        </div>
+        <section class="bt-zone ff-gate" aria-labelledby="ff-gate-title">
+          <span class="ff-gate-art" aria-hidden="true">🏭</span>
+          <h1 class="bt-title" id="ff-gate-title" data-ff-gate-title>{crewOnly ? "Crew only" : "Members only"}</h1>
+          <p class="ff-gate-lead" data-ff-gate-crew hidden={!crewOnly}>The season builder is for mods and admins. If you're on the crew, sign in with your crew account.</p>
+          <p class="ff-gate-lead" data-ff-gate-member hidden={crewOnly}>The Fun Factory is for members: daily jobs, weekly missions and a season-long story, with XP, badges and trophies. Joining is free.</p>
+          <div class="ff-gate-acts" data-ff-gate-visitor>
+            {crewOnly
+              ? <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
+              : <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to start your season">Join free</a>}
+            {!crewOnly && <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>}
+          </div>
+          <div class="ff-gate-acts" data-ff-gate-signup hidden>
+            <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+          </div>
+          <a class="bt-btn bt-btn--ghost" href={crewOnly ? "/" : "/factory/how-it-works"} data-ff-gate-back>{crewOnly ? "Back to the site" : "How the Fun Factory works"}</a>
+        </section>
+      </>
+    )}
+    <div class="ff-page"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/factory/layout";
+</script>

@@ -26,6 +26,7 @@ function dayKey(t) {
   const g = (k) => p.find((x) => x.type === k).value;
   return `${g("year")}-${g("month")}-${g("day")}`;
 }
+// Season ends are exclusive (midnight starting the next day), so ranges show end - 1: the last day.
 const fmt = (t) => new Date(t).toLocaleDateString("en-US", { timeZone: TZ, month: "short", day: "numeric" });
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const listMore = (names, max = 3) => (names.length <= max ? names.join(", ") : `${names.slice(0, max).join(", ")} and ${names.length - max} more`);
@@ -97,7 +98,7 @@ function stageChecks(tree, ctx = {}) {
   const unnamed = chapters.filter((c) => !String(c.name || "").trim()).length;
   out.chapters = [
     n >= LIMITS.chaptersMin && n <= LIMITS.chaptersMax ? ok(`${plural(n, "chapter")} (2 to 5 allowed)`) : warn(`${plural(n, "chapter")}: a season has 2 to 5`),
-    datesOk ? ok(`Unlock dates cover ${fmt(start)} to ${fmt(end)}`) : warn(start == null || end == null ? "Set the season's start and end dates" : "The first chapter unlocks on the season's start, and each later one after it, before the end"),
+    datesOk ? ok(`Unlock dates cover ${fmt(start)} to ${fmt(end - 1)}`) : warn(start == null || end == null ? "Set the season's start and end dates" : "The first chapter unlocks on the season's start, and each later one after it, before the end"),
     n && !unnamed ? ok("Every chapter has a name") : warn(n ? `${plural(unnamed, "chapter")} still need a name` : "Add chapters"),
   ];
 
@@ -154,8 +155,8 @@ function stageChecks(tree, ctx = {}) {
     return !ch || o == null || cl == null || cl <= o || o < ch.start || (ch.end != null && cl > ch.end);
   });
   out.schedule = [
-    datesOk ? ok(`Chapters cover ${fmt(start)} to ${fmt(end)} with no gaps`) : warn("Fix the chapter dates (stage 2)"),
-    start == null || end == null ? warn("Set the season's dates") : overlap ? warn(`Overlaps ${overlap.name || overlap.id} (${fmt(overlap.startsAt)} to ${fmt(overlap.endsAt)})`) : ok("No overlap with another season"),
+    datesOk ? ok(`Chapters cover ${fmt(start)} to ${fmt(end - 1)} with no gaps`) : warn("Fix the chapter dates (stage 2)"),
+    start == null || end == null ? warn("Set the season's dates") : overlap ? warn(`Overlaps ${overlap.name || overlap.id} (${fmt(overlap.startsAt)} to ${fmt(overlap.endsAt - 1)})`) : ok("No overlap with another season"),
     !events.length ? optional(false, "Events sit inside their chapter (no events yet)") : !strayEvents.length ? ok("Every event sits inside its chapter") : warn(`Event dates outside their chapter: ${listMore(strayEvents.map((c) => c.name || "Untitled"))}`),
   ];
 

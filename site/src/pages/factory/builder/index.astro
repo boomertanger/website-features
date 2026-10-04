@@ -1,0 +1,19 @@
+---
+// /factory/builder: the Fun Factory season builder (docs/specs/fun-factory.md §7;
+// docs/design/mockups/fun-factory-screens.html screen 2, stage tracker A "Assembly line"). Mods and
+// admins only (FactoryLayout crewOnly; the callables check on the server). Without ?season= it lists
+// every season; with ?season=<id> it opens the editor: the header, the .bt-stepper of eight stages, the
+// open stage's panel with its checks, and the .bt-drawer of ideas beside it. Filled by
+// scripts/factory/builder.ts.
+import FactoryLayout from "../../../layouts/FactoryLayout.astro";
+---
+<FactoryLayout title="Season builder · Fun Factory" description="Plan a Fun Factory season." crewOnly builder section="seasons" wide>
+  <div class="bt-zone ff-wrap" data-builder aria-busy="true">
+    <span class="bt-skeleton ff-skel-title"></span>
+    <span class="bt-skeleton ff-skel-card"></span>
+  </div>
+</FactoryLayout>
+
+<script>
+  import "../../../scripts/factory/builder";
+</script>
