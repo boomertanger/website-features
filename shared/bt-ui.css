@@ -2525,7 +2525,7 @@
 .bt-root:not(#_) .bt-card--danger .bt-card-title { color: var(--bt-danger-text); }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bt-account-page { grid-template-columns: minmax(0, 1fr); }
-  .bt-root:not(#_) .bt-account-tabs { position: static; flex-direction: row; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+  .bt-root:not(#_) .bt-account-tabs { position: static; flex-direction: row; gap: 6px; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: none; margin: 0 -14px; padding: 0 14px; }   /* bleeds to the edge: .bt-zone has 14px sides at this width */
   .bt-root:not(#_) .bt-account-tabs::-webkit-scrollbar { display: none; }
   .bt-root:not(#_) .bt-account-tabs a { flex: none; padding: 7px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; scroll-snap-align: start; }
   .bt-root:not(#_) .bt-account-tabs a[aria-selected="true"] { border-color: var(--bt-primary); }
