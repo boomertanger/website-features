@@ -1,0 +1,9 @@
+---
+// The Trophy Room catalog's authored badge order, for scripts/trophies/data.ts loadCatalog():
+// Firestore returns badges A to Z by id, so pages that list badges (/trophies, the account's
+// Rewards tab, /u/{handle}) carry the seed file's order (functions/data/trophy-room-badges.json).
+// Badges added since go last, by rarity and name.
+import catalog from "../../../../functions/data/trophy-room-badges.json";
+const ORDER = JSON.stringify(catalog.badges.map((b) => b.id));
+---
+<script type="application/json" id="tr-order" set:html={ORDER} />

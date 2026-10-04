@@ -10,14 +10,13 @@
 import TrophyLayout from "../../layouts/TrophyLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
-import { levelBars, escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
 import { RANKS, XP_BY_RARITY, xpForLevel, PERSONAS, PERSONA_ICONS } from "../../lib/rewards.js";
+import { badgeCardHtml, rarityBadge as rbadge } from "../../scripts/trophies/card";
 import catalog from "../../../../functions/data/trophy-room-badges.json";
 
 const JOIN_TITLE = "Join to start your collection";
 const medal = (emoji: string, rarity: number, size?: number, secret = false) => medalHtml({ emoji, rarity, size, secret });
-const rbadge = (n: number) => `<span class="bt-badge bt-badge--${RARITY[n].tone}">${levelBars(n, 5)}${RARITY[n].name}</span>`;
 const example = `<span class="bt-badge bt-badge--gray tr-example">Example</span>`;
 
 // Rarity guidance (section 2): what each step means. No member counts on this page.
@@ -47,24 +46,7 @@ const SRC: Record<string, { ic: string; t: string; d?: string; ex?: string; c?: 
 const COLLS = catalog.collections.map((c) => ({ ...c, n: catalog.badges.filter((b) => b.collection === c.id).length }));
 const collName = new Map(COLLS.map((c) => [c.id, c.name]));
 const DEFAULT_COLL = "loyalty";
-function card(b: Badge) {
-  const s = SRC[b.source] ?? SRC.auto, tone = RARITY[b.rarity].tone, secret = b.secret?.hint;
-  const noXp = b.source === "support" || b.collection === "supporters";
-  const flags = [b.crewOnly && `<span class="bt-badge bt-badge--teal">Crew</span>`, b.limited && `<span class="bt-badge bt-badge--gold">Limited</span>`, secret && `<span class="bt-badge bt-badge--gray">Secret</span>`].filter(Boolean).join("");
-  const front = secret
-    ? `${medal(b.emoji, b.rarity, 72, true)}<b>???</b>${rbadge(b.rarity)}<span class="tr-hint">"${esc(secret)}"</span>`
-    : `${medal(b.emoji, b.rarity, 72)}<b>${esc(b.name)}</b>${rbadge(b.rarity)}`;
-  const label = secret ? `Secret ${RARITY[b.rarity].name} badge. Hint: ${secret}` : `${b.name}, ${RARITY[b.rarity].name}. How to earn: ${b.how} Earned by: ${s.t}.`;
-  return `<button type="button" class="bt-flip tr-card" style="--c:var(--bt-${tone})" data-coll="${b.collection}" data-rar="${b.rarity}"${b.collection === DEFAULT_COLL ? "" : " hidden"} aria-label="${esc(label)}"><span class="bt-flip-in">
-    <span class="bt-flip-face" aria-hidden="true"><span class="tr-src" title="${s.t}">${s.ic}</span><span class="tr-flags">${flags}</span>${front}</span>
-    <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">
-      <span class="bt-flip-k">${secret ? "Secret badge" : "How to earn"}</span><span class="bt-flip-v">${secret ? "The name and how to earn it stay hidden until it's yours. Follow the hint." : esc(b.how)}</span>
-      <span class="bt-flip-k">Earned by</span><span class="bt-flip-v">${s.ic} ${s.t}</span>
-      <span class="bt-flip-k">Collection</span><span class="bt-flip-v">${esc(collName.get(b.collection) ?? "")}</span>
-      <span class="tr-card-xp">${rbadge(b.rarity)}<span>${noXp ? "No XP" : `+${XP_BY_RARITY[b.rarity]} XP`}</span></span>
-    </span></span></button>`;
-}
-const GRID = catalog.badges.map(card).join("");
+const GRID = catalog.badges.map((b) => badgeCardHtml(b, { collName: collName.get(b.collection), hidden: b.collection !== DEFAULT_COLL })).join("");
 
 const FOUR = [
   ["🏅", "Badges", "gold", "Proof you did something: showed up, found a bug, survived a boss fight. Each has a rarity from Common to Legendary.", "Yours forever"],

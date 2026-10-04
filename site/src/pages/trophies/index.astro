@@ -1,0 +1,34 @@
+---
+// /trophies: the badge catalog (docs/specs/rewards.md §11). Members only. Every badge as a flip
+// card, earned ones lit with the date and serial, the rest dimmed; collection and rarity chips;
+// a strip on top with the member's level, rank, XP and badge count (to the account's Rewards
+// tab). Filled by scripts/trophies/catalog.ts: the catalog (cached 5 minutes) plus the member's
+// profiles/{uid}/badges.
+import TrophyLayout from "../../layouts/TrophyLayout.astro";
+import TrophyOrder from "../../components/trophies/TrophyOrder.astro";
+---
+<TrophyLayout title="Badges · Trophy Room" description="Every badge in the Trophy Room, and the ones you've earned." section="badges">
+  <div class="bt-zone tr-cat">
+    <div class="tr-cat-head">
+      <h1 class="bt-title">Badges</h1>
+      <p class="bt-subtitle">Every badge you can earn. Hover or tap one to see how.</p>
+    </div>
+    <a class="tr-me" href="/account#rewards" data-tr-me aria-busy="true">
+      <span class="bt-skeleton tr-me-skel"></span>
+    </a>
+    <div class="tr-filters" data-tr-filters hidden>
+      <div class="tr-chips" role="group" aria-label="Collection" data-tr-colls></div>
+      <div class="tr-chips" role="group" aria-label="Rarity" data-tr-rars></div>
+    </div>
+    <div class="tr-coll-head" data-tr-head aria-live="polite"></div>
+    <div class="tr-grid" data-tr-grid aria-busy="true">
+      {Array.from({ length: 8 }, () => <span class="bt-skeleton tr-card-skel"></span>)}
+    </div>
+    <p class="tr-empty" data-tr-empty hidden></p>
+    <TrophyOrder />
+  </div>
+</TrophyLayout>
+
+<script>
+  import "../../scripts/trophies/catalog";
+</script>

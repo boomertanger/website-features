@@ -333,3 +333,46 @@
   .bt-root:not(#_) :is(.tr-tile:hover .tr-ic, .tr-cup:hover svg, .tr-rar-col:is(:hover, :focus-visible)) { transform: none; }
   .bt-root:not(#_) .tr-xpbar i { transition: none; }
 }
+
+/* ===== Badges (/trophies): the catalog ===== */
+.bt-root:not(#_) .tr-cat { gap: 16px; padding-bottom: 48px; }
+.bt-root:not(#_) .tr-cat-head .bt-subtitle { margin-top: 4px; }
+.bt-root:not(#_) .tr-cat .tr-filters { margin-bottom: 0; }
+.bt-root:not(#_) .tr-cat .tr-coll-head > div { margin: 0; }
+.bt-root:not(#_) .tr-coll-head :is(h2, h3) { margin: 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .tr-coll-head > div > div { flex: 1; min-width: 0; }
+.bt-root:not(#_) .tr-coll-n { flex: none; color: var(--bt-title); font-size: var(--bt-text-sm); font-weight: 800; font-variant-numeric: tabular-nums; white-space: nowrap; }
+/* The member's strip: level coin, rank and XP bar, badge count, a way to Rewards */
+.bt-root:not(#_) .tr-me { display: flex; align-items: center; gap: 16px; padding: 14px 18px; border: 1px solid rgba(var(--bt-gold-rgb), 0.35); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 120% at 0% 0%, rgba(var(--bt-gold-rgb), 0.12), transparent 60%), var(--bt-surface); color: var(--bt-text); text-decoration: none; transition: border-color 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .tr-me:hover { border-color: rgba(var(--bt-gold-rgb), 0.6); box-shadow: 0 0 22px rgba(var(--bt-gold-rgb), 0.12); text-decoration: none; }
+.bt-root:not(#_) .tr-me:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .tr-me[hidden] { display: none; }
+.bt-root:not(#_) .tr-me-skel { width: 100%; height: 44px; border-radius: var(--bt-radius-md); }
+.bt-root:not(#_) .tr-me-lv { flex: none; width: 52px; height: 52px; display: grid; place-content: center; border-radius: 50%; background: radial-gradient(circle at 35% 28%, rgba(var(--bt-gold-rgb), 0.45), rgba(var(--bt-gold-rgb), 0.08) 72%); box-shadow: inset 0 0 0 2px rgba(var(--bt-gold-rgb), 0.6); color: var(--bt-title); font-size: var(--bt-text-xl); font-weight: 900; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .tr-me-lv small { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 800; text-transform: uppercase; letter-spacing: 0.08em; }
+.bt-root:not(#_) .tr-me-main { flex: 1; min-width: 0; display: block; }
+.bt-root:not(#_) .tr-me-main .tr-xpbar { display: block; }
+.bt-root:not(#_) .tr-me-count { flex: none; display: flex; flex-direction: column; align-items: center; padding: 0 6px; }
+.bt-root:not(#_) .tr-me-count b { font-size: var(--bt-text-2xl); font-weight: 900; line-height: 1.1; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .tr-me-count small { color: var(--bt-text-muted); font-size: var(--bt-text-xs); white-space: nowrap; }
+.bt-root:not(#_) .tr-me-go { flex: none; display: inline-flex; align-items: center; gap: 6px; color: var(--bt-primary-soft); font-size: var(--bt-text-md); font-weight: 700; }
+.bt-root:not(#_) .tr-me-go svg { width: 16px; height: 16px; }
+/* Cards: held ones carry their date and serial; the rest are dimmed until earned */
+.bt-root:not(#_) .tr-earned { color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 700; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .tr-card.is-locked .bt-flip-face:not(.bt-flip-face--back) :is(.bt-medal, b, .bt-badge) { opacity: 0.45; filter: grayscale(0.7); }
+.bt-root:not(#_) .tr-card.is-locked .bt-flip-face:not(.bt-flip-face--back) .tr-flags .bt-badge { opacity: 1; filter: none; }
+.bt-root:not(#_) .tr-card.is-held .bt-flip-face:not(.bt-flip-face--back) { border-color: color-mix(in srgb, var(--c) 45%, transparent); }
+.bt-root:not(#_) .tr-card-skel { height: 236px; border-radius: var(--bt-radius-xl); }
+.bt-root:not(#_) .tr-cat-error { grid-column: 1 / -1; margin: 0; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .tr-me { flex-wrap: wrap; gap: 10px 14px; padding: 12px 14px; }
+  .bt-root:not(#_) .tr-me-main { flex-basis: calc(100% - 66px); }
+  .bt-root:not(#_) .tr-me-count { flex-direction: row; align-items: baseline; gap: 6px; padding: 0; }
+  .bt-root:not(#_) .tr-me-count b { font-size: var(--bt-text-lg); }
+  .bt-root:not(#_) .tr-me-go { margin-left: auto; }
+  .bt-root:not(#_) .tr-card-skel { height: 250px; }
+  .bt-root:not(#_) .tr-cat .tr-chips { margin: 0 -14px; padding: 0 14px 4px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .tr-me { transition: none; }
+}
