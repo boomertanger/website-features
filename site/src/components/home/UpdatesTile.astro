@@ -1,14 +1,18 @@
 ---
-// Latest updates. PREVIEW DATA.
+// Latest updates. Visitors (and anyone before sign-in settles) see the PREVIEW DATA rows;
+// signed-in members see the real activityLog (rules: sign-in to read), newest first, drawn by
+// scripts/home/updates.ts, with the Game Vault's digest row (round 2 G3 + G4: its covers fan
+// out on hover and it keeps counting while the page is open).
 import preview from "../../data/preview-home.json";
 import PreviewTag from "./PreviewTag.astro";
+import "../../styles/updates.css";
 ---
-<div class="bt-tile">
+<div class="bt-tile" data-updates>
   <div class="bt-tile-head">
     <h3>Latest updates</h3>
-    <PreviewTag />
+    <span data-upd-tag><PreviewTag /></span>
   </div>
-  <div>
+  <div data-upd-preview>
     {preview.updates.map((u) => (
       <div class="bt-upd">
         <span class="bt-upd-ic" aria-hidden="true">{u.icon}</span>
@@ -16,4 +20,9 @@ import PreviewTag from "./PreviewTag.astro";
       </div>
     ))}
   </div>
+  <div data-upd-live hidden aria-live="polite"></div>
 </div>
+
+<script>
+  import "../../scripts/home/updates";
+</script>
