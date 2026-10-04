@@ -1,0 +1,33 @@
+---
+// The Trophy Room's feature bar (design-system.md §8h pattern, §8j): the kit's .bt-topbar in a
+// .bt-sticky-bar like the Arcade's, with the TROPHYROOM .bt-wordmark--power (the trophy hops, a
+// shine crosses it and its stars twinkle on hover or focus; once on touch as it scrolls in), and
+// Badges / How it works as a .bt-seg-nav (the icon-only .bt-seg-nav--icons on phones). The
+// members-only gate's bar has no links and doesn't stick. Wired in scripts/trophies/layout.ts.
+import { TR_ICON } from "../../scripts/trophies/art";
+
+interface Props { section?: "badges" | "how" | null; membersOnly?: boolean }
+const { section = null, membersOnly = false } = Astro.props;
+const links = [
+  { id: "badges", label: "Badges", href: "/trophies", icon: "medal" },
+  { id: "how", label: "How it works", href: "/trophies/how-it-works", icon: "help" },
+];
+---
+<div class="bt-sticky-bar tr-dock" data-tr-dock data-members-only={membersOnly ? "" : undefined}>
+  <div class="bt-topbar tr-bar">
+    <a class="bt-wordmark bt-wordmark--power" href="/trophies" aria-label="Trophy Room">
+      <span class="bt-wordmark-icon" set:html={TR_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">TROPHY<span class="bt-wordmark-accent">ROOM</span></span>
+    </a>
+    <nav class="bt-seg-nav tr-barlinks" aria-label="Trophy Room">
+      {links.map((l) => (
+        <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
+      ))}
+    </nav>
+    <nav class="bt-seg-nav bt-seg-nav--icons tr-barico" aria-label="Trophy Room">
+      {links.map((l) => (
+        <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>
+      ))}
+    </nav>
+  </div>
+</div>

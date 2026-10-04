@@ -1,0 +1,55 @@
+/* site/src/styles/trophies.css — the Trophy Room's own look (docs/specs/rewards.md;
+   docs/design/mockups/trophy-room-how-it-works.html, approved shape 1 Coin; design-system.md §8j).
+   Only what's unique to these pages (tr-* prefix): the TROPHYROOM icon, the bar and gate, and the
+   page layouts. Components come from shared/bt-ui.css (.bt-medal, .bt-level--5, .bt-flip,
+   .bt-placard, .bt-chat). Tokens only: no raw colours. Container queries (1024 / 640 / 420, and
+   900 where the Arcade's pieces use it); every animation has a reduced-motion version. */
+
+/* ---- TROPHYROOM icon: rests; on hover / focus / .is-lit the cup hops, a shine crosses it, the stars twinkle ---- */
+.bt-root:not(#_) .tr-icon, .bt-root:not(#_) .bt-wordmark .tr-icon { width: 36px; height: 36px; overflow: visible; }
+.bt-root:not(#_) .tr-icon .c0 { stop-color: var(--bt-lamp); }
+.bt-root:not(#_) .tr-icon .c1 { stop-color: var(--bt-title); }
+.bt-root:not(#_) .tr-icon .bowl { stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.2; }
+.bt-root:not(#_) .tr-icon .handle { fill: none; stroke: var(--bt-title); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) .tr-icon :is(.stem, .base) { fill: color-mix(in srgb, var(--bt-title) 80%, var(--bt-bg)); }
+.bt-root:not(#_) .tr-icon .plinth { fill: var(--bt-primary); }
+.bt-root:not(#_) .tr-icon .shine { fill: var(--bt-logo-shine); opacity: 0; transform-box: view-box; }
+.bt-root:not(#_) .tr-icon .star { fill: var(--bt-lamp); opacity: 0.3; transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) .tr-icon .cup { transform-box: view-box; transform-origin: 20px 34px; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .tr-icon .cup { animation: tr-hop 0.7s cubic-bezier(.3, 1.6, .5, 1); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .tr-icon .shine { animation: tr-shine 0.9s ease-out 0.15s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .tr-icon .star { opacity: 1; filter: drop-shadow(0 0 3px rgba(var(--bt-lamp-rgb), 0.9)); animation: tr-twinkle 0.9s ease-in-out 2; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .tr-icon .s2 { animation-delay: 0.3s; }
+@keyframes tr-hop { 0% { transform: none; } 35% { transform: translateY(-3px) rotate(-6deg); } 70% { transform: translateY(0) rotate(3deg); } 100% { transform: none; } }
+@keyframes tr-shine { 0% { opacity: 0.8; transform: translateX(0); } 100% { opacity: 0; transform: translateX(22px); } }
+@keyframes tr-twinkle { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.5) rotate(20deg); } }
+
+/* ---- The bar (the page content width, like the Arcade's) ---- */
+.bt-root:not(#_) .tr-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
+.bt-root:not(#_) .tr-barico { display: none; }
+
+/* ---- Members-only states: <body data-auth-state> picks skeleton, gate or page ---- */
+.bt-root:not(#_) .tr[data-members-only] :is(.tr-skel, .tr-gate, .tr-page) { display: none; }
+.bt-root[data-auth-state="loading"]:not(#_) .tr[data-members-only] .tr-skel { display: flex; }
+.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .tr[data-members-only] .tr-gate { display: flex; }
+.bt-root:is([data-auth-state="verified"], [data-auth-state="unverified"]):not(#_) .tr[data-members-only] .tr-page { display: block; }
+.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .tr-dock[data-members-only] :is(.tr-barlinks, .tr-barico) { display: none; }
+.bt-root:is([data-auth-state="signedOut"], [data-auth-state="needsSignup"]):not(#_) .tr-dock[data-members-only] { position: relative; }
+.bt-root[data-auth-state="needsSignup"]:not(#_) .tr-gate-visitor { display: none; }
+.bt-root:not(#_) .tr-skel { gap: 14px; }
+.bt-root:not(#_) .tr-skel-title { width: 220px; height: 32px; }
+.bt-root:not(#_) .tr-skel-line { width: min(420px, 80%); height: 14px; }
+.bt-root:not(#_) .tr-skel-card { width: 100%; height: 240px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .tr-gate { flex-direction: column; align-items: center; gap: 14px; max-width: 560px; padding-top: 40px; padding-bottom: 56px; text-align: center; }
+.bt-root:not(#_) .tr-gate .bt-title { margin: 0 auto; }
+.bt-root:not(#_) .tr-gate-art { display: flex; align-items: center; justify-content: center; gap: 18px; margin-bottom: 6px; }
+.bt-root:not(#_) .tr-gate-lead { color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
+.bt-root:not(#_) .tr-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .tr-barlinks { display: none; }
+  .bt-root:not(#_) .tr-barico { display: inline-flex; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .tr-icon :is(.cup, .shine, .star) { animation: none; }
+}

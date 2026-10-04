@@ -1,0 +1,51 @@
+---
+// One layout for every Trophy Room page (docs/specs/rewards.md §11): the site shell, the sticky
+// TROPHYROOM bar in BaseLayout's "bar" slot, then the page. With membersOnly (/trophies) the page
+// shows only to signed-up members; visitors get the members-only gate (Join to start your
+// collection) and mid-signup members get Finish signup. Display-only, like the Arcade's: pages are
+// static and read member data in their scripts after sign-in; <body data-auth-state> picks what
+// shows (a skeleton while auth loads, never a flash of the gate).
+import BaseLayout from "./BaseLayout.astro";
+import TrophyBar from "../components/trophies/TrophyBar.astro";
+import { medalHtml } from "../../../shared/ui/medal.js";
+import "../styles/trophies.css";
+
+interface Props { title: string; description?: string; membersOnly?: boolean; section?: "badges" | "how" | null }
+const { title, description, membersOnly = true, section = null } = Astro.props;
+const gateMedals = [["🕯", 1], ["🎃", 3], ["👁", 5]] as const;
+---
+<BaseLayout title={title} description={description}>
+  <TrophyBar slot="bar" section={section} membersOnly={membersOnly} />
+  <div class="tr" data-members-only={membersOnly ? "" : undefined}>
+    {membersOnly && (
+      <>
+        <div class="bt-zone tr-skel" aria-hidden="true">
+          <span class="bt-skeleton tr-skel-title"></span>
+          <span class="bt-skeleton tr-skel-line"></span>
+          <span class="bt-skeleton tr-skel-card"></span>
+        </div>
+        <section class="bt-zone tr-gate" aria-labelledby="tr-gate-title">
+          <div class="tr-gate-art" aria-hidden="true">{gateMedals.map(([e, r]) => <Fragment set:html={medalHtml({ emoji: e, rarity: r, size: r === 3 ? 92 : 64 })} />)}</div>
+          <h1 class="bt-title" id="tr-gate-title">Members only</h1>
+          <p class="tr-gate-lead">The Trophy Room is for members: badges for showing up, playing and joining in, trophies for winning, and a level that never resets. Joining is free.</p>
+          <div class="tr-gate-acts tr-gate-visitor">
+            <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to start your collection">Join free</a>
+            <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>
+          </div>
+          <div class="tr-gate-acts bt-when-needs-signup">
+            <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+          </div>
+          <a class="bt-keyhole-link" href="/trophies/how-it-works" aria-label="Peek inside: how the Trophy Room works (no account needed)">
+            <span class="bt-keyhole-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 3a5 5 0 0 0-2.4 9.4L8 21h8l-1.6-8.6A5 5 0 0 0 12 3z"/></svg></span>
+            <span aria-hidden="true">Peek inside <small>· no account needed</small></span>
+          </a>
+        </section>
+      </>
+    )}
+    <div class="tr-page"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/trophies/layout";
+</script>

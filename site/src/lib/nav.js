@@ -7,6 +7,7 @@ const MODULE_PAGES = {
   schedule: { label: "Schedule", href: "/schedule", icon: "cal" },
   games: { label: "Games", href: "/games", icon: "game" },
   arcade: { label: "Arcade", href: "/arcade", icon: "joystick" },
+  trophies: { label: "Trophy Room", href: "/trophies", icon: "trophy" },
   streams: { label: "Streams", href: "/streams", icon: "film" },
   shop: { label: "Shop", href: "/shop", icon: "bag" },
   club: { label: "Club", href: "/club", icon: "club" },
