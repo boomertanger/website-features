@@ -285,7 +285,9 @@
   .bt-root:not(#_) .gv-hero-inner .bt-dialbox { grid-column: 1 / -1; justify-self: start; display: flex; align-items: center; gap: 14px; }
   .bt-root:not(#_) .gv-pick-banner .bt-btn { width: 100%; }
   .bt-portal[data-feature="game-vault"] .gv-dsplit { grid-template-columns: minmax(0, 1fr); }
-  .bt-portal[data-feature="game-vault"] .gv-preview { flex-direction: row; align-items: center; }
+  .bt-portal[data-feature="game-vault"] .gv-preview { flex-flow: row wrap; align-items: center; }
+  .bt-portal[data-feature="game-vault"] .gv-preview > .bt-label { flex-basis: 100%; }
+  .bt-portal[data-feature="game-vault"] .gv-preview > .bt-hint { flex: 1; min-width: 0; }
   .bt-portal[data-feature="game-vault"] .gv-preview .bt-cover-card { flex: none; width: 96px; }
   .bt-portal[data-feature="game-vault"] .gv-preview .bt-cover-card-body { display: none; }
   .bt-portal[data-feature="game-vault"] .gv-crop { grid-template-columns: minmax(0, 1fr); justify-items: center; }
