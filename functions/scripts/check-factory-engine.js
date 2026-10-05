@@ -152,11 +152,15 @@ async function main() {
   assert.deepEqual([doc.current, doc.savers, doc.lastDay], [7, 0, "2026-11-08"]);
   out = await K.checkIn("fan", fanWho, start + 8 * day);
   assert.deepEqual([out.current, out.best], [8, 8]);
+  let prof = (await db.doc("sites/boomertanger/profiles/fan").get()).data();
+  assert.deepEqual([prof.currentStreak, prof.bestStreak], [8, 8]);   // copied to the public profile
   // Missed two days with no savers: the sweep breaks it; the next check-in starts again at 1.
   sw = await K.sweep(start + 11 * day);
   assert.equal(sw.broke, 1);
   doc = (await db.doc(`${root}/streaks/fan`).get()).data();
   assert.deepEqual([doc.current, doc.best, doc.lastDay], [0, 8, null]);
+  prof = (await db.doc("sites/boomertanger/profiles/fan").get()).data();
+  assert.deepEqual([prof.currentStreak, prof.bestStreak], [0, 8]);   // a broken streak shows 0, best kept
   assert.equal((await K.sweep(start + 12 * day)).checked, 0);   // broken streaks drop out of the sweep
   out = await K.checkIn("fan", fanWho, start + 12 * day);
   assert.deepEqual([out.current, out.best], [1, 8]);
@@ -166,6 +170,8 @@ async function main() {
 
   // ---------- the scheduler ----------
   const Z = makeSeason({ db, grant });
+  await db.doc("sites/boomertanger/profiles/fan").update({ featuredBadge: "everpresent" });
+  await put("sites/boomertanger/badges/everpresent", { name: "The Everpresent", emoji: "👁", rarity: 5 });
   NOW = Date.parse("2026-12-01T18:00:00Z");
   // s00 is still "live" but past its end, so the tick finalizes it; s01 is Scheduled and due.
   const S1 = `${root}/seasons/s01`;
@@ -190,6 +196,17 @@ async function main() {
   assert.equal(trophies[0].label, "1st · Season 00");
   const board = (await db.doc(`${S}/boards/all`).get()).data();
   assert.deepEqual(board.rows.map((r) => [r.rank, r.uid]), [[1, "fan"], [2, "mod"]]);
+  assert.deepEqual(board.rows[0].featured, { id: "everpresent", emoji: "👁", art: null, rarity: 5 });   // featured badges ride on the rows
+  assert.equal(board.rows[1].featured, null);
+  // The public summary: s01 went live in the same tick, chapter 1 of 2, chapter 2 next; s00's top 3.
+  let sum = (await db.doc("sites/boomertanger/public/factory").get()).data();
+  assert.deepEqual([sum.live, sum.liveSeasonId, sum.name, sum.chapters, sum.chapter.number, sum.nextChapterNumber], [true, "s01", "Season 01", 2, 1, 2]);
+  assert.equal(sum.nextUnlockAt, NOW + 2 * day);
+  assert.deepEqual(sum.last.top3.map((x) => x.uid), ["fan", "mod"]);
+  assert.deepEqual(sum.huntPaths, []);
+  const stamp = sum.updatedAt.toMillis();
+  await Z.writeSummary(NOW + 60e3);
+  assert.equal((await db.doc("sites/boomertanger/public/factory").get()).get("updatedAt").toMillis(), stamp);   // unchanged: not rewritten
   assert.equal(board.count, 2);
   assert.deepEqual((await db.doc(`${S}/boards/crew`).get()).data().rows.map((r) => r.uid), ["mod"]);
   // Running the end again pays nothing twice.
@@ -213,6 +230,8 @@ async function main() {
   log = await Z.tick(NOW + 15 * day);
   assert.ok(log.includes("s01: season badge to fan") && !log.includes("s01: season badge to mod"), log.join("; "));
   assert.ok(log.includes("s01: ended"));
+  sum = (await db.doc("sites/boomertanger/public/factory").get()).data();
+  assert.deepEqual([sum.live, sum.liveSeasonId, sum.last.id], [false, null, "s01"]);   // off-season
 
   console.log("check-factory-engine: ok");
 }

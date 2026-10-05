@@ -99,6 +99,26 @@ async function main() {
   const daily1 = camps.find((c) => c.chapterId === chapters[0] && c.cadence === "daily");
   assert.deepEqual([daily1.opensAt.toMillis(), daily1.closesAt.toMillis()], [start, start + 3 * W]);
   assert.equal(camps.find((c) => c.chapterId === chapters[0] && c.cadence === "story").closesAt, null);
+  // Preview as a plan on a date: chapter 1 only on day one; chapter 2 three weeks in; a Sub Club campaign
+  // shows as a locked count for Fan Club and as a campaign for Sub Club.
+  await db.doc(`${S}/factory/main/seasons/${seasonId}/campaigns/subx`).set({ chapterId: chapters[0], name: "Prestige Path", cadence: "weekly", audience: "sub", order: 9 });
+  await db.doc(`${S}/factory/main/seasons/${seasonId}/campaigns/crewx`).set({ chapterId: chapters[0], name: "Mod Patrol", cadence: "weekly", audience: "crew", order: 10 });
+  assert.equal(await reason(fan("factoryPreview", { seasonId, as: "fan", date: "2027-01-12" })), "notStaff");
+  let pv = await mod("factoryPreview", { seasonId, as: "fan", date: "2027-01-12" });
+  assert.deepEqual(pv.chapters.map((c) => [c.number, c.revealed, c.name === null]), [[1, true, false], [2, false, true], [3, false, true], [4, false, true]]);
+  assert.ok(pv.campaigns.every((c) => c.chapterId === chapters[0]));
+  assert.deepEqual(pv.lockedSub.map((c) => c.name), ["Prestige Path"]);
+  assert.ok(!pv.campaigns.some((c) => c.name === "Mod Patrol" || c.name === "Prestige Path"));
+  assert.ok(pv.activities.length > 0 && pv.activities.every((a) => pv.campaigns.some((c) => c.id === a.campaignId)));
+  pv = await mod("factoryPreview", { seasonId, as: "sub", date: "2027-02-02" });
+  assert.equal(pv.chapters.filter((c) => c.revealed).length, 2);
+  assert.ok(pv.campaigns.some((c) => c.name === "Prestige Path") && !pv.campaigns.some((c) => c.name === "Mod Patrol"));
+  assert.equal(pv.campaigns.find((c) => c.chapterId === chapters[0] && c.cadence === "daily").open, false);   // chapter 1's daily ended with it
+  assert.equal(pv.campaigns.find((c) => c.chapterId === chapters[0] && c.cadence === "story").open, true);    // its story is still open
+  pv = await mod("factoryPreview", { seasonId, as: "crew", date: "2027-01-12" });
+  assert.ok(pv.campaigns.some((c) => c.name === "Mod Patrol") && pv.campaigns.some((c) => c.name === "Prestige Path"));
+  for (const id of ["subx", "crewx"]) await db.doc(`${S}/factory/main/seasons/${seasonId}/campaigns/${id}`).delete();
+
   // Scheduled: edits need an unpublish first.
   assert.equal(await reason(mod("factorySave", { seasonId, node: "season", op: "update", data: { pitch: "x" } })), "locked");
 

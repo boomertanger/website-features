@@ -11,6 +11,12 @@
 //        (places 1-3, kind "season": 150 / 100 / 75 XP, rewards.md §7), a "plaque" for places 4-10,
 //        the season badge (season.badgeId) to everyone who completed every Story campaign, then
 //        status "ended". Every grant is idempotent, so a finalize that stops halfway just reruns.
+//     5. writes the public summary sites/{siteId}/public/factory (only when it changed), so pages know
+//        what's on without querying the season tree: the live season (name, number, art, the current
+//        chapter, the next unlock, endsAt, the season badge, huntPaths: pages with live medals); off-
+//        season, the next Scheduled season and the last one's top 3.
+//   Board rows carry each member's featured badge (emoji, art, rarity) for the leaderboard, refreshed
+//   whenever the rows change.
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { refs } = require("./record");
@@ -46,7 +52,56 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
       log.push(...(await reveal(s, now)));
       await rollBoards(s, now);
     }
+    try { if (await writeSummary(now)) log.push("summary updated"); } catch (err) { console.error("factoryTick: summary failed", err); }
     return log;
+  }
+
+  // 5. The public summary (sites/{siteId}/public/factory).
+  async function writeSummary(now) {
+    const all = (await R.seasons.get()).docs.map(data);
+    const live = all.find((x) => x.status === "live" && L.ms(x.startsAt) <= now && now < L.ms(x.endsAt));
+    const next = all.filter((x) => x.status === "scheduled" && L.ms(x.startsAt) > now).sort((a, b) => L.ms(a.startsAt) - L.ms(b.startsAt))[0] || null;
+    const last = all.filter((x) => x.status === "ended").sort((a, b) => L.ms(b.endsAt) - L.ms(a.endsAt))[0] || null;
+    const badgeOf = async (id) => {
+      if (!id) return null;
+      const b = await R.site.collection("badges").doc(id).get();
+      return b.exists ? { id, name: b.get("name") || "", emoji: b.get("emoji") || null, rarity: b.get("rarity") || 3 } : null;
+    };
+    const out = { live: false, liveSeasonId: null, updatedAt: null };
+    if (live) {
+      const chapters = (await R.chapters(live.id).get()).docs.map(data).sort((a, b) => L.ms(a.unlockAt) - L.ms(b.unlockAt) || (a.order || 0) - (b.order || 0));
+      const openCh = chapters.filter((c) => c.revealed === true && L.ms(c.unlockAt) <= now);
+      const cur = openCh[openCh.length - 1] || null;
+      const upcoming = chapters.find((c) => L.ms(c.unlockAt) > now) || null;
+      // Pages with medals in a hunt that's counting now (its activity revealed, its campaign open).
+      const [camps, acts, hunts] = await Promise.all([R.campaigns(live.id).where("revealed", "==", true).get(), R.activities(live.id).where("revealed", "==", true).get(), R.hunts(live.id).get()]);
+      const campById = new Map(camps.docs.map((d) => [d.id, data(d)]));
+      const huntPaths = new Set();
+      for (const h of hunts.docs) {
+        const a = acts.docs.find((d) => d.id === h.get("activityId"));
+        const c = a && campById.get(a.get("campaignId"));
+        if (!a || a.get("typeId") !== "medals" || !c || !L.campaignOpen(c, live, now)) continue;
+        (await h.ref.collection("medals").get()).docs.forEach((m) => { if (typeof m.get("path") === "string") huntPaths.add(m.get("path").replace(/\/+$/, "") || "/"); });
+      }
+      Object.assign(out, {
+        live: true, liveSeasonId: live.id, name: live.name || "", number: live.number ?? null, pitch: live.pitch || "", art: live.art?.url || null,
+        startsAt: L.ms(live.startsAt), endsAt: L.ms(live.endsAt), chapters: chapters.length,
+        chapter: cur ? { number: chapters.indexOf(cur) + 1, name: cur.name || "", id: cur.id } : null,
+        nextUnlockAt: upcoming ? L.ms(upcoming.unlockAt) : null, nextChapterNumber: upcoming ? chapters.indexOf(upcoming) + 1 : null,
+        badge: await badgeOf(live.badgeId), huntPaths: [...huntPaths].sort(),
+      });
+    }
+    out.next = next ? { id: next.id, name: next.name || "", number: next.number ?? null, startsAt: L.ms(next.startsAt) } : null;
+    if (last) {
+      const board = await R.boards(last.id).doc("all").get();
+      out.last = { id: last.id, name: last.name || "", number: last.number ?? null, endedAt: L.ms(last.endsAt), top3: (board.get("rows") || []).slice(0, 3).map((x) => ({ uid: x.uid, handle: x.handle || null, displayName: x.displayName || null, seasonXp: x.seasonXp || 0, featured: x.featured || null })) };
+    } else out.last = null;
+    const ref = R.site.collection("public").doc("factory");
+    const cur = await ref.get();
+    const strip = (x) => JSON.stringify({ ...x, updatedAt: null });
+    if (cur.exists && strip(cur.data()) === strip(out)) return false;
+    await ref.set({ ...out, updatedAt: Timestamp.fromMillis(now) });
+    return true;
   }
 
   // 2. Reveal what's due, top down.
@@ -76,15 +131,32 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
       R.standings(s.id).where("tier", "==", "crew").count().get(),
     ]);
     const counts = { all: all.data().count, sub: sub.data().count, crew: crew.data().count };
+    let featured = null;   // uid -> featured badge, read only when some board's rows changed
+    const plainRow = ({ featured: _f, ...x }) => x;
     for (const board of ["all", "sub", "crew"]) {
       const top = rows.filter((r) => board === "all" || r.tier === board).slice(0, BOARD_SIZE)
         .map((r, i) => ({ rank: i + 1, uid: r.uid, handle: r.handle || null, displayName: r.displayName || r.handle || null, seasonXp: r.seasonXp, tier: r.tier }));
       const ref = R.boards(s.id).doc(board);
       const cur = await ref.get();
-      if (cur.exists && JSON.stringify(cur.get("rows")) === JSON.stringify(top) && cur.get("count") === counts[board]) continue;
-      await ref.set({ board, rows: top, count: counts[board], updatedAt: Timestamp.fromMillis(now) });
+      if (cur.exists && JSON.stringify((cur.get("rows") || []).map(plainRow)) === JSON.stringify(top) && cur.get("count") === counts[board]) continue;
+      featured ||= await featuredBadges(rows.slice(0, BOARD_SIZE * 3).map((x) => x.uid));
+      await ref.set({ board, rows: top.map((x) => ({ ...x, featured: featured.get(x.uid) || null })), count: counts[board], updatedAt: Timestamp.fromMillis(now) });
     }
     return rows;
+  }
+
+  /** uid -> { id, emoji, art, rarity } for each member's featured badge (profiles, then the catalog). */
+  async function featuredBadges(uids) {
+    const out = new Map();
+    const list = [...new Set(uids)].filter(Boolean);
+    if (!list.length) return out;
+    const profiles = [];
+    for (let i = 0; i < list.length; i += 100) profiles.push(...(await db.getAll(...list.slice(i, i + 100).map((u) => R.profile(u)))));
+    const ids = [...new Set(profiles.map((p) => p.exists && p.get("featuredBadge")).filter(Boolean))];
+    const badges = new Map();
+    for (let i = 0; i < ids.length; i += 100) (await db.getAll(...ids.slice(i, i + 100).map((id) => R.site.collection("badges").doc(id)))).forEach((b) => { if (b.exists) badges.set(b.id, { id: b.id, emoji: b.get("emoji") || null, art: b.get("art") || null, rarity: b.get("rarity") || 1 }); });
+    profiles.forEach((p) => { const b = p.exists && badges.get(p.get("featuredBadge")); if (b) out.set(p.id, b); });
+    return out;
   }
 
   // 4. Season end.
@@ -117,7 +189,7 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
     return out;
   }
 
-  return { tick, reveal, rollBoards, finalize };
+  return { tick, reveal, rollBoards, finalize, writeSummary };
 }
 
 module.exports = { makeSeason, BOARD_SIZE };

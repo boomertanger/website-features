@@ -21,6 +21,9 @@
 //   factoryDuplicate({ seasonId })               the tree as a new Draft, dates and art cleared
 //   factoryIdeaSave({ id, kind, data, retired }) admin  add, edit or retire an idea
 //   factoryTypeToggle({ typeId, enabled })   admin  switch an activity type on or off
+//   factoryPreview({ seasonId, as, date })      the season as a member of that plan (fan | sub | crew)
+//                                                would see it on that day: what's revealed by then, audience
+//                                                filtered (Sub Club campaigns stay as a locked count for fan)
 const crypto = require("crypto");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
@@ -90,6 +93,31 @@ const FIELDS = {
 const DATE_FIELDS = ["startsAt", "endsAt", "unlockAt", "opensAt", "closesAt"];
 // What can still change once the season is live (spec §7 stage 8).
 const LIVE_EDITABLE = { season: ["name", "pitch", "tags"], chapter: ["name", "blurb"], campaign: ["name"], activity: ["title", "instructions", "link"], medal: ["hint"] };
+
+/** The season tree as a member of plan `as` sees it at time `at` (the same rules as factoryTick and the rules file). */
+function previewOf(t, as, at) {
+  const s = t.season;
+  const who = { roles: as === "crew" ? ["mod"] : as === "sub" ? ["sub"] : [], staging: true };
+  const wins = C.chapterWindows(s, t.chapters);
+  const shown = new Set(wins.filter((c) => c.start != null && c.start <= at).map((c) => c.id));
+  const chapters = wins.map((c, i) => shown.has(c.id)
+    ? { id: c.id, number: i + 1, name: c.name || "", blurb: c.blurb || "", unlockAt: c.start, revealed: true }
+    : { id: c.id, number: i + 1, name: null, unlockAt: c.start, revealed: false });
+  const byCh = new Map(wins.map((c) => [c.id, c]));
+  const campaigns = [], lockedSub = [];
+  for (const c of t.campaigns) {
+    if (!shown.has(c.chapterId) || c.enabled === false) continue;
+    const w = C.campaignWindow(c, byCh.get(c.chapterId), s);
+    if (w.start == null || w.start > at) continue;
+    const view = { ...c, opensAt: w.start, closesAt: c.cadence === "story" || c.cadence === "milestone" ? (c.closesAt ?? null) : w.end ?? null, revealed: true, open: w.start <= at && (w.end == null || at < w.end) && at < (s.endsAt ?? Infinity) };
+    if (L.audienceOk(c.audience || "all", who)) campaigns.push(view);
+    else if (c.audience === "sub") lockedSub.push({ id: c.id, chapterId: c.chapterId, name: c.name });
+  }
+  const ids = new Set(campaigns.map((c) => c.id));
+  const activities = t.activities.filter((a) => ids.has(a.campaignId) && a.enabled !== false).map((a) => ({ ...a, revealed: true }));
+  const { createdBy, updatedBy, submittedBy, publishedBy, reviewNote, ...season } = s;
+  return { season: { ...season, revealed: true }, chapters, campaigns, activities, lockedSub, as, at };
+}
 
 module.exports = function builder({ adminLogEntry, recordAssetCreated, performAssetDeletion, cloudSecrets, cloudCreds }) {
   const db = admin.firestore();
@@ -537,8 +565,21 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
     return { ok: true, typeId, enabled };
   });
 
+  // ---------- factoryPreview({ seasonId, as, date }) ----------
+  const factoryPreview = onCall(async (request) => {
+    await crew(request);
+    const { as = "fan", date } = request.data || {};
+    if (!["fan", "sub", "crew"].includes(as)) throw fail("invalid-argument", "Preview as fan, sub or crew.", "args");
+    const t = await tree(request.data?.seasonId);
+    const m = typeof date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : null;
+    // Noon Central on that day (any time that day shows the same chapters and campaigns).
+    const at = m ? (Date.UTC(+m.slice(0, 4), +m.slice(5, 7) - 1, +m.slice(8, 10), 17)) : Date.now();
+    return { ok: true, ...previewOf(t, as, at) };
+  });
+
   return {
-    factoryListSeasons, factoryGetSeason, factorySave, factoryArtSignature, factorySubmit, factoryPublish,
+    factoryListSeasons, factoryGetSeason, factoryPreview, factorySave, factoryArtSignature, factorySubmit, factoryPublish,
     factorySendBack, factoryUnpublish, factoryEnd, factoryDuplicate, factoryIdeaSave, factoryTypeToggle,
   };
 };
+module.exports.previewOf = previewOf;

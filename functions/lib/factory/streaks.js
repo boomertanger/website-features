@@ -10,6 +10,7 @@
 //                       so pages show the right number before the member comes back.
 // lastDay is the last day the streak covers (a check-in, or a missed day a saver paid for), and
 // null once it's broken, so the sweep's query (lastDay < yesterday) skips broken streaks.
+// The public profile carries currentStreak and bestStreak (function-written) for /u/{handle}.
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { refs } = require("./record");
@@ -33,6 +34,7 @@ function makeStreaks({ db = admin.firestore(), grant = null } = {}) {
       }
       return next;
     });
+    if (!s.already) await copyToProfile(uid, s.current, s.best);
     const badges = [];
     for (const badgeId of s.badges || []) {
       try {
@@ -54,9 +56,19 @@ function makeStreaks({ db = admin.firestore(), grant = null } = {}) {
         if (!next.changed) return;
         tx.update(doc.ref, { current: next.current, lastDay: next.lastDay, savers: next.savers, updatedAt: Timestamp.fromMillis(now) });
         if (next.broke) broke++; else kept++;
+        if (next.broke) tx.set(R.profile(doc.id), { currentStreak: 0 }, { merge: true });
       });
     }
     return { checked: late.size, kept, broke };
+  }
+
+  /** profiles/{uid}.currentStreak and bestStreak, for the public profile (no profile, no copy). */
+  async function copyToProfile(uid, current, best) {
+    try {
+      const ref = R.profile(uid);
+      const p = await ref.get();
+      if (p.exists && (p.get("currentStreak") !== current || p.get("bestStreak") !== best)) await ref.update({ currentStreak: current, bestStreak: best });
+    } catch (err) { console.error("factory: streak not copied to the profile", err); }
   }
 
   return { checkIn, sweep };
