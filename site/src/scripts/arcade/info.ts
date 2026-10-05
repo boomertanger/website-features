@@ -2,13 +2,14 @@
 // in how-it-works-sections-2-3.html): the journey lights up to the step you're on, the
 // version cycle is the kit's cycle wheel, the What's inside cards get the pointer spotlight, and
 // the Versions timeline and its cartridges light each other on hover. The "On this page"
-// menu comes from TocLayout.astro. No Firestore reads.
-import { initSpotlights } from "../../../../shared/ui/spotlight.js";
+// menu comes from TocLayout.astro. The journey, the stage cards' spotlight and Ask BOOMBOT are
+// the shared How it works behaviour (shared/ui/how-it-works.js). No Firestore reads.
+import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
 import { initFlipCards } from "../../../../shared/ui/flip-card.js";
-import { initChat } from "../../../../shared/ui/chat.js";
 import { initCycleWheels } from "../../../../shared/ui/cycle-wheel.js";
 
-initSpotlights(document.querySelector(".ai-stage") ?? document);
+// 1 What's inside (spotlight), 2 How a game is born (the journey) and 9 FAQ (Ask BOOMBOT).
+initHowItWorks(document);
 
 // Versions: a cartridge lights its part of the line (data-hl + .is-lit stops); a stop lifts its card.
 const linked = document.querySelector<HTMLElement>(".ai-linked");
@@ -22,24 +23,6 @@ if (linked) {
     el.addEventListener("pointerenter", () => light(el.dataset.kind));
     el.addEventListener("pointerleave", () => light(""));
   });
-}
-
-// 2 How a game is born: hover, focus or a tap lights a step; the line fills gold up to it.
-const journey = document.querySelector<HTMLElement>("[data-journey]");
-if (journey) {
-  const items = [...journey.children] as HTMLElement[];
-  const set = (i: number) => {
-    if (i < 0) journey.removeAttribute("data-active"); else journey.dataset.active = String(i);
-    journey.style.setProperty("--p", String(Math.max(i, 0)));
-    items.forEach((li, j) => { li.classList.toggle("is-on", j === i); li.classList.toggle("is-past", i >= 0 && j < i); });
-  };
-  items.forEach((li, i) => {
-    li.addEventListener("pointerenter", (e) => { if (e.pointerType === "mouse") set(i); });
-    li.addEventListener("focus", () => set(i));
-    li.addEventListener("click", () => set(i));
-  });
-  journey.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse" && !journey.contains(document.activeElement)) set(-1); });
-  journey.addEventListener("focusout", (e) => { if (!journey.contains(e.relatedTarget as Node)) set(-1); });
 }
 
 // 3 How a game grows: the cycle wheel (tabs, arrows, Play).
@@ -113,5 +96,3 @@ if (gloss) {
   show(Math.max(0, terms.findIndex(([t]) => t === "Boom Arcade")));
 }
 
-// 9 FAQ, Ask BOOMBOT: the kit's chat (one answer open at a time, a moment of "typing").
-initChat();

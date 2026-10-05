@@ -10,3 +10,6 @@ node_modules/
 site/node_modules/
 site/dist/
 site/.astro/
+
+# Staff-only material (the mod guide); the repo is public, so never committed
+functions/scripts/private/

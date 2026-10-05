@@ -1,0 +1,82 @@
+/* site/src/styles/how-it-works.css — the How it works blocks the Arcade's and the Game Vault's pages
+   share (docs/specs/game-vault-how-it-works.md §4; moved from arcade.css, class names unchanged):
+   the column (.ai-main), hero (.ai-hero, .ai-kicker, .ai-acts), stage cards with scenes (.ai-stage,
+   .ai-part, .ai-scene, .ai-who-chip; the cards are the kit's .bt-card + .bt-spotlight), the journey
+   (.ai-jr, data-journey) and the closing call (.ai-cta). Behaviour: shared/ui/how-it-works.js.
+   The side menu is TocLayout (toc-layout.css); the placard and the FAQ are the kit's .bt-placard and
+   .bt-chat. Each page adds its own scenes in its own CSS. */
+
+.bt-root:not(#_) .ai-main { display: flex; flex-direction: column; gap: 44px; min-width: 0; }
+.bt-root:not(#_) .ai-hero { position: relative; overflow: hidden; padding: 40px 32px; border: 1px solid var(--bt-border); border-radius: 22px; background: radial-gradient(70% 90% at 85% 10%, var(--bt-game-spot), transparent 60%), radial-gradient(60% 80% at 10% 100%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .ai-kicker { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bt-text-faint); }
+
+.bt-root:not(#_) .ai-hero .bt-title { margin: 6px 0 10px; }
+.bt-root:not(#_) .ai-hero p { max-width: 52ch; margin: 0 0 20px; color: var(--bt-text); font-size: var(--bt-text-lg); }
+.bt-root:not(#_) :is(.ai-acts) { display: flex; flex-wrap: wrap; gap: 10px; }
+/* Section 2, the journey (how-it-works-sections-2-3.html "After"): six circles on their own
+   line above the cards, each joined to its card by a stem. The line fills gold up to the
+   hovered / focused / tapped step (--p, set by info.ts); passed steps stay lit. */
+.bt-root:not(#_) .ai-jr { --p: 0; position: relative; display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; margin: 58px 0 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .ai-jr::before, .bt-root:not(#_) .ai-jr::after { content: ""; position: absolute; z-index: 1; top: -29px; left: 29px; height: 2px; margin-top: -1px; border-radius: 2px; pointer-events: none; }
+.bt-root:not(#_) .ai-jr::before { right: calc((100% - 50px) / 6 - 29px); background: var(--bt-border-2); }
+.bt-root:not(#_) .ai-jr::after { width: calc(var(--p) * ((100% - 50px) / 6 + 10px)); background: linear-gradient(90deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 70%, var(--bt-blood))); box-shadow: 0 0 10px rgba(var(--bt-gold-rgb), 0.6); transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .ai-jr li { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 4px; padding: 16px 14px 14px; border: 1px solid var(--bt-border); border-radius: 16px; background: var(--bt-surface); cursor: default; outline: none; transition: transform 0.25s ease, border-color 0.25s, box-shadow 0.25s, background 0.25s; }
+.bt-root:not(#_) .ai-jr li:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .ai-jr li::before { content: ""; position: absolute; top: -14px; left: 28px; width: 2px; height: 14px; background: var(--bt-border-2); transition: background 0.3s; }
+.bt-root:not(#_) .ai-jr li:is(.is-on, .is-past)::before { background: rgba(var(--bt-gold-rgb), 0.6); }
+.bt-root:not(#_) .ai-jr-num { position: absolute; z-index: 3; top: -44px; left: 14px; width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 13px; font-weight: 900; box-shadow: 0 0 0 4px var(--bt-bg); transition: transform 0.35s cubic-bezier(0.3, 1.6, 0.4, 1), box-shadow 0.3s, background 0.3s; }
+.bt-root:not(#_) .ai-jr-num::after { content: ""; position: absolute; inset: -4px; border: 2px solid var(--bt-title); border-radius: 50%; opacity: 0; pointer-events: none; }
+.bt-root:not(#_) .ai-jr-ic { position: absolute; top: 12px; right: 12px; font-size: 18px; opacity: 0.35; filter: grayscale(0.7); transition: opacity 0.3s, filter 0.3s, transform 0.35s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.bt-root:not(#_) .ai-jr b { padding-right: 24px; font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .ai-jr-t { color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+.bt-root:not(#_) .ai-jr[data-active] li:not(.is-past, .is-on) .ai-jr-num { background: color-mix(in srgb, var(--bt-title) 55%, var(--bt-surface-2)); }
+.bt-root:not(#_) .ai-jr li.is-past .ai-jr-num { box-shadow: 0 0 0 4px var(--bt-bg), 0 0 12px rgba(var(--bt-gold-rgb), 0.45); }
+.bt-root:not(#_) .ai-jr li.is-on { z-index: 3; transform: translateY(-4px); border-color: rgba(var(--bt-gold-rgb), 0.55); background: radial-gradient(90% 80% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); box-shadow: 0 12px 28px var(--bt-lift-shadow), 0 0 22px rgba(var(--bt-gold-rgb), 0.14); }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-num { transform: scale(1.35); background: var(--bt-lamp); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 18px rgba(var(--bt-lamp-rgb), 0.9), 0 0 36px rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-num::after { animation: ai-jr-ring 1.2s ease-out infinite; }
+.bt-root:not(#_) .ai-jr li.is-on .ai-jr-ic { opacity: 1; filter: none; transform: scale(1.25) rotate(-8deg); }
+@keyframes ai-jr-ring { 0% { opacity: 0.9; transform: scale(0.9); } 100% { opacity: 0; transform: scale(1.9); } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.ai-jr li, .ai-jr-num, .ai-jr-ic, .ai-jr::after) { transition: none; }
+  .bt-root:not(#_) .ai-jr li.is-on, .bt-root:not(#_) .ai-jr li.is-on :is(.ai-jr-num, .ai-jr-ic) { transform: none; }
+  .bt-root:not(#_) .ai-jr li.is-on .ai-jr-num::after { animation: none; }
+}
+/* 900px is this page's breakpoint for the journey (design-system.md §8h). */
+@container bt (max-width: 900px) and (min-width: 641px) {
+  .bt-root:not(#_) .ai-jr { grid-template-columns: repeat(3, minmax(0, 1fr)); row-gap: 58px; }
+  .bt-root:not(#_) .ai-jr::before, .bt-root:not(#_) .ai-jr::after { display: none; }
+}
+/* Phones: a vertical path, the circles on the line beside the cards, filling downward. */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-jr { grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; padding-left: 30px; }
+  .bt-root:not(#_) .ai-jr li::before { display: none; }
+  .bt-root:not(#_) .ai-jr::before { top: 20px; bottom: 20px; left: 14px; right: auto; width: 2px; height: auto; margin: 0; }
+  .bt-root:not(#_) .ai-jr::after { top: 20px; left: 14px; width: 2px; height: calc(var(--p) * (100% - 40px) / 5); margin: 0; transition: height 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+  .bt-root:not(#_) .ai-jr li { padding: 14px 44px 14px 18px; }
+  .bt-root:not(#_) .ai-jr-num { top: 50%; left: -31px; margin-top: -15px; }
+  .bt-root:not(#_) .ai-jr li.is-on { transform: translateX(3px); }
+}
+
+.bt-root:not(#_) .ai-cta { padding: 32px 20px; border: 1px solid var(--bt-border); border-radius: 22px; background: radial-gradient(60% 100% at 50% 0%, var(--bt-game-spot), transparent 70%), var(--bt-surface); text-align: center; }
+.bt-root:not(#_) .ai-cta h2 { margin: 0 0 6px; color: var(--bt-title); font-size: 24px; font-weight: 900; letter-spacing: 0.03em; text-transform: uppercase; }
+.bt-root:not(#_) .ai-cta p { margin: 0 0 16px; color: var(--bt-text-muted); }
+.bt-root:not(#_) .ai-cta .ai-acts { justify-content: center; }
+
+/* Section 1, What's inside: "Stage" cards (docs/design/mockups/how-it-works-round-2.html, 1A).
+   The card is the kit's .bt-card (--door when it links somewhere) with .bt-spotlight; the
+   scene on top animates on hover, the big icon tile overlaps its bottom edge. */
+.bt-root:not(#_) .ai-stage { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.bt-root:not(#_) .ai-part { position: relative; overflow: hidden; gap: 0; padding: 0; border-radius: var(--bt-radius-xl); }
+.bt-root:not(#_) .ai-part > * { position: relative; z-index: 1; }
+.bt-root:not(#_) .ai-part-ic { position: absolute; z-index: 2; left: 22px; top: 118px; }
+.bt-root:not(#_) .ai-part-copy { flex: 1; display: flex; flex-direction: column; gap: 8px; min-width: 0; padding: 44px 22px 22px; }
+.bt-root:not(#_) .ai-part-copy h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.01em; }
+.bt-root:not(#_) .ai-part-copy p { margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .ai-part-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: auto; padding-top: 10px; }
+.bt-root:not(#_) .ai-who-chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); background: var(--bt-surface-2); color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ai-scene { position: relative; height: 150px; display: grid; place-items: center; overflow: hidden; border-bottom: 1px solid var(--bt-border); }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-hero { padding: 26px 18px; }
+  .bt-root:not(#_) :is(.ai-stage, .ai-gloss) { grid-template-columns: minmax(0, 1fr); }
+}
