@@ -29,6 +29,7 @@ import { stepperHtml, keepOpenInView } from "../ui/stepper.js";
 import { lanesHtml } from "../ui/lanes.js";
 import { taskRowHtml, lockCardHtml, clockHtml, pathHtml } from "../ui/season.js";
 import { timerHtml, initTimers } from "../ui/countdown.js";
+import { backHtml, pagerHtml } from "../ui/pager.js";
 
 const KIT_VERSION = "dev";
 
@@ -790,6 +791,7 @@ function pageHtml() {
 ${navHtml()}
 ${arcadeHtml()}
 ${vaultKitHtml()}
+${pagerKitHtml()}
 ${trophyKitHtml()}
 ${storyKitHtml()}
 ${toastKitHtml()}
@@ -1231,6 +1233,25 @@ const VK_IC = {
   filter: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M4 6h16M7 12h10M10 18h4"/></svg>',
   people: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="9" cy="8" r="3"/><path d="M3 20c0-3.3 2.7-5 6-5s6 1.7 6 5"/><path d="M16 11a3 3 0 1 0 0-6M21 20c0-2.6-1.6-4.2-4-4.8"/></svg>',
 };
+// ---------- Back pill and pager (game-vault-round-3.html N1 + P12; shared/ui/pager.js) ----------
+function pagerKitHtml() {
+  const pic = { source: "upload", url: KIT_MASCOT };
+  const side = (title, meta) => ({ href: "#kit-pager", title, meta, cover: coverHtml(pic, { alt: "" }) });
+  return `
+  <section class="kit-section" id="kit-pager">
+    <h2 class="kit-h">Back pill and pager</h2>
+    <p class="kit-p">For stepping through a list one item at a time (the Game Vault's game page). Both sit on busy art, so they're frosted. On phones the back pill shortens and drops its reminder, and the buttons grow to 44px.</p>
+    <p class="kit-sub">Back pill: .bt-back, with a small reminder of where you came from (backHtml)</p>
+    <div class="kit-row">${backHtml({ href: "#kit-pager", label: "Wishlist, A-Z", long: "Back to the Vault", short: "Vault" })}${backHtml({ href: "#kit-pager", long: "Back to the Vault", short: "Vault" })}</div>
+    <p class="kit-sub">Pager: .bt-pager, "3 of 14" with ‹ › (pagerHtml). Hover or focus an arrow for the preview. At either end the missing side is an empty gap, so nothing moves</p>
+    <div class="kit-row" style="gap:32px;padding-bottom:90px">
+      ${pagerHtml({ pos: 3, total: 14, prev: side("The game before", "6 streams"), next: side("The game after", "Not streamed yet"), label: "Pager demo" })}
+      ${pagerHtml({ pos: 1, total: 14, next: side("The second game", "2 streams"), keys: false, label: "Pager demo, first" })}
+      ${pagerHtml({ pos: 14, total: 14, prev: side("The one before last", "1 stream"), keys: false, label: "Pager demo, last" })}
+    </div>
+  </section>`;
+}
+
 function vaultKitHtml() {
   const pic = { source: "upload", url: KIT_MASCOT };
   const badge = (tone, label) => `<span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>${label}</span>`;

@@ -7,7 +7,9 @@
 // S1), just the gliding grid when searching or filtering, and the states (loading, empty, no
 // matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
 // there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything,
-// the 5 newest wishlist games and a nudge to be the first.
+// the 5 newest wishlist games and a nudge to be the first. Leaving for a game stores the list you
+// were in (scripts/vault/context.ts) for the game page's Back to the Vault and previous / next, and
+// coming back that way puts you at the same scroll position.
 import { buildIndex, search } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
@@ -20,6 +22,7 @@ import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, doorParts, I } from "./art";
 import { esc, badge, vcard, tag, hours, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS } from "./ui";
 import { wantButton, initWants } from "./wants";
+import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 
 const root = document.querySelector<HTMLElement>("[data-vault]");
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -70,7 +73,7 @@ function list(): VCard[] {
     return gs;
   }
   const cmp: Record<string, (a: VCard, b: VCard) => number> = {
-    last: (a, b) => (b.last || 0) - (a.last || 0) || b.wanted - a.wanted || a.sortTitle.localeCompare(b.sortTitle),
+    last: byLastStreamed,
     most: (a, b) => b.streams - a.streams || b.minutes - a.minutes,
     score: (a, b) => (b.score ?? -1) - (a.score ?? -1) || (b.last || 0) - (a.last || 0),
     wanted: (a, b) => b.wanted - a.wanted || a.sortTitle.localeCompare(b.sortTitle),
@@ -78,6 +81,20 @@ function list(): VCard[] {
     az: (a, b) => a.sortTitle.localeCompare(b.sortTitle, "en"),
   };
   return gs.sort(cmp[st.sort] || cmp.last);
+}
+
+// ---------- the list you leave from (round 3 N1) ----------
+/** "Wishlist, A-Z", "All games, last streamed", "Search “granny”". */
+function ctxLabel() {
+  const q = st.q.trim();
+  if (q) return `Search “${q}”`;
+  const sortL = SORTS.find(([k]) => k === st.sort)![1];
+  const sort = sortL === "A–Z" ? "A-Z" : sortL.startsWith("Boomer") ? sortL : sortL[0].toLowerCase() + sortL.slice(1);
+  const what = st.status === "all" ? "All games" : STATUS[st.status][0];
+  return `${what}${st.tags.length || st.len || st.picks ? " (filtered)" : ""}, ${sort}`;
+}
+function remember() {
+  saveCtx({ url: `${location.pathname}${location.search}`, scroll: Math.round(scrollY), label: ctxLabel(), slugs: list().map((g) => g.slug) });
 }
 
 // ---------- pieces ----------
@@ -247,7 +264,7 @@ function wire() {
     input, mount: root!.querySelector<HTMLElement>("[data-cmd]")!,
     groups: cmdGroups,
     onChoose: (v: any, q: string) => {
-      if (v.kind === "game") { location.href = `/games/${encodeURIComponent(v.slug)}`; return; }
+      if (v.kind === "game") { remember(); location.href = `/games/${encodeURIComponent(v.slug)}`; return; }
       if (v.kind === "add") { openAdd(q); return; }
       st.q = ""; input.value = "";
       if (v.kind === "status") st.status = v.k;
@@ -272,6 +289,8 @@ function wire() {
   });
   root!.addEventListener("click", (e) => {
     const el = e.target as Element;
+    const game = el.closest<HTMLAnchorElement>('a[href^="/games/"]');
+    if (game && !game.closest("[data-seg]") && !(game.getAttribute("href") || "").startsWith("/games/queue")) remember();
     const s = el.closest<HTMLElement>("[data-status]");
     if (s) { e.preventDefault(); st.status = s.dataset.status as State["status"]; update(); return; }
     const see = el.closest<HTMLElement>("[data-see]");
@@ -323,6 +342,9 @@ async function boot() {
   renderControls();
   renderResults();
   onAuth(() => renderResults());   // the Add / Join wording and the want buttons follow sign-in
+  // Back to the Vault: the same URL, so scroll to where you left it.
+  const ctx = loadCtx();
+  if (takeRestore() && ctx && ctx.url === `${location.pathname}${location.search}`) requestAnimationFrame(() => scrollTo({ top: ctx.scroll, behavior: "auto" }));
 }
 
 if (root) boot();

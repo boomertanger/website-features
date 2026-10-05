@@ -671,6 +671,46 @@
   .bt-root:not(#_) .bt-task-row-bar i, .bt-root:not(#_) .bt-path::after { transition: none; }
 }
 
+/* ---- Back pill and pager: .bt-back, .bt-pager (shared/ui/pager.js; game-vault-round-3.html N1 + P12) ----
+   .bt-back        the "Back to the Vault" pill: chevron, .bt-back-long (desktop) / .bt-back-short
+                   (phones), and a small reminder of the list you came from (hidden on phones).
+   .bt-pager       "3 of 14" (.bt-pager-pos) with round ‹ › links (.bt-pager-btn in a .bt-pager-wrap);
+                   .bt-pager-gap holds the place of a side with nothing. .bt-pager-peek previews the
+                   game on hover or focus (pointer devices only). .bt-pager-keys hints at the arrow keys.
+   Both sit on busy art (a banner), so they have a frosted dark fill. 44px targets on phones. */
+.bt-root:not(#_) .bt-back { display: inline-flex; align-items: center; gap: 8px; min-width: 0; padding: 7px 14px 7px 10px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: color-mix(in srgb, var(--bt-bg) 60%, transparent); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); color: var(--bt-text); font-size: var(--bt-text-md); font-weight: 700; text-decoration: none; transition: border-color 0.2s; }
+.bt-root:not(#_) .bt-back svg { width: 16px; height: 16px; flex: none; color: var(--bt-primary-soft); transition: transform 0.2s; }
+.bt-root:not(#_) .bt-back:hover { border-color: var(--bt-primary); text-decoration: none; }
+.bt-root:not(#_) .bt-back:hover svg { transform: translateX(-3px); }
+.bt-root:not(#_) .bt-back:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-back small { overflow: hidden; color: var(--bt-text-faint); font-size: var(--bt-text-sm); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root:not(#_) .bt-back-short { display: none; }
+.bt-root:not(#_) .bt-pager { display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .bt-pager-pos { color: var(--bt-text-muted); font-size: var(--bt-text-md); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bt-root:not(#_) .bt-pager-pos b { color: var(--bt-text); }
+.bt-root:not(#_) .bt-pager-keys { color: var(--bt-text-faint); font-size: var(--bt-text-xs); white-space: nowrap; }
+.bt-root:not(#_) .bt-pager-wrap { position: relative; }
+.bt-root:not(#_) .bt-pager-btn, .bt-root:not(#_) .bt-pager-gap { width: 38px; height: 38px; flex: none; }
+.bt-root:not(#_) .bt-pager-btn { display: grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--bt-border-2); background: color-mix(in srgb, var(--bt-bg) 60%, transparent); color: var(--bt-text); cursor: pointer; transition: border-color 0.2s, background-color 0.2s; }
+.bt-root:not(#_) .bt-pager-btn svg { width: 18px; height: 18px; }
+.bt-root:not(#_) .bt-pager-btn:hover { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .bt-pager-btn:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-pager-peek { position: absolute; z-index: var(--bt-z-dropdown); top: calc(100% + 10px); right: 0; display: none; align-items: center; gap: 12px; width: 240px; padding: 10px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: var(--bt-surface); box-shadow: var(--bt-shadow-dropdown); pointer-events: none; }
+.bt-root:not(#_) .bt-pager-peek .bt-cover { width: 44px; flex: none; }
+.bt-root:not(#_) .bt-pager-peek > span { display: flex; flex-direction: column; gap: 2px; min-width: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-pager-peek b { overflow: hidden; color: var(--bt-text); font-size: var(--bt-text-base); text-overflow: ellipsis; white-space: nowrap; }
+@media (hover: hover) and (pointer: fine) {
+  .bt-root:not(#_) .bt-pager-wrap:is(:hover, :focus-within) .bt-pager-peek { display: flex; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-back small, .bt-root:not(#_) .bt-back-long, .bt-root:not(#_) .bt-pager-keys { display: none; }
+  .bt-root:not(#_) .bt-back-short { display: inline; }
+  .bt-root:not(#_) :is(.bt-pager-btn, .bt-pager-gap) { width: 44px; height: 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-back, .bt-back svg, .bt-pager-btn) { transition: none; }
+}
+
 /* ---- Hidden medal: .bt-hunt-medal (the Fun Factory's site-wide hunts; site/src/scripts/factory/site-wide.ts)
    A small .bt-medal button in a corner of a positioned host (.bt-hunt-host, given position: relative).
    Absolutely placed, so it never moves the layout; it glints now and then, and pops away when claimed.

@@ -153,6 +153,16 @@
 .bt-root:not(#_) .gv-grain { position: absolute; inset: -50%; z-index: 0; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); opacity: 0.09; pointer-events: none; animation: gv-grain 0.9s steps(4) infinite; }
 @keyframes gv-grain { 0% { transform: translate(0, 0); } 25% { transform: translate(-4%, 3%); } 50% { transform: translate(3%, -2%); } 75% { transform: translate(-2%, -4%); } }
 .bt-root:not(#_) .gv-hero-inner { position: relative; z-index: 1; display: grid; grid-template-columns: 220px minmax(0, 1fr) auto; gap: 32px; align-items: end; padding: 48px var(--bt-gutter) 32px; }
+/* round 3 N1 + P12: the bar across the top of the banner (.bt-back + .bt-pager), and the banner
+   sliding in from the side you moved toward. */
+.bt-root:not(#_) .gv-pagebar { position: relative; z-index: 2; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 18px var(--bt-gutter) 0; }
+.bt-root:not(#_) .gv-hero--bar .gv-hero-inner { padding-top: 24px; }
+.bt-root:not(#_) .gv-hero.is-next .gv-hero-inner { animation: gv-from-right 0.4s var(--bt-ease-glide); }
+.bt-root:not(#_) .gv-hero.is-prev .gv-hero-inner { animation: gv-from-left 0.4s var(--bt-ease-glide); }
+@keyframes gv-from-right { from { opacity: 0; transform: translateX(40px); } }
+@keyframes gv-from-left { from { opacity: 0; transform: translateX(-40px); } }
+.bt-root:not(#_) .gv-hero-text .bt-title:focus { outline: none; }
+.bt-root:not(#_) .gv-hero-text .bt-title:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; border-radius: var(--bt-radius-sm); }
 .bt-root:not(#_) .gv-cover-tilt { position: relative; display: block; border-radius: var(--bt-radius-md); box-shadow: 0 30px 50px var(--bt-scrim-strong); }
 .bt-root:not(#_) .gv-hero-text { display: flex; flex-direction: column; gap: 12px; min-width: 0; padding-bottom: 6px; }
 .bt-root:not(#_) .gv-hero-text .bt-title { overflow-wrap: anywhere; }
@@ -163,6 +173,14 @@
 .bt-root:not(#_) .gv-page-tools .bt-btn svg { width: 15px; height: 15px; }
 .bt-root:not(#_) .gv-cols { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; align-items: start; padding: 28px var(--bt-gutter) var(--bt-space-12); }
 .bt-root:not(#_) .gv-col { display: flex; flex-direction: column; gap: 20px; min-width: 0; }
+/* The bottom of the page: an Up next door card for the next game in the list, and ‹ Previous */
+.bt-root:not(#_) .gv-endnav { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .gv-upnext { display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 20px; align-items: center; padding: 16px; }
+.bt-root:not(#_) .gv-upnext .bt-label { display: block; margin-bottom: 6px; }
+.bt-root:not(#_) .gv-upnext h3 { font-size: var(--bt-text-2xl); font-weight: 800; overflow-wrap: anywhere; }
+.bt-root:not(#_) .gv-upnext p { margin-top: 4px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .gv-endlinks { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 12px; }
+.bt-root:not(#_) .gv-endlinks a { text-decoration: none; }
 .bt-root:not(#_) .gv-verdict { font-size: var(--bt-text-xl); font-weight: 700; line-height: 1.35; }
 .bt-root:not(#_) .gv-review-body { display: flex; flex-direction: column; gap: 12px; max-width: 70ch; color: var(--bt-text); font-size: 15px; line-height: 1.65; white-space: pre-line; }
 .bt-root:not(#_) .gv-review-by { display: flex; align-items: center; gap: 10px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
@@ -286,6 +304,10 @@
   .bt-root:not(#_) .gv-hero-inner .bt-title { font-size: 24px; }
   .bt-root:not(#_) .gv-hero-inner .bt-dialbox { grid-column: 1 / -1; justify-self: start; display: flex; align-items: center; gap: 14px; }
   .bt-root:not(#_) .gv-pick-banner .bt-btn { width: 100%; }
+  .bt-root:not(#_) .gv-pagebar { padding-top: 14px; }
+  .bt-root:not(#_) .gv-upnext { grid-template-columns: 72px minmax(0, 1fr); gap: 14px; }
+  .bt-root:not(#_) .gv-upnext .bt-card-go { grid-column: 1 / -1; }
+  .bt-root:not(#_) .gv-upnext h3 { font-size: var(--bt-text-xl); }
   .bt-portal[data-feature="game-vault"] .gv-dsplit { grid-template-columns: minmax(0, 1fr); }
   .bt-portal[data-feature="game-vault"] .gv-preview { flex-flow: row wrap; align-items: center; }
   .bt-portal[data-feature="game-vault"] .gv-preview > .bt-label { flex-basis: 100%; }
@@ -302,6 +324,7 @@
   .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .gv-icon .lamp { animation: none; opacity: 1; }
   .bt-root:not(#_) :is(.gv-grain, .gv-beam, .gv-dust i) { display: none; }
   .bt-root:not(#_) :is(.gv-hero--ambient .gv-hero-art, .gv-rim, .gv-loader .gv-icon .dial, .gv-deadlamp, .bt-cover-card.is-hit .bt-cover) { animation: none; }
+  .bt-root:not(#_) .gv-hero:is(.is-next, .is-prev) .gv-hero-inner { animation: none; }
   .bt-root:not(#_) :is(.gv-door-wrap, .gv-door3d, .gv-door, .gv-door *, .gv-door-inside .bt-cover, .gv-door-tag, .gv-reveal) { transition: none; }
   .bt-portal[data-feature="game-vault"] :is(.gv-lockscene .bt-cover, .gv-lockring .rr, .gv-lockring .spin, .gv-lockring .lamp, .gv-burst, .gv-checks li .gv-ck) { animation-duration: 1ms; animation-delay: 0s; }
   .bt-portal[data-feature="game-vault"] .gv-steps3::after { transition: none; }

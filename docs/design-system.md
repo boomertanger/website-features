@@ -763,6 +763,15 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   glide to their new places when a list re-renders; new ones fade in.
 - **Store marks** (`shared/ui/brand-icons.js` `brandIcon(key)`): the official Steam, GOG,
   itch.io and Epic Games Store marks (Simple Icons, CC0), one-colour, for "Where to play".
+- **Back pill: `.bt-back`** (`shared/ui/pager.js` `backHtml({ href, label, long, short })`; round 3
+  N1): a frosted pill with a chevron, `.bt-back-long` ("Back to the Vault") and a small reminder of
+  the list you came from ("Wishlist, A-Z"); on phones `.bt-back-short` ("Vault") replaces both.
+- **Pager: `.bt-pager`** (`pagerHtml({ pos, total, prev, next, keys, label })`; round 3 P12):
+  `.bt-pager-pos` ("3 of 14") and round ‹ › links (`.bt-pager-btn` with `data-pg="-1" / "1"` in a
+  `.bt-pager-wrap`); a side with nothing is an empty `.bt-pager-gap`, so the other button doesn't
+  move. `.bt-pager-peek` previews the item (cover, title, a line) on hover or focus, pointer
+  devices only; `.bt-pager-keys` hints at ← →. 44px buttons on phones. The page wires the links and
+  keys (the Vault's game page steps in place).
 
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
