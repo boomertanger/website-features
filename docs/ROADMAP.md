@@ -11,8 +11,8 @@ Last updated: 2026-10-04. Every planning chat reads this file first and proposes
 | 4 | Schedule Planner | Later | Games and streams |
 | 5 | Live Beacon and Control Room | Later | Games and streams |
 | 6 | Stream Library | Later | Games and streams |
-| 7 | Trophy Room (rewards) | In progress | Community services |
-| 7b | Fun Factory | Next | Community services |
+| 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
+| 7b | Fun Factory | v1 done on staging; v2 later | Community services |
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
 | 9 | Mod Machina | Later | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
@@ -30,6 +30,8 @@ Why this order: Game Vault → Schedule Planner → Control Room → Stream Libr
 - "Shared power" Contact + Follow footer; Contact "Pulse and type" reveal (prompt given; confirm it shipped).
 - Live UI kit at https://staging.boomertanger.com/dev/ui-kit/.
 - Privacy Policy and Terms drafted; pages on staging at /privacy and /terms (prompt given; confirm it shipped).
+- Trophy Room (7): badges, trophies, XP, levels and ranks, the ledger, crew awards, the trophy case, /trophies, How it works and /u/{handle}. Badge sources that wait for other workstreams are listed under Fun Factory hooks.
+- Fun Factory v1 (7b): the engine (activity recording, streaks and savers, the scheduler and season finalize), the idea library, the builder and its guide, the season pass, the leaderboard, How it works, the nav module, the Clock in menu item, hidden medal hunts and site-tour visits.
 
 ## The stream object (shared by workstreams 3 to 6)
 Design it once, in the Game Vault chat, so every later piece fills in the same object. Lifecycle: **Planned → Scheduled → Live → Ended → in the Library**.
@@ -78,12 +80,20 @@ Kickoff: "Start workstream 6 (Stream Library) from docs/ROADMAP.md."
 Goal: the shared rewards service: badges (5 rarities, 9 collections), trophies, XP, levels and ranks, one append-only ledger, the showcase and persona, crew awards, and an eligibility check other services call ("does member X hold badge Y?"). Includes the profile trophy case.
 Spec: [docs/specs/rewards.md](specs/rewards.md) (confirmed 2026-10-03); mockup `docs/design/mockups/trophy-room-how-it-works.html`; starter catalog `functions/data/trophy-room-badges.json` (90 badges). Part 1: docs, kit pieces (`.bt-medal`, `.bt-level--5`), the rewards backend and the Arcade's switch to Central time; part 2: the pages.
 Used by: Fun Factory, Arcade Studio (pitching), Contests (entry pools), Mod Machina (Keeper eligibility).
+Status: done on staging, except the badge sources that wait for other workstreams (see Fun Factory hooks).
 Kickoff: "Start workstream 7 (Trophy Room) from docs/ROADMAP.md."
 
 ### 7b. Fun Factory
 Goal: quarterly seasons of chapters, campaigns and activities that pay XP, badges and trophies through the Trophy Room; the idea library, the builder with a stage tracker, the member season pass and leaderboard, hidden medal hunts, How it works and the builder guide.
 Spec: [docs/specs/fun-factory.md](specs/fun-factory.md); mockups `docs/design/mockups/fun-factory-how-it-works.html` and `fun-factory-screens.html`.
 Depends on: Trophy Room (7).
+Status: v1 done on staging.
+v2 (later):
+- [ ] Story layer and chapter intros.
+- [ ] Squad campaigns.
+- [ ] Notifications (a chapter unlocks, a streak is at risk, a season ends).
+- [ ] AI ideas in the builder.
+- [ ] Stream streaks and stream check-ins, with the Control Room (5).
 Kickoff: "Start workstream 7b (Fun Factory) from docs/ROADMAP.md."
 
 ### 8. Accounts part 2b
