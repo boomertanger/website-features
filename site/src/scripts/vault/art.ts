@@ -15,7 +15,11 @@ export function vaultIcon({ size, lamp = "" }: { size?: number; lamp?: string } 
 }
 export const GV_ICON = vaultIcon();
 
-/** The vault door: the wall plate (static) and the door that swings open (two SVGs, the inside goes between). */
+/**
+ * The vault door: the wall plate (static) and the door that swings open (two SVGs, the inside goes
+ * between). round 3 R4: the door is a solid piece (.gv-door3d): a stack of slabs behind the face
+ * and an edge band with three bolts, so seen side-on at 90 degrees it shows a profile, not a sliver.
+ */
 export function doorParts() {
   const C = 200;
   const doorTicks = Array.from({ length: 24 }, (_, i) => {
@@ -27,7 +31,9 @@ export function doorParts() {
   const screws = [[34, 34], [366, 34], [34, 366], [366, 366]].map(([x, y]) => `<circle class="screw" cx="${x}" cy="${y}" r="6"/>`).join("");
   const plate = `<svg class="gv-plate" viewBox="0 0 400 400" aria-hidden="true" focusable="false"><rect class="plate" x="6" y="6" width="388" height="388" rx="44"/><circle class="hole" cx="200" cy="200" r="176"/><rect class="hinge" x="10" y="112" width="26" height="46" rx="7"/><rect class="hinge" x="10" y="242" width="26" height="46" rx="7"/>${screws}</svg>`;
   const door = `<svg class="gv-door" viewBox="0 0 400 400" aria-hidden="true" focusable="false">${bolts}<circle class="face" cx="200" cy="200" r="170"/><circle class="rim" cx="200" cy="200" r="170"/><circle class="ring2" cx="200" cy="200" r="138"/>${doorTicks}<circle class="ring2" cx="200" cy="200" r="58"/><g class="wheel">${sp(0)}${sp(120)}${sp(240)}<circle class="hub" cx="200" cy="200" r="26"/></g><circle class="lamp" cx="200" cy="74" r="7"/></svg>`;
-  return { plate, door };
+  const slabs = Array.from({ length: 10 }, (_, i) => `<span class="gv-slab" style="--z:${((i + 1) * 2.2).toFixed(1)}"></span>`).reverse().join("");
+  const edge = `<span class="gv-door-edge" aria-hidden="true"><i style="top:18%"></i><i style="top:47%"></i><i style="bottom:18%"></i></span>`;
+  return { plate, door: `<div class="gv-door3d" aria-hidden="true">${slabs}${edge}${door}</div>` };
 }
 
 /** The lock scene's ring (the Add dialog's last step): ticks that spin shut and a lamp. */
