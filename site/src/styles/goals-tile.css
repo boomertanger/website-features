@@ -1,0 +1,21 @@
+/* The Goal Tracker's headline card (public/goalTrackerTeaser): the /goals gate and the home tile
+   (scripts/goals/teaser.ts). Tokens only. */
+.bt-root:not(#_) .gt-tease { display: flex; flex-direction: column; gap: 12px; width: 100%; max-width: 420px; padding: 18px 20px; border: 1px solid color-mix(in srgb, var(--bt-gold) 35%, transparent); border-radius: 20px; background: radial-gradient(90% 80% at 100% 0%, color-mix(in srgb, var(--bt-gold) 12%, transparent), transparent 60%), var(--bt-bg); text-align: left; }
+.bt-root:not(#_) .gt-tease[hidden] { display: none; }
+.bt-root:not(#_) .gt-tease-kicker { color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+.bt-root:not(#_) .gt-tease-title { font-size: var(--bt-text-xl); font-weight: 900; line-height: 1.2; }
+.bt-root:not(#_) .gt-tease-ready, .bt-root:not(#_) .gt-tease-when { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .gt-tease-row { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; }
+.bt-root:not(#_) .gt-tease-row b { font-weight: 800; }
+.bt-root:not(#_) .gt-tease small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .gt-tease-when b { color: var(--bt-title); font-size: var(--bt-text-lg); font-weight: 900; }
+.bt-root:not(#_) .gt-tease .gt-pct { font-size: 32px; }
+
+
+.bt-root:not(#_) .gt-tease .gt-pct { color: var(--bt-title); font-size: 32px; font-weight: 900; line-height: 0.9; font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.bt-root:not(#_) .gt-tease .gt-pct small { font-size: 16px; color: var(--bt-title); }
+
+/* The home tile */
+.bt-root:not(#_) .gt-tile[hidden] { display: none; }
+.bt-root:not(#_) .gt-tile .gt-tease { max-width: none; padding: 0; border: 0; background: none; }
+.bt-root:not(#_) .gt-tile-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; }

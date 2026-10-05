@@ -1,0 +1,20 @@
+---
+// The Goal Tracker's feature bar (the Arcade / Trophy Room pattern): the kit's .bt-topbar with the
+// GOALTRACKER wordmark and, for admins only, a green Edit plan link to /admin/goals. On the admin page
+// the link goes back to the members page.
+interface Props { admin?: boolean }
+const { admin = false } = Astro.props;
+---
+<div class="bt-sticky-bar gt-dock" data-gt-dock>
+  <div class="bt-topbar gt-bar">
+    <a class="bt-wordmark" href="/goals" aria-label="Goal Tracker">
+      <span class="bt-wordmark-icon"><span class="gt-wm-ic" aria-hidden="true">🏆</span></span>
+      <span class="bt-wordmark-text" aria-hidden="true">GOAL<span class="bt-wordmark-accent">TRACKER</span></span>
+    </a>
+    <div class="bt-topnav gt-barlinks">
+      {admin
+        ? <a class="bt-btn bt-btn--admin bt-btn--sm" href="/goals"><span class="bt-btn-label">View the page</span></a>
+        : <a class="bt-btn bt-btn--admin bt-btn--sm bt-when-admin" href="/admin/goals"><span class="bt-btn-label">Edit plan</span></a>}
+    </div>
+  </div>
+</div>

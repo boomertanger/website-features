@@ -1,0 +1,22 @@
+---
+// The Goal Tracker's home tile: the North Star and how far along the relaunch is (a readiness meter, or a
+// countdown once a relaunch date is set), from public/goalTrackerTeaser (public read), drawn by
+// scripts/goals/teaser.ts. Hidden until the owner has published once.
+import "../../styles/goals-tile.css";
+---
+<div class="bt-tile bt-wide gt-tile" data-gt-tile hidden>
+  <div class="bt-tile-head">
+    <h3>🏆 Goal Tracker</h3>
+    <a href="/goals">See the plan</a>
+  </div>
+  <div class="gt-tease" data-gt-teaser aria-busy="true"></div>
+</div>
+
+<script>
+  import { fillTeasers } from "../../scripts/goals/teaser";
+  const tile = document.querySelector<HTMLElement>("[data-gt-tile]");
+  if (tile) {
+    // The tile stays hidden until a teaser has been published.
+    void fillTeasers(tile).then((t) => { tile.hidden = !t; });
+  }
+</script>

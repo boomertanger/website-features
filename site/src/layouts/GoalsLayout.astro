@@ -1,0 +1,51 @@
+---
+// One layout for the Goal Tracker's two pages (docs/specs/goal-tracker.md §5, §6): the site shell, the sticky
+// GOALTRACKER bar in BaseLayout's "bar" slot, then the page. Like the Arcade's and the Fun Factory's:
+//   members page (default)  signed-up members see the plan; visitors get the Join gate with the teaser card
+//                           (public/goalTrackerTeaser), mid-signup members Finish signup
+//   adminOnly               /admin/goals: admins see the page, everyone else a short "Admins only" gate
+// Display-only: pages are static and read their data in scripts after sign-in; the callables and the
+// rules do the real checking. A skeleton shows while auth loads, never a flash of the gate.
+// scripts/goals/layout.ts sets .gt[data-access] = loading | join | signup | gate | page.
+import BaseLayout from "./BaseLayout.astro";
+import GoalsBar from "../components/goals/GoalsBar.astro";
+import "../styles/how-it-works.css";
+import "../styles/goals-tile.css";
+import "../styles/goals.css";
+
+interface Props { title: string; description?: string; adminOnly?: boolean }
+const { title, description, adminOnly = false } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex={adminOnly}>
+  <GoalsBar slot="bar" admin={adminOnly} />
+  <div class="gt" data-gt data-access="loading" data-admin-only={adminOnly ? "" : undefined}>
+    <div class="bt-zone gt-skel" aria-hidden="true">
+      <span class="bt-skeleton gt-skel-title"></span>
+      <span class="bt-skeleton gt-skel-line"></span>
+      <span class="bt-skeleton gt-skel-card"></span>
+    </div>
+    <section class="bt-zone gt-gate" aria-labelledby="gt-gate-title">
+      <span class="gt-gate-art" aria-hidden="true">{adminOnly ? "🔒" : "🏆"}</span>
+      <h1 class="bt-title" id="gt-gate-title">{adminOnly ? "Admins only" : "Members only"}</h1>
+      {adminOnly
+        ? <p class="gt-gate-lead">The plan editor is for site admins. If you're an admin, sign in with your admin account.</p>
+        : <p class="gt-gate-lead">The Goal Tracker lays out the plan to become Content Creator of the Year: the road, what's left before the relaunch, and how you can help. Joining is free.</p>}
+      {!adminOnly && <div class="gt-tease" data-gt-teaser aria-busy="true" hidden></div>}
+      <div class="gt-gate-acts" data-gt-gate-visitor>
+        {adminOnly
+          ? <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
+          : <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to follow the plan">Join free</a>}
+        {!adminOnly && <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>}
+      </div>
+      <div class="gt-gate-acts" data-gt-gate-signup hidden>
+        <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+      </div>
+      <a class="bt-btn bt-btn--ghost" href="/">Back to the site</a>
+    </section>
+    <div class="gt-page"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/goals/layout";
+</script>

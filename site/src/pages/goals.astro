@@ -1,0 +1,135 @@
+---
+// /goals: the Goal Tracker's members page (docs/specs/goal-tracker.md §5; mockup
+// docs/design/mockups/goal-tracker.html, road option 1 "Level select"). The How it works layout: the
+// TocLayout side menu and ghost chapter numbers. Members only (GoalsLayout: visitors get the gate with the
+// teaser card). The sections that come from the plan are filled by scripts/goals/page.ts from
+// public/goalTracker; the help cards and the FAQ are static here. Brand links come from site.json.
+import GoalsLayout from "../layouts/GoalsLayout.astro";
+import TocLayout from "../components/TocLayout.astro";
+import { boombotIcon } from "../../../shared/ui/arcade.js";
+import site from "../data/site.json";
+
+const NAV: [string, string][] = [["s-goal", "The goal"], ["s-road", "The road"], ["s-ready", "Relaunch readiness"], ["s-goals", "2027 goals"], ["s-nums", "The numbers"], ["s-help", "How you can help"], ["s-faq", "Questions"]];
+const social = (id: string) => site.socials.find((s) => s.id === id);
+const FAQS: [string, string][] = [
+  ["What is this page?", "It's the whole plan for becoming Content Creator of the Year at The Game Awards in 2027: the big goal, the levels on the road to it, what still has to happen before the relaunch, and how far along everything is. I update it myself and press Publish when something changes."],
+  ["What is Content Creator of the Year?", "An award given at The Game Awards in December. The Game Awards chooses the nominees, so creators can't sign themselves up. The plan is to be impossible to overlook by the time the list comes out."],
+  ["Is it realistic?", "It's a long shot, and I know it. That's the point: every rung under it, like Twitch Partner, a collab with a bigger creator or the Best of Boomertanger Horror reel, is worth reaching on its own."],
+  ["When is the relaunch?", "When the readiness list is done, not on a date I made up. Once the end is in sight I'll set a date, and a countdown replaces the readiness meter at the top of this page."],
+  ["How are the numbers counted?", "Followers and subscribers are counted automatically every morning, and Fan Club members are everyone who has joined the site. If a count is more than a week old, the page says when it was last counted."],
+  ["How can I help?", "Come to streams, follow on every platform, share a clip, and bring a friend. Some goals have a You can help line with the most useful thing for that one."],
+];
+---
+<GoalsLayout title="Goal Tracker" description="The plan to become Content Creator of the Year: the road, what's left before the relaunch, and how you can help.">
+  <div data-gt-body hidden>
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+        <section class="ai-hero" id="s-goal" aria-labelledby="h-goal">
+          <div class="gt-hero">
+            <div>
+              <span class="ai-kicker">Goal Tracker</span>
+              <h2 class="bt-title bt-title--hero" id="h-goal">Content Creator of the Year, 2027</h2>
+              <p data-story>Every December, The Game Awards names one Content Creator of the Year. I'm going for it in 2027. It's a long shot, and that's the point: aiming this high pulls everything else up with it. Here's the whole plan, how far along it is, and where you come in.</p>
+              <div class="ai-acts">
+                <a class="bt-btn bt-btn--primary" href="#s-help">See how you can help</a>
+                <a class="bt-btn bt-btn--secondary" href="#s-road">Follow the road</a>
+              </div>
+            </div>
+            <div class="gt-ready" data-ready-card aria-live="polite"></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-road" aria-labelledby="h-road">
+          <header class="bt-chapter bt-chapter--ghost" data-n="01">
+            <h2 class="bt-chapter-title" id="h-road">The road</h2>
+            <p class="bt-chapter-lede" data-road-lede>Pick a level to see what's in it.</p>
+          </header>
+          <div data-road></div>
+        </section>
+
+        <section class="ai-sec" id="s-ready" aria-labelledby="h-ready">
+          <header class="bt-chapter bt-chapter--ghost" data-n="02">
+            <h2 class="bt-chapter-title" id="h-ready">Relaunch readiness</h2>
+            <p class="bt-chapter-lede">The relaunch happens when this list is done, not on a date I made up. Once the end is in sight, I'll set the date and a countdown starts here.</p>
+          </header>
+          <div class="gt-groups" data-groups></div>
+        </section>
+
+        <section class="ai-sec" id="s-goals" aria-labelledby="h-goals">
+          <header class="bt-chapter bt-chapter--ghost" data-n="03">
+            <h2 class="bt-chapter-title" id="h-goals">2027 goals</h2>
+            <p class="bt-chapter-lede">The rungs under the big goal. Each one is worth hitting on its own, and together they're what gets a creator noticed.</p>
+          </header>
+          <div class="gt-tracks" role="group" aria-label="Tracks" data-tracks></div>
+          <div class="gt-goals" data-goals aria-live="polite"></div>
+        </section>
+
+        <section class="ai-sec" id="s-nums" aria-labelledby="h-nums">
+          <header class="bt-chapter bt-chapter--ghost" data-n="04">
+            <h2 class="bt-chapter-title" id="h-nums">The numbers</h2>
+            <p class="bt-chapter-lede">Counted automatically every morning. The bar shows the way to the next milestone.</p>
+          </header>
+          <div class="gt-nums" data-nums></div>
+          <p class="gt-fine">Updated daily at 5 AM Pacific.</p>
+        </section>
+
+        <section class="ai-sec" id="s-help" aria-labelledby="h-help">
+          <header class="bt-chapter bt-chapter--ghost" data-n="05">
+            <h2 class="bt-chapter-title" id="h-help">How you can help</h2>
+            <p class="bt-chapter-lede">Nobody gets to the top of this alone. These are the things that move the needle most.</p>
+          </header>
+          <div class="gt-help">
+            <div class="gt-ask"><span class="gt-ask-ic" aria-hidden="true">📺</span><b>Come hang out live</b><p>Live viewers matter more than anything for Twitch Partner, and a busy chat makes every stream better.</p><a class="bt-btn bt-btn--primary bt-btn--sm" href="/schedule">See the schedule</a></div>
+            <div class="gt-ask"><span class="gt-ask-ic" aria-hidden="true">🔔</span><b>Follow everywhere</b><p>Follow on Twitch, YouTube and TikTok, and turn on notifications so you know when I'm live.</p>
+              <div class="gt-ask-row">{["twitch", "youtube", "tiktok"].map((id) => social(id) && <a class="bt-btn bt-btn--secondary bt-btn--sm" href={social(id)!.url} target={social(id)!.url.startsWith("http") ? "_blank" : undefined} rel="noopener">{social(id)!.label}</a>)}</div>
+            </div>
+            <div class="gt-ask"><span class="gt-ask-ic" aria-hidden="true">✂️</span><b>Share a clip</b><p>One clip in the right place can bring in more people than a month of streams. Clip it, post it, tag me.</p><a class="bt-btn bt-btn--secondary bt-btn--sm" href="https://help.twitch.tv/s/article/how-to-use-clips" target="_blank" rel="noopener">How to clip on Twitch</a></div>
+            <div class="gt-ask"><span class="gt-ask-ic" aria-hidden="true">🫂</span><b>Bring a friend</b><p>Know someone who loves horror games? Send them the site. Joining the Fan Club is free.</p><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-copy>Copy the link</button></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-faq" aria-labelledby="h-faq">
+          <header class="bt-chapter bt-chapter--ghost" data-n="06">
+            <h2 class="bt-chapter-title" id="h-faq">Questions</h2>
+          </header>
+          <div class="bt-chat">
+            {FAQS.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`gt-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`gt-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`gt-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <footer class="gt-foot">
+          <span data-updated></span>
+          <span>Boomertanger isn't affiliated with The Game Awards.</span>
+        </footer>
+      </div>
+    </TocLayout>
+  </div>
+
+  <div class="bt-zone" data-gt-empty hidden>
+    <div class="bt-empty">
+      
+      <div class="bt-empty-title">The plan is being written</div>
+      <p>Nothing is published here yet. Check back soon.</p>
+    </div>
+  </div>
+  <div class="bt-zone" data-gt-error hidden>
+    <div class="bt-empty">
+      
+      <div class="bt-empty-title">Couldn't load the plan</div>
+      <p>Check your connection and try again.</p>
+      <button type="button" class="bt-btn bt-btn--secondary" data-retry>Try again</button>
+    </div>
+  </div>
+</GoalsLayout>
+
+<script>
+  import "../scripts/goals/page";
+</script>
