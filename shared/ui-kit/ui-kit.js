@@ -1169,6 +1169,8 @@ function seasonKitHtml() {
     <div class="kit-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px" data-kit-clock>${clockHtml({ streak: 12, savers: 1, cap: 2 })}${clockHtml({ streak: 31, savers: 3, cap: 3, done: true })}</div>
     <p class="kit-sub">Path: .bt-path, the story path; the line fills gold to the next node</p>
     ${pathHtml({ nodes: [{ icon: "🗺", label: "Site tour", state: "done" }, { icon: "🔗", label: "Link up", state: "done" }, { icon: "🏅", label: "Hidden medals 3/5", state: "now" }, { icon: "🕹", label: "Finish the season game" }, { icon: "🔒", label: "Chapter 4", state: "locked" }] })}
+    <p class="kit-sub">Hidden medal: .bt-hunt-medal in a corner of a .bt-hunt-host; glints, and pops away when claimed. Click one</p>
+    <div class="bt-hunt-host" style="height:120px;border:1px dashed var(--bt-border-2);border-radius:var(--bt-radius-lg)" data-kit-hunt>${["top-left", "bottom-right"].map((c) => `<button type="button" class="bt-hunt-medal bt-hunt-medal--${c}" aria-label="A hidden medal. Claim it.">${medalHtml({ emoji: "🏅", rarity: 3, size: 28 })}</button>`).join("")}</div>
   </section>`;
 }
 function initSeasonKit(mount) {
@@ -1181,6 +1183,13 @@ function initSeasonKit(mount) {
     n.textContent = String(Number(n.textContent) + 1);
     clock.classList.add("is-done"); b.classList.add("is-done"); b.setAttribute("aria-disabled", "true"); b.textContent = "Clocked in ✓";
     clock.querySelector(".bt-clock-txt b").textContent = "Clocked in for today";
+  });
+  mount.querySelector("[data-kit-hunt]")?.addEventListener("click", (e) => {
+    const b = e.target.closest(".bt-hunt-medal");
+    if (!b || b.classList.contains("is-claimed")) return;
+    b.classList.add("is-claimed");
+    const gone = () => b.remove();
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) gone(); else b.addEventListener("animationend", gone, { once: true });
   });
 }
 

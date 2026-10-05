@@ -57,7 +57,7 @@ async function main() {
   try {
     const uid = await uidForHandle(handle);
     if (!uid) return notFound(handle);
-    const [profile, held, trophies, { collections, badges }, me] = await Promise.all([loadProfile(uid), loadHeld(uid), loadTrophies(uid), loadCatalog(), whenReady()]);
+    const [profile, held, trophies, { collections, badges }, me, season] = await Promise.all([loadProfile(uid), loadHeld(uid), loadTrophies(uid), loadCatalog(), whenReady(), seasonPlace(uid)]);
     if (!profile) return notFound(handle);
     const byId = new Map(badges.map((b) => [b.id, b]));
     const isMe = me.user?.uid === uid;
@@ -95,7 +95,7 @@ async function main() {
           ${isMe ? `<a class="bt-btn bt-btn--secondary bt-btn--sm tr-pf-edit" href="/account#rewards">Edit trophy case</a>` : ""}
         </div>
         <div><div class="tr-lv-top"><b>Level ${p.level} · ${esc(p.rank)}</b><span>${p.xp.toLocaleString("en-US")} XP</span></div><div class="tr-xpbar" style="--v:${pct.toFixed(1)}%" role="img" aria-label="${Math.round(pct)}% of the way to level ${p.level + 1}"><i></i></div></div>
-        <div class="tr-stats"><div><b>${held.size}</b><span>badge${held.size === 1 ? "" : "s"}</span></div><div><b>${trophies.length}</b><span>troph${trophies.length === 1 ? "y" : "ies"}</span></div><div><b>${p.level}</b><span>level</span></div></div>
+        <div class="tr-stats"><div><b>${held.size}</b><span>badge${held.size === 1 ? "" : "s"}</span></div><div><b>${trophies.length}</b><span>troph${trophies.length === 1 ? "y" : "ies"}</span></div><div><b>${p.level}</b><span>level</span></div>${profile.bestStreak ? `<div><b>🔥 ${profile.currentStreak}</b><span>day streak</span></div><div><b>${profile.bestStreak}</b><span>best streak</span></div>` : ""}${season ? `<a href="/factory/leaderboard"><b>#${season.rank}</b><span>${esc(season.label)}</span></a>` : ""}</div>
       </header>
       ${pins.length ? `<section class="bt-card tr-pf-sec" aria-labelledby="pf-case"><h2 class="bt-card-title" id="pf-case">Trophy case</h2><ol class="tr-pins">${pinHtml}</ol></section>` : ""}
       ${trophies.length ? `<section class="bt-card tr-pf-sec" aria-labelledby="pf-tro"><h2 class="bt-card-title" id="pf-tro">Trophies</h2><ol class="tr-pf-shelf">${trophies.map(trophyHtml).join("")}</ol></section>` : ""}
@@ -109,5 +109,15 @@ async function main() {
     root.removeAttribute("aria-busy");
     root.innerHTML = `<p class="bt-notice bt-notice--error">This profile didn't load. Check your connection and refresh the page.</p>`;
   }
+}
+/** Where the member sits on the live Fun Factory season's All board (its top 100), or null. */
+async function seasonPlace(uid: string): Promise<{ rank: number; label: string } | null> {
+  try {
+    const { loadSummary, loadBoard } = await import("../factory/member-data");
+    const s = await loadSummary();
+    if (!s?.live || !s.liveSeasonId) return null;
+    const row = (await loadBoard(s.liveSeasonId, "all")).rows.find((r) => r.uid === uid);
+    return row ? { rank: row.rank ?? 0, label: `Season ${String(s.number ?? 0).padStart(2, "0")} rank` } : null;
+  } catch { return null; }
 }
 void main();

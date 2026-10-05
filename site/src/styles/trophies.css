@@ -270,8 +270,10 @@
 .bt-root:not(#_) .tr-pin > b { font-size: var(--bt-text-xs); font-weight: 800; line-height: 1.25; }
 .bt-root:not(#_) .tr-pin > span:not(.bt-medal) { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .tr-pin--empty .tr-slot { width: 56px; height: 56px; display: grid; place-items: center; border: 2px dashed var(--bt-border-2); border-radius: 50%; color: var(--bt-text-faint); font-size: 18px; }
-.bt-root:not(#_) .tr-stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
-.bt-root:not(#_) .tr-stats div { padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); text-align: center; }
+.bt-root:not(#_) .tr-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(96px, 1fr)); gap: 8px; }
+.bt-root:not(#_) .tr-stats > a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .tr-stats > a:hover { border-color: var(--bt-primary); }
+.bt-root:not(#_) .tr-stats > :is(div, a) { padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); text-align: center; }
 .bt-root:not(#_) .tr-stats b { display: block; font-size: var(--bt-text-2xl); font-weight: 900; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .tr-stats span { color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
 .bt-root:not(#_) .tr-side { display: flex; flex-direction: column; gap: 12px; }

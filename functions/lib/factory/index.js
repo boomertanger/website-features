@@ -87,7 +87,8 @@ module.exports = function factory(deps = {}) {
   // ---------- hidden medal hunts ----------
   // A hunt (hunts/{huntId}: activityId, name) lists medals (medals/{medalId}: path, position, hint).
   // Pages ask for their own path's medals; each comes with a claim token = HMAC(uid, medal, expiry)
-  // under a server-only secret (private/huntSecret), so tokens are never stored.
+  // under a server-only secret (private/huntSecret), so tokens are never stored. Each medal also says
+  // how many of its hunt the member has (have) out of the activity's target (of), for "Medal 3 of 5 found".
   let secretCache = null;
   async function huntSecret() {
     if (secretCache) return secretCache;
@@ -127,13 +128,18 @@ module.exports = function factory(deps = {}) {
     const secret = await huntSecret();
     const exp = now + TOKEN_MINUTES * 60 * 1000;
     const out = [];
+    let acts = null;   // the member's progress, read once if this page has medals: have / of for the toast
     for (const h of hunts) {
       const medals = await h.ref.collection("medals").where("path", "==", path).get();
+      if (!medals.size) continue;
+      if (!acts) { const p = await R.progress(b.season.id, uid).get(); acts = (p.exists && p.get("acts")) || {}; }
+      const a = b.activities.find((x) => x.id === h.get("activityId"));
+      const have = acts[a.id]?.count || 0, of = a.target || 1;
       for (const m of medals.docs) {
         const medalKey = `${h.id}/${m.id}`;
         const found = (await R.event(F.eventKey("medals", medalKey, uid)).get()).exists;
         out.push({
-          medalId: medalKey, huntId: h.id, position: m.get("position") || null, hint: m.get("hint") || null, art: m.get("art") || null,
+          medalId: medalKey, huntId: h.id, activityId: a.id, have, of, position: m.get("position") || null, hint: m.get("hint") || null, art: m.get("art") || null,
           found, ...(found ? {} : { token: `${exp}.${sign(secret, uid, medalKey, exp)}` }),
         });
       }

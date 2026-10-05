@@ -671,6 +671,25 @@
   .bt-root:not(#_) .bt-task-row-bar i, .bt-root:not(#_) .bt-path::after { transition: none; }
 }
 
+/* ---- Hidden medal: .bt-hunt-medal (the Fun Factory's site-wide hunts; site/src/scripts/factory/site-wide.ts)
+   A small .bt-medal button in a corner of a positioned host (.bt-hunt-host, given position: relative).
+   Absolutely placed, so it never moves the layout; it glints now and then, and pops away when claimed.
+   Corners: --top-left, --top-right, --bottom-left, --bottom-right. Reduced motion: no glint, no pop. */
+.bt-root:not(#_) .bt-hunt-host { position: relative; }
+.bt-root:not(#_) .bt-hunt-medal { position: absolute; z-index: 2; display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: none; cursor: pointer; opacity: 0.85; animation: bt-hunt-glint 4.2s ease-in-out infinite; }
+.bt-root:not(#_) .bt-hunt-medal--top-left { top: 10px; left: 10px; }
+.bt-root:not(#_) .bt-hunt-medal--top-right { top: 10px; right: 10px; }
+.bt-root:not(#_) .bt-hunt-medal--bottom-left { bottom: 10px; left: 10px; }
+.bt-root:not(#_) .bt-hunt-medal--bottom-right { bottom: 10px; right: 10px; }
+.bt-root:not(#_) .bt-hunt-medal:hover { opacity: 1; }
+.bt-root:not(#_) .bt-hunt-medal:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 3px; opacity: 1; }
+.bt-root:not(#_) .bt-hunt-medal.is-claimed { pointer-events: none; animation: bt-hunt-pop 0.5s ease-in forwards; }
+@keyframes bt-hunt-glint { 0%, 82%, 100% { filter: brightness(0.8); } 90% { filter: brightness(1.6) drop-shadow(0 0 8px var(--bt-title)); } }
+@keyframes bt-hunt-pop { 40% { transform: scale(1.35); opacity: 1; } 100% { transform: scale(0.4) translateY(-14px); opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-hunt-medal, .bt-root:not(#_) .bt-hunt-medal.is-claimed { animation: none; }
+}
+
 /* ---- Medal: .bt-medal (the Trophy Room's badges; docs/specs/rewards.md, design-system.md §8j) ----
    A coin: .bt-medal-ring (the rarity) + .bt-medal-face (the art). Size: --bt-medal-size (72px).
    data-rarity 1-5: 1 gray, 2 blue, 3 gold notched, 4 pink with a glow and an inner ring,
@@ -1938,7 +1957,10 @@
 .bt-root:not(#_):is([data-auth-state="unverified"], [data-auth-state="needsSignup"]) .bt-site-header--overlay { position: relative; background: var(--bt-bg); border-bottom-color: var(--bt-border); }
 
 /* Main navigation */
-.bt-root:not(#_) .bt-nav { display: flex; align-items: center; gap: 2px; min-width: 0; }
+/* The nav shrinks first and scrolls sideways when the modules don't fit, so it never runs under the beacon. */
+.bt-root:not(#_) .bt-nav { display: flex; align-items: center; align-self: stretch; gap: 2px; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bt-root:not(#_) .bt-nav::-webkit-scrollbar { display: none; }
+.bt-root:not(#_) .bt-site-header .bt-beacon-slot { flex: none; }
 .bt-root:not(#_) .bt-nav a { display: inline-flex; align-items: center; gap: 7px; padding: 8px 11px; border-radius: var(--bt-radius-sm); color: var(--bt-text-muted); font-size: var(--bt-text-base); font-weight: 500; text-decoration: none; position: relative; white-space: nowrap; }
 .bt-root:not(#_) .bt-nav a:hover { color: var(--bt-text); background: var(--bt-surface-2); text-decoration: none; }
 .bt-root:not(#_) .bt-nav a[aria-current="page"] { color: var(--bt-text); }
@@ -1958,8 +1980,6 @@
   .bt-root:not(#_) .bt-site-header { gap: 12px; }
   .bt-root:not(#_) .bt-site-header .bt-logo-text { display: none; }
   .bt-root:not(#_) .bt-site-header .bt-beacon-sub { display: none; }
-  .bt-root:not(#_) .bt-nav { overflow-x: auto; scrollbar-width: none; }
-  .bt-root:not(#_) .bt-nav::-webkit-scrollbar { display: none; }
   .bt-root:not(#_) .bt-nav a { padding: 8px 8px; }
   .bt-root:not(#_) .bt-nav a[aria-current="page"]::after { left: 8px; right: 8px; bottom: 0; }
 }
@@ -2684,6 +2704,9 @@
 .bt-root:not(#_) .bt-account-menu :is(a, button) { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 8px; border: 0; border-radius: var(--bt-radius-sm); background: none; color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-md); font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
 .bt-root:not(#_) .bt-account-menu :is(a, button):hover { background: var(--bt-surface-2); color: var(--bt-text); text-decoration: none; }
 .bt-root:not(#_) .bt-account-menu a.is-admin { color: var(--bt-admin-text); }
+.bt-root:not(#_) .bt-account-menu-meta { margin-left: auto; color: var(--bt-rank-3); font-size: var(--bt-text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-account-menu [aria-disabled="true"] { cursor: default; }
+.bt-root:not(#_) .bt-account-menu [aria-disabled="true"]:hover { background: none; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-account-menu hr { margin: 6px 0; border: 0; border-top: 1px solid var(--bt-border); }
 
 /* Account page (A2): .bt-account-page > nav.bt-account-tabs (role=tablist) + .bt-account-panes >

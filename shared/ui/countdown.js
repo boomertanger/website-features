@@ -32,7 +32,7 @@ export function initTimers(root = document) {
       const t = el.querySelector(".bt-timer-t");
       if (!t) return;
       if (left <= 0 && el.dataset.done != null) {
-        if (t.textContent !== el.dataset.done) { t.textContent = el.dataset.done; el.dispatchEvent(new CustomEvent("bt:countdown-done", { bubbles: true })); }
+        if (t.textContent !== el.dataset.done) { t.textContent = el.dataset.done; el.dispatchEvent(new CustomEvent("bt:timer-done", { bubbles: true })); }
         return;
       }
       t.textContent = `${el.dataset.label ? `${el.dataset.label} ` : ""}${fmtLeft(left)}`;
