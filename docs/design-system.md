@@ -651,6 +651,24 @@ any multi-stage editor).
   `.bt-lanes-bar`s (`--c` colour, `grid-column: start / span len`, the label being column 1). Scrolls
   sideways when narrow. Named lanes because `.bt-timeline` is the Vault's dots on a line.
 
+**Road and tree** (the Goal Tracker, `docs/specs/goal-tracker.md` §7; see §8k).
+- **Road: `.bt-road`**, a level select (`shared/ui/road.js` `roadHtml({ levels, selected, label, mascot,
+  panelHtml })`, `initRoad(host, { renderPanel, onSelect })`). Each stop is a `button.bt-road-stop[data-lv]`
+  (`.bt-road-nodewrap` > `.bt-road-node` icon and an optional `.bt-road-me` mascot, then `.bt-road-lv`,
+  `.bt-road-name`, `.bt-road-when`) on a dashed road with a gold-to-purple fill (`.bt-road-fill`) that grows
+  once on load to the current stop. States: `.is-done` (gold), `.is-now` (glows, the mascot stands on it),
+  `.is-later` (dashed), `.bt-road-stop--boss` (the last stop, bigger and gold); `aria-pressed` marks the
+  open stop and puts a notch toward `.bt-road-panel` under the road. `--bt-road-n` sets the stop count;
+  `--bt-road-fill` and `--bt-road-fill-v` are set by `initRoad`. At 640px and under it is a vertical path and
+  `initRoad` moves the panel to sit right under the tapped stop. Reduced motion: no pulse, no bobbing, the
+  fill is drawn at once.
+- **Tree: `.bt-tree`**, collapsible admin rows (`shared/ui/tree.js` `initTree(root, { collapsed, onChange })`).
+  `.bt-tree-row` (`--d` depth, `data-id`, `data-parent`, `data-type`) holds `.bt-tree-caret[data-caret]`,
+  `.bt-tree-main` (`b`, `.bt-tree-type`, `.bt-tree-tag` / `--quiet` state tags), `.bt-tree-meta`
+  (`.bt-tree-vis`, `.bt-tree-opt`, a `.bt-tree-status` button around a badge) and `.bt-tree-acts`
+  (`.bt-tree-move` hides at 640px and under). `initTree` hides a row (`data-hidden`) while an ancestor is
+  collapsed; page filters use the `hidden` attribute.
+
 **Task row, timer, lock card, clock and path** (the Fun Factory season pass, `docs/specs/fun-factory.md`
 §8; `shared/ui/season.js` builds them, `shared/ui/countdown.js` ticks the timers).
 - **Task row: `.bt-task-row`** (`taskRowHtml({ icon, title, sub, n, of, xp, soon })`), an activity:
@@ -793,6 +811,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
 | `flip-card.js` · `chat.js` | `initFlipCards(root)` · `initChat(root)` |
 | `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
+| `road.js` · `tree.js` | `roadHtml({ levels, selected, label, mascot, panelHtml })`, `initRoad(host, { renderPanel, onSelect })` · `initTree(root, { collapsed, onChange })` |
 | `season.js` · `countdown.js` | `taskRowHtml`, `lockCardHtml`, `clockHtml`, `pathHtml` · `timerHtml`, `initTimers(root)`, `fmtLeft(ms)` |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
@@ -1263,3 +1282,27 @@ was already the Game Vault, so the Trophy Room is §8j.)
 - **Boards: mods race on the season board with members; admins are on no boards.** Mods also have
   the crew board (Mod MVP). Crew members don't win member giveaways.
 - **Supporter badges give no XP** and never appear on leaderboards.
+
+### 8k. Goal Tracker
+
+Spec: `docs/specs/goal-tracker.md` (confirmed Oct 4, 2026); mockup
+`docs/design/mockups/goal-tracker.html`.
+
+- **Draft and publish.** Every admin edit writes a draft (`goalItems`, `goalMetrics`,
+  `goalTracker/config`); members see nothing until Publish rebuilds `public/goalTracker`. The admin
+  page's sticky publish bar says how many changes are unpublished. Automatic counts (followers,
+  Fan Club members) refresh in the snapshot daily without a publish. A failed publish leaves the
+  draft untouched and members on the last snapshot.
+- **The teaser doc.** `public/goalTrackerTeaser` is the only public read: the North Star title,
+  readiness done / total, the relaunch date if set and the next key date. It feeds the /goals gate
+  card and the home tile, so visitors see the goal and the progress but never the plan.
+- **Option 1 was chosen for the timeline: Level select (`.bt-road`).** Options 2 (the climb) and 3
+  (phase board) were drawn in the mockup and dropped. A level select works on a phone as a vertical
+  path with the same nodes, so there is one kit component, not two layouts.
+- **New kit pieces: `.bt-road` and `.bt-tree`** (see §5 "Road and tree"). Everything else on both
+  pages is existing bt-ui.
+- **Colours.** Meters on /goals are gold (readiness) and blue (a goal tied to a metric), never
+  green: green stays for staff and admin actions. Status badges are the site-wide ones: Planned
+  gold, In progress green, Done lime, Dropped gray. Overdue shows on the admin page only.
+- **Visibility.** Public, members or private per item, never wider than its parent (applied when
+  the snapshot is built). Income items are private by default and need a confirmation to be shown.

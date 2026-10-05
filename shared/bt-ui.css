@@ -776,6 +776,105 @@
   flex: none;
 }
 
+/* ---- Road and tree (Goal Tracker, docs/specs/goal-tracker.md §7) ----
+   .bt-road       level select: stops on a dashed road, a gold-to-purple fill growing to the current stop.
+                  shared/ui/road.js roadHtml / initRoad. Each stop is a button.bt-road-stop[data-lv]
+                  (.bt-road-nodewrap > .bt-road-node icon + optional .bt-road-me mascot; .bt-road-lv,
+                  .bt-road-name, .bt-road-when). States: .is-done (gold) .is-now (glows) .is-later
+                  (dashed), .bt-road-stop--boss (the final stop, bigger and gold); aria-pressed marks the
+                  chosen stop and shows a notch toward the .bt-road-panel under the road.
+                  --bt-road-n (stops), --bt-road-fill and --bt-road-fill-v (set by initRoad) size the fill.
+                  <= 640px: a vertical path, and initRoad moves the panel to sit right under the tapped stop.
+   .bt-tree       collapsible admin rows: .bt-tree-row (--d depth; data-type; [data-hidden] when a parent
+                  is collapsed) with .bt-tree-caret, .bt-tree-main (b + .bt-tree-type), .bt-tree-meta
+                  (.bt-tree-vis, .bt-tree-status button around a badge, .bt-tree-opt hidden on phones), state tags
+                  (.bt-tree-tag dashed gold "Unpublished", --quiet grey "Relaunch") in .bt-tree-main, and
+                  .bt-tree-acts (.bt-tree-move hidden on phones). shared/ui/tree.js initTree handles the
+                  carets. Reduced motion: no glow pulse, no bobbing, no fill growth. */
+.bt-root:not(#_) .bt-road { --bt-road-n: 6; position: relative; display: grid; grid-template-columns: repeat(var(--bt-road-n), minmax(0, 1fr)); gap: 6px; padding: 30px 4px 0; }
+.bt-root:not(#_) .bt-road::before, .bt-root:not(#_) .bt-road-fill { content: ""; position: absolute; top: 70px; left: calc(100% / (var(--bt-road-n) * 2)); height: 3px; border-radius: 3px; }
+.bt-root:not(#_) .bt-road::before { right: calc(100% / (var(--bt-road-n) * 2)); background: repeating-linear-gradient(90deg, var(--bt-border-2) 0 10px, transparent 10px 16px); }
+.bt-root:not(#_) .bt-road-fill { width: 0; background: linear-gradient(90deg, var(--bt-title), var(--bt-primary)); box-shadow: 0 0 10px rgba(var(--bt-primary-rgb), 0.6); transition: width 1.2s cubic-bezier(.3, .7, .2, 1) 0.2s; }
+.bt-root:not(#_) .bt-road.is-in .bt-road-fill { width: var(--bt-road-fill); }
+.bt-root:not(#_) .bt-road-stop { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; min-width: 0; padding: 0 4px 16px; border: 0; border-radius: var(--bt-radius-lg); background: none; color: var(--bt-text); font: inherit; text-align: center; cursor: pointer; }
+.bt-root:not(#_) .bt-road-nodewrap { position: relative; display: grid; place-items: center; height: 80px; width: 100%; }
+.bt-root:not(#_) .bt-road-node { display: grid; place-items: center; width: 60px; height: 60px; border: 2px solid var(--bt-border-2); border-radius: 50%; background: var(--bt-bg); font-size: 24px; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .bt-road-stop:hover .bt-road-node { transform: translateY(-3px); border-color: var(--bt-primary); }
+.bt-root:not(#_) .bt-road-stop:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-road-lv { color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .bt-road-name { font-size: var(--bt-text-base); font-weight: 800; line-height: 1.2; }
+.bt-root:not(#_) .bt-road-when { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-road-stop.is-done .bt-road-node { border-color: var(--bt-title); background: rgba(var(--bt-gold-rgb), 0.14); }
+.bt-root:not(#_) .bt-road-stop.is-now .bt-road-node { border-color: var(--bt-primary); background: var(--bt-primary-bg); box-shadow: 0 0 0 6px rgba(var(--bt-primary-rgb), 0.16), 0 0 26px rgba(var(--bt-primary-rgb), 0.55); animation: bt-road-beat 2.4s ease-in-out infinite; }
+.bt-root:not(#_) .bt-road-stop.is-later .bt-road-node { border-style: dashed; filter: grayscale(0.7); opacity: 0.75; }
+.bt-root:not(#_) .bt-road-stop.is-later :is(.bt-road-name) { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-road-stop.bt-road-stop--boss .bt-road-node { width: 78px; height: 78px; font-size: 34px; border: 2px solid var(--bt-title); border-style: solid; filter: none; opacity: 1; background: radial-gradient(circle at 50% 40%, rgba(var(--bt-gold-rgb), 0.35), var(--bt-game-spot) 60%, var(--bt-bg)); box-shadow: 0 0 30px rgba(var(--bt-gold-rgb), 0.35); }
+.bt-root:not(#_) .bt-road-stop--boss .bt-road-name { background: var(--bt-title-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.bt-root:not(#_) .bt-road-stop[aria-pressed="true"]::after { content: ""; position: absolute; left: 50%; bottom: -1px; width: 14px; height: 14px; margin-left: -7px; transform: rotate(45deg); border-left: 1px solid var(--bt-border-2); border-top: 1px solid var(--bt-border-2); background: var(--bt-surface); z-index: 3; }
+.bt-root:not(#_) .bt-road-stop[aria-pressed="true"] .bt-road-name { color: var(--bt-title); }
+.bt-root:not(#_) .bt-road-me { position: absolute; top: -12px; left: calc(50% + 14px); width: 34px; filter: drop-shadow(0 4px 8px var(--bt-lift-shadow)); animation: bt-road-bob 2.4s ease-in-out infinite; pointer-events: none; }
+.bt-root:not(#_) .bt-road-me .bt-mascot { width: 34px; }
+.bt-root:not(#_) .bt-road-panel { position: relative; margin-top: -1px; }
+@keyframes bt-road-beat { 0%, 100% { box-shadow: 0 0 0 6px rgba(var(--bt-primary-rgb), 0.16), 0 0 26px rgba(var(--bt-primary-rgb), 0.55); } 50% { box-shadow: 0 0 0 10px rgba(var(--bt-primary-rgb), 0.06), 0 0 34px rgba(var(--bt-primary-rgb), 0.75); } }
+@keyframes bt-road-bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-4px); } }
+.bt-root:not(#_) .bt-road > .bt-road-panel { grid-column: 1 / -1; z-index: 2; margin: 4px 0 10px; }
+
+.bt-root:not(#_) .bt-tree { border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); overflow: hidden; }
+.bt-root:not(#_) .bt-tree-row { display: grid; grid-template-columns: 28px minmax(0, 1fr) auto auto auto; align-items: center; gap: 10px; padding: 8px 12px 8px calc(12px + var(--d, 0) * 24px); border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-tree-row:first-child { border-top: 0; }
+.bt-root:not(#_) .bt-tree-row:hover { background: color-mix(in srgb, var(--bt-surface-2) 60%, transparent); }
+.bt-root:not(#_) .bt-tree-row[data-type="track"] { background: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-tree-row[data-hidden] { display: none; }
+.bt-root:not(#_) .bt-tree-caret { width: 28px; height: 28px; display: grid; place-items: center; border: 0; border-radius: var(--bt-radius-sm); background: none; color: var(--bt-text-muted); cursor: pointer; transition: transform 0.2s; }
+.bt-root:not(#_) .bt-tree-caret:hover { color: var(--bt-text); background: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-tree-caret[aria-expanded="false"] { transform: rotate(-90deg); }
+.bt-root:not(#_) .bt-tree-caret[disabled] { visibility: hidden; }
+.bt-root:not(#_) .bt-tree-main { display: flex; align-items: center; gap: 8px; min-width: 0; flex-wrap: wrap; }
+.bt-root:not(#_) .bt-tree-main b { font-weight: 600; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-tree-row[data-type="track"] .bt-tree-main b { font-weight: 800; }
+.bt-root:not(#_) .bt-tree-row[data-type="goal"] .bt-tree-main b { font-weight: 700; }
+.bt-root:not(#_) .bt-tree-type { color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 600; }
+.bt-root:not(#_) .bt-tree-meta { display: flex; align-items: center; gap: 10px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); white-space: nowrap; }
+.bt-root:not(#_) .bt-tree-vis { width: 22px; text-align: center; }
+.bt-root:not(#_) .bt-tree-status { padding: 0; border: 0; background: none; cursor: pointer; border-radius: var(--bt-radius-full); }
+.bt-root:not(#_) .bt-tree-status:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-tree-acts { display: flex; gap: 2px; }
+.bt-root:not(#_) .bt-tree-tag { padding: 1px 7px; border: 1px dashed rgba(var(--bt-gold-rgb), 0.7); border-radius: var(--bt-radius-full); color: var(--bt-title); font-size: var(--bt-text-2xs); font-weight: 700; }
+.bt-root:not(#_) .bt-tree-tag--quiet { border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); }
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .bt-road-name { font-size: var(--bt-text-md); }
+  .bt-root:not(#_) .bt-road-when { font-size: var(--bt-text-xs); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-road { grid-template-columns: minmax(0, 1fr); gap: 0; padding: 4px 0 0; }
+  .bt-root:not(#_) .bt-road::before, .bt-root:not(#_) .bt-road-fill { top: 36px; left: 35px; width: 3px; height: auto; }
+  .bt-root:not(#_) .bt-road::before { right: auto; bottom: 46px; background: repeating-linear-gradient(180deg, var(--bt-border-2) 0 10px, transparent 10px 16px); }
+  .bt-root:not(#_) .bt-road-fill { height: 0; transition-property: height; }
+  .bt-root:not(#_) .bt-road.is-in .bt-road-fill { width: 3px; height: var(--bt-road-fill-v); }
+  .bt-root:not(#_) .bt-road-stop { display: grid; grid-template-columns: 72px minmax(0, 1fr); grid-template-rows: auto auto auto; column-gap: 12px; align-items: center; padding: 4px 8px 4px 0; text-align: left; }
+  .bt-root:not(#_) .bt-road-nodewrap { grid-row: 1 / 4; height: 76px; width: 72px; }
+  .bt-root:not(#_) .bt-road-node { width: 52px; height: 52px; font-size: 21px; }
+  .bt-root:not(#_) .bt-road-stop.bt-road-stop--boss .bt-road-node { width: 66px; height: 66px; font-size: 28px; }
+  .bt-root:not(#_) .bt-road-lv { align-self: end; }
+  .bt-root:not(#_) .bt-road-when { align-self: start; }
+  .bt-root:not(#_) .bt-road-stop[aria-pressed="true"] { background: var(--bt-surface); }
+  .bt-root:not(#_) .bt-road-stop[aria-pressed="true"]::after { display: none; }
+  .bt-root:not(#_) .bt-road-me { top: -4px; left: 44px; width: 28px; }
+  .bt-root:not(#_) .bt-road-me .bt-mascot { width: 28px; }
+  .bt-root:not(#_) .bt-road-panel { margin-top: 12px; }
+  .bt-root:not(#_) .bt-tree-row { grid-template-columns: 28px minmax(0, 1fr) auto; padding-left: calc(8px + var(--d, 0) * 14px); }
+  .bt-root:not(#_) .bt-tree-meta { grid-column: 2 / -1; grid-row: 2; }
+  .bt-root:not(#_) .bt-tree-acts { grid-column: 3; grid-row: 1; }
+  .bt-root:not(#_) .bt-tree-meta .bt-tree-opt { display: none; }
+  .bt-root:not(#_) .bt-tree-acts .bt-tree-move { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-road-stop.is-now .bt-road-node, .bt-road-me) { animation: none; }
+  .bt-root:not(#_) .bt-road-fill { transition: none; }
+  .bt-root:not(#_) .bt-road-stop:hover .bt-road-node { transform: none; }
+  .bt-root:not(#_) .bt-tree-caret { transition: none; }
+}
+
 /* ================= List rows ================= */
 
 .bt-root:not(#_) .bt-row {

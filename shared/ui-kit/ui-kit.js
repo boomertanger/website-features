@@ -30,6 +30,8 @@ import { lanesHtml } from "../ui/lanes.js";
 import { taskRowHtml, lockCardHtml, clockHtml, pathHtml } from "../ui/season.js";
 import { timerHtml, initTimers } from "../ui/countdown.js";
 import { backHtml, pagerHtml } from "../ui/pager.js";
+import { roadHtml, initRoad } from "../ui/road.js";
+import { initTree } from "../ui/tree.js";
 
 const KIT_VERSION = "dev";
 
@@ -796,7 +798,8 @@ ${trophyKitHtml()}
 ${storyKitHtml()}
 ${toastKitHtml()}
 ${factoryKitHtml()}
-${seasonKitHtml()}`;
+${seasonKitHtml()}
+${roadKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -980,6 +983,7 @@ function init() {
   initChat(mount);
   initFactoryKit(mount);
   initSeasonKit(mount);
+  initRoadKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
@@ -1174,6 +1178,48 @@ function seasonKitHtml() {
     <p class="kit-sub">Hidden medal: .bt-hunt-medal in a corner of a .bt-hunt-host; glints, and pops away when claimed. Click one</p>
     <div class="bt-hunt-host" style="height:120px;border:1px dashed var(--bt-border-2);border-radius:var(--bt-radius-lg)" data-kit-hunt>${["top-left", "bottom-right"].map((c) => `<button type="button" class="bt-hunt-medal bt-hunt-medal--${c}" aria-label="A hidden medal. Claim it.">${medalHtml({ emoji: "🏅", rarity: 3, size: 28 })}</button>`).join("")}</div>
   </section>`;
+}
+// ---------- Road and tree (Goal Tracker) ----------
+const KIT_ROAD = [
+  [0, "🔧", "Rebuild", "Now until relaunch", "Level 0"], [1, "🎬", "Relaunch", "When it's ready", "Level 1"], [2, "📈", "Grow", "Spring 2027", "Level 2"],
+  [3, "💥", "Break out", "Summer 2027", "Level 3"], [4, "🎃", "Halloween", "October 2027", "Level 4"], [5, "🏆", "The Game Awards", "Nominees Nov, show Dec", "Final boss", true],
+];
+const roadLevels = (now) => KIT_ROAD.map(([n, icon, name, when, lv, boss]) => ({ n, icon, name, when, lv, boss, state: now == null ? "later" : n < now ? "done" : n === now ? "now" : "later" }));
+const roadPanel = (n) => { const [, icon, name, when, lv] = KIT_ROAD[n]; return `<div class="bt-card" aria-live="polite"><div class="bt-card-head"><h3 class="bt-card-title">${icon} ${name}</h3><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Planned</span></div><p class="bt-section-text">${lv} · ${when}. The panel under the road: whatever belongs to the chosen stop.</p></div>`; };
+const KIT_ROADS = [["now", 2, "Level 2 is current: stops 0 and 1 are gold, the mascot stands on 2, the rest are dashed, the last is the boss"], ["start", null, "Nothing started: every stop dashed, no fill, no mascot"], ["done", 5, "The boss is current: everything before it is gold"]];
+function roadKitHtml() {
+  const tr = (d, type, t, s, vis, extra = "", due = "", open = true) => {
+    const ST = { planned: ["gold", "Planned"], progress: ["green", "In progress"], done: ["lime", "Done"], dropped: ["gray", "Dropped"] };
+    const VIS = { public: ["🌐", "Public"], members: ["👥", "Members"], private: ["🔒", "Private"] };
+    return `<div class="bt-tree-row" role="treeitem" aria-level="${d + 1}" data-id="${t}" data-parent="${d ? type.split(":")[1] : ""}" data-type="${type.split(":")[0]}" style="--d:${d}">`
+      + `<button type="button" class="bt-tree-caret" data-caret="${t}" aria-label="Collapse"${open ? "" : " disabled"}><svg width="12" height="12" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 4l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.8"/></svg></button>`
+      + `<span class="bt-tree-main"><b>${t}</b><span class="bt-tree-type">${type.split(":")[0]}</span>${extra}</span>`
+      + `<span class="bt-tree-meta"><span class="bt-tree-vis" title="${VIS[vis][1]}" aria-label="${VIS[vis][1]}">${VIS[vis][0]}</span>${due ? `<span class="bt-tree-opt">${due}</span>` : ""}${s ? `<button type="button" class="bt-tree-status" aria-label="Status: ${ST[s][1]}"><span class="bt-badge bt-badge--${ST[s][0]}"><span class="bt-badge-dot"></span>${ST[s][1]}</span></button>` : ""}</span>`
+      + `<span class="bt-tree-acts"><button type="button" class="bt-icon-btn bt-icon-btn--sm bt-tree-move" aria-label="Move up">↑</button><button type="button" class="bt-icon-btn bt-icon-btn--sm bt-tree-move" aria-label="Move down">↓</button><button type="button" class="bt-icon-btn bt-icon-btn--sm" aria-label="Edit">✎</button></span></div>`;
+  };
+  const unpub = `<span class="bt-tree-tag">Unpublished</span>`, rel = `<span class="bt-tree-tag bt-tree-tag--quiet">Relaunch</span>`, over = `<span class="bt-badge bt-badge--pink">Overdue</span>`;
+  return `
+  <section class="kit-section" id="kit-road">
+    <h2 class="kit-h">Road and tree</h2>
+    <p class="kit-p">The Goal Tracker's pieces (docs/specs/goal-tracker.md §7). The road is a level select: pick a stop and the panel under it changes. Reduced motion: the fill is drawn at once, no glow or bobbing.</p>
+    ${KIT_ROADS.map(([key, now, note]) => `<p class="kit-sub">Road, ${key}: .bt-road (shared/ui/road.js roadHtml, initRoad). ${note}. Click a stop. At 640px and under it becomes a vertical path and the panel opens under the tapped stop</p>
+    <div data-kit-road="${key}" data-now="${now ?? ""}">${roadHtml({ levels: roadLevels(now), selected: now ?? 0, label: "Levels", mascot: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="">`, panelHtml: roadPanel(now ?? 0) })}</div>`).join("")}
+    <p class="kit-sub">Tree: .bt-tree of .bt-tree-row (--d depth, data-type track / goal / milestone / task), shared/ui/tree.js initTree. The caret collapses its children; a disabled caret has none. Row parts: .bt-tree-main (title, .bt-tree-type, .bt-tree-tag), .bt-tree-meta (.bt-tree-vis, .bt-tree-opt, a .bt-tree-status button around a status badge), .bt-tree-acts (.bt-tree-move hides on phones). Click a caret</p>
+    <div class="bt-tree" role="tree" aria-label="The plan (demo)" data-kit-tree>
+      ${tr(0, "track", "Platforms", "", "public")}
+      ${tr(1, "goal:Platforms", "Twitch Partner", "progress", "public", rel, "Mar 2027")}
+      ${tr(2, "milestone:Twitch Partner", "Hit the viewer average", "planned", "public", over, "Jan 2027", false)}
+      ${tr(2, "milestone:Twitch Partner", "Affiliate to Partner request", "planned", "members", unpub, "Feb 2027", false)}
+      ${tr(1, "goal:Platforms", "YouTube 10K", "done", "public", "", "", false)}
+      ${tr(0, "track", "Money", "", "private")}
+      ${tr(1, "goal:Money", "$1K a month gross", "dropped", "private", "", "Jun 2027", false)}
+    </div>
+  </section>`;
+}
+function initRoadKit(mount) {
+  mount.querySelectorAll("[data-kit-road]").forEach((host) => initRoad(host, { renderPanel: roadPanel }));
+  const tree = mount.querySelector("[data-kit-tree]");
+  if (tree) initTree(tree);
 }
 function initSeasonKit(mount) {
   initTimers(mount);
