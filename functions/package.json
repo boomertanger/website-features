@@ -6,7 +6,7 @@
   },
   "main": "index.js",
   "scripts": {
-    "check": "node scripts/check-accounts.js && node scripts/check-arcade.js && node scripts/check-growth.js && node scripts/check-vault.js && node scripts/check-vault-search.js && node scripts/check-streams.js && node scripts/check-import-vault.js && node scripts/check-rewards.js && node scripts/check-factory.js && node scripts/check-factory-engine.js && node scripts/check-factory-builder.js",
+    "check": "node scripts/check-accounts.js && node scripts/check-arcade.js && node scripts/check-growth.js && node scripts/check-vault.js && node scripts/check-vault-search.js && node scripts/check-vault-reveal.js && node scripts/check-streams.js && node scripts/check-import-vault.js && node scripts/check-rewards.js && node scripts/check-factory.js && node scripts/check-factory-engine.js && node scripts/check-factory-builder.js",
     "check:emulator": "cd .. && npx --yes firebase-tools emulators:exec --only firestore --project demo-vault \"node functions/scripts/check-vault-emulator.js\""
   },
   "dependencies": {

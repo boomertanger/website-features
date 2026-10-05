@@ -1,6 +1,7 @@
 // Game Vault UI pieces shared by its pages: status badges, scores, the C5 + C6 cover card
 // (evidence marks at rest, the verdict on hover), short dates and hours.
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
+import { reveal as revealOf, metaLine as cardMeta } from "../../../../shared/vault-reveal.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { I } from "./art";
 import type { VCard, Status } from "./data";
@@ -28,11 +29,8 @@ export function shortDate(ms: number | null | undefined) {
 export const longDate = (ms: number | null | undefined) => (ms ? new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 
-export function metaLine(g: VCard) {
-  if (g.status === "wishlist" && !g.streams) return g.wanted ? `Not streamed yet, ${g.wanted} want it` : "Not streamed yet";
-  if (!g.streams) return "Not streamed yet";
-  return `${plural(g.streams, "stream")}${g.last ? `, last ${shortDate(g.last)}` : ""}`;
-}
+/** The line under a card's title; a played game with no streams shows its time to beat, never "Not streamed yet". */
+export const metaLine = (g: VCard): string => cardMeta(g);
 export const isEarly = (g: { releaseStatus?: string }) => g.releaseStatus === "early_access";
 
 /** The cover card (C5 + C6): tape, stamp, ribbon and pulse on the art; the verdict slides up on hover. */
@@ -41,11 +39,9 @@ export function vcard(g: VCard, { key = true }: { key?: boolean } = {}) {
   if (g.status === "abandoned") over += '<span class="gv-tape" aria-hidden="true">ABANDONED</span>';
   if (g.status === "wishlist" && g.wanted) over += `<span class="gv-stamp" aria-hidden="true">${g.wanted} want it</span>`;
   if (g.score === 10) over += '<span class="gv-ribbon" aria-hidden="true">10/10</span>';
-  const reveal = g.verdict
-    ? `<q>${esc(g.verdict)}</q><span>${plural(g.streams, "stream")}, ${hours(g.minutes)} h on stream</span>`
-    : g.streams ? `<q>No verdict yet</q><span>${plural(g.streams, "stream")}, ${hours(g.minutes)} h on stream</span>`
-    : `<q>Not played yet</q><span>${g.wanted ? `${g.wanted} want it` : "On the Wishlist"}${g.by ? `. Community pick by @${esc(g.by)}` : ""}</span>`;
-  over += `<span class="gv-reveal" aria-hidden="true">${reveal}</span>`;
+  // The hover panel follows the game: its verdict, else "No review yet" with a status line, else (wishlist) "Not played yet".
+  const r = revealOf(g);
+  over += `<span class="gv-reveal" aria-hidden="true">${r.quoted ? `<q>${esc(r.title)}</q>` : `<b>${esc(r.title)}</b>`}<span>${esc(r.line)}</span></span>`;
   const extras = g.origin === "community" || isEarly(g)
     ? `<div class="bt-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}</div>` : "";
   return `<a class="bt-cover-card" href="/games/${encodeURIComponent(g.slug)}"${key ? ` data-key="${esc(g.slug)}"` : ""}>${coverHtml(g.cover, { tilt: true, cls: g.status === "playing" ? "gv-rim" : "", over })}<div class="bt-cover-card-body"><div class="bt-cover-card-title">${esc(g.title)}</div><div class="bt-cover-card-row">${badge(g.status)}${score(g.score)}</div><div class="bt-cover-card-meta">${metaLine(g)}</div>${extras}</div></a>`;

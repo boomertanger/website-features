@@ -110,7 +110,7 @@
 
 /* ---- C5: the verdict slides up on hover (on touch the details below the cover still show) ---- */
 .bt-root:not(#_) .gv-reveal { position: absolute; left: 0; right: 0; bottom: 0; z-index: 2; display: flex; flex-direction: column; gap: 6px; padding: 12px; border-top: 1px solid var(--bt-border-2); background: color-mix(in srgb, var(--bt-bg) 72%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); transform: translateY(101%); transition: transform 0.35s var(--bt-ease-glide); }
-.bt-root:not(#_) .gv-reveal q { color: var(--bt-text); font-size: var(--bt-text-md); font-weight: 700; line-height: 1.35; }
+.bt-root:not(#_) .gv-reveal :is(q, b) { color: var(--bt-text); font-size: var(--bt-text-md); font-weight: 700; line-height: 1.35; }
 .bt-root:not(#_) .gv-reveal span { color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
 @media (hover: hover) and (pointer: fine) {
   .bt-root:not(#_) .bt-cover-card:is(:hover, :focus-visible) .gv-reveal { transform: none; }

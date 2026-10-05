@@ -24,7 +24,7 @@ import { messageFor } from "../../lib/errors";
 import { loadGame, loadStreamsFor, loadVault, type StreamRow, type VCard, type Vault } from "./data";
 import { loadCtx, markRestore, byLastStreamed, DEFAULT_LABEL } from "./context";
 import { vaultIcon, I } from "./art";
-import { esc, badge, tag, hours, plural, longDate, shortDate, isEarly } from "./ui";
+import { esc, badge, tag, hours, plural, longDate, shortDate, isEarly, metaLine } from "./ui";
 import { isStaff, isAdmin } from "./gate";
 import { wantButton, initWants } from "./wants";
 
@@ -53,7 +53,6 @@ function setupNav(vault: Vault | null, slug: string) {
   else Object.assign(nav, { slugs: [...(vault?.games || [])].sort(byLastStreamed).map((g) => g.slug), back: "/games", label: DEFAULT_LABEL });
 }
 const neighbour = (d: number): string | null => { const i = nav.slugs.indexOf(G.slug); return i < 0 ? null : nav.slugs[i + d] ?? null; };
-const streamedLine = (c: VCard) => (c.streams ? `${plural(c.streams, "stream")}${c.last ? `, last ${shortDate(c.last)}` : ""}` : "Not streamed yet");
 
 function pagebar(g: any) {
   const back = backHtml({ href: nav.back, label: nav.label, long: "Back to the Vault", short: "Vault", attrs: "data-back" });
@@ -62,7 +61,7 @@ function pagebar(g: any) {
     const slug = neighbour(d);
     if (!slug) return null;
     const c = nav.cards.get(slug);
-    return { href: gameHref(slug), title: c?.title || slug, meta: c ? (c.streams ? plural(c.streams, "stream") : "Not streamed yet") : "", cover: c ? coverHtml(c.cover, { alt: "", size: "sm" }) : "" };
+    return { href: gameHref(slug), title: c?.title || slug, meta: c ? metaLine(c) : "", cover: c ? coverHtml(c.cover, { alt: "", size: "sm" }) : "" };
   };
   const pager = i >= 0 && nav.slugs.length > 1 ? pagerHtml({ pos: i + 1, total: nav.slugs.length, prev: side(-1), next: side(1), label: "Games in this list" }) : "";
   return `<div class="gv-pagebar">${back}${pager}</div>`;
@@ -72,7 +71,7 @@ function upNext() {
   const nx = neighbour(1), pv = neighbour(-1);
   const n = nx ? nav.cards.get(nx) : null, p = pv ? nav.cards.get(pv) : null;
   const by = n ? [n.developers[0], n.release ? new Date(n.release).getFullYear() : null].filter(Boolean).join(", ") : "";
-  const card = n ? `<a class="bt-card bt-card--door bt-spotlight gv-upnext" href="${gameHref(n.slug)}" data-pg="1">${coverHtml(n.cover, { alt: "" })}<div><span class="bt-label">Up next</span><h3>${esc(n.title)}</h3><p>${esc(by ? `${by}. ` : "")}${esc(streamedLine(n))}.</p></div><span class="bt-card-go">Next game${ARROW}</span></a>` : "";
+  const card = n ? `<a class="bt-card bt-card--door bt-spotlight gv-upnext" href="${gameHref(n.slug)}" data-pg="1">${coverHtml(n.cover, { alt: "" })}<div><span class="bt-label">Up next</span><h3>${esc(n.title)}</h3><p>${esc(by ? `${by}. ` : "")}${esc(metaLine(n))}.</p></div><span class="bt-card-go">Next game${ARROW}</span></a>` : "";
   const links = pv ? `<div class="gv-endlinks"><a class="bt-link-btn" href="${gameHref(pv)}" data-pg="-1">‹ Previous: ${esc(p?.title || pv)}</a><a class="bt-link-btn" href="${esc(nav.back)}" data-back>Back to the Vault</a></div>` : "";
   return card || links ? `<div class="gv-endnav">${card}${links}</div>` : "";
 }
@@ -105,7 +104,7 @@ function hero(g: any) {
   const by = [g.developers?.[0], year(g.releaseDate)].filter(Boolean).join(", ");
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
   const dial = g.review?.score ? dialHtml(g.review.score) : "";
-  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : '<span class="bt-cover-card-meta">Not streamed yet</span>'}${tools(g)}</div></div>${dial}</div></section>`;
+  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial}</div></section>`;
 }
 
 function pickBanner(g: any) {
@@ -128,7 +127,7 @@ function everyStream(g: any) {
   const t = totals(g);
   const real = [...streams].sort((a, b) => a.start - b.start);
   if (!real.length && !t.legacy) {
-    return `<section class="bt-card"><div class="bt-card-head"><h2 class="bt-card-title">Every stream</h2></div><div class="bt-empty bt-empty--compact"><p class="bt-empty-title">Not streamed yet</p><span>Each stream of this game shows up here.</span></div></section>`;
+    return `<section class="bt-card"><div class="bt-card-head"><h2 class="bt-card-title">Every stream</h2></div><div class="bt-empty bt-empty--compact"><p class="bt-empty-title">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</p><span>Each stream of this game shows up here.</span></div></section>`;
   }
   const now = Date.now();
   const legacyAt = g.legacy?.lastStreamedAt || null;
