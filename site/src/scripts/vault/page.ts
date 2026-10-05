@@ -1,6 +1,7 @@
 // /games, the Vault page (docs/specs/game-vault.md §7, §9; round 2 A65 + B34 + C56):
-// the vault door hero that opens on what Boomer's playing (once per visit, never under reduced
-// motion; a click skips it), the ledger, search with the command panel (matched letters lit,
+// the vault door hero that opens on what Boomer's playing (once per tab, a new tab always plays it;
+// click it or press Enter on it to play it again; ?door=replay forces it; under reduced motion it's
+// simply open), the ledger, search with the command panel (matched letters lit,
 // suggested filters, an Add row, full keyboard, "/" focuses it), the status seg nav, Tags /
 // Length menus, Community picks, removable tokens, sort, state in the URL, the shelves (Now
 // playing, Most wanted, Boomer's best, The ones that got away) and then the All games grid (round 3
@@ -109,7 +110,7 @@ function doorHero() {
   const ledger = `<div class="gv-ledger"><div><b data-count-to="${V.games.length}">${V.games.length}</b><small>games in the Vault</small></div><div><b data-count-to="${totals.streams}">${totals.streams}</b><small>streams</small></div><div><b data-count-to="${h}" data-suffix=" h">${h} h</b><small>on stream</small></div><div><b data-count-to="${fin}">${fin}</b><small>finished</small></div></div>`;
   const now = playing.length
     ? `<p class="gv-nowline"><span>Now playing:</span>${playing.slice(0, 3).map((x, i) => `${i ? `<span>${i === playing.slice(0, 3).length - 1 ? "and" : ","}</span>` : ""}<a href="/games/${encodeURIComponent(x.slug)}">${esc(x.title)}</a>`).join("")}</p>` : "";
-  return `<section class="gv-vaulthero"><div class="gv-door-wrap" data-door role="img" aria-label="${esc(label)}">${plate}${inside}${door}</div><div class="gv-vaulthero-copy"><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>${ledger}${now}</div></section>`;
+  return `<section class="gv-vaulthero"><div class="gv-door-wrap" data-door role="button" tabindex="0" aria-label="${esc(`${label}. Press to open it again.`)}">${plate}${inside}${door}</div><div class="gv-vaulthero-copy"><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>${ledger}${now}</div></section>`;
 }
 
 function tools() {
@@ -220,21 +221,52 @@ function toggleMenu(kind: "" | "tags" | "len") {
 }
 
 // ---------- the door ----------
+// Once per tab. The "played" mark in sessionStorage holds this tab's id, which lives in window.name:
+// window.name survives navigation inside the tab but a new tab starts without it, while
+// sessionStorage is copied into tabs opened from a page (window.open, target=_blank, Duplicate tab).
+// A bare "1" made those tabs think they'd already seen it, so the door never swung there.
+const TAB_PREFIX = "bt-tab-";
+function tabId() {
+  if (!window.name.startsWith(TAB_PREFIX)) window.name = `${TAB_PREFIX}${Math.random().toString(36).slice(2, 10)}`;
+  return window.name;
+}
 function initDoor() {
   const door = root!.querySelector<HTMLElement>("[data-door]");
   if (!door) return;
+  const tab = tabId();
+  const param = new URLSearchParams(location.search).get("door");
+  const log = (why: string) => { if (param) console.info(`vault door: ${why}`); };   // ?door=replay (or ?door=log) traces it
   let seen = false;
-  try { seen = sessionStorage.getItem(DOOR_KEY) === "1"; } catch { /* storage blocked */ }
+  try { seen = sessionStorage.getItem(DOOR_KEY) === tab; } catch { /* storage blocked: play it */ }
+  const mark = () => { try { sessionStorage.setItem(DOOR_KEY, tab); } catch { /* fine */ } };
   const openNow = () => door.classList.add("is-instant", "is-open");
-  if (seen || reduce()) return openNow();
-  const io = new IntersectionObserver((es) => es.forEach((e) => {
-    if (!e.isIntersecting) return;
-    io.disconnect();
-    try { sessionStorage.setItem(DOOR_KEY, "1"); } catch { /* fine */ }
-    setTimeout(() => door.classList.add("is-open"), 350);
-  }), { threshold: 0.4 });
-  io.observe(door);
-  door.addEventListener("click", () => { io.disconnect(); try { sessionStorage.setItem(DOOR_KEY, "1"); } catch { /* fine */ } openNow(); });
+  /** The whole sequence from closed: wheel, bolts, lamp, the swing to 90 degrees. */
+  const play = (why: string) => {
+    log(`playing (${why})`);
+    door.classList.add("is-instant");
+    door.classList.remove("is-open");
+    void door.offsetWidth;            // shut, with no transition
+    door.classList.remove("is-instant");
+    void door.offsetWidth;            // then open with every transition
+    door.classList.add("is-open");
+    mark();
+  };
+  if (reduce()) { log("reduced motion: shown open"); openNow(); return; }
+  let io: IntersectionObserver | null = null;
+  if (seen && param !== "replay") { log("already played in this tab: shown open"); openNow(); }
+  else {
+    log(param === "replay" ? "?door=replay: waiting to come into view" : "first time in this tab: waiting to come into view");
+    io = new IntersectionObserver((es) => es.forEach((e) => {
+      if (!e.isIntersecting) return;
+      io?.disconnect(); io = null;
+      mark();
+      setTimeout(() => { if (!door.classList.contains("is-open")) play("in view"); }, 350);
+    }), { threshold: 0.4 });
+    io.observe(door);
+  }
+  const replay = () => { io?.disconnect(); io = null; if (!reduce()) play("pressed"); };
+  door.addEventListener("click", replay);
+  door.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); replay(); } });
 }
 
 // ---------- search panel ----------
