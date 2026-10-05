@@ -3,8 +3,11 @@
 // motion; a click skips it), the ledger, search with the command panel (matched letters lit,
 // suggested filters, an Add row, full keyboard, "/" focuses it), the status seg nav, Tags /
 // Length menus, Community picks, removable tokens, sort, state in the URL, the shelves (Now
-// playing, Most wanted, Boomer's best, The ones that got away) turning into a gliding grid when
-// searching or filtering, and the states (loading, empty, no matches, error).
+// playing, Most wanted, Boomer's best, The ones that got away) and then the All games grid (round 3
+// S1), just the gliding grid when searching or filtering, and the states (loading, empty, no
+// matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
+// there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything,
+// the 5 newest wishlist games and a nudge to be the first.
 import { buildIndex, search } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
@@ -119,21 +122,30 @@ function popover(kind: "tags" | "len") {
   return `<div class="bt-popover" role="group" aria-label="Length">${opts}<div class="bt-popover-foot"><span class="bt-meta">From IGDB's time to beat</span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-close-menu>Show ${plural(list().length, "game")}</button></div></div>`;
 }
 
-function shelf(title: string, sub: string, games: VCard[], { ranked = false, status }: { ranked?: boolean; status: Status }) {
+function shelf(title: string, sub: string, games: VCard[], { ranked = false, wants = false, status }: { ranked?: boolean; wants?: boolean; status: Status }) {
   if (!games.length) return "";
   const items = games.map((g, i) => ranked
     ? `<div class="bt-ranked"${i < 3 ? ` style="--rk:var(--bt-rank-${i + 1})"` : ""}><span class="bt-rank" aria-hidden="true">${i + 1}</span><div class="gv-want">${vcard(g, { key: false })}${wantButton(g)}</div></div>`
-    : vcard(g, { key: false })).join("");
-  return `<section data-shelf-wrap aria-label="${esc(title)}"><div class="bt-shelf-head"><div><h2 class="bt-heading">${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${games.length}</button></div></div><div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
+    : wants ? `<div class="gv-want">${vcard(g, { key: false })}${wantButton(g)}</div>` : vcard(g, { key: false })).join("");
+  return `<section data-shelf-wrap aria-label="${esc(title)}"><div class="bt-shelf-head"><div><h2 class="bt-heading">${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${count(status)}</button></div></div><div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
+}
+/** Most wanted: the top 5 by wants (ranked); before anyone wants anything, the 5 newest wishlist games. */
+function mostWanted() {
+  const wish = V.games.filter((g) => g.status === "wishlist");
+  const wanted = wish.filter((g) => g.wanted > 0).sort((a, b) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0)).slice(0, 5);
+  if (wanted.length) return shelf("Most wanted", "What members want Boomer to play next.", wanted, { ranked: true, status: "wishlist" });
+  const newest = [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
+  return shelf("Most wanted", "Nothing wanted yet. Tap I want this too on a game to be the first.", newest, { wants: true, status: "wishlist" });
 }
 function shelves() {
   const by = (s: Status, sort: (a: VCard, b: VCard) => number) => V.games.filter((g) => g.status === s).sort(sort);
   const html = shelf("Now playing", "", by("playing", (a, b) => (b.last || 0) - (a.last || 0)), { status: "playing" })
-    + shelf("Most wanted", "What members want Boomer to play next.", by("wishlist", (a, b) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0)).slice(0, 10), { ranked: true, status: "wishlist" })
+    + mostWanted()
     + shelf("Boomer's best", "Finished, highest score first.", by("finished", (a, b) => (b.score ?? -1) - (a.score ?? -1) || (b.last || 0) - (a.last || 0)), { status: "finished" })
     + shelf("The ones that got away", "Games that beat Boomer's patience.", by("abandoned", (a, b) => (b.last || 0) - (a.last || 0)), { status: "abandoned" });
   return `<div class="gv-rails">${html}</div>`;
 }
+const allGames = (gs: VCard[]) => `<div class="gv-allhead"><h2 class="bt-heading">All games</h2><span class="bt-meta">${plural(gs.length, "game")}, last streamed first</span></div>${grid(gs)}`;
 
 function addCta(q: string, big = false) {
   const visitor = getAuthState().status === "signedOut";
@@ -157,7 +169,7 @@ function renderResults() {
   countEl.innerHTML = filtered
     ? `<span><b>${gs.length}</b> ${gs.length === 1 ? "game" : "games"}${st.q.trim() ? ` for “${esc(st.q.trim())}”` : ""}</span><button type="button" class="bt-link-btn" data-reset>Clear filters</button>`
     : "";
-  const html = !filtered ? shelves() : gs.length ? grid(gs) : noMatch();
+  const html = !filtered ? shelves() + allGames(gs) : gs.length ? grid(gs) : noMatch();
   if (filtered && lastGrid && gs.length) flipSwap(res, html);
   else res.innerHTML = html;
   lastGrid = filtered && gs.length > 0;
