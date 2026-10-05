@@ -1,0 +1,105 @@
+---
+// /admin/goals: the Goal Tracker's admin page (docs/specs/goal-tracker.md §6; mockup
+// docs/design/mockups/goal-tracker.html, the admin screen). Admins only (GoalsLayout adminOnly: everyone
+// else gets a short gate). Every edit is a draft; the sticky publish bar counts them and Publish updates
+// /goals. Tabs: Plan (.bt-tree), Relaunch, Metrics, Settings. All reads and writes are in
+// scripts/admin/goals/; writes only go through the Cloud Functions.
+import GoalsLayout from "../../layouts/GoalsLayout.astro";
+---
+<GoalsLayout title="Goal Tracker admin" adminOnly>
+  <div class="gt-admin">
+    <div class="bt-skeleton gt-admin-skel" data-admin-load></div>
+    <div class="bt-zone" data-admin-error hidden>
+      <div class="bt-empty">
+        <div class="bt-empty-title">Couldn't load the plan</div>
+        <p>Check your connection and try again.</p>
+        <button type="button" class="bt-btn bt-btn--secondary" data-retry-load>Try again</button>
+      </div>
+    </div>
+
+    <div class="gt-admin-body" data-admin-body hidden>
+      <div class="gt-pub" data-pub data-state="clean" role="region" aria-label="Publishing">
+        <span class="gt-pub-msg"><i aria-hidden="true"></i><span data-pub-text aria-live="polite">Everything is published</span></span>
+        <div class="gt-pub-acts">
+          <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/goals" target="_blank" rel="noopener">Preview</a>
+          <button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-publish>Publish</button>
+        </div>
+      </div>
+
+      <div class="gt-admin-head">
+        <div><h1 class="bt-title">Goal Tracker</h1><p>Your edits stay here until you press Publish.</p></div>
+        <span class="bt-admin-tag" aria-label="Admin only"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Admin only</span>
+      </div>
+
+      <nav class="bt-page-tabs" aria-label="Goal Tracker admin">
+        <a href="#plan" aria-current="page" data-tab="plan">Plan</a>
+        <a href="#relaunch" data-tab="relaunch">Relaunch</a>
+        <a href="#metrics" data-tab="metrics">Metrics</a>
+        <a href="#settings" data-tab="settings">Settings</a>
+      </nav>
+
+      <div class="gt-tabpane" data-pane="plan">
+        <div class="gt-toolbar" data-filters role="group" aria-label="Filter the plan">
+          <button type="button" class="bt-chip bt-chip--small is-active" aria-pressed="true" data-f="all">All</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="progress">In progress</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="planned">Planned</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="overdue">Overdue</button>
+          <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="relaunch">Needed for relaunch</button>
+          <button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-add-track>Add track</button>
+        </div>
+        <div class="bt-tree" role="tree" aria-label="The plan" data-tree></div>
+        <div class="bt-empty" data-plan-empty hidden>
+          <div class="bt-empty-title">The plan is empty</div>
+          <p>Load the starting plan to begin with the tracks, goals and milestones already drafted, or add a track yourself.</p>
+          <button type="button" class="bt-btn bt-btn--admin" data-seed>Load the starting plan</button>
+        </div>
+        <p class="gt-fine" data-plan-note>Click a status to move it on (Planned, In progress, Done, Dropped). 🌐 public · 👥 members · 🔒 private (admins only, never on /goals).</p>
+      </div>
+
+      <div class="gt-tabpane" data-pane="relaunch" hidden>
+        <div class="gt-stats" data-relstats></div>
+        <div class="gt-par"><button type="button" class="bt-switch" role="switch" aria-checked="true" aria-labelledby="gt-par-l" data-par></button><span id="gt-par-l">Website work and stream prep happen side by side</span></div>
+        <p class="gt-fine">The estimate assumes one thing at a time within each side. Change any estimate below and the date moves.</p>
+        <div class="gt-groups" data-relgroups></div>
+        <div class="gt-setdate">
+          <div class="bt-field"><label class="bt-label" for="gt-reldate">Relaunch date</label><input class="bt-input" id="gt-reldate" type="date" data-reldate></div>
+          <div class="bt-field"><label class="bt-label" for="gt-reltime">Time (Central)</label><input class="bt-input" id="gt-reltime" type="time" data-reltime></div>
+          <button type="button" class="bt-btn bt-btn--admin" data-save-date>Save date</button>
+          <button type="button" class="bt-btn bt-btn--secondary" data-clear-date>Clear date</button>
+          <span class="bt-hint gt-setdate-note" data-reldate-note></span>
+        </div>
+      </div>
+
+      <div class="gt-tabpane" data-pane="metrics" hidden>
+        <div class="gt-toolbar"><button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-add-metric>Add metric</button></div>
+        <div class="bt-table-wrap"><table class="bt-table" data-metrics></table></div>
+        <p class="gt-fine">Automatic counts refresh every morning without publishing. Values you type in go live when you publish.</p>
+      </div>
+
+      <div class="gt-tabpane" data-pane="settings" hidden>
+        <form class="bt-card" data-settings novalidate>
+          <div class="bt-form">
+            <div class="bt-field"><label class="bt-label" for="gt-ns">The big goal</label><input class="bt-input" id="gt-ns" name="northStar" maxlength="120"></div>
+            <div class="bt-field"><label class="bt-label" for="gt-why">Why it matters (shown under the title)</label><textarea class="bt-textarea" id="gt-why" name="story" rows="3" maxlength="600"></textarea></div>
+            <div class="bt-form-grid">
+              <div class="bt-field"><label class="bt-label" for="gt-d1">Nominees announced</label><input class="bt-input" id="gt-d1" type="date" name="nomineesDay"><span class="bt-hint">Fill in once The Game Awards announces it.</span></div>
+              <div class="bt-field"><label class="bt-label" for="gt-t1">Time (Central)</label><input class="bt-input" id="gt-t1" type="time" name="nomineesTime"></div>
+              <div class="bt-field"><label class="bt-label" for="gt-d2">The show</label><input class="bt-input" id="gt-d2" type="date" name="showDay"></div>
+              <div class="bt-field"><label class="bt-label" for="gt-t2">Time (Central)</label><input class="bt-input" id="gt-t2" type="time" name="showTime"></div>
+            </div>
+            <div class="bt-field"><label class="bt-label" for="gt-res">Result line (after the show)</label><input class="bt-input" id="gt-res" name="result" maxlength="200" placeholder="e.g. Not this year. The road to 2028 starts now."></div>
+            <div class="bt-field"><span class="bt-label">Levels on the road</span><div class="gt-levels-edit" data-levels></div>
+              <div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-add-level>Add a level</button></div>
+              <span class="bt-hint">Milestones sit on a level. A level that still has milestones can't be removed. The last level can be the final boss.</span></div>
+            <p class="bt-notice bt-notice--error" data-settings-err role="alert" hidden></p>
+            <div class="bt-form-actions"><button type="submit" class="bt-btn bt-btn--admin" data-save-settings>Save settings</button></div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</GoalsLayout>
+
+<script>
+  import "../../scripts/admin/goals/index";
+</script>
