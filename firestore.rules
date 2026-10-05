@@ -535,6 +535,12 @@ service cloud.firestore {
           allow write: if false;
         }
       }
+      // Staff-only reading (docs/specs/game-vault-how-it-works.md §3), e.g. the queue's mod guide
+      // (vault-guide). Mods and admins read; only functions/scripts/seed-staff-doc.js writes.
+      match /staffDocs/{docId} {
+        allow read: if isSiteStaff(siteId);
+        allow write: if false;
+      }
 
       // ---------- Fun Factory (docs/specs/fun-factory.md §9) ----------
       // Everything lives under one container doc, factory/main (Firestore paths alternate

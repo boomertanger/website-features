@@ -15,6 +15,7 @@ import { esc, tag } from "./ui";
 import { coverPicker, uploadSigned } from "./crop";
 import { refreshQueueCount } from "./layout";
 import type { Cover } from "./data";
+import { mountGuide } from "./guide";
 
 interface QItem {
   id: string; kind: "add" | "cover"; reason: string; code: string | null; checks: { id: string; state: string }[];
@@ -161,8 +162,10 @@ async function load(showLoading = true) {
   }
 }
 
+const guide = document.querySelector<HTMLElement>("[data-guide]");
 async function boot() {
   const s = await whenReady();
+  if (guide) { if (isStaff(s)) void mountGuide(guide); else { guide.hidden = true; guide.replaceChildren(); } }
   if (!isStaff(s)) {
     const visitor = s.status === "signedOut";
     root!.innerHTML = `<div class="bt-empty gv-state"><span aria-hidden="true">${document.getElementById("bt-mascot-tpl")?.innerHTML ?? ""}</span><p class="bt-empty-title">Staff only</p><span>The queue is where mods check new adds and cover suggestions.${visitor ? " Log in if you're a mod." : ""}</span>${visitor ? '<button type="button" class="bt-btn bt-btn--secondary" data-signin="signin">Log in</button>' : '<a class="bt-btn bt-btn--secondary" href="/games">Back to the Vault</a>'}</div>`;

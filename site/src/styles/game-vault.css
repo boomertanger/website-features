@@ -478,14 +478,32 @@
 .bt-root:not(#_) .vh-tidy h3 { font-size: var(--bt-text-lg); font-weight: 800; }
 .bt-root:not(#_) .vh-tidy p { margin: 4px 0 0; color: var(--bt-text-muted); line-height: 1.55; }
 
+/* The queue's mod guide (staff only; scripts/vault/guide.ts): admin-tinted, open on a first visit,
+   a slim bar with "Show guide" once closed */
+.bt-root:not(#_) .gv-guide-slot { padding-bottom: 0; }
+.bt-root:not(#_) .gv-guide-slot[hidden] { display: none; }
+.bt-root:not(#_) .vh-guide { overflow: hidden; border: 1px solid var(--bt-admin-panel-border); border-radius: var(--bt-radius-xl); background: radial-gradient(90% 100% at 0% 0%, var(--bt-admin-tint), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .vh-guide-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; }
+.bt-root:not(#_) .vh-guide.is-closed .vh-guide-head { padding-top: 10px; padding-bottom: 10px; }
+.bt-root:not(#_) .vh-guide-head b { display: flex; align-items: center; gap: 10px; font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .vh-guide.is-closed .vh-guide-head b { font-size: var(--bt-text-base); }
+.bt-root:not(#_) .vh-guide-body { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; padding: 0 18px 18px; }
+.bt-root:not(#_) .vh-guide-body[hidden] { display: none; }
+.bt-root:not(#_) .vh-guide-card { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); min-width: 0; }
+.bt-root:not(#_) .vh-guide-card h4 { margin: 0; font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .vh-guide-card :is(p, li) { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .vh-guide-card b { color: var(--bt-text); }
+.bt-root:not(#_) .vh-guide-card ul { display: flex; flex-direction: column; gap: 6px; margin: 0; padding-left: 18px; }
+
 @container bt (max-width: 1024px) {
+  .bt-root:not(#_) .vh-guide-body { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .bt-root:not(#_) .vh-stage { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container bt (max-width: 900px) and (min-width: 641px) {
   .bt-root:not(#_) .vh-jr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
 }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) :is(.vh-stage, .vh-stage3, .vh-split, .vh-facts) { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) :is(.vh-stage, .vh-stage3, .vh-split, .vh-facts, .vh-guide-body) { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .vh-jr { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .vh-jr::after { width: 2px; height: calc(var(--p) * (100% - 40px) / 4); }
   .bt-root:not(#_) .vh-jr::before { right: auto; }

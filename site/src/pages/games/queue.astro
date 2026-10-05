@@ -1,7 +1,8 @@
 ---
 // /games/queue, the Game Vault's mod queue (staff: mods and admins; docs/specs/game-vault.md §5,
 // round 2 F3). scripts/vault/queue.ts draws the triage deck from vaultQueueList; everyone else
-// sees a polite staff-only state. Staff controls use the admin green.
+// sees a polite staff-only state. Staff controls use the admin green. Above the deck, staff get the
+// "How the queue works" guide (scripts/vault/guide.ts; its text is a staff-only Firestore doc).
 import VaultLayout from "../../layouts/VaultLayout.astro";
 ---
 <VaultLayout title="Queue · Game Vault">
@@ -9,6 +10,7 @@ import VaultLayout from "../../layouts/VaultLayout.astro";
     <h1 class="bt-title">Queue</h1>
     <p class="bt-subtitle">Adds and covers that need a quick look. Approved games land on the Wishlist.</p>
   </div>
+  <div class="gv-body gv-guide-slot" data-guide hidden></div>
   <div class="gv-body" data-queue>
     <div class="gv-loader" role="status"><span class="bt-spinner"></span><span>Loading the queue…</span></div>
   </div>
