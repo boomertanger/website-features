@@ -1225,6 +1225,23 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
 - **"I want this too" is remembered per browser.** The server never shows who wants what, so
   the button remembers the games you pressed in this browser; pressing again elsewhere is
   harmless (the server counts each member once).
+- **Round 3** (`game-vault-round-3.html`, approved R4 S1 N1 P12; details in the spec's §9):
+  - **The door opens all the way.** It turns as one solid piece (`.gv-door3d`: slabs + an edge
+    band with three bolts) to exactly `rotateY(-90deg)` while the wrap's perspective eases out to
+    40000px, so it ends as a profile at the hinge and never covers the opening. Reduced motion:
+    already open.
+  - **Shelves, then All games, always.** Shelves are highlights and only show with games; the full
+    grid always follows, so the page is never one row. **Most wanted is the exception**: it shows
+    whenever there's a wishlist game, ranked by wants (top 5, numerals) or, before anyone wants
+    anything, the 5 newest wishlist games with a nudge to be the first. Search and filters show
+    just the grid.
+  - **A game page knows the list you came from.** Back to the Vault returns to the same URL and
+    scroll position; the pager and the Up next card step through that same list in place (the
+    address follows; the browser's back works). The context lives in sessionStorage
+    (`site/src/scripts/vault/context.ts`); without it, the whole Vault, last streamed first.
+  - **The back pill and the pager are kit pieces** (`.bt-back`, `.bt-pager`), not Vault-only;
+    the banner bar around them (`.gv-pagebar`), the slide and the Up next layout stay in
+    `game-vault.css`.
 
 ### 8j. Trophy Room
 

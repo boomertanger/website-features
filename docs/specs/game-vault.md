@@ -215,6 +215,33 @@ Feature key `game-vault`.
 - States: loading (spinning dial + wave skeleton), empty, no matches (flashlight), error.
 - New kit pieces: see the mockups' section 9 lists (round 1 and round 2).
 
+Round 3 (`docs/design/mockups/game-vault-round-3.html`; approved R4 S1 N1 P12):
+- **R4 The door opens all the way.** The hero gives the door more room, and the door is one solid
+  piece with depth (a stack of slabs behind the face, an edge band with three bolts). It swings to
+  exactly 90 degrees while the view flattens (perspective eases out to about 40000px), so it lands
+  as a clean profile at the hinge with the opening fully clear, phones included. Reduced motion:
+  shown already open, nothing moves.
+- **S1 Shelves, then All games.** Without a search or filter, /games shows the shelves and then
+  the All games grid with its count, always. Shelves only show when they have games, except
+  **Most wanted**, which always shows above the grid while there's at least one wishlist game:
+  - with wants: the top 5 by wants (games with at least one), with rank numerals;
+  - with no wants yet: up to 5 wishlist games, newest first, no numerals, with their I want this
+    too buttons and the line "Nothing wanted yet. Tap I want this too on a game to be the first.";
+  - hidden only when there are no wishlist games at all.
+  Searching or filtering still shows just the grid.
+- **N1 Back link that remembers.** A "Back to the Vault" pill at the top of the game banner with a
+  reminder of the list you came from ("Wishlist, A-Z"; just "Vault" on phones). It returns to that
+  exact /games URL and scroll position. /games stores the context in sessionStorage when you leave
+  for a game (URL, scroll, label, the games in order); a direct visit with none goes back to /games
+  in the default order.
+- **P12 Previous / next.** In the banner, "3 of 14" with ‹ › stepping through the same list (same
+  filters and order), a cover preview on hover (pointer devices), the ← → keys (not while typing or
+  in a dialog), and the banner sliding in the direction you moved (not under reduced motion). At
+  the bottom, an Up next door card for the next game and a small "‹ Previous: …" link. Buttons that
+  don't apply at either end are hidden. A direct visit steps through the whole Vault, last
+  streamed first.
+- Kit: `.bt-back` and `.bt-pager` (`shared/ui/pager.js`), reusable for any one-at-a-time list.
+
 ## 10. Edge cases
 
 - IGDB down: "Search is having trouble, paste a Steam link instead"; Steam-only adds queue.
