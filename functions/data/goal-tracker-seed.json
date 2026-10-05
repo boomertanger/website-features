@@ -1,0 +1,819 @@
+{
+  "_note": "Starting plan for Goal Tracker (docs/specs/goal-tracker.md). Loaded once by goalTrackerEdit action 'seed' when there are no items. Week estimates are placeholders.",
+  "config": {
+    "northStar": "Content Creator of the Year, 2027",
+    "story": "Every December, The Game Awards names one Content Creator of the Year. I'm going for it in 2027. It's a long shot, and that's the point: aiming this high pulls everything else up with it. Here's the whole plan, how far along it is, and where you come in.",
+    "relaunchAt": null,
+    "nomineesAt": null,
+    "showAt": null,
+    "result": ""
+  },
+  "levels": [
+    {
+      "n": 0,
+      "name": "Rebuild",
+      "when": "Now until relaunch",
+      "icon": "🔧",
+      "status": "progress",
+      "blurb": "Get the website, the platforms and the content ready, so the relaunch lands with everything in place."
+    },
+    {
+      "n": 1,
+      "name": "Relaunch",
+      "when": "When it's ready",
+      "icon": "🎬",
+      "status": "planned",
+      "blurb": "Go live with the new look, a schedule I can keep, and the first signature series."
+    },
+    {
+      "n": 2,
+      "name": "Grow",
+      "when": "Spring 2027",
+      "icon": "📈",
+      "status": "planned",
+      "blurb": "Better production, first collabs, and steady growth on every platform."
+    },
+    {
+      "n": 3,
+      "name": "Break out",
+      "when": "Summer 2027",
+      "icon": "💥",
+      "status": "planned",
+      "blurb": "Chase the moments that travel: big challenge runs, specials, clips worth sharing."
+    },
+    {
+      "n": 4,
+      "name": "Halloween",
+      "when": "October 2027",
+      "icon": "🎃",
+      "status": "planned",
+      "blurb": "Horror's biggest month, right before nominations. Everything builds to this."
+    },
+    {
+      "n": 5,
+      "boss": true,
+      "name": "The Game Awards",
+      "when": "Nominees Nov, show Dec",
+      "icon": "🏆",
+      "status": "planned",
+      "blurb": "Five creators get nominated. The plan is to be impossible to overlook by the time the list comes out."
+    }
+  ],
+  "metrics": [
+    {
+      "id": "twitchFollowers",
+      "label": "Twitch followers",
+      "unit": "followers",
+      "source": "auto:twitchFollowers",
+      "visibility": "members"
+    },
+    {
+      "id": "youtubeSubscribers",
+      "label": "YouTube subscribers",
+      "unit": "subscribers",
+      "source": "auto:youtubeSubscribers",
+      "visibility": "members"
+    },
+    {
+      "id": "tiktokFollowers",
+      "label": "TikTok followers",
+      "unit": "followers",
+      "source": "auto:tiktokFollowers",
+      "visibility": "members"
+    },
+    {
+      "id": "fanClubMembers",
+      "label": "Fan Club members",
+      "unit": "members",
+      "source": "auto:fanClubMembers",
+      "visibility": "members"
+    },
+    {
+      "id": "twitchAvgViewers",
+      "label": "Average viewers (Twitch)",
+      "unit": "viewers",
+      "source": "manual",
+      "visibility": "members"
+    },
+    {
+      "id": "monthlyGross",
+      "label": "Monthly gross",
+      "unit": "USD",
+      "source": "manual",
+      "visibility": "private"
+    }
+  ],
+  "tracks": [
+    {
+      "title": "Identity",
+      "icon": "🎭",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "A signature reaction style",
+          "status": "progress",
+          "description": "Dramatic, animated and real. The reactions people clip and share.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "A recognizable retro-horror brand",
+          "status": "progress",
+          "description": "The same look on the site, the streams, the clips and the merch.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "A standout personality on camera",
+          "status": "planned",
+          "description": "Funny, high energy, a little sassy, always genuine.",
+          "visibility": "members",
+          "children": []
+        }
+      ]
+    },
+    {
+      "title": "Signature content",
+      "icon": "📼",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "Content pillars chosen",
+          "status": "progress",
+          "description": "Pick the series that define the channel.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Content pillars chosen",
+              "level": 0,
+              "status": "progress",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "First two series planned",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 2,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "First signature series, episode 1",
+              "level": 1,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "VR Horror",
+          "status": "planned",
+          "description": "Finishing games in the scariest way possible.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "Extreme Survival",
+          "status": "planned",
+          "description": "Beating games on the hardest difficulty.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "Extreme No Death",
+          "status": "planned",
+          "description": "The hardest difficulty, without dying once.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "Monthly best scares",
+          "status": "planned",
+          "description": "The month's biggest jump scares and reactions in one video.",
+          "visibility": "members",
+          "children": []
+        },
+        {
+          "type": "goal",
+          "title": "Speedrun challenges",
+          "status": "planned",
+          "description": "Beating games as fast as possible.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Second signature series",
+              "level": 3,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Platforms",
+      "icon": "📡",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "Platforms ready for the relaunch",
+          "status": "progress",
+          "description": "Every platform pointing to the site and posting the right things.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Study what works for top horror creators",
+              "level": 0,
+              "status": "done",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 0,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Names, bios and banners match everywhere",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Old content cleaned up",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "What to post where",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Clip workflow",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 2,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "A stream schedule I can keep",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "New overlays and alerts",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Better audio, video and editing",
+              "level": 2,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "YouTube monetization",
+          "status": "planned",
+          "description": "1,000 subscribers and the watch hours YouTube asks for.",
+          "visibility": "members",
+          "children": [],
+          "metricId": "youtubeSubscribers",
+          "target": 1000,
+          "help": "Subscribe on YouTube"
+        },
+        {
+          "type": "goal",
+          "title": "Twitch Partner",
+          "status": "planned",
+          "description": "Steady viewers and a schedule Twitch can count on.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Twitch Partner push",
+              "level": 2,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ],
+          "help": "Come to streams and stay a while"
+        },
+        {
+          "type": "goal",
+          "title": "Twitch followers",
+          "status": "progress",
+          "description": "The next milestone on the way up.",
+          "visibility": "members",
+          "children": [],
+          "metricId": "twitchFollowers",
+          "target": 500,
+          "help": "Follow on Twitch"
+        },
+        {
+          "type": "goal",
+          "title": "TikTok followers",
+          "status": "progress",
+          "description": "Clips that bring new people to the streams.",
+          "visibility": "members",
+          "children": [],
+          "metricId": "tiktokFollowers",
+          "target": 5000,
+          "help": "Follow and share a clip"
+        }
+      ]
+    },
+    {
+      "title": "Community",
+      "icon": "👥",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "The new site launched",
+          "status": "progress",
+          "description": "Your home base for everything Boomertanger.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Accounts and sign-in",
+              "level": 0,
+              "status": "done",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 0,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Home page, header and footer",
+              "level": 0,
+              "status": "done",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 0,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Daily follower counts",
+              "level": 0,
+              "status": "done",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 0,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Security and data rights",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 3,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Bug Zapper, Feature Lab and Cloud Stash moved over",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 4,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Fan Club and Sub Club plans",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 4,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Goal Tracker",
+              "level": 0,
+              "status": "progress",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 2,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Schedule page",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 2,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Live on boomertanger.com",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 2,
+                "side": "site"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Relaunch stream",
+              "level": 1,
+              "status": "planned",
+              "visibility": "members"
+            },
+            {
+              "type": "milestone",
+              "title": "Weekly schedule on the site",
+              "level": 1,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "Fan Club members",
+          "status": "progress",
+          "description": "Everyone who joins the site, free.",
+          "visibility": "members",
+          "children": [],
+          "metricId": "fanClubMembers",
+          "target": 100,
+          "help": "Bring a friend"
+        },
+        {
+          "type": "goal",
+          "title": "Discord open",
+          "status": "planned",
+          "description": "Somewhere to hang out between streams.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Discord ready",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "Stream-to-site path: chat command, panels, links",
+              "level": 0,
+              "status": "planned",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            },
+            {
+              "type": "milestone",
+              "title": "A reason to join on day one",
+              "level": 0,
+              "status": "progress",
+              "visibility": "members",
+              "relaunch": {
+                "needed": true,
+                "weeks": 1,
+                "side": "stream"
+              }
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "First Fun Factory season",
+          "status": "planned",
+          "description": "Missions, streaks and badges for showing up.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "First Fun Factory season opens",
+              "level": 1,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Collabs",
+      "icon": "🤝",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "Three collabs with mid-size horror creators",
+          "status": "planned",
+          "description": "Creators between about 5K and 200K followers.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Collabs with mid-size horror creators",
+              "level": 2,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "Indie horror devs",
+          "status": "planned",
+          "description": "Play their games, share the stream, grow together.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Work with indie horror devs",
+              "level": 2,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "One collab with a bigger creator",
+          "status": "planned",
+          "description": "Later in the year, once the channel has momentum.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Collab with a bigger creator",
+              "level": 3,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "Recognition",
+      "icon": "🏅",
+      "visibility": "members",
+      "children": [
+        {
+          "type": "goal",
+          "title": "Noticed by horror devs and press",
+          "status": "planned",
+          "description": "Shared, quoted or featured by the horror world.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "High-effort horror specials",
+              "level": 3,
+              "status": "planned",
+              "visibility": "members"
+            },
+            {
+              "type": "milestone",
+              "title": "Halloween plans locked",
+              "level": 3,
+              "status": "planned",
+              "visibility": "members"
+            },
+            {
+              "type": "milestone",
+              "title": "Halloween month event",
+              "level": 4,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "Best of Boomertanger Horror reel",
+          "status": "planned",
+          "description": "The year's best moments in one video, out before nominations.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "Best of Boomertanger Horror reel",
+              "level": 4,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ]
+        },
+        {
+          "type": "goal",
+          "title": "The nomination push",
+          "status": "planned",
+          "description": "October and November 2027: everyone shares, everyone shows up.",
+          "visibility": "members",
+          "children": [
+            {
+              "type": "milestone",
+              "title": "The community rally",
+              "level": 4,
+              "status": "planned",
+              "visibility": "members"
+            },
+            {
+              "type": "milestone",
+              "title": "Nominees announced",
+              "level": 5,
+              "status": "planned",
+              "visibility": "members"
+            },
+            {
+              "type": "milestone",
+              "title": "The show",
+              "level": 5,
+              "status": "planned",
+              "visibility": "members"
+            }
+          ],
+          "help": "Share the reel when it drops"
+        }
+      ]
+    },
+    {
+      "title": "Money",
+      "icon": "💰",
+      "visibility": "private",
+      "children": [
+        {
+          "type": "goal",
+          "title": "$250 a month gross",
+          "status": "done",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$500 a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$1K a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$3K a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$5K a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$8K a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$10K a month gross",
+          "status": "planned",
+          "description": "Monthly gross.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        },
+        {
+          "type": "goal",
+          "title": "$10K a month net (the quit-my-job threshold)",
+          "status": "planned",
+          "description": "The point where streaming replaces the day job.",
+          "visibility": "private",
+          "children": [],
+          "metricId": "monthlyGross"
+        }
+      ]
+    }
+  ]
+}

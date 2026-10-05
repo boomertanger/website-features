@@ -930,3 +930,8 @@ Object.assign(exports, require("./lib/factory")({
   cloudSecrets: CLOUDINARY_SECRETS,
   cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
 }));
+
+// ---------- Goal Tracker (docs/specs/goal-tracker.md) ----------
+// The plan to become Content Creator of the Year: the admin's draft edits, manual metrics, Publish
+// (rebuilds public/goalTracker and the teaser) and the 05:30 Los Angeles daily counts. Lives in lib/goalTracker/.
+Object.assign(exports, require("./lib/goalTracker")({ adminLogEntry }));

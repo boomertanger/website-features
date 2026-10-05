@@ -398,6 +398,13 @@ service cloud.firestore {
       return hasSiteRole(siteId, 'admin') || hasSiteRole(siteId, 'mod');
     }
 
+    // A signed-up member: signed in and finished signup. The profile is only created when signup
+    // completes (functions/lib/accounts), so it is the signal; a member doc can exist earlier.
+    function isSignedUpMember(siteId) {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/sites/$(siteId)/profiles/$(request.auth.uid));
+    }
+
     // Site settings (name, tagline, socials, modules, ownerUid): public.
     match /sites/{siteId} {
       allow read: if true;
@@ -493,9 +500,33 @@ service cloud.firestore {
         allow read: if hasSiteRole(siteId, 'admin');
         allow write: if false;
       }
+      // Every public/ doc is public read EXCEPT public/goalTracker (the Goal Tracker's published plan),
+      // which signed-up members read. One rule, not two: rules OR together, so a second match could
+      // not narrow this one. public/goalTrackerTeaser stays public.
       match /public/{docId} {
-        allow read: if true;
+        allow read: if docId != 'goalTracker' || isSignedUpMember(siteId);
         allow write: if false;
+      }
+
+      // ---------- Goal Tracker (docs/specs/goal-tracker.md §4) ----------
+      // Written ONLY by Cloud Functions (functions/lib/goalTracker). The draft (config, items,
+      // metrics and their history) is for site admins; members read the published snapshot.
+      match /goalTracker/{docId} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /goalItems/{itemId} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /goalMetrics/{metricId} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+
+        match /history/{day} {
+          allow read: if hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
       }
 
       // ---------- Game Vault (docs/specs/game-vault.md §4) ----------
