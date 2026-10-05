@@ -49,7 +49,9 @@ function ideasFrom(data) {
   for (const n of data.rewardNames || []) add("reward", n, { name: n });
   return out;
 }
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
+// Compare ignoring key order (Firestore can return a map's keys in a different order).
+const stable = (v) => (Array.isArray(v) ? v.map(stable) : v && typeof v === "object" ? Object.fromEntries(Object.keys(v).sort().map((k) => [k, stable(v[k])])) : v);
+const same = (a, b) => JSON.stringify(stable(a)) === JSON.stringify(stable(b));
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));
