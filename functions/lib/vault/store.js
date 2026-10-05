@@ -17,6 +17,7 @@ const D = require("./digest");
 const S = require("../streams/logic");
 const { dayKey } = require("../arcade/logic");
 
+const { safeSlug } = require("./checks");
 const SITE_ID = "boomertanger";
 const CACHE_TTL_MS = 7 * 24 * 60 * 60 * 1000;
 const LIMITS_TTL_MS = 3 * 24 * 60 * 60 * 1000;
@@ -63,7 +64,8 @@ module.exports = function makeStore({ adminLogEntry }) {
    * game and one "already there". Returns { ok: true, slug } or { ok: false, duplicateSlug }.
    */
   async function createGame({ draft, source, keys, addedByUid, checks, reason, now = Date.now() }) {
-    const base = draft.slug;
+    // Never a fixed /games/ page name, even for a draft made before the name was reserved (an old queue item).
+    const base = safeSlug(draft.slug);
     const slugs = [base, ...Array.from({ length: 8 }, (_, i) => `${base}-${i + 2}`)];
     return db.runTransaction(async (tx) => {
       const keyRefs = keys.map((k) => keysCol.doc(k));

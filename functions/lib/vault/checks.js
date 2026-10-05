@@ -67,10 +67,19 @@ function titleKey(name) {
   return w.join("-").slice(0, 120);
 }
 
-/** URL slug for a title (editions folded, "the" kept). */
+/**
+ * Slugs a game can never have: the fixed pages under /games/ (site/src/pages/games/: the How it works
+ * page, the queue, and view, the game page itself; site/public/_redirects serves them before
+ * /games/{slug}). Add any new fixed /games/ page here.
+ */
+const RESERVED_SLUGS = new Set(["how-it-works", "queue", "view"]);
+/** A slug that isn't a fixed page: "queue" -> "queue-game". */
+const safeSlug = (slug) => (RESERVED_SLUGS.has(slug) ? `${slug}-game` : slug);
+
+/** URL slug for a title (editions folded, "the" kept; never a fixed /games/ page name). */
 function slugify(name) {
   const w = words(stripAccents(name).replace(EDITION_RE, " "));
-  return (w.join("-").slice(0, 60).replace(/-$/, "")) || "game";
+  return safeSlug((w.join("-").slice(0, 60).replace(/-$/, "")) || "game");
 }
 
 /** Sort form: leading "The", "A", "An" dropped. */
@@ -311,6 +320,6 @@ async function runByHandChecks({ name, link, lookupKey, handle = null, now = Dat
 }
 
 module.exports = {
-  runChecks, runByHandChecks, parseInput, titleKey, slugify, sortTitle, buildDrafts,
+  runChecks, runByHandChecks, parseInput, titleKey, slugify, safeSlug, RESERVED_SLUGS, sortTitle, buildDrafts,
   MESSAGES, CHECK_LABELS, ACCEPTED_TYPES, STEAM_ADULT_DESCRIPTORS,
 };

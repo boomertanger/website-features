@@ -89,6 +89,17 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
   assert.equal(C.titleKey("Pokémon  Horror!"), "pokemon-horror");
   assert.equal(C.slugify("Granny: Chapter Two"), "granny-chapter-two");
   assert.equal(C.slugify("!!!"), "game");
+  // the fixed /games/ pages are never a game's slug: a clash gets "-game"
+  assert.equal(C.slugify("How It Works"), "how-it-works-game");
+  assert.equal(C.slugify("Queue"), "queue-game");
+  assert.equal(C.slugify("View"), "view-game");
+  assert.equal(C.slugify("The Queue"), "the-queue", "only the exact name is reserved");
+  assert.equal(C.safeSlug("queue"), "queue-game");
+  assert.equal(C.safeSlug("visage"), "visage");
+  for (const page of fs.readdirSync(path.join(__dirname, "..", "..", "site", "src", "pages", "games"))) {
+    const name = page.replace(/\.astro$/, "").replace(/\/index$/, "");
+    if (name !== "index") assert.ok(C.RESERVED_SLUGS.has(name), `/games/${name} is a fixed page, so it must be in RESERVED_SLUGS`);
+  }
   assert.equal(C.sortTitle("The Long Dark"), "long dark");
   assert.equal(C.sortTitle("A Plague Tale"), "plague tale");
   assert.equal(C.sortTitle("Amnesia"), "amnesia");
