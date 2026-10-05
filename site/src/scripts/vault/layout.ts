@@ -28,7 +28,9 @@ onAuth((s) => {
   if (staff && !counted) { counted = true; refreshQueueCount(); }
 });
 
-document.querySelector("[data-gv-add]")?.addEventListener("click", async () => {
+// Every Add a game button (the bar's, and the How it works page's) opens the same dialog.
+document.addEventListener("click", async (e) => {
+  if (!(e.target as Element).closest?.("[data-gv-add]")) return;
   const { openAddGame } = await import("./add");
   openAddGame();
 });

@@ -4,13 +4,14 @@
 // then the page. Vault pages are public; member actions check in the scripts.
 import BaseLayout from "./BaseLayout.astro";
 import VaultBar from "../components/vault/VaultBar.astro";
+import "../styles/how-it-works.css";   // the How it works blocks (shared with the Arcade); before game-vault.css so the Vault's scenes win ties
 import "../styles/game-vault.css";
 
-interface Props { title: string; description?: string }
-const { title, description } = Astro.props;
+interface Props { title: string; description?: string; section?: string | null }
+const { title, description, section = null } = Astro.props;
 ---
 <BaseLayout title={title} description={description}>
-  <VaultBar slot="bar" />
+  <VaultBar slot="bar" section={section} />
   <div class="gv-wrap"><slot /></div>
 </BaseLayout>
 

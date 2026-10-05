@@ -24,6 +24,10 @@ const SUB = "Paste a Steam link or search by name. We fill in the details.";
 const CHECK_LABELS: [string, string][] = [["found", "Found it"], ["notDuplicate", "Not already in the Vault"], ["fullGame", "A full game"], ["fits", "Fits the Vault"], ["safe", "Safe for the channel"]];
 const isLink = (q: string) => /steampowered\.com\/app\/\d+|^\d{3,9}$|igdb\.com\/games\//i.test(q.trim());
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+// The How it works page (docs/specs/game-vault-how-it-works.md §1): how adding works, and the house rules
+// a refusal points to. They open in a new tab, so what you typed here stays.
+const HOW_ADD = '<a class="bt-link-btn" href="/games/how-it-works#s-add" target="_blank" rel="noopener">How adding works</a>';
+const RULES_LINK = '<a href="/games/how-it-works#s-fair" target="_blank" rel="noopener">See the house rules</a>';
 
 export async function openAddGame(q = "") {
   if (!(await requireVerified("Join to add games"))) return;
@@ -47,7 +51,7 @@ export async function openAddGame(q = "") {
       <p class="bt-hint">Like store.steampowered.com/app/1205040 or “Granny”.</p>
       <div data-notice role="status">${notice}</div>
       <div class="gv-results" data-results aria-live="polite"></div>
-      <button type="button" class="bt-link-btn" data-byhand style="align-self:flex-start">Can't find it? Add it by hand</button>
+      <div class="gv-dlinks"><button type="button" class="bt-link-btn" data-byhand>Can't find it? Add it by hand</button>${HOW_ADD}</div>
       ${boomer ? "" : '<p class="bt-fine bt-fine--left">New adds land on the Wishlist as your Community pick. You can add 5 a day.</p>'}
     </div><div data-preview>${previewCard(null)}</div></div>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-go disabled>Add to the Vault</button></div>`);
@@ -163,7 +167,7 @@ export async function openAddGame(q = "") {
       return result("", again ? `${title} is already waiting` : `A mod will look at ${title} soon`, again ? "Someone sent it already. It joins the Vault once a mod approves it." : `It joins the Vault once it's approved.${isStaff() ? "" : " It doesn't count toward your 5 a day unless it's approved."}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: c.cover });
     }
     // refused: the plain reason (adult and profanity stay vague on purpose), and a way forward
-    find(c.title, `<div class="bt-notice bt-notice--error">${esc(r.message || "That game can't be added.")}${r.code === "adult" || r.code === "profanity" ? '<br><span class="bt-hint">Think that\'s a mistake? Ask a mod in chat.</span>' : ""}</div>`);
+    find(c.title, `<div class="bt-notice bt-notice--error">${esc(r.message || "That game can't be added.")} ${RULES_LINK}.${r.code === "adult" || r.code === "profanity" ? '<br><span class="bt-hint">Think that\'s a mistake? Ask a mod in chat.</span>' : ""}</div>`);
   }
 
   // ---------- add it by hand ----------
@@ -197,7 +201,7 @@ export async function openAddGame(q = "") {
         }
         send.textContent = "Sending…";
         const r = await call<AddReply>("vaultAddGame", { byHand: { name: gameName, link }, ...(pendingCoverId ? { pendingCoverId } : {}) });
-        if (r.decision === "refused") { err.innerHTML = `<p class="bt-notice bt-notice--error">${esc(r.message)}</p>`; send.disabled = false; send.textContent = "Send for a check"; return; }
+        if (r.decision === "refused") { err.innerHTML = `<p class="bt-notice bt-notice--error">${esc(r.message)} ${RULES_LINK}.</p>`; send.disabled = false; send.textContent = "Send for a check"; return; }
         if (r.decision === "duplicate") return done(r, { igdbId: null, steamAppId: null, title: gameName, year: null, cover: null, input: null, inVault: r.slug || null });
         result("", `A mod will look at ${gameName} soon`, `It joins the Vault once it's approved.${blob ? " Your cover goes with it." : ""}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: null });
       } catch (e2) {

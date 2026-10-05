@@ -2,11 +2,13 @@
 // The Game Vault's feature bar (docs/specs/game-vault.md §9): the kit's .bt-topbar in a
 // .bt-sticky-bar like the Arcade's, with the GAMEVAULT .bt-wordmark--power (the vault-dial icon
 // rests; on hover or focus it spins a combination and lights the lamp; touch screens play it
-// once as it scrolls into view). Right: Queue with its count (staff, admin green) and Add a game
-// (everyone; visitors get the Join dialog titled "Join to add games"). Wired in
-// scripts/vault/layout.ts.
+// once as it scrolls into view). Right: a ghost How it works link (current on that page; just its
+// icon on phones), Queue with its count (staff, admin green) and Add a game (everyone; visitors get
+// the Join dialog titled "Join to add games"). Wired in scripts/vault/layout.ts.
 import { GV_ICON } from "../../scripts/vault/art";
 import { I } from "../../scripts/vault/art";
+interface Props { section?: string | null }
+const { section = null } = Astro.props;
 ---
 <div class="bt-sticky-bar gv-dock" data-gv-dock>
   <div class="bt-topbar gv-bar">
@@ -15,6 +17,7 @@ import { I } from "../../scripts/vault/art";
       <span class="bt-wordmark-text" aria-hidden="true">GAME<span class="bt-wordmark-accent">VAULT</span></span>
     </a>
     <div class="bt-topnav">
+      <a class="bt-btn bt-btn--ghost bt-btn--sm gv-how-link" href="/games/how-it-works" aria-label="How it works" aria-current={section === "how" ? "page" : undefined}><Fragment set:html={I.help} /><span class="bt-btn-label">How it works</span></a>
       <a class="bt-btn bt-btn--admin bt-btn--sm" href="/games/queue" data-gv-queue hidden><Fragment set:html={I.queue} /><span class="bt-btn-label">Queue</span> <span class="bt-chip-n" data-gv-queue-n></span></a>
       <button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-gv-add aria-label="Add a game"><Fragment set:html={I.plusSm} /><span class="bt-btn-label">Add a game</span></button>
     </div>
