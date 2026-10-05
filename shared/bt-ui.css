@@ -597,6 +597,80 @@
   .bt-root:not(#_) :is(.bt-stepper-step:hover, .bt-stepper-step.is-now) .bt-stepper-mach { transform: none; }
 }
 
+/* ---- Task row, countdown, lock card, clock and path (the Fun Factory season pass, fun-factory.md §8) ----
+   shared/ui/season.js builds them; shared/ui/countdown.js ticks .bt-timer (not .bt-countdown: that's the home hero's next-stream digits).
+   .bt-task-row    an activity: .bt-task-row-ic, .bt-task-row-main (b, small, .bt-task-row-bar > i --v),
+                   .bt-task-row-xp ("+60 XP" with "2 / 3" or "Done ✓"). .is-done gold edge; .is-soon dashed
+                   and dimmed (a feature that isn't live yet). .bt-task-list lays them out two across.
+   .bt-timer       the gold pill with a timer ("Resets in 7h 12m"); --locked is grey. Ticks once a minute.
+   .bt-lock-card   the dashed gold upsell card: .bt-lock-card-ic, a b + p block, a button.
+   .bt-clock       Clock in: .bt-clock-flame (the streak number), .bt-clock-txt (b, savers .bt-clock-savers
+                   with i pips, i.is-empty), and a button; .is-done when clocked in today.
+   .bt-path        the story path: ol of .bt-path-node (i icon, b, small) on a line that fills gold to
+                   --fill (0 to 1); .is-done gold, .is-now ringed. Phones: a sideways strip.
+   Reduced motion: no bar or line transitions, no pulse. */
+.bt-root:not(#_) .bt-task-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bt-root:not(#_) .bt-task-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 6px 12px; align-items: center; padding: 12px 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-task-row-ic { width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--bt-surface-2); font-size: 19px; }
+.bt-root:not(#_) .bt-task-row-main { min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.bt-root:not(#_) .bt-task-row-main b { font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .bt-task-row-main small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-task-row-bar { position: relative; height: 6px; overflow: hidden; border-radius: 6px; background: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-task-row-bar i { position: absolute; inset: 0 auto 0 0; width: var(--v, 0%); border-radius: inherit; background: linear-gradient(90deg, var(--bt-title), var(--bt-rank-3)); transition: width 0.5s var(--bt-ease-glide); }
+.bt-root:not(#_) .bt-task-row-xp { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; color: var(--bt-title); font-size: var(--bt-text-sm); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-task-row-xp > span:not(.bt-badge) { color: var(--bt-text-muted); font-weight: 700; }
+.bt-root:not(#_) .bt-task-row.is-done { border-color: rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .bt-task-row.is-done .bt-task-row-xp > span { color: var(--bt-title); }
+.bt-root:not(#_) .bt-task-row.is-soon { border-style: dashed; opacity: 0.6; }
+
+.bt-root:not(#_) .bt-timer { display: inline-flex; align-items: center; gap: 6px; padding: 4px 9px; border: 1px solid rgba(var(--bt-gold-rgb), 0.4); border-radius: var(--bt-radius-full); color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 800; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-timer--locked { border-color: var(--bt-border-2); color: var(--bt-text-muted); }
+
+.bt-root:not(#_) .bt-lock-card { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; padding: 16px; border: 1px dashed rgba(var(--bt-gold-rgb), 0.45); border-radius: var(--bt-radius-lg); background: radial-gradient(80% 100% at 0% 50%, rgba(var(--bt-gold-rgb), 0.08), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .bt-lock-card-ic { width: 48px; height: 48px; flex: none; display: grid; place-items: center; border-radius: 14px; background: radial-gradient(circle at 35% 28%, rgba(var(--bt-gold-rgb), 0.5), rgba(var(--bt-gold-rgb), 0.1) 72%); box-shadow: inset 0 0 0 1px rgba(var(--bt-gold-rgb), 0.45); font-size: 22px; }
+.bt-root:not(#_) .bt-lock-card > div { flex: 1; min-width: 200px; }
+.bt-root:not(#_) .bt-lock-card b { display: block; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-lock-card p { margin: 2px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+
+.bt-root:not(#_) .bt-clock { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-clock-flame { display: flex; flex-direction: column; align-items: center; min-width: 44px; line-height: 1; }
+.bt-root:not(#_) .bt-clock-flame b { color: var(--bt-rank-3); font-size: var(--bt-text-2xl); font-weight: 900; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-clock-flame span { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.06em; text-align: center; text-transform: uppercase; }
+.bt-root:not(#_) .bt-clock-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-clock-txt b { color: var(--bt-text); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-clock-savers { display: inline-flex; gap: 3px; vertical-align: middle; }
+.bt-root:not(#_) .bt-clock-savers i { width: 10px; height: 12px; border-radius: 5px 5px 2px 2px; background: var(--bt-blue); }
+.bt-root:not(#_) .bt-clock-savers i.is-empty { background: var(--bt-surface-2); box-shadow: inset 0 0 0 1px var(--bt-border-2); }
+.bt-root:not(#_) .bt-clock .bt-btn.is-done, .bt-root:not(#_) .bt-clock .bt-btn[aria-disabled="true"] { pointer-events: none; opacity: 0.7; }
+.bt-root:not(#_) .bt-clock.is-done { border-color: rgba(var(--bt-gold-rgb), 0.35); }
+
+.bt-root:not(#_) .bt-path { --n: 5; --fill: 0; position: relative; display: grid; grid-template-columns: repeat(var(--n), minmax(84px, 1fr)); gap: 8px; margin: 0; padding: 16px; overflow-x: auto; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); list-style: none; scrollbar-width: thin; }
+.bt-root:not(#_) .bt-path::before, .bt-root:not(#_) .bt-path::after { content: ""; position: absolute; top: 38px; left: calc(16px + (100% - 32px) / var(--n) / 2); height: 3px; border-radius: 3px; }
+.bt-root:not(#_) .bt-path::before { right: calc(16px + (100% - 32px) / var(--n) / 2); background: var(--bt-border-2); }
+.bt-root:not(#_) .bt-path::after { width: calc((100% - 32px) * (var(--n) - 1) / var(--n) * var(--fill)); background: var(--bt-title); box-shadow: 0 0 8px rgba(var(--bt-gold-rgb), 0.5); transition: width 0.5s var(--bt-ease-glide); }
+.bt-root:not(#_) .bt-path-node { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; color: var(--bt-text-muted); font-size: var(--bt-text-xs); text-align: center; }
+.bt-root:not(#_) .bt-path-node i { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-bg); box-shadow: inset 0 0 0 2px var(--bt-border-2); font-size: 18px; font-style: normal; }
+.bt-root:not(#_) .bt-path-node.is-done i { background: var(--bt-title); box-shadow: 0 0 12px rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root:not(#_) .bt-path-node.is-now i { box-shadow: inset 0 0 0 2px var(--bt-title), 0 0 0 4px rgba(var(--bt-gold-rgb), 0.18); }
+.bt-root:not(#_) .bt-path-node.is-locked { opacity: 0.55; }
+.bt-root:not(#_) .bt-path-node b { color: var(--bt-text); font-size: var(--bt-text-sm); line-height: 1.25; overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-path-node small { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-task-list { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-path { grid-template-columns: repeat(var(--n), minmax(76px, 1fr)); padding: 12px 6px; }
+  .bt-root:not(#_) .bt-path::before, .bt-root:not(#_) .bt-path::after { top: 30px; }
+  .bt-root:not(#_) .bt-path-node i { width: 36px; height: 36px; font-size: 15px; }
+  .bt-root:not(#_) .bt-path-node b { font-size: var(--bt-text-2xs); }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .bt-clock { flex-wrap: wrap; }
+  .bt-root:not(#_) .bt-clock .bt-btn { width: 100%; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-task-row-bar i, .bt-root:not(#_) .bt-path::after { transition: none; }
+}
+
 /* ---- Medal: .bt-medal (the Trophy Room's badges; docs/specs/rewards.md, design-system.md §8j) ----
    A coin: .bt-medal-ring (the rarity) + .bt-medal-face (the art). Size: --bt-medal-size (72px).
    data-rarity 1-5: 1 gray, 2 blue, 3 gold notched, 4 pink with a glow and an inner ring,

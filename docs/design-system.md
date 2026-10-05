@@ -651,6 +651,25 @@ any multi-stage editor).
   `.bt-lanes-bar`s (`--c` colour, `grid-column: start / span len`, the label being column 1). Scrolls
   sideways when narrow. Named lanes because `.bt-timeline` is the Vault's dots on a line.
 
+**Task row, timer, lock card, clock and path** (the Fun Factory season pass, `docs/specs/fun-factory.md`
+§8; `shared/ui/season.js` builds them, `shared/ui/countdown.js` ticks the timers).
+- **Task row: `.bt-task-row`** (`taskRowHtml({ icon, title, sub, n, of, xp, soon })`), an activity:
+  `.bt-task-row-ic`, `.bt-task-row-main` (`b`, `small`, `.bt-task-row-bar > i` with `--v`), and
+  `.bt-task-row-xp` ("+60 XP" over "2 / 3" or "Done ✓"). `.is-done` has a gold edge; `.is-soon` is dashed
+  and dimmed with a Soon badge. `.bt-task-list` lays them out two across (one at ≤ 640px).
+- **Timer: `.bt-timer`** (`timerHtml({ until, label, icon, locked, done })`,
+  `initTimers(root)`, `fmtLeft(ms)`; not `.bt-countdown`, the home hero's next-stream digits): the gold pill with a timer ("Resets in 7h 12m", "Ch 3 in 10d 14h"),
+  `--locked` grey. Ticks on the minute; when it runs out it shows `data-done` and fires
+  `bt:timer-done`. Nothing moves under reduced motion.
+- **Lock card: `.bt-lock-card`** (`lockCardHtml({ icon, title, text, href, label })`): the dashed gold upsell
+  card (icon tile, `b` + `p`, a button).
+- **Clock: `.bt-clock`** (`clockHtml({ streak, savers, cap, done })`): the streak number in
+  `.bt-clock-flame`, `.bt-clock-txt` with saver pips (`.bt-clock-savers i`, `.is-empty`), and a
+  `[data-clock-btn]` button; `.is-done` (and `aria-disabled`) once clocked in today.
+- **Path: `.bt-path`** (`pathHtml({ nodes })`): the story path, an `ol` of `.bt-path-node`s (`i` icon, `b`,
+  `small`) on a line that fills gold to the first node not done (`--fill` 0 to 1); `.is-done`, `.is-now`,
+  `.is-locked`. Scrolls sideways when narrow.
+
 **Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500 })`,
 returns dismiss). A short confirmation at the bottom of the screen, above the tab bar on phones
 (full width at ≤ 640px). It renders in its own `.bt-root.bt-toast-host` on `<body>`, like a modal
@@ -758,6 +777,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `shelf.js` · `timeline.js` · `deck.js` | `initShelves(root)` · `timelineHtml(opts)`, `initTimelines(root)` · `initDeck(deck, { onKey })`, `flyOut(card, kind)` |
 | `flip-card.js` · `chat.js` | `initFlipCards(root)` · `initChat(root)` |
 | `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
+| `season.js` · `countdown.js` | `taskRowHtml`, `lockCardHtml`, `clockHtml`, `pathHtml` · `timerHtml`, `initTimers(root)`, `fmtLeft(ms)` |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
