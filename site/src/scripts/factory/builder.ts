@@ -33,7 +33,7 @@ let tree: Tree;
 let typeList: Awaited<ReturnType<typeof A.loadTypes>> = [];
 let ideas: Idea[] = [];
 let open = "theme";
-const focus = { ch: 0, chapterId: "", campaignId: "", cad: "daily" as Cadence, waiting: false, inspire: [] as string[] };
+const focus = { ch: 0, chapterId: "", campaignId: "", cad: "daily" as Cadence, waiting: false, inspire: [] as string[], pvAs: "fan", pvDate: "" };
 
 onAccess(async (s) => {
   me = s;
@@ -260,7 +260,7 @@ const PANELS: Record<string, () => string> = {
     return head(7, "Review", "When stages 1 to 6 are green, a mod submits the season. An admin reviews it, previews it and schedules it.")
       + `<div class="ff-flowline">${flow}</div>` + checksHtml("review")
       + `<span class="bt-label">Plan map</span>${treeHtml()}`
-      + `<div class="ff-prev"><span class="bt-label">Preview as</span><span class="bt-chip bt-chip--small is-active" aria-disabled="true">Fan Club</span><span class="bt-chip bt-chip--small" aria-disabled="true">Sub Club</span><span class="bt-chip bt-chip--small" aria-disabled="true">Crew</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" disabled>Open preview</button><span class="ff-muted">Comes with the season pass</span></div>`
+      + previewRow()
       + `<div class="ff-prev">${acts}</div>`;
   },
   live() {
@@ -271,6 +271,13 @@ const PANELS: Record<string, () => string> = {
       + checksHtml("live");
   },
 };
+/** Review: open the season pass as a Fan Club, Sub Club or crew member on a chosen day (factoryPreview). */
+function previewRow() {
+  const s = tree.season;
+  if (!focus.pvDate) focus.pvDate = A.centralDate(Math.max(s.startsAt ?? Date.now(), Date.now()));
+  const href = `/factory?preview=${encodeURIComponent(s.id)}&as=${focus.pvAs}&date=${focus.pvDate}`;
+  return `<div class="ff-prev"><span class="bt-label" id="ff-pv-l">Preview as</span><span class="ff-sel" role="group" aria-labelledby="ff-pv-l">${([["fan", "Fan Club"], ["sub", "Sub Club"], ["crew", "Crew"]] as const).map(([k, l]) => `<button type="button" class="bt-chip bt-chip--small${focus.pvAs === k ? " is-active" : ""}" data-pv-as="${k}" aria-pressed="${focus.pvAs === k}">${l}</button>`).join("")}</span><input class="bt-input ff-pvdate" type="date" data-pv-date value="${focus.pvDate}" aria-label="Preview date"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="${href}" target="_blank" rel="noopener" data-pv-open>Open preview</a><span class="ff-muted">Opens the season pass as that member would see it that day.</span></div>`;
+}
 function renderPanel() {
   const panel = root.querySelector<HTMLElement>("[data-panel]")!;
   panel.innerHTML = PANELS[open]();
@@ -434,6 +441,7 @@ function bindEditor() {
     if (el.matches("[data-badge]")) badgeChanged(true);
     if (el.matches("[data-art]") && el.files?.[0]) void uploadArt(el.files[0]);
     if (el.matches("[data-waiting]")) { focus.waiting = el.checked; renderDrawer(); }
+    if (el.matches("[data-pv-date]") && el.value) { focus.pvDate = el.value; renderPanel(); }
   });
   root.addEventListener("keydown", (e) => {
     const el = e.target as HTMLInputElement;
@@ -457,6 +465,7 @@ function bindEditor() {
       renderDrawer(); return;
     }
     if ((b = q("[data-cad]"))) { focus.cad = b.dataset.cad as Cadence; renderDrawer(); return; }
+    if ((b = q("[data-pv-as]"))) { focus.pvAs = b.dataset.pvAs!; renderPanel(); return; }
     if ((b = q("[data-tag-del]"))) { const tags = (tree.season.tags || []).filter((x) => x !== b!.dataset.tagDel); tree.season.tags = tags; renderPanel(); persist("season", "update", { tags }).catch(() => {}); return; }
     if (q("[data-add-chapter]")) return addChapter();
     if ((b = q("[data-del]"))) { const [node, id] = b.dataset.del!.split(":"); return deleteNode(node, id); }

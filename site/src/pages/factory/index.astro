@@ -1,0 +1,25 @@
+---
+// /factory: the season pass (docs/specs/fun-factory.md §8; fun-factory-screens.html screen 1). Members
+// only (FactoryLayout's gate). The hero (art, chapter and progress bars, season XP, rank, days left, the
+// next chapter's timer, Clock in), chapter chips, then Today, This week, the Story path, Events, Sub Club
+// (a lock card for Fan Club), Crew (mods and admins) and Milestones as task rows, with the leaderboard,
+// the next streak badge and "Lately" beside them. Off-season and ended-season states come from the
+// public summary. ?preview=<seasonId>&as=fan|sub|crew&date=YYYY-MM-DD renders factoryPreview for mods
+// and admins. Filled by scripts/factory/pass.ts.
+import FactoryLayout from "../../layouts/FactoryLayout.astro";
+import TrophyOrder from "../../components/trophies/TrophyOrder.astro";
+---
+<FactoryLayout title="Season pass · Fun Factory" description="Your Fun Factory season: daily jobs, weekly missions and the season's story." membersOnly section="season" wide>
+  <div class="bt-zone ff-wrap ff-pass-page" data-pass aria-busy="true">
+    <div class="ff-pass-skel" aria-hidden="true">
+      <span class="bt-skeleton ff-skel-hero"></span>
+      <span class="bt-skeleton ff-skel-line"></span>
+      <div class="ff-pass-cols"><span class="bt-skeleton ff-skel-card"></span><span class="bt-skeleton ff-skel-card"></span></div>
+    </div>
+  </div>
+  <TrophyOrder />
+</FactoryLayout>
+
+<script>
+  import "../../scripts/factory/pass";
+</script>
