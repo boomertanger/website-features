@@ -238,7 +238,7 @@
 .bt-root:not(#_) .ff-lbrow.is-you { border-color: rgba(var(--bt-gold-rgb), 0.5); background: rgba(var(--bt-gold-rgb), 0.06); }
 .bt-root:not(#_) .ff-lbrow em { margin-left: auto; color: var(--bt-text-muted); font-style: normal; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .ff-rk { flex: none; width: 24px; color: var(--bt-text-muted); font-weight: 900; font-variant-numeric: tabular-nums; }
-.bt-root:not(#_) .ff-nomedal { flex: none; width: 22px; height: 22px; border-radius: 50%; background: var(--bt-surface-2); }
+.bt-root:not(#_) .ff-nomedal { flex: none; width: var(--s, 22px); height: var(--s, 22px); border-radius: 50%; background: var(--bt-surface-2); }
 .bt-root:not(#_) .ff-nomedal--lg { width: 28px; height: 28px; }
 .bt-root:not(#_) .ff-gap { color: var(--bt-text-faint); text-align: center; line-height: 1; }
 .bt-root:not(#_) .ff-next { display: flex; align-items: center; gap: 12px; }
@@ -259,6 +259,23 @@
 .bt-root:not(#_) .ff-podium a { color: var(--bt-text); font-weight: 700; text-decoration: none; }
 .bt-root:not(#_) .ff-podium em { margin-left: auto; color: var(--bt-text-muted); font-style: normal; font-variant-numeric: tabular-nums; }
 
+/* ---- Leaderboard (/factory/leaderboard) ---- */
+.bt-root:not(#_) .ff-lb-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
+.bt-root:not(#_) .ff-lb-head > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+.bt-root:not(#_) .ff-lb-head .bt-title, .bt-root:not(#_) .ff-lb-head p { margin: 0; }
+.bt-root:not(#_) .ff-lb-title { margin: 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .ff-lb-title .ff-muted { font-weight: 600; }
+.bt-root:not(#_) .ff-lb-page .bt-board-who .bt-medal, .bt-root:not(#_) .ff-lb-page .bt-board-who .ff-nomedal { flex: none; }
+.bt-root:not(#_) .ff-lb-you { margin: 0; }
+.bt-root:not(#_) .ff-lb-you b { color: var(--bt-text); }
+.bt-root:not(#_) .ff-lb-you a { color: var(--bt-primary-soft); }
+.bt-root:not(#_) .ff-lb-podium { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .ff-lb-place { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid color-mix(in srgb, var(--rk) 45%, var(--bt-border)); border-radius: var(--bt-radius-lg); background: radial-gradient(80% 60% at 50% 0%, color-mix(in srgb, var(--rk) 14%, transparent), transparent 70%), var(--bt-surface); text-align: center; min-width: 0; }
+.bt-root:not(#_) .ff-lb-place > b { color: var(--rk); font-size: var(--bt-text-xl); font-weight: 900; }
+.bt-root:not(#_) .ff-lb-cup { font-size: 30px; line-height: 1; }
+.bt-root:not(#_) .ff-lb-place .bt-board-who { max-width: 100%; justify-content: center; font-weight: 700; }
+.bt-root:not(#_) .ff-lb-place .bt-badge { max-width: 100%; white-space: normal; }
+
 @container bt (max-width: 1024px) {
   .bt-root:not(#_) .ff-hero { grid-template-columns: 100px minmax(0, 1fr); }
   .bt-root:not(#_) .ff-hero-art { width: 100px; font-size: 44px; }
@@ -270,6 +287,8 @@
   .bt-root:not(#_) .ff-hero-art { width: 72px; font-size: 32px; border-radius: 16px; }
   .bt-root:not(#_) .ff-chaptabs { flex-wrap: nowrap; overflow-x: auto; margin: 0 -14px; padding: 0 14px 4px; scrollbar-width: none; }
   .bt-root:not(#_) .ff-chaptabs .bt-chip { flex: none; }
+  .bt-root:not(#_) .ff-lb-podium { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .ff-lb-place { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; text-align: left; padding: 12px; }
 }
 
 /* ---- Builder guide (/factory/builder/guide; TocLayout supplies the columns and side menu) ---- */
