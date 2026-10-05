@@ -1,0 +1,245 @@
+---
+// /factory/how-it-works: the Fun Factory's public pitch page (docs/specs/fun-factory.md §13a;
+// docs/design/mockups/fun-factory-how-it-works.html). Same frame as the Arcade's and the Trophy Room's
+// How it works: the TocLayout side menu, ghost chapter headings, the House rules placard and Ask BOOMBOT.
+// Built from the kit's season pieces (.bt-task-row, .bt-timer, .bt-clock, .bt-medal). The streak ladders
+// come from the starter catalog at build time (functions/data/trophy-room-badges.json). The only
+// Firestore read is the public summary (scripts/factory/how.ts), so the hero shows the real season; with
+// none, it keeps the example season, marked Example. The example time card and the example hidden medal
+// work locally and save nothing. Visitors get Join free; members get Open this season.
+import FactoryLayout from "../../layouts/FactoryLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import { medalHtml } from "../../../../shared/ui/medal.js";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { taskRowHtml, clockHtml } from "../../../../shared/ui/season.js";
+import catalog from "../../../../functions/data/trophy-room-badges.json";
+
+const JOIN_TITLE = "Join to start your shift";
+const example = `<span class="bt-badge bt-badge--gray ff-hw-example">Example</span>`;
+const medal = (emoji: string, rarity: number, size?: number) => medalHtml({ emoji, rarity, size });
+const ladder = (kind: "day" | "stream") => catalog.badges
+  .filter((b) => b.id.startsWith(`streak-${kind}-`))
+  .map((b) => ({ n: Number(b.id.split("-").pop()), name: b.name, rarity: b.rarity, emoji: b.emoji }))
+  .sort((a, b) => a.n - b.n);
+const DAILY = ladder("day"), STREAM = ladder("stream");
+const EX_STREAK = 12;
+
+const CHAPTERS = [["Ch 1 · The Awakening", "Oct 5 to 25", "is-done"], ["Ch 2 · The Rift Opens", "Oct 26 to Nov 15", "is-now"], ["Ch 3 · Unlocks Nov 16", "4 weeks", "is-locked"], ["Ch 4 · Unlocks Dec 14", "3 weeks", "is-locked"]];
+const CAD = [
+  ["☀️", "Daily", "blue", "Resets every day", "Quick jobs: clock in, play a round, add a game to your wishlist. A couple of minutes.", "Daily Ops"],
+  ["📅", "Weekly", "gold", "Resets Mondays", "Bigger jobs for the week: three Splat runs, a personal best, two wishlist votes.", "Weekly Rotations"],
+  ["📖", "Story", "rank-3", "Open all season", "The season's theme as a path of missions. Finish it for the season badge.", "Investigate the Signal"],
+  ["🏔", "Milestone", "pink", "Open all season", "Long counts for the dedicated: 30 clock-ins, 25 runs, every medal found.", "The Long Haul"],
+  ["⚡", "Event", "teal", "A few days only", "Surprise windows: a Halloween hunt, a game night, an anniversary.", "Full Moon Event"],
+];
+const AUD = [["👥", "Everyone", "gray", "Most campaigns. Every member, free or paid."], ["⭐", "Sub Club", "gold", "Extra campaigns with more ways to earn. Fan Club members see them locked."], ["🛡", "Crew", "teal", "Missions for mods and admins: patrols, recaps, events."]];
+const ACTS = [
+  { icon: "⏱", title: "Clock in", sub: "Daily Ops", n: 1, of: 1, xp: 10 },
+  { icon: "🩸", title: "Splat run", sub: "Weekly · finish Tap the Splat 3 times", n: 2, of: 3, xp: 60 },
+  { icon: "🗺", title: "Site tour", sub: "Storyline · visit 6 sections", n: 6, of: 6, xp: 100 },
+  { icon: "🏅", title: "Hidden medals", sub: "Storyline · find all 5", n: 3, of: 5, xp: 150 },
+  { icon: "⭐", title: "Wishlist voter", sub: "Weekly · want 2 wishlist games", n: 1, of: 2, xp: 50 },
+  { icon: "🏔", title: "Month of shifts", sub: "Milestone · clock in on 30 days", n: 12, of: 30, xp: 250 },
+  { icon: "📺", title: "Check in to the stream", sub: "Needs the Control Room", soon: true },
+  { icon: "🗳", title: "Pick the games", sub: "Needs the Schedule Planner", soon: true },
+];
+const PUNCH = [["Mon", "is-on"], ["Tue", "is-on"], ["Wed", "is-save"], ["Thu", "is-today"], ["Fri", ""], ["Sat", ""], ["Sun", ""]];
+const POD = [[4, "@vhs_ghost", 70], [2, "@gbo", 118], [1, "@nightjar", 150], [3, "@skullkid", 96], [5, "@mothman", 52]] as const;
+const ENDS = [["🏆", "Top 3", "win gold, silver and bronze season trophies."], ["🎖", "Top 10", "get a season plaque on their profile."], ["🏅", "Finish the story", "and the season badge is yours, wherever you rank."], ["⚡", "Your lifetime XP and level", "keep everything you earned. Only the race resets."]];
+const PLANS = [
+  { k: "", t: "Everyone", price: "Fan Club, free", tag: ["gray", "Free"], items: ["The whole season: daily, weekly, story, milestone and event campaigns", "Clock in, streaks and streak savers (hold 2)", "The season leaderboard and its trophies", "Hidden medal hunts"], foot: "Every member starts here." },
+  { k: "sub", t: "Sub Club", price: "$7.99 a month", tag: ["gold", "Paid"], plus: "Everything for everyone, plus", items: ["Sub Club campaigns each chapter", "Hold up to 3 streak savers", "Early looks at new Arcade versions"], foot: "Same XP per task as everyone else." },
+  { k: "crew", t: "Crew", price: "Mods and admins", tag: ["teal", "Invite only"], plus: "Everything in Sub Club, plus", items: ["Crew missions: patrols, recaps, events", "Mods race on the season board too", "Mod MVP on the crew board"], foot: "Admins plan and publish seasons and stay off the boards." },
+];
+const RULES = [
+  ["🔒", "The server counts", "Progress only counts what the site's server sees. Nothing done in a browser can add XP."],
+  ["⏳", "No backfill", "Activities count from the moment they open, not before."],
+  ["⚖️", "Same XP for everyone", "Plans add campaigns, never more XP for the same task."],
+  ["🧊", "Live targets are locked", "Once a chapter is live, its targets don't change mid-race."],
+  ["🕛", "One clock", "Every reset is on Central time: daily at midnight, weekly on Monday."],
+  ["🤝", "Play it straight", "Scripts, alt accounts and farming get removed, and so does the XP."],
+];
+const FAQS = [
+  ["I joined halfway through. Can I still catch up?", "Yes. Story and milestone campaigns from earlier chapters stay open until the season ends. Only daily and weekly jobs expire with their chapter."],
+  ["What happens to my XP when the season ends?", "Your season XP freezes for the final standings, then the next season starts everyone at zero. Your lifetime XP, level, badges and trophies keep everything."],
+  ["I missed a day. Is my streak gone?", "Not if you have a streak saver. You earn one for every 7 days in a row, and a missed day uses one automatically."],
+  ["When do things reset?", "Daily jobs reset at midnight Central time. Weekly jobs reset Monday at midnight Central."],
+  ["Why can't I see the next chapter yet?", "Chapters stay secret until they unlock. You'll see a countdown on the season pass."],
+  ["Can mods win the season?", "Yes. Mods race on the season leaderboard like everyone else. Admins run the seasons, so they stay off the boards."],
+];
+const NAV: [string, string][] = [["s-season", "How a season works"], ["s-camp", "Campaigns"], ["s-acts", "Activities"], ["s-clock", "Clock in and streaks"], ["s-hunt", "Hidden medals"], ["s-lb", "Season leaderboard"], ["s-plan", "Your plan"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
+const chapter = (n: number, id: string, title: string, lede?: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const rung = (cur: number) => (b: { n: number; name: string; rarity: number; emoji: string }) => `<li class="ff-hw-rung${b.n > cur ? " is-locked" : ""}">${medal(b.emoji, b.rarity, 52)}<span>${b.n}</span><b>${b.name}</b></li>`;
+const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
+---
+<FactoryLayout title="How the Fun Factory works" description="Seasons, campaigns, daily clock-ins, streaks, hidden medals and the season leaderboard: how the Fun Factory works on Boomertanger." section="how">
+  <TocLayout items={NAV}>
+    <div class="ff-hw">
+      <section class="ff-hw-hero" aria-labelledby="h-hero">
+        <div>
+          <span class="ff-kicker">Fun Factory</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Clock in. Run missions. Climb the season.</h1>
+          <p>Every few months a new season opens with its own theme, missions and badges. Do a few things each day, finish the weekly jobs, follow the season's story, and race everyone else up the season leaderboard.</p>
+          <div class="ff-hw-acts">
+            <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+            <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/factory">Open this season</a>
+            <a class="bt-btn bt-btn--secondary" href="#s-season">How a season works</a>
+          </div>
+        </div>
+        <div class="ff-hw-pass" data-hw-pass aria-label="Example season pass" role="group">
+          <div class="ff-hw-pass-top"><div><b>Season 01 · Dark Signal</b><span>Chapter 2 of 4 · The Rift Opens</span></div><Fragment set:html={example} /></div>
+          <div class="ff-chaps" aria-hidden="true"><i class="is-done"></i><i class="is-now" style="--v:45%"></i><i></i><i></i></div>
+          <div class="ff-hw-xp"><div class="ff-hw-xp-top"><b>Season XP 2,340</b><span>Rank #14 of 612</span></div><div class="bt-task-row-bar" role="img" aria-label="58% of the way to the next chapter"><i style="--v:58%"></i></div></div>
+          <Fragment set:html={clockHtml({ streak: EX_STREAK, savers: 1, cap: 2 })} />
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-season" aria-labelledby="h-season">
+        <Fragment set:html={chapter(1, "h-season", "How a season works", "A season lasts about three months. It's split into chapters that unlock one by one, each chapter has campaigns, and each campaign is a set of activities.")} />
+        <div class="ff-hw-nest">
+          <div class="ff-hw-box ff-hw-box--season" role="img" aria-label="A season holds chapters; a chapter holds campaigns; a campaign holds activities.">
+            <span class="ff-hw-box-lab">📡 Season 01 · Dark Signal</span>
+            <div class="ff-hw-box-row">
+              <div class="ff-hw-box ff-hw-box--chap"><span class="ff-hw-box-lab">Ch 2 · The Rift Opens</span>
+                <div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">Daily Ops</span><span class="ff-hw-act is-done">Clock in</span><span class="ff-hw-act">Play a round</span></div>
+                <div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">Storyline</span><span class="ff-hw-act is-done">Site tour</span><span class="ff-hw-act is-done">Link up</span><span class="ff-hw-act">Hidden medals</span></div>
+              </div>
+              <div class="ff-hw-box ff-hw-box--chap is-locked"><span class="ff-hw-box-lab">Ch 3 · 🔒</span><div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">???</span><span class="ff-hw-act">Unlocks Nov 16</span></div></div>
+              <div class="ff-hw-box ff-hw-box--chap is-locked"><span class="ff-hw-box-lab">Ch 4 · 🔒</span><div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">???</span><span class="ff-hw-act">Unlocks Dec 14</span></div></div>
+            </div>
+          </div>
+          <ul class="ff-hw-legend">
+            <li><span aria-hidden="true">📡</span><b>Season<small>about 13 weeks</small></b><p>The big theme. Season XP, the season leaderboard and the season badge belong to it.</p></li>
+            <li><span aria-hidden="true">📖</span><b>Chapters<small>2 to 5 a season</small></b><p>Unlock on set dates, like content drops. Names stay hidden until they unlock.</p></li>
+            <li><span aria-hidden="true">🗂</span><b>Campaigns<small>a few per chapter</small></b><p>Groups of activities: daily, weekly, story, milestone or event.</p></li>
+            <li><span aria-hidden="true">✅</span><b>Activities<small>the things you do</small></b><p>One clear task each, with a target and XP. Done means done: the XP lands right away.</p></li>
+          </ul>
+        </div>
+        <div class="ff-hw-tl">
+          <div class="ff-hw-tl-head"><b>Season 01 calendar <Fragment set:html={example} /></b><span>Daily reset 12:00 am Central · weekly reset Monday 12:00 am Central</span></div>
+          <div class="ff-hw-tl-bar">{CHAPTERS.map(([t, d, c]) => <div class={`ff-hw-tl-seg ${c}`}><b>{t}</b><span>{d}</span></div>)}</div>
+          <div class="ff-hw-tl-ticks"><span>Oct 5</span><span>Nov 5 · today</span><span>Jan 4</span></div>
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-camp" aria-labelledby="h-camp">
+        <Fragment set:html={chapter(2, "h-camp", "Campaigns", "Five kinds, each on its own clock. A few minutes a day keeps you moving; the story and milestones are for the long run.")} />
+        <div class="ff-hw-cad">
+          {CAD.map(([ic, t, c, r, d, ex]) => <div class="ff-hw-tile" style={`--c:var(--bt-${c})`}><span class="ff-hw-ic" aria-hidden="true">{ic}</span><h3>{t}</h3><span class="ff-reset" style={`--c:var(--bt-${c})`}>{r}</span><p>{d}</p><span class="ff-hw-small">e.g. {ex}</span></div>)}
+        </div>
+        <div class="ff-hw-aud">
+          {AUD.map(([ic, t, c, d]) => <div><span class="ff-hw-ic ff-hw-ic--sm" style={`--c:var(--bt-${c})`} aria-hidden="true">{ic}</span><div><b>{t}</b><p>{d}</p></div></div>)}
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-acts" aria-labelledby="h-acts">
+        <Fragment set:html={chapter(3, "h-acts", "Activities", "Real things around the site: play, wishlist, explore. New kinds appear as new parts of the site open.")} />
+        <div class="bt-task-list ff-hw-acts-list" set:html={ACTS.map((a) => taskRowHtml(a)).join("")} />
+        <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: want a game, finish a run, clock in.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-clock" aria-labelledby="h-clock">
+        <Fragment set:html={chapter(4, "h-clock", "Clock in and streaks", "Two streaks: one for days, one for streams. Both carry over from season to season, and both earn badges.")} />
+        <div class="ff-hw-two">
+          <div class="ff-hw-timecard" data-hw-card>
+            <h3>⏱ Daily streak <Fragment set:html={example} /></h3>
+            <p>Press <b>Clock in</b> once a day. Every 7 days in a row earns a streak saver, which covers a missed day automatically. Hold up to 2, or 3 with Sub Club.</p>
+            <ol class="ff-hw-punch" aria-label="This week's time card">{PUNCH.map(([d, c]) => <li class={c}><i aria-hidden="true"></i>{d}<span class="bt-sr-only">{c === "is-on" ? ": clocked in" : c === "is-save" ? ": covered by a saver" : c === "is-today" ? ": today" : ""}</span></li>)}</ol>
+            <Fragment set:html={clockHtml({ streak: EX_STREAK, unit: "days", title: "Best streak: 31 days", sub: nextDaily ? `Next badge: ${nextDaily.name} in ${nextDaily.n - EX_STREAK} days` : "" })} />
+          </div>
+          <div class="ff-hw-sc">
+            <h3>📺 Stream streak <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></h3>
+            <p>Streams in a row you were at. Only scheduled streams can break it; a surprise stream adds to it if you're there.</p>
+            <ol class="ff-hw-ways"><li><b>Linked Twitch:</b> in chat for at least 15 minutes.</li><li><b>Stream code:</b> enter the code shown on stream. It changes every 15 minutes.</li><li><b>Live drop:</b> claiming one counts too.</li></ol>
+            <p>One stream saver for every 5 streams in a row, up to 2.</p>
+          </div>
+        </div>
+        <div class="ff-hw-ladder"><div class="ff-hw-ladder-top"><b>Daily streak badges</b><span>{DAILY.length} badges, {DAILY[0]?.n} to {DAILY.at(-1)?.n} days</span></div><ol class="ff-hw-rungs" set:html={DAILY.map(rung(EX_STREAK)).join("")} /></div>
+        <div class="ff-hw-ladder"><div class="ff-hw-ladder-top"><b>Stream streak badges</b><span>{STREAM.length} badges, {STREAM[0]?.n} to {STREAM.at(-1)?.n} streams in a row</span></div><ol class="ff-hw-rungs" set:html={STREAM.map(rung(0)).join("")} /></div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-hunt" aria-labelledby="h-hunt">
+        <Fragment set:html={chapter(5, "h-hunt", "Hidden medals", "Some activities hide medals around the site. Find them all to finish the hunt.")} />
+        <div class="ff-hw-hunt">
+          <div class="ff-hw-fake" role="group" aria-label="Example page with a hidden medal">
+            <i></i><i></i><i></i><i></i>
+            <div class="ff-hw-fake-cards"><span></span><span></span><span></span></div>
+            <span class="ff-hw-found" data-hw-found role="status"></span>
+            <button type="button" class="ff-hw-hidden" data-hw-medal aria-label="A hidden medal. Click to claim it." set:html={medal("📡", 3, 30)} />
+          </div>
+          <div class="ff-hw-hunt-txt">
+            <p>Medals are small, and they can be on any page: the Game Vault, the Arcade, the schedule, even the footer. Each hunt gives a hint for every medal.</p>
+            <p class="ff-hw-hint">"Medal 3 hides where the games are kept." Try the bottom corner of the example page.</p>
+            <p>Every season's hunt is new. Your progress shows on the activity, like 3 of 5.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-lb" aria-labelledby="h-lb">
+        <Fragment set:html={chapter(6, "h-lb", "Season leaderboard", "Everything you finish this season adds season XP. Season XP starts at zero every season, so everyone gets a fresh race.")} />
+        <div class="ff-hw-lb">
+          <div class="ff-hw-pod" role="img" aria-label="Example top five: @nightjar first, @gbo second, @skullkid third, @vhs_ghost fourth, @mothman fifth">
+            {POD.map(([r, n, h]) => <div><em>{n}</em><i style={`--h:${h}px;--c:var(--bt-rank-${r})`}>{r}</i></div>)}
+            <Fragment set:html={example} />
+          </div>
+          <ul class="ff-hw-ends">{ENDS.map(([ic, b, t]) => <li><span aria-hidden="true">{ic}</span><span><b>{b}</b> {t}</span></li>)}</ul>
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-plan" aria-labelledby="h-plan">
+        <Fragment set:html={chapter(7, "h-plan", "Your plan", "Everyone gets the full season. Sub Club and the crew get extra campaigns, never extra XP for the same task.")} />
+        <div class="ff-hw-plans">
+          {PLANS.map((p) => (
+            <div class:list={["ff-hw-plan", p.k && `ff-hw-plan--${p.k}`]}>
+              <div class="ff-hw-plan-top"><h3>{p.t}</h3><span class={`bt-badge bt-badge--${p.tag[0]}`}>{p.tag[1]}</span></div>
+              <span class="ff-hw-price">{p.price}</span>
+              <ul>{p.plus && <li class="is-plus">{p.plus}</li>}{p.items.map((i) => <li>{i}</li>)}</ul>
+              {p.k === "" && <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>}
+              <span class="ff-hw-small">{p.foot}</span>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-fair" aria-labelledby="h-fair">
+        <Fragment set:html={chapter(8, "h-fair", "Fair play", "The rules every season follows.")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {RULES.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ff-hw-sec" id="s-faq" aria-labelledby="h-faq">
+        <Fragment set:html={chapter(9, "h-faq", "FAQ")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ff-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`ff-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`ff-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ff-hw-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Your shift starts now</h2>
+        <p class="bt-when-visitor">Join free, clock in, and your first XP lands today.</p>
+        <p class="bt-when-signed-in">Clock in, pick a job, and your first XP lands today.</p>
+        <div class="ff-hw-acts">
+          <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/factory">Open this season</a>
+          <a class="bt-btn bt-btn--secondary" href="/factory/leaderboard">See the leaderboard</a>
+        </div>
+      </section>
+    </div>
+  </TocLayout>
+</FactoryLayout>
+
+<script>
+  import "../../scripts/factory/how";
+</script>
