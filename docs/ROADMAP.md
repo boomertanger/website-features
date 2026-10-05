@@ -1,12 +1,13 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-10-04. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-05. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
 |---|---|---|---|
 | 1 | Boom Arcade (step 1: foundations + Tap the Splat v1 for real) | Done (step 1) | Arcade |
 | 2 | 404 page | In progress | 404 page |
+| 2b | Goal Tracker (needed for relaunch) | In progress | Goal Tracker |
 | 3 | Game Vault | In progress | Games and streams |
 | 4 | Schedule Planner | Later | Games and streams |
 | 5 | Live Beacon and Control Room | Later | Games and streams |
@@ -52,6 +53,12 @@ Kickoff: "Start workstream 1 (Boom Arcade) from docs/ROADMAP.md."
 ### 2. 404 page
 Goal: an enjoyable, on-brand "page not found" page (lost firefly, dead bug zapper, a way home, "Report this broken link" into Bug Zapper).
 Kickoff: see the 404 kickoff message, or "Start workstream 2 (404 page) from docs/ROADMAP.md."
+
+### 2b. Goal Tracker
+Goal: the plan to become Content Creator of the Year (The Game Awards 2027) laid out for members at /goals: the North Star, the road of levels, relaunch readiness, 2027 goals, live numbers and how to help. The owner edits a draft at /admin/goals and members see it when he presses Publish. Needed for the relaunch (the readiness meter and countdown are on the gate).
+Spec: [docs/specs/goal-tracker.md](specs/goal-tracker.md) (confirmed 2026-10-04); starting plan `docs/specs/goal-tracker-seed.json`; mockup `docs/design/mockups/goal-tracker.html` (road option 1, Level select). Parts: 1 docs, 2 kit (`.bt-road`, `.bt-tree`), 3 backend, 4 members page, 5 admin page.
+Status: in progress.
+Kickoff: "Start workstream 2b (Goal Tracker) from docs/ROADMAP.md."
 
 ### 3. Game Vault
 Goal: every horror game on the channel at /games (boomertanger.games redirects here): cover art, tags, the owner's rating, how often and when it was last streamed, status (playing, finished, abandoned, wishlist), admin editing. Also design the stream object here (see above), since games and streams reference each other. Member game suggestions and votes are built with the Schedule Planner.
