@@ -1,33 +1,29 @@
-// /games, the Vault page (docs/specs/game-vault.md §7, §9; round 2 A65 + B34 + C56):
-// the vault door hero that opens on what Boomer's playing (once per tab, a new tab always plays it;
-// click it or press Enter on it to play it again; ?door=replay forces it; under reduced motion it's
-// simply open), the ledger, search with the command panel (matched letters lit,
-// suggested filters, an Add row, full keyboard, "/" focuses it), the status seg nav, Tags /
-// Length menus, Community picks, removable tokens, sort, state in the URL, the shelves (Now
-// playing, Most wanted, Boomer's best, The ones that got away) and then the All games grid (round 3
-// S1), just the gliding grid when searching or filtering, and the states (loading, empty, no
-// matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
-// there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything,
-// the 5 newest wishlist games and a nudge to be the first. Leaving for a game stores the list you
-// were in (scripts/vault/context.ts) for the game page's Back to the Vault and previous / next, and
-// coming back that way puts you at the same scroll position.
+// /games, the Vault page (docs/specs/game-vault.md §7, §9; round 2 A65 + B34 + C56, round 3, and the
+// page redesign game-vault-page.html V3): the hero (a drifting wall of real covers; the big search with
+// its match strip and hint; the counts; the Now playing spotlight, or the top Most wanted game when
+// nothing is playing), the status seg nav, Tags / Length menus, Community picks, removable tokens, sort,
+// state in the URL, the shelves (Now playing, Most wanted, Boomer's best, The ones that got away) and then
+// the All games grid, just the gliding grid when searching or filtering, and the states (loading, empty,
+// no matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
+// there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything, the 5
+// newest wishlist games and a nudge to be the first. Searching lights the matching covers on the wall.
+// Leaving for a game stores the list you were in (scripts/vault/context.ts) for the game page's Back to
+// the Vault and previous / next, and coming back that way puts you at the same scroll position.
 import { buildIndex, search } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
-import { initCmd, litText } from "../../../../shared/ui/cmd.js";
 import { initShelves } from "../../../../shared/ui/shelf.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { flipSwap } from "../../../../shared/ui/flip.js";
 import { onAuth, getAuthState } from "../../lib/auth";
 import { loadVault, type VCard, type Status, type Vault } from "./data";
-import { vaultIcon, doorParts, I } from "./art";
-import { esc, badge, vcard, tag, hours, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS } from "./ui";
+import { vaultIcon, I } from "./art";
+import { esc, badge, vcard, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS } from "./ui";
 import { wantButton, initWants } from "./wants";
 import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 
 const root = document.querySelector<HTMLElement>("[data-vault]");
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
-const DOOR_KEY = "bt-vault-door";
 const SUB = "Every horror game on the channel: what Boomer's playing, what he finished, what beat him and what's next.";
 const SORTS: [string, string][] = [["last", "Last streamed"], ["most", "Most streamed"], ["score", "Boomer's score"], ["wanted", "Most wanted"], ["new", "Newest"], ["az", "A–Z"]];
 
@@ -99,22 +95,63 @@ function remember() {
 }
 
 // ---------- pieces ----------
-function doorHero() {
+const EXAMPLES = ["granny", "vr", "frictional"];
+/** The wall's covers, in 8 columns that each loop (twice the height they scroll, so the drift shows no gap). */
+function wallHtml() {
+  const withArt = V.games.filter((g) => g.cover);
+  if (withArt.length < 8) return "";   // too few to make a wall: the hero stays plain
+  return `<div class="gvh-wall" aria-hidden="true">${Array.from({ length: 8 }, (_, c) => {
+    const col = withArt.filter((_, i) => i % 8 === c);
+    const copies = col.length >= 6 ? 2 : 4;
+    return `<div class="gvh-col" style="--d:${34 + (c % 4) * 6}s">${Array.from({ length: copies }, () => col).flat().map((g) => `<span class="gvh-c" data-slug="${esc(g.slug)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</span>`).join("")}</div>`;
+  }).join("")}</div>`;
+}
+/** The spotlight: what's playing (the latest, with the second tucked behind), else the top Most wanted game. */
+function spotlight() {
   const playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
-  const g = playing[0] || null;
-  const { plate, door } = doorParts();
-  const label = g ? `The vault door swings open on what Boomer is playing now: ${g.title}` : "The vault door";
-  const inside = `<div class="gv-door-inside">${coverHtml(g?.cover ?? null, { alt: "" })}<span class="gv-door-tag">${g ? badge("playing") : tag("Nothing on right now")}</span></div>`;
-  const totals = V.games.reduce((a, x) => ({ streams: a.streams + x.streams, minutes: a.minutes + x.minutes }), { streams: 0, minutes: 0 });
-  const fin = count("finished"), h = hours(totals.minutes);
-  const ledger = `<div class="gv-ledger"><div><b data-count-to="${V.games.length}">${V.games.length}</b><small>games in the Vault</small></div><div><b data-count-to="${totals.streams}">${totals.streams}</b><small>streams</small></div><div><b data-count-to="${h}" data-suffix=" h">${h} h</b><small>on stream</small></div><div><b data-count-to="${fin}">${fin}</b><small>finished</small></div></div>`;
-  const now = playing.length
-    ? `<p class="gv-nowline"><span>Now playing:</span>${playing.slice(0, 3).map((x, i) => `${i ? `<span>${i === playing.slice(0, 3).length - 1 ? "and" : ","}</span>` : ""}<a href="/games/${encodeURIComponent(x.slug)}">${esc(x.title)}</a>`).join("")}</p>` : "";
-  return `<section class="gv-vaulthero"><div class="gv-door-wrap" data-door role="button" tabindex="0" aria-label="${esc(`${label}. Press to open it again.`)}">${plate}${inside}${door}</div><div class="gv-vaulthero-copy"><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>${ledger}${now}</div></section>`;
+  const g = playing[0] || mostWantedGames()[0];
+  if (!g) return { html: "", kind: "" };
+  const also = playing[1];
+  const label = playing[0] ? "Now playing" : "Most wanted";
+  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "member")} want it</small>` : ""}</div></div>`;
+  return { html, kind: playing[0] ? "playing" : "wanted" };
+}
+function heroCounts() {
+  const n = [[V.games.length, "games in the Vault"], [count("finished"), "finished"], [V.games.filter((g) => g.tags.includes("VR")).length, "played in VR"]] as const;
+  const shown = n.filter(([v]) => v > 0);
+  return `<div class="vh-counts"${shown.length ? "" : " hidden"}>${shown.map(([v, l]) => `<div><b data-count-to="${v}">${v}</b><small>${l}</small></div>`).join("")}</div>`;
+}
+function hero() {
+  const sp = spotlight();
+  const ex = EXAMPLES.filter((w) => search(index, w, { limit: 1 }).length);
+  return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">Game Vault</span><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>
+  <label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q data-hero-search autocomplete="off" spellcheck="false" placeholder="Search ${V.games.length} games…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label>
+  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}</div>${sp.html}</div></section>`;
+}
+/** Searching: the wall pauses, non-matches grey out, matches light up, the strip shows up to 7, the hint counts. */
+function renderHero() {
+  const box = root!.querySelector<HTMLElement>("[data-hero]");
+  if (!box) return;
+  const q = st.q.trim();
+  const strip = box.querySelector<HTMLElement>("[data-strip]")!, hint = box.querySelector<HTMLElement>("[data-hint]")!;
+  box.classList.toggle("is-searching", !!q);
+  if (!q) {
+    strip.innerHTML = "";
+    const ex = (hint.dataset.examples || "").split("|").filter(Boolean);
+    hint.innerHTML = ex.length ? `Try ${ex.join(", ")}.` : "Search by title, developer or tag.";
+    box.querySelectorAll(".gvh-c.is-hit").forEach((c) => c.classList.remove("is-hit"));
+    return;
+  }
+  const hits = list();
+  const slugs = new Set(hits.map((g) => g.slug));
+  box.querySelectorAll<HTMLElement>(".gvh-c").forEach((c) => c.classList.toggle("is-hit", slugs.has(c.dataset.slug || "")));
+  strip.innerHTML = hits.slice(0, 7).map((g, i) => `<a href="/games/${encodeURIComponent(g.slug)}" style="--i:${i}" title="${esc(g.title)}" aria-label="${esc(g.title)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</a>`).join("");
+  const visitor = getAuthState().status === "signedOut";
+  hint.innerHTML = hits.length ? `<b>${hits.length}</b> ${hits.length === 1 ? "game" : "games"}. Press Enter to jump to ${hits.length === 1 ? "it" : "them"}.` : `Nothing for “${esc(q)}”. Press Enter to ${visitor ? "join free and add it" : "add it"}.`;
 }
 
 function tools() {
-  return `<div class="gv-tools"><div class="gv-searchwrap"><label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q autocomplete="off" spellcheck="false" placeholder="Search games, developers, tags…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label><div data-cmd></div></div><select class="bt-select" data-sort aria-label="Sort">${SORTS.map(([k, l]) => `<option value="${k}"${st.sort === k ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+  return `<div class="gv-tools"><select class="bt-select" data-sort aria-label="Sort">${SORTS.map(([k, l]) => `<option value="${k}"${st.sort === k ? " selected" : ""}>${l}</option>`).join("")}</select></div>
   <div class="gv-segrow"><nav class="bt-seg-nav" aria-label="Status" data-seg>${(["all", ...STATUS_KEYS] as State["status"][]).map((s) => `<a href="?status=${s}" data-status="${s}"${st.status === s ? ' aria-current="page"' : ""}>${s === "all" ? "All" : STATUS[s][0]}<span class="bt-chip-n">${count(s)}</span></a>`).join("")}</nav>
   <div class="gv-menu" data-menu="tags"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="tags" aria-expanded="false" aria-haspopup="true">Tags<span class="bt-chip-n" data-tags-n></span></button></div>
   <div class="gv-menu" data-menu="len"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="len" aria-expanded="false" aria-haspopup="true">Length</button></div>
@@ -148,12 +185,16 @@ function shelf(title: string, sub: string, games: VCard[], { ranked = false, wan
   return `<section data-shelf-wrap aria-label="${esc(title)}"><div class="bt-shelf-head"><div><h2 class="bt-heading">${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${count(status)}</button></div></div><div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
 }
 /** Most wanted: the top 5 by wants (ranked); before anyone wants anything, the 5 newest wishlist games. */
-function mostWanted() {
+function mostWantedGames() {
   const wish = V.games.filter((g) => g.status === "wishlist");
   const wanted = wish.filter((g) => g.wanted > 0).sort((a, b) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0)).slice(0, 5);
-  if (wanted.length) return shelf("Most wanted", "What members want Boomer to play next.", wanted, { ranked: true, status: "wishlist" });
-  const newest = [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
-  return shelf("Most wanted", "Nothing wanted yet. Tap I want this too on a game to be the first.", newest, { wants: true, status: "wishlist" });
+  if (wanted.length) return wanted;
+  return [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
+}
+function mostWanted() {
+  const games = mostWantedGames();
+  if (games.some((g) => g.wanted > 0)) return shelf("Most wanted", "What members want Boomer to play next.", games, { ranked: true, status: "wishlist" });
+  return shelf("Most wanted", "Nothing wanted yet. Tap I want this too on a game to be the first.", games, { wants: true, status: "wishlist" });
 }
 function shelves() {
   const by = (s: Status, sort: (a: VCard, b: VCard) => number) => V.games.filter((g) => g.status === s).sort(sort);
@@ -209,7 +250,7 @@ function renderControls() {
   // an open menu keeps its live "Show N games"
   if (openMenu) { const box = root!.querySelector(`[data-menu="${openMenu}"] .bt-popover-foot .bt-btn`); if (box) box.textContent = `Show ${plural(list().length, "game")}`; }
 }
-function update() { writeUrl(); renderControls(); renderResults(); }
+function update() { writeUrl(); renderControls(); renderResults(); renderHero(); }
 
 function toggleMenu(kind: "" | "tags" | "len") {
   root!.querySelectorAll("[data-menu] .bt-popover").forEach((p) => p.remove());
@@ -220,89 +261,20 @@ function toggleMenu(kind: "" | "tags" | "len") {
   root!.querySelector<HTMLInputElement>(`[data-menu="${kind}"] input`)?.focus();
 }
 
-// ---------- the door ----------
-// Once per tab. The "played" mark in sessionStorage holds this tab's id, which lives in window.name:
-// window.name survives navigation inside the tab but a new tab starts without it, while
-// sessionStorage is copied into tabs opened from a page (window.open, target=_blank, Duplicate tab).
-// A bare "1" made those tabs think they'd already seen it, so the door never swung there.
-const TAB_PREFIX = "bt-tab-";
-function tabId() {
-  if (!window.name.startsWith(TAB_PREFIX)) window.name = `${TAB_PREFIX}${Math.random().toString(36).slice(2, 10)}`;
-  return window.name;
-}
-function initDoor() {
-  const door = root!.querySelector<HTMLElement>("[data-door]");
-  if (!door) return;
-  const tab = tabId();
-  const param = new URLSearchParams(location.search).get("door");
-  const log = (why: string) => { if (param) console.info(`vault door: ${why}`); };   // ?door=replay (or ?door=log) traces it
-  let seen = false;
-  try { seen = sessionStorage.getItem(DOOR_KEY) === tab; } catch { /* storage blocked: play it */ }
-  const mark = () => { try { sessionStorage.setItem(DOOR_KEY, tab); } catch { /* fine */ } };
-  const openNow = () => door.classList.add("is-instant", "is-open");
-  /** The whole sequence from closed: wheel, bolts, lamp, the swing to 90 degrees. */
-  const play = (why: string) => {
-    log(`playing (${why})`);
-    door.classList.add("is-instant");
-    door.classList.remove("is-open");
-    void door.offsetWidth;            // shut, with no transition
-    door.classList.remove("is-instant");
-    void door.offsetWidth;            // then open with every transition
-    door.classList.add("is-open");
-    mark();
-  };
-  if (reduce()) { log("reduced motion: shown open"); openNow(); return; }
-  let io: IntersectionObserver | null = null;
-  if (seen && param !== "replay") { log("already played in this tab: shown open"); openNow(); }
-  else {
-    log(param === "replay" ? "?door=replay: waiting to come into view" : "first time in this tab: waiting to come into view");
-    io = new IntersectionObserver((es) => es.forEach((e) => {
-      if (!e.isIntersecting) return;
-      io?.disconnect(); io = null;
-      mark();
-      setTimeout(() => { if (!door.classList.contains("is-open")) play("in view"); }, 350);
-    }), { threshold: 0.4 });
-    io.observe(door);
-  }
-  const replay = () => { io?.disconnect(); io = null; if (!reduce()) play("pressed"); };
-  door.addEventListener("click", replay);
-  door.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); replay(); } });
-}
-
-// ---------- search panel ----------
-function cmdGroups(q: string) {
-  const hits = search(index, q, { limit: 5 }) as { game: VCard; lit: number[] }[];
-  const nq = q.toLowerCase();
-  const tagSug = V.tags.map((t) => t.tag).filter((t) => !st.tags.includes(t) && (t.toLowerCase().startsWith(nq) || (nq.length > 2 && t.toLowerCase().includes(nq)))).slice(0, 2);
-  const statSug = nq.length > 1 ? STATUS_KEYS.filter((k) => STATUS[k][0].toLowerCase().startsWith(nq) && st.status !== k) : [];
-  const visitor = getAuthState().status === "signedOut";
-  return [
-    { label: "In the Vault", items: hits.map(({ game: g, lit }) => ({ value: { kind: "game", slug: g.slug }, html: `${coverHtml(g.cover, { cls: "bt-cover--sm", size: "sm" })}<b>${litText(g.title, lit, esc)}</b><small>${esc(g.developers[0] || "")}</small>${badge(g.status)}` })) },
-    { label: "Filters", items: [
-      ...statSug.map((k) => ({ value: { kind: "status", k }, html: `<span class="bt-cmd-ic">${I.filter}</span><b>Only ${STATUS[k][0]}</b><small>${plural(count(k), "game")}</small>` })),
-      ...tagSug.map((t) => ({ value: { kind: "tag", t }, html: `<span class="bt-cmd-ic">${I.filter}</span><b>Only ${esc(t)} games</b><small>${plural(V.games.filter((g) => g.tags.includes(t)).length, "game")}</small>` })),
-    ] },
-    { label: "Not here?", items: [{ value: { kind: "add", q }, html: `<span class="bt-cmd-ic">${I.plusSm}</span><b>${visitor ? "Join free to add" : "Add"} “${esc(q)}” to the Vault</b>` }] },
-  ];
-}
 async function openAdd(q = "") { const { openAddGame } = await import("./add"); openAddGame(q); }
 
 // ---------- boot ----------
 function wire() {
-  const input = root!.querySelector<HTMLInputElement>("[data-q]")!;
+  const input = root!.querySelector<HTMLInputElement>("[data-hero-search]")!;
   let t = 0;
   input.addEventListener("input", () => { st.q = input.value; clearTimeout(t); t = window.setTimeout(update, 120); });
-  initCmd({
-    input, mount: root!.querySelector<HTMLElement>("[data-cmd]")!,
-    groups: cmdGroups,
-    onChoose: (v: any, q: string) => {
-      if (v.kind === "game") { remember(); location.href = `/games/${encodeURIComponent(v.slug)}`; return; }
-      if (v.kind === "add") { openAdd(q); return; }
-      st.q = ""; input.value = "";
-      if (v.kind === "status") st.status = v.k;
-      if (v.kind === "tag") st.tags = [...st.tags, v.t];
-      update();
-    },
+  // Enter: scroll to the results, or, with no match, add the game.
+  input.addEventListener("keydown", (e) => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+    clearTimeout(t); st.q = input.value; update();
+    if (st.q.trim() && !list().length) { openAdd(st.q.trim()); return; }
+    root!.querySelector<HTMLElement>("[data-results]")?.scrollIntoView({ block: "start", behavior: reduce() ? "auto" : "smooth" });
   });
   document.addEventListener("keydown", (e) => {
     if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
@@ -367,13 +339,13 @@ async function boot() {
   if (!V.games.length) { onAuth(() => showState("empty")); return; }
   index = buildIndex(V.games);
   readUrl();
-  root!.innerHTML = `${doorHero()}<div class="gv-body">${tools()}<div data-results></div></div>`;
-  initDoor();
+  root!.innerHTML = `${hero()}<div class="gv-body">${tools()}<div data-results id="gv-results"></div></div>`;
   initCountUp(root!);
   wire();
   renderControls();
   renderResults();
-  onAuth(() => renderResults());   // the Add / Join wording and the want buttons follow sign-in
+  renderHero();
+  onAuth(() => { renderResults(); renderHero(); });   // the Add / Join wording and the want buttons follow sign-in
   // Back to the Vault: the same URL, so scroll to where you left it.
   const ctx = loadCtx();
   if (takeRestore() && ctx && ctx.url === `${location.pathname}${location.search}`) requestAnimationFrame(() => scrollTo({ top: ctx.scroll, behavior: "auto" }));

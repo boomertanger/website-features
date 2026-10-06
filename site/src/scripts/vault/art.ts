@@ -1,6 +1,5 @@
 // Game Vault art (docs/design/mockups/game-vault-round-2.html): the GAMEVAULT wordmark's vault-dial
-// icon (it rests; on hover the dial spins a combination and the lamp lights, game-vault.css) and
-// the vault door for the /games hero. Vault-only, so it lives with the feature, not the kit.
+// icon (it rests; on hover the dial spins a combination and the lamp lights, game-vault.css). Vault-only, so it lives with the feature, not the kit.
 
 const ticks = Array.from({ length: 12 }, (_, i) => {
   const a = (i * 30 * Math.PI) / 180, r1 = 8.9, r2 = 10.1;
@@ -14,27 +13,6 @@ export function vaultIcon({ size, lamp = "" }: { size?: number; lamp?: string } 
   return `<svg class="gv-icon" viewBox="0 0 40 40" aria-hidden="true" focusable="false"${style}><rect class="hinge" x="1.4" y="11" width="3.6" height="5" rx="1"/><rect class="hinge" x="1.4" y="24" width="3.6" height="5" rx="1"/><rect class="door" x="4" y="4" width="32" height="32" rx="6"/><circle class="ring" cx="20" cy="20" r="11"/>${ticks}<g class="dial">${spoke(0)}${spoke(120)}${spoke(240)}<circle class="hub" cx="20" cy="20" r="3.3"/></g><circle class="lamp${lamp ? ` ${lamp}` : ""}" cx="31" cy="9" r="1.9"/></svg>`;
 }
 export const GV_ICON = vaultIcon();
-
-/**
- * The vault door: the wall plate (static) and the door that swings open (two SVGs, the inside goes
- * between). round 3 R4: the door is a solid piece (.gv-door3d): a stack of slabs behind the face
- * and an edge band with three bolts, so seen side-on at 90 degrees it shows a profile, not a sliver.
- */
-export function doorParts() {
-  const C = 200;
-  const doorTicks = Array.from({ length: 24 }, (_, i) => {
-    const a = (i * 15 * Math.PI) / 180;
-    return `<line class="tick" x1="${(C + 146 * Math.sin(a)).toFixed(1)}" y1="${(C - 146 * Math.cos(a)).toFixed(1)}" x2="${(C + 156 * Math.sin(a)).toFixed(1)}" y2="${(C - 156 * Math.cos(a)).toFixed(1)}"/>`;
-  }).join("");
-  const bolts = Array.from({ length: 8 }, (_, i) => `<g transform="rotate(${i * 45 + 22.5} ${C} ${C})"><rect class="bolt" x="${C + 158}" y="${C - 8}" width="30" height="16" rx="4" style="--bx:-22px;--by:0px"/></g>`).join("");
-  const sp = (d: number) => `<g transform="rotate(${d} ${C} ${C})"><line class="spoke" x1="${C}" y1="${C}" x2="${C}" y2="${C - 92}"/><circle class="knob" cx="${C}" cy="${C - 96}" r="11"/></g>`;
-  const screws = [[34, 34], [366, 34], [34, 366], [366, 366]].map(([x, y]) => `<circle class="screw" cx="${x}" cy="${y}" r="6"/>`).join("");
-  const plate = `<svg class="gv-plate" viewBox="0 0 400 400" aria-hidden="true" focusable="false"><rect class="plate" x="6" y="6" width="388" height="388" rx="44"/><circle class="hole" cx="200" cy="200" r="176"/><rect class="hinge" x="10" y="112" width="26" height="46" rx="7"/><rect class="hinge" x="10" y="242" width="26" height="46" rx="7"/>${screws}</svg>`;
-  const door = `<svg class="gv-door" viewBox="0 0 400 400" aria-hidden="true" focusable="false">${bolts}<circle class="face" cx="200" cy="200" r="170"/><circle class="rim" cx="200" cy="200" r="170"/><circle class="ring2" cx="200" cy="200" r="138"/>${doorTicks}<circle class="ring2" cx="200" cy="200" r="58"/><g class="wheel">${sp(0)}${sp(120)}${sp(240)}<circle class="hub" cx="200" cy="200" r="26"/></g><circle class="lamp" cx="200" cy="74" r="7"/></svg>`;
-  const slabs = Array.from({ length: 10 }, (_, i) => `<span class="gv-slab" style="--z:${((i + 1) * 2.2).toFixed(1)}"></span>`).reverse().join("");
-  const edge = `<span class="gv-door-edge" aria-hidden="true"><i style="top:18%"></i><i style="top:47%"></i><i style="bottom:18%"></i></span>`;
-  return { plate, door: `<div class="gv-door3d" aria-hidden="true">${slabs}${edge}${door}</div>` };
-}
 
 /** The lock scene's ring (the Add dialog's last step): ticks that spin shut and a lamp. */
 export function lockRing() {
