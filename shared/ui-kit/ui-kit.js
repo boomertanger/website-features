@@ -1363,11 +1363,12 @@ function vaultKitHtml() {
     <div data-shelf-wrap><div class="bt-shelf-head"><div><h3 class="bt-heading">A shelf</h3><p>Swipe, or use the arrows.</p></div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 7</button></div></div><div class="bt-shelf">${shelfCards}</div></div>
     <div data-shelf-wrap><div class="bt-shelf bt-shelf--ranked">${ranked}</div></div>
 
-    <p class="kit-sub">Section head: .bt-section-head (shared/ui/section-head.js sectionHeadHtml). An icon tile, the heading with a count pill, a thin gold rule running to the tools. Phones: no rule and no line under the heading</p>
+    <p class="kit-sub">Section head: .bt-section-head (shared/ui/section-head.js sectionHeadHtml). An icon tile, the heading with a count pill, a thin gold rule running to the tools. Phones: no rule and no line under the heading. small (.bt-section-head--sm) with a meta note is the head above a card on a detail page (the Game Vault game page)</p>
     <div class="kit-stack" style="gap:22px">
       ${sectionHeadHtml({ icon: "🏆", title: "Boomer's best", count: 12, sub: "Finished, highest score first.", tools: `<span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 12</button>` })}
       ${sectionHeadHtml({ icon: "🗝", title: "All games", count: 78, sub: "Last streamed first." })}
       ${sectionHeadHtml({ title: "No icon, no tools", count: 3 })}
+      ${sectionHeadHtml({ icon: "📺", title: "Every stream", meta: "6 streams, 14 hours", small: true })}
     </div>
 
     <p class="kit-sub">Timeline: .bt-timeline (shared/ui/timeline.js). Dots sized by length, a hollow dot for history before the site, a flag; hover or focus a dot</p>

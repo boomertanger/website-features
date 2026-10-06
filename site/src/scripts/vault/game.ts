@@ -12,6 +12,7 @@
 // last streamed first.
 import { coverHtml, coverUrl } from "../../../../shared/ui/cover.js";
 import { backHtml, pagerHtml } from "../../../../shared/ui/pager.js";
+import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { initSpotlights } from "../../../../shared/ui/spotlight.js";
 import { dialHtml, initDials } from "../../../../shared/ui/dial.js";
 import { timelineHtml, initTimelines } from "../../../../shared/ui/timeline.js";
@@ -71,11 +72,13 @@ function upNext() {
   const nx = neighbour(1), pv = neighbour(-1);
   const n = nx ? nav.cards.get(nx) : null, p = pv ? nav.cards.get(pv) : null;
   const by = n ? [n.developers[0], n.release ? new Date(n.release).getFullYear() : null].filter(Boolean).join(", ") : "";
-  const card = n ? `<a class="bt-card bt-card--door bt-spotlight gv-upnext" href="${gameHref(n.slug)}" data-pg="1">${coverHtml(n.cover, { alt: "" })}<div><span class="bt-label">Up next</span><h3>${esc(n.title)}</h3><p>${esc(by ? `${by}. ` : "")}${esc(metaLine(n))}.</p></div><span class="bt-card-go">Next game${ARROW}</span></a>` : "";
+  const card = n ? `<a class="bt-card bt-card--door bt-spotlight gv-upnext" href="${gameHref(n.slug)}" data-pg="1">${coverHtml(n.cover, { alt: "" })}<div><h3>${esc(n.title)}</h3><p>${esc(by ? `${by}. ` : "")}${esc(metaLine(n))}.</p></div><span class="bt-card-go">Next game${ARROW}</span></a>` : "";
   const links = pv ? `<div class="gv-endlinks"><a class="bt-link-btn" href="${gameHref(pv)}" data-pg="-1">‹ Previous: ${esc(p?.title || pv)}</a><a class="bt-link-btn" href="${esc(nav.back)}" data-back>Back to the Vault</a></div>` : "";
-  return card || links ? `<div class="gv-endnav">${card}${links}</div>` : "";
+  return card || links ? `<div class="gv-endnav">${card ? sectionHeadHtml({ icon: "⏭", title: "Up next", small: true }) : ""}${card}${links}</div>` : "";
 }
 
+/** A game-page section (G1): the section head above its card; the card holds the content. */
+const sec = (icon: string, title: string, inner: string, meta = "") => `<section>${sectionHeadHtml({ icon, title, meta, small: true })}<div class="bt-card">${inner}</div></section>`;
 const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML ?? "";
 const year = (ms: number | null) => (ms ? new Date(ms).getFullYear() : null);
 
@@ -117,17 +120,17 @@ function pickBanner(g: any) {
 function review(g: any) {
   if (!g.review) {
     const msg = g.status === "wishlist" ? ["Not played yet", "Boomer reviews it once he's streamed it."] : ["No review yet", "Boomer hasn't written this one up."];
-    return `<section class="bt-card"><h2 class="bt-card-title">Boomer's review</h2><div class="bt-empty bt-empty--compact"><p class="bt-empty-title">${msg[0]}</p><span>${msg[1]}</span></div></section>`;
+    return sec("🎙", "Boomer's review", `<div class="bt-empty bt-empty--compact"><p class="bt-empty-title">${msg[0]}</p><span>${msg[1]}</span></div>`);
   }
   const r = g.review;
-  return `<section class="bt-card"><h2 class="bt-card-title">Boomer's review</h2>${r.verdict ? `<p class="gv-verdict">“${esc(r.verdict)}”</p>` : ""}${r.body ? `<div class="gv-review-body">${esc(r.body)}</div>` : ""}<div class="gv-review-by"><span aria-hidden="true">${mascot()}</span>Boomer${r.updatedAt ? `, updated ${longDate(r.updatedAt)}` : ""}</div></section>`;
+  return sec("🎙", "Boomer's review", `${r.verdict ? `<p class="gv-verdict">“${esc(r.verdict)}”</p>` : ""}${r.body ? `<div class="gv-review-body">${esc(r.body)}</div>` : ""}<div class="gv-review-by"><span aria-hidden="true">${mascot()}</span>Boomer${r.updatedAt ? `, updated ${longDate(r.updatedAt)}` : ""}</div>`);
 }
 
 function everyStream(g: any) {
   const t = totals(g);
   const real = [...streams].sort((a, b) => a.start - b.start);
   if (!real.length && !t.legacy) {
-    return `<section class="bt-card"><div class="bt-card-head"><h2 class="bt-card-title">Every stream</h2></div><div class="bt-empty bt-empty--compact"><p class="bt-empty-title">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</p><span>Each stream of this game shows up here.</span></div></section>`;
+    return sec("📺", "Every stream", `<div class="bt-empty bt-empty--compact"><p class="bt-empty-title">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</p><span>Each stream of this game shows up here.</span></div>`);
   }
   const now = Date.now();
   const legacyAt = g.legacy?.lastStreamedAt || null;
@@ -148,13 +151,13 @@ function everyStream(g: any) {
   ];
   const keys = [{ label: "A stream (size = length)" }, ...(t.legacy ? [{ cls: "is-legacy", label: "Before the site" }] : []), ...(finishedAt ? [{ flag: "🏁", label: "Finished it" }] : [])];
   const site = real.length ? { at: pos(real[0].start), label: t.legacy ? "On the site" : "" } : null;
-  return `<section class="bt-card"><div class="bt-card-head"><h2 class="bt-card-title">Every stream</h2><span class="bt-card-meta">${plural(t.count, "stream")}, ${hours(t.minutes)} hours</span></div>${timelineHtml({ points, site, ends: [shortDate(first), "Today"], keys, label: `Every stream of ${g.title}` })}</section>`;
+  return sec("📺", "Every stream", timelineHtml({ points, site, ends: [shortDate(first), "Today"], keys, label: `Every stream of ${g.title}` }), `${plural(t.count, "stream")}, ${hours(t.minutes)} hours`);
 }
 
 function about(g: any) {
   if (!g.summary) return "";
   const fromIgdb = !!g.ids?.igdb;
-  return `<section class="bt-card"><h2 class="bt-card-title">About the game</h2><p class="gv-about">${esc(g.summary)}</p>${fromIgdb ? '<span class="gv-credit">Game info from IGDB</span>' : ""}</section>`;
+  return sec("📖", "About the game", `<p class="gv-about">${esc(g.summary)}</p>${fromIgdb ? '<span class="gv-credit">Game info from IGDB</span>' : ""}`);
 }
 
 function facts(g: any) {
@@ -167,21 +170,21 @@ function facts(g: any) {
   if (g.timeToBeat?.normally) rows.push(["Time to beat", `About ${g.timeToBeat.normally} hours${g.timeToBeat.hastily ? ` (${g.timeToBeat.hastily} rushed)` : ""}`]);
   if (g.createdAt) rows.push(["In the Vault", `Since ${shortDate(g.createdAt)}`]);
   if (g.tags?.boomer?.length) rows.push(["Boomer's tags", g.tags.boomer.join(", ")]);
-  return rows.length ? `<section class="bt-card"><dl class="gv-facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl></section>` : "";
+  return rows.length ? sec("📋", "Details", `<dl class="gv-facts">${rows.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl>`) : "";
 }
 
 function where(g: any) {
   const L = g.links || {};
   const items = (["steam", "gog", "itch", "epic"] as const).filter((k) => L[k]).map((k) => `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(L[k])}" target="_blank" rel="noopener">${brandIcon(k)}${BRANDS[k].name}</a>`);
   if (L.official) items.push(`<a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(L.official)}" target="_blank" rel="noopener">${I.globe}Official site</a>`);
-  return items.length ? `<section class="bt-card"><div class="bt-stack" style="gap:10px"><span class="bt-label">Where to play</span><div class="gv-where">${items.join("")}</div></div></section>` : "";
+  return items.length ? sec("🛒", "Where to play", `<div class="gv-where">${items.join("")}</div>`) : "";
 }
 
 function stats(g: any) {
   const t = totals(g);
   if (!t.count) return "";
   const h = hours(t.minutes);
-  return `<section class="bt-card"><h2 class="bt-card-title">On stream</h2><div class="bt-stack" style="gap:8px"><div class="gv-stats"><div class="gv-stat"><b data-count-to="${t.count}">${t.count}</b><small>${t.count === 1 ? "stream" : "streams"}</small></div><div class="gv-stat"><b data-count-to="${h}" data-suffix=" h">${h} h</b><small>on stream</small></div><div class="gv-stat"><b>${t.first ? shortDate(t.first) : "–"}</b><small>first streamed</small></div><div class="gv-stat"><b>${t.last ? shortDate(t.last) : "–"}</b><small>last streamed</small></div></div>${t.legacy ? `<span class="gv-stats-note">Includes ${plural(t.legacy, "stream")} from before the site.</span>` : ""}</div></section>`;
+  return sec("📊", "On stream", `<div class="bt-stack" style="gap:8px"><div class="gv-stats"><div class="gv-stat"><b data-count-to="${t.count}">${t.count}</b><small>${t.count === 1 ? "stream" : "streams"}</small></div><div class="gv-stat"><b data-count-to="${h}" data-suffix=" h">${h} h</b><small>on stream</small></div><div class="gv-stat"><b>${t.first ? shortDate(t.first) : "–"}</b><small>first streamed</small></div><div class="gv-stat"><b>${t.last ? shortDate(t.last) : "–"}</b><small>last streamed</small></div></div>${t.legacy ? `<span class="gv-stats-note">Includes ${plural(t.legacy, "stream")} from before the site.</span>` : ""}</div>`);
 }
 
 function suggest(g: any) {

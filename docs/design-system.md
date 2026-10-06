@@ -772,7 +772,9 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   sub, tools, level })`; Game Vault part 8, mockup SH3): a 38px icon tile, the heading with a
   `.bt-section-head-n` count pill (and an optional line under it), and a thin gold rule that runs
   across to `.bt-section-head-tools` (a shelf's arrows and See all). Use it for the head of any
-  page section or shelf; phones drop the rule and the line under the heading.
+  page section or shelf; phones drop the rule and the line under the heading. `meta` puts a short
+  note at the right (`.bt-section-head-meta`); `small` (`.bt-section-head--sm`) is the compact size
+  for the head above a card on a detail page (the Game Vault game page, G1).
 - **Timeline: `.bt-timeline`** (`shared/ui/timeline.js` `timelineHtml({ points, site, ends,
   keys, label })` + `initTimelines`): dots on a line sized by value, a hollow `.is-legacy` dot
   for history before the site, a flag, a coloured stretch for "on the site", tooltips on hover
