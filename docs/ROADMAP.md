@@ -101,6 +101,10 @@ v2 (later):
 - [ ] Notifications (a chapter unlocks, a streak is at risk, a season ends).
 - [ ] AI ideas in the builder.
 - [ ] Stream streaks and stream check-ins, with the Control Room (5).
+- [ ] Season export/import:
+  - `functions/scripts/season-export.js --project staging --season <id>` writes a JSON file (season, chapters, campaigns, activities, hunt medals with hints, season badge name and rarity; no dates, no art files, no progress, no standings, no ledger, no ids that point at member data).
+  - `functions/scripts/season-import.js --project prod --file <json>` creates it as a Draft with new ids, dates cleared, art empty, the season badge created as a draft badge; dry run unless `--apply`; refuses if a season with the same name exists unless `--rename` is given.
+  - Checks in check-factory for a round trip (export then import gives the same tree minus dates and art).
 Kickoff: "Start workstream 7b (Night Shift) from docs/ROADMAP.md."
 
 ### 8. Accounts part 2b
@@ -158,3 +162,12 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
+
+### Trophy Room and Night Shift in production
+- [ ] Seed the Trophy Room badge catalog in production: functions/scripts/seed-badges.js --project prod (dry run, then --apply). Includes beat-the-boss and the streak badges; check boomer-s-blessing is owner only.
+- [ ] Seed Night Shift activity types in production: seed-factory-types.js --project prod (dry run, then --apply). Check the enabled list matches what's live in production.
+- [ ] Seed the Night Shift idea library in production: seed-factory-ideas.js --project prod (dry run, then --apply).
+- [ ] Build the season export/import tool (below), export Season 01 from staging, import it into production as a Draft, re-upload its art, set its dates, approve it.
+- [ ] Set sites/boomertanger.flags.founderStart in production to the launch date (Founder badge window).
+- [ ] Remove the staging test season (seed-test-season.js --remove) once Season 01 is ready on staging.
+- [ ] Deploy firestore rules and functions to production (rules first, separately; retry once on an Eventarc/IAM error) and confirm rewardsNightly, factoryTick and factoryStreakSweep are scheduled in the production console.
