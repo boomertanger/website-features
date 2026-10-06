@@ -187,7 +187,7 @@ function makeFactory({ db = admin.firestore(), grant = null } = {}) {
       const ref = d.kind === "bonus" ? `bonus:${d.id}:${d.period}` : `${d.id}:${d.period}`;
       try {
         if (d.xp > 0) {
-          const r = await G().grantXp(uid, d.xp, { feature: "factory", ref, reason: `${s.name || "Fun Factory"}` });
+          const r = await G().grantXp(uid, d.xp, { feature: "factory", ref, reason: `${s.name || "Night Shift"}` });
           if (r.granted) seasonXp += d.xp;
         }
         if (d.badgeId) await G().grantBadge(uid, d.badgeId, { feature: "factory", ref: `badge:${d.badgeId}` });

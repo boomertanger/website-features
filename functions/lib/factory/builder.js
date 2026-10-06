@@ -132,7 +132,7 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
     try {
       await db.collection("adminLog").add(await adminLogEntry(db, {
         feature: "factory", action, itemPath: seasonId ? `sites/${SITE_ID}/factory/main/seasons/${seasonId}` : `sites/${SITE_ID}/factory/main`,
-        itemTitle: title || seasonId || "Fun Factory", actorUid: c.uid, actorName: c.name, reason, details,
+        itemTitle: title || seasonId || "Night Shift", actorUid: c.uid, actorName: c.name, reason, details,
       }));
     } catch (err) { console.error("factory: adminLog failed", err); }
   }

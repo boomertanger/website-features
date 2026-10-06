@@ -1,14 +1,14 @@
 {
   "version": 1,
-  "note": "Fun Factory activity types and starter idea library (docs/specs/fun-factory.md sections 4 and 6). enabled = live at launch. Vault ideas use actions (want, add, cover); rating ideas wait under the disabled ratings type until members can rate games.",
+  "note": "Night Shift activity types and starter idea library (docs/specs/fun-factory.md sections 4 and 6). enabled = live at launch. Vault ideas use actions (want, add, cover); rating ideas wait under the disabled ratings type until members can rate games.",
   "activityTypes": [
     {
       "id": "checkin",
       "name": "Daily check-in",
       "enabled": true,
       "needs": null,
-      "source": "Fun Factory",
-      "description": "Clock in once per Central day on the Fun Factory page.",
+      "source": "Night Shift",
+      "description": "Clock in once per Central day on the Night Shift page.",
       "actions": [],
       "params": []
     },
@@ -17,7 +17,7 @@
       "name": "Visit pages",
       "enabled": true,
       "needs": null,
-      "source": "Fun Factory",
+      "source": "Night Shift",
       "description": "Visit sections of the site (each section counts once per day; a site tour counts different sections).",
       "actions": [],
       "params": [
@@ -29,7 +29,7 @@
       "name": "Find hidden medals",
       "enabled": true,
       "needs": null,
-      "source": "Fun Factory",
+      "source": "Night Shift",
       "description": "Find medals hidden on site pages during a hunt.",
       "actions": [],
       "params": [
@@ -574,7 +574,7 @@
   "activities": [
     {
       "title": "Clock in",
-      "instructions": "Press Clock in on the Fun Factory page.",
+      "instructions": "Press Clock in on the Night Shift page.",
       "type": "checkin",
       "target": 1,
       "xp": 10,

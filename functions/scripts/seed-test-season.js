@@ -64,7 +64,7 @@ function plan(now) {
   const activity = (id, d) => writes.push([`activities/${id}`, { link: null, params: {}, badgeId: null, repeat: "none", target: 1, enabled: true, ...d }]);
 
   writes.push(["", {
-    number: 0, name: "Season 00 · Test Signal", pitch: "A two-week test of the Fun Factory engine on staging.", art: null,
+    number: 0, name: "Season 00 · Test Signal", pitch: "A two-week test of the Night Shift engine on staging.", art: null,
     startsAt: ts(now), endsAt: ts(endsAt), status: "live", revealed: true, dailyXpCap: null, badgeId: null,
     createdBy: "seed-test-season", publishedBy: "seed-test-season", test: true, liveAt: ts(now),
   }]);
@@ -72,7 +72,7 @@ function plan(now) {
   writes.push(["chapters/ch2", { order: 2, name: "Static", blurb: "Something's hiding on the site.", art: null, unlockAt: ts(ch2At), ...later }]);
 
   campaign("daily", { chapterId: "ch1", name: "Daily shift", cadence: "daily", opensAt: ts(now), order: 1, ...shown });
-  activity("clock-in", { campaignId: "daily", title: "Clock in", instructions: "Press Clock in on the Fun Factory page.", link: "/factory", typeId: "checkin", repeat: "daily", xp: 10, order: 1, ...shown });
+  activity("clock-in", { campaignId: "daily", title: "Clock in", instructions: "Press Clock in on the Night Shift page.", link: "/shift", typeId: "checkin", repeat: "daily", xp: 10, order: 1, ...shown });
   activity("play-a-round", { campaignId: "daily", title: "Play a round", instructions: "Play any game in the Boom Arcade.", link: "/arcade", typeId: "arcade", params: { action: "play" }, repeat: "daily", xp: 15, order: 2, ...shown });
 
   campaign("weekly", { chapterId: "ch1", name: "This week", cadence: "weekly", opensAt: ts(now), order: 2, ...shown });
@@ -83,7 +83,7 @@ function plan(now) {
   activity("site-tour", { campaignId: "tour", title: "Site tour", instructions: "Visit 3 sections of the site.", typeId: "visit", target: 3, xp: 100, order: 1, ...shown });
 
   campaign("milestone", { chapterId: "ch1", name: "Regular", cadence: "milestone", opensAt: ts(now), order: 4, ...shown });
-  activity("ten-check-ins", { campaignId: "milestone", title: "Ten check-ins", instructions: "Clock in on 10 days this season.", link: "/factory", typeId: "checkin", target: 10, xp: 100, order: 1, ...shown });
+  activity("ten-check-ins", { campaignId: "milestone", title: "Ten check-ins", instructions: "Clock in on 10 days this season.", link: "/shift", typeId: "checkin", target: 10, xp: 100, order: 1, ...shown });
 
   campaign("hunt", { chapterId: "ch2", name: "Hidden medals", cadence: "story", opensAt: ts(ch2At), order: 1, ...later });
   activity("hidden-medals", { campaignId: "hunt", title: "Hidden medals", instructions: "Find the 2 medals hidden around the site.", typeId: "medals", params: { huntId: "test-hunt" }, target: 2, xp: 150, order: 1, ...later });

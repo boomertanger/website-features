@@ -581,14 +581,14 @@
         },
         {
           "type": "goal",
-          "title": "First Fun Factory season",
+          "title": "First Night Shift season",
           "status": "planned",
           "description": "Missions, streaks and badges for showing up.",
           "visibility": "members",
           "children": [
             {
               "type": "milestone",
-              "title": "First Fun Factory season opens",
+              "title": "First Night Shift season opens",
               "level": 1,
               "status": "planned",
               "visibility": "members"
