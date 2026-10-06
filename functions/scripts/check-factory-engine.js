@@ -14,6 +14,7 @@ const { makeStreaks } = require("../lib/factory/streaks");
 const { makeSeason } = require("../lib/factory/season");
 
 const T = admin.firestore.Timestamp;
+const L = require('../lib/factory/logic');
 const day = 86400000;
 let NOW = Date.parse("2026-10-07T15:00:00Z");   // a Wednesday, 10:00 Central
 const realNow = Date.now;
@@ -288,6 +289,38 @@ async function main() {
   assert.equal(staff12.boss.rank, null);   // under "separate" the marker shows the gap, not a rank
   assert.deepEqual((await db.doc(`${root}/seasons/s12/boards/crew`).get()).data().rows, []);
   assert.deepEqual(paid.slice(b3).filter((p) => p.trophy === "staff-season").map((p) => [p.uid, p.place, p.label]), [["a9", 1, "Season 12 · Staff finish · #1 of 2"], ["boss", 2, "Season 12 · Staff finish · #2 of 2"]]);
+
+  // ---------- a mod's addition to a live season: held back until an admin approves it (fun-factory.md §13d) ----------
+  const S20 = `${root}/seasons/s20`;
+  await put(S20, { name: "Season 20", number: 20, status: "live", revealed: true, startsAt: T.fromMillis(NOW - 5 * day), endsAt: T.fromMillis(NOW + 20 * day) });
+  await put(`${S20}/chapters/c1`, { order: 1, unlockAt: T.fromMillis(NOW - 5 * day), revealed: true });
+  const k = (id, d) => put(`${S20}/campaigns/${id}`, { chapterId: "c1", cadence: "event", audience: "all", opensAt: T.fromMillis(NOW - day), closesAt: null, revealed: false, ...d });
+  const a = (id, d) => put(`${S20}/activities/${id}`, { target: 1, params: {}, repeat: "none", revealed: false, ...d });
+  await k("kAdmin", { approval: "approved" }); await a("aAdmin", { campaignId: "kAdmin", typeId: "checkin", xp: 10, approval: "approved" });
+  await k("kMod", { approval: "pending", addedBy: { uid: "mod", name: "Mod" } }); await a("aMod", { campaignId: "kMod", typeId: "checkin", xp: 77, approval: "pending" });
+  await k("kBack", { approval: "changes", addedBy: { uid: "mod", name: "Mod" } }); await a("aBack", { campaignId: "kBack", typeId: "checkin", xp: 66, approval: "changes" });
+  const log20 = await Z.tick(NOW);
+  const rev = async (p) => (await db.doc(`${S20}/${p}`).get()).get("revealed");
+  // Their unlock time passed, but pending and sent-back additions never reveal; the approved one does.
+  assert.deepEqual([await rev("campaigns/kAdmin"), await rev("activities/aAdmin"), await rev("campaigns/kMod"), await rev("activities/aMod"), await rev("campaigns/kBack"), await rev("activities/aBack")], [true, true, false, false, false, false], log20.join("; "));
+  assert.ok(!log20.some((x) => x.includes("kMod") || x.includes("kBack")));
+  // The engine counts nothing for them, even if one were somehow revealed.
+  await db.doc(`${S20}/campaigns/kMod`).update({ revealed: true }); await db.doc(`${S20}/activities/aMod`).update({ revealed: true });
+  F.dropCache();
+  const rp = await F.recordFactoryEvent("fan", "checkin", {}, "s20-day");
+  assert.deepEqual(rp.completed, ["aAdmin"]);
+  assert.ok(!paid.some((p) => p.ref && String(p.ref).startsWith("aMod")));
+  assert.equal((await db.doc(`${S20}/progress/fan`).get()).get("acts.aMod") ?? null, null);
+  // The public summary's hunt paths ignore held-back hunts the same way (campaignOpen).
+  assert.equal(L.campaignOpen({ revealed: true, approval: "pending", opensAt: 1 }, { endsAt: NOW + day }, NOW), false);
+  // Approving makes it an ordinary campaign: it reveals on the next tick and counts.
+  await db.doc(`${S20}/campaigns/kMod`).update({ revealed: false, approval: "approved" }); await db.doc(`${S20}/activities/aMod`).update({ revealed: false, approval: "approved" });
+  const log20b = await Z.tick(NOW + 60e3);
+  assert.ok(log20b.includes("s20: campaign kMod") && log20b.includes("s20: activity aMod") && !log20b.some((x) => x.includes("kBack")), log20b.join("; "));
+  F.dropCache();
+  await db.doc(`${S20}/progress/fan`).delete();
+  assert.ok((await F.recordFactoryEvent("fan", "checkin", {}, "s20-day2")).completed.includes("aMod"));
+  await db.doc(S20).update({ status: "ended" });   // out of the way
 
   // The real Trophy Room: a Staff Finish pays no XP, even for 1st place; a member's 1st still pays 150.
   const RG = require("../lib/rewards/grant").makeGrant({ db });

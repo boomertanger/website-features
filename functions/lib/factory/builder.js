@@ -106,7 +106,7 @@ function previewOf(t, as, at) {
   const byCh = new Map(wins.map((c) => [c.id, c]));
   const campaigns = [], lockedSub = [];
   for (const c of t.campaigns) {
-    if (!shown.has(c.chapterId) || c.enabled === false) continue;
+    if (!shown.has(c.chapterId) || c.enabled === false || L.heldBack(c)) continue;
     const w = C.campaignWindow(c, byCh.get(c.chapterId), s);
     if (w.start == null || w.start > at) continue;
     const view = { ...c, opensAt: w.start, closesAt: c.cadence === "story" || c.cadence === "milestone" ? (c.closesAt ?? null) : w.end ?? null, revealed: true, open: w.start <= at && (w.end == null || at < w.end) && at < (s.endsAt ?? Infinity) };
@@ -178,10 +178,14 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
   const factoryListSeasons = onCall(async (request) => {
     await crew(request);
     const snap = await R.seasons.get();
-    const seasons = snap.docs.map((d) => {
+    const seasons = (await Promise.all(snap.docs.map(async (d) => {
       const x = plain(d.data());
-      return { id: d.id, number: x.number ?? null, name: x.name || "", status: x.status || "draft", startsAt: x.startsAt || null, endsAt: x.endsAt || null, createdBy: x.createdBy || null, updatedAt: x.updatedAt || null, test: !!x.test, art: x.art?.url || null };
-    }).sort((a, b) => (b.number ?? -1) - (a.number ?? -1) || (b.updatedAt || 0) - (a.updatedAt || 0));
+      // A live season's additions waiting on an admin (a mod's campaign or event; fun-factory.md §13d): one small query, live seasons only.
+      const pendingAdditions = x.status === "live"
+        ? (await R.campaigns(d.id).where("approval", "in", ["pending", "changes"]).get()).docs.map((p) => ({ id: p.id, name: p.get("name") || "", cadence: p.get("cadence") || "event", approval: p.get("approval"), addedBy: p.get("addedBy") || null }))
+        : [];
+      return { id: d.id, number: x.number ?? null, name: x.name || "", status: x.status || "draft", startsAt: x.startsAt || null, endsAt: x.endsAt || null, createdBy: x.createdBy || null, updatedAt: x.updatedAt || null, test: !!x.test, art: x.art?.url || null, pending: pendingAdditions.length, pendingAdditions };
+    }))).sort((a, b) => (b.number ?? -1) - (a.number ?? -1) || (b.updatedAt || 0) - (a.updatedAt || 0));
     return { ok: true, seasons };
   });
 
@@ -205,6 +209,25 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
     return out;
   }
   const isPast = (ts, now) => ts != null && L.ms(ts) <= now;
+
+  /** A mod can change their own pending or sent-back addition (not another mod's); their edit to a sent-back one
+   *  returns it to "pending". Admins change any. Returns the campaign doc when it's held back, else null. */
+  async function guardHeld(c, seasonId, campaignId, { edits = true } = {}) {
+    if (!campaignId) return null;
+    const ref = R.campaigns(seasonId).doc(campaignId);
+    const camp = await ref.get();
+    if (!camp.exists || !L.heldBack(camp.data())) return null;
+    if (!c.isAdmin && camp.get("addedBy")?.uid !== c.uid) throw fail("permission-denied", "That addition belongs to another mod. An admin can change it.", "notYours");
+    if (edits && !c.isAdmin && camp.get("approval") === "changes") await setApproval(seasonId, campaignId, "pending", {});
+    return camp;
+  }
+  /** The campaign and every activity in it move together. */
+  async function setApproval(seasonId, campaignId, approval, extra) {
+    const batch = db.batch();
+    batch.update(R.campaigns(seasonId).doc(campaignId), { approval, ...extra });
+    for (const a of (await R.activities(seasonId).where("campaignId", "==", campaignId).get()).docs) batch.update(a.ref, { approval });
+    await batch.commit();
+  }
 
   /** Live season: only the fields in LIVE_EDITABLE on revealed nodes, and dates only in the future. */
   function liveGuard(node, op, before, patch, now) {
@@ -264,6 +287,7 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
       if (op !== "update") throw fail("invalid-argument", "Unknown change.", "args");
       result = await setBadge(c, sSnap, data, live);
     } else if (node === "medal") {
+      if (live) await guardHeld(c, seasonId, (await R.activities(seasonId).doc(idLike(data.activityId) || "_").get()).get("campaignId"));
       result = await saveMedal(sSnap, op, data, live, now);
     } else if (op === "reorder") {
       if (live) throw fail("failed-precondition", "The order is fixed once a season is live.", "live");
@@ -276,7 +300,11 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
       const before = op === "create" ? null : await ref.get();
       if (op !== "create" && !before.exists) throw fail("not-found", "That part of the season is gone. Refresh the builder.", "noNode");
       if (op === "delete") {
-        if (live) liveGuard(node, "delete", before.data(), {}, now);
+        if (live) {
+          liveGuard(node, "delete", before.data(), {}, now);
+          if (node === "campaign") await guardHeld(c, seasonId, ref.id, { edits: false });
+          if (node === "activity") await guardHeld(c, seasonId, before.get("campaignId"));
+        }
         await deleteNode(seasonId, node, ref);
       } else {
         const patch = clean(node, data, { partial: op === "update" });
@@ -291,19 +319,27 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
           if (typeId === "medals" && op !== "create") p.huntId = data.id;
           patch.params = p;
         }
+        let joined = null;   // the (held-back) campaign a new live activity joins
         if (live) {
           if (op === "create" && node === "activity") {
             const camp = await R.campaigns(seasonId).doc(patch.campaignId).get();
             if (!camp.exists || camp.get("revealed") === true) throw fail("failed-precondition", "Add activities to a new campaign or event; live campaigns are locked.", "live");
+            joined = await guardHeld(c, seasonId, camp.id);
           }
           liveGuard(node, op, before?.data() || null, patch, now);
+          if (op === "update" && node === "campaign") await guardHeld(c, seasonId, ref.id);
+          if (op === "update" && node === "activity") await guardHeld(c, seasonId, before.get("campaignId"));
         }
         if (op === "create") {
           const order = (await col[node](seasonId).get()).size;
           const base = node === "chapter" ? { name: "", blurb: "", unlockAt: null }
             : node === "campaign" ? { name: "", audience: "all", opensAt: null, closesAt: null, bonus: null, enabled: true }
             : { title: "", instructions: "", link: null, params: {}, target: 1, xp: 0, badgeId: null, repeat: "none", enabled: true };
-          await ref.set({ ...base, order, ...patch, revealed: false, createdAt: Timestamp.now() });
+          // A mod's new campaign or event on a live season, and every activity in it, wait for an admin; an admin's go live.
+          const who = { uid: c.uid, name: c.name };
+          const hold = live && node === "campaign" ? { approval: c.isAdmin ? "approved" : "pending", addedBy: who }
+            : live && node === "activity" ? { approval: joined ? joined.get("approval") : "approved", addedBy: joined?.get("addedBy") || who } : {};
+          await ref.set({ ...base, order, ...patch, ...hold, revealed: false, createdAt: Timestamp.now() });
           if (node === "activity" && patch.typeId === "medals") await R.hunts(seasonId).doc(ref.id).set({ activityId: ref.id, name: patch.title || "Hunt" }, { merge: true });
           if (node === "activity" && patch.typeId === "medals") await ref.update({ params: { ...(patch.params || {}), huntId: ref.id } });
           result = { ok: true, id: ref.id };
@@ -578,7 +614,35 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
     return { ok: true, ...previewOf(t, as, at) };
   });
 
+  // ---------- approving a mod's additions to a live season (fun-factory.md §13d) ----------
+  async function heldCampaign(request) {
+    const c = await adminOnly(request);
+    const { seasonId, campaignId } = request.data || {};
+    const sSnap = await loadSeason(seasonId);
+    if (sSnap.get("status") !== "live") throw fail("failed-precondition", "Only a live season has additions to approve.", "notLive");
+    if (!idLike(campaignId)) throw fail("invalid-argument", "Which addition?", "args");
+    const camp = await R.campaigns(seasonId).doc(campaignId).get();
+    if (!camp.exists) throw fail("not-found", "That addition is gone. Refresh the builder.", "noNode");
+    if (!L.heldBack(camp.data())) throw fail("failed-precondition", "That one isn't waiting for approval.", "notPending");
+    return { c, sSnap, camp };
+  }
+  const factoryApproveAddition = onCall(async (request) => {
+    const { c, sSnap, camp } = await heldCampaign(request);
+    await setApproval(sSnap.id, camp.id, "approved", { approvedBy: { uid: c.uid, name: c.name }, approvedAt: Timestamp.now(), reviewNote: null });
+    await log(c, "factoryApproveAddition", sSnap.id, sSnap.get("name"), { campaignId: camp.id, name: camp.get("name") || "", addedBy: camp.get("addedBy") || null });
+    return { ok: true };
+  });
+  const factorySendBackAddition = onCall(async (request) => {
+    const { c, sSnap, camp } = await heldCampaign(request);
+    const note = str(request.data?.note, 300, { allowEmpty: false });
+    if (!note) throw fail("invalid-argument", "Tell the mod what to change.", "note");
+    await setApproval(sSnap.id, camp.id, "changes", { reviewNote: note, sentBackBy: { uid: c.uid, name: c.name }, sentBackAt: Timestamp.now() });
+    await log(c, "factorySendBackAddition", sSnap.id, sSnap.get("name"), { campaignId: camp.id, name: camp.get("name") || "", addedBy: camp.get("addedBy") || null }, note);
+    return { ok: true };
+  });
+
   return {
+    factoryApproveAddition, factorySendBackAddition,
     factoryListSeasons, factoryGetSeason, factoryPreview, factorySave, factoryArtSignature, factorySubmit, factoryPublish,
     factorySendBack, factoryUnpublish, factoryEnd, factoryDuplicate, factoryIdeaSave, factoryTypeToggle,
   };

@@ -87,7 +87,7 @@ function makeDb() {
           if (op === "<=") return x != null && cmp(x, v) <= 0;
           if (op === ">") return x != null && cmp(x, v) > 0;
           if (op === ">=") return x != null && cmp(x, v) >= 0;
-          if (op === "in") return v.some((y) => cmp(x, y) === 0);
+          if (op === "in") return x !== undefined && v.some((y) => cmp(x, y) === 0);
           throw new Error(`fake-firestore: op ${op}`);
         });
       }

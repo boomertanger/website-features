@@ -80,8 +80,8 @@ function makeFactory({ db = admin.firestore(), grant = null } = {}) {
       const off = new Set(types.docs.filter((d) => d.get("enabled") === false).map((d) => d.id));
       value = {
         season: { id: s.id, ...s.data() },
-        campaigns: new Map(campaigns.docs.map((d) => [d.id, { id: d.id, ...d.data() }])),
-        activities: activities.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => a.enabled !== false && !off.has(a.typeId)),
+        campaigns: new Map(campaigns.docs.map((d) => [d.id, { id: d.id, ...d.data() }]).filter(([, c]) => !L.heldBack(c))),   // a mod's addition still waiting for an admin counts nothing
+        activities: activities.docs.map((d) => ({ id: d.id, ...d.data() })).filter((a) => a.enabled !== false && !off.has(a.typeId) && !L.heldBack(a)),
       };
     }
     cache = { at: now, value };

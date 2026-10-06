@@ -597,12 +597,13 @@ service cloud.firestore {
             allow read: if resource.data.revealed == true && seasonPublic();
             allow write: if false;
           }
+          // A mod's addition waiting for an admin (approval pending or changes) is never revealed, and is hidden here too.
           match /campaigns/{campaignId} {
-            allow read: if resource.data.revealed == true && seasonPublic();
+            allow read: if resource.data.revealed == true && !(resource.data.get('approval', 'approved') in ['pending', 'changes']) && seasonPublic();
             allow write: if false;
           }
           match /activities/{activityId} {
-            allow read: if resource.data.revealed == true && seasonPublic();
+            allow read: if resource.data.revealed == true && !(resource.data.get('approval', 'approved') in ['pending', 'changes']) && seasonPublic();
             allow write: if false;
           }
           match /progress/{uid} {

@@ -16,6 +16,7 @@
 //   staffFinishes(rows, race, size) / beatTheBoss(rows, bossXp)   staff trophies and the Beat the Boss list
 //   streakCheckIn(state, today, cap)   a check-in's effect on the streak (savers, resets, badges)
 //   streakSweep(state, today)       the nightly sweep: spend savers for missed days, or break
+//   heldBack(node)                  a mod's addition to a live season waiting for an admin (approval pending or changes)
 //   revealDue(node, now)            the scheduler reveals a chapter, campaign or activity
 //   campaignOpen(campaign, season, now)   a campaign counts actions right now
 //   capXp(xp, earnedToday, cap)     the XP a completion may pay under the season's daily cap
@@ -117,14 +118,17 @@ function streakSweep(state, today) {
 
 // ---------- scheduling ----------
 /** When a node reveals: a chapter at unlockAt, a campaign at opensAt; activities follow their campaign. */
+/** A mod's campaign or event added to a live season, and its activities, wait for an admin (fun-factory.md §13d):
+ *  approval "pending", or "changes" after a send-back. Held-back nodes never reveal, count or show. Absent = approved. */
+const heldBack = (node) => !!node && (node.approval === "pending" || node.approval === "changes");
 function revealDue(node, now) {
-  if (!node || node.revealed === true) return false;
+  if (!node || node.revealed === true || heldBack(node)) return false;
   const at = ms(node.unlockAt ?? node.opensAt);
   return at > 0 && at <= now;
 }
 /** A campaign counts actions when it's revealed and inside its window (and the season's). */
 function campaignOpen(campaign, season, now) {
-  if (!campaign || campaign.revealed !== true || campaign.enabled === false) return false;
+  if (!campaign || campaign.revealed !== true || campaign.enabled === false || heldBack(campaign)) return false;
   const opens = ms(campaign.opensAt), closes = ms(campaign.closesAt) || ms(season?.endsAt);
   return opens <= now && (!closes || now < closes) && (!season || now < ms(season.endsAt));
 }
@@ -189,6 +193,6 @@ module.exports = {
   STAFF_RACES, STAFF_FINISH_PLACES, BOSS_MIN_XP, BEAT_THE_BOSS,
   dayKey, weekKey, ms, addDays, daysBetween, isDayKey, periodKey,
   paramsMatch, audienceOk, tierFor, roleTagFor, staffRaceOf, saversCapFor,
-  streakCheckIn, streakSweep, revealDue, campaignOpen, seasonLive, capXp,
+  streakCheckIn, streakSweep, heldBack, revealDue, campaignOpen, seasonLive, capXp,
   rankRows, seasonAwards, boardsOf, boardRows, staffFinishes, beatTheBoss, seasonsOverlap, visitSection,
 };

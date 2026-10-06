@@ -23,13 +23,13 @@ const B = require("../lib/factory/builder")({
   recordAssetCreated: async () => "asset1", performAssetDeletion: async () => {}, cloudSecrets: [], cloudCreds: () => ({}),
 });
 const as = (uid) => (fn, data = {}) => B[fn].run({ auth: { uid, token: {} }, data });
-const mod = as("mod"), boss = as("boss"), fan = as("fan");
+const mod = as("mod"), mod2 = as("mod2"), boss = as("boss"), fan = as("fan");
 const reason = async (p) => { try { await p; return "ok"; } catch (e) { return e.details?.reason || e.message; } };
 
 async function main() {
   const S = "sites/boomertanger";
   await db.doc(S).set({ ownerUid: "boss" });
-  for (const [uid, roles] of [["mod", ["mod"]], ["boss", ["admin"]], ["fan", []]]) {
+  for (const [uid, roles] of [["mod", ["mod"]], ["mod2", ["mod"]], ["boss", ["admin"]], ["fan", []]]) {
     await db.doc(`${S}/members/${uid}`).set({ roles });
     await db.doc(`${S}/profiles/${uid}`).set({ handle: uid });
   }
@@ -159,6 +159,40 @@ async function main() {
   const ev = (await mod("factorySave", { seasonId, node: "campaign", op: "create", data: { chapterId: chapters[1], name: "Full moon", cadence: "event", audience: "all", opensAt: Date.now() + W, closesAt: Date.now() + W + 3 * 86400000 } })).id;
   assert.ok((await mod("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: ev, title: "Howl", typeId: "checkin", target: 1, xp: 100 } })).id);
   assert.equal(await reason(mod("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: acts[0].get("campaignId"), title: "Sneaky", typeId: "checkin", target: 1, xp: 100 } })), "live");
+  // A mod's addition waits for an admin (fun-factory.md §13d); an admin's goes live. Titles and instructions stay immediate.
+  const camp = (id) => db.doc(`${S}/factory/main/seasons/${seasonId}/campaigns/${id}`).get();
+  const actsOf = async (id) => (await db.collection(`${S}/factory/main/seasons/${seasonId}/activities`).where("campaignId", "==", id).get()).docs;
+  const [evc, howl] = [await camp(ev), (await actsOf(ev))[0]];
+  assert.deepEqual([evc.get("approval"), evc.get("addedBy").uid, evc.get("revealed"), howl.get("approval"), howl.get("addedBy").uid], ["pending", "mod", false, "pending", "mod"]);
+  assert.equal((await boss("factoryListSeasons")).seasons.find((x) => x.id === seasonId).pending, 1);
+  assert.deepEqual((await boss("factoryListSeasons")).seasons.find((x) => x.id === seasonId).pendingAdditions.map((x) => [x.id, x.approval, x.addedBy.uid]), [[ev, "pending", "mod"]]);
+  assert.equal(await reason(mod2("factorySave", { seasonId, node: "campaign", op: "update", data: { id: ev, name: "Hijacked" } })), "notYours");   // not another mod's
+  assert.equal(await reason(mod2("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: ev, title: "Sneak in", typeId: "checkin", target: 1, xp: 1 } })), "notYours");
+  await mod("factorySave", { seasonId, node: "campaign", op: "update", data: { id: ev, name: "Full moon night" } });   // their own: fine, and still pending
+  assert.deepEqual([(await camp(ev)).get("name"), (await camp(ev)).get("approval")], ["Full moon night", "pending"]);
+  assert.equal(await reason(mod("factoryApproveAddition", { seasonId, campaignId: ev })), "notAdmin");
+  assert.equal(await reason(mod("factorySendBackAddition", { seasonId, campaignId: ev, note: "x" })), "notAdmin");
+  assert.equal(await reason(boss("factorySendBackAddition", { seasonId, campaignId: ev, note: " " })), "note");
+  assert.equal(await reason(boss("factoryApproveAddition", { seasonId, campaignId: acts[0].get("campaignId") })), "notPending");   // an ordinary campaign isn't waiting
+  // Send back: still hidden, the note travels with it; the mod's next edit puts it back to pending.
+  await boss("factorySendBackAddition", { seasonId, campaignId: ev, note: "Lower the XP." });
+  assert.deepEqual([(await camp(ev)).get("approval"), (await camp(ev)).get("reviewNote"), (await actsOf(ev))[0].get("approval"), (await camp(ev)).get("revealed")], ["changes", "Lower the XP.", "changes", false]);
+  assert.equal((await boss("factoryListSeasons")).seasons.find((x) => x.id === seasonId).pendingAdditions[0].approval, "changes");
+  await mod("factorySave", { seasonId, node: "activity", op: "update", data: { id: howl.id, title: "Howl softly", xp: 50 } });
+  assert.deepEqual([(await camp(ev)).get("approval"), (await actsOf(ev))[0].get("approval")], ["pending", "pending"]);
+  // The member view (factoryPreview) leaves it out; approving makes it a normal campaign.
+  const pvLive = await boss("factoryPreview", { seasonId, as: "fan", date: "2027-01-12" });
+  assert.ok(!pvLive.campaigns.some((x) => x.id === ev));
+  await boss("factoryApproveAddition", { seasonId, campaignId: ev });
+  assert.deepEqual([(await camp(ev)).get("approval"), (await camp(ev)).get("approvedBy").uid, (await actsOf(ev))[0].get("approval"), (await camp(ev)).get("revealed")], ["approved", "boss", "approved", false]);   // it reveals on the next tick
+  assert.equal((await boss("factoryListSeasons")).seasons.find((x) => x.id === seasonId).pending, 0);
+  assert.equal(await reason(boss("factoryApproveAddition", { seasonId, campaignId: ev })), "notPending");
+  // An admin's own event goes live directly.
+  const adminEv = (await boss("factorySave", { seasonId, node: "campaign", op: "create", data: { chapterId: chapters[1], name: "Admin night", cadence: "event", audience: "all", opensAt: Date.now() + W, closesAt: Date.now() + W + 86400000 } })).id;
+  assert.deepEqual([(await camp(adminEv)).get("approval"), (await camp(adminEv)).get("addedBy").uid], ["approved", "boss"]);
+  const adminAct = (await boss("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: adminEv, title: "Admin howl", typeId: "checkin", target: 1, xp: 10 } })).id;
+  assert.equal((await db.doc(`${S}/factory/main/seasons/${seasonId}/activities/${adminAct}`).get()).get("approval"), "approved");
+
   // End early (admin): finalized, ended.
   assert.equal(await reason(mod("factoryEnd", { seasonId })), "notAdmin");
   await boss("factoryEnd", { seasonId });
@@ -176,7 +210,7 @@ async function main() {
 
   // Everything went to adminLog.
   const actions = new Set(logs.map((l) => l.action));
-  for (const a of ["factorySave", "factorySubmit", "factorySendBack", "factoryPublish", "factoryUnpublish", "factoryDuplicate", "factoryEnd", "factoryIdeaSave", "factoryTypeToggle"]) assert.ok(actions.has(a), a);
+  for (const a of ["factorySave", "factoryApproveAddition", "factorySendBackAddition", "factorySubmit", "factorySendBack", "factoryPublish", "factoryUnpublish", "factoryDuplicate", "factoryEnd", "factoryIdeaSave", "factoryTypeToggle"]) assert.ok(actions.has(a), a);
   assert.ok(logs.every((l) => l.feature === "factory"));
 
   // The list.
