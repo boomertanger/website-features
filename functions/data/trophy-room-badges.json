@@ -893,6 +893,22 @@
       "awardableBy": null
     },
     {
+      "id": "beat-the-boss",
+      "name": "Beat the Boss",
+      "collection": "arcade",
+      "rarity": 3,
+      "source": "factory",
+      "how": "Finish a season with more season XP than Boomertanger.",
+      "emoji": "👑",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
       "id": "pocket-change-pal",
       "name": "Pocket Change Pal",
       "collection": "supporters",

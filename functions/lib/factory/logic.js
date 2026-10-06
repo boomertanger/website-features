@@ -9,13 +9,17 @@
 //   periodKey(repeat, at)           "all" | day key | week key, from an activity's repeat
 //   paramsMatch(want, got)          every parameter the activity sets must match the event's
 //   audienceOk(audience, who)       all / sub (Sub Club or crew) / crew (mods and admins)
-//   tierFor(who)                    the season board a member races on: fan, sub, crew; null for admins
+//   tierFor(who)                    the season board a member races on: fan, sub, crew (admins race with the crew)
+//   roleTagFor(who)                 "admin" for admins and the owner (the Staff tag), else null
+//   staffRaceOf(season)             "together" (default) or "separate": where admins race (docs/specs/fun-factory.md §13c)
+//   boardRows(rows, board, race) / boardsOf(row, race)   which rows a board shows (all, sub, crew, staff)
+//   staffFinishes(rows, race, size) / beatTheBoss(rows, bossXp)   staff trophies and the Beat the Boss list
 //   streakCheckIn(state, today, cap)   a check-in's effect on the streak (savers, resets, badges)
 //   streakSweep(state, today)       the nightly sweep: spend savers for missed days, or break
 //   revealDue(node, now)            the scheduler reveals a chapter, campaign or activity
 //   campaignOpen(campaign, season, now)   a campaign counts actions right now
 //   capXp(xp, earnedToday, cap)     the XP a completion may pay under the season's daily cap
-//   rankRows(rows) / seasonAwards(rows)   board order; trophies (top 3) and plaques (4 to 10)
+//   rankRows(rows) / seasonAwards(rows)   board order; trophies (top 3) and plaques (4 to 10), for members only
 //   seasonsOverlap(a, b)            two seasons' [startsAt, endsAt) windows overlap
 const { dayKey, weekKey, ms, WEEK_TZ: TZ } = require("../arcade/logic");
 
@@ -28,6 +32,10 @@ const STREAK_BADGES = [3, 7, 14, 21, 30, 45, 60, 75, 100, 150, 200, 365];
 const SAVER_EVERY = 7;
 const SAVERS_CAP = { base: 2, plus: 3 };
 const SEASON_PLACES = { trophies: 3, plaques: 10 };
+const STAFF_RACES = ["together", "separate"];
+const STAFF_FINISH_PLACES = 10;   // an admin in the top 10 of the all board gets a Staff Finish trophy
+const BOSS_MIN_XP = 500;          // the owner needs this much season XP before Beat the Boss can be earned
+const BEAT_THE_BOSS = "beat-the-boss";
 // The sections factoryVisit counts (the first path segment); anything else is refused.
 const VISIT_SECTIONS = ["/", "/live", "/schedule", "/games", "/arcade", "/trophies", "/factory", "/streams", "/shop", "/club"];
 
@@ -68,14 +76,15 @@ function audienceOk(audience, w) {
   if (audience === "sub") return x.sub || x.crew;
   return true;
 }
-/** Admins (and the owner) never race; mods race on the crew board; Sub Club on sub; everyone else fan. */
+/** Mods and admins race on the crew board (admins with a Staff tag, see roleTagFor); Sub Club on sub; everyone else fan. */
 function tierFor(w) {
   const x = who(w);
-  if (x.admin) return null;
   if (x.crew) return "crew";
   if (x.sub) return "sub";
   return "fan";
 }
+const roleTagFor = (w) => (who(w).admin ? "admin" : null);
+const staffRaceOf = (season) => (season && season.staffRace === "separate" ? "separate" : "together");
 const saversCapFor = (w) => { const x = who(w); return x.sub || x.crew ? SAVERS_CAP.plus : SAVERS_CAP.base; };
 
 // ---------- streaks (§13a) ----------
@@ -134,9 +143,36 @@ function rankRows(rows) {
   return [...(rows || [])].filter((r) => r && r.seasonXp > 0)
     .sort((a, b) => b.seasonXp - a.seasonXp || ms(a.updatedAt) - ms(b.updatedAt) || String(a.uid).localeCompare(String(b.uid)));
 }
-/** Places 1-3 get a season trophy, 4-10 a plaque (rewards.md §7). */
+/** Admins are staff: they race and show on the boards, but member prizes skip them. */
+const isStaffRow = (r) => !!r && r.roleTag === "admin";
+/** The boards a standings row shows on. Together: everyone on all; Sub Club on sub; mods and admins on crew.
+ *  Separate: admins on the staff board only. */
+function boardsOf(row, race = "together") {
+  if (isStaffRow(row)) return race === "separate" ? ["staff"] : ["all", "crew"];
+  const out = ["all"];
+  if (row.tier === "sub") out.push("sub");
+  if (row.tier === "crew") out.push("crew");
+  return out;
+}
+/** The rows of one board, in rank order (ranks are the board's own: rank them with their index). */
+function boardRows(rows, board, race = "together") {
+  return rankRows(rows).filter((r) => boardsOf(r, race).includes(board));
+}
+/** Places 1-3 get a season trophy, 4-10 a plaque (rewards.md §7). Admins are skipped: places count members only. */
 function seasonAwards(rows) {
-  return rankRows(rows).slice(0, SEASON_PLACES.plaques).map((r, i) => ({ uid: r.uid, place: i + 1, kind: i < SEASON_PLACES.trophies ? "season" : "plaque" }));
+  return rankRows(rows).filter((r) => !isStaffRow(r)).slice(0, SEASON_PLACES.plaques).map((r, i) => ({ uid: r.uid, place: i + 1, kind: i < SEASON_PLACES.trophies ? "season" : "plaque" }));
+}
+/** Admins in the top 10 of the all board (together) or of the staff board (separate): [{ uid, place, of }].
+ *  size: the all board's member count (together); the staff board's own count is used under separate. */
+function staffFinishes(rows, race = "together", size = null) {
+  const ranked = race === "separate" ? rankRows(rows).filter(isStaffRow) : rankRows(rows);
+  const of = race === "separate" ? ranked.length : Math.max(size || 0, ranked.length);
+  return ranked.slice(0, STAFF_FINISH_PLACES).map((r, i) => ({ uid: r.uid, place: i + 1, of, staff: isStaffRow(r) })).filter((x) => x.staff).map(({ staff, ...x }) => x);
+}
+/** Beat the Boss: every non-admin with more season XP than the owner, once the owner has BOSS_MIN_XP. */
+function beatTheBoss(rows, bossXp) {
+  if (!(bossXp >= BOSS_MIN_XP)) return [];
+  return rankRows(rows).filter((r) => !isStaffRow(r) && r.seasonXp > bossXp).map((r) => r.uid);
 }
 const seasonsOverlap = (a, b) => ms(a.startsAt) < ms(b.endsAt) && ms(b.startsAt) < ms(a.endsAt);
 
@@ -150,8 +186,9 @@ function visitSection(path) {
 
 module.exports = {
   TZ, DAY_MS, REPEATS, CADENCES, AUDIENCES, STATUSES, STREAK_BADGES, SAVER_EVERY, SAVERS_CAP, SEASON_PLACES, VISIT_SECTIONS,
+  STAFF_RACES, STAFF_FINISH_PLACES, BOSS_MIN_XP, BEAT_THE_BOSS,
   dayKey, weekKey, ms, addDays, daysBetween, isDayKey, periodKey,
-  paramsMatch, audienceOk, tierFor, saversCapFor,
+  paramsMatch, audienceOk, tierFor, roleTagFor, staffRaceOf, saversCapFor,
   streakCheckIn, streakSweep, revealDue, campaignOpen, seasonLive, capXp,
-  rankRows, seasonAwards, seasonsOverlap, visitSection,
+  rankRows, seasonAwards, boardsOf, boardRows, staffFinishes, beatTheBoss, seasonsOverlap, visitSection,
 };

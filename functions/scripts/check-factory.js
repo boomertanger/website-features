@@ -61,8 +61,12 @@ assert.equal(L.tierFor(fan), "fan");
 assert.equal(L.tierFor(sub), "sub");
 assert.equal(L.tierFor(subProd), "fan");
 assert.equal(L.tierFor(mod), "crew");
-assert.equal(L.tierFor(adm), null);
-assert.equal(L.tierFor(owner), null);
+assert.equal(L.tierFor(adm), "crew");      // admins race with the crew, with a Staff tag
+assert.equal(L.tierFor(owner), "crew");
+assert.equal(L.roleTagFor(adm), "admin");
+assert.equal(L.roleTagFor(owner), "admin");
+assert.equal(L.roleTagFor(mod), null);
+assert.equal(L.roleTagFor(fan), null);
 assert.equal(L.saversCapFor(fan), 2);
 assert.equal(L.saversCapFor(sub), 3);
 assert.equal(L.saversCapFor(mod), 3);
@@ -138,6 +142,42 @@ const awards = L.seasonAwards(rows);
 assert.equal(awards.length, 10);
 assert.deepEqual(awards.slice(0, 4).map((a) => [a.uid, a.place, a.kind]), [["b", 1, "season"], ["c", 2, "season"], ["a", 3, "season"], ["m0", 4, "plaque"]]);
 assert.equal(awards[9].kind, "plaque");
+// ---------- staff race (fun-factory.md §13c) ----------
+assert.equal(L.staffRaceOf({}), "together");
+assert.equal(L.staffRaceOf({ staffRace: "separate" }), "separate");
+assert.equal(L.staffRaceOf({ staffRace: "nonsense" }), "together");
+const race = [
+  { uid: "adm1", seasonXp: 900, updatedAt: 1, tier: "crew", roleTag: "admin" },   // 1st by XP, but staff
+  { uid: "f1", seasonXp: 800, updatedAt: 1, tier: "fan" },
+  { uid: "adm2", seasonXp: 700, updatedAt: 1, tier: "crew", roleTag: "admin" },
+  { uid: "m1", seasonXp: 600, updatedAt: 1, tier: "crew" },
+  { uid: "s1", seasonXp: 500, updatedAt: 1, tier: "sub" },
+  { uid: "f2", seasonXp: 400, updatedAt: 1, tier: "fan" },
+  { uid: "f3", seasonXp: 300, updatedAt: 1, tier: "fan" },
+];
+// Boards: admins on all and crew, never on sub; real ranks include them.
+assert.deepEqual(L.boardRows(race, "all").map((r) => r.uid), ["adm1", "f1", "adm2", "m1", "s1", "f2", "f3"]);
+assert.deepEqual(L.boardRows(race, "crew").map((r) => r.uid), ["adm1", "adm2", "m1"]);
+assert.deepEqual(L.boardRows(race, "sub").map((r) => r.uid), ["s1"]);
+assert.deepEqual(L.boardRows(race, "staff").map((r) => r.uid), []);
+// Prizes skip admins: places count members only (the first member is 1st even though the board says #2).
+assert.deepEqual(L.seasonAwards(race).slice(0, 4).map((a) => [a.uid, a.place, a.kind]), [["f1", 1, "season"], ["m1", 2, "season"], ["s1", 3, "season"], ["f2", 4, "plaque"]]);
+// Staff Finish: an admin in the top 10 of the all board, with the real place and the board size.
+assert.deepEqual(L.staffFinishes(race, "together", 612), [{ uid: "adm1", place: 1, of: 612 }, { uid: "adm2", place: 3, of: 612 }]);
+// An admin outside the top 10 gets none.
+const deep = [...Array.from({ length: 10 }, (_, i) => ({ uid: `x${i}`, seasonXp: 1000 - i, updatedAt: 1, tier: "fan" })), { uid: "adm3", seasonXp: 5, updatedAt: 1, tier: "crew", roleTag: "admin" }];
+assert.deepEqual(L.staffFinishes(deep, "together", 11), []);
+// Separate: admins leave the all, sub and crew boards for a staff board; their finish is their place there.
+assert.deepEqual(L.boardRows(race, "all", "separate").map((r) => r.uid), ["f1", "m1", "s1", "f2", "f3"]);
+assert.deepEqual(L.boardRows(race, "crew", "separate").map((r) => r.uid), ["m1"]);
+assert.deepEqual(L.boardRows(race, "staff", "separate").map((r) => r.uid), ["adm1", "adm2"]);
+assert.deepEqual(L.staffFinishes(race, "separate"), [{ uid: "adm1", place: 1, of: 2 }, { uid: "adm2", place: 2, of: 2 }]);
+// Beat the Boss: only once the owner has 500 season XP, only non-admins, only strictly more.
+assert.deepEqual(L.beatTheBoss(race, 600), ["f1"]);   // f1 (800) beats a boss on 600; m1 ties and doesn't; admins never
+assert.deepEqual(L.beatTheBoss(race, 499), []);                                           // under the 500 gate nobody earns it
+assert.deepEqual(L.beatTheBoss(race, 500).sort(), ["f1", "m1"]);                          // exactly 500 opens the gate; s1 (500) doesn't beat it
+assert.equal(L.BOSS_MIN_XP, 500);
+
 assert.ok(L.seasonsOverlap({ startsAt: 0, endsAt: 10 }, { startsAt: 5, endsAt: 20 }));
 assert.ok(!L.seasonsOverlap({ startsAt: 0, endsAt: 10 }, { startsAt: 10, endsAt: 20 }));   // back to back is fine
 

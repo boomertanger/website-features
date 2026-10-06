@@ -112,7 +112,7 @@ function makeGrant({ db = admin.firestore() } = {}) {
     if (!uid || !kind || !label || ref == null) throw new Error("grantTrophy: uid, kind, label and ref are required");
     const id = safeId(`${kind}-${ref}`);
     const key = L.ledgerKey("trophy", id, uid);
-    const xp = L.trophyXp(place);
+    const xp = kind === "staff-season" ? 0 : L.trophyXp(place);   // a Staff Finish never pays XP
     const out = await db.runTransaction(async (tx) => {
       const [ledger, trophy, profile] = await Promise.all([tx.get(R.ledger(key)), tx.get(R.trophy(uid, id)), tx.get(R.profile(uid))]);
       if (ledger.exists || trophy.exists) return { granted: false, reason: "paid" };

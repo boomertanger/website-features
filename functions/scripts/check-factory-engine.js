@@ -115,14 +115,15 @@ async function main() {
   assert.equal(paid.filter((p) => p.uid === "fan").pop().ref, "play:2026-10-08");
   assert.deepEqual((await F.recordFactoryEvent("fan", "arcade", { action: "finish", gameId: "tapTheSplat" }, "finish-d")).completed, []);
 
-  // A mod gets the crew job; an admin earns XP but is never on the standings.
+  // A mod gets the crew job; an admin earns XP and races too (tier crew, roleTag admin).
   r = await F.recordFactoryEvent("mod", "checkin", {}, "2026-10-08");
   assert.deepEqual(r.completed.sort(), ["clock", "crewjob"]);
   assert.equal((await db.doc(`${S}/standings/mod`).get()).data().tier, "crew");
   r = await F.recordFactoryEvent("adm", "checkin", {}, "2026-10-08");
   assert.deepEqual(r.completed.sort(), ["clock", "crewjob"]);
   assert.ok(paid.some((p) => p.uid === "adm" && p.ref === "crewjob:all"));
-  assert.equal((await db.doc(`${S}/standings/adm`).get()).exists, false);
+  assert.deepEqual([(await db.doc(`${S}/standings/adm`).get()).get("tier"), (await db.doc(`${S}/standings/adm`).get()).get("roleTag")], ["crew", "admin"]);
+  assert.equal((await db.doc(`${S}/standings/mod`).get()).get("roleTag"), null);
   // Someone who never signed up counts for nothing.
   assert.equal((await F.recordFactoryEvent("ghost", "checkin", {}, "2026-10-08")).reason, "noProfile");
 
@@ -190,14 +191,18 @@ async function main() {
   assert.ok(log.includes("s01: chapter c1") && log.includes("s01: campaign k1") && log.includes("s01: activity x1"));
   assert.ok(!log.includes("s01: chapter c2") && !log.includes("s01: campaign k2") && !log.includes("s01: activity x2"));
   assert.equal((await db.doc(S).get()).get("status"), "ended");
-  // s00's results: the fan was 1st (the only member with XP who isn't an admin besides the mod).
+  // s00's results: the fan was 1st and the mod 2nd among members; the admin raced between them (2nd on the board),
+  // so she gets no season trophy (places count members) but a Staff Finish with her real place and the board size.
   const trophies = paid.filter((p) => p.trophy);
-  assert.deepEqual(trophies.map((p) => [p.uid, p.trophy, p.place]), [["fan", "season", 1], ["mod", "season", 2]]);
+  assert.deepEqual(trophies.map((p) => [p.uid, p.trophy, p.place]), [["fan", "season", 1], ["mod", "season", 2], ["adm", "staff-season", 2]]);
   assert.equal(trophies[0].label, "1st · Season 00");
+  assert.equal(trophies[1].label, "2nd · Season 00");   // a member's place, not their board rank (#3)
+  assert.equal(trophies[2].label, "Season 00 · Staff finish · #2 of 3");
   const board = (await db.doc(`${S}/boards/all`).get()).data();
-  assert.deepEqual(board.rows.map((r) => [r.rank, r.uid]), [[1, "fan"], [2, "mod"]]);
+  assert.deepEqual(board.rows.map((r) => [r.rank, r.uid, r.roleTag]), [[1, "fan", null], [2, "adm", "admin"], [3, "mod", null]]);
   assert.deepEqual(board.rows[0].featured, { id: "everpresent", emoji: "👁", art: null, rarity: 5 });   // featured badges ride on the rows
   assert.equal(board.rows[1].featured, null);
+  assert.equal(board.boss, null);   // the owner ("boss") never raced this season: no marker
   // The public summary: s01 went live in the same tick, chapter 1 of 2, chapter 2 next; s00's top 3.
   let sum = (await db.doc("sites/boomertanger/public/factory").get()).data();
   assert.deepEqual([sum.live, sum.liveSeasonId, sum.name, sum.chapters, sum.chapter.number, sum.nextChapterNumber], [true, "s01", "Season 01", 2, 1, 2]);
@@ -207,11 +212,12 @@ async function main() {
   const stamp = sum.updatedAt.toMillis();
   await Z.writeSummary(NOW + 60e3);
   assert.equal((await db.doc("sites/boomertanger/public/factory").get()).get("updatedAt").toMillis(), stamp);   // unchanged: not rewritten
-  assert.equal(board.count, 2);
-  assert.deepEqual((await db.doc(`${S}/boards/crew`).get()).data().rows.map((r) => r.uid), ["mod"]);
+  assert.equal(board.count, 3);
+  assert.deepEqual((await db.doc(`${S}/boards/crew`).get()).data().rows.map((r) => [r.uid, r.roleTag]), [["adm", "admin"], ["mod", null]]);   // admins are on the crew board with their tag
+  assert.equal((await db.doc(`${S}/boards/sub`).get()).data().count, 0);
   // Running the end again pays nothing twice.
   await Z.finalize({ id: "s00", ...(await db.doc(S).get()).data() }, NOW);
-  assert.equal(paid.filter((p) => p.trophy).length, 2);
+  assert.equal(paid.filter((p) => p.trophy).length, 3);
   // A season can't go live over another: a Scheduled one overlapping live s01 waits.
   await put(`${root}/seasons/s02`, { name: "Clash", status: "scheduled", startsAt: T.fromMillis(NOW), endsAt: T.fromMillis(NOW + 30 * day) });
   log = await Z.tick(NOW + 5 * 60e3);
@@ -232,6 +238,66 @@ async function main() {
   assert.ok(log.includes("s01: ended"));
   sum = (await db.doc("sites/boomertanger/public/factory").get()).data();
   assert.deepEqual([sum.live, sum.liveSeasonId, sum.last.id], [false, null, "s01"]);   // off-season
+
+  // ---------- staff race: Beat the Boss, Staff Finish, the 500 XP gate and the staffRace switch ----------
+  // The owner ("boss", an admin) raced. Members f1 (900) and f2 (700, a tie that got there later) and the admin a9 (800).
+  const standing = (sid, uid, seasonXp, extra = {}, updatedAt = 1) => put(`${root}/seasons/${sid}/standings/${uid}`, { uid, seasonXp, tier: "fan", handle: uid, displayName: uid, updatedAt, ...extra });
+  const raced = async (sid, bossXp, season = {}) => {
+    await put(`${root}/seasons/${sid}`, { name: `Season ${sid}`, number: Number(sid.slice(1)), status: "live", revealed: true, startsAt: T.fromMillis(NOW - 20 * day), endsAt: T.fromMillis(NOW - 60e3), ...season });
+    await standing(sid, "boss", bossXp, { tier: "crew", roleTag: "admin" }, 1);
+    await standing(sid, "a9", 800, { tier: "crew", roleTag: "admin" });
+    await standing(sid, "f1", 900);
+    await standing(sid, "f2", bossXp, {}, 2);
+    for (const u of ["f1", "f2", "a9", "boss"]) await db.doc(`sites/boomertanger/profiles/${u}`).set({ handle: u, displayName: u }, { merge: true });
+    await put("sites/boomertanger", { ownerUid: "boss" });
+    return Z.finalize({ id: sid, ...(await db.doc(`${root}/seasons/${sid}`).get()).data() }, NOW);
+  };
+  const before = paid.length;
+  await raced("s09", 700);
+  const got = paid.slice(before);
+  assert.deepEqual(got.filter((p) => p.badgeId === "beat-the-boss").map((p) => p.uid), ["f1"]);   // 900 beats 700; the tie doesn't; admins never
+  assert.deepEqual(got.filter((p) => p.trophy === "season").map((p) => [p.uid, p.place, p.label]), [["f1", 1, "1st · Season s09"], ["f2", 2, "2nd · Season s09"]]);
+  assert.deepEqual(got.filter((p) => p.trophy === "staff-season").map((p) => [p.uid, p.place, p.label]), [["a9", 2, "Season 09 · Staff finish · #2 of 4"], ["boss", 3, "Season 09 · Staff finish · #3 of 4"]]);
+  assert.equal((await db.doc("sites/boomertanger/profiles/f1").get()).get("beatTheBoss"), 1);
+  assert.equal((await db.doc("sites/boomertanger/profiles/f2").get()).get("beatTheBoss") ?? 0, 0);
+  const all9 = (await db.doc(`${root}/seasons/s09/boards/all`).get()).data();
+  assert.deepEqual(all9.boss, { uid: "boss", handle: "boss", displayName: "boss", seasonXp: 700, rank: 3 });   // the Boss marker rides on the board doc
+  assert.deepEqual(all9.rows.map((r) => [r.uid, r.roleTag]), [["f1", null], ["a9", "admin"], ["boss", "admin"], ["f2", null]]);
+  assert.equal((await db.doc(`${root}/seasons/s09/boards/staff`).get()).exists, false);   // "together": no staff board
+  // Finishing again pays and counts nothing twice.
+  await Z.finalize({ id: "s09", ...(await db.doc(`${root}/seasons/s09`).get()).data() }, NOW);
+  assert.equal(paid.slice(before).length, got.length);
+  assert.equal((await db.doc("sites/boomertanger/profiles/f1").get()).get("beatTheBoss"), 1);
+  // A second season beaten counts again (the badge is earned once; the count is per season).
+  await raced("s10", 700);
+  assert.equal((await db.doc("sites/boomertanger/profiles/f1").get()).get("beatTheBoss"), 2);
+  // Under 500 the Boss is just getting started: nobody earns it.
+  const b2 = paid.length;
+  await raced("s11", 499);
+  assert.ok(!paid.slice(b2).some((p) => p.badgeId === "beat-the-boss"));
+  assert.equal((await db.doc("sites/boomertanger/profiles/f1").get()).get("beatTheBoss"), 2);
+  // staffRace "separate": admins leave the all and crew boards for a staff board; the Staff Finish is their place there.
+  const b3 = paid.length;
+  await raced("s12", 700, { staffRace: "separate" });
+  const all12 = (await db.doc(`${root}/seasons/s12/boards/all`).get()).data();
+  assert.deepEqual(all12.rows.map((r) => r.uid), ["f1", "f2"]);
+  assert.equal(all12.count, 2);
+  const staff12 = (await db.doc(`${root}/seasons/s12/boards/staff`).get()).data();
+  assert.deepEqual(staff12.rows.map((r) => [r.rank, r.uid]), [[1, "a9"], [2, "boss"]]);
+  assert.equal(staff12.count, 2);
+  assert.equal(staff12.boss.rank, null);   // under "separate" the marker shows the gap, not a rank
+  assert.deepEqual((await db.doc(`${root}/seasons/s12/boards/crew`).get()).data().rows, []);
+  assert.deepEqual(paid.slice(b3).filter((p) => p.trophy === "staff-season").map((p) => [p.uid, p.place, p.label]), [["a9", 1, "Season 12 · Staff finish · #1 of 2"], ["boss", 2, "Season 12 · Staff finish · #2 of 2"]]);
+
+  // The real Trophy Room: a Staff Finish pays no XP, even for 1st place; a member's 1st still pays 150.
+  const RG = require("../lib/rewards/grant").makeGrant({ db });
+  await put("sites/boomertanger/profiles/t1", { handle: "t1", xp: 0 });
+  await put("sites/boomertanger/profiles/t2", { handle: "t2", xp: 0 });
+  const sf = await RG.grantTrophy("t1", { kind: "staff-season", place: 1, label: "Season 01 · Staff finish · #1 of 612", ref: "sT" });
+  const mf = await RG.grantTrophy("t2", { kind: "season", place: 1, label: "1st · Season 01", ref: "sT" });
+  assert.deepEqual([sf.granted, sf.xp, mf.granted, mf.xp], [true, 0, true, 150]);
+  assert.equal((await db.doc("sites/boomertanger/profiles/t1").get()).get("xp"), 0);
+  assert.equal((await db.doc("sites/boomertanger/profiles/t1/trophies/staff-season-sT").get()).get("kind"), "staff-season");
 
   console.log("check-factory-engine: ok");
 }

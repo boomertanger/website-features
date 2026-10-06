@@ -15,7 +15,7 @@
 //        visit and medals count distinct sections / medals.
 //     4. on reaching the target, pays grantXp (feature "factory", ref "{activityId}:{period}") and
 //        grantBadge if the activity has a badgeId; adds the same XP to standings/{uid}.seasonXp
-//        (never for admins); a campaign whose activities are all done pays its bonus once per period.
+//        (admins too, with roleTag "admin": they race, but member prizes skip them); a campaign whose activities are all done pays its bonus once per period.
 //     5. respects the season's optional dailyXpCap (factory XP per Central day).
 //     Activities whose type an admin switched off don't count.
 //   Never throws for a member's action: problems are logged and the feature carries on.
@@ -199,12 +199,11 @@ function makeFactory({ db = admin.firestore(), grant = null } = {}) {
     return { counted: true, completed: pay.filter((d) => d.kind === "activity").map((d) => d.id), bonuses: pay.filter((d) => d.kind === "bonus").map((d) => d.id) };
   }
 
-  /** standings/{uid}.seasonXp += xp (admins never race). */
+  /** standings/{uid}.seasonXp += xp. Admins race too (tier crew, roleTag "admin"; fun-factory.md §13c). */
   async function addStanding(seasonId, uid, who, xp, now = Date.now()) {
     const tier = L.tierFor(who);
-    if (!tier) return;
     await R.standings(seasonId).doc(uid).set({
-      uid, seasonXp: FieldValue.increment(xp), tier, handle: who.handle, displayName: who.displayName, updatedAt: Timestamp.fromMillis(now),
+      uid, seasonXp: FieldValue.increment(xp), tier, roleTag: L.roleTagFor(who), handle: who.handle, displayName: who.displayName, updatedAt: Timestamp.fromMillis(now),
     }, { merge: true });
   }
 

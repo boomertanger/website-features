@@ -59,6 +59,13 @@ async function main() {
     await mod("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: w, title: "Splat run", typeId: "arcade", params: { action: "finish", gameId: "tapTheSplat" }, target: 3, xp: 100, repeat: "weekly" } });
     await mod("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: st, title: `Find ${ch}`, typeId: "visit", target: 3, xp: 150 } });
   }
+  // Where staff race (fun-factory.md §13c): "together" by default; only admins change it, and only before it's live.
+  const seasonDoc = () => db.doc(`${S}/factory/main/seasons/${seasonId}`).get();
+  assert.equal((await seasonDoc()).get("staffRace"), "together");
+  assert.equal(await reason(mod("factorySave", { seasonId, node: "season", op: "update", data: { staffRace: "separate" } })), "notAdmin");
+  assert.equal(await reason(boss("factorySave", { seasonId, node: "season", op: "update", data: { staffRace: "sideways" } })), "field");
+  await boss("factorySave", { seasonId, node: "season", op: "update", data: { staffRace: "separate" } });
+  assert.equal((await seasonDoc()).get("staffRace"), "separate");
   // A medal hunt: its hunt doc and up to 10 medals on allowlisted pages.
   const huntCamp = (await mod("factorySave", { seasonId, node: "campaign", op: "create", data: { chapterId: chapters[0], name: "Hunt", cadence: "story", audience: "all" } })).id;
   const hunt = (await mod("factorySave", { seasonId, node: "activity", op: "create", data: { campaignId: huntCamp, title: "Hidden medals", typeId: "medals", target: 2, xp: 150 } })).id;
@@ -126,6 +133,7 @@ async function main() {
   const two = (await mod("factoryDuplicate", { seasonId })).seasonId;
   let d2 = (await db.doc(`${S}/factory/main/seasons/${two}`).get()).data();
   assert.deepEqual([d2.status, d2.startsAt, d2.art, d2.badgeId, d2.number], ["draft", null, null, null, 2]);
+  assert.equal(d2.staffRace, "separate");   // a duplicate keeps the setting
   assert.equal((await db.collection(`${S}/factory/main/seasons/${two}/activities`).get()).size, 13);
   assert.equal((await db.collection(`${S}/factory/main/seasons/${two}/hunts/${hunt}/medals`).get()).size, 1);
   const g2 = await mod("factoryGetSeason", { seasonId: two });
@@ -142,6 +150,7 @@ async function main() {
   const a0 = acts[0].id;
   assert.equal(await mod("factorySave", { seasonId, node: "activity", op: "update", data: { id: a0, title: "Clock in!" } }).then(() => "ok"), "ok");
   assert.equal(await reason(mod("factorySave", { seasonId, node: "activity", op: "update", data: { id: a0, xp: 999 } })), "live");
+  assert.equal(await reason(boss("factorySave", { seasonId, node: "season", op: "update", data: { staffRace: "together" } })), "live");   // locked once live: boards would reshuffle
   assert.equal(await reason(mod("factorySave", { seasonId, node: "activity", op: "update", data: { id: a0, target: 2 } })), "live");
   assert.equal(await reason(mod("factorySave", { seasonId, node: "chapter", op: "update", data: { id: chapters[0], unlockAt: Date.now() + W } })), "pastDate");
   assert.equal(await reason(mod("factorySave", { seasonId, node: "activity", op: "delete", data: { id: a0 } })), "live");

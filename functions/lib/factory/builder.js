@@ -82,7 +82,7 @@ const toTs = (v) => (v == null ? null : admin.firestore.Timestamp.fromMillis(v))
 
 const FIELDS = {
   season: { name: (v) => str(v, 60), pitch: (v) => str(v, 200), tags: (v) => (Array.isArray(v) && v.length <= 6 && v.every((t) => typeof t === "string" && t.trim() && t.length <= 24) ? v.map((t) => t.trim().toLowerCase()) : undefined),
-    startsAt: msOrNull, endsAt: msOrNull, dailyXpCap: (v) => (v === null ? null : int(v, 0, 100000)), ideaId: (v) => (v == null ? null : idLike(v)) },
+    startsAt: msOrNull, endsAt: msOrNull, dailyXpCap: (v) => (v === null ? null : int(v, 0, 100000)), staffRace: (v) => oneOf(v, L.STAFF_RACES), ideaId: (v) => (v == null ? null : idLike(v)) },
   chapter: { name: (v) => str(v, 60), blurb: (v) => str(v, 200), unlockAt: msOrNull, order: (v) => int(v, 0, 99), ideaId: (v) => (v == null ? null : idLike(v)) },
   campaign: { chapterId: idLike, name: (v) => str(v, 60), cadence: (v) => oneOf(v, L.CADENCES), audience: (v) => oneOf(v, L.AUDIENCES), opensAt: msOrNull, closesAt: msOrNull,
     order: (v) => int(v, 0, 99), bonus: (v) => (v == null ? null : typeof v === "object" && int(v.xp ?? 0, 0, 2000) !== undefined && (v.badgeId == null || idLike(v.badgeId)) ? { xp: v.xp || 0, badgeId: v.badgeId || null } : undefined), ideaId: (v) => (v == null ? null : idLike(v)) },
@@ -237,7 +237,7 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
       const number = Math.max(0, ...all.map((s) => s.number ?? 0)) + 1;
       const id = `s${String(number).padStart(2, "0")}-${crypto.randomBytes(3).toString("hex")}`;
       const fields = clean("season", data, { partial: true });
-      await R.season(id).set({ number, name: fields.name || "", pitch: fields.pitch || "", tags: fields.tags || [], art: null, startsAt: fields.startsAt ?? null, endsAt: fields.endsAt ?? null, status: "draft", revealed: false, dailyXpCap: null, badgeId: null, ideaId: fields.ideaId ?? null, createdBy: { uid: c.uid, name: c.name }, createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
+      await R.season(id).set({ number, name: fields.name || "", pitch: fields.pitch || "", tags: fields.tags || [], art: null, startsAt: fields.startsAt ?? null, endsAt: fields.endsAt ?? null, status: "draft", revealed: false, dailyXpCap: null, staffRace: "together", badgeId: null, ideaId: fields.ideaId ?? null, createdBy: { uid: c.uid, name: c.name }, createdAt: Timestamp.now(), updatedAt: Timestamp.now() });
       await log(c, "factorySave", id, fields.name || `Season ${number}`, { node, op });
       return { ok: true, seasonId: id };
     }
@@ -253,6 +253,7 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
       if (op === "art") result = await setArt(c, sSnap, data);
       else if (op === "update") {
         const patch = clean("season", data, { partial: true });
+        if ("staffRace" in patch && !c.isAdmin) throw fail("permission-denied", "Only admins can change where staff race.", "notAdmin");
         if (live) liveGuard("season", "update", sSnap.data(), patch, now);
         await R.season(seasonId).update(patch);
       } else if (op === "delete") {
@@ -500,7 +501,7 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
     const id = `s${String(number).padStart(2, "0")}-${crypto.randomBytes(3).toString("hex")}`;
     const now = Timestamp.now();
     const strip = (x, drop) => Object.fromEntries(Object.entries(x).filter(([k]) => !["id", "revealed", "revealedAt", ...drop].includes(k)));
-    const writes = [[R.season(id), { number, name: `${t.season.name || "Untitled"} (copy)`, pitch: t.season.pitch || "", tags: t.season.tags || [], art: null, startsAt: null, endsAt: null, status: "draft", revealed: false, dailyXpCap: t.season.dailyXpCap ?? null, badgeId: null, ideaId: t.season.ideaId || null, duplicatedFrom: t.season.id, createdBy: { uid: c.uid, name: c.name }, createdAt: now, updatedAt: now }]];
+    const writes = [[R.season(id), { number, name: `${t.season.name || "Untitled"} (copy)`, pitch: t.season.pitch || "", tags: t.season.tags || [], art: null, startsAt: null, endsAt: null, status: "draft", revealed: false, dailyXpCap: t.season.dailyXpCap ?? null, staffRace: t.season.staffRace || "together", badgeId: null, ideaId: t.season.ideaId || null, duplicatedFrom: t.season.id, createdBy: { uid: c.uid, name: c.name }, createdAt: now, updatedAt: now }]];
     for (const ch of t.chapters) writes.push([R.chapters(id).doc(ch.id), { ...strip(ch, ["createdAt"]), unlockAt: null, revealed: false, createdAt: now }]);
     for (const cp of t.campaigns) writes.push([R.campaigns(id).doc(cp.id), { ...strip(cp, ["createdAt"]), opensAt: null, closesAt: null, revealed: false, createdAt: now }]);
     for (const a of t.activities) writes.push([R.activities(id).doc(a.id), { ...strip(a, ["createdAt"]), revealed: false, createdAt: now }]);

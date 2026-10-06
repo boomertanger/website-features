@@ -6,10 +6,14 @@
 //     2. in a live season, reveals chapters (unlockAt), campaigns (opensAt, once their chapter is
 //        revealed) and activities (once their campaign is), stamping revealedAt
 //     3. rolls up boards/{all|sub|crew}: the top 100 by season XP and a count, like the Arcade's
-//        pre-built boards (admins are never in standings, so never on a board)
+//        pre-built boards. Admins race too (a Staff tag, never on the sub board); under the season's
+//        staffRace "separate" they are on boards/staff instead. Every board doc also carries the
+//        owner's rank and XP (boss) for the "Boss is #12" marker (docs/specs/fun-factory.md §13c)
 //     4. a live season past endsAt is finalized: final boards, season trophies through grantTrophy
-//        (places 1-3, kind "season": 150 / 100 / 75 XP, rewards.md §7), a "plaque" for places 4-10,
-//        the season badge (season.badgeId) to everyone who completed every Story campaign, then
+//        (places 1-3, kind "season": 150 / 100 / 75 XP, rewards.md §7), a "plaque" for places 4-10, both
+//        for members only (admins are skipped, places count members), a "staff-season" Staff Finish
+//        trophy (no XP) for admins in the top 10, Beat the Boss for every member who out-earned the
+//        owner (when the owner has 500+), the season badge (season.badgeId) to everyone who completed every Story campaign, then
 //        status "ended". Every grant is idempotent, so a finalize that stops halfway just reruns.
 //     5. writes the public summary sites/{siteId}/public/factory (only when it changed), so pages know
 //        what's on without querying the season tree: the live season (name, number, art, the current
@@ -24,6 +28,7 @@ const { refs } = require("./record");
 const BOARD_SIZE = 100;
 const READ_ROWS = 1000;
 const ORD = ["", "1st", "2nd", "3rd"];
+const seasonTag = (s) => (s.number != null ? `Season ${String(s.number).padStart(2, "0")}` : s.name || s.id);
 const ordinal = (n) => ORD[n] || `${n}th`;
 
 function makeSeason({ db = admin.firestore(), grant = null } = {}) {
@@ -94,7 +99,7 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
     out.next = next ? { id: next.id, name: next.name || "", number: next.number ?? null, startsAt: L.ms(next.startsAt) } : null;
     if (last) {
       const board = await R.boards(last.id).doc("all").get();
-      out.last = { id: last.id, name: last.name || "", number: last.number ?? null, endedAt: L.ms(last.endsAt), top3: (board.get("rows") || []).slice(0, 3).map((x) => ({ uid: x.uid, handle: x.handle || null, displayName: x.displayName || null, seasonXp: x.seasonXp || 0, featured: x.featured || null })) };
+      out.last = { id: last.id, name: last.name || "", number: last.number ?? null, endedAt: L.ms(last.endsAt), top3: (board.get("rows") || []).filter((x) => x.roleTag !== "admin").slice(0, 3).map((x) => ({ uid: x.uid, handle: x.handle || null, displayName: x.displayName || null, seasonXp: x.seasonXp || 0, featured: x.featured || null })) };
     } else out.last = null;
     const ref = R.site.collection("public").doc("factory");
     const cur = await ref.get();
@@ -121,28 +126,43 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
     return out;
   }
 
-  // 3. Boards: top 100 per board (all, sub, crew) and how many members are on it.
+  // 3. Boards: top 100 per board (all, sub, crew, and staff under "separate") and how many are on it.
   async function rollBoards(s, now) {
+    const race = L.staffRaceOf(s);
     const snap = await R.standings(s.id).orderBy("seasonXp", "desc").limit(READ_ROWS).get();
     const rows = L.rankRows(snap.docs.map((d) => ({ uid: d.id, ...d.data() })));
-    const [all, sub, crew] = await Promise.all([
+    const [all, sub, crew, staff] = await Promise.all([
       R.standings(s.id).where("seasonXp", ">", 0).count().get(),
       R.standings(s.id).where("tier", "==", "sub").count().get(),
       R.standings(s.id).where("tier", "==", "crew").count().get(),
+      R.standings(s.id).where("roleTag", "==", "admin").count().get(),
     ]);
-    const counts = { all: all.data().count, sub: sub.data().count, crew: crew.data().count };
+    const nStaff = staff.data().count;
+    const sep = race === "separate";
+    const counts = { all: all.data().count - (sep ? nStaff : 0), sub: sub.data().count, crew: crew.data().count - (sep ? nStaff : 0), staff: nStaff };
+    // The owner's standing, for the Boss marker (rank among everyone who raced, staff included).
+    const ownerUid = (await R.site.get()).get("ownerUid") || null;
+    let boss = null;
+    if (ownerUid) {
+      const own = rows.find((r) => r.uid === ownerUid) || (await R.standings(s.id).doc(ownerUid).get().then((d) => (d.exists ? { uid: d.id, ...d.data() } : null)));
+      if (own && own.seasonXp > 0) {
+        const at = rows.findIndex((r) => r.uid === ownerUid);
+        const above = at >= 0 ? at : (await R.standings(s.id).where("seasonXp", ">", own.seasonXp).count().get()).data().count;
+        boss = { uid: ownerUid, handle: own.handle || null, displayName: own.displayName || own.handle || null, seasonXp: own.seasonXp, rank: sep ? null : above + 1 };
+      }
+    }
     let featured = null;   // uid -> featured badge, read only when some board's rows changed
     const plainRow = ({ featured: _f, ...x }) => x;
-    for (const board of ["all", "sub", "crew"]) {
-      const top = rows.filter((r) => board === "all" || r.tier === board).slice(0, BOARD_SIZE)
-        .map((r, i) => ({ rank: i + 1, uid: r.uid, handle: r.handle || null, displayName: r.displayName || r.handle || null, seasonXp: r.seasonXp, tier: r.tier }));
+    for (const board of ["all", "sub", "crew", ...(sep ? ["staff"] : [])]) {
+      const top = L.boardRows(rows, board, race).slice(0, BOARD_SIZE)
+        .map((r, i) => ({ rank: i + 1, uid: r.uid, handle: r.handle || null, displayName: r.displayName || r.handle || null, seasonXp: r.seasonXp, tier: r.tier, roleTag: r.roleTag || null }));
       const ref = R.boards(s.id).doc(board);
       const cur = await ref.get();
-      if (cur.exists && JSON.stringify((cur.get("rows") || []).map(plainRow)) === JSON.stringify(top) && cur.get("count") === counts[board]) continue;
+      if (cur.exists && JSON.stringify((cur.get("rows") || []).map(plainRow)) === JSON.stringify(top) && cur.get("count") === counts[board] && JSON.stringify(cur.get("boss") ?? null) === JSON.stringify(boss)) continue;
       featured ||= await featuredBadges(rows.slice(0, BOARD_SIZE * 3).map((x) => x.uid));
-      await ref.set({ board, rows: top.map((x) => ({ ...x, featured: featured.get(x.uid) || null })), count: counts[board], updatedAt: Timestamp.fromMillis(now) });
+      await ref.set({ board, rows: top.map((x) => ({ ...x, featured: featured.get(x.uid) || null })), count: counts[board], boss, updatedAt: Timestamp.fromMillis(now) });
     }
-    return rows;
+    return { rows, counts, boss, race, ownerUid };
   }
 
   /** uid -> { id, emoji, art, rarity } for each member's featured badge (profiles, then the catalog). */
@@ -162,13 +182,34 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
   // 4. Season end.
   async function finalize(s, now) {
     const out = [];
-    const rows = await rollBoards(s, now);
+    const { rows, counts, boss, race } = await rollBoards(s, now);
+    // Member prizes: admins are skipped, so places (and the label's place) count members only.
     for (const a of L.seasonAwards(rows)) {
       const label = a.kind === "season" ? `${ordinal(a.place)} · ${s.name}` : `Top 10 · ${s.name}`;
       try {
         const r = await G().grantTrophy(a.uid, { kind: a.kind, place: a.place, label, period: s.name || s.id, ref: s.id });
         if (r.granted) out.push(`${s.id}: ${a.kind} #${a.place} to ${a.uid}`);
       } catch (err) { console.error(`factory: trophy for ${a.uid} failed`, err); }
+    }
+    // Staff Finish: an admin in the top 10 of the all board (the staff board under "separate"). No XP.
+    for (const f of L.staffFinishes(rows, race, counts.all)) {
+      const label = `${seasonTag(s)} · Staff finish · #${f.place} of ${f.of}`;
+      try {
+        const r = await G().grantTrophy(f.uid, { kind: "staff-season", place: f.place, label, period: s.name || s.id, ref: s.id });
+        if (r.granted) out.push(`${s.id}: staff finish #${f.place} to ${f.uid}`);
+      } catch (err) { console.error(`factory: staff finish for ${f.uid} failed`, err); }
+    }
+    // Beat the Boss: more season XP than the owner (who needs at least BOSS_MIN_XP). The badge is earned once ever;
+    // the profile's beatTheBoss count goes up once per season (a marker per season keeps a rerun from counting twice).
+    if (boss && boss.seasonXp >= L.BOSS_MIN_XP) {
+      const beaters = (await R.standings(s.id).where("seasonXp", ">", boss.seasonXp).get()).docs.map((d) => ({ uid: d.id, ...d.data() }));
+      for (const uid of L.beatTheBoss(beaters, boss.seasonXp)) {
+        try {
+          const r = await G().grantBadge(uid, L.BEAT_THE_BOSS, { feature: "factory", ref: `season:${s.id}` });
+          if (r.granted) out.push(`${s.id}: beat the boss, ${uid}`);
+          await countBeatTheBoss(s, uid, boss.seasonXp, now);
+        } catch (err) { console.error(`factory: beat the boss for ${uid} failed`, err); }
+      }
     }
     if (s.badgeId) {
       const story = (await R.campaigns(s.id).where("cadence", "==", "story").get()).docs.filter((c) => c.get("enabled") !== false && (c.get("audience") || "all") === "all").map((c) => c.id);
@@ -187,6 +228,17 @@ function makeSeason({ db = admin.firestore(), grant = null } = {}) {
     await R.season(s.id).update({ status: "ended", endedAt: Timestamp.fromMillis(now), frozenAt: Timestamp.fromMillis(now) });
     out.push(`${s.id}: ended`);
     return out;
+  }
+
+  /** profiles/{uid}.beatTheBoss += 1, once per season. */
+  async function countBeatTheBoss(s, uid, bossXp, now) {
+    const marker = R.season(s.id).collection("boss").doc(uid);
+    await db.runTransaction(async (tx) => {
+      const m = await tx.get(marker);
+      if (m.exists) return;
+      tx.set(marker, { uid, bossXp, at: Timestamp.fromMillis(now) });
+      tx.set(R.profile(uid), { beatTheBoss: admin.firestore.FieldValue.increment(1) }, { merge: true });
+    });
   }
 
   return { tick, reveal, rollBoards, finalize, writeSummary };
