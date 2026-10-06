@@ -1,4 +1,8 @@
-# Fun Factory spec: seasons, chapters, campaigns and activities
+# Night Shift spec: seasons, chapters, campaigns and activities
+
+Member-facing name: Night Shift (renamed Oct 6, 2026; internal name stays factory)
+
+The internal names did not change: data paths (`sites/{siteId}/factory/main`), the `factory*` functions, activity type ids, the `ff-` CSS prefix, FactoryLayout, `scripts/factory/` and `factory.css`, and this file's name. The pages moved from `/factory` to `/shift` (old addresses redirect), the wordmark is NIGHT SHIFT with a time clock over a punch card, and the site tour and hidden medals keep their stored key `/factory` for the pages under `/shift`.
 
 Oct 3, 2026 · Glenn Bowering · **Confirmed**
 Mockups (stage tracker A chosen Oct 3): How it works https://claude.ai/artifact/Jxo6qvjhVJSHf3gp23RV3j · Screens (season pass, builder with stage tracker options A/B/C, builder guide) https://claude.ai/artifact/5aRBbxzU9BwXjzbcZHT7XP
@@ -37,7 +41,7 @@ Rules:
 - A campaign can give a completion bonus (XP and/or a badge) on top of its activities.
 - The season badge goes to everyone who finishes the season's Story campaigns.
 
-Clock: one site clock, **America/Chicago (Central)**, for Fun Factory and the Arcade (daily reset 00:00, weekly Monday 00:00). The Arcade's weekly boards moved from Pacific to Central with Trophy Room part 1 (Oct 2026).
+Clock: one site clock, **America/Chicago (Central)**, for Night Shift and the Arcade (daily reset 00:00, weekly Monday 00:00). The Arcade's weekly boards moved from Pacific to Central with Trophy Room part 1 (Oct 2026).
 
 ## 4. Activities and activity types
 An activity is a rule over one **activity type**: "Do <type> <target> times (with these parameters)", for example "Rate 3 games in the Game Vault" or "Find 5 hidden medals".
@@ -51,9 +55,9 @@ A type can cover several **actions**, passed as the `action` parameter: an activ
 Available for v1:
 | Type | Source |
 |---|---|
-| Daily check-in (streaks count too) | Fun Factory |
-| Visit pages (site tour) | Fun Factory |
-| Find hidden medals | Fun Factory |
+| Daily check-in (streaks count too) | Night Shift |
+| Visit pages (site tour) | Night Shift |
+| Find hidden medals | Night Shift |
 | Complete your profile, link accounts (`profile`: avatar, persona, link) | Accounts |
 | Play / finish an Arcade game, beat your best, place on a board (`arcade`: play, finish, best, board; gameId) | Boom Arcade |
 | Earn a badge (`badges`: any, by collection, by rarity) | Trophy Room |
@@ -82,7 +86,7 @@ A curated collection the builder offers at every stage, seeded from a file and e
 Starter set (compiled at the mockup stage from your examples and the best web engagement patterns): about 20 themes, 60 chapter names, 40 campaign names, 80 activity ideas, 30 reward ideas.
 Builder tools: Inspire me (shuffle three), filter by tag, "used before" marker, add your own.
 
-## 7. The builder (/factory/builder, mods and admins)
+## 7. The builder (/shift/builder, mods and admins)
 - **Season list:** every season with its status: Draft, In review, Scheduled, Live, Ended, Archived. Duplicate a past season as a starting point.
 - **Stage tracker** (the "where am I" view), each stage with a completeness check:
   1. Theme: name, pitch, art.
@@ -98,10 +102,10 @@ Builder tools: Inspire me (shuffle three), filter by tag, "used before" marker, 
 - Every publish, edit and end goes to adminLog.
 
 ## 8. Member pages
-- `/factory`: the season pass. Season hero with art, a countdown to the next chapter, your season XP and rank. Chapter tabs (locked ones show a countdown, no spoilers). Today's dailies with the reset timer and your check-in streak, This week, the Story path, Milestones, Events. Sub Club and Crew campaigns marked. Off-season: countdown to the next season and the last season's results.
-- `/factory/leaderboard`: season XP, filters All / Sub Club / Crew, your row pinned, top 100 + your rank.
-- `/factory/how-it-works`: public guide, Arcade quality.
-- `/factory/builder/guide`: the builder manual for mods and admins.
+- `/shift`: the season pass. Season hero with art, a countdown to the next chapter, your season XP and rank. Chapter tabs (locked ones show a countdown, no spoilers). Today's dailies with the reset timer and your check-in streak, This week, the Story path, Milestones, Events. Sub Club and Crew campaigns marked. Off-season: countdown to the next season and the last season's results.
+- `/shift/leaderboard`: season XP, filters All / Sub Club / Crew, your row pinned, top 100 + your rank.
+- `/shift/how-it-works`: public guide, Arcade quality.
+- `/shift/builder/guide`: the builder manual for mods and admins.
 - The feature top bar pattern (a factory icon, FUN + accent FACTORY), members-only gate like the Arcade's.
 
 ## 9. Data model (sites/boomertanger/factory/main/…)
@@ -137,14 +141,14 @@ Stage tracker / stepper, countdown chip, locked card, campaign card with progres
 
 ## 13. Build order
 1. Trophy Room core (rewards phase 1) first.
-2. Fun Factory data, engine, activity types available now.
+2. Night Shift data, engine, activity types available now.
 3. Builder and idea library.
 4. Member pages and leaderboard.
 5. How it works and the builder guide.
-Each later feature adds its events through its spec's "Fun Factory and Trophy Room hooks" section; ROADMAP.md gets a "Fun Factory hooks" checklist.
+Each later feature adds its events through its spec's "Night Shift and Trophy Room hooks" section; ROADMAP.md gets a "Night Shift hooks" checklist.
 
 ## 13a. Daily check-in and streaks
-- **Punch the clock:** a Clock in button on `/factory` (and in the header menu) once per Central day. It counts for check-in activities and the streak.
+- **Punch the clock:** a Clock in button on `/shift` (and in the header menu) once per Central day. It counts for check-in activities and the streak.
 - **Streak savers:** every 7 days in a row earns one saver (hold up to 2; Sub Club up to 3). A missed day uses a saver automatically instead of breaking the streak.
 - **The streak never resets with the season**; your best streak is kept on your profile.
 - **Streak ladder** (Trophy Room badges, Loyalty collection, rarity rises with length):
@@ -187,7 +191,7 @@ Each later feature adds its events through its spec's "Fun Factory and Trophy Ro
 | 100 | Witness to Everything | Legendary |
 
 ## 14. Decisions (Oct 3, 2026)
-1. Site clock: Central (America/Chicago) for Fun Factory and the Arcade.
+1. Site clock: Central (America/Chicago) for Night Shift and the Arcade.
 2. Only admins publish, including Event campaigns; mods draft and submit.
 3. Check-in streaks earn badges on the 12-step ladder above, with streak savers.
 4. Stream streaks added (section 13b), live once the Control Room ships.

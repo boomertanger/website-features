@@ -630,7 +630,7 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - Reduced motion: icons, beacon pulse and the hero stop animating; the hero doesn't
   autoplay.
 
-**Stepper, drawer and lanes** (the Fun Factory builder, `docs/specs/fun-factory.md` §7; reusable for
+**Stepper, drawer and lanes** (the Night Shift builder, `docs/specs/fun-factory.md` §7; reusable for
 any multi-stage editor).
 - **Stepper: `.bt-stepper`**, the assembly line (`shared/ui/stepper.js` `stepperHtml({ steps, open, crate,
   rail })`, `keepOpenInView(el)`). Each stage is a `button.bt-stepper-step[data-step]` (`.bt-stepper-mach`
@@ -669,7 +669,7 @@ any multi-stage editor).
   (`.bt-tree-move` hides at 640px and under). `initTree` hides a row (`data-hidden`) while an ancestor is
   collapsed; page filters use the `hidden` attribute.
 
-**Task row, timer, lock card, clock and path** (the Fun Factory season pass, `docs/specs/fun-factory.md`
+**Task row, timer, lock card, clock and path** (the Night Shift season pass, `docs/specs/fun-factory.md`
 §8; `shared/ui/season.js` builds them, `shared/ui/countdown.js` ticks the timers).
 - **Task row: `.bt-task-row`** (`taskRowHtml({ icon, title, sub, n, of, xp, soon })`), an activity:
   `.bt-task-row-ic`, `.bt-task-row-main` (`b`, `small`, `.bt-task-row-bar > i` with `--v`), and
@@ -687,7 +687,7 @@ any multi-stage editor).
 - **Path: `.bt-path`** (`pathHtml({ nodes })`): the story path, an `ol` of `.bt-path-node`s (`i` icon, `b`,
   `small`) on a line that fills gold to the first node not done (`--fill` 0 to 1); `.is-done`, `.is-now`,
   `.is-locked`. Scrolls sideways when narrow.
-- **Hidden medal: `.bt-hunt-medal`** (the Fun Factory's site-wide hunts,
+- **Hidden medal: `.bt-hunt-medal`** (the Night Shift's site-wide hunts,
   `site/src/scripts/factory/site-wide.ts`): a small `.bt-medal` button in a corner of a host with
   `.bt-hunt-host` (`position: relative`); `--top-left`, `--top-right`, `--bottom-left`,
   `--bottom-right`. Absolutely placed, so it never moves the layout. It glints every few seconds and pops
@@ -1334,3 +1334,19 @@ Spec: `docs/specs/goal-tracker.md` (confirmed Oct 4, 2026); mockup
   gold, In progress green, Done lime, Dropped gray. Overdue shows on the admin page only.
 - **Visibility.** Public, members or private per item, never wider than its parent (applied when
   the snapshot is built). Income items are private by default and need a confirmation to be shown.
+
+### 8l. Night Shift
+
+Member-facing name of the Fun Factory (renamed Oct 6, 2026; the internal name stays `factory`: data paths,
+`factory*` functions, activity type ids, the `ff-` prefix, `FactoryLayout`, `scripts/factory/`, `factory.css`).
+Spec: `docs/specs/fun-factory.md`.
+
+- **Routes.** `/shift`, `/shift/leaderboard`, `/shift/how-it-works`, `/shift/builder` (`/ideas`, `/guide`).
+  `site/public/_redirects` sends every old `/factory/*` address there with a 301.
+- **Wordmark.** NIGHT + accent SHIFT on `.bt-wordmark--power`: the accent lights gold like the Arcade's (the
+  kit's own effect). The icon is a time clock over a punch card (`FF_ICON` in `scripts/factory/art.ts`); on
+  hover, focus or touch its lamp, dial and punch holes flicker on in turn, like a light coming on. Under reduced
+  motion they just light. The nav icon is the same drawing (`#i-shift` in IconSprite, built from `SHIFT_SYMBOL`).
+- **Two different areas.** **Night Shift** is for members (seasons, missions, the leaderboard, plus the builder
+  for mods and admins). **Night Watch** is the planned staff admin hub (ROADMAP workstream 10). They share a
+  night theme on purpose, not a page, a layout or a nav slot.

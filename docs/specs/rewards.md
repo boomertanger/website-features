@@ -2,10 +2,10 @@
 
 Oct 3, 2026 · Glenn Bowering · **Confirmed**
 Mockup: `docs/design/mockups/trophy-room-how-it-works.html` (approved Oct 3: shape 1 Coin). Starter catalog: `functions/data/trophy-room-badges.json` (90 badges).
-Replaces and grows ROADMAP workstream 7 (Badges). Fun Factory is built on it.
+Replaces and grows ROADMAP workstream 7 (Badges). Night Shift is built on it.
 
 ## 1. Purpose
-One shared rewards service for the whole site. Features earn things (Fun Factory, Boom Arcade, Bug Zapper, Feature Lab, Contests, live streams); Rewards pays out, keeps one append-only ledger, and answers "does member X hold badge Y?".
+One shared rewards service for the whole site. Features earn things (Night Shift, Boom Arcade, Bug Zapper, Feature Lab, Contests, live streams); Rewards pays out, keeps one append-only ledger, and answers "does member X hold badge Y?".
 
 ## 2. What members collect
 | Kind | Meaning | Lasts |
@@ -13,7 +13,7 @@ One shared rewards service for the whole site. Features earn things (Fun Factory
 | Badge | You did something. Has a rarity and a collection. | Forever |
 | Trophy | You placed (1st/2nd/3rd) or were picked. Dated. | Forever |
 | XP and level | Lifetime XP raises your level and rank. | Never resets |
-| Season XP | Fun Factory's per-season race. | Resets each season |
+| Season XP | Night Shift's per-season race. | Resets each season |
 | Perk | Comes with a plan (showcase slots, early merch, giveaways). | While on the plan |
 | Identity tag | Role (from plan) and one chosen persona. Not collected or ranked. | Live |
 
@@ -47,7 +47,7 @@ Changes from the notes:
 | Live drop | Owner or the stream lead presses Drop in the Control Room; a banner shows site-wide while the claim window is open (configurable, section 10a); members claim through a callable | Control Room |
 | Crew award | Mod/admin awards with a written reason | Mod Machina permissions (ws 9), or admin until then |
 | Contests and hunts | Contest results, scavenger hunts, hidden finds (one-time server tokens) | Contests (ws 12) |
-| Fun Factory | Campaign/activity completion | Fun Factory |
+| Night Shift | Campaign/activity completion | Night Shift |
 | Support | Subs, gifts, tips. **No XP, never on leaderboards** | Billing (ws 11), tip provider |
 
 ## 6. Plans
@@ -55,7 +55,7 @@ Changes from the notes:
 |---|---|---|---|
 | Badges | All except Crew | All except Crew | All, plus Crew |
 | Showcase | 3 pins | 6 pins + animated featured frame | 6 pins |
-| Fun Factory | All campaigns | + Sub Club campaigns (more ways, same XP per task) | + Crew missions |
+| Night Shift | All campaigns | + Sub Club campaigns (more ways, same XP per task) | + Crew missions |
 | Boards | Season, Arcade | Season, Arcade | Season, Arcade, plus the crew board (Mod MVP). Admins on no boards |
 | Giveaways | Member giveaways | + Sub Club giveaways (**legal review**) | Not eligible for member giveaways |
 | Other | Merch store | Early merch access | Free Sub Club, earliest merch, Mod MVP trophy monthly |
@@ -66,7 +66,7 @@ Changes from the notes: one season board (filter All / Sub Club / Crew) instead 
 Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; top 10 plaque) · Contests · Mod MVP (monthly, picked by the owner). XP: 1st 150, 2nd 100, 3rd 75.
 
 ## 8. XP and levels
-- XP: Fun Factory dailies 10-25, weeklies 50-100, badges by rarity, trophies by place, supporter badges 0.
+- XP: Night Shift dailies 10-25, weeklies 50-100, badges by rarity, trophies by place, supporter badges 0.
 - Total XP for level L = 50 × L × (L − 1). Level 5 = 1,000 · 10 = 4,500 · 20 = 19,000 · 50 = 122,500.
 - Ranks (draft names): Fresh Meat 1 · Survivor 5 · Night Stalker 10 · Nightmare 20 · Dread Lord 35 · Boomer Legend 50.
 - An active member earns roughly 3,000-4,000 XP a season, so level 10 in the first season.
@@ -79,7 +79,7 @@ Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; to
 - `rewardLedger/{key}`: uid, kind (xp | badge | trophy), amount, badgeId, feature, ref, grantedBy, reason, createdAt. Doc id = idempotency key `${feature}:${ref}:${uid}`, so a grant can never double-pay. Closed to clients; members read their own history through a callable.
 - `drops/{dropId}`: badgeId, streamId, mode (timed | streamEnd | until | firstN), opensAt, closesAt, cap, droppedBy, claims (count), status open | closed. Claims in `drops/{id}/claims/{uid}`.
 - `badges/{badgeId}.drop`: default mode, minutes, cap (the badge's drop preset).
-- Season XP lives in Fun Factory (`seasons/{id}/standings/{uid}`), written through the same grant function.
+- Season XP lives in Night Shift (`seasons/{id}/standings/{uid}`), written through the same grant function.
 - adminLog `rewardsAward`, `rewardsRevoke`; activityLog `badge-earned`, `trophy-won` (Common badges skipped to keep the feed readable).
 
 ## 10. Functions
@@ -107,7 +107,7 @@ Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; to
 
 ## 13. Phasing
 1. Core service + Automatic badges (Bug Zapper, Feature Lab, Arcade, account age, linked accounts) + XP/levels + profile trophy case + How it works.
-2. Fun Factory on top.
+2. Night Shift on top.
 3. Stream presence and Live drops once the Control Room exists.
 4. Crew awards with Mod Machina; Supporters with billing; Contests.
 Badges whose source isn't live yet show in the catalog with "Coming soon".
