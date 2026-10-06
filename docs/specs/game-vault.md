@@ -271,13 +271,13 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
 - **B1 Phone bar, every Vault page.** Under 640px the bar's words become icons: ? How it works, the
   green queue icon (staff) with its count as a badge, + Add a game; each 40px, with aria-labels.
   Desktop unchanged.
-- **M2 Phone hero (part 9, `game-vault-phone-heroes.html`, approved).** Under 640px only (desktop and
-  tablet keep V3), the hero drops the cover wall and the small spotlight: title, line, big search (its
-  match strip works as before) and counts first, then a "Now playing" poster band: the latest playing
-  game's cover blurred as the background with a dark fade, a green NOW PLAYING kicker, the cover large
-  (190px, green pulse, tilt on pointer devices only), the name, and a small line with its stream count
-  and the other playing game. With nothing playing it shows the top Most wanted game with a gold MOST
-  WANTED kicker (no pulse). Reduced motion: no pulse, no tilt.
+- **M3 Phone hero (part 9, `game-vault-phone-heroes.html`, approved; M3 replaced the first-built M2 poster).**
+  Under 640px only (desktop and tablet keep V3), the cover wall (5 columns of real covers) fills the
+  background behind the kicker, title, line, big search and counts and fades to the page colour toward
+  the bottom; no spotlight and no poster band. The "Now playing" shelf (the same section head and cards
+  as the other shelves) leads the page above Most wanted and hides when nothing is playing. Searching
+  works as on desktop: the wall pauses, non-matches fade, matches light up and the strip of matches shows
+  under the search. Reduced motion: no drift.
 - **G1 Game page section heads (part 9).** Boomer's review, Every stream (note: "6 streams, 14
   hours"), About the game, Details, Where to play, On stream and Up next each get the SH3 section head
   above their card (the kit's `.bt-section-head`, compact `--sm` size, `meta` note), replacing the
