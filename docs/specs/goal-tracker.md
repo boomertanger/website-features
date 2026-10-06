@@ -13,11 +13,11 @@ the changes when he presses Publish.
 **North Star:** The Game Awards 2027, Content Creator of the Year. A stretch goal: every rung
 below it is worth reaching on its own.
 
-**Award facts still to verify on thegameawards.com** (from memory, not their site): creators can't
-submit or apply, nominees are picked by The Game Awards; the eligibility window runs about
-mid-November 2026 to mid-November 2027; nominees are announced in November and the show is in
-December; fan voting plays some part in the winner. The FAQ copy "creators can't sign themselves
-up" depends on the first one.
+Award facts (verified Oct 2026 from The Game Awards FAQ): nominees are chosen by an international
+jury of 100+ gaming media and influencer outlets; each submits an unranked top five and the five on
+the most ballots are nominated (ties add nominees). There is no entry process. Winners: 90% jury,
+10% public fan vote. Still unverified: whether Content Creator of the Year uses the main jury or a
+specialized one, and the eligibility window.
 
 ## 2. Shape of the plan
 
