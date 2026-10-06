@@ -225,6 +225,23 @@ Data: `standings/{uid}` gains `roleTag` ("admin" or null; an admin's `tier` is "
 `profiles/{uid}.beatTheBoss`. Rank for a member past the top 100 is still "members with more XP, plus one", so under
 "together" it includes admins (their real rank).
 
+## 13d. Mods' changes to a live season
+Decided Oct 6, 2026 (Glenn, option A).
+
+1. **Titles and instructions stay immediate.** On a live season a mod can still edit titles and instructions at once (logged to adminLog, as today). Everything else about live nodes stays locked (section 7, stage 8).
+2. **A mod's additions wait for an admin.** A campaign or event a **mod** adds to a live season, and every activity in it, is saved with `approval: "pending"` (plus `addedBy: { uid, name }`). A pending node is **never revealed**: factoryTick skips it even after its unlock time, the public summary and its hunt paths ignore it, factoryPreview leaves it out of the member view, the engine (recordFactoryEvent) counts nothing for it, and the rules hide it. A campaign or event an **admin** adds goes live directly (`approval: "approved"`).
+3. **Admin callables.** `factoryApproveAddition({ seasonId, campaignId })` sets the campaign and its activities to `"approved"`; it then reveals on schedule like any campaign (if its unlock time has passed, on the next tick). `factorySendBackAddition({ seasonId, campaignId, note })` returns it to the mod as `"changes"` ("changes requested") with the note; it stays hidden. Both are logged to adminLog.
+4. **Mods keep editing their own.** A mod can edit and delete their own pending or sent-back addition (not another mod's). A mod's edit to a sent-back addition sets it back to `"pending"`.
+5. **Where it shows.** The builder's Live stage lists pending additions with an "Awaiting approval" badge; admins get Approve and Send back (with a note), mods see the note on a sent-back one. The season list shows a count of pending additions per live season. The season pass's crew strip (below) tells admins "N additions to approve" and the mod who added one "Your event is waiting for approval".
+6. Data: `approval` ("pending" | "changes" | "approved"; absent = approved, for everything built before a season goes live), `addedBy`, `reviewNote`, `approvedBy` on campaigns, and `approval`/`addedBy` on their activities. factoryListSeasons also returns the pending additions of live seasons (so the crew strip needs no extra read).
+
+## 13e. Crew entry points to the builder
+Display-only (the callables enforce roles). `.bt-when-staff` shows for mods and admins, like `.bt-when-admin` does for admins.
+- **Nav on member pages** (/shift, /shift/leaderboard, /shift/how-it-works): a **Builder** link to /shift/builder for staff only, in the staff green with a small Crew tag; on phones an extra icon in the icon seg nav, staff only.
+- **Season pass crew strip** (staff only, at the top of /shift): "You're crew · Open the builder · Idea library"; when relevant "Season N is waiting for review" (a Review link for admins, "with an admin" for mods) and "2 additions to approve" (admins) or "Your event is waiting for approval" (the mod who added it). Read through factoryListSeasons after sign-in, cached 5 minutes.
+- **Account menu:** "🛠 Night Shift builder" (/shift/builder) for staff, beside Admin tools, in the same green.
+- **Builder bar:** a "Member view" link to /shift.
+
 ## 14. Decisions (Oct 3, 2026)
 1. Site clock: Central (America/Chicago) for Night Shift and the Arcade.
 2. Only admins publish, including Event campaigns; mods draft and submit.
