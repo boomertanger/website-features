@@ -55,7 +55,7 @@ async function showList() {
     list.innerHTML = seasons.length ? seasons.map((s) => `<div class="ff-srow">
         <span class="ff-sart" aria-hidden="true">${s.art ? `<img src="${esc(s.art)}" alt="" loading="lazy">` : SHIFT_ICON}</span>
         <div class="ff-srow-main"><a href="/shift/builder?season=${encodeURIComponent(s.id)}"><b>${esc(A.seasonLabel(s))}</b></a><small>${esc(A.fmtRange(s.startsAt, s.endsAt))}${s.createdBy?.name ? ` · drafted by ${esc(s.createdBy.name)}` : ""}${s.test ? " · test season" : ""}</small></div>
-        ${A.statusBadge(s.status)}
+        ${A.statusBadge(s.status)}${s.pending ? `<span class="bt-badge bt-badge--teal" title="Additions by mods waiting for an admin">${s.pending} awaiting approval</span>` : ""}
         <div class="ff-srow-acts"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/builder?season=${encodeURIComponent(s.id)}">Open</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-dup="${esc(s.id)}">Duplicate</button></div>
       </div>`).join("") : `<div class="bt-empty"><span class="bt-empty-title">No seasons yet</span><p>Start one, or ask an admin to seed the test season.</p></div>`;
   } catch (err) {
@@ -268,10 +268,25 @@ const PANELS: Record<string, () => string> = {
     const st = status();
     return head(8, "Live", `${tree.season.startsAt != null ? `From ${esc(A.fmtDay(tree.season.startsAt))}` : "Once it starts"} the season runs on its own: chapters unlock on their dates and every reset is on Central time.`)
       + `<div class="ff-grid2"><div class="bt-drawer-tip"><b>You can still change</b><br>Titles and instructions · new campaigns and events · art · hunt hints</div><div class="bt-drawer-tip"><b>Locked once live</b><br>Targets and XP of live activities · chapter dates already passed · the season's start</div></div>`
+      + (st === "live" ? pendingHtml() : "")
       + `<div class="ff-prev">${st === "live" ? `<button type="button" class="bt-btn bt-btn--secondary" data-add-event>Add an event</button>${isAdmin ? `<button type="button" class="bt-btn bt-btn--danger" data-act="end">End season early</button>` : ""}<span class="ff-muted">${isAdmin ? "Every change is logged." : "Admins can end a season early. Every change is logged."}</span>` : `<span class="ff-muted">${st === "ended" ? "This season has ended." : "These open once the season is live."}</span>`}</div>`
       + checksHtml("live");
   },
 };
+/** Live: a mod's additions waiting for an admin. Admins approve or send back (with a note); mods see the note. */
+function pendingHtml() {
+  const held = tree.campaigns.filter((c) => c.approval === "pending" || c.approval === "changes");
+  if (!held.length) return "";
+  const rows = held.map((c) => {
+    const n = tree.activities.filter((a) => a.campaignId === c.id).length;
+    const sent = c.approval === "changes";
+    return `<li class="ff-pend"><div class="ff-pend-main"><b>${esc(c.name || "Untitled")}</b><span class="ff-muted">${esc(A.CADENCE[c.cadence]?.[0] ?? c.cadence)} · ${n} ${n === 1 ? "activity" : "activities"} · added by ${esc(c.addedBy?.name || "a mod")}</span>
+      ${sent ? `<span class="bt-badge bt-badge--gold">Changes requested</span>` : `<span class="bt-badge bt-badge--teal">Awaiting approval</span>`}
+      ${sent && c.reviewNote ? `<p class="ff-pend-note"><b>Admin's note:</b> ${esc(c.reviewNote)}</p>` : ""}</div>
+      ${isAdmin ? `<div class="ff-pend-acts"><button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="approve-add" data-cid="${esc(c.id)}">Approve</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-act="sendback-add" data-cid="${esc(c.id)}">Send back</button></div>` : ""}</li>`;
+  }).join("");
+  return `<div class="ff-pendbox"><span class="bt-label">Additions waiting for an admin</span><p class="ff-muted">${isAdmin ? "A mod's campaign or event stays hidden, and counts nothing, until you approve it. It then goes live on its dates." : "An admin approves what you add to a live season. It stays hidden until then; edit it under Campaigns, and it goes back to the admin."}</p><ul class="ff-pendlist">${rows}</ul></div>`;
+}
 /** Review: open the season pass as a Fan Club, Sub Club or crew member on a chosen day (factoryPreview). */
 function previewRow() {
   const s = tree.season;
@@ -377,6 +392,7 @@ function renderDrawer() {
 const timers = new Map<string, number>();
 let pending = 0;
 async function persist(node: string, op: string, data: Record<string, unknown>) {
+  if (tree?.season?.status === "live") A.dropCrewCache();   // the /shift crew strip re-reads the season list
   pending++;
   setSave("Saving…", "busy");
   let tries = 0;
@@ -789,6 +805,22 @@ async function flowAction(act: string, btn: HTMLButtonElement) {
   if (act === "end") {
     await confirmAction({ title: "End the season now?", message: "Members' progress stops, the leaderboard freezes, and trophies, plaques and the season badge are awarded now. This can't be undone.", confirmLabel: "End season", busyLabel: "Ending…", feature: "factory",
       onConfirm: async () => { await A.endSeason(id); } }).then(async (ok) => { if (ok) { toast("The season has ended."); await reload(); } });
+    return;
+  }
+  if (act === "approve-add") {
+    const cid = btn.dataset.cid!;
+    return run(async () => { await A.approveAddition(id, cid); A.dropCrewCache(); }, "Approved. It goes live on its dates.");
+  }
+  if (act === "sendback-add") {
+    const cid = btn.dataset.cid!;
+    const { modal, close } = openModal({ feature: "factory", title: "Send back", content: `${modalHeader("Send it back to the mod")}<form class="bt-stack" novalidate><div class="bt-field"><label class="bt-label" for="sba-note">What needs changing?</label><textarea class="bt-textarea" id="sba-note" maxlength="300" required></textarea></div><p class="bt-notice bt-notice--error bt-error" role="alert" hidden></p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--ghost" data-bt-close>Cancel</button><button type="submit" class="bt-btn bt-btn--primary">Send back</button></div></form>` });
+    const form = modal.querySelector("form")!, err = modal.querySelector<HTMLElement>(".bt-error")!;
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const note = modal.querySelector<HTMLTextAreaElement>("textarea")!.value.trim();
+      if (!note) { err.textContent = "Say what needs changing."; err.hidden = false; return; }
+      try { await A.sendBackAddition(id, cid, note); A.dropCrewCache(); close(); toast("Sent back to the mod."); await reload(); } catch (e2) { err.textContent = messageFor(e2); err.hidden = false; }
+    });
     return;
   }
   if (act === "sendback") {

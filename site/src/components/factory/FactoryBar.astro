@@ -3,7 +3,9 @@
 // with the NIGHTSHIFT .bt-wordmark--power (the windows flicker on and smoke rolls out of the chimney on
 // hover or focus; once on touch as it scrolls in). Member pages link Season, Leaderboard and How it
 // works; builder pages add a teal Builder tag and link Seasons, Idea library and Guide. Icon-only
-// .bt-seg-nav--icons on phones. Wired in scripts/factory/layout.ts.
+// .bt-seg-nav--icons on phones. Staff (mods and admins; .bt-when-staff, display only) also get a Builder link on the
+// member pages, in the staff green with a small Crew tag (an icon in the phone seg nav); builder pages get a
+// Member view link back to /shift. Wired in scripts/factory/layout.ts.
 import { FF_ICON } from "../../scripts/factory/art";
 
 interface Props { section?: string | null; builder?: boolean; gated?: boolean }
@@ -29,11 +31,19 @@ const links = builder
       </a>
       {builder && <span class="bt-badge bt-badge--teal ff-tag">Builder</span>}
     </div>
-    <nav class="bt-seg-nav ff-barlinks" aria-label={builder ? "Night Shift builder" : "Night Shift"}>
-      {links.map((l) => <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
-    </nav>
+    <div class="ff-barright">
+      <nav class="bt-seg-nav ff-barlinks" aria-label={builder ? "Night Shift builder" : "Night Shift"}>
+        {links.map((l) => <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
+      </nav>
+      {builder
+        ? <a class="bt-btn bt-btn--ghost bt-btn--sm ff-crewlink" href="/shift"><svg aria-hidden="true"><use href="#i-eye" /></svg><span class="bt-btn-label">Member view</span></a>
+        : <a class="bt-btn bt-btn--ghost bt-btn--sm bt-when-staff ff-crewlink ff-crewlink--staff" href="/shift/builder"><svg aria-hidden="true"><use href="#i-wrench" /></svg><span class="bt-btn-label">Builder</span><span class="ff-crewtag">Crew</span></a>}
+    </div>
     <nav class="bt-seg-nav bt-seg-nav--icons ff-barico" aria-label={builder ? "Night Shift builder" : "Night Shift"}>
       {links.map((l) => <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
+      {builder
+        ? <a href="/shift" aria-label="Member view" title="Member view"><svg aria-hidden="true"><use href="#i-eye" /></svg></a>
+        : <a class="bt-when-staff ff-ico-staff" href="/shift/builder" aria-label="Builder (crew)" title="Builder (crew)"><svg aria-hidden="true"><use href="#i-wrench" /></svg></a>}
     </nav>
   </div>
 </div>

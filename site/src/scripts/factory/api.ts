@@ -9,7 +9,7 @@ export type Cadence = "daily" | "weekly" | "story" | "milestone" | "event";
 export type Audience = "all" | "sub" | "crew";
 export interface Season { id: string; number: number | null; name: string; pitch: string; tags: string[]; art: { url: string } | null; startsAt: number | null; endsAt: number | null; status: Status; dailyXpCap: number | null; staffRace?: "together" | "separate"; badgeId: string | null; badge?: { id: string; name: string; rarity: number; emoji: string | null; status: string } | null; ideaId?: string | null; createdBy?: { name: string } | null; reviewNote?: { text: string; by: string; at: number } | null; updatedAt?: number | null; test?: boolean }
 export interface Chapter { id: string; order: number; name: string; blurb?: string; unlockAt: number | null; revealed?: boolean; ideaId?: string | null }
-export interface Campaign { id: string; chapterId: string; name: string; cadence: Cadence; audience: Audience; opensAt: number | null; closesAt: number | null; order: number; bonus: { xp: number; badgeId: string | null } | null; revealed?: boolean; ideaId?: string | null }
+export interface Campaign { id: string; chapterId: string; name: string; cadence: Cadence; audience: Audience; opensAt: number | null; closesAt: number | null; order: number; bonus: { xp: number; badgeId: string | null } | null; revealed?: boolean; ideaId?: string | null; approval?: "pending" | "changes" | "approved"; addedBy?: { uid: string; name: string } | null; reviewNote?: string | null }
 export interface Activity { id: string; campaignId: string; title: string; instructions: string; link: string | null; typeId: string; target: number; params: Record<string, string | number>; xp: number; badgeId: string | null; repeat: "none" | "daily" | "weekly"; order: number; revealed?: boolean; ideaId?: string | null }
 export interface Medal { id: string; path: string; position: string; hint: string; order: number }
 export interface Hunt { id: string; activityId: string; name: string; medals: Medal[] }
@@ -59,7 +59,14 @@ export const fmtRange = (a: number | null, b: number | null) => (a == null || b 
 export const nextDay = (d: string) => { const t = Date.parse(`${d}T12:00:00Z`) + 86400000; return new Date(t).toISOString().slice(0, 10); };
 
 // ---------- callables ----------
-export const listSeasons = () => call<{ seasons: (Pick<Season, "id" | "number" | "name" | "status" | "startsAt" | "endsAt" | "createdBy" | "updatedAt" | "test"> & { art: string | null })[] }>("factoryListSeasons");
+/** A mod's campaign or event on a live season waiting for an admin (fun-factory.md §13d). */
+export interface Pending { id: string; name: string; cadence: string; approval: "pending" | "changes"; addedBy: { uid: string; name: string } | null }
+export type SeasonRow = Pick<Season, "id" | "number" | "name" | "status" | "startsAt" | "endsAt" | "createdBy" | "updatedAt" | "test"> & { art: string | null; pending: number; pendingAdditions: Pending[] };
+export const listSeasons = () => call<{ seasons: SeasonRow[] }>("factoryListSeasons");
+export const approveAddition = (seasonId: string, campaignId: string) => call("factoryApproveAddition", { seasonId, campaignId });
+export const sendBackAddition = (seasonId: string, campaignId: string, note: string) => call("factorySendBackAddition", { seasonId, campaignId, note });
+/** The crew strip on /shift reads the season list once per five minutes; the builder drops it when something changes. */
+export const dropCrewCache = () => { try { sessionStorage.removeItem("ff-crew-v1"); } catch { /* no storage */ } };
 export const getSeason = (seasonId: string) => call<SeasonView>("factoryGetSeason", { seasonId });
 export const save = (seasonId: string | null, node: string, op: string, data: Record<string, unknown> = {}) => call<{ ok: boolean; id?: string; seasonId?: string; badgeId?: string; art?: { url: string } }>("factorySave", { seasonId, node, op, data });
 export const submit = (seasonId: string) => call("factorySubmit", { seasonId });

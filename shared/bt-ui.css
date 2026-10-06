@@ -2048,14 +2048,15 @@
 .bt-root:not(#_):not(:is([data-live="backstage"], [data-live="backstage"] *)) .bt-when-backstage,
 .bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-when-signed-in,
 .bt-root:not(#_):not(:is([data-auth="visitor"], [data-auth="visitor"] *)) .bt-when-visitor,
-.bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin { display: none; }
+.bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin,
+.bt-root:not(#_):not(:is([data-staff="on"], [data-staff="on"] *)) .bt-when-staff { display: none; }   /* staff = mods and admins */
 /* Auth state: data-auth-state on the page root (site/src/lib/auth.ts) =
    loading | signedOut | needsSignup | unverified | verified. While loading, the
    account area shows its skeleton; mid-signup, its Finish signup button. */
 .bt-root:not(#_):not([data-auth-state="loading"]) .bt-when-auth-loading,
 .bt-root:not(#_):not([data-auth-state="needsSignup"]) .bt-when-needs-signup,
 .bt-root:not(#_):not([data-auth-state="unverified"]) .bt-when-unverified,
-.bt-root:not(#_):is([data-auth-state="loading"], [data-auth-state="needsSignup"]) .bt-account :is(.bt-when-visitor, .bt-when-signed-in, .bt-when-admin) { display: none; }
+.bt-root:not(#_):is([data-auth-state="loading"], [data-auth-state="needsSignup"]) .bt-account :is(.bt-when-visitor, .bt-when-signed-in, .bt-when-admin, .bt-when-staff) { display: none; }
 
 /* ---- Mascot (inline SVG built from shared/assets/mascot.svg; site/src/components/Mascot.astro) ----
    <svg class="bt-mascot [bt-mascot--aware]" viewBox="30 92 145 162"> with the artwork's
@@ -2842,7 +2843,7 @@
 .bt-root:not(#_) .bt-account-menu-who small { display: block; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-account-menu :is(a, button) { display: flex; align-items: center; gap: 10px; width: 100%; padding: 9px 8px; border: 0; border-radius: var(--bt-radius-sm); background: none; color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-md); font-weight: 600; text-align: left; text-decoration: none; cursor: pointer; }
 .bt-root:not(#_) .bt-account-menu :is(a, button):hover { background: var(--bt-surface-2); color: var(--bt-text); text-decoration: none; }
-.bt-root:not(#_) .bt-account-menu a.is-admin { color: var(--bt-admin-text); }
+.bt-root:not(#_) .bt-account-menu a:is(.is-admin, .is-staff) { color: var(--bt-admin-text); }
 .bt-root:not(#_) .bt-account-menu-meta { margin-left: auto; color: var(--bt-rank-3); font-size: var(--bt-text-sm); font-weight: 800; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .bt-account-menu [aria-disabled="true"] { cursor: default; }
 .bt-root:not(#_) .bt-account-menu [aria-disabled="true"]:hover { background: none; color: var(--bt-text-muted); }

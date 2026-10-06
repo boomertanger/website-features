@@ -1363,6 +1363,9 @@ function vaultKitHtml() {
     <div data-shelf-wrap><div class="bt-shelf-head"><div><h3 class="bt-heading">A shelf</h3><p>Swipe, or use the arrows.</p></div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 7</button></div></div><div class="bt-shelf">${shelfCards}</div></div>
     <div data-shelf-wrap><div class="bt-shelf bt-shelf--ranked">${ranked}</div></div>
 
+    <p class="kit-sub">State helpers: .bt-when-visitor, .bt-when-signed-in, .bt-when-admin and .bt-when-staff (mods and admins) show or hide by the page's data-auth and data-staff; try ?as=admin or ?as=member</p>
+    <div class="kit-row"><span class="bt-badge bt-badge--gray bt-when-visitor">Visitors</span><span class="bt-badge bt-badge--blue bt-when-signed-in">Signed in</span><span class="bt-badge bt-badge--teal bt-when-staff">Staff (mods and admins)</span><span class="bt-badge bt-badge--green bt-when-admin">Admins</span></div>
+
     <p class="kit-sub">Section head: .bt-section-head (shared/ui/section-head.js sectionHeadHtml). An icon tile, the heading with a count pill, a thin gold rule running to the tools. Phones: no rule and no line under the heading. small (.bt-section-head--sm) with a meta note is the head above a card on a detail page (the Game Vault game page)</p>
     <div class="kit-stack" style="gap:22px">
       ${sectionHeadHtml({ icon: "🏆", title: "Boomer's best", count: 12, sub: "Finished, highest score first.", tools: `<span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 12</button>` })}

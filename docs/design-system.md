@@ -466,7 +466,9 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - **States:** `data-live` = `off | public | backstage`, `data-auth` =
   `visitor | member | admin` on the page root (or any ancestor). Show/hide with
   `.bt-when-off` `.bt-when-live` `.bt-when-public` `.bt-when-backstage`
-  `.bt-when-visitor` `.bt-when-signed-in` (member or admin) `.bt-when-admin`.
+  `.bt-when-visitor` `.bt-when-signed-in` (member or admin) `.bt-when-admin` `.bt-when-staff`
+  (mods and admins; `data-staff="on"` on the page root, set by `site/src/lib/auth.ts` from the roles, and by
+  `?as=admin` in a preview). Display only: the callables and rules enforce roles.
 - **Mascot:** `svg.bt-mascot [.bt-mascot--aware]` (`viewBox="30 92 145 162"`), inline so
   CSS can style it; the site renders it with `site/src/components/Mascot.astro`
   (props `size`, `aware`, `label`, `decorative`) from `shared/assets/mascot.svg`. Parts keep
@@ -1352,6 +1354,11 @@ Spec: `docs/specs/fun-factory.md`.
   is the nav's `#i-shift` sprite at text size (`.bt-ic`, 1em, text colour; gold on the Night Shift pages) and
   stands in for it in the gate, the intro card, the hero and season art placeholders, the leaderboard empty states
   and the Trophy Room's Night Shift badge source. Badge and idea placeholders in data use ⏱.
+- **Crew entry points (Oct 6).** `.bt-when-staff` shows a Builder link (the staff green with a small Crew tag; an icon in
+  the phone seg nav) on the member pages, a crew strip on the season pass (`.ff-crew`: builder and idea library
+  links, a season waiting for review, additions to approve or the mod's own addition waiting), the account
+  menu's "Night Shift builder" item, and "Member view" in the builder bar. A mod's additions to a live season are
+  shown as Awaiting approval (teal) with Approve and Send back for admins (fun-factory.md §13d, §13e).
 - **Staff race (Oct 6).** Admins race with members: a Staff tag (`.bt-admin-tag--small`) on their board rows, the
   Boss marker (`.ff-boss`: the owner's rank and the gap, from the board doc) on the season pass and the
   leaderboard, and a **Staff Finish** trophy in the trophy case (the season trophy's rank colours plus a green

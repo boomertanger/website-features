@@ -29,6 +29,25 @@
 .bt-root:not(#_) .ff-staff-tag { margin-left: 6px; flex: none; vertical-align: middle; }
 .bt-root:not(#_) .ff-boss { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px solid rgba(var(--bt-gold-rgb), 0.4); border-radius: var(--bt-radius-md); background: rgba(var(--bt-gold-rgb), 0.06); color: var(--bt-text); font-size: var(--bt-text-md); font-weight: 600; }
 
+/* Crew entry points: the Builder link in the bar, the crew strip on the season pass, the pending additions in the builder */
+.bt-root:not(#_) .ff-barright { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bt-root:not(#_) .ff-crewlink svg { width: 16px; height: 16px; flex: none; }
+.bt-root:not(#_) .ff-crewlink--staff { border: 1px solid var(--bt-admin-panel-border); color: var(--bt-admin-text); text-decoration: none; }
+.bt-root:not(#_) .ff-crewlink--staff:hover { background: var(--bt-admin-tint); color: var(--bt-admin-text); }
+.bt-root:not(#_) .ff-crewlink .ff-crewtag { margin-left: 6px; padding: 0 6px; border-radius: var(--bt-radius-full); background: var(--bt-admin-tint); color: var(--bt-admin-text); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.04em; }
+.bt-root:not(#_) .ff-barico .ff-ico-staff { color: var(--bt-admin-text); }
+.bt-root:not(#_) .ff-crew { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; margin-bottom: 14px; padding: 8px 14px; border: 1px solid var(--bt-admin-panel-border); border-radius: var(--bt-radius-lg); background: var(--bt-admin-tint); color: var(--bt-text); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .ff-crew[hidden] { display: none; }
+.bt-root:not(#_) .ff-crew-tag { padding: 1px 8px; border-radius: var(--bt-radius-full); background: var(--bt-admin-tint); border: 1px solid var(--bt-admin-panel-border); color: var(--bt-admin-text); font-size: var(--bt-text-2xs); font-weight: 800; }
+.bt-root:not(#_) .ff-crew a { color: var(--bt-admin-text); font-weight: 700; }
+.bt-root:not(#_) .ff-crew-note { display: inline-flex; flex-wrap: wrap; gap: 4px 8px; color: var(--bt-text-muted); }
+.bt-root:not(#_) .ff-pendbox { display: flex; flex-direction: column; gap: 8px; padding: 12px 14px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .ff-pendlist { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .ff-pend { display: flex; flex-wrap: wrap; align-items: flex-start; justify-content: space-between; gap: 8px 12px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-root:not(#_) .ff-pend-main { display: flex; flex-wrap: wrap; align-items: center; gap: 4px 10px; min-width: 0; flex: 1; }
+.bt-root:not(#_) .ff-pend-note { flex-basis: 100%; margin: 0; color: var(--bt-text); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .ff-pend-acts { display: flex; gap: 8px; flex: none; }
+
 /* ---- The bar (the page content width, like the Arcade's) ---- */
 .bt-root:not(#_) .ff-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .ff-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
@@ -338,7 +357,7 @@
   .bt-root:not(#_) .ff-chrow > :nth-child(n+4) { grid-column: 2 / -1; justify-self: start; }
 }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .ff-barlinks { display: none; }
+  .bt-root:not(#_) .ff-barright { display: none; }
   .bt-root:not(#_) .ff-barico { display: inline-flex; }
   .bt-root:not(#_) .ff-tag { display: none; }
   .bt-root:not(#_) :is(.ff-grid2, .ff-grid3, .ff-badgepick .ff-grid3) { grid-template-columns: minmax(0, 1fr); }

@@ -55,6 +55,9 @@ function publish(next: AuthState) {
   if (next.user && next.status !== "needsSignup") b.dataset.auth = next.isAdmin ? "admin" : "member";
   else if (next.user) b.dataset.auth = "visitor";
   else b.dataset.auth = previewAuth;
+  // data-staff: mods and admins (.bt-when-staff). With nobody signed in, the ?as=admin preview counts as staff.
+  const staff = next.user && next.status !== "needsSignup" ? next.isAdmin || next.roles.includes("mod") : !next.user && previewAuth === "admin";
+  b.dataset.staff = staff ? "on" : "off";
   listeners.forEach((fn) => { try { fn(next); } catch (err) { console.error(err); } });
 }
 
