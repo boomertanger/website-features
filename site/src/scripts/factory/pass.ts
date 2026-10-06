@@ -132,7 +132,7 @@ function heroHtml() {
   }).join("");
   const xp = M.me?.seasonXp || 0;
   const daysLeft = s.endsAt != null ? Math.max(0, Math.ceil((s.endsAt - M.now) / DAY)) : null;
-  const rankStat = M.preview ? "" : M.admin ? `<div><b>—</b><span>admins stay off the boards</span></div>` : M.rank ? `<div><b>#${M.rank.toLocaleString("en-US")}</b><span>of ${M.board.count.toLocaleString("en-US")}</span></div>` : `<div><b>—</b><span>not ranked yet</span></div>`;
+  const rankStat = M.preview ? "" : M.admin && M.tree.season.staffRace === "separate" ? `<div><b>—</b><span>you race on the staff board</span></div>` : M.rank ? `<div><b>#${M.rank.toLocaleString("en-US")}</b><span>of ${M.board.count.toLocaleString("en-US")}</span></div>` : `<div><b>—</b><span>not ranked yet</span></div>`;
   const timer = M.nextUnlockAt != null ? timerHtml({ until: M.nextUnlockAt, label: `Chapter ${M.nextNumber ?? ""} in`, done: "New chapter now" }) : s.endsAt != null ? timerHtml({ until: s.endsAt, label: "Season ends in", done: "Season over" }) : "";
   const today = dayKey(M.now);
   const done = M.streak.lastCheckIn === today;
@@ -217,18 +217,19 @@ function sideHtml() {
   if (M.preview) return `<div class="ff-card"><h2>Preview</h2><p class="ff-muted">The leaderboard, streak and history show for real members.</p></div>`;
   const rows = M.board.rows.slice(0, 5);
   const inTop = M.me && rows.some((r) => r.uid === M.me!.uid);
+  const boss = D.bossLine(M.board.boss, M.me?.seasonXp || 0, me.user?.uid);
   const lb = rows.map((r) => lbRow(r, r.rank ?? 0, r.uid === me.user?.uid)).join("")
     + (M.me && !inTop && M.rank ? `<div class="ff-gap" aria-hidden="true">···</div>${lbRow({ ...M.me, featured: null }, M.rank, true)}` : "");
   const cur = M.streak.current, next = STREAK_STEPS.find((n) => n > cur);
   const nb = next ? M.badges.get(`streak-day-${next}`) : null;
   const left = next ? next - cur : 0;
-  return `<div class="ff-card"><h2>Season leaderboard <a href="/shift/leaderboard">See all</a></h2>${lb || `<p class="ff-muted">No one's on the board yet. Finish a job to be first.</p>`}</div>
+  return `<div class="ff-card"><h2>Season leaderboard <a href="/shift/leaderboard">See all</a></h2>${boss ? `<p class="ff-boss" role="status"><span aria-hidden="true">👑</span> ${esc(boss)}</p>` : ""}${lb || `<p class="ff-muted">No one's on the board yet. Finish a job to be first.</p>`}</div>
     ${next ? `<div class="ff-card"><h2>Next streak badge</h2><div class="ff-next">${medalHtml({ emoji: nb?.emoji || "🔥", rarity: nb?.rarity || 1, size: 52 })}<div><b>${esc(nb?.name || `${next}-day streak`)}</b><span>${plural(left, "more day")} of clocking in</span><div class="bt-task-row-bar" role="img" aria-label="${cur} of ${next} days"><i style="--v:${Math.round((cur / next) * 100)}%"></i></div></div></div></div>` : ""}
     <div class="ff-card"><h2>Lately</h2><ul class="ff-feed" data-lately><li class="ff-muted">Loading…</li></ul></div>`;
 }
 function lbRow(r: BoardRow, rank: number, you: boolean) {
   const name = r.handle ? `@${r.handle}` : r.displayName || "Member";
-  return `<div class="ff-lbrow${you ? " is-you" : ""}"><span class="ff-rk" style="${rank <= 3 ? `color:var(--bt-rank-${rank})` : ""}">${rank}</span>${r.featured ? medalHtml({ emoji: r.featured.emoji || "", art: r.featured.art || "", rarity: r.featured.rarity, size: 22 }) : `<span class="ff-nomedal" aria-hidden="true"></span>`}${r.handle ? `<a href="/u/${encodeURIComponent(r.handle)}">${esc(name)}</a>` : esc(name)}${you ? " (you)" : ""}<em>${(r.seasonXp || 0).toLocaleString("en-US")}</em></div>`;
+  return `<div class="ff-lbrow${you ? " is-you" : ""}"><span class="ff-rk" style="${rank <= 3 ? `color:var(--bt-rank-${rank})` : ""}">${rank}</span>${r.featured ? medalHtml({ emoji: r.featured.emoji || "", art: r.featured.art || "", rarity: r.featured.rarity, size: 22 }) : `<span class="ff-nomedal" aria-hidden="true"></span>`}${r.handle ? `<a href="/u/${encodeURIComponent(r.handle)}">${esc(name)}</a>` : esc(name)}${r.roleTag === "admin" ? `<span class="bt-admin-tag bt-admin-tag--small ff-staff-tag">Staff</span>` : ""}${you ? " (you)" : ""}<em>${(r.seasonXp || 0).toLocaleString("en-US")}</em></div>`;
 }
 async function loadLately(seasonId: string) {
   const box = () => root.querySelector<HTMLElement>("[data-lately]");

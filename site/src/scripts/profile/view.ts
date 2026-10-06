@@ -45,10 +45,11 @@ function avatarHtml(p: RewardProfile, featured: BadgeDoc | null) {
 }
 
 function trophyHtml(t: Trophy) {
+  const staff = t.kind === "staff-season";   // Staff Finish: rank colours for 1st to 3rd, plus a green Staff ribbon; its label already has the place
   const place = t.place && t.place <= 3 ? t.place : 0;
-  const ord = ["", "1st", "2nd", "3rd"][place] || (t.place ? `${t.place}th` : "");
+  const ord = staff ? "" : ["", "1st", "2nd", "3rd"][place] || (t.place ? `${t.place}th` : "");
   const when = t.earnedAt ? t.earnedAt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "";
-  return `<li class="tr-cup${place ? ` tr-cup--${place}` : ""}">${TR_CUP}<b>${esc([ord, t.label].filter(Boolean).join(" · "))}</b><span>${esc([t.period, when].filter(Boolean).join(" · "))}</span></li>`;
+  return `<li class="tr-cup${place ? ` tr-cup--${place}` : ""}${staff ? " tr-cup--staff" : ""}">${TR_CUP}${staff ? `<i class="tr-staff">Staff</i>` : ""}<b>${esc([ord, t.label].filter(Boolean).join(" · "))}</b><span>${esc([t.period, when].filter(Boolean).join(" · "))}</span></li>`;
 }
 
 async function main() {
@@ -79,7 +80,7 @@ async function main() {
     const groups = collections.map((c) => ({ c, list: badges.filter((b) => b.collection === c.id && held.has(b.id)) })).filter((g) => g.list.length);
     const groupHtml = groups.map(({ c, list }) => `<section class="tr-pf-group" aria-labelledby="pf-c-${esc(c.id)}">
         <h3 id="pf-c-${esc(c.id)}"><span aria-hidden="true">${esc(c.icon)}</span>${esc(c.name)} <small>${list.length}</small></h3>
-        <div class="tr-grid">${list.map((b) => badgeCardHtml(b, { collName: c.name, held: held.get(b.id) as Held, comingSoon: !LIVE_SOURCES.has(b.source) })).join("")}</div>
+        <div class="tr-grid">${list.map((b) => badgeCardHtml(b, { collName: c.name, held: held.get(b.id) as Held, comingSoon: !LIVE_SOURCES.has(b.source), times: b.id === "beat-the-boss" ? profile.beatTheBoss : 0 })).join("")}</div>
       </section>`).join("");
 
     root.removeAttribute("aria-busy");
@@ -90,7 +91,7 @@ async function main() {
           <div class="tr-prof-id">
             <h1 class="tr-pf-name">${esc(name)}</h1>
             <span class="tr-pf-handle">@${esc(profile.handle)}${profile.joinedAt ? ` · joined ${profile.joinedAt.toLocaleDateString("en-US", { month: "short", year: "numeric" })}` : ""}</span>
-            <div class="tr-tags">${tag ? roleTag(tag) : ""}${persona}<span class="bt-tag">Lv ${p.level} · ${esc(p.rank)}</span></div>
+            <div class="tr-tags">${tag ? roleTag(tag) : ""}${persona}${profile.beatTheBoss > 0 ? `<span class="bt-tag">👑 Beat the Boss ×${profile.beatTheBoss}</span>` : ""}<span class="bt-tag">Lv ${p.level} · ${esc(p.rank)}</span></div>
           </div>
           ${isMe ? `<a class="bt-btn bt-btn--secondary bt-btn--sm tr-pf-edit" href="/account#rewards">Edit trophy case</a>` : ""}
         </div>

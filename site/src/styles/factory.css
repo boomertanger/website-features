@@ -25,6 +25,10 @@
 /* The one Night Shift icon where the factory emoji used to be (gate, intro card, hero art, season art, empty states): gold, sized by the text */
 .bt-root:not(#_) :is(.ff-gate-art, .ff-intro > span, .ff-hero-art, .ff-sart, .ff-art, .ff .bt-board-empty > span:first-child) { color: var(--bt-title); }
 
+/* Staff race: the Staff tag on a board row, and the Boss marker (the owner's rank and the gap) */
+.bt-root:not(#_) .ff-staff-tag { margin-left: 6px; flex: none; vertical-align: middle; }
+.bt-root:not(#_) .ff-boss { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; padding: 8px 12px; border: 1px solid rgba(var(--bt-gold-rgb), 0.4); border-radius: var(--bt-radius-md); background: rgba(var(--bt-gold-rgb), 0.06); color: var(--bt-text); font-size: var(--bt-text-md); font-weight: 600; }
+
 /* ---- The bar (the page content width, like the Arcade's) ---- */
 .bt-root:not(#_) .ff-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .ff-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }

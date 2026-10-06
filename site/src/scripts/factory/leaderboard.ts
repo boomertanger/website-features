@@ -1,6 +1,7 @@
 // /shift/leaderboard (docs/specs/fun-factory.md §8). Reads after sign-in: the public summary (which season),
 // the chosen board (boards/{all|sub|crew}, top 100, written by factoryTick), the member's standing and, past
-// the top 100 of All, a count of who's ahead. Admins are never in standings, so never on a board. Off-season
+// the top 100 of All, a count of who's ahead. Admins race too, with a Staff tag (members get the prizes); under a
+// season's staffRace "separate" they're on a Staff board instead. The Boss marker comes from the board doc. Off-season
 // it shows the last season's final board with the top 3's trophies (factoryTick's finalize, rewards.md §7).
 import { onAccess } from "./layout";
 import { SHIFT_ICON } from "./art";
@@ -13,10 +14,14 @@ import { timerHtml, initTimers } from "../../../../shared/ui/countdown.js";
 import { medalHtml } from "../../../../shared/ui/medal.js";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
 
-type BoardId = "all" | "sub" | "crew";
+type BoardId = "all" | "sub" | "crew" | "staff";
 const esc = (v: unknown) => escapeHtml(String(v ?? ""));
 const root = document.querySelector<HTMLElement>("[data-ff-lb]")!;
-const BOARDS: [BoardId, string][] = [["all", "All"], ["sub", "Sub Club"], ["crew", "Crew"]];
+const BASE_BOARDS: [BoardId, string][] = [["all", "All"], ["sub", "Sub Club"], ["crew", "Crew"]];
+let hasStaff = false;   // the season keeps staff on their own board (staffRace "separate")
+const boardList = (): [BoardId, string][] => (hasStaff ? [...BASE_BOARDS, ["staff", "Staff"]] : BASE_BOARDS);
+/** Is this standing on that board? Admins race on all and crew (together) or only on staff (separate). */
+const onBoardOf = (st: BoardRow | null, id: BoardId) => !!st && (id === "staff" ? st.roleTag === "admin" : st.roleTag === "admin" && hasStaff ? false : id === "all" || st.tier === id);
 const TROPHIES = [{ place: "1st", xp: 150 }, { place: "2nd", xp: 100 }, { place: "3rd", xp: 75 }];
 const PAGE = 25;
 const num = (n: number) => (n || 0).toLocaleString("en-US");
@@ -38,8 +43,10 @@ onAccess(async (s) => {
     if (!pick) return renderEmpty(summary);
     season = pick;
     const q = new URLSearchParams(location.search).get("board");
-    if (q === "sub" || q === "crew") board = q;
     standing = await D.loadStanding(season.id, me.user!.uid).catch(() => null);
+    const staff = await D.loadBoard(season.id, "staff").catch(() => null);
+    if (staff?.exists) { hasStaff = true; boards.set("staff", staff); ranks.set("staff", staff.rows.find((r) => r.uid === me.user!.uid)?.rank ?? null); }
+    if (q === "sub" || q === "crew" || (q === "staff" && hasStaff)) board = q;
     await show(board);
   } catch (err) {
     console.error(err);
@@ -61,7 +68,7 @@ async function show(id: BoardId) {
     const b = await D.loadBoard(season.id, id);
     boards.set(id, b);
     const tier = id === "all" ? undefined : id;
-    const mine = standing && (id === "all" || standing.tier === id) ? standing : null;
+    const mine = onBoardOf(standing, id) ? standing : null;
     ranks.set(id, await D.rankOf(season.id, b, mine, tier).catch(() => null));
   }
   render();
@@ -70,13 +77,13 @@ async function show(id: BoardId) {
 function headHtml() {
   const title = `Season ${sn(season.number)}${season.name ? ` · ${esc(season.name)}` : ""}`;
   return `<div class="ff-lb-head"><div><span class="ff-kicker">${season.ended ? "Final standings" : "Season leaderboard"}</span><h1 class="bt-title">${title}</h1>
-    <p class="ff-muted">${season.ended ? `Ended ${esc(fmtDay(season.endedAt ?? Date.now()))}. Places 1 to 3 won the season trophies; 4 to 10 a top 10 plaque.` : "Ranked by season XP. Finish jobs to climb; everyone starts at zero each season."}</p></div>
+    <p class="ff-muted">${season.ended ? `Ended ${esc(fmtDay(season.endedAt ?? Date.now()))}. Members in places 1 to 3 won the season trophies and 4 to 10 a top 10 plaque; staff race too, with a Staff tag, and the top 10 of them get a Staff Finish.` : "Ranked by season XP. Finish jobs to climb; everyone starts at zero each season."}</p></div>
     ${!season.ended && season.endsAt ? timerHtml({ until: season.endsAt, label: "Ends in", done: "Ending now" }) : ""}</div>`;
 }
 
 function podiumHtml(b: Board) {
   if (!season.ended || !b.rows.length || board !== "all") return "";
-  return `<section class="ff-lb-podium" aria-label="Season trophies">${b.rows.slice(0, 3).map((r, i) => `<div class="ff-lb-place" style="--rk:var(--bt-rank-${i + 1})">
+  return `<section class="ff-lb-podium" aria-label="Season trophies, members only">${b.rows.filter((r) => r.roleTag !== "admin").slice(0, 3).map((r, i) => `<div class="ff-lb-place" style="--rk:var(--bt-rank-${i + 1})">
       <span class="ff-lb-cup" aria-hidden="true">🏆</span><b>${TROPHIES[i].place}</b>
       ${whoHtml(r, 40)}<span class="ff-muted">${num(r.seasonXp)} season XP</span>
       <span class="bt-badge bt-badge--gold">${TROPHIES[i].place} · ${esc(season.name)} · +${TROPHIES[i].xp} XP</span></div>`).join("")}</section>`;
@@ -85,20 +92,20 @@ function podiumHtml(b: Board) {
 function whoHtml(r: BoardRow, size = 24) {
   const name = r.handle ? `@${r.handle}` : r.displayName || "Member";
   const medal = r.featured ? medalHtml({ emoji: r.featured.emoji || "", art: r.featured.art || "", rarity: r.featured.rarity, size }) : `<span class="ff-nomedal" style="--s:${size}px" aria-hidden="true"></span>`;
-  return `<span class="bt-board-who">${medal}<span>${r.handle ? `<a href="/u/${encodeURIComponent(r.handle)}">${esc(name)}</a>` : esc(name)}</span></span>`;
+  return `<span class="bt-board-who">${medal}<span>${r.handle ? `<a href="/u/${encodeURIComponent(r.handle)}">${esc(name)}</a>` : esc(name)}</span>${r.roleTag === "admin" ? `<span class="bt-admin-tag bt-admin-tag--small ff-staff-tag">Staff</span>` : ""}</span>`;
 }
 const rowHtml = (r: BoardRow, rank: number, you: boolean) =>
   `<tr data-r="${rank}"${you ? ' class="is-me"' : ""}><td class="bt-board-rank">${rank}</td><td>${whoHtml(r)}${you ? `<span class="bt-sr-only"> (you)</span>` : ""}</td><td class="bt-board-time">${num(r.seasonXp)}</td></tr>`;
 
 function youHtml(b: Board) {
   const rank = ranks.get(board) ?? null;
-  const onBoard = standing && (board === "all" || standing.tier === board) ? standing : null;
-  if (me.isAdmin || me.roles.includes("admin")) return `<p class="ff-muted ff-lb-you">Admins run Night Shift, so they're never on the board.</p>`;
+  const onBoard = onBoardOf(standing, board) ? standing : null;
+  const staffNote = standing?.roleTag === "admin" ? ` You race with a Staff tag: member prizes go to members, and a top 10 finish earns a Staff Finish trophy.` : "";
   if (!onBoard || !(onBoard.seasonXp > 0)) {
-    if (board !== "all") return `<p class="ff-muted ff-lb-you">${board === "sub" ? "Sub Club members' season XP, ranked among themselves." : "Mods' season XP, ranked among themselves."}${standing?.seasonXp ? ` You're on the <a href="/shift/leaderboard">All board</a>.` : ""}</p>`;
-    return `<p class="ff-muted ff-lb-you">${season.ended ? "You didn't race this season." : "You're not on the board yet. Finish any job on the <a href=\"/factory\">season pass</a> to get a place."}</p>`;
+    if (board !== "all") return `<p class="ff-muted ff-lb-you">${board === "sub" ? "Sub Club members' season XP, ranked among themselves." : board === "staff" ? "Admins' season XP, ranked among themselves." : "Mods' and admins' season XP, ranked among themselves."}${standing?.seasonXp ? ` You're on the <a href="/shift/leaderboard">All board</a>.` : ""}</p>`;
+    return `<p class="ff-muted ff-lb-you">${season.ended ? "You didn't race this season." : "You're not on the board yet. Finish any job on the <a href=\"/shift\">season pass</a> to get a place."}</p>`;
   }
-  return `<p class="ff-muted ff-lb-you">You're <b>${rank ? `#${num(rank)}` : "past #100"}</b> with <b>${num(onBoard.seasonXp)}</b> season XP${rank && rank > 1 && b.rows[rank - 2] ? `, ${num(b.rows[rank - 2].seasonXp - onBoard.seasonXp + 1)} XP behind #${rank - 1}` : ""}.</p>`;
+  return `<p class="ff-muted ff-lb-you">You're <b>${rank ? `#${num(rank)}` : "past #100"}</b> with <b>${num(onBoard.seasonXp)}</b> season XP${rank && rank > 1 && b.rows[rank - 2] ? `, ${num(b.rows[rank - 2].seasonXp - onBoard.seasonXp + 1)} XP behind #${rank - 1}` : ""}.${staffNote}</p>`;
 }
 
 function render() {
@@ -108,13 +115,15 @@ function render() {
   const rows = b.rows.slice(0, shown);
   const inView = rows.some((r) => r.uid === uid);
   const rank = ranks.get(board) ?? null;
-  const pin = !inView && standing && standing.seasonXp > 0 && (board === "all" || standing.tier === board);
+  const pin = !inView && standing && standing.seasonXp > 0 && onBoardOf(standing, board);
   const body = rows.map((r, i) => rowHtml(r, r.rank ?? i + 1, r.uid === uid)).join("")
     + (pin ? `<tr class="bt-board-gap" aria-hidden="true"><td colspan="3">···</td></tr>${rowHtml({ ...standing!, featured: null }, rank ?? 0, true).replace(`<td class="bt-board-rank">0</td>`, `<td class="bt-board-rank">100+</td>`)}` : "");
-  const label = BOARDS.find(([k]) => k === board)![1];
+  const label = boardList().find(([k]) => k === board)![1];
+  const boss = D.bossLine(b.boss, standing?.seasonXp || 0, uid);
   root.innerHTML = `${headHtml()}
-    <div class="ff-sel ff-lb-pills" role="group" aria-label="Board">${BOARDS.map(([k, l]) => `<button type="button" class="bt-chip${k === board ? " is-active" : ""}" data-board="${k}" aria-pressed="${k === board}">${l}</button>`).join("")}</div>
+    <div class="ff-sel ff-lb-pills" role="group" aria-label="Board">${boardList().map(([k, l]) => `<button type="button" class="bt-chip${k === board ? " is-active" : ""}" data-board="${k}" aria-pressed="${k === board}">${l}</button>`).join("")}</div>
     ${podiumHtml(b)}
+    ${boss ? `<p class="ff-boss" role="status"><span aria-hidden="true">👑</span> ${esc(boss)}</p>` : ""}
     <section class="bt-tile bt-board-card" aria-labelledby="ff-lb-h">
       <div class="bt-tile-head"><h2 class="ff-lb-title" id="ff-lb-h">${label}${b.count ? ` <span class="ff-muted">· ${num(b.count)} ${b.count === 1 ? "member" : "members"}</span>` : ""}</h2></div>
       ${b.rows.length ? `<table class="bt-board"><thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col">Season XP</th></tr></thead><tbody>${body}</tbody></table>`

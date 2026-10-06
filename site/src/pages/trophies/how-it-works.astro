@@ -69,7 +69,7 @@ const MINI = [
 
 const TRO = [
   ["🕹", "Weekly boards", "rank-1", "Finish top 3 on a Boom Arcade weekly board, on Desktop or Mobile.", "Every Monday"],
-  [SHIFT_ICON, "Season finish", "rank-3", "Finish top 3 on the Night Shift season leaderboard. The top 10 get a plaque.", "Every season"],
+  [SHIFT_ICON, "Season finish", "rank-3", "Finish top 3 among members on the Night Shift season leaderboard. The top 10 get a plaque.", "Every season"],
   ["🎉", "Contests", "pink", "Place in a contest or community game night.", "Whenever one runs"],
   ["🛡", "Mod MVP", "teal", "Boomertanger picks the mod who went above and beyond.", "Every month · crew only"],
 ];
@@ -298,6 +298,7 @@ const tile = (ic: string, t: string, c: string, d: string, f: string) => `<div c
         </div>
         <div class="tr-shelf-board" aria-hidden="true"></div>
         <div class="tr-tro" set:html={TRO.map(([ic, t, c, d, f]) => tile(ic, t, c, d, f)).join("")} />
+        <p class="tr-staffnote">Everyone races in Night Shift, staff included: admins show on the season board with a Staff tag and their real rank. Member prizes go to members, so places are counted among members, and an admin in the top 10 gets a Staff Finish trophy (a green Staff ribbon, no XP) instead. Finish a season with more season XP than Boomertanger and you earn the Beat the Boss badge.</p>
       </section>
 
       <section class="tr-sec" id="s-xp" aria-labelledby="h-xp">

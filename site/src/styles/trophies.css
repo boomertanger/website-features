@@ -206,6 +206,9 @@
 .bt-root:not(#_) .tr-cup:hover svg { transform: translateY(-4px) rotate(-4deg); }
 .bt-root:not(#_) .tr-cup b { color: var(--bt-text); font-size: var(--bt-text-sm); font-weight: 800; }
 .bt-root:not(#_) .tr-cup span { color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+/* Staff Finish (kind staff-season): the season trophy's rank colours plus a green Staff ribbon in the admin tokens */
+.bt-root:not(#_) .tr-staff { padding: 1px 9px; border: 1px solid var(--bt-admin-panel-border); border-radius: var(--bt-radius-full); background: var(--bt-admin-tint); color: var(--bt-admin-text); font-size: var(--bt-text-2xs); font-style: normal; font-weight: 800; letter-spacing: 0.04em; }
+.bt-root:not(#_) .tr-staffnote { max-width: 74ch; margin: 14px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; }
 .bt-root:not(#_) .tr-cup--1 { --cc: var(--bt-rank-1); --w: 84px; }
 .bt-root:not(#_) .tr-cup--2 { --cc: var(--bt-rank-2); }
 .bt-root:not(#_) .tr-cup--3 { --cc: var(--bt-rank-3); --w: 58px; }

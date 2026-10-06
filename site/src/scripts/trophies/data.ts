@@ -15,6 +15,7 @@ export interface RewardProfile {
   xp: number; showcase: string[]; featuredBadge: string | null; persona: string | null; joinedAt: Date | null;
   roleTag: string | null;   // fan, sub, mod or admin: the public copy of the highest role (functions keep it in step)
   currentStreak: number; bestStreak: number;   // Night Shift daily streak, copied on check-in (functions)
+  beatTheBoss: number;   // seasons finished with more season XP than the owner (Night Shift; functions count it at season end)
 }
 
 const lib = () => import("../../lib/db");
@@ -89,7 +90,7 @@ function toProfile(uid: string, x: Record<string, any>): RewardProfile {
     uid, handle: String(x.handle ?? ""), displayName: String(x.displayName ?? x.handle ?? ""), avatar: x.avatar ?? null,
     xp: Number(x.xp) || 0, showcase: Array.isArray(x.showcase) ? x.showcase.filter((v: unknown) => typeof v === "string") : [],
     featuredBadge: typeof x.featuredBadge === "string" ? x.featuredBadge : null, persona: typeof x.persona === "string" ? x.persona : null,
-    currentStreak: Number(x.currentStreak) || 0, bestStreak: Number(x.bestStreak) || 0,
+    currentStreak: Number(x.currentStreak) || 0, bestStreak: Number(x.bestStreak) || 0, beatTheBoss: Number(x.beatTheBoss) || 0,
     joinedAt: toDate(x.joinedAt), roleTag: typeof x.roleTag === "string" ? x.roleTag : null,
   };
 }

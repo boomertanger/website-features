@@ -45,11 +45,11 @@ const ACTS = [
 ];
 const PUNCH = [["Mon", "is-on"], ["Tue", "is-on"], ["Wed", "is-save"], ["Thu", "is-today"], ["Fri", ""], ["Sat", ""], ["Sun", ""]];
 const POD = [[4, "@vhs_ghost", 70], [2, "@gbo", 118], [1, "@nightjar", 150], [3, "@skullkid", 96], [5, "@mothman", 52]] as const;
-const ENDS = [["🏆", "Top 3", "win gold, silver and bronze season trophies."], ["🎖", "Top 10", "get a season plaque on their profile."], ["🏅", "Finish the story", "and the season badge is yours, wherever you rank."], ["⚡", "Your lifetime XP and level", "keep everything you earned. Only the race resets."]];
+const ENDS = [["🏆", "Top 3 members", "win gold, silver and bronze season trophies."], ["🎖", "Top 10 members", "get a season plaque on their profile."], ["🛡", "Staff race too", "with a Staff tag and their real rank. Member prizes go to members, so staff get a Staff Finish trophy for a top 10 place instead."], ["👑", "Beat the Boss", "finish a season with more season XP than Boomertanger (once he has 500) and the Beat the Boss badge is yours."], ["🏅", "Finish the story", "and the season badge is yours, wherever you rank."], ["⚡", "Your lifetime XP and level", "keep everything you earned. Only the race resets."]];
 const PLANS = [
   { k: "", t: "Everyone", price: "Fan Club, free", tag: ["gray", "Free"], items: ["The whole season: daily, weekly, story, milestone and event campaigns", "Clock in, streaks and streak savers (hold 2)", "The season leaderboard and its trophies", "Hidden medal hunts"], foot: "Every member starts here." },
   { k: "sub", t: "Sub Club", price: "$7.99 a month", tag: ["gold", "Paid"], plus: "Everything for everyone, plus", items: ["Sub Club campaigns each chapter", "Hold up to 3 streak savers", "Early looks at new Arcade versions"], foot: "Same XP per task as everyone else." },
-  { k: "crew", t: "Crew", price: "Mods and admins", tag: ["teal", "Invite only"], plus: "Everything in Sub Club, plus", items: ["Crew missions: patrols, recaps, events", "Mods race on the season board too", "Mod MVP on the crew board"], foot: "Admins plan and publish seasons and stay off the boards." },
+  { k: "crew", t: "Crew", price: "Mods and admins", tag: ["teal", "Invite only"], plus: "Everything in Sub Club, plus", items: ["Crew missions: patrols, recaps, events", "Mods and admins race on the season board too (admins with a Staff tag)", "Mod MVP on the crew board"], foot: "Admins plan and publish seasons, and race with a Staff tag." },
 ];
 const RULES = [
   ["🔒", "The server counts", "Progress only counts what the site's server sees. Nothing done in a browser can add XP."],
@@ -65,7 +65,8 @@ const FAQS = [
   ["I missed a day. Is my streak gone?", "Not if you have a streak saver. You earn one for every 7 days in a row, and a missed day uses one automatically."],
   ["When do things reset?", "Daily jobs reset at midnight Central time. Weekly jobs reset Monday at midnight Central."],
   ["Why can't I see the next chapter yet?", "Chapters stay secret until they unlock. You'll see a countdown on the season pass."],
-  ["Can mods win the season?", "Yes. Mods race on the season leaderboard like everyone else. Admins run the seasons, so they stay off the boards."],
+  ["Can mods win the season?", "Yes. Mods race on the season leaderboard and win prizes like everyone else. Admins race too, with a Staff tag and their real rank, but the season trophies and plaques go to members, so an admin in the top 10 gets a Staff Finish trophy instead."],
+  ["Can I beat the Boss?", "Maybe. The Boss is Boomertanger, racing on the same board. If you finish a season with more season XP than he has (and he has at least 500), you earn the Beat the Boss badge, and your profile counts every season you did it. The season pass and the leaderboard show where he is and how far behind you are."],
 ];
 const NAV: [string, string][] = [["s-season", "How a season works"], ["s-camp", "Campaigns"], ["s-acts", "Activities"], ["s-clock", "Clock in and streaks"], ["s-hunt", "Hidden medals"], ["s-lb", "Season leaderboard"], ["s-plan", "Your plan"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
 const chapter = (n: number, id: string, title: string, lede?: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
@@ -176,7 +177,7 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
       </section>
 
       <section class="ff-hw-sec" id="s-lb" aria-labelledby="h-lb">
-        <Fragment set:html={chapter(6, "h-lb", "Season leaderboard", "Everything you finish this season adds season XP. Season XP starts at zero every season, so everyone gets a fresh race.")} />
+        <Fragment set:html={chapter(6, "h-lb", "Season leaderboard", "Everything you finish this season adds season XP. Season XP starts at zero every season, so everyone gets a fresh race. Everyone races together, staff included.")} />
         <div class="ff-hw-lb">
           <div class="ff-hw-pod" role="img" aria-label="Example top five: @nightjar first, @gbo second, @skullkid third, @vhs_ghost fourth, @mothman fifth">
             {POD.map(([r, n, h]) => <div><em>{n}</em><i style={`--h:${h}px;--c:var(--bt-rank-${r})`}>{r}</i></div>)}

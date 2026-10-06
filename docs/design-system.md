@@ -1352,6 +1352,11 @@ Spec: `docs/specs/fun-factory.md`.
   is the nav's `#i-shift` sprite at text size (`.bt-ic`, 1em, text colour; gold on the Night Shift pages) and
   stands in for it in the gate, the intro card, the hero and season art placeholders, the leaderboard empty states
   and the Trophy Room's Night Shift badge source. Badge and idea placeholders in data use ⏱.
+- **Staff race (Oct 6).** Admins race with members: a Staff tag (`.bt-admin-tag--small`) on their board rows, the
+  Boss marker (`.ff-boss`: the owner's rank and the gap, from the board doc) on the season pass and the
+  leaderboard, and a **Staff Finish** trophy in the trophy case (the season trophy's rank colours plus a green
+  `.tr-staff` ribbon in the admin tokens, no XP). "Beat the Boss ×n" is a profile tag and the badge card's count.
+  The builder's Rewards stage has an admin-only Where staff race setting (together by default).
 - **Two different areas.** **Night Shift** is for members (seasons, missions, the leaderboard, plus the builder
   for mods and admins). **Night Watch** is the planned staff admin hub (ROADMAP workstream 10). They share a
   night theme on purpose, not a page, a layout or a nav slot.

@@ -25,12 +25,14 @@ export interface Summary {
   huntPaths?: string[]; next: { id: string; name: string; number: number | null; startsAt: number } | null;
   last: { id: string; name: string; number: number | null; endedAt: number; top3: BoardRow[] } | null;
 }
-export interface BoardRow { rank?: number; uid: string; handle: string | null; displayName: string | null; seasonXp: number; tier?: string; featured?: { id: string; emoji: string | null; art: string | null; rarity: number } | null }
-export interface Board { rows: BoardRow[]; count: number }
+export interface BoardRow { rank?: number; uid: string; handle: string | null; displayName: string | null; seasonXp: number; tier?: string; roleTag?: string | null; featured?: { id: string; emoji: string | null; art: string | null; rarity: number } | null }
+/** The owner's place this season (written onto every board doc by factoryTick): rank is null under staffRace "separate". */
+export interface Boss { uid: string; handle: string | null; displayName: string | null; seasonXp: number; rank: number | null }
+export interface Board { rows: BoardRow[]; count: number; boss?: Boss | null; exists?: boolean }
 export interface SChapter { id: string; order: number; name: string; blurb?: string; unlockAt: number | null; revealed?: boolean; number?: number }
 export interface SCampaign { id: string; chapterId: string; name: string; cadence: string; audience: string; opensAt: number | null; closesAt: number | null; order: number; bonus: { xp: number; badgeId: string | null } | null; enabled?: boolean }
 export interface SActivity { id: string; campaignId: string; title: string; instructions: string; link: string | null; typeId: string; target: number; params: Record<string, unknown>; xp: number; repeat: string; order: number; enabled?: boolean }
-export interface STree { season: { id: string; number: number | null; name: string; pitch: string; art: { url: string } | null; startsAt: number | null; endsAt: number | null; status: string; badgeId: string | null }; chapters: SChapter[]; campaigns: SCampaign[]; activities: SActivity[]; lockedSub?: { id: string; chapterId: string; name: string }[] }
+export interface STree { season: { id: string; number: number | null; name: string; pitch: string; art: { url: string } | null; startsAt: number | null; endsAt: number | null; status: string; badgeId: string | null; staffRace?: "together" | "separate" }; chapters: SChapter[]; campaigns: SCampaign[]; activities: SActivity[]; lockedSub?: { id: string; chapterId: string; name: string }[] }
 export interface Progress { acts: Record<string, { count: number; period: string; completedAt: number | null; seen?: string[] }>; camps: Record<string, { period: string; completedAt: number | null }> }
 export interface Streak { current: number; best: number; lastDay: string | null; lastCheckIn?: string | null; savers: number; saversCap: number }
 
@@ -77,10 +79,10 @@ export async function loadStreak(uid: string): Promise<Streak> {
   const d = s.exists() ? s.data() : {};
   return { current: d.current || 0, best: d.best || 0, lastDay: d.lastDay ?? null, lastCheckIn: d.lastCheckIn ?? null, savers: d.savers || 0, saversCap: d.saversCap || 2 };
 }
-export async function loadBoard(seasonId: string, board: "all" | "sub" | "crew" = "all"): Promise<Board> {
+export async function loadBoard(seasonId: string, board: "all" | "sub" | "crew" | "staff" = "all"): Promise<Board> {
   const { db, doc, getDoc, SITE_ID } = await lib();
   const s = await getDoc(doc(db, "sites", SITE_ID, "factory", "main", "seasons", seasonId, "boards", board));
-  return s.exists() ? { rows: (s.get("rows") || []) as BoardRow[], count: s.get("count") || 0 } : { rows: [], count: 0 };
+  return s.exists() ? { rows: (s.get("rows") || []) as BoardRow[], count: s.get("count") || 0, boss: (s.get("boss") as Boss | null) ?? null, exists: true } : { rows: [], count: 0, boss: null, exists: false };
 }
 export async function loadStanding(seasonId: string, uid: string): Promise<BoardRow | null> {
   const { db, doc, getDoc, SITE_ID } = await lib();
@@ -96,5 +98,14 @@ export async function rankOf(seasonId: string, board: Board, me: BoardRow | null
   const { db, collection, query, where, getCount, SITE_ID } = await lib();
   const q = query(collection(db, "sites", SITE_ID, "factory", "main", "seasons", seasonId, "standings"), where("seasonXp", ">", me.seasonXp));
   return (await getCount(q)).data().count + 1;
+}
+/** "Boss is #12 · you're 340 XP behind" / "You're ahead of the Boss": the owner's place and the gap for the signed-in
+ *  member, from the board doc's boss field (no query per row). "" when the owner hasn't raced, or is the viewer. */
+export function bossLine(boss: Boss | null | undefined, myXp: number, myUid?: string): string {
+  if (!boss || !(boss.seasonXp > 0) || boss.uid === myUid) return "";
+  const n = (v: number) => v.toLocaleString("en-US");
+  if (myXp > boss.seasonXp) return "You're ahead of the Boss";
+  const lead = boss.rank ? `Boss is #${n(boss.rank)}` : `Boss has ${n(boss.seasonXp)} XP`;
+  return myXp === boss.seasonXp ? `${lead} · you're level with the Boss` : `${lead} · you're ${n(boss.seasonXp - myXp)} XP behind`;
 }
 export { toMs };

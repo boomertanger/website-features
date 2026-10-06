@@ -36,8 +36,9 @@ export const earnedLine = (h: Held) => [h.earnedAt && `Earned ${fmtDay(h.earnedA
 /** "4%", "0.6%", "<0.1%". */
 export const fmtPct = (p: number) => (p < 0.1 ? "<0.1%" : p < 10 ? `${Math.round(p * 10) / 10}%` : `${Math.round(p)}%`);
 
-export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Held | null; member?: boolean; comingSoon?: boolean; hidden?: boolean } = {}) {
-  const { collName = "", held = null, member = false, comingSoon = false, hidden = false } = opts;
+export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Held | null; member?: boolean; comingSoon?: boolean; hidden?: boolean; times?: number } = {}) {
+  const { collName = "", held = null, member = false, comingSoon = false, hidden = false, times = 0 } = opts;
+  const ntimes = held && times > 1 ? ` ×${times}` : "";   // a badge earned in several seasons (Beat the Boss)
   const s = SOURCES[b.source] ?? SOURCES.auto, r = Math.max(1, Math.min(5, b.rarity || 1)), tone = RARITY[r].tone;
   const hint = b.secret?.hint, secret = !!hint && !held;
   const xp = badgeXp(b);
@@ -51,11 +52,11 @@ export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Hel
   const medal = medalHtml({ emoji: b.emoji ?? "", art: b.art ?? "", rarity: r, size: 72, secret });
   const front = secret
     ? `${medal}<b>???</b>${rarityBadge(r)}<span class="tr-hint">"${esc(hint)}"</span>`
-    : `${medal}<b>${esc(b.name)}</b>${rarityBadge(r)}${held ? `<span class="tr-earned">${esc(earnedLine(held))}</span>` : ""}`;
+    : `${medal}<b>${esc(b.name)}${ntimes}</b>${rarityBadge(r)}${held ? `<span class="tr-earned">${esc(earnedLine(held))}</span>` : ""}`;
   const pct = typeof b.pctHeld === "number" && b.pctHeld > 0 ? fmtPct(b.pctHeld) : "";
   const label = secret
     ? `Secret ${RARITY[r].name} badge. Hint: ${hint}`
-    : `${b.name}, ${RARITY[r].name}${held ? `. ${earnedLine(held)}` : member ? ". Not earned yet" : ""}. How to earn: ${b.how} Earned by: ${s.t}.${comingSoon && !held ? " Coming soon." : ""}${pct ? ` Held by ${pct} of members.` : ""}`;
+    : `${b.name}${ntimes}, ${RARITY[r].name}${held ? `. ${earnedLine(held)}` : member ? ". Not earned yet" : ""}. How to earn: ${b.how} Earned by: ${s.t}.${comingSoon && !held ? " Coming soon." : ""}${pct ? ` Held by ${pct} of members.` : ""}`;
   const cls = ["bt-flip", "tr-card", member && !held && "is-locked", held && "is-held"].filter(Boolean).join(" ");
   return `<button type="button" class="${cls}" style="--c:var(--bt-${tone})" data-id="${esc(b.id)}" data-coll="${esc(b.collection)}" data-rar="${r}"${hidden ? " hidden" : ""} aria-label="${esc(label)}"><span class="bt-flip-in">
     <span class="bt-flip-face" aria-hidden="true"><span class="tr-src" title="${s.t}">${s.ic}</span><span class="tr-flags">${flags}</span>${front}</span>

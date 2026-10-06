@@ -239,6 +239,7 @@ const PANELS: Record<string, () => string> = {
           </div>
           <small class="ff-hint">It goes into the Trophy Room catalog as a draft and turns on when the season is published.</small></div></div>`
       + field("Daily XP cap (optional)", `<input class="bt-input" type="number" min="0" step="10" id="ff-cap" data-bind="season::dailyXpCap" value="${s.dailyXpCap ?? ""}" placeholder="No cap"${dis(edit)}>`, "ff-cap", "The most Night Shift XP one member can earn in a day.")
+      + field("Where staff race", `<select class="bt-select" id="ff-staff" data-bind="season::staffRace"${dis(edit && isAdmin)}><option value="together"${(s.staffRace || "together") === "together" ? " selected" : ""}>Together with members</option><option value="separate"${s.staffRace === "separate" ? " selected" : ""}>On their own staff board</option></select>`, "ff-staff", isAdmin ? "Together: admins race on the main board with a Staff tag; member prizes still go to members. Own board: admins leave the all, sub and crew boards. Can't change once the season is live." : "Only admins change this. Together is the default.")
       + checksHtml("rewards");
   },
   schedule() {
