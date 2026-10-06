@@ -282,6 +282,15 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   hours"), About the game, Details, Where to play, On stream and Up next each get the SH3 section head
   above their card (the kit's `.bt-section-head`, compact `--sm` size, `meta` note), replacing the
   gold-bar card titles. Icons: 🎙 📺 📖 📋 🛒 📊; Up next uses ⏭.
+- **P3 Game page hero on phones (part 10, `game-vault-phone-game-page.html`, approved).** Under 640px
+  only (desktop and tablet unchanged). The top row keeps the "‹ Vault" pill and "3 of 15" with ‹ ›.
+  Then a two-column row: the cover at about 58% on the left (tilt on pointer devices only), and on the
+  right the status badge, the tags (one per line) and the score dial (about 112px, Boomer's gold,
+  lights up on view). A game with no score shows just the badge and tags, plus "Not rated" in the
+  dial's place when it has been played (not on the Wishlist). Under the row, full width: the title
+  (wraps, never cut off), the byline (developer, year, time to beat), then the stream count line with
+  the admin Edit button (green, small) at its right. The blurred cover stays behind the whole block
+  and fades to the page colour. Reduced motion: no tilt, the dial shows lit.
 - The cover card's hover panel follows the game (already in round 3's follow-ups): "No review yet"
   with a status line for playing, finished and abandoned games without a verdict, "Not played yet"
   only on the Wishlist (`shared/vault-reveal.js`).

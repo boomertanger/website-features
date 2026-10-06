@@ -1292,6 +1292,12 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   - **G1, section heads sit above the cards on the game page.** The same `.bt-section-head` as the
     /games shelves (compact `--sm`, with a `meta` note), not a second piece and not a title inside
     the card; the cards stay clean.
+- **Game page hero on phones, part 10** (`game-vault-phone-game-page.html`, approved P3; details in the
+  spec's §9). Under 640px the hero is a two-column row, the cover (58%) beside the status badge, the
+  tags (one per line) and the score dial, then the title, byline and stream line (with the admin Edit
+  button) full width. Built on the existing hero markup: `.gv-hero-text` and `.gv-badges` become
+  `display: contents` and the hero grid places the pieces; no second copy of the title. "Not rated"
+  (`.gv-norate`, shown on phones only) stands in for the dial on played games with no score.
 
 ### 8j. Trophy Room
 
