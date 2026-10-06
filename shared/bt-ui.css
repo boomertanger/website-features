@@ -3218,6 +3218,9 @@
 .bt-root:not(#_) .bt-shelf-arrows { display: flex; gap: 6px; }
 .bt-root:not(#_) .bt-shelf-tools .bt-link-btn { white-space: nowrap; }
 
+/* Inline sprite icon: <svg class="bt-ic"><use href="#i-…"/></svg> is as big as the text around it (1em) and takes its colour. */
+.bt-root:not(#_) .bt-ic { width: 1em; height: 1em; flex: none; vertical-align: -0.14em; }
+
 /* Section head (game-vault-page.html SH3): icon tile, heading + count pill, a thin gold rule to the tools.
    Put the shelf's .bt-shelf-tools (arrows, See all) inside .bt-section-head-tools. Phones: no rule, no line under the heading. */
 .bt-root:not(#_) .bt-section-head { display: flex; align-items: center; gap: 14px; min-width: 0; margin-bottom: 16px; }

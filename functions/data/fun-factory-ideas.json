@@ -218,13 +218,13 @@
       "emoji": "🌊"
     },
     {
-      "name": "Night Shift",
-      "pitch": "Clock in at a factory that only runs after dark.",
+      "name": "Overtime",
+      "pitch": "The factory that never closes is hiring for the late shift.",
       "tags": [
         "factory",
         "workplace"
       ],
-      "emoji": "🏭"
+      "emoji": "⏱"
     },
     {
       "name": "The Hollow Asylum",
@@ -397,7 +397,7 @@
       ]
     },
     {
-      "theme": "Night Shift",
+      "theme": "Overtime",
       "names": [
         "First Shift",
         "Overtime",

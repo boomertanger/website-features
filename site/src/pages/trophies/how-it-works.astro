@@ -8,6 +8,7 @@
 // looks like a member's data (the hero case, the shelf, the profile and the board rows) is a
 // marked example. Visitors get Join free (the Join dialog); members get See your badges.
 import TrophyLayout from "../../layouts/TrophyLayout.astro";
+import { SHIFT_ICON } from "../../scripts/factory/art";
 import TocLayout from "../../components/TocLayout.astro";
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
@@ -39,7 +40,7 @@ const SRC: Record<string, { ic: string; t: string; d?: string; ex?: string; c?: 
   drop: { ic: "⚡", t: "Live drops" },
   crew: { ic: "🛡", t: "Crew awards", c: "teal", d: "Mods and admins award badges for moments a computer can't judge, always with a written reason.", ex: "Streamer Saves · The Diplomat · Boomer's Blessing" },
   quest: { ic: "🏁", t: "Contests and hunts", c: "pink", d: "Win a contest, finish a scavenger hunt, or find something hidden on the site.", ex: "Find the Floof · Corgi Quest · The Last Survivor" },
-  factory: { ic: "🏭", t: "Night Shift", c: "rank-3", d: "Complete seasonal campaigns and missions. Every season brings its own badges.", ex: "Season 01 badge · Site Sleuth" },
+  factory: { ic: SHIFT_ICON, t: "Night Shift", c: "rank-3", d: "Complete seasonal campaigns and missions. Every season brings its own badges.", ex: "Season 01 badge · Site Sleuth" },
   support: { ic: "💛", t: "Support", c: "gold", d: "Subscribing, gifting and tipping earn Supporter badges as a thank-you. They give no XP and never count on a leaderboard.", ex: "Pocket Change Pal · Boomer Booster" },
 };
 
@@ -68,7 +69,7 @@ const MINI = [
 
 const TRO = [
   ["🕹", "Weekly boards", "rank-1", "Finish top 3 on a Boom Arcade weekly board, on Desktop or Mobile.", "Every Monday"],
-  ["🏭", "Season finish", "rank-3", "Finish top 3 on the Night Shift season leaderboard. The top 10 get a plaque.", "Every season"],
+  [SHIFT_ICON, "Season finish", "rank-3", "Finish top 3 on the Night Shift season leaderboard. The top 10 get a plaque.", "Every season"],
   ["🎉", "Contests", "pink", "Place in a contest or community game night.", "Whenever one runs"],
   ["🛡", "Mod MVP", "teal", "Boomertanger picks the mod who went above and beyond.", "Every month · crew only"],
 ];
@@ -190,7 +191,7 @@ const tile = (ic: string, t: string, c: string, d: string, f: string) => `<div c
         <div class="tr-grid" data-tr-grid set:html={GRID} />
         <p class="tr-empty" data-tr-empty hidden></p>
         <ul class="tr-legend" aria-label="How each badge is earned">
-          {Object.values(SRC).map((s) => <li><span aria-hidden="true">{s.ic}</span> {s.t}</li>)}
+          {Object.values(SRC).map((s) => <li><span aria-hidden="true"><Fragment set:html={s.ic} /></span> {s.t}</li>)}
         </ul>
       </section>
 
@@ -245,7 +246,7 @@ const tile = (ic: string, t: string, c: string, d: string, f: string) => `<div c
           </div>
           {(["auto", "stream", "crew", "quest", "factory", "support"] as const).map((k) => {
             const s = SRC[k];
-            return <div class="tr-tile" style={`--c:var(--bt-${s.c})`}><span class="tr-ic" aria-hidden="true">{s.ic}</span><h3>{s.t}</h3><p>{s.d}</p><span class="tr-ex">{s.ex}</span></div>;
+            return <div class="tr-tile" style={`--c:var(--bt-${s.c})`}><span class="tr-ic" aria-hidden="true"><Fragment set:html={s.ic} /></span><h3>{s.t}</h3><p>{s.d}</p><span class="tr-ex">{s.ex}</span></div>;
           })}
         </div>
       </section>

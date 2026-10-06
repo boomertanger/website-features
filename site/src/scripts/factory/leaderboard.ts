@@ -3,6 +3,7 @@
 // the top 100 of All, a count of who's ahead. Admins are never in standings, so never on a board. Off-season
 // it shows the last season's final board with the top 3's trophies (factoryTick's finalize, rewards.md §7).
 import { onAccess } from "./layout";
+import { SHIFT_ICON } from "./art";
 import { messageFor } from "../../lib/errors";
 import type { AuthState } from "../../lib/auth";
 import * as D from "./member-data";
@@ -117,7 +118,7 @@ function render() {
     <section class="bt-tile bt-board-card" aria-labelledby="ff-lb-h">
       <div class="bt-tile-head"><h2 class="ff-lb-title" id="ff-lb-h">${label}${b.count ? ` <span class="ff-muted">· ${num(b.count)} ${b.count === 1 ? "member" : "members"}</span>` : ""}</h2></div>
       ${b.rows.length ? `<table class="bt-board"><thead><tr><th scope="col">#</th><th scope="col">Member</th><th scope="col">Season XP</th></tr></thead><tbody>${body}</tbody></table>`
-        : `<div class="bt-board-empty"><span aria-hidden="true">🏭</span><b>No one's on this board yet</b><span>${season.ended ? "No one in this group finished with season XP." : board === "all" ? "Finish a job on the season pass to be first." : `The first ${label} member to finish a job takes #1.`}</span></div>`}
+        : `<div class="bt-board-empty"><span aria-hidden="true">${SHIFT_ICON}</span><b>No one's on this board yet</b><span>${season.ended ? "No one in this group finished with season XP." : board === "all" ? "Finish a job on the season pass to be first." : `The first ${label} member to finish a job takes #1.`}</span></div>`}
       <div class="bt-board-foot">${youHtml(b)}${b.rows.length > shown ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-more>Show more</button>` : b.count > 100 && b.rows.length >= 100 ? `<span>Top 100 shown</span>` : ""}</div>
     </section>`;
   initTimers(root);
@@ -128,7 +129,7 @@ function renderEmpty(s: Summary | null) {
   const next = s?.next;
   root.innerHTML = `<div class="ff-lb-head"><div><span class="ff-kicker">Season leaderboard</span><h1 class="bt-title">No season yet</h1>
     <p class="ff-muted">The board opens with the first season.${next ? "" : " Check back soon."}</p></div>${next ? timerHtml({ until: next.startsAt, label: "Starts in", done: "Starting now" }) : ""}</div>
-    <div class="bt-tile bt-board-card"><div class="bt-board-empty"><span aria-hidden="true">🏭</span><b>Night Shift is quiet</b><span>Read <a href="/shift/how-it-works">how it works</a> while you wait.</span></div></div>`;
+    <div class="bt-tile bt-board-card"><div class="bt-board-empty"><span aria-hidden="true">${SHIFT_ICON}</span><b>Night Shift is quiet</b><span>Read <a href="/shift/how-it-works">how it works</a> while you wait.</span></div></div>`;
   initTimers(root);
 }
 

@@ -7,6 +7,7 @@
 //   member:      true on /trophies: badges you don't hold are dimmed (.is-locked)
 //   comingSoon:  the badge's source isn't live yet (a Coming soon flag)
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
+import { SHIFT_ICON } from "../factory/art";
 import { levelBars, escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { badgeXp, progress } from "../../lib/rewards.js";
 
@@ -22,7 +23,7 @@ export interface Held { earnedAt: Date | null; serial: number | null }
 /** The seven ways in (How it works section 5 and every card's corner icon). */
 export const SOURCES: Record<string, { ic: string; t: string }> = {
   auto: { ic: "⚙️", t: "Automatic" }, stream: { ic: "📡", t: "Stream presence" }, drop: { ic: "⚡", t: "Live drops" },
-  crew: { ic: "🛡", t: "Crew awards" }, quest: { ic: "🏁", t: "Contests and hunts" }, factory: { ic: "🏭", t: "Night Shift" },
+  crew: { ic: "🛡", t: "Crew awards" }, quest: { ic: "🏁", t: "Contests and hunts" }, factory: { ic: SHIFT_ICON, t: "Night Shift" },
   support: { ic: "💛", t: "Support" },
 };
 /** Sources that can award badges today. The rest show a Coming soon flag until their feature

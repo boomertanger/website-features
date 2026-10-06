@@ -4,6 +4,7 @@
 // past the top 100), the streak badges from the catalog (cached) and the factory lines of their reward
 // history. Clock in calls factoryCheckIn. ?preview= renders factoryPreview for mods and admins.
 import { onAccess, isCrew } from "./layout";
+import { SHIFT_ICON } from "./art";
 import { call } from "../../lib/call";
 import { messageFor } from "../../lib/errors";
 import { isProduction } from "../../lib/env.js";
@@ -113,7 +114,7 @@ function introCard() {
   let seen = false;
   try { seen = localStorage.getItem("ff-pass-intro") === "1"; } catch { /* no storage */ }
   if (seen || M.preview) return "";
-  return `<div class="ff-intro" data-intro><span aria-hidden="true">🏭</span><div><b>New to Night Shift?</b><span>Clock in each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
+  return `<div class="ff-intro" data-intro><span aria-hidden="true">${SHIFT_ICON}</span><div><b>New to Night Shift?</b><span>Clock in each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
 }
 
 // ---------- hero ----------
@@ -135,7 +136,7 @@ function heroHtml() {
   const timer = M.nextUnlockAt != null ? timerHtml({ until: M.nextUnlockAt, label: `Chapter ${M.nextNumber ?? ""} in`, done: "New chapter now" }) : s.endsAt != null ? timerHtml({ until: s.endsAt, label: "Season ends in", done: "Season over" }) : "";
   const today = dayKey(M.now);
   const done = M.streak.lastCheckIn === today;
-  return `<div class="ff-hero-art" aria-hidden="true">${s.art?.url ? `<img src="${esc(s.art.url)}" alt="">` : "<span>🏭</span>"}</div>
+  return `<div class="ff-hero-art" aria-hidden="true">${s.art?.url ? `<img src="${esc(s.art.url)}" alt="">` : `<span>${SHIFT_ICON}</span>`}</div>
     <div class="ff-hero-main">
       <span class="ff-kicker">Season ${String(s.number ?? 0).padStart(2, "0")} · Chapter ${curIdx + 1} of ${M.total}</span>
       <h1 class="bt-title" id="ff-hero-h">${esc(s.name || "This season")}</h1>
@@ -258,7 +259,7 @@ async function renderOff(summary: Summary | null) {
       mine = standing?.seasonXp ? `You finished <b>#${rank ?? "?"}</b> with <b>${standing.seasonXp.toLocaleString("en-US")}</b> season XP.` : "You didn't race last season. The next one is a fresh start for everyone.";
     } catch { mine = ""; }
   }
-  root.innerHTML = `<section class="ff-hero ff-hero--off" aria-labelledby="ff-off-h"><div class="ff-hero-art" aria-hidden="true"><span>🏭</span></div><div class="ff-hero-main">
+  root.innerHTML = `<section class="ff-hero ff-hero--off" aria-labelledby="ff-off-h"><div class="ff-hero-art" aria-hidden="true"><span>${SHIFT_ICON}</span></div><div class="ff-hero-main">
       <span class="ff-kicker">Night Shift · Between seasons</span>
       <h1 class="bt-title" id="ff-off-h">${next ? `Season ${String(next.number ?? 0).padStart(2, "0")}${next.name ? ` · ${esc(next.name)}` : ""} is coming` : "Night Shift is quiet"}</h1>
       <p class="ff-muted">${next ? "A new season, new missions and a fresh race. Your streak and badges carry over." : "No season is running right now. Keep your streak going in the meantime."}</p>

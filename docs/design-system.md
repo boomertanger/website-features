@@ -1348,6 +1348,10 @@ Spec: `docs/specs/fun-factory.md`.
   kit's own effect). The icon is a time clock over a punch card (`FF_ICON` in `scripts/factory/art.ts`); on
   hover, focus or touch its lamp, dial and punch holes flicker on in turn, like a light coming on. Under reduced
   motion they just light. The nav icon is the same drawing (`#i-shift` in IconSprite, built from `SHIFT_SYMBOL`).
+- **One icon everywhere.** The factory emoji is gone from everything members see. `SHIFT_ICON` (`scripts/factory/art.ts`)
+  is the nav's `#i-shift` sprite at text size (`.bt-ic`, 1em, text colour; gold on the Night Shift pages) and
+  stands in for it in the gate, the intro card, the hero and season art placeholders, the leaderboard empty states
+  and the Trophy Room's Night Shift badge source. Badge and idea placeholders in data use ⏱.
 - **Two different areas.** **Night Shift** is for members (seasons, missions, the leaderboard, plus the builder
   for mods and admins). **Night Watch** is the planned staff admin hub (ROADMAP workstream 10). They share a
   night theme on purpose, not a page, a layout or a nav slot.

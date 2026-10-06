@@ -22,6 +22,9 @@
 @keyframes ff-win { 0% { fill: var(--bt-bg); } 30% { fill: var(--bt-lamp); } 45% { fill: var(--bt-bg); } 60%, 100% { fill: var(--bt-lamp); } }
 @keyframes ff-glow { 0% { fill: var(--bt-bg); } 25% { fill: color-mix(in srgb, var(--bt-lamp) 35%, var(--bt-bg)); } 40% { fill: var(--bt-bg); } 55%, 100% { fill: color-mix(in srgb, var(--bt-lamp) 35%, var(--bt-bg)); } }
 
+/* The one Night Shift icon where the factory emoji used to be (gate, intro card, hero art, season art, empty states): gold, sized by the text */
+.bt-root:not(#_) :is(.ff-gate-art, .ff-intro > span, .ff-hero-art, .ff-sart, .ff-art, .ff .bt-board-empty > span:first-child) { color: var(--bt-title); }
+
 /* ---- The bar (the page content width, like the Arcade's) ---- */
 .bt-root:not(#_) .ff-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .ff-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }

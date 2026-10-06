@@ -7,7 +7,7 @@
 import { onAccess } from "./layout";
 import * as A from "./api";
 import type { Activity, Campaign, Chapter, Idea, SeasonView, Stage, Tree, Cadence } from "./api";
-import { STAGE_ICONS } from "./art";
+import { STAGE_ICONS, SHIFT_ICON } from "./art";
 import { stageChecks, chapterWindows, campaignWindow, xpBudget } from "../../lib/factory-checks.js";
 import { stepperHtml, keepOpenInView } from "../../../../shared/ui/stepper.js";
 import { lanesHtml } from "../../../../shared/ui/lanes.js";
@@ -53,7 +53,7 @@ async function showList() {
     const list = root.querySelector<HTMLElement>("[data-list]")!;
     list.removeAttribute("aria-busy");
     list.innerHTML = seasons.length ? seasons.map((s) => `<div class="ff-srow">
-        <span class="ff-sart" aria-hidden="true">${s.art ? `<img src="${esc(s.art)}" alt="" loading="lazy">` : "🏭"}</span>
+        <span class="ff-sart" aria-hidden="true">${s.art ? `<img src="${esc(s.art)}" alt="" loading="lazy">` : SHIFT_ICON}</span>
         <div class="ff-srow-main"><a href="/shift/builder?season=${encodeURIComponent(s.id)}"><b>${esc(A.seasonLabel(s))}</b></a><small>${esc(A.fmtRange(s.startsAt, s.endsAt))}${s.createdBy?.name ? ` · drafted by ${esc(s.createdBy.name)}` : ""}${s.test ? " · test season" : ""}</small></div>
         ${A.statusBadge(s.status)}
         <div class="ff-srow-acts"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/builder?season=${encodeURIComponent(s.id)}">Open</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-dup="${esc(s.id)}">Duplicate</button></div>
@@ -186,7 +186,7 @@ const PANELS: Record<string, () => string> = {
       + `<div class="ff-grid2">${field("Season name", `<input class="bt-input" id="ff-name" data-bind="season::name" maxlength="60" value="${esc(s.name)}"${dis(fieldOpen("season", "name"))}>`, "ff-name")}${field("Number", `<input class="bt-input" id="ff-num" value="Season ${String(s.number ?? 0).padStart(2, "0")}" disabled>`, "ff-num")}</div>`
       + field("Pitch", `<input class="bt-input" id="ff-pitch" data-bind="season::pitch" maxlength="200" value="${esc(s.pitch)}"${dis(fieldOpen("season", "pitch"))}>`, "ff-pitch")
       + `<div class="ff-f"><span class="bt-label" id="ff-tags-l">Mood tags</span><div class="ff-sel" role="group" aria-labelledby="ff-tags-l">${(s.tags || []).map((t) => `<span class="bt-chip bt-chip--small is-active">${esc(t)}${fieldOpen("season", "tags") ? `<button type="button" class="ff-x" data-tag-del="${esc(t)}" aria-label="Remove ${esc(t)}">×</button>` : ""}</span>`).join("")}${fieldOpen("season", "tags") && (s.tags || []).length < 6 ? `<input class="bt-input ff-taginput" data-tag-add placeholder="+ Add tag" maxlength="24" aria-label="Add a mood tag">` : ""}</div></div>`
-      + `<div class="ff-upload"><span class="ff-art" aria-hidden="true">${s.art?.url ? `<img src="${esc(s.art.url)}" alt="">` : "🏭"}</span><div><b>Season art</b><br>Square, at least 800 by 800 pixels, JPG, PNG or WebP, up to 5 MB.</div>${fieldOpen("season", "name") ? `<label class="bt-btn bt-btn--secondary bt-btn--sm ff-filebtn">${s.art?.url ? "Replace" : "Upload"}<input type="file" accept="image/png,image/jpeg,image/webp" data-art hidden></label>` : ""}</div>`
+      + `<div class="ff-upload"><span class="ff-art" aria-hidden="true">${s.art?.url ? `<img src="${esc(s.art.url)}" alt="">` : SHIFT_ICON}</span><div><b>Season art</b><br>Square, at least 800 by 800 pixels, JPG, PNG or WebP, up to 5 MB.</div>${fieldOpen("season", "name") ? `<label class="bt-btn bt-btn--secondary bt-btn--sm ff-filebtn">${s.art?.url ? "Replace" : "Upload"}<input type="file" accept="image/png,image/jpeg,image/webp" data-art hidden></label>` : ""}</div>`
       + checksHtml("theme");
   },
   chapters() {

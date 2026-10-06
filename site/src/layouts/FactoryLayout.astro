@@ -25,7 +25,7 @@ const gated = membersOnly || crewOnly;
           <span class="bt-skeleton ff-skel-card"></span>
         </div>
         <section class="bt-zone ff-gate" aria-labelledby="ff-gate-title">
-          <span class="ff-gate-art" aria-hidden="true">🏭</span>
+          <span class="ff-gate-art" aria-hidden="true"><svg class="bt-ic" focusable="false"><use href="#i-shift" /></svg></span>
           <h1 class="bt-title" id="ff-gate-title" data-ff-gate-title>{crewOnly ? "Crew only" : "Members only"}</h1>
           <p class="ff-gate-lead" data-ff-gate-crew hidden={!crewOnly}>The season builder is for mods and admins. If you're on the crew, sign in with your crew account.</p>
           <p class="ff-gate-lead" data-ff-gate-member hidden={crewOnly}>Night Shift is for members: daily jobs, weekly missions and a season-long story, with XP, badges and trophies. Joining is free.</p>
