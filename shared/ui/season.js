@@ -1,5 +1,5 @@
 // shared/ui/season.js — markup for the season pieces (docs/design-system.md §5 "Task row, countdown,
-// lock card, clock and path"; the Fun Factory's season pass). Pages and the UI kit build them here so
+// lock card, clock and path"; Night Shift's season pass). Pages and the UI kit build them here so
 // they always match.
 //
 //   taskRowHtml({ icon, title, sub, n, of, xp, soon, done })   .bt-task-row: progress "n / of" or "Done ✓";

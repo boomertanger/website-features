@@ -1,4 +1,4 @@
-// /factory/builder (docs/specs/fun-factory.md §7; fun-factory-screens.html screen 2, tracker A).
+// /shift/builder (docs/specs/fun-factory.md §7; fun-factory-screens.html screen 2, tracker A).
 // Without ?season= it lists every season; with it, the editor: the header (save state, status, the
 // flow buttons), the .bt-stepper of eight stages, the open stage's panel and checks, and the .bt-drawer
 // of matching ideas. Every change autosaves through factorySave; the checks are worked out here with
@@ -54,9 +54,9 @@ async function showList() {
     list.removeAttribute("aria-busy");
     list.innerHTML = seasons.length ? seasons.map((s) => `<div class="ff-srow">
         <span class="ff-sart" aria-hidden="true">${s.art ? `<img src="${esc(s.art)}" alt="" loading="lazy">` : "🏭"}</span>
-        <div class="ff-srow-main"><a href="/factory/builder?season=${encodeURIComponent(s.id)}"><b>${esc(A.seasonLabel(s))}</b></a><small>${esc(A.fmtRange(s.startsAt, s.endsAt))}${s.createdBy?.name ? ` · drafted by ${esc(s.createdBy.name)}` : ""}${s.test ? " · test season" : ""}</small></div>
+        <div class="ff-srow-main"><a href="/shift/builder?season=${encodeURIComponent(s.id)}"><b>${esc(A.seasonLabel(s))}</b></a><small>${esc(A.fmtRange(s.startsAt, s.endsAt))}${s.createdBy?.name ? ` · drafted by ${esc(s.createdBy.name)}` : ""}${s.test ? " · test season" : ""}</small></div>
         ${A.statusBadge(s.status)}
-        <div class="ff-srow-acts"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/factory/builder?season=${encodeURIComponent(s.id)}">Open</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-dup="${esc(s.id)}">Duplicate</button></div>
+        <div class="ff-srow-acts"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/builder?season=${encodeURIComponent(s.id)}">Open</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-dup="${esc(s.id)}">Duplicate</button></div>
       </div>`).join("") : `<div class="bt-empty"><span class="bt-empty-title">No seasons yet</span><p>Start one, or ask an admin to seed the test season.</p></div>`;
   } catch (err) {
     root.querySelector<HTMLElement>("[data-list]")!.innerHTML = `<p class="bt-notice bt-notice--error">${esc(messageFor(err, "The seasons didn't load. Refresh the page."))}</p>`;
@@ -70,7 +70,7 @@ async function showList() {
     btn.disabled = true;
     try {
       const id = nb ? (await A.save(null, "season", "create", {})).seasonId! : (await A.duplicate(db!.dataset.dup!)).seasonId;
-      location.href = `/factory/builder?season=${encodeURIComponent(id)}`;
+      location.href = `/shift/builder?season=${encodeURIComponent(id)}`;
     } catch (err) { btn.disabled = false; toast(messageFor(err), { kind: "error" }); }
   });
 }
@@ -83,7 +83,7 @@ async function openEditor(id: string) {
   try {
     [view, typeList, ideas] = await Promise.all([A.getSeason(id), A.loadTypes(), A.loadIdeas().catch(() => [])]);
   } catch (err) {
-    root.innerHTML = `<p class="bt-notice bt-notice--error">${esc(messageFor(err, "That season didn't load."))} <a href="/factory/builder">Back to the seasons</a></p>`;
+    root.innerHTML = `<p class="bt-notice bt-notice--error">${esc(messageFor(err, "That season didn't load."))} <a href="/shift/builder">Back to the seasons</a></p>`;
     return;
   }
   tree = view.tree;
@@ -137,7 +137,7 @@ function renderHead() {
   if (st === "review" && isAdmin) acts.push(`<button type="button" class="bt-btn bt-btn--admin" data-act="publish">Approve and schedule</button><button type="button" class="bt-btn bt-btn--ghost" data-act="sendback">Send back</button>`);
   if (st === "scheduled" && isAdmin) acts.push(`<button type="button" class="bt-btn bt-btn--ghost" data-act="unpublish">Unpublish</button>`);
   root.querySelector<HTMLElement>("[data-head]")!.innerHTML = `
-    <div class="ff-bhead-l"><span class="ff-kicker"><a href="/factory/builder">Seasons</a> · ${st === "live" ? "Running" : st === "ended" ? "Finished" : "Planning"}</span>
+    <div class="ff-bhead-l"><span class="ff-kicker"><a href="/shift/builder">Seasons</a> · ${st === "live" ? "Running" : st === "ended" ? "Finished" : "Planning"}</span>
       <h1 class="bt-heading ff-bname">${esc(A.seasonLabel(s))}</h1>
       <span class="ff-muted">${esc(A.fmtRange(s.startsAt, s.endsAt))}${who} · <span data-save role="status">${esc(saveState)}</span></span></div>
     <div class="ff-bhead-r">${A.statusBadge(st)}${acts.join("")}</div>`;
@@ -238,7 +238,7 @@ const PANELS: Record<string, () => string> = {
             <input class="bt-input" data-badge="emoji" value="${esc(b?.emoji || "🏅")}" maxlength="8" aria-label="Emoji (until the art arrives)"${dis(edit)}>
           </div>
           <small class="ff-hint">It goes into the Trophy Room catalog as a draft and turns on when the season is published.</small></div></div>`
-      + field("Daily XP cap (optional)", `<input class="bt-input" type="number" min="0" step="10" id="ff-cap" data-bind="season::dailyXpCap" value="${s.dailyXpCap ?? ""}" placeholder="No cap"${dis(edit)}>`, "ff-cap", "The most Fun Factory XP one member can earn in a day.")
+      + field("Daily XP cap (optional)", `<input class="bt-input" type="number" min="0" step="10" id="ff-cap" data-bind="season::dailyXpCap" value="${s.dailyXpCap ?? ""}" placeholder="No cap"${dis(edit)}>`, "ff-cap", "The most Night Shift XP one member can earn in a day.")
       + checksHtml("rewards");
   },
   schedule() {
@@ -275,7 +275,7 @@ const PANELS: Record<string, () => string> = {
 function previewRow() {
   const s = tree.season;
   if (!focus.pvDate) focus.pvDate = A.centralDate(Math.max(s.startsAt ?? Date.now(), Date.now()));
-  const href = `/factory?preview=${encodeURIComponent(s.id)}&as=${focus.pvAs}&date=${focus.pvDate}`;
+  const href = `/shift?preview=${encodeURIComponent(s.id)}&as=${focus.pvAs}&date=${focus.pvDate}`;
   return `<div class="ff-prev"><span class="bt-label" id="ff-pv-l">Preview as</span><span class="ff-sel" role="group" aria-labelledby="ff-pv-l">${([["fan", "Fan Club"], ["sub", "Sub Club"], ["crew", "Crew"]] as const).map(([k, l]) => `<button type="button" class="bt-chip bt-chip--small${focus.pvAs === k ? " is-active" : ""}" data-pv-as="${k}" aria-pressed="${focus.pvAs === k}">${l}</button>`).join("")}</span><input class="bt-input ff-pvdate" type="date" data-pv-date value="${focus.pvDate}" aria-label="Preview date"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="${href}" target="_blank" rel="noopener" data-pv-open>Open preview</a><span class="ff-muted">Opens the season pass as that member would see it that day.</span></div>`;
 }
 function renderPanel() {
@@ -643,7 +643,7 @@ function activityModal(id: string | null, preset: Partial<Activity> = {}) {
     const medals = tree.hunts.find((h) => h.id === a.id)?.medals || [];
     const liveLock = isLive() && a.revealed === true;
     huntBox.innerHTML = `<span class="bt-label">Hidden medals (${medals.length} of 10)</span>${medals.map((m, i) => `<div class="ff-medalrow" data-medal="${esc(m.id)}"><span>${i + 1}</span>
-        <select class="bt-select" data-mf="path" aria-label="Medal ${i + 1} page"${liveLock ? " disabled" : ""}>${A.VISIT_SECTIONS.map((p) => opt(p, p, m.path)).join("")}</select>
+        <select class="bt-select" data-mf="path" aria-label="Medal ${i + 1} page"${liveLock ? " disabled" : ""}>${A.VISIT_SECTIONS.map((p) => opt(p, p === "/factory" ? "/shift" : p, m.path)).join("")}</select>
         <select class="bt-select" data-mf="position" aria-label="Medal ${i + 1} corner"${liveLock ? " disabled" : ""}>${A.POSITIONS.map(([p, l]) => opt(p, l, m.position)).join("")}</select>
         <input class="bt-input" data-mf="hint" value="${esc(m.hint)}" placeholder="Hint (optional)" maxlength="120" aria-label="Medal ${i + 1} hint">
         ${liveLock ? "" : `<button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-medal-del aria-label="Remove medal ${i + 1}">Remove</button>`}</div>`).join("")}

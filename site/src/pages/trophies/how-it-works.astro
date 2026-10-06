@@ -39,7 +39,7 @@ const SRC: Record<string, { ic: string; t: string; d?: string; ex?: string; c?: 
   drop: { ic: "⚡", t: "Live drops" },
   crew: { ic: "🛡", t: "Crew awards", c: "teal", d: "Mods and admins award badges for moments a computer can't judge, always with a written reason.", ex: "Streamer Saves · The Diplomat · Boomer's Blessing" },
   quest: { ic: "🏁", t: "Contests and hunts", c: "pink", d: "Win a contest, finish a scavenger hunt, or find something hidden on the site.", ex: "Find the Floof · Corgi Quest · The Last Survivor" },
-  factory: { ic: "🏭", t: "Fun Factory", c: "rank-3", d: "Complete seasonal campaigns and missions. Every season brings its own badges.", ex: "Season 01 badge · Site Sleuth" },
+  factory: { ic: "🏭", t: "Night Shift", c: "rank-3", d: "Complete seasonal campaigns and missions. Every season brings its own badges.", ex: "Season 01 badge · Site Sleuth" },
   support: { ic: "💛", t: "Support", c: "gold", d: "Subscribing, gifting and tipping earn Supporter badges as a thank-you. They give no XP and never count on a leaderboard.", ex: "Pocket Change Pal · Boomer Booster" },
 };
 
@@ -52,7 +52,7 @@ const GRID = catalog.badges.map((b) => badgeCardHtml(b, { collName: collName.get
 const FOUR = [
   ["🏅", "Badges", "gold", "Proof you did something: showed up, found a bug, survived a boss fight. Each has a rarity from Common to Legendary.", "Yours forever"],
   ["🏆", "Trophies", "rank-2", "Proof you beat everyone else or got picked: weekly boards, season finishes, contests, Mod MVP.", "Yours forever, with the date"],
-  ["⚡", "XP and levels", "rank-3", "Badges, trophies and Fun Factory missions give XP. XP raises your level and rank.", "Your level never resets"],
+  ["⚡", "XP and levels", "rank-3", "Badges, trophies and Night Shift missions give XP. XP raises your level and rank.", "Your level never resets"],
   ["🎟", "Perks", "teal", "What your plan unlocks: more showcase slots, early merch, giveaways, Sub Club campaigns.", "Lasts while you're on the plan"],
 ];
 
@@ -68,12 +68,12 @@ const MINI = [
 
 const TRO = [
   ["🕹", "Weekly boards", "rank-1", "Finish top 3 on a Boom Arcade weekly board, on Desktop or Mobile.", "Every Monday"],
-  ["🏭", "Season finish", "rank-3", "Finish top 3 on the Fun Factory season leaderboard. The top 10 get a plaque.", "Every season"],
+  ["🏭", "Season finish", "rank-3", "Finish top 3 on the Night Shift season leaderboard. The top 10 get a plaque.", "Every season"],
   ["🎉", "Contests", "pink", "Place in a contest or community game night.", "Whenever one runs"],
   ["🛡", "Mod MVP", "teal", "Boomertanger picks the mod who went above and beyond.", "Every month · crew only"],
 ];
 
-const XP = [["A Fun Factory daily", "+10 to 25"], ["A Fun Factory weekly", "+50 to 100"], ["A badge", "+10 to 250, by rarity"], ["A trophy", "+75 to 150, by place"], ["Supporter badges", "No XP"]];
+const XP = [["A Night Shift daily", "+10 to 25"], ["A Night Shift weekly", "+50 to 100"], ["A badge", "+10 to 250, by rarity"], ["A trophy", "+75 to 150, by place"], ["Supporter badges", "No XP"]];
 const pos = (l: number) => ((l - 1) / 49) * 100;
 const YOU = 12.45;
 const ROAD = RANKS.map(([l, n], i) => {
@@ -85,8 +85,8 @@ const ROAD_LABEL = `Ranks by level: ${RANKS.map(([l, n]) => `${n} at level ${l}`
 
 const PLANS = [
   { k: "", t: "Fan Club", price: `<b>Free</b>`, tag: ["gray", "Free"], items: ["Earn every badge except Crew", "Trophy case with 3 pinned badges", "Season and Arcade leaderboards", "Member giveaways", "Merch store access"], foot: "Every new member starts here." },
-  { k: "sub", t: "Sub Club", price: `<b>$7.99</b> a month`, tag: ["gold", "Paid"], plus: "Everything in Fan Club, plus", items: ["The Sub Club tag", "6 pinned badges and an animated frame on your featured badge", "Sub Club campaigns in Fun Factory: more ways to earn, never more XP per task", "Early access to merch drops", "Sub Club giveaways"], foot: "Supporter badges come with it too." },
-  { k: "crew", t: "Crew", price: `Mods and admins`, tag: ["teal", "Invite only"], items: ["Free Sub Club while you're on the crew", "Crew badges and Fun Factory crew missions", "Mod MVP trophy every month", "Earliest access to merch drops", "The season leaderboard, plus the crew board for Mod MVP"], foot: "Mods race on the season board with everyone else. Crew members don't win member giveaways." },
+  { k: "sub", t: "Sub Club", price: `<b>$7.99</b> a month`, tag: ["gold", "Paid"], plus: "Everything in Fan Club, plus", items: ["The Sub Club tag", "6 pinned badges and an animated frame on your featured badge", "Sub Club campaigns in Night Shift: more ways to earn, never more XP per task", "Early access to merch drops", "Sub Club giveaways"], foot: "Supporter badges come with it too." },
+  { k: "crew", t: "Crew", price: `Mods and admins`, tag: ["teal", "Invite only"], items: ["Free Sub Club while you're on the crew", "Crew badges and Night Shift crew missions", "Mod MVP trophy every month", "Earliest access to merch drops", "The season leaderboard, plus the crew board for Mod MVP"], foot: "Mods race on the season board with everyone else. Crew members don't win member giveaways." },
 ];
 
 const PINS = [["👁", "The Everpresent", 5, "#7"], ["🥽", "VR Vertigo Veteran", 3, "#41"], ["🐾", "Find the Floof", 4, "#3"]] as const;
@@ -102,7 +102,7 @@ const RULES = [
   ["🪦", "Buried means buried", "Limited badges never come back once their window closes."],
 ];
 const FAQS = [
-  ["Do my badges reset each season?", "No. Badges, trophies and your lifetime level are permanent. Only season XP starts again at zero when a new Fun Factory season begins."],
+  ["Do my badges reset each season?", "No. Badges, trophies and your lifetime level are permanent. Only season XP starts again at zero when a new Night Shift season begins."],
   ["Why should I link my Twitch account?", "It's how the site knows you were at a stream. Without it, the Loyalty, Chat and Hype, and most Stream Moments badges can't find you. The site only counts whether you were in chat and how many messages you sent. It never stores what you type."],
   ["I missed a live drop. Can I still get it?", "No. Drops only last a few minutes while the stream is live, which is what makes them worth showing off. There's always another one coming."],
   ["Can a mod give their friends badges?", "Every crew award needs a written reason, mods have a daily limit, every award is logged, and Boomertanger can reverse any of them. Epic and Legendary badges can only be awarded by admins."],
@@ -314,7 +314,7 @@ const tile = (ic: string, t: string, c: string, d: string, f: string) => `<div c
             </div>
             <div class="tr-split">
               <div><b>Lifetime level</b><span>Never resets. Your level and rank follow you forever.</span></div>
-              <div><b>Season XP</b><span>Starts at zero each Fun Factory season, so the season leaderboard is a fresh race every quarter.</span></div>
+              <div><b>Season XP</b><span>Starts at zero each Night Shift season, so the season leaderboard is a fresh race every quarter.</span></div>
             </div>
           </div>
           <ul class="tr-xp-list" aria-label="Where XP comes from">

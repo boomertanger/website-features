@@ -95,7 +95,7 @@ async function main() {
           ${isMe ? `<a class="bt-btn bt-btn--secondary bt-btn--sm tr-pf-edit" href="/account#rewards">Edit trophy case</a>` : ""}
         </div>
         <div><div class="tr-lv-top"><b>Level ${p.level} · ${esc(p.rank)}</b><span>${p.xp.toLocaleString("en-US")} XP</span></div><div class="tr-xpbar" style="--v:${pct.toFixed(1)}%" role="img" aria-label="${Math.round(pct)}% of the way to level ${p.level + 1}"><i></i></div></div>
-        <div class="tr-stats"><div><b>${held.size}</b><span>badge${held.size === 1 ? "" : "s"}</span></div><div><b>${trophies.length}</b><span>troph${trophies.length === 1 ? "y" : "ies"}</span></div><div><b>${p.level}</b><span>level</span></div>${profile.bestStreak ? `<div><b>🔥 ${profile.currentStreak}</b><span>day streak</span></div><div><b>${profile.bestStreak}</b><span>best streak</span></div>` : ""}${season ? `<a href="/factory/leaderboard"><b>#${season.rank}</b><span>${esc(season.label)}</span></a>` : ""}</div>
+        <div class="tr-stats"><div><b>${held.size}</b><span>badge${held.size === 1 ? "" : "s"}</span></div><div><b>${trophies.length}</b><span>troph${trophies.length === 1 ? "y" : "ies"}</span></div><div><b>${p.level}</b><span>level</span></div>${profile.bestStreak ? `<div><b>🔥 ${profile.currentStreak}</b><span>day streak</span></div><div><b>${profile.bestStreak}</b><span>best streak</span></div>` : ""}${season ? `<a href="/shift/leaderboard"><b>#${season.rank}</b><span>${esc(season.label)}</span></a>` : ""}</div>
       </header>
       ${pins.length ? `<section class="bt-card tr-pf-sec" aria-labelledby="pf-case"><h2 class="bt-card-title" id="pf-case">Trophy case</h2><ol class="tr-pins">${pinHtml}</ol></section>` : ""}
       ${trophies.length ? `<section class="bt-card tr-pf-sec" aria-labelledby="pf-tro"><h2 class="bt-card-title" id="pf-tro">Trophies</h2><ol class="tr-pf-shelf">${trophies.map(trophyHtml).join("")}</ol></section>` : ""}
@@ -110,7 +110,7 @@ async function main() {
     root.innerHTML = `<p class="bt-notice bt-notice--error">This profile didn't load. Check your connection and refresh the page.</p>`;
   }
 }
-/** Where the member sits on the live Fun Factory season's All board (its top 100), or null. */
+/** Where the member sits on the live Night Shift season's All board (its top 100), or null. */
 async function seasonPlace(uid: string): Promise<{ rank: number; label: string } | null> {
   try {
     const { loadSummary, loadBoard } = await import("../factory/member-data");

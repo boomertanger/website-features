@@ -1,5 +1,5 @@
 // shared/ui/stepper.js — .bt-stepper, a row of stages as machines on an assembly line (docs/design-system.md
-// §5 "Stepper"; the Fun Factory builder's stage tracker, option A). Every machine is a button. A conveyor
+// §5 "Stepper"; Night Shift builder's stage tracker, option A). Every machine is a button. A conveyor
 // belt runs under them with a gold "done" stretch up to the current stage, where a crate sits. The rail
 // form (.bt-stepper--rail) is a vertical list with progress rings, for narrow side panels.
 //

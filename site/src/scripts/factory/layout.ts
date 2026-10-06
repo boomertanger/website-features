@@ -1,4 +1,4 @@
-// Fun Factory layout behaviour: the sticky FUNFACTORY bar, the seg navs, the wordmark's touch
+// Night Shift layout behaviour: the sticky NIGHTSHIFT bar, the seg navs, the wordmark's touch
 // power-on, and which part of a gated page shows (FactoryLayout.astro): .ff[data-access] is
 //   loading (skeleton) · join (visitors) · signup (mid-signup) · gate (signed in, not crew, on a
 //   crew-only page) · page. The ff:access event fires with the auth state once the page is allowed.

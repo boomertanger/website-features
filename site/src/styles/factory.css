@@ -1,26 +1,26 @@
-/* site/src/styles/factory.css — the Fun Factory's own look (docs/specs/fun-factory.md; mockups
+/* site/src/styles/factory.css — Night Shift's own look (docs/specs/fun-factory.md; mockups
    docs/design/mockups/fun-factory-screens.html). Only what's unique to these pages (ff-* prefix): the
-   FUNFACTORY icon, the bar and gates, and the builder's panels. Components come from shared/bt-ui.css
+   NIGHTSHIFT icon, the bar and gates, and the builder's panels. Components come from shared/bt-ui.css
    (.bt-stepper, .bt-drawer, .bt-lanes, .bt-medal, .bt-chip, .bt-badge…). Tokens only: no raw colours.
    Container queries (1024 / 640 / 420); every animation has a reduced-motion version. */
 
-/* ---- FUNFACTORY icon: rests; on hover / focus / .is-lit the windows flicker on and smoke rolls up ---- */
+/* ---- NIGHTSHIFT icon: a time clock over a punch card. Rests with the lamp dim; on hover / focus / .is-lit the lamp, the dial
+   and the punch holes flicker on in turn, like a light coming on. Reduced motion: they just light, no flicker. ---- */
 .bt-root:not(#_) .ff-icon, .bt-root:not(#_) .bt-wordmark .ff-icon { width: 36px; height: 36px; overflow: visible; }
-.bt-root:not(#_) .ff-icon .body { fill: color-mix(in srgb, var(--bt-title) 75%, var(--bt-bg)); }
-.bt-root:not(#_) .ff-icon .chimney { fill: color-mix(in srgb, var(--bt-title) 60%, var(--bt-bg)); }
-.bt-root:not(#_) .ff-icon .floor { fill: var(--bt-primary); }
-.bt-root:not(#_) .ff-icon .w { fill: var(--bt-bg); }
-.bt-root:not(#_) .ff-icon .w2 { fill: color-mix(in srgb, var(--bt-lamp) 55%, var(--bt-bg)); }
-.bt-root:not(#_) .ff-icon .puff { fill: var(--bt-text-faint); opacity: 0; transform-box: fill-box; transform-origin: center; }
-.bt-root:not(#_) .ff-icon .p1 { opacity: 0.5; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .w { animation: ff-win 0.9s steps(1, end) forwards; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .w2 { animation-delay: 0.15s; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .w3 { animation-delay: 0.3s; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .puff { animation: ff-puff 1.2s ease-out 2; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .p2 { animation-delay: 0.3s; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .p3 { animation-delay: 0.6s; }
+.bt-root:not(#_) .ff-icon .face { fill: color-mix(in srgb, var(--bt-title) 75%, var(--bt-bg)); }
+.bt-root:not(#_) .ff-icon .dial { fill: var(--bt-bg); }
+.bt-root:not(#_) .ff-icon .hand { fill: none; stroke: var(--bt-text); stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .ff-icon .hub { fill: var(--bt-text); }
+.bt-root:not(#_) .ff-icon .card { fill: var(--bt-primary); }
+.bt-root:not(#_) .ff-icon .hole { fill: var(--bt-bg); }
+.bt-root:not(#_) .ff-icon .lamp { fill: color-mix(in srgb, var(--bt-lamp) 45%, var(--bt-bg)); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon :is(.lamp, .hole) { animation: ff-win 0.9s steps(1, end) forwards; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .dial { animation: ff-glow 1s steps(1, end) 0.1s forwards; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .h1 { animation-delay: 0.3s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .h2 { animation-delay: 0.45s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .h3 { animation-delay: 0.6s; }
 @keyframes ff-win { 0% { fill: var(--bt-bg); } 30% { fill: var(--bt-lamp); } 45% { fill: var(--bt-bg); } 60%, 100% { fill: var(--bt-lamp); } }
-@keyframes ff-puff { 0% { opacity: 0; transform: translate(0, 4px) scale(0.5); } 30% { opacity: 0.8; } 100% { opacity: 0; transform: translate(3px, -6px) scale(1.4); } }
+@keyframes ff-glow { 0% { fill: var(--bt-bg); } 25% { fill: color-mix(in srgb, var(--bt-lamp) 35%, var(--bt-bg)); } 40% { fill: var(--bt-bg); } 55%, 100% { fill: color-mix(in srgb, var(--bt-lamp) 35%, var(--bt-bg)); } }
 
 /* ---- The bar (the page content width, like the Arcade's) ---- */
 .bt-root:not(#_) .ff-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
@@ -259,7 +259,7 @@
 .bt-root:not(#_) .ff-podium a { color: var(--bt-text); font-weight: 700; text-decoration: none; }
 .bt-root:not(#_) .ff-podium em { margin-left: auto; color: var(--bt-text-muted); font-style: normal; font-variant-numeric: tabular-nums; }
 
-/* ---- Leaderboard (/factory/leaderboard) ---- */
+/* ---- Leaderboard (/shift/leaderboard) ---- */
 .bt-root:not(#_) .ff-lb-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; }
 .bt-root:not(#_) .ff-lb-head > div { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
 .bt-root:not(#_) .ff-lb-head .bt-title, .bt-root:not(#_) .ff-lb-head p { margin: 0; }
@@ -291,7 +291,7 @@
   .bt-root:not(#_) .ff-lb-place { flex-direction: row; flex-wrap: wrap; justify-content: flex-start; text-align: left; padding: 12px; }
 }
 
-/* ---- Builder guide (/factory/builder/guide; TocLayout supplies the columns and side menu) ---- */
+/* ---- Builder guide (/shift/builder/guide; TocLayout supplies the columns and side menu) ---- */
 .bt-root:not(#_) .ff-gmain { display: flex; flex-direction: column; gap: 44px; min-width: 0; }
 .bt-root:not(#_) .ff-ghero { position: relative; overflow: hidden; padding: 40px 32px; border: 1px solid var(--bt-border); border-radius: 22px; background: radial-gradient(70% 90% at 85% 10%, rgba(var(--bt-lamp-rgb), 0.1), transparent 60%), radial-gradient(60% 80% at 10% 100%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
 .bt-root:not(#_) .ff-ghero .bt-title { margin: 6px 0 10px; }
@@ -353,13 +353,14 @@
   .bt-portal[data-feature="factory"] .ff-medalrow > :nth-child(n+4) { grid-column: 2 / -1; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon :is(.w, .puff) { animation: none; }
-  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .w { fill: var(--bt-lamp); }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon :is(.lamp, .hole, .dial) { animation: none; }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon :is(.lamp, .hole) { fill: var(--bt-lamp); }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .ff-icon .dial { fill: color-mix(in srgb, var(--bt-lamp) 35%, var(--bt-bg)); }
   .bt-root:not(#_) .ff-flash { animation: none; outline: 2px solid var(--bt-title); outline-offset: 2px; }
   .bt-root:not(#_) .ff-bbar i { transition: none; }
 }
 
-/* ---- How it works (/factory/how-it-works; fun-factory-how-it-works.html) ---- */
+/* ---- How it works (/shift/how-it-works; fun-factory-how-it-works.html) ---- */
 .bt-root:not(#_) .ff-hw { display: flex; flex-direction: column; gap: 44px; min-width: 0; }
 .bt-root:not(#_) .ff-hw-acts { display: flex; flex-wrap: wrap; gap: 10px; }
 .bt-root:not(#_) .ff-hw-small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }

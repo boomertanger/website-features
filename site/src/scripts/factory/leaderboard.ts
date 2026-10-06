@@ -1,4 +1,4 @@
-// /factory/leaderboard (docs/specs/fun-factory.md §8). Reads after sign-in: the public summary (which season),
+// /shift/leaderboard (docs/specs/fun-factory.md §8). Reads after sign-in: the public summary (which season),
 // the chosen board (boards/{all|sub|crew}, top 100, written by factoryTick), the member's standing and, past
 // the top 100 of All, a count of who's ahead. Admins are never in standings, so never on a board. Off-season
 // it shows the last season's final board with the top 3's trophies (factoryTick's finalize, rewards.md §7).
@@ -92,9 +92,9 @@ const rowHtml = (r: BoardRow, rank: number, you: boolean) =>
 function youHtml(b: Board) {
   const rank = ranks.get(board) ?? null;
   const onBoard = standing && (board === "all" || standing.tier === board) ? standing : null;
-  if (me.isAdmin || me.roles.includes("admin")) return `<p class="ff-muted ff-lb-you">Admins run the factory, so they're never on the board.</p>`;
+  if (me.isAdmin || me.roles.includes("admin")) return `<p class="ff-muted ff-lb-you">Admins run Night Shift, so they're never on the board.</p>`;
   if (!onBoard || !(onBoard.seasonXp > 0)) {
-    if (board !== "all") return `<p class="ff-muted ff-lb-you">${board === "sub" ? "Sub Club members' season XP, ranked among themselves." : "Mods' season XP, ranked among themselves."}${standing?.seasonXp ? ` You're on the <a href="/factory/leaderboard">All board</a>.` : ""}</p>`;
+    if (board !== "all") return `<p class="ff-muted ff-lb-you">${board === "sub" ? "Sub Club members' season XP, ranked among themselves." : "Mods' season XP, ranked among themselves."}${standing?.seasonXp ? ` You're on the <a href="/shift/leaderboard">All board</a>.` : ""}</p>`;
     return `<p class="ff-muted ff-lb-you">${season.ended ? "You didn't race this season." : "You're not on the board yet. Finish any job on the <a href=\"/factory\">season pass</a> to get a place."}</p>`;
   }
   return `<p class="ff-muted ff-lb-you">You're <b>${rank ? `#${num(rank)}` : "past #100"}</b> with <b>${num(onBoard.seasonXp)}</b> season XP${rank && rank > 1 && b.rows[rank - 2] ? `, ${num(b.rows[rank - 2].seasonXp - onBoard.seasonXp + 1)} XP behind #${rank - 1}` : ""}.</p>`;
@@ -128,7 +128,7 @@ function renderEmpty(s: Summary | null) {
   const next = s?.next;
   root.innerHTML = `<div class="ff-lb-head"><div><span class="ff-kicker">Season leaderboard</span><h1 class="bt-title">No season yet</h1>
     <p class="ff-muted">The board opens with the first season.${next ? "" : " Check back soon."}</p></div>${next ? timerHtml({ until: next.startsAt, label: "Starts in", done: "Starting now" }) : ""}</div>
-    <div class="bt-tile bt-board-card"><div class="bt-board-empty"><span aria-hidden="true">🏭</span><b>The factory is quiet</b><span>Read <a href="/factory/how-it-works">how it works</a> while you wait.</span></div></div>`;
+    <div class="bt-tile bt-board-card"><div class="bt-board-empty"><span aria-hidden="true">🏭</span><b>Night Shift is quiet</b><span>Read <a href="/shift/how-it-works">how it works</a> while you wait.</span></div></div>`;
   initTimers(root);
 }
 

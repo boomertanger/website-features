@@ -22,11 +22,11 @@ export interface Held { earnedAt: Date | null; serial: number | null }
 /** The seven ways in (How it works section 5 and every card's corner icon). */
 export const SOURCES: Record<string, { ic: string; t: string }> = {
   auto: { ic: "⚙️", t: "Automatic" }, stream: { ic: "📡", t: "Stream presence" }, drop: { ic: "⚡", t: "Live drops" },
-  crew: { ic: "🛡", t: "Crew awards" }, quest: { ic: "🏁", t: "Contests and hunts" }, factory: { ic: "🏭", t: "Fun Factory" },
+  crew: { ic: "🛡", t: "Crew awards" }, quest: { ic: "🏁", t: "Contests and hunts" }, factory: { ic: "🏭", t: "Night Shift" },
   support: { ic: "💛", t: "Support" },
 };
 /** Sources that can award badges today. The rest show a Coming soon flag until their feature
- *  ships (stream presence, drops, contests, Fun Factory, and paid support). Keep this the one list. */
+ *  ships (stream presence, drops, contests, Night Shift, and paid support). Keep this the one list. */
 export const LIVE_SOURCES = new Set(["auto", "crew"]);
 
 export const rarityBadge = (n: number) => `<span class="bt-badge bt-badge--${RARITY[n]?.tone ?? "gray"}">${levelBars(n, 5)}${RARITY[n]?.name ?? ""}</span>`;

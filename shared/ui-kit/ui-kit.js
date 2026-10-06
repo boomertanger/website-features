@@ -1115,7 +1115,7 @@ function storyKitHtml() {
   </section>`;
 }
 
-// ---------- Stepper, drawer and lanes (the Fun Factory builder) ----------
+// ---------- Stepper, drawer and lanes (Night Shift builder) ----------
 const KIT_FF_STAGES = [
   ["theme", "🎨", "Theme", "done", "Done", 100], ["chapters", "📖", "Chapters", "done", "4 chapters", 100], ["campaigns", "🗂", "Campaigns", "done", "16 campaigns", 100],
   ["activities", "⚙️", "Activities", "now", "9 of 16 filled", 56], ["rewards", "🏅", "Rewards", "todo", "1 warning", 40], ["schedule", "📅", "Schedule", "todo", "3 of 3 checks", 100],
@@ -1127,7 +1127,7 @@ function factoryKitHtml() {
   return `
   <section class="kit-section" id="kit-factory">
     <h2 class="kit-h">Stepper, drawer and lanes</h2>
-    <p class="kit-p">The Fun Factory builder's pieces (docs/specs/fun-factory.md §7). Reusable for any multi-stage editor. Reduced motion: the belt stands still and the lamp doesn't blink.</p>
+    <p class="kit-p">The Night Shift builder's pieces (docs/specs/fun-factory.md §7). Reusable for any multi-stage editor. Reduced motion: the belt stands still and the lamp doesn't blink.</p>
     <p class="kit-sub">Stepper: .bt-stepper, the assembly line (shared/ui/stepper.js stepperHtml). Machines are buttons (data-step); .is-done gold lamp, .is-now blinking lamp, .is-todo, .is-open. Click a machine. Phones: a sideways strip that keeps the open stage in view</p>
     <div data-kit-stepper>${stepperHtml({ steps: KIT_FF_STAGES, open: "activities", crate: "S2", label: "Season stages" })}</div>
     <p class="kit-sub">.bt-stepper--rail: the compact form with progress rings, for narrow side panels</p>
@@ -1159,7 +1159,7 @@ function initFactoryKit(mount) {
   });
 }
 
-// ---------- Task row, timer, lock card, clock and path (the Fun Factory season pass) ----------
+// ---------- Task row, timer, lock card, clock and path (Night Shift season pass) ----------
 function seasonKitHtml() {
   const H = 3600000, D = 24 * H;
   return `

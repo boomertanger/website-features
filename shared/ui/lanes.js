@@ -1,5 +1,5 @@
 // shared/ui/lanes.js — .bt-lanes, a week timeline with labelled lanes (docs/design-system.md §5
-// "Lanes"; the Fun Factory builder's Schedule stage). Not .bt-timeline, which is the Vault's dots.
+// "Lanes"; Night Shift builder's Schedule stage). Not .bt-timeline, which is the Vault's dots.
 //
 //   lanesHtml({ weeks, weekLabel, rows, label })
 //     weeks: how many week columns; weekLabel(i) -> "W1" (default)

@@ -14,7 +14,7 @@ export interface RewardProfile {
   uid: string; handle: string; displayName: string; avatar?: { type: string; initials?: string; url?: string } | null;
   xp: number; showcase: string[]; featuredBadge: string | null; persona: string | null; joinedAt: Date | null;
   roleTag: string | null;   // fan, sub, mod or admin: the public copy of the highest role (functions keep it in step)
-  currentStreak: number; bestStreak: number;   // Fun Factory daily streak, copied on check-in (functions)
+  currentStreak: number; bestStreak: number;   // Night Shift daily streak, copied on check-in (functions)
 }
 
 const lib = () => import("../../lib/db");

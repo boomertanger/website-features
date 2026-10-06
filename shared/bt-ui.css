@@ -487,7 +487,7 @@
   .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-face--back { opacity: 1; }
 }
 
-/* ---- Stepper, drawer and lanes (the Fun Factory builder, docs/specs/fun-factory.md §7) ----
+/* ---- Stepper, drawer and lanes (Night Shift builder, docs/specs/fun-factory.md §7) ----
    .bt-stepper    stages as machines on an assembly line (shared/ui/stepper.js stepperHtml): every
                   machine is a button.bt-stepper-step (.bt-stepper-mach icon, .bt-stepper-n "Stage 3",
                   b name, .bt-stepper-s status line); a conveyor (.bt-stepper-belt) runs under them, gold
@@ -597,7 +597,7 @@
   .bt-root:not(#_) :is(.bt-stepper-step:hover, .bt-stepper-step.is-now) .bt-stepper-mach { transform: none; }
 }
 
-/* ---- Task row, countdown, lock card, clock and path (the Fun Factory season pass, fun-factory.md §8) ----
+/* ---- Task row, countdown, lock card, clock and path (Night Shift season pass, fun-factory.md §8) ----
    shared/ui/season.js builds them; shared/ui/countdown.js ticks .bt-timer (not .bt-countdown: that's the home hero's next-stream digits).
    .bt-task-row    an activity: .bt-task-row-ic, .bt-task-row-main (b, small, .bt-task-row-bar > i --v),
                    .bt-task-row-xp ("+60 XP" with "2 / 3" or "Done ✓"). .is-done gold edge; .is-soon dashed
@@ -711,7 +711,7 @@
   .bt-root:not(#_) :is(.bt-back, .bt-back svg, .bt-pager-btn) { transition: none; }
 }
 
-/* ---- Hidden medal: .bt-hunt-medal (the Fun Factory's site-wide hunts; site/src/scripts/factory/site-wide.ts)
+/* ---- Hidden medal: .bt-hunt-medal (Night Shift's site-wide hunts; site/src/scripts/factory/site-wide.ts)
    A small .bt-medal button in a corner of a positioned host (.bt-hunt-host, given position: relative).
    Absolutely placed, so it never moves the layout; it glints now and then, and pops away when claimed.
    Corners: --top-left, --top-right, --bottom-left, --bottom-right. Reduced motion: no glint, no pop. */

@@ -1,4 +1,4 @@
-// Fun Factory pieces on every page (docs/specs/fun-factory.md §8, §13a), for signed-up members only:
+// Night Shift pieces on every page (docs/specs/fun-factory.md §8, §13a), for signed-up members only:
 //   - the account menu's Clock in item: today's state and the streak, calling factoryCheckIn. Shown only
 //     while a season is live or the streak is above 0.
 //   - factoryVisit: once a day per site-tour section (functions/lib/factory/logic.js VISIT_SECTIONS),
@@ -29,11 +29,13 @@ async function start(s: AuthState) {
   void clockItem(uid, live);
   if (!live) return;
   void visit(uid);
-  const path = norm(location.pathname);
+  const path = internal(norm(location.pathname));
   if ((summary!.huntPaths || []).some((p) => norm(p) === path)) void hunt(path);
 }
 
 const norm = (p: string) => (p.split(/[?#]/)[0].replace(/\/+$/, "") || "/").toLowerCase();
+/** Night Shift lives at /shift, but the site tour and the medal hunts keep their stored key, /factory (internal name). */
+const internal = (p: string) => p.replace(/^\/shift(?=\/|$)/, "/factory");
 const dayKey = (t = Date.now()) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date(t));
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -98,7 +100,7 @@ async function clockItem(uid: string, live: boolean) {
 // ---------- site tour visits ----------
 async function visit(uid: string) {
   const seg = location.pathname.split("/").filter(Boolean)[0];
-  const section = seg ? `/${seg.toLowerCase()}` : "/";
+  const section = internal(seg ? `/${seg.toLowerCase()}` : "/");
   if (!VISIT_SECTIONS.includes(section)) return;
   const k = `ff-visit-${uid}-${section}`, today = dayKey();
   if (store.get(k) === today) return;

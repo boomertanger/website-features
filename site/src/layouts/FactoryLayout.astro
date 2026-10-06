@@ -1,6 +1,6 @@
 ---
-// One layout for every Fun Factory page (docs/specs/fun-factory.md §8): the site shell, the sticky
-// FUNFACTORY bar in BaseLayout's "bar" slot, then the page. Like the Arcade's and the Trophy Room's:
+// One layout for every Night Shift page (docs/specs/fun-factory.md §8): the site shell, the sticky
+// NIGHTSHIFT bar in BaseLayout's "bar" slot, then the page. Like the Arcade's and the Trophy Room's:
 //   membersOnly  signed-up members see the page; visitors get the Join gate, mid-signup Finish signup
 //   crewOnly     mods and admins see the page; everyone else gets a short "Crew only" gate
 // Display-only: pages are static and read their data in scripts; the callables check roles on the
@@ -28,17 +28,17 @@ const gated = membersOnly || crewOnly;
           <span class="ff-gate-art" aria-hidden="true">🏭</span>
           <h1 class="bt-title" id="ff-gate-title" data-ff-gate-title>{crewOnly ? "Crew only" : "Members only"}</h1>
           <p class="ff-gate-lead" data-ff-gate-crew hidden={!crewOnly}>The season builder is for mods and admins. If you're on the crew, sign in with your crew account.</p>
-          <p class="ff-gate-lead" data-ff-gate-member hidden={crewOnly}>The Fun Factory is for members: daily jobs, weekly missions and a season-long story, with XP, badges and trophies. Joining is free.</p>
+          <p class="ff-gate-lead" data-ff-gate-member hidden={crewOnly}>Night Shift is for members: daily jobs, weekly missions and a season-long story, with XP, badges and trophies. Joining is free.</p>
           <div class="ff-gate-acts" data-ff-gate-visitor>
             {crewOnly
               ? <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
-              : <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to start your season">Join free</a>}
+              : <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to start your shift">Join free</a>}
             {!crewOnly && <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>}
           </div>
           <div class="ff-gate-acts" data-ff-gate-signup hidden>
             <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
           </div>
-          <a class="bt-btn bt-btn--ghost" href={crewOnly ? "/" : "/factory/how-it-works"} data-ff-gate-back>{crewOnly ? "Back to the site" : "How the Fun Factory works"}</a>
+          <a class="bt-btn bt-btn--ghost" href={crewOnly ? "/" : "/shift/how-it-works"} data-ff-gate-back>{crewOnly ? "Back to the site" : "How Night Shift works"}</a>
         </section>
       </>
     )}

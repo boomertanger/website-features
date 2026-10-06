@@ -1,5 +1,5 @@
 ---
-// /factory/how-it-works: the Fun Factory's public pitch page (docs/specs/fun-factory.md §13a;
+// /shift/how-it-works: Night Shift's public pitch page (docs/specs/fun-factory.md §13a;
 // docs/design/mockups/fun-factory-how-it-works.html). Same frame as the Arcade's and the Trophy Room's
 // How it works: the TocLayout side menu, ghost chapter headings, the House rules placard and Ask BOOMBOT.
 // Built from the kit's season pieces (.bt-task-row, .bt-timer, .bt-clock, .bt-medal). The streak ladders
@@ -72,17 +72,17 @@ const chapter = (n: number, id: string, title: string, lede?: string) => `<heade
 const rung = (cur: number) => (b: { n: number; name: string; rarity: number; emoji: string }) => `<li class="ff-hw-rung${b.n > cur ? " is-locked" : ""}">${medal(b.emoji, b.rarity, 52)}<span>${b.n}</span><b>${b.name}</b></li>`;
 const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
 ---
-<FactoryLayout title="How the Fun Factory works" description="Seasons, campaigns, daily clock-ins, streaks, hidden medals and the season leaderboard: how the Fun Factory works on Boomertanger." section="how">
+<FactoryLayout title="How Night Shift works" description="Seasons, campaigns, daily clock-ins, streaks, hidden medals and the season leaderboard: how Night Shift works on Boomertanger." section="how">
   <TocLayout items={NAV}>
     <div class="ff-hw">
       <section class="ff-hw-hero" aria-labelledby="h-hero">
         <div>
-          <span class="ff-kicker">Fun Factory</span>
-          <h1 class="bt-title bt-title--hero" id="h-hero">Clock in. Run missions. Climb the season.</h1>
+          <span class="ff-kicker">Night Shift</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Clock in. Run missions. Survive the season.</h1>
           <p>Every few months a new season opens with its own theme, missions and badges. Do a few things each day, finish the weekly jobs, follow the season's story, and race everyone else up the season leaderboard.</p>
           <div class="ff-hw-acts">
             <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
-            <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/factory">Open this season</a>
+            <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/shift">Open this season</a>
             <a class="bt-btn bt-btn--secondary" href="#s-season">How a season works</a>
           </div>
         </div>
@@ -232,8 +232,8 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
         <p class="bt-when-signed-in">Clock in, pick a job, and your first XP lands today.</p>
         <div class="ff-hw-acts">
           <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
-          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/factory">Open this season</a>
-          <a class="bt-btn bt-btn--secondary" href="/factory/leaderboard">See the leaderboard</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/shift">Open this season</a>
+          <a class="bt-btn bt-btn--secondary" href="/shift/leaderboard">See the leaderboard</a>
         </div>
       </section>
     </div>

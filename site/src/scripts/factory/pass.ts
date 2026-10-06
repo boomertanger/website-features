@@ -77,7 +77,7 @@ async function openLive(summary: Summary) {
 }
 
 async function openPreview(seasonId: string, as: string, date: string) {
-  if (!isCrew(me)) { root.removeAttribute("aria-busy"); root.innerHTML = `<p class="bt-notice">Previews are for mods and admins. <a href="/factory">Open the season pass</a></p>`; return; }
+  if (!isCrew(me)) { root.removeAttribute("aria-busy"); root.innerHTML = `<p class="bt-notice">Previews are for mods and admins. <a href="/shift">Open the season pass</a></p>`; return; }
   const day = /^\d{4}-\d{2}-\d{2}$/.test(date) ? date : dayKey(Date.now());
   const p = await call<{ season: any; chapters: any[]; campaigns: any[]; activities: any[]; lockedSub: any[]; at: number }>("factoryPreview", { seasonId, as, date: day });
   const revealed = p.chapters.filter((c) => c.revealed);
@@ -102,18 +102,18 @@ function render() {
     <div class="ff-chaptabs" role="tablist" aria-label="Chapters" data-chips>${chipsHtml()}</div>
     <div class="ff-pass-cols"><div class="ff-pass-main" data-main>${mainHtml()}</div><aside class="ff-pass-side" data-side aria-label="Your season">${sideHtml()}</aside></div>`;
   initTimers(root);
-  document.title = `${s.name || "Season"} · Fun Factory`;
+  document.title = `${s.name || "Season"} · Night Shift`;
 }
 function previewBanner() {
   const p = M.preview!;
   const as = { fan: "Fan Club", sub: "Sub Club", crew: "Crew" }[p.as] || p.as;
-  return `<div class="bt-notice ff-preview-banner" role="status"><b>Preview</b> · as ${esc(as)} on ${esc(fmtDay(Date.parse(`${p.date}T17:00:00Z`), true))}. Nothing here counts, and members can't see it. <a href="/factory/builder?season=${encodeURIComponent(M.tree.season.id)}">Back to the builder</a></div>`;
+  return `<div class="bt-notice ff-preview-banner" role="status"><b>Preview</b> · as ${esc(as)} on ${esc(fmtDay(Date.parse(`${p.date}T17:00:00Z`), true))}. Nothing here counts, and members can't see it. <a href="/shift/builder?season=${encodeURIComponent(M.tree.season.id)}">Back to the builder</a></div>`;
 }
 function introCard() {
   let seen = false;
   try { seen = localStorage.getItem("ff-pass-intro") === "1"; } catch { /* no storage */ }
   if (seen || M.preview) return "";
-  return `<div class="ff-intro" data-intro><span aria-hidden="true">🏭</span><div><b>New to the Fun Factory?</b><span>Clock in each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/factory/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
+  return `<div class="ff-intro" data-intro><span aria-hidden="true">🏭</span><div><b>New to Night Shift?</b><span>Clock in each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
 }
 
 // ---------- hero ----------
@@ -221,7 +221,7 @@ function sideHtml() {
   const cur = M.streak.current, next = STREAK_STEPS.find((n) => n > cur);
   const nb = next ? M.badges.get(`streak-day-${next}`) : null;
   const left = next ? next - cur : 0;
-  return `<div class="ff-card"><h2>Season leaderboard <a href="/factory/leaderboard">See all</a></h2>${lb || `<p class="ff-muted">No one's on the board yet. Finish a job to be first.</p>`}</div>
+  return `<div class="ff-card"><h2>Season leaderboard <a href="/shift/leaderboard">See all</a></h2>${lb || `<p class="ff-muted">No one's on the board yet. Finish a job to be first.</p>`}</div>
     ${next ? `<div class="ff-card"><h2>Next streak badge</h2><div class="ff-next">${medalHtml({ emoji: nb?.emoji || "🔥", rarity: nb?.rarity || 1, size: 52 })}<div><b>${esc(nb?.name || `${next}-day streak`)}</b><span>${plural(left, "more day")} of clocking in</span><div class="bt-task-row-bar" role="img" aria-label="${cur} of ${next} days"><i style="--v:${Math.round((cur / next) * 100)}%"></i></div></div></div></div>` : ""}
     <div class="ff-card"><h2>Lately</h2><ul class="ff-feed" data-lately><li class="ff-muted">Loading…</li></ul></div>`;
 }
@@ -259,13 +259,13 @@ async function renderOff(summary: Summary | null) {
     } catch { mine = ""; }
   }
   root.innerHTML = `<section class="ff-hero ff-hero--off" aria-labelledby="ff-off-h"><div class="ff-hero-art" aria-hidden="true"><span>🏭</span></div><div class="ff-hero-main">
-      <span class="ff-kicker">Fun Factory · Between seasons</span>
-      <h1 class="bt-title" id="ff-off-h">${next ? `Season ${String(next.number ?? 0).padStart(2, "0")}${next.name ? ` · ${esc(next.name)}` : ""} is coming` : "The factory is quiet"}</h1>
+      <span class="ff-kicker">Night Shift · Between seasons</span>
+      <h1 class="bt-title" id="ff-off-h">${next ? `Season ${String(next.number ?? 0).padStart(2, "0")}${next.name ? ` · ${esc(next.name)}` : ""} is coming` : "Night Shift is quiet"}</h1>
       <p class="ff-muted">${next ? "A new season, new missions and a fresh race. Your streak and badges carry over." : "No season is running right now. Keep your streak going in the meantime."}</p>
-      <div class="ff-hero-stats">${next ? timerHtml({ until: next.startsAt, label: "Starts in", done: "Starting now" }) : ""}<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/factory/how-it-works">How it works</a></div></div></section>
+      <div class="ff-hero-stats">${next ? timerHtml({ until: next.startsAt, label: "Starts in", done: "Starting now" }) : ""}<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a></div></div></section>
     ${last ? `<section class="ff-card ff-results" aria-labelledby="ff-last-h"><h2 id="ff-last-h">Season ${String(last.number ?? 0).padStart(2, "0")} · ${esc(last.name)}: final standings</h2>
       <ol class="ff-podium">${last.top3.map((r, i) => `<li><span class="ff-rk" style="color:var(--bt-rank-${i + 1})">${i + 1}</span>${r.featured ? medalHtml({ emoji: r.featured.emoji || "", rarity: r.featured.rarity, size: 28 }) : `<span class="ff-nomedal ff-nomedal--lg" aria-hidden="true"></span>`}${r.handle ? `<a href="/u/${encodeURIComponent(r.handle)}">@${esc(r.handle)}</a>` : esc(r.displayName || "Member")}<em>${(r.seasonXp || 0).toLocaleString("en-US")} XP</em></li>`).join("") || `<li class="ff-muted">No one finished on the board.</li>`}</ol>
-      ${mine ? `<p class="ff-muted">${mine}</p>` : ""}<a class="bt-btn bt-btn--ghost bt-btn--sm" href="/factory/leaderboard">Full leaderboard</a></section>` : ""}`;
+      ${mine ? `<p class="ff-muted">${mine}</p>` : ""}<a class="bt-btn bt-btn--ghost bt-btn--sm" href="/shift/leaderboard">Full leaderboard</a></section>` : ""}`;
   initTimers(root);
 }
 

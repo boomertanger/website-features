@@ -1,4 +1,4 @@
-// Fun Factory member reads (docs/specs/fun-factory.md §8, §9), through lib/db.ts (Firestore Lite) after
+// Night Shift member reads (docs/specs/fun-factory.md §8, §9), through lib/db.ts (Firestore Lite) after
 // sign-in. Paths under sites/{siteId}/factory/main. The rules only let members read what's revealed in a
 // live or ended season, so every query filters on revealed == true. The public summary
 // (sites/{siteId}/public/factory, written by factoryTick) says what's on without touching the tree.

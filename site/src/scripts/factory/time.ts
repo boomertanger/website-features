@@ -1,4 +1,4 @@
-// Fun Factory clock for the site (docs/specs/fun-factory.md §3): Central time, like the engine
+// Night Shift clock for the site (docs/specs/fun-factory.md §3): Central time, like the engine
 // (functions/lib/factory/logic.js). Day keys run midnight to midnight Central; weeks start Monday.
 import { centralMidnight, centralDate } from "./api";
 

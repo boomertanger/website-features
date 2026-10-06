@@ -1,4 +1,4 @@
-// Fun Factory How it works (docs/design/mockups/fun-factory-how-it-works.html). Ask BOOMBOT, the example
+// Night Shift How it works (docs/design/mockups/fun-factory-how-it-works.html). Ask BOOMBOT, the example
 // time card's Clock in and the example hidden medal (both local: nothing is saved), and the hero's season
 // card. The one Firestore read is the public summary (sites/{siteId}/public/factory): a live season, or the
 // next scheduled one, replaces the example card; with neither, the example stays, marked Example.

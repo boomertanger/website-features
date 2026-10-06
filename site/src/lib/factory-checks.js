@@ -1,4 +1,4 @@
-// The Fun Factory builder's stage checks for the site (docs/specs/fun-factory.md §7): a copy of
+// Night Shift builder's stage checks for the site (docs/specs/fun-factory.md §7): a copy of
 // functions/lib/factory/checks.js (CommonJS, so the browser bundle can't import it). The server runs
 // the same checks on submit and publish; functions/scripts/check-factory.js compares the two on the
 // same seasons, so they can't drift. Edit both together.

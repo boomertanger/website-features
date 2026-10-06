@@ -1,6 +1,12 @@
 # Cloudflare Pages redirects and rewrites (https://developers.cloudflare.com/pages/configuration/redirects/).
 # First match wins. A 200 is a rewrite: the address bar keeps the URL, the page at the target is served.
 #
+# Night Shift (the member-facing name of the Fun Factory; internal names stay factory): the pages moved from
+# /factory to /shift. Every old /factory address redirects for good, keeping the rest of the path.
+/factory    /shift    301
+/factory/    /shift/    301
+/factory/*    /shift/:splat    301
+
 # Game Vault (docs/specs/game-vault.md §9): every /games/{slug} is the one client-rendered game page
 # (/games/view/, which reads the slug from the address). The queue and How it works pages are real
 # pages, so they are matched first and rewritten to themselves; without those lines they would

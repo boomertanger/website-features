@@ -1,4 +1,4 @@
-// Fun Factory builder data (docs/specs/fun-factory.md §7, §10): the builder's callables, the idea
+// Night Shift builder data (docs/specs/fun-factory.md §7, §10): the builder's callables, the idea
 // library (readable by mods and admins), and the bits every builder page shares: status and cadence
 // tones, and Central dates (date inputs hold "2027-01-11"; the server keeps milliseconds at midnight
 // Central).
@@ -28,7 +28,7 @@ export const CADENCE: Record<Cadence, [string, string]> = { daily: ["Daily", "bl
 export const AUDIENCE: Record<Audience, string> = { all: "Everyone", sub: "Sub Club", crew: "Crew" };
 export const statusBadge = (s: Status) => `<span class="bt-badge bt-badge--${STATUS[s]?.[1] ?? "gray"}"><span class="bt-badge-dot"></span>${STATUS[s]?.[0] ?? s}</span>`;
 export const seasonLabel = (s: Pick<Season, "number" | "name">) => `Season ${String(s.number ?? 0).padStart(2, "0")}${s.name ? ` · ${s.name}` : ""}`;
-/** The site tour's sections (functions/lib/factory/logic.js VISIT_SECTIONS): where medals can hide. */
+/** The site tour's sections (functions/lib/factory/logic.js VISIT_SECTIONS): where medals can hide. "/factory" is the stored key of Night Shift's own pages (/shift). */
 export const VISIT_SECTIONS = ["/", "/live", "/schedule", "/games", "/arcade", "/trophies", "/factory", "/streams", "/shop", "/club"];
 export const POSITIONS: [string, string][] = [["top-left", "Top left"], ["top-right", "Top right"], ["bottom-left", "Bottom left"], ["bottom-right", "Bottom right"]];
 

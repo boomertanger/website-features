@@ -1,5 +1,5 @@
 ---
-// /factory/builder/guide: the builder manual for mods and admins (docs/specs/fun-factory.md §7, §8;
+// /shift/builder/guide: the builder manual for mods and admins (docs/specs/fun-factory.md §7, §8;
 // fun-factory-screens.html screen 3). TocLayout with ghost chapter headings: Before you start, The 8
 // stages (what to do, what the builder checks, a tip, and each stage's machine), A good season (the
 // recipe), Activity types (live and waiting, from functions/data/fun-factory-ideas.json at build time),
@@ -40,14 +40,14 @@ const FAQS = [
 ];
 const NAV: [string, string][] = [["g-start", "Before you start"], ["g-stages", "The 8 stages"], ["g-recipe", "A good season"], ["g-types", "Activity types"], ["g-review", "Review and publish"], ["g-live", "Changing a live season"], ["g-faq", "FAQ"]];
 ---
-<FactoryLayout title="Builder guide · Fun Factory" description="How to build a Fun Factory season." crewOnly builder section="guide">
+<FactoryLayout title="Night Shift builder guide" description="How to build a Night Shift season." crewOnly builder section="guide">
     <TocLayout items={NAV}>
       <div class="ff-gmain">
         <section class="ff-ghero" aria-labelledby="h-g">
-          <span class="ff-kicker">Fun Factory · Builder guide</span>
+          <span class="ff-kicker">Night Shift · Builder guide</span>
           <h1 class="bt-title bt-title--hero" id="h-g">How to build a season</h1>
           <p>Everything you and the mods need to plan a season, from the first idea to launch day. Follow the eight stages in order; the builder checks your work at each one.</p>
-          <div class="ff-acts"><a class="bt-btn bt-btn--primary" href="/factory/builder">Open the builder</a><a class="bt-btn bt-btn--secondary" href="/factory/builder/ideas">Browse the ideas</a></div>
+          <div class="ff-acts"><a class="bt-btn bt-btn--primary" href="/shift/builder">Open the builder</a><a class="bt-btn bt-btn--secondary" href="/shift/builder/ideas">Browse the ideas</a></div>
         </section>
 
         <section class="ff-gsec" id="g-start" aria-labelledby="h-g-start">
@@ -72,7 +72,7 @@ const NAV: [string, string][] = [["g-start", "Before you start"], ["g-stages", "
           <header class="bt-chapter bt-chapter--ghost" data-n="03"><p class="bt-chapter-eyebrow" aria-hidden="true">03 · Chapter</p><h2 class="bt-chapter-title" id="h-g-recipe">A good season</h2><p class="bt-chapter-lede">A starting recipe. Adjust it once you see how members play.</p></header>
           <div class="ff-recipe"><table><thead><tr><th scope="col">Piece</th><th scope="col">How many</th><th scope="col">XP each</th><th scope="col">Why</th></tr></thead><tbody>
             {RECIPE.map(([a, b, c, d]) => <tr><td>{a}</td><td>{b}</td><td>{c}</td><td>{d}</td></tr>)}
-            <tr><td>Total budget</td><td colspan="2">3,000 to 4,000 XP for an all-in member</td><td>Level 8 or 9 from the Fun Factory alone.</td></tr>
+            <tr><td>Total budget</td><td colspan="2">3,000 to 4,000 XP for an all-in member</td><td>Level 8 or 9 from Night Shift alone.</td></tr>
           </tbody></table></div>
         </section>
 

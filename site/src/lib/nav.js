@@ -7,7 +7,7 @@ const MODULE_PAGES = {
   schedule: { label: "Schedule", href: "/schedule", icon: "cal" },
   games: { label: "Games", href: "/games", icon: "game" },
   arcade: { label: "Arcade", href: "/arcade", icon: "joystick" },
-  factory: { label: "Fun Factory", href: "/factory", icon: "factory" },
+  factory: { label: "Night Shift", href: "/shift", icon: "shift" },
   trophies: { label: "Trophy Room", href: "/trophies", icon: "trophy" },
   goals: { label: "Goals", href: "/goals", icon: "target" },
   streams: { label: "Streams", href: "/streams", icon: "film" },

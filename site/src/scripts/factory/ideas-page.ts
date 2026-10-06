@@ -1,4 +1,4 @@
-// /factory/builder/ideas: browse, search and filter the idea library; admins add, edit and retire
+// /shift/builder/ideas: browse, search and filter the idea library; admins add, edit and retire
 // ideas (factoryIdeaSave) and switch activity types on or off (factoryTypeToggle). Everything is read
 // once (ideas and types are crew-readable) and filtered here.
 import { onAccess } from "./layout";
