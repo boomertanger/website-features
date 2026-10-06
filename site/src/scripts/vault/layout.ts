@@ -17,10 +17,15 @@ initCoverFallbacks();
 // Staff: Queue with how many items wait (one count query, refreshed when the queue page changes it).
 const q = document.querySelector<HTMLAnchorElement>("[data-gv-queue]");
 const qn = document.querySelector<HTMLElement>("[data-gv-queue-n]");
+const qb = document.querySelector<HTMLElement>("[data-gv-queue-badge]");   // phones: the count as a badge on the icon
 let counted = false;
 export async function refreshQueueCount() {
   if (!qn) return;
-  try { const n = await queueCount(); qn.textContent = n ? String(n) : ""; } catch { qn.textContent = ""; }
+  let n = 0;
+  try { n = await queueCount(); } catch { /* no count */ }
+  qn.textContent = n ? String(n) : "";
+  if (qb) qb.textContent = n ? String(n) : "";
+  q?.setAttribute("aria-label", n ? `Queue, ${n} waiting` : "Queue");
 }
 onAuth((s) => {
   const staff = s.status !== "loading" && isStaff(s);

@@ -27,6 +27,21 @@
 .bt-root:not(#_) .gv-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .gv-bar .bt-topnav { display: flex; align-items: center; gap: 10px; }
 .bt-root:not(#_) .gv-bar .bt-btn svg { width: 16px; height: 16px; }
+.bt-root:not(#_) .gv-badge { display: none; }
+/* B1 (game-vault-page.html, approved): under 640px the bar's words become icons, so Queue's count can't push
+   Add a game off the screen: ? for How it works, the queue icon with its count as a badge, + to add, each a
+   40px target (aria-labels are in VaultBar.astro and layout.ts). */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .gv-bar .bt-wordmark-text { font-size: 18px; }
+  .bt-root:not(#_) .gv-bar .bt-wordmark .gv-icon { width: 30px; height: 30px; }
+  .bt-root:not(#_) .gv-bar .bt-topnav { gap: 8px; }
+  .bt-root:not(#_) .bt-topbar.gv-bar .gv-act:has(> svg) { position: relative; width: 40px; height: 40px; padding: 0; justify-content: center; }
+  .bt-root:not(#_) .gv-bar .gv-act > .bt-btn-label { display: none; }
+  .bt-root:not(#_) .gv-bar .gv-act svg { width: 18px; height: 18px; }
+  .bt-root:not(#_) .gv-bar .gv-how-link { border: 1px solid var(--bt-border-2); border-radius: 50%; text-decoration: none; }
+  .bt-root:not(#_) .gv-bar .gv-queue .bt-chip-n { display: none; }
+  .bt-root:not(#_) .gv-bar .gv-queue .gv-badge:not(:empty) { position: absolute; top: -6px; right: -6px; display: grid; place-items: center; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--bt-admin-accent); box-shadow: 0 0 0 2px var(--bt-bg); color: var(--bt-bg); font-size: 10px; font-weight: 900; line-height: 1; }
+}
 .bt-root:not(#_) .gv-wrap { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .gv-body { display: flex; flex-direction: column; gap: 18px; padding: 24px var(--bt-gutter) var(--bt-space-12); }
 
