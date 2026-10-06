@@ -117,7 +117,7 @@ Firestore paths alternate collection and document, so everything hangs off one c
 - `seasons/{s}/hunts/{huntId}/medals/{medalId}`: path, position, hint. Tokens server-only.
 - `seasons/{s}/progress/{uid}`: per-activity count, period, completedAt; the day's factory XP (for the cap); completed campaigns. Readable by its member only.
 - `streaks/{uid}`: the daily check-in streak (current, best, lastDay, savers, saversCap); never resets with the season. Readable by its member only.
-- `seasons/{s}/standings/{uid}` and `seasons/{s}/boards/{all|sub|crew}`: season XP; boards pre-built top 100 (as the Arcade does). Public read.
+- `seasons/{s}/standings/{uid}` and `seasons/{s}/boards/{all|sub|crew|staff}`: season XP; boards pre-built top 100 (as the Arcade does). Public read. Admins race too (section 13c); `staff` exists only when the season's `staffRace` is "separate".
 - `activityTypes/{typeId}`, `ideas/{ideaId}` (kind, text, tags, typeId, suggested values, uses, addedBy). Ideas readable by crew only.
 - Events: `events/{type:ref:uid}` (type, uid, params, at), TTL 120 days (`expireAt`), server only.
 - Drafts live in the same docs with status Draft; rules hide anything not revealed from members, and all writes go through callables.
@@ -189,6 +189,41 @@ Each later feature adds its events through its spec's "Night Shift and Trophy Ro
 | 50 | Possessed | Epic |
 | 75 | The Unblinking | Epic |
 | 100 | Witness to Everything | Legendary |
+
+## 13c. Staff and the season race
+Decided Oct 6, 2026 (Glenn). This replaces the earlier rule that admins never race (rewards.md sections 6, 7 and 14, and
+the engine's "admins are never in standings"). The internal name is still factory.
+
+1. **Admins race.** Admins (and the owner) are written to `standings` and appear on the **all** board with a
+   **Staff** tag (`roleTag: "admin"`) and their real rank. Mods are unchanged: on the boards and prize-eligible.
+   Admins never appear on the **sub** board; they do appear on the **crew** board (mods and admins).
+2. **Prizes go to members.** At season end the top-3 season trophies and the places 4-10 plaques go to the top
+   **non-admin** finishers, in order: admins are skipped when assigning places, so a member's trophy label uses
+   their member place ("2nd · Season 01", not their board rank).
+3. **Staff Finish trophy.** An admin who finishes in the top 10 of the all board gets `grantTrophy` kind
+   **`staff-season`** with their real place and the board size in the label ("Season 01 · Staff finish · #4 of
+   612"). It renders like the season trophies (rank colours) plus a green **Staff** ribbon (the admin tokens).
+   **No XP.**
+4. **Beat the Boss.** A new Trophy Room badge, id `beat-the-boss`, collection `arcade` (Arcade and Contests),
+   rarity 3 (Rare), 50 XP, source `factory`, emoji 👑 (placeholder), how: "Finish a season with more season XP than
+   Boomertanger." At season end, **if the owner's seasonXp is at least 500**, it is granted to every non-admin
+   whose seasonXp is greater than the owner's. It is earned once (`grantBadge` is idempotent); the public profile
+   also keeps `beatTheBoss: n`, incremented once per season (a per-season marker in `seasons/{s}/boss/{uid}` keeps a
+   rerun from counting twice). The profile page shows "Beat the Boss ×n" and the badge card shows it when n > 1.
+5. **Boss marker.** While the owner has standings this season, the season pass side card and the leaderboard show
+   the owner's rank and the gap for the signed-in member ("Boss is #12 · you're 340 XP behind", or "You're ahead of
+   the Boss"). The rollup writes it onto the board docs (`boss: { uid, handle, displayName, seasonXp, rank }`), so
+   there is no extra query per row.
+6. **Season setting `staffRace`: `"together"` (default) or `"separate"`.** "separate" keeps admins off the all, sub
+   and crew boards and gives them a **staff** board (`boards/staff`) instead; their Staff Finish is then their place
+   on the staff board. The switch is in the builder's Rewards stage (admins only) with a one-line explanation. The
+   default stays "together".
+7. **Giveaways are unchanged:** admins never win member giveaways.
+
+Data: `standings/{uid}` gains `roleTag` ("admin" or null; an admin's `tier` is "crew"); board rows carry `roleTag`;
+`boards/all` and `boards/crew` carry `boss`; `boards/staff` exists only under "separate"; `seasons/{s}.staffRace`;
+`profiles/{uid}.beatTheBoss`. Rank for a member past the top 100 is still "members with more XP, plus one", so under
+"together" it includes admins (their real rank).
 
 ## 14. Decisions (Oct 3, 2026)
 1. Site clock: Central (America/Chicago) for Night Shift and the Arcade.

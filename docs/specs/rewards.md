@@ -56,14 +56,21 @@ Changes from the notes:
 | Badges | All except Crew | All except Crew | All, plus Crew |
 | Showcase | 3 pins | 6 pins + animated featured frame | 6 pins |
 | Night Shift | All campaigns | + Sub Club campaigns (more ways, same XP per task) | + Crew missions |
-| Boards | Season, Arcade | Season, Arcade | Season, Arcade, plus the crew board (Mod MVP). Admins on no boards |
+| Boards | Season, Arcade | Season, Arcade | Season, Arcade, plus the crew board (Mod MVP). Admins race on the season board with a Staff tag (7a) |
 | Giveaways | Member giveaways | + Sub Club giveaways (**legal review**) | Not eligible for member giveaways |
 | Other | Merch store | Early merch access | Free Sub Club, earliest merch, Mod MVP trophy monthly |
 
-Changes from the notes: one season board (filter All / Sub Club / Crew) instead of separate Club, Sub, Mod and Admin boards. **Decision (Oct 3): mods race on the season board with members**, to maximise activity at launch; revisit if mods dominate the top spots. Mods also have a crew board for Mod MVP. Admins stay off every board. An Admin-only board and admin giveaways are dropped; crew members don't win member giveaways.
+Changes from the notes: one season board (filter All / Sub Club / Crew) instead of separate Club, Sub, Mod and Admin boards. **Decision (Oct 3): mods race on the season board with members**, to maximise activity at launch; revisit if mods dominate the top spots. Mods also have a crew board for Mod MVP. **Decision (Oct 6): admins race too, with a Staff tag, but member prizes go to members (section 7a).** Admin giveaways are dropped; crew members don't win member giveaways.
 
 ## 7. Trophies
 Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; top 10 plaque) · Contests · Mod MVP (monthly, picked by the owner). XP: 1st 150, 2nd 100, 3rd 75.
+
+## 7a. Staff and the season race
+Decided Oct 6, 2026. The full rules and data are in fun-factory.md section 13c; the Trophy Room side:
+- **Season prizes skip admins.** The top-3 season trophies (150 / 100 / 75 XP) and the places 4-10 plaques go to the top non-admin finishers, with their member place in the label.
+- **Staff Finish** is a new trophy kind, `staff-season`: an admin in the top 10 of the all board, label "Season 01 · Staff finish · #4 of 612", real place, **no XP** (even for places 1-3). It uses the season trophies' rank colours plus a green Staff ribbon (admin tokens).
+- **Beat the Boss** (`beat-the-boss`, Arcade and Contests, Rare, 50 XP, source factory, 👑 placeholder): "Finish a season with more season XP than Boomertanger." Granted at season end to every non-admin with more season XP than the owner, when the owner has at least 500. The profile keeps `beatTheBoss` (a count, one per season) and shows "Beat the Boss ×n".
+- Giveaways are unchanged: admins never win member giveaways.
 
 ## 8. XP and levels
 - XP: Night Shift dailies 10-25, weeklies 50-100, badges by rarity, trophies by place, supporter badges 0.
@@ -116,7 +123,7 @@ Badges whose source isn't live yet show in the catalog with "Coming soon".
 1. Name: Trophy Room.
 2. Badge shape: 1 Coin. The tombstone may be used later for one special set.
 3. Roles and personas are identity tags, not rarity badges.
-4. Mods are on the season leaderboard with members (Option A). Admins are on no boards.
+4. Mods are on the season leaderboard with members (Option A). Admins race too, with a Staff tag, but member prizes skip them (section 7a, Oct 6).
 5. Rank names and XP curve as in section 8 (tunable before launch).
 6. Badge art: commission a full set (art brief to follow: one coin template, rarity ring added in code, art supplied as the face only).
 7. Live drop windows are configurable per drop (section 10a).
