@@ -1221,7 +1221,7 @@ Spec: `docs/specs/arcade-step1.md` (§7 UI states, §8 kit pieces); mockup
 Spec: `docs/specs/game-vault.md` (and `docs/specs/stream-object.md`); mockups
 `docs/design/mockups/game-vault-mockups.html` (round 1) and `game-vault-round-2.html` (round 2:
 A65 C56 B34 D34 E4 F3 G34). Pages: `/games`, `/games/{slug}`, `/games/queue`; feature CSS
-`site/src/styles/game-vault.css` (the door, ledger, tape, stamps, ribbon, lock scene,
+`site/src/styles/game-vault.css` (the hero, filter bar, tape, stamps, ribbon, lock scene,
 flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
 
 - **Staff green means mods and admins.** The admin green (`--bt-admin-*`, `.bt-btn--admin`) was
@@ -1234,9 +1234,9 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   Steam app id and build the URL in the browser (`shared/ui/cover.js`); nothing is copied to
   our side unless an admin or mod uploads an override (Cloudinary `game-vault/covers`). A game
   with no art shows the mascot.
-- **The vault door opens once per visit.** The /games hero plays its opening the first time it
-  scrolls into view (`sessionStorage`), never under reduced motion (it's simply open), and a
-  click skips it. After that it rests open.
+- **The vault door is gone** (replaced by the V3 hero, below). The /games hero no longer plays an
+  opening and nothing is kept in `sessionStorage` for it; the GAMEVAULT wordmark icon and its hover
+  spin stay.
 - **Member cover suggestions are only for games with no cover** (the mascot), or with an Add it
   by hand; never to replace an existing cover. They're cropped to 3:4 in the browser, uploaded
   privately (Cloudinary type authenticated) and seen by staff through 10-minute signed previews.
@@ -1250,10 +1250,7 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   the button remembers the games you pressed in this browser; pressing again elsewhere is
   harmless (the server counts each member once).
 - **Round 3** (`game-vault-round-3.html`, approved R4 S1 N1 P12; details in the spec's §9):
-  - **The door opens all the way.** It turns as one solid piece (`.gv-door3d`: slabs + an edge
-    band with three bolts) to exactly `rotateY(-90deg)` while the wrap's perspective eases out to
-    40000px, so it ends as a profile at the hinge and never covers the opening. Reduced motion:
-    already open.
+  - ~~The door opens all the way.~~ Superseded by the V3 hero (part 8, below).
   - **Shelves, then All games, always.** Shelves are highlights and only show with games; the full
     grid always follows, so the page is never one row. **Most wanted is the exception**: it shows
     whenever there's a wishlist game, ranked by wants (top 5, numerals) or, before anyone wants
@@ -1266,6 +1263,21 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   - **The back pill and the pager are kit pieces** (`.bt-back`, `.bt-pager`), not Vault-only;
     the banner bar around them (`.gv-pagebar`), the slide and the Up next layout stay in
     `game-vault.css`.
+
+- **Page redesign, part 8** (`game-vault-page.html`, approved V3 SH3 B1; details in the spec's §9):
+  - **The door is replaced by V3, search + spotlight.** The hero is a wall of real covers behind the
+    big search, its match strip and the counts, with a Now playing spotlight on the right (the top
+    Most wanted game when nothing is playing). Searching pauses the wall, greys the non-matches and
+    lights the matches purple. This supersedes the door (R4) and the ledger; the door's code, CSS and
+    sessionStorage mark are deleted.
+  - **Filtering lives in a sticky bar under the hero**, under the GAMEVAULT bar (`.gp-fbar`, using
+    `--bt-sticky-top`). A compact search slides in once the hero's is out of view. The hero's
+    command panel is gone (the strip and hint replace it). Up to 1024px, Tags, Length, Community
+    picks and Sort move into a Filters dialog (`openModal`; there was no bottom sheet to reuse).
+  - **SH3 section heads** are the kit's `.bt-section-head` (§5), used by every shelf and All games.
+  - **B1 phone bar:** under 640px the Vault bar's words are icons (? / queue with a count badge / +),
+    40px each with aria-labels, on every Vault page. This replaces the kit's 420px label rule for the
+    Vault and fixes the staff bar overflowing.
 
 ### 8j. Trophy Room
 

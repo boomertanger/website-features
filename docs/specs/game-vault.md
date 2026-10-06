@@ -203,9 +203,9 @@ Feature key `game-vault`.
 
 - `/games`: GAMEVAULT feature bar (`.bt-wordmark--power`; the vault-dial icon rests, and on
   hover spins a combination and lights the lamp), Add a game (members), Queue + count
-  (staff, green). Round 2: vault door hero (once per visit, never under reduced motion),
-  ledger counts, shelves (Now playing, Most wanted with rank numerals and I want this too,
-  Boomer's best, The ones that got away); grid when searching or filtering.
+  (staff, green). Round 2: shelves (Now playing, Most wanted with rank numerals and I want this too,
+  Boomer's best, The ones that got away); grid when searching or filtering. (Round 2's vault door
+  hero and ledger counts were replaced by the page redesign below.)
 - Cards (round 2 C5 + C6): tilt + glare on pointer devices, verdict reveal on hover,
   caution tape (abandoned), pulse (playing), want stamp (wishlist), 10/10 ribbon.
 - Game page `/games/{slug}` (round 2 E4): ambient banner, score dial (Boomer's gold),
@@ -216,7 +216,7 @@ Feature key `game-vault`.
 - New kit pieces: see the mockups' section 9 lists (round 1 and round 2).
 
 Round 3 (`docs/design/mockups/game-vault-round-3.html`; approved R4 S1 N1 P12):
-- **R4 The door opens all the way.** The hero gives the door more room, and the door is one solid
+- **R4 The door opens all the way.** (Superseded by the page redesign below: the door is gone.) The hero gives the door more room, and the door is one solid
   piece with depth (a stack of slabs behind the face, an edge band with three bolts). It swings to
   exactly 90 degrees while the view flattens (perspective eases out to about 40000px), so it lands
   as a clean profile at the hinge with the opening fully clear, phones included. Reduced motion:
@@ -241,6 +241,39 @@ Round 3 (`docs/design/mockups/game-vault-round-3.html`; approved R4 S1 N1 P12):
   don't apply at either end are hidden. A direct visit steps through the whole Vault, last
   streamed first.
 - Kit: `.bt-back` and `.bt-pager` (`shared/ui/pager.js`), reusable for any one-at-a-time list.
+
+Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, part 8):
+- **V3 Hero: search + spotlight (replaces the vault door and the ledger).** A wall of real covers
+  (from `public/vault`; 8 columns, 5 on phones; skipped with fewer than 8 covers) drifts behind
+  the hero. Left: kicker, title, line, the big search ("Search N games…", N from the summary), the
+  match strip, a hint line ("Try “granny”, “vr”…" using only examples that match something) and
+  the counts (games, finished, played in VR; zeros hidden). Right: the Now playing spotlight (the
+  latest playing game, a tilting cover with the green pulse, the second playing game tucked behind,
+  its name and "Also playing"); with nothing playing it spotlights the top Most wanted game
+  (gold, no pulse); with neither the hero is the left column alone. While searching: the wall
+  pauses, non-matches fade to grey, matches light up purple, the spotlight steps back, the strip
+  shows up to 7 matches and Enter scrolls to the results (or opens Add a game when nothing
+  matches). The matches are the same list the grid shows, filters included. Reduced motion: no
+  drift, no scaling. The search's command panel (suggested filters, Add row) is gone; the strip
+  and hint replace it.
+- **Sticky filter bar.** Under the hero, sticking under the GAMEVAULT bar (below the site header;
+  on phones, where that bar hides while scrolling down, it moves to the top): status seg nav with
+  counts, Tags and Length menus, Community picks, Sort. When the hero's search is out of view (or
+  while searching) a compact search slides into the bar; both stay in sync and the URL state
+  (`?q=`, `status`, `tags`, `len`, `picks`, `sort`) works as before; "/" focuses the visible one.
+  Searching or filtering hides the shelves and shows "N games for “granny”, Finished" with "Clear
+  search and filters" above the grid. Up to 1024px the menus, Community picks and Sort move into a
+  Filters button (a dialog with Sort, Length, Tags, Community picks and a live "Show N games");
+  phones: search on row 1, status tabs + Filters on row 2.
+- **SH3 Section heads.** Now playing, Most wanted, Boomer's best, The ones that got away and All
+  games: an icon tile, the heading with a count pill (games in that shelf; See all still counts every
+  game with the status), a thin gold rule running to the arrows and See all. Kit: `.bt-section-head`.
+- **B1 Phone bar, every Vault page.** Under 640px the bar's words become icons: ? How it works, the
+  green queue icon (staff) with its count as a badge, + Add a game; each 40px, with aria-labels.
+  Desktop unchanged.
+- The cover card's hover panel follows the game (already in round 3's follow-ups): "No review yet"
+  with a status line for playing, finished and abandoned games without a verdict, "Not played yet"
+  only on the Wishlist (`shared/vault-reveal.js`).
 
 ## 10. Edge cases
 
