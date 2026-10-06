@@ -768,6 +768,11 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   and `.bt-shelf-arrows` (`[data-shelf-prev]` / `[data-shelf-next]`; `shared/ui/shelf.js`): a
   snap rail of cards (168px, 138px on phones; arrows hide on phones). `--ranked` with
   `.bt-ranked` + `.bt-rank`: outlined numerals in `--rk` (`--bt-rank-1..3` for the top three).
+- **Section head: `.bt-section-head`** (`shared/ui/section-head.js` `sectionHeadHtml({ icon, title, count,
+  sub, tools, level })`; Game Vault part 8, mockup SH3): a 38px icon tile, the heading with a
+  `.bt-section-head-n` count pill (and an optional line under it), and a thin gold rule that runs
+  across to `.bt-section-head-tools` (a shelf's arrows and See all). Use it for the head of any
+  page section or shelf; phones drop the rule and the line under the heading.
 - **Timeline: `.bt-timeline`** (`shared/ui/timeline.js` `timelineHtml({ points, site, ends,
   keys, label })` + `initTimelines`): dots on a line sized by value, a hollow `.is-legacy` dot
   for history before the site, a flag, a coloured stretch for "on the site", tooltips on hover

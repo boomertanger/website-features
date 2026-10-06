@@ -13,6 +13,7 @@
 import { buildIndex, search } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
+import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { initShelves } from "../../../../shared/ui/shelf.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
@@ -186,12 +187,13 @@ function popover(kind: "tags" | "len") {
   return `<div class="bt-popover" role="group" aria-label="Length">${opts}<div class="bt-popover-foot"><span class="bt-meta">From IGDB's time to beat</span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-close-menu>Show ${plural(list().length, "game")}</button></div></div>`;
 }
 
+const ICONS: Record<string, string> = { "Now playing": "🎮", "Most wanted": "🔖", "Boomer's best": "🏆", "The ones that got away": "🪦", "All games": "🗝" };
 function shelf(title: string, sub: string, games: VCard[], { ranked = false, wants = false, status }: { ranked?: boolean; wants?: boolean; status: Status }) {
   if (!games.length) return "";
   const items = games.map((g, i) => ranked
     ? `<div class="bt-ranked"${i < 3 ? ` style="--rk:var(--bt-rank-${i + 1})"` : ""}><span class="bt-rank" aria-hidden="true">${i + 1}</span><div class="gv-want">${vcard(g, { key: false })}${wantButton(g)}</div></div>`
     : wants ? `<div class="gv-want">${vcard(g, { key: false })}${wantButton(g)}</div>` : vcard(g, { key: false })).join("");
-  return `<section data-shelf-wrap aria-label="${esc(title)}"><div class="bt-shelf-head"><div><h2 class="bt-heading">${title}</h2>${sub ? `<p>${sub}</p>` : ""}</div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${count(status)}</button></div></div><div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
+  return `<section data-shelf-wrap aria-label="${esc(title)}">${sectionHeadHtml({ icon: ICONS[title], title, count: games.length, sub, tools: `<span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${count(status)}</button>` })}<div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
 }
 /** Most wanted: the top 5 by wants (ranked); before anyone wants anything, the 5 newest wishlist games. */
 function mostWantedGames() {
@@ -213,7 +215,7 @@ function shelves() {
     + shelf("The ones that got away", "Games that beat Boomer's patience.", by("abandoned", (a, b) => (b.last || 0) - (a.last || 0)), { status: "abandoned" });
   return `<div class="gv-rails">${html}</div>`;
 }
-const allGames = (gs: VCard[]) => `<div class="gv-allhead"><h2 class="bt-heading">All games</h2><span class="bt-meta">${plural(gs.length, "game")}, last streamed first</span></div>${grid(gs)}`;
+const allGames = (gs: VCard[]) => `<section aria-label="All games">${sectionHeadHtml({ icon: ICONS["All games"], title: "All games", count: gs.length, sub: "Last streamed first." })}${grid(gs)}</section>`;
 
 function addCta(q: string, big = false) {
   const visitor = getAuthState().status === "signedOut";

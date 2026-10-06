@@ -19,6 +19,7 @@ import { initCountUp } from "../ui/count-up.js";
 import { dialHtml, initDials } from "../ui/dial.js";
 import { initCmd, litText } from "../ui/cmd.js";
 import { initShelves } from "../ui/shelf.js";
+import { sectionHeadHtml } from "../ui/section-head.js";
 import { timelineHtml, initTimelines } from "../ui/timeline.js";
 import { initDeck, flyOut } from "../ui/deck.js";
 import { medalHtml, RARITY } from "../ui/medal.js";
@@ -1361,6 +1362,13 @@ function vaultKitHtml() {
     <p class="kit-sub">Shelf: .bt-shelf with its head and arrows (shared/ui/shelf.js); --ranked with outlined .bt-rank numerals in --bt-rank-1…</p>
     <div data-shelf-wrap><div class="bt-shelf-head"><div><h3 class="bt-heading">A shelf</h3><p>Swipe, or use the arrows.</p></div><div class="bt-shelf-tools"><span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 7</button></div></div><div class="bt-shelf">${shelfCards}</div></div>
     <div data-shelf-wrap><div class="bt-shelf bt-shelf--ranked">${ranked}</div></div>
+
+    <p class="kit-sub">Section head: .bt-section-head (shared/ui/section-head.js sectionHeadHtml). An icon tile, the heading with a count pill, a thin gold rule running to the tools. Phones: no rule and no line under the heading</p>
+    <div class="kit-stack" style="gap:22px">
+      ${sectionHeadHtml({ icon: "🏆", title: "Boomer's best", count: 12, sub: "Finished, highest score first.", tools: `<span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll on">›</button></span><button type="button" class="bt-link-btn">See all 12</button>` })}
+      ${sectionHeadHtml({ icon: "🗝", title: "All games", count: 78, sub: "Last streamed first." })}
+      ${sectionHeadHtml({ title: "No icon, no tools", count: 3 })}
+    </div>
 
     <p class="kit-sub">Timeline: .bt-timeline (shared/ui/timeline.js). Dots sized by length, a hollow dot for history before the site, a flag; hover or focus a dot</p>
     <div class="bt-card" style="max-width:720px">${tl}</div>

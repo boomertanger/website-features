@@ -144,8 +144,6 @@
 .bt-root:not(#_) .gv-count b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .gv-rails { display: flex; flex-direction: column; gap: 34px; }
 .bt-root:not(#_) .gv-rails:empty { display: none; }
-/* round 3 S1: the All games grid always follows the shelves */
-.bt-root:not(#_) .gv-allhead { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 4px 12px; margin-top: 10px; }
 .bt-root:not(#_) .gv-want { display: flex; flex-direction: column; gap: 8px; }
 .bt-root:not(#_) .gv-want .bt-btn svg { width: 14px; height: 14px; }
 .bt-root:not(#_) .gv-want .bt-btn[aria-pressed="true"] { border-color: var(--bt-primary); color: var(--bt-primary-soft); }
