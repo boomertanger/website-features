@@ -11,7 +11,7 @@
 // Leaving for a game stores the list you were in (scripts/vault/context.ts) for the game page's Back to
 // the Vault and previous / next, and coming back that way puts you at the same scroll position.
 import { buildIndex, search } from "../../../../shared/vault-search.js";
-import { coverHtml } from "../../../../shared/ui/cover.js";
+import { coverHtml, coverUrl } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
 import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
@@ -120,6 +120,18 @@ function spotlight() {
   const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "member")} want it</small>` : ""}</div></div>`;
   return { html, kind: playing[0] ? "playing" : "wanted" };
 }
+/** Phones (M2): the poster band under the search: the playing game (or the top Most wanted) on its own blurred cover. */
+function poster() {
+  const playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
+  const g = playing[0] || mostWantedGames()[0];
+  if (!g) return "";
+  const also = playing[1];
+  const url = coverUrl(g.cover);
+  const line = playing[0]
+    ? `${g.streams > 0 ? plural(g.streams, "stream") + " so far" : "No streams yet"}${also ? ` · also playing ${esc(also.title)}` : ""}`
+    : g.wanted > 0 ? `${plural(g.wanted, "member")} want it` : "On the Wishlist";
+  return `<div class="gvh-poster${playing[0] ? "" : " gvh-poster--wanted"}"><div class="gv-hero-art" aria-hidden="true">${url ? `<img src="${esc(url)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gvh-poster-kicker">${playing[0] ? "Now playing" : "Most wanted"}</span><a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${playing[0] ? "Now playing" : "Most wanted"}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><h2>${esc(g.title)}</h2><small>${line}</small></div>`;
+}
 function heroCounts() {
   const n = [[V.games.length, "games in the Vault"], [count("finished"), "finished"], [V.games.filter((g) => g.tags.includes("VR")).length, "played in VR"]] as const;
   const shown = n.filter(([v]) => v > 0);
@@ -130,7 +142,7 @@ function hero() {
   const ex = EXAMPLES.filter((w) => search(index, w, { limit: 1 }).length);
   return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">Game Vault</span><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>
   <label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q data-hero-search autocomplete="off" spellcheck="false" placeholder="Search ${V.games.length} games…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label>
-  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}</div>${sp.html}</div></section>`;
+  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}</div>${sp.html}</div>${poster()}</section>`;
 }
 /** Searching: the wall pauses, non-matches grey out, matches light up, the strip shows up to 7, the hint counts. */
 function renderHero() {

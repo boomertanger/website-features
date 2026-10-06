@@ -101,20 +101,36 @@
   .bt-root:not(#_) .gvh-spot .gvh-also { right: 190px; width: 110px; }
   .bt-root:not(#_) .gvh-spot-tag { top: 246px; right: 40px; width: 170px; }
 }
+/* Phones (M2, game-vault-phone-heroes.html, approved): no cover wall and no small spotlight. The title, line,
+   big search and counts come first, then what's playing (or the top Most wanted game) as a big poster on its
+   own blurred cover. Desktop and tablet keep the V3 hero above. */
+.bt-root:not(#_) .gvh-poster { display: none; }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .gvh::before { background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 30%, transparent) 0%, color-mix(in srgb, var(--bt-bg) 92%, transparent) 55%, var(--bt-bg) 100%); }
-  .bt-root:not(#_) .gvh-in { grid-template-columns: minmax(0, 1fr); gap: 8px; min-height: 0; padding: 28px var(--bt-gutter); }
-  .bt-root:not(#_) .gvh-wall { grid-template-columns: repeat(5, 1fr); }
-  .bt-root:not(#_) .gvh-col:nth-child(n + 6) { display: none; }
-  .bt-root:not(#_) .gvh-spot { order: -1; height: 250px; }
-  .bt-root:not(#_) .gvh-spot .gv-cover-tilt { right: auto; left: 50%; width: 140px; margin-left: -50px; }
-  .bt-root:not(#_) .gvh-spot .gvh-also { right: auto; left: 50%; top: 40px; width: 92px; margin-left: -140px; }
-  .bt-root:not(#_) .gvh-spot-tag { display: none; }
+  .bt-root:not(#_) .gvh { min-height: 0; }
+  .bt-root:not(#_) .gvh::before, .bt-root:not(#_) .gvh-wall, .bt-root:not(#_) .gvh-spot { display: none; }
+  .bt-root:not(#_) .gvh-in { grid-template-columns: minmax(0, 1fr); gap: 0; min-height: 0; padding: 0; }
+  .bt-root:not(#_) .gvh-copy { gap: 12px; padding: 22px var(--bt-gutter) 20px; }
+  .bt-root:not(#_) .gvh-copy > p { font-size: var(--bt-text-base); }
+  .bt-root:not(#_) .gvh .vh-counts { gap: 8px 22px; }
+  .bt-root:not(#_) .gvh .vh-counts b { font-size: 22px; }
   .bt-root:not(#_) .gvh-strip { justify-content: center; }
+  .bt-root:not(#_) .gvh-poster { position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; overflow: hidden; padding: 26px var(--bt-gutter) 22px; border-top: 1px solid var(--bt-border); text-align: center; }
+  .bt-root:not(#_) .gvh-poster .gv-hero-art { inset: -40px; filter: blur(30px) saturate(1.3); opacity: 0.6; }
+  .bt-root:not(#_) .gvh-poster::after { content: ""; position: absolute; inset: 0; background: linear-gradient(180deg, var(--bt-scrim) 0%, var(--bt-scrim-strong) 70%, var(--bt-bg) 100%); }
+  .bt-root:not(#_) .gvh-poster > :not(.gv-hero-art) { position: relative; z-index: 1; }
+  .bt-root:not(#_) .gvh-poster .gv-cover-tilt { width: 190px; }
+  .bt-root:not(#_) .gvh-poster .gv-cover-tilt .bt-cover { border-color: var(--bt-green); animation: gv-rim 2.2s ease-in-out infinite; }
+  .bt-root:not(#_) .gvh-poster--wanted .gv-cover-tilt .bt-cover { border-color: var(--bt-gold); animation: none; }
+  .bt-root:not(#_) .gvh-poster h2 { font-size: 26px; font-weight: 900; letter-spacing: -0.01em; }
+  .bt-root:not(#_) .gvh-poster small { color: var(--bt-text-muted); }
+  .bt-root:not(#_) .gvh-poster-kicker { display: flex; align-items: center; gap: 8px; color: var(--bt-green); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; }
+  .bt-root:not(#_) .gvh-poster-kicker::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-green); box-shadow: 0 0 8px var(--bt-green-glow); }
+  .bt-root:not(#_) .gvh-poster--wanted .gvh-poster-kicker { color: var(--bt-gold); }
+  .bt-root:not(#_) .gvh-poster--wanted .gvh-poster-kicker::before { background: var(--bt-gold); box-shadow: 0 0 8px rgba(var(--bt-gold-rgb), 0.6); }
 }
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .gvh-col { animation: none; }
-  .bt-root:not(#_) .gvh-spot .gv-cover-tilt .bt-cover { animation: none; }
+  .bt-root:not(#_) .gvh-spot .gv-cover-tilt .bt-cover, .bt-root:not(#_) .gvh-poster .gv-cover-tilt .bt-cover { animation: none; }
   .bt-root:not(#_) .gvh-c { transition: none; }
   .bt-root:not(#_) .gvh.is-searching .gvh-c.is-hit { transform: none; }
   .bt-root:not(#_) .gvh-strip a { animation: none; }
