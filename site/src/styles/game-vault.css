@@ -104,18 +104,40 @@
   .bt-root:not(#_) .gvh.is-searching .gvh-c.is-hit { transform: none; }
   .bt-root:not(#_) .gvh-strip a { animation: none; }
 }
-
-/* ---- B3 + B4: search, sort, the status seg nav, menus, tokens ---- */
-.bt-root:not(#_) .gv-tools { display: flex; align-items: stretch; gap: 12px; }
-.bt-root:not(#_) .gv-tools .bt-select { flex: none; width: 190px; }
-.bt-root:not(#_) .gv-searchwrap { position: relative; display: flex; flex: 1; min-width: 0; }
-.bt-root:not(#_) .gv-segrow { position: relative; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 12px; }
-.bt-root:not(#_) .gv-segrow .bt-seg-nav { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
-.bt-root:not(#_) .gv-segrow .bt-seg-nav::-webkit-scrollbar { display: none; }
-.bt-root:not(#_) .gv-segrow .bt-seg-nav a { padding: 7px 14px; font-size: var(--bt-text-md); }
-.bt-root:not(#_) .gv-segrow .bt-chip svg { width: 13px; height: 13px; margin-right: 5px; vertical-align: -2px; }
+/* ---- The sticky filter bar (game-vault-page.html gp-fbar): under the hero it sticks under the
+   GAMEVAULT bar (--bt-sticky-top is that bar's height while it's stuck and shown, 0 when a phone hides it).
+   Status seg nav with counts, Tags and Length menus, Community picks, Sort; a compact search slides in
+   once the hero's search is out of view (or while searching). Phones: search on row 1, status tabs and a
+   Filters button (a dialog) on row 2. ---- */
+.bt-root:not(#_) .gp-fbar { position: sticky; top: var(--bt-sticky-top, 0px); z-index: calc(var(--bt-z-sticky) - 1); display: flex; flex-wrap: nowrap; align-items: center; gap: 12px; padding: 12px var(--bt-gutter); border-bottom: 1px solid var(--bt-border); background: color-mix(in srgb, var(--bt-bg) 90%, transparent); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); transition: top 0.25s var(--bt-ease-glide); }
+.bt-root:not(#_) .gp-fbar .gp-fsearch { display: none; flex: 0 1 240px; min-width: 0; }
+.bt-root:not(#_) .gp-fbar:is(.has-search, .has-compact) .gp-fsearch { display: flex; animation: gv-pop 0.2s var(--bt-ease-glide); }
+.bt-root:not(#_) .gp-fbar .gp-fsearch .bt-input { padding-top: 9px; padding-bottom: 9px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .gp-fbar .bt-seg-nav { flex: 0 1 auto; min-width: 0; max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+.bt-root:not(#_) .gp-fbar .bt-seg-nav::-webkit-scrollbar { display: none; }
+.bt-root:not(#_) .gp-fbar .bt-seg-nav a { padding: 7px 13px; font-size: var(--bt-text-md); white-space: nowrap; }
+.bt-root:not(#_) .gp-fbar:is(.has-search, .has-compact) .bt-seg-nav .bt-chip-n { display: none; }
+.bt-root:not(#_) .gp-fmore { display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .gp-fmore .bt-chip svg { width: 13px; height: 13px; margin-right: 5px; vertical-align: -2px; }
+.bt-root:not(#_) .gp-fbar .bt-select { flex: none; width: auto; margin-left: auto; padding-top: 8px; padding-bottom: 8px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .gp-fbtn { display: none; }
 .bt-root:not(#_) .gv-menu { position: relative; }
 .bt-root:not(#_) .gv-menu > .bt-popover { top: calc(100% + 8px); left: 0; max-height: 360px; overflow-y: auto; }
+.bt-root:not(#_) [data-results] { scroll-margin-top: 150px; }
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .gp-fmore { display: none; }
+  .bt-root:not(#_) .gp-fbtn { display: inline-flex; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .gp-fbar { flex-wrap: wrap; gap: 8px; padding: 10px var(--bt-gutter); }
+  .bt-root:not(#_) .gp-fbar .gp-fsearch { flex: 1 1 100%; }
+  .bt-root:not(#_) .gp-fbar .bt-seg-nav { flex: 1 1 0; }
+  .bt-root:not(#_) .gp-fbar .bt-select { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .gp-fbar { transition: none; }
+  .bt-root:not(#_) .gp-fbar:is(.has-search, .has-compact) .gp-fsearch { animation: none; }
+}
 .bt-root:not(#_) .gv-tokens { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .bt-root:not(#_) .gv-tokens:empty { display: none; }
 .bt-root:not(#_) .gv-count { display: flex; align-items: center; justify-content: space-between; gap: 12px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
@@ -310,8 +332,6 @@
   .bt-root:not(#_) .gv-cols { grid-template-columns: minmax(0, 1fr); }
 }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .gv-tools { flex-direction: column; }
-  .bt-root:not(#_) .gv-tools .bt-select { width: 100%; }
   .bt-root:not(#_) .gv-body { padding-top: 18px; }
   .bt-root:not(#_) .gv-hero-inner { grid-template-columns: 112px minmax(0, 1fr); gap: 16px; padding: 28px var(--bt-gutter) 20px; }
   .bt-root:not(#_) .gv-hero-inner .bt-title { font-size: 24px; }
@@ -535,3 +555,7 @@
   .bt-root:not(#_) .ai-part:is(:hover, :focus-within) .vh-scene--playing .bt-cover { animation: none; }
   .bt-root:not(#_) .vh-mw-row.is-bump { animation: none; }
 }
+
+/* The Filters dialog (phones and tablets): the same Tags / Length / Community picks / Sort as the bar */
+.bt-portal[data-feature="game-vault"] .gv-fchecks { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
+.bt-portal[data-feature="game-vault"] .gv-fchecks .bt-check > span:not(.bt-popover-n) { flex: 1; }

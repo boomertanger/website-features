@@ -1,8 +1,9 @@
 // /games, the Vault page (docs/specs/game-vault.md §7, §9; round 2 A65 + B34 + C56, round 3, and the
 // page redesign game-vault-page.html V3): the hero (a drifting wall of real covers; the big search with
 // its match strip and hint; the counts; the Now playing spotlight, or the top Most wanted game when
-// nothing is playing), the status seg nav, Tags / Length menus, Community picks, removable tokens, sort,
-// state in the URL, the shelves (Now playing, Most wanted, Boomer's best, The ones that got away) and then
+// nothing is playing), the sticky filter bar (status seg nav, Tags / Length menus, Community picks, sort;
+// a compact search slides in when the hero's scrolls away; phones get a Filters dialog), removable
+// tokens, state in the URL, the shelves (Now playing, Most wanted, Boomer's best, The ones that got away) and then
 // the All games grid, just the gliding grid when searching or filtering, and the states (loading, empty,
 // no matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
 // there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything, the 5
@@ -12,6 +13,7 @@
 import { buildIndex, search } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
+import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { initShelves } from "../../../../shared/ui/shelf.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { flipSwap } from "../../../../shared/ui/flip.js";
@@ -32,6 +34,7 @@ const st: State = { q: "", status: "all", tags: [], len: "", picks: false, sort:
 let V: Vault = { games: [], tags: [], count: 0 };
 let index: any = null;
 let openMenu: "" | "tags" | "len" = "";
+let heroIO: IntersectionObserver | null = null;
 
 // ---------- URL state ----------
 function readUrl() {
@@ -151,13 +154,19 @@ function renderHero() {
 }
 
 function tools() {
-  return `<div class="gv-tools"><select class="bt-select" data-sort aria-label="Sort">${SORTS.map(([k, l]) => `<option value="${k}"${st.sort === k ? " selected" : ""}>${l}</option>`).join("")}</select></div>
-  <div class="gv-segrow"><nav class="bt-seg-nav" aria-label="Status" data-seg>${(["all", ...STATUS_KEYS] as State["status"][]).map((s) => `<a href="?status=${s}" data-status="${s}"${st.status === s ? ' aria-current="page"' : ""}>${s === "all" ? "All" : STATUS[s][0]}<span class="bt-chip-n">${count(s)}</span></a>`).join("")}</nav>
-  <div class="gv-menu" data-menu="tags"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="tags" aria-expanded="false" aria-haspopup="true">Tags<span class="bt-chip-n" data-tags-n></span></button></div>
+  return `<div class="gv-tokens" data-tokens></div><div class="gv-count" data-count></div>`;
+}
+
+/** The sticky filter bar under the hero (the compact search only shows once the hero's has scrolled away). */
+function fbar() {
+  const tabs = (["all", ...STATUS_KEYS] as State["status"][]).map((s) => `<a href="?status=${s}" data-status="${s}"${st.status === s ? ' aria-current="page"' : ""}>${s === "all" ? "All" : STATUS[s][0]}<span class="bt-chip-n">${count(s)}</span></a>`).join("");
+  return `<div class="gp-fbar" data-fbar><label class="bt-search gp-fsearch">${I.search}<input class="bt-input" type="search" data-q data-compact-search autocomplete="off" spellcheck="false" placeholder="Search the Vault…" aria-label="Search the Vault" value="${esc(st.q)}"></label>
+  <nav class="bt-seg-nav" aria-label="Status" data-seg>${tabs}</nav>
+  <div class="gp-fmore"><div class="gv-menu" data-menu="tags"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="tags" aria-expanded="false" aria-haspopup="true">Tags<span class="bt-chip-n" data-tags-n></span></button></div>
   <div class="gv-menu" data-menu="len"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="len" aria-expanded="false" aria-haspopup="true">Length</button></div>
   <button type="button" class="bt-chip bt-chip--small" data-picks aria-pressed="false">${I.people}Community picks</button></div>
-  <div class="gv-tokens" data-tokens></div>
-  <div class="gv-count" data-count></div>`;
+  <select class="bt-select" data-sort aria-label="Sort">${SORTS.map(([k, l]) => `<option value="${k}"${st.sort === k ? " selected" : ""}>${l}</option>`).join("")}</select>
+  <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm gp-fbtn" data-open-filters>${I.filter}Filters<span class="bt-chip-n" data-fcount></span></button></div>`;
 }
 
 function tokensHtml() {
@@ -219,6 +228,17 @@ const mascotSvg = () => document.getElementById("bt-mascot-tpl")?.innerHTML ?? "
 const grid = (gs: VCard[]) => `<div class="bt-cover-grid">${gs.map((g) => vcard(g)).join("")}</div>`;
 
 // ---------- render ----------
+/** What the list is for: “granny”, Finished, a tag, a length, Community picks (empty with no search or filter). */
+function forWhat() {
+  const q = st.q.trim();
+  return [
+    q ? `“${esc(q)}”` : "",
+    st.status !== "all" ? STATUS[st.status][0] : "",
+    ...st.tags.map(esc),
+    st.len ? esc(LENGTHS.find(([k]) => k === st.len)![1].split(",")[0]) : "",
+    st.picks ? "Community picks" : "",
+  ].filter(Boolean).join(", ");
+}
 let lastGrid = false;
 function renderResults() {
   const res = root!.querySelector<HTMLElement>("[data-results]")!;
@@ -226,7 +246,7 @@ function renderResults() {
   const filtered = filtering();
   const countEl = root!.querySelector<HTMLElement>("[data-count]")!;
   countEl.innerHTML = filtered
-    ? `<span><b>${gs.length}</b> ${gs.length === 1 ? "game" : "games"}${st.q.trim() ? ` for “${esc(st.q.trim())}”` : ""}</span><button type="button" class="bt-link-btn" data-reset>Clear filters</button>`
+    ? `<span><b>${gs.length}</b> ${gs.length === 1 ? "game" : "games"}${forWhat() ? ` for ${forWhat()}` : ""}</span><button type="button" class="bt-link-btn" data-reset>Clear search and filters</button>`
     : "";
   const html = !filtered ? shelves() + allGames(gs) : gs.length ? grid(gs) : noMatch();
   if (filtered && lastGrid && gs.length) flipSwap(res, html);
@@ -247,10 +267,16 @@ function renderControls() {
   lenBtn.classList.toggle("is-active", !!st.len);
   root!.querySelector<HTMLButtonElement>('[data-open="tags"]')!.classList.toggle("is-active", st.tags.length > 0);
   root!.querySelector<HTMLSelectElement>("[data-sort]")!.value = st.sort;
+  root!.querySelector<HTMLElement>("[data-fbar]")!.classList.toggle("has-search", !!st.q.trim());
+  const nf = (st.tags.length ? 1 : 0) + (st.len ? 1 : 0) + (st.picks ? 1 : 0) + (st.sort !== "last" ? 1 : 0);
+  root!.querySelector<HTMLElement>("[data-fcount]")!.textContent = nf ? String(nf) : "";
   // an open menu keeps its live "Show N games"
   if (openMenu) { const box = root!.querySelector(`[data-menu="${openMenu}"] .bt-popover-foot .bt-btn`); if (box) box.textContent = `Show ${plural(list().length, "game")}`; }
 }
-function update() { writeUrl(); renderControls(); renderResults(); renderHero(); }
+function update() {
+  writeUrl(); renderControls(); renderResults(); renderHero();
+  root!.querySelectorAll<HTMLInputElement>("[data-q]").forEach((i) => { if (i !== document.activeElement) i.value = st.q; });   // the hero's and the bar's search stay in sync
+}
 
 function toggleMenu(kind: "" | "tags" | "len") {
   root!.querySelectorAll("[data-menu] .bt-popover").forEach((p) => p.remove());
@@ -261,28 +287,73 @@ function toggleMenu(kind: "" | "tags" | "len") {
   root!.querySelector<HTMLInputElement>(`[data-menu="${kind}"] input`)?.focus();
 }
 
+/** Phones: Tags, Length, Community picks and Sort in a dialog (the bar has no room for them). */
+function openFilters() {
+  const tags = V.tags.map((t) => `<label class="bt-check"><input type="checkbox" data-f-tag="${esc(t.tag)}"${st.tags.includes(t.tag) ? " checked" : ""}><span>${esc(t.tag)}</span><span class="bt-popover-n">${t.count}</span></label>`).join("");
+  const lens = [["", "Any length"], ...LENGTHS].map(([k, l]) => `<label class="bt-check"><input type="radio" name="gv-flen" data-f-len="${k}"${st.len === k ? " checked" : ""}><span>${l}</span></label>`).join("");
+  const content = `${modalHeader("Filters")}
+  <div class="bt-stack gv-fsheet" style="gap:18px">
+    <div class="bt-field"><label class="bt-label" for="gv-fs">Sort</label><select class="bt-select" id="gv-fs" data-f-sort>${SORTS.map(([k, l]) => `<option value="${k}"${st.sort === k ? " selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div class="bt-field" role="group" aria-labelledby="gv-fl"><span class="bt-label" id="gv-fl">Length</span><div class="gv-fchecks">${lens}</div></div>
+    <div class="bt-field" role="group" aria-labelledby="gv-ft"><span class="bt-label" id="gv-ft">Tags</span><div class="gv-fchecks">${tags || '<span class="bt-meta">No tags yet.</span>'}</div></div>
+    <label class="bt-check"><input type="checkbox" data-f-picks${st.picks ? " checked" : ""}><span>Community picks only</span></label>
+    <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--ghost" data-f-clear>Clear</button><button type="button" class="bt-btn bt-btn--primary" data-bt-close data-f-show>Show ${plural(list().length, "game")}</button></div>
+  </div>`;
+  const m = openModal({ title: "Filters", feature: "game-vault", content });
+  const show = m.modal.querySelector<HTMLElement>("[data-f-show]")!;
+  const sync = () => { show.textContent = `Show ${plural(list().length, "game")}`; };
+  m.modal.addEventListener("change", (e) => {
+    const el = e.target as HTMLInputElement;
+    if (el.dataset.fTag != null) st.tags = el.checked ? [...st.tags, el.dataset.fTag] : st.tags.filter((x) => x !== el.dataset.fTag);
+    else if (el.dataset.fLen != null) st.len = el.dataset.fLen;
+    else if (el.dataset.fPicks != null) st.picks = el.checked;
+    else if (el.dataset.fSort != null) st.sort = (el as unknown as HTMLSelectElement).value;
+    else return;
+    update(); sync();
+  });
+  m.modal.querySelector("[data-f-clear]")!.addEventListener("click", () => {
+    Object.assign(st, { tags: [], len: "", picks: false, sort: "last" });
+    m.modal.querySelectorAll<HTMLInputElement>("[data-f-tag], [data-f-picks]").forEach((c) => { c.checked = false; });
+    m.modal.querySelectorAll<HTMLInputElement>("[data-f-len]").forEach((c) => { c.checked = c.dataset.fLen === ""; });
+    m.modal.querySelector<HTMLSelectElement>("[data-f-sort]")!.value = "last";
+    update(); sync();
+  });
+}
 async function openAdd(q = "") { const { openAddGame } = await import("./add"); openAddGame(q); }
 
 // ---------- boot ----------
 function wire() {
   const input = root!.querySelector<HTMLInputElement>("[data-hero-search]")!;
+  const compact = root!.querySelector<HTMLInputElement>("[data-compact-search]")!;
+  const fb = root!.querySelector<HTMLElement>("[data-fbar]")!;
   let t = 0;
-  input.addEventListener("input", () => { st.q = input.value; clearTimeout(t); t = window.setTimeout(update, 120); });
+  root!.addEventListener("input", (e) => {
+    const el = e.target as HTMLInputElement;
+    if (!el.matches?.("[data-q]")) return;
+    st.q = el.value; clearTimeout(t); t = window.setTimeout(update, 120);
+  });
   // Enter: scroll to the results, or, with no match, add the game.
-  input.addEventListener("keydown", (e) => {
-    if (e.key !== "Enter") return;
+  root!.addEventListener("keydown", (e) => {
+    const el = e.target as HTMLInputElement;
+    if (e.key !== "Enter" || !el.matches?.("[data-q]")) return;
     e.preventDefault();
-    clearTimeout(t); st.q = input.value; update();
+    clearTimeout(t); st.q = el.value; update();
     if (st.q.trim() && !list().length) { openAdd(st.q.trim()); return; }
     root!.querySelector<HTMLElement>("[data-results]")?.scrollIntoView({ block: "start", behavior: reduce() ? "auto" : "smooth" });
   });
+  // "/" focuses the search you can see: the hero's, or the bar's once the hero's has scrolled away.
   document.addEventListener("keydown", (e) => {
     if (e.key !== "/" || e.metaKey || e.ctrlKey || e.altKey) return;
     if (e.target instanceof Element && e.target.closest("input, textarea, select, [contenteditable], .bt-portal")) return;
     e.preventDefault();
-    input.focus();
-    input.scrollIntoView({ block: "center", behavior: reduce() ? "auto" : "smooth" });
+    const target = fb.classList.contains("has-compact") ? compact : input;
+    target.focus();
+    if (target === input) input.scrollIntoView({ block: "center", behavior: reduce() ? "auto" : "smooth" });
   });
+  // The compact search slides into the bar once the hero's is under the bars.
+  heroIO?.disconnect();
+  heroIO = new IntersectionObserver(([en]) => fb.classList.toggle("has-compact", !en.isIntersecting), { rootMargin: "-140px 0px 0px 0px" });
+  heroIO.observe(input);
   const nav = root!.querySelector<HTMLElement>("[data-seg]")!;
   initSegNav(nav);
   root!.querySelector<HTMLSelectElement>("[data-sort]")!.addEventListener("change", (e) => { st.sort = (e.target as HTMLSelectElement).value; update(); });
@@ -299,6 +370,7 @@ function wire() {
     if (s) { e.preventDefault(); st.status = s.dataset.status as State["status"]; update(); return; }
     const see = el.closest<HTMLElement>("[data-see]");
     if (see) { st.status = see.dataset.see as Status; update(); root!.querySelector("[data-seg]")?.scrollIntoView({ block: "center", behavior: reduce() ? "auto" : "smooth" }); return; }
+    if (el.closest("[data-open-filters]")) { openFilters(); return; }
     const op = el.closest<HTMLElement>("[data-open]");
     if (op) { toggleMenu(openMenu === op.dataset.open ? "" : (op.dataset.open as "tags" | "len")); return; }
     if (el.closest("[data-close-menu]")) { toggleMenu(""); return; }
@@ -339,7 +411,7 @@ async function boot() {
   if (!V.games.length) { onAuth(() => showState("empty")); return; }
   index = buildIndex(V.games);
   readUrl();
-  root!.innerHTML = `${hero()}<div class="gv-body">${tools()}<div data-results id="gv-results"></div></div>`;
+  root!.innerHTML = `${hero()}${fbar()}<div class="gv-body">${tools()}<div data-results id="gv-results"></div></div>`;
   initCountUp(root!);
   wire();
   renderControls();
