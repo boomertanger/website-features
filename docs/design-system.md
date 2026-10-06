@@ -1281,6 +1281,15 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
     40px each with aria-labels, on every Vault page. This replaces the kit's 420px label rule for the
     Vault and fixes the staff bar overflowing.
 
+- **Phone hero and game page heads, part 9** (`game-vault-phone-heroes.html`, approved M2 G1; details in
+  the spec's §9):
+  - **M2, the phone hero is a poster, not a wall.** Under 640px /games shows the title, search and
+    counts first, then what's playing as a big poster on its own blurred cover (the top Most wanted
+    game, gold, when nothing is playing). The wall and the small spotlight are desktop and tablet only.
+  - **G1, section heads sit above the cards on the game page.** The same `.bt-section-head` as the
+    /games shelves (compact `--sm`, with a `meta` note), not a second piece and not a title inside
+    the card; the cards stay clean.
+
 ### 8j. Trophy Room
 
 Spec: `docs/specs/rewards.md` (§14 decisions, Oct 3, 2026); mockup
