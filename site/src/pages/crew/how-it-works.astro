@@ -1,0 +1,356 @@
+---
+// /crew/how-it-works: the public pitch page for the crew (docs/specs/mod-machina.md §12; approved round 2 in
+// docs/design/mockups/mod-machina-guides.html). The same frame as the Arcade's, Night Shift's and the Trophy
+// Room's How it works: TocLayout, ghost chapters, the shared How it works blocks (hero, stage cards with hover
+// scenes, journey, flow, glossary chips, closing call), flip medals, the Crew Code placard and Ask BOOMBOT.
+// Kit pieces: .bt-ladder (grade ladder), .bt-timecard, .bt-grade, .bt-room, .bt-flip, .bt-placard, .bt-chat.
+// Static: no Firestore reads, no callables. Every example (the ladder, Pass the lantern, the Gears calculator, the
+// time card) works locally and saves nothing. Stream duty, seats, the Mod Deck and Chat Games are not open yet
+// (phases 3 and 4), so they are described and marked Soon. The badge ladders come from the starter catalog at
+// build time (functions/data/trophy-room-badges.json).
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { medalHtml } from "../../../../shared/ui/medal.js";
+import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
+import { ladderHtml, ladderDetailHtml } from "../../../../shared/ui/ladder.js";
+import { platformIconHtml, roomHtml, timecardHtml } from "../../../../shared/ui/crew.js";
+import catalog from "../../../../functions/data/trophy-room-badges.json";
+import "../../styles/how-it-works.css";
+import "../../styles/crew-how.css";
+
+const example = `<span class="bt-badge bt-badge--gray">Example</span>`;
+const soon = `<span class="bt-badge bt-badge--gold cw-soon"><span class="bt-badge-dot"></span>Soon</span>`;
+const pi = (c: "twitch" | "ytLandscape" | "ytVertical" | "tiktok") => platformIconHtml(c);
+
+const NAV: [string, string][] = [["s-does", "What the crew does"], ["s-join", "From viewer to crew"], ["s-ladder", "The ladder"], ["s-stream", "On a stream"], ["s-gears", "Gears"], ["s-active", "Staying active"], ["s-rewards", "Rewards"], ["s-code", "Crew Code"], ["s-words", "Glossary"], ["s-faq", "FAQ"]];
+const chapter = (n: number, id: string, title: string, lede?: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+
+const PARTS = [
+  { k: "chat", ic: "🛡", t: "Keep it friendly", d: "Welcome new faces, answer questions and handle the rare troublemaker, gently first.", who: "Every crew member" },
+  { k: "rooms", ic: "📡", t: "Cover every chat", d: "Twitch, YouTube landscape, YouTube vertical and TikTok each get a lead. YouTube needs you most.", who: "1.5× Gears on YouTube" },
+  { k: "case", ic: "🔎", t: "Run Chat Games", d: "Drop the clues, call the bingo squares and hype your chat. Members play; the crew hosts.", who: "Hosting earns Gears", soon: true },
+  { k: "recruit", ic: "🔗", t: "Bring friends", d: "Share your link. When someone joins and sticks around, it counts for you and the crew.", who: "+10 Gears per recruit" },
+];
+const JOURNEY = [
+  ["📝", "Apply", "Pick the chats you'd help in and when you're around."],
+  ["🤝", "Get vouched", "Crew who know you from chat can back you."],
+  ["✅", "Boomer says yes", "Every new crew member is Boomer's call."],
+  ["🎓", "Train", "Short Academy modules and two ride-alongs."],
+  ["🕹", "Take duties", "Sign up for the streams that suit you."],
+  ["📈", "Climb", "Watcher, Warden, Sentinel, and maybe more."],
+];
+
+// The ladder (spec §3a, §3b): lowest rung first; the admin rungs sit above the dashed gate.
+const MOD_UP = (a: string[]) => a;
+const LADDER = [
+  { track: "mod", grade: 1, blurb: "You're in. Learn the ropes alongside a Room Lead.", can: ["Deckhand duty in your chats", "Moderate your own chats", "The Crew Academy"], up: MOD_UP(["Core Academy modules 1 to 6", "2 ride-alongs signed off by a Room Lead", "30 days", "Show up for 80% of your duties"]), min: "2 duties a month" },
+  { track: "mod", grade: 2, blurb: "A full mod. Most of the crew lives here, and that's great.", can: ["Room Lead duty", "The task board", "Vouch in the queue", "Award badges up to Uncommon"], up: ["90 days as a Watcher", "15 duties, 5 as Room Lead", "The Safety module", "No active strikes"], min: "2 duties a month" },
+  { track: "mod", grade: 3, blurb: "Senior crew. You run whole streams and bring new people up.", can: ["Stream Captain", "Award badges up to Rare", "Live drops while Captain", "Mentor an Initiate", "Draft Night Shift seasons"], up: ["6 months as a Warden", "40 duties, 10 as Captain", "Mentored 2 Initiates up to Watcher", "Boomer's invite"], min: "3 duties a month, 1 as a lead" },
+  { track: "mod", grade: 4, blurb: "The top of the mod ladder. Boomer's most trusted on stream.", can: ["Confirm crew rosters", "Shortlist the queue", "Post crew tasks"], up: ["May be invited to the admin ladder"], min: "3 duties a month, 1 as a lead" },
+  { track: "admin", grade: 1, blurb: "A 90-day trial on the admin ladder, by invitation only.", can: ["Admin tools with a safety net: anything that deletes or removes needs Boomer or a Right Hand to confirm", "Bug Zapper and Feature Lab triage", "Publish Night Shift", "Schedule the crew"], up: ["Finish the trial with Boomer's OK"], min: "2 duties, or 1 plus admin work" },
+  { track: "admin", grade: 2, blurb: "A full admin, trusted with the whole site.", can: ["Full admin tools", "Crew management and strikes", "Approve tasks", "Publish"], up: ["Boomer's invite"], min: "2 duties, or 1 plus admin work" },
+  { track: "admin", grade: 3, blurb: "Boomer's right hand. Runs the crew when he's away.", can: ["Confirm mod promotions up to Warden", "Run the crew in Boomer's absence", "Everything an Overseer can do"], up: ["The top of the ladder"], min: "2 duties, or 1 plus admin work" },
+] as const;
+const LADDER_HTML = ladderHtml({
+  label: "Grades",
+  selected: 1,
+  rungs: LADDER.map((L, i) => {
+    const admin = L.track === "admin";
+    const chip = gradeChipHtml({ track: L.track, grade: L.grade, code: true });
+    const name = admin ? ["", "Steward", "Overseer", "Right Hand"][L.grade] : ["", "Initiate", "Watcher", "Warden", "Sentinel"][L.grade];
+    return {
+      admin,
+      rungHtml: chip,
+      tag: admin ? "Admin" : `Rung ${L.grade}`,
+      detailHtml: ladderDetailHtml({
+        chipHtml: gradeChipHtml({ track: L.track, grade: L.grade, code: true }),
+        meta: admin ? "Invitation only" : `Rung ${L.grade} of 4`,
+        title: name,
+        text: L.blurb,
+        can: [...L.can],
+        up: [...L.up],
+        upLabel: i === 3 || i === 6 ? "Next" : "To move up",
+        tags: [`Stay Active: ${L.min}`, ...(i < 4 ? ["Boomer confirms every promotion"] : [])],
+        admin,
+      }),
+    };
+  }),
+});
+
+const FLOW = [
+  { k: "dk", ic: "🪝", t: "Deckhand", badge: ["teal", "0 to 2 per chat"], d: "Welcomes people, answers questions, backs up the lead. Come and go freely." },
+  { k: "rl", ic: "🔦", t: "Room Lead", badge: ["blue", "1 per chat"], d: "Owns one chat: welcomes, the check-in code, Chat Game clues, keeping it friendly." },
+  { k: "sc", ic: "🧭", t: "Stream Captain", badge: ["gold", "1 per stream"], d: "Watches every chat's coverage, fills gaps, drops badges, handles anything serious." },
+  { k: "bt", ic: "", t: "Boomer", badge: ["pink", "On stream"], d: "Plays the game. Hears from the Captain only when it matters." },
+];
+const ARROWS = ["Backs up · takes over", "Calls for help", "Flags what matters"];
+
+// Gears (spec §4a). soon: needs stream duty (phase 3) or Chat Games (phase 4).
+const EARN: [string, string, string, string, boolean?][] = [
+  ["⏱", "An hour on duty", "Captain 12 · Room Lead 10 · Deckhand 6", "6 to 12", true],
+  ["📺", "Any duty in a YouTube chat", "Boomer can raise it for any chat that needs help", "× 1.5", true],
+  ["✅", "Showing up for your seat", "Clocked in within 15 minutes of the start", "+5", true],
+  ["🔦", "Taking over as lead mid-stream", "When someone passes you the lantern", "+5", true],
+  ["🔎", "Hosting a Chat Game", "Clues and calls sent from the Mod Deck", "+5", true],
+  ["🔗", "A recruit who sticks around", "Active after 7 days. Up to 10 a month count.", "+10"],
+  ["🧰", "Crew tasks", "Clips, VOD chapters, welcomes. Confirmed by someone else.", "5 to 50"],
+  ["🎓", "An Academy module passed", "Once for each module", "+5"],
+  ["📝", "A queue review", "A vouch or a note on an applicant. Up to 10 a month count.", "+2"],
+];
+
+const FLIPS = [
+  ["gold", "⚙️", "Top Gear", "Most Gears each month", [["How", "Automatic, from the crew board on the 1st."], ["Prize", "A trophy and a shout-out on stream"]], "Pick a game for a stream"],
+  ["primary", "🕯️", "Fan Favourite", "Voted by members", [["How", "Members vote in the last 5 days of each month."], ["Prize", "A trophy and a shout-out on stream"]], "Featured on /crew"],
+  ["teal", "⏱️", "On the Clock", "4 duties in a month", [["How", "Do 4 duties in a calendar month."], ["Prize", "A new collectible every month"]], "Crew collection · soon"],
+  ["red", "⛓️", "Iron Shift", "Active months in a row", [["How", "Stay Active 3, 6, 12 and 24 months in a row."], ["Prize", "Uncommon up to Legendary"]], "A ladder of 4 · soon"],
+] as const;
+type Badge = { id: string; name: string; rarity: number; emoji: string; ladder: { id: string; step: number } | null };
+const BADGES = catalog.badges as unknown as Badge[];
+const ladder = (id: string) => BADGES.filter((b) => b.ladder?.id === id).sort((a, b) => a.ladder!.step - b.ladder!.step);
+const LADDERS: [string, string, Badge[], string][] = [
+  ["Grade badges", "One for every grade you reach", ladder("crew-grade"), ""],
+  ["Admin grade badges", "For the admin ladder", ladder("crew-grade-admin"), ""],
+  ["Service", "Months on the crew", ladder("crew-service"), "months"],
+  ["Duties", "Stream duties worked (starts with stream duty)", ladder("crew-duties"), "duties"],
+  ["Iron Shift", "Active months in a row (starts with stream duty)", ladder("iron-shift"), "months"],
+  ["YouTube Pioneer", "YouTube rooms you've led (starts with stream duty)", ladder("youtube-pioneer"), "rooms"],
+];
+const rung = (b: Badge, unit: string) => `<li class="cw-rung">${medalHtml({ emoji: b.emoji, rarity: b.rarity, size: 48 })}<span>${unit ? `${b.ladder!.step}` : ""}</span><b>${b.name}</b></li>`;
+
+const PERKS = [["⭐", "Free Sub Club", "While you're Active"], ["👕", "Earliest merch", "Before anyone else"], ["🎖", "Crew badges", "A collection only the crew can earn"], ["🌙", "Crew missions", "Night Shift campaigns just for the crew"]];
+const CODE = [
+  ["🕯", "Life comes first", "Step away any time. Hand off if it'll be a while. Nobody is guilted here."],
+  ["🤝", "Friendly before firm", "Start with the gentlest step that works: remind, warn, timeout, ban."],
+  ["🔒", "Personal info stays private", "Never repeat, screenshot or share anyone's personal details."],
+  ["⚖️", "Mod powers aren't for grudges", "No actions on a friend's say-so or to settle a score."],
+  ["📣", "Flag what matters", "Raids, threats or self-harm talk: tell the Captain and flag Boomer."],
+  ["🧡", "We're one crew", "Every chat counts the same. YouTube viewers deserve a welcome too."],
+];
+const TERMS = [
+  ["Crew", "Mods and admins together."], ["Duty", "Being on the crew for one stream, in one seat."], ["Chat", "One live chat: Twitch, YouTube landscape, YouTube vertical or TikTok. Also called a room."],
+  ["Seat", "A spot on a stream's crew: Captain, Room Lead or Deckhand."], ["Drop-in", "Clocking in mid-stream to a chat that needs a hand."], ["Gears", "Crew points for helping. They decide the crew board."],
+  ["Grade", "Where you are on the ladder, Initiate to Sentinel."], ["Vouch", "A Watcher or higher backing an applicant. Each holds up to 3."], ["Going dark", "A planned break, up to 2 months a year."],
+  ["Reserve", "On pause after two quiet months. One good month brings you back."], ["Pass the lantern", "Handing your lead to a Deckhand when you step away."], ["Chat Games", "Live games members play during a stream, run by the crew."],
+];
+const FAQS = [
+  ["Do I have to be at every stream?", "No. Two duties a month keeps you Active (three for Wardens and Sentinels). Pick the streams that suit you and skip the rest. In months with fewer than 8 streams, it's just one. Monthly minimums start once stream duty opens."],
+  ["What if life gets busy?", "Set Going dark before you go, up to 2 months a year. No warnings, and your perks carry on for the first month. If you just go quiet, you'll get a friendly reminder, never a telling-off."],
+  ["Do I have to mod YouTube?", "Only the chats you choose. YouTube is where help is needed most right now, so every YouTube duty earns 1.5× Gears."],
+  ["Do crew get paid?", "No, the crew are volunteers. Active crew get free Sub Club, the earliest merch, crew-only badges and Night Shift missions, and the monthly awards."],
+  ["Who can apply?", "Members who are 18 or older, have had an account for at least 14 days, have linked a Twitch, YouTube or TikTok account, and have at least 3 check-ins. Boomer can waive the check-ins. Every new crew member is Boomer's call."],
+  ["What are Gears, and are they the same as XP?", "No. Gears are crew-only points for helping, and they decide the crew board and Top Gear. Night Shift XP is separate: crew still earn it and race on the season board like everyone else, and Gears never add to it."],
+  ["How do I become an admin?", "You don't apply. Sentinels Boomer trusts with the whole site, not just the stream, get invited to a 90-day Steward trial."],
+  ["Can I leave and come back?", "Any time. Alumni keep their badges and Hall of Fame spots, and come back through a short fast-track, no queue."],
+];
+const TC_SLOTS = [
+  { stamp: "Oct 3", text: "YT vertical · 2 h" }, { stamp: "Oct 9", text: "Twitch · 3 h" }, { stamp: "Oct 14", text: "YT landscape · 1 h" }, { stamp: "Oct 22", text: "TikTok · 2 h" },
+];
+const TC_INITIAL = timecardHtml({ month: "October", need: 2, total: 4, slots: TC_SLOTS.slice(0, 1), bonusHtml: medalHtml({ emoji: "⏱️", rarity: 2, size: 36 }), foot: `<span class="cw-timecard-foot"><span><b>1 of 2</b> duties</span><button type="button" class="bt-link-btn" data-tc-reset>Reset</button></span>` });
+---
+<CrewLayout title="How the crew works" description="Mod Machina: what the Boomertanger crew does, how to join, the grade ladder, a stream from the crew's side, Gears and the rewards." section="how">
+  <TocLayout items={NAV}>
+    <div class="ai-main" data-crew-how data-tc-slots={JSON.stringify(TC_SLOTS)}>
+      <section class="ai-hero cw-hero" aria-labelledby="h-hero">
+        <div>
+          <span class="ai-kicker">Mod Machina · the crew</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Keep every chat alive</h1>
+          <p>The crew are the volunteers who make chat the best seat in the house: welcoming new faces, running Chat Games and keeping it safe on Twitch, YouTube and TikTok while Boomer plays. Here's how you join, what a stream looks like from the crew's side, and what you get back.</p>
+          <div class="ai-acts">
+            <a class="bt-btn bt-btn--primary cw-nostaff" href="/crew/join">Join the crew</a>
+            <a class="bt-btn bt-btn--primary bt-when-staff" href="/crew/hq">Open crew HQ</a>
+            <a class="bt-btn bt-btn--secondary" href="/crew">Meet the crew</a>
+          </div>
+        </div>
+        <div class="cw-board" role="group" aria-label="Example crew for one stream">
+          <div class="cw-board-head"><span>Tonight's crew <Fragment set:html={example} /></span><span class="bt-live-tag"><i></i>Live</span></div>
+          <div class="cw-slot"><span class="bt-avatar-sm" aria-hidden="true">NK</span><b>Captain · NightOwl Kat</b><small>all chats</small></div>
+          <div class="cw-slot"><Fragment set:html={pi("twitch")} /><b>Twitch · Salem Spooks</b><small>lead</small></div>
+          <div class="cw-slot"><Fragment set:html={pi("ytLandscape")} /><b>YT landscape · Jay</b><small>lead</small></div>
+          <div class="cw-slot is-open"><Fragment set:html={pi("ytVertical")} /><b>YT vertical · open seat</b><small>×1.5</small></div>
+          <div class="cw-slot"><Fragment set:html={pi("tiktok")} /><b>TikTok · Vex</b><small>lead</small></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-does" aria-labelledby="h-does">
+        <Fragment set:html={chapter(1, "h-does", "What the crew does", "Four jobs, shared by everyone on the crew. Hover a card to see it in action.")} />
+        <div class="ai-stage">
+          {PARTS.map((p) => (
+            <div class="bt-card ai-part bt-spotlight" tabindex="0">
+              <div class={`ai-scene cw-scene--${p.k}`} aria-hidden="true">
+                {p.k === "chat" && <div class="cw-chat"><span>first time here, hi chat 👋</span><span>is this the blind run??</span><span class="spam">BUY CHEAP FOLLOWERS at…</span><span class="mod"><i>MOD</i>welcome in! yes, totally blind 🎃</span></div>}
+                {p.k === "rooms" && <div class="cw-rooms">
+                  <span class="cw-room"><Fragment set:html={pi("twitch")} /><i class="cw-lamp"></i></span>
+                  <span class="cw-room is-need" style="--d:.1s"><Fragment set:html={pi("ytLandscape")} /><i class="cw-lamp"></i></span>
+                  <span class="cw-room is-need" style="--d:.25s"><Fragment set:html={pi("ytVertical")} /><i class="cw-lamp"></i></span>
+                  <span class="cw-room"><Fragment set:html={pi("tiktok")} /><i class="cw-lamp"></i></span></div>}
+                {p.k === "case" && <div class="cw-case"><b>Case #4 · Dead Air</b><strong>The Lighthouse</strong><span class="cw-clue">Clue 3 dropped in <Fragment set:html={pi("ytVertical")} /> vertical</span></div>}
+                {p.k === "recruit" && <div class="cw-link">boomertanger.com/join/@you{[[-70, -34, 0], [64, -36, 0.08], [-56, 32, 0.16], [76, 30, 0.24]].map(([x, y, d]) => <span class="cw-pop" style={`--x:${x}px;--y:${y}px;--d:${d}s;left:calc(50% - 13px);top:calc(50% - 13px)`}>+1</span>)}</div>}
+              </div>
+              <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{p.ic}</span>
+              <div class="ai-part-copy"><h3>{p.t}{p.soon && <Fragment set:html={soon} />}</h3><p>{p.d}</p><div class="ai-part-foot"><span class="ai-who-chip">{p.who}</span></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-join" aria-labelledby="h-join">
+        <Fragment set:html={chapter(2, "h-join", "From viewer to crew", "Six steps from your first chat message to your first duty. Who can apply: 18 or older, a member for 14 days, a linked Twitch, YouTube or TikTok account, and at least 3 check-ins.")} />
+        <ol class="ai-jr" data-journey>
+          {JOURNEY.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+        </ol>
+      </section>
+
+      <section class="ai-sec" id="s-ladder" aria-labelledby="h-ladder">
+        <Fragment set:html={chapter(3, "h-ladder", "The ladder", "Four grades for mods, three more for admins by invitation. Pick a rung.")} />
+        <Fragment set:html={LADDER_HTML} />
+      </section>
+
+      <section class="ai-sec" id="s-stream" aria-labelledby="h-stream">
+        <Fragment set:html={chapter(4, "h-stream", `On a stream ${soon}`, "Every stream has up to four chats. Each gets a lead, with Deckhands when there are enough of us, and one Captain watches over them all. Hover a role to see who it leans on. Stream duty opens with the Control Room; until then this is how it will work.")} />
+        <div class="cw-flow">
+          {FLOW.map((f, i) => (
+            <>
+              <div class={`bt-card ai-node ai-node--${f.k}`} data-role={f.k} tabindex="0">
+                <div class="ai-node-top">{f.k === "bt" ? <Mascot decorative /> : <span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{f.ic}</span>}<span class={`bt-badge bt-badge--${f.badge[0]}`}>{f.badge[1]}</span></div>
+                <h3>{f.t}</h3><p>{f.d}</p>
+              </div>
+              {i < 3 && <div class="ai-arr" data-links={`${f.k} ${FLOW[i + 1].k}`} aria-hidden="true"><span>{ARROWS[i]}</span><i><b></b></i></div>}
+            </>
+          ))}
+        </div>
+        <div class="cw-drop"><span class="bt-icon-tile--lg" aria-hidden="true">🚪</span><div><b>Drop in any time</b><p>Any Active crew member can open the Mod Deck while we're live and clock in to a chat that needs a hand. Same Gears, no sign-up needed.</p></div></div>
+        <div class="cw-lantern" data-lantern>
+          <div class="cw-lantern-copy"><h3>Pass the lantern <Fragment set:html={example} /></h3>
+            <p>Leads can step away whenever they need to. Tap <b>Step away</b>: the Deckhands in that chat are asked to take the lead, the first to accept carries the lantern, and Gears follow the minutes each person held it. Nobody loses anything. Try it: nothing here is saved.</p>
+            <div class="cw-status" data-lstatus role="status" aria-live="polite">Mothman Mike is leading the YouTube vertical chat.</div></div>
+          <div class="cw-room-card">
+            <div class="cw-room-card-head"><Fragment set:html={roomHtml({ chat: "ytVertical", name: "YT vertical", state: "covered", text: "" })} /><span>8:41 pm</span></div>
+            <div class="cw-person has-lantern" data-p="a"><span class="bt-avatar-md" aria-hidden="true">MM</span><span><b>Mothman Mike</b><small data-role-a>Room Lead</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>
+            <div class="cw-person" data-p="b"><span class="bt-avatar-md" aria-hidden="true">HH</span><span><b>Hollow Hannah</b><small data-role-b>Deckhand</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>
+            <div class="cw-person" data-p="c"><span class="bt-avatar-md" aria-hidden="true">GG</span><span><b>Grim Gabe</b><small data-role-c>Deckhand</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>
+            <div class="cw-lantern-opts" data-lacts>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-step="5">Step away 5 min</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-step="15">15 min</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-step="30">30 min</button>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-step="done">I'm done for tonight</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-gears" aria-labelledby="h-gears">
+        <Fragment set:html={chapter(5, "h-gears", "Gears", "Gears count help, and decide the crew board and Top Gear. They're separate from Night Shift XP, which you still earn like everyone else. Duty Gears start with stream duty; tasks, recruits and the Academy count now.")} />
+        <div class="cw-gears">
+          <div class="cw-earn">
+            {EARN.map(([ic, t, s, v, isSoon]) => <div class="cw-earn-row"><span class="cw-earn-ic" aria-hidden="true">{ic}</span><span><b>{t}{isSoon && <Fragment set:html={soon} />}</b><small>{s}</small></span><span class="cw-earn-v">{v}</span></div>)}
+            <div class="cw-earn-row is-zero"><span class="cw-earn-ic" aria-hidden="true">🚫</span><span><b>Timeouts, bans and message counts</b><small>We reward helping, never punishing or spamming.</small></span><span class="cw-earn-v">0</span></div>
+          </div>
+          <div class="cw-calc" data-calc>
+            <span class="k">Worked example <Fragment set:html={example} /></span>
+            <b data-calc-title>Two hours leading YouTube vertical, on time</b>
+            <div class="cw-eq" data-calc-eq aria-hidden="true"><span>10<small>per hour</small></span><i>×</i><span>2<small>hours</small></span><i>×</i><span>1.5<small>YouTube</small></span><i>+</i><span>5<small>on time</small></span><i>=</i><span class="tot">35</span></div>
+            <p data-calc-sum role="status" aria-live="polite">Two hours leading YouTube vertical, on time: 10 × 2 × 1.5 + 5 = 35 Gears. The same two hours on Twitch would be 25. That's the YouTube boost doing its job.</p>
+            <div class="cw-calc-ctl">
+              <div><span class="bt-label">Seat</span><span class="bt-pref-seg" role="radiogroup" aria-label="Seat" data-ctl="role"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="12">Captain</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-value="10">Room Lead</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="6">Deckhand</button></span></div>
+              <div><span class="bt-label">Chat</span><span class="bt-pref-seg" role="radiogroup" aria-label="Chat" data-ctl="chat"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="1">Twitch</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="1.5-l">YT landscape</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-value="1.5-v">YT vertical</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="1-t">TikTok</button></span></div>
+              <div><span class="bt-label">Hours</span><span class="bt-pref-seg" role="radiogroup" aria-label="Hours on duty" data-ctl="hours"><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="1">1</button><button type="button" role="radio" aria-checked="true" tabindex="0" data-value="2">2</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="4">4</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="6">6</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="8">8</button></span></div>
+              <div><span class="bt-label">Clocked in</span><span class="bt-pref-seg" role="radiogroup" aria-label="Clock-in time" data-ctl="ontime"><button type="button" role="radio" aria-checked="true" tabindex="0" data-value="1">Within 15 min</button><button type="button" role="radio" aria-checked="false" tabindex="-1" data-value="0">Later</button></span></div>
+            </div>
+            <span class="cw-calc-note">Duty Gears stop at 6 hours a stream. Boomer can raise the YouTube boost.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-active" aria-labelledby="h-active">
+        <Fragment set:html={chapter(6, "h-active", "Staying active", "Crew perks are for Active crew. The bar is low on purpose: two duties a month, three for Wardens and Sentinels. Tap the time card to try it.")} />
+        <div class="cw-active">
+          <div>
+            <div class="cw-ex"><Fragment set:html={example} /><span>Starts with stream duty. Until then nobody is behind.</span></div>
+            <div data-tc-host aria-live="polite" set:html={TC_INITIAL} />
+            <p class="cw-hint">Tap an empty slot to punch a duty. A duty counts when you're clocked in for at least 60 minutes, drop-ins included.</p>
+          </div>
+          <div class="cw-track">
+            <div class="cw-step is-now" style="--c:var(--bt-lime)"><span class="cw-step-dot" aria-hidden="true">✓</span><div><b>Active <span class="bt-badge bt-badge--lime">Full perks</span></b><p>Met the monthly minimum. Reminders on the 15th and 24th if you're behind.</p></div></div>
+            <div class="cw-step" style="--c:var(--bt-gold)"><span class="cw-step-dot" aria-hidden="true">👋</span><div><b>Check-in <span class="bt-badge bt-badge--gold">Perks stay</span></b><p>Missed one month. Just a friendly message.</p></div></div>
+            <div class="cw-step" style="--c:var(--bt-blue)"><span class="cw-step-dot" aria-hidden="true">🌙</span><div><b>Going dark <span class="bt-badge bt-badge--blue">Planned</span></b><p>Set a break in advance, up to 2 months a year. No warnings, and perks continue the first month.</p></div></div>
+            <div class="cw-step is-dim" style="--c:var(--bt-gray)"><span class="cw-step-dot" aria-hidden="true">⏸</span><div><b>Reserve <span class="bt-badge bt-badge--gray">Perks paused</span></b><p>Two quiet months in a row. Grade, badges and Hall of Fame stay. One good month, or a drop-in, brings everything back.</p></div></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rewards" aria-labelledby="h-rewards">
+        <Fragment set:html={chapter(7, "h-rewards", "Rewards", "Thanks you can see. Hover or tap a medal.")} />
+        <div class="bt-flip-grid">
+          {FLIPS.map(([c, ic, t, sub, rows, tag]) => (
+            <button type="button" class={`bt-flip bt-flip--${c}`} aria-label={`${t}: ${sub}. ${rows.map(([k, v]) => `${k}: ${v}`).join(" ")} ${tag}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{ic}</span><b>{t}</b><span class="bt-flip-sub">{sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">{rows.map(([k, v]) => <><span class="bt-flip-k">{k}</span><span class="bt-flip-v">{v}</span></>)}<span class="bt-flip-tag">{tag}</span></span>
+              </span>
+            </button>
+          ))}
+        </div>
+        <div class="cw-perks">
+          {PERKS.map(([ic, t, s]) => <div class="cw-perk"><span aria-hidden="true">{ic}</span><b>{t}</b><small>{s}</small></div>)}
+        </div>
+        <div class="cw-ladders">
+          {LADDERS.map(([t, sub, list, unit]) => (
+            <div class="cw-lad">
+              <div class="cw-lad-top"><b>{t}</b><span>{sub}</span></div>
+              <ol class="cw-rungs" set:html={list.map((b) => rung(b, unit)).join("")} />
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-code" aria-labelledby="h-code">
+        <Fragment set:html={chapter(8, "h-code", "The Crew Code", "Six rules every crew member agrees to.")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>Crew Code</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {CODE.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-words" aria-labelledby="h-words">
+        <Fragment set:html={chapter(9, "h-words", "Glossary")} />
+        <div class="ai-gloss-wrap" data-gloss>
+          <dl class="ai-gloss">{TERMS.map(([t, d]) => <div><dt>{t}</dt><dd>{d}</dd></div>)}</dl>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-faq" aria-labelledby="h-faq">
+        <Fragment set:html={chapter(10, "h-faq", "FAQ")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cw-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`cw-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`cw-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Want a seat on the crew?</h2>
+        <p class="cw-nostaff">Pick your chats, train at your own pace, and help on the streams that suit you.</p>
+        <p class="bt-when-staff">Your grade, your Gears and the Academy are in crew HQ.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary cw-nostaff" href="/crew/join">Join the crew</a>
+          <a class="bt-btn bt-btn--primary bt-when-staff" href="/crew/hq">Open crew HQ</a>
+          <a class="bt-btn bt-btn--secondary" href="/crew">Meet the crew</a>
+        </div>
+      </section>
+    </div>
+  </TocLayout>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/how";
+</script>

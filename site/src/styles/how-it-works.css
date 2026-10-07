@@ -80,3 +80,107 @@
   .bt-root:not(#_) .ai-hero { padding: 26px 18px; }
   .bt-root:not(#_) :is(.ai-stage, .ai-gloss) { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* Moved from arcade.css so every How it works page can use them (the Crew page too): the flow (role cards
+   joined by arrows, .ai-node / .ai-arr) and the glossary (.ai-gloss list, term chips .ai-gc-chips and the
+   definition card .ai-gc-card). Behaviour: initFlow and initGlossary in shared/ui/how-it-works.js. */
+.bt-root:not(#_) .ai-gloss { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 24px; margin: 0; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .ai-gloss div { padding: 12px 0; border-bottom: 1px solid var(--bt-border); }
+.bt-root:not(#_) .ai-gloss dt { color: var(--bt-title); font-size: var(--bt-text-base); font-weight: 800; }
+.bt-root:not(#_) .ai-gloss dd { margin: 2px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+
+/* Section 5, Who does what: "Flow" (docs/design/mockups/how-it-works-sections-5-9.html, 5A).
+   Role cards in reading order with aria-hidden arrows between them; hovering a role (tap on
+   touch) lights its arrows with a running signal and dims the unrelated roles (info.ts). */
+.bt-root:not(#_) .ai-flow { display: grid; grid-template-columns: minmax(0, 1fr) 90px minmax(0, 1fr) 90px minmax(0, 1fr); grid-template-rows: auto auto; row-gap: 18px; align-items: stretch; }
+.bt-root:not(#_) .ai-node { --c: var(--bt-primary); gap: 8px; padding: 18px; cursor: default; transition: border-color 0.3s, box-shadow 0.3s, opacity 0.3s; }
+.bt-root:not(#_) .ai-node--pl, .bt-root:not(#_) .ai-node--pi { --c: var(--bt-blue); }
+.bt-root:not(#_) .ai-node--kp, .bt-root:not(#_) .ai-node--bt { --c: var(--bt-gold); }
+.bt-root:not(#_) .ai-node--md { --c: var(--bt-teal); }
+.bt-root:not(#_) .ai-node h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .ai-node p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .ai-node-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 8px; }
+.bt-root:not(#_) .ai-node-ic { width: 52px; height: 52px; border-radius: 16px; font-size: 25px; background: radial-gradient(circle at 35% 28%, color-mix(in srgb, var(--c) 60%, transparent), color-mix(in srgb, var(--c) 14%, transparent) 72%); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 45%, transparent), 0 8px 22px var(--bt-lift-shadow); }   /* tinted in the role's colour */
+.bt-root:not(#_) .ai-node.is-on { border-color: color-mix(in srgb, var(--c) 60%, transparent); box-shadow: 0 0 26px color-mix(in srgb, var(--c) 22%, transparent); }
+.bt-root:not(#_) .ai-node.is-on .ai-node-ic { transform: translateY(-2px) rotate(-6deg) scale(1.06); }
+.bt-root:not(#_) .ai-node.is-dim { opacity: 0.5; }
+.bt-root:not(#_) .ai-node--pl { grid-column: 1; grid-row: 1; }
+.bt-root:not(#_) .ai-arr--1 { grid-column: 2; grid-row: 1; }
+.bt-root:not(#_) .ai-node--kp { grid-column: 3; grid-row: 1; }
+.bt-root:not(#_) .ai-arr--2 { grid-column: 4; grid-row: 1; }
+.bt-root:not(#_) .ai-node--bt { grid-column: 5; grid-row: 1 / span 2; justify-content: center; border-color: rgba(var(--bt-gold-rgb), 0.35); background: radial-gradient(90% 80% at 100% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .ai-node--bt .ai-node-top { flex-direction: column-reverse; align-items: flex-start; gap: 12px; }
+.bt-root:not(#_) .ai-node--bt .bt-mascot { width: 92px; margin: 4px 0 2px; filter: drop-shadow(0 0 14px rgba(var(--bt-gold-rgb), 0.35)); }
+.bt-root:not(#_) .ai-node--pi { grid-column: 1; grid-row: 2; }
+.bt-root:not(#_) .ai-arr--3 { grid-column: 2 / span 3; grid-row: 2; }
+.bt-root:not(#_) .ai-node--md { position: relative; grid-column: 1 / -1; grid-row: 3; flex-direction: row; align-items: center; gap: 16px; padding: 14px 18px; border-style: dashed; }
+.bt-root:not(#_) .ai-node--md::before { content: ""; position: absolute; left: 0; right: 0; top: 0; height: 2px; background: linear-gradient(90deg, transparent, var(--bt-teal), transparent); opacity: 0.5; }
+.bt-root:not(#_) .ai-node-txt { flex: 1; min-width: 0; }
+.bt-root:not(#_) .ai-node-txt h3 { margin: 0 0 2px; }
+.bt-root:not(#_) .ai-arr { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; }
+.bt-root:not(#_) .ai-arr i { position: relative; display: block; width: 100%; height: 2px; border-radius: 2px; background: var(--bt-border-2); transition: background 0.3s, box-shadow 0.3s; }
+.bt-root:not(#_) .ai-arr i::after { content: ""; position: absolute; right: -1px; top: 50%; width: 8px; height: 8px; margin-top: -4px; border-top: 2px solid currentColor; border-right: 2px solid currentColor; color: var(--bt-border-2); transform: rotate(45deg); transition: color 0.3s; }
+.bt-root:not(#_) .ai-arr i b { position: absolute; top: -3px; left: 0; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-lamp); box-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), 0.9); opacity: 0; }
+.bt-root:not(#_) .ai-arr span { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; line-height: 1.3; text-align: center; text-transform: uppercase; transition: color 0.3s; }
+.bt-root:not(#_) .ai-arr.is-on i { background: var(--bt-lamp); box-shadow: 0 0 10px rgba(var(--bt-lamp-rgb), 0.6); }
+.bt-root:not(#_) .ai-arr.is-on i::after, .bt-root:not(#_) .ai-arr.is-on span { color: var(--bt-lamp); }
+.bt-root:not(#_) .ai-arr.is-on i b { animation: ai-flow-run 1s linear infinite; }
+@keyframes ai-flow-run { 0% { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 8px); opacity: 0; } }
+@keyframes ai-flow-run-v { 0% { top: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { top: calc(100% - 8px); opacity: 0; } }
+
+
+
+/* Sections 6, 7 and 9 (flip medals, the House rules placard, Ask BOOMBOT) use the kit's
+   .bt-flip, .bt-placard and .bt-chat (shared/bt-ui.css). */
+
+/* Section 8, Glossary: "Term chips" (8B). The full <dl> is in the HTML (search, screen
+   readers, no JS); info.ts adds the chips and one gold definition card, and then only
+   hides the list visually. */
+.bt-root:not(#_) .ai-gloss-wrap.is-enhanced { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.bt-root:not(#_) .ai-gloss-wrap.is-enhanced .ai-gloss { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
+.bt-root:not(#_) .ai-gc-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .ai-gc-chips button { padding: 8px 14px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-md); font-weight: 700; cursor: pointer; transition: color 0.2s, border-color 0.2s, background 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .ai-gc-chips button:hover { border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .ai-gc-chips button[aria-pressed="true"] { border-color: var(--bt-title); background: var(--bt-title); color: var(--bt-bg); box-shadow: 0 0 16px rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .ai-gc-card { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 16px); min-height: 150px; padding: 22px; border: 1px solid rgba(var(--bt-gold-rgb), 0.35); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 80% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .ai-gc-card .k { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.bt-root:not(#_) .ai-gc-card h3 { margin: 6px 0 8px; color: var(--bt-title); font-size: 26px; font-weight: 900; }
+.bt-root:not(#_) .ai-gc-card p { margin: 0; color: var(--bt-text); line-height: 1.6; }
+.bt-root:not(#_) .ai-gc-in { animation: ai-pop-in 0.35s cubic-bezier(.3, .7, .2, 1); }
+@keyframes ai-pop-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+
+@container bt (max-width: 900px) {
+  /* The flow reads top to bottom; the Pitchers arrow points up into Boomertanger. */
+  .bt-root:not(#_) .ai-flow { grid-template-columns: minmax(0, 1fr); row-gap: 0; }
+  .bt-root:not(#_) .ai-flow > * { grid-column: 1; grid-row: auto; }
+  .bt-root:not(#_) .ai-flow > .ai-node--bt { grid-row: auto; }
+  .bt-root:not(#_) .ai-flow > .ai-arr--3 { grid-column: 1; }
+  .bt-root:not(#_) .ai-flow > .ai-node--md { grid-column: 1; }
+  .bt-root:not(#_) .ai-arr { flex-direction: row; justify-content: flex-start; gap: 12px; height: 46px; padding-left: 44px; }
+  .bt-root:not(#_) .ai-arr i { order: -1; width: 2px; height: 100%; }
+  .bt-root:not(#_) .ai-arr span { text-align: left; }
+  .bt-root:not(#_) .ai-arr i::after { top: auto; right: auto; bottom: -1px; left: 50%; margin: 0 0 0 -4px; transform: rotate(135deg); }
+  .bt-root:not(#_) .ai-arr i b { left: -3px; }
+  .bt-root:not(#_) .ai-arr.is-on i b { animation-name: ai-flow-run-v; }
+  .bt-root:not(#_) .ai-node--pl { order: 1; }
+  .bt-root:not(#_) .ai-arr--1 { order: 2; }
+  .bt-root:not(#_) .ai-node--kp { order: 3; }
+  .bt-root:not(#_) .ai-arr--2 { order: 4; }
+  .bt-root:not(#_) .ai-node--bt { order: 5; }
+  .bt-root:not(#_) .ai-arr--3 { order: 6; }
+  .bt-root:not(#_) .ai-node--pi { order: 7; }
+  .bt-root:not(#_) .ai-arr--3 i::after { top: -1px; bottom: auto; transform: rotate(-45deg); }
+  .bt-root:not(#_) .ai-arr--3.is-on i b { animation-direction: reverse; }
+  .bt-root:not(#_) .ai-node--md { order: 8; flex-wrap: wrap; margin-top: 16px; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-node--md { flex-direction: column; align-items: flex-start; }
+  .bt-root:not(#_) .ai-gloss-wrap.is-enhanced { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .ai-gc-card { position: static; order: -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* Colour and glow only. (The medals, placard and BOOMBOT chat are kit pieces now.) */
+  .bt-root:not(#_) .ai-arr.is-on i b, .bt-root:not(#_) .ai-gc-in { animation: none; }
+  .bt-root:not(#_) .ai-node.is-on .ai-node-ic { transform: none; }
+}
