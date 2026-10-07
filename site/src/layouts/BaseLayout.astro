@@ -80,7 +80,8 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       import "../scripts/factory/site-wide";
       // Header menus (Watch / Play / Community): hover or click opens a panel.
       import { initNavGroups } from "../../../shared/ui/navgroup.js";
-      initNavGroups(document);
+      import { onNavOpen, onNavClose } from "../scripts/nav-features";
+      initNavGroups(document, { onOpen: onNavOpen, onClose: onNavClose });
     </script>
   </body>
 </html>
