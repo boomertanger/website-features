@@ -1,0 +1,14 @@
+---
+// /crew/tasks: the crew task board (docs/specs/mod-machina.md §4a). Crew only. Filled by scripts/crew/tasks.ts.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-hq.css";
+---
+<CrewLayout title="Crew tasks" description="Small jobs that help the community, and Gears for doing them." crewOnly section="hq">
+  <div class="bt-zone hq-page" data-hq aria-busy="true">
+    <div class="hq-skel" aria-hidden="true"><span class="bt-skeleton hq-skel-line"></span><span class="bt-skeleton hq-skel-card"></span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/tasks";
+</script>

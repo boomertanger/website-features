@@ -1,0 +1,15 @@
+---
+// /crew/profile: your chat preferences, availability, device and Going dark (docs/specs/mod-machina.md §3c, §7).
+// Crew only. Filled by scripts/crew/profile.ts.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-hq.css";
+---
+<CrewLayout title="Crew profile" description="Your chats, availability and breaks." crewOnly section="hq">
+  <div class="bt-zone hq-page" data-hq aria-busy="true">
+    <div class="hq-skel" aria-hidden="true"><span class="bt-skeleton hq-skel-line"></span><span class="bt-skeleton hq-skel-card"></span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/profile";
+</script>

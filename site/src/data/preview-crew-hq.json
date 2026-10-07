@@ -1,0 +1,45 @@
+{
+  "_note": "PREVIEW DATA for /crew/hq, /crew/queue, /crew/tasks and /crew/profile when signed out with ?as=member|admin (non-production only). Real signed-in people always get real data.",
+  "uid": "preview-me",
+  "handle": "mothmanmike",
+  "name": "Mothman Mike",
+  "owner": true,
+  "vouchCap": 3,
+  "me": {
+    "activityRules": false,
+    "apply": null,
+    "next": {
+      "to": 3, "name": "Warden", "ready": false,
+      "met": ["Safety module passed", "No active strikes"],
+      "missing": ["68 of 90 days as Watcher", "Core Academy modules 1 to 6 (5 of 6)"],
+      "pending": ["15 duties, 5 as Room Lead", "Mentored 2 Initiates to Watcher"]
+    },
+    "crew": {
+      "track": "mod", "grade": 2, "name": "Watcher", "status": "active", "since": 1783900800000, "gradeSince": 1790000000000,
+      "platforms": { "twitch": "happy", "ytLandscape": "favourite", "ytVertical": "ifNeeded", "tiktok": "no" },
+      "availability": { "days": ["tue", "thu", "sat"], "note": "Evenings Central, back by 7 pm." },
+      "device": "both", "breakUntil": null, "stats": {}
+    },
+    "strikes": [],
+    "ready": null,
+    "academy": { "passed": ["m1", "m2", "m3", "m4", "m5"] },
+    "application": null
+  },
+  "boards": {
+    "month": { "uid": "preview-me", "gears": 298, "recruits": 4, "place": 3 },
+    "all": { "uid": "preview-me", "gears": 1240, "recruits": 11, "place": 4 }
+  },
+  "tasks": [
+    { "taskId": "t1", "title": "Clip the best scare from Saturday", "detail": "Anything under 45 seconds, posted to the crew thread.", "gears": 15, "status": "open", "postedBy": "u-raven", "postedByHandle": "raven", "claimedBy": null, "claimedByHandle": null, "createdAt": 1791300000000 },
+    { "taskId": "t2", "title": "Welcome 5 new Discord members", "detail": "Say hi and point them at the rules channel.", "gears": 10, "status": "claimed", "postedBy": "u-raven", "postedByHandle": "raven", "claimedBy": "preview-me", "claimedByHandle": "mothmanmike", "createdAt": 1791200000000 },
+    { "taskId": "t3", "title": "Write VOD chapters for Tuesday", "detail": "", "gears": 20, "status": "done", "postedBy": "u-moss", "postedByHandle": "moss", "claimedBy": "preview-me", "claimedByHandle": "mothmanmike", "createdAt": 1791100000000 },
+    { "taskId": "t4", "title": "Sort the emote request spreadsheet", "detail": "Group duplicates and flag anything off-brand.", "gears": 25, "status": "done", "postedBy": "preview-me", "postedByHandle": "mothmanmike", "claimedBy": "u-lou", "claimedByHandle": "lanternlou", "createdAt": 1791000000000 },
+    { "taskId": "t5", "title": "Update the pinned chat rules", "detail": "", "gears": 10, "status": "claimed", "postedBy": "u-moss", "postedByHandle": "moss", "claimedBy": "u-lou", "claimedByHandle": "lanternlou", "createdAt": 1790900000000 },
+    { "taskId": "t6", "title": "Tag last week's clips by game", "detail": "", "gears": 15, "status": "confirmed", "postedBy": "u-raven", "postedByHandle": "raven", "claimedBy": "preview-me", "claimedByHandle": "mothmanmike", "createdAt": 1790000000000 }
+  ],
+  "queue": [
+    { "appId": "a1", "uid": "u-ap1", "handle": "nightowl_ned", "createdAt": 1791000000000, "expiresAt": 1798000000000, "band": "Top 5", "prefs": { "twitch": "happy", "ytLandscape": "favourite", "ytVertical": "favourite", "tiktok": "no" }, "availability": { "days": ["fri", "sat", "sun"], "note": "Late nights, I'm in Pacific time." }, "device": "phone", "answers": { "why": "I've watched most streams since spring and love how kind the chat is. I want to help new people feel welcome, especially on YouTube where it's quieter.", "experience": "Mod for a 2k Discord for two years." }, "score": 9, "rank": 1, "vouches": [{ "uid": "u-raven", "handle": "raven", "grade": 3 }, { "uid": "u-moss", "handle": "moss", "grade": 4 }], "vouchedByMe": false, "concerns": [] },
+    { "appId": "a2", "uid": "u-ap2", "handle": "pixelpam", "createdAt": 1791200000000, "expiresAt": 1798200000000, "band": "Top 5", "prefs": { "twitch": "favourite", "ytLandscape": "happy", "ytVertical": "no", "tiktok": "ifNeeded" }, "availability": { "days": ["tue", "wed"], "note": "" }, "device": "desktop", "answers": { "why": "Chat is my favourite part of the week and I'd like to give something back.", "experience": "" }, "score": 6, "rank": 2, "vouches": [{ "uid": "preview-me", "handle": "mothmanmike", "grade": 2 }], "vouchedByMe": true, "concerns": [{ "byHandle": "raven", "note": "Short-tempered in a Discord thread last month. Worth a chat." }] },
+    { "appId": "a3", "uid": "u-ap3", "handle": "quietquinn", "createdAt": 1791300000000, "expiresAt": 1798300000000, "band": "In the queue", "prefs": { "twitch": "happy", "ytLandscape": "ifNeeded", "ytVertical": "ifNeeded", "tiktok": "happy" }, "availability": { "days": ["mon", "thu", "sun"], "note": "Mornings too." }, "device": "both", "answers": { "why": "I like keeping chats friendly and would enjoy learning how the crew runs a stream.", "experience": "None yet, keen to learn." }, "score": 2, "rank": 3, "vouches": [], "vouchedByMe": false, "concerns": [] }
+  ]
+}

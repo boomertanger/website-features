@@ -1,0 +1,15 @@
+---
+// /crew/queue: the crew queue (docs/specs/mod-machina.md §10). Watcher and up, admins and the owner; lower grades
+// see a friendly "Queue opens at Watcher" state. Filled by scripts/crew/queue.ts.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-hq.css";
+---
+<CrewLayout title="Crew queue" description="Vouch for people who've applied to join the crew." crewOnly section="queue">
+  <div class="bt-zone hq-page" data-hq aria-busy="true">
+    <div class="hq-skel" aria-hidden="true"><span class="bt-skeleton hq-skel-line"></span><span class="bt-skeleton hq-skel-card"></span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/queue";
+</script>
