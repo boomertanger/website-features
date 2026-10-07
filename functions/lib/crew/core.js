@@ -425,20 +425,26 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     }
     await refreshQueue(now);
     const roster = await rosterCol().get();
-    let flagged = 0;
+    let flagged = 0, served = 0;
     for (const d of roster.docs) {
       const r = d.data();
+      // The service ladder (3, 6, 12, 24 months on the crew): Alumni stop earning it, everyone else keeps going.
+      if (r.status !== "alumni" && ms(r.since)) {
+        for (const badgeId of L.serviceBadges(L.monthsBetween(ms(r.since), now))) {
+          if ((await giveBadge(d.id, badgeId)).granted) served++;
+        }
+      }
       const [rec, prog] = await Promise.all([record(d.id), db.doc(paths.academy(d.id)).get()]);
       const c = L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: r.stats, passed: progressOf(prog), strikes: L.activeStrikes(rec.strikes, now).length, now, settings });
       if (c.ready && ["active", "checkIn"].includes(r.status)) {
         if (!rec.ready || rec.ready.to !== c.to) { await recordRef(d.id).set({ ready: { to: c.to, since: now } }, { merge: true }); flagged++; }
       } else if (rec.ready) await recordRef(d.id).set({ ready: FieldValue.delete() }, { merge: true });
     }
-    return { expired, flagged };
+    return { expired, flagged, served };
   }
   const crewNightly = onSchedule({ schedule: "every day 03:10", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
     const r = await runNightly();
-    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote`);
+    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges`);
   });
 
   return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewNightly };

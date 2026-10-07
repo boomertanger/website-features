@@ -133,7 +133,18 @@ function promotionCriteria({ roster, stats = {}, passed = [], strikes = 0, now, 
   return { ready: missing.length === 0, to: roster.grade + 1, met, missing, pending };
 }
 
+/** Whole calendar months between two instants (the crew service ladder: 3, 6, 12, 24). */
+function monthsBetween(fromMs, toMs) {
+  const a = new Date(fromMs), b = new Date(toMs);
+  let m = (b.getUTCFullYear() - a.getUTCFullYear()) * 12 + (b.getUTCMonth() - a.getUTCMonth());
+  if (b.getUTCDate() < a.getUTCDate()) m--;
+  return Math.max(0, m);
+}
+const SERVICE_STEPS = [3, 6, 12, 24];
+/** The service badge ids earned after `months` months: crew-service-3 ... crew-service-24. */
+const serviceBadges = (months) => SERVICE_STEPS.filter((n) => months >= n).map((n) => `crew-service-${n}`);
+
 const STRIKE_EXPIRY_DAYS = 183;
 const activeStrikes = (strikes, now) => (strikes || []).filter((s) => (s.expiresAtMs || 0) > now);
 
-module.exports = { MOD_GRADES, ADMIN_GRADES, STATUSES, PLATFORM_PREFS, DEFAULT_SETTINGS, mergeSettings, claimGrade, publicCrew, gradeName, effectiveGrade, isMod, DAY_MS, vouchWeight, moduleId, checkinsWithin, monthCheckins, applyEligibility, queueScore, rankQueue, promotionCriteria, STRIKE_EXPIRY_DAYS, activeStrikes };
+module.exports = { MOD_GRADES, ADMIN_GRADES, STATUSES, PLATFORM_PREFS, DEFAULT_SETTINGS, mergeSettings, claimGrade, publicCrew, gradeName, effectiveGrade, isMod, DAY_MS, vouchWeight, moduleId, checkinsWithin, monthCheckins, applyEligibility, queueScore, rankQueue, promotionCriteria, STRIKE_EXPIRY_DAYS, activeStrikes, monthsBetween, SERVICE_STEPS, serviceBadges };

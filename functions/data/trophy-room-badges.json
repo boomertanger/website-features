@@ -1637,6 +1637,594 @@
       },
       "status": "active",
       "awardableBy": null
+    },
+    {
+      "id": "crew-initiate",
+      "name": "Initiate",
+      "collection": "crew",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Be approved into the crew.",
+      "emoji": "🔩",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade",
+        "step": 1
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-watcher",
+      "name": "Watcher",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Be promoted to Watcher.",
+      "emoji": "👁",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade",
+        "step": 2
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-warden",
+      "name": "Warden",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Be promoted to Warden.",
+      "emoji": "🛡",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade",
+        "step": 3
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-sentinel",
+      "name": "Sentinel",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Be promoted to Sentinel, the top of the mod ladder.",
+      "emoji": "🗼",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade",
+        "step": 4
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-steward",
+      "name": "Steward",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Be invited to the admin ladder as a Steward.",
+      "emoji": "🗝",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade-admin",
+        "step": 1
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-overseer",
+      "name": "Overseer",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Finish the Steward trial and become an Overseer.",
+      "emoji": "🔭",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade-admin",
+        "step": 2
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-right-hand",
+      "name": "Right Hand",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Be invited to be the owner's Right Hand.",
+      "emoji": "🤝",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-grade-admin",
+        "step": 3
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-service-3",
+      "name": "Three Months In",
+      "collection": "crew",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Be on the crew for 3 months.",
+      "emoji": "🕰",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-service",
+        "step": 3
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-service-6",
+      "name": "Half a Year",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Be on the crew for 6 months.",
+      "emoji": "🕰",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-service",
+        "step": 6
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-service-12",
+      "name": "A Year on the Crew",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Be on the crew for 12 months.",
+      "emoji": "🕰",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-service",
+        "step": 12
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-service-24",
+      "name": "Two Years Strong",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Be on the crew for 24 months.",
+      "emoji": "🕰",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-service",
+        "step": 24
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-duties-10",
+      "name": "First Ten Shifts",
+      "collection": "crew",
+      "rarity": 1,
+      "source": "stream",
+      "how": "Work 10 stream duties.",
+      "emoji": "📋",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-duties",
+        "step": 10
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-duties-25",
+      "name": "Twenty-Five Shifts",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "stream",
+      "how": "Work 25 stream duties.",
+      "emoji": "📋",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-duties",
+        "step": 25
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-duties-50",
+      "name": "Fifty Shifts",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "stream",
+      "how": "Work 50 stream duties.",
+      "emoji": "📋",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-duties",
+        "step": 50
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-duties-100",
+      "name": "Centurion",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "stream",
+      "how": "Work 100 stream duties.",
+      "emoji": "📋",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-duties",
+        "step": 100
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "crew-duties-250",
+      "name": "Iron Roster",
+      "collection": "crew",
+      "rarity": 5,
+      "source": "stream",
+      "how": "Work 250 stream duties.",
+      "emoji": "📋",
+      "xp": 250,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "crew-duties",
+        "step": 250
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "youtube-pioneer-1",
+      "name": "YouTube Pioneer",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "stream",
+      "how": "Lead your 1st YouTube room.",
+      "emoji": "📺",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "youtube-pioneer",
+        "step": 1
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "youtube-pioneer-5",
+      "name": "YouTube Pioneer II",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "stream",
+      "how": "Lead your 5th YouTube room.",
+      "emoji": "📺",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "youtube-pioneer",
+        "step": 5
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "youtube-pioneer-15",
+      "name": "YouTube Pioneer III",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "stream",
+      "how": "Lead your 15th YouTube room.",
+      "emoji": "📺",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "youtube-pioneer",
+        "step": 15
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "youtube-pioneer-30",
+      "name": "YouTube Pioneer IV",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "stream",
+      "how": "Lead your 30th YouTube room.",
+      "emoji": "📺",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "youtube-pioneer",
+        "step": 30
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "youtube-founding-crew",
+      "name": "Founding YouTube Crew",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "stream",
+      "how": "Be one of the first 5 crew to lead 5 YouTube rooms.",
+      "emoji": "🏗",
+      "xp": 100,
+      "secret": null,
+      "limited": {
+        "label": "Founding",
+        "opensAt": null,
+        "closesAt": null
+      },
+      "crewOnly": true,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "on-the-clock",
+      "name": "On the Clock",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "stream",
+      "how": "Work 4 or more duties in a month. Each month is its own collectible.",
+      "emoji": "⏱",
+      "xp": 25,
+      "secret": null,
+      "limited": {
+        "label": "Monthly",
+        "opensAt": null,
+        "closesAt": null
+      },
+      "crewOnly": true,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "iron-shift-3",
+      "name": "Iron Shift",
+      "collection": "crew",
+      "rarity": 2,
+      "source": "stream",
+      "how": "Stay Active for 3 months in a row.",
+      "emoji": "⚙️",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "iron-shift",
+        "step": 3
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "iron-shift-6",
+      "name": "Iron Shift II",
+      "collection": "crew",
+      "rarity": 3,
+      "source": "stream",
+      "how": "Stay Active for 6 months in a row.",
+      "emoji": "⚙️",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "iron-shift",
+        "step": 6
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "iron-shift-12",
+      "name": "Iron Shift III",
+      "collection": "crew",
+      "rarity": 4,
+      "source": "stream",
+      "how": "Stay Active for 12 months in a row.",
+      "emoji": "⚙️",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "iron-shift",
+        "step": 12
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "iron-shift-24",
+      "name": "Iron Shift IV",
+      "collection": "crew",
+      "rarity": 5,
+      "source": "stream",
+      "how": "Stay Active for 24 months in a row.",
+      "emoji": "⚙️",
+      "xp": 250,
+      "secret": null,
+      "limited": null,
+      "crewOnly": true,
+      "ladder": {
+        "id": "iron-shift",
+        "step": 24
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "recruiter-1",
+      "name": "First Recruit",
+      "collection": "community",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Bring a friend who becomes an active member.",
+      "emoji": "🧲",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "recruiter",
+        "step": 1
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "recruiter-5",
+      "name": "Five Friends",
+      "collection": "community",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Bring 5 friends who become active members.",
+      "emoji": "🧲",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "recruiter",
+        "step": 5
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "recruiter-15",
+      "name": "Pied Piper",
+      "collection": "community",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Bring 15 friends who become active members.",
+      "emoji": "🧲",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "recruiter",
+        "step": 15
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "recruiter-50",
+      "name": "Crowd Puller",
+      "collection": "community",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Bring 50 friends who become active members.",
+      "emoji": "🧲",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "recruiter",
+        "step": 50
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "case-closed",
+      "name": "Case Closed",
+      "collection": "moments",
+      "rarity": 2,
+      "source": "stream",
+      "how": "Solve a Dead Air case on stream.",
+      "emoji": "🔍",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
     }
   ]
 }

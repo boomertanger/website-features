@@ -704,6 +704,68 @@ async function main() {
   await boss("crewTodoDone", { id: "twitch_tw1_add" });
   assert.equal((await todoDoc("twitch", "tw1", "add")).get("status"), "done");
   assert.equal((await todoDoc("twitch", "tw1", "add")).get("doneBy"), "boss");
+
+  // ---------- part 3: the crew badge catalog ----------
+  const cat = require("../data/trophy-room-badges.json");
+  const byId = new Map(cat.badges.map((b) => [b.id, b]));
+  const XPR = [0, 10, 25, 50, 100, 250];
+  assert.equal(cat.badges.length, new Set(cat.badges.map((b) => b.id)).size, "no duplicate ids");
+  assert.equal(cat.badges[0].id, "lurker-lantern");                                                // merged at the end: nothing reordered
+  assert.equal(byId.get("boomer-s-blessing").awardableBy, "owner");                                // the owner keeps Boomer's Blessing
+  assert.ok(byId.has("beat-the-boss") && byId.has("streak-day-365") && byId.has("streak-stream-100"));
+  const want = (id, rarity, source, collection = "crew", crewOnly = true) => {
+    const b = byId.get(id);
+    assert.ok(b, `${id} is in the catalog`);
+    assert.equal(b.rarity, rarity, `${id} rarity`); assert.equal(b.source, source, `${id} source`);
+    assert.equal(b.collection, collection, `${id} collection`); assert.equal(!!b.crewOnly, crewOnly, `${id} crewOnly`);
+    assert.equal(b.xp, XPR[rarity], `${id} xp matches its rarity`); assert.equal(b.status, "active");
+    assert.ok(b.name && b.how && b.emoji, `${id} has a name, a how and an emoji`);
+  };
+  // one badge per grade: Initiate Common, Watcher Uncommon, Warden Rare, Sentinel Epic; Steward, Overseer, Right Hand Epic
+  [["crew-initiate", 1], ["crew-watcher", 2], ["crew-warden", 3], ["crew-sentinel", 4], ["crew-steward", 4], ["crew-overseer", 4], ["crew-right-hand", 4]].forEach(([id, r]) => want(id, r, "auto"));
+  // service ladder 3, 6, 12, 24 months (a nightly job grants it)
+  [["crew-service-3", 1], ["crew-service-6", 2], ["crew-service-12", 3], ["crew-service-24", 4]].forEach(([id, r]) => want(id, r, "auto"));
+  assert.deepEqual(L.serviceBadges(24), ["crew-service-3", "crew-service-6", "crew-service-12", "crew-service-24"]);
+  assert.deepEqual(L.serviceBadges(2), []); assert.deepEqual(L.serviceBadges(7), ["crew-service-3", "crew-service-6"]);
+  // duties ladder 10, 25, 50, 100, 250; YouTube Pioneer 1, 5, 15, 30 (Uncommon to Epic); On the Clock; Iron Shift 3, 6, 12, 24: Coming soon (a source that isn't live)
+  [["crew-duties-10", 1], ["crew-duties-25", 2], ["crew-duties-50", 3], ["crew-duties-100", 4], ["crew-duties-250", 5]].forEach(([id, r]) => want(id, r, "stream"));
+  [["youtube-pioneer-1", 2], ["youtube-pioneer-5", 3], ["youtube-pioneer-15", 3], ["youtube-pioneer-30", 4], ["youtube-founding-crew", 4]].forEach(([id, r]) => want(id, r, "stream"));
+  assert.ok(byId.get("youtube-founding-crew").limited);
+  want("on-the-clock", 2, "stream"); assert.ok(byId.get("on-the-clock").limited);                  // monthly, Limited, Uncommon
+  [["iron-shift-3", 2], ["iron-shift-6", 3], ["iron-shift-12", 4], ["iron-shift-24", 5]].forEach(([id, r]) => want(id, r, "stream"));
+  // the Recruiter ladder is for everyone, in Community; Case Closed is in Stream Moments
+  [["recruiter-1", 1], ["recruiter-5", 2], ["recruiter-15", 3], ["recruiter-50", 4]].forEach(([id, r]) => want(id, r, "auto", "community", false));
+  want("case-closed", 2, "stream", "moments", false);
+  // the ids the functions grant are all in the catalog
+  for (const [, id] of require("../lib/crew/referrals").LADDER) assert.ok(byId.has(id), id);
+  for (const id of ["crew-initiate", "crew-watcher", "crew-warden", "crew-sentinel", "crew-steward", "crew-overseer", "crew-right-hand"]) assert.ok(byId.has(id), id);
+
+  // granted for real: approval pays the Initiate badge, a promotion the next grade, and the nightly run the service ladder
+  for (const b of cat.badges) await db.doc(`${S}/badges/${b.id}`).set({ ...b, holders: 0 });
+  await person("nu", {}); await streakDays("nu", 3);
+  const nuApp = (await as("nu")("crewApply", goodApp())).appId;
+  await boss("crewDecide", { appId: nuApp, decision: "approve" });
+  const holds = async (uid, id) => (await db.doc(`${S}/profiles/${uid}/badges/${id}`).get()).exists;
+  assert.equal(await holds("nu", "crew-initiate"), true);
+  assert.equal(await holds("nu", "crew-watcher"), false);
+  await boss("crewPromote", { uid: "nu" });
+  assert.equal(await holds("nu", "crew-watcher"), true);
+  assert.equal((await db.doc(`${S}/badges/crew-watcher`).get()).get("holders"), 1);
+  await boss("crewPromote", { uid: "nu" });
+  assert.equal(await holds("nu", "crew-warden"), true);
+  await person("svc", { roles: ["mod"], roster: { track: "mod", grade: 2, since: T.fromMillis(NOW - 250 * DAY) } });          // about 8 months
+  await person("alu", { roles: [], roster: { track: "mod", grade: 2, status: "alumni", since: T.fromMillis(NOW - 800 * DAY) } });
+  await person("fresh", { roles: ["mod"], roster: { track: "mod", grade: 1, since: T.fromMillis(NOW - 20 * DAY) } });
+  const nightly = await C.crewNightly.run({});
+  assert.equal(await holds("svc", "crew-service-3"), true); assert.equal(await holds("svc", "crew-service-6"), true);
+  assert.equal(await holds("svc", "crew-service-12"), false);
+  assert.equal(await holds("alu", "crew-service-3"), false);                                                                 // Alumni stop earning it
+  assert.equal(await holds("fresh", "crew-service-3"), false);
+  assert.equal(await holds("m1", "crew-service-3"), true);                                                                   // a roster seeded 200 days back (6 months)
+  const serial = (await db.doc(`${S}/profiles/svc/badges/crew-service-3`).get()).get("serial");
+  await C.crewNightly.run({});
+  assert.equal((await db.doc(`${S}/profiles/svc/badges/crew-service-3`).get()).get("serial"), serial);                       // paid once
+  assert.equal((await db.doc(`${S}/badges/crew-service-3`).get()).get("holders") >= 3, true);
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
