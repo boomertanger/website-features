@@ -1,0 +1,5 @@
+{
+  "_note": "PREVIEW DATA: sample Academy progress for ?as=member / ?as=admin on non-production builds (signed out). Replaced by crewMe().academy for real accounts.",
+  "passed": ["m1", "m2", "m3", "m4"],
+  "grade": 1
+}

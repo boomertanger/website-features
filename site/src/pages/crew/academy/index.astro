@@ -1,0 +1,98 @@
+---
+// /crew/academy: the Crew Academy hub (approved round 2, docs/design/mockups/mod-machina-guides.html): the hero
+// with the progress ring, the core six as a journey, next steps as stage cards with hover scenes, Chat Games
+// marked Soon, and the locked Admin Academy. Module text: content/academy/*.md (docs/specs/crew-academy.md).
+// Progress is filled in by scripts/crew/academy/hub.ts from crewMe().academy.passed (preview: sample data).
+import CrewLayout from "../../../layouts/CrewLayout.astro";
+import { boombotIcon } from "../../../../../shared/ui/arcade.js";
+import { modules, COUNTED, GRADE_NAME } from "../../../data/academy";
+import "../../../styles/how-it-works.css";
+import "../../../styles/crew-academy.css";
+
+const ICON: Record<string, string> = { welcome: "👋", "house-rules": "📜", platforms: "📺", "stream-duty": "⏱", engagement: "💬", tools: "🧰", recruiting: "🔗", "chat-games": "🔎", safety: "🛡", captain: "🧭" };
+const BLURB: Record<string, string> = { welcome: "The Crew Code and why life comes first", "house-rules": "Remind, warn, timeout, ban", platforms: "Twitch, both YouTube chats, TikTok", "stream-duty": "Seats, clock in, the handoff", engagement: "Welcomes, prompts, cross-chat nudges", tools: "Mod Deck, tasks, Gears, badges" };
+const core = modules.slice(0, 6);
+const NEXT = ["safety", "captain", "recruiting", "chat-games"].map((s) => modules.find((m) => m.slug === s)!);
+const NEXT_D: Record<string, string> = { safety: "Personal info, minors in chat, raids, mentions of self-harm, and when to flag Boomer.", captain: "Watching coverage across chats, live badge drops, and handling incidents calmly.", recruiting: "Your link, where it's welcome and where it isn't, and Recruit Rush nights.", "chat-games": "Dropping clues, calling squares and hyping your chat. Opens with Chat Games." };
+const tag = (m: (typeof modules)[number]) => m.soon ? "Soon" : m.optional ? "Optional" : `Unlocks ${GRADE_NAME[m.requiredFor]}`;
+const first = COUNTED.find((m) => !m.optional)!;
+const ARR = `<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg>`;
+---
+<CrewLayout title="Crew Academy" description="Short reads with a five-question quiz. Each module you pass earns 5 Gears and opens the next step." crewOnly section="academy">
+  <div class="ai-main cra-main">
+    <section class="ai-hero cra-hero" aria-labelledby="h-acad">
+      <div>
+        <span class="ai-kicker">Mod Machina · training</span>
+        <h1 class="bt-title bt-title--hero" id="h-acad">Crew Academy</h1>
+        <p>Short reads with a five-question quiz at the end. Each module you pass earns 5 Gears and unlocks the next step on the ladder. Take them at your own pace; nothing expires.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary" data-continue href={`/crew/academy/${first.slug}/`}>Start: {first.title}</a>
+          <span class="bt-meta cra-meta" data-continue-meta>About {first.minutes} minutes</span>
+        </div>
+        <div class="bt-chat-a cra-bb"><span class="bt-chat-av" set:html={boombotIcon("bt-bb-hub")} /><div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-text">Pass a module and I'll hand you 5 Gears, once per module. I grade the quizzes and tell you why.</span></div></div>
+        <p class="bt-meta cra-prenote" data-preview-note hidden>Preview data: this progress is a sample. Real accounts see their own.</p>
+      </div>
+      <span class="bt-ring" data-ring style="--v:0" role="img" aria-label={`0 of ${COUNTED.length} modules passed`}><span class="bt-ring-c" aria-hidden="true"><b>0/{COUNTED.length}</b><small>Passed</small></span></span>
+    </section>
+
+    <section class="ai-sec" aria-labelledby="h-core">
+      <header class="bt-chapter bt-chapter--ghost" data-n="01">
+        <p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p>
+        <h2 class="bt-chapter-title" id="h-core">The core six</h2>
+        <p class="bt-chapter-lede">Everyone takes these. Done in order, they take about 40 minutes in total.</p>
+      </header>
+      <ol class="ai-jr cra-jr" data-journey>
+        {core.map((m, i) => (
+          <li tabindex="0" data-mod={m.id} data-n={i + 1} data-soon="false" data-optional="false" data-href={`/crew/academy/${m.slug}/`} data-title={m.title} data-minutes={m.minutes}>
+            <span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ICON[m.slug]}</span>
+            <b><a class="cra-jr-link" href={`/crew/academy/${m.slug}/`}>{m.title}</a></b>
+            <span class="ai-jr-t">{BLURB[m.slug]}</span>
+            <span class="bt-badge bt-badge--lime cra-st" data-st hidden>Passed</span>
+          </li>
+        ))}
+      </ol>
+    </section>
+
+    <section class="ai-sec" aria-labelledby="h-next">
+      <header class="bt-chapter bt-chapter--ghost" data-n="02">
+        <p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p>
+        <h2 class="bt-chapter-title" id="h-next">Next steps</h2>
+        <p class="bt-chapter-lede">These unlock new seats and grades. The tag says what each one opens.</p>
+      </header>
+      <div class="ai-stage cra-next">
+        {NEXT.map((m) => {
+          const Tag = m.soon ? "div" : "a";
+          return (
+            <Tag class:list={["bt-card ai-part bt-spotlight", m.soon ? "bt-spotlight--gold is-soon" : "bt-card--door"]} href={m.soon ? undefined : `/crew/academy/${m.slug}/`} tabindex={m.soon ? 0 : undefined} data-mod={m.id} data-soon={String(m.soon)} data-optional={String(m.optional)} data-href={`/crew/academy/${m.slug}/`} data-title={m.title} data-minutes={m.minutes}>
+              <div class={`ai-scene cra-scene cra-scene--${m.slug}`} aria-hidden="true">
+                {m.slug === "safety" && <span class="cra-shield">🛡️</span>}
+                {m.slug === "captain" && <span class="cra-compass">🧭</span>}
+                {m.slug === "recruiting" && <div class="cra-link">/join/@you{[[-60, -30, 0], [58, -32, 0.08], [-50, 30, 0.16], [66, 28, 0.24]].map(([x, y, d]) => <span class="cra-pop" style={`--x:${x}px;--y:${y}px;--d:${d}s`}>+1</span>)}</div>}
+                {m.slug === "chat-games" && <div class="cra-case"><b>Coming soon</b><strong>Chat Games</strong><span class="cra-clue">Dead Air · Scream Off</span></div>}
+              </div>
+              <span class:list={["bt-icon-tile--lg ai-part-ic", m.soon && "bt-icon-tile--soon"]} aria-hidden="true">{ICON[m.slug]}</span>
+              <div class="ai-part-copy">
+                <h3>{m.title}{m.soon && <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>}<span class="bt-badge bt-badge--lime cra-st" data-st hidden>Passed</span></h3>
+                <p>{NEXT_D[m.slug]}</p>
+                <div class="ai-part-foot">
+                  <span class="ai-who-chip">{tag(m)}</span>
+                  {!m.soon && <span class="bt-card-go">+5 Gears · {m.minutes} min<Fragment set:html={ARR} /></span>}
+                </div>
+              </div>
+            </Tag>
+          );
+        })}
+      </div>
+    </section>
+
+    <div class="bt-lock-card cra-admin">
+      <span class="bt-lock-card-ic" aria-hidden="true">🔒</span>
+      <div><b>Admin Academy</b><p>Site tools and the safety net, Night Shift publishing, Bug Zapper and Feature Lab triage, member reports and strikes, crew management, privacy duties and the audit log. Opens when Boomer invites you to the admin track.</p></div>
+      <span class="bt-badge bt-badge--admin">Invitation only</span>
+    </div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../../scripts/crew/academy/hub";
+</script>

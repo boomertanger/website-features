@@ -1,0 +1,157 @@
+---
+// /crew/academy/<slug>: one Crew Academy module, built as a How it works page (docs/design-system.md §8m, the
+// Arcade frame): the TocLayout rail, ghost chapters, the placard / flow where the text has one, a Try it example,
+// the 5-question quiz (BOOMBOT grades through the academySubmitQuiz callable; this page never holds an answer),
+// Ask BOOMBOT and a next-module call. Text: content/academy/<slug>.md (docs/specs/crew-academy.md); the extras
+// per module: data/academy-blocks.ts. Behaviour: scripts/crew/academy/page.ts, which also loads the Try it widget
+// for the slug from scripts/crew/academy/tryit/<slug>.ts into [data-tryit].
+import CrewLayout from "../../../layouts/CrewLayout.astro";
+import TocLayout from "../../../components/TocLayout.astro";
+import Mascot from "../../../components/Mascot.astro";
+import { boombotIcon } from "../../../../../shared/ui/arcade.js";
+import { quizHtml } from "../../../../../shared/ui/quiz.js";
+import { modules, nextAfter, requiredLabel } from "../../../data/academy";
+import { chapterBlocks, TRYIT, FAQ } from "../../../data/academy-blocks";
+import "../../../styles/how-it-works.css";
+import "../../../styles/crew-academy.css";
+
+export function getStaticPaths() {
+  return modules.map((m) => ({ params: { slug: m.slug }, props: { slug: m.slug } }));
+}
+const { slug } = Astro.props;
+const mod = modules.find((m) => m.slug === slug)!;
+const next = nextAfter(mod);
+const widgets = Object.keys(import.meta.glob("../../../scripts/crew/academy/tryit/*.ts"));
+const hasWidget = widgets.some((p) => p.endsWith(`/tryit/${slug}.ts`));
+const tryit = TRYIT[slug];
+const showTry = !mod.soon && !!tryit && (hasWidget || slug === "house-rules");
+const showQuiz = !mod.soon && mod.quiz?.length > 0;
+const MASC = "%%MASCOT%%";
+const pad = (n: number) => String(n).padStart(2, "0");
+
+const chapters = mod.chapters.map((c, i) => ({ ...c, n: i + 1, blocks: chapterBlocks(slug, i + 1, MASC).split(MASC) }));
+let n = chapters.length;
+const tryN = showTry ? ++n : 0;
+const quizN = showQuiz ? ++n : 0;
+const soonN = mod.soon ? ++n : 0;
+const faqN = ++n;
+const faq = FAQ[slug] ?? [];
+const nav: [string, string][] = [
+  ...chapters.map((c) => [`s-${c.id}`, c.title] as [string, string]),
+  ...(showTry ? [["s-try", "Try it"] as [string, string]] : []),
+  ...(showQuiz ? [["s-quiz", "Quiz"] as [string, string]] : []),
+  ...(mod.soon ? [["s-soon", "When it opens"] as [string, string]] : []),
+  ["s-ask", "Ask BOOMBOT"],
+];
+const quiz = showQuiz ? quizHtml({ questions: mod.quiz.map((q) => ({ text: q.q, options: q.options })), passMark: 4, label: `${mod.title} quiz` }) : "";
+const medalHow = showQuiz ? "Pass the five-question quiz with 4 right. Your first pass pays 5 Gears." : "Opens with Chat Games.";
+const medalUn = mod.unlocks ? `Unlocks ${mod.unlocks}` : "Gears and know-how";
+---
+<CrewLayout title={mod.title} description={mod.hero} crewOnly section="academy">
+  <TocLayout items={nav} label="In this module">
+    <div class="ai-main cra-main" data-academy-module={mod.soon ? undefined : mod.id}>
+      <section class="ai-hero" aria-labelledby="h-hero">
+        <span class="ai-kicker">Crew Academy · module {mod.num} of {modules.length} · {mod.minutes} min read</span>
+        <h1 class="bt-title bt-title--hero" id="h-hero">{mod.title}</h1>
+        <p>{mod.hero}</p>
+        <div class="ai-acts cra-chips-row">
+          <span class="ai-who-chip">{requiredLabel(mod)}</span>
+          {!mod.soon && <span class="ai-who-chip">+5 Gears when you pass</span>}
+          {mod.soon && <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span>}
+          {!mod.soon && <span class="bt-badge bt-badge--lime" data-passed-only hidden>Passed</span>}
+          <a class="bt-btn bt-btn--ghost bt-btn--sm" href="/crew/academy/">All modules</a>
+        </div>
+      </section>
+
+      {chapters.map((c) => (
+        <section class="ai-sec" id={`s-${c.id}`} aria-labelledby={`h-${c.id}`}>
+          <header class="bt-chapter bt-chapter--ghost" data-n={pad(c.n)}>
+            <p class="bt-chapter-eyebrow" aria-hidden="true">{pad(c.n)} · Chapter</p>
+            <h2 class="bt-chapter-title" id={`h-${c.id}`}>{c.title}</h2>
+          </header>
+          {c.html && <div class="bt-prose cra-prose" set:html={c.html} />}
+          {c.blocks.length > 1
+            ? <><Fragment set:html={c.blocks[0]} /><Mascot decorative /><Fragment set:html={c.blocks[1]} /></>
+            : c.blocks[0] && <Fragment set:html={c.blocks[0]} />}
+        </section>
+      ))}
+
+      {showTry && (
+        <section class="ai-sec" id="s-try" aria-labelledby="h-try">
+          <header class="bt-chapter bt-chapter--ghost" data-n={pad(tryN)}>
+            <p class="bt-chapter-eyebrow" aria-hidden="true">{pad(tryN)} · Chapter</p>
+            <h2 class="bt-chapter-title" id="h-try">Try it</h2>
+            <p class="bt-chapter-lede">{tryit.title}. {tryit.lede}</p>
+          </header>
+          {hasWidget
+            ? <div data-tryit={slug} hidden></div>
+            : <div class="bt-card cra-tryquiz"><p>{tryit.lede}</p><a class="bt-btn bt-btn--secondary" href="#s-quiz">Go to the quiz</a></div>}
+        </section>
+      )}
+
+      {showQuiz && (
+        <section class="ai-sec" id="s-quiz" aria-labelledby="h-quiz">
+          <header class="bt-chapter bt-chapter--ghost" data-n={pad(quizN)}>
+            <p class="bt-chapter-eyebrow" aria-hidden="true">{pad(quizN)} · Chapter</p>
+            <h2 class="bt-chapter-title" id="h-quiz">Quiz</h2>
+            <p class="bt-chapter-lede">Five questions. Get four right to pass. BOOMBOT tells you why after each one.</p>
+          </header>
+          <div data-academy-quiz set:html={quiz} />
+        </section>
+      )}
+
+      {mod.soon && (
+        <section class="ai-sec" id="s-soon" aria-labelledby="h-soon">
+          <header class="bt-chapter bt-chapter--ghost" data-n={pad(soonN)}>
+            <p class="bt-chapter-eyebrow" aria-hidden="true">{pad(soonN)} · Chapter</p>
+            <h2 class="bt-chapter-title" id="h-soon">When it opens</h2>
+          </header>
+          <div class="bt-lock-card"><span class="bt-lock-card-ic" aria-hidden="true">🔎</span><div><b>Hosting Chat Games opens with Chat Games</b><p>You can read every chapter now. The quiz and the Try it example arrive when hosting does.</p></div><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></div>
+        </section>
+      )}
+
+      <section class="ai-sec" id="s-ask" aria-labelledby="h-ask">
+        <header class="bt-chapter bt-chapter--ghost" data-n={pad(faqN)}>
+          <p class="bt-chapter-eyebrow" aria-hidden="true">{pad(faqN)} · Chapter</p>
+          <h2 class="bt-chapter-title" id="h-ask">Ask BOOMBOT</h2>
+        </header>
+        <div class="bt-chat">
+          {faq.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cra-ans-${i}`} data-q={i}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`cra-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`bt-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta cra-cta" aria-labelledby="h-cta">
+        <Mascot decorative class="cra-cta-mascot" />
+        {next
+          ? <><h2 id="h-cta">Next: {next.title}</h2><p>{next.hero}</p></>
+          : <><h2 id="h-cta">That's the whole Academy</h2><p>Thank you for taking the time. Anything you're unsure about, ask your Room Lead or the Captain.</p></>}
+        <div class="ai-acts">
+          {next && <a class="bt-btn bt-btn--primary" href={`/crew/academy/${next.slug}/`}>Next module</a>}
+          <a class="bt-btn bt-btn--secondary" href="/crew/academy/">Back to the Academy</a>
+        </div>
+        {!mod.soon && (
+          <div class="cra-medal">
+            <button type="button" class="bt-flip bt-flip--gold" aria-label={`${mod.title} module medal. How to earn: ${medalHow} ${medalUn}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">🏅</span><b>Module {mod.num}</b><span class="bt-flip-sub">{mod.title}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">{medalHow}</span><span class="bt-flip-k">Unlocks</span><span class="bt-flip-tag">{medalUn}</span></span>
+              </span>
+            </button>
+          </div>
+        )}
+      </section>
+    </div>
+  </TocLayout>
+</CrewLayout>
+
+<script>
+  import "../../../scripts/crew/academy/page";
+</script>
