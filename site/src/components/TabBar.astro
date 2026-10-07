@@ -61,10 +61,13 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
     const set = (open: boolean) => {
       sheet.hidden = !open;
       toggle.setAttribute("aria-expanded", String(open));
+      if (open) document.dispatchEvent(new CustomEvent("bt:overlay-open", { detail: { source: "more" } }));   // closes any nav panel or the account menu
+      
       // The Arcade tile reads its data the first time the sheet opens, not on page load.
       const tile = sheet.querySelector<HTMLAnchorElement>("[data-sheet-feature]");
       if (open && tile && !tileLoaded) { tileLoaded = true; void import("../scripts/nav-features").then((m) => m.loadSheetFeature(tile)); }
     };
+    document.addEventListener("bt:overlay-open", (e) => { if ((e as CustomEvent).detail?.source !== "more" && !sheet.hidden) set(false); });
     toggle.addEventListener("click", () => set(sheet.hidden));
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && !sheet.hidden) { set(false); toggle.focus(); }

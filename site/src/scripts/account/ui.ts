@@ -47,7 +47,11 @@ onAuth((s) => {
 document.querySelectorAll<HTMLElement>("[data-account-menu]").forEach((wrap) => {
   const btn = wrap.querySelector<HTMLButtonElement>("[aria-haspopup]")!;
   const menu = wrap.querySelector<HTMLElement>(".bt-account-menu")!;
-  const set = (open: boolean) => { menu.hidden = !open; btn.setAttribute("aria-expanded", String(open)); };
+  const set = (open: boolean) => {
+    menu.hidden = !open; btn.setAttribute("aria-expanded", String(open));
+    if (open) document.dispatchEvent(new CustomEvent("bt:overlay-open", { detail: { source: "account" } }));   // closes any nav panel or the More sheet
+  };
+  document.addEventListener("bt:overlay-open", (ev) => { if ((ev as CustomEvent).detail?.source !== "account" && !menu.hidden) set(false); });
   btn.addEventListener("click", () => set(menu.hidden));
   document.addEventListener("click", (ev) => { if (!menu.hidden && !wrap.contains(ev.target as Node)) set(false); });
   wrap.addEventListener("keydown", (ev) => { if (ev.key === "Escape" && !menu.hidden) { set(false); btn.focus(); } });

@@ -14,6 +14,11 @@
 
 import { escapeHtml as esc } from "./dom.js";
 
+// Only one overlay is open at a time: a nav panel, the account menu or the phone More sheet. Whichever opens
+// announces itself with this event ({ detail: { source } }); the others close when it isn't theirs.
+export const OVERLAY_EVENT = "bt:overlay-open";
+export const announceOverlay = (source) => document.dispatchEvent(new CustomEvent(OVERLAY_EVENT, { detail: { source } }));
+
 const HOVER_MS = 140;
 const LEAVE_MS = 220;
 
@@ -83,6 +88,7 @@ export function initNavGroups(root = document, { onOpen, onClose } = {}) {
     place(g);
     const first = !s.seen;
     s.seen = true;
+    announceOverlay("navgroup");
     if (onOpen) onOpen(s.name, s.panel, { first });
   };
 
@@ -123,6 +129,7 @@ export function initNavGroups(root = document, { onOpen, onClose } = {}) {
   });
 
   if (groups.length) {
+    on(document, "bt:overlay-open", (e) => { if (current && e.detail?.source !== "navgroup") close(); });
     on(document, "keydown", (e) => { if (e.key === "Escape" && current) { e.stopPropagation(); close({ focus: true }); } });
     on(document, "pointerdown", (e) => { if (current && !current.contains(e.target)) close(); });
     on(window, "scroll", () => { if (current) close(); }, { passive: true });

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: only one header overlay is open at a time. Opening a nav panel (hover or click) closes the account menu and the phone More sheet, opening the account menu closes any nav panel and the More sheet, and opening the More sheet closes both, through one shared event (bt:overlay-open) announced by shared/ui/navgroup.js, the account menu script and the tab bar. Also nextStream.startsAt in site.json is now 2026-10-15T19:00:00-05:00 so the Watch tile's countdown can be tested (still a placeholder until the Schedule Planner feeds it).
 docs: header nav spec and approved mockup, design-system 8n Header nav, ROADMAP marks the header nav redesign done.
 site: the phone More sheet is grouped under Watch, Play, Community and Shop headings with a line under each page and a small tile on top (Live now, or today's Arcade game and your best); pages already in the tab bar are left out. The tab bar is unchanged.
 site: header menu tiles. Watch shows Live now (red, Watch now) or the next stream with a ticking countdown and Add to calendar (an .ics download); Play shows today's Arcade game and the member's best time, or a Play button; Community shows the latest Mod of the Month award, or Help keep the chats fun with Join the crew. They read existing data only and load the first time a menu opens.
