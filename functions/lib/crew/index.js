@@ -31,5 +31,10 @@ module.exports = function crew({ adminLogEntry } = {}) {
     }
   });
 
-  return { mirrorCrewRoster, ...require("./core")({ adminLogEntry }) };
+  const gears = require("./gears").makeGears({ db });
+  return {
+    mirrorCrewRoster,
+    ...require("./core")({ adminLogEntry, gears }),
+    ...require("./tasks")({ adminLogEntry, gears }),
+  };
 };

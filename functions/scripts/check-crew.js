@@ -124,7 +124,7 @@ async function main() {
   assert.equal(ready({ roster: { track: "mod", grade: 4, status: "active", gradeSince: 0 } }).ready, false);   // Sentinels aren't flagged
   assert.equal(ready({ roster: { track: "admin", grade: 1, status: "active", gradeSince: 0 } }).ready, false);
 
-  await db.doc(paths.settings()).update({ vouchCap: 3 });   // (part 1 tuned it to 5)
+  await db.doc(paths.settings()).update({ vouchCap: 3, "gearsValues.academyModule": 5 });   // (part 1 tuned them)
   // the callables, against the fake Firestore
   const logs = [];
   const C = require("../lib/crew")({ adminLogEntry: async (_d, e) => { logs.push(e); return e; } });
@@ -308,6 +308,102 @@ async function main() {
   assert.equal(ovw.roster.find((x) => x.uid === "rookie").ready.to, 2);
   assert.ok(ovw.roster.length >= 8);
   assert.equal((await as("rookie")("crewMe")).ready.name, "Watcher");
+
+  // ---------- part 2b: Gears, tasks and boards ----------
+  const G = require("../lib/crew/gears");
+  const gears = G.makeGears({ db });
+  assert.equal(G.gearKey("task", "t1", "u1"), "task:t1:u1");
+  assert.equal(G.gearKey("recruit", "a/b c", "u1"), "recruit:a-b-c:u1");
+  // the vouches in part 2a already paid queue-review Gears to w1 (4 x 2) and w2 (2 x 2)
+  const mine = async (uid) => (await db.collection(`${paths.settings()}/gears`).get()).docs.filter((d) => d.get("uid") === uid);
+  assert.equal((await mine("w1")).reduce((n, d) => n + d.get("amount"), 0), 8);
+  assert.equal((await mine("w2")).reduce((n, d) => n + d.get("amount"), 0), 4);
+  assert.ok((await db.doc(paths.gear(`queueReview:${applied.appId}:w1`)).get()).exists);   // doc id = source:ref:uid
+
+  // idempotent, crew only, only the Phase 1 sources, never for timeouts, bans or message counts
+  const first = await gears.grantGears("m1", "task", "task-x", 20);
+  assert.equal(first.granted, true);
+  assert.equal((await gears.grantGears("m1", "task", "task-x", 20)).reason, "paid");
+  assert.equal((await gears.grantGears("m1", "task", "task-x", 99)).reason, "paid");         // the same key never pays again, whatever the amount
+  assert.equal((await gears.grantGears("fan", "task", "task-y", 20)).reason, "notCrew");
+  for (const bad of ["timeout", "ban", "messages", "deletedMessage", "duty", "made-up"]) assert.equal((await gears.grantGears("m1", bad, "r", 5)).reason, "badSource", bad);
+  assert.equal((await gears.grantGears("m1", "task", "task-z", 0)).reason, "badAmount");
+  assert.equal((await gears.grantGears("m1", "task", "task-z", 5000)).reason, "badAmount");
+  assert.equal((await mine("m1")).reduce((n, d) => n + d.get("amount"), 0), 20);
+
+  // queue reviews: +2 each, at most 10 a month (w1 has 8)
+  assert.equal((await gears.grantQueueReview("w1", "extra1")).granted, true);
+  assert.equal((await gears.grantQueueReview("w1", "extra2")).reason, "monthlyCap");
+  // recruits: +10 each, up to recruitCapPerMonth (10) a month; the first check-in +5; the same recruit never pays twice
+  for (let i = 1; i <= 10; i++) assert.equal((await gears.grantRecruit("w2", `new${i}`)).granted, true, `recruit ${i}`);
+  assert.equal((await gears.grantRecruit("w2", "new11")).reason, "monthlyCap");
+  assert.equal((await gears.grantRecruit("w2", "new1")).reason, "monthlyCap");
+  assert.equal((await gears.grantRecruitCheckin("w2", "new1")).granted, true);
+  assert.equal((await gears.grantRecruitCheckin("w2", "new1")).reason, "paid");
+  assert.equal((await mine("w2")).filter((d) => d.get("source") === "recruit").reduce((n, d) => n + d.get("amount"), 0), 100);
+  // an Academy module pays +5, once
+  assert.equal((await gears.grantAcademy("rookie", "m1")).granted, true);
+  assert.equal((await gears.grantAcademy("rookie", "m1")).reason, "paid");
+  assert.equal((await gears.grantAcademy("rookie", "m2")).granted, true);
+  assert.equal((await mine("rookie")).reduce((n, d) => n + d.get("amount"), 0), 10);
+
+  // the task board
+  const sent = as("sent"), m1 = as("m1");
+  assert.equal(await reason(w1("taskPost", { title: "Greet new chatters", gears: 10 })), "notAllowed");     // Watchers can't post
+  assert.equal(await reason(initiate("taskPost", { title: "x", gears: 10 })), "field");                  // (admin-track) title too short
+  assert.equal(await reason(sent("taskPost", { title: "Greet new chatters", gears: 4 })), "field");
+  assert.equal(await reason(sent("taskPost", { title: "Greet new chatters", gears: 51 })), "field");
+  const task = (await sent("taskPost", { title: "Greet new chatters", detail: "Say hi in the first 5 minutes.", gears: 15 })).taskId;
+  assert.equal((await db.doc(paths.task(task)).get()).get("status"), "open");
+  assert.equal(await reason(as("fan")("taskClaim", { taskId: task })), "notCrew");
+  await w1("taskClaim", { taskId: task });
+  assert.equal(await reason(w2("taskClaim", { taskId: task })), "notOpen");
+  assert.equal(await reason(w1("taskConfirm", { taskId: task })), "notDone");
+  assert.equal(await reason(w2("taskDone", { taskId: task })), "notYours");
+  await w1("taskDone", { taskId: task });
+  assert.equal(await reason(w1("taskConfirm", { taskId: task })), "ownTask");                            // never by the claimer
+  assert.equal(await reason(w2("taskConfirm", { taskId: task })), "notAllowed");                         // a Warden who isn't the poster
+  const w1Before = (await mine("w1")).reduce((n, d) => n + d.get("amount"), 0);
+  const conf = await sent("taskConfirm", { taskId: task });                                              // the poster
+  assert.equal(conf.paid, true);
+  assert.equal((await mine("w1")).reduce((n, d) => n + d.get("amount"), 0), w1Before + 15);
+  assert.ok((await db.doc(paths.gear(`task:${task}:w1`)).get()).exists);
+  assert.equal(await reason(sent("taskConfirm", { taskId: task })), "notDone");                          // no second payout
+  assert.ok(logs.some((l) => l.action === "taskConfirm" && l.details.gears === 15));
+  const task2 = (await ov("taskPost", { title: "Review the Academy text", gears: 50 })).taskId;           // an admin posts too
+  await m1("taskClaim", { taskId: task2 }); await m1("taskDone", { taskId: task2 });
+  await ov("taskConfirm", { taskId: task2 });                                                            // an Overseer confirms
+  assert.equal((await db.doc(paths.gear(`task:${task2}:m1`)).get()).get("amount"), 50);
+
+  // boards: month, season, all; admins appear with a staff flag; Reserve and alumni are off the board
+  await gears.grantGears("ov", "task", "ov-task", 5);
+  const all = (await db.doc(paths.board("all")).get()).data();
+  assert.ok(all.rows.length >= 4);
+  assert.deepEqual(all.rows.map((r) => r.gears), [...all.rows.map((r) => r.gears)].sort((a, b) => b - a));
+  assert.deepEqual(all.rows.map((r) => r.place), all.rows.map((_, i) => i + 1));
+  assert.equal(all.rows[0].uid, "w2");                                                                   // 4 + 100 + 5 Gears
+  assert.equal(all.rows.find((r) => r.uid === "m1").gears, 70);
+  assert.equal(all.rows.find((r) => r.uid === "w2").recruits, 10);
+  assert.equal(Object.keys(all.rows[0]).sort().join(), "duties,gears,grade,handle,hours,place,recruits,rooms,staff,track,uid");   // nothing private
+  const month = (await db.doc(paths.board("month")).get()).data();
+  assert.match(month.period, /^[0-9]{4}-[0-9]{2}$/);
+  assert.ok(month.rows.some((r) => r.uid === "m1"));
+  assert.deepEqual((await db.doc(paths.board("season")).get()).data().rows, []);                         // no live Night Shift season in this test
+  await db.doc(paths.roster("m1")).update({ status: "reserve" });
+  await gears.rebuildBoards();
+  assert.equal((await db.doc(paths.board("all")).get()).data().rows.some((r) => r.uid === "m1"), false);
+  await db.doc(paths.roster("m1")).update({ status: "active" });
+  // an admin on the board with the staff flag
+  assert.equal(all.rows.some((r) => r.uid === "ov" && r.staff === true), true);
+  // the season board follows Night Shift's live season
+  await db.doc(`${S}/factory/main/seasons/s01`).set({ name: "Season 01", status: "live", startsAt: NOW - 10 * DAY, endsAt: NOW + 50 * DAY });
+  await gears.grantGears("w1", "task", "season-task", 7);
+  assert.equal((await db.doc(paths.board("season")).get()).data().rows.find((r) => r.uid === "w1").gears > 0, true);
+  assert.equal((await db.doc(paths.board("season")).get()).data().period, "Season 01");
+  // a Gears grant only ever lands once per key, so the boards can't double count
+  const before = (await db.doc(paths.board("all")).get()).data().rows.find((r) => r.uid === "w1").gears;
+  await gears.grantGears("w1", "task", "season-task", 7);
+  assert.equal((await db.doc(paths.board("all")).get()).data().rows.find((r) => r.uid === "w1").gears, before);
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
