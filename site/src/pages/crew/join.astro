@@ -63,6 +63,14 @@ const SEATS: [string, string[]][] = [["twitch", ["SS", "V", ""]], ["ytLandscape"
         <div class="cj-crewart" data-cj-crewart hidden><Mascot decorative /></div>
       </section>
 
+      <section class="cj-bring" data-cj-bring hidden aria-labelledby="cj-bring-h">
+        <div class="bt-card">
+          <span class="bt-card-title" id="cj-bring-h">Bring someone with you</span>
+          <p data-cj-bring-p></p>
+          <div class="cj-bring-row" data-cj-bring-row></div>
+        </div>
+      </section>
+
       <section class="ai-sec" id="j-check" aria-labelledby="h-check" data-cj-full>
         <Fragment set:html={chapter(1, "h-check", "Can I apply?", "Four quick checks, done for you. Hover a step to see what it looked at.")} />
         <div data-cj-check><span class="bt-skeleton cj-skel"></span></div>
@@ -112,7 +120,7 @@ const SEATS: [string, string[]][] = [["twitch", ["SS", "V", ""]], ["ytLandscape"
         </section>
       </form>
 
-      <section class="ai-sec" id="j-faq" aria-labelledby="h-faq">
+      <section class="ai-sec" id="j-faq" aria-labelledby="h-faq" data-cj-faq>
         <Fragment set:html={chapter(7, "h-faq", "Questions before you apply", "Ask BOOMBOT. One answer open at a time.")} />
         <div class="bt-chat">
           {FAQS.map(([q, a], i) => (

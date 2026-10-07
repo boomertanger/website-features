@@ -78,6 +78,13 @@
   .bt-root:not(#_) .cj-chats { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .cj-rows { gap: 5px; }
 }
+/* Crew view: the invite card under the hero. While the sign-in check runs, the applicant-only FAQ stays hidden so it can't flash. */
+.bt-root:not(#_) .cj-bring[hidden] { display: none; }
+.bt-root:not(#_) .cj-bring .bt-card { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .cj-bring p { margin: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .cj-bring-row { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bt-root:not(#_) .cj-bring-row .bt-code { min-width: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) [data-cj-state="loading"] [data-cj-faq] { display: none; }
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .cj-chair.is-you { animation: none; }
 }

@@ -15,6 +15,7 @@ import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../../../../shared
 import { dayPickerHtml, initDayPicker, dayPickerValue } from "../../../../shared/ui/day-picker.js";
 import { initRadioGroup } from "../../../../shared/ui/pref.js";
 import { stampHtml } from "../../../../shared/ui/stamp.js";
+import { toast } from "../../../../shared/ui/toast.js";
 import type { AuthState } from "../../lib/auth";
 
 type Mode = "visitor" | "signup" | "blocked" | "form" | "sent" | "applied" | "notNow" | "crew";
@@ -160,6 +161,28 @@ function notNowHtml(note: string | null, reapplyAt: number | null) {
     <p>${reapplyAt ? `You're welcome to apply again on <b>${esc(dateLabel(reapplyAt))}</b>.` : "You're welcome to apply again later."} Until then, come hang out in chat and keep checking in.</p></div></div>`;
 }
 
+// ---- Crew: one small invite card under the hero (the member's own recruit link, as on HQ, or a pointer to How it works) ----
+const SITE_URL = "https://boomertanger.com";
+function bring(show: boolean) {
+  const box = $("[data-cj-bring]");
+  box.hidden = !show;
+  if (!show) return;
+  const handle = me?.profile?.handle || "";
+  const p = $("[data-cj-bring-p]"), row = $("[data-cj-bring-row]");
+  if (handle) {
+    const link = `${SITE_URL}/join/@${handle}`;
+    p.textContent = "Know someone who'd be good at this? Share your link. It counts once they've been around for a week.";
+    row.innerHTML = `<span class="bt-code">${esc(link.replace("https://", ""))}</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-cj-copy>Copy</button>`;
+    row.querySelector<HTMLButtonElement>("[data-cj-copy]")!.addEventListener("click", async () => {
+      try { await navigator.clipboard.writeText(link); toast("Link copied. One link post per room an hour, please."); }
+      catch { toast("Couldn't copy. Select the link and copy it by hand.", { kind: "error" }); }
+    });
+  } else {
+    p.textContent = "Know someone who'd be good at this? Here's how the crew works, so you can tell them what to expect.";
+    row.innerHTML = `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/crew/how-it-works">How the crew works</a>`;
+  }
+}
+
 // ---- Mode switch: what shows ----
 function setMode(mode: Mode, m: Me | null, extra: { band?: string | null; expiresAt?: number | null; createdAt?: number; note?: string | null; reapplyAt?: number | null } = {}) {
   root.dataset.cjState = mode;
@@ -170,6 +193,8 @@ function setMode(mode: Mode, m: Me | null, extra: { band?: string | null; expire
   root.querySelectorAll<HTMLElement>("[data-cj-full]").forEach((s) => { s.hidden = lite; });
   const sent = mode === "sent" || mode === "applied" || mode === "notNow";
   $("[data-cj-nextsec]").hidden = mode === "crew";
+  $("[data-cj-faq]").hidden = mode === "crew";      // the questions are for applicants; crew just get the hero and the invite card
+  bring(mode === "crew");
   $("[data-cj-nextchap]").hidden = sent;
   $("[data-cj-nextj]").hidden = sent;
   $("[data-cj-send]").hidden = sent;
