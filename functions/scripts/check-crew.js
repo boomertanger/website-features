@@ -789,6 +789,12 @@ async function main() {
   assert.equal(crewMeRook.apply, null);
   assert.equal(crewMeRook.next.name, "Watcher"); assert.equal(crewMeRook.next.ready, true);
   assert.deepEqual(crewMeRook.next.pending, ["2 ride-alongs signed off", "Showed up for 80% of duties"]);   // duty criteria are pending, not failing
+  assert.equal(crewMeRook.crew.breakMonthsUsed, 0);
+  await person("breaker", { roles: ["mod"], roster: { track: "mod", grade: 1, breakMonthsUsed: { [String(new Date().getUTCFullYear())]: 1, 1999: 2 } } });
+  assert.equal((await as("breaker")("crewMe")).crew.breakMonthsUsed, 1);                                       // this year only
+  assert.equal(await reason(as("breaker")("crewSetStatus", { status: "goingDark", months: 2 })), "breakLimit");
+  assert.equal(await reason(as("breaker")("crewSetStatus", { status: "alumni" })), "ok");                          // retiring is allowed for yourself
+  assert.equal((await as("breaker")("crewMe")).crew.status, "alumni");
   assert.equal(await reason(as("nobody")("crewMe")), "ok");                                                    // a member with no docs still gets an answer
   // crewAdminOverview carries the settings
   assert.equal((await boss("crewAdminOverview")).settings.vouchCap, 3);

@@ -21,12 +21,15 @@ function render() {
   const rows = CHATS.map((chat) => ({ chat, name: CHAT_NAME[chat], iconHtml: platformIconHtml(chat), value: prefs[chat] || "no" }));
   const days = DAYS.map((d) => `<button type="button" class="bt-chip${c.availability.days.includes(d) ? " is-active" : ""}" data-day="${d}" aria-pressed="${c.availability.days.includes(d)}">${DAY_LABEL[d]}</button>`).join("");
   const dev = DEVICES.map((d, i) => `<button type="button" role="radio" aria-checked="${c.device === d}" tabindex="${c.device === d || (!DEVICES.includes(c.device) && i === 0) ? 0 : -1}" data-value="${d}">${esc(DEVICE_LABEL[d])}</button>`).join("");
+  const canRetire = c.status !== "alumni" && c.status !== "paused";
   const canBreak = c.status === "active" || c.status === "checkIn";
+  const used = c.breakMonthsUsed || 0, left = Math.max(0, 2 - used);
+  const usedLine = `<p class="hq-note"><b>${used} of 2 months</b> used this year${left ? `, ${left} left` : ". You have none left until January"}.</p>`;
   const dark = c.status === "goingDark"
-    ? `<p class="hq-note">You're on a planned break${c.breakUntil ? ` until about <b>${esc(fmtDate(c.breakUntil, { month: "long", day: "numeric" }))}</b>` : ""}. No warnings, and your perks carry on for the first month. Ready sooner? One tap and you're back.</p><div><button type="button" class="bt-btn bt-btn--primary" data-back>Back to Active</button></div>`
+    ? `<p class="hq-note">You're on a planned break${c.breakUntil ? ` until about <b>${esc(fmtDate(c.breakUntil, { month: "long", day: "numeric" }))}</b>` : ""}. No warnings, and your perks carry on for the first month. Ready sooner? One tap and you're back.</p>${usedLine}<div><button type="button" class="bt-btn bt-btn--primary" data-back>Back to Active</button></div>`
     : canBreak
-      ? `<p class="hq-note">Life comes first. Take up to <b>2 months a year</b> away, with <b>no warnings</b>. Your perks continue for the first month and pause after that, and your grade, badges and Hall of Fame spots stay put. Come back whenever you're ready.</p>
-         <div class="hq-acts"><button type="button" class="bt-btn bt-btn--secondary" data-dark="1">Go dark for 1 month</button><button type="button" class="bt-btn bt-btn--secondary" data-dark="2">Go dark for 2 months</button></div>`
+      ? `<p class="hq-note">Life comes first. Take up to <b>2 months a year</b> away, with <b>no warnings</b>. Your perks continue for the first month and pause after that, and your grade, badges and Hall of Fame spots stay put. Come back whenever you're ready.</p>${usedLine}
+         <div class="hq-acts"><button type="button" class="bt-btn bt-btn--secondary" data-dark="1"${left < 1 ? " disabled" : ""}>Go dark for 1 month</button><button type="button" class="bt-btn bt-btn--secondary" data-dark="2"${left < 2 ? " disabled" : ""}>Go dark for 2 months</button></div>`
       : `<p class="hq-note">Your status is ${esc(c.status === "reserve" ? "Reserve" : c.status)}, so a planned break isn't needed. ${c.status === "reserve" ? "Taking a duty when stream duty opens brings you back." : "The owner will be in touch."}</p>`;
 
   root.innerHTML = `${previewNote(ctx)}
@@ -43,6 +46,7 @@ function render() {
           <span class="bt-fineprint">A phone matters for YouTube vertical: that chat is easiest to watch and moderate from the YouTube app on a phone. Desktop is great for everything else.</span></div>
         <p class="bt-error" hidden></p><div><button type="button" class="bt-btn bt-btn--primary" data-save="avail">Save availability</button></div></div>
       <div class="bt-card hq-card hq-dark" id="going-dark" data-card="dark"><div class="bt-card-head"><span class="bt-card-title">Going dark</span>${statusChip(c.status)}</div>${dark}</div>
+      ${canRetire ? `<div class="bt-card hq-card" data-card="retire"><div class="bt-card-head"><span class="bt-card-title">Retire from the crew</span></div><p class="hq-note">Stepping down for good? Thank you for everything. You become Alumni: your platform mod powers are removed, and you keep your grade, badges and Hall of Fame entries. You can come back later through a short fast-track, with no queue.</p><div><button type="button" class="bt-btn bt-btn--secondary" data-retire>Retire from the crew</button></div></div>` : ""}
     </div>`;
   root.setAttribute("aria-busy", "false");
 
@@ -69,9 +73,10 @@ function render() {
   const availBody = () => ({ availability: { days: DAYS.filter((d) => dayOn.has(d)), note: (root.querySelector("#hq-av-note") as HTMLTextAreaElement).value.trim() }, device: device.get() || c.device });
   save("avail", availBody, () => { const b = availBody(); Object.assign(previewData().me.crew, b); Object.assign(c, b); }, "Availability saved.", "Save availability");
 
-  const setStatus = async (status: "goingDark" | "active", months?: number) => {
+  const setStatus = async (status: "goingDark" | "active" | "alumni", months?: number) => {
     await act(ctx, "crewSetStatus", months ? { status, months } : { status }, () => {
       c.status = status; c.breakUntil = status === "goingDark" ? Date.now() + (months || 1) * 30 * 86400000 : null;
+      if (status === "goingDark") c.breakMonthsUsed = (c.breakMonthsUsed || 0) + (months || 1);
     });
     if (!ctx.preview) ctx.me = await crewMe();
     render();
@@ -85,6 +90,13 @@ function render() {
       onConfirm: async () => { try { await setStatus("goingDark", m); } catch (x) { throw new Error(messageFor(x, "That didn't work. Try again.")); } toast("Enjoy the break. We'll be here."); },
     });
   }));
+  root.querySelector<HTMLElement>("[data-retire]")?.addEventListener("click", () => {
+    void confirmAction({
+      feature: "crew", title: "Retire from the crew?", confirmLabel: "Retire", busyLabel: "Saving…", danger: false,
+      message: "You become Alumni and your Twitch moderator powers are removed. You keep your grade, badges and Hall of Fame entries, and you can return through the fast-track later.",
+      onConfirm: async () => { try { await setStatus("alumni"); } catch (x) { throw new Error(messageFor(x, "That didn't work. Try again.")); } toast("Thank you for everything. The door stays open."); },
+    });
+  });
   root.querySelector<HTMLButtonElement>("[data-back]")?.addEventListener("click", async (e) => {
     const b = e.currentTarget as HTMLButtonElement; b.disabled = true;
     try { await setStatus("active"); toast("Welcome back!"); } catch (x) { toast(messageFor(x, "That didn't work. Try again."), { kind: "error" }); b.disabled = false; }

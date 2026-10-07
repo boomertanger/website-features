@@ -17,7 +17,7 @@ export interface Me {
   activityRules: boolean;
   apply: { ok: boolean; reason: string | null; reapplyAt: number | null; items: ApplyItem[]; signedUp: boolean } | null;
   next: { to: number; name: string; ready: boolean; met: string[]; missing: string[]; pending: string[] } | null;
-  crew: { track: "mod" | "admin"; grade: number; name: string; status: string; since: number | null; gradeSince: number | null; platforms: Partial<Prefs>; availability: { days: string[]; note: string }; device: string; breakUntil: number | null; stats: Record<string, number> } | null;
+  crew: { track: "mod" | "admin"; grade: number; name: string; status: string; since: number | null; gradeSince: number | null; platforms: Partial<Prefs>; availability: { days: string[]; note: string }; device: string; breakUntil: number | null; breakMonthsUsed: number; stats: Record<string, number> } | null;
   strikes: { at: number; reason: string; expiresAt: number }[];
   ready: { to: number; name: string } | null;
   academy: { passed: string[] };

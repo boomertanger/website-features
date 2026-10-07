@@ -407,7 +407,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       activityRules: settings.activityRules === true,
       apply,
       next: crit && crit.to ? { to: crit.to, name: L.gradeName("mod", crit.to), ready: crit.ready, met: crit.met, missing: crit.missing, pending: crit.pending } : null,
-      crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, breakUntil: ms(r.breakUntil), stats: r.stats || {} } : null,
+      crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, breakUntil: ms(r.breakUntil), breakMonthsUsed: (r.breakMonthsUsed || {})[String(new Date(now).getUTCFullYear())] || 0, stats: r.stats || {} } : null,
       strikes: L.activeStrikes(rec.strikes, now).map((s) => ({ at: s.at, reason: s.reason, expiresAt: s.expiresAtMs })),
       ready: rec.ready ? { to: rec.ready.to, name: L.gradeName(r?.track || "mod", rec.ready.to) } : null,
       academy: { passed: progressOf(progress) },
