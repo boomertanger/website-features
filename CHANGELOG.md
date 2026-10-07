@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: the /admin Scream Planner card (deadlines and defaults line, the Week not published to-do once the open week is past its publish-by time, links to /schedule/plan and /schedule/plan/usual) and a Scream Planner item in the account menu for crew and admins.
 site: /schedule/plan/usual, the usual-week editor for the owner and admins (7-day strip of poster cards, add, edit and delete a slot in a dialog, exceptions list and editor with the On /schedule switch, and the owner's deadlines and defaults card with the opens, closes, publish-by order check). Preview data: ?as=admin.
 site: /schedule/plan for staff, the plan view (owner and admins: deadline fuse, slot cards by day, the T1 tray with the four groups and Vault search, add, remove and reorder games, add and edit slots, Publish week with the unfinished list, marquee frame and door pickers and the ON AIR SOON celebration, Publish changes, Delay, Cancel, the crew's seats, open a week early, reopen voting) and the crew view at the same URL (availability tri-toggle, seat map, seat requests, Ask for a game). Phones show one day at a time with the tray as a sheet. Preview data: ?as=admin and ?as=member. confirmAction gains cancelLabel.
 - Scream Planner public pages: /schedule (marquee, week at a glance doors, tickets or timeline, usual-week strip, vote call-out), /schedule/usual and /schedule/vote (covers or race, vote, add a Vault game).

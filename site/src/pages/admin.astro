@@ -24,6 +24,16 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
       <p class="bt-section-text">The Mod Machina roster, coverage map, promotions, queue decisions, to-do list and crew settings.</p>
     </a>
   </div>
+  <div class="bt-zone bt-when-admin" data-planner-card hidden>
+    <div class="bt-card pc-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Scream Planner</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
+      <p class="bt-section-text" data-pc-deadlines></p>
+      <p class="bt-fine bt-fine--left" data-pc-defaults></p>
+      <p class="bt-fine bt-fine--left" data-pc-week></p>
+      <div class="bt-stack" data-pc-todos hidden></div>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin" href="/schedule/plan">Plan the week</a><a class="bt-btn bt-btn--secondary" href="/schedule/plan/usual">My usual week</a></div>
+    </div>
+  </div>
   <div class="bt-zone" data-ff-link hidden>
     <a class="bt-card bt-card--door" href="/shift/builder">
       <div class="bt-card-head"><h2 class="bt-card-title">Night Shift builder</h2><span class="bt-badge bt-badge--teal">Mods and admins</span></div>
@@ -100,6 +110,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 <script>
   // Owner and admin checks are for display only: the callables check on the server.
   import "../scripts/admin/award";
+  import "../scripts/admin/planner-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";
