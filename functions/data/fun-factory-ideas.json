@@ -102,6 +102,26 @@
       ]
     },
     {
+      "id": "bring-a-friend",
+      "name": "Bring a friend",
+      "enabled": false,
+      "needs": "Referral links (Mod Machina)",
+      "source": "Mod Machina",
+      "description": "A friend you brought to the site becomes an active member (a referral activates after 7 days with a real action).",
+      "actions": [],
+      "params": []
+    },
+    {
+      "id": "recruit-checks-in",
+      "name": "Your recruit checks in",
+      "enabled": false,
+      "needs": "Referral links (Mod Machina)",
+      "source": "Mod Machina",
+      "description": "A friend you brought checks in to Night Shift for the first time.",
+      "actions": [],
+      "params": []
+    },
+    {
       "id": "ratings",
       "name": "Member ratings",
       "enabled": false,

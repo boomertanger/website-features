@@ -161,6 +161,9 @@ module.exports = function accounts({ adminLogEntry }) {
         roleTag: v.roleTagFor(member.exists ? member.get("roles") : []),   // the role trigger re-checks it (owner = admin)
       });
     });
+    // Mod Machina referrals (docs/specs/mod-machina.md section 9): an optional /join/@handle link, first link wins.
+    // Never fails the signup.
+    if (d.refHandle) await require("../crew/referrals").recordReferral(db, uid, d.refHandle);
     return { handle, displayName, ageBand: v.ageBand(age) };
   });
 

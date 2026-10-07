@@ -404,6 +404,121 @@ async function main() {
   const before = (await db.doc(paths.board("all")).get()).data().rows.find((r) => r.uid === "w1").gears;
   await gears.grantGears("w1", "task", "season-task", 7);
   assert.equal((await db.doc(paths.board("all")).get()).data().rows.find((r) => r.uid === "w1").gears, before);
+
+  // ---------- part 2c: Academy quizzes and referral links ----------
+  const academy = require("../lib/crew/academy");
+  const acData = require("../data/crew-academy.json");
+  // the JSON is generated from docs/specs/crew-academy.md and must be current
+  assert.deepEqual(JSON.parse(JSON.stringify(require("./build-crew-academy").build())), acData, "crew-academy.json is stale: run node scripts/build-crew-academy.js");
+  assert.deepEqual(acData.modules.map((m) => m.id), ["m1", "m2", "m3", "m4", "m5", "m6", "m7", "m8", "m9", "m10"]);
+  assert.deepEqual(acData.modules.map((m) => m.slug), ["welcome", "house-rules", "platforms", "stream-duty", "engagement", "tools", "recruiting", "chat-games", "safety", "captain"]);
+  assert.deepEqual(acData.modules.map((m) => m.requiredFor), ["initiate", "initiate", "initiate", "initiate", "watcher", "watcher", null, null, "warden", "captain"]);
+  assert.equal(acData.modules[6].optional, true); assert.equal(acData.modules[7].soon, true);
+  assert.equal(acData.passMark, 4);
+  for (const m of acData.modules) { assert.equal(m.quiz.length, 5, m.slug); for (const q of m.quiz) { assert.equal(q.options.length, 3); assert.ok(q.answer >= 0 && q.answer < 3); assert.ok(q.q.length > 5); } }
+  // the answer keys, written out so a parser slip can't pass quietly (they come from the ✓ marks in the spec)
+  assert.equal(acData.modules[0].quiz.map((q) => q.answer).join(""), "11112");
+  assert.equal(acData.modules[2].quiz.map((q) => q.answer).join(""), "11111");
+  assert.equal(acData.modules[8].quiz.map((q) => q.answer).join(""), "01121");
+  assert.equal(acData.modules[9].quiz.map((q) => q.answer).join(""), "10010");
+  assert.equal(acData.modules[0].quiz[0].options[acData.modules[0].quiz[0].answer], "Set Going dark before you go");
+  assert.match(acData.modules[1].quiz[3].say, /crisis|flag/i);
+  // grading: pass mark 4 of 5
+  const key = (id) => acData.modules.find((m) => m.id === id).quiz.map((q) => q.answer);
+  const wrong = (a, n) => a.map((x, i) => (i < n ? (x + 1) % 3 : x));
+  assert.deepEqual(academy.grade(academy.MODULES.get("m1"), key("m1")), { score: 5, passed: true, results: academy.grade(academy.MODULES.get("m1"), key("m1")).results });
+  assert.equal(academy.grade(academy.MODULES.get("m1"), wrong(key("m1"), 1)).passed, true);    // 4 of 5
+  assert.equal(academy.grade(academy.MODULES.get("m1"), wrong(key("m1"), 2)).passed, false);   // 3 of 5
+  assert.equal(academy.grade(academy.MODULES.get("m1"), [0, 0, 0]).score >= 0, true);
+  assert.equal(academy.grade(academy.MODULES.get("m1"), ["1", "1", "1", "1", "2"]).score, 0);   // strings never match
+
+  // academySubmitQuiz: crew only, validated, graded on the server, +5 Gears once per module
+  const quiz = (uid, moduleId, answers) => as(uid)("academySubmitQuiz", { moduleId, answers });
+  await person("rk", { roles: ["mod"], roster: { track: "mod", grade: 1 } });
+  assert.equal(await reason(quiz("fan", "m1", key("m1"))), "notCrew");
+  assert.equal(await reason(quiz("rk", "m99", [0, 0, 0, 0, 0])), "noModule");
+  assert.equal(await reason(quiz("rk", "m1", [0, 0])), "answers");
+  assert.equal(await reason(quiz("rk", "m1", [0, 0, 0, 0, 7])), "answers");
+  assert.equal(await reason(quiz("rk", "m8", key("m8"))), "soon");
+  const rookieGears = async () => (await mine("rk")).reduce((n, d) => n + d.get("amount"), 0);
+  const g0 = await rookieGears();                                                                
+  const failed = await quiz("rk", "m3", wrong(key("m3"), 2));
+  assert.equal(failed.passed, false); assert.equal(failed.score, 3); assert.equal(failed.paid, false);
+  assert.equal(failed.results.length, 5); assert.equal(typeof failed.results[0].say, "string");
+  assert.equal(JSON.stringify(failed).includes('"answer"'), false);                              // the key never leaves the server
+  assert.equal((await db.doc(paths.academy("rk")).get()).get("modules").m3, undefined);
+  assert.equal((await db.doc(paths.academy("rk")).get()).get("attempts").m3, 1);
+  assert.equal(await rookieGears(), g0);
+  const passed = await quiz("rk", "m3", wrong(key("m3"), 1));
+  assert.equal(passed.passed, true); assert.equal(passed.score, 4); assert.equal(passed.paid, true);
+  assert.equal(await rookieGears(), g0 + 5);
+  assert.ok((await db.doc(paths.gear("academy:m3:rk")).get()).exists);
+  const again = await quiz("rk", "m3", key("m3"));
+  assert.equal(again.passed, true); assert.equal(again.paid, false);                              // no second payout
+  assert.equal(await rookieGears(), g0 + 5);
+  assert.equal((await db.doc(paths.academy("rk")).get()).get("modules").m3.score, 5);          // the best score is kept
+  assert.equal((await db.doc(paths.academy("rk")).get()).get("attempts").m3, 3);
+  assert.equal((await as("rk")("crewMe")).academy.passed.includes("m3"), true);
+  // the nightly check reads these passes: with m1 to m6 in, the Initiate is flagged ready
+  for (const id of ["m1", "m2", "m4", "m5", "m6"]) await quiz("rk", id, key(id));
+  assert.deepEqual((await as("rk")("crewMe")).academy.passed.sort(), ["m1", "m2", "m3", "m4", "m5", "m6"]);
+
+  // referrals: the link at signup (first wins), the first check-in, 7 days with a real action, the ladder
+  const R = require("../lib/crew/referrals");
+  await db.doc("handles/mod_one").set({ uid: "m1" });
+  let clock = NOW;
+  const eventCalls = [];
+  const refs = R.makeReferrals({ db, gears, now: () => clock, recordEvent: async (uid, type, params, ref) => { eventCalls.push([uid, type, ref]); return { counted: true }; } });
+  assert.equal((await R.recordReferral(db, "ra", "")).reason, "noLink");
+  assert.equal((await R.recordReferral(db, "ra", "no")).reason, "badHandle");
+  assert.equal((await R.recordReferral(db, "ra", "grapefan")).reason, "noReferrer");
+  await person("ra", {});
+  assert.equal((await R.recordReferral(db, "m1", "mod_one")).reason, "noReferrer");                    // never your own link
+  assert.equal((await R.recordReferral(db, "ra", "@MOD_ONE", clock)).saved, true);                     // the handle is normalised
+  await db.doc("handles/ward_one").set({ uid: "w1" });
+  assert.equal((await R.recordReferral(db, "ra", "ward_one")).reason, "firstLinkWins");
+  assert.equal((await db.doc(paths.referral("ra")).get()).get("refUid"), "m1");
+  const m1Gears = async () => (await mine("m1")).reduce((n, d) => n + d.get("amount"), 0);
+  const m1Before = await m1Gears();
+  assert.deepEqual(await refs.noteAction("nobody", "checkin"), { noted: false });                 // no referral, nothing happens
+  assert.deepEqual(await refs.noteAction("ra", "tap"), { noted: false });                         // only a check-in or a finished run
+  assert.equal((await refs.noteAction("ra", "checkin")).gears, 5);                                // the recruit's first check-in: +5 for a crew referrer
+  assert.equal(await m1Gears(), m1Before + 5);
+  await refs.noteAction("ra", "checkin");
+  assert.equal(await m1Gears(), m1Before + 5);                                                    // once
+  assert.deepEqual(eventCalls.filter((c) => c[1] === "recruit-checks-in"), [["m1", "recruit-checks-in", "ra"]]);
+  // 7 days with a real action: not before, then once
+  clock = NOW + 6 * DAY;
+  assert.equal((await refs.activateDue(clock)).activated, 0);
+  clock = NOW + 8 * DAY;
+  assert.equal((await refs.activateDue(clock)).activated, 1);
+  assert.equal(await m1Gears(), m1Before + 5 + 10);                                               // +10 for the activated recruit
+  assert.ok((await db.doc(paths.referral("ra")).get()).get("activatedAt"));
+  assert.deepEqual(eventCalls.filter((c) => c[1] === "bring-a-friend"), [["m1", "bring-a-friend", "ra"]]);
+  assert.equal((await refs.activateDue(clock)).activated, 0);                                     // never twice
+  // a recruit with no action never activates; a non-crew referrer still gets the badge ladder, just no Gears
+  await person("rb", {}); await R.recordReferral(db, "rb", "mod_one", NOW);
+  assert.equal((await refs.activateDue(NOW + 30 * DAY)).activated, 0);
+  for (const [n, id, xp] of [[1, "recruiter-1", 1], [5, "recruiter-5", 2], [15, "recruiter-15", 3], [50, "recruiter-50", 4]]) await db.doc(`${S}/badges/${id}`).set({ name: `Recruiter ${n}`, rarity: xp, collection: "community", holders: 0, status: "active" });
+  await db.doc(`${S}/profiles/m1`).set({ handle: "m1", xp: 0 }, { merge: true });
+  for (let i = 2; i <= 5; i++) {
+    await person(`ra${i}`, {});
+    await R.recordReferral(db, `ra${i}`, "mod_one", NOW);
+    await refs.noteAction(`ra${i}`, "arcade");
+  }
+  clock = NOW + 9 * DAY;
+  assert.equal((await refs.activateDue(clock)).activated, 4);
+  const owns = async (uid, id) => (await db.doc(`${S}/profiles/${uid}/badges/${id}`).get()).exists;
+  assert.equal(await owns("m1", "recruiter-1"), true);
+  assert.equal(await owns("m1", "recruiter-5"), true);                                             // five activated recruits
+  assert.equal(await owns("m1", "recruiter-15"), false);
+  // Gears for the referrer stop at the monthly cap (10 recruits) but the recruit still counts for the ladder
+  assert.equal((await mine("m1")).filter((d) => d.get("source") === "recruit").length, 5);
+  await person("rf", {}); await db.doc("handles/refer_f").set({ uid: "rf" });
+  await person("rg", {}); await R.recordReferral(db, "rg", "refer_f", NOW); await refs.noteAction("rg", "arcade");
+  assert.equal((await refs.activateDue(NOW + 9 * DAY)).activated, 1);
+  assert.equal(await owns("rf", "recruiter-1"), true);                                             // a plain member gets the badge...
+  assert.equal((await mine("rf")).length, 0);                                                      // ...and no Gears
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

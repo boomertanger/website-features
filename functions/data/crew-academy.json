@@ -1,0 +1,628 @@
+{
+  "passMark": 4,
+  "questions": 5,
+  "gears": "gearsValues.academyModule",
+  "source": "docs/specs/crew-academy.md",
+  "modules": [
+    {
+      "id": "m1",
+      "n": 1,
+      "title": "Welcome to the crew",
+      "slug": "welcome",
+      "minutes": 4,
+      "requiredFor": "initiate",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "You have exams next month. What's the right move?",
+          "options": [
+            "Keep signing up and hope for the best",
+            "Set Going dark before you go",
+            "Quietly stop showing up"
+          ],
+          "answer": 1,
+          "say": "Going dark covers up to two months a year, with no warnings and your perks carrying on for the first month."
+        },
+        {
+          "q": "A friend in chat asks you to time out someone they're arguing with. You:",
+          "options": [
+            "Do it, they're your friend",
+            "Treat it like any other chat moment and follow the ladder",
+            "Ban both of them"
+          ],
+          "answer": 1,
+          "say": "Mod powers aren't for grudges, ours or anyone else's."
+        },
+        {
+          "q": "How many duties a month keep a Watcher Active?",
+          "options": [
+            "1",
+            "2",
+            "4"
+          ],
+          "answer": 1,
+          "say": "Two. In months with fewer than 8 streams, it's one."
+        },
+        {
+          "q": "Someone posts what looks like another viewer's home address. Who do you tell after removing it?",
+          "options": [
+            "Nobody, it's handled",
+            "The Captain, and flag Boomer",
+            "Post in chat that you removed it"
+          ],
+          "answer": 1,
+          "say": "Personal info is a flag-it moment. Remove, then flag. Never repeat it."
+        },
+        {
+          "q": "Which chat matters most?",
+          "options": [
+            "Twitch, it's the biggest",
+            "YouTube, it needs the most help",
+            "All of them equally"
+          ],
+          "answer": 2,
+          "say": "We're one crew. YouTube needs more hands right now, but every viewer counts the same."
+        }
+      ]
+    },
+    {
+      "id": "m2",
+      "n": 2,
+      "title": "House rules and the escalation ladder",
+      "slug": "house-rules",
+      "minutes": 4,
+      "requiredFor": "initiate",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "A new viewer posts a link to their own stream. First step?",
+          "options": [
+            "Ban",
+            "Remind them self-promo isn't allowed",
+            "10-minute timeout"
+          ],
+          "answer": 1,
+          "say": "Start with the gentlest step that works. Most people just didn't know."
+        },
+        {
+          "q": "Someone keeps spoiling the ending after a reminder and a warning. Next?",
+          "options": [
+            "Another reminder",
+            "A short timeout",
+            "A ban"
+          ],
+          "answer": 1,
+          "say": "Third time is a timeout. Note it in the Mod Deck so the next lead knows."
+        },
+        {
+          "q": "Which of these skips straight to a ban?",
+          "options": [
+            "Backseating",
+            "Posting in another language (a reminder: English only)",
+            "A slur aimed at another viewer"
+          ],
+          "answer": 2,
+          "say": "Hate gets no reminder. Ban, then flag."
+        },
+        {
+          "q": "A viewer says they don't want to be here anymore. You:",
+          "options": [
+            "Ban, it's against the rules",
+            "Ignore it, it's probably a joke",
+            "Don't ban; flag Boomer right away"
+          ],
+          "answer": 2,
+          "say": "Someone in crisis is never a moderation problem. Flag it now; the Safety module covers what to say."
+        },
+        {
+          "q": "Someone argues with your warning. Best response?",
+          "options": [
+            "Explain the rule in detail until they agree",
+            "Stay short and calm; if it continues, timeout",
+            "Argue back so chat sees you're right"
+          ],
+          "answer": 1,
+          "say": "Never argue in chat. Short, calm, then the next step."
+        }
+      ]
+    },
+    {
+      "id": "m3",
+      "n": 3,
+      "title": "Platform guides",
+      "slug": "platforms",
+      "minutes": 7,
+      "requiredFor": "initiate",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "How many chats does a YouTube mobile stream have?",
+          "options": [
+            "One",
+            "Two, landscape and vertical",
+            "Three"
+          ],
+          "answer": 1,
+          "say": "Two broadcasts, two chats. One lead can cover both from the Deck early on."
+        },
+        {
+          "q": "Where do Twitch's held messages show up?",
+          "options": [
+            "Nowhere, they're deleted",
+            "AutoMod, in Mod View",
+            "Boomer's DMs"
+          ],
+          "answer": 1,
+          "say": "AutoMod holds them for a mod to approve or deny."
+        },
+        {
+          "q": "Who turns on Twitch Shield Mode during a raid?",
+          "options": [
+            "Any mod",
+            "The Captain",
+            "Boomer only"
+          ],
+          "answer": 1,
+          "say": "It changes the whole chat, so it's the Captain's call."
+        },
+        {
+          "q": "How do you become a TikTok LIVE moderator?",
+          "options": [
+            "Mod Machina adds you automatically",
+            "Boomer adds you in the TikTok app",
+            "You request it in chat"
+          ],
+          "answer": 1,
+          "say": "TikTok has no way to do it from the site, so it's on Boomer's checklist."
+        },
+        {
+          "q": "A Chat Game clue just dropped in YouTube vertical, and you lead Twitch. You:",
+          "options": [
+            "Post the clue in Twitch too",
+            "Tell Twitch chat a clue just dropped in YouTube vertical",
+            "Say nothing"
+          ],
+          "answer": 1,
+          "say": "Never repost clues. Point people to the chat that has it; that's the game."
+        }
+      ]
+    },
+    {
+      "id": "m4",
+      "n": 4,
+      "title": "Stream duty",
+      "slug": "stream-duty",
+      "minutes": 5,
+      "requiredFor": "initiate",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "You need 10 minutes away mid-stream. What do you press?",
+          "options": [
+            "Clock out",
+            "Step away",
+            "Nothing, just go"
+          ],
+          "answer": 1,
+          "say": "Step away asks a Deckhand to take the lead and hands it back when you return."
+        },
+        {
+          "q": "When should you drop a seat you can't make?",
+          "options": [
+            "Right before the stream",
+            "At least 24 hours ahead, on the swap board",
+            "Never, just don't show"
+          ],
+          "answer": 1,
+          "say": "24 hours ahead costs you nothing. No-shows add up."
+        },
+        {
+          "q": "You open the Deck 20 minutes after the start. Do you get the +5 for showing up?",
+          "options": [
+            "No, that's for clocking in within 15 minutes",
+            "Yes, always",
+            "Only on YouTube"
+          ],
+          "answer": 0,
+          "say": "You still earn your hourly Gears; only the on-time bonus is missed."
+        },
+        {
+          "q": "Who becomes Captain if the Captain steps away?",
+          "options": [
+            "Nobody",
+            "The highest-grade lead on duty",
+            "Boomer"
+          ],
+          "answer": 1,
+          "say": "Someone always watches every chat."
+        },
+        {
+          "q": "Can you help on a stream you didn't sign up for?",
+          "options": [
+            "No",
+            "Yes, drop in from the Mod Deck",
+            "Only as Captain"
+          ],
+          "answer": 1,
+          "say": "Drop-ins earn the same Gears, without the on-time bonus."
+        }
+      ]
+    },
+    {
+      "id": "m5",
+      "n": 5,
+      "title": "Engagement playbook",
+      "slug": "engagement",
+      "minutes": 6,
+      "requiredFor": "watcher",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "A first-time chatter says hi. Best reply?",
+          "options": [
+            "\"!welcome\"",
+            "Their name and a hello with a little context",
+            "Nothing, Boomer will see it"
+          ],
+          "answer": 1,
+          "say": "A name and a real hello is what makes people come back."
+        },
+        {
+          "q": "Chat has been quiet for 15 minutes. You:",
+          "options": [
+            "Post five prompts in a row",
+            "Post one question chat can answer",
+            "Wait for Boomer"
+          ],
+          "answer": 1,
+          "say": "One good prompt beats a wall of them."
+        },
+        {
+          "q": "A big scare is clearly coming. You:",
+          "options": [
+            "Go quiet and let chat react",
+            "Post a prediction poll",
+            "Remind the rules"
+          ],
+          "answer": 0,
+          "say": "Let the moment land."
+        },
+        {
+          "q": "How do you send people to another chat for a Chat Game clue?",
+          "options": [
+            "Repost the clue",
+            "Say where it dropped",
+            "DM people the clue"
+          ],
+          "answer": 1,
+          "say": "Pointing is the game. Reposting spoils it."
+        },
+        {
+          "q": "Where do your quick lines live?",
+          "options": [
+            "In a notes app",
+            "In the Mod Deck, one tap to copy",
+            "In Discord"
+          ],
+          "answer": 1,
+          "say": "The Deck keeps your code, rules, socials and link ready to paste."
+        }
+      ]
+    },
+    {
+      "id": "m6",
+      "n": 6,
+      "title": "Tools",
+      "slug": "tools",
+      "minutes": 5,
+      "requiredFor": "watcher",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "Who confirms a task you finished?",
+          "options": [
+            "Nobody",
+            "Someone else (the poster or an admin)",
+            "You"
+          ],
+          "answer": 1,
+          "say": "Gears for tasks always need a second person."
+        },
+        {
+          "q": "Highest badge rarity a Watcher can award?",
+          "options": [
+            "Common",
+            "Uncommon",
+            "Rare"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Where's your chat's check-in code?",
+          "options": [
+            "Quick lines in the Deck",
+            "Boomer posts it",
+            "On /schedule"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "You want to swap Saturday's seat. Where?",
+          "options": [
+            "Swap on the duty in HQ",
+            "Ask in chat",
+            "Clock out on Saturday"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "Can you award a badge to yourself?",
+          "options": [
+            "Yes, once a month",
+            "Never",
+            "Only Uncommon"
+          ],
+          "answer": 1,
+          "say": ""
+        }
+      ]
+    },
+    {
+      "id": "m7",
+      "n": 7,
+      "title": "Recruiting",
+      "slug": "recruiting",
+      "minutes": 4,
+      "requiredFor": null,
+      "optional": true,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "When does a recruit count?",
+          "options": [
+            "At signup",
+            "Active after 7 days",
+            "When they subscribe"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Is it OK to drop your link in another streamer's chat?",
+          "options": [
+            "Yes",
+            "No",
+            "Only if they're small"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "How often can you post your link in our chats?",
+          "options": [
+            "At most once an hour per chat",
+            "Every message",
+            "Never"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "During Recruit Rush you should push",
+          "options": [
+            "your link",
+            "the shared goal",
+            "Sub Club"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Do members (not crew) get anything for recruiting?",
+          "options": [
+            "No",
+            "Recruiter badges and XP",
+            "Gears"
+          ],
+          "answer": 1,
+          "say": ""
+        }
+      ]
+    },
+    {
+      "id": "m8",
+      "n": 8,
+      "title": "Hosting Chat Games",
+      "slug": "chat-games",
+      "minutes": 6,
+      "requiredFor": null,
+      "optional": false,
+      "soon": true,
+      "quiz": [
+        {
+          "q": "Your clue is due. You",
+          "options": [
+            "paraphrase it",
+            "post it exactly, press Posted",
+            "wait for a busier moment"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Twitch asks for clue 2 from YouTube landscape. You",
+          "options": [
+            "post it",
+            "tell them where it dropped",
+            "ignore them"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "You're the Inside Job culprit. You",
+          "options": [
+            "tell your best friend",
+            "tell no one, one tell per clue",
+            "drop five tells at once"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Why can a small chat win Scream Off?",
+          "options": [
+            "luck",
+            "points per viewer",
+            "YouTube boost"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "A bingo square was called by mistake. Who fixes it?",
+          "options": [
+            "Nobody",
+            "The Captain undoes it",
+            "Boomer on stream"
+          ],
+          "answer": 1,
+          "say": ""
+        }
+      ]
+    },
+    {
+      "id": "m9",
+      "n": 9,
+      "title": "Safety",
+      "slug": "safety",
+      "minutes": 8,
+      "requiredFor": "warden",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "Someone posts a viewer's phone number. First step?",
+          "options": [
+            "Remove it, then flag",
+            "Screenshot it as evidence",
+            "Ask them to delete it"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "A 15-year-old viewer asks you to DM them. You",
+          "options": [
+            "DM them",
+            "Kindly say crew don't DM viewers and keep it in chat",
+            "Ban them"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "A raid floods Twitch chat with slurs. Who decides on Shield Mode?",
+          "options": [
+            "You",
+            "The Captain",
+            "Nobody"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "Someone writes that they don't want to live anymore. You",
+          "options": [
+            "ban",
+            "ignore it as a joke",
+            "reply kindly with 988, then flag Boomer now"
+          ],
+          "answer": 2,
+          "say": ""
+        },
+        {
+          "q": "After a heavy moment you need a break. You",
+          "options": [
+            "stay anyway",
+            "tell the Captain and pass the lantern",
+            "clock out without telling anyone"
+          ],
+          "answer": 1,
+          "say": ""
+        }
+      ]
+    },
+    {
+      "id": "m10",
+      "n": 10,
+      "title": "Captain's course",
+      "slug": "captain",
+      "minutes": 10,
+      "requiredFor": "captain",
+      "optional": false,
+      "soon": false,
+      "quiz": [
+        {
+          "q": "TikTok's tile turns gold mid-stream. You",
+          "options": [
+            "ignore it",
+            "cover it or move a seat",
+            "end the stream"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "How many times can one badge drop per stream?",
+          "options": [
+            "Once",
+            "Twice",
+            "Unlimited"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "A raid hits. First call?",
+          "options": [
+            "Shield Mode / slow mode on the raided chat",
+            "ban everyone",
+            "tell chat to ignore it"
+          ],
+          "answer": 0,
+          "say": ""
+        },
+        {
+          "q": "Flagging Boomer looks like",
+          "options": [
+            "a paragraph",
+            "one clear sentence",
+            "a DM"
+          ],
+          "answer": 1,
+          "say": ""
+        },
+        {
+          "q": "After the stream, the Captain",
+          "options": [
+            "writes a two-line wrap-up and rates the game",
+            "nothing",
+            "posts the Gears"
+          ],
+          "answer": 0,
+          "say": ""
+        }
+      ]
+    }
+  ]
+}

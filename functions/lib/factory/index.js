@@ -64,6 +64,7 @@ module.exports = function factory(deps = {}) {
     await rateLimit(uid, "checkin");
     const now = Date.now(), today = L.dayKey(now);
     const streak = await Streaks.checkIn(uid, who, now);
+    if (!streak.already) await require("../crew/hooks").noteRecruitAction(uid, "checkin");   // Mod Machina: a recruit's first check-in
     const r = streak.already ? { counted: false, completed: [] } : await F.recordFactoryEvent(uid, "checkin", {}, today);
     return { ok: true, day: today, streak, counted: r.counted, completed: r.completed || [] };
   });

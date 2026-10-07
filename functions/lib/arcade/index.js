@@ -255,6 +255,7 @@ module.exports = function arcade() {
       await Promise.all([
         factory.recordFactoryEvent(uid, "arcade", { action: "play", ...p }, `play-${id.docId}`),
         result === "win" && checks.ok && factory.recordFactoryEvent(uid, "arcade", { action: "finish", ...p }, `finish-${id.docId}`),
+        result === "win" && checks.ok && require("../crew/hooks").noteRecruitAction(uid, "arcade"),   // Mod Machina: a recruit's first finished run
         out.personalBest && factory.recordFactoryEvent(uid, "arcade", { action: "best", ...p }, `best-${id.docId}`),
         out.onBoard && factory.recordFactoryEvent(uid, "arcade", { action: "board", ...p }, `board-${id.docId}`),
       ]);

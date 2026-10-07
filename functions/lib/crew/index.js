@@ -2,6 +2,7 @@
 // at crew/main/roster/{uid}). Written ONLY here (Admin SDK); firestore.rules gives clients no writes.
 // index.js calls this factory with its adminLog helper and spreads the result into its exports.
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { SITE_ID } = require("./settings");
@@ -32,8 +33,19 @@ module.exports = function crew({ adminLogEntry } = {}) {
   });
 
   const gears = require("./gears").makeGears({ db });
+
+  // ---------- crewReferralSweep (03:40 Central) ----------
+  // A recruit 7 days old with a real action is activated, and pays the referrer once (see ./referrals.js).
+  const referrals = require("./referrals").makeReferrals({ db, gears });
+  const crewReferralSweep = onSchedule({ schedule: "every day 03:40", timeZone: "America/Chicago", timeoutSeconds: 300 }, async () => {
+    const r = await referrals.activateDue();
+    console.log(`crewReferralSweep: ${r.checked} waiting, ${r.activated} activated`);
+  });
+
   return {
     mirrorCrewRoster,
+    crewReferralSweep,
+    ...require("./academy")({ adminLogEntry, gears }),
     ...require("./core")({ adminLogEntry, gears }),
     ...require("./tasks")({ adminLogEntry, gears }),
   };
