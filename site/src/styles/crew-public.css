@@ -1,0 +1,112 @@
+/* site/src/styles/crew-public.css — page-only layout for the public Mod Machina pages (/crew, /crew/board,
+   /crew/join, /crew/vote; mockup docs/design/mockups/mod-machina-screens.html). cp-* prefix. Components all come
+   from shared/bt-ui.css; this file only lays them out. Tokens only, no raw colours. Container queries
+   (1024 / 640 / 420), never @media for layout. Reduced motion respected (the only motion is smooth scroll, in JS). */
+
+.bt-root:not(#_) .cp-page { gap: 20px; }
+.bt-root:not(#_) .cp-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; }
+.bt-root:not(#_) .cp-head > div { min-width: 0; }
+.bt-root:not(#_) .cp-group { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .cp-group[hidden] { display: none; }
+.bt-root:not(#_) .cp-groups { display: flex; flex-direction: column; gap: 20px; }
+.bt-root:not(#_) .cp-muted { color: var(--bt-text-muted); }
+.bt-root:not(#_) .cp-art { display: inline-flex; width: 56px; height: 56px; color: var(--bt-title); }
+.bt-root:not(#_) .cp-art svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .cp-skel-tile { display: block; height: 118px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cp-skel-card { display: block; width: 100%; height: 260px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cp-acts { display: flex; flex-wrap: wrap; gap: 10px; }
+
+/* "Most needed" strip */
+.bt-root:not(#_) .cp-need { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 16px; padding: 14px 16px; border: 1px solid color-mix(in srgb, var(--bt-gold) 50%, transparent); border-radius: var(--bt-radius-lg); background: linear-gradient(90deg, var(--bt-gold-bg), transparent 80%), var(--bt-surface); }
+.bt-root:not(#_) .cp-need-txt { flex: 1 1 260px; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+.bt-root:not(#_) .cp-need-txt b { color: var(--bt-gold); }
+.bt-root:not(#_) .cp-need-txt span { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .cp-rooms { display: flex; flex-wrap: wrap; gap: 8px; min-width: 0; }
+
+/* Awards */
+.bt-root:not(#_) .cp-awards { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .cp-awards--one { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .cp-award { flex-direction: row; align-items: center; gap: 16px; }
+.bt-root:not(#_) .cp-award-txt { min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+.bt-root:not(#_) .cp-award-txt > b, .bt-root:not(#_) .cp-award-who b { font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .cp-award-txt a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .cp-award-txt a:hover { color: var(--bt-primary-soft); text-decoration: underline; }
+.bt-root:not(#_) .cp-award-txt small { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .cp-award-who { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+
+/* Hall of Fame: a row of small winner chips that scrolls sideways inside itself */
+.bt-root:not(#_) .cp-fame { display: flex; gap: 10px; margin: 0; padding: 0 0 4px; list-style: none; overflow-x: auto; scrollbar-width: thin; }
+.bt-root:not(#_) .cp-fame-item { flex: none; display: flex; align-items: center; gap: 10px; padding: 8px 12px 8px 8px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); }
+.bt-root:not(#_) .cp-fame-item b { display: block; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cp-fame-item a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .cp-fame-item a:hover { text-decoration: underline; }
+.bt-root:not(#_) .cp-fame-item small { color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+
+/* Board: tabs, the table scrolls inside its card rather than the page */
+.bt-root:not(#_) .cp-tabs.bt-pills { grid-template-columns: repeat(3, auto); width: fit-content; }
+.bt-root:not(#_) .cp-tabs.bt-pills button { padding: 8px 14px; white-space: nowrap; }
+.bt-root:not(#_) .cp-scroll { overflow-x: auto; }
+.bt-root:not(#_) .cp-page .bt-board-foot { flex-wrap: wrap; gap: 8px 16px; }
+
+/* Join: form + side column */
+.bt-root:not(#_) .cp-join { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.bt-root:not(#_) .cp-main, .bt-root:not(#_) .cp-side { min-width: 0; }
+.bt-root:not(#_) .cp-side { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .cp-form { gap: 18px; }
+.bt-root:not(#_) .cp-form .bt-card-head { padding-bottom: 0; }
+.bt-root:not(#_) .cp-apply-card p { margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .cp-apply-card p b { color: var(--bt-text); }
+.bt-root:not(#_) .cp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_) .cp-chips .bt-chip[aria-pressed="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .cp-device { width: fit-content; max-width: 100%; grid-template-columns: repeat(3, auto); }
+.bt-root:not(#_) .cp-checks { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .cp-checks li { display: grid; grid-template-columns: 22px minmax(0, 1fr); gap: 10px; align-items: start; font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .cp-checks small { display: block; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .cp-ck { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-lime-bg); color: var(--bt-lime); font-size: 12px; font-weight: 900; }
+.bt-root:not(#_) .cp-ck.is-todo { background: var(--bt-gold-bg); color: var(--bt-gold); }
+.bt-root:not(#_) .cp-expect { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .cp-expect li::before { content: "›"; margin-right: 8px; color: var(--bt-primary-soft); font-weight: 800; }
+.bt-root:not(#_) .cp-after { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; }
+.bt-root:not(#_) .cp-after > div { flex: 1 1 220px; min-width: 0; display: flex; flex-direction: column; gap: 6px; }
+.bt-root:not(#_) .cp-pos { flex: none; width: 72px; height: 72px; display: grid; place-items: center; border: 2px solid var(--bt-primary); border-radius: 50%; background: var(--bt-primary-bg); color: var(--bt-primary-soft); font-size: var(--bt-text-lg); font-weight: 900; line-height: 1.05; text-align: center; }
+
+/* Join: what the crew does, the ladder summary */
+.bt-root:not(#_) .cp-does { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .cp-do { gap: 8px; padding: 16px; }
+.bt-root:not(#_) .cp-do > span:last-child { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .cp-do-ico { font-size: var(--bt-text-2xl); line-height: 1; }
+.bt-root:not(#_) .cp-rungs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .cp-rung { flex-direction: row; align-items: center; gap: 14px; padding: 12px 14px; }
+.bt-root:not(#_) .cp-rung > span:last-child { min-width: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .cp-rung-chip { flex: none; }
+
+/* Vote */
+.bt-root:not(#_) .cp-vote-state { align-items: center; gap: 12px; padding: 32px 20px; text-align: center; }
+.bt-root:not(#_) .cp-vote-state p { max-width: 520px; margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .cp-vote-state .cp-acts { justify-content: center; }
+.bt-root:not(#_) .cp-vote-head { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 6px 12px; }
+.bt-root:not(#_) .cp-cand { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .cp-cand > .bt-btn, .bt-root:not(#_) .cp-cand > .bt-badge { align-self: stretch; justify-content: center; }
+.bt-root:not(#_) .cp-cand.is-mine .bt-crew-card { border-color: var(--bt-lime); }
+
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .cp-join { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cp-side { display: contents; }
+  .bt-root:not(#_) .cp-side > [data-cp-check] { order: -1; }
+  .bt-root:not(#_) .cp-main { order: 0; }
+  .bt-root:not(#_) .cp-side > :last-child { order: 1; }
+  .bt-root:not(#_) .cp-does { grid-template-columns: minmax(0, 1fr); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cp-page { gap: 16px; }
+  .bt-root:not(#_) .cp-awards, .bt-root:not(#_) .cp-rungs { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cp-head > .bt-btn { width: 100%; }
+  .bt-root:not(#_) .cp-device { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bt-root:not(#_) .cp-tabs.bt-pills { width: 100%; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bt-root:not(#_) .cp-tabs.bt-pills button { padding: 8px 4px; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .cp-form .bt-pref-seg button { padding: 7px 2px; font-size: var(--bt-text-xs); white-space: normal; line-height: 1.15; }
+  .bt-root:not(#_) .cp-award { gap: 12px; }
+  .bt-root:not(#_) .cp-award .bt-medal { --bt-medal-size: 54px; }
+}

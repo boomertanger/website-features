@@ -1,0 +1,71 @@
+{
+  "members": [
+    { "uid": "p-raven", "handle": "ravenrx", "track": "admin", "grade": 2, "status": "active", "favourites": ["twitch"] },
+    { "uid": "p-moss", "handle": "mossy", "track": "admin", "grade": 1, "status": "active", "favourites": ["ytLandscape"] },
+    { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "status": "active", "favourites": ["twitch"] },
+    { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "status": "active", "favourites": ["ytLandscape", "ytVertical"] },
+    { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "status": "active", "favourites": ["twitch", "tiktok"] },
+    { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "status": "active", "favourites": ["twitch"] },
+    { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "status": "checkIn", "favourites": ["ytVertical"] },
+    { "uid": "p-gem", "handle": "ghoulgem", "track": "mod", "grade": 2, "status": "goingDark", "favourites": ["tiktok"] },
+    { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "status": "active", "favourites": ["twitch"] }
+  ],
+  "awards": [
+    { "month": "2026-09", "topGear": { "uid": "p-jay", "handle": "cryptjay", "gears": 412 }, "fanFavourite": { "uid": "p-kat", "handle": "nightowlkat", "votes": 63 } },
+    { "month": "2026-08", "topGear": { "uid": "p-kat", "handle": "nightowlkat", "gears": 377 }, "fanFavourite": { "uid": "p-salem", "handle": "salemspooks", "votes": 51 } },
+    { "month": "2026-07", "topGear": { "uid": "p-raven", "handle": "ravenrx", "gears": 301 }, "fanFavourite": { "uid": "p-vex", "handle": "vex", "votes": 44 } }
+  ],
+  "board": {
+    "rows": [
+      { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "gears": 412, "duties": 0, "hours": 0, "rooms": ["ytLandscape", "ytVertical", "twitch"], "recruits": 3, "staff": false },
+      { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "gears": 377, "duties": 0, "hours": 0, "rooms": ["twitch", "ytLandscape"], "recruits": 1, "staff": false },
+      { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "gears": 298, "duties": 0, "hours": 0, "rooms": ["ytVertical", "ytLandscape"], "recruits": 4, "staff": false },
+      { "uid": "p-raven", "handle": "ravenrx", "track": "admin", "grade": 2, "gears": 251, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "staff": true },
+      { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "gears": 233, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 2, "staff": false },
+      { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "gears": 164, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 0, "staff": false },
+      { "uid": "p-moss", "handle": "mossy", "track": "admin", "grade": 1, "gears": 150, "duties": 0, "hours": 0, "rooms": ["ytLandscape"], "recruits": 1, "staff": true },
+      { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "gears": 58, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "staff": false }
+    ]
+  },
+  "me": { "uid": "p-lou", "handle": "lanternlou" },
+  "crewMe": {
+    "activityRules": false,
+    "apply": {
+      "ok": true, "reason": null, "reapplyAt": null, "signedUp": true,
+      "items": [
+        { "id": "age", "label": "18 or older", "ok": true, "detail": "" },
+        { "id": "account", "label": "Account at least 14 days old", "ok": true, "detail": "" },
+        { "id": "platform", "label": "A linked platform account", "ok": true, "detail": "" },
+        { "id": "checkins", "label": "3 daily check-ins in the last 30 days", "ok": true, "detail": "3 of 3" },
+        { "id": "standing", "label": "Not already crew, no open application", "ok": true, "detail": "" }
+      ]
+    },
+    "next": null, "crew": null, "strikes": [], "ready": null, "academy": { "passed": [] }, "application": null
+  },
+  "crewMeBlocked": {
+    "activityRules": false,
+    "apply": {
+      "ok": false, "reason": "needsCheckins", "reapplyAt": null, "signedUp": true,
+      "items": [
+        { "id": "age", "label": "18 or older", "ok": true, "detail": "" },
+        { "id": "account", "label": "Account at least 14 days old", "ok": false, "detail": "5 more days" },
+        { "id": "platform", "label": "A linked platform account", "ok": false, "detail": "Link Twitch, YouTube or TikTok in your account" },
+        { "id": "checkins", "label": "3 daily check-ins in the last 30 days", "ok": false, "detail": "1 of 3" },
+        { "id": "standing", "label": "Not already crew, no open application", "ok": true, "detail": "" }
+      ]
+    },
+    "next": null, "crew": null, "strikes": [], "ready": null, "academy": { "passed": [] }, "application": null
+  },
+  "application": { "appId": "p-lou-1", "status": "open", "band": "Top 5", "note": null, "createdAt": 1790000000000, "expiresAt": 1797700000000, "reapplyAt": null },
+  "ballot": {
+    "open": true, "month": "2026-10", "opensOn": "2026-10-27", "closesOn": "2026-10-31", "canVote": true, "reason": null, "myVote": null,
+    "candidates": [
+      { "uid": "p-kat", "handle": "nightowlkat", "grade": 4, "sinceMs": 1767225600000 },
+      { "uid": "p-jay", "handle": "cryptjay", "grade": 3, "sinceMs": 1772323200000 },
+      { "uid": "p-salem", "handle": "salemspooks", "grade": 3, "sinceMs": 1772323200000 },
+      { "uid": "p-vex", "handle": "vex", "grade": 2, "sinceMs": 1780272000000 },
+      { "uid": "p-mike", "handle": "mothmanmike", "grade": 2, "sinceMs": 1782864000000 },
+      { "uid": "p-lou", "handle": "lanternlou", "grade": 1, "sinceMs": 1788220800000 }
+    ]
+  }
+}

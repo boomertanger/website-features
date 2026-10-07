@@ -1,0 +1,28 @@
+---
+// /crew/board: the crew leaderboard (docs/specs/mod-machina.md §4b; mockup "Crew board", option B2: podium + table).
+// Public. This month / Season / All time from the boards docs, your own row highlighted and pinned, admins with a
+// green Staff tag. Filled by scripts/crew/board.ts.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-public.css";
+---
+<CrewLayout title="Crew board" description="Who is helping the most: Gears earned by the Boomertanger crew this month, this season and all time." section="board">
+  <div class="bt-zone cp-page" data-cp-board aria-busy="true">
+    <div class="cp-head">
+      <div>
+        <h1 class="bt-title">Crew board</h1>
+        <p class="bt-subtitle" data-cp-sub>Gears count help: time on duty, hosting Chat Games, recruiting and crew tasks.</p>
+      </div>
+      <div class="bt-pills cp-tabs" role="group" aria-label="Period" data-cp-tabs>
+        <button type="button" class="is-on" data-b="month" aria-pressed="true">This month</button>
+        <button type="button" data-b="season" aria-pressed="false">Season</button>
+        <button type="button" data-b="all" aria-pressed="false">All time</button>
+      </div>
+    </div>
+    <div data-cp-body><span class="bt-skeleton cp-skel-card"></span></div>
+    <div class="bt-board-legend"><span>YouTube chats earn 1.5× Gears</span><span>Timeouts and bans earn nothing</span><span>Top Gear is decided on the 1st, 00:05 Central</span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/board";
+</script>

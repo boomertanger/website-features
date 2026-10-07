@@ -1,0 +1,23 @@
+---
+// /crew/vote: the Fan Favourite ballot (docs/specs/mod-machina.md §5, §12). Members vote in the last 5 days of the
+// month, one vote each; the rest of the month a friendly "Voting opens" page. Public page: visitors get a Join
+// free prompt. Filled by scripts/crew/vote.ts from fanFavouriteBallot / fanFavouriteVote.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-public.css";
+---
+<CrewLayout title="Fan Favourite vote" description="Vote for the crew member who made your chats better this month." section="crew">
+  <div class="bt-zone cp-page" data-cp-vote aria-busy="true">
+    <div class="cp-head">
+      <div>
+        <h1 class="bt-title">Fan Favourite vote</h1>
+        <p class="bt-subtitle">Choose the crew member who made the chats better this month. One vote each, in the last 5 days of the month.</p>
+      </div>
+      <a class="bt-btn bt-btn--ghost" href="/crew">Meet the crew</a>
+    </div>
+    <div data-cp-body aria-live="polite"><span class="bt-skeleton cp-skel-card"></span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/vote";
+</script>

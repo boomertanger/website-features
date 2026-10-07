@@ -1,0 +1,33 @@
+---
+// /crew: Meet the crew (docs/specs/mod-machina.md §12; mockup mod-machina-screens.html "Meet the crew"). Public.
+// This month's awards, the roster (admins, then mods) with grade chips and starred favourite chats, the Hall of
+// Fame and the Join card. Filled by scripts/crew/index.ts from public/crew and the awards docs.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import NeedStrip from "../../components/crew/NeedStrip.astro";
+import "../../styles/crew-public.css";
+---
+<CrewLayout title="Meet the crew" description="The volunteers who keep every Boomertanger chat welcoming, fun and safe, on Twitch, YouTube and TikTok." section="crew">
+  <div class="bt-zone cp-page" data-cp-crew>
+    <div class="cp-head">
+      <div>
+        <h1 class="bt-title">The crew</h1>
+        <p class="bt-subtitle">The volunteers who keep every chat welcoming, fun and safe, on Twitch, YouTube and TikTok.</p>
+      </div>
+      <a class="bt-btn bt-btn--primary" href="/crew/join" data-cp-joinbtn>Join the crew</a>
+    </div>
+    <NeedStrip />
+    <section class="cp-awards" data-cp-awards aria-label="Awards" aria-busy="true">
+      <span class="bt-skeleton cp-skel-tile"></span><span class="bt-skeleton cp-skel-tile"></span>
+    </section>
+    <div data-cp-roster aria-busy="true"><span class="bt-skeleton cp-skel-card"></span></div>
+    <section class="cp-group" data-cp-fame hidden aria-labelledby="cp-fame-h"></section>
+    <div class="bt-join-card" data-cp-cta>
+      <div><h3>Want to help run the chats?</h3><ul><li>Pick the chats you like</li><li>Training included</li><li>Life comes first, always</li></ul></div>
+      <a class="bt-btn bt-btn--primary" href="/crew/join">Join the crew</a>
+    </div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/index";
+</script>

@@ -1,0 +1,88 @@
+---
+// /crew/join: Join the crew (docs/specs/mod-machina.md §10, §12; mockup "Join the crew"). Public page: visitors see
+// what the crew does, what to expect, the ladder, the Crew Code and "Most needed: YouTube"; applying needs an
+// account. Signed-in members get the live "Can I apply?" checklist and the application form (scripts/crew/join.ts),
+// then their queue band; crew see "You're on the crew".
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import NeedStrip from "../../components/crew/NeedStrip.astro";
+import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
+import "../../styles/crew-public.css";
+
+const does = [
+  ["👋", "Welcome people", "Say hi to new chatters, keep conversations going and make the quiet chats feel alive."],
+  ["🛡️", "Keep chats safe", "Gentle reminders first, timeouts and bans only when they're needed. Training shows you how."],
+  ["📺", "Cover every chat", "Twitch, both YouTube chats and TikTok. You pick the chats you like and the streams that suit you."],
+];
+const rungs = [
+  { chip: gradeChipHtml({ track: "mod", grade: 1 }), text: "Just approved and in training: short Academy modules and two ride-alongs." },
+  { chip: gradeChipHtml({ track: "mod", grade: 2 }), text: "A full mod. Leads a room, uses the task board and vouches for new applicants." },
+  { chip: gradeChipHtml({ track: "mod", grade: 3 }), text: "A senior mod. Can captain a stream and mentor Initiates." },
+  { chip: gradeChipHtml({ track: "mod", grade: 4 }), text: "The top of the mod ladder. Helps confirm rosters and shortlist the queue." },
+];
+const code = [
+  ["🕯", "Life comes first", "Step away any time. Hand off if it'll be a while. Nobody is guilted here."],
+  ["🤝", "Friendly before firm", "Start with the gentlest step that works: remind, warn, timeout, ban."],
+  ["🔒", "Personal info stays private", "Never repeat, screenshot or share anyone's personal details."],
+  ["⚖️", "Mod powers aren't for grudges", "No actions on a friend's say-so or to settle a score."],
+  ["📣", "Flag what matters", "Raids, threats or self-harm talk: tell the Captain and flag Boomer."],
+  ["🧡", "We're one crew", "Every chat counts the same. YouTube viewers deserve a welcome too."],
+];
+---
+<CrewLayout title="Join the crew" description="Help keep the Boomertanger chats fun and safe. See what the crew does, what to expect, and apply." section="join">
+  <div class="bt-zone cp-page" data-cp-join>
+    <div class="cp-head">
+      <div>
+        <h1 class="bt-title">Join the crew</h1>
+        <p class="bt-subtitle">Help keep the chats fun and safe. Tell us where you like to hang out; we'll train you for the rest.</p>
+      </div>
+    </div>
+    <NeedStrip />
+
+    <div class="cp-join">
+      <div class="cp-main" data-cp-main aria-live="polite"><span class="bt-skeleton cp-skel-card"></span></div>
+      <div class="cp-side">
+        <div class="bt-card" data-cp-check hidden></div>
+        <div class="bt-card">
+          <span class="bt-card-title">What to expect</span>
+          <ul class="cp-expect">
+            <li>The crew vouches for applicants; Boomer makes every final call.</li>
+            <li>You start as an Initiate: short training and two ride-alongs.</li>
+            <li>Sign up for the streams that suit you. Skip any you can't make.</li>
+            <li>Step away any time. Someone else takes over.</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+
+    <section class="cp-group" aria-labelledby="cp-does-h">
+      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-does-h">What the crew does</h2></div>
+      <div class="cp-does">
+        {does.map(([ico, t, d]) => <div class="bt-tile cp-do"><span class="cp-do-ico" aria-hidden="true">{ico}</span><b>{t}</b><span>{d}</span></div>)}
+      </div>
+    </section>
+
+    <section class="cp-group" aria-labelledby="cp-ladder-h">
+      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-ladder-h">The ladder</h2><a href="/crew/how-it-works">How grades work</a></div>
+      <ol class="cp-rungs">
+        {rungs.map((r) => <li class="bt-tile cp-rung"><span class="cp-rung-chip" set:html={r.chip} /><span>{r.text}</span></li>)}
+      </ol>
+      <p class="bt-fineprint">Admins are chosen by Boomer from the top of the mod ladder. Nobody applies to be one. Promotions are never automatic.</p>
+    </section>
+
+    <section class="cp-group" aria-labelledby="cp-code-h">
+      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-code-h">The Crew Code</h2><span class="bt-meta">Six rules every crew member agrees to</span></div>
+      <div class="bt-placard">
+        <div class="bt-placard-head"><i aria-hidden="true"></i><b>Crew Code</b><i aria-hidden="true"></i></div>
+        <ol class="bt-placard-list">
+          {code.map(([ic, t, d], i) => (
+            <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
+          ))}
+        </ol>
+      </div>
+    </section>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/join";
+</script>

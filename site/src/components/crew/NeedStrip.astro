@@ -1,0 +1,15 @@
+---
+// The "Most needed: YouTube" strip (docs/specs/mod-machina.md §7, §10), shared by /crew and /crew/join.
+// Static for now: Twitch and TikTok covered, both YouTube chats need help. Coverage data comes with stream duty.
+import { roomHtml } from "../../../../shared/ui/crew.js";
+const rooms = [
+  roomHtml({ chat: "twitch", name: "Twitch", state: "covered" }),
+  roomHtml({ chat: "ytLandscape", name: "YT landscape", state: "needed" }),
+  roomHtml({ chat: "ytVertical", name: "YT vertical", state: "needed" }),
+  roomHtml({ chat: "tiktok", name: "TikTok", state: "covered" }),
+].join("");
+---
+<div class="cp-need">
+  <div class="cp-need-txt"><b>Most needed: YouTube</b><span>Both YouTube chats (landscape and vertical) often have nobody on duty. YouTube help earns 1.5× Gears.</span></div>
+  <div class="cp-rooms" set:html={rooms} />
+</div>
