@@ -18,7 +18,7 @@ const admin = require("firebase-admin");
 
 const FILE = path.join(__dirname, "..", "data", "trophy-room-badges.json");
 const SITE_ID = "boomertanger";
-const KEEP = ["holders", "pctHeld", "buriedAt", "art"];   // owned by the service (or the badge editor), not the file
+const { KEEP, badgeDoc, same, norm } = require("../lib/rewards/catalog");   // shared with the seedBadgeCatalog callable
 
 function parseArgs(argv) {
   const args = { project: "staging", apply: false };
@@ -36,19 +36,6 @@ function resolveProjectId(nameOrId) {
     return rc.projects?.[nameOrId] ?? nameOrId;
   } catch { return nameOrId; }
 }
-
-const ts = (v) => (v == null ? null : admin.firestore.Timestamp.fromMillis(typeof v === "number" ? v : Date.parse(v)));
-/** The fields the file owns for a badge doc. */
-function badgeDoc(b) {
-  return {
-    name: b.name, collection: b.collection, rarity: b.rarity, source: b.source, how: b.how || "", emoji: b.emoji || null,
-    xp: b.xp, secret: b.secret || null, limited: b.limited ? { label: b.limited.label || null, opensAt: ts(b.limited.opensAt), closesAt: ts(b.limited.closesAt) } : null,
-    crewOnly: !!b.crewOnly, ladder: b.ladder || null, status: b.status || "active", awardableBy: b.awardableBy || null,
-    ...(b.drop ? { drop: b.drop } : {}),
-  };
-}
-const same = (a, b) => JSON.stringify(a) === JSON.stringify(b);
-const norm = (v) => JSON.parse(JSON.stringify(v, (k, x) => (x && typeof x.toMillis === "function" ? x.toMillis() : x)));
 
 async function main() {
   const args = parseArgs(process.argv.slice(2));

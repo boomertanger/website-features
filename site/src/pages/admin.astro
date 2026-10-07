@@ -78,6 +78,16 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
       <p class="bt-fine" data-tiktok-status role="status"></p>
       <p class="bt-fine" data-growth-result role="status"></p>
     </div>
+    <div class="bt-card" data-catalog>
+      <div class="bt-card-head"><h2 class="bt-card-title">Badge catalog</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
+      <p class="bt-section-text">Loads the Trophy Room's badges from the site's catalog file into this site. Check shows what would be created or changed and writes nothing. Load does it. It never deletes a badge and keeps who holds what.</p>
+      <div class="bt-row-center">
+        <button type="button" class="bt-btn bt-btn--admin" data-cat-check>Check</button>
+        <button type="button" class="bt-btn bt-btn--admin" data-cat-load>Load</button>
+      </div>
+      <p class="bt-fine" data-cat-status role="status"></p>
+      <div class="bt-tags" data-cat-ids hidden></div>
+    </div>
   </div>
 </BaseLayout>
 
@@ -87,6 +97,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";
+  import { confirmAction } from "../../../shared/ui/confirm.js";
 
   // ---- TikTok followers (manual), until the API is approved (docs/specs/growth-collector.md §5b) ----
   const DAY_MS = 86400000;
@@ -135,6 +146,48 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   const result = box.querySelector<HTMLElement>("[data-growth-result]")!;
   const connect = box.querySelector<HTMLButtonElement>("[data-connect-tiktok]")!;
   const runBtn = box.querySelector<HTMLButtonElement>("[data-run-growth]")!;
+
+  // ---- Badge catalog (owner only; seedBadgeCatalog checks again on the server) ----
+  type CatalogResult = { apply: boolean; written: number; total: number; created: string[]; changed: { id: string; fields: string[] }[]; unchanged: number; extra: string[]; collections: { created: number; changed: number } };
+  const cat = document.querySelector<HTMLElement>("[data-catalog]")!;
+  const catStatus = cat.querySelector<HTMLElement>("[data-cat-status]")!;
+  const catIds = cat.querySelector<HTMLElement>("[data-cat-ids]")!;
+  const catBtns = [...cat.querySelectorAll<HTMLButtonElement>("button")];
+  const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+  const esc = (t: string) => t.replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[c]!);
+  function showCatalog(r: CatalogResult) {
+    const cols = r.collections.created + r.collections.changed;
+    const head = r.apply ? "Loaded" : "Check";
+    const verb = r.apply ? ["created", "changed"] : ["would be created", "would be changed"];
+    catStatus.textContent = `${head}: ${r.total} badges in the catalog file. ${plural(r.created.length, "badge")} ${verb[0]}, ${plural(r.changed.length, "badge")} ${verb[1]}, ${r.unchanged} already match.`
+      + (cols ? ` ${plural(cols, "collection")} ${r.apply ? "updated" : "to update"}.` : "")
+      + (r.extra.length ? ` Left alone (in the site but not in the file): ${r.extra.join(", ")}.` : "")
+      + (r.apply ? ` ${plural(r.written, "document")} written.` : r.created.length || r.changed.length ? " Nothing has been written yet." : " Nothing to load.");
+    const chips = [...r.created.map((id) => `<span class="bt-tag">${esc(id)}</span>`), ...r.changed.map((c) => `<span class="bt-tag">${esc(c.id)} (${esc(c.fields.join(", "))})</span>`)];
+    catIds.innerHTML = chips.join("");
+    catIds.hidden = !chips.length;
+  }
+  async function runCatalog(apply: boolean) {
+    const { call } = await import("../lib/call");
+    return call<CatalogResult>("seedBadgeCatalog", { apply });
+  }
+  cat.querySelector<HTMLButtonElement>("[data-cat-check]")!.addEventListener("click", async () => {
+    catBtns.forEach((b) => (b.disabled = true)); catStatus.textContent = "Checking…";
+    try { showCatalog(await runCatalog(false)); } catch (err) { catStatus.textContent = messageFor(err); catIds.hidden = true; }
+    finally { catBtns.forEach((b) => (b.disabled = false)); }
+  });
+  cat.querySelector<HTMLButtonElement>("[data-cat-load]")!.addEventListener("click", () => {
+    void confirmAction({
+      title: "Load the badge catalog?",
+      message: "This creates the badges that are missing and updates the ones whose definition changed in the catalog file. It never deletes a badge, and it keeps who holds each one. Use Check first to see the list.",
+      confirmLabel: "Load",
+      busyLabel: "Loading…",
+      danger: false,
+      onConfirm: async () => {
+        try { showCatalog(await runCatalog(true)); } catch (err) { throw new Error(messageFor(err)); }
+      },
+    });
+  });
 
   whenReady().then(async (s) => {
     if (!s.user) return;

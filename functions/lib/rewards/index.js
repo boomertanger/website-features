@@ -13,6 +13,8 @@
 //   myRewardHistory({ cursor })          the member's own ledger, 25 at a time
 //   awardBadge({ uid, badgeId, reason }) admins (mods with Mod Machina): reason, no self-awards, 20 a day
 //   revokeBadge({ uid, badgeId, reason }) admins: removes the badge and its XP
+//   seedBadgeCatalog({ apply })          the owner only: loads functions/data/trophy-room-badges.json into the catalog (staging and
+//                                        production; a dry run unless apply is true; never deletes; keeps holders and pctHeld)
 //   rewardsLinkedAccounts                users/{uid} trigger: The Multistream Nomad (Twitch + YouTube + TikTok)
 //   rewardsNightly                       03:00 America/Chicago: holders and pctHeld, bury closed limited
 //                                        badges, The Pilgrim / The Elder, Founder (when flags.founderStart is set)
@@ -164,6 +166,28 @@ module.exports = function rewards({ adminLogEntry }) {
     return { ok: true, xp: r.xp };
   });
 
+  // ---------- seedBadgeCatalog({ apply }) ----------
+  // The owner's way to load the starter catalog without credentials on a laptop. Same rules as
+  // scripts/seed-badges.js (lib/rewards/catalog.js): new badges are created, changed ones merged, a badge's
+  // holders and pctHeld stay, nothing is deleted. Dry run unless apply === true. Logs an adminLog entry when it writes.
+  const seedBadgeCatalog = onCall(async (request) => {
+    const c = await caller(request);
+    if (!c.isOwner) throw fail("permission-denied", "Only the owner can load the badge catalog.", "notOwner");
+    const apply = request.data?.apply === true;
+    const catalog = require("./catalog");
+    const { summary, writes } = await catalog.planCatalog(db, require("../../data/trophy-room-badges.json"));
+    let written = 0;
+    if (apply && writes.length) {
+      written = await catalog.applyWrites(db, writes);
+      await db.collection("adminLog").add(await adminLogEntry(db, {
+        feature: "rewards", action: "rewardsCatalog", itemPath: `sites/${SITE_ID}/badges`, itemTitle: "Badge catalog",
+        actorUid: c.uid, actorName: c.name,
+        details: { version: summary.version, created: summary.created.length, changed: summary.changed.length, createdIds: summary.created.slice(0, 60), changedIds: summary.changed.map((x) => x.id).slice(0, 60) },
+      }));
+    }
+    return { ok: true, apply, written, ...summary };
+  });
+
   // ---------- The Multistream Nomad: Twitch, YouTube and TikTok all linked ----------
   // Watches users/{uid}.linked, so it pays out as soon as the third platform links (today only
   // Twitch can be linked; YouTube and TikTok linking land with their own workstreams).
@@ -219,5 +243,5 @@ module.exports = function rewards({ adminLogEntry }) {
     console.log(`rewardsNightly: ${all.size} badges (${recounted} updated, ${buried} buried), ${membersCount} members, ${paid} membership badges paid${founderStart ? "" : "; Founder off (no flags.founderStart)"}`);
   });
 
-  return { setShowcase, setPersona, myRewardHistory, awardBadge, revokeBadge, rewardsLinkedAccounts, rewardsNightly };
+  return { setShowcase, setPersona, myRewardHistory, awardBadge, revokeBadge, seedBadgeCatalog, rewardsLinkedAccounts, rewardsNightly };
 };
