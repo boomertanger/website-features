@@ -22,3 +22,8 @@
 # page (/u/view/, which reads the handle from the address).
 /u/:handle      /u/view/       200
 /u/:handle/     /u/view/       200
+
+# Referral links (docs/specs/mod-machina.md §9): every /join/@handle is the one client-rendered page
+# (/join/view/), which keeps the handle for 30 days and opens the Join free dialog.
+/join/:handle   /join/view/    200
+/join/:handle/  /join/view/    200

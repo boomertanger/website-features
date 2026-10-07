@@ -24,6 +24,7 @@ import { createHandleChecker, cleanHandle, type HandleState } from "../../lib/ha
 import { wordmark, signInReasons, termsVersion } from "../../data/site.json";
 import { UNDER13_KEY, EMAIL_FOR_LINK_KEY, RETURN_KEY } from "../../lib/auth-keys";
 import { isProduction } from "../../lib/env.js";
+import { getRef, clearRef } from "../../lib/referral";
 
 export type Screen = "join" | "signin" | "link" | "forgot" | "birthday" | "under13" | "handle" | "terms";
 export type Mode = "join" | "signin";
@@ -398,7 +399,9 @@ export function openSignIn({ screen, mode = "join", title, previewError }: { scr
           await call("completeSignup", {
             birthMonth: draft.month, birthYear: draft.year, handle: draft.handle,
             displayName: draft.displayName.trim(), termsVersion, reminders: draft.reminders,
+            ...(getRef() ? { refHandle: getRef() } : {}),   // a /join/@handle link, kept 30 days (lib/referral.ts)
           });
+          clearRef();   // the link was used (or ignored by the server: first link wins); don't carry it to another signup
           const u = auth.currentUser;
           if (u?.email && !u.emailVerified) await sendVerification().catch((err) => console.error(err));
           await refresh({ forceToken: true });

@@ -1,0 +1,20 @@
+---
+// /join/{handle}, a member's referral link (docs/specs/mod-machina.md §9). Cloudflare Pages serves this
+// page for every /join/{handle} (public/_redirects); scripts/crew/referral.ts reads the handle from the
+// address (or ?handle= when opened at /join/view/ directly, as in local previews), keeps it for 30 days
+// and opens the Join free dialog.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Join free" noindex>
+  <section class="bt-zone" data-ref hidden style="text-align:center;padding-block:48px">
+    <h1 class="bt-title" data-ref-who>Join Boomertanger</h1>
+    <p data-ref-lead></p>
+    <p><a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join free">Join free</a>
+       <a class="bt-btn bt-btn--ghost" href="/">Look around first</a></p>
+  </section>
+  <noscript><p class="bt-empty-title">Joining needs JavaScript.</p></noscript>
+</BaseLayout>
+
+<script>
+  import "../../scripts/crew/referral";
+</script>

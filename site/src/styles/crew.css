@@ -1,0 +1,35 @@
+/* site/src/styles/crew.css — Mod Machina's own look (docs/specs/mod-machina.md; mockups
+   docs/design/mockups/mod-machina-*.html). Only what's unique to these pages (cr-* prefix): the bar, gates and
+   page layouts. Components come from shared/bt-ui.css (.bt-grade, .bt-room, .bt-pref, .bt-crew-card, .bt-podium,
+   .bt-timecard, .bt-ladder, .bt-ring, .bt-quiz…). Tokens only: no raw colours. Container queries
+   (1024 / 640 / 420); every animation has a reduced-motion version. */
+
+/* ---- The bar (the page content width, like Night Shift's) ---- */
+.bt-root:not(#_) .cr-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
+.bt-root:not(#_) .cr-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .cr-tag { flex: none; }
+.bt-root:not(#_) .cr-barico { display: none; }
+
+/* ---- Gated pages: .cr[data-access] picks skeleton, gate or page ---- */
+.bt-root:not(#_) .cr :is(.cr-skel, .cr-gate) { display: none; }
+.bt-root:not(#_) .cr[data-access="loading"] .cr-skel { display: flex; }
+.bt-root:not(#_) .cr:is([data-access="join"], [data-access="signup"], [data-access="gate"]) .cr-gate { display: flex; }
+.bt-root:not(#_) .cr:not([data-access="page"]) > .cr-page { display: none; }
+.bt-root:not(#_) .cr-skel { flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .cr-skel-title { display: block; width: 260px; height: 32px; }
+.bt-root:not(#_) .cr-skel-line { display: block; width: min(420px, 80%); height: 14px; }
+.bt-root:not(#_) .cr-skel-card { display: block; width: 100%; height: 260px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cr-gate { flex-direction: column; align-items: center; gap: 14px; max-width: 560px; padding-top: 40px; padding-bottom: 56px; text-align: center; }
+.bt-root:not(#_) .cr-gate .bt-title { margin: 0 auto; }
+.bt-root:not(#_) .cr-gate-art { display: inline-flex; width: 72px; height: 72px; color: var(--bt-title); }
+.bt-root:not(#_) .cr-gate-art svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .cr-gate-lead { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
+.bt-root:not(#_) .cr-gate-lead[hidden] { display: none; }
+.bt-root:not(#_) .cr-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.bt-root:not(#_) .cr-gate-acts[hidden] { display: none; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cr-barlinks { display: none; }
+  .bt-root:not(#_) .cr-barico { display: inline-flex; }
+  .bt-root:not(#_) .cr-tag { display: none; }
+}
