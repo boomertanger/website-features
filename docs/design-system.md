@@ -962,6 +962,8 @@ reduced motion every piece goes still (frames, doors, flip clock, bursts, slider
   radiogroup that emits `bt-view-change`; the PAGE saves it (`bt.schedule.weekView`, `bt.schedule.voteView`, try/catch).
 - **Burst** (`burst.js`): `burst(el)`, `flyTo(from, to, done)`, `celebrate(root, { selector })` (the ON AIR SOON stamp and a
   splat burst on each card), `onAirSoonHtml()`; nothing under reduced motion.
+- **Crew view** (`seats.js`, added with the staff pages; shown live on the UI Kit page): `.bt-cslot` (`cslotHtml({ id, day, num, icon, label, timeHtml, count, games, metaHtml, state, backstage, sideHtml })`: the crew's slot card with read-only game sockets and a right column for the tri-toggle, seat map and Ask for a game; `state: "yes"` lights a lime edge), `.bt-smap` (`seatMapHtml({ captainHtml, rooms: [{ chat, name, boost, boxesHtml }] })`: the Captain row and one `.bt-smap-room` per chat, YouTube rooms edged gold with the "×1.5" boost), `.bt-sbox` (`seatBoxHtml({ kind, name, role, note, seat, label, title })`: `taken`, `open` (gold dashed button, `data-seat="room:role"` or `captain`), `mine` (primary; a button with `data-drop` when given a `seat`), `locked`), `.bt-crewbar` + `.bt-month` (`crewBarHtml`, `monthMeterHtml`: your grade and status chips, the month's duties as little bars and notes) and `.bt-myreq` (`myReqHtml`: "You asked for X" with where it stands). "Needed" is gold, never red.
+- **Slot card options** (`slot.js`): `timeHtml` (a `dualTimeHtml`), `badgeHtml` (Delayed, Cancelled...), `metaHtml`, `actionsHtml` (`.bt-slot-acts`, buttons at the foot of the right column) and `reorder` (‹ › on a hovered game, `data-mv="slotId:index:-1|1"`). `confirmAction` takes `bodyHtml` and `onOpen(modal)` (and passes `modal` to `onConfirm`) for a confirm dialog with a choice or a preview.
 
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
@@ -1000,6 +1002,7 @@ reduced motion every piece goes still (frames, doors, flip clock, bursts, slider
 | `vote.js` · `slot.js` | `voteCardHtml`, `raceRowHtml`, `voteBtnHtml`, `voteAddHtml`, `tokensHtml`, `dropsHtml`, `initVoteButtons`, `fuseHtml` · `slotHtml`, `slotOffHtml`, `roomsMiniHtml`, `trayHtml`, `initTray` |
 | `tri.js` · `view-switch.js` | `triHtml`, `initTri` · `viewSwitchHtml`, `initViewSwitch`, `WEEK_VIEWS`, `VOTE_VIEWS` |
 | `doors.js` · `slider.js` · `burst.js` | `doorHtml`, `doorsHtml`, `doorStateFor`, `setDoorStyle`, `initDoors`, `DOOR_STYLES` · `sliderHtml`, `initSlider` · `burst`, `flyTo`, `celebrate`, `onAirSoonHtml` |
+| `seats.js` | `seatBoxHtml`, `seatMapHtml`, `cslotHtml`, `crewBarHtml`, `monthMeterHtml`, `myReqHtml` (the crew view's seat map, slot card and bar) |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 

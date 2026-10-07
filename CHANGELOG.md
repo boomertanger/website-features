@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+kit: Scream Planner crew view pieces on /dev/ui-kit: .bt-cslot (the crew's slot card), .bt-smap seat map with .bt-sbox seats (taken, open, mine, locked), .bt-crewbar with .bt-month, .bt-myreq (shared/ui/seats.js); slot cards gain timeHtml, badgeHtml, metaHtml, actionsHtml and ‹ › reorder; confirmAction takes bodyHtml and onOpen.
 - site: Scream Planner page frame (PlannerLayout, PlannerBar with the SCREAM PLANNER wordmark and the Schedule, Usual week, Vote and Plan seg nav, planner layout script with membersOnly, crewOnly and adminOnly gates and the ?as= preview, planner.css). Pages follow.
 - docs: the Scream Planner kit piece list in design-system.md §8o names the doors .bt-doors / .bt-door (the spec's .bt-portal is the modal portal).
 functions: scripts/make-test-week.js (staging only, dry run by default, --apply writes, --remove deletes everything it made): opens a test week from sample patterns through the real openWeek code with every document marked test: true, seeds the ballot from the Vault games that exist and adds crew sign-ups for roster members that exist; --remove also rebuilds public/ballot and public/schedule. openWeek gained source and mark options for it.

@@ -3,13 +3,17 @@
 //
 //   roomsMiniHtml(rooms)    .bt-rooms-mini: { twitch, ytLandscape, ytVertical, tiktok } -> "covered" | "needed" | "off"
 //                           (the dot is lime, gold for needed, never red)
-//   slotHtml({ id, day, num, icon, label, timeText, state, count, games, backstage, selected, published, roomsHtml,
-//              availHtml, requests, stampHtml })
+//   slotHtml({ id, day, num, icon, label, timeText, timeHtml, badgeHtml, metaHtml, actionsHtml, reorder, state, count, games,
+//              backstage, selected, published, roomsHtml, availHtml, requests, stampHtml })
 //        .bt-slot: day tile, theme chip, time, badge, "1 of 2 games", game sockets (filled ones from games, empty ones
 //        dashed up to `count`), then the right column (rooms, availability, mod-request flag).
 //        games   [{ slug, coverHtml, src: "mod" | "vote" | "theme" | "you", srcExtra, fresh }]
 //        availHtml   avatarsHtml(...) + text, e.g. "4 can make it · 1 maybe"
 //        state   "Planned" (blue, default) | published adds gold "Scheduled"
+//        timeHtml   trusted markup in place of the escaped timeText (dualTimeHtml: Central, then your time)
+//        badgeHtml  replaces the Planned / Scheduled badge (Delayed, Cancelled...); metaHtml replaces "1 of 2 games"
+//        actionsHtml  trusted buttons at the foot of the right column (Edit, Delay, Crew...)
+//        reorder    adds ‹ › buttons on filled sockets (data-mv="slotId:index:-1|1"); the page reorders and re-renders
 //   slotOffHtml({ day, num, actionHtml })      the dashed day-off row
 //   trayHtml({ forHtml, filled, count, groups, searchValue, disabled })   .bt-tray (an <aside>)
 //        groups  [{ kind: "mod" | "vote" | "theme" | "pick", items: [trayItem...], empty }]; the titles are fixed:
@@ -31,20 +35,21 @@ export function roomsMiniHtml(rooms = {}) {
   return `<span class="bt-rooms-mini">${Object.keys(PLATFORMS).filter((c) => rooms[c]).map((c) => `<span class="bt-rm" data-state="${esc(rooms[c])}" title="${esc(PLATFORMS[c].name)}: ${rooms[c] === "covered" ? "lead covered" : rooms[c] === "needed" ? "lead needed" : "off"}">${platformIconHtml(c)}</span>`).join("")}</span>`;
 }
 
-export function slotHtml({ id = "", day = "", num = "", icon = "", label = "", timeText = "", count = 2, games = [], backstage = false, selected = false, published = false, roomsHtml = "", availHtml = "", requests = 0, stampHtml = "" } = {}) {
+export function slotHtml({ id = "", day = "", num = "", icon = "", label = "", timeText = "", timeHtml = "", badgeHtml = "", metaHtml = "", actionsHtml = "", reorder = false, count = 2, games = [], backstage = false, selected = false, published = false, roomsHtml = "", availHtml = "", requests = 0, stampHtml = "" } = {}) {
   const socks = Array.from({ length: count }, (_, k) => {
     const g = games[k];
     return g
-      ? `<span class="bt-sock${g.fresh ? " is-new" : ""}" data-sock="${esc(id)}-${k}">${g.coverHtml}<button type="button" class="bt-sock-x" data-rm="${esc(id)}:${k}" data-slug="${esc(g.slug ?? "")}" aria-label="Remove ${esc(g.title ?? "game")}">×</button>${srcHtml(g.src || "you", g.srcExtra || "")}</span>`
+      ? `<span class="bt-sock${g.fresh ? " is-new" : ""}" data-sock="${esc(id)}-${k}">${g.coverHtml}<button type="button" class="bt-sock-x" data-rm="${esc(id)}:${k}" data-slug="${esc(g.slug ?? "")}" aria-label="Remove ${esc(g.title ?? "game")}">×</button>${reorder && games.length > 1 ? `<span class="bt-sock-mv">${k > 0 ? `<button type="button" data-mv="${esc(id)}:${k}:-1" aria-label="Move ${esc(g.title ?? "game")} earlier">‹</button>` : ""}${k < games.length - 1 ? `<button type="button" data-mv="${esc(id)}:${k}:1" aria-label="Move ${esc(g.title ?? "game")} later">›</button>` : ""}</span>` : ""}${srcHtml(g.src || "you", g.srcExtra || "")}</span>`
       : `<span class="bt-sock" data-sock="${esc(id)}-${k}"><span class="bt-sock-empty" aria-label="Empty game spot">+</span><span class="bt-src bt-src--you">&nbsp;</span></span>`;
   }).join("");
   const right = backstage
     ? `<span class="bt-avail">${velvetHtml("Fan Club")}</span><span class="bt-avail">No chats to crew</span>`
     : `${roomsHtml}${availHtml ? `<span class="bt-avail">${availHtml}</span>` : ""}${requests ? `<span class="bt-req-flag">✋ ${esc(requests)} mod request${requests > 1 ? "s" : ""}</span>` : ""}`;
+  const acts = actionsHtml ? `<div class="bt-slot-acts">${actionsHtml}</div>` : "";
   return `<div class="bt-slot${backstage ? " is-backstage" : ""}${published ? " is-published" : ""}${selected ? " is-sel" : ""}" data-slot="${esc(id)}" tabindex="0" role="group"${selected ? ' aria-current="true"' : ""} aria-label="${esc(label)}, ${esc(day)} ${esc(num)}">`
     + `<div class="bt-slot-day"><small>${esc(String(day).toUpperCase())}</small><b>${esc(num)}</b></div>`
-    + `<div class="bt-slot-mid"><div class="bt-slot-l1">${themeChipHtml({ icon, label })}<span class="bt-slot-time">${esc(timeText)}</span><span class="bt-badge bt-badge--${published ? "gold" : "blue"}">${published ? "Scheduled" : "Planned"}</span><span class="bt-meta">${games.length} of ${esc(count)} games</span></div><div class="bt-slot-socks">${socks}</div></div>`
-    + `<div class="bt-slot-right">${right}</div>${stampHtml}</div>`;
+    + `<div class="bt-slot-mid"><div class="bt-slot-l1">${themeChipHtml({ icon, label })}<span class="bt-slot-time">${timeHtml || esc(timeText)}</span>${badgeHtml || `<span class="bt-badge bt-badge--${published ? "gold" : "blue"}">${published ? "Scheduled" : "Planned"}</span>`}<span class="bt-meta">${metaHtml || `${games.length} of ${esc(count)} games`}</span></div><div class="bt-slot-socks">${socks}</div></div>`
+    + `<div class="bt-slot-right">${right}${acts}</div>${stampHtml}</div>`;
 }
 
 export const slotOffHtml = ({ day = "", num = "", actionHtml = "" } = {}) => `<div class="bt-slot-off"><span><b>${esc(day)} ${esc(num)}</b> · day off in your usual week</span>${actionHtml}</div>`;

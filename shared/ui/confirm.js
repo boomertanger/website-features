@@ -3,7 +3,9 @@ import { openModal, modalHeader } from "./modal.js";
 import { escapeHtml } from "./dom.js";
 
 /**
- * confirmAction({ title, message, confirmLabel, busyLabel, danger, feature, onConfirm })
+ * confirmAction({ title, message, bodyHtml, confirmLabel, busyLabel, danger, feature, onOpen, onConfirm })
+ * bodyHtml (optional, trusted markup) goes under the message for a dialog that needs a choice or a preview; onOpen(modal) wires it,
+ * and onConfirm(modal) can read it (Scream Planner's cancel dialog: reason chips and a preview).
  * onConfirm is async. While it runs, every control is disabled and the confirm
  * button shows a spinner + busyLabel, so a double-click can't fire twice.
  * If onConfirm throws, the error message is shown and the buttons re-enable.
@@ -12,10 +14,12 @@ import { escapeHtml } from "./dom.js";
 export function confirmAction({
   title = "Are you sure?",
   message = "",
+  bodyHtml = "",
   confirmLabel = "Delete",
   busyLabel = "Deleting…",
   danger = true,
   feature = "",
+  onOpen,
   onConfirm = async () => {},
 } = {}) {
   return new Promise((resolve) => {
@@ -25,6 +29,7 @@ export function confirmAction({
       content:
         modalHeader(escapeHtml(title)) +
         (message ? `<p class="bt-section-text" style="font-size:var(--bt-text-base);color:var(--bt-text-muted)">${escapeHtml(message)}</p>` : "") +
+        bodyHtml +
         `<p class="bt-error" hidden></p>` +
         `<div class="bt-modal-actions">` +
         `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button>` +
@@ -33,6 +38,7 @@ export function confirmAction({
       onClose: () => { if (!done) resolve(false); },
     });
 
+    onOpen?.(modal);
     const confirmBtn = modal.querySelector("[data-bt-confirm]");
     const errorEl = modal.querySelector(".bt-error");
 
@@ -42,7 +48,7 @@ export function confirmAction({
       confirmBtn.disabled = true;
       confirmBtn.innerHTML = `<span class="bt-spinner" aria-hidden="true"></span>${escapeHtml(busyLabel)}`;
       try {
-        await onConfirm();
+        await onConfirm(modal);
         done = true;
         setDismissible(true);
         close();

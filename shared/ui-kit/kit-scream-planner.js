@@ -14,6 +14,8 @@ import { DOOR_STYLES, doorHtml, doorsHtml, doorStateFor, setDoorStyle, initDoors
 import { sliderHtml, initSlider } from "../ui/slider.js";
 import { viewSwitchHtml, initViewSwitch, WEEK_VIEWS, VOTE_VIEWS } from "../ui/view-switch.js";
 import { burst, celebrate, flyTo } from "../ui/burst.js";
+import { seatBoxHtml, seatMapHtml, cslotHtml, crewBarHtml, monthMeterHtml, myReqHtml } from "../ui/seats.js";
+import { gradeChipHtml } from "../ui/grade-chip.js";
 
 // stand-in cover art, drawn from a hue (the real pages pass the Vault cover)
 const art = (title, h) => {
@@ -123,6 +125,44 @@ function planKit() {
     <div class="kit-grid-2">${emptyTray}${groupsEmpty}</div>`;
 }
 
+// ---- the crew view: seat map, crew slot, crew bar (shared/ui/seats.js) ----
+const CREW_DEMO = { avail: "yes", mine: null, asked: false };
+function seatsMap(mine) {
+  const box = (o) => seatBoxHtml(o);
+  const me = (seat, role) => (mine === seat ? box({ kind: "mine", role, seat, note: "waiting for the Captain" }) : null);
+  const open = (seat, role) => me(seat, role) || box({ kind: "open", seat, role });
+  return seatMapHtml({
+    captainHtml: box({ kind: "locked", label: "⚓ Open · Warden and up", title: "Captain is Warden and up" }),
+    rooms: [
+      { chat: "twitch", name: "Twitch", boxesHtml: box({ kind: "taken", name: "NightOwl Kat", role: "lead" }) + open("twitch:deckhand", "deckhand") },
+      { chat: "ytLandscape", name: "YT land", boost: "×1.5", boxesHtml: open("ytLandscape:lead", "lead") + box({ kind: "open", seat: "ytLandscape:deckhand", role: "deckhand" }) },
+      { chat: "ytVertical", name: "YT vert", boost: "×1.5", boxesHtml: box({ kind: "taken", name: "Vex", role: "lead" }) + box({ kind: "taken", name: "Salem", role: "deckhand" }) },
+      { chat: "tiktok", name: "TikTok", boxesHtml: box({ kind: "open", seat: "tiktok:lead", role: "lead" }) + box({ kind: "open", seat: "tiktok:deckhand", role: "deckhand" }) },
+    ],
+  });
+}
+function crewSlotDemo() {
+  const d = CREW_DEMO, canAsk = d.avail === "yes" && !!d.mine;
+  const ask = d.asked ? myReqHtml({ coverHtml: cov("granny3"), title: "Granny 3", status: "open", extra: "closes Thu 10 PM" })
+    : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-sp-ask${canAsk ? "" : " disabled"}>✋ Ask for a game</button>${canAsk ? "" : '<span class="bt-meta">Mark Available and take a seat first.</span>'}`;
+  return cslotHtml({ id: "demo", day: "Wed", num: 14, icon: "🥽", label: "VR night", timeHtml: dt(26, 2), count: 2, games: [{ coverHtml: cov("vr") }], state: d.avail,
+    metaHtml: "So far: Dark Room VR. 1 spot still open.",
+    sideHtml: `<div class="bt-cslot-row">${triHtml({ value: d.avail, name: "demo-avail" })}<span class="bt-tri-hint">Pre-filled from your usual times</span></div>${seatsMap(d.mine)}<div class="bt-cslot-row">${ask}</div>` });
+}
+function crewKit() {
+  return `
+    <p class="kit-sub">Crew bar (.bt-crewbar, crewBarHtml in shared/ui/seats.js): your grade and status chips, the month meter (.bt-month) and notes</p>
+    ${crewBarHtml({ gradeHtml: gradeChipHtml({ track: "mod", grade: 2 }), statusHtml: '<span class="bt-badge bt-badge--lime">Active</span>', monthHtml: `October duties ${monthMeterHtml({ done: 1, need: 2 })}`, notes: ["Seats taken within 48 h of publishing earn <b>+3 Gears</b>", "YouTube seats earn <b>×1.5</b>"] })}
+    <p class="kit-sub">Seat boxes (.bt-sbox, seatBoxHtml): taken, open (gold, dashed, a button), mine (primary; a button to drop it when it has a seat), locked (your grade doesn't cover it)</p>
+    <div class="kit-row" style="max-width:640px">${seatBoxHtml({ kind: "taken", name: "NightOwl Kat", role: "lead" })}${seatBoxHtml({ kind: "open", seat: "twitch:lead", role: "lead" })}${seatBoxHtml({ kind: "mine", role: "deckhand", note: "confirmed" })}${seatBoxHtml({ kind: "mine", role: "lead", seat: "x:lead", note: "pending" })}${seatBoxHtml({ kind: "locked", label: "⚓ Warden and up", title: "Captain is Warden and up" })}</div>
+    <p class="kit-sub">Crew slot (.bt-cslot, cslotHtml) with the tri-toggle, the seat map (.bt-smap) and Ask for a game / your request (.bt-myreq). Live: pick Available, take a seat (a gold box), ask for a game, drop the seat</p>
+    <div data-kit-sp-crew>${crewSlotDemo()}</div>
+    <p class="kit-sub">Crew slot, backstage (no chats to crew)</p>
+    <div class="bt-slots">${cslotHtml({ id: "bs", day: "Sun", num: 18, icon: "🎬", label: "Backstage hangout", timeHtml: dt(100, 2), backstage: true })}</div>
+    <p class="kit-sub">Slot card options for the plan view: a dual time, a badge of your own (Delayed, Cancelled), action buttons, and ‹ › to reorder the games (hover a game)</p>
+    <div class="bt-slots">${slotOf({ ...SLOTS[2], id: "opts", day: "Fri", num: 16 }, { reorder: true, published: true, timeHtml: dt(52, 2, "7 PM"), badgeHtml: '<span class="bt-badge bt-badge--gold">Delayed</span>', actionsHtml: '<button type="button" class="bt-btn bt-btn--admin bt-btn--sm">Delay</button><button type="button" class="bt-btn bt-btn--admin bt-btn--sm">Cancel</button>' })}</div>`;
+}
+
 function doorsKit() {
   const week = (n0) => [
     { id: "mon", day: "Mon", num: 5, state: "ended", icon: "🎯", title: "Co-op day", timeText: "7–9 PM", coverHtml: cov("iron") },
@@ -177,6 +217,7 @@ export function screamPlannerKitHtml({ mascotHtml = "" } = {}) {
     ${marqueeKit(mascotHtml)}
     ${ballotKit()}
     ${planKit()}
+    ${crewKit()}
     ${doorsKit()}
   </section>`;
 }
@@ -254,6 +295,20 @@ export function initScreamPlannerKit(mount) {
     burst(e.currentTarget, { n: 24 });
     S.published = true; renderPlan();
     celebrate(plan.querySelector("[data-kit-sp-slots]"), { selector: ".bt-slot" });
+  });
+
+  // live crew slot
+  const crewHost = sec.querySelector("[data-kit-sp-crew]");
+  const renderCrew = () => {
+    crewHost.innerHTML = crewSlotDemo();
+    initTri(crewHost, { onChange: (v) => { CREW_DEMO.avail = v; if (v === "no") { CREW_DEMO.mine = null; CREW_DEMO.asked = false; } setTimeout(renderCrew, 0); } });
+  };
+  renderCrew();
+  crewHost.addEventListener("click", (e) => {
+    const take = e.target.closest("[data-seat]"), drop = e.target.closest("[data-drop]"), ask = e.target.closest("[data-kit-sp-ask]");
+    if (take) { CREW_DEMO.mine = take.dataset.seat; if (CREW_DEMO.avail !== "maybe") CREW_DEMO.avail = "yes"; renderCrew(); burst(crewHost.querySelector(".bt-sbox.is-mine"), { n: 10 }); }
+    else if (drop) { CREW_DEMO.mine = null; CREW_DEMO.asked = false; renderCrew(); }
+    else if (ask && !ask.disabled) { CREW_DEMO.asked = true; renderCrew(); }
   });
 
   // doors
