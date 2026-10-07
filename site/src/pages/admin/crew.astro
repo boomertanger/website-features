@@ -34,6 +34,7 @@ import "../../styles/crew-admin.css";
         <a href="#coverage" data-nav="coverage">Coverage</a>
         <a href="#ready" data-nav="ready">Ready to promote <span class="bt-badge bt-badge--admin" data-count="ready" hidden></span></a>
         <a href="#queue" data-nav="queue">Queue <span class="bt-badge bt-badge--admin" data-count="queue" hidden></span></a>
+        <a href="#waive" data-nav="waive" data-ca-owner hidden>Waive</a>
         <a href="#strikes" data-nav="strikes">Strikes</a>
         <a href="#todos" data-nav="todos">To-do <span class="bt-badge bt-badge--admin" data-count="todos" hidden></span></a>
         <a href="#settings" data-nav="settings">Settings</a>
@@ -70,6 +71,15 @@ import "../../styles/crew-admin.css";
         <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-queue">Queue decisions</h2></div>
         <p class="ca-sub">Open applications, best first. Only the owner approves new mods.</p>
         <div class="ca-queue" data-ca-queue></div>
+      </section>
+
+      <section class="ca-sec" id="waive" aria-labelledby="ca-h-waive" data-ca-owner hidden>
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-waive">Waive requirements</h2></div>
+        <p class="ca-sub">Owner only. Waives the 3 check-ins for a member so they can apply now. Everything else (18+, account age, a linked platform) still applies.</p>
+        <form class="bt-card ca-card ca-waive" data-ca-waive novalidate>
+          <div class="bt-field"><label class="bt-label" for="ca-waive-h">Member's handle</label><input class="bt-input" id="ca-waive-h" name="handle" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="@handle" maxlength="21"><span class="bt-hint ca-err" data-waive-err role="alert" hidden></span></div>
+          <div><button type="submit" class="bt-btn bt-btn--admin">Waive requirements</button></div>
+        </form>
       </section>
 
       <section class="ca-sec" id="strikes" aria-labelledby="ca-h-strikes">

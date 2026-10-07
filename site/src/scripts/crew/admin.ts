@@ -6,6 +6,7 @@
 import { onAccess, previewAs } from "./layout";
 import { crewCall, crewMe, CHATS, CHAT_NAME, type Chat } from "./api";
 import { messageFor, reasonOf } from "../../lib/errors";
+import { uidForHandle } from "../trophies/data";
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
 import { toast } from "../../../../shared/ui/toast.js";
@@ -442,6 +443,31 @@ function waive(appId: string) {
   });
 }
 
+function wireWaive() {
+  document.querySelectorAll<HTMLElement>("[data-ca-owner]").forEach((e) => { e.hidden = !me.isOwner; });
+  const form = document.querySelector<HTMLFormElement>("[data-ca-waive]");
+  if (!form || !me.isOwner) return;
+  const err = form.querySelector<HTMLElement>("[data-waive-err]")!, input = form.elements.namedItem("handle") as HTMLInputElement;
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    err.hidden = true;
+    const handle = input.value.trim().replace(/^@/, "").toLowerCase();
+    const fail = (m: string) => { err.textContent = m; err.hidden = false; };
+    if (!/^[a-z0-9_]{3,20}$/.test(handle)) return fail("Enter a handle: 3 to 20 letters, numbers or underscores.");
+    let uid: string | null = null;
+    if (preview) uid = "preview";
+    else { try { uid = await uidForHandle(handle); } catch { return fail("Couldn't look that handle up. Try again."); } }
+    if (!uid) return fail(`No member called @${handle}.`);
+    void confirmAction({
+      title: "Waive the requirements?", confirmLabel: "Waive", busyLabel: "Saving…", danger: false, feature: "crew",
+      message: `@${handle} won't need the 3 check-ins to apply. 18+, account age and a linked platform still apply.`,
+      onConfirm: async () => {
+        try { const res = await act("crewWaive", { uid }); if (res) { toast(`Check-ins waived for @${handle}.`); input.value = ""; } } catch (x) { throw new Error(messageFor(x, "Couldn't save. Try again.")); }
+      },
+    });
+  });
+}
+
 async function todoDone(id: string, btn: HTMLButtonElement) {
   btn.disabled = true;
   try {
@@ -495,6 +521,7 @@ function wireSettings() {
 // ---- wiring ----
 function wire() {
   wireSettings();
+  wireWaive();
   $("[data-ca-filters]").addEventListener("click", (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-f]");
     if (!b) return;
