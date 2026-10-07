@@ -31,5 +31,5 @@ module.exports = function crew({ adminLogEntry } = {}) {
     }
   });
 
-  return { mirrorCrewRoster };
+  return { mirrorCrewRoster, ...require("./core")({ adminLogEntry }) };
 };

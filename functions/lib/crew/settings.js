@@ -19,6 +19,7 @@ const paths = {
   academy: (uid) => `${ROOT}/academyProgress/${uid}`,
   award: (ym) => `${ROOT}/awards/${ym}`,
   awardVote: (ym, uid) => `${ROOT}/awards/${ym}/votes/${uid}`,
+  waiver: (uid) => `${ROOT}/waivers/${uid}`,
   referral: (uid) => `${ROOT}/referrals/${uid}`,
 };
 

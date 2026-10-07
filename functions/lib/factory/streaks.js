@@ -6,6 +6,7 @@
 //                       there are enough, else it starts again at 1. Every 7 days in a row earns a
 //                       saver (hold 2; Sub Club and crew 3). Pays the streak-day-N badges (3 … 365)
 //                       through the Trophy Room. Returns the streak and what changed.
+//   (recentDays: the last 40 check-in day keys, for Mod Machina's check-in rules)
 //   sweep(now)          the 00:10 Central job: streaks that missed yesterday spend savers or break,
 //                       so pages show the right number before the member comes back.
 // lastDay is the last day the streak covers (a check-in, or a missed day a saver paid for), and
@@ -30,6 +31,8 @@ function makeStreaks({ db = admin.firestore(), grant = null } = {}) {
         tx.set(R.streak(uid), {
           uid, current: next.current, best: next.best, lastDay: next.lastDay, savers: next.savers, saversCap: cap,
           lastCheckIn: today, updatedAt: Timestamp.fromMillis(now),
+          // The last 40 check-in days, kept for Mod Machina's "3 check-ins in 30 days" and "1 this month" fallbacks.
+          recentDays: [...(snap.get("recentDays") || []).filter((d) => d !== today), today].slice(-40),
         }, { merge: true });
       }
       return next;

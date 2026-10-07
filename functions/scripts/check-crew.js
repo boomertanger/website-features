@@ -83,6 +83,231 @@ async function main() {
   assert.equal(await reason(setRole("boss", { uid: "fan", role: "admin", on: true })), "ok");
   assert.deepEqual((await db.doc(`${S}/members/fan`).get()).get("roles"), ["admin"]);
 
+
+  // ---------- part 2a: apply, queue, decide, grades and status ----------
+  const NOW = Date.now(), DAY = 86400000, T = admin.firestore.Timestamp;
+  // pure: queue score and bands
+  assert.deepEqual(L.queueScore({ vouchGrades: [2, 3, 4], prefs: { ytVertical: "happy" }, checkins: 5 }), { score: 1 + 2 + 3 + 3 + 5, vouches: 6, youtube: 3, checkins: 5 });
+  assert.equal(L.queueScore({ vouchGrades: [], prefs: { ytLandscape: "ifNeeded", ytVertical: "no" }, checkins: 0 }).score, 0);
+  assert.equal(L.queueScore({ vouchGrades: [4], prefs: { ytLandscape: "favourite" }, checkins: 1 }).score, 7);
+  const ranked = L.rankQueue(Array.from({ length: 7 }, (_, i) => ({ id: `a${i}`, score: 10 - i, createdAtMs: i })));
+  assert.deepEqual(ranked.map((r) => r.band), ["Top 5", "Top 5", "Top 5", "Top 5", "Top 5", "In the queue", "In the queue"]);
+  assert.equal(L.rankQueue([{ id: "late", score: 3, createdAtMs: 9 }, { id: "early", score: 3, createdAtMs: 1 }])[0].id, "early");   // ties: earlier first
+  assert.equal(L.checkinsWithin(["2026-10-01", "2026-09-10", "2026-08-01", "2026-10-01"], "2026-10-06"), 2);
+  // pure: who may apply
+  const elig = (o) => L.applyEligibility({ ageBand: "18+", signedUpAtMs: NOW - 20 * DAY, linkedCount: 1, checkins: 3, waived: false, now: NOW, settings: L.DEFAULT_SETTINGS, ...o }).reason || "ok";
+  assert.equal(elig({}), "ok");
+  assert.equal(elig({ ageBand: "13-17" }), "under18");
+  assert.equal(elig({ signedUpAtMs: NOW - 13 * DAY }), "tooNew");
+  assert.equal(elig({ linkedCount: 0 }), "noPlatform");
+  assert.equal(elig({ checkins: 2 }), "needsCheckins");
+  assert.equal(elig({ checkins: 0, waived: true }), "ok");
+  assert.equal(elig({ crewStatus: "active" }), "alreadyCrew");
+  assert.equal(elig({ crewStatus: "alumni" }), "ok");
+  assert.equal(elig({ openApp: true }), "openApplication");
+  assert.equal(elig({ lastNotNowAtMs: NOW - 30 * DAY }), "reapplyWait");
+  assert.equal(elig({ lastNotNowAtMs: NOW - 61 * DAY }), "ok");
+  assert.equal(elig({ settings: { ...L.DEFAULT_SETTINGS, checkinFallback: false } }), "needsStreamCheckins");
+  // pure: the "ready to promote" criteria (spec 3a); duty criteria wait for stream duty
+  const mods = [1, 2, 3, 4, 5, 6].map(L.moduleId);
+  const ready = (o) => L.promotionCriteria({ now: NOW, settings: L.DEFAULT_SETTINGS, ...o });
+  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods }).ready, true);
+  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 29 * DAY }, passed: mods }).ready, false);
+  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods.slice(0, 5) }).missing[0], "Core Academy modules 1 to 6");
+  assert.deepEqual(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods }).pending, ["2 ride-alongs signed off", "Showed up for 80% of duties"]);
+  const onRules = { ...L.DEFAULT_SETTINGS, activityRules: true };
+  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules }).ready, false);
+  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules, stats: { rideAlongs: 2, showedPct: 80 } }).ready, true);
+  assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"] }).ready, true);
+  assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"], strikes: 1 }).ready, false);
+  assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: mods }).ready, false);   // no Safety module
+  assert.equal(ready({ roster: { track: "mod", grade: 4, status: "active", gradeSince: 0 } }).ready, false);   // Sentinels aren't flagged
+  assert.equal(ready({ roster: { track: "admin", grade: 1, status: "active", gradeSince: 0 } }).ready, false);
+
+  await db.doc(paths.settings()).update({ vouchCap: 3 });   // (part 1 tuned it to 5)
+  // the callables, against the fake Firestore
+  const logs = [];
+  const C = require("../lib/crew")({ adminLogEntry: async (_d, e) => { logs.push(e); return e; } });
+  const as = (uid) => (fn, data = {}) => C[fn].run({ auth: { uid, token: {} }, data });
+  const person = async (uid, { roles = [], roster = null, user = {} } = {}) => {
+    await db.doc(`${S}/members/${uid}`).set({ roles });
+    await db.doc(`${S}/profiles/${uid}`).set({ handle: uid });
+    await db.doc(`users/${uid}`).set({ signedUpAt: T.fromMillis(NOW - 30 * DAY), ageBand: "18+", linked: { twitch: { login: uid } }, ...user });
+    if (roster) await db.doc(paths.roster(uid)).set({ status: "active", since: T.fromMillis(NOW - 200 * DAY), gradeSince: T.fromMillis(NOW - 100 * DAY), stats: {}, ...roster });
+  };
+  const streakDays = (uid, n) => db.doc(`${S}/factory/main/streaks/${uid}`).set({ recentDays: Array.from({ length: n }, (_, i) => require("../lib/arcade/logic").dayKey(NOW - i * DAY)) });
+  await person("boss", { roles: ["admin"] });
+  await person("init", { roles: ["mod"], roster: { track: "mod", grade: 1 } });
+  await person("w1", { roles: ["mod"], roster: { track: "mod", grade: 2 } });
+  await person("w2", { roles: ["mod"], roster: { track: "mod", grade: 3 } });
+  await person("sent", { roles: ["mod"], roster: { track: "mod", grade: 4 } });
+  await person("ov", { roles: ["admin"], roster: { track: "admin", grade: 2 } });
+  await person("rh", { roles: ["admin"], roster: { track: "admin", grade: 3 } });
+  await person("fan", {});
+  const boss = as("boss"), initiate = as("init"), w1 = as("w1"), w2 = as("w2"), ov = as("ov"), rh = as("rh");
+  const goodApp = (extra = {}) => ({ preferences: { twitch: "happy", ytLandscape: "favourite", ytVertical: "no", tiktok: "no" }, availability: { days: ["mon", "fri"], note: "evenings" }, device: "phone", answers: { why: "I love this community and want to help it grow.", experience: "Modded a small channel." }, codeAgreed: true, ...extra });
+
+  // crewApply: the gates, then one open application
+  await person("apl", {}); await streakDays("apl", 3);
+  await person("kid", { user: { ageBand: "13-17" } }); await streakDays("kid", 5);
+  await person("newbie", { user: { signedUpAt: T.fromMillis(NOW - 5 * DAY) } }); await streakDays("newbie", 5);
+  await person("nolink", { user: { linked: {} } }); await streakDays("nolink", 5);
+  await person("quiet", {}); await streakDays("quiet", 2);
+  assert.equal(await reason(as("kid")("crewApply", goodApp())), "under18");
+  assert.equal(await reason(as("newbie")("crewApply", goodApp())), "tooNew");
+  assert.equal(await reason(as("nolink")("crewApply", goodApp())), "noPlatform");
+  assert.equal(await reason(as("quiet")("crewApply", goodApp())), "needsCheckins");
+  await boss("crewWaive", { uid: "quiet" });
+  assert.equal(await reason(as("quiet")("crewApply", goodApp())), "ok");   // waived
+  assert.equal(await reason(as("apl")("crewApply", goodApp({ codeAgreed: false }))), "code");
+  assert.equal(await reason(as("apl")("crewApply", goodApp({ device: "fax" }))), "field");
+  assert.equal(await reason(as("apl")("crewApply", goodApp({ answers: { why: "short" } }))), "field");
+  assert.equal(await reason(w1("crewWaive", { uid: "x" })), "notOwner");
+  const applied = await as("apl")("crewApply", goodApp());
+  assert.match(applied.appId, /^apl-/);
+  assert.equal(await reason(as("apl")("crewApply", goodApp())), "openApplication");
+  assert.equal(await reason(as("init")("crewApply", goodApp())), "alreadyCrew");
+  const appDoc = () => db.doc(paths.application(applied.appId)).get();
+  assert.equal((await appDoc()).get("band"), "Top 5");   // the only one in the queue
+  assert.equal((await appDoc()).get("score"), undefined);                       // the applicant-readable doc never carries the score
+  assert.equal((await db.doc(paths.score(applied.appId)).get()).get("score"), 3 + 3);   // 3 check-ins + YouTube favourite
+  assert.ok((await appDoc()).get("expiresAt"));
+
+  // vouches: Watcher and above, not for yourself, a cap of 3, weighted by grade
+  assert.equal(await reason(initiate("crewVouch", { appId: applied.appId })), "notWatcher");
+  assert.equal(await reason(as("apl")("crewVouch", { appId: applied.appId })), "notWatcher");
+  await w1("crewVouch", { appId: applied.appId });
+  assert.equal(await reason(w1("crewVouch", { appId: applied.appId })), "alreadyVouched");
+  await w2("crewVouch", { appId: applied.appId });
+  assert.equal((await db.doc(paths.score(applied.appId)).get()).get("score"), 6 + 1 + 2);
+  for (const n of ["f1", "f2", "f3"]) {
+    await person(n, {});
+    await db.doc(paths.application(`${n}-1`)).set({ uid: n, handle: n, status: "open", prefs: {}, createdAt: T.fromMillis(NOW - 5000), expiresAt: T.fromMillis(NOW + 80 * DAY) });
+  }
+  await w1("crewVouch", { appId: "f1-1" }); await w1("crewVouch", { appId: "f2-1" });   // w1: applicant + f1 + f2 = 3
+  assert.equal(await reason(w1("crewVouch", { appId: "f3-1" })), "vouchCap");
+  await w1("crewUnvouch", { appId: "f2-1" });
+  await w1("crewVouch", { appId: "f3-1" });                                       // a slot freed
+  await db.doc(paths.application("w1-1")).set({ uid: "w1", status: "open", prefs: {}, createdAt: T.fromMillis(NOW), expiresAt: T.fromMillis(NOW + DAY) });
+  assert.equal(await reason(w2("crewVouch", { appId: "w1-1" })), "ok");           // someone else can
+  await db.doc(paths.application("w2-1")).set({ uid: "w2", status: "open", prefs: {}, createdAt: T.fromMillis(NOW), expiresAt: T.fromMillis(NOW + DAY) });
+  assert.equal(await reason(w2("crewVouch", { appId: "w2-1" })), "self");
+
+  // the queue: only Watcher+, concerns for admins only, applicants see their band only
+  await w1("crewConcern", { appId: applied.appId, note: "Seen heated in another chat." });
+  assert.equal(await reason(initiate("crewQueue")), "notWatcher");
+  const q = await w1("crewQueue");
+  assert.equal(q.queue[0].appId, applied.appId);
+  assert.equal(q.queue[0].score, 9); assert.equal(q.queue[0].vouches.length, 2); assert.equal(q.queue[0].concerns, undefined);
+  assert.equal((await boss("crewQueue")).queue[0].concerns[0].note, "Seen heated in another chat.");
+  assert.equal(await reason(as("apl")("crewConcern", { appId: applied.appId, note: "x" })), "notWatcher");
+  assert.equal(await reason(initiate("crewConcern", { appId: applied.appId, note: "x" })), "notWatcher");
+
+  // crewDecide: owner only; approve makes an Initiate with the mod role; not now waits 60 days
+  assert.equal(await reason(ov("crewDecide", { appId: applied.appId, decision: "approve" })), "notOwner");
+  assert.equal(await reason(w2("crewDecide", { appId: applied.appId, decision: "approve" })), "notOwner");
+  assert.equal(await reason(boss("crewDecide", { appId: applied.appId, decision: "maybe" })), "args");
+  assert.equal(await reason(boss("crewDecide", { appId: "f1-1", decision: "notNow" })), "field");   // a kind note is required
+  await boss("crewDecide", { appId: "f1-1", decision: "notNow", note: "Not right now, thank you for offering. Come back in a couple of months." });
+  assert.equal((await db.doc(paths.application("f1-1")).get()).get("status"), "notNow");
+  const ap = await boss("crewDecide", { appId: applied.appId, decision: "approve" });
+  assert.equal(ap.status, "approved");
+  const r = (await db.doc(paths.roster("apl")).get()).data();
+  assert.equal(r.track, "mod"); assert.equal(r.grade, 1); assert.equal(r.status, "active"); assert.equal(r.platforms.ytLandscape, "favourite"); assert.equal(r.device, "phone");
+  assert.deepEqual((await db.doc(`${S}/members/apl`).get()).get("roles"), ["mod"]);
+  assert.equal((await db.doc(`${S}/members/apl`).get()).get("rolesChangedBy").uid, "boss");
+  assert.deepEqual((await db.doc(paths.record("w1")).get()).get("activeVouches"), ["f3-1"]);   // the vouch slot came back
+  assert.ok(logs.some((l) => l.action === "crewApprove" && l.feature === "crew"));
+  assert.ok((await db.collection("activityLog").get()).docs.some((d) => d.get("type") === "crew-joined"));
+  assert.equal(await reason(boss("crewDecide", { appId: applied.appId, decision: "approve" })), "closed");
+  await person("late", {}); await streakDays("late", 3);
+  await boss("crewDecide", { appId: (await as("late")("crewApply", goodApp())).appId, decision: "notNow", note: "Not this time, but thank you." });
+  assert.equal(await reason(as("late")("crewApply", goodApp())), "reapplyWait");
+  assert.equal((await as("late")("crewMe")).application.status, "notNow");
+  assert.equal((await as("late")("crewMe")).application.band, null);
+
+  // crewPromote: the owner moves anyone up one step; a Right Hand up to Warden; nobody else
+  assert.equal(await reason(w2("crewPromote", { uid: "init" })), "notAllowed");
+  assert.equal(await reason(ov("crewPromote", { uid: "init" })), "notAllowed");
+  assert.equal(await reason(boss("crewPromote", { uid: "boss" })), "self");
+  assert.equal(await reason(boss("crewPromote", { uid: "late" })), "notMod");
+  await boss("crewPromote", { uid: "init" });
+  assert.equal((await db.doc(paths.roster("init")).get()).get("grade"), 2);
+  await rh("crewPromote", { uid: "init" });                                       // Watcher -> Warden, confirmed by the Right Hand
+  assert.equal((await db.doc(paths.roster("init")).get()).get("grade"), 3);
+  assert.equal(await reason(rh("crewPromote", { uid: "init" })), "notOwner");     // Sentinel is the owner's
+  await boss("crewPromote", { uid: "init" });
+  assert.equal((await db.doc(paths.roster("init")).get()).get("grade"), 4);
+  assert.equal(await reason(boss("crewPromote", { uid: "init" })), "top");
+  assert.equal(await reason(boss("crewPromote", { uid: "w1", track: "admin", grade: 1 })), "badStep");   // only a Sentinel (or an admin) enters the admin ladder
+  await boss("crewPromote", { uid: "init", track: "admin", grade: 1 });
+  assert.deepEqual((await db.doc(`${S}/members/init`).get()).get("roles").sort(), ["admin", "mod"]);
+  assert.equal((await db.doc(paths.roster("init")).get()).get("track"), "admin");
+  assert.equal(await reason(rh("crewPromote", { uid: "init", track: "admin", grade: 2 })), "notOwner");
+  await boss("crewPromote", { uid: "init", track: "admin", grade: 2 });
+  assert.ok(logs.filter((l) => l.action === "crewPromote").length >= 5);
+  assert.ok((await db.collection("activityLog").get()).docs.some((d) => d.get("type") === "crew-promoted"));
+
+  // crewSetStatus: Going dark by self (2 months a year), the rest by the owner or an Overseer
+  await person("m1", { roles: ["mod"], roster: { track: "mod", grade: 2 } });
+  assert.equal(await reason(as("m1")("crewSetStatus", { status: "reserve" })), "notAllowed");
+  assert.equal(await reason(as("m1")("crewSetStatus", { status: "goingDark", months: 3 })), "args");
+  await as("m1")("crewSetStatus", { status: "goingDark", months: 2 });
+  assert.equal((await db.doc(paths.roster("m1")).get()).get("status"), "goingDark");
+  assert.ok((await db.doc(paths.roster("m1")).get()).get("breakUntil"));
+  await as("m1")("crewSetStatus", { status: "active" });
+  assert.equal(await reason(as("m1")("crewSetStatus", { status: "goingDark", months: 1 })), "breakLimit");
+  assert.equal(await reason(w2("crewSetStatus", { uid: "m1", status: "reserve", reason: "x" })), "notAllowed");
+  assert.equal(await reason(ov("crewSetStatus", { uid: "m1", status: "reserve" })), "field");   // a reason is required
+  await ov("crewSetStatus", { uid: "m1", status: "reserve", reason: "Missed two months" });
+  assert.equal((await db.doc(paths.roster("m1")).get()).get("status"), "reserve");
+  assert.deepEqual((await db.doc(`${S}/members/m1`).get()).get("roles"), ["mod"]);               // Reserve keeps the role
+  await ov("crewSetStatus", { uid: "m1", status: "alumni", reason: "Six months on Reserve" });
+  assert.deepEqual((await db.doc(`${S}/members/m1`).get()).get("roles"), []);                    // Alumni: mod powers removed
+  assert.equal(await reason(ov("crewSetStatus", { uid: "m1", status: "active" })), "notAllowed"); // only the owner brings an alumnus back
+  await boss("crewSetStatus", { uid: "m1", status: "active" });
+  assert.deepEqual((await db.doc(`${S}/members/m1`).get()).get("roles"), ["mod"]);
+  assert.equal(await reason(boss("crewSetStatus", { uid: "boss", status: "paused", reason: "x" })), "notCrew");
+  assert.equal(await reason(ov("crewSetStatus", { uid: "rh", status: "paused", reason: "x" })), "notAllowed");   // an Overseer can't touch admins
+  assert.ok(logs.filter((l) => l.action === "crewStatus").length >= 4);
+
+  // crewExcuse (owner), crewStrike (A2+; 2 = no Lead/Captain for 30 days, 3 = owner review), crewSaveProfile
+  assert.equal(await reason(ov("crewExcuse", { uid: "m1", month: "2026-10" })), "notOwner");
+  assert.equal(await reason(boss("crewExcuse", { uid: "m1", month: "Oct" })), "args");
+  await boss("crewExcuse", { uid: "m1", month: "2026-10", reason: "Moving house" });
+  assert.deepEqual((await db.doc(paths.roster("m1")).get()).get("excusedMonths"), ["2026-10"]);
+  assert.equal(await reason(w2("crewStrike", { uid: "m1", reason: "x" })), "notAllowed");
+  assert.equal(await reason(ov("crewStrike", { uid: "ov", reason: "x" })), "self");
+  assert.equal(await reason(ov("crewStrike", { uid: "boss", reason: "x" })), "owner");
+  const s1 = await ov("crewStrike", { uid: "m1", reason: "Rude to a new chatter" });
+  assert.equal(s1.activeStrikes, 1); assert.equal((await db.doc(paths.roster("m1")).get()).get("leadBlockedUntil"), undefined);
+  const s2 = await boss("crewStrike", { uid: "m1", reason: "Missed a handoff" });
+  assert.equal(s2.activeStrikes, 2); assert.ok((await db.doc(paths.roster("m1")).get()).get("leadBlockedUntil"));
+  const s3 = await ov("crewStrike", { uid: "m1", reason: "Third" });
+  assert.equal(s3.ownerReview, true);
+  assert.equal((await as("m1")("crewMe")).strikes.length, 3);                     // the mod sees their own strikes
+  assert.equal((await db.doc(paths.record("m1")).get()).get("strikes")[0].byName, "@ov");
+  await db.doc(paths.record("m1")).update({ strikes: [{ at: NOW - 200 * DAY, reason: "old", expiresAtMs: NOW - 17 * DAY }] });
+  assert.equal((await as("m1")("crewMe")).strikes.length, 0);                     // strikes expire after 6 months
+  await as("m1")("crewSaveProfile", { device: "both", availability: { days: ["sat"], note: "" } });
+  assert.equal((await db.doc(paths.roster("m1")).get()).get("device"), "both");
+  assert.equal(await reason(as("m1")("crewSaveProfile", { device: "toaster" })), "field");
+  assert.equal(await reason(as("fan")("crewSaveProfile", { device: "both" })), "notCrew");
+
+  // crewAdminOverview and the nightly run: expiry, the queue refresh and a "ready to promote" flag (never a promotion)
+  assert.equal(await reason(w1("crewAdminOverview")), "notAdmin");
+  await person("rookie", { roles: ["mod"], roster: { track: "mod", grade: 1, gradeSince: T.fromMillis(NOW - 40 * DAY) } });
+  await db.doc(paths.academy("rookie")).set({ modules: Object.fromEntries(mods.map((m) => [m, { passedAt: NOW }])) });
+  await db.doc(paths.application("old-1")).set({ uid: "old", status: "open", prefs: {}, createdAt: T.fromMillis(NOW - 100 * DAY), expiresAt: T.fromMillis(NOW - DAY) });
+  await C.crewNightly.run({});
+  assert.equal((await db.doc(paths.application("old-1")).get()).get("status"), "expired");
+  assert.equal((await db.doc(paths.record("rookie")).get()).get("ready").to, 2);
+  assert.equal((await db.doc(paths.roster("rookie")).get()).get("grade"), 1);      // flagged, not promoted
+  assert.equal((await db.doc(paths.record("w1")).get()).get("ready"), undefined);
+  const ovw = await boss("crewAdminOverview");
+  assert.equal(ovw.roster.find((x) => x.uid === "rookie").ready.to, 2);
+  assert.ok(ovw.roster.length >= 8);
+  assert.equal((await as("rookie")("crewMe")).ready.name, "Watcher");
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
