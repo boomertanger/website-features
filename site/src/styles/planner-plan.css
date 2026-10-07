@@ -5,7 +5,7 @@
 /* ---- page ---- */
 .bt-root:not(#_) .pp { display: flex; flex-direction: column; gap: 14px; padding: 18px var(--bt-gutter) 56px; width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; min-width: 0; }
 .bt-root:not(#_) .pp-skel { width: 100%; height: 360px; border-radius: var(--bt-radius-lg); }
-.bt-root:not(#_) .pp :is(.pp-skel, [data-pp-body], [data-pp-error])[hidden] { display: none; }
+.bt-root:not(#_) .pp :is(.pp-skel, [data-pp-body], [data-pp-error], [data-pu-body], [data-pu-error], [data-pu-load])[hidden] { display: none; }
 .bt-root:not(#_) .pp-previewnote { margin: 0; }
 .bt-root:not(#_) .pp-page { display: flex; flex-direction: column; gap: 18px; min-width: 0; }
 .bt-root:not(#_) .pp-head { position: relative; display: flex; flex-wrap: wrap; align-items: flex-end; gap: 14px 22px; }
@@ -159,4 +159,53 @@
   .bt-root:not(#_) [data-celebrating] .pp-scene-m { animation: none; }
   .bt-root:not(#_).bt-portal[data-feature="planner"] :is(.pp-icon-b, .pp-lcard .bt-cover, .pp-nudge) { transition: none; }
   .bt-root:not(#_).bt-portal[data-feature="planner"] .pp-lcard:hover .bt-cover { transform: none; }
+}
+
+/* ---- /schedule/plan/usual ---- */
+.bt-root:not(#_) .pu-sec { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+.bt-root:not(#_) .pu-strip { align-items: stretch; }
+.bt-root:not(#_) .pu-col { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .pu-col > .bt-poster { flex: 1 1 auto; }
+.bt-root:not(#_) .pu-col.has-paused .bt-poster:not(.is-sel) { opacity: 0.85; }
+.bt-root:not(#_) .pu-addday { align-self: stretch; }
+.bt-root:not(#_) .pu-exc-list { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .pu-exc { display: grid; grid-template-columns: auto minmax(0, 1fr) auto auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); }
+.bt-root:not(#_) .pu-exc-t b { display: block; }
+.bt-root:not(#_) .pu-exc-t small { color: var(--bt-text-muted); }
+.bt-root:not(#_) .pu-pub { display: inline-flex; align-items: center; gap: 8px; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .pu-settings { display: flex; flex-direction: column; gap: 14px; max-width: 820px; border-color: var(--bt-admin-panel-border); background: var(--bt-admin-panel-bg); }
+.bt-root:not(#_) .pu-settings .bt-card-title { display: flex; align-items: center; gap: 8px; color: var(--bt-admin-text); }
+.bt-root:not(#_) .pu-ic { display: inline-flex; width: 24px; height: 24px; }
+.bt-root:not(#_) .pu-ic svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .pu-dl { display: grid; grid-template-columns: 34px minmax(0, 1fr) 160px 160px; gap: 10px; align-items: center; }
+.bt-root:not(#_) .pu-dl-ic { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .pu-weekline { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; }
+.bt-root:not(#_) .pu-weekline span { position: relative; padding: 8px 0 22px; border-radius: 8px; background: var(--bt-bg); text-align: center; font-size: var(--bt-text-2xs); font-weight: 800; color: var(--bt-text-faint); letter-spacing: 0.08em; }
+.bt-root:not(#_) .pu-weekline span i { position: absolute; left: 50%; bottom: 6px; transform: translateX(-50%); font-style: normal; font-size: var(--bt-text-sm); white-space: nowrap; }
+.bt-root:not(#_) .pu-valid { margin: 0; font-size: var(--bt-text-md); font-weight: 700; }
+.bt-root:not(#_) .pu-valid.is-ok { color: var(--bt-lime); }
+.bt-root:not(#_) .pu-valid.is-bad { color: var(--bt-gold); }
+.bt-root:not(#_) .pu-h3 { margin: 4px 0 0; font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .pu-nums { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.bt-root:not(#_) .pu-settings .pp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_) .pu-settings .bt-chip[aria-pressed="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .pu-settings .pp-chip-ic { display: inline-flex; align-items: center; gap: 6px; }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-tokens { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-tokens:empty { display: none; }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-tok { display: inline-flex; align-items: center; gap: 6px; padding: 4px 6px 4px 10px; border-radius: 8px; background: var(--bt-teal-bg); color: var(--bt-teal); font-size: var(--bt-text-sm); font-weight: 800; }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-tok.is-game { background: var(--bt-surface-2); color: var(--bt-text); }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-tok button { border: 0; background: none; color: inherit; cursor: pointer; font-size: var(--bt-text-xs); }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-pubrow > span { display: inline-flex; align-items: center; gap: 10px; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-row2 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bt-root:not(#_).bt-portal[data-feature="planner"] .pu-row2b { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pu-col { flex: 0 0 38%; scroll-snap-align: start; }
+  .bt-root:not(#_) .pu-col > .bt-poster { flex: 1 1 auto; }
+  .bt-root:not(#_) .pu-exc { grid-template-columns: minmax(0, 1fr) auto; }
+  .bt-root:not(#_) .pu-exc > :first-child { display: none; }
+  .bt-root:not(#_) .pu-dl { grid-template-columns: 34px minmax(0, 1fr) 150px; }
+  .bt-root:not(#_) .pu-dl > b { grid-column: 2 / -1; }
+  .bt-root:not(#_) .pu-dl > select { grid-column: 2; }
+  .bt-root:not(#_).bt-portal[data-feature="planner"] .pu-row2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt-root:not(#_).bt-portal[data-feature="planner"] .pu-row2 > :first-child { grid-column: auto; }
 }

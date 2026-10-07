@@ -1,0 +1,24 @@
+---
+// /schedule/plan/usual (docs/specs/scream-planner.md §2): the usual-week editor for the owner and admins (PlannerLayout adminOnly: everyone
+// else gets the "Admins only" gate). Patterns, exceptions and (owner only) the deadlines and defaults, all in scripts/planner/usual.ts
+// through callables. Non-production, signed out, ?as=admin shows preview data.
+import PlannerLayout from "../../../layouts/PlannerLayout.astro";
+import "../../../styles/planner-plan.css";
+---
+<PlannerLayout title="My usual week" description="Edit Boomer's usual week: patterns, exceptions and deadlines." adminOnly section="plan" wide>
+  <div class="pp" data-pu>
+    <div class="bt-skeleton pp-skel" data-pu-load></div>
+    <div class="bt-zone" data-pu-error hidden>
+      <div class="bt-empty">
+        <div class="bt-empty-title">Couldn't load the usual week</div>
+        <p data-pu-error-text>Check your connection and try again.</p>
+        <button type="button" class="bt-btn bt-btn--secondary" data-pu-retry>Try again</button>
+      </div>
+    </div>
+    <div data-pu-body hidden></div>
+  </div>
+</PlannerLayout>
+
+<script>
+  import "../../../scripts/planner/usual";
+</script>
