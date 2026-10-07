@@ -78,6 +78,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       startAuth();
       import "../scripts/account/ui";
       import "../scripts/factory/site-wide";
+      // Header menus (Watch / Play / Community): hover or click opens a panel.
+      import { initNavGroups } from "../../../shared/ui/navgroup.js";
+      initNavGroups(document);
     </script>
   </body>
 </html>

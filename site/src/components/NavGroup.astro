@@ -1,0 +1,49 @@
+---
+// One header menu: a trigger plus its panel of page cards and a feature tile
+// (docs/specs/header-nav.md, design-system.md §5 "Header nav groups"). Without
+// JavaScript the trigger is a link to the group's first page and the panel stays
+// hidden; shared/ui/navgroup.js upgrades it to a disclosure button.
+// The Watch tile is built here (next stream and the live state, the same sources
+// as the Live Beacon); Play and Community show a shimmer until scripts/nav-features.ts
+// fills them the first time their panel opens.
+import site from "../data/site.json";
+import { watchFeatureHtml, featureLoadingHtml } from "../../../shared/ui/navgroup.js";
+import { formatStreamTime } from "../lib/time.js";
+import { isCurrent, isInSection, groupIsCurrent } from "../lib/nav.js";
+
+interface Item { id: string; label: string; href: string; icon: string; blurb: string }
+interface Props { group: { id: string; label: string; items: Item[] }; path: string }
+const { group, path } = Astro.props;
+const current = groupIsCurrent(group, path);
+const panelId = `bt-ng-${group.id}`;
+const { startsAt, title } = site.nextStream;
+const day = formatStreamTime(startsAt, "day", site.timezone);
+const watchTile = watchFeatureHtml({ title, startsAt, whenHtml: `<time data-stream-time="day" datetime="${startsAt}">${day}</time>, your time.` });
+---
+<span class="bt-navgroup" data-navgroup={group.id}>
+  <a class:list={["bt-navgroup-btn", current && "is-current"]} href={group.items[0].href} data-navgroup-trigger aria-controls={panelId}>
+    {group.label}
+    {group.id === "watch" && <><span class="bt-navgroup-dot bt-when-public" aria-hidden="true"></span><span class="bt-sr-only bt-when-public">, live now</span></>}
+    <svg class="bt-navgroup-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" /></svg>
+  </a>
+  <div class="bt-navgroup-panel" id={panelId} hidden>
+    <div class="bt-navgroup-links">
+      {group.items.map((i) => (
+        <a class:list={["bt-navgroup-link", i.id === "live" && "bt-navgroup-link--live"]} href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
+          <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href={`#i-${i.icon}`} /></svg></span>
+          <span class="bt-navgroup-name">{i.label}{i.id === "live" && <span class="bt-badge bt-badge--red bt-when-public" aria-hidden="true">Live</span>}</span>
+          <span class="bt-navgroup-blurb">{i.blurb}</span>
+        </a>
+      ))}
+    </div>
+    {group.id === "watch" && (
+      <div class="bt-navgroup-feature is-watch" data-navgroup-feature="watch" set:html={watchTile} />
+    )}
+    {group.id === "play" && (
+      <div class="bt-navgroup-feature" data-navgroup-feature="play" aria-live="polite" set:html={featureLoadingHtml("Today in the Arcade")} />
+    )}
+    {group.id === "community" && (
+      <div class="bt-navgroup-feature" data-navgroup-feature="community" aria-live="polite" set:html={featureLoadingHtml("The crew")} />
+    )}
+  </div>
+</span>

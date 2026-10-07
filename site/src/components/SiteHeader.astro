@@ -1,5 +1,5 @@
 ---
-// Site header: logo, main navigation, Live Beacon, account area.
+// Site header: logo (Home), main navigation (Watch / Play / Community menus and Shop, lib/nav.js), Live Beacon, account area.
 // Account states (docs/specs/accounts.md, screen 9) come from <body data-auth-state>
 // (lib/auth.ts): a skeleton while loading, Log in / Join free (open the sign-in
 // dialog on its Sign in / Join tab), Finish signup mid-signup, or the avatar menu (green Admin for admins).
@@ -9,7 +9,8 @@ import Logo from "./Logo.astro";
 import LiveBeacon from "./LiveBeacon.astro";
 import AccountMenu from "./AccountMenu.astro";
 import member from "../data/preview-member.json";
-import { navItems, isCurrent, isInSection } from "../lib/nav.js";
+import NavGroup from "./NavGroup.astro";
+import { headerNav, isCurrent, isInSection } from "../lib/nav.js";
 
 interface Props { overlay?: boolean }
 const { overlay = false } = Astro.props;
@@ -18,8 +19,10 @@ const path = Astro.url.pathname;
 <header class:list={["bt-site-header", overlay && "bt-site-header--overlay"]}>
   <Logo />
   <nav class="bt-nav" aria-label="Main">
-    {navItems.map((item) => (
-      <a href={item.href} aria-current={isCurrent(item.href, path) || isInSection(item.href, path) ? "page" : undefined}>{item.label}</a>
+    {headerNav.map((entry) => entry.kind === "group" ? (
+      <NavGroup group={entry} path={path} />
+    ) : (
+      <a href={entry.href} aria-current={isCurrent(entry.href, path) || isInSection(entry.href, path) ? "page" : undefined}>{entry.label}</a>
     ))}
   </nav>
   <span class="bt-spacer"></span>
