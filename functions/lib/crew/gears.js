@@ -74,6 +74,9 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     const live = seasons.docs.map((d) => d.data()).filter((s) => ["live", "ended"].includes(s.status) && s.startsAt)
       .sort((a, b) => (b.status === "live") - (a.status === "live") || ms(b.startsAt) - ms(a.startsAt))[0] || null;
     const onBoard = new Map(roster.docs.filter((d) => ["active", "checkIn", "goingDark"].includes(d.get("status"))).map((d) => [d.id, d.data()]));
+    const ids = [...onBoard.keys()];
+    const profiles = ids.length ? await db.getAll(...ids.map((u) => db.doc(`sites/${SITE_ID}/profiles/${u}`))) : [];
+    const handleOf = new Map(profiles.map((p, i) => [ids[i], p.exists ? p.get("handle") || null : null]));   // the profile's handle is current; the roster copy can go stale
     const rowsFor = (inRange) => {
       const by = new Map();
       for (const d of ledger.docs) {
@@ -86,7 +89,7 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
       }
       return [...onBoard.entries()].map(([uid, r]) => {
         const row = by.get(uid) || { gears: 0, recruits: 0 };
-        return { uid, handle: r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: 0, hours: 0, rooms: [], recruits: row.recruits, staff: r.track === "admin" };
+        return { uid, handle: handleOf.get(uid) || r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: 0, hours: 0, rooms: [], recruits: row.recruits, staff: r.track === "admin" };
       }).filter((r) => r.gears > 0 || r.recruits > 0)
         .sort((a, b) => b.gears - a.gears || b.recruits - a.recruits || String(a.handle).localeCompare(String(b.handle)))
         .map((r, i) => ({ ...r, place: i + 1 }));

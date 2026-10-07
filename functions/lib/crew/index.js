@@ -46,6 +46,7 @@ module.exports = function crew({ adminLogEntry } = {}) {
     mirrorCrewRoster,
     crewReferralSweep,
     ...require("./academy")({ adminLogEntry, gears }),
+    ...require("./awards")({ adminLogEntry }),
     ...require("./core")({ adminLogEntry, gears }),
     ...require("./tasks")({ adminLogEntry, gears }),
   };

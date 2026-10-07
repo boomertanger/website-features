@@ -519,6 +519,106 @@ async function main() {
   assert.equal((await refs.activateDue(NOW + 9 * DAY)).activated, 1);
   assert.equal(await owns("rf", "recruiter-1"), true);                                             // a plain member gets the badge...
   assert.equal((await mine("rf")).length, 0);                                                      // ...and no Gears
+
+  // ---------- part 2d: Top Gear and Fan Favourite ----------
+  const AWM = require("../lib/crew/awards");
+  // the vote window: the last 5 days of the month, Central
+  assert.equal(AWM.voteWindow("2026-10-26").open, false);
+  assert.equal(AWM.voteWindow("2026-10-27").open, true);
+  assert.equal(AWM.voteWindow("2026-10-31").open, true);
+  assert.equal(AWM.voteWindow("2026-11-25").open, false);                       // November has 30 days: the window opens on the 26th
+  assert.equal(AWM.voteWindow("2026-11-26").open, true);
+  assert.equal(AWM.voteWindow("2028-02-24").open, false);                       // a leap February has 29
+  assert.equal(AWM.voteWindow("2028-02-25").open, true);
+  assert.equal(AWM.voteWindow("2026-10-28").opensOn, "2026-10-27");
+  assert.equal(AWM.prevMonth("2027-01"), "2026-12"); assert.equal(AWM.prevMonth("2026-10"), "2026-09");
+  assert.equal(AWM.monthLabel("2026-10"), "October 2026");
+  // Top Gear: most Gears; a tie goes to more duty hours, then to whoever reached their total first
+  assert.equal(AWM.pickTopGear([{ uid: "a", gears: 50, hours: 0, reachedAtMs: 5 }, { uid: "b", gears: 60, hours: 0, reachedAtMs: 9 }]).uid, "b");
+  assert.equal(AWM.pickTopGear([{ uid: "a", gears: 60, hours: 2, reachedAtMs: 1 }, { uid: "b", gears: 60, hours: 3, reachedAtMs: 9 }]).uid, "b");       // more duty hours
+  assert.equal(AWM.pickTopGear([{ uid: "a", gears: 60, hours: 3, reachedAtMs: 9 }, { uid: "b", gears: 60, hours: 3, reachedAtMs: 4 }]).uid, "b");       // earlier achiever
+  assert.equal(AWM.pickTopGear([{ uid: "a", gears: 0, hours: 9, reachedAtMs: 1 }]), null);                                                           // nobody earned anything
+  assert.equal(AWM.pickTopGear([]), null);
+  // Fan Favourite: most votes; ties go to more Gears, then the longer-serving
+  assert.equal(AWM.pickFanFavourite([{ uid: "a", votes: 3, gears: 1, sinceMs: 1 }, { uid: "b", votes: 4, gears: 0, sinceMs: 9 }]).uid, "b");
+  assert.equal(AWM.pickFanFavourite([{ uid: "a", votes: 3, gears: 10, sinceMs: 9 }, { uid: "b", votes: 3, gears: 20, sinceMs: 9 }]).uid, "b");
+  assert.equal(AWM.pickFanFavourite([{ uid: "a", votes: 3, gears: 10, sinceMs: 9 }, { uid: "b", votes: 3, gears: 10, sinceMs: 2 }]).uid, "b");
+  assert.equal(AWM.pickFanFavourite([{ uid: "a", votes: 0 }]), null);
+
+  // the callables, on a clock inside the window (the 28th, Central) and one on the 1st
+  const ym = require("../lib/arcade/logic").dayKey(NOW).slice(0, 7);
+  const [Y, M] = ym.split("-").map(Number);
+  let awClock = Date.UTC(Y, M - 1, 20, 18);
+  const AW = AWM({ adminLogEntry: async (_d, e) => e, now: () => awClock });
+  const av = (uid) => (fn, data = {}) => AW[fn].run({ auth: { uid, token: {} }, data });
+  const checkedIn = (uid, extra = {}) => person(uid, { user: extra }).then(() => db.doc(`${S}/factory/main/streaks/${uid}`).set({ recentDays: [`${ym}-10`] }));
+  await checkedIn("v1"); await checkedIn("v2"); await checkedIn("v3");
+  await person("v4", {}); await db.doc(`${S}/factory/main/streaks/v4`).set({ recentDays: [] });                              // no check-in this month
+  await checkedIn("v5", { signedUpAt: T.fromMillis(Date.UTC(Y, M - 1, 25, 12)) });                                           // signed up 3 days before the vote: too new
+  assert.equal((await av("v1")("fanFavouriteBallot")).open, false);
+  assert.equal((await av("v1")("fanFavouriteBallot")).reason, "closed");
+  assert.deepEqual((await av("v1")("fanFavouriteBallot")).candidates, []);
+  assert.equal(await reason(av("v1")("fanFavouriteVote", { uid: "w1" })), "closed");
+  awClock = Date.UTC(Y, M - 1, new Date(Date.UTC(Y, M, 0)).getUTCDate() - 1, 18);                                            // two days before the month ends
+  const bal = await av("v1")("fanFavouriteBallot");
+  assert.equal(bal.open, true); assert.equal(bal.canVote, true);
+  assert.equal(bal.candidates.some((c) => c.uid === "w1"), true);
+  for (const adminUid of ["ov", "rh", "init", "boss"]) assert.equal(bal.candidates.some((c) => c.uid === adminUid), false, `${adminUid} (an admin) is never on the ballot`);
+  assert.equal(bal.candidates.some((c) => c.uid === "m1"), true);
+  assert.equal(JSON.stringify(bal).includes("votes"), false);                                                                  // no tally
+  assert.equal((await av("v4")("fanFavouriteBallot")).reason, "needsCheckin");
+  assert.equal((await av("v5")("fanFavouriteBallot")).reason, "tooNew");
+  assert.equal((await av("w1")("fanFavouriteBallot")).reason, "crewCantVote");
+  assert.equal(await reason(av("v4")("fanFavouriteVote", { uid: "w1" })), "needsCheckin");
+  assert.equal(await reason(av("v5")("fanFavouriteVote", { uid: "w1" })), "tooNew");
+  assert.equal(await reason(av("w2")("fanFavouriteVote", { uid: "w1" })), "crewCantVote");
+  assert.equal(await reason(av("ov")("fanFavouriteVote", { uid: "w1" })), "crewCantVote");
+  assert.equal(await reason(av("v1")("fanFavouriteVote", { uid: "ov" })), "notOnBallot");
+  assert.equal(await reason(av("v1")("fanFavouriteVote", { uid: "nobody" })), "notOnBallot");
+  assert.equal(await reason(av("v1")("fanFavouriteVote", {})), "args");
+  await av("v1")("fanFavouriteVote", { uid: "w1" });
+  await av("v2")("fanFavouriteVote", { uid: "w1" });
+  await av("v3")("fanFavouriteVote", { uid: "w2" });
+  assert.equal(await reason(av("v1")("fanFavouriteVote", { uid: "w2" })), "voted");                                           // one vote each
+  assert.equal((await av("v1")("fanFavouriteBallot")).myVote, "w1");
+  assert.equal((await av("v1")("fanFavouriteBallot")).canVote, false);
+  assert.equal((await db.doc(paths.awardVote(ym, "v1")).get()).get("candidate"), "w1");
+
+  // the monthly run, on the 1st: Top Gear (most Gears) and Fan Favourite (most votes); admins never win
+  const eligibleNow = (await db.collection(`${paths.settings()}/roster`).get()).docs.filter((d) => d.get("track") !== "admin" && ["active", "checkIn"].includes(d.get("status"))).map((d) => d.id);
+  const totals = new Map();
+  for (const g of (await db.collection(`${paths.settings()}/gears`).get()).docs) if (g.get("month") === ym && eligibleNow.includes(g.get("uid"))) totals.set(g.get("uid"), (totals.get(g.get("uid")) || 0) + g.get("amount"));
+  const [bestUid, bestGears] = [...totals.entries()].sort((a, b) => b[1] - a[1])[0];
+  assert.equal(totals.has("ov"), false);
+  const adminGears = (await mine("ov")).reduce((n, d) => n + d.get("amount"), 0);
+  assert.ok(adminGears > 0 && adminGears < bestGears);                                                                        // an admin earned Gears and is on the board, not eligible for the award
+  awClock = Date.UTC(Y, M, 1, 12);                                                                                            // the 1st of next month (past 00:05 Central)
+  const xpOf = async (uid) => (await db.doc(`${S}/profiles/${uid}`).get()).get("xp") || 0;
+  const [xpTop, xpFan] = [await xpOf(bestUid), await xpOf("w1")];
+  await AW.crewMonthlyAwards.run({});
+  const award = (await db.doc(paths.award(ym)).get()).data();
+  assert.equal(award.topGear.uid, bestUid); assert.equal(award.topGear.gears, bestGears);
+  assert.equal(award.fanFavourite.uid, "w1"); assert.equal(award.fanFavourite.votes, 2);
+  assert.equal(award.votesCast, 3); assert.equal(award.ballot.includes("ov"), false);
+  assert.ok(award.ranAt);
+  assert.ok(await xpOf("w1") - xpFan >= 150);                                                                                 // a 150 XP trophy
+  const trophy = (uid, kind) => db.doc(`${S}/profiles/${uid}/trophies/${kind}-${ym}`).get();
+  assert.equal((await trophy(bestUid, "crew-top-gear")).exists, true);
+  assert.equal((await trophy("w1", "crew-fan-favourite")).exists, true);
+  assert.equal((await trophy("w1", "crew-fan-favourite")).get("label"), `Fan Favourite · ${AWM.monthLabel(ym)}`);
+  assert.equal((await trophy("w1", "crew-fan-favourite")).get("kind"), "crew-fan-favourite");
+  assert.ok(await xpOf(bestUid) - xpTop >= 150);
+  const awardLogs = (await db.collection("activityLog").get()).docs.filter((d) => d.get("type") === "crew-award");
+  assert.equal(awardLogs.length, 2);
+  assert.match(awardLogs.map((d) => d.get("summary")).join("|"), /won Top Gear for/);
+  await AW.crewMonthlyAwards.run({});                                                                                         // a rerun changes nothing
+  assert.equal((await db.collection("activityLog").get()).docs.filter((d) => d.get("type") === "crew-award").length, 2);
+  // a month with no Gears and no votes awards nobody
+  awClock = Date.UTC(Y, M + 1, 1, 12);
+  await AW.crewMonthlyAwards.run({});
+  const emptyMonth = new Date(Date.UTC(Y, M, 1)).toISOString().slice(0, 7);
+  const empty = (await db.doc(paths.award(emptyMonth)).get()).data();
+  assert.equal(empty.topGear, null); assert.equal(empty.fanFavourite, null);
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

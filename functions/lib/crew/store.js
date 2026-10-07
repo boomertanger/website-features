@@ -63,13 +63,20 @@ function makeStore({ db = admin.firestore(), adminLogEntry } = {}) {
     });
   }
 
+  /** Current public handles for some uids (the roster copy can go stale after a handle change). */
+  async function handlesOf(uids) {
+    if (!uids.length) return new Map();
+    const snaps = await db.getAll(...uids.map((u) => db.doc(`sites/${SITE_ID}/profiles/${u}`)));
+    return new Map(snaps.map((s, i) => [uids[i], s.exists ? s.get("handle") || null : null]));
+  }
+
   const text = (v, max, { min = 0, field = "text" } = {}) => {
     const s = typeof v === "string" ? v.trim() : "";
     if (s.length < min || s.length > max) throw fail("invalid-argument", `${field} must be ${min ? `${min} to ` : "up to "}${max} characters.`, "field", { field });
     return s;
   };
 
-  return { db, FieldValue, Timestamp, requireAuth, who, active, watcherPlus, a2plus, adminLog, activity, setModRole, text };
+  return { db, FieldValue, Timestamp, requireAuth, who, active, watcherPlus, a2plus, adminLog, activity, setModRole, handlesOf, text };
 }
 
 module.exports = { makeStore, fail, ms };
