@@ -33,3 +33,10 @@
   .bt-root:not(#_) .cr-barico { display: inline-flex; }
   .bt-root:not(#_) .cr-tag { display: none; }
 }
+
+@container bt (max-width: 420px) {
+  /* Seven icons (three for crew only) plus the wordmark don't fit a phone: keep the gear and eye, drop the letters. */
+  .bt-root:not(#_) .cr-brand .bt-wordmark-text { display: none; }
+  .bt-root:not(#_) .cr-bar { gap: 8px; }
+  .bt-root:not(#_) .cr-barico { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+}
