@@ -20,7 +20,7 @@ const flow = (mascot: string) => `<div class="cra-flow" role="list" aria-label="
 
 export const CODE: [string, string, string][] = [
   ["Life comes first", "⏳", "Duties flex around real life. Step away, hand off, or go dark whenever you need to."],
-  ["Friendly before firm", "🤝", "Start with the gentlest step that works. Most people just didn't know."],
+  ["Friendly before firm", "🤝", "Begin with the softest step that does the job. Most people just didn't know."],
   ["Personal info stays private", "🔒", "Never repeat, screenshot or share it, even to report it."],
   ["Mod powers aren't for grudges", "⚖️", "Not ours, and not a friend's. Every chat moment follows the same ladder."],
   ["Flag what matters", "🚩", "Anything serious goes to the Captain and to Boomer, through Flag in the Mod Deck."],
