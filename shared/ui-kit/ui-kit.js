@@ -39,6 +39,10 @@ import { platformIconHtml, roomHtml, crewCardHtml, podiumHtml, timecardHtml, rin
 import { prefHtml, initPrefs, PREF_OPTIONS } from "../ui/pref.js";
 import { ladderHtml, ladderDetailHtml, initLadder } from "../ui/ladder.js";
 import { quizHtml, initQuiz, showQuizResults } from "../ui/quiz.js";
+import { stampHtml } from "../ui/stamp.js";
+import { dayPickerHtml, initDayPicker, DAYS } from "../ui/day-picker.js";
+import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../ui/chat-tile.js";
+import { initJourney } from "../ui/how-it-works.js";
 
 const KIT_VERSION = "dev";
 
@@ -807,7 +811,7 @@ ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
 ${roadKitHtml()}
-${modMachinaKitHtml()}`;
+${modMachinaKitHtml()}${storyPiecesKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -993,6 +997,7 @@ function init() {
   initSeasonKit(mount);
   initRoadKit(mount);
   initModMachinaKit(mount);
+  initStoryPiecesKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
@@ -1542,6 +1547,66 @@ function initModMachinaKit(mount) {
     const nRight = Number(card.dataset.kitQuizStatic);
     const answers = MM_QUIZ.map((q, i) => (i < nRight ? q.right : (q.right + 1) % q.options.length));
     showQuizResults(card.querySelector(".bt-quiz"), answers, { results: grade(answers), say: nRight >= 2 ? "Nice work." : "Have another read, then try again." });
+  });
+}
+
+// ---------- Story page pieces (design-system.md §5 "Story page pieces"; shared/ui/stamp.js, day-picker.js, chat-tile.js; journey .ai-jr--4 is site CSS) ----------
+function storyPiecesKitHtml() {
+  const step = (cls, num, ic, t, d, v = "") => `<li tabindex="0"${cls ? ` class="${cls}"` : ""}><span class="ai-jr-num" aria-hidden="true">${num}</span><span class="ai-jr-ic" aria-hidden="true">${ic}</span><b>${t}</b><span class="ai-jr-t">${d}</span>${v ? `<span class="ai-jr-v">${v}</span>` : ""}</li>`;
+  const j4 = (steps, attrs = "") => `<ol class="ai-jr ai-jr--4"${attrs}>${steps.join("")}</ol>`;
+  const msgs = {
+    twitch: [{ user: "SalemSpooks", text: "that jump scare 😂", tone: "blue" }, { user: "ravenrx", text: "mods asleep?" }, { user: "nightowlkat", text: "welcome in!", tone: "teal" }],
+    ytLandscape: [{ quiet: true, text: "Chat is quiet. Nobody on duty." }, { user: "viewer88", text: "hello? anyone here", tone: "gold" }],
+    ytVertical: [{ user: "pixiejo", text: "first time here!", tone: "lime" }, { quiet: true, text: "Slow mode is on." }],
+    tiktok: [{ user: "bansheebea", text: "love this one" }, { user: "gh0stly", text: "😍😍😍", tone: "teal" }],
+  };
+  const tile = (chat, name, value, extra = {}) => chatTileHtml({ chat, name, iconHtml: platformIconHtml(chat), value, note: "Chat note", previewHtml: chatPreviewHtml(msgs[chat]), ...extra });
+  const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((label, key) => ({ key, label, num: 6 + key }));
+  return `
+  <section class="kit-section" id="kit-story-pages">
+    <h2 class="kit-h">Story page pieces</h2>
+    <p class="kit-p">The pieces the Join and Meet the crew pages are built from (<span class="kit-code">docs/design/mockups/crew-story-pages.html</span>, design-system.md §5 and §8m). Tool pages can use the stamp, the day picker and the chat tile too.</p>
+
+    <p class="kit-sub">Four-step journey: .ai-jr.ai-jr--4 (site/src/styles/how-it-works.css, with shared/ui/how-it-works.js initJourney for hover). Step states on the li: is-met (lime check), is-on (the step in focus), is-wait (gold, dashed), is-locked (dimmed), is-waived (teal), and an optional .ai-jr-v value line. Phones go vertical</p>
+    <p class="kit-note">All four met, hover or tap a step (live)</p>
+    ${j4([step("is-met", "✓", "🎂", "18 or older", "Checked from your birthday", "✓ Yes"), step("is-met", "✓", "📅", "Member 14 days", "Joined Sep 2", "✓ 35 days"), step("is-met", "✓", "🔗", "A linked account", "Twitch, YouTube or TikTok", "✓ Twitch"), step("is-met", "✓", "📺", "3 stream check-ins", "In the last 30 days", "✓ 11")], " data-journey")}
+    <p class="kit-note">Met, met, waiting, locked</p>
+    ${j4([step("is-met", "✓", "🎂", "18 or older", "Checked from your birthday", "✓ Yes"), step("is-met", "✓", "📅", "Member 14 days", "Joined Sep 2", "✓ 35 days"), step("is-wait", "3", "🔗", "A linked account", "Twitch, YouTube or TikTok", "Not yet"), step("is-locked", "4", "📺", "3 stream check-ins", "Unlocks after a linked account", "Later")])}
+    <p class="kit-note">Met, waived by the owner, now (is-on, with --p lighting the line to it), locked</p>
+    ${j4([step("is-met is-past", "✓", "🎂", "18 or older", "Checked from your birthday", "✓ Yes"), step("is-waived is-past", "✓", "📅", "Member 14 days", "Waived by Boomer", "Waived"), step("is-on", "3", "🔗", "A linked account", "Twitch, YouTube or TikTok", "Looking now"), step("is-locked", "4", "📺", "3 stream check-ins", "Comes last", "Later")], ' style="--p:2"')}
+
+    <p class="kit-sub">Stamp: .bt-stamp (shared/ui/stamp.js stampHtml({ label, kicker, sub, tone, size })). Slams in and settles; tones gold (default), lime, primary; --sm is 96px. Under reduced motion it sits still (no slam). Re-render to replay</p>
+    <div class="kit-row" style="gap:28px;padding:10px 6px">${stampHtml({ kicker: "Application", label: "In", sub: "Oct 7" })}${stampHtml({ label: "Done", sub: "Signed off", tone: "lime" })}${stampHtml({ label: "Sent", tone: "primary" })}${stampHtml({ label: "In", tone: "lime", size: "sm" })}${stampHtml({ label: "Done", size: "sm" })}</div>
+    <div class="kit-row"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-kit-stamp-replay>Replay the slam</button></div>
+
+    <p class="kit-sub">Day picker: .bt-day-picker, dayPickerHtml({ days, selected, label, disabled }) + initDayPicker(root, { onChange(selected, key) }) in shared/ui/day-picker.js. Real buttons with aria-pressed (Tab, Space, Enter); the dot lights when chosen</p>
+    <p class="kit-note">Empty</p>
+    ${dayPickerHtml({ label: "Days you are around" })}
+    <p class="kit-note">Selected: Mon, Thu, Fri (with date numbers), try it</p>
+    <div class="kit-stack" data-kit-days>${dayPickerHtml({ days, selected: [0, 3, 4] })}<p class="kit-note" data-kit-days-out aria-live="polite">Chosen: Mon, Thu, Fri</p></div>
+    <p class="kit-note">All seven</p>
+    ${dayPickerHtml({ selected: [0, 1, 2, 3, 4, 5, 6] })}
+    <p class="kit-note">Disabled (the whole picker, and weekend tiles only)</p>
+    ${dayPickerHtml({ selected: [1, 2], disabled: true })}
+    ${dayPickerHtml({ days: ["Mon", "Tue", "Wed", "Thu", "Fri", { key: 5, label: "Sat", disabled: true }, { key: 6, label: "Sun", disabled: true }], selected: [0] })}
+
+    <p class="kit-sub">Chat tile: .bt-chat-tile, chatTileHtml({ chat, name, iconHtml, value, needed, boost, previewHtml, note }) + chatPreviewHtml(messages) + initChatTiles(root, { onChange(chat, value) }) in shared/ui/chat-tile.js. The same four values as .bt-pref (favourite, happy, ifNeeded, no); a radio group with arrow keys. Pick one: the tile changes</p>
+    <p class="kit-note">Each value, left to right: Favourite, Happy to help, Only if needed, No</p>
+    <div class="kit-tiles">${tile("twitch", "Twitch", "favourite")}${tile("tiktok", "TikTok", "happy")}${tile("ytVertical", "YouTube vertical", "ifNeeded")}${tile("twitch", "Twitch", "no")}</div>
+    <p class="kit-note">Nothing chosen yet, and "Most needed" (needed + boost 1.5: gold edge and ribbon) with nothing, Favourite and Happy to help chosen</p>
+    <div class="kit-tiles">${tile("tiktok", "TikTok", "")}${tile("ytLandscape", "YouTube landscape", "", { needed: true, boost: 1.5 })}${tile("ytLandscape", "YouTube landscape", "favourite", { needed: true, boost: 1.5 })}${tile("ytVertical", "YouTube vertical", "happy", { needed: true })}</div>
+    <p class="kit-note" data-kit-tiles-out aria-live="polite">Nothing changed yet. Tab to a tile and use the arrow keys to see the focus ring.</p>
+  </section>`;
+}
+
+function initStoryPiecesKit(mount) {
+  const sec = mount.querySelector("#kit-story-pages");
+  if (!sec) return;
+  sec.querySelectorAll("[data-journey]").forEach(initJourney);
+  initDayPicker(sec, { onChange: (sel) => { const o = sec.querySelector("[data-kit-days-out]"); if (o) o.textContent = `Chosen: ${sel.map((k) => DAYS[k]?.label ?? k).join(", ") || "none"}`; } });
+  initChatTiles(sec, { onChange: (chat, value) => { const o = sec.querySelector("[data-kit-tiles-out]"); if (o) o.textContent = `${chat}: ${PREF_OPTIONS.find((p) => p.value === value)?.label}`; } });
+  sec.querySelector("[data-kit-stamp-replay]")?.addEventListener("click", () => {
+    sec.querySelectorAll(".bt-stamp").forEach((s) => { s.style.animation = "none"; void s.offsetWidth; s.style.animation = ""; });
   });
 }
 

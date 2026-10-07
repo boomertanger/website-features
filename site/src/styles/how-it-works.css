@@ -185,3 +185,30 @@
   .bt-root:not(#_) .ai-arr.is-on i b, .bt-root:not(#_) .ai-gc-in { animation: none; }
   .bt-root:not(#_) .ai-node.is-on .ai-node-ic { transform: none; }
 }
+
+/* The four-step journey (.ai-jr--4, docs/design-system.md §5 "Story pages"): the same line and circles with four
+   columns, for "Can I apply?" (the four checks) and "What happens next". Added after everything above so none
+   of the 3 / 5 / 6-step journeys change. Steps may also carry a state: .is-met (lime check), .is-wait (gold,
+   dashed: not yet), .is-locked (dimmed, comes later), .is-waived (teal: the owner waived it); .is-on is still
+   the hover / focus step. .ai-jr-v is an optional value line under the text. 641px and up only: phones keep
+   the base vertical path (only its fill is re-measured for four steps). */
+@container bt (min-width: 641px) {
+  .bt-root:not(#_) .ai-jr.ai-jr--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; }
+  .bt-root:not(#_) .ai-jr.ai-jr--4::before, .bt-root:not(#_) .ai-jr.ai-jr--4::after { display: block; }
+  .bt-root:not(#_) .ai-jr.ai-jr--4::before { right: calc((100% - 30px) / 4 - 29px); }
+  .bt-root:not(#_) .ai-jr.ai-jr--4::after { width: calc(var(--p) * ((100% - 30px) / 4 + 10px)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-jr.ai-jr--4::after { height: calc(var(--p) * (100% - 40px) / 3); }
+}
+.bt-root:not(#_) .ai-jr-v { margin-top: 4px; font-size: var(--bt-text-xs); font-weight: 800; color: var(--bt-text-faint); }
+.bt-root:not(#_) .ai-jr li.is-met:not(.is-on) .ai-jr-num, .bt-root:not(#_) .ai-jr[data-active] li.is-met:not(.is-on) .ai-jr-num { background: var(--bt-lime); }
+.bt-root:not(#_) .ai-jr li.is-met .ai-jr-v { color: var(--bt-lime); }
+.bt-root:not(#_) .ai-jr li.is-wait:not(.is-on) .ai-jr-num, .bt-root:not(#_) .ai-jr[data-active] li.is-wait:not(.is-on) .ai-jr-num { background: var(--bt-surface-2); color: var(--bt-gold); box-shadow: 0 0 0 4px var(--bt-bg), inset 0 0 0 2px var(--bt-gold); }
+.bt-root:not(#_) .ai-jr li.is-wait { border-style: dashed; border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); }
+.bt-root:not(#_) .ai-jr li.is-wait .ai-jr-v { color: var(--bt-gold); }
+.bt-root:not(#_) .ai-jr li.is-locked { border-style: dashed; opacity: 0.6; }
+.bt-root:not(#_) .ai-jr li.is-locked:not(.is-on) .ai-jr-num, .bt-root:not(#_) .ai-jr[data-active] li.is-locked:not(.is-on) .ai-jr-num { background: var(--bt-surface-2); color: var(--bt-text-faint); }
+.bt-root:not(#_) .ai-jr li.is-waived:not(.is-on) .ai-jr-num, .bt-root:not(#_) .ai-jr[data-active] li.is-waived:not(.is-on) .ai-jr-num { background: var(--bt-teal); }
+.bt-root:not(#_) .ai-jr li.is-waived { border-color: color-mix(in srgb, var(--bt-teal) 45%, transparent); }
+.bt-root:not(#_) .ai-jr li.is-waived .ai-jr-v { color: var(--bt-teal); }

@@ -860,6 +860,38 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   (lime) or `.is-wrong` (red, with a ✕) on the picked option, the rest stay neutral, each with BOOMBOT's `say`
   as a `.bt-chat-a` bubble, and `.bt-quiz-result[data-state="pass|fail"]` shows a small ring, the score and,
   when not passed, a Try again button (a pass is "Passed", a fail is "Not quite", never red).
+- **Four-step journey: `.ai-jr.ai-jr--4`** (`site/src/styles/how-it-works.css`, behaviour `initJourney` in
+  `shared/ui/how-it-works.js`, markup exactly like the other journeys: `ol.ai-jr.ai-jr--4[data-journey] > li[tabindex=0]`
+  with `.ai-jr-num`, `.ai-jr-ic`, `b`, `.ai-jr-t`). The same line and circles as the 3 / 5 / 6-step journeys with four
+  columns (641px and up; phones keep the vertical path, the fill re-measured for four). Added rules only, so the
+  other journeys are unchanged. Step states on the `li`: `.is-met` (lime circle, put a ✓ in `.ai-jr-num`), `.is-wait`
+  (gold ring, dashed card: not yet), `.is-locked` (dimmed, dashed: comes later), `.is-waived` (teal: the owner waived
+  it), and `.is-on` / `.is-past`, which `initJourney` sets on hover, focus and tap. `.ai-jr-v` is an optional value line
+  under the text ("✓ 35 days"), coloured by the state. A page that shows progress without hover sets `--p` on the `ol`
+  (the index the line fills to) and `.is-on` / `.is-past` itself.
+- **Stamp: `.bt-stamp`** (`shared/ui/stamp.js` `stampHtml({ label, kicker, sub, tone, size })`): the celebratory seal
+  ("Application · In · Oct 7"), for story pages and the key action on a tool page (queued, signed off, sent). `label`
+  is the big word, `kicker` a small line above and `sub` below; `tone` is gold by default, `lime` or `primary`
+  (`.bt-stamp--lime`, `--primary`, driven by `--st`); `size: "sm"` is `.bt-stamp--sm` (96px). It slams in once (scale and
+  fade, `bt-stamp-slam`, 0.5s) and settles tilted; render it when the moment happens, or re-render to replay. Under
+  `prefers-reduced-motion` there is no animation. `role="img"` with the text as its name.
+- **Day picker: `.bt-day-picker`** (`shared/ui/day-picker.js` `dayPickerHtml({ days, selected, label, disabled })`,
+  `initDayPicker(root, { onChange(selected, key) })`, `dayPickerValue(picker)`, `DAYS`): seven `.bt-day` tiles in a
+  `role="group"`. Each is a real `<button aria-pressed>` (Tab, Space, Enter) with the day name, an optional big number
+  (`num`, e.g. the date) and a dot that lights when chosen. `days` is `[{ key, label, num?, disabled? }]` or plain
+  labels (the key is the index); default Mon to Sun. Selected tiles take the primary edge. `disabled` greys out
+  the whole picker or a single tile. The change also fires a bubbling `bt-day-change` event (`detail: { selected, key }`).
+  Seven columns at every width (tighter on phones).
+- **Chat tile: `.bt-chat-tile`** (`shared/ui/chat-tile.js` `chatTileHtml({ chat, name, iconHtml, value, needed, boost,
+  previewHtml, note })`, `chatPreviewHtml(messages)`, `initChatTiles(root, { onChange(chat, value) })`): a chat card for
+  the per-chat choice on story pages (`.bt-pref` stays for the denser profile list). Header with the platform icon
+  (`platformIconHtml`) and name, an optional gold "Most needed" ribbon (`needed`; `boost: 1.5` adds "· ×1.5"; gold edge,
+  never red), a mini chat of a few fake messages (`.bt-chat-tile-mini`, from `chatPreviewHtml([{ user, text, tone }])`;
+  `{ text, quiet: true }` is an italic system line) and the choice, a 2x2 `role="radiogroup"` (`.bt-chat-tile-pick`;
+  Favourite · Happy to help · Only if needed · No, the same values as `.bt-pref`: `favourite`, `happy`, `ifNeeded`, `no`),
+  built on `initRadioGroup` (roving tabindex; arrows, Home and End move and choose). `data-value` on the tile follows
+  the choice: Favourite lights the primary edge, Happy to help a softer one, No dims the tile. Fires a bubbling
+  `bt-chat-tile-change` event (`detail: { chat, value }`). The page lays the tiles out in its own grid.
 
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
@@ -889,6 +921,9 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `grade-chip.js` · `mod-machina.js` | `gradeChipHtml({ track, grade, code, label })`, `gradeChip(opts)`, `gradeInfo`, `parseGrade`, `GRADES` · `MM_ICON` (the Mod Machina wordmark icon) |
 | `crew.js` | `platformIconHtml(chat, { logo })`, `roomHtml`, `crewCardHtml`, `podiumHtml`, `timecardHtml`, `ringHtml`, `PLATFORMS` |
 | `pref.js` · `ladder.js` · `quiz.js` | `prefHtml({ rows })`, `prefRowHtml`, `initPrefs(root, { onChange })`, `initRadioGroup(group, { onChange })`, `PREF_OPTIONS` · `ladderHtml`, `ladderDetailHtml`, `initLadder(root, { onSelect })` · `quizHtml`, `initQuiz(root, { submit, onResult })`, `showQuizResults(el, answers, outcome)` |
+| `stamp.js` | `stampHtml({ label, sub, kicker, tone, size })`: the `.bt-stamp` seal (markup string, text escaped) |
+| `day-picker.js` | `dayPickerHtml({ days, selected, label, disabled })`, `initDayPicker(root, { onChange(selected, key) })`, `dayPickerValue(picker)`, `DAYS` |
+| `chat-tile.js` | `chatTileHtml({ chat, name, iconHtml, value, needed, boost, previewHtml, note })`, `chatPreviewHtml(messages)`, `initChatTiles(root, { onChange(chat, value) })` (reuses `initRadioGroup` from `pref.js`) |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 

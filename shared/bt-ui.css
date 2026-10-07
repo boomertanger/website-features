@@ -3346,6 +3346,7 @@
    .bt-ladder       clickable rungs + a detail card (shared/ui/ladder.js)
    .bt-quiz         question, options, right / wrong / neutral states and a result card (shared/ui/quiz.js)
    Reduced motion: no turning gear, no pop-in. */
+/* Story page pieces (below the Mod Machina block): .bt-stamp, .bt-day-picker, .bt-chat-tile. */
 
 /* Wordmark icon: the gear turns slowly and the eye glances about; on hover, focus or touch it speeds up and the eye lights. */
 .bt-root:not(#_) .bt-mm-icon { width: 1.5em; height: 1.5em; flex: none; overflow: visible; }
@@ -3555,3 +3556,68 @@
   .bt-root:not(#_) .bt-ladder-detail { animation: none; }
 }
 /* ================= END Mod Machina pieces ================= */
+
+/* ================= Story page pieces (design-system.md §5 "Story page pieces"; mockup crew-story-pages.html "After") =================
+   .bt-stamp       the celebratory stamp: slams in and settles (shared/ui/stamp.js); still under reduced motion
+   .bt-day-picker  a week of day tiles, real toggle buttons (shared/ui/day-picker.js)
+   .bt-chat-tile   a chat card: icon + name, a mini chat preview, a four-way choice (shared/ui/chat-tile.js)
+   (The four-step journey .ai-jr--4 lives in site/src/styles/how-it-works.css with the other journeys.) */
+
+/* Stamp: --st is the tone (gold by default); .bt-stamp--lime, --primary; --sm is 96px. */
+.bt-root:not(#_) .bt-stamp { --st: var(--bt-title); display: inline-grid; place-items: center; flex: none; width: 130px; height: 130px; border: 3px solid var(--st); border-radius: 50%; color: var(--st); text-align: center; transform: rotate(-10deg); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; line-height: 1.15; text-transform: uppercase; box-shadow: 0 0 30px color-mix(in srgb, var(--st) 30%, transparent), inset 0 0 0 6px color-mix(in srgb, var(--st) 15%, transparent); animation: bt-stamp-slam 0.5s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.bt-root:not(#_) .bt-stamp--lime { --st: var(--bt-lime); }
+.bt-root:not(#_) .bt-stamp--primary { --st: var(--bt-primary); }
+.bt-root:not(#_) .bt-stamp--sm { width: 96px; height: 96px; font-size: 12px; }
+.bt-root:not(#_) .bt-stamp small { display: block; font-size: 10px; letter-spacing: 0.14em; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-stamp b { display: block; font-size: 28px; color: var(--bt-text); }
+.bt-root:not(#_) .bt-stamp--sm b { font-size: 21px; }
+@keyframes bt-stamp-slam { from { transform: rotate(-10deg) scale(1.8); opacity: 0; } }
+
+/* Day picker: Mon to Sun toggle tiles (aria-pressed). The dot lights when a day is chosen. */
+.bt-root:not(#_) .bt-day-picker { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 8px; }
+.bt-root:not(#_) .bt-day { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border: 1px solid var(--bt-border-2); border-radius: 14px; background: var(--bt-surface); color: var(--bt-text-muted); font: inherit; cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s; }
+.bt-root:not(#_) .bt-day:hover:not(:disabled) { border-color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-day small { font-size: 10px; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-day b { font-size: var(--bt-text-lg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-day i { width: 8px; height: 8px; border-radius: 50%; background: var(--bt-border-2); transition: background 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .bt-day[aria-pressed="true"] { border-color: var(--bt-primary); background: radial-gradient(80% 80% at 50% 0%, var(--bt-primary-bg), transparent), var(--bt-surface); }
+.bt-root:not(#_) .bt-day[aria-pressed="true"] i { background: var(--bt-primary); box-shadow: 0 0 10px rgba(var(--bt-primary-rgb), 0.9); }
+.bt-root:not(#_) .bt-day:disabled { opacity: 0.45; cursor: not-allowed; }
+
+/* Chat tile: [data-value] is the choice (favourite, happy, ifNeeded, no); .is-needed adds the gold edge and ribbon. */
+.bt-root:not(#_) .bt-chat-tile { position: relative; display: flex; flex-direction: column; gap: 10px; min-width: 0; padding: 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); transition: border-color 0.25s, box-shadow 0.25s, transform 0.25s, opacity 0.25s; }
+.bt-root:not(#_) .bt-chat-tile:hover { transform: translateY(-3px); }
+.bt-root:not(#_) .bt-chat-tile.is-needed { border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); background: radial-gradient(90% 60% at 50% 0%, var(--bt-gold-bg), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .bt-chat-tile[data-value="happy"] { border-color: color-mix(in srgb, var(--bt-primary) 50%, transparent); }
+.bt-root:not(#_) .bt-chat-tile[data-value="favourite"] { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary), 0 0 24px rgba(var(--bt-primary-rgb), 0.3); }
+.bt-root:not(#_) .bt-chat-tile[data-value="no"] { opacity: 0.55; }
+.bt-root:not(#_) .bt-chat-tile-flag { align-self: flex-start; }
+.bt-root:not(#_) .bt-chat-tile-h { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .bt-chat-tile-h .bt-platform-icon { width: 34px; height: 34px; border-radius: 10px; font-size: 12px; }
+.bt-root:not(#_) .bt-chat-tile-h > span:not(.bt-platform-icon) { min-width: 0; }
+.bt-root:not(#_) .bt-chat-tile-h b { display: block; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-chat-tile-h small { display: block; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-chat-tile-mini { display: flex; flex-direction: column; justify-content: flex-end; gap: 4px; height: 66px; overflow: hidden; padding: 8px; border-radius: 10px; background: var(--bt-bg); color: var(--bt-text-muted); font-size: 10.5px; -webkit-mask-image: linear-gradient(180deg, transparent, var(--bt-text) 35%); mask-image: linear-gradient(180deg, transparent, var(--bt-text) 35%); }
+.bt-root:not(#_) .bt-chat-tile-mini b { margin-right: 4px; color: var(--bt-primary-soft); }
+.bt-root:not(#_) .bt-chat-tile-mini .is-blue b { color: var(--bt-blue); }
+.bt-root:not(#_) .bt-chat-tile-mini .is-gold b { color: var(--bt-gold); }
+.bt-root:not(#_) .bt-chat-tile-mini .is-lime b { color: var(--bt-lime); }
+.bt-root:not(#_) .bt-chat-tile-mini .is-teal b { color: var(--bt-teal); }
+.bt-root:not(#_) .bt-chat-tile-mini .is-quiet { color: var(--bt-text-faint); font-style: italic; }
+.bt-root:not(#_) .bt-chat-tile-pick { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; }
+.bt-root:not(#_) .bt-chat-tile-pick button { padding: 7px 4px; border: 1px solid var(--bt-border-2); border-radius: 9px; background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; transition: background 0.2s, color 0.2s, border-color 0.2s; }
+.bt-root:not(#_) .bt-chat-tile-pick button:hover { border-color: var(--bt-text-faint); color: var(--bt-text); }
+.bt-root:not(#_) .bt-chat-tile-pick button[aria-checked="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-chat-tile-pick button[data-value="no"][aria-checked="true"] { border-color: var(--bt-border-2); background: var(--bt-surface-2); }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-day-picker { gap: 4px; }
+  .bt-root:not(#_) .bt-day { padding: 9px 0; border-radius: 10px; }
+  .bt-root:not(#_) .bt-day b { font-size: var(--bt-text-md); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-stamp { animation: none; }
+  .bt-root:not(#_) :is(.bt-chat-tile, .bt-day, .bt-day i, .bt-chat-tile-pick button) { transition: none; }
+  .bt-root:not(#_) .bt-chat-tile:hover { transform: none; }
+}
+/* ================= END Story page pieces ================= */

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(kit): story page pieces: four-step journey (.ai-jr--4, met / waiting / locked / waived steps), .bt-stamp, .bt-day-picker and .bt-chat-tile with stamp.js, day-picker.js and chat-tile.js, all on the UI kit page
 Meet the crew (/crew) is now a story page: spotlit lineup, flip-medal awards, where we need you, roster cards and a Hall of Fame journey.
 - docs: the site-wide page quality standard (Oct 7). CLAUDE.md rule 10 and design-system.md §8m now describe two kinds of page: story pages (landing, Join, Meet the crew, How it works, Academy, feature home pages) use the full How it works frame; tool pages (queues, HQ, tasks, profiles, boards, the Mod Deck, /admin) keep the same polish built for speed. Adds the approved story-page mockup (docs/design/mockups/crew-story-pages.html) and its link in docs/specs/mod-machina.md.
 - functions, site: the owner's waiver now covers the 14-day account age as well as the 3 check-ins (docs/specs/mod-machina.md §10). crewWaive records what it covers and now writes an adminLog entry (crewWaive, with the member), which it did not before; applyEligibility skips the account-age rule for a waived member, so crewApply and the checklist agree; 18+ and a linked platform account can never be waived. The Can I apply? rows for check-ins and account age show "Waived by Boomer". The Waive requirements card and the queue's Waive button on /admin/crew say what is covered. check-crew.js covers it. Deployed to staging: crewWaive, crewMe, crewApply.

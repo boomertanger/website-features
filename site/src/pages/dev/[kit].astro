@@ -20,6 +20,7 @@ import { isProduction } from "../../lib/env.js";
 import { Content as TermsText } from "../../content/legal/terms.md";
 import "../../../../shared/ui-kit/ui-kit.css";
 import "../../styles/ui-kit.css";
+import "../../styles/how-it-works.css";   // the journey (.ai-jr--4) shown in Story page pieces
 
 export function getStaticPaths() {
   return isProduction ? [] : [{ params: { kit: "ui-kit" } }];
