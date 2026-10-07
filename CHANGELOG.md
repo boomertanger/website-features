@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- functions, site: an optional "in their own words" line for crew (docs/specs/mod-machina.md §12). crewSaveProfile takes quote (plain text, one line, up to 90 characters, no < or >, empty clears it); crewMe returns crew.quote; the public roster (public/crew) carries it only when set; /crew/profile has an In your own words card with a counter; the /crew roster cards show it as before, only when set. check-crew.js covers it.
 Join the crew is now a story page: seat-map hero, the four-step Can I apply journey, chat and day tiles, the Crew Code signing row, a stamp after sending, and Ask BOOMBOT.
 feat(kit): story page pieces: four-step journey (.ai-jr--4, met / waiting / locked / waived steps), .bt-stamp, .bt-day-picker and .bt-chat-tile with stamp.js, day-picker.js and chat-tile.js, all on the UI kit page
 Meet the crew (/crew) is now a story page: spotlit lineup, flip-medal awards, where we need you, roster cards and a Hall of Fame journey.

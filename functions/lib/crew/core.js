@@ -50,6 +50,14 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     if (days.some((d) => !DAYS.includes(d))) throw fail("invalid-argument", "Days must be mon to sun.", "field", { field: "availability" });
     return { days, note: S.text(v?.note ?? "", 300, { field: "availability note" }) };
   }
+  /** The optional "in their own words" line: plain text, one line, up to 90 characters. "" clears it. */
+  function cleanQuote(v) {
+    if (typeof v !== "string") throw fail("invalid-argument", "The quote must be text.", "field", { field: "quote" });
+    const s = v.replace(/[\u0000-\u001f\u007f]+/g, " ").replace(/\s+/g, " ").trim();
+    if (s.length > 90) throw fail("invalid-argument", "Keep your quote to 90 characters.", "field", { field: "quote" });
+    if (/[<>]/.test(s)) throw fail("invalid-argument", "Plain text only: no < or >.", "field", { field: "quote" });
+    return s;
+  }
   function cleanDevice(v) {
     if (!DEVICES.includes(v)) throw fail("invalid-argument", "Device must be phone, desktop or both.", "field", { field: "device" });
     return v;
@@ -377,6 +385,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     if (d.preferences !== undefined) patch.platforms = cleanPrefs(d.preferences);
     if (d.availability !== undefined) patch.availability = cleanAvailability(d.availability);
     if (d.device !== undefined) patch.device = cleanDevice(d.device);
+    if (d.quote !== undefined) { const q = cleanQuote(d.quote); patch.quote = q || FieldValue.delete(); }
     if (!Object.keys(patch).length) throw fail("invalid-argument", "Nothing to save.", "args");
     await rosterRef(uid).update(patch);
     return { ok: true };
@@ -409,7 +418,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       activityRules: settings.activityRules === true,
       apply,
       next: crit && crit.to ? { to: crit.to, name: L.gradeName("mod", crit.to), ready: crit.ready, met: crit.met, missing: crit.missing, pending: crit.pending } : null,
-      crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, breakUntil: ms(r.breakUntil), breakMonthsUsed: (r.breakMonthsUsed || {})[String(new Date(now).getUTCFullYear())] || 0, stats: r.stats || {} } : null,
+      crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, quote: r.quote || "", breakUntil: ms(r.breakUntil), breakMonthsUsed: (r.breakMonthsUsed || {})[String(new Date(now).getUTCFullYear())] || 0, stats: r.stats || {} } : null,
       strikes: L.activeStrikes(rec.strikes, now).map((s) => ({ at: s.at, reason: s.reason, expiresAt: s.expiresAtMs })),
       ready: rec.ready ? { to: rec.ready.to, name: L.gradeName(r?.track || "mod", rec.ready.to) } : null,
       academy: { passed: progressOf(progress) },

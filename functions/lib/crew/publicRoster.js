@@ -1,7 +1,8 @@
 // The public crew roster (docs/specs/mod-machina.md section 12, /crew "Meet the crew"): one document,
 // sites/boomertanger/public/crew, readable by everyone (public/{docId} is open in firestore.rules).
 // It carries ONLY what the spec lets the public see: handle, track, grade, status, and the chats marked
-// Favourite. "Happy", "If needed" and "No" are never published. Reserve, Alumni and Paused aren't listed.
+// Favourite, plus the optional one-line quote the member wrote for themselves (plain text, up to 90 characters, only when
+// set). "Happy", "If needed" and "No" are never published. Reserve, Alumni and Paused aren't listed.
 // Rebuilt after each roster change (mirrorCrewRoster) and every night (crewNightly); never throws.
 const admin = require("firebase-admin");
 const { SITE_ID, paths } = require("./settings");
@@ -13,7 +14,8 @@ const CHATS = ["twitch", "ytLandscape", "ytVertical", "tiktok"];
 function publicMember(uid, roster, handle) {
   if (!roster || !LISTED.includes(roster.status) || !Number.isInteger(roster.grade)) return null;
   const favourites = CHATS.filter((k) => roster.platforms?.[k] === "favourite");
-  return { uid, handle: handle || roster.handle || null, track: roster.track === "admin" ? "admin" : "mod", grade: roster.grade, status: roster.status, favourites };
+  const quote = typeof roster.quote === "string" ? roster.quote.trim().slice(0, 90) : "";
+  return { uid, handle: handle || roster.handle || null, track: roster.track === "admin" ? "admin" : "mod", grade: roster.grade, status: roster.status, favourites, ...(quote ? { quote } : {}) };
 }
 
 /** Admins first (A3 down), then mods (M4 down), then by handle. */

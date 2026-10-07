@@ -45,6 +45,10 @@ function render() {
         <div class="bt-field"><span class="bt-label" id="hq-dev-l">Your device</span><span class="bt-pref-seg hq-dev" role="radiogroup" aria-labelledby="hq-dev-l" data-dev>${dev}</span>
           <span class="bt-fineprint">A phone matters for YouTube vertical: that chat is easiest to watch and moderate from the YouTube app on a phone. Desktop is great for everything else.</span></div>
         <p class="bt-error" hidden></p><div><button type="button" class="bt-btn bt-btn--primary" data-save="avail">Save availability</button></div></div>
+      <div class="bt-card hq-card" data-card="quote"><div class="bt-card-head"><span class="bt-card-title">In your own words</span></div>
+        <p class="hq-note">One line that shows under your name on the public <a href="/crew">Meet the crew</a> page. Totally optional: leave it empty and nothing is shown. Plain text, up to 90 characters, and everyone can read it.</p>
+        <div class="bt-field"><label class="bt-label" for="hq-quote">Your line</label><input class="bt-input" id="hq-quote" type="text" maxlength="90" autocomplete="off" placeholder="Say hi, I mostly bite pixels." value="${esc(c.quote || "")}"><span class="bt-hint" data-quote-count aria-live="polite"></span></div>
+        <p class="bt-error" hidden></p><div><button type="button" class="bt-btn bt-btn--primary" data-save="quote">Save my line</button></div></div>
       <div class="bt-card hq-card hq-dark" id="going-dark" data-card="dark"><div class="bt-card-head"><span class="bt-card-title">Going dark</span>${statusChip(c.status)}</div>${dark}</div>
       ${canRetire ? `<div class="bt-card hq-card" data-card="retire"><div class="bt-card-head"><span class="bt-card-title">Retire from the crew</span></div><p class="hq-note">Stepping down for good? Thank you for everything. You become Alumni: your platform mod powers are removed, and you keep your grade, badges and Hall of Fame entries. You can come back later through a short fast-track, with no queue.</p><div><button type="button" class="bt-btn bt-btn--secondary" data-retire>Retire from the crew</button></div></div>` : ""}
     </div>`;
@@ -52,6 +56,9 @@ function render() {
 
   const chosen: Partial<Prefs> = { ...prefs };
   initPrefs(root, { onChange: (chat: string, v: string) => { chosen[chat as Chat] = v as Pref; } });
+  const quoteEl = root.querySelector<HTMLInputElement>("#hq-quote")!, quoteCount = root.querySelector<HTMLElement>("[data-quote-count]")!;
+  const countQuote = () => { quoteCount.textContent = `${quoteEl.value.length} of 90`; };
+  countQuote(); quoteEl.addEventListener("input", countQuote);
   const dayOn = new Set(c.availability.days);
   root.querySelector(".hq-chips")!.addEventListener("click", (e) => {
     const b = (e.target as HTMLElement).closest<HTMLElement>("[data-day]"); if (!b) return;
@@ -73,6 +80,7 @@ function render() {
   const availBody = () => ({ availability: { days: DAYS.filter((d) => dayOn.has(d)), note: (root.querySelector("#hq-av-note") as HTMLTextAreaElement).value.trim() }, device: device.get() || c.device });
   save("avail", availBody, () => { const b = availBody(); Object.assign(previewData().me.crew, b); Object.assign(c, b); }, "Availability saved.", "Save availability");
 
+  save("quote", () => ({ quote: quoteEl.value.trim() }), () => { const v = quoteEl.value.trim(); previewData().me.crew.quote = v; c.quote = v; }, "Saved. It shows on Meet the crew once the page refreshes.", "Save my line");
   const setStatus = async (status: "goingDark" | "active" | "alumni", months?: number) => {
     await act(ctx, "crewSetStatus", months ? { status, months } : { status }, () => {
       c.status = status; c.breakUntil = status === "goingDark" ? Date.now() + (months || 1) * 30 * 86400000 : null;

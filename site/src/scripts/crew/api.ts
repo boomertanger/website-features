@@ -17,13 +17,13 @@ export interface Me {
   activityRules: boolean;
   apply: { ok: boolean; reason: string | null; reapplyAt: number | null; items: ApplyItem[]; signedUp: boolean } | null;
   next: { to: number; name: string; ready: boolean; met: string[]; missing: string[]; pending: string[] } | null;
-  crew: { track: "mod" | "admin"; grade: number; name: string; status: string; since: number | null; gradeSince: number | null; platforms: Partial<Prefs>; availability: { days: string[]; note: string }; device: string; breakUntil: number | null; breakMonthsUsed: number; stats: Record<string, number> } | null;
+  crew: { track: "mod" | "admin"; grade: number; name: string; status: string; since: number | null; gradeSince: number | null; platforms: Partial<Prefs>; availability: { days: string[]; note: string }; device: string; breakUntil: number | null; breakMonthsUsed: number; quote?: string; stats: Record<string, number> } | null;
   strikes: { at: number; reason: string; expiresAt: number }[];
   ready: { to: number; name: string } | null;
   academy: { passed: string[] };
   application: { appId: string; status: string; band: string | null; note: string | null; createdAt: number; expiresAt: number | null; reapplyAt: number | null } | null;
 }
-export interface PublicMember { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; status: string; favourites: Chat[]; /** Optional one-line "in their own words" (max 90 chars). NOT in the backend yet: the page only renders it when present. */ quote?: string }
+export interface PublicMember { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; status: string; favourites: Chat[]; /** Optional one-line "in their own words" (plain text, max 90 chars), published only when the member set one. */ quote?: string }
 export interface BoardRow { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; gears: number; duties: number; hours: number; rooms: string[]; recruits: number; staff: boolean; place: number }
 export interface Board { period: string | null; rows: BoardRow[] }
 export interface Award { month: string; topGear: { uid: string; handle: string | null; gears?: number } | null; fanFavourite: { uid: string; handle: string | null; votes?: number } | null }

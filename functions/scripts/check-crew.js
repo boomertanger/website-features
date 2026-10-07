@@ -827,6 +827,20 @@ async function main() {
   // the roster trigger refreshes it
   await fire("pub3", null, { track: "mod", grade: 1, status: "active", platforms: { tiktok: "favourite" } });
   assert.deepEqual((await db.doc(`${S}/public/crew`).get()).get("members").find((x) => x.uid === "pub3").favourites, ["tiktok"]);
+  // the optional quote: saved through crewSaveProfile, plain text, 90 characters, published only when set
+  await as("pub1")("crewSaveProfile", { quote: "  Say hi,\n  I bite   rarely.  " });
+  assert.equal((await db.doc(paths.roster("pub1")).get()).get("quote"), "Say hi, I bite rarely.");
+  assert.equal((await as("pub1")("crewMe")).crew.quote, "Say hi, I bite rarely.");
+  await fire("pub1", null, (await db.doc(paths.roster("pub1")).get()).data());                                   // what the roster trigger does after a write
+  assert.equal((await db.doc(`${S}/public/crew`).get()).get("members").find((x) => x.uid === "pub1").quote, "Say hi, I bite rarely.");   // the roster trigger refreshed it
+  assert.equal("quote" in (await db.doc(`${S}/public/crew`).get()).get("members").find((x) => x.uid === "pub2"), false);                    // nothing published when unset
+  assert.equal(await reason(as("pub1")("crewSaveProfile", { quote: "x".repeat(91) })), "field");
+  assert.equal(await reason(as("pub1")("crewSaveProfile", { quote: "<b>hi</b>" })), "field");
+  assert.equal(await reason(as("pub1")("crewSaveProfile", { quote: 5 })), "field");
+  assert.equal(await reason(as("pub1")("crewSaveProfile", { quote: "x".repeat(90) })), "ok");
+  await as("pub1")("crewSaveProfile", { quote: "" });
+  assert.equal((await db.doc(paths.roster("pub1")).get()).get("quote"), undefined);                                                           // empty clears it
+  assert.equal(await reason(as("fan")("crewSaveProfile", { quote: "hi" })), "notCrew");
   // crewSaveSettings: owner only, validated, logged
   assert.equal(await reason(as("ov")("crewSaveSettings", { vouchCap: 4 })), "notOwner");
   assert.equal(await reason(as("w1")("crewSaveSettings", { vouchCap: 4 })), "notOwner");
