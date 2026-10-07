@@ -79,7 +79,7 @@ function applyEligibility(i) {
   if (i.crewStatus && i.crewStatus !== "alumni") return { ok: false, reason: "alreadyCrew" };
   if (i.openApp) return { ok: false, reason: "openApplication" };
   if (i.lastNotNowAtMs && i.now < i.lastNotNowAtMs + s.reapplyDays * DAY_MS) return { ok: false, reason: "reapplyWait", reapplyAtMs: i.lastNotNowAtMs + s.reapplyDays * DAY_MS };
-  if (!(i.signedUpAtMs && i.now - i.signedUpAtMs >= 14 * DAY_MS)) return { ok: false, reason: "tooNew" };
+  if (!i.waived && !(i.signedUpAtMs && i.now - i.signedUpAtMs >= 14 * DAY_MS)) return { ok: false, reason: "tooNew" };   // the owner's waiver covers the account age too
   if (!(i.linkedCount >= 1)) return { ok: false, reason: "noPlatform" };
   if (!i.waived) {
     if (!s.checkinFallback) return { ok: false, reason: "needsStreamCheckins" };   // real stream check-ins arrive with the Control Room
@@ -100,10 +100,10 @@ function applyChecklist(i) {
   const checks = i.checkins || 0;
   const items = [
     { id: "age", label: "18 or older", ok: i.ageBand === "18+", detail: i.ageBand === "18+" ? "" : "The crew is 18+ because crew spaces put adults and teens together." },
-    { id: "account", label: "Account at least 14 days old", ok: aged, detail: aged ? "" : `${daysLeft} more day${daysLeft === 1 ? "" : "s"}` },
+    { id: "account", label: "Account at least 14 days old", ok: aged || !!i.waived, detail: i.waived && !aged ? "Waived by Boomer" : aged ? "" : `${daysLeft} more day${daysLeft === 1 ? "" : "s"}` },
     { id: "platform", label: "A linked platform account", ok: i.linkedCount >= 1, detail: i.linkedCount >= 1 ? "" : "Link Twitch, YouTube or TikTok in your account" },
     i.waived
-      ? { id: "checkins", label: "Check-ins", ok: true, detail: "Waived by the owner" }
+      ? { id: "checkins", label: "3 daily check-ins in the last 30 days", ok: true, detail: "Waived by Boomer" }
       : { id: "checkins", label: "3 daily check-ins in the last 30 days", ok: s.checkinFallback ? checks >= 3 : false, detail: s.checkinFallback ? `${Math.min(checks, 3)} of 3` : "Stream check-ins are needed" },
     { id: "standing", label: "Not already crew, no open application", ok: !(i.crewStatus && i.crewStatus !== "alumni") && !i.openApp, detail: i.openApp ? "You have an application in the queue" : i.crewStatus && i.crewStatus !== "alumni" ? "You're already on the crew" : "" },
   ];

@@ -216,7 +216,7 @@ function renderQueue() {
     const concerns = (a.concerns || []).length ? `<div class="ca-concerns"><b>Concerns (admins only)</b>${a.concerns!.map((c) => `<p><span>${c.byHandle ? "@" + esc(c.byHandle) : "An admin"}:</span> ${esc(c.note)}</p>`).join("")}</div>` : "";
     const days = (a.availability?.days || []).map((d) => DAY_NAME[d] || d).join(", ");
     const acts = me.isOwner
-      ? `<button type="button" class="bt-btn bt-btn--admin" data-act="approve" data-app="${esc(a.appId)}">Approve</button><button type="button" class="bt-btn bt-btn--secondary" data-act="notnow" data-app="${esc(a.appId)}">Not now</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-act="waive" data-app="${esc(a.appId)}">Waive check-ins</button>`
+      ? `<button type="button" class="bt-btn bt-btn--admin" data-act="approve" data-app="${esc(a.appId)}">Approve</button><button type="button" class="bt-btn bt-btn--secondary" data-act="notnow" data-app="${esc(a.appId)}">Not now</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-act="waive" data-app="${esc(a.appId)}">Waive requirements</button>`
       : `<span class="ca-none">Only the owner decides.</span>`;
     return `<article class="bt-card ca-app" data-app="${esc(a.appId)}">
       <div class="ca-app-top">
@@ -435,10 +435,10 @@ function notNow(appId: string) {
 function waive(appId: string) {
   const a = queue.find((x) => x.appId === appId)!;
   void confirmAction({
-    title: "Waive the check-ins?", confirmLabel: "Waive", busyLabel: "Saving…", danger: false, feature: "crew",
-    message: `${a.handle ? "@" + a.handle : "This person"} won't need the 3 check-ins to apply. Their application stays in the queue.`,
+    title: "Waive the requirements?", confirmLabel: "Waive", busyLabel: "Saving…", danger: false, feature: "crew",
+    message: `${a.handle ? "@" + a.handle : "This person"} won't need the 3 check-ins or the 14-day account age to apply. Their application stays in the queue.`,
     onConfirm: async () => {
-      try { const res = await act("crewWaive", { uid: a.uid }); if (res) toast("Check-ins waived."); } catch (e) { throw new Error(messageFor(e, "Couldn't save. Try again.")); }
+      try { const res = await act("crewWaive", { uid: a.uid }); if (res) toast("Requirements waived."); } catch (e) { throw new Error(messageFor(e, "Couldn't save. Try again.")); }
     },
   });
 }
@@ -460,9 +460,9 @@ function wireWaive() {
     if (!uid) return fail(`No member called @${handle}.`);
     void confirmAction({
       title: "Waive the requirements?", confirmLabel: "Waive", busyLabel: "Saving…", danger: false, feature: "crew",
-      message: `@${handle} won't need the 3 check-ins to apply. 18+, account age and a linked platform still apply.`,
+      message: `@${handle} won't need the 3 check-ins or the 14-day account age to apply. 18+ and a linked platform account still apply.`,
       onConfirm: async () => {
-        try { const res = await act("crewWaive", { uid }); if (res) { toast(`Check-ins waived for @${handle}.`); input.value = ""; } } catch (x) { throw new Error(messageFor(x, "Couldn't save. Try again.")); }
+        try { const res = await act("crewWaive", { uid }); if (res) { toast(`Requirements waived for @${handle}.`); input.value = ""; } } catch (x) { throw new Error(messageFor(x, "Couldn't save. Try again.")); }
       },
     });
   });

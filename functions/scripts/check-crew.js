@@ -102,6 +102,10 @@ async function main() {
   assert.equal(elig({ linkedCount: 0 }), "noPlatform");
   assert.equal(elig({ checkins: 2 }), "needsCheckins");
   assert.equal(elig({ checkins: 0, waived: true }), "ok");
+  assert.equal(elig({ signedUpAtMs: NOW - 2 * DAY, checkins: 0, waived: true }), "ok");          // the waiver covers the account age too
+  assert.equal(elig({ signedUpAtMs: NOW - 2 * DAY }), "tooNew");
+  assert.equal(elig({ ageBand: "13-17", waived: true }), "under18");                              // 18+ and a platform can never be waived
+  assert.equal(elig({ linkedCount: 0, waived: true }), "noPlatform");
   assert.equal(elig({ crewStatus: "active" }), "alreadyCrew");
   assert.equal(elig({ crewStatus: "alumni" }), "ok");
   assert.equal(elig({ openApp: true }), "openApplication");
@@ -163,6 +167,7 @@ async function main() {
   assert.equal(await reason(as("apl")("crewApply", goodApp({ device: "fax" }))), "field");
   assert.equal(await reason(as("apl")("crewApply", goodApp({ answers: { why: "short" } }))), "field");
   assert.equal(await reason(w1("crewWaive", { uid: "x" })), "notOwner");
+  assert.equal(logs.filter((e) => e.action === "crewWaive").length >= 1, true);                    // the waiver is logged
   const applied = await as("apl")("crewApply", goodApp());
   assert.match(applied.appId, /^apl-/);
   assert.equal(await reason(as("apl")("crewApply", goodApp())), "openApplication");
@@ -776,7 +781,12 @@ async function main() {
   assert.equal(young.items.find((x) => x.id === "account").ok, false); assert.equal(young.items.find((x) => x.id === "account").detail, "4 more days");
   assert.equal(young.items.find((x) => x.id === "checkins").detail, "1 of 3");
   assert.equal(listFor({ ageBand: "13-17" }).items.find((x) => x.id === "age").ok, false);
-  assert.equal(listFor({ waived: true, checkins: 0 }).items.find((x) => x.id === "checkins").detail, "Waived by the owner");
+  assert.equal(listFor({ waived: true, checkins: 0 }).items.find((x) => x.id === "checkins").detail, "Waived by Boomer");
+  const wv = listFor({ waived: true, checkins: 0, signedUpAtMs: NOW - 2 * DAY });
+  assert.equal(wv.ok, true); assert.equal(wv.items.find((x) => x.id === "account").detail, "Waived by Boomer"); assert.equal(wv.items.find((x) => x.id === "account").ok, true);
+  const wv2 = listFor({ waived: true, ageBand: "13-17", linkedCount: 0 });
+  assert.equal(wv2.ok, false); assert.equal(wv2.items.find((x) => x.id === "age").ok, false); assert.equal(wv2.items.find((x) => x.id === "platform").ok, false);
+  assert.equal(listFor({ waived: true }).items.find((x) => x.id === "account").detail, "");                 // an old enough account has nothing to waive
   assert.equal(listFor({ lastNotNowAtMs: NOW - 30 * DAY }).reapplyAt > NOW, true);
   // crewMe: applicant checklist, crew next-grade progress, the activity switch
   await person("hopeful", {}); await streakDays("hopeful", 2);

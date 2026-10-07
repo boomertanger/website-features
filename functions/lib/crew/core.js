@@ -197,10 +197,12 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
   const crewWaive = onCall(async (request) => {
     const uid = S.requireAuth(request);
     const w = await S.who(uid);
-    if (!w.isOwner) throw fail("permission-denied", "Only the owner can waive the check-ins.", "notOwner");
+    if (!w.isOwner) throw fail("permission-denied", "Only the owner can waive the requirements.", "notOwner");
     const target = request.data?.uid;
     if (typeof target !== "string" || !target) throw fail("invalid-argument", "uid is required.", "args");
-    await db.doc(paths.waiver(target)).set({ byUid: uid, at: FieldValue.serverTimestamp() });
+    const tw = await S.who(target);
+    await db.doc(paths.waiver(target)).set({ byUid: uid, at: FieldValue.serverTimestamp(), covers: ["checkins", "accountAge"] });
+    await S.adminLog(w, { action: "crewWaive", uid: target, title: tw.handle ? `@${tw.handle}` : target, details: { covers: "check-ins and the 14-day account age" } });
     return { ok: true };
   });
 
