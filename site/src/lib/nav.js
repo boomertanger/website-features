@@ -27,7 +27,8 @@ export const hasModule = (id) => id === "home" || enabled.has(id);
 
 // Phone tab bar: Home, Schedule, raised Live, Games, More. "More" holds the rest.
 export const TAB_IDS = ["home", "schedule", "live", "games"];
-export const moreItems = navItems.filter((i) => !TAB_IDS.includes(i.id));
+// Crew is not in the header (no room at 1100px); it lives here, in the account menu and in the footer.
+export const moreItems = [...navItems.filter((i) => !TAB_IDS.includes(i.id)), { id: "crew", ...MODULE_PAGES.crew }];
 
 const clean = (p) => (p.length > 1 ? p.replace(/\/+$/, "") : p);
 export const isCurrent = (href, pathname) => clean(href) === clean(pathname);
