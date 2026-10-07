@@ -78,7 +78,7 @@
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ai-hero { padding: 26px 18px; }
-  .bt-root:not(#_) :is(.ai-stage, .ai-gloss) { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .ai-stage { grid-template-columns: minmax(0, 1fr); }
 }
 
 /* Moved from arcade.css so every How it works page can use them (the Crew page too): the flow (role cards
@@ -176,6 +176,7 @@
 }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ai-node--md { flex-direction: column; align-items: flex-start; }
+  .bt-root:not(#_) .ai-gloss { grid-template-columns: minmax(0, 1fr); }   /* after the .ai-gloss base rule (moved from arcade.css) so it wins the tie */
   .bt-root:not(#_) .ai-gloss-wrap.is-enhanced { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .ai-gc-card { position: static; order: -1; }
 }

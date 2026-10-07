@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: /arcade/how-it-works verified unchanged after the flow and glossary CSS moved into styles/how-it-works.css (computed styles and behaviour identical); the 640 px single-column .ai-gloss rule now follows its base rule so the Crew page's list stacks on phones too.
 - site: /admin/crew has an owner-only Waive requirements card (Waive in the section nav): enter a member's handle, confirm, and crewWaive waives the 3 check-ins so they can apply (18+, account age and a linked platform still apply). Hidden for everyone but the owner; for testing the queue with a test account.
 - site: Crew Academy wording audited against docs/specs/crew-academy.md; restored the Crew Code placard's six rule descriptions in the Welcome module to the approved How it works wording (Life comes first, Friendly before firm, Personal info stays private, Mod powers aren't for grudges, Flag what matters with raids/threats/self-harm talk, We're one crew). Everything else (safety and 988 wording, ladder, Going dark and duty numbers, quizzes and option order) already matched, and no quiz answers or BOOMBOT replies ship in site/ or site/dist.
 - site, functions: /crew/profile has a Retire from the crew card (status Alumni, behind confirmAction; powers removed, badges and Hall of Fame stay) and Going dark shows the months used this year ("1 of 2 months used", buttons disabled when there are not enough left); crewMe now returns crew.breakMonthsUsed for the current year. check-crew.js covers it.
