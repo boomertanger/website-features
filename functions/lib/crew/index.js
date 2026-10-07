@@ -30,6 +30,7 @@ module.exports = function crew({ adminLogEntry } = {}) {
         crewStatus: pub ? pub.status : FieldValue.delete(),
       });
     }
+    await require("./publicRoster").rebuildPublicCrew(db);        // public/crew: grade, track, status and Favourite chats only
   });
 
   const gears = require("./gears").makeGears({ db });

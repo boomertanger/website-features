@@ -766,6 +766,65 @@ async function main() {
   await C.crewNightly.run({});
   assert.equal((await db.doc(`${S}/profiles/svc/badges/crew-service-3`).get()).get("serial"), serial);                       // paid once
   assert.equal((await db.doc(`${S}/badges/crew-service-3`).get()).get("holders") >= 3, true);
+  // ---------- part 5: what the pages need (checklist, next grade, public roster, settings) ----------
+  // pure: the "Can I apply?" checklist agrees with applyEligibility
+  const listFor = (o) => L.applyChecklist({ ageBand: "18+", signedUpAtMs: NOW - 20 * DAY, linkedCount: 1, checkins: 3, waived: false, now: NOW, settings: L.DEFAULT_SETTINGS, ...o });
+  assert.equal(listFor({}).ok, true);
+  assert.equal(listFor({}).items.every((x) => x.ok), true);
+  const young = listFor({ signedUpAtMs: NOW - 10 * DAY, checkins: 1 });
+  assert.equal(young.ok, false); assert.equal(young.reason, "tooNew");
+  assert.equal(young.items.find((x) => x.id === "account").ok, false); assert.equal(young.items.find((x) => x.id === "account").detail, "4 more days");
+  assert.equal(young.items.find((x) => x.id === "checkins").detail, "1 of 3");
+  assert.equal(listFor({ ageBand: "13-17" }).items.find((x) => x.id === "age").ok, false);
+  assert.equal(listFor({ waived: true, checkins: 0 }).items.find((x) => x.id === "checkins").detail, "Waived by the owner");
+  assert.equal(listFor({ lastNotNowAtMs: NOW - 30 * DAY }).reapplyAt > NOW, true);
+  // crewMe: applicant checklist, crew next-grade progress, the activity switch
+  await person("hopeful", {}); await streakDays("hopeful", 2);
+  const hopeful = await as("hopeful")("crewMe");
+  assert.equal(hopeful.apply.ok, false); assert.equal(hopeful.apply.reason, "needsCheckins"); assert.equal(hopeful.apply.signedUp, true);
+  assert.equal(hopeful.next, null); assert.equal(hopeful.activityRules, false);
+  await streakDays("hopeful", 3);
+  assert.equal((await as("hopeful")("crewMe")).apply.ok, true);
+  const crewMeRook = await as("rookie")("crewMe");
+  assert.equal(crewMeRook.apply, null);
+  assert.equal(crewMeRook.next.name, "Watcher"); assert.equal(crewMeRook.next.ready, true);
+  assert.deepEqual(crewMeRook.next.pending, ["2 ride-alongs signed off", "Showed up for 80% of duties"]);   // duty criteria are pending, not failing
+  assert.equal(await reason(as("nobody")("crewMe")), "ok");                                                    // a member with no docs still gets an answer
+  // crewAdminOverview carries the settings
+  assert.equal((await boss("crewAdminOverview")).settings.vouchCap, 3);
+  // the public roster: only grade, track, status and Favourite chats; Happy, If needed and No never appear
+  const { rebuildPublicCrew, publicMember } = require("../lib/crew/publicRoster");
+  await person("pub1", { roles: ["mod"], roster: { track: "mod", grade: 2, platforms: { twitch: "favourite", ytLandscape: "happy", ytVertical: "ifNeeded", tiktok: "no" }, private: "x", gears: 77 } });
+  await person("pub2", { roles: ["mod"], roster: { track: "mod", grade: 3, platforms: { ytVertical: "favourite", twitch: "favourite" } } });
+  await person("pubres", { roles: ["mod"], roster: { track: "mod", grade: 2, status: "reserve", platforms: { twitch: "favourite" } } });
+  await rebuildPublicCrew(db);
+  const pc = (await db.doc(`${S}/public/crew`).get()).get("members");
+  const p1 = pc.find((x) => x.uid === "pub1");
+  assert.deepEqual(p1, { uid: "pub1", handle: "pub1", track: "mod", grade: 2, status: "active", favourites: ["twitch"] });
+  assert.deepEqual(pc.find((x) => x.uid === "pub2").favourites, ["twitch", "ytVertical"]);
+  assert.equal(pc.some((x) => x.uid === "pubres"), false);                                                     // Reserve isn't listed
+  assert.equal(pc.some((x) => x.uid === "alu"), false);
+  assert.equal(JSON.stringify(pc).includes("happy"), false); assert.equal(JSON.stringify(pc).includes("ifNeeded"), false);
+  assert.equal(JSON.stringify(pc).includes("gears"), false);
+  assert.ok(pc.findIndex((x) => x.track === "admin") < pc.findIndex((x) => x.track === "mod"));               // admins first
+  assert.equal(publicMember("u", { status: "paused", grade: 1 }, "x"), null);
+  // the roster trigger refreshes it
+  await fire("pub3", null, { track: "mod", grade: 1, status: "active", platforms: { tiktok: "favourite" } });
+  assert.deepEqual((await db.doc(`${S}/public/crew`).get()).get("members").find((x) => x.uid === "pub3").favourites, ["tiktok"]);
+  // crewSaveSettings: owner only, validated, logged
+  assert.equal(await reason(as("ov")("crewSaveSettings", { vouchCap: 4 })), "notOwner");
+  assert.equal(await reason(as("w1")("crewSaveSettings", { vouchCap: 4 })), "notOwner");
+  assert.equal(await reason(boss("crewSaveSettings", { vouchCap: 0 })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", { youtubeBoost: 9 })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", { activityRules: "yes" })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", { gearsValues: { bogus: 1 } })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", {})), "args");
+  const saved = await boss("crewSaveSettings", { vouchCap: 4, youtubeBoost: 2, gearsValues: { dutyCaptainPerHour: 14 }, activityRules: true });
+  assert.equal(saved.settings.vouchCap, 4); assert.equal(saved.settings.youtubeBoost, 2); assert.equal(saved.settings.gearsValues.dutyCaptainPerHour, 14); assert.equal(saved.settings.gearsValues.recruitActivated, 10);
+  assert.equal((await loadSettings(db)).activityRules, true);
+  const settingsLog = logs.filter((e) => e.action === "crewSettings").pop();
+  assert.equal(settingsLog.changes.vouchCap.after, 4); assert.equal(settingsLog.changes["gearsValues.dutyCaptainPerHour"].before, 12);
+  await boss("crewSaveSettings", { vouchCap: 3, youtubeBoost: 1.5, gearsValues: { dutyCaptainPerHour: 12 }, activityRules: false });   // put them back
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

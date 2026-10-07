@@ -88,6 +88,29 @@ function applyEligibility(i) {
   return { ok: true };
 }
 
+/**
+ * The "Can I apply?" checklist for /crew/join: one row per requirement, each with ok and a short detail, plus the
+ * overall verdict from applyEligibility (so the page and crewApply can never disagree). Same input as applyEligibility.
+ */
+function applyChecklist(i) {
+  const s = i.settings || DEFAULT_SETTINGS;
+  const verdict = applyEligibility(i);
+  const aged = !!(i.signedUpAtMs && i.now - i.signedUpAtMs >= 14 * DAY_MS);
+  const daysLeft = i.signedUpAtMs ? Math.max(0, Math.ceil((14 * DAY_MS - (i.now - i.signedUpAtMs)) / DAY_MS)) : 14;
+  const checks = i.checkins || 0;
+  const items = [
+    { id: "age", label: "18 or older", ok: i.ageBand === "18+", detail: i.ageBand === "18+" ? "" : "The crew is 18+ because crew spaces put adults and teens together." },
+    { id: "account", label: "Account at least 14 days old", ok: aged, detail: aged ? "" : `${daysLeft} more day${daysLeft === 1 ? "" : "s"}` },
+    { id: "platform", label: "A linked platform account", ok: i.linkedCount >= 1, detail: i.linkedCount >= 1 ? "" : "Link Twitch, YouTube or TikTok in your account" },
+    i.waived
+      ? { id: "checkins", label: "Check-ins", ok: true, detail: "Waived by the owner" }
+      : { id: "checkins", label: "3 daily check-ins in the last 30 days", ok: s.checkinFallback ? checks >= 3 : false, detail: s.checkinFallback ? `${Math.min(checks, 3)} of 3` : "Stream check-ins are needed" },
+    { id: "standing", label: "Not already crew, no open application", ok: !(i.crewStatus && i.crewStatus !== "alumni") && !i.openApp, detail: i.openApp ? "You have an application in the queue" : i.crewStatus && i.crewStatus !== "alumni" ? "You're already on the crew" : "" },
+  ];
+  if (verdict.reason === "reapplyWait") items.push({ id: "reapply", label: "Reapply wait", ok: false, detail: "" });
+  return { ok: verdict.ok, reason: verdict.reason || null, reapplyAt: verdict.reapplyAtMs || null, items };
+}
+
 /** The queue score (spec 10): vouches by grade + platform need (a YouTube Favourite or Happy: +3) + check-ins in 30 days. */
 function queueScore({ vouchGrades = [], prefs = {}, checkins = 0 }) {
   const vouches = vouchGrades.reduce((n, g) => n + vouchWeight(g), 0);
@@ -147,4 +170,4 @@ const serviceBadges = (months) => SERVICE_STEPS.filter((n) => months >= n).map((
 const STRIKE_EXPIRY_DAYS = 183;
 const activeStrikes = (strikes, now) => (strikes || []).filter((s) => (s.expiresAtMs || 0) > now);
 
-module.exports = { MOD_GRADES, ADMIN_GRADES, STATUSES, PLATFORM_PREFS, DEFAULT_SETTINGS, mergeSettings, claimGrade, publicCrew, gradeName, effectiveGrade, isMod, DAY_MS, vouchWeight, moduleId, checkinsWithin, monthCheckins, applyEligibility, queueScore, rankQueue, promotionCriteria, STRIKE_EXPIRY_DAYS, activeStrikes, monthsBetween, SERVICE_STEPS, serviceBadges };
+module.exports = { MOD_GRADES, ADMIN_GRADES, STATUSES, PLATFORM_PREFS, DEFAULT_SETTINGS, mergeSettings, claimGrade, publicCrew, gradeName, effectiveGrade, isMod, DAY_MS, vouchWeight, moduleId, checkinsWithin, monthCheckins, applyEligibility, applyChecklist, queueScore, rankQueue, promotionCriteria, STRIKE_EXPIRY_DAYS, activeStrikes, monthsBetween, SERVICE_STEPS, serviceBadges };

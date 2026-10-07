@@ -387,7 +387,26 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     const now = Date.now();
     const apps = mine.docs.map((d) => ({ appId: d.id, status: d.get("status"), band: d.get("band") || null, note: d.get("note") || null, createdAt: ms(d.get("createdAt")), expiresAt: ms(d.get("expiresAt")), reapplyAt: ms(d.get("reapplyAt")) })).sort((a, b) => b.createdAt - a.createdAt);
     const r = w.roster;
+    const settings = await loadSettings(db);
+    // Not crew (or Alumni): the "Can I apply?" checklist, from the same function crewApply uses.
+    let apply = null;
+    if (!r || r.status === "alumni") {
+      const [user, waiver, streak] = await Promise.all([db.doc(`users/${uid}`).get(), db.doc(paths.waiver(uid)).get(), db.doc(`sites/${SITE_ID}/factory/main/streaks/${uid}`).get()]);
+      const linked = Object.values(user.get("linked") || {}).filter((x) => x && (x.login || x.id || x.channelId)).length;
+      const lastNotNow = Math.max(0, ...mine.docs.filter((a) => a.get("status") === "notNow").map((a) => ms(a.get("decidedAt")) || 0));
+      apply = L.applyChecklist({
+        ageBand: user.get("ageBand"), signedUpAtMs: ms(user.get("signedUpAt")), linkedCount: linked,
+        checkins: L.checkinsWithin(streak.get("recentDays"), dayKey(now)), waived: waiver.exists, now, settings,
+        crewStatus: r ? r.status : null, openApp: mine.docs.some((a) => a.get("status") === "open"), lastNotNowAtMs: lastNotNow || null,
+      });
+      apply.signedUp = !!user.get("signedUpAt");
+    }
+    // Next-grade progress for HQ: the same criteria the nightly "Ready to promote" flag uses (duty criteria are pending until stream duty).
+    const crit = r ? L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: r.stats, passed: progressOf(progress), strikes: L.activeStrikes(rec.strikes, now).length, now, settings }) : null;
     return {
+      activityRules: settings.activityRules === true,
+      apply,
+      next: crit && crit.to ? { to: crit.to, name: L.gradeName("mod", crit.to), ready: crit.ready, met: crit.met, missing: crit.missing, pending: crit.pending } : null,
       crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, breakUntil: ms(r.breakUntil), stats: r.stats || {} } : null,
       strikes: L.activeStrikes(rec.strikes, now).map((s) => ({ at: s.at, reason: s.reason, expiresAt: s.expiresAtMs })),
       ready: rec.ready ? { to: rec.ready.to, name: L.gradeName(r?.track || "mod", rec.ready.to) } : null,
@@ -407,7 +426,50 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       const r = d.data(), rec = await record(d.id);
       rows.push({ uid: d.id, handle: r.handle || null, track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), platforms: r.platforms || {}, device: r.device || null, ready: rec.ready ? { to: rec.ready.to, since: rec.ready.since } : null, activeStrikes: L.activeStrikes(rec.strikes, Date.now()).length, ownerReview: !!rec.ownerReview });
     }
-    return { roster: rows, openApplications: open.size };
+    return { roster: rows, openApplications: open.size, settings: await loadSettings(db) };
+  });
+
+  // ---------- crewSaveSettings (owner only): the settings card on /admin/crew ----------
+  // Validates every field; anything not sent is left alone. Gears values, the YouTube boost, the activity rules switch,
+  // the check-in fallback, the recruit and vouch caps, application timings and the Twitch sync switch.
+  const crewSaveSettings = onCall(async (request) => {
+    const uid = S.requireAuth(request);
+    const w = await S.who(uid);
+    if (!w.isOwner) throw fail("permission-denied", "Only the owner changes the crew settings.", "notOwner");
+    const d = request.data || {};
+    const patch = {};
+    const int = (v, min, max, field) => { if (!Number.isInteger(v) || v < min || v > max) throw fail("invalid-argument", `${field} must be a whole number from ${min} to ${max}.`, "field", { field }); return v; };
+    const bool = (v, field) => { if (typeof v !== "boolean") throw fail("invalid-argument", `${field} must be on or off.`, "field", { field }); return v; };
+    if (d.gearsValues !== undefined) {
+      if (!d.gearsValues || typeof d.gearsValues !== "object") throw fail("invalid-argument", "gearsValues must be an object.", "field", { field: "gearsValues" });
+      for (const [k, v] of Object.entries(d.gearsValues)) {
+        if (!(k in L.DEFAULT_SETTINGS.gearsValues)) throw fail("invalid-argument", `${k} isn't a Gears value.`, "field", { field: k });
+        patch[`gearsValues.${k}`] = int(v, 0, 1000, k);
+      }
+    }
+    if (d.youtubeBoost !== undefined) {
+      if (typeof d.youtubeBoost !== "number" || !(d.youtubeBoost >= 1 && d.youtubeBoost <= 5)) throw fail("invalid-argument", "youtubeBoost must be from 1 to 5.", "field", { field: "youtubeBoost" });
+      patch.youtubeBoost = Math.round(d.youtubeBoost * 100) / 100;
+    }
+    if (d.activityRules !== undefined) patch.activityRules = bool(d.activityRules, "activityRules");
+    if (d.checkinFallback !== undefined) patch.checkinFallback = bool(d.checkinFallback, "checkinFallback");
+    if (d.twitchSync !== undefined) patch.twitchSync = bool(d.twitchSync, "twitchSync");
+    if (d.recruitCapPerMonth !== undefined) patch.recruitCapPerMonth = int(d.recruitCapPerMonth, 1, 100, "recruitCapPerMonth");
+    if (d.vouchCap !== undefined) patch.vouchCap = int(d.vouchCap, 1, 10, "vouchCap");
+    if (d.appExpiryDays !== undefined) patch.appExpiryDays = int(d.appExpiryDays, 7, 365, "appExpiryDays");
+    if (d.reapplyDays !== undefined) patch.reapplyDays = int(d.reapplyDays, 0, 365, "reapplyDays");
+    if (!Object.keys(patch).length) throw fail("invalid-argument", "Nothing to save.", "args");
+    const before = await loadSettings(db);
+    await db.doc(paths.settings()).update(patch);
+    const after = await loadSettings(db);
+    const changes = {};
+    for (const k of Object.keys(patch)) {
+      const [a, b] = k.split(".");
+      const was = b ? before[a][b] : before[a], now = b ? after[a][b] : after[a];
+      if (was !== now) changes[k] = { before: was, after: now };
+    }
+    await db.collection("adminLog").add(await adminLogEntry(db, { feature: "crew", action: "crewSettings", itemPath: paths.settings(), itemTitle: "Crew settings", actorUid: uid, actorName: w.name, changes }));
+    return { ok: true, settings: after };
   });
 
   // ---------- crewNightly (03:10 Central) ----------
@@ -440,6 +502,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
         if (!rec.ready || rec.ready.to !== c.to) { await recordRef(d.id).set({ ready: { to: c.to, since: now } }, { merge: true }); flagged++; }
       } else if (rec.ready) await recordRef(d.id).set({ ready: FieldValue.delete() }, { merge: true });
     }
+    await require("./publicRoster").rebuildPublicCrew(db);     // handles can change; the roster page stays fresh
     return { expired, flagged, served };
   }
   const crewNightly = onSchedule({ schedule: "every day 03:10", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
@@ -447,5 +510,5 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges`);
   });
 
-  return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewNightly };
+  return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewSaveSettings, crewNightly };
 };
