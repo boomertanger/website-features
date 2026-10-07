@@ -1450,7 +1450,13 @@ Approved picks (the pages themselves come in the next prompt):
   **Dead Air: C1, the evidence board.**
 - Colours: "needed" uses gold, never red (red is for destroying data); admin-only controls are green.
 
-**Site-wide decision (Oct 6): the How it works standard.** How it works, guide, training and informational pages use
-the Boom Arcade How it works frame as the minimum standard: TocLayout rail, `.bt-chapter--ghost` chapters, the shared
-How it works blocks (hero, stage cards with hover scenes, journey, flow, glossary chips, closing CTA), flip medals,
-the placard, Ask BOOMBOT, the real mascot and BOOMBOT art, and at least one working example.
+**Site-wide decision (Oct 6, widened Oct 7): the page quality standard, in two kinds.** Every member-facing page matches
+the Boom Arcade How it works page in craft (minimum standard, never less).
+- **Story pages** (pages that sell, explain or welcome: landing pages, Join, Meet the crew, How it works, Academy,
+  feature home pages) use the full frame: TocLayout rail, ghost-numbered chapters (`.bt-chapter--ghost`), a hero with a
+  scene, stage cards with hover scenes, journey line, flow diagram where it fits, flip medals or the placard where they
+  fit, at least one working example, Ask BOOMBOT, the real mascot and BOOMBOT art, and a closing call to action.
+- **Tool pages** (pages used every day: queues, HQ, tasks, profiles, boards, the Mod Deck, /admin) keep the same polish
+  built for speed: a hero header with a small scene, cards that react to hover and taps, a celebratory moment on key
+  actions (a stamp, a punch, a lamp), empty states with the mascot, and no long chapters.
+Mockups: `docs/design/mockups/crew-story-pages.html` (Join the crew and Meet the crew, Before and After; After approved Oct 7).

@@ -4,6 +4,7 @@ Oct 6, 2026 · Glenn Bowering · **Confirmed** (all section 18 recommendations a
 Mockups batch 1 (approved Oct 6: grade chip option 1 Bars, crew board B2 podium + table; Meet the crew, Join, Queue screens approved): https://claude.ai/artifact/DDvFMBcTeytbcYqG4VvVSX
 Mockups batch 2 round 2 (approved Oct 6: How it works, Crew Academy and module pages on the Arcade How it works frame; Crew HQ activity meter M2, the time card): https://claude.ai/artifact/Y4gPMTTRDFQxKM55omBwye
 Mockups batch 3 (approved Oct 6: seats S1 seat map, Mod Deck D1 chat wall with D2 focus as an in-Deck toggle, Dead Air C1 evidence board; Chat Games pool and /live Play panel approved): https://claude.ai/artifact/219k2BT2pjFuFyW4V9pGp1
+Story-page round (approved Oct 7: Join the crew and Meet the crew rebuilt as story pages on the How it works frame; the site-wide two-kind page standard, story pages and tool pages, is now in CLAUDE.md rule 10 and design-system.md §8m): https://claude.ai/artifact/FxmQd6qveeiKSnmjo5fvMz (repo copy: `docs/design/mockups/crew-story-pages.html`)
 ROADMAP workstream 9. Builds on the Trophy Room (`rewards.md`) and Night Shift (`fun-factory.md`). Parts depend on the Schedule Planner (ws 4) and the Control Room (ws 5); section 15 phases it so the first part can start without them.
 
 ## 1. Purpose

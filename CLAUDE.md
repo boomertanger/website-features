@@ -61,12 +61,17 @@ first, and `docs/design-system.md` §5 "Site shell" and §8d before changing it.
    always resolve at the same version as the feature.
 9. Button/heading/label text is sentence case. Uppercase only where the kit does it
    (page title, dialog title, labels, table headers, admin tag).
-10. **How it works, guide, training and informational pages** use the Boom Arcade How
-    it works frame as the minimum standard: TocLayout rail, `.bt-chapter--ghost`
-    chapters, the shared How it works blocks (hero, stage cards with hover scenes,
-    journey, flow, glossary chips, closing CTA), flip medals, the placard, Ask BOOMBOT,
-    the real mascot and BOOMBOT art, and at least one working example
-    (`docs/design-system.md` §8m).
+10. **Page quality (minimum standard, never less):** every member-facing page matches the
+    Boom Arcade How it works page in craft. **Story pages** (pages that sell, explain or
+    welcome: landing pages, Join, Meet the crew, How it works, Academy, feature home
+    pages) use the full frame: TocLayout rail, ghost-numbered chapters
+    (`.bt-chapter--ghost`), a hero with a scene, stage cards with hover scenes, journey
+    line, flow diagram where it fits, flip medals or the placard where they fit, at least
+    one working example, Ask BOOMBOT, the real mascot and BOOMBOT art, and a closing call
+    to action. **Tool pages** (pages used every day: queues, HQ, tasks, profiles, boards,
+    the Mod Deck, /admin) keep the same polish built for speed: a hero header with a small
+    scene, cards that react to hover and taps, a celebratory moment on key actions, empty
+    states with the mascot, and no long chapters (`docs/design-system.md` §8m).
 
 Building an admin-only feature, auditing status colors, or picking up
 follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
