@@ -6,7 +6,7 @@
 import { initSegNavs } from "../../../../shared/ui/seg-nav.js";
 import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
 import { initStickyBar } from "../../../../shared/ui/sticky-bar.js";
-import { onAuth, type AuthState } from "../../lib/auth";
+import { onAuth, getAuthState, type AuthState } from "../../lib/auth";
 import { isProduction } from "../../lib/env.js";
 
 initSegNavs();
@@ -54,10 +54,36 @@ if (root && root.dataset.access !== "page") {
   });
 }
 
-/** Runs fn once the page is allowed. On ungated pages it runs once auth has settled (signed out or not). */
+const gatedPage = !!root && (root.hasAttribute("data-members-only") || root.hasAttribute("data-crew-only") || root.hasAttribute("data-admin-only"));
+
+/**
+ * Runs fn once the page is allowed. On gated pages that is once, when the gate opens. On open pages (join,
+ * vote, the roster, the board) fn runs again every time the member changes (signed out, signed up, verified,
+ * a different account), so a state that arrives late is never missed: the page used to render the visitor
+ * card from the first state it saw and keep it. A signed-out state is only acted on after a short pause
+ * (and if it still holds), so a brief signed-out reading while Firebase restores the session can't flash it.
+ */
 export function onAccess(fn: (s: AuthState) => void) {
-  let done = false;
-  const go = (s: AuthState) => { if (!done) { done = true; fn(s); } };
-  document.addEventListener("cr:access", (e) => go((e as CustomEvent<AuthState>).detail), { once: true });
-  onAuth((real) => { const s = real.status === "signedOut" && previewState() ? previewState()! : real; if (root?.dataset.access === "page" && s.status !== "loading") go(s); });
+  if (gatedPage) {
+    let done = false;
+    const go = (s: AuthState) => { if (!done) { done = true; fn(s); } };
+    document.addEventListener("cr:access", (e) => go((e as CustomEvent<AuthState>).detail), { once: true });
+    onAuth((real) => { const s = real.status === "signedOut" && previewState() ? previewState()! : real; if (root?.dataset.access === "page" && s.status !== "loading") go(s); });
+    return;
+  }
+  let last = "", timer = 0;
+  const emit = (s: AuthState) => {
+    const key = `${s.status}:${s.user?.uid ?? ""}`;
+    if (key === last) return;
+    last = key;
+    fn(s);
+  };
+  onAuth((real) => {
+    clearTimeout(timer);
+    if (real.status === "loading") return;
+    if (real.status !== "signedOut") return emit(real);
+    const p = previewState();
+    if (p) return emit(p);
+    timer = window.setTimeout(() => { const now = getAuthState(); if (now.status === "signedOut") emit(now); }, 700);
+  });
 }
