@@ -19,12 +19,12 @@ const FLOW: [string, string, string, string, string][] = [
 const flow = (mascot: string) => `<div class="cra-flow" role="list" aria-label="Seats, from Deckhand to Boomer">${FLOW.map(([k, ic, t, d, tag], i) => `${i ? `<div class="ai-arr" aria-hidden="true"><i><b></b></i></div>` : ""}<div class="bt-card ai-node cra-node cra-node--${k}" role="listitem"><div class="ai-node-top">${k === "bt" ? mascot : `<span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">${ic}</span>`}<span class="bt-badge bt-badge--${k === "dk" ? "teal" : k === "rl" ? "blue" : k === "sc" ? "gold" : "pink"}">${tag}</span></div><h3>${t}</h3><p>${d}</p></div>`).join("")}</div>`;
 
 export const CODE: [string, string, string][] = [
-  ["Life comes first", "⏳", "Duties flex around real life. Step away, hand off, or go dark whenever you need to."],
-  ["Friendly before firm", "🤝", "Begin with the softest step that does the job. Most people just didn't know."],
-  ["Personal info stays private", "🔒", "Never repeat, screenshot or share it, even to report it."],
-  ["Mod powers aren't for grudges", "⚖️", "Not ours, and not a friend's. Every chat moment follows the same ladder."],
-  ["Flag what matters", "🚩", "Anything serious goes to the Captain and to Boomer, through Flag in the Mod Deck."],
-  ["We're one crew", "🛟", "Every chat and every viewer counts the same."],
+  ["Life comes first", "🕯", "Step away any time. Hand off if it'll be a while. Nobody is guilted here."],
+  ["Friendly before firm", "🤝", "Start with the gentlest step that works: remind, warn, timeout, ban."],
+  ["Personal info stays private", "🔒", "Never repeat, screenshot or share anyone's personal details."],
+  ["Mod powers aren't for grudges", "⚖️", "No actions on a friend's say-so or to settle a score."],
+  ["Flag what matters", "📣", "Raids, threats or self-harm talk: tell the Captain and flag Boomer."],
+  ["We're one crew", "🧡", "Every chat counts the same. YouTube viewers deserve a welcome too."],
 ];
 
 /** Blocks shown after a chapter's prose. `mascot` is the rendered Mascot (for the flow's Boomer node). */
