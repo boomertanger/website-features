@@ -619,6 +619,91 @@ async function main() {
   const emptyMonth = new Date(Date.UTC(Y, M, 1)).toISOString().slice(0, 7);
   const empty = (await db.doc(paths.award(emptyMonth)).get()).data();
   assert.equal(empty.topGear, null); assert.equal(empty.fanFavourite, null);
+
+  // ---------- part 2e: Twitch moderator sync (off) and the platform to-do list ----------
+  const PM = require("../lib/crew/platform");
+  const rosterOf = (o) => ({ track: "mod", grade: 1, status: "active", platforms: { twitch: "happy", ytLandscape: "no", ytVertical: "no", tiktok: "no" }, ...o });
+  // the plan: Twitch always, YouTube and TikTok only where they said they'd help; nothing when powers don't change
+  assert.deepEqual(PM.planChanges({ before: null, after: rosterOf({}), handle: "vexa", twitchLogin: "vexa_tv" }), [{ platform: "twitch", action: "add", text: "Add @vexa_tv as a Twitch mod" }]);
+  assert.deepEqual(PM.planChanges({ before: null, after: rosterOf({ platforms: { ytVertical: "favourite", tiktok: "ifNeeded" } }), handle: "vexa", twitchLogin: null }).map((c) => c.platform), ["twitch", "youtube", "tiktok"]);
+  assert.equal(PM.planChanges({ before: null, after: rosterOf({}), handle: "vexa", twitchLogin: null })[0].text, "Add @vexa as a Twitch mod");
+  assert.deepEqual(PM.planChanges({ before: rosterOf({}), after: rosterOf({ status: "reserve" }), handle: "v" }), []);                // Reserve keeps the powers
+  assert.deepEqual(PM.planChanges({ before: rosterOf({}), after: rosterOf({ status: "paused" }), handle: "v" }), []);
+  assert.deepEqual(PM.planChanges({ before: rosterOf({}), after: rosterOf({ status: "alumni" }), handle: "v", twitchLogin: "v" }), [{ platform: "twitch", action: "remove", text: "Remove @v as a Twitch mod" }]);
+  assert.deepEqual(PM.planChanges({ before: rosterOf({ status: "alumni" }), after: rosterOf({}), handle: "v", twitchLogin: "v" }).map((c) => c.action), ["add"]);
+  assert.deepEqual(PM.planChanges({ before: rosterOf({ platforms: { ytLandscape: "happy" } }), after: null, handle: "v" }).map((c) => `${c.platform}:${c.action}`), ["twitch:remove", "youtube:remove"]);
+  assert.equal(L.DEFAULT_SETTINGS.twitchSync, false);
+
+  // sync, flag off: a to-do, no Twitch call
+  const calls = [];
+  const okFetch = (status = 204) => async (url, opts = {}) => { calls.push([opts.method || "GET", String(url)]); return { ok: status < 300, status, json: async () => ({ access_token: "fresh", refresh_token: "r2", expires_in: 3600, scope: ["channel:manage:moderators"] }) }; };
+  await person("tw1", { roles: ["mod"], user: { linked: { twitch: { id: "9001", login: "tw1_tv" } } } });
+  await db.doc(`${S}/profiles/tw1`).set({ handle: "tw1" });
+  const todoDoc = (platform, uid, action) => db.doc(`${paths.settings()}/todos/${platform}_${uid}_${action}`).get();
+  let sync = PM.makePlatformMods({ db, fetchFn: okFetch(), clientId: "cid", clientSecret: "sec", now: () => NOW });
+  const joined = rosterOf({ platforms: { twitch: "favourite", ytVertical: "happy", ytLandscape: "no", tiktok: "no" } });
+  await sync.sync("tw1", null, joined);
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("text"), "Add @tw1_tv as a Twitch mod");
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("status"), "open");
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("why"), "Twitch sync is off");
+  assert.equal((await todoDoc("youtube", "tw1", "add")).get("text"), "Add @tw1 as a YouTube moderator");
+  assert.equal((await todoDoc("tiktok", "tw1", "add")).exists, false);
+  assert.equal(calls.length, 0);
+  // leaving cancels the open "add" and leaves a "remove"
+  await sync.sync("tw1", joined, rosterOf({ status: "alumni" }));
+  assert.equal((await todoDoc("twitch", "tw1", "add")).exists, false);
+  assert.equal((await todoDoc("twitch", "tw1", "remove")).get("text"), "Remove @tw1_tv as a Twitch mod");
+
+  // sync, flag on but no broadcaster token: still a to-do, with the reason
+  await db.doc(paths.settings()).update({ twitchSync: true });
+  await sync.sync("tw1", null, joined);
+  assert.match((await todoDoc("twitch", "tw1", "add")).get("why"), /no broadcaster token/);
+  assert.equal(calls.length, 0);
+  // flag on, token stored but without the scope: no call
+  await db.doc(`${S}/private/twitchBroadcaster`).set({ accessToken: "old", refreshToken: "r1", accessExpiresAt: NOW + 3600000, scope: ["chat:read"] });
+  await db.doc(`${S}/private/growthConfig`).set({ twitchBroadcasterId: "555" });
+  await sync.sync("tw1", null, joined);
+  assert.equal(calls.length, 0);
+  // flag on and a good token: the moderator is added through Helix, and the to-do goes away
+  await db.doc(`${S}/private/twitchBroadcaster`).set({ accessToken: "tok", refreshToken: "r1", accessExpiresAt: NOW + 3600000, scope: ["channel:manage:moderators"] });
+  await sync.sync("tw1", null, joined);
+  assert.deepEqual(calls.at(-1), ["POST", "https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=555&user_id=9001"]);
+  assert.equal((await todoDoc("twitch", "tw1", "add")).exists, false);
+  assert.equal((await todoDoc("youtube", "tw1", "add")).exists, true);                                                       // YouTube stays manual
+  await sync.sync("tw1", joined, rosterOf({ status: "alumni" }));
+  assert.deepEqual(calls.at(-1), ["DELETE", "https://api.twitch.tv/helix/moderation/moderators?broadcaster_id=555&user_id=9001"]);
+  assert.equal((await todoDoc("twitch", "tw1", "remove")).exists, false);
+  // an expired token is refreshed first (and stored); a refused refresh or a Helix error falls back to a to-do
+  await db.doc(`${S}/private/twitchBroadcaster`).update({ accessExpiresAt: NOW - 1000 });
+  const n = calls.length;
+  await sync.sync("tw1", null, joined);
+  assert.equal(calls[n][1], "https://id.twitch.tv/oauth2/token");
+  assert.equal((await db.doc(`${S}/private/twitchBroadcaster`).get()).get("accessToken"), "fresh");
+  assert.equal(calls.at(-1)[0], "POST");
+  const failing = PM.makePlatformMods({ db, fetchFn: okFetch(500), clientId: "cid", clientSecret: "sec", now: () => NOW });
+  await failing.sync("tw1", null, joined);
+  assert.match((await todoDoc("twitch", "tw1", "add")).get("why"), /Twitch said 500/);
+  await db.doc(`${S}/private/twitchBroadcaster`).update({ accessExpiresAt: NOW - 1000 });
+  const noSecret = PM.makePlatformMods({ db, fetchFn: okFetch(), clientId: "cid", clientSecret: null, now: () => NOW });
+  await noSecret.sync("tw1", null, joined);
+  assert.match((await todoDoc("twitch", "tw1", "add")).get("why"), /no broadcaster token/);                                  // can't refresh: a to-do, not a crash
+  const throwing = PM.makePlatformMods({ db, fetchFn: async () => { throw new Error("network down"); }, clientId: "cid", clientSecret: "sec", now: () => NOW });
+  assert.ok(Array.isArray(await throwing.sync("tw1", null, joined)));
+  await db.doc(paths.settings()).update({ twitchSync: false });
+
+  // the trigger: only a change in who holds powers does anything; crewTodoDone is for admins
+  const fireRoster = (uid, before, after) => C.crewTwitchSync.run({ params: { siteId: "boomertanger", uid }, data: { before: { exists: !!before, data: () => before }, after: { exists: !!after, data: () => after } } });
+  await db.doc(`${paths.settings()}/todos/twitch_tw1_add`).delete().catch(() => {});
+  await fireRoster("tw1", rosterOf({}), rosterOf({ grade: 2 }));
+  assert.equal((await todoDoc("twitch", "tw1", "add")).exists, false);
+  await fireRoster("tw1", null, joined);
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("status"), "open");
+  assert.equal(await reason(w1("crewTodoDone", { id: "twitch_tw1_add" })), "notAdmin");
+  assert.equal(await reason(boss("crewTodoDone", { id: "nope" })), "args");
+  assert.equal(await reason(boss("crewTodoDone", { id: "twitch_zz9_add" })), "noTodo");
+  await boss("crewTodoDone", { id: "twitch_tw1_add" });
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("status"), "done");
+  assert.equal((await todoDoc("twitch", "tw1", "add")).get("doneBy"), "boss");
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

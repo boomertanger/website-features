@@ -719,6 +719,11 @@ service cloud.firestore {
         match /referrals/{newUid} {
           allow read, write: if false;
         }
+        // The to-do list for /admin/crew: add or remove a platform moderator by hand ("Add @handle as a Twitch mod").
+        match /todos/{todoId} {
+          allow read: if hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
       }
 
       // ---------- The stream object (docs/specs/stream-object.md §4) ----------
