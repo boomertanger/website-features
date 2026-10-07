@@ -374,6 +374,8 @@
 .bt-root:not(#_) .bt-badge--green { color: var(--bt-green); background: var(--bt-green-bg); }
 .bt-root:not(#_) .bt-badge--gray  { color: var(--bt-gray);  background: var(--bt-gray-bg); }
 .bt-root:not(#_) .bt-badge--red   { color: var(--bt-red);   background: var(--bt-red-bg); }
+/* Admin green: admin-only badges (the Staff tag, the admin grade track). Never for anything members can have. */
+.bt-root:not(#_) .bt-badge--admin { color: var(--bt-admin-text); background: var(--bt-admin-tint); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bt-admin-panel-border) 55%, transparent); }
 /* Level badges (severity, priority) show signal bars instead of a dot:
    <span class="bt-level" data-level="2" data-of="4"> via levelBars() in dom.js */
 .bt-root:not(#_) .bt-level { display: inline-flex; align-items: flex-end; gap: 2px; height: 11px; flex: none; }
@@ -389,6 +391,10 @@
 .bt-root:not(#_) .bt-level--5 i:nth-child(3) { height: 7px; }
 .bt-root:not(#_) .bt-level--5 i:nth-child(4) { height: 9px; }
 .bt-root:not(#_) .bt-level--5 i:nth-child(5) { height: 11px; }
+/* .bt-level--3: three steps (the admin grades, shared/ui/grade-chip.js). */
+.bt-root:not(#_) .bt-level--3 i:nth-child(1) { height: 4px; }
+.bt-root:not(#_) .bt-level--3 i:nth-child(2) { height: 8px; }
+.bt-root:not(#_) .bt-level--3 i:nth-child(3) { height: 11px; }
 
 /* ---- Flip card, placard and chat (promoted from the Arcade's How it works, docs/specs/rewards.md §12) ----
    .bt-flip       a medal card that turns over: <button class="bt-flip bt-flip--gold"> > .bt-flip-in >
@@ -3325,3 +3331,227 @@
 }
 
 /* ================= END Site shell ================= */
+
+/* ================= Mod Machina pieces (docs/specs/mod-machina.md §16, design-system.md §5, §8m) =================
+   .bt-grade        a grade chip: .bt-badge + .bt-level bars (shared/ui/grade-chip.js). Mod grades are blue, gold,
+                    pink, red (4 bars); admin grades use .bt-badge--admin (3 bars)
+   .bt-mm-icon      the Mod Machina wordmark icon, a gear with a watching eye (shared/ui/mod-machina.js MM_ICON)
+   .bt-platform-icon--sm, .bt-platform-or   the small platform tile and its landscape / vertical corner mark
+   .bt-room         one live chat and its coverage: [data-state="covered|needed|off"]; needed is GOLD, never red
+   .bt-pref         per-chat preference rows with a four-way radio choice (shared/ui/pref.js)
+   .bt-crew-card    a roster card: avatar, name, grade chip, starred favourite chats
+   .bt-podium       the crew board's top three (B2) and .bt-board--crew for the table below it
+   .bt-timecard     the month's duties as a punched time card (M2): [data-state="normal|behind|done|idle"]
+   .bt-ring         a progress ring driven by --v (0-100) with a text centre
+   .bt-ladder       clickable rungs + a detail card (shared/ui/ladder.js)
+   .bt-quiz         question, options, right / wrong / neutral states and a result card (shared/ui/quiz.js)
+   Reduced motion: no turning gear, no pop-in. */
+
+/* Wordmark icon: the gear turns slowly and the eye glances about; on hover, focus or touch it speeds up and the eye lights. */
+.bt-root:not(#_) .bt-mm-icon { width: 1.5em; height: 1.5em; flex: none; overflow: visible; }
+.bt-root:not(#_) .bt-wordmark .bt-mm-icon { width: 36px; height: 36px; }
+.bt-root:not(#_) .bt-mm-icon .gear { fill: var(--bt-surface-2); stroke: var(--bt-primary); stroke-width: 2; stroke-linejoin: round; transform-box: view-box; transform-origin: 20px 20px; animation: bt-mm-turn 14s linear infinite; }
+.bt-root:not(#_) .bt-mm-icon .eye { fill: var(--bt-bg); stroke: var(--bt-title); stroke-width: 1.6; transition: filter 0.2s; }
+.bt-root:not(#_) .bt-mm-icon .pupil { fill: var(--bt-title); animation: bt-mm-look 6s ease-in-out infinite; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-mm-icon .gear { animation-duration: 3s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-mm-icon .eye { filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.9)); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-mm-icon .pupil { animation-duration: 1.6s; }
+@keyframes bt-mm-turn { to { transform: rotate(360deg); } }
+@keyframes bt-mm-look { 0%, 40%, 100% { transform: translateX(0); } 50%, 60% { transform: translateX(2.2px); } 70%, 80% { transform: translateX(-2.2px); } }
+
+/* Grade chip: the badge carries the colour (--blue, --gold, --pink, --red, or --admin); the bars show the rung. */
+.bt-root:not(#_) .bt-grade { gap: var(--bt-space-1h); }
+
+/* Small platform tile (a stand-in letter, or the real logo as img with .has-logo) */
+.bt-root:not(#_) .bt-platform-icon--sm { position: relative; width: 22px; height: 22px; border-radius: 6px; font-size: 9px; letter-spacing: -0.02em; }
+.bt-root:not(#_) .bt-platform-icon--sm img { width: 100%; height: 100%; object-fit: contain; border-radius: inherit; }
+.bt-root:not(#_) .bt-platform-icon.has-logo { background: var(--bt-surface-2); padding: 2px; }
+.bt-root:not(#_) .bt-platform-or { position: absolute; right: -4px; bottom: -4px; width: 11px; height: 11px; display: grid; place-items: center; border: 1px solid var(--bt-border-2); border-radius: 3px; background: var(--bt-bg); }
+.bt-root:not(#_) .bt-platform-or i { display: block; border: 1.5px solid var(--bt-text); border-radius: 1px; }
+.bt-root:not(#_) .bt-platform-or.is-l i { width: 7px; height: 4px; }
+.bt-root:not(#_) .bt-platform-or.is-v i { width: 4px; height: 7px; }
+
+/* Room: one chat and whether someone is covering it. covered = lime, needed = gold, off = dimmed gray. */
+.bt-root:not(#_) .bt-rooms { display: flex; flex-wrap: wrap; gap: var(--bt-space-2); }
+.bt-root:not(#_) .bt-room { display: inline-flex; align-items: center; gap: 8px; padding: 4px 11px 4px 5px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); font-size: var(--bt-text-sm); font-weight: 600; white-space: nowrap; }
+.bt-root:not(#_) .bt-room small { font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-room[data-state="covered"] small { color: var(--bt-lime); }
+.bt-root:not(#_) .bt-room[data-state="needed"] { border-color: color-mix(in srgb, var(--bt-gold) 60%, transparent); background: var(--bt-gold-bg); }
+.bt-root:not(#_) .bt-room[data-state="needed"] small { color: var(--bt-gold); }
+.bt-root:not(#_) .bt-room[data-state="off"] { opacity: 0.55; }
+
+/* Preference rows: a name on the left, a four-way radio choice on the right (stacks, full width, on phones). */
+.bt-root:not(#_) .bt-pref { display: flex; flex-direction: column; gap: var(--bt-space-2); }
+.bt-root:not(#_) .bt-pref-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 10px 14px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-root:not(#_) .bt-pref-row.is-needed { border-color: color-mix(in srgb, var(--bt-gold) 45%, transparent); }
+.bt-root:not(#_) .bt-pref-lab { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; min-width: 0; font-weight: 600; }
+.bt-root:not(#_) .bt-pref-seg { display: grid; grid-template-columns: repeat(4, auto); gap: 3px; padding: 3px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-pref-seg button { padding: 6px 11px; border: 0; border-radius: var(--bt-radius-full); background: none; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; white-space: nowrap; cursor: pointer; }
+.bt-root:not(#_) .bt-pref-seg button:hover { color: var(--bt-text); }
+.bt-root:not(#_) .bt-pref-seg button[aria-checked="true"] { background: var(--bt-primary-bg); color: var(--bt-text); box-shadow: inset 0 0 0 1px var(--bt-primary); }
+.bt-root:not(#_) .bt-pref-seg button[data-value="no"][aria-checked="true"] { background: var(--bt-surface-2); box-shadow: inset 0 0 0 1px var(--bt-border-2); }
+.bt-root:not(#_) .bt-pref-seg button:focus-visible { outline-offset: 1px; }
+
+/* Roster card */
+.bt-root:not(#_) .bt-roster { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+.bt-root:not(#_) .bt-crew-card { gap: 10px; padding: 16px; }
+.bt-root:not(#_) .bt-crew-card.is-reserve { opacity: 0.6; }
+.bt-root:not(#_) .bt-crew-card-top { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.bt-root:not(#_) .bt-crew-card-name { min-width: 0; }
+.bt-root:not(#_) .bt-crew-card-name b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root:not(#_) .bt-crew-card-name small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-crew-card-name a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .bt-crew-card-row { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .bt-crew-card-meta { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-crew-plats { display: inline-flex; align-items: center; gap: 6px; }
+.bt-root:not(#_) .bt-crew-plat { position: relative; display: inline-flex; }
+.bt-root:not(#_) .bt-crew-plat.is-fav::after { content: "★"; position: absolute; top: -7px; right: -6px; font-size: 10px; color: var(--bt-title); text-shadow: 0 0 4px var(--bt-bg); }
+.bt-root:not(#_) .bt-crew-plat.is-no { opacity: 0.25; }
+
+/* Podium (B2): the top three as cards, 1st in the middle and taller; one column on phones with 1st first. */
+.bt-root:not(#_) .bt-podium { display: grid; grid-template-columns: 1fr 1.15fr 1fr; align-items: end; gap: 12px; }
+.bt-root:not(#_) .bt-podium-card { align-items: center; gap: 8px; padding: 18px 14px; text-align: center; }
+.bt-root:not(#_) .bt-podium-card[data-r="1"] { padding-top: 26px; border-color: color-mix(in srgb, var(--bt-title) 55%, transparent); background: linear-gradient(180deg, var(--bt-gold-bg), var(--bt-surface) 70%); }
+.bt-root:not(#_) .bt-podium-rank { font-size: var(--bt-text-2xl); font-weight: 900; line-height: 1; }
+.bt-root:not(#_) .bt-podium-card[data-r="1"] .bt-podium-rank { color: var(--bt-rank-1); }
+.bt-root:not(#_) .bt-podium-card[data-r="2"] .bt-podium-rank { color: var(--bt-rank-2); }
+.bt-root:not(#_) .bt-podium-card[data-r="3"] .bt-podium-rank { color: var(--bt-rank-3); }
+.bt-root:not(#_) .bt-podium-mid { display: flex; flex-direction: column; align-items: center; gap: 6px; min-width: 0; }
+.bt-root:not(#_) .bt-podium-mid b { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root:not(#_) .bt-podium-val { font-size: var(--bt-text-3xl); font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-podium-val small { margin-left: 4px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); font-weight: 700; }
+.bt-root:not(#_) .bt-podium-sub { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-podium-card .bt-avatar-md { width: 52px; height: 52px; }
+.bt-root:not(#_) .bt-podium-card[data-r="1"] .bt-avatar-md { width: 64px; height: 64px; border-color: var(--bt-title); background: var(--bt-gold-bg); color: var(--bt-title); }
+/* The crew board table: .bt-board with extra cells (rooms covered, numbers) and a green-tinted staff row. */
+.bt-root:not(#_) .bt-board--crew :is(th, td):last-child { width: 80px; }
+.bt-root:not(#_) .bt-board--crew .bt-board-rooms { width: 120px; }
+.bt-root:not(#_) .bt-board--crew .bt-board-n { width: 74px; text-align: right; font-variant-numeric: tabular-nums; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-board--crew .bt-board-who > span:last-child { display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .bt-board--crew .bt-board-who b { overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-board--crew tr.is-staff td { background: color-mix(in srgb, var(--bt-admin-tint) 60%, transparent); }
+.bt-root:not(#_) .bt-board-legend { display: flex; flex-wrap: wrap; gap: 6px 16px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+
+/* Time card (M2): ruled paper, one punched slot per duty, a dashed bonus slot for On the Clock. */
+.bt-root:not(#_) .bt-timecard { display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: repeating-linear-gradient(180deg, transparent 0 27px, color-mix(in srgb, var(--bt-border) 70%, transparent) 27px 28px), var(--bt-surface); }
+.bt-root:not(#_) .bt-timecard-head { display: flex; align-items: baseline; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.bt-root:not(#_) .bt-timecard-head b { color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 800; letter-spacing: 0.18em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-timecard-slots { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.bt-root:not(#_) .bt-timecard-slot { position: relative; min-height: 78px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; padding: 8px 6px; border: 1.5px solid var(--bt-border-2); border-radius: var(--bt-radius-md); background: var(--bt-bg); color: var(--bt-text-faint); font-size: var(--bt-text-xs); text-align: center; }
+.bt-root:not(#_) .bt-timecard-slot.is-bonus { border-style: dashed; }
+.bt-root:not(#_) .bt-timecard-slot.is-punched { border-color: var(--bt-title); background: radial-gradient(circle at 50% 40%, var(--bt-gold-bg), var(--bt-bg) 75%); color: var(--bt-text); }
+.bt-root:not(#_) .bt-timecard-slot small { font-size: var(--bt-text-2xs); }
+.bt-root:not(#_) .bt-timecard-n { color: var(--bt-text-muted); font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .bt-timecard-stamp { padding: 1px 6px; border: 2px solid var(--bt-title); border-radius: 6px; color: var(--bt-title); font-size: var(--bt-text-md); font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; transform: rotate(-6deg); }
+.bt-root:not(#_) .bt-timecard-foot { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 10px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-timecard-foot b { color: var(--bt-text); }
+/* Behind: the unpunched slots still owed turn gold. Idle ("Starts with stream duty"): nothing to punch yet, so it rests. */
+.bt-root:not(#_) .bt-timecard[data-state="behind"] .bt-timecard-slot:not(.is-punched, .is-bonus) { border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); }
+.bt-root:not(#_) .bt-timecard[data-state="behind"] .bt-timecard-slot:not(.is-punched, .is-bonus) .bt-timecard-n { color: var(--bt-gold); }
+.bt-root:not(#_) .bt-timecard[data-state="done"] { border-color: color-mix(in srgb, var(--bt-title) 45%, transparent); }
+.bt-root:not(#_) .bt-timecard[data-state="idle"] .bt-timecard-slots { opacity: 0.45; }
+.bt-root:not(#_) .bt-timecard[data-state="idle"] .bt-timecard-slot { border-style: dashed; }
+
+/* Progress ring: --v is 0-100. The centre is text (.bt-ring-c > b + small). */
+.bt-root:not(#_) .bt-ring { --v: 0; position: relative; display: grid; place-items: center; flex: none; width: 132px; height: 132px; border-radius: 50%; background: conic-gradient(var(--bt-title) calc(var(--v) * 1%), var(--bt-surface-2) 0); box-shadow: 0 0 30px rgba(var(--bt-gold-rgb), 0.2); }
+.bt-root:not(#_) .bt-ring::before { content: ""; position: absolute; inset: 10px; border-radius: 50%; background: var(--bt-surface); }
+.bt-root:not(#_) .bt-ring-c { position: relative; text-align: center; line-height: 1.05; }
+.bt-root:not(#_) .bt-ring-c b { display: block; font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-ring-c small { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-ring--sm { width: 64px; height: 64px; box-shadow: none; }
+.bt-root:not(#_) .bt-ring--sm::before { inset: 6px; }
+.bt-root:not(#_) .bt-ring--sm .bt-ring-c b { font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-ring--sm .bt-ring-c small { display: none; }
+.bt-root:not(#_) .bt-ring--done { background: conic-gradient(var(--bt-lime) calc(var(--v) * 1%), var(--bt-surface-2) 0); box-shadow: none; }
+
+/* Ladder: rungs on a drawn ladder (role="tablist") beside a detail card (role="tabpanel"); the admin rungs sit above a dashed gate. */
+.bt-root:not(#_) .bt-ladder { display: grid; grid-template-columns: 260px minmax(0, 1fr); align-items: start; gap: 22px; }
+.bt-root:not(#_) .bt-ladder-rungs { position: relative; display: flex; flex-direction: column-reverse; gap: 10px; padding: 14px 26px; }
+.bt-root:not(#_) .bt-ladder-rungs::before, .bt-root:not(#_) .bt-ladder-rungs::after { content: ""; position: absolute; top: 0; bottom: 0; width: 6px; border-radius: 3px; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-admin-accent) 70%, var(--bt-border-2)) 0 34%, var(--bt-border-2) 40%); }
+.bt-root:not(#_) .bt-ladder-rungs::before { left: 10px; }
+.bt-root:not(#_) .bt-ladder-rungs::after { right: 10px; }
+.bt-root:not(#_) .bt-ladder-rung { position: relative; z-index: 1; display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; padding: 10px 12px; border: 1px solid var(--bt-border-2); border-radius: 10px; background: var(--bt-surface); color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; cursor: pointer; transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+.bt-root:not(#_) .bt-ladder-rung:hover { transform: translateX(3px); border-color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-ladder-rung[aria-selected="true"] { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary), 0 0 22px rgba(var(--bt-primary-rgb), 0.35); color: var(--bt-text); }
+.bt-root:not(#_) .bt-ladder-rung.is-admin[aria-selected="true"] { border-color: var(--bt-admin-panel-border); box-shadow: 0 0 0 1px var(--bt-admin-panel-border), 0 0 22px rgba(var(--bt-admin-neon-rgb), 0.25); }
+.bt-root:not(#_) .bt-ladder-gate { position: relative; z-index: 1; display: flex; align-items: center; gap: 8px; padding: 6px 4px; color: var(--bt-admin-text); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-ladder-gate::before, .bt-root:not(#_) .bt-ladder-gate::after { content: ""; flex: 1; height: 0; border-top: 2px dashed color-mix(in srgb, var(--bt-admin-accent) 70%, transparent); }
+.bt-root:not(#_) .bt-ladder-detail { display: flex; flex-direction: column; gap: 14px; min-height: 330px; padding: 22px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(80% 70% at 100% 0%, var(--bt-ladder-tone, var(--bt-primary-bg)), transparent 60%), var(--bt-surface); animation: bt-ladder-in 0.35s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bt-ladder-detail[hidden] { display: none; }
+.bt-root:not(#_) .bt-ladder-detail.is-admin { --bt-ladder-tone: var(--bt-admin-tint); border-color: color-mix(in srgb, var(--bt-admin-panel-border) 55%, transparent); }
+.bt-root:not(#_) .bt-ladder-detail-top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; }
+.bt-root:not(#_) .bt-ladder-detail h3 { margin: 0; font-size: 26px; font-weight: 900; letter-spacing: -0.01em; }
+.bt-root:not(#_) .bt-ladder-detail p { margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .bt-ladder-cols { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .bt-ladder-detail ul { display: grid; gap: 6px; margin: 6px 0 0; padding: 0; list-style: none; font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .bt-ladder-detail li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; }
+.bt-root:not(#_) .bt-ladder-can li::before { content: "✓"; color: var(--bt-lime); font-weight: 900; }
+.bt-root:not(#_) .bt-ladder-up li::before { content: "↑"; color: var(--bt-title); font-weight: 900; }
+.bt-root:not(#_) .bt-ladder-foot { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+@keyframes bt-ladder-in { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+
+/* Quiz: the component never knows the answers. Options are plain radio buttons; after submit() the results
+   mark each one: .is-right (lime), .is-wrong (red) or neither (neutral, the unpicked rest). */
+.bt-root:not(#_) .bt-quiz { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .bt-quiz-q { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .bt-quiz-q[hidden] { display: none; }
+.bt-root:not(#_) .bt-quiz-text { font-size: var(--bt-text-lg); line-height: 1.4; }
+.bt-root:not(#_) .bt-quiz-opts { display: grid; gap: 8px; }
+.bt-root:not(#_) .bt-quiz-opt { display: flex; align-items: center; gap: 10px; width: 100%; padding: 11px 14px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-md); background: var(--bt-bg); color: var(--bt-text); font-size: var(--bt-text-md); text-align: left; cursor: pointer; }
+.bt-root:not(#_) .bt-quiz-opt:hover { border-color: var(--bt-primary); }
+.bt-root:not(#_) .bt-quiz-opt i { display: grid; place-items: center; flex: none; width: 22px; height: 22px; border: 1.5px solid var(--bt-border-2); border-radius: 50%; font-size: var(--bt-text-2xs); font-style: normal; font-weight: 900; }
+.bt-root:not(#_) .bt-quiz-opt[aria-checked="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .bt-quiz-opt[aria-checked="true"] i { border-color: var(--bt-primary); background: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .bt-quiz-opt.is-right { border-color: var(--bt-lime); background: var(--bt-lime-bg); }
+.bt-root:not(#_) .bt-quiz-opt.is-right i { border-color: var(--bt-lime); background: var(--bt-lime); color: var(--bt-bg); }
+.bt-root:not(#_) .bt-quiz-opt.is-wrong { border-color: var(--bt-red); background: var(--bt-red-bg); }
+.bt-root:not(#_) .bt-quiz-opt.is-wrong i { border-color: var(--bt-red); background: var(--bt-red); color: var(--bt-bg); }
+.bt-root:not(#_) .bt-quiz.is-checked .bt-quiz-opt { cursor: default; }
+.bt-root:not(#_) .bt-quiz.is-checked .bt-quiz-opt:not(.is-right, .is-wrong) { opacity: 0.6; }
+.bt-root:not(#_) .bt-quiz.is-checked .bt-quiz-opt:hover:not(.is-right, .is-wrong) { border-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-quiz-say { margin-top: 4px; }
+.bt-root:not(#_) .bt-quiz-result .bt-chat-a { max-width: 100%; }
+.bt-root:not(#_) .bt-quiz-acts { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; }
+.bt-root:not(#_) .bt-quiz-result { display: flex; align-items: center; gap: 18px; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-bg); }
+.bt-root:not(#_) .bt-quiz-result[hidden] { display: none; }
+.bt-root:not(#_) .bt-quiz-result[data-state="pass"] { border-color: color-mix(in srgb, var(--bt-lime) 55%, transparent); background: var(--bt-lime-bg); }
+.bt-root:not(#_) .bt-quiz-result[data-state="fail"] { border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); background: var(--bt-gold-bg); }
+.bt-root:not(#_) .bt-quiz-result-txt { display: flex; flex-direction: column; flex: 1 1 auto; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .bt-quiz-result-txt h3 { margin: 0; font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .bt-quiz-result-txt p { margin: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-quiz-result-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .bt-quiz-review { display: flex; flex-direction: column; gap: 18px; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-roster { grid-template-columns: minmax(0, 1fr); gap: 8px; }
+  .bt-root:not(#_) .bt-pref-row { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-pref-seg { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .bt-root:not(#_) .bt-pref-seg button { padding: 7px 4px; }
+  .bt-root:not(#_) .bt-podium { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-podium-card { flex-direction: row; padding: 12px 14px; text-align: left; }
+  .bt-root:not(#_) .bt-podium-card[data-r="1"] { order: -1; padding-top: 12px; }
+  .bt-root:not(#_) .bt-podium-card .bt-avatar-md, .bt-root:not(#_) .bt-podium-card[data-r="1"] .bt-avatar-md { width: 40px; height: 40px; }
+  .bt-root:not(#_) .bt-podium-mid { align-items: flex-start; }
+  .bt-root:not(#_) .bt-podium-val { margin-left: auto; font-size: var(--bt-text-2xl); }
+  .bt-root:not(#_) .bt-board--crew .bt-board-hide { display: none; }
+  .bt-root:not(#_) .bt-board--crew .bt-board-rooms { width: 78px; }
+  .bt-root:not(#_) .bt-timecard-slots { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt-root:not(#_) .bt-ring { width: 104px; height: 104px; }
+  .bt-root:not(#_) .bt-ring--sm { width: 64px; height: 64px; }
+  .bt-root:not(#_) .bt-ladder { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-ladder-rungs { gap: 6px; padding: 8px 22px; }
+  .bt-root:not(#_) .bt-ladder-rung { padding: 8px 10px; }
+  .bt-root:not(#_) .bt-ladder-cols { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-ladder-detail { min-height: 0; padding: 18px; }
+  .bt-root:not(#_) .bt-quiz-result { flex-direction: column; align-items: flex-start; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .bt-board--crew .bt-board-who .bt-badge { display: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-mm-icon :is(.gear, .pupil) { animation: none; }
+  .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-mm-icon :is(.gear, .pupil) { animation: none; }
+  .bt-root:not(#_) .bt-ladder-rung { transition: none; }
+  .bt-root:not(#_) .bt-ladder-detail { animation: none; }
+}
+/* ================= END Mod Machina pieces ================= */

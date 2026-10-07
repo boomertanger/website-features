@@ -800,6 +800,67 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   devices only; `.bt-pager-keys` hints at ← →. 44px buttons on phones. The page wires the links and
   keys (the Vault's game page steps in place).
 
+**Mod Machina pieces** (`docs/specs/mod-machina.md` §16, §8m; all on the UI Kit page under "Mod Machina"):
+- **Admin badge: `.bt-badge--admin`**: the admin green (`--bt-admin-text` on `--bt-admin-tint`, a thin
+  admin-border ring). For the Staff tag and the admin grade track only; never for anything a member can have.
+- **Grade chip: `.bt-grade`** (`shared/ui/grade-chip.js` `gradeChipHtml({ track, grade, code, label })`, or
+  `gradeChip(opts)` for an element): `.bt-badge` + `.bt-level` bars (option 1, Bars). Mod grades (`track: "mod"`,
+  1-4: M1 Initiate blue, M2 Watcher gold, M3 Warden pink, M4 Sentinel red) show 4 bars; admin grades
+  (`track: "admin"`, 1-3: A1 Steward, A2 Overseer, A3 Right Hand) use `.bt-badge--admin` and `.bt-level--3`.
+  `grade` also takes `"A2"` or the profile's `crewGrade` claim (`parseGrade`). `code: true` prefixes "M2 ".
+  ```html
+  <span class="bt-badge bt-grade bt-badge--gold" data-track="mod" data-grade="2"><span class="bt-level">
+    <i class="is-on"></i><i class="is-on"></i><i></i><i></i></span>Watcher</span>
+  ```
+- **Wordmark icon: `.bt-mm-icon`** (`shared/ui/mod-machina.js` `MM_ICON`): a gear with a watching eye, in
+  `.bt-wordmark-icon` next to `MOD <span class="bt-wordmark-accent">MACHINA</span>` on `.bt-wordmark--power`.
+  The gear turns slowly and the pupil glances about; on hover, focus or touch (`initPowerWordmarks`) the gear
+  speeds up, the eye glows gold and MACHINA lights. Still under reduced motion.
+- **Platform tile and room: `.bt-platform-icon--sm`, `.bt-room`** (`shared/ui/crew.js` `platformIconHtml(chat,
+  { logo })`, `roomHtml({ chat, name, state, text })`). Chats: `twitch`, `ytLandscape`, `ytVertical` (a corner
+  mark, `.bt-platform-or.is-l|.is-v`), `tiktok`; the tile is a letter until a real logo URL is passed
+  (`.has-logo`). `.bt-room[data-state="covered|needed|off"]`: covered lime, **needed GOLD, never red** (red is
+  for destroying data), off dimmed. `.bt-rooms` wraps a row of them.
+- **Preference rows: `.bt-pref`** (`shared/ui/pref.js` `prefHtml({ rows })`, `prefRowHtml`, `initPrefs(root,
+  { onChange(chat, value) })`, `PREF_OPTIONS`): one `.bt-pref-row[data-chat]` per chat with a `.bt-pref-seg`
+  radio group (Favourite · Happy to help · Only if needed · No; values `favourite`, `happy`, `ifNeeded`, `no`).
+  Buttons are `role="radio"` with `aria-checked` and a roving tabindex; arrows, Home and End move and choose.
+  A row with `needed` gets a gold edge and a "Most needed" tag. The group is full width on phones. The change
+  also fires a bubbling `bt-pref-change` event (`detail: { chat, value }`). `initRadioGroup(group, opts)` is the
+  reusable radio behaviour.
+- **Crew card: `.bt-crew-card`** (`crewCardHtml({ name, handle, href, avatar, gradeHtml, staff, onBreak, chats,
+  meta })` in `.bt-roster`): a `.bt-tile` with avatar, name, grade chip (plus the Staff tag for admins, a gray
+  "On a break" and a dimmed `.is-reserve` card), and the chats as `.bt-crew-plats`: a star on favourites, faded
+  for No (`chats: { twitch: "favourite", … }`), each with a screen-reader label.
+- **Podium and crew board: `.bt-podium`** (`podiumHtml({ places })`, B2): the top three as `.bt-podium-card[data-r]`
+  with rank, avatar, name and chip, a big value (`.bt-podium-val`) and a line; 1st sits in the middle and taller,
+  one column on phones with 1st first. Under it the table is `.bt-board.bt-board--crew` (cells `.bt-board-n`,
+  `.bt-board-rooms`, `.bt-board-hide` for the columns phones drop, `tr.is-staff` green-tinted, `tr.is-me`) and
+  `.bt-board-legend`.
+- **Time card: `.bt-timecard`** (`timecardHtml({ month, need, total, slots, state, bonusHtml, foot, badge })`, M2):
+  ruled paper with a slot per duty (`.bt-timecard-slot.is-punched` with a `.bt-timecard-stamp` date, empty slots
+  numbered "Needed" / "Extra", a dashed `.is-bonus` slot holding the On the Clock medal). `data-state` is
+  `normal` (enough duties, lime "Active"), `behind` (the owed slots go gold), `done` (every slot punched, "On
+  the Clock earned") or `idle`: "Starts with stream duty", shown while `crew.activityRules` is off, with the
+  slots dimmed and nothing to punch. The state defaults from the number of punched slots; pass `state: "idle"`.
+- **Progress ring: `.bt-ring`** (`ringHtml({ value, centre, caption, label, size, done })`): a conic ring driven by
+  `--v` (0-100) with a text centre (`.bt-ring-c`: a number and a small caption); `--sm` is 64px with the number
+  only, `--done` turns it lime. `role="img"` with `label` as its name.
+- **Ladder: `.bt-ladder`** (`shared/ui/ladder.js` `ladderHtml({ rungs, selected, label, id, gate })`,
+  `ladderDetailHtml({ chipHtml, meta, title, text, can, up, tags, admin })`, `initLadder(root, { onSelect })`):
+  `.bt-ladder-rungs` is a vertical `role="tablist"` (lowest rung at the bottom; roving tabindex, `aria-selected`;
+  Up climbs, Down descends, Home and End) and each `.bt-ladder-detail` is a `role="tabpanel"` already in the
+  HTML (the unselected ones `hidden`). The first admin rung sits above a dashed `.bt-ladder-gate`
+  ("Invitation only"); admin rungs and cards go green. Stacks on phones.
+- **Quiz: `.bt-quiz`** (`shared/ui/quiz.js` `quizHtml({ questions, passMark, title })`, `initQuiz(root, { submit,
+  onResult })`, `showQuizResults(el, answers, outcome)`): one question at a time (`.bt-steps`, Back / Next, a
+  radio group of `.bt-quiz-opt` buttons). The component never knows the answers: on the last question it calls
+  `await submit(answers)` (chosen option indexes) and the page returns `[{ correct, say }]` or `{ results,
+  passed?, say? }`; a throw shows an error line and allows another try. Then every question shows `.is-right`
+  (lime) or `.is-wrong` (red, with a ✕) on the picked option, the rest stay neutral, each with BOOMBOT's `say`
+  as a `.bt-chat-a` bubble, and `.bt-quiz-result[data-state="pass|fail"]` shows a small ring, the score and,
+  when not passed, a Try again button (a pass is "Passed", a fail is "Not quite", never red).
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -825,6 +886,9 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
+| `grade-chip.js` · `mod-machina.js` | `gradeChipHtml({ track, grade, code, label })`, `gradeChip(opts)`, `gradeInfo`, `parseGrade`, `GRADES` · `MM_ICON` (the Mod Machina wordmark icon) |
+| `crew.js` | `platformIconHtml(chat, { logo })`, `roomHtml`, `crewCardHtml`, `podiumHtml`, `timecardHtml`, `ringHtml`, `PLATFORMS` |
+| `pref.js` · `ladder.js` · `quiz.js` | `prefHtml({ rows })`, `prefRowHtml`, `initPrefs(root, { onChange })`, `initRadioGroup(group, { onChange })`, `PREF_OPTIONS` · `ladderHtml`, `ladderDetailHtml`, `initLadder(root, { onSelect })` · `quizHtml`, `initQuiz(root, { submit, onResult })`, `showQuizResults(el, answers, outcome)` |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 

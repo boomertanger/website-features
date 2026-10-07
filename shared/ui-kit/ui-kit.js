@@ -33,6 +33,12 @@ import { timerHtml, initTimers } from "../ui/countdown.js";
 import { backHtml, pagerHtml } from "../ui/pager.js";
 import { roadHtml, initRoad } from "../ui/road.js";
 import { initTree } from "../ui/tree.js";
+import { gradeChipHtml } from "../ui/grade-chip.js";
+import { MM_ICON } from "../ui/mod-machina.js";
+import { platformIconHtml, roomHtml, crewCardHtml, podiumHtml, timecardHtml, ringHtml } from "../ui/crew.js";
+import { prefHtml, initPrefs, PREF_OPTIONS } from "../ui/pref.js";
+import { ladderHtml, ladderDetailHtml, initLadder } from "../ui/ladder.js";
+import { quizHtml, initQuiz, showQuizResults } from "../ui/quiz.js";
 
 const KIT_VERSION = "dev";
 
@@ -800,7 +806,8 @@ ${storyKitHtml()}
 ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
-${roadKitHtml()}`;
+${roadKitHtml()}
+${modMachinaKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -985,6 +992,7 @@ function init() {
   initFactoryKit(mount);
   initSeasonKit(mount);
   initRoadKit(mount);
+  initModMachinaKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
@@ -1418,6 +1426,123 @@ function initVaultKit(mount) {
     initDeck(deck, { onKey: act });
     deck.addEventListener("click", (e) => { const b = e.target.closest("[data-kit-deck]"); if (b) act(b.dataset.kitDeck); });
   }
+}
+
+// ---------- Mod Machina pieces (docs/specs/mod-machina.md §16; shared/ui/grade-chip.js, crew.js, pref.js, ladder.js, quiz.js) ----------
+const MM_LADDER = [
+  { track: "mod", grade: 1, title: "Initiate", text: "New to the crew. You learn the rooms, welcome people and ask when unsure.", can: ["Remind, warn and flag in chat", "Take a Deckhand seat on a stream"], up: ["Pass the core Academy modules", "Three duties and a vouch from a Watcher"] },
+  { track: "mod", grade: 2, title: "Watcher", text: "Trusted to keep a room going without checking in.", can: ["Vouch for people in the queue", "Lead a chat on a quiet stream"], up: ["Pass Safety (module 9)", "A clean record and steady duties"] },
+  { track: "mod", grade: 3, title: "Warden", text: "Handles the tricky moments and looks after newer mods.", can: ["Time out and ban when it is needed", "Lead any chat"], up: ["The owner's call, after a long steady run"] },
+  { track: "mod", grade: 4, title: "Sentinel", text: "The top of the mod ladder: runs the crew day to day.", can: ["Post tasks on the task board", "Captain a stream"], up: [] },
+  { track: "admin", grade: 1, title: "Steward", text: "Looks after the site and the crew tools.", can: ["Use the admin tools"], up: ["By invitation"] },
+  { track: "admin", grade: 2, title: "Overseer", text: "Runs the crew's records and standing.", can: ["Confirm tasks", "Record strikes"], up: ["By invitation"] },
+  { track: "admin", grade: 3, title: "Right Hand", text: "Acts for the owner on the crew.", can: ["Promote up to Warden"], up: [] },
+];
+const MM_QUIZ = [
+  { text: "A new viewer posts a link to their own stream. What is your first step?", options: ["Ban them so it does not happen again", "Remind them that self-promo is not allowed here", "Time them out for ten minutes"], right: 1 },
+  { text: "Someone mentions self-harm in chat. What do you do?", options: ["Ignore it and keep the chat moving", "Flag the owner straight away, and be kind", "Argue with them"], right: 1 },
+  { text: "A friend of yours breaks a rule. What now?", options: ["Let it slide, they are a friend", "Treat them like anyone else", "Ban them to look fair"], right: 1 },
+];
+const mmGrades = () => [{ track: "mod", grade: 1 }, { track: "mod", grade: 2 }, { track: "mod", grade: 3 }, { track: "mod", grade: 4 }, { track: "admin", grade: 1 }, { track: "admin", grade: 2 }, { track: "admin", grade: 3 }];
+const mmBoardRow = (r, name, handle, grade, gears, duties, hours, rooms, extra = "") => `<tr${r <= 3 ? ` data-r="${r}"` : ""}${extra ? ` class="${extra}"` : ""}><td class="bt-board-rank">${r}</td><td><span class="bt-board-who"><span class="bt-avatar-sm" aria-hidden="true">${kitInitials(name)}</span><span><b>${name}</b>${gradeChipHtml(grade)}${extra.includes("is-staff") ? '<span class="bt-badge bt-badge--admin">Staff</span>' : ""}</span></span></td><td class="bt-board-n">${gears}</td><td class="bt-board-n bt-board-hide">${duties}</td><td class="bt-board-n bt-board-hide">${hours}</td><td class="bt-board-rooms"><span class="bt-crew-plats">${rooms.map((c) => platformIconHtml(c)).join("")}</span></td></tr>`;
+
+function modMachinaKitHtml() {
+  const chips = (code) => mmGrades().map((g) => `<div class="kit-stack" style="align-items:flex-start;gap:8px">${gradeChipHtml({ ...g, code })}</div>`).join("");
+  const wordmark = (lit) => `<a class="bt-wordmark bt-wordmark--power${lit ? " is-lit" : ""}" href="#kit-mod-machina" aria-label="Mod Machina"><span class="bt-wordmark-icon">${MM_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">MOD <span class="bt-wordmark-accent">MACHINA</span></span></a>`;
+  const room = (chat, state) => roomHtml({ chat, state });
+  const card = (o) => crewCardHtml(o);
+  const chatsA = { twitch: "favourite", ytLandscape: "happy", ytVertical: "ifNeeded", tiktok: "no" };
+  const punched = [{ stamp: "Oct 3", text: "YT vertical · 2 h" }, { stamp: "Oct 9", text: "Twitch · 3 h" }, { stamp: "Oct 14", text: "YT landscape · 1 h" }, { stamp: "Oct 22", text: "TikTok · 2 h" }];
+  const bonus = medalHtml({ emoji: "⏱", rarity: 2, size: 36 });
+  return `
+  <section class="kit-section" id="kit-mod-machina">
+    <h2 class="kit-h">Mod Machina</h2>
+    <p class="kit-p">The crew's pieces (<span class="kit-code">docs/specs/mod-machina.md</span> §16, design-system.md §5 and §8m). Colours: "needed" is gold, never red (red is for destroying data); admin-only things are green.</p>
+
+    <p class="kit-sub">Admin badge: .bt-badge--admin (the Staff tag; admin green, admin only)</p>
+    <div class="kit-row"><span class="bt-badge bt-badge--admin">Staff</span><span class="bt-badge bt-badge--admin"><span class="bt-badge-dot"></span>Admin only</span><span class="bt-badge bt-badge--gold">Gold</span><span class="bt-badge bt-badge--gray">Gray</span></div>
+
+    <p class="kit-sub">Grade chip: .bt-grade, gradeChipHtml({ track, grade, code }) in shared/ui/grade-chip.js. Mod grades: blue, gold, pink, red with 4 bars; admin grades: .bt-badge--admin with 3 bars</p>
+    <div class="kit-row" style="gap:10px">${chips(false)}</div>
+    <div class="kit-row" style="gap:10px">${chips(true)}</div>
+
+    <p class="kit-sub">Wordmark icon: MM_ICON (shared/ui/mod-machina.js) on .bt-wordmark--power. Rest, and lit (hover, focus or touch: the gear speeds up, the eye lights, MACHINA goes gold). Still under reduced motion</p>
+    <div class="kit-row" style="gap:36px">${wordmark(false)}${wordmark(true)}</div>
+
+    <p class="kit-sub">Platform tiles: .bt-platform-icon--sm (the real logo goes in as an img with .has-logo; the corner mark shows YouTube landscape or vertical), platformIconHtml(chat)</p>
+    <div class="kit-row" style="gap:16px">${["twitch", "ytLandscape", "ytVertical", "tiktok"].map((c) => platformIconHtml(c)).join("")}${platformIconHtml("twitch", { logo: KIT_MASCOT })}</div>
+
+    <p class="kit-sub">Room: .bt-room with data-state covered, needed (gold) or off, roomHtml({ chat, name, state, text })</p>
+    <div class="bt-rooms">${room("twitch", "covered")}${room("ytLandscape", "needed")}${room("ytVertical", "needed")}${room("tiktok", "off")}${roomHtml({ chat: "twitch", name: "Twitch", state: "covered", text: "2 on duty" })}</div>
+
+    <p class="kit-sub">Preference rows: .bt-pref, prefHtml({ rows }) + initPrefs(root, { onChange }). A radio group per chat: arrow keys, Home and End move and choose; "needed" adds a gold edge and tag. Pick one: the line below follows</p>
+    <div class="kit-grid-2"><div class="kit-stack" data-kit-pref>${prefHtml({ rows: [
+      { chat: "twitch", name: "Twitch", iconHtml: platformIconHtml("twitch"), value: "favourite" },
+      { chat: "ytLandscape", name: "YouTube landscape", iconHtml: platformIconHtml("ytLandscape"), value: "happy", needed: true },
+      { chat: "ytVertical", name: "YouTube vertical", iconHtml: platformIconHtml("ytVertical"), value: "ifNeeded", needed: true },
+      { chat: "tiktok", name: "TikTok", iconHtml: platformIconHtml("tiktok"), value: "no" },
+    ] })}<p class="kit-note" data-kit-pref-out aria-live="polite">Nothing changed yet.</p></div></div>
+
+    <p class="kit-sub">Roster card: .bt-crew-card (in .bt-roster), crewCardHtml({ name, handle, gradeHtml, staff, onBreak, chats, meta }). Starred chats are favourites, faded ones are No. Mod, admin (Staff tag) and on a break</p>
+    <div class="bt-roster">
+      ${card({ name: "NightOwl Kat", handle: "nightowlkat", gradeHtml: gradeChipHtml({ track: "mod", grade: 4 }), chats: chatsA, meta: "88 duties · since Jan 2026" })}
+      ${card({ name: "Raven", handle: "ravenrx", gradeHtml: gradeChipHtml({ track: "admin", grade: 2 }), staff: true, chats: { twitch: "favourite", ytLandscape: "happy", ytVertical: "happy", tiktok: "ifNeeded" }, meta: "96 duties" })}
+      ${card({ name: "Ghoul Girl Gem", handle: "ghoulgem", gradeHtml: gradeChipHtml({ track: "mod", grade: 2 }), onBreak: true, chats: { twitch: "no", ytLandscape: "no", ytVertical: "no", tiktok: "favourite" }, meta: "15 duties" })}
+      ${card({ name: "Lantern Lou", handle: "lanternlou", gradeHtml: gradeChipHtml({ track: "mod", grade: 1 }) })}
+    </div>
+
+    <p class="kit-sub">Podium (B2): .bt-podium, podiumHtml({ places }), 1st in the middle; one column on phones. With the board table below: .bt-board.bt-board--crew (.bt-board-rooms, .bt-board-n, .bt-board-hide, tr.is-staff, tr.is-me) and .bt-board-legend</p>
+    ${podiumHtml({ places: [
+      { rank: 1, name: "CryptKeeper Jay", gradeHtml: gradeChipHtml({ track: "mod", grade: 3 }), value: 412, unit: "Gears", sub: "11 duties · 26.5 h" },
+      { rank: 2, name: "NightOwl Kat", gradeHtml: gradeChipHtml({ track: "mod", grade: 4 }), value: 377, unit: "Gears", sub: "12 duties · 31 h" },
+      { rank: 3, name: "Mothman Mike", gradeHtml: gradeChipHtml({ track: "mod", grade: 2 }), value: 298, unit: "Gears", sub: "8 duties · 19 h" },
+    ] })}
+    <div class="bt-card"><table class="bt-board bt-board--crew"><thead><tr><th scope="col">#</th><th scope="col">Crew</th><th scope="col" class="bt-board-n">Gears</th><th scope="col" class="bt-board-n bt-board-hide">Duties</th><th scope="col" class="bt-board-n bt-board-hide">Hours</th><th scope="col" class="bt-board-rooms">Rooms</th></tr></thead><tbody>
+      ${mmBoardRow(4, "Raven", "ravenrx", { track: "admin", grade: 2 }, 251, 9, 22, ["twitch"], "is-staff")}
+      ${mmBoardRow(5, "Salem Spooks", "salemspooks", { track: "mod", grade: 3 }, 233, 9, "21.5", ["twitch", "tiktok"])}
+      ${mmBoardRow(6, "Lantern Lou", "lanternlou", { track: "mod", grade: 1 }, 58, 2, 4, ["twitch"], "is-me")}
+    </tbody></table><div class="bt-board-legend"><span>Staff rows are tinted green and never win crew awards.</span><span>Your row is highlighted.</span></div></div>
+
+    <p class="kit-sub">Time card (M2): .bt-timecard, timecardHtml({ month, need, total, slots, state, bonusHtml }); states normal, behind, done and "Starts with stream duty" (idle)</p>
+    <div class="kit-grid-2">
+      <div class="kit-stack"><span class="kit-note">Normal: 2 of 2 punched</span>${timecardHtml({ month: "October", slots: punched.slice(0, 2), bonusHtml: bonus })}</div>
+      <div class="kit-stack"><span class="kit-note">Behind: 1 of 2</span>${timecardHtml({ month: "October", slots: punched.slice(0, 1), bonusHtml: bonus })}</div>
+      <div class="kit-stack"><span class="kit-note">Done: 4 punched, On the Clock earned</span>${timecardHtml({ month: "October", slots: punched, bonusHtml: bonus })}</div>
+      <div class="kit-stack"><span class="kit-note">Starts with stream duty (activity rules off)</span>${timecardHtml({ month: "October", slots: [], state: "idle", bonusHtml: bonus })}</div>
+    </div>
+
+    <p class="kit-sub">Progress ring: .bt-ring with --v 0 to 100 and a text centre, ringHtml({ value, centre, caption, label, size, done }); --sm (64px) and --done (lime)</p>
+    <div class="kit-row" style="gap:24px">${ringHtml({ value: 0, centre: "0/10", caption: "Passed" })}${ringHtml({ value: 60, centre: "6/10", caption: "Passed" })}${ringHtml({ value: 100, centre: "10/10", caption: "Passed", done: true })}${ringHtml({ value: 60, centre: "3/5", size: "sm" })}${ringHtml({ value: 100, centre: "5/5", size: "sm", done: true })}</div>
+
+    <p class="kit-sub">Ladder: .bt-ladder, ladderHtml({ rungs }) + ladderDetailHtml(...) + initLadder(root). Click a rung, or use the arrow keys (Up climbs); the admin rungs sit above the dashed gate</p>
+    ${ladderHtml({ id: "kit-ladder", label: "Crew grades", selected: 1, rungs: MM_LADDER.map((l) => {
+      const admin = l.track === "admin";
+      const chip = gradeChipHtml({ track: l.track, grade: l.grade });
+      return { admin, rungHtml: chip, tag: admin ? "Admin" : `Rung ${l.grade}`, detailHtml: ladderDetailHtml({ chipHtml: chip, meta: admin ? "Invitation only" : `Rung ${l.grade} of 4`, title: l.title, text: l.text, can: l.can, up: l.up, upLabel: l.up.length ? (admin ? "How" : "To move up") : "", admin, tags: admin ? [] : ["Boomer confirms every promotion"] }) };
+    }) })}
+
+    <p class="kit-sub">Quiz: .bt-quiz, quizHtml({ questions, passMark }) + initQuiz(root, { submit }). Options are plain radio buttons and the component never knows the answers: submit(answers) is async and returns { correct, say } per question. This demo grades locally (the real Academy asks the server). Pick, then Next</p>
+    <div class="kit-grid-2"><div class="bt-card" data-kit-quiz>${quizHtml({ questions: MM_QUIZ, passMark: 2 })}</div></div>
+    <p class="kit-sub">Quiz states without a server (showQuizResults): wrong answer in red, right in lime, the rest neutral, BOOMBOT's reply; the result card passed, and not quite</p>
+    <div class="kit-grid-2">
+      <div class="bt-card" data-kit-quiz-static="3">${quizHtml({ questions: MM_QUIZ, passMark: 2, title: "Passed" })}</div>
+      <div class="bt-card" data-kit-quiz-static="1">${quizHtml({ questions: MM_QUIZ, passMark: 2, title: "Not quite" })}</div>
+    </div>
+  </section>`;
+}
+
+function initModMachinaKit(mount) {
+  const sec = mount.querySelector("#kit-mod-machina");
+  if (!sec) return;
+  initPrefs(sec, { onChange: (chat, value) => { const o = sec.querySelector("[data-kit-pref-out]"); if (o) o.textContent = `${chat}: ${PREF_OPTIONS.find((p) => p.value === value)?.label}`; } });
+  initLadder(sec);
+  const grade = (answers) => answers.map((a, i) => ({ correct: a === MM_QUIZ[i].right, say: a === MM_QUIZ[i].right ? "Right. Start with the gentlest step that works." : "Not quite. Start with a friendly reminder; most people just did not know." }));
+  initQuiz(sec.querySelector("[data-kit-quiz]"), { submit: async (answers) => { await new Promise((r) => setTimeout(r, 400)); return { results: grade(answers), say: "Nice work. Come back any time to read it again." }; } });
+  sec.querySelectorAll("[data-kit-quiz-static]").forEach((card) => {
+    const nRight = Number(card.dataset.kitQuizStatic);
+    const answers = MM_QUIZ.map((q, i) => (i < nRight ? q.right : (q.right + 1) % q.options.length));
+    showQuizResults(card.querySelector(".bt-quiz"), answers, { results: grade(answers), say: nRight >= 2 ? "Nice work." : "Have another read, then try again." });
+  });
 }
 
 if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init);
