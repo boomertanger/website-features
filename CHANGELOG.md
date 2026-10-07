@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Scream Planner public pages: /schedule (marquee, week at a glance doors, tickets or timeline, usual-week strip, vote call-out), /schedule/usual and /schedule/vote (covers or race, vote, add a Vault game).
 kit: Scream Planner crew view pieces on /dev/ui-kit: .bt-cslot (the crew's slot card), .bt-smap seat map with .bt-sbox seats (taken, open, mine, locked), .bt-crewbar with .bt-month, .bt-myreq (shared/ui/seats.js); slot cards gain timeHtml, badgeHtml, metaHtml, actionsHtml and ‹ › reorder; confirmAction takes bodyHtml and onOpen.
 - site: Scream Planner page frame (PlannerLayout, PlannerBar with the SCREAM PLANNER wordmark and the Schedule, Usual week, Vote and Plan seg nav, planner layout script with membersOnly, crewOnly and adminOnly gates and the ?as= preview, planner.css). Pages follow.
 - docs: the Scream Planner kit piece list in design-system.md §8o names the doors .bt-doors / .bt-door (the spec's .bt-portal is the modal portal).

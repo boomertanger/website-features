@@ -1,0 +1,152 @@
+/* site/src/styles/planner-public.css — the public Scream Planner pages (/schedule, /schedule/usual, /schedule/vote).
+   Page-only layout and the few panels the kit doesn't have (pp-* prefix): the week at a glance panel, the W2 night
+   timeline, the selected-ticket detail, the ballot panel, the call-out. Everything else is bt-ui (tickets, marquee, doors,
+   slider, posters, vote cards, view switch). Tokens only; container queries 1024 / 640 / 420 (the page root is the `bt`
+   container, .bt-site-frame); everything still under prefers-reduced-motion. Mockup: docs/design/mockups/scream-planner-mockups.html. */
+
+.bt-root:not(#_) .pp-page { gap: 36px; padding-top: 28px; padding-bottom: 44px; }
+.bt-root:not(#_) .pp-page > [hidden] { display: none; }
+.bt-root:not(#_) .pp-kick { color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.bt-root:not(#_) .pp-skel-hero { display: block; width: 100%; height: 340px; border-radius: var(--bt-radius-xl); }
+.bt-root:not(#_) .pp-skel-card { display: block; width: 100%; height: 280px; border-radius: var(--bt-radius-xl); }
+
+/* empty and friendly states: the mascot (bt-empty) */
+.bt-root:not(#_) .pp-empty { padding: 40px 20px; }
+.bt-root:not(#_) .pp-empty-art { display: inline-flex; width: 84px; }
+.bt-root:not(#_) .pp-empty-art :is(svg, .bt-mascot) { width: 84px; height: auto; }
+.bt-root:not(#_) .pp-empty .bt-title { margin: 6px 0 0; font-size: var(--bt-text-3xl); }
+.bt-root:not(#_) .pp-empty a { color: var(--bt-primary-soft); }
+
+/* section heads with tools (tabs, view switch): wrap on phones */
+.bt-root:not(#_) .pp-page .bt-section-head-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: flex-end; gap: 10px; }
+.bt-root:not(#_) .pp-tabs { display: inline-flex; gap: 6px; }
+
+/* ---- This week at a glance ---- */
+.bt-root:not(#_) .pp-glance { padding: 22px 24px; border-radius: var(--bt-radius-xl); background: radial-gradient(80% 60% at 50% 100%, color-mix(in srgb, var(--bt-gold) 10%, transparent), transparent 70%), var(--bt-footer-bg); }
+.bt-root:not(#_) .pp-glance > div { display: flex; flex-direction: column; gap: 18px; }
+.bt-root:not(#_) .pp-glance .bt-section-head { margin: 0; }
+.bt-root:not(#_) .pp-stsw { display: inline-flex; align-items: center; gap: 6px; padding: 3px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); background: var(--bt-bg); }
+.bt-root:not(#_) .pp-stsw b { min-width: 140px; text-align: center; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .pp-stsw .bt-chip { width: 30px; height: 30px; padding: 0; display: grid; place-items: center; font-size: 18px; font-weight: 900; }
+.bt-root:not(#_) .pp-glance-doors { padding: 4px 0 0; }
+.bt-root:not(#_) .pp-door-detail { display: flex; flex-flow: row wrap; align-items: center; gap: 12px 24px; padding: 14px 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: color-mix(in srgb, var(--bt-surface) 80%, transparent); }
+.bt-root:not(#_) .pp-dd-go { margin-left: auto; }
+
+/* delay / cancel notes (gold for moved, gray for off: never red) */
+.bt-root:not(#_) .pp-why { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid color-mix(in srgb, var(--bt-gold) 45%, transparent); border-radius: var(--bt-radius-md); background: var(--bt-gold-bg); color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .pp-why.is-gray { border-color: var(--bt-border-2); background: var(--bt-gray-bg); }
+.bt-root:not(#_) .pp-why b { color: var(--bt-gold); white-space: nowrap; }
+.bt-root:not(#_) .pp-why.is-gray b { color: var(--bt-text-muted); }
+
+/* ---- The week: tickets, the selected ticket's detail, the W2 timeline ---- */
+.bt-root:not(#_) .pp-week { display: flex; flex-direction: column; gap: 14px; scroll-margin-top: calc(var(--bt-header-h, 64px) + 70px); }
+.bt-root:not(#_) .pp-detail { display: grid; grid-template-columns: 220px minmax(0, 1fr) 260px; gap: 22px; padding: 22px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(60% 100% at 0% 0%, color-mix(in srgb, var(--tone, var(--bt-title)) 12%, transparent), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .pp-detail-games { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; align-content: start; }
+.bt-root:not(#_) .pp-detail-games .bt-cover { width: 100%; }
+.bt-root:not(#_) .pp-detail-main { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .pp-detail-title { margin: 0; font-size: var(--bt-text-3xl); }
+.bt-root:not(#_) .pp-detail-time { font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .pp-plan-lab { margin-top: 6px; }
+.bt-root:not(#_) .pp-detail-side { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .pp-where { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.bt-root:not(#_) .pp-gamelist { display: flex; flex-direction: column; gap: 8px; margin: 4px 0 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .pp-gamelist li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-root:not(#_) .pp-gamelist .bt-cover { width: 30px; flex: none; }
+.bt-root:not(#_) .pp-gamelist .n { width: 18px; color: var(--bt-text-faint); font-weight: 900; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .pp-gamelist .t { flex: 1; min-width: 0; font-weight: 700; }
+.bt-root:not(#_) .pp-gamelist .bt-src { margin-left: auto; flex: none; }
+
+.bt-root:not(#_) .pp-tl { --n: 13; position: relative; display: grid; grid-template-columns: 70px minmax(0, 1fr); overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
+.bt-root:not(#_) .pp-tl-axis { grid-column: 2; display: grid; grid-template-columns: repeat(var(--n), minmax(0, 1fr)); padding: 10px 0 6px; border-bottom: 1px solid var(--bt-border); color: var(--bt-text-faint); font-size: 10px; font-weight: 800; letter-spacing: 0.06em; }
+.bt-root:not(#_) .pp-tl-axis span { padding-left: 5px; border-left: 1px solid var(--bt-border); overflow: hidden; white-space: nowrap; }
+.bt-root:not(#_) .pp-tl-day { grid-column: 1; display: flex; flex-direction: column; justify-content: center; height: 58px; padding: 0 12px; border-bottom: 1px solid var(--bt-border); color: var(--bt-text-faint); font-size: 10px; font-weight: 800; letter-spacing: 0.1em; }
+.bt-root:not(#_) .pp-tl-day b { color: var(--bt-text); font-size: 18px; letter-spacing: 0; }
+.bt-root:not(#_) .pp-tl-day.is-today b { color: var(--bt-title); }
+.bt-root:not(#_) .pp-tl-lane { grid-column: 2; position: relative; height: 58px; border-bottom: 1px solid var(--bt-border); background: repeating-linear-gradient(90deg, var(--bt-border) 0 1px, transparent 1px calc(100% / var(--n))); }
+.bt-root:not(#_) .pp-blk { --tone: var(--bt-primary); position: absolute; top: 8px; bottom: 8px; display: flex; align-items: center; gap: 8px; min-width: 0; padding: 0 10px 0 6px; overflow: hidden; border: 1px solid color-mix(in srgb, var(--tone) 70%, transparent); border-radius: var(--bt-radius-md); background: linear-gradient(90deg, color-mix(in srgb, var(--tone) 34%, var(--bt-surface)), color-mix(in srgb, var(--tone) 12%, var(--bt-surface))); box-shadow: 0 0 18px color-mix(in srgb, var(--tone) 30%, transparent); font-size: var(--bt-text-sm); font-weight: 800; white-space: nowrap; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .pp-blk:hover { z-index: 2; transform: scale(1.03); box-shadow: 0 0 28px color-mix(in srgb, var(--tone) 55%, transparent); }
+.bt-root:not(#_) .pp-blk:focus-visible { z-index: 2; outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .pp-blk.is-sel { box-shadow: 0 0 0 2px var(--bt-primary-soft), 0 0 22px color-mix(in srgb, var(--tone) 45%, transparent); }
+.bt-root:not(#_) .pp-blk .bt-cover { width: 28px; flex: none; border-radius: 5px; }
+.bt-root:not(#_) .pp-blk i { flex: none; font-style: normal; }
+.bt-root:not(#_) .pp-blk-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .pp-blk small { flex: none; color: var(--bt-text-muted); font-weight: 600; }
+.bt-root:not(#_) .pp-blk.is-past { --tone: var(--bt-lime); opacity: 0.55; }
+.bt-root:not(#_) .pp-blk.is-backstage { --tone: var(--bt-velvet); }
+.bt-root:not(#_) .pp-blk.is-tonight { --tone: var(--bt-title); }
+.bt-root:not(#_) .pp-blk.is-live { --tone: var(--bt-red); }
+.bt-root:not(#_) .pp-blk.is-cancelled { --tone: var(--bt-gray); background: repeating-linear-gradient(-45deg, var(--bt-gray-bg) 0 10px, var(--bt-surface) 10px 20px); box-shadow: none; color: var(--bt-text-muted); text-decoration: line-through; }
+.bt-root:not(#_) .pp-blk-ghost { position: absolute; top: 8px; bottom: 8px; border: 1.5px dashed color-mix(in srgb, var(--bt-gold) 60%, transparent); border-radius: var(--bt-radius-md); pointer-events: none; }
+.bt-root:not(#_) .pp-now { position: absolute; top: 0; bottom: 0; z-index: 3; width: 2px; background: var(--bt-blood); box-shadow: 0 0 10px var(--bt-blood); pointer-events: none; }
+.bt-root:not(#_) .pp-now::before { content: "NOW"; position: absolute; top: -1px; left: 4px; color: var(--bt-blood); font-size: 9px; font-weight: 900; letter-spacing: 0.1em; }
+.bt-root:not(#_) .pp-agenda-note { text-align: center; }
+
+/* ---- Vote call-out and the usual-week strip ---- */
+.bt-root:not(#_) .pp-callout { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; padding: 18px 22px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(60% 120% at 0% 50%, color-mix(in srgb, var(--bt-blood) 14%, transparent), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .pp-callout-ic { display: grid; place-items: center; flex: none; width: 48px; height: 48px; border-radius: var(--bt-radius-lg); background: color-mix(in srgb, var(--bt-blood) 18%, var(--bt-bg)); }
+.bt-root:not(#_) .pp-callout-ic svg { width: 20px; height: 24px; }
+.bt-root:not(#_) .pp-callout-ic path { fill: var(--bt-blood); filter: drop-shadow(0 0 4px var(--bt-blood-glow)); }
+.bt-root:not(#_) .pp-callout-text { display: flex; flex: 1 1 240px; flex-direction: column; gap: 2px; min-width: 0; }
+.bt-root:not(#_) .pp-callout-text .bt-heading { margin: 0; }
+.bt-root:not(#_) .pp-usual { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .pp-exc { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+
+/* ---- Vote ---- */
+.bt-root:not(#_) .pp-ballot { display: flex; flex-direction: column; gap: 18px; padding: 24px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(60% 80% at 100% 0%, color-mix(in srgb, var(--bt-blood) 12%, transparent), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .pp-ballot .bt-section-head { margin: 0; }
+.bt-root:not(#_) .pp-ballot-top { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 14px; }
+.bt-root:not(#_) .pp-closes { display: inline-flex; align-items: center; gap: 8px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .pp-closed-note, .bt-root:not(#_) .pp-gate-note { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
+.bt-root:not(#_) .pp-gate-note { padding: 12px 16px; border: 1px dashed color-mix(in srgb, var(--bt-gold) 45%, transparent); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .pp-gate-note > span { flex: 1 1 220px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .pp-add-pick { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .pp-add-list { display: flex; flex-direction: column; gap: 8px; max-height: 340px; overflow-y: auto; }
+.bt-root:not(#_) .pp-add-row { display: flex; align-items: center; gap: 12px; padding: 8px 10px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-root:not(#_) .pp-add-row .bt-cover { width: 36px; flex: none; }
+.bt-root:not(#_) .pp-add-row b { flex: 1; min-width: 0; }
+.bt-root:not(#_) .pp-add-row .bt-badge { flex: none; }
+
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .pp-detail { grid-template-columns: 180px minmax(0, 1fr); }
+  .bt-root:not(#_) .pp-detail-side { grid-column: 1 / -1; }
+}
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pp-page { gap: 28px; padding-top: 20px; }
+  .bt-root:not(#_) .pp-page .bt-section-head { flex-wrap: wrap; }
+  .bt-root:not(#_) .pp-page .bt-section-head-tools { width: 100%; justify-content: flex-start; margin-left: 0; }
+  .bt-root:not(#_) .pp-glance { padding: 16px 12px; }
+  .bt-root:not(#_) .pp-stsw b { min-width: 0; flex: 1; }
+  .bt-root:not(#_) .pp-stsw { width: 100%; }
+  .bt-root:not(#_) .pp-dd-go { margin-left: 0; }
+  .bt-root:not(#_) .pp-detail { grid-template-columns: minmax(0, 1fr); padding: 16px; }
+  .bt-root:not(#_) .pp-detail-games { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .bt-root:not(#_) .pp-ballot { padding: 16px; }
+  /* W2 on phones: a compact night timeline, not a list */
+  .bt-root:not(#_) .pp-tl { grid-template-columns: 44px minmax(0, 1fr); border-radius: var(--bt-radius-lg); }
+  .bt-root:not(#_) .pp-tl-axis span { padding-left: 2px; font-size: 8px; }
+  .bt-root:not(#_) .pp-tl-axis span:nth-child(even) { color: transparent; }
+  .bt-root:not(#_) .pp-tl-day { height: 50px; padding: 0 8px; font-size: 8px; }
+  .bt-root:not(#_) .pp-tl-day b { font-size: 15px; }
+  .bt-root:not(#_) .pp-tl-lane { height: 50px; }
+  .bt-root:not(#_) .pp-blk { top: 7px; bottom: 7px; gap: 4px; padding: 0 4px; font-size: 0; }
+  .bt-root:not(#_) .pp-blk .bt-cover { width: 22px; }
+  .bt-root:not(#_) .pp-blk small, .bt-root:not(#_) .pp-blk-t { display: none; }
+}
+
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .pp-callout { padding: 16px; }
+  .bt-root:not(#_) .pp-callout .bt-btn { width: 100%; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .pp-blk { transition: none; }
+  .bt-root:not(#_) .pp-blk:hover { transform: none; }
+}
+
+/* ---- Usual week: a day can hold more than one poster ---- */
+.bt-root:not(#_) .pp-day { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .pp-day > .bt-poster { flex: 1 1 auto; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pp-posters .pp-day { flex: 0 0 38%; scroll-snap-align: start; }
+}

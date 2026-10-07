@@ -1,0 +1,20 @@
+---
+// /schedule: the marquee (what is next), This week at a glance (doors), the week as tickets or a timeline, the usual-week
+// strip and the vote call-out (docs/specs/scream-planner.md section 2). Everyone sees it; the public docs and published
+// streams are read in scripts/planner/schedule.ts. Backstage streams show as members-only.
+import PlannerLayout from "../../layouts/PlannerLayout.astro";
+import "../../styles/planner-public.css";
+---
+<PlannerLayout title="Schedule" description="What Boomer is streaming this week and next: the next stream, the week at a glance, every game and when it starts in your time." section="schedule">
+  <div class="bt-zone pp-page" data-pp-schedule aria-busy="true">
+    <div data-pp-hero aria-live="polite"><span class="bt-skeleton pp-skel-hero"></span></div>
+    <section class="pp-glance" data-pp-glance aria-label="This week at a glance" hidden></section>
+    <section data-pp-week aria-label="The week"><span class="bt-skeleton pp-skel-card"></span></section>
+    <section data-pp-vote aria-label="Vote for next week" hidden></section>
+    <section class="pp-usual" data-pp-usual aria-label="Boomer's usual week" hidden></section>
+  </div>
+</PlannerLayout>
+
+<script>
+  import "../../scripts/planner/schedule";
+</script>

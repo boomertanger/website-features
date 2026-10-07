@@ -1,0 +1,83 @@
+{
+  "_about": "SAMPLE data for the public Scream Planner pages (/schedule, /schedule/usual, /schedule/vote), used only outside production when you are signed out and add ?as=member or ?as=admin (or ?pv=...) to the address. Nothing here is real: people, games and numbers are examples. Shapes follow docs/specs/scream-planner.md section 14 but days are relative (dow 1 = Monday of this week, times are Central 'HH:MM') so the page always has a 'tonight'. scripts/planner/pub.ts turns them into the real shapes. Preview switches (?pv=a,b): live, weekoff, empty, closed, unverified, visitor, nobackstage, delayed (default sample already has one), snowman, jack.",
+  "tz": "America/Chicago",
+  "hero": { "frame": "bulbs", "doors": "jaws" },
+  "nextHero": { "frame": "neon", "doors": "coffins" },
+  "covers": {
+    "phasmophobia": { "source": "steam", "steamAppId": "739630" },
+    "lethal-company": { "source": "steam", "steamAppId": "1966720" },
+    "content-warning": { "source": "steam", "steamAppId": "2881650" },
+    "outlast": { "source": "steam", "steamAppId": "238320" },
+    "dead-by-daylight": { "source": "steam", "steamAppId": "381210" },
+    "the-bunker": { "source": "steam", "steamAppId": "1944430" },
+    "alien-isolation": { "source": "steam", "steamAppId": "214490" },
+    "re-village": { "source": "steam", "steamAppId": "1196590" },
+    "granny": { "source": "steam", "steamAppId": "1105000" },
+    "visage": { "source": "steam", "steamAppId": "1293160" }
+  },
+  "tonight": {
+    "startsInHours": 3,
+    "hours": 3,
+    "type": "platform",
+    "theme": { "label": "Granny day", "icon": "👵" },
+    "delay": { "hours": 1, "reason": "Boomer's internet is being difficult" },
+    "games": [
+      { "slug": "granny", "title": "Granny: Chapter Two", "kind": "modRequest", "byHandle": "mothmanmike" },
+      { "slug": "visage", "title": "Visage", "kind": "owner" }
+    ],
+    "crew": { "captain": "NightOwlKat", "chats": { "twitch": { "lead": "NightOwlKat", "deckhands": ["vex"] }, "ytLandscape": { "lead": "mothmanmike", "deckhands": [] }, "ytVertical": { "lead": null, "deckhands": [] }, "tiktok": { "lead": "vex", "deckhands": [] } } }
+  },
+  "week": [
+    { "dow": 1, "start": "20:00", "end": "23:00", "type": "platform", "theme": { "label": "Slasher Monday", "icon": "🔪" }, "games": [{ "slug": "dead-by-daylight", "title": "Dead by Daylight", "kind": "ballot", "votes": 41 }, { "slug": "re-village", "title": "Resident Evil Village", "kind": "owner" }], "crew": { "captain": "vex" } },
+    { "dow": 3, "start": "19:00", "end": "22:00", "type": "platform", "theme": { "label": "Co-op day", "icon": "🤝" }, "games": [{ "slug": "lethal-company", "title": "Lethal Company", "kind": "ballot", "votes": 58 }, { "slug": "content-warning", "title": "Content Warning", "kind": "ballot", "votes": 33 }], "crew": { "captain": "NightOwlKat" } },
+    { "dow": 4, "start": "20:00", "end": "23:00", "type": "platform", "theme": { "label": "VR night", "icon": "🥽" }, "games": [{ "slug": "the-bunker", "title": "Amnesia: The Bunker", "kind": "ballot", "votes": 27 }], "plannedGameCount": 2, "cancel": { "reason": "Boomer is under the weather. Back on Friday." } },
+    { "dow": 5, "start": "21:00", "end": "23:59", "type": "backstage", "audience": "fanClub", "theme": { "label": "Backstage VOD recording", "icon": "🎬" }, "games": [{ "slug": "outlast", "title": "Outlast", "kind": "owner" }] },
+    { "dow": 6, "start": "19:00", "end": "22:00", "type": "platform", "theme": { "label": "Scary Saturday", "icon": "🕯️" }, "games": [{ "slug": "alien-isolation", "title": "Alien: Isolation", "kind": "ballot", "votes": 36 }, { "slug": "phasmophobia", "title": "Phasmophobia", "kind": "modRequest", "byHandle": "vex" }], "crew": { "captain": "mothmanmike" } },
+    { "dow": 7, "start": "18:00", "end": "21:00", "type": "platform", "theme": { "label": "Sunday chill", "icon": "🛋️" }, "games": [{ "slug": "phasmophobia", "title": "Phasmophobia", "kind": "owner" }] }
+  ],
+  "next": [
+    { "dow": 1, "start": "20:00", "end": "23:00", "type": "platform", "theme": { "label": "Slasher Monday", "icon": "🔪" }, "games": [{ "slug": "dead-by-daylight", "title": "Dead by Daylight", "kind": "owner" }] },
+    { "dow": 3, "start": "19:00", "end": "22:00", "type": "platform", "theme": { "label": "Co-op day", "icon": "🤝" }, "games": [{ "slug": "lethal-company", "title": "Lethal Company", "kind": "ballot", "votes": 61 }, { "slug": "content-warning", "title": "Content Warning", "kind": "ballot", "votes": 40 }] },
+    { "dow": 5, "start": "21:00", "end": "23:59", "type": "backstage", "audience": "fanClub", "theme": { "label": "Backstage VOD recording", "icon": "🎬" }, "games": [] },
+    { "dow": 6, "start": "19:00", "end": "22:00", "type": "platform", "theme": { "label": "Scary Saturday", "icon": "🕯️" }, "games": [{ "slug": "alien-isolation", "title": "Alien: Isolation", "kind": "ballot", "votes": 36 }] }
+  ],
+  "usual": {
+    "patterns": [
+      { "id": "p1", "label": "Slasher Monday", "icon": "🔪", "dow": 1, "start": "20:00", "end": "23:00", "type": "platform", "membersOnly": false, "platforms": ["twitch", "youtube", "tiktok"], "gameCount": 2 },
+      { "id": "p2", "label": "Co-op day", "icon": "🤝", "dow": 3, "start": "19:00", "end": "22:00", "type": "platform", "membersOnly": false, "platforms": ["twitch", "youtube", "tiktok"], "gameCount": 2 },
+      { "id": "p3", "label": "VR night", "icon": "🥽", "dow": 4, "start": "20:00", "end": "23:00", "type": "platform", "membersOnly": false, "platforms": ["twitch", "youtube"], "gameCount": 2 },
+      { "id": "p4", "label": "Backstage VOD recording", "icon": "🎬", "dow": 5, "start": "21:00", "end": "23:59", "type": "backstage", "membersOnly": true, "platforms": [], "gameCount": 1 },
+      { "id": "p5", "label": "Scary Saturday", "icon": "🕯️", "dow": 6, "start": "19:00", "end": "22:00", "type": "platform", "membersOnly": false, "platforms": ["twitch", "youtube", "tiktok"], "gameCount": 2 },
+      { "id": "p6", "label": "Sunday chill", "icon": "🛋️", "dow": 7, "start": "18:00", "end": "21:00", "type": "platform", "membersOnly": false, "platforms": ["twitch", "youtube"], "gameCount": 1 }
+    ],
+    "exceptions": [
+      { "id": "e1", "kind": "dayOff", "inDays": 18, "label": "Travelling", "patternIds": [] },
+      { "id": "e2", "kind": "weekOff", "inDays": 40, "spanDays": 6, "label": "Thanksgiving", "patternIds": [] }
+    ]
+  },
+  "ballot": {
+    "closesInHours": 30,
+    "votesPerMember": 3,
+    "games": [
+      { "slug": "lethal-company", "title": "Lethal Company", "votes": 61, "wanted": 120, "seededFrom": "mostWanted", "addedBy": null, "tags": ["co-op"] },
+      { "slug": "dead-by-daylight", "title": "Dead by Daylight", "votes": 48, "wanted": 90, "seededFrom": "owner", "addedBy": null, "tags": ["multiplayer"] },
+      { "slug": "content-warning", "title": "Content Warning", "votes": 40, "wanted": 77, "seededFrom": "mostWanted", "addedBy": null, "tags": ["co-op"] },
+      { "slug": "alien-isolation", "title": "Alien: Isolation", "votes": 36, "wanted": 51, "seededFrom": "member", "addedBy": "mothmanmike", "tags": ["stealth"] },
+      { "slug": "the-bunker", "title": "Amnesia: The Bunker", "votes": 27, "wanted": 64, "seededFrom": "mostWanted", "addedBy": null, "tags": ["vr"] },
+      { "slug": "outlast", "title": "Outlast", "votes": 19, "wanted": 30, "seededFrom": "owner", "addedBy": null, "tags": [] },
+      { "slug": "re-village", "title": "Resident Evil Village", "votes": 12, "wanted": 40, "seededFrom": "member", "addedBy": "vex", "tags": [] },
+      { "slug": "visage", "title": "Visage", "votes": 7, "wanted": 22, "seededFrom": "member", "addedBy": "NightOwlKat", "tags": ["psychological"] }
+    ],
+    "mine": { "votes": ["lethal-company", "alien-isolation"], "adds": [], "addsLeft": 2 }
+  },
+  "vault": [
+    { "slug": "phasmophobia", "title": "Phasmophobia", "status": "playing", "tags": ["co-op"] },
+    { "slug": "granny", "title": "Granny", "status": "wishlist", "tags": [] },
+    { "slug": "lethal-company", "title": "Lethal Company", "status": "playing", "tags": ["co-op"] },
+    { "slug": "outlast", "title": "Outlast", "status": "finished", "tags": [] },
+    { "slug": "the-bunker", "title": "Amnesia: The Bunker", "status": "wishlist", "tags": ["vr"] },
+    { "slug": "visage", "title": "Visage", "status": "wishlist", "tags": [] },
+    { "slug": "re-village", "title": "Resident Evil Village", "status": "finished", "tags": [] },
+    { "slug": "dead-by-daylight", "title": "Dead by Daylight", "status": "playing", "tags": [] }
+  ]
+}

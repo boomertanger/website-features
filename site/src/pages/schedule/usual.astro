@@ -1,0 +1,18 @@
+---
+// /schedule/usual: Boomer's usual week (docs/specs/scream-planner.md section 2), from public/usualWeek.
+import PlannerLayout from "../../layouts/PlannerLayout.astro";
+import "../../styles/planner-public.css";
+---
+<PlannerLayout title="Boomer's usual week" description="Boomer's usual streaming week: the routine each new week starts from, and the days off coming up." section="usual">
+  <div class="bt-zone pp-page" data-pp-usual-page aria-busy="true">
+    <div>
+      <h1 class="bt-title">Boomer's usual week</h1>
+      <p class="bt-subtitle">The routine. Each new week starts from this, then Boomer changes what's different. Times are Central; your own time is shown on the <a href="/schedule">schedule</a>.</p>
+    </div>
+    <div data-pp-body aria-live="polite"><span class="bt-skeleton pp-skel-card"></span></div>
+  </div>
+</PlannerLayout>
+
+<script>
+  import "../../scripts/planner/usual";
+</script>

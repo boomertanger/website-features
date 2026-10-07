@@ -1,0 +1,18 @@
+---
+// /schedule/vote: next week's ballot (docs/specs/scream-planner.md section 2). Everyone sees it; members vote.
+import PlannerLayout from "../../layouts/PlannerLayout.astro";
+import "../../styles/planner-public.css";
+---
+<PlannerLayout title="Vote on next week's games" description="Vote on the games Boomer plays next week. Three votes a week for members, and you can move them until the ballot closes." section="vote">
+  <div class="bt-zone pp-page" data-pp-vote aria-busy="true">
+    <div>
+      <h1 class="bt-title">Vote for next week</h1>
+      <p class="bt-subtitle">Pick up to three games you want to watch. The most-voted games go to the front of Boomer's list.</p>
+    </div>
+    <div data-pp-body aria-live="polite"><span class="bt-skeleton pp-skel-card"></span></div>
+  </div>
+</PlannerLayout>
+
+<script>
+  import "../../scripts/planner/vote";
+</script>
