@@ -484,14 +484,30 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   focus a light sweeps across TANGER once (a 900ms background-position transition, not a
   loop; none under reduced motion). Header, footer top, same markup.
 - **Header:** `.bt-site-header [--overlay]` (overlay = transparent, over the home hero) >
-  `.bt-logo` (the R4 lockup), `.bt-nav` (links with
+  `.bt-logo` (the R4 lockup, also Home), `.bt-nav` (the `.bt-navgroup` menus below and a plain link with
   `aria-current="page"`), `.bt-spacer`, `.bt-beacon-slot`, `.bt-account.bt-account--wide`
   and `.bt-account.bt-account--compact` (phones). Account: `.bt-account-btn` +
   `.bt-avatar-sm` (a `button` opening `.bt-account-menu`); green `.bt-admin-link` for
   admins; `.bt-skeleton.bt-account-skel` while auth loads; a Finish signup button
   mid-signup (see Accounts below). ≤ 1024px: mascot-only logo, no
-  beacon subtitle, nav scrolls if tight. ≤ 640px: nav and beacon hide (the tab bar takes
+  beacon subtitle, tighter nav. ≤ 640px: nav and beacon hide (the tab bar takes
   over); the wordmark comes back at 15px with a 30px mascot.
+- **Header nav groups (`docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html`, UI Kit
+  "Header nav groups"):** `span.bt-navgroup[data-navgroup]` > trigger `.bt-navgroup-btn` (`a` that
+  `shared/ui/navgroup.js` upgrades to a `button` with `aria-expanded` + `aria-controls`; a link to the group's
+  first page without JavaScript; `.is-current` = purple underline for the section you are in; a
+  `.bt-navgroup-dot` with `.bt-when-public` is Watch's red live dot) + `.bt-navgroup-panel[hidden]` >
+  `.bt-navgroup-links` > `a.bt-navgroup-link` (`.bt-navgroup-ic` icon tile, `.bt-navgroup-name`,
+  `.bt-navgroup-blurb`; `aria-current="page"`; `--live` pulses the icon) + one `.bt-navgroup-feature` tile.
+  The panel is placed against the nearest positioned ancestor (the header); the script sets `--bt-ng-left`.
+  ≤ 1024px (container): the panel fits the container and the tile moves under the cards; ≤ 640px the cards
+  go single column (the phone header has no nav; the More sheet takes over). Reduced motion: no slide, glow,
+  icon lift or pulse. **Feature tile:** `.bt-navgroup-feature` (`.is-watch` goes red under `data-live="public"`;
+  `.is-live` / `.is-off` force a state for demos) holds a `.bt-label`, a `strong` title, `p`, `.bt-btn.bt-btn--sm`;
+  extras `.bt-navgroup-count` (countdown boxes), `.bt-navgroup-score`, `.bt-navgroup-medal`,
+  `.bt-navgroup-mascot`; `.bt-navgroup-notlive` / `.bt-navgroup-livenow` show only offline / live. States:
+  loading (`.bt-skeleton` shimmer, `.bt-navgroup-skel`), live, offline, empty (call to action). The tile markup
+  comes from `navgroup.js` builders so the site and the kit draw the same thing.
 - **Accounts (`docs/specs/accounts.md`, mockup `docs/design/mockups/accounts.html`, S2 +
   A2):** state comes from `<body data-auth-state>` = `loading | signedOut | needsSignup |
   unverified | verified` (site/src/lib/auth.ts) with helpers `.bt-when-auth-loading`,
@@ -906,6 +922,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `lightbox.js` | `thumbHtml({ src, full, alt })`, `initLightboxTriggers(scope)`, `openLightbox({ src, alt })`, `cloudinaryUrl(url, transform)` |
 | `hero-carousel.js` | `initHeroCarousel(hero, { duration = 7000, stateRoot = document.body })` → `{ go, destroy }`. Stories bars, 7 s per slide, pause on hover / focus / hidden tab, swipe, tap zones on narrow screens (never on links or buttons), arrow keys, no autoplay under reduced motion, live-first pinning of the `data-stream` slide while `data-live` isn't `off`, drops slides outside `data-starts`/`data-ends` or for another `data-audience`. |
 | `pill-switch.js` | `initPillSwitch(group, { target, attr, onChange })` → `{ set }`. Marks the chosen `button[data-value]` `.is-on` / `aria-pressed` and writes `data-{attr}` on the target. |
+| `navgroup.js` | `initNavGroups(root, { onOpen(name, panel, { first }), onClose(name, panel) })` → `{ open, close, destroy }`: the header menus (`.bt-navgroup`, §5): upgrades each `[data-navgroup-trigger]` link to a disclosure button, hover opens after ~140 ms (mouse), click toggles, one open at a time, outside click, scroll, resize (width) or Escape closes (Escape returns focus to the trigger). Tile builders (inner html): `featureLoadingHtml(label)`, `watchFeatureHtml({ title, whenHtml, startsAt })`, `playFeatureHtml({ title, href, best, bestNote, text, cta })`, `communityFeatureHtml({ month, winners, mascotHtml })`; `initWatchTile(tile, { title, startsAt, url, name })` → `{ start, stop }` (ticking countdown, Add to calendar downloads an `.ics`), `streamIcs(...)`. |
 | `cover.js` | `coverHtml(cover, opts)`, `coverUrl(cover)`, `IGDB_COVER`, `STEAM_COVER`, `mascotFallback()`, `initCoverFallbacks()` |
 | `tilt.js` · `count-up.js` · `flip.js` | `initTilt()` · `initCountUp(root)` · `flipSwap(container, html)` |
 | `dial.js` | `dialHtml(score, { label, caption, size })`, `initDials(root)` |

@@ -43,6 +43,7 @@ import { stampHtml } from "../ui/stamp.js";
 import { dayPickerHtml, initDayPicker, DAYS } from "../ui/day-picker.js";
 import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../ui/chat-tile.js";
 import { initJourney } from "../ui/how-it-works.js";
+import { initNavGroups, featureLoadingHtml, watchFeatureHtml, playFeatureHtml, communityFeatureHtml, initWatchTile } from "../ui/navgroup.js";
 
 const KIT_VERSION = "dev";
 
@@ -811,7 +812,7 @@ ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
 ${roadKitHtml()}
-${modMachinaKitHtml()}${storyPiecesKitHtml()}`;
+${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -998,6 +999,7 @@ function init() {
   initRoadKit(mount);
   initModMachinaKit(mount);
   initStoryPiecesKit(mount);
+  initNavgroupKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
@@ -1607,6 +1609,93 @@ function initStoryPiecesKit(mount) {
   initChatTiles(sec, { onChange: (chat, value) => { const o = sec.querySelector("[data-kit-tiles-out]"); if (o) o.textContent = `${chat}: ${PREF_OPTIONS.find((p) => p.value === value)?.label}`; } });
   sec.querySelector("[data-kit-stamp-replay]")?.addEventListener("click", () => {
     sec.querySelectorAll(".bt-stamp").forEach((s) => { s.style.animation = "none"; void s.offsetWidth; s.style.animation = ""; });
+  });
+}
+
+// ---------- Header nav groups (design-system.md §5 "Header nav groups"; shared/ui/navgroup.js; docs/design/mockups/header-nav.html) ----------
+const NG_CHEV = `<svg class="bt-navgroup-chev" viewBox="0 0 12 12" aria-hidden="true"><path d="M2.5 4.5 6 8l3.5-3.5" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const NG_PAGES = {
+  watch: [["live", "live", "Live", "Watch the stream right now, on any platform."], ["cal", "schedule", "Schedule", "When I'm on next, in your own time zone."], ["film", "streams", "Streams", "Past streams, highlights and clips."], ["game", "games", "Games", "What I'm playing, and what's up next."]],
+  play: [["joystick", "arcade", "Arcade", "Quick horror games with leaderboards."], ["shift", "factory", "Night Shift", "Missions between streams. Keep your streak alive."], ["trophy", "trophies", "Trophy Room", "Every badge and trophy you've earned."]],
+  community: [["club", "club", "Club", "Fan Club is free. Sub Club adds the extras."], ["eye", "crew", "Crew", "Meet the mods who keep the chats fun, or join them."], ["target", "goals", "Goals", "What we're working toward together."]],
+};
+const NG_LABEL = { watch: "Watch", play: "Play", community: "Community" };
+const ngCard = ([icon, id, name, blurb], { cls = "", current = false, liveOn = false } = {}) => `<a class="bt-navgroup-link${id === "live" ? " bt-navgroup-link--live" : ""}${cls ? " " + cls : ""}" href="#kit-navgroup"${current ? ' aria-current="page"' : ""}><span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-${icon}"/></svg></span><span class="bt-navgroup-name">${name}${id === "live" ? `<span class="bt-badge bt-badge--red${liveOn ? "" : " bt-when-public"}">Live</span>` : ""}</span><span class="bt-navgroup-blurb">${blurb}</span></a>`;
+const ngBtn = (g, { cls = "", expanded = false, dot = false, dotOn = false, trigger = false } = {}) => `<${trigger ? 'a href="#kit-navgroup" data-navgroup-trigger' : 'button type="button"'} class="bt-navgroup-btn${cls ? " " + cls : ""}"${trigger ? "" : ` aria-expanded="${expanded}"`}>${NG_LABEL[g]}${dot ? `<span class="bt-navgroup-dot${dotOn ? "" : " bt-when-public"}" aria-hidden="true"></span>` : ""}${NG_CHEV}</${trigger ? "a" : "button"}>`;
+const ngWhen = () => `<time datetime="2026-10-08T19:00:00-05:00">Thursday, 7 PM</time>, your time.`;
+const ngFuture = () => new Date(Date.now() + ((2 * 24 + 4) * 60 + 12) * 60000).toISOString();
+const NG_TILE = {
+  loading: (label) => featureLoadingHtml(label),
+  watchOff: () => watchFeatureHtml({ title: "Granny Gauntlet, night 12", whenHtml: ngWhen(), startsAt: ngFuture() }),
+  play: () => playFeatureHtml({ title: "Tap the Splat", href: "#kit-navgroup", best: "0:36.94", bestNote: "Your best this week." }),
+  community: () => communityFeatureHtml({ month: "September 2026", winners: [{ role: "Top Gear", handle: "hollowhannah" }, { role: "Fan Favourite", handle: "mothmanmike" }] }),
+};
+function navgroupKitHtml() {
+  const staticPanel = (g, tile) => `<div class="bt-navgroup-panel"><div class="bt-navgroup-links">${NG_PAGES[g].map((p) => ngCard(p)).join("")}</div><div class="bt-navgroup-feature">${tile}</div></div>`;
+  const stage = (inner, attrs = "") => `<div class="kit-ng-stage"${attrs}><header class="bt-site-header"><span class="bt-nav" role="presentation">${inner}</span></header></div>`;
+  const live = (g) => `<span class="bt-navgroup" data-navgroup="${g}">${ngBtn(g, { trigger: true, cls: g === "watch" ? "is-current" : "", dot: g === "watch" })}<div class="bt-navgroup-panel" id="kit-ng-${g}" hidden><div class="bt-navgroup-links">${NG_PAGES[g].map((p, i) => ngCard(p, { current: i === 1 && g === "watch" })).join("")}</div><div class="bt-navgroup-feature${g === "watch" ? " is-watch" : ""}" data-kit-ng-tile="${g}">${NG_TILE.loading(g === "watch" ? "Next stream" : g === "play" ? "Today in the Arcade" : "The crew")}</div></div></span>`;
+  const tile = (cap, inner, { feature = "" } = {}) => `<figure><div class="bt-navgroup-feature${feature ? " " + feature : ""}">${inner}</div><figcaption>${cap}</figcaption></figure>`;
+  return `
+  <section class="kit-section" id="kit-navgroup">
+    <h2 class="kit-h">Header nav groups</h2>
+    <p class="kit-p">The site header's Watch, Play and Community menus (<span class="kit-code">docs/specs/header-nav.md</span>, mockup <span class="kit-code">docs/design/mockups/header-nav.html</span>). <span class="kit-code">.bt-navgroup</span> > trigger <span class="kit-code">.bt-navgroup-btn</span> + panel <span class="kit-code">.bt-navgroup-panel</span> of cards <span class="kit-code">.bt-navgroup-link</span> (<span class="kit-code">-ic</span>, <span class="kit-code">-name</span>, <span class="kit-code">-blurb</span>) and one feature tile <span class="kit-code">.bt-navgroup-feature</span>. <span class="kit-code">shared/ui/navgroup.js</span> opens on hover (about 140 ms) or click, one at a time; outside click, scroll or Escape closes (Escape returns focus to the trigger). A disclosure (button + aria-expanded + aria-controls), not an ARIA menu. Without the script the trigger is a link to the group's first page.</p>
+
+    <p class="kit-sub">Trigger states</p>
+    <div class="kit-ng-triggers">
+      <figure><span class="bt-navgroup">${ngBtn("play")}</span><figcaption>Closed</figcaption></figure>
+      <figure><span class="bt-navgroup">${ngBtn("play", { cls: "is-hover" })}</span><figcaption>Hover</figcaption></figure>
+      <figure><span class="bt-navgroup">${ngBtn("play", { expanded: true })}</span><figcaption>Open</figcaption></figure>
+      <figure><span class="bt-navgroup">${ngBtn("watch", { cls: "is-current" })}</span><figcaption>Current section (purple underline)</figcaption></figure>
+      <figure><span class="bt-navgroup">${ngBtn("watch", { dot: true, dotOn: true })}</span><figcaption>Live dot (Watch while live)</figcaption></figure>
+    </div>
+
+    <p class="kit-sub">Page cards: default, hover (glow and icon lift), current page, and Live (badge and icon pulse while live)</p>
+    <div class="kit-ng-cards">
+      ${ngCard(NG_PAGES.watch[2])}${ngCard(NG_PAGES.watch[3], { cls: "is-hover" })}${ngCard(NG_PAGES.watch[1], { current: true })}${ngCard(NG_PAGES.watch[0], { liveOn: true })}
+    </div>
+
+    <p class="kit-sub">Live demo: hover or click Watch, Play and Community (Tab, Enter and Escape work too). The tiles shimmer, then fill the first time a panel opens, as on the site.</p>
+    ${stage(`${live("watch")}${live("play")}${live("community")}<a href="#kit-navgroup">Shop</a>`, " data-kit-ng-demo")}
+
+    <p class="kit-sub">Open panel at tablet width (container 700px, so 1024px and below): it fits the container and the tile moves under the cards</p>
+    <div class="kit-ng-narrow">${stage(`<span class="bt-navgroup">${ngBtn("play", { expanded: true })}${staticPanel("play", NG_TILE.play())}</span>`)}</div>
+
+    <p class="kit-sub">Feature tiles: loading, live, offline, start passed, and the Play and Community states</p>
+    <div class="kit-ng-tiles">
+      ${tile("Loading (shimmer)", NG_TILE.loading("Today in the Arcade"))}
+      ${tile("Watch: live now (red)", watchFeatureHtml({ title: "Granny Gauntlet, night 12", whenHtml: ngWhen(), startsAt: ngFuture() }), { feature: "is-watch is-live" })}
+      ${tile("Watch: offline (countdown and calendar)", NG_TILE.watchOff(), { feature: "is-watch is-off" })}
+      ${tile("Watch: start has passed", watchFeatureHtml({ title: "Granny Gauntlet, night 12", whenHtml: ngWhen(), startsAt: "2026-10-01T19:00:00-07:00" }), { feature: "is-watch is-off" })}
+      ${tile("Play: with the member's best", NG_TILE.play())}
+      ${tile("Play: call to action (signed out or no score)", playFeatureHtml({ title: "Tap the Splat", href: "#kit-navgroup" }))}
+      ${tile("Community: Mod of the Month", NG_TILE.community())}
+      ${tile("Community: empty (call to action, mascot)", communityFeatureHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` }))}
+    </div>
+  </section>`;
+}
+function initNavgroupKit(mount) {
+  const sec = mount.querySelector("#kit-navgroup");
+  if (!sec) return;
+  sec.querySelectorAll(".kit-ng-tiles .bt-navgroup-feature").forEach((t) => {
+    const c = t.querySelector("[data-ng-count]");
+    if (c) initWatchTile(t, { title: "Granny Gauntlet, night 12", startsAt: c.dataset.ngCount, url: location.href }).start();
+  });
+  const demo = sec.querySelector("[data-kit-ng-demo]");
+  if (!demo) return;
+  let watch = null;
+  initNavGroups(demo, {
+    onOpen(name, panel, { first }) {
+      const t = panel.querySelector("[data-kit-ng-tile]");
+      if (name === "watch") {
+        if (watch) watch.start();
+        else if (first) setTimeout(() => {
+          t.innerHTML = NG_TILE.watchOff();
+          watch = initWatchTile(t, { title: "Granny Gauntlet, night 12", startsAt: t.querySelector("[data-ng-count]").dataset.ngCount, url: location.href });
+          if (!panel.hidden) watch.start();
+        }, 900);
+      } else if (first) setTimeout(() => { t.innerHTML = name === "play" ? NG_TILE.play() : NG_TILE.community(); }, 900);
+    },
+    onClose(name) { if (name === "watch" && watch) watch.stop(); },
   });
 }
 

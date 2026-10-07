@@ -98,3 +98,18 @@
 #bt-ui-kit .kit-option { display: flex; flex-direction: column; gap: var(--bt-space-2); }
 #bt-ui-kit .kit-option .bt-card { gap: var(--bt-space-3); }
 #bt-ui-kit .kit-narrow { max-width: 320px; }
+
+/* Header nav groups (.bt-navgroup): a stage the demo header and its panel sit in */
+#bt-ui-kit .kit-ng-stage { position: relative; min-height: 400px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); }
+#bt-ui-kit .kit-ng-stage .bt-site-header { border-radius: var(--bt-radius-lg) var(--bt-radius-lg) 0 0; }
+#bt-ui-kit .kit-ng-narrow { container: bt / inline-size; width: 700px; max-width: 100%; }
+#bt-ui-kit .kit-ng-narrow .kit-ng-stage { min-height: 560px; }
+#bt-ui-kit .kit-ng-triggers { display: flex; flex-wrap: wrap; gap: var(--bt-space-6); align-items: flex-start; padding: var(--bt-space-4); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); }
+#bt-ui-kit .kit-ng-triggers figure { margin: 0; display: grid; gap: var(--bt-space-3); justify-items: start; }
+#bt-ui-kit .kit-ng-triggers figcaption { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+#bt-ui-kit .kit-ng-triggers .bt-navgroup-btn.is-current::after { bottom: -6px; }
+#bt-ui-kit .kit-ng-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: var(--bt-space-3); }
+#bt-ui-kit .kit-ng-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(236px, 1fr)); gap: var(--bt-space-4); }
+#bt-ui-kit .kit-ng-tiles figure { margin: 0; display: grid; gap: var(--bt-space-2); align-content: start; }
+#bt-ui-kit .kit-ng-tiles figcaption { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+#bt-ui-kit .kit-ng-sheet { max-width: 390px; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); }
