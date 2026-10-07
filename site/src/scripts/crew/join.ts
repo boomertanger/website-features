@@ -1,135 +1,264 @@
-// /crew/join (docs/specs/mod-machina.md §10). Visitors get a Join free / Log in card; signed-in members get the live
-// "Can I apply?" checklist (crewMe().apply.items) and, when they can apply, the application form -> crewApply.
-// Afterwards (and whenever an application is open) they see their band and the expiry date. Not-now applicants see
-// the kind note and the reapply date; crew see "You're on the crew". The server checks everything again; this
-// only decides what to show. Sample data under ?as= (non-production).
+// /crew/join: Join the crew, a story page (docs/specs/mod-machina.md §10). Fills the live parts of the page from
+// crewMe(): the four-step "Can I apply?" journey (apply.items) and its verdict, the chat tiles, day tiles and
+// device chips, the About you answers, the Crew Code agreement and Send (-> crewApply). Visitors see the same story
+// with "Join free to apply" in place of the form; members who can't apply yet see what's left and no working form;
+// applicants see their stamp, band and expiry; not-now applicants the kind note and the reapply date; crew a short
+// "You're already on the crew". The server checks everything again; this only decides what to show. Sample data
+// under ?as= (non-production). onAccess re-runs on every member change, so every render replaces its host's
+// contents; listeners on the persistent form are added once.
 import { onAccess } from "./layout";
 import { esc, loadMe, errText, dateLabel, isPreview, reasonText, q } from "./public";
-import { CHATS, CHAT_NAME, crewCall, type Chat, type Me, type Pref, type Prefs } from "./api";
-import { prefHtml, initPrefs, initRadioGroup } from "../../../../shared/ui/pref.js";
+import { CHATS, CHAT_NAME, crewCall, type Chat, type Me, type Pref, type Prefs, type ApplyItem } from "./api";
 import { platformIconHtml } from "../../../../shared/ui/crew.js";
+import { initHowItWorks, initJourney } from "../../../../shared/ui/how-it-works.js";
+import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../../../../shared/ui/chat-tile.js";
+import { dayPickerHtml, initDayPicker, dayPickerValue } from "../../../../shared/ui/day-picker.js";
+import { initRadioGroup } from "../../../../shared/ui/pref.js";
+import { stampHtml } from "../../../../shared/ui/stamp.js";
 import type { AuthState } from "../../lib/auth";
 
-const root = document.querySelector<HTMLElement>("[data-cp-join]")!;
-const main = root.querySelector<HTMLElement>("[data-cp-main]")!;
-const check = root.querySelector<HTMLElement>("[data-cp-check]")!;
-const DAYS: [string, string][] = [["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"], ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"]];
+type Mode = "visitor" | "signup" | "blocked" | "form" | "sent" | "applied" | "notNow" | "crew";
+const LITE: Mode[] = ["applied", "notNow", "crew"];
+
+const root = document.querySelector<HTMLElement>("[data-cj-join]")!;
+const $ = <T extends HTMLElement = HTMLElement>(s: string) => root.querySelector<T>(s)!;
+const form = $<HTMLFormElement>("[data-cj-form]");
+const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+const DAYS = [["mon", "Mon"], ["tue", "Tue"], ["wed", "Wed"], ["thu", "Thu"], ["fri", "Fri"], ["sat", "Sat"], ["sun", "Sun"]].map(([key, label]) => ({ key, label }));
+const TIMES = ["Evenings, 6 to 10 pm", "Late nights, 10 pm to 2 am", "Afternoons", "It varies"];
 const DEVICES: [string, string][] = [["desktop", "Computer"], ["phone", "Phone"], ["both", "Both"]];
 const NEEDED: Chat[] = ["ytLandscape", "ytVertical"];
+const NOTE: Record<Chat, string> = { twitch: "The main stream chat", ytLandscape: "Needs a lead most nights", ytVertical: "Phone chat, often empty", tiktok: "Fast and friendly" };
+const MINI: Record<Chat, { user?: string; text: string; tone?: string; quiet?: boolean }[]> = {
+  twitch: [{ user: "ghostbyte", text: "LMAO the door", tone: "blue" }, { user: "kait", text: "he's going to get caught", tone: "gold" }, { user: "vex", text: "welcome in nightjar 🎃", tone: "lime" }],
+  ytLandscape: [{ user: "Rachel M", text: "just got here", tone: "gold" }, { user: "Tom", text: "sound design is unreal", tone: "blue" }, { text: "…quiet for 4 minutes", quiet: true }],
+  ytVertical: [{ user: "lil_wraith", text: "vertical gang where u at", tone: "lime" }, { text: "…nobody's welcomed them yet", quiet: true }],
+  tiktok: [{ user: "dani", text: "🔥🔥🔥" }, { user: "spookymama", text: "hi from my lunch break", tone: "teal" }, { user: "noah.k", text: "first time here", tone: "blue" }],
+};
+// What a visitor's look at the form shows (never sent anywhere).
+const SAMPLE: Prefs = { twitch: "favourite", ytLandscape: "happy", ytVertical: "favourite", tiktok: "no" };
+
+const ITEMS = [
+  { id: "age", ic: "🎂", t: "18 or older", d: "Checked from your birthday", yes: "Yes" },
+  { id: "account", ic: "📅", t: "Member 14 days", d: "How long you've had an account", yes: "Yes" },
+  { id: "platform", ic: "🔗", t: "A linked account", d: "Twitch, YouTube or TikTok", yes: "Linked" },
+  { id: "checkins", ic: "📺", t: "3 stream check-ins", d: "In the last 30 days", yes: "Done" },
+];
+const DEV_HINT: Record<string, string> = { desktop: "Great for keeping an eye on several chats at once.", both: "The best of both: phone for the YouTube vertical chat, computer for the rest.", phone: "Perfect: the YouTube vertical chat is a phone chat." };
+const WAIVED = "Waived by Boomer";
+
 let me: AuthState;
+let seq = 0;
+let prefs = {} as Record<Chat, Pref | "">;
+let dev: { get(): string | null } = { get: () => "desktop" };
+let sending = false;
+
+// ---- Small pieces ----
+const journeyHtml = (items: ApplyItem[] | null) => `<ol class="ai-jr ai-jr--4 cj-req" data-journey>${ITEMS.map((s, i) => {
+  const it = items?.find((x) => x.id === s.id);
+  const waived = !!it && it.detail === WAIVED;
+  const cls = !it ? "" : waived ? "is-waived" : it.ok ? "is-met" : "is-wait";
+  const v = !it ? "" : waived ? WAIVED : it.ok ? (it.detail || s.yes) : (it.detail || "Not yet");
+  return `<li tabindex="0"${cls ? ` class="${cls}"` : ""}><span class="ai-jr-num">${cls === "is-met" || cls === "is-waived" ? "✓" : i + 1}</span><span class="ai-jr-ic" aria-hidden="true">${s.ic}</span><b>${s.t}</b><span class="ai-jr-t">${s.d}</span>${v ? `<span class="ai-jr-v">${esc(v)}</span>` : ""}${cls ? `<span class="bt-sr-only">: ${cls === "is-wait" ? "not yet" : "done"}</span>` : ""}</li>`;
+}).join("")}</ol>`;
+
+const signInActs = `<a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to apply for the crew">Join free to apply</a><a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>`;
+const signUpAct = `<button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>`;
+const how = `<a class="bt-btn bt-btn--secondary" href="/crew/how-it-works">How the crew works</a>`;
+
+function verdict(mode: Mode, m: Me | null) {
+  const a = m?.apply;
+  if (mode === "visitor") return `<div class="cj-verdict is-wait"><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Free account needed</span><span>Join free and we'll check these four for you in a moment.</span><span class="ai-acts">${signInActs}</span></div>`;
+  if (mode === "signup") return `<div class="cj-verdict is-wait"><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Almost there</span><span>Your account needs a few more details before we can check these.</span><span class="ai-acts">${signUpAct}</span></div>`;
+  if (mode === "blocked") {
+    const t = a?.reapplyAt ? `You can apply again on ${dateLabel(a.reapplyAt)}.` : reasonText(a?.reason) || "The steps above show what's left. The form opens as soon as you're ready.";
+    return `<div class="cj-verdict is-wait"><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Not quite yet</span><span>${esc(t)}</span><span class="ai-acts"><a class="bt-btn bt-btn--secondary" href="/crew">Meet the crew</a></span></div>`;
+  }
+  if (mode === "form") return `<div class="cj-verdict"><span class="bt-badge bt-badge--lime"><span class="bt-badge-dot"></span>You can apply</span><span>All four are green. Pick your chats below.</span></div>`;
+  return "";
+}
+
+// ---- The form's parts (02 to 05) ----
+function buildParts(locked: boolean) {
+  prefs = Object.fromEntries(CHATS.map((c) => [c, locked ? SAMPLE[c] : ""])) as Record<Chat, Pref | "">;
+  $("[data-cj-chats]").innerHTML = `<div class="cj-chats">${CHATS.map((c) => chatTileHtml({
+    chat: c, name: CHAT_NAME[c], iconHtml: platformIconHtml(c), value: prefs[c], needed: NEEDED.includes(c), boost: NEEDED.includes(c) ? 1.5 : 0,
+    note: NOTE[c], previewHtml: chatPreviewHtml(MINI[c]),
+  })).join("")}</div>`;
+  initChatTiles($("[data-cj-chats]"), { onChange: (chat, v) => { prefs[chat as Chat] = v as Pref; } });
+
+  $("[data-cj-when]").innerHTML = `${dayPickerHtml({ days: DAYS, selected: locked ? ["thu", "fri", "sat"] : [], label: "Days you're usually around" })}
+    <div class="cj-when">
+      <div class="bt-field"><span class="bt-label" id="cj-l-time">Usual time (Central)</span><div class="cj-opt" role="group" aria-labelledby="cj-l-time">${TIMES.map((t, i) => `<button type="button" class="bt-chip bt-chip--small" data-time="${esc(t)}" aria-pressed="${locked && i === 0}">${t}</button>`).join("")}</div>
+        <input class="bt-input" id="cj-note" maxlength="200" placeholder="Anything else about your times? (optional)" aria-label="Anything else about your times"></div>
+      <div class="bt-field"><span class="bt-label" id="cj-l-dev">How you watch</span>
+        <span class="bt-pref-seg cj-device" role="radiogroup" aria-labelledby="cj-l-dev" data-device>${DEVICES.map(([k, l], i) => `<button type="button" role="radio" aria-checked="${i === (locked ? 1 : 0)}" tabindex="${i === (locked ? 1 : 0) ? 0 : -1}" data-value="${k}">${l}</button>`).join("")}</span>
+        <span class="bt-hint" data-cj-devhint>${locked ? DEV_HINT.phone : DEV_HINT.desktop}</span></div>
+    </div>`;
+  initDayPicker($("[data-cj-when]"));
+  const hint = $("[data-cj-devhint]");
+  dev = initRadioGroup($("[data-device]"), { onChange: (v: string) => { hint.textContent = DEV_HINT[v] || DEV_HINT.desktop; } });
+  $("[data-cj-when]").querySelectorAll<HTMLButtonElement>("[data-time]").forEach((b) => b.addEventListener("click", () => {
+    const on = b.getAttribute("aria-pressed") !== "true";
+    $("[data-cj-when]").querySelectorAll("[data-time]").forEach((x) => x.setAttribute("aria-pressed", "false"));
+    b.setAttribute("aria-pressed", String(on));
+  }));
+
+  $("[data-cj-you]").innerHTML = `<div class="cj-about">
+    <div class="bt-field"><label class="bt-label" for="cj-why">Why do you want to help?</label><textarea class="bt-textarea" id="cj-why" rows="5" maxlength="1000" aria-describedby="cj-why-h"></textarea><span class="bt-hint" id="cj-why-h">At least 20 characters.</span></div>
+    <div class="bt-field"><label class="bt-label" for="cj-exp">Any mod experience? (optional)</label><textarea class="bt-textarea" id="cj-exp" rows="5" maxlength="1000" placeholder="Other channels, Discord servers, anything"></textarea></div></div>`;
+
+  $("[data-cj-agree]").innerHTML = `<label class="bt-check"><input type="checkbox" id="cj-code" data-cj-code> <span>I agree to the Crew Code, and I'm 18 or older.</span></label><span class="bt-badge bt-badge--lime" data-cj-signed hidden><span class="bt-badge-dot"></span>Signed</span>`;
+
+  root.querySelectorAll<HTMLElement>(".cj-part").forEach((p) => { p.toggleAttribute("inert", locked); p.classList.toggle("is-locked", locked); });
+}
+
+function syncSend() {
+  const box = root.querySelector<HTMLInputElement>("[data-cj-code]");
+  const ok = !!box?.checked;
+  root.querySelector<HTMLElement>("[data-cj-signed]")?.toggleAttribute("hidden", !ok);
+  const btn = root.querySelector<HTMLButtonElement>("[data-cj-send-acts] button[type=submit]");
+  if (btn && root.dataset.cjState === "form") btn.disabled = !ok || sending;
+  const p = $("[data-cj-send-p]");
+  if (root.dataset.cjState === "form") p.textContent = ok ? "Everything's filled in. Send it and you're in the queue." : "Tick the Crew Code above to send your application.";
+}
+form.addEventListener("change", syncSend);
+
+// ---- Hero ----
+const defaults = { kicker: $("[data-cj-kicker]").textContent!, h: $("[data-cj-h]").textContent!, p: $("[data-cj-p]").textContent! };
+function hero(mode: Mode, m: Me | null) {
+  const set = (kicker: string, h: string, p: string, acts: string) => {
+    $("[data-cj-kicker]").textContent = kicker; $("[data-cj-h]").textContent = h; $("[data-cj-p]").textContent = p; $("[data-cj-acts]").innerHTML = acts;
+  };
+  const d = defaults;
+  if (mode === "crew") set("Mod Machina · the crew", "You're already on the crew", "Thank you for helping keep the chats fun and safe. Your grade, Gears and next steps are in HQ, and the Academy is there whenever you want to learn more.", `<a class="bt-btn bt-btn--primary" href="/crew/hq">Go to HQ</a><a class="bt-btn bt-btn--secondary" href="/crew/academy">Crew Academy</a>`);
+  else if (mode === "applied" || mode === "sent") set(d.kicker, "Your application is in", "The crew can vouch for you now, and Boomer makes the final call. Here's where you stand.", `<a class="bt-btn bt-btn--primary" href="#j-next">See what happens next</a>${how}`);
+  else if (mode === "notNow") set(d.kicker, "Thanks for applying", "We'd like a little more time with you in chat first. Here's when you can try again.", `<a class="bt-btn bt-btn--primary" href="/crew">Meet the crew</a>${how}`);
+  else if (mode === "visitor") set(d.kicker, d.h, d.p, `<a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to apply for the crew">Join free to apply</a>${how}`);
+  else if (mode === "signup") set(d.kicker, d.h, d.p, `${signUpAct}${how}`);
+  else if (mode === "blocked") set(d.kicker, d.h, d.p, `<a class="bt-btn bt-btn--primary" href="#j-check">See what's left</a>${how}`);
+  else set(d.kicker, d.h, d.p, `<a class="bt-btn bt-btn--primary" href="#j-chats">Start my application</a>${how}`);
+  $("[data-cj-stage]").hidden = mode === "crew";
+  $("[data-cj-crewart]").hidden = mode !== "crew";
+  void m;
+}
+
+// ---- After sending / already applied ----
+function afterHtml(band: string | null, expiresAt: number | null, createdAt: number) {
+  const top = band === "Top 5";
+  const day = new Date(createdAt).toLocaleDateString("en-US", { month: "short", day: "numeric" });
+  const steps = [["✅", "Applied", "Done."], ["🤝", "Get vouched", "Crew back you."], ["🎃", "Boomer says yes", "His call, every time."], ["🎓", "Train", "Academy + 2 ride-alongs."]];
+  return `<div class="cj-sent" role="status"><span class="cj-sent-stamp">${stampHtml({ kicker: "Application", label: "In", sub: day })}</span>
+    <div><h3>${top ? "You're in the queue. Top 5." : "You're in the queue."}</h3>
+      <p>Crew who know you from chat can vouch for you now, and Boomer makes the final call. We'll message you here either way. ${expiresAt ? `Your application stays open until ${esc(dateLabel(expiresAt))}.` : "Applications stay open for 90 days."}</p></div>
+    <ol class="ai-jr ai-jr--4 cj-j4" data-journey>${steps.map(([ic, t, d], i) => `<li tabindex="0"${i === 0 ? ` class="is-met"` : ""}><span class="ai-jr-num">${i ? i + 1 : "✓"}</span><span class="ai-jr-ic" aria-hidden="true">${ic}</span><b>${t}</b><span class="ai-jr-t">${d}</span></li>`).join("")}</ol></div>`;
+}
+function notNowHtml(note: string | null, reapplyAt: number | null) {
+  return `<div class="cj-sent cj-sent--note"><span class="cj-sent-ic" aria-hidden="true">💌</span><div><h3>Not this time</h3>
+    <p>${esc(note || "Thanks for applying. We'd like a little more time with you in chat first.")}</p>
+    <p>${reapplyAt ? `You're welcome to apply again on <b>${esc(dateLabel(reapplyAt))}</b>.` : "You're welcome to apply again later."} Until then, come hang out in chat and keep checking in.</p></div></div>`;
+}
+
+// ---- Mode switch: what shows ----
+function setMode(mode: Mode, m: Me | null, extra: { band?: string | null; expiresAt?: number | null; createdAt?: number; note?: string | null; reapplyAt?: number | null } = {}) {
+  root.dataset.cjState = mode;
+  const lite = LITE.includes(mode);
+  const tl = root.closest<HTMLElement>(".tl-wrap");
+  tl?.toggleAttribute("data-cj-lite", lite);
+  tl?.querySelector<HTMLElement>(".tl-nav")?.toggleAttribute("hidden", lite);
+  root.querySelectorAll<HTMLElement>("[data-cj-full]").forEach((s) => { s.hidden = lite; });
+  const sent = mode === "sent" || mode === "applied" || mode === "notNow";
+  $("[data-cj-nextsec]").hidden = mode === "crew";
+  $("[data-cj-nextchap]").hidden = sent;
+  $("[data-cj-nextj]").hidden = sent;
+  $("[data-cj-send]").hidden = sent;
+  $("[data-cj-after]").innerHTML = mode === "sent" || mode === "applied" ? afterHtml(extra.band ?? null, extra.expiresAt ?? null, extra.createdAt ?? Date.now()) : mode === "notNow" ? notNowHtml(extra.note ?? null, extra.reapplyAt ?? null) : "";
+  const label = $("[data-cj-after]");
+  label.querySelectorAll("[data-journey]").forEach(initJourney);
+  hero(mode, m);
+}
+
+function renderLive(mode: Mode, m: Me | null) {
+  const locked = mode !== "form";
+  const items = m?.apply?.items ?? null;
+  $("[data-cj-check]").innerHTML = journeyHtml(items) + verdict(mode, m);
+  $("[data-cj-check]").querySelectorAll("[data-journey]").forEach(initJourney);
+  const lock = $("[data-cj-lock]");
+  lock.hidden = !locked;
+  lock.innerHTML = locked ? `<div class="bt-notice cj-lock">${mode === "visitor" ? "Here's a look at the form. Join free to fill it in." : mode === "signup" ? "Here's a look at the form. Finish signing up to fill it in." : "Here's a look at the form. It opens as soon as you can apply."}</div>` : "";
+  buildParts(locked);
+  const p = $("[data-cj-send-p]"), acts = $("[data-cj-send-acts]");
+  $("[data-cj-err]").hidden = true;
+  if (mode === "visitor") { p.textContent = "Applying needs a free account, so we can check the basics."; acts.innerHTML = signInActs; }
+  else if (mode === "signup") { p.textContent = "Your account needs a few more details before you can apply."; acts.innerHTML = signUpAct; }
+  else if (mode === "blocked") { p.textContent = m?.apply?.reapplyAt ? `You can apply again on ${dateLabel(m.apply.reapplyAt)}.` : reasonText(m?.apply?.reason) || "The form opens as soon as you can apply."; acts.innerHTML = `<button class="bt-btn bt-btn--primary" type="submit" disabled>Send application</button>`; }
+  else { acts.innerHTML = `<button class="bt-btn bt-btn--primary" type="submit" disabled>Send application</button>`; }
+  syncSend();
+}
 
 onAccess(async (s) => {
   me = s;
-  if (s.status === "signedOut") return visitor();
-  if (s.status === "needsSignup") return needsSignup();
-  try {
-    show(await loadMe(s));
-  } catch (err) {
-    main.innerHTML = `<div class="bt-notice bt-notice--error">${esc(errText(err, "We couldn't check your account just now. Refresh the page to try again."))}</div>`;
+  const run = ++seq;
+  if (s.status === "signedOut") { setMode("visitor", null); return renderLive("visitor", null); }
+  if (s.status === "needsSignup") { setMode("signup", null); return renderLive("signup", null); }
+  let m: Me;
+  try { m = await loadMe(s); } catch (err) {
+    if (run !== seq) return;
+    setMode("blocked", null);
+    renderLive("blocked", null);
+    $("[data-cj-check]").innerHTML = `<div class="bt-notice bt-notice--error">${esc(errText(err, "We couldn't check your account just now. Refresh the page to try again."))}</div>`;
+    $("[data-cj-send-p]").textContent = "Refresh the page to try again.";
+    return;
   }
+  if (run !== seq) return;
+  const app = m.application;
+  if (m.crew && m.crew.status !== "alumni") return setMode("crew", m);
+  if (app && app.status === "open") return setMode("applied", m, { band: app.band, expiresAt: app.expiresAt, createdAt: app.createdAt });
+  if (app && app.status === "notNow" && m.apply && !m.apply.ok) return setMode("notNow", m, { note: app.note, reapplyAt: app.reapplyAt ?? m.apply.reapplyAt });
+  const mode: Mode = m.apply?.ok ? "form" : "blocked";
+  setMode(mode, m);
+  renderLive(mode, m);
 });
 
-function visitor() {
-  check.hidden = true;
-  main.innerHTML = `<div class="bt-card cp-apply-card"><span class="bt-card-title">Apply to join</span>
-    <p>Applying needs a free account, so we can check the basics: you're 18 or older, your account is a couple of weeks old, and you've been around for a few streams.</p>
-    <div class="cp-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to apply for the crew">Join free</a><a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a></div></div>`;
-}
-function needsSignup() {
-  check.hidden = true;
-  main.innerHTML = `<div class="bt-card cp-apply-card"><span class="bt-card-title">Finish signing up first</span><p>Your account needs a few more details before you can apply.</p>
-    <div class="cp-acts"><button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button></div></div>`;
-}
+// ---- Send ----
+form.addEventListener("submit", async (e) => {
+  e.preventDefault();
+  if (root.dataset.cjState !== "form" || sending) return;
+  const err = $("[data-cj-err]");
+  const fail = (msg: string, focus?: HTMLElement | null) => { err.textContent = msg; err.hidden = false; (focus ?? err).scrollIntoView({ block: "nearest", behavior: reduced() ? "auto" : "smooth" }); focus?.focus({ preventScroll: true }); };
+  err.hidden = true;
+  const why = root.querySelector<HTMLTextAreaElement>("#cj-why")!;
+  const whyText = why.value.trim();
+  why.removeAttribute("aria-invalid");
+  if (!CHATS.some((c) => prefs[c] && prefs[c] !== "no")) return fail("Pick at least one chat you'd help in.", root.querySelector<HTMLElement>(".bt-chat-tile [role=radio][tabindex='0']"));
+  if (whyText.length < 20) { why.setAttribute("aria-invalid", "true"); return fail("Tell us a little more about why you want to help (at least 20 characters).", why); }
+  if (!root.querySelector<HTMLInputElement>("[data-cj-code]")!.checked) return fail(reasonText("code"));
+  const btn = root.querySelector<HTMLButtonElement>("[data-cj-send-acts] button[type=submit]")!;
+  sending = true; btn.disabled = true; btn.setAttribute("aria-busy", "true");
+  const time = root.querySelector<HTMLElement>("[data-time][aria-pressed=true]")?.dataset.time || "";
+  const extraNote = root.querySelector<HTMLInputElement>("#cj-note")!.value.trim();
+  const data = {
+    preferences: Object.fromEntries(CHATS.map((c) => [c, prefs[c] || "no"])) as Prefs,
+    availability: { days: dayPickerValue(root.querySelector(".bt-day-picker")!) as string[], note: [time, extraNote].filter(Boolean).join(" · ") },
+    device: dev.get() || "desktop",
+    answers: { why: whyText, experience: root.querySelector<HTMLTextAreaElement>("#cj-exp")!.value.trim() },
+    codeAgreed: true,
+  };
+  try {
+    let res: { band: string | null; expiresAt: number | null };
+    if (isPreview(me)) { console.debug("crewApply (preview, not sent)", JSON.stringify(data)); res = { band: q("band") === "queue" ? "In the queue" : "Top 5", expiresAt: Date.now() + 90 * 864e5 }; }
+    else res = await crewCall<{ ok: boolean; appId: string; band: string | null; expiresAt: number | null }>("crewApply", data);
+    seq++;   // a late auth re-render must not undo this
+    setMode("sent", null, { band: res.band, expiresAt: res.expiresAt, createdAt: Date.now() });
+    root.querySelectorAll<HTMLElement>(".cj-part").forEach((p) => { p.setAttribute("inert", ""); p.classList.add("is-locked"); });
+    const after = $("[data-cj-after]");
+    after.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "center" });
+  } catch (e2) {
+    fail(errText(e2, "We couldn't send your application. Try again in a moment."));
+    btn.removeAttribute("aria-busy");
+  } finally { sending = false; syncSend(); }
+});
 
-function checklist(me: Me, verdict = true) {
-  const a = me.apply;
-  if (!a) { check.hidden = true; return; }
-  check.hidden = false;
-  const items = a.items.map((i) => `<li><span class="cp-ck${i.ok ? "" : " is-todo"}" aria-hidden="true">${i.ok ? "✓" : "·"}</span><span>${esc(i.label)}<span class="bt-sr-only">: ${i.ok ? "done" : "not yet"}</span>${i.detail ? `<small>${esc(i.detail)}</small>` : ""}</span></li>`).join("");
-  const note = !verdict ? "" : a.ok ? `<div class="bt-notice bt-notice--ok">You can apply.</div>`
-    : `<div class="bt-notice">${esc(a.reapplyAt ? `You can apply again on ${dateLabel(a.reapplyAt)}.` : reasonText(a.reason) || "Not quite yet. The list above shows what's left.")}</div>`;
-  check.innerHTML = `<span class="bt-card-title">Can I apply?</span><ul class="cp-checks">${items}</ul>${note}`;
-}
-
-function show(me: Me) {
-  const app = me.application;
-  if (me.crew) { check.hidden = true; return crewCard(); }
-  if (app && app.status === "open") { check.hidden = true; return afterCard(app.band, app.expiresAt); }
-  checklist(me);
-  if (app && app.status === "notNow" && me.apply && !me.apply.ok) return notNow(app.note, app.reapplyAt ?? me.apply.reapplyAt);
-  if (me.apply?.ok) return form();
-  main.innerHTML = `<div class="bt-card cp-apply-card"><span class="bt-card-title">Not quite yet</span><p>${esc(me.apply?.reapplyAt ? `You can apply again on ${dateLabel(me.apply.reapplyAt)}.` : reasonText(me.apply?.reason) || "Check the list on the right to see what's left. The form opens as soon as you're ready.")}</p>
-    <div class="cp-acts"><a class="bt-btn bt-btn--secondary" href="/crew">Meet the crew</a></div></div>`;
-}
-
-function crewCard() {
-  main.innerHTML = `<div class="bt-card cp-apply-card"><span class="bt-card-title">You're on the crew</span><p>Thank you for helping. Your grade, Gears and next steps are in HQ.</p>
-    <div class="cp-acts"><a class="bt-btn bt-btn--primary" href="/crew/hq">Go to HQ</a></div></div>`;
-}
-function notNow(note: string | null, reapplyAt: number | null) {
-  main.innerHTML = `<div class="bt-card cp-apply-card"><span class="bt-card-title">Not this time</span>
-    <p>${esc(note || "Thanks for applying. We'd like a little more time with you in chat first.")}</p>
-    <p>${reapplyAt ? `You're welcome to apply again on <b>${esc(dateLabel(reapplyAt))}</b>.` : "You're welcome to apply again later."} Until then, come hang out in chat and keep checking in.</p></div>`;
-}
-function afterCard(band: string | null, expiresAt: number | null) {
-  const top = band === "Top 5";
-  main.innerHTML = `<div class="bt-card cp-apply-card" role="status"><span class="bt-card-title">Application sent</span>
-    <div class="cp-after"><span class="cp-pos" aria-hidden="true">${top ? "Top<br>5" : "In<br>queue"}</span>
-    <div><p><b>${top ? "You're in the top 5." : "You're in the queue."}</b> The crew vouches for applicants and Boomer makes the final call.</p>
-    <p class="cp-muted">${expiresAt ? `Your application stays open until ${esc(dateLabel(expiresAt))}.` : "Applications stay open for 90 days."} We'll message you when there's news.</p></div></div></div>`;
-}
-
-function form() {
-  const rows = CHATS.map((c) => ({ chat: c, name: CHAT_NAME[c], iconHtml: platformIconHtml(c), value: "no", needed: NEEDED.includes(c) }));
-  main.innerHTML = `<form class="bt-card cp-form" novalidate>
-    <div class="bt-card-head"><span class="bt-card-title">Your application</span><span class="bt-card-meta">About 5 minutes</span></div>
-    <div class="bt-field"><span class="bt-label" id="cp-l-chats">Which chats would you help in?</span>
-      ${prefHtml({ rows })}
-      <span class="bt-hint">You'll only be scheduled in chats you mark Favourite or Happy to help. "Only if needed" means we may ask when a chat is empty. YouTube is the most needed: marking either YouTube chat Favourite or Happy to help puts you higher in the queue.</span></div>
-    <div class="bt-field"><span class="bt-label" id="cp-l-days">When are you usually around? (Central time)</span>
-      <div class="cp-chips" role="group" aria-labelledby="cp-l-days">${DAYS.map(([k, l]) => `<button type="button" class="bt-chip bt-chip--small" data-day="${k}" aria-pressed="false">${l}</button>`).join("")}</div>
-      <input class="bt-input" id="cp-note" maxlength="300" placeholder="Usual times, e.g. evenings 6 to 10 pm" aria-label="Usual times"></div>
-    <div class="bt-field"><span class="bt-label" id="cp-l-dev">How do you watch?</span>
-      <span class="bt-pref-seg cp-device" role="radiogroup" aria-labelledby="cp-l-dev" data-device>${DEVICES.map(([k, l], i) => `<button type="button" role="radio" aria-checked="${i === 0}" tabindex="${i === 0 ? 0 : -1}" data-value="${k}">${l}</button>`).join("")}</span>
-      <span class="bt-hint">Phone is perfect for the YouTube vertical chat.</span></div>
-    <div class="bt-field"><label class="bt-label" for="cp-why">Why do you want to help?</label>
-      <textarea class="bt-textarea" id="cp-why" rows="4" maxlength="1000" aria-describedby="cp-why-h"></textarea><span class="bt-hint" id="cp-why-h">At least 20 characters.</span></div>
-    <div class="bt-field"><label class="bt-label" for="cp-exp">Any mod experience? (optional)</label>
-      <input class="bt-input" id="cp-exp" maxlength="1000" placeholder="Other channels, Discord servers, anything"></div>
-    <label class="bt-check"><input type="checkbox" id="cp-code"> <span>I've read the <a href="#cp-code-h">Crew Code</a> and I agree to it.</span></label>
-    <div class="bt-notice bt-notice--error" data-err hidden role="alert"></div>
-    <div class="bt-form-actions"><button class="bt-btn bt-btn--primary" type="submit">Send application</button></div></form>`;
-  const f = main.querySelector<HTMLFormElement>("form")!;
-  const prefs = Object.fromEntries(CHATS.map((c) => [c, "no"])) as Prefs;
-  initPrefs(f, { onChange: (chat, v) => { prefs[chat as Chat] = v as Pref; } });
-  const dev = initRadioGroup(f.querySelector("[data-device]")!, {});
-  f.querySelectorAll<HTMLButtonElement>("[data-day]").forEach((b) => b.addEventListener("click", () => b.setAttribute("aria-pressed", String(b.getAttribute("aria-pressed") !== "true"))));
-  const err = f.querySelector<HTMLElement>("[data-err]")!;
-  const fail = (msg: string) => { err.textContent = msg; err.hidden = false; err.scrollIntoView({ block: "nearest" }); };
-  f.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    err.hidden = true;
-    const why = (f.querySelector<HTMLTextAreaElement>("#cp-why")!).value.trim();
-    if (!CHATS.some((c) => prefs[c] !== "no")) return fail("Pick at least one chat you'd help in.");
-    if (why.length < 20) return fail("Tell us a little more about why you want to help (at least 20 characters).");
-    if (!f.querySelector<HTMLInputElement>("#cp-code")!.checked) return fail(reasonText("code"));
-    const btn = f.querySelector<HTMLButtonElement>("button[type=submit]")!;
-    btn.disabled = true; btn.setAttribute("aria-busy", "true");
-    const data = {
-      preferences: prefs,
-      availability: { days: [...f.querySelectorAll<HTMLElement>("[data-day][aria-pressed=true]")].map((b) => b.dataset.day), note: f.querySelector<HTMLInputElement>("#cp-note")!.value.trim() },
-      device: dev.get() || "desktop",
-      answers: { why, experience: f.querySelector<HTMLInputElement>("#cp-exp")!.value.trim() },
-      codeAgreed: true,
-    };
-    try {
-      const res = isPreview(me) ? { band: q("band") === "queue" ? "In the queue" : "Top 5", expiresAt: Date.now() + 90 * 864e5 } : await crewCall<{ band: string; expiresAt: number }>("crewApply", data);
-      check.hidden = true;
-      afterCard(res.band, res.expiresAt);
-      main.scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" });
-    } catch (e2) {
-      btn.disabled = false; btn.removeAttribute("aria-busy");
-      fail(errText(e2, "We couldn't send your application. Try again in a moment."));
-    }
-  });
-}
+// The shared How it works behaviour: spotlight, journeys, Ask BOOMBOT.
+initHowItWorks(document);

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Join the crew is now a story page: seat-map hero, the four-step Can I apply journey, chat and day tiles, the Crew Code signing row, a stamp after sending, and Ask BOOMBOT.
 feat(kit): story page pieces: four-step journey (.ai-jr--4, met / waiting / locked / waived steps), .bt-stamp, .bt-day-picker and .bt-chat-tile with stamp.js, day-picker.js and chat-tile.js, all on the UI kit page
 Meet the crew (/crew) is now a story page: spotlit lineup, flip-medal awards, where we need you, roster cards and a Hall of Fame journey.
 - docs: the site-wide page quality standard (Oct 7). CLAUDE.md rule 10 and design-system.md §8m now describe two kinds of page: story pages (landing, Join, Meet the crew, How it works, Academy, feature home pages) use the full How it works frame; tool pages (queues, HQ, tasks, profiles, boards, the Mod Deck, /admin) keep the same polish built for speed. Adds the approved story-page mockup (docs/design/mockups/crew-story-pages.html) and its link in docs/specs/mod-machina.md.

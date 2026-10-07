@@ -1,25 +1,22 @@
 ---
-// /crew/join: Join the crew (docs/specs/mod-machina.md §10, §12; mockup "Join the crew"). Public page: visitors see
-// what the crew does, what to expect, the ladder, the Crew Code and "Most needed: YouTube"; applying needs an
-// account. Signed-in members get the live "Can I apply?" checklist and the application form (scripts/crew/join.ts),
-// then their queue band; crew see "You're on the crew".
+// /crew/join: Join the crew, a story page (docs/specs/mod-machina.md §10, §12; approved mockup
+// docs/design/mockups/crew-story-pages.html screen 1 "After"). The Arcade How it works frame: TocLayout rail, ghost
+// chapters, a hero with a seat map (one gold chair for you), the four-step "Can I apply?" journey, chat tiles, day
+// tiles, the Crew Code placard with the agreement row, "What happens next" + Send, and Ask BOOMBOT. The static shell
+// is here; scripts/crew/join.ts fills the live parts from crewMe() and sends crewApply (sample data under ?as= on
+// staging). Visitors see the same story with "Join free to apply" in place of the form.
 import CrewLayout from "../../layouts/CrewLayout.astro";
-import NeedStrip from "../../components/crew/NeedStrip.astro";
-import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
-import "../../styles/crew-public.css";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { platformIconHtml } from "../../../../shared/ui/crew.js";
+import "../../styles/how-it-works.css";
+import "../../styles/crew-join.css";
 
-const does = [
-  ["👋", "Welcome people", "Say hi to new chatters, keep conversations going and make the quiet chats feel alive."],
-  ["🛡️", "Keep chats safe", "Gentle reminders first, timeouts and bans only when they're needed. Training shows you how."],
-  ["📺", "Cover every chat", "Twitch, both YouTube chats and TikTok. You pick the chats you like and the streams that suit you."],
-];
-const rungs = [
-  { chip: gradeChipHtml({ track: "mod", grade: 1 }), text: "Just approved and in training: short Academy modules and two ride-alongs." },
-  { chip: gradeChipHtml({ track: "mod", grade: 2 }), text: "A full mod. Leads a room, uses the task board and vouches for new applicants." },
-  { chip: gradeChipHtml({ track: "mod", grade: 3 }), text: "A senior mod. Can captain a stream and mentor Initiates." },
-  { chip: gradeChipHtml({ track: "mod", grade: 4 }), text: "The top of the mod ladder. Helps confirm rosters and shortlist the queue." },
-];
-const code = [
+const NAV: [string, string][] = [["j-check", "Can I apply?"], ["j-chats", "Your chats"], ["j-when", "When you're around"], ["j-you", "About you"], ["j-code", "The Crew Code"], ["j-next", "What happens next"], ["j-faq", "Questions"]];
+const chapter = (n: number, id: string, title: string, lede = "") => { const ledeHtml = lede ? '<p class="bt-chapter-lede">' + lede + '</p>' : ""; return `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2>${ledeHtml}</header>` };
+
+const CODE = [
   ["🕯", "Life comes first", "Step away any time. Hand off if it'll be a while. Nobody is guilted here."],
   ["🤝", "Friendly before firm", "Start with the gentlest step that works: remind, warn, timeout, ban."],
   ["🔒", "Personal info stays private", "Never repeat, screenshot or share anyone's personal details."],
@@ -27,60 +24,110 @@ const code = [
   ["📣", "Flag what matters", "Raids, threats or self-harm talk: tell the Captain and flag Boomer."],
   ["🧡", "We're one crew", "Every chat counts the same. YouTube viewers deserve a welcome too."],
 ];
+const NEXT = [
+  ["📝", "Apply", "Right here, about 5 minutes."],
+  ["🤝", "Get vouched", "Crew who know you from chat can back you."],
+  ["🎃", "Boomer says yes", "Every new crew member is his call."],
+  ["🎓", "Train", "Academy modules and 2 ride-alongs."],
+];
+const FAQS = [
+  ["What if I've never modded before?", "Most of the crew hadn't. The Academy is short modules you take at your own pace, and your first two streams are ride-alongs next to a Room Lead. Nobody is thrown in alone."],
+  ["How long until I hear back?", "Crew members can vouch for you as soon as you apply, and Boomer makes the final call on every new crew member. Your application stays open for 90 days, and we'll message you here either way."],
+  ["What if I'm not picked?", "You get a kind note, and you can apply again after 60 days. Being around in chat and on the site is the best way to get vouched next time."],
+  ["Do I have to mod YouTube?", "Only the chats you mark Favourite or Happy to help. YouTube is where help is needed most, so every YouTube duty earns 1.5× Gears, but it's always your choice."],
+];
+// The hero seat map: one gold chair for you in the YouTube vertical column.
+const SEATS: [string, string[]][] = [["twitch", ["SS", "V", ""]], ["ytLandscape", ["CJ", "", ""]], ["ytVertical", ["MM", "you", ""]], ["tiktok", ["", "", ""]]];
 ---
-<CrewLayout title="Join the crew" description="Help keep the Boomertanger chats fun and safe. See what the crew does, what to expect, and apply." section="join">
-  <div class="bt-zone cp-page" data-cp-join>
-    <div class="cp-head">
-      <div>
-        <h1 class="bt-title">Join the crew</h1>
-        <p class="bt-subtitle">Help keep the chats fun and safe. Tell us where you like to hang out; we'll train you for the rest.</p>
-      </div>
-    </div>
-    <NeedStrip />
-
-    <div class="cp-join">
-      <div class="cp-main" data-cp-main aria-live="polite"><span class="bt-skeleton cp-skel-card"></span></div>
-      <div class="cp-side">
-        <div class="bt-card" data-cp-check hidden></div>
-        <div class="bt-card">
-          <span class="bt-card-title">What to expect</span>
-          <ul class="cp-expect">
-            <li>The crew vouches for applicants; Boomer makes every final call.</li>
-            <li>You start as an Initiate: short training and two ride-alongs.</li>
-            <li>Sign up for the streams that suit you. Skip any you can't make.</li>
-            <li>Step away any time. Someone else takes over.</li>
-          </ul>
+<CrewLayout title="Join the crew" description="Help keep the Boomertanger chats fun and safe. See what the crew does, check you can apply, pick your chats and send your application." section="join">
+  <TocLayout items={NAV}>
+    <div class="ai-main cj-main" data-cj-join data-cj-state="loading">
+      <section class="ai-hero cj-hero" aria-labelledby="h-hero">
+        <div>
+          <span class="ai-kicker" data-cj-kicker>Mod Machina · join the crew</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero" data-cj-h>Take a seat on the crew</h1>
+          <p data-cj-p>Help keep the chats fun and safe while Boomer plays. Pick the chats you like, train at your own pace, and help on the streams that suit you. About five minutes to apply.</p>
+          <div class="ai-acts" data-cj-acts>
+            <a class="bt-btn bt-btn--secondary" href="/crew/how-it-works">How the crew works</a>
+          </div>
         </div>
-      </div>
-    </div>
+        <div class="cj-stage" data-cj-stage aria-hidden="true">
+          <div class="cj-stage-h"><span>Thursday's crew <span class="bt-badge bt-badge--gray">Example</span></span><span class="bt-live-tag"><i></i>8 pm</span></div>
+          <div class="cj-rows">
+            {SEATS.map(([c, s]) => (
+              <div class="cj-col"><Fragment set:html={platformIconHtml(c)} />{s.map((x) => <span class:list={["cj-chair", x === "you" && "is-you"]}>{x === "you" ? "+" : x}</span>)}</div>
+            ))}
+          </div>
+          <span class="cj-stage-f">Gold chairs need a hand. YouTube help earns 1.5× Gears.</span>
+        </div>
+        <div class="cj-crewart" data-cj-crewart hidden><Mascot decorative /></div>
+      </section>
 
-    <section class="cp-group" aria-labelledby="cp-does-h">
-      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-does-h">What the crew does</h2></div>
-      <div class="cp-does">
-        {does.map(([ico, t, d]) => <div class="bt-tile cp-do"><span class="cp-do-ico" aria-hidden="true">{ico}</span><b>{t}</b><span>{d}</span></div>)}
-      </div>
-    </section>
+      <section class="ai-sec" id="j-check" aria-labelledby="h-check" data-cj-full>
+        <Fragment set:html={chapter(1, "h-check", "Can I apply?", "Four quick checks, done for you. Hover a step to see what it looked at.")} />
+        <div data-cj-check><span class="bt-skeleton cj-skel"></span></div>
+      </section>
 
-    <section class="cp-group" aria-labelledby="cp-ladder-h">
-      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-ladder-h">The ladder</h2><a href="/crew/how-it-works">How grades work</a></div>
-      <ol class="cp-rungs">
-        {rungs.map((r) => <li class="bt-tile cp-rung"><span class="cp-rung-chip" set:html={r.chip} /><span>{r.text}</span></li>)}
-      </ol>
-      <p class="bt-fineprint">Admins are chosen by Boomer from the top of the mod ladder. Nobody applies to be one. Promotions are never automatic.</p>
-    </section>
+      <form class="cj-form" data-cj-form novalidate>
+        <section class="ai-sec" id="j-chats" aria-labelledby="h-chats" data-cj-full>
+          <Fragment set:html={chapter(2, "h-chats", "Which chats would you help in?", "Tap how you feel about each one. You're only ever scheduled in chats you mark Favourite or Happy to help.")} />
+          <div data-cj-lock hidden></div>
+          <div class="cj-part" data-cj-chats><span class="bt-skeleton cj-skel"></span></div>
+        </section>
 
-    <section class="cp-group" aria-labelledby="cp-code-h">
-      <div class="bt-tile-head"><h2 class="bt-heading" id="cp-code-h">The Crew Code</h2><span class="bt-meta">Six rules every crew member agrees to</span></div>
-      <div class="bt-placard">
-        <div class="bt-placard-head"><i aria-hidden="true"></i><b>Crew Code</b><i aria-hidden="true"></i></div>
-        <ol class="bt-placard-list">
-          {code.map(([ic, t, d], i) => (
-            <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>
+        <section class="ai-sec" id="j-when" aria-labelledby="h-when" data-cj-full>
+          <Fragment set:html={chapter(3, "h-when", "When are you usually around?", "Rough is fine. It helps the Captain know who to ask when a chat needs someone.")} />
+          <div class="cj-part" data-cj-when></div>
+        </section>
+
+        <section class="ai-sec" id="j-you" aria-labelledby="h-you" data-cj-full>
+          <Fragment set:html={chapter(4, "h-you", "About you", "Two short answers. The crew reads these when they vouch.")} />
+          <div class="cj-part" data-cj-you></div>
+        </section>
+
+        <section class="ai-sec" id="j-code" aria-labelledby="h-code" data-cj-full>
+          <Fragment set:html={chapter(5, "h-code", "The Crew Code", "Six rules every crew member agrees to.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>Crew Code</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {CODE.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+            </ol>
+            <div class="cj-sign cj-part" data-cj-agree></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="j-next" aria-labelledby="h-next" data-cj-nextsec>
+          <div data-cj-nextchap><Fragment set:html={chapter(6, "h-next", "What happens next", "Four steps from here to your first stream on the crew.")} /></div>
+          <ol class="ai-jr ai-jr--4" data-journey data-cj-nextj>
+            {NEXT.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num">{i + 1}</span><span class="ai-jr-ic">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+          <div class="cj-send" data-cj-send>
+            <span class="cj-send-art" aria-hidden="true"><Mascot decorative /></span>
+            <h2>Ready?</h2>
+            <p data-cj-send-p>Tick the Crew Code above to send your application.</p>
+            <div class="bt-notice bt-notice--error" data-cj-err hidden role="alert"></div>
+            <div class="ai-acts" data-cj-send-acts><button class="bt-btn bt-btn--primary" type="submit" disabled>Send application</button></div>
+          </div>
+          <div data-cj-after aria-live="polite"></div>
+        </section>
+      </form>
+
+      <section class="ai-sec" id="j-faq" aria-labelledby="h-faq">
+        <Fragment set:html={chapter(7, "h-faq", "Questions before you apply", "Ask BOOMBOT. One answer open at a time.")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cj-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`cj-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`cj-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
           ))}
-        </ol>
-      </div>
-    </section>
-  </div>
+        </div>
+      </section>
+    </div>
+  </TocLayout>
 </CrewLayout>
 
 <script>

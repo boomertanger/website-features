@@ -1,0 +1,83 @@
+/* site/src/styles/crew-join.css — /crew/join, the Join the crew story page (docs/specs/mod-machina.md §10; approved
+   mockup docs/design/mockups/crew-story-pages.html screen 1 "After"). Built on the shared How it works blocks
+   (styles/how-it-works.css: hero, journey incl. .ai-jr--4 and its states) and TocLayout, and on the kit's
+   .bt-chat-tile, .bt-day-picker, .bt-stamp and .bt-placard. This file adds only what is unique to the page: the
+   hero seat map, the verdict bar, the field layouts, the signing row, the Send card and the sent card. cj-* prefix.
+   Tokens only. Container queries at the How it works breakpoints (900 / 640 / 420); reduced motion has its own rules. */
+
+.bt-root:not(#_) .cj-form { display: contents; }
+.bt-root:not(#_) .cj-skel { display: block; height: 150px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cj-hero { display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(0, 1fr); gap: 26px; align-items: center; }
+.bt-root:not(#_) .cj-hero > div { min-width: 0; }
+
+/* Hero seat map: four chat columns, three chairs each, one gold chair that could be you */
+.bt-root:not(#_) .cj-stage { position: relative; display: flex; flex-direction: column; gap: 10px; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: radial-gradient(60% 40% at 50% 0%, var(--bt-gold-bg), transparent 70%), color-mix(in srgb, var(--bt-bg) 80%, transparent); box-shadow: 0 18px 40px var(--bt-lift-shadow); }
+.bt-root:not(#_) .cj-stage[hidden], .bt-root:not(#_) .cj-crewart[hidden] { display: none; }
+.bt-root:not(#_) .cj-stage-h { display: flex; justify-content: space-between; align-items: center; gap: 8px; color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.12em; text-transform: uppercase; }
+.bt-root:not(#_) .cj-rows { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; padding-top: 22px; }
+.bt-root:not(#_) .cj-col { display: flex; flex-direction: column; gap: 7px; align-items: stretch; }
+.bt-root:not(#_) .cj-col > .bt-platform-icon { align-self: center; }
+.bt-root:not(#_) .cj-chair { position: relative; display: grid; place-items: center; height: 34px; border: 1px solid var(--bt-border-2); border-radius: 10px 10px 4px 4px; background: var(--bt-surface); color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 800; }
+.bt-root:not(#_) .cj-chair::after { content: ""; position: absolute; left: 6px; right: 6px; bottom: -4px; height: 3px; border-radius: 0 0 3px 3px; background: var(--bt-border-2); }
+.bt-root:not(#_) .cj-chair.is-you { border: 1.5px dashed var(--bt-gold); background: var(--bt-gold-bg); color: var(--bt-gold); font-size: var(--bt-text-md); animation: cj-glow 2.2s ease-in-out infinite; }
+.bt-root:not(#_) .cj-chair.is-you::before { content: "This could be you"; position: absolute; top: -26px; left: 50%; transform: translateX(-50%); padding: 3px 8px; border-radius: 999px; background: var(--bt-title); color: var(--bt-bg); font-size: var(--bt-text-2xs); font-weight: 900; white-space: nowrap; box-shadow: 0 4px 12px var(--bt-lift-shadow); }
+.bt-root:not(#_) .cj-main[data-cj-state="applied"] .cj-chair.is-you::before, .bt-root:not(#_) .cj-main[data-cj-state="sent"] .cj-chair.is-you::before { content: "Saved for you"; }
+.bt-root:not(#_) .cj-stage-f { color: var(--bt-text-faint); font-size: var(--bt-text-xs); text-align: center; }
+.bt-root:not(#_) .cj-crewart { display: grid; place-items: center; }
+.bt-root:not(#_) .cj-crewart .bt-mascot { width: 120px; filter: drop-shadow(0 0 16px rgba(var(--bt-gold-rgb), 0.45)); }
+@keyframes cj-glow { 50% { box-shadow: 0 0 18px rgba(var(--bt-gold-rgb), 0.45); } }
+
+/* 01 Can I apply?: the journey's step values, then the verdict bar */
+.bt-root:not(#_) .cj-verdict { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: 14px; padding: 12px 14px; border: 1px solid color-mix(in srgb, var(--bt-lime) 45%, transparent); border-radius: var(--bt-radius-lg); background: var(--bt-lime-bg); }
+.bt-root:not(#_) .cj-verdict.is-wait { border-color: color-mix(in srgb, var(--bt-gold) 50%, transparent); background: var(--bt-gold-bg); }
+.bt-root:not(#_) .cj-verdict > span:not(.bt-badge):not(.ai-acts) { flex: 1; min-width: 200px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cj-lock { margin-bottom: 12px; }
+
+/* 02 to 04: the chat tiles, the week, the fields */
+.bt-root:not(#_) .cj-chats { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .cj-when { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; margin-top: 14px; }
+.bt-root:not(#_) .cj-opt { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+.bt-root:not(#_) .cj-opt .bt-chip[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .cj-about { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .cj-part.is-locked { opacity: 0.6; }
+
+/* 05 The Crew Code: the agreement row sits at the bottom of the placard */
+.bt-root:not(#_) .cj-sign { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 16px 22px; border-top: 1px solid var(--bt-border); background: color-mix(in srgb, var(--bt-bg) 70%, transparent); }
+.bt-root:not(#_) .cj-sign .bt-check { color: var(--bt-text); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .cj-sign.is-locked { opacity: 0.6; }
+
+/* 06 What happens next: the journey, then the Send card */
+.bt-root:not(#_) .cj-send { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 22px; padding: 28px 20px; border: 1px solid var(--bt-border); border-radius: 22px; background: radial-gradient(60% 100% at 50% 0%, var(--bt-primary-bg), transparent 70%), var(--bt-surface); text-align: center; }
+.bt-root:not(#_) .cj-send[hidden] { display: none; }
+.bt-root:not(#_) .cj-send h2 { margin: 0; color: var(--bt-title); font-size: var(--bt-text-2xl); font-weight: 900; letter-spacing: 0.03em; text-transform: uppercase; }
+.bt-root:not(#_) .cj-send p { max-width: 52ch; margin: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .cj-send .bt-notice { max-width: 52ch; text-align: left; }
+.bt-root:not(#_) .cj-send .ai-acts { justify-content: center; }
+.bt-root:not(#_) .cj-send-art .bt-mascot { width: 52px; filter: drop-shadow(0 0 12px rgba(var(--bt-gold-rgb), 0.4)); }
+
+/* After sending, and for applicants who already did: the stamp, the band and the journey */
+.bt-root:not(#_) .cj-sent { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 22px; align-items: center; padding: 26px; border: 1px solid color-mix(in srgb, var(--bt-gold) 45%, transparent); border-radius: 22px; background: radial-gradient(70% 100% at 0% 50%, var(--bt-gold-bg), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .cj-sent h3 { margin: 0 0 6px; font-size: var(--bt-text-2xl); font-weight: 900; }
+.bt-root:not(#_) .cj-sent p { margin: 0 0 10px; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .cj-sent .cj-j4 { grid-column: 1 / -1; margin-top: 12px; }
+.bt-root:not(#_) .cj-sent-ic { display: grid; place-items: center; width: 84px; height: 84px; border-radius: 50%; background: var(--bt-surface-2); font-size: 36px; }
+.bt-root:not(#_) .cj-sent--note { border-color: var(--bt-border-2); background: var(--bt-surface); }
+
+/* Applicants and crew see a short page: no rail, the one column */
+.bt-root:not(#_) .tl-wrap[data-cj-lite] { grid-template-columns: minmax(0, 1fr); }
+
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .cj-chats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cj-hero, .bt-root:not(#_) .cj-when, .bt-root:not(#_) .cj-about { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cj-sent { grid-template-columns: minmax(0, 1fr); justify-items: center; text-align: center; }
+  .bt-root:not(#_) .cj-sign { padding: 14px 16px; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .cj-chats { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cj-rows { gap: 5px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .cj-chair.is-you { animation: none; }
+}
