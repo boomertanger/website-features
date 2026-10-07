@@ -19,7 +19,7 @@ export const isAdmin = (s: AuthState) => s.isAdmin || s.roles.includes("admin");
 
 /**
  * Preview (non-production only): signed out with ?as=member or ?as=admin, pages show sample data from
- * site/src/data/preview-planner-*.json instead of calling the callables, so layouts can be checked without an
+ * site/src/data/preview-planner-*.json (on /schedule/plan, ?as=member is a mod, so the crew view shows) instead of calling the callables, so layouts can be checked without an
  * account. A real signed-in member always wins. Never true on production.
  */
 export const previewAs = (): "member" | "admin" | null => {
@@ -29,7 +29,7 @@ export const previewAs = (): "member" | "admin" | null => {
 };
 const previewState = (): AuthState | null => {
   const p = previewAs();
-  return p ? ({ status: "verified", user: null, profile: null, account: null, roles: p === "admin" ? ["admin", "mod"] : [], isAdmin: p === "admin" } as unknown as AuthState) : null;
+  return p ? ({ status: "verified", user: null, profile: null, account: null, roles: p === "admin" ? ["admin", "mod"] : location.pathname.startsWith("/schedule/plan") ? ["mod"] : [], isAdmin: p === "admin" } as unknown as AuthState) : null;
 };
 
 const root = document.querySelector<HTMLElement>("[data-pl]");

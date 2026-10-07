@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: /schedule/plan for staff, the plan view (owner and admins: deadline fuse, slot cards by day, the T1 tray with the four groups and Vault search, add, remove and reorder games, add and edit slots, Publish week with the unfinished list, marquee frame and door pickers and the ON AIR SOON celebration, Publish changes, Delay, Cancel, the crew's seats, open a week early, reopen voting) and the crew view at the same URL (availability tri-toggle, seat map, seat requests, Ask for a game). Phones show one day at a time with the tray as a sheet. Preview data: ?as=admin and ?as=member. confirmAction gains cancelLabel.
 - Scream Planner public pages: /schedule (marquee, week at a glance doors, tickets or timeline, usual-week strip, vote call-out), /schedule/usual and /schedule/vote (covers or race, vote, add a Vault game).
 kit: Scream Planner crew view pieces on /dev/ui-kit: .bt-cslot (the crew's slot card), .bt-smap seat map with .bt-sbox seats (taken, open, mine, locked), .bt-crewbar with .bt-month, .bt-myreq (shared/ui/seats.js); slot cards gain timeHtml, badgeHtml, metaHtml, actionsHtml and ‹ › reorder; confirmAction takes bodyHtml and onOpen.
 - site: Scream Planner page frame (PlannerLayout, PlannerBar with the SCREAM PLANNER wordmark and the Schedule, Usual week, Vote and Plan seg nav, planner layout script with membersOnly, crewOnly and adminOnly gates and the ?as= preview, planner.css). Pages follow.

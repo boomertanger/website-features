@@ -1,0 +1,24 @@
+---
+// /schedule/plan (docs/specs/scream-planner.md §2): the planning board for the open week. Owner and admins plan (the plan view); Active
+// crew see the crew view at the same URL. Gated by PlannerLayout (crewOnly). Display only: everything is read and written in
+// scripts/planner/plan.ts through callables and the staff reads. Non-production, signed out, ?as=admin or ?as=member shows preview data.
+import PlannerLayout from "../../../layouts/PlannerLayout.astro";
+import "../../../styles/planner-plan.css";
+---
+<PlannerLayout title="Plan the week" description="The Scream Planner planning board for the open week." crewOnly section="plan" wide>
+  <div class="pp" data-pp>
+    <div class="bt-skeleton pp-skel" data-pp-load></div>
+    <div class="bt-zone" data-pp-error hidden>
+      <div class="bt-empty">
+        <div class="bt-empty-title">Couldn't load the planner</div>
+        <p data-pp-error-text>Check your connection and try again.</p>
+        <button type="button" class="bt-btn bt-btn--secondary" data-pp-retry>Try again</button>
+      </div>
+    </div>
+    <div data-pp-body aria-busy="true" hidden></div>
+  </div>
+</PlannerLayout>
+
+<script>
+  import "../../../scripts/planner/plan";
+</script>

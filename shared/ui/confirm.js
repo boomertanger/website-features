@@ -3,7 +3,7 @@ import { openModal, modalHeader } from "./modal.js";
 import { escapeHtml } from "./dom.js";
 
 /**
- * confirmAction({ title, message, bodyHtml, confirmLabel, busyLabel, danger, feature, onOpen, onConfirm })
+ * confirmAction({ title, message, bodyHtml, cancelLabel, confirmLabel, busyLabel, danger, feature, onOpen, onConfirm })
  * bodyHtml (optional, trusted markup) goes under the message for a dialog that needs a choice or a preview; onOpen(modal) wires it,
  * and onConfirm(modal) can read it (Scream Planner's cancel dialog: reason chips and a preview).
  * onConfirm is async. While it runs, every control is disabled and the confirm
@@ -15,6 +15,7 @@ export function confirmAction({
   title = "Are you sure?",
   message = "",
   bodyHtml = "",
+  cancelLabel = "Cancel",
   confirmLabel = "Delete",
   busyLabel = "Deleting…",
   danger = true,
@@ -32,7 +33,7 @@ export function confirmAction({
         bodyHtml +
         `<p class="bt-error" hidden></p>` +
         `<div class="bt-modal-actions">` +
-        `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button>` +
+        `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>${escapeHtml(cancelLabel)}</button>` +
         `<button type="button" class="bt-btn ${danger ? "bt-btn--danger" : "bt-btn--primary"}" data-bt-confirm>${escapeHtml(confirmLabel)}</button>` +
         `</div>`,
       onClose: () => { if (!done) resolve(false); },
