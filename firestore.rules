@@ -398,6 +398,13 @@ service cloud.firestore {
       return hasSiteRole(siteId, 'admin') || hasSiteRole(siteId, 'mod');
     }
 
+    // Mod Machina (docs/specs/mod-machina.md): Watcher or above. crewGrade is a claim written by the server
+    // (1-4 on the mod track, "A1"-"A3" on the admin track); admins pass through hasSiteRole.
+    function isWatcherPlus(siteId) {
+      return hasSiteRole(siteId, 'admin')
+        || (hasSiteRole(siteId, 'mod') && request.auth.token.get('crewGrade', 0) is int && request.auth.token.get('crewGrade', 0) >= 2);
+    }
+
     // A signed-up member: signed in and finished signup. The profile is only created when signup
     // completes (functions/lib/accounts), so it is the signal; a member doc can exist earlier.
     function isSignedUpMember(siteId) {
@@ -642,6 +649,74 @@ service cloud.firestore {
           allow read, write: if false;
         }
         match /private/{docId} {
+          allow read, write: if false;
+        }
+      }
+
+      // ---------- Mod Machina (docs/specs/mod-machina.md §13) ----------
+      // Everything lives under one container doc, crew/main (the settings doc; paths alternate collection /
+      // document). Written ONLY by Cloud Functions (functions/lib/crew); no client writes anywhere.
+      // Gears and referrals are closed: callables return what a page needs.
+      match /crew/{rootId} {
+        allow read: if isSiteStaff(siteId);
+        allow write: if false;
+
+        // The roster: crew read it (claims); the public part (grade, track, status) is mirrored to
+        // profiles/{uid}.crew. The private record (reliability, strikes, notes): the member, admins and the owner.
+        match /roster/{uid} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+
+          match /private/{docId} {
+            allow read: if request.auth != null && (request.auth.uid == uid || hasSiteRole(siteId, 'admin'));
+            allow write: if false;
+          }
+        }
+
+        // Applications: the applicant reads their own (it carries only their band, never the score);
+        // Watcher and above and admins read all; vouches follow; concerns are admins and owner only.
+        match /applications/{appId} {
+          allow read: if request.auth != null && (resource.data.uid == request.auth.uid || isWatcherPlus(siteId));
+          allow write: if false;
+
+          match /vouches/{voucherUid} {
+            allow read: if isWatcherPlus(siteId);
+            allow write: if false;
+          }
+          match /concerns/{uid} {
+            allow read: if hasSiteRole(siteId, 'admin');
+            allow write: if false;
+          }
+          match /private/{docId} {
+            allow read: if isWatcherPlus(siteId);
+            allow write: if false;
+          }
+        }
+
+        match /gears/{key} {
+          allow read, write: if false;
+        }
+        match /boards/{boardId} {
+          allow read: if true;
+          allow write: if false;
+        }
+        match /tasks/{taskId} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+        }
+        match /academyProgress/{uid} {
+          allow read: if request.auth != null && request.auth.uid == uid;
+          allow write: if false;
+        }
+        match /awards/{month} {
+          allow read: if true;
+          allow write: if false;
+
+          match /votes/{uid} {
+            allow read, write: if false;
+          }
+        }
+        match /referrals/{newUid} {
           allow read, write: if false;
         }
       }

@@ -389,7 +389,7 @@ module.exports = function accounts({ adminLogEntry }) {
   });
 
   // ---------- setMemberRole({ uid, role, on }) ----------
-  // Owner: everything, including admins. Admins: mods. The owner's admin role
+  // Owner: admins. Mods go through Mod Machina (crewDecide / crewSetStatus), not here. The owner's admin role
   // can't be removed. The trigger below mirrors the change into custom claims and
   // writes the adminLog entry (with rolesChangedBy as the actor).
   const setMemberRole = onCall(async (request) => {
@@ -405,7 +405,9 @@ module.exports = function accounts({ adminLogEntry }) {
     const isOwner = caller === ownerUid;
     const isAdmin = isOwner || (callerMember.get("roles") || []).includes("admin");
     if (role === "admin" && !isOwner) throw fail("permission-denied", "Only the owner can change admins.", "notOwner");
-    if (role === "mod" && !isAdmin) throw fail("permission-denied", "Only admins can change mods.", "notAdmin");
+    // Mod Machina (docs/specs/mod-machina.md section 3b): only the owner approves mods, and only through
+    // crewDecide (add) or crewSetStatus (remove), never through this callable.
+    if (role === "mod") throw fail("permission-denied", "Mods are approved and removed through the crew queue, by the owner.", "useCrew");
     if (target === ownerUid && role === "admin" && !on) throw fail("failed-precondition", "The owner can't be removed as admin.", "owner");
     const targetRef = refs(target).member;
     await db.runTransaction(async (tx) => {
@@ -431,7 +433,13 @@ module.exports = function accounts({ adminLogEntry }) {
     const before = event.data.before.exists ? (event.data.before.get("roles") || []) : [];
     const after = event.data.after.exists ? (event.data.after.get("roles") || []) : [];
     if (event.data.after.exists) await syncRoleTag(siteId, uid, after);
-    if (sameRoles(before, after)) return;
+    // Mod Machina: crewGrade (1-4, or "A1"-"A3") and crewStatus ride along in the claims, written onto the
+    // member doc by mirrorCrewRoster. Merged next to the roles, never replacing them.
+    const crewBefore = { grade: event.data.before.get("crewGrade") ?? null, status: event.data.before.get("crewStatus") ?? null };
+    const crewAfter = { grade: event.data.after.get("crewGrade") ?? null, status: event.data.after.get("crewStatus") ?? null };
+    const crewSame = crewBefore.grade === crewAfter.grade && crewBefore.status === crewAfter.status;
+    const rolesSame = sameRoles(before, after);
+    if (rolesSame && crewSame) return;
 
     let user;
     try { user = await auth.getUser(uid); } catch (err) {
@@ -442,8 +450,11 @@ module.exports = function accounts({ adminLogEntry }) {
     const roleMap = { ...(claims.roles || {}) };
     if (after.length) roleMap[siteId] = [...after].sort(); else delete roleMap[siteId];
     if (Object.keys(roleMap).length) claims.roles = roleMap; else delete claims.roles;
+    if (crewAfter.grade != null) claims.crewGrade = crewAfter.grade; else delete claims.crewGrade;
+    if (crewAfter.status != null) claims.crewStatus = crewAfter.status; else delete claims.crewStatus;
     await auth.setCustomUserClaims(uid, claims);
     await db.doc(`users/${uid}`).set({ claimsUpdatedAt: FieldValue.serverTimestamp() }, { merge: true });
+    if (rolesSame) return;   // a crew-only change: no adminLog entry (the crew functions log their own)
 
     const actor = event.data.after.exists ? event.data.after.get("rolesChangedBy") : null;
     const profile = await db.doc(`sites/${siteId}/profiles/${uid}`).get();

@@ -935,3 +935,6 @@ Object.assign(exports, require("./lib/factory")({
 // The plan to become Content Creator of the Year: the admin's draft edits, manual metrics, Publish
 // (rebuilds public/goalTracker and the teaser) and the 05:30 Los Angeles daily counts. Lives in lib/goalTracker/.
 Object.assign(exports, require("./lib/goalTracker")({ adminLogEntry }));
+
+// Mod Machina (docs/specs/mod-machina.md): the crew's roster, queue, Gears, tasks, Academy and awards.
+Object.assign(exports, require("./lib/crew")({ adminLogEntry }));

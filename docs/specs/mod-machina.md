@@ -309,8 +309,8 @@ v1 ships Dead Air and Scream Off (they move YouTube chat most); Bingo and Body C
 Promotions are never automatic: when someone meets every criterion, a "Ready to promote" card appears on /admin/crew and the owner (or A3 for up to Warden) confirms with one tap.
 
 ## 13. Data model (sites/boomertanger/crew/main/…)
-- `crew/{uid}`: grade, track (mod | admin), status (active | checkIn | goingDark | reserve | alumni | paused), monthDuties, missedMonths, activeStreak, breakUntil, breakMonthsUsed (per year), excusedMonths, firstPick, crewComp, since, gradeSince, platforms {twitch, ytLandscape, ytVertical, tiktok: favourite | happy | ifNeeded | no}, availability, device, mentor, alumni flag. Crew read; public subset mirrored to `profiles/{uid}.crew` (grade chip only).
-- `crew/{uid}/private/record`: reliability, strikes, notes. Admins + owner + self (strikes visible to self).
+- `crew/main/roster/{uid}` (the roster; the settings doc is `crew/main` itself; amended Oct 6 to match the build): grade, track (mod | admin), status (active | checkIn | goingDark | reserve | alumni | paused), monthDuties, missedMonths, activeStreak, breakUntil, breakMonthsUsed (per year), excusedMonths, firstPick, crewComp, since, gradeSince, platforms {twitch, ytLandscape, ytVertical, tiktok: favourite | happy | ifNeeded | no}, availability, device, mentor, alumni flag. Crew read; public subset mirrored to `profiles/{uid}.crew` (grade, track and status only). Grade is 1-4 on the mod track and 1-3 on the admin track (claims: `crewGrade` 1-4 or "A1"-"A3", and `crewStatus`).
+- `crew/main/roster/{uid}/private/record`: reliability, strikes, notes. Admins + owner + self (strikes visible to self).
 - `applications/{appId}`: uid, role (mod | keeper), answers, status, score, expiresAt; `vouches/{voucherUid}`, `concerns/{uid}` (admin + owner only).
 - `duties/{streamId}_{uid}`: streamId, room, role, scheduled, clockIns [{in, out, role}], handoffs, minutes, gears. Seats themselves live on the stream object.
 - `gears/{key}`: append-only ledger like rewardLedger (key `${source}:${ref}:${uid}`, so nothing pays twice). `boards/{month|season|all}` pre-built.
