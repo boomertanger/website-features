@@ -312,3 +312,57 @@ Mockups: `docs/design/mockups/scream-planner-mockups.html`, round 4, approved. R
 - **Viewer view switches:** the week defaults to W1 tickets with a Tickets / Timeline (W2) switch, and the ballot defaults to V1 covers with a Covers / Race (V2) switch. Both are kept per viewer in localStorage (`bt.schedule.weekView`, `bt.schedule.voteView`), wrapped in try/catch. On phones the timeline is a compact grid.
 - **Everything goes still under reduced motion** (frames, doors, flip clock, bursts, slider transitions).
 - **New kit pieces** (bt-ui.css + shared/ui/*.js + the /dev/ui-kit page): `.bt-ticket`, `.bt-marquee[data-frame]` + `.bt-flipclock`, `.bt-velvet`, `.bt-vote-card` + `.bt-drops`, `.bt-fuse`, `.bt-slot` + `.bt-tray`, `.bt-tri`, `.bt-poster`, `.bt-portal` (five styles), `.bt-slider` (L4), `.bt-view-switch`, `.bt-burst`, plus the Scream Planner icon. Unique colours are declared once as custom properties (velvet, bulb, fuse, wire, wax, snow, ice, pumpkin).
+
+## 14. Reads for the pages (the backend contract, built Oct 7)
+
+Everything below is written only by `functions/lib/planner/*` (Admin SDK). Pages read these paths and call the callables; they never write. Times are Firestore Timestamps on stream docs and plain UTC milliseconds in the `public/*` summary docs. Weekdays are ISO numbers (1 Monday to 7 Sunday); local times are `"HH:MM"` strings in the site zone (`sites/{siteId}.timezone`, Central today). Callable errors carry `details.reason`.
+
+### Public reads (everyone)
+- **`public/schedule`** (new): `{ currentWeek, tz, weeks: [{ week, state: "published" | "planning", startsMs, endsMs, publishBy, publishedAt, publishedRev, hero: { frame, doors } | null, weekOff: { label } | null, streamCount }], updatedAt }`. Every week from the current one on. `hero` and `streamCount` are only set once published; `weekOff.label` is null when the exception is not public. Rebuilt on open, close, publish and every tick. This is what /schedule reads for the marquee frame, the door style and the week-off message; with no entry for next week (or `state: "planning"`) show "Next week's schedule lands Friday."
+- **Published streams**: `streams` where `published == true` (rules already public). By week: `where published == true, where week == "2026-W44", orderBy plannedStart`. The marquee's next stream: `where published == true, where plannedStart > now, orderBy plannedStart, limit 1` (skip `state == "cancelled"` client-side). The indexes are in `firestore.indexes.json`.
+  - Fields: `state` (`scheduled | live | ended | cancelled`), `slug`, `week`, `title`, `tz`, `plannedStart`, `plannedEnd`, `type` (`platform | backstage`), `audience` (`public | fanClub`), `platforms[]`, `rooms[]`, `plannedGameCount`, `theme { patternId, label, icon, tagHints[], gameHints[] }?`, `plannedGames[] { gameId, title, order, source { kind, byHandle?, votes? }, outcome }`, `plannedGameIds[]`, `minCrew`, `caps`, `crew { captain: handle | null, chats: { room: { lead: handle | null, deckhands: [handle] } }, caps }` (a room the stream doesn't have is absent), `delay { originalStart, originalEnd, count, reason?, at, by }?`, `cancel { reason?, at, by }?`, `hasUnpublishedChanges`, `rev`. Backstage streams are public docs too: show them as members-only ("Backstage · Fan Club", velvet door) without linking.
+  - After publishing, **seat changes, delay and cancel reach the public doc at once**; edits to times, games, theme and rooms stay in the draft until Publish changes (the public doc keeps showing the published version).
+- **`public/usualWeek`**: `{ patterns: [{ id, label, icon, dow, start, end, type, membersOnly, platforms[], gameCount }], exceptions: [{ id, kind, from, to, label, patternIds[] }] (upcoming public ones only), tz, updatedAt }`.
+- **`public/ballot`**: `{ week, state: "open" | "closed" | "none", opensAt, closesAt, games: [{ slug, title, cover, status, tags[], votes, wanted, seededFrom, addedBy (handle | null) }] (ranked: votes, then Most wanted, then newest vote), totalVotes, votesPerMember, updatedAt }`. It always shows the newest week that has a ballot (state `closed` once voting is over). The signed-in member's own picks come from `ballotMine`.
+
+### Crew and staff reads (Firestore rules: mods and admins; admins for settings)
+- **`planWeeks/{week}`** (staff): `state` (`open | closed | published`), `opensAt`, `closesAt`, `publishBy`, `publishedAt`, `publishedRev`, `hasUnpublishedChanges`, `hero { frame, doors } | null`, `weekOff { label, public, exceptionId } | null`, `streamIds[]`, `ballotSlugs[]`, `counts { slots, seatsOpen, votes }`, `earlySignupUntil?`, `closedEarly?`. The collection is small: read it whole and pick the weeks you need.
+- **Planning board**: `streams` where `week == w` ordered by `plannedStart` (staff read every stream, including `published: false`), plus `streams/{id}/private/draft` for the full working copy (crew seats there are `{ uid, handle }`).
+- **`streams/{id}/signups/{uid}`** (staff): `{ availability: "yes" | "maybe" | "no", prefilled, seats: [{ room: "captain" | room, role, status: "requested" | "confirmed" | "declined" | "dropped", needsOwnerOk?, why? }], gameRequest: { gameSlug, note, status: "open" | "planned" | "notPlanned" } | null, reconfirm: { count, needed }?, handle, grade, track, updatedAt }`. No reliability data.
+- **`planner/main`** (admins): `{ deadlines { openDow, openTime, closeDow, closeTime, publishDow, publishTime }, defaults { rooms[], minCrew, caps, votesPerMember, ballotAddsPerMember, ballotSeed, gameCount } }`; `planner/main/patterns/{id}`, `planner/main/exceptions/{id}`, `planner/main/todos/{id}` (`{ kind: "weekNotPublished" | "seatReleased", text, week, link }`: the /admin to-do list).
+- Not readable by clients: `planWeeks/{week}/ballot`, `planWeeks/{week}/votes`, `notifyOutbox`.
+
+### Callables (all `onCall`, all refuse with `details.reason`)
+| Callable | Who | Data in | Returns |
+|---|---|---|---|
+| `plannerSaveSettings` | owner | `{ deadlines?, defaults? }` (merged) | `{ ok, settings }` |
+| `patternSave` / `patternDelete` | admins | `{ id?, label, icon, dow, start, end, type, platforms?, rooms?, gameCount, tagHints[], gameHints[], minCrew?, caps?, active?, order? }` / `{ id }` | `{ ok, id }` |
+| `exceptionSave` / `exceptionDelete` | admins | `{ id?, kind, from, to?, label, public?, patternIds? }` (dates `YYYY-MM-DD`) / `{ id }` | `{ ok, id }` |
+| `weekOpen` | owner | `{ week? }` (default: next week) | `{ ok, week, created, streams, weekOff }` |
+| `weekReopen` | owner | `{ week, closesAt? (ms) }` | `{ ok, week, closesAt }` |
+| `planSlot` | admins | create: `{ week, date, start, end, type?, rooms?, plannedGameCount?, theme?, minCrew?, caps?, title? }`; edit: add `streamId`; remove: `{ week, streamId, remove: true }` (a published slot is cancelled instead) | `{ ok, streamId, slug }` |
+| `planGames` | admins | `{ streamId, slugs[] }` in order; the server sets each source (modRequest, ballot, owner) | `{ ok, plannedGames }` |
+| `planTray` | admins | `{ streamId }` | `{ ok, groups: [{ id: modRequests / votes / theme / picks, items }] }` (picks capped at 60, with `more`) |
+| `publishWeek` | owner | `{ week, hero?: { frame, doors } (either may be "surprise"), check?: true }` | check: `{ warnings, hero (default), recentFrames, poolFrames, seasonalFrames, doorStyles }`; publish: `{ publishedRev, published, changed, hero, warnings }` |
+| `delayStream` | owner, A2+ | `{ streamId, date, start, end?, reason? }` (or `startMs`, `endMs`) | `{ ok, plannedStart, plannedEnd, delayCount }` |
+| `cancelStream` | owner, A2+ | `{ streamId, reason? }` | `{ ok, state }` |
+| `crewAvailability` | Active crew | `{ streamId, availability }` (week must be open) | `{ ok }` |
+| `dutySignUp` | Active crew | `{ streamId, seats: [{ room?, role }] }` in order of preference | `{ ok, seats, earlyGears }` |
+| `dutyDrop` | crew (own); admins (`uid`) | `{ streamId, seat?, uid? }` | `{ ok, dropped, released }` |
+| `dutyConfirm` | Captain, admins, owner | `{ streamId, uid, seat, decline? }` | `{ ok, status, crew }` |
+| `dutyKeep` | Active crew | `{ streamId }` ("Still on for the new time?" keep) | `{ ok }` |
+| `modGameRequest` | Active crew | `{ streamId, gameSlug, note?, remove? }` | `{ ok, gameRequest }` |
+| `ballotVote` | verified members | `{ week?, slugs[] }` (replaces the member's picks, max 3) | `{ ok, slugs, votesLeft }` |
+| `ballotAddGame` | verified members | `{ week?, slug }` | `{ ok, slug, addsLeft }` |
+| `ballotMine` | members | `{ week? }` | `{ week, open, closesAt, votes[], adds[], votesLeft, addsLeft }` |
+
+Common `details.reason` values: `notOwner`, `notAdmin`, `notAllowed` (delay and cancel below A2), `notCrew`, `notActive`, `gradeTooLow`, `leadBlocked`, `needsOwner`, `seatTaken`, `cantHold`, `roomOff`, `deckhandCap`, `needsAvailability`, `needsSeat`, `noteTooLong`, `closed` (voting, availability and requests after Close), `emailNotVerified`, `needsSignup`, `tooManyVotes`, `notOnBallot`, `addLimit`, `onBallot`, `noGame`, `overlap`, `outsideWeek`, `tooManyGames`, `started`, `badState`, `noChange`, `nothingToPublish`, `noTimezone`, `invalid` (with `details.problems[]`). The Vault's `vaultDeleteGame` now refuses with `inPlanner` while a game is on a ballot taking votes or in a planned or scheduled slot.
+
+### Decisions made while building (flagged for review)
+- Overlaps are refused on save, delay and publish (section 10); section 6 lists overlap among the publish warnings, so `publishWeek` returns it in `warnings` and also blocks (`overlap`). Overlaps cannot normally exist at publish because saves and delays refuse them.
+- A Watcher may request Captain; the request is flagged `needsOwnerOk` and only the owner can confirm it. A Captain may also hold Room Lead seats (including both YouTube rooms); a Deckhand holds that seat only.
+- Prefilled availability: the slot's weekday is in the mod's usual days gives `yes`, otherwise `no`; a mod with no usual days is left blank. Saying `no` drops pending seat requests and the game request (confirmed seats stay until dropped).
+- Planner defaults when unset: every room (`twitch`, `ytLandscape`, `ytVertical`, `tiktok`), `minCrew { captain: true, rooms: ["youtube"] }`, `caps.deckhands 2`, 2 games. Playing games are seeded onto the ballot as `seededFrom: "owner"`; a wishlist game needs at least one "want" to count as Most wanted.
+- The Mod Machina early sign-up window is `planWeeks.earlySignupUntil` (48 h after the first publish); the first seat request in it pays +3 Gears through `grantGears` with source `earlySignup` (added to the Gears sources; idempotent per stream and person).
+- A partly covering `weekOff` exception acts as days off for the days it covers; only a range covering Monday to Sunday takes the whole week off.
+- `notifyOutbox` docs carry `expireAt` (30 days); the TTL policy is in `firestore.indexes.json` `fieldOverrides`.

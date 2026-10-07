@@ -51,6 +51,31 @@
       ]
     },
     {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "week", "order": "ASCENDING" },
+        { "fieldPath": "plannedStart", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "published", "order": "ASCENDING" },
+        { "fieldPath": "plannedStart", "order": "ASCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "week", "order": "ASCENDING" },
+        { "fieldPath": "plannedStart", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "rewardLedger",
       "queryScope": "COLLECTION",
       "fields": [
@@ -100,6 +125,12 @@
     },
     {
       "collectionGroup": "events",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "notifyOutbox",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []

@@ -486,3 +486,5 @@ assert.equal(L.weekPublishedSummary(5), "Next week's schedule is up: 5 streams")
 assert.equal(L.weekPublishedSummary(1), "Next week's schedule is up: 1 stream");
 
 console.log("check-planner: logic ok");
+
+require("./check-planner-wiring")(L).then(() => console.log("check-planner: wiring ok"), (e) => { console.error(e); process.exit(1); });

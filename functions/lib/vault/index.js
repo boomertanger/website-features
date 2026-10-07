@@ -29,6 +29,7 @@ const { createSources, SourceError } = require("./sources");
 const C = require("./checks");
 const makeStore = require("./store");
 const cloud = require("./cloudinary");
+const { plannerRefs } = require("../planner/refs");
 const { fail, callerInfo, requireVerifiedMember, requireStaff, requireAdmin, sourceError } = require("./common");
 const factory = require("../factory/record");
 const makeEditor = require("./edit");
@@ -372,6 +373,11 @@ module.exports = function vault(deps) {
     const g = await gRef.get();
     if (!g.exists) throw fail("not-found", "That game isn't in the Vault.", "noGame");
 
+    // Refused while the Scream Planner still uses it: on a ballot that is taking votes, or in a planned or scheduled slot.
+    const inPlanner = await plannerRefs(db, slug);
+    if (inPlanner.ballots.length || inPlanner.slots.length) {
+      throw fail("failed-precondition", "It's on next week's ballot or planned in a slot; take it off first, or set it to Abandoned instead.", "inPlanner", { ballots: inPlanner.ballots.length, slots: inPlanner.slots.length });
+    }
     // Refused while any stream references it.
     const refs = new Set();
     for (const field of ["plannedGameIds", "gameIds"]) {

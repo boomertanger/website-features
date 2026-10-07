@@ -784,7 +784,7 @@ module.exports = {
   // deadlines
   validateDeadlines, weekDeadlines, targetWeekAt, stateAt,
   // patterns and slots
-  roomsForPlatforms, platformsForRooms, validatePattern, validateException, validateSlot, weekOffFor, expandWeek, slotFromPattern,
+  roomsForPlatforms, platformsForRooms, validateRooms, validateMinCrew, validatePattern, validateException, validateSlot, weekOffFor, expandWeek, slotFromPattern,
   // overlaps
   overlaps, overlapsWith, findOverlaps,
   // crew

@@ -269,6 +269,13 @@ const pub = async () => (await site.collection("public").doc("vault").get()).dat
   // ---------- deleting: refused while a stream references the game ----------
   const e = await rejects(call("vaultDeleteGame", "owner1", { slug: "granny-chapter-two" }), "failed-precondition", "inStreams");
   assert.match(e.message, /Appears in 1 stream; set it to Abandoned instead/);
+  // ... and while the Scream Planner uses it: on a ballot that is taking votes, or in a planned slot (details.reason inPlanner)
+  await site.collection("planWeeks").doc("2026-W44").set({ state: "open", ballotSlugs: ["hell-carnage"] });
+  await rejects(call("vaultDeleteGame", "owner1", { slug: "hell-carnage" }), "failed-precondition", "inPlanner");
+  await site.collection("planWeeks").doc("2026-W44").update({ state: "published" });   // a published week's ballot is history, not a use
+  await site.collection("streams").doc("slot1").set({ state: "planned", plannedGameIds: ["hell-carnage"] });
+  await rejects(call("vaultDeleteGame", "owner1", { slug: "hell-carnage" }), "failed-precondition", "inPlanner");
+  await site.collection("streams").doc("slot1").delete(); await site.collection("planWeeks").doc("2026-W44").delete();
   const before = (await col(`sites/${SITE}/vaultKeys`)).length;
   r = await call("vaultDeleteGame", "owner1", { slug: "hell-carnage" });
   assert.equal(r.ok, true);

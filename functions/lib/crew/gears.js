@@ -12,7 +12,7 @@ const L = require("./logic");
 const { SITE_ID, paths, loadSettings } = require("./settings");
 const { dayKey } = require("../arcade/logic");
 
-const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy"];
+const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish)
 const NEVER = ["timeout", "ban", "deletedMessage", "messages", "messageCount"];
 const safe = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 100);
 const ms = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);

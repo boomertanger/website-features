@@ -938,3 +938,7 @@ Object.assign(exports, require("./lib/goalTracker")({ adminLogEntry }));
 
 // Mod Machina (docs/specs/mod-machina.md): the crew's roster, queue, Gears, tasks, Academy and awards.
 Object.assign(exports, require("./lib/crew")({ adminLogEntry }));
+
+// Scream Planner (docs/specs/scream-planner.md): the usual week, weekly planning, the ballot, publish, delay and cancel,
+// crew availability and seats, and plannerTick (every 15 minutes). Lives in lib/planner/.
+Object.assign(exports, require("./lib/planner")({ adminLogEntry }));
