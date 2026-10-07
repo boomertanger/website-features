@@ -1630,6 +1630,7 @@ const NG_TILE = {
   play: () => playFeatureHtml({ title: "Tap the Splat", href: "#kit-navgroup", best: "0:36.94", bestNote: "Your best this week." }),
   community: () => communityFeatureHtml({ month: "September 2026", winners: [{ role: "Top Gear", handle: "hollowhannah" }, { role: "Fan Favourite", handle: "mothmanmike" }] }),
 };
+const ngSheetLink = ([icon, , name, blurb], current = false) => `<a class="bt-menu-sheet-link" href="#kit-navgroup"${current ? ' aria-current="page"' : ""}><svg aria-hidden="true"><use href="#i-${icon}"/></svg><span>${name}<small>${blurb}</small></span></a>`;
 function navgroupKitHtml() {
   const staticPanel = (g, tile) => `<div class="bt-navgroup-panel"><div class="bt-navgroup-links">${NG_PAGES[g].map((p) => ngCard(p)).join("")}</div><div class="bt-navgroup-feature">${tile}</div></div>`;
   const stage = (inner, attrs = "") => `<div class="kit-ng-stage"${attrs}><header class="bt-site-header"><span class="bt-nav" role="presentation">${inner}</span></header></div>`;
@@ -1670,6 +1671,22 @@ function navgroupKitHtml() {
       ${tile("Play: call to action (signed out or no score)", playFeatureHtml({ title: "Tap the Splat", href: "#kit-navgroup" }))}
       ${tile("Community: Mod of the Month", NG_TILE.community())}
       ${tile("Community: empty (call to action, mascot)", communityFeatureHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` }))}
+    </div>
+
+    <p class="kit-sub">Phone More sheet: .bt-menu-sheet regrouped under .bt-menu-sheet-h headings, a line under each page (.bt-menu-sheet-link > svg + span > small), and a small tile on top (.bt-menu-sheet-feature, red with .is-live). Pages already in the tab bar are left out.</p>
+    <div class="kit-ng-sheets">
+      <figure><div class="bt-menu-sheet kit-ng-sheet">
+        <a class="bt-menu-sheet-feature" href="#kit-navgroup"><span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-joystick"/></svg></span><span><b>Today in the Arcade</b><small>Tap the Splat. Your best this week: 0:36.94</small></span></a>
+        <p class="bt-menu-sheet-h">Watch</p>${ngSheetLink(["film", "streams", "Streams", "Past streams, highlights and clips."])}
+        <p class="bt-menu-sheet-h">Play</p>${NG_PAGES.play.map((p) => ngSheetLink(p)).join("")}
+        <p class="bt-menu-sheet-h">Community</p>${NG_PAGES.community.map((p, i) => ngSheetLink(p, i === 1)).join("")}
+        <p class="bt-menu-sheet-h">Shop</p>${ngSheetLink(["bag", "shop", "Shop", "Merch and crew drops."])}
+      </div><figcaption>Offline: Arcade tile, current page marked</figcaption></figure>
+      <figure><div class="bt-menu-sheet kit-ng-sheet">
+        <a class="bt-menu-sheet-feature is-live" href="#kit-navgroup"><span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-live"/></svg></span><span><b>Live now</b><small>Granny. Watch now.</small></span></a>
+        <p class="bt-menu-sheet-h">Watch</p>${ngSheetLink(["film", "streams", "Streams", "Past streams, highlights and clips."])}
+        <p class="bt-menu-sheet-h">Play</p>${ngSheetLink(NG_PAGES.play[0])}
+      </div><figcaption>Live: the tile turns red</figcaption></figure>
     </div>
   </section>`;
 }

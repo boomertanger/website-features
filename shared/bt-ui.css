@@ -2239,6 +2239,7 @@
 .bt-root:not(#_) .bt-menu-sheet small { display: block; font-size: var(--bt-text-xs); font-weight: 500; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-menu-sheet > a.bt-menu-sheet-feature { padding: 12px; margin: 4px 0 6px; gap: 12px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: radial-gradient(120% 90% at 100% 0%, color-mix(in srgb, var(--bt-title) 14%, transparent), transparent 60%), var(--bt-surface); }
 .bt-root:not(#_) .bt-menu-sheet > a.bt-menu-sheet-feature.is-live { border-color: var(--bt-red); background: radial-gradient(120% 90% at 100% 0%, var(--bt-red-bg), transparent 65%), var(--bt-surface); box-shadow: 0 0 18px var(--bt-red-glow); }
+.bt-root:not(#_):is([data-live="public"], [data-live="public"] *) .bt-menu-sheet-notlive { display: none; }
 .bt-root:not(#_) .bt-menu-sheet-feature .bt-navgroup-ic { grid-row: auto; }
 .bt-root:not(#_) .bt-menu-sheet-feature b { display: block; color: var(--bt-title); font-size: var(--bt-text-base); }
 .bt-root:not(#_) .bt-menu-sheet-feature.is-live b { color: var(--bt-red); }

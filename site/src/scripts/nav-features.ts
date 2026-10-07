@@ -7,6 +7,7 @@
 // Each tile falls back to its call to action when the data is missing or the read fails.
 import site from "../data/site.json";
 import { initWatchTile, playFeatureHtml, communityFeatureHtml } from "../../../shared/ui/navgroup.js";
+import { escapeHtml } from "../../../shared/ui/dom.js";
 
 type Tile = { start: () => void; stop: () => void };
 let watch: Tile | null = null;
@@ -54,6 +55,14 @@ async function loadCommunity(tile: Element) {
   } catch {
     tile.innerHTML = communityFeatureHtml({ mascotHtml });
   }
+}
+
+/** The phone More sheet's small Arcade tile (TabBar.astro): same data as the Play panel. */
+export async function loadSheetFeature(tile: HTMLAnchorElement) {
+  const d = await loadPlayData();
+  tile.href = d.href;
+  const body = tile.querySelector("[data-sheet-body]");
+  if (body) body.innerHTML = `<b>Today in the Arcade</b><small>${escapeHtml(d.title)}${d.best ? `. ${escapeHtml(d.bestNote.replace(/.$/, ""))}: ${escapeHtml(d.best)}` : ". Tap to play."}</small>`;
 }
 
 /** navgroup.js onOpen: fills a group's feature tile the first time its panel opens (Watch's countdown runs while open). */

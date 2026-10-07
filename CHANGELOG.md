@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: the phone More sheet is grouped under Watch, Play, Community and Shop headings with a line under each page and a small tile on top (Live now, or today's Arcade game and your best); pages already in the tab bar are left out. The tab bar is unchanged.
 site: header menu tiles. Watch shows Live now (red, Watch now) or the next stream with a ticking countdown and Add to calendar (an .ics download); Play shows today's Arcade game and the member's best time, or a Play button; Community shows the latest Mod of the Month award, or Help keep the chats fun with Join the crew. They read existing data only and load the first time a menu opens.
 site: the header's eleven flat links become Watch, Play and Community menus plus a Shop link (groups and blurbs from site/src/lib/nav.js; disabled modules and empty groups are hidden, a one-page group is a plain link). Crew returns to Community; Bug Zapper, Feature Lab and Horror Monthly are defined there for later. Watch shows a red dot while live.
 feat(kit): header nav groups: .bt-navgroup (trigger, panel, page cards, feature tile in loading, live, offline and empty states) with shared/ui/navgroup.js (hover or click opens, one at a time, outside click, scroll or Escape closes) and every state on /dev/ui-kit/.

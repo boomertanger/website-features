@@ -113,3 +113,6 @@
 #bt-ui-kit .kit-ng-tiles figure { margin: 0; display: grid; gap: var(--bt-space-2); align-content: start; }
 #bt-ui-kit .kit-ng-tiles figcaption { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
 #bt-ui-kit .kit-ng-sheet { max-width: 390px; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); }
+#bt-ui-kit .kit-ng-sheets { display: flex; flex-wrap: wrap; gap: var(--bt-space-6); align-items: flex-start; }
+#bt-ui-kit .kit-ng-sheets figure { margin: 0; display: grid; gap: var(--bt-space-2); flex: 1 1 300px; max-width: 390px; }
+#bt-ui-kit .kit-ng-sheets figcaption { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }

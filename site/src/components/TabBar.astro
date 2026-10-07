@@ -1,9 +1,10 @@
 ---
 // Phone tab bar: Home, Schedule, raised Live, Games, More. The raised Live
 // glows by data-live and shows the next stream time while offline. "More"
-// opens a sheet with the rest of the navigation.
+// opens a sheet with the rest of the navigation, grouped like the header menus
+// (Watch / Play / Community / Shop, a line under each page) under a small live tile.
 import site from "../data/site.json";
-import { navItems, moreItems, isCurrent, isInSection, hasModule } from "../lib/nav.js";
+import { navItems, moreGroups, isCurrent, isInSection, hasModule } from "../lib/nav.js";
 import { formatStreamTime } from "../lib/time.js";
 
 const path = Astro.url.pathname;
@@ -11,7 +12,7 @@ const byId = Object.fromEntries(navItems.map((i) => [i.id, i]));
 const tabs = ["home", "schedule"].filter(hasModule).map((id) => byId[id]);
 const after = ["games"].filter(hasModule).map((id) => byId[id]);
 const liveOn = hasModule("live");
-const { startsAt } = site.nextStream;
+const { startsAt, game } = site.nextStream;
 const short = formatStreamTime(startsAt, "short", site.timezone);
 ---
 <nav class="bt-tabbar bt-site-tabbar" aria-label="Main (tabs)">
@@ -31,8 +32,24 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
   <button type="button" aria-expanded="false" aria-controls="bt-more-sheet" data-more-toggle><svg aria-hidden="true"><use href="#i-more" /></svg>More</button>
 </nav>
 <div class="bt-menu-sheet bt-site-more" id="bt-more-sheet" hidden>
-  {moreItems.map((i) => (
-    <a href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>{i.label}</a>
+  <a class="bt-menu-sheet-feature is-live bt-when-public" href="/live">
+    <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-live" /></svg></span>
+    <span><b>Live now</b><small>{game}. Watch now.</small></span>
+  </a>
+  <a class="bt-menu-sheet-feature bt-menu-sheet-notlive" href="/arcade" data-sheet-feature>
+    <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-joystick" /></svg></span>
+    <span data-sheet-body><b>Today in the Arcade</b><span class="bt-skeleton bt-navgroup-skel"></span></span>
+  </a>
+  {moreGroups.map((g) => (
+    <>
+      <p class="bt-menu-sheet-h">{g.label}</p>
+      {g.items.map((i) => (
+        <a class="bt-menu-sheet-link" href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
+          <svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>
+          <span>{i.label}<small>{i.blurb}</small></span>
+        </a>
+      ))}
+    </>
   ))}
 </div>
 
@@ -40,9 +57,13 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
   const toggle = document.querySelector<HTMLButtonElement>("[data-more-toggle]");
   const sheet = document.getElementById("bt-more-sheet");
   if (toggle && sheet) {
+    let tileLoaded = false;
     const set = (open: boolean) => {
       sheet.hidden = !open;
       toggle.setAttribute("aria-expanded", String(open));
+      // The Arcade tile reads its data the first time the sheet opens, not on page load.
+      const tile = sheet.querySelector<HTMLAnchorElement>("[data-sheet-feature]");
+      if (open && tile && !tileLoaded) { tileLoaded = true; void import("../scripts/nav-features").then((m) => m.loadSheetFeature(tile)); }
     };
     toggle.addEventListener("click", () => set(sheet.hidden));
     document.addEventListener("keydown", (e) => {
