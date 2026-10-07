@@ -909,6 +909,60 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   the choice: Favourite lights the primary edge, Happy to help a softer one, No dims the tile. Fires a bubbling
   `bt-chat-tile-change` event (`detail: { chat, value }`). The page lays the tiles out in its own grid.
 
+**Scream Planner pieces** (`docs/specs/scream-planner.md` §13; approved mockup
+`docs/design/mockups/scream-planner-mockups.html`; all on the UI Kit page under "Scream Planner", built in
+`shared/ui-kit/kit-scream-planner.js`). Builders live in `shared/ui/` (§6); text is escaped, `*Html` arguments are
+trusted markup; covers are always `coverHtml()` from `cover.js` (`.bt-cover`). Unique colours are custom properties
+declared once at the top of the block in `bt-ui.css`: `--bt-velvet` (+ `-rgb`), `--bt-bulb`, `--bt-fuse`, `--bt-wire`,
+`--bt-wax`, `--bt-snow`, `--bt-ice`, `--bt-pumpkin` (+ `-dk`), `--bt-stem`, and the shadow and glint triplets
+`--bt-ink-rgb`, `--bt-sheen-rgb`; everything else is `var(--bt-*)`. Container queries only (1024 / 640 / 420). Under
+reduced motion every piece goes still (frames, doors, flip clock, bursts, slider; one block at the end of the CSS).
+**Naming:** `.bt-portal` is the modal portal (rule 6), so the doors are `.bt-doors` / `.bt-door`, never `.bt-portal`.
+- **Icon:** `SP_ICON` (`.bt-sp-icon`, `scream-planner.js`) in `.bt-wordmark.bt-wordmark--power`: SCREAM PLANNER. On
+  hover, focus or touch (`initPowerWordmarks`) the top page rips away and the mouth stretches. No sprite icon is needed.
+- **Small parts:** `.bt-theme` (`themeChipHtml`), `.bt-velvet` (`velvetHtml`, the backstage badge), `.bt-plats`
+  (`platformsHtml`), `.bt-avs` / `.bt-av` (`avatarsHtml`), `.bt-src--mod|vote|theme|you` (`srcHtml`), `.bt-dualtime`
+  (`dualTimeHtml({ start, end, was, tz, localTz })`: Central first, your own time after, skipped when it is the same clock;
+  `was` strikes a delayed time). `timeRangeText`, `dayParts` format dates for a ticket.
+- **Ticket `.bt-ticket`** (`ticket.js` `ticketHtml`, `initTickets`): `.bt-ticket-stub` (day) + `.bt-ticket-body`. States by
+  `state`: `scheduled` · `soon` (On air soon, with the stamp) · `tonight` (spinning edge) · `live` (red) · `ended`
+  (`is-past`) · `cancelled` (tape, reason) · `off` (day off); `was` + `reason` add "Delayed · reason"; `backstage` adds the
+  velvet badge and rope. Covers fan out (three, then dashed `+N`). Grid: `.bt-tickets` (3, 2, 1 columns).
+- **Marquee `.bt-marquee[data-frame]`** (`marquee.js` `marqueeHtml`, `miniMarqueeHtml`, `setMarqueeFrame`, `frameHtml`):
+  `FRAMES` (pool of 11: bulbs neon barbed drip tape film web electric vhs candles ecg), `SEASONAL` (jack, pumpkin,
+  blizzard, snowman; picked by hand, never rolled), `rollFrame({ recent, current })`. Layers: `.bt-marquee-frame`,
+  `.bt-marquee-main` (`-neon` kicker, `-title`, `-when`, `-meta`, `-cta`), `.bt-marquee-art` (two tilted covers) and
+  `.bt-marquee-peek` (the mascot; hidden for `snowman`). `--mini` is the card-sized version.
+- **Flip clock `.bt-flipclock`** (`flipClockHtml({ startsAt })`, `initFlipClocks(root, { onZero })` → `{ stop }`):
+  `role="timer"`, Hours : Min : Sec under a day, Days : Hours : Min above; flips only the changed digits; `is-zero` at 0.
+  `initFlipClocks` also ticks the VHS frame's REC counter.
+- **Vote** (`vote.js`): `.bt-vote-card` (`voteCardHtml`, in `.bt-vote-grid`), `.bt-race-row` (`raceRowHtml`, in
+  `.bt-race`), `.bt-vote-btn` (`voteBtnHtml`: Vote, Voted ✓ `is-on`, No votes left, Join to vote `[data-join]`),
+  `.bt-vote-add`, `.bt-drops` / `.bt-tokens` (`dropsHtml`, `tokensHtml`: "2 of 3 votes left"),
+  `initVoteButtons(root, { onVote(slug, on, btn), onJoin, onAdd })` (a new vote bursts).
+- **Fuse `.bt-fuse`** (`fuseHtml({ steps, progress, left, short })`): the deadline strip; `.bt-unpub`, `.bt-published`,
+  `.bt-btn--shine` (the Publish week button) go with it.
+- **Slot + tray** (`slot.js`): `.bt-slot` (`slotHtml`, `slotOffHtml`, `roomsMiniHtml`; states `is-sel`, `is-published`,
+  `is-backstage`; sockets `.bt-sock`, empty `.bt-sock-empty`; "needed" is gold, never red) and `.bt-tray` (`trayHtml` with
+  the four fixed groups mod · vote · theme · pick, `trayEmptyHtml`). `initTray(root, { onAdd(slug, kind, item, socket),
+  onRemove(slotId, i, slug), onSearch(q) })`: the + button (tap, Enter, Space) or a mouse and pen drag onto a slot; touch
+  uses +. The page owns the data and re-renders.
+- **Tri-toggle `.bt-tri`** (`tri.js` `triHtml({ value, label, name, disabled })`, `initTri`): `role="radiogroup"`,
+  arrows, Home and End; `data-value` yes | maybe | no | "" drives the pill; `bt-tri-change` event.
+- **Poster `.bt-poster`** (`poster.js` `posterHtml`, `posterAddHtml`) in `.bt-posters` (7 columns, scrolls at 640px).
+- **Doors `.bt-door[data-style]`** (`doors.js`): styles `jaws` · `elevator` · `coffins` · `morgue` · `hinged`
+  (`DOOR_STYLES`, `rollDoorStyle`, `setDoorStyle`); `doorHtml({ state })` with `later` · `tonight` (open a crack, light
+  leaking) · `ended` (greyed, Ended stamp) · `cancelled` (chained, padlock, rattles on hover) · `off` (sealed) and
+  `backstage` (velvet); `doorStateFor(stream, now, tz)` picks the state. `.bt-doors` is the row of seven; each door floats
+  out of step (`--ph`). `initDoors(root, { onOpen(id, el) })`.
+- **Slider `.bt-slider`** (`slider.js` `sliderHtml({ cells, index })`, `initSlider(root, { onChange })` → `{ go, get }`): the
+  L4 layout. Above 640px (container) a row of seven; at 640px and below a left-right slider, tonight centred and open, the
+  neighbours scaled and dimmed; swipe, ‹ ›, dots, arrow keys; no wrap. `bt-slider-change` event.
+- **View switch `.bt-view-switch`** (`view-switch.js` `viewSwitchHtml`, `initViewSwitch`, `WEEK_VIEWS`, `VOTE_VIEWS`): a
+  radiogroup that emits `bt-view-change`; the PAGE saves it (`bt.schedule.weekView`, `bt.schedule.voteView`, try/catch).
+- **Burst** (`burst.js`): `burst(el)`, `flyTo(from, to, done)`, `celebrate(root, { selector })` (the ON AIR SOON stamp and a
+  splat burst on each card), `onAirSoonHtml()`; nothing under reduced motion.
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -941,6 +995,11 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
 | `stamp.js` | `stampHtml({ label, sub, kicker, tone, size })`: the `.bt-stamp` seal (markup string, text escaped) |
 | `day-picker.js` | `dayPickerHtml({ days, selected, label, disabled })`, `initDayPicker(root, { onChange(selected, key) })`, `dayPickerValue(picker)`, `DAYS` |
 | `chat-tile.js` | `chatTileHtml({ chat, name, iconHtml, value, needed, boost, previewHtml, note })`, `chatPreviewHtml(messages)`, `initChatTiles(root, { onChange(chat, value) })` (reuses `initRadioGroup` from `pref.js`) |
+| `scream-planner.js` · `ticket.js` · `poster.js` | `SP_ICON`, `themeChipHtml`, `velvetHtml`, `platformsHtml`, `avatarsHtml`, `srcHtml`, `dualTimeHtml`, `timeRangeText`, `dayParts` · `ticketHtml`, `initTickets` · `posterHtml`, `posterAddHtml` |
+| `marquee.js` | `FRAMES`, `SEASONAL`, `frameHtml`, `marqueeHtml`, `miniMarqueeHtml`, `setMarqueeFrame`, `rollFrame`, `flipClockHtml`, `initFlipClocks` |
+| `vote.js` · `slot.js` | `voteCardHtml`, `raceRowHtml`, `voteBtnHtml`, `voteAddHtml`, `tokensHtml`, `dropsHtml`, `initVoteButtons`, `fuseHtml` · `slotHtml`, `slotOffHtml`, `roomsMiniHtml`, `trayHtml`, `initTray` |
+| `tri.js` · `view-switch.js` | `triHtml`, `initTri` · `viewSwitchHtml`, `initViewSwitch`, `WEEK_VIEWS`, `VOTE_VIEWS` |
+| `doors.js` · `slider.js` · `burst.js` | `doorHtml`, `doorsHtml`, `doorStateFor`, `setDoorStyle`, `initDoors`, `DOOR_STYLES` · `sliderHtml`, `initSlider` · `burst`, `flyTo`, `celebrate`, `onAirSoonHtml` |
 
 ## 7. Migration guide (Bug Zapper, Feature Lab, Cloud Stash)
 

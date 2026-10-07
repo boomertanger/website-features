@@ -116,3 +116,17 @@
 #bt-ui-kit .kit-ng-sheets { display: flex; flex-wrap: wrap; gap: var(--bt-space-6); align-items: flex-start; }
 #bt-ui-kit .kit-ng-sheets figure { margin: 0; display: grid; gap: var(--bt-space-2); flex: 1 1 300px; max-width: 390px; }
 #bt-ui-kit .kit-ng-sheets figcaption { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+
+/* Scream Planner section (shared/ui-kit/kit-scream-planner.js) */
+#bt-ui-kit .kit-sp-gallery { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: var(--bt-space-4); }
+#bt-ui-kit .kit-sp-fcard { display: flex; flex-direction: column; gap: 8px; padding: 10px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-surface); align-items: flex-start; }
+#bt-ui-kit .kit-sp-fcard .bt-marquee { align-self: stretch; }
+#bt-ui-kit .kit-sp-plan { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: var(--bt-space-4); align-items: start; }
+@container bt (max-width: 640px) { #bt-ui-kit .kit-sp-plan { grid-template-columns: minmax(0, 1fr); } }
+#bt-ui-kit .kit-sp-doorstage { padding: 18px 14px; border-radius: var(--bt-radius-xl); background: var(--bt-footer-bg); }
+#bt-ui-kit .kit-sp-phone { container: bt / inline-size; width: 390px; max-width: 100%; padding: 12px 0; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-footer-bg); }
+#bt-ui-kit .kit-sp-phone .bt-meta { text-align: center; margin-top: 6px; }
+#bt-ui-kit .kit-sp-wide { padding: 18px 14px; border-radius: var(--bt-radius-xl); background: var(--bt-footer-bg); }
+#bt-ui-kit .kit-sp-tris { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
+#bt-ui-kit .kit-sp-tris .bt-tri { min-width: 260px; }
+#bt-ui-kit .kit-sp-fly-from .bt-cover { width: 44px; }
