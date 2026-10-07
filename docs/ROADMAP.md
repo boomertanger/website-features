@@ -1,6 +1,6 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-10-05. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-07. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -9,7 +9,8 @@ Last updated: 2026-10-05. Every planning chat reads this file first and proposes
 | 2 | 404 page | In progress | 404 page |
 | 2b | Goal Tracker (needed for relaunch) | In progress | Goal Tracker |
 | 3 | Game Vault | In progress | Games and streams |
-| 4 | Schedule Planner | Later | Games and streams |
+| 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
+| 4b | Notifications (email, text, push from the Planner's outbox) | Later | Community services |
 | 5 | Live Beacon and Control Room | Later | Games and streams |
 | 6 | Stream Library | Later | Games and streams |
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
@@ -21,7 +22,7 @@ Last updated: 2026-10-05. Every planning chat reads this file first and proposes
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 
-Why this order: Game Vault → Schedule Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
+Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
 ## Done (on staging)
 - Foundation: Astro on Cloudflare Pages, home page design, header, mascot logo (R4).
@@ -66,17 +67,24 @@ Naming: Game Vault games are games Boomertanger streams; Boom Arcade games are g
 Specs: `docs/specs/game-vault.md` and `docs/specs/stream-object.md` (both confirmed 2026-10-02); mockups `docs/design/mockups/game-vault-mockups.html` and `game-vault-round-2.html`. Parts 1 to 4 (docs, backend logic, wiring and staging deploy, scripts) come first; the site pages are part 5.
 Kickoff: "Start workstream 3 (Game Vault) from docs/ROADMAP.md."
 
-### 4. Schedule Planner
+### 4. Scream Planner (was Schedule Planner)
+Status: **In progress.** Spec `docs/specs/scream-planner.md` (confirmed Oct 7, 2026), approved mockups `docs/design/mockups/scream-planner-mockups.html`. Backend first (logic, callables, `plannerTick`, rules, indexes, test-week script), then the site pages (kit pieces, /schedule, /schedule/plan, /schedule/plan/usual, the /admin card). The original goal below was refined by the spec (usual-week patterns, a weekly ballot, tray order, delay and cancel).
 Goal: plan next week with the community. The owner opens slots (e.g. Mon to Fri with times); members suggest and vote on games (from the Game Vault; a new game can be added as a wishlist entry); the owner drags games into slots (a slot can hold several); mods sign up to crew each stream; the owner publishes the week to /schedule (boomertanger.events redirects here). Unpublished changes stay private.
 Mod crew per stream: one stream lead (there the whole stream, others lean on them), one lead per platform streamed to (Twitch, YouTube, TikTok), optional helpers with a per-stream cap (default 2 per platform). Mods sign up; the owner or stream lead confirms; reminders go out. Mod eligibility comes from the existing mod role until Mod Machina takes over.
 Update (Oct 6, Mod Machina): the crew roles are now Stream Captain (was stream lead) / Room Lead (was platform lead) / Deckhand (was helper), and YouTube counts as two chats (landscape and vertical), so a stream has up to four rooms (Twitch, YouTube Landscape, YouTube Vertical, TikTok); one YouTube Lead may cover both. The stream object's crew field should follow docs/specs/mod-machina.md section 16a: `crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`.
 Planner UI idea: week as columns with slot cards, a suggestions tray beside it, crew status on each card ("Lead ✓ · Twitch ✓ · YouTube needed"), a Publish week button.
 Depends on: Game Vault, the stream object.
-Kickoff: "Start workstream 4 (Schedule Planner) from docs/ROADMAP.md."
+Kickoff: "Start workstream 4 (Scream Planner) from docs/ROADMAP.md."
+
+### 4b. Notifications
+Goal: one service that delivers events from `notifyOutbox` (written by the Scream Planner now; later Mod Machina reminders, Night Shift, Contests) by email, text and push, with per-member preferences on the account page (which events, which channels, quiet hours), unsubscribe links and delivery logs. Until it exists nothing is sent off-site.
+Spec: section 9 of `docs/specs/scream-planner.md` (outbox shape in section 4f); a full spec comes when the workstream starts.
+Depends on: Scream Planner (outbox), the custom email sending domain (13) and an SMS provider.
+Kickoff: "Start workstream 4b (Notifications) from docs/ROADMAP.md."
 
 ### 5. Live Beacon and Control Room
 Goal: live and backstage states across the site (header beacon, mascot "aware" lenses, footer Twitch LIVE dot), and the owner's controls at /live for playing the scheduled streams: pick today's stream, Start (records the actual start, turns on live states), mark the game being played (records each game's start and end), Stop (records the end). An unscheduled stream can still be started ad hoc.
-Depends on: Schedule Planner, Game Vault, accounts (done), Twitch app (done).
+Depends on: Scream Planner, Game Vault, accounts (done), Twitch app (done).
 Kickoff: "Start workstream 5 (Live Beacon and Control Room) from docs/ROADMAP.md."
 
 ### 6. Stream Library
@@ -119,7 +127,7 @@ Spec: [docs/specs/mod-machina.md](specs/mod-machina.md) (confirmed Oct 6, 2026);
 Status: **Phase 1 (crew core, spec section 15) is built and tested on staging (Oct 7, 2026).** Tested end to end: the owner's waiver, applying on /crew/join, approving on /crew/queue, the new Initiate in /crew/hq, an Academy quiz paying Gears, and the quote on /crew/profile. Built: grades and status, the queue, Gears, the task board, the crew board, referral links, Academy modules 1 to 7, 9 and 10, monthly awards, /crew, /crew/how-it-works, /crew/join, /crew/vote, /crew/board, /crew/hq, /crew/queue, /crew/tasks, /crew/profile, /crew/academy and /admin/crew, with the Twitch moderator sync built but off (twitchSync).
 Next, in order:
 1. **Header nav redesign (done, pushed Oct 7).** The header is now Watch, Play and Community menus plus Shop (spec `docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html`), each with a live feature tile, and Crew is back in Community. The phone More sheet is grouped the same way; Crew also stays in the account menu and the footer. Bug Zapper, Feature Lab and Horror Monthly join Community when their modules are enabled.
-2. **Phase 2: Schedule Planner seats** and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
+2. **Phase 2: Scream Planner seats** (the Planner's backend provides `dutySignUp` / `dutyDrop` / `dutyConfirm`, availability and reminders) and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
 3. **Phase 3: Control Room / Mod Deck**: clock in, handoffs, duty Gears, per-room check-in codes, YouTube moderator sync, Recruit Rush, and the activity rules switched on (`crew.activityRules`; the HQ time card stops saying "Starts with stream duty").
 4. **Phase 4: Chat Games** (the pool, crew votes, Planner slot, Play panel; Dead Air and Scream Off first), then Academy module 8 and the Captain's course content going live.
 Depends on: Badges.
@@ -147,7 +155,7 @@ Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5).
-- [ ] Schedule votes: Schedule Planner (4).
+- [ ] Schedule votes: Scream Planner (4).
 - [ ] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10).
 - [ ] Feature Lab activities and The Architect badge (an idea that ships): porting (10).
 - [ ] Moderation activities and crew awards by mods: Mod Machina (9).

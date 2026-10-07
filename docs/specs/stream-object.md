@@ -1,4 +1,4 @@
-# Spec: The stream object — CONFIRMED (2026-10-02)
+# Spec: The stream object — CONFIRMED (2026-10-02; amended 2026-10-07 for the Scream Planner)
 
 Defined in workstream 3 (Game Vault) so that workstreams 4 (Schedule Planner),
 5 (Live Beacon and Control Room) and 6 (Stream Library) all fill in the same record.
@@ -31,9 +31,10 @@ and becomes `/tv/{slug}` later. Time zone: **America/Chicago** (from
 - **Times:** `plannedStart`, `plannedEnd`, `actualStart`, `actualEnd` (UTC timestamps), `tz`,
   `week` (ISO week in the site's time zone, e.g. `2026-W41`).
 - **Basics:** `title`, `description`, `platforms` (`twitch`, `youtube`, `tiktok`).
-- **Planned games:** `plannedGames[]` of `{ gameId, title, order, source: { kind: owner | suggestion | wishlist, suggestionId?, byHandle? }, outcome: played | skipped | null }`, plus `plannedGameIds[]` for queries.
+- **Planned games:** `plannedGames[]` of `{ gameId, title, order, source: { kind: owner | suggestion | wishlist | modRequest | ballot, suggestionId?, byHandle?, votes? }, outcome: played | skipped | null }`, plus `plannedGameIds[]` for queries. `modRequest` carries `byHandle`; `ballot` carries the vote count at planning time (`votes`); `suggestion` is kept for old data.
 - **Games played:** `segments[]` of `{ gameId | null, kind: game | break, title, startedAt, endedAt }`, max 30, plus `gameIds[]` (played games only).
-- **Crew summary:** `crew: { lead, platforms: { twitch: { lead, helpers[] }, … }, caps }`. Sign-ups live in a subcollection defined by the Planner spec.
+- **Crew summary (Mod Machina shape, `mod-machina.md` §16a):** `crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`. Confirmed seats only; handles in the public doc, uids in the draft. This replaces the earlier per-platform `{ lead, platforms }` shape (no stream had crew yet). Sign-ups live in `streams/{id}/signups/{uid}` (Scream Planner spec §4d).
+- **Planner fields (added 2026-10-07):** `type` (`platform | backstage`), `audience` (`public | fanClub`, later `subClub`), `plannedGameCount` (1 to 6), `theme` (`{ patternId?, label, icon }` or absent), `rooms[]` (`twitch`, `ytLandscape`, `ytVertical`, `tiktok`; backstage has none), `minCrew`, `caps` (from the pattern or the planner defaults), `delay` (`{ originalStart, originalEnd, count, reason?, at, by }` or absent) and `cancel` (`{ reason?, at, by }`, with state `cancelled`). `week` is the key for every planner query.
 - **Reserved for later:** `vods: { youtube: [], twitch: [] }`, `clips[]`, `stats` per platform (`peak`, `avg`).
 - **Flags and audit:** `published`, `hasUnpublishedChanges`, `adhoc`, `autoEnded`, `hidden`, `rev`, `createdAt`, `updatedAt`.
 
@@ -42,6 +43,8 @@ owner's working copy is `streams/{id}/private/draft` (admins and mods can read i
 need it to sign up as crew). Publish copies the draft into the public doc.
 
 ## 4. Rules
+
+(The Scream Planner adds `streams/{id}/signups/{uid}`, readable by crew and staff only, and uses the `private/draft` working copy; see `docs/specs/scream-planner.md` §4.)
 
 - Everyone may read a stream when `published == true`; clients must query with that filter.
 - Admins and mods read every stream and `private/*`.
