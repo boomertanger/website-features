@@ -13,7 +13,7 @@ const { ms, weekKey, dayKey } = require("../arcade/logic");
 
 const STATES = ["planned", "scheduled", "live", "ended", "cancelled"];
 const PLATFORMS = ["twitch", "youtube", "tiktok"];
-const SOURCE_KINDS = ["owner", "suggestion", "wishlist"];
+const SOURCE_KINDS = ["owner", "suggestion", "wishlist", "modRequest", "ballot"];   // modRequest and ballot: Scream Planner (stream-object.md section 3)
 const MAX_SEGMENTS = 30;
 const MAX_PLANNED_GAMES = 20;
 const AUTO_END_MS = 12 * 60 * 60 * 1000;

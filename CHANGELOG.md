@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions: Scream Planner logic (functions/lib/planner/logic.js) and functions/scripts/check-planner.js in npm run check: week math in the site time zone across DST (ISO week ids, Monday to Sunday), pattern expansion with exceptions, overlaps, the four-group tray, seat eligibility (Mod Machina 6a), deadlines, marquee frame and door rolls, ballot seeding and ties, delay and cancel. streams/logic.js accepts the modRequest and ballot source kinds.
 docs: Scream Planner spec (confirmed Oct 7) and approved mockups; stream-object.md gains the planner fields, the Mod Machina crew shape and the modRequest and ballot source kinds; ROADMAP renames workstream 4 to Scream Planner (In progress) and adds workstream 4b Notifications; design-system.md section 8o records the marquee frames, door styles, L4 slider, view switches and kit piece list.
 - site: only one header overlay is open at a time. Opening a nav panel (hover or click) closes the account menu and the phone More sheet, opening the account menu closes any nav panel and the More sheet, and opening the More sheet closes both, through one shared event (bt:overlay-open) announced by shared/ui/navgroup.js, the account menu script and the tab bar. Also nextStream.startsAt in site.json is now 2026-10-15T19:00:00-05:00 so the Watch tile's countdown can be tested (still a placeholder until the Schedule Planner feeds it).
 docs: header nav spec and approved mockup, design-system 8n Header nav, ROADMAP marks the header nav redesign done.
