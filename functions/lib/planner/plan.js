@@ -145,22 +145,22 @@ module.exports = function plan({ core }) {
   }
 
   /** The ballot a week opens with: top Most wanted wishlist games plus every playing game (section 4e). */
-  async function seedBallot(week, settings) {
+  async function seedBallot(week, settings, mark = null) {
     const snap = await db.collection(P.games).where("hidden", "==", false).get();
     const games = snap.docs.map((d) => ({ slug: d.id, status: d.get("status"), hidden: d.get("hidden") === true, wantedCount: d.get("wantedCount") || 0, addedMs: ms(d.get("createdAt")) || 0 }));
     const seeded = L.seedBallot({ games, seed: settings.defaults.ballotSeed });
-    for (const s of seeded) await db.doc(`${P.ballot(week)}/${s.slug}`).set({ votes: 0, seededFrom: s.seededFrom, addedBy: null, createdAt: FieldValue.serverTimestamp() });
+    for (const s of seeded) await db.doc(`${P.ballot(week)}/${s.slug}`).set({ votes: 0, seededFrom: s.seededFrom, addedBy: null, ...(mark || {}), createdAt: FieldValue.serverTimestamp() });
     return seeded.map((s) => s.slug);
   }
   /** Crew prefilled from their usual availability: the day is in their list -> yes, else no (prefilled: true until touched). */
-  async function prefillSignups(streams) {
+  async function prefillSignups(streams, mark = null) {
     const roster = (await db.collection(P.rosterCol).get()).docs.filter((d) => ["active", "checkIn"].includes(d.get("status")));
     for (const r of roster) {
       const days = r.get("availability")?.days || [];
       if (!days.length) continue;
       for (const s of streams) {
         const dow = L.localParts(ms(s.draft.plannedStart), s.draft.tz).dow;
-        await db.doc(P.signup(s.id, r.id)).set({ availability: days.includes(DAYS[dow - 1]) ? "yes" : "no", prefilled: true, seats: [], gameRequest: null, handle: r.get("handle") || null, grade: r.get("grade") ?? null, track: r.get("track") || "mod", updatedAt: FieldValue.serverTimestamp() });
+        await db.doc(P.signup(s.id, r.id)).set({ availability: days.includes(DAYS[dow - 1]) ? "yes" : "no", prefilled: true, seats: [], gameRequest: null, handle: r.get("handle") || null, grade: r.get("grade") ?? null, track: r.get("track") || "mod", ...(mark || {}), updatedAt: FieldValue.serverTimestamp() });
       }
     }
   }
@@ -169,29 +169,31 @@ module.exports = function plan({ core }) {
    * Creates planWeeks/{week} from the usual week minus exceptions. Called by the owner's weekOpen and by plannerTick.
    * `manual` opens early: a close time already in the past becomes 24 hours from now.
    * Returns { created: false } when the week already exists (so a repeat tick is harmless).
+   * `source` ({ patterns, exceptions }) replaces the stored usual week and `mark` ({ test: true }) is stamped on every
+   * document created; both are for scripts/make-test-week.js only.
    */
-  async function openWeek(week, { w = null, manual = false, nowMs = Date.now() } = {}) {
+  async function openWeek(week, { w = null, manual = false, nowMs = Date.now(), source = null, mark = null } = {}) {
     const tz = await core.siteTz(), settings = await core.loadSettings();
     const ref = db.doc(P.week(week));
     if ((await ref.get()).exists) return { created: false };
     const dl = L.weekDeadlines(week, settings.deadlines, tz);
-    const [pats, exs] = await Promise.all([db.collection(P.patterns).get(), db.collection(P.exceptions).get()]);
-    const exp = L.expandWeek({ week, patterns: pats.docs.map((d) => ({ id: d.id, ...d.data() })), exceptions: exs.docs.map((d) => ({ id: d.id, ...d.data() })), tz, defaults: settings.defaults });
+    const [pats, exs] = source ? [null, null] : await Promise.all([db.collection(P.patterns).get(), db.collection(P.exceptions).get()]);
+    const exp = L.expandWeek({ week, patterns: source ? source.patterns : pats.docs.map((d) => ({ id: d.id, ...d.data() })), exceptions: source ? source.exceptions || [] : exs.docs.map((d) => ({ id: d.id, ...d.data() })), tz, defaults: settings.defaults });
     let closesAt = dl.closesAt;
     if (manual && closesAt <= nowMs) closesAt = nowMs + DAY_MS;
     const state = L.stateAt(nowMs, { closesAt });
     try {
-      await ref.create({ week, state, opensAt: ts(manual ? nowMs : dl.opensAt), closesAt: ts(closesAt), publishBy: ts(dl.publishBy), publishedAt: null, publishedRev: 0, hasUnpublishedChanges: false, weekOff: exp.weekOff, hero: null, streamIds: [], ballotSlugs: [], counts: { slots: 0, seatsOpen: 0, votes: 0 }, tz, createdAt: FieldValue.serverTimestamp() });
+      await ref.create({ week, state, opensAt: ts(manual ? nowMs : dl.opensAt), closesAt: ts(closesAt), publishBy: ts(dl.publishBy), publishedAt: null, publishedRev: 0, hasUnpublishedChanges: false, weekOff: exp.weekOff, hero: null, streamIds: [], ballotSlugs: [], counts: { slots: 0, seatsOpen: 0, votes: 0 }, tz, ...(mark || {}), createdAt: FieldValue.serverTimestamp() });
     } catch (err) { if (err.code === 6 || /ALREADY_EXISTS/.test(String(err.message))) return { created: false }; throw err; }
     const made = [];
     for (const slot of exp.slots) {
       const id = newId(P.streams);
       const draft = newDraft(slot, { week, slug: await freeSlug(slot.startMs, tz, week) });
-      await core.saveDraft(id, draft);
+      await core.saveDraft(id, { ...draft, ...(mark || {}) });
       made.push({ id, draft });
     }
-    await prefillSignups(made);
-    const ballotSlugs = exp.weekOff ? [] : await seedBallot(week, settings);
+    await prefillSignups(made, mark);
+    const ballotSlugs = exp.weekOff ? [] : await seedBallot(week, settings, mark);
     await ref.update({ streamIds: made.map((m) => m.id).sort(), ballotSlugs });
     await core.refreshCounts(week);
     await core.rebuildPublicBallot();
@@ -527,5 +529,5 @@ module.exports = function plan({ core }) {
     return { ok: true, streamId: id, state: "cancelled" };
   });
 
-  return { functions: { plannerSaveSettings, patternSave, patternDelete, exceptionSave, exceptionDelete, weekOpen, weekReopen, planSlot, planGames, planTray, publishWeek, delayStream, cancelStream }, openWeek, closeWeek, dropSeatInSignup };
+  return { functions: { plannerSaveSettings, patternSave, patternDelete, exceptionSave, exceptionDelete, weekOpen, weekReopen, planSlot, planGames, planTray, publishWeek, delayStream, cancelStream }, openWeek, closeWeek, dropSeatInSignup, newDraft };
 };
