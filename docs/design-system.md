@@ -1373,3 +1373,20 @@ Spec: `docs/specs/fun-factory.md`.
 - **Two different areas.** **Night Shift** is for members (seasons, missions, the leaderboard, plus the builder
   for mods and admins). **Night Watch** is the planned staff admin hub (ROADMAP workstream 10). They share a
   night theme on purpose, not a page, a layout or a nav slot.
+
+### 8m. Mod Machina
+Spec: `docs/specs/mod-machina.md` (confirmed Oct 6, 2026); Academy text `docs/specs/crew-academy.md`; mockups
+`docs/design/mockups/mod-machina-screens.html`, `mod-machina-guides.html` and `mod-machina-live.html`.
+Approved picks (the pages themselves come in the next prompt):
+- **Grade chip: option 1, Bars.** The kit's `.bt-badge` with level bars (`.bt-grade`); the admin track uses a
+  new `.bt-badge--admin` (the admin green).
+- **Crew board: B2**, a podium plus a table (`/crew/board`).
+- **Crew HQ activity meter: M2, the time card** (new kit piece `.bt-timecard`).
+- **Seats: S1, the seat map.** **Mod Deck: D1, the chat wall**, with D2 (focus on one chat) as an in-Deck toggle.
+  **Dead Air: C1, the evidence board.**
+- Colours: "needed" uses gold, never red (red is for destroying data); admin-only controls are green.
+
+**Site-wide decision (Oct 6): the How it works standard.** How it works, guide, training and informational pages use
+the Boom Arcade How it works frame as the minimum standard: TocLayout rail, `.bt-chapter--ghost` chapters, the shared
+How it works blocks (hero, stage cards with hover scenes, journey, flow, glossary chips, closing CTA), flip medals,
+the placard, Ask BOOMBOT, the real mascot and BOOMBOT art, and at least one working example.

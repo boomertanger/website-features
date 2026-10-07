@@ -61,6 +61,12 @@ first, and `docs/design-system.md` §5 "Site shell" and §8d before changing it.
    always resolve at the same version as the feature.
 9. Button/heading/label text is sentence case. Uppercase only where the kit does it
    (page title, dialog title, labels, table headers, admin tag).
+10. **How it works, guide, training and informational pages** use the Boom Arcade How
+    it works frame as the minimum standard: TocLayout rail, `.bt-chapter--ghost`
+    chapters, the shared How it works blocks (hero, stage cards with hover scenes,
+    journey, flow, glossary chips, closing CTA), flip medals, the placard, Ask BOOMBOT,
+    the real mascot and BOOMBOT art, and at least one working example
+    (`docs/design-system.md` §8m).
 
 Building an admin-only feature, auditing status colors, or picking up
 follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.

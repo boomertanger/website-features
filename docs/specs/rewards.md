@@ -56,14 +56,14 @@ Changes from the notes:
 | Badges | All except Crew | All except Crew | All, plus Crew |
 | Showcase | 3 pins | 6 pins + animated featured frame | 6 pins |
 | Night Shift | All campaigns | + Sub Club campaigns (more ways, same XP per task) | + Crew missions |
-| Boards | Season, Arcade | Season, Arcade | Season, Arcade, plus the crew board (Mod MVP). Admins race on the season board with a Staff tag (7a) |
+| Boards | Season, Arcade | Season, Arcade | Season, Arcade, plus the crew board (Gears; Mod Machina). Admins race on the season board with a Staff tag (7a) |
 | Giveaways | Member giveaways | + Sub Club giveaways (**legal review**) | Not eligible for member giveaways |
-| Other | Merch store | Early merch access | Free Sub Club, earliest merch, Mod MVP trophy monthly |
+| Other | Merch store | Early merch access | Free Sub Club, earliest merch, Top Gear and Fan Favourite trophies monthly (Mod Machina) |
 
-Changes from the notes: one season board (filter All / Sub Club / Crew) instead of separate Club, Sub, Mod and Admin boards. **Decision (Oct 3): mods race on the season board with members**, to maximise activity at launch; revisit if mods dominate the top spots. Mods also have a crew board for Mod MVP. **Decision (Oct 6): admins race too, with a Staff tag, but member prizes go to members (section 7a).** Admin giveaways are dropped; crew members don't win member giveaways.
+Changes from the notes: one season board (filter All / Sub Club / Crew) instead of separate Club, Sub, Mod and Admin boards. **Decision (Oct 3): mods race on the season board with members**, to maximise activity at launch; revisit if mods dominate the top spots. Mods also have a crew board (Gears; Top Gear and Fan Favourite, not the owner-picked Mod MVP). **Decision (Oct 6): admins race too, with a Staff tag, but member prizes go to members (section 7a).** Admin giveaways are dropped; crew members don't win member giveaways.
 
 ## 7. Trophies
-Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; top 10 plaque) · Contests · Mod MVP (monthly, picked by the owner). XP: 1st 150, 2nd 100, 3rd 75.
+Weekly Arcade boards (top 3 per board, every Monday) · Season finish (top 3; top 10 plaque) · Contests · Top Gear (monthly, automatic: most Gears) and Fan Favourite (monthly, a member vote), which replace the owner-picked Mod MVP (decided Oct 6, docs/specs/mod-machina.md section 5; the owner keeps Boomer's Blessing). XP: 1st 150, 2nd 100, 3rd 75.
 
 ## 7a. Staff and the season race
 Decided Oct 6, 2026. The full rules and data are in fun-factory.md section 13c; the Trophy Room side:
@@ -134,3 +134,6 @@ Streak ladders (Loyalty collection): daily check-in streak, 12 badges from 3 to 
 
 ## 15. Still open (before the relevant phase)
 - Sub Club-only giveaways: going ahead (Oct 3); Glenn sorts out legality before the first one runs (free way in or a lawyer's OK; prizes for 13-17 year olds).
+
+## Crew award limits (Mod Machina, Oct 6, 2026)
+The owner-picked Mod MVP is replaced by **Top Gear** (automatic, most Gears in the month) and **Fan Favourite** (a member vote); both are 150 XP trophies (kinds `crew-top-gear`, `crew-fan-favourite`). The owner keeps **Boomer's Blessing**. What crew can award with `awardBadge` now comes from their Mod Machina grade: Watcher up to Uncommon; Warden and up to Rare; admins up to Legendary as before; Boomer's Blessing owner only. See `docs/specs/mod-machina.md` sections 3 and 5.

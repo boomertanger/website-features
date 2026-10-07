@@ -111,8 +111,8 @@ Mod and admin are roles on a member's site record, granted only by the server, a
 | Role | Can do | Granted by |
 | --- | --- | --- |
 | Owner | Everything, including managing admins. Cannot be removed. | Set once in `sites/{siteId}` (you) |
-| Admin | Admin tools, member management, grant or remove mods | Owner |
-| Mod | Moderation tools (e.g. Question Queue control, later) | Owner or admin |
+| Admin | Admin tools, member management (cannot grant or remove the mod role) | Owner |
+| Mod | Moderation tools (e.g. Question Queue control, later) | Owner only, through Mod Machina (crewDecide) |
 | Member | Community features | Signup |
 
 - Source of truth: `sites/{siteId}/members/{uid}.roles`. A Cloud Function copies it into the account's custom claims, scoped per site: `{ roles: { boomertanger: ["admin"] } }`.
@@ -308,3 +308,5 @@ Every feature is built to stay fast and affordable as the community grows, and t
 - Boom Board drawer (variation 5D) so members can post from the Control Room.
 - Callout component for bt-ui, based on the mockups' recommendation box.
 - Alternative name for Warm Fuzzies if wanted later: Boo-quets.
+
+**Update (Oct 6, Mod Machina):** only the owner approves new mods, through Mod Machina's `crewDecide` (and removes them through `crewSetStatus`). Admins can no longer grant or remove the mod role. See `docs/specs/mod-machina.md` section 3b.

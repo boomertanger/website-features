@@ -15,7 +15,7 @@ Last updated: 2026-10-05. Every planning chat reads this file first and proposes
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
-| 9 | Mod Machina | Later | Community services |
+| 9 | Mod Machina | In progress (phase 1) | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
@@ -69,6 +69,7 @@ Kickoff: "Start workstream 3 (Game Vault) from docs/ROADMAP.md."
 ### 4. Schedule Planner
 Goal: plan next week with the community. The owner opens slots (e.g. Mon to Fri with times); members suggest and vote on games (from the Game Vault; a new game can be added as a wishlist entry); the owner drags games into slots (a slot can hold several); mods sign up to crew each stream; the owner publishes the week to /schedule (boomertanger.events redirects here). Unpublished changes stay private.
 Mod crew per stream: one stream lead (there the whole stream, others lean on them), one lead per platform streamed to (Twitch, YouTube, TikTok), optional helpers with a per-stream cap (default 2 per platform). Mods sign up; the owner or stream lead confirms; reminders go out. Mod eligibility comes from the existing mod role until Mod Machina takes over.
+Update (Oct 6, Mod Machina): the crew roles are now Stream Captain (was stream lead) / Room Lead (was platform lead) / Deckhand (was helper), and YouTube counts as two chats (landscape and vertical), so a stream has up to four rooms (Twitch, YouTube Landscape, YouTube Vertical, TikTok); one YouTube Lead may cover both. The stream object's crew field should follow docs/specs/mod-machina.md section 16a: `crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`.
 Planner UI idea: week as columns with slot cards, a suggestions tray beside it, crew status on each card ("Lead ✓ · Twitch ✓ · YouTube needed"), a Publish week button.
 Depends on: Game Vault, the stream object.
 Kickoff: "Start workstream 4 (Schedule Planner) from docs/ROADMAP.md."
@@ -114,6 +115,8 @@ Kickoff: "Start workstream 8 (Accounts part 2b) from docs/ROADMAP.md."
 
 ### 9. Mod Machina
 Goal: mod requests (not public), mod permissions, moderation tools, the Keeper volunteer queue, and eligibility for stream crew sign-ups (taking over from the plain mod role).
+Spec: [docs/specs/mod-machina.md](specs/mod-machina.md) (confirmed Oct 6, 2026); Academy text `docs/specs/crew-academy.md`; mockups `docs/design/mockups/mod-machina-screens.html`, `mod-machina-guides.html` and `mod-machina-live.html`.
+Status: In progress (phase 1: crew core, spec section 15). Prompt 1 of 2 is docs, data, rules and Cloud Functions; prompt 2 is the pages.
 Depends on: Badges.
 Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 
