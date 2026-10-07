@@ -1528,3 +1528,12 @@ the Boom Arcade How it works page in craft (minimum standard, never less).
   built for speed: a hero header with a small scene, cards that react to hover and taps, a celebratory moment on key
   actions (a stamp, a punch, a lamp), empty states with the mascot, and no long chapters.
 Mockups: `docs/design/mockups/crew-story-pages.html` (Join the crew and Meet the crew, Before and After; After approved Oct 7).
+
+### 8n. Header nav
+Spec `docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html` (option 1, approved Oct 7).
+
+- **`.bt-navgroup`** (`shared/bt-ui.css`, §5 "Header nav groups"): a header menu = trigger, panel of page cards and one feature tile. Kit piece, shown in every state on `/dev/ui-kit/`.
+- **`shared/ui/navgroup.js`** (§6): the disclosure behaviour (hover about 140 ms or click, one open at a time, outside click, scroll or Escape closes) plus the tile builders and the Watch countdown and calendar file, shared by the site and the kit.
+- **Groups live in `site/src/lib/nav.js`** (`headerNav`, `moreGroups`): Watch, Play, Community and a plain Shop link, built from `site.json` modules; a disabled module is hidden, an empty group is hidden, a one-page group becomes a plain link. /crew is always on. Bug Zapper, Feature Lab and Horror Monthly are defined there and appear in Community once their modules are enabled (Horror Monthly's href is still `#`).
+- **Tiles read existing data only** (`site/src/scripts/nav-features.ts`, first open only): Watch = `site.json` nextStream and `data-live`; Play = public `games` plus the member's own `bests` doc; Community = public `crew/main/awards`. No functions, rules or collections were added.
+- The phone tab bar is unchanged; its More sheet uses the same groups under headings, with a small tile on top.
