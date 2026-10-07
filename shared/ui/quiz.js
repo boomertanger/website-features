@@ -9,7 +9,7 @@
 //   initQuiz(root, { submit, onResult })  wires every .bt-quiz under root -> [{ reset }]
 //     submit(answers): async; answers is an array of chosen option indexes, one per question. Returns either
 //       an array of { correct, say } (one per question), or { results: [{ correct, say }], passed, say }
-//       where passed (boolean) and say (BOOMBOT's overall reply) are optional. A throw shows an error line and
+//       where passed (boolean) and say (BOOMBOT's overall reply) are optional. A throw shows an error line (the Error's userMessage when it has one) and
 //       lets the person try again.
 //     onResult(outcome): called after the results are drawn ({ results, passed, score, total, say })
 //   showQuizResults(quizEl, answers, outcome)  draws results onto a quiz (initQuiz calls it; the UI Kit page uses
@@ -125,7 +125,8 @@ export function initQuiz(root = document, { submit, onResult } = {}) {
         }
         onResult?.(o);
       } catch (e) {
-        err.textContent = "Couldn't check your answers. Try again.";
+        // A submit that throws an Error with a userMessage (written for people) shows that; anything else gets the general line.
+        err.textContent = (e && typeof e.userMessage === "string" && e.userMessage) || "Couldn't check your answers. Try again.";
         err.hidden = false;
       } finally { busy = false; if (!box.classList.contains("is-checked")) paint(); }
     });
