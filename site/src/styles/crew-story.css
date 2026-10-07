@@ -1,0 +1,89 @@
+/* site/src/styles/crew-story.css — /crew, the Meet the crew story page (docs/specs/mod-machina.md §12; approved
+   mockup docs/design/mockups/crew-story-pages.html screen 2 "After"). Built on the shared How it works blocks
+   (styles/how-it-works.css: hero, journey, closing call) and TocLayout; this file adds only what is unique to the
+   page: the spotlit lineup, the coverage rooms, the roster card hover and quote line, the Hall of Fame journey sized
+   to however many winners there are, and the empty states. cs-* prefix. Tokens only. Container queries at the How it
+   works breakpoints (900 / 640 / 420); every animation has a reduced-motion version. */
+
+.bt-root:not(#_) .cs-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 24px; align-items: center; }
+.bt-root:not(#_) .cs-hero > div { min-width: 0; }
+.bt-root:not(#_) .cs-skel { display: block; height: 230px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cs-skel--tall { height: 300px; }
+.bt-root:not(#_) .cs-fine { margin: 10px 0 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); line-height: 1.5; }
+
+/* The lineup: the crew around the real mascot, one gold spot left for you */
+.bt-root:not(#_) .cs-lineup { position: relative; display: flex; align-items: flex-end; justify-content: center; gap: 8px; height: 230px; padding: 0 12px 26px; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-footer-spot) 50% 0 / 520px 100% no-repeat, var(--bt-footer-bg); }
+.bt-root:not(#_) .cs-floor { position: absolute; left: 0; right: 0; bottom: 0; height: 52px; border-top: 1px solid rgba(var(--bt-gold-rgb), 0.2); background: linear-gradient(180deg, transparent, rgba(var(--bt-gold-rgb), 0.08)); }
+.bt-root:not(#_) .cs-side { display: contents; }
+.bt-root:not(#_) .cs-who { position: relative; z-index: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; color: inherit; text-decoration: none; transition: transform 0.4s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.bt-root:not(#_) .cs-who[hidden] { display: none; }
+.bt-root:not(#_) .cs-who .bt-avatar-md { width: calc(var(--s, 48px) * 0.85); height: calc(var(--s, 48px) * 0.85); box-shadow: 0 10px 22px var(--bt-lift-shadow); }
+.bt-root:not(#_) .cs-who small { color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 800; white-space: nowrap; }
+.bt-root:not(#_) .cs-lineup:hover .cs-who { transform: translateY(-6px); }
+.bt-root:not(#_) .cs-who.is-boss .bt-mascot { width: 58px; margin: 0; filter: drop-shadow(0 0 16px rgba(var(--bt-gold-rgb), 0.45)); }
+.bt-root:not(#_) .cs-who.is-open .bt-avatar-md { border-style: dashed; border-color: var(--bt-gold); background: var(--bt-gold-bg); color: var(--bt-gold); animation: cs-glow 2.2s ease-in-out infinite; }
+.bt-root:not(#_) .cs-who.is-open small { color: var(--bt-gold); }
+.bt-root:not(#_) .cs-who.is-open:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; border-radius: var(--bt-radius-md); }
+.bt-root:not(#_) .cs-start { position: absolute; z-index: 1; left: 0; right: 0; bottom: 8px; text-align: center; color: var(--bt-title); font-size: var(--bt-text-sm); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.bt-root:not(#_) .cs-start[hidden] { display: none; }
+.bt-root:not(#_) .cs-lineup[data-empty="true"] .cs-who.is-boss .bt-mascot { width: 84px; }
+@keyframes cs-glow { 50% { box-shadow: 0 0 18px rgba(var(--bt-gold-rgb), 0.45); } }
+
+/* Where we need you: one tile per chat; the YouTube chats glow gold, never red */
+.bt-root:not(#_) .cs-rooms { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .cs-room { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); text-align: center; }
+.bt-root:not(#_) .cs-room .bt-platform-icon { width: 44px; height: 44px; font-size: var(--bt-text-md); border-radius: 12px; }
+.bt-root:not(#_) .cs-room b { font-size: var(--bt-text-base); }
+.bt-root:not(#_) .cs-room small { color: var(--bt-text-muted); font-size: var(--bt-text-xs); line-height: 1.4; }
+.bt-root:not(#_) .cs-lamp { width: 12px; height: 12px; border-radius: 50%; background: var(--bt-lime); box-shadow: 0 0 10px color-mix(in srgb, var(--bt-lime) 70%, transparent); }
+.bt-root:not(#_) .cs-room.is-need { border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); background: radial-gradient(90% 60% at 50% 0%, var(--bt-gold-bg), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .cs-room.is-need .cs-lamp { background: var(--bt-gold); box-shadow: 0 0 10px color-mix(in srgb, var(--bt-gold) 70%, transparent); animation: cs-blink 1.2s steps(2, jump-none) infinite; }
+.bt-root:not(#_) .cs-room.is-need b { color: var(--bt-gold); }
+@keyframes cs-blink { 50% { opacity: 0.25; } }
+
+/* The crew: kit roster cards that lift on hover, plus the optional quote line */
+.bt-root:not(#_) .cs-roster { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .cs-card { transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s; }
+.bt-root:not(#_) .cs-card:hover, .bt-root:not(#_) .cs-card:focus-within { transform: translateY(-4px); border-color: rgba(var(--bt-primary-rgb), 0.6); box-shadow: 0 14px 30px var(--bt-lift-shadow); }
+.bt-root:not(#_) .cs-card.is-staff { background: radial-gradient(80% 60% at 0% 0%, var(--bt-admin-tint), transparent 65%), var(--bt-surface); }
+.bt-root:not(#_) .cs-quote { margin: 0; padding-left: 10px; border-left: 2px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-md); font-style: italic; line-height: 1.5; overflow-wrap: anywhere; }
+
+/* Hall of Fame: the shared journey line, sized to the number of winners shown (--n, and --m = n - 1) */
+.bt-root:not(#_) .cs-fame .bt-medal { --bt-medal-size: 40px; align-self: flex-start; margin-bottom: 4px; }
+.bt-root:not(#_) .cs-fame li { cursor: default; }
+.bt-root:not(#_) .cs-fame b a { color: inherit; text-decoration: none; }
+.bt-root:not(#_) .cs-fame b a:hover { text-decoration: underline; }
+.bt-root:not(#_) .cs-fame b { padding-right: 0; font-size: var(--bt-text-md); overflow-wrap: break-word; }
+@container bt (min-width: 901px) {
+  .bt-root:not(#_) .cs-fame { grid-template-columns: repeat(var(--n, 6), minmax(0, 1fr)); }
+  .bt-root:not(#_) .cs-fame::before { right: calc((100% - 50px) / var(--n, 6) - 29px); }
+  .bt-root:not(#_) .cs-fame::after { width: calc(var(--p) * ((100% - 50px) / var(--n, 6) + 10px)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cs-fame::after { height: calc(var(--p) * (100% - 40px) / var(--m, 5)); }
+}
+
+/* Empty states */
+.bt-root:not(#_) .cs-empty { align-items: center; gap: 10px; padding: 28px 20px; text-align: center; }
+.bt-root:not(#_) .cs-empty b { color: var(--bt-title); font-size: var(--bt-text-xl); }
+.bt-root:not(#_) .cs-empty span { max-width: 52ch; color: var(--bt-text-muted); line-height: 1.5; }
+
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .cs-rooms { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt-root:not(#_) .cs-roster { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cs-hero { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cs-roster { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cs-lineup { height: 200px; gap: 5px; padding: 0 8px 26px; }
+  .bt-root:not(#_) .cs-who .bt-avatar-md { width: calc(var(--s, 48px) * 0.6); height: calc(var(--s, 48px) * 0.6); font-size: var(--bt-text-xs); }
+  .bt-root:not(#_) .cs-who.is-boss .bt-mascot { width: 50px; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .cs-rooms { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.cs-who.is-open .bt-avatar-md, .cs-room.is-need .cs-lamp) { animation: none; }
+  .bt-root:not(#_) :is(.cs-who, .cs-card) { transition: none; }
+  .bt-root:not(#_) .cs-lineup:hover .cs-who, .bt-root:not(#_) .cs-card:is(:hover, :focus-within) { transform: none; }
+}

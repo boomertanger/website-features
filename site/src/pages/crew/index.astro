@@ -1,31 +1,74 @@
 ---
-// /crew: Meet the crew (docs/specs/mod-machina.md §12; mockup mod-machina-screens.html "Meet the crew"). Public.
-// This month's awards, the roster (admins, then mods) with grade chips and starred favourite chats, the Hall of
-// Fame and the Join card. Filled by scripts/crew/index.ts from public/crew and the awards docs.
+// /crew: Meet the crew, a story page (docs/specs/mod-machina.md §12; approved mockup
+// docs/design/mockups/crew-story-pages.html screen 2 "After"). The Arcade How it works frame: TocLayout rail,
+// ghost chapters, a hero with a spotlit lineup, flip medals for the awards, a journey line for the Hall of Fame and
+// a closing call. The static shell is here; scripts/crew/index.ts fills the lineup, awards, coverage, roster and
+// Hall of Fame from public/crew and the awards docs (sample data under ?as= on staging).
 import CrewLayout from "../../layouts/CrewLayout.astro";
-import NeedStrip from "../../components/crew/NeedStrip.astro";
-import "../../styles/crew-public.css";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import "../../styles/how-it-works.css";
+import "../../styles/crew-story.css";
+
+const NAV: [string, string][] = [["s-heroes", "This month"], ["s-need", "Where we need you"], ["s-crew", "The crew"], ["s-fame", "Hall of Fame"], ["s-join", "Join"]];
+const chapter = (n: number, id: string, title: string, lede = "", ledeAttr = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2><p class="bt-chapter-lede" ${ledeAttr}>${lede}</p></header>`;
 ---
 <CrewLayout title="Meet the crew" description="The volunteers who keep every Boomertanger chat welcoming, fun and safe, on Twitch, YouTube and TikTok." section="crew">
-  <div class="bt-zone cp-page" data-cp-crew>
-    <div class="cp-head">
-      <div>
-        <h1 class="bt-title">The crew</h1>
-        <p class="bt-subtitle">The volunteers who keep every chat welcoming, fun and safe, on Twitch, YouTube and TikTok.</p>
-      </div>
-      <a class="bt-btn bt-btn--primary" href="/crew/join" data-cp-joinbtn>Join the crew</a>
+  <TocLayout items={NAV}>
+    <div class="ai-main" data-cs-crew>
+      <section class="ai-hero cs-hero" aria-labelledby="h-hero">
+        <div>
+          <span class="ai-kicker">Mod Machina · the crew</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Meet the crew</h1>
+          <p>The volunteers who keep every chat welcoming, fun and safe while Boomer plays, on Twitch, both YouTube chats and TikTok. Say hi next time you see them in chat.</p>
+          <div class="ai-acts">
+            <a class="bt-btn bt-btn--primary" href="/crew/join" data-cs-join>Join the crew</a>
+            <a class="bt-btn bt-btn--primary" href="/crew/hq" data-cs-hq hidden>Go to HQ</a>
+            <a class="bt-btn bt-btn--secondary" href="/crew/board">Crew board</a>
+          </div>
+        </div>
+        <div class="cs-lineup" role="group" aria-label="Some of the crew" data-cs-lineup aria-busy="true">
+          <span class="cs-floor" aria-hidden="true"></span>
+          <span class="cs-side" data-cs-left></span>
+          <span class="cs-who is-boss"><Mascot decorative /><small>Boomer</small></span>
+          <span class="cs-side" data-cs-right></span>
+          <a class="cs-who is-open" href="/crew/join" data-cs-open aria-label="Join the crew: this spot is yours"><span class="bt-avatar-md" aria-hidden="true">+</span><small>you?</small></a>
+          <span class="cs-start" data-cs-start hidden>The crew starts here</span>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-heroes" aria-labelledby="h-heroes">
+        <Fragment set:html={chapter(1, "h-heroes", "This month's heroes", "Hover or tap a medal to see who won it and why.", "data-cs-heroes-lede")} />
+        <div class="bt-flip-grid" data-cs-awards aria-busy="true"><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span></div>
+      </section>
+
+      <section class="ai-sec" id="s-need" aria-labelledby="h-need">
+        <Fragment set:html={chapter(2, "h-need", "Where we need you", "Chat by chat, who loves each one. Gold means that chat often has nobody on duty, and YouTube help earns 1.5× Gears.")} />
+        <div class="cs-rooms" data-cs-rooms aria-busy="true"><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span><span class="bt-skeleton cs-skel"></span></div>
+        <p class="cs-fine">The counts come from the chats each crew member marked as a favourite, not from streams covered. Real coverage arrives with stream duty.</p>
+      </section>
+
+      <section class="ai-sec" id="s-crew" aria-labelledby="h-crew">
+        <Fragment set:html={chapter(3, "h-crew", "The crew", "Their grade, the chats they love (★), and sometimes a line in their own words.")} />
+        <div data-cs-roster aria-busy="true"><span class="bt-skeleton cs-skel cs-skel--tall"></span></div>
+      </section>
+
+      <section class="ai-sec" id="s-fame" aria-labelledby="h-fame">
+        <Fragment set:html={chapter(4, "h-fame", "Hall of Fame", "The latest monthly winners, oldest to newest. Hover to light the path.")} />
+        <div data-cs-fame aria-busy="true"><span class="bt-skeleton cs-skel"></span></div>
+      </section>
+
+      <section class="ai-cta" id="s-join" aria-labelledby="h-cta">
+        <h2 id="h-cta" data-cs-cta-h>There's a seat for you</h2>
+        <p data-cs-cta-p>Pick your chats, train at your own pace, and help on the streams that suit you. YouTube especially.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary" href="/crew/join" data-cs-join>Join the crew</a>
+          <a class="bt-btn bt-btn--primary" href="/crew/hq" data-cs-hq hidden>Go to HQ</a>
+          <a class="bt-btn bt-btn--secondary" href="/crew/how-it-works">How the crew works</a>
+        </div>
+      </section>
     </div>
-    <NeedStrip />
-    <section class="cp-awards" data-cp-awards aria-label="Awards" aria-busy="true">
-      <span class="bt-skeleton cp-skel-tile"></span><span class="bt-skeleton cp-skel-tile"></span>
-    </section>
-    <div data-cp-roster aria-busy="true"><span class="bt-skeleton cp-skel-card"></span></div>
-    <section class="cp-group" data-cp-fame hidden aria-labelledby="cp-fame-h"></section>
-    <div class="bt-join-card" data-cp-cta>
-      <div><h3>Want to help run the chats?</h3><ul><li>Pick the chats you like</li><li>Training included</li><li>Life comes first, always</li></ul></div>
-      <a class="bt-btn bt-btn--primary" href="/crew/join">Join the crew</a>
-    </div>
-  </div>
+  </TocLayout>
 </CrewLayout>
 
 <script>

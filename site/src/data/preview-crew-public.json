@@ -2,13 +2,13 @@
   "members": [
     { "uid": "p-raven", "handle": "ravenrx", "track": "admin", "grade": 2, "status": "active", "favourites": ["twitch"] },
     { "uid": "p-moss", "handle": "mossy", "track": "admin", "grade": 1, "status": "active", "favourites": ["ytLandscape"] },
-    { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "status": "active", "favourites": ["twitch"] },
-    { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "status": "active", "favourites": ["ytLandscape", "ytVertical"] },
-    { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "status": "active", "favourites": ["twitch", "tiktok"] },
-    { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "status": "active", "favourites": ["twitch"] },
-    { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "status": "checkIn", "favourites": ["ytVertical"] },
-    { "uid": "p-gem", "handle": "ghoulgem", "track": "mod", "grade": 2, "status": "goingDark", "favourites": ["tiktok"] },
-    { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "status": "active", "favourites": ["twitch"] }
+    { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "status": "active", "favourites": ["twitch"], "quote": "Here for the late-night chats." },
+    { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "status": "active", "favourites": ["ytLandscape", "ytVertical"], "quote": "Vertical chat on my phone, every Thursday." },
+    { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "status": "active", "favourites": ["twitch", "tiktok"], "quote": "Welcome in, pull up a chair." },
+    { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "status": "active", "favourites": ["twitch"], "quote": "TikTok is my happy place." },
+    { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "status": "checkIn", "favourites": ["ytVertical"], "quote": "If chat is quiet, I will start the party." },
+    { "uid": "p-gem", "handle": "ghoulgem", "track": "mod", "grade": 2, "status": "goingDark", "favourites": ["tiktok"], "quote": "On a break, back soon!" },
+    { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "status": "active", "favourites": ["twitch"], "quote": "New here. Still learning the ropes." }
   ],
   "awards": [
     { "month": "2026-09", "topGear": { "uid": "p-jay", "handle": "cryptjay", "gears": 412 }, "fanFavourite": { "uid": "p-kat", "handle": "nightowlkat", "votes": 63 } },
