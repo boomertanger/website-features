@@ -1,0 +1,53 @@
+---
+// One layout for every Scream Planner page (docs/specs/scream-planner.md §2): the site shell, the sticky SCREAM PLANNER
+// bar in BaseLayout's "bar" slot, then the page. Like Night Shift's:
+//   membersOnly  signed-up members see the page; visitors get the Join gate, mid-signup Finish signup
+//   crewOnly     mods and admins see the page; everyone else a short "Crew only" gate
+//   adminOnly    admins only (the /admin/crew pages, admin green); everyone else an "Admins only" gate
+// Display-only: pages are static and read their data in scripts through callables or public docs; the
+// server checks roles. scripts/planner/layout.ts sets .pl[data-access] = loading | gate | join | signup | page.
+import BaseLayout from "./BaseLayout.astro";
+import PlannerBar from "../components/planner/PlannerBar.astro";
+import { SP_ICON } from "../../../shared/ui/scream-planner.js";
+import "../styles/planner.css";
+
+interface Props { title: string; description?: string; membersOnly?: boolean; crewOnly?: boolean; adminOnly?: boolean; section?: string | null; wide?: boolean }
+const { title, description, membersOnly = false, crewOnly = false, adminOnly = false, section = null, wide = false } = Astro.props;
+const gated = membersOnly || crewOnly || adminOnly;
+const staff = crewOnly || adminOnly;
+---
+<BaseLayout title={title} description={description} noindex={adminOnly}>
+  <PlannerBar slot="bar" section={section} admin={adminOnly} gated={gated} />
+  <div class:list={["pl", wide && "pl--wide"]} data-pl data-access={gated ? "loading" : "page"} data-crew-only={crewOnly ? "" : undefined} data-admin-only={adminOnly ? "" : undefined} data-members-only={membersOnly ? "" : undefined}>
+    {gated && (
+      <>
+        <div class="bt-zone pl-skel" aria-hidden="true">
+          <span class="bt-skeleton pl-skel-title"></span>
+          <span class="bt-skeleton pl-skel-line"></span>
+          <span class="bt-skeleton pl-skel-card"></span>
+        </div>
+        <section class="bt-zone pl-gate" aria-labelledby="pl-gate-title">
+          <span class="pl-gate-art" aria-hidden="true" set:html={SP_ICON} />
+          <h1 class="bt-title" id="pl-gate-title">{adminOnly ? "Admins only" : crewOnly ? "Crew only" : "Members only"}</h1>
+          <p class="pl-gate-lead" hidden={!staff}>{adminOnly ? "These pages are for site admins. If you're one, sign in with your admin account." : "The planning board is for the crew and admins. If you're a mod or admin, sign in with your crew account."}</p>
+          <p class="pl-gate-lead" hidden={staff}>Voting is for members. Joining is free.</p>
+          <div class="pl-gate-acts" data-pl-gate-visitor>
+            {staff
+              ? <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
+              : <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to vote on games">Join free</a>}
+            {!staff && <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>}
+          </div>
+          <div class="pl-gate-acts" data-pl-gate-signup hidden>
+            <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+          </div>
+          <a class="bt-btn bt-btn--ghost" href="/schedule">See the schedule</a>
+        </section>
+      </>
+    )}
+    <div class="pl-page"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/planner/layout";
+</script>

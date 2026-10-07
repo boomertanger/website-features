@@ -1,0 +1,33 @@
+---
+// Scream Planner's feature bar (the Mod Machina / Night Shift pattern): the kit's .bt-topbar in a .bt-sticky-bar with
+// the SCREAM PLANNER .bt-wordmark--power (the screaming tear-off calendar) and a seg nav: Schedule, Usual week, Vote
+// (with the open ballot's count, filled by the page scripts) and, for crew and admins (.bt-when-staff, display only),
+// Plan. Icon-only on phones. Wired in scripts/planner/layout.ts.
+import { SP_ICON } from "../../../../shared/ui/scream-planner.js";
+
+interface Props { section?: string | null; admin?: boolean; gated?: boolean }
+const { section = null, admin = false, gated = false } = Astro.props;
+const links = [
+  { id: "schedule", label: "Schedule", href: "/schedule", icon: "cal", staff: false },
+  { id: "usual", label: "Usual week", href: "/schedule/usual", icon: "target", staff: false },
+  { id: "vote", label: "Vote", href: "/schedule/vote", icon: "game", staff: false },
+  { id: "plan", label: "Plan", href: "/schedule/plan", icon: "wrench", staff: true },
+];
+---
+<div class="bt-sticky-bar pl-dock" data-pl-dock data-gated={gated ? "" : undefined}>
+  <div class="bt-topbar pl-bar">
+    <div class="pl-brand">
+      <a class="bt-wordmark bt-wordmark--power" href="/schedule" aria-label="Scream Planner">
+        <span class="bt-wordmark-icon" set:html={SP_ICON} />
+        <span class="bt-wordmark-text" aria-hidden="true">SCREAM<span class="bt-wordmark-accent">PLANNER</span></span>
+      </a>
+      {admin && <span class="bt-badge bt-badge--admin pl-tag">Admin</span>}
+    </div>
+    <nav class="bt-seg-nav pl-barlinks" aria-label="Scream Planner">
+      {links.map((l) => <a class:list={[l.staff && "bt-when-staff"]} href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}{l.id === "vote" && <span class="bt-badge bt-badge--gold pl-votecount" data-pl-votecount hidden></span>}</a>)}
+    </nav>
+    <nav class="bt-seg-nav bt-seg-nav--icons pl-barico" aria-label="Scream Planner">
+      {links.map((l) => <a class:list={[l.staff && "bt-when-staff"]} href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
+    </nav>
+  </div>
+</div>
