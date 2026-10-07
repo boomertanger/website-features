@@ -1485,6 +1485,22 @@ Approved picks (the pages themselves come in the next prompt):
   **Dead Air: C1, the evidence board.**
 - Colours: "needed" uses gold, never red (red is for destroying data); admin-only controls are green.
 
+**Kit pieces added for Mod Machina** (all shown in every state on the UI kit page, /dev/ui-kit/, under Mod Machina and Story page pieces; markup in §5, JS in §6):
+- `.bt-badge--admin`: the admin-green badge, for the admin track's grades and admin-only tags.
+- `gradeChip()` / `.bt-grade`: a grade chip with level bars (mod grades blue, gold, pink, red in 4 steps; admin grades `.bt-badge--admin` in 3 steps).
+- `.bt-room`: one live chat (platform and name) with covered, needed (gold) or off states.
+- `.bt-pref`: a per-chat preference row with a 4-way choice (Favourite, Happy to help, Only if needed, No); still used by /crew/profile.
+- `.bt-crew-card`: a roster card with avatar, name, grade chip and starred favourite chats.
+- `.bt-podium`: the crew board's top three (B2), with the `.bt-board--crew` table under it.
+- `.bt-timecard`: the month's duty time card (M2), including the "Starts with stream duty" state.
+- `.bt-ladder`: clickable grade rungs with a detail card (How it works, the join page).
+- `.bt-ring`: a progress ring with a centre label (Academy progress).
+- `.bt-quiz`: a question, options and right or wrong states; the server grades, so the component never holds the answers.
+- The 4-step journey (`.ai-jr--4`, in how-it-works.css): the join page's "Can I apply?" and "What happens next", with met, waiting, waived and locked steps.
+- `.bt-stamp`: the celebratory stamp (the "Application In" seal) for key actions on tool pages; still under reduced motion.
+- `.bt-day-picker`: a week of day tiles to toggle.
+- `.bt-chat-tile`: a chat card with a mini chat preview and a 4-way choice (the join page's replacement for the .bt-pref rows).
+
 **Site-wide decision (Oct 6, widened Oct 7): the page quality standard, in two kinds.** Every member-facing page matches
 the Boom Arcade How it works page in craft (minimum standard, never less).
 - **Story pages** (pages that sell, explain or welcome: landing pages, Join, Meet the crew, How it works, Academy,

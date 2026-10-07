@@ -15,7 +15,7 @@ Last updated: 2026-10-05. Every planning chat reads this file first and proposes
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
-| 9 | Mod Machina | In progress (phase 1) | Community services |
+| 9 | Mod Machina | Phase 1 built and tested on staging (Oct 7); phases 2 to 4 later | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
@@ -116,7 +116,12 @@ Kickoff: "Start workstream 8 (Accounts part 2b) from docs/ROADMAP.md."
 ### 9. Mod Machina
 Goal: mod requests (not public), mod permissions, moderation tools, the Keeper volunteer queue, and eligibility for stream crew sign-ups (taking over from the plain mod role).
 Spec: [docs/specs/mod-machina.md](specs/mod-machina.md) (confirmed Oct 6, 2026); Academy text `docs/specs/crew-academy.md`; mockups `docs/design/mockups/mod-machina-screens.html`, `mod-machina-guides.html` and `mod-machina-live.html`.
-Status: In progress (phase 1: crew core, spec section 15). Prompt 1 of 2 is docs, data, rules and Cloud Functions; prompt 2 is the pages.
+Status: **Phase 1 (crew core, spec section 15) is built and tested on staging (Oct 7, 2026).** Tested end to end: the owner's waiver, applying on /crew/join, approving on /crew/queue, the new Initiate in /crew/hq, an Academy quiz paying Gears, and the quote on /crew/profile. Built: grades and status, the queue, Gears, the task board, the crew board, referral links, Academy modules 1 to 7, 9 and 10, monthly awards, /crew, /crew/how-it-works, /crew/join, /crew/vote, /crew/board, /crew/hq, /crew/queue, /crew/tasks, /crew/profile, /crew/academy and /admin/crew, with the Twitch moderator sync built but off (twitchSync).
+Next, in order:
+1. **Header nav redesign.** The header has no room for Crew (it already scrolls at 1100px), so Crew lives in the phone More sheet, the footer and the account menu until then.
+2. **Phase 2: Schedule Planner seats** and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
+3. **Phase 3: Control Room / Mod Deck**: clock in, handoffs, duty Gears, per-room check-in codes, YouTube moderator sync, Recruit Rush, and the activity rules switched on (`crew.activityRules`; the HQ time card stops saying "Starts with stream duty").
+4. **Phase 4: Chat Games** (the pool, crew votes, Planner slot, Play panel; Dead Air and Scream Off first), then Academy module 8 and the Captain's course content going live.
 Depends on: Badges.
 Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 
@@ -165,6 +170,12 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
+
+### Mod Machina in production
+- [ ] Connect the Twitch broadcaster token for mod sync (twitchSync is off until then): store sites/boomertanger/private/twitchBroadcaster { accessToken, refreshToken, accessExpiresAt, scope incl. channel:manage:moderators }, then set crew/main.twitchSync = true in Crew settings. Until then every Twitch mod change is a to-do on /admin/crew.
+- [ ] Admin Academy text before the first Steward is invited (outline at the bottom of docs/specs/crew-academy.md; the hub shows it as a locked card).
+- [ ] Deploy the crew functions and rules to production (rules first, separately; staging done) and check crewNightly, crewReferralSweep and crewMonthlyAwards are scheduled in the production console.
+- [ ] Seed the crew badges in production with the rest of the Trophy Room catalog (seed-badges.js, dry run first).
 
 ### Trophy Room and Night Shift in production
 - [ ] Seed the Trophy Room badge catalog in production: functions/scripts/seed-badges.js --project prod (dry run, then --apply). Includes beat-the-boss and the streak badges; check boomer-s-blessing is owner only.
