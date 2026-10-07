@@ -1,0 +1,135 @@
+---
+// /admin/crew: Mod Machina's admin page (docs/specs/mod-machina.md §3, §7, §12). Admins only (CrewLayout adminOnly:
+// everyone else gets a short gate). Sections: Roster, Coverage map, Ready to promote, Queue decisions, Strikes,
+// To-do list, Crew settings. Display only: the owner-only controls are hidden for everyone else, but the callables
+// check on the server. All reads and writes are in scripts/crew/admin.ts. Non-production, signed out, ?as=admin
+// shows sample data from src/data/preview-crew-admin.json (and ?owner=0 the read-only view).
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-admin.css";
+---
+<CrewLayout title="Crew admin" adminOnly section={null}>
+  <div class="ca" data-ca>
+    <div class="bt-skeleton ca-skel" data-ca-load></div>
+    <div class="bt-zone" data-ca-error hidden>
+      <div class="bt-empty">
+        <div class="bt-empty-title">Couldn't load the crew</div>
+        <p data-ca-error-text>Check your connection and try again.</p>
+        <button type="button" class="bt-btn bt-btn--secondary" data-ca-retry>Try again</button>
+      </div>
+    </div>
+
+    <div class="ca-body" data-ca-body hidden>
+      <div class="ca-head">
+        <div>
+          <h1 class="bt-title">Crew admin</h1>
+          <p class="ca-lead">Who is on the crew, who needs help, and who is ready to move up.</p>
+        </div>
+        <span class="bt-admin-tag" aria-label="Admin only"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/></svg>Admin only</span>
+      </div>
+
+      <p class="bt-notice ca-role" data-ca-role hidden></p>
+
+      <nav class="bt-page-tabs ca-nav" aria-label="Crew admin sections" data-ca-nav>
+        <a href="#roster" data-nav="roster">Roster</a>
+        <a href="#coverage" data-nav="coverage">Coverage</a>
+        <a href="#ready" data-nav="ready">Ready to promote <span class="bt-badge bt-badge--admin" data-count="ready" hidden></span></a>
+        <a href="#queue" data-nav="queue">Queue <span class="bt-badge bt-badge--admin" data-count="queue" hidden></span></a>
+        <a href="#strikes" data-nav="strikes">Strikes</a>
+        <a href="#todos" data-nav="todos">To-do <span class="bt-badge bt-badge--admin" data-count="todos" hidden></span></a>
+        <a href="#settings" data-nav="settings">Settings</a>
+      </nav>
+
+      <section class="ca-sec" id="roster" aria-labelledby="ca-h-roster">
+        <div class="ca-sec-head">
+          <h2 class="ca-h" id="ca-h-roster">Roster</h2>
+          <div class="ca-filters" role="group" aria-label="Filter the roster" data-ca-filters>
+            <button type="button" class="bt-chip bt-chip--small is-active" aria-pressed="true" data-f="all">All</button>
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="attention">Needs attention</button>
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="mod">Mods</button>
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-f="admin">Admins</button>
+          </div>
+        </div>
+        <div class="ca-roster" data-ca-roster role="list"></div>
+        <p class="bt-fine bt-fine--left" data-ca-roster-note></p>
+      </section>
+
+      <section class="ca-sec" id="coverage" aria-labelledby="ca-h-coverage">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-coverage">Coverage map</h2></div>
+        <p class="ca-sub">How many crew are willing to help in each chat, from their platform preferences. Counts Active and Check-in crew.</p>
+        <div class="ca-cov" data-ca-coverage></div>
+        <p class="bt-fine bt-fine--left">Gold means a chat needs more people. YouTube is the first gap to close, so it is flagged as most needed until it has enough.</p>
+      </section>
+
+      <section class="ca-sec" id="ready" aria-labelledby="ca-h-ready">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-ready">Ready to promote</h2></div>
+        <p class="ca-sub">Promotions are never automatic. When someone meets every step, they show up here and you confirm with one tap.</p>
+        <div class="ca-ready" data-ca-ready></div>
+      </section>
+
+      <section class="ca-sec" id="queue" aria-labelledby="ca-h-queue">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-queue">Queue decisions</h2></div>
+        <p class="ca-sub">Open applications, best first. Only the owner approves new mods.</p>
+        <div class="ca-queue" data-ca-queue></div>
+      </section>
+
+      <section class="ca-sec" id="strikes" aria-labelledby="ca-h-strikes">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-strikes">Strikes</h2></div>
+        <div class="bt-card ca-card" data-ca-strikes></div>
+      </section>
+
+      <section class="ca-sec" id="todos" aria-labelledby="ca-h-todos">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-todos">To-do list</h2></div>
+        <p class="ca-sub">Moderator changes to make by hand on Twitch, YouTube and TikTok. Tick each off once you've done it.</p>
+        <div data-ca-todos></div>
+      </section>
+
+      <section class="ca-sec" id="settings" aria-labelledby="ca-h-settings">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-settings">Crew settings</h2></div>
+        <form class="bt-card ca-card" data-ca-settings novalidate>
+          <p class="bt-notice" data-ca-settings-note hidden>Only the owner can change these. You can see the current values.</p>
+          <div class="bt-form ca-form">
+            <fieldset class="ca-fs">
+              <legend class="bt-label">Gears values</legend>
+              <p class="bt-hint">What each kind of help earns. Whole numbers from 0 to 1,000.</p>
+              <div class="ca-gears" data-ca-gears></div>
+            </fieldset>
+
+            <fieldset class="ca-fs">
+              <legend class="bt-label">Boost and limits</legend>
+              <div class="bt-form-grid">
+                <div class="bt-field"><label class="bt-label" for="ca-yt">YouTube boost</label><input class="bt-input" id="ca-yt" name="youtubeBoost" type="number" inputmode="decimal" min="1" max="5" step="0.05"><span class="bt-hint">Gears multiplier on YouTube rooms, from 1 to 5.</span><span class="bt-hint ca-err" data-err="youtubeBoost" role="alert" hidden></span></div>
+                <div class="bt-field"><label class="bt-label" for="ca-rc">Recruit cap a month</label><input class="bt-input" id="ca-rc" name="recruitCapPerMonth" type="number" inputmode="numeric" min="1" max="100" step="1"><span class="bt-hint">Recruits credited per person, 1 to 100.</span><span class="bt-hint ca-err" data-err="recruitCapPerMonth" role="alert" hidden></span></div>
+                <div class="bt-field"><label class="bt-label" for="ca-vc">Vouch cap</label><input class="bt-input" id="ca-vc" name="vouchCap" type="number" inputmode="numeric" min="1" max="10" step="1"><span class="bt-hint">Active vouches each mod can hold, 1 to 10.</span><span class="bt-hint ca-err" data-err="vouchCap" role="alert" hidden></span></div>
+                <div class="bt-field"><label class="bt-label" for="ca-ae">Application expiry (days)</label><input class="bt-input" id="ca-ae" name="appExpiryDays" type="number" inputmode="numeric" min="7" max="365" step="1"><span class="bt-hint">Open applications lapse after this, 7 to 365.</span><span class="bt-hint ca-err" data-err="appExpiryDays" role="alert" hidden></span></div>
+                <div class="bt-field"><label class="bt-label" for="ca-ra">Reapply wait (days)</label><input class="bt-input" id="ca-ra" name="reapplyDays" type="number" inputmode="numeric" min="0" max="365" step="1"><span class="bt-hint">After "Not now", 0 to 365.</span><span class="bt-hint ca-err" data-err="reapplyDays" role="alert" hidden></span></div>
+              </div>
+            </fieldset>
+
+            <fieldset class="ca-fs">
+              <legend class="bt-label">Switches</legend>
+              <div class="ca-sw">
+                <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="ca-sw-ar-l" aria-describedby="ca-sw-ar-d" name="activityRules" data-sw="activityRules"></button>
+                <div><span class="ca-sw-l" id="ca-sw-ar-l">Activity rules</span><p class="bt-hint" id="ca-sw-ar-d">Turns on the monthly minimums, so people can fall to Check-in and Reserve. Keep it off until stream duty exists.</p></div>
+              </div>
+              <div class="ca-sw">
+                <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="ca-sw-cf-l" aria-describedby="ca-sw-cf-d" name="checkinFallback" data-sw="checkinFallback"></button>
+                <div><span class="ca-sw-l" id="ca-sw-cf-l">Check-in fallback</span><p class="bt-hint" id="ca-sw-cf-d">Night Shift daily check-ins count in place of stream check-ins when someone applies.</p></div>
+              </div>
+              <div class="ca-sw">
+                <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="ca-sw-ts-l" aria-describedby="ca-sw-ts-d" name="twitchSync" data-sw="twitchSync"></button>
+                <div><span class="ca-sw-l" id="ca-sw-ts-l">Twitch moderator sync</span><p class="bt-hint" id="ca-sw-ts-d">Adds and removes Twitch mods for you. It needs a broadcaster token with channel:manage:moderators. Until then, changes land on the to-do list.</p></div>
+              </div>
+            </fieldset>
+
+            <p class="bt-notice bt-notice--error" data-ca-settings-err role="alert" hidden></p>
+            <div class="bt-form-actions" data-ca-settings-acts><button type="submit" class="bt-btn bt-btn--admin" data-ca-save>Save settings</button></div>
+          </div>
+        </form>
+      </section>
+    </div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/admin";
+</script>

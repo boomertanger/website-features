@@ -1,0 +1,41 @@
+{
+  "_note": "PREVIEW DATA for /admin/crew (?as=admin, non-production, signed out). Same shapes as crewAdminOverview, crewQueue and the crew/main/todos documents. Never used for real accounts.",
+  "overview": {
+    "roster": [
+      { "uid": "a1", "handle": "boomerdad", "track": "admin", "grade": 3, "name": "Right Hand", "status": "active", "since": 1767225600000, "platforms": { "twitch": "favourite", "ytLandscape": "happy", "ytVertical": "ifNeeded", "tiktok": "no" }, "device": "desktop", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "a2", "handle": "nightowl", "track": "admin", "grade": 2, "name": "Overseer", "status": "active", "since": 1772323200000, "platforms": { "twitch": "happy", "ytLandscape": "favourite", "ytVertical": "happy", "tiktok": "ifNeeded" }, "device": "both", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m1", "handle": "kettle_corn", "track": "mod", "grade": 4, "name": "Sentinel", "status": "active", "since": 1767225600000, "platforms": { "twitch": "favourite", "ytLandscape": "ifNeeded", "ytVertical": "no", "tiktok": "happy" }, "device": "desktop", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m2", "handle": "pixelpete", "track": "mod", "grade": 3, "name": "Warden", "status": "active", "since": 1772323200000, "platforms": { "twitch": "favourite", "ytLandscape": "happy", "ytVertical": "ifNeeded", "tiktok": "no" }, "device": "desktop", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m3", "handle": "moth_lamp", "track": "mod", "grade": 2, "name": "Watcher", "status": "active", "since": 1780272000000, "platforms": { "twitch": "happy", "ytLandscape": "no", "ytVertical": "no", "tiktok": "favourite" }, "device": "phone", "ready": { "to": 3, "since": 1791158400000 }, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m4", "handle": "sunny_side", "track": "mod", "grade": 2, "name": "Watcher", "status": "checkIn", "since": 1780272000000, "platforms": { "twitch": "favourite", "ytLandscape": "ifNeeded", "ytVertical": "no", "tiktok": "no" }, "device": "both", "ready": null, "activeStrikes": 1, "ownerReview": false },
+      { "uid": "m5", "handle": "gearhead_gwen", "track": "mod", "grade": 1, "name": "Initiate", "status": "active", "since": 1788220800000, "platforms": { "twitch": "happy", "ytLandscape": "favourite", "ytVertical": "happy", "tiktok": "ifNeeded" }, "device": "phone", "ready": { "to": 2, "since": 1791072000000 }, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m6", "handle": "late_lantern", "track": "mod", "grade": 1, "name": "Initiate", "status": "goingDark", "since": 1789862400000, "platforms": { "twitch": "ifNeeded", "ytLandscape": "no", "ytVertical": "no", "tiktok": "no" }, "device": "desktop", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m7", "handle": "quiet_quill", "track": "mod", "grade": 2, "name": "Watcher", "status": "reserve", "since": 1772323200000, "platforms": { "twitch": "happy", "ytLandscape": "happy", "ytVertical": "no", "tiktok": "no" }, "device": "desktop", "ready": null, "activeStrikes": 2, "ownerReview": false },
+      { "uid": "m8", "handle": "old_guard", "track": "mod", "grade": 3, "name": "Warden", "status": "alumni", "since": 1767225600000, "platforms": { "twitch": "no", "ytLandscape": "no", "ytVertical": "no", "tiktok": "no" }, "device": "desktop", "ready": null, "activeStrikes": 0, "ownerReview": false },
+      { "uid": "m9", "handle": "tangent_tom", "track": "mod", "grade": 1, "name": "Initiate", "status": "paused", "since": 1788220800000, "platforms": { "twitch": "happy", "ytLandscape": "ifNeeded", "ytVertical": "no", "tiktok": "no" }, "device": "phone", "ready": null, "activeStrikes": 3, "ownerReview": true }
+    ],
+    "openApplications": 3,
+    "settings": {
+      "gearsValues": { "dutyCaptainPerHour": 12, "dutyRoomLeadPerHour": 10, "dutyDeckhandPerHour": 6, "showedUp": 5, "tookOver": 5, "hostedGame": 5, "earlySignup": 3, "recruitActivated": 10, "recruitFirstCheckin": 5, "queueReview": 2, "queueReviewMonthlyCap": 10, "academyModule": 5, "triage": 3, "dutyHoursCapPerStream": 6 },
+      "youtubeBoost": 1.5,
+      "activityRules": false,
+      "checkinFallback": true,
+      "recruitCapPerMonth": 10,
+      "vouchCap": 3,
+      "appExpiryDays": 90,
+      "reapplyDays": 60,
+      "twitchSync": false
+    }
+  },
+  "queue": [
+    { "appId": "ap1", "uid": "u1", "handle": "marsh_mellow", "createdAt": 1790812800000, "expiresAt": 1798588800000, "band": "Top 5", "rank": 1, "score": 14, "prefs": { "twitch": "happy", "ytLandscape": "favourite", "ytVertical": "happy", "tiktok": "no" }, "availability": { "days": ["tue", "thu", "sat"], "note": "Evenings Central" }, "device": "both", "answers": { "why": "I have been in chat most nights since spring and I would like to help new people feel welcome, especially on the YouTube side where it is quiet.", "experience": "Modded a 2,000 viewer Twitch channel for two years." }, "vouches": [{ "uid": "m2", "handle": "pixelpete", "grade": 3 }, { "uid": "m3", "handle": "moth_lamp", "grade": 2 }], "vouchedByMe": false, "concerns": [] },
+    { "appId": "ap2", "uid": "u2", "handle": "static_sheep", "createdAt": 1791072000000, "expiresAt": 1798848000000, "band": "Top 5", "rank": 2, "score": 8, "prefs": { "twitch": "favourite", "ytLandscape": "ifNeeded", "ytVertical": "no", "tiktok": "happy" }, "availability": { "days": ["sun", "mon"], "note": "" }, "device": "desktop", "answers": { "why": "Streams are the best part of my week and I would like to give something back by keeping chat friendly.", "experience": "" }, "vouches": [{ "uid": "m1", "handle": "kettle_corn", "grade": 4 }], "vouchedByMe": false, "concerns": [{ "byHandle": "nightowl", "note": "Was timed out once in March for spam. Seems to have settled." }] },
+    { "appId": "ap3", "uid": "u3", "handle": "wobbly_wick", "createdAt": 1791158400000, "expiresAt": 1798934400000, "band": "In the queue", "rank": 3, "score": 4, "prefs": { "twitch": "no", "ytLandscape": "no", "ytVertical": "happy", "tiktok": "favourite" }, "availability": { "days": ["fri", "sat", "sun"], "note": "Mostly phone" }, "device": "phone", "answers": { "why": "I watch on my phone most nights and would love to help with the vertical chats.", "experience": "None yet, happy to learn." }, "vouches": [], "vouchedByMe": false, "concerns": [] }
+  ],
+  "todos": [
+    { "id": "twitch_m5_add", "kind": "platformMod", "platform": "twitch", "action": "add", "uid": "m5", "text": "Add @gearhead_gwen as a Twitch mod", "why": "Twitch sync is off", "status": "open", "createdAt": 1788307200000 },
+    { "id": "youtube_m5_add", "kind": "platformMod", "platform": "youtube", "action": "add", "uid": "m5", "text": "Add @gearhead_gwen as a YouTube mod", "why": "manual in phase 1", "status": "open", "createdAt": 1788307200000 },
+    { "id": "tiktok_m8_remove", "kind": "platformMod", "platform": "tiktok", "action": "remove", "uid": "m8", "text": "Remove @old_guard as a TikTok mod", "why": "manual in phase 1", "status": "open", "createdAt": 1790985600000 },
+    { "id": "twitch_m8_remove", "kind": "platformMod", "platform": "twitch", "action": "remove", "uid": "m8", "text": "Remove @old_guard as a Twitch mod", "why": "Twitch sync is off", "status": "done", "createdAt": 1790985600000 }
+  ]
+}
