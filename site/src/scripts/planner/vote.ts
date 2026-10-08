@@ -4,7 +4,7 @@
 // read-only (Vote opens the Join dialog), members with an unverified email get the verify-email prompt. Covers (V1) or
 // Race (V2), kept per viewer in localStorage (bt.schedule.voteView). Sample data under ?as= / ?pv= (non-production).
 import { onAccess } from "./layout";
-import { esc, loadBallot, loadMine, loadCovers, fillVoteCount, isSample, sampleBallot, sampleMine, sampleVault, ballotError, dayTime, DEFAULT_TZ, pv, type Ballot, type Mine, type BallotGame } from "./pub";
+import { esc, loadBallot, loadMine, loadCovers, fillVoteCount, isSample, sampleBallot, sampleMine, sampleVault, ballotError, dayTime, DEFAULT_TZ, pv, rangeLabel, mondayOf, type Ballot, type Mine, type BallotGame } from "./pub";
 import { call } from "../../lib/call";
 import { sendVerification, refresh, getAuthState, type AuthState } from "../../lib/auth";
 import { loadVault, type VCard } from "../vault/data";
@@ -99,7 +99,7 @@ function render() {
   else if (unverified()) top = `<div class="pp-gate-note"><span>Verify your email to vote. It takes a minute and keeps the vote fair.</span><button type="button" class="bt-btn bt-btn--primary" data-verify>Verify email</button></div>`;
   const errBox = notice ? `<div class="bt-notice bt-notice--error" role="alert">${esc(notice)}</div>` : "";
   const hint = open() ? (canVote ? `Change your votes any time before it closes.${mine ? ` ${mine.addsLeft} of 2 game adds left.` : ""}` : "") : `${ballot.totalVotes} votes were cast.`;
-  body.innerHTML = `<section class="pp-ballot" aria-label="The ballot">${sectionHeadHtml({ icon: "🗳️", title: "The ballot", count: ballot.games.length, sub: "The top games go to the front of Boomer's list.", tools: `${viewSwitchHtml({ key: "voteView", label: "Ballot view", value: view, options: VOTE_VIEWS })}<span class="pp-closes">${closes}</span>` })}`
+  body.innerHTML = `<section class="pp-ballot" aria-label="The ballot">${sectionHeadHtml({ icon: "🗳️", title: "The ballot", count: ballot.games.length, sub: `${ballot.week ? `${rangeLabel(mondayOf(ballot.week))}. ` : ""}The top games go to the front of Boomer's list.`, tools: `${viewSwitchHtml({ key: "voteView", label: "Ballot view", value: view, options: VOTE_VIEWS })}<span class="pp-closes">${closes}</span>` })}`
     + `${top}${errBox}<div class="pp-ballot-top">${open() ? tokens : ""}<span class="bt-meta">${hint}</span></div>${gamesHtml()}</section>`;
   if (!open()) body.querySelectorAll(".bt-vote-btn").forEach((b) => b.remove());
   initViewSwitch(body, { onChange: (v) => { view = v === "race" ? "race" : "covers"; store.set(view); render(); body.querySelector<HTMLElement>('.bt-view-switch [aria-checked="true"]')?.focus(); } });
