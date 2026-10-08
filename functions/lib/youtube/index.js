@@ -116,7 +116,11 @@ function build({ adminLogEntry, fetchFn, clientId, clientSecret, now = Date.now,
       if (after) await writeStatus(streamId, L.statusDocShape(status, error, now(), warning));
       return { action: d.action, status };
     };
-    if (d.action === "none") return { action: "none", status: after?.youtube?.status || "ok" };
+    if (d.action === "none") {
+      // A removed stream never leaves its server-only watch doc behind, even when it had no event any more (a cancelled stream's ids are already cleared).
+      if (!after) await db.doc(path.watch(streamId)).delete();
+      return { action: "none", status: after?.youtube?.status || "ok" };
+    }
     try {
       const au = auth();
       if (!(await au.status()).connected) return await finish("pending");      // not connected yet: skip quietly
@@ -130,23 +134,30 @@ function build({ adminLogEntry, fetchFn, clientId, clientSecret, now = Date.now,
         await writeWatch(streamId, y, a.type, ev.id, hash);
         return ev.id;
       };
+      // One log line per sync action: server-side only (Cloud Logging, admins), so the ids it names are never in a doc anyone else can read.
+      const logAction = (act, id) => console.log(`youtubeSync ${streamId}: ${act} ${id || "-"}${force ? " (retry)" : ""}`);
       if (d.action === "create") {
         const id = await create();
+        logAction("create", id);
         warning = await setThumbnail(api, id, a, cover);
       } else if (d.action === "update") {
         let id = eventId;
         try {
           await api.update(eventId, L.buildEvent(a, { siteUrl, projectId: pid(), cover }));
           await writeWatch(streamId, y, a.type, eventId, hash);
+          logAction("update", eventId);
         } catch (err) {
           if (!(err instanceof YoutubeError) || err.kind !== "notFound") throw err;
           id = await create();                                                  // deleted by hand: make a new one
+          logAction("recreate (the old event was gone)", id);
           warning = "The YouTube event was deleted by hand, so a new one was made.";
         }
         const thumb = await setThumbnail(api, id, a, cover);
         warning = warning || thumb;
       } else {                                                                   // delete
-        try { await api.remove(eventId); } catch (err) { if (!(err instanceof YoutubeError) || err.kind !== "notFound") throw err; }
+        let gone = false;
+        try { await api.remove(eventId); } catch (err) { if (!(err instanceof YoutubeError) || err.kind !== "notFound") throw err; gone = true; }
+        logAction(gone ? "delete (already gone)" : "delete", eventId);
         await writeWatch(streamId, y, after?.type, null, null);
         if (!after) await db.doc(path.watch(streamId)).delete();
       }

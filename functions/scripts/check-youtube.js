@@ -402,12 +402,35 @@ async function main() {
   assert.equal((await cur("s1")).youtube.status, "ok");
   m = mark();
   await edit("s1", { rev: 9 }); assert.equal(since(m).length, 0, "a cancelled stream with no event: nothing");
+  // A removed stream whose event is already gone (a cancelled stream's ids are cleared) still takes its watch doc with it.
+  const lines = []; const realLog = console.log; console.log = (...x) => { lines.push(x.join(" ")); };
+  try {
+    assert.ok(await watchOf("s1"), "the cancelled stream still has a (null-id) watch doc");
+    await fire("s1", await cur("s1"), null);
+    assert.equal(await watchOf("s1"), undefined, "a removed stream with no event leaves no watch doc");
+  } finally { console.log = realLog; }
+  assert.equal(lines.some((l) => /^youtubeSync s1: (create|update|delete)/.test(l)), false, "no event, no action line");
   const before2 = await cur("s2");
   await fire("s2", before2, null);
   assert.equal(eg.events.has("EV2"), false); assert.equal(await watchOf("s2"), undefined, "the watch doc goes with the stream");
   // A stream that has gone live is the Control Room's: hands off.
   m = mark();
   await edit("s3", { state: "live", actualStart: TS(NOW), title: "Changed while live" }); assert.equal(since(m).length, 0);
+
+  // ---------- every sync action is logged: action, stream id, event id (server log only) ----------
+  {
+    const log = []; const realLog = console.log; console.log = (...x) => { log.push(x.join(" ")); };
+    try {
+      await fire("sl", null, wstream({ title: "Logged" }));
+      const id = (await watchOf("sl")).youtube.landscapeId;
+      await edit("sl", { title: "Logged, edited" });
+      await edit("sl", { state: "cancelled" });
+      assert.ok(log.includes(`youtubeSync sl: create ${id}`), "create logged: " + JSON.stringify(log));
+      assert.ok(log.includes(`youtubeSync sl: update ${id}`), "update logged");
+      assert.ok(log.includes(`youtubeSync sl: delete ${id}`), "delete logged");
+    } finally { console.log = realLog; }
+    assert.ok(!/EVd+/.test(JSON.stringify(await cur("sl"))), "the public stream doc carries no event id");
+  }
 
   // ---------- an event deleted by hand is recreated, with a warning ----------
   await fire("s5", null, wstream({ title: "Hand deleted" }));
