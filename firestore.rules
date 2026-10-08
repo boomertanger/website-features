@@ -398,6 +398,17 @@ service cloud.firestore {
       return hasSiteRole(siteId, 'admin') || hasSiteRole(siteId, 'mod');
     }
 
+    // Control Room (docs/specs/control-room.md §13): the owner (sites/{siteId}.ownerUid), and the owner or an A2 Overseer and up
+    // (crewGrade is the server-written claim "A1" to "A3" on the admin track; an A1 Steward is not enough).
+    function isSiteOwner(siteId) {
+      return request.auth != null
+        && get(/databases/$(database)/documents/sites/$(siteId)).data.ownerUid == request.auth.uid;
+    }
+    function isOwnerOrA2Plus(siteId) {
+      return isSiteOwner(siteId)
+        || (hasSiteRole(siteId, 'admin') && request.auth.token.get('crewGrade', '') in ['A2', 'A3']);
+    }
+
     // Mod Machina (docs/specs/mod-machina.md): Watcher or above. crewGrade is a claim written by the server
     // (1-4 on the mod track, "A1"-"A3" on the admin track); admins pass through hasSiteRole.
     function isWatcherPlus(siteId) {
@@ -758,9 +769,26 @@ service cloud.firestore {
 
         // private/watch holds the YouTube event and video IDs (the unlisted backstage video among them): server
         // only. Rules from overlapping matches are OR-ed, so the exclusion lives in this one rule, not in a
-        // separate deny match.
+        // separate deny match. The Control Room adds two more (docs/specs/control-room.md §13), again inside this one rule:
+        // private/control holds the CURRENT check-in word, so only the owner and A2+ read it (never a mod); private/checklist
+        // is the owner's own list: the owner's uid only (an A2 cannot read it). Everything else here (the draft) stays staff.
         match /private/{docId} {
-          allow read: if docId != 'watch' && isSiteStaff(siteId);
+          allow read: if (docId == 'control' && isOwnerOrA2Plus(siteId))
+            || (docId == 'checklist' && isSiteOwner(siteId))
+            || (docId != 'watch' && docId != 'control' && docId != 'checklist' && isSiteStaff(siteId));
+          allow write: if false;
+        }
+
+        // Check-in presence: that member reads their own record ("What we recorded for this stream"), admins read all.
+        // Written by streamCheckIn and the settle step only; it expires after 13 months (TTL on expireAt).
+        match /presence/{uid} {
+          allow read: if request.auth != null && (request.auth.uid == uid || hasSiteRole(siteId, 'admin'));
+          allow write: if false;
+        }
+        // The 10 check-in counter shards (counts per beat and room): the owner and A2+. The stream view gets its numbers from
+        // obsFeed with its key, not from these documents.
+        match /counters/{shard} {
+          allow read: if isOwnerOrA2Plus(siteId);
           allow write: if false;
         }
 
@@ -769,6 +797,23 @@ service cloud.firestore {
         match /signups/{uid} {
           allow read: if isSiteStaff(siteId);
           allow write: if false;
+        }
+      }
+
+      // ---------- Control Room (docs/specs/control-room.md §13) ----------
+      // live/main: settings, the look, and the stream view and deck key HASHES: the owner and A2+ read it. Written only by
+      // Cloud Functions. live/main/private/checklistTemplates: the owner's uid only. live/main/wordLog (when each check-in
+      // word was last used) is server only. What /live shows is public/live, covered by the public/{docId} rule above.
+      match /live/{docId} {
+        allow read: if isOwnerOrA2Plus(siteId);
+        allow write: if false;
+
+        match /private/{templateId} {
+          allow read: if isSiteOwner(siteId);
+          allow write: if false;
+        }
+        match /wordLog/{word} {
+          allow read, write: if false;
         }
       }
     }

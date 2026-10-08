@@ -511,7 +511,8 @@ async function main() {
     assert.ok(!/AT\d|RT\d|dQw4w9WgXcQ/.test(json), `no token in ${p}`);
   }
   const rules = require("fs").readFileSync(require("path").join(__dirname, "..", "..", "firestore.rules"), "utf8");
-  assert.ok(/match \/private\/\{docId\} \{\s*allow read: if docId != 'watch' && isSiteStaff\(siteId\);/.test(rules), "streams/{id}/private/watch is server only");
+  // The Control Room extended this one rule (control, checklist): the watch exclusion must still be inside the generic streams rule.
+  assert.ok(/match \/private\/\{docId\} \{\s*allow read: if[^;]*docId != 'watch' &&[^;]*isSiteStaff\(siteId\)[^;]*;/.test(rules), "streams/{id}/private/watch is server only");
   assert.ok(/match \/private\/\{docId\} \{\s*allow read, write: if false;/.test(rules), "sites/{id}/private/* (youtubeChannel) is server only");
 
   // ---------- production sync: public, no prefix, the production link ----------

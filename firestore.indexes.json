@@ -76,6 +76,22 @@
       ]
     },
     {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "actualEnd", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "streams",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "state", "order": "ASCENDING" },
+        { "fieldPath": "plannedStart", "order": "ASCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "rewardLedger",
       "queryScope": "COLLECTION",
       "fields": [
@@ -131,6 +147,12 @@
     },
     {
       "collectionGroup": "notifyOutbox",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "presence",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []

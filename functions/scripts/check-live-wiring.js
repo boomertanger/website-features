@@ -785,7 +785,114 @@ async function main() {
   const idle = []; const again = await SUB.run({ apply: true, projectId: "boomertanger-staging", fetchFn: helix, readSecret, clientId: "CID", getBroadcasterId: "B1", log: (l) => idle.push(l) });
   assert.equal(again.applied, false); assert.ok(idle.some((l) => /Nothing to do/.test(l)));
 
-  // [3e section]
+  // ================================================================ 3e: rules, indexes and seed
+  const rulesText = fs.readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8").replace(/\r\n/g, "\n");
+  const count = (t, ch) => t.split(ch).length - 1;
+  assert.equal(count(rulesText, "{"), count(rulesText, "}"), "firestore.rules braces balance");
+  /** The text of the block that starts at the first match of `re` (through its closing brace). */
+  const block = (text, re, from = 0) => {
+    const m = re.exec(text.slice(from)); assert.ok(m, `no block ${re}`);
+    const start = from + m.index; let depth = 0;
+    for (let i = start + m[0].length - 1; i < text.length; i++) { if (text[i] === "{") depth++; else if (text[i] === "}" && --depth === 0) return text.slice(start, i + 1); }
+    throw new Error("unbalanced");
+  };
+  const streamsBlock = block(rulesText, /match \/streams\/\{streamId\} \{/);
+  assert.equal((streamsBlock.match(/match \/private\//g) || []).length, 1, "ONE generic private rule inside streams (rules OR together: never a second overlapping match)");
+  const rule = (text, op = "read") => { const m = new RegExp(`allow ${op}[a-z, ]*: if ([^;]+);`).exec(text); assert.ok(m, `no allow ${op}`); return m[1].replace(/\s+/g, " ").trim(); };
+  const privateBlock = block(streamsBlock, /match \/private\/\{docId\} \{/);
+  const privRead = rule(privateBlock);
+  const evalRule = (expr, scope) => new Function(...Object.keys(scope), `return (${expr});`)(...Object.values(scope));
+  const roleScope = (role, extra = {}) => ({
+    siteId: "boomertanger", isSiteOwner: () => role === "owner", isOwnerOrA2Plus: () => ["owner", "a2"].includes(role),
+    isSiteStaff: () => ["owner", "a2", "a1", "mod"].includes(role), isSignedUpMember: () => role !== "visitor",
+    hasSiteRole: (_s, r) => (r === "admin" ? ["owner", "a2", "a1"].includes(role) : r === "mod" ? role === "mod" : false),
+    request: { auth: role === "visitor" ? null : { uid: `u-${role}` } }, ...extra,
+  });
+  const ROLES = ["visitor", "member", "mod", "a1", "a2", "owner"];
+  const who = (docId) => ROLES.filter((role) => evalRule(privRead, roleScope(role, { docId })));
+  assert.deepEqual(who("control"), ["a2", "owner"], "private/control (the current word): the owner and A2+, never a mod or A1");
+  assert.deepEqual(who("checklist"), ["owner"], "private/checklist: the owner's uid only, an A2 cannot read it");
+  assert.deepEqual(who("watch"), [], "private/watch (the video id): nobody on the client");
+  assert.deepEqual(who("draft"), ["mod", "a1", "a2", "owner"], "the planner draft stays staff");
+  assert.equal(rule(privateBlock, "write"), "false");
+  // presence (own doc + admins), counters (owner + A2+), live/main (owner + A2+), its private templates (owner only), the word log (nobody)
+  const presenceBlock = block(streamsBlock, /match \/presence\/\{uid\} \{/), countersBlock = block(streamsBlock, /match \/counters\/\{shard\} \{/);
+  const pres = (role, uid) => evalRule(rule(presenceBlock), roleScope(role, { uid }));
+  assert.equal(pres("member", "u-member"), true, "a member reads their own presence"); assert.equal(pres("member", "someone-else"), false, "not another member's");
+  assert.equal(pres("a1", "x"), true); assert.equal(pres("owner", "x"), true); assert.equal(pres("mod", "x"), false, "mods do not read presence"); assert.equal(pres("visitor", "x"), false);
+  assert.deepEqual(ROLES.filter((r) => evalRule(rule(countersBlock), roleScope(r))), ["a2", "owner"], "counters: owner and A2+");
+  const liveBlock = block(rulesText, /match \/live\/\{docId\} \{/);
+  assert.deepEqual(ROLES.filter((r) => evalRule(rule(liveBlock), roleScope(r))), ["a2", "owner"], "live/main: owner and A2+ read");
+  const tplBlock = block(liveBlock, /match \/private\/\{templateId\} \{/), wordBlock = block(liveBlock, /match \/wordLog\/\{word\} \{/);
+  assert.deepEqual(ROLES.filter((r) => evalRule(rule(tplBlock), roleScope(r))), ["owner"], "checklistTemplates: the owner only");
+  assert.match(wordBlock, /allow read, write: if false;/);
+  // public/live: public read through the one public/{docId} rule
+  const publicBlock = block(rulesText, /match \/public\/\{docId\} \{/);
+  assert.equal(evalRule(rule(publicBlock), roleScope("visitor", { docId: "live" })), true, "public/live is public read");
+  assert.equal(evalRule(rule(publicBlock), roleScope("visitor", { docId: "goalTracker" })), false);
+  // NO client writes anywhere in the Control Room's paths: every write-like allow is `if false`
+  for (const [name, b] of [["private", privateBlock], ["presence", presenceBlock], ["counters", countersBlock], ["live", liveBlock], ["templates", tplBlock], ["wordLog", wordBlock]]) {
+    for (const m of b.matchAll(/allow ([a-z, ]+): if ([^;]+);/g)) if (/write|create|update|delete/.test(m[1])) assert.equal(m[2].trim(), "false", `${name}: ${m[0]}`);
+  }
+  assert.match(rulesText, /request\.auth\.token\.get\('crewGrade', ''\) in \['A2', 'A3'\]/, "A2+ means the A2 and A3 claims, not A1");
+  assert.ok(!/'A1'\]/.test(rulesText.slice(rulesText.indexOf("function isOwnerOrA2Plus"), rulesText.indexOf("function isOwnerOrA2Plus") + 300)));
+  // the word and key hashes are never in any public path the rules open: public/live is built by buildPublicLive (checked above), and live/main is staff-only
+  const ctrlNow = await control("c1");
+  assert.ok(ctrlNow.words && Object.values(ctrlNow.words).length, "the word lives in private/control");
+  assert.deepEqual(L.findSecrets(await get("public/live"), { words: Object.values(ctrlNow.words) }), [], "…and nowhere in public/live");
+
+  // indexes
+  const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "firestore.indexes.json"), "utf8"));
+  const has = (cg, fields) => idx.indexes.some((i) => i.collectionGroup === cg && JSON.stringify(i.fields.map((f) => [f.fieldPath, f.order])) === JSON.stringify(fields));
+  assert.ok(has("streams", [["state", "ASCENDING"], ["actualEnd", "DESCENDING"]]), "public/live: the stream that just ended");
+  assert.ok(has("streams", [["state", "ASCENDING"], ["plannedStart", "ASCENDING"]]), "the stream view: the next scheduled stream");
+  assert.ok(idx.fieldOverrides.some((o) => o.collectionGroup === "presence" && o.fieldPath === "expireAt" && o.ttl === true), "presence expires after 13 months (TTL)");
+  assert.ok(idx.fieldOverrides.some((o) => o.collectionGroup === "rateLimits" && o.ttl === true), "the flush state, the deck counters and EventSub ids reuse the rateLimits TTL");
+
+  // seed-live.js
+  const SEED = require("./seed-live");
+  const { STARTER_TEMPLATES } = require("../lib/live/starter");
+  const sdb = makeDb(); const slog = [];
+  assert.deepEqual(SEED.parseArgs([]), { project: "staging", apply: false, force: false }); assert.equal(SEED.parseArgs(["--apply", "--force"]).force, true);
+  assert.throws(() => SEED.parseArgs(["--yolo"]), /Unknown argument/);
+  assert.equal(SEED.STAGING_PROJECT, "boomertanger-staging");
+  assert.match(fs.readFileSync(path.join(__dirname, "seed-live.js"), "utf8"), /Staging only: refusing/);
+  let sr = await SEED.run({ db: sdb, apply: false, log: (l) => slog.push(l) });
+  assert.deepEqual(sr, { wrote: false, main: "created", templates: "created" }); assert.equal(sdb._store.size, 0, "a dry run writes nothing");
+  assert.ok(slog.some((l) => /Would create: live\/main/.test(l)));
+  sr = await SEED.run({ db: sdb, apply: true, log: () => {} });
+  assert.equal(sr.wrote, true);
+  const sm = (await sdb.doc(`${S}/live/main`).get()).data();
+  for (const [k, v] of Object.entries(L.DEFAULT_SETTINGS)) assert.deepEqual(sm[k], v, `live/main.${k} is the logic default`);
+  assert.equal(sm.look, "hull"); assert.equal(sm.twitchPresence, false); assert.equal(sm.makeBackstagePrivateAfterDays, 7);
+  assert.ok(!("obsKeyHash" in sm) && !("deckKeyHash" in sm), "no key is seeded");
+  const stpl = (await sdb.doc(`${S}/live/main/private/checklistTemplates`).get()).data();
+  assert.deepEqual(stpl.beats, JSON.parse(JSON.stringify(STARTER_TEMPLATES.beats)));
+  assert.deepEqual(Object.keys(stpl.beats), ["start", "break1", "break2", "end"]);
+  assert.ok(stpl.beats.start.some((i) => i.text.includes("open check-in")) && stpl.beats.break1.some((i) => /Questions/.test(i.text)) && stpl.beats.break2.some((i) => /Hot Seat/.test(i.text)) && stpl.beats.end.some((i) => /crew by name/.test(i.text)), "the starter checklist of section 5");
+  assert.deepEqual(live.hooks.controls.helpers.cleanTemplates({ beats: stpl.beats }).beats.start.map((i) => i.id), stpl.beats.start.map((i) => i.id), "the callable accepts the starter templates unchanged");
+  // idempotent; the owner's edits survive; keys survive --force
+  sr = await SEED.run({ db: sdb, apply: true, log: () => {} });
+  assert.deepEqual(sr, { wrote: false, main: "unchanged", templates: "kept" });
+  await sdb.doc(`${S}/live/main`).set({ look: "crt", windowDefaultMinutes: 3, obsKeyHash: "a".repeat(64), deckKeyHash: "b".repeat(64) }, { merge: true });
+  await sdb.doc(`${S}/live/main`).update({ xpCheckin: 12 });
+  await sdb.doc(`${S}/live/main/private/checklistTemplates`).set({ beats: { start: [{ id: "mine", text: "My own" }], break1: [], break2: [], end: [] } });
+  sr = await SEED.run({ db: sdb, apply: true, log: () => {} });
+  assert.equal(sr.main, "unchanged"); assert.equal(sr.templates, "kept");
+  assert.equal((await sdb.doc(`${S}/live/main`).get()).get("look"), "crt"); assert.equal((await sdb.doc(`${S}/live/main`).get()).get("xpCheckin"), 12);
+  assert.equal((await sdb.doc(`${S}/live/main/private/checklistTemplates`).get()).get("beats").start[0].id, "mine");
+  await sdb.doc(`${S}/live/main`).update({ makeBackstagePrivateAfterDays: realFs.FieldValue.delete() });
+  sr = await SEED.run({ db: sdb, apply: true, log: () => {} });
+  assert.equal(sr.main, "filled", "a missing field is filled"); assert.equal((await sdb.doc(`${S}/live/main`).get()).get("makeBackstagePrivateAfterDays"), 7); assert.equal((await sdb.doc(`${S}/live/main`).get()).get("look"), "crt", "…without touching what is there");
+  const fl = []; sr = await SEED.run({ db: sdb, apply: false, force: true, log: (l) => fl.push(l) });
+  assert.equal(sdb._store.get(`${S}/live/main`).look, "crt", "a forced dry run still writes nothing");
+  assert.ok(fl.some((l) => /Would reset: live\/main fields/.test(l)));
+  sr = await SEED.run({ db: sdb, apply: true, force: true, log: () => {} });
+  const after = (await sdb.doc(`${S}/live/main`).get()).data();
+  assert.equal(sr.main, "reset"); assert.equal(after.look, "hull"); assert.equal(after.xpCheckin, 10); assert.equal(after.windowDefaultMinutes, 5);
+  assert.equal(after.obsKeyHash, "a".repeat(64), "--force never touches the key hashes"); assert.equal(after.deckKeyHash, "b".repeat(64));
+  assert.equal((await sdb.doc(`${S}/live/main/private/checklistTemplates`).get()).get("beats").start.length, 5, "--force restores the starter templates");
+
   console.log("check-live-wiring: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
