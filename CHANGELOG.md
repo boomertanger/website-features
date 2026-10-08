@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- functions: YouTube events, the lib layer (Scream Planner part 8a): lib/youtube/logic.js (event payload, staging rule, what-changed decision, sync hash, tidy rule, doc shapes), auth.js (Connect YouTube token exchange, refresh, redirect allowlist) and api.js (liveBroadcasts, thumbnails, videos.update with typed errors); check-youtube.js added to npm run check. No callables or triggers yet.
 - docs: Control Room spec (confirmed Oct 8), approved mockups, amendments to Night Shift, Mod Machina, Scream Planner (part 8 YouTube events), stream object, Boom Alerts, header nav, design system and ROADMAP.
 Type cleanup: astro check errors in the planner and crew pages and scripts fixed with annotations and casts only, no behaviour change (build output identical).
 - functions: make-test-week.js --adopt fills an EXISTING empty, unpublished week (the one plannerTick opened) with the test streams, ballot games and crew sign-up instead of creating a week, and never deletes it: the week is marked adoptedTest, and --remove --apply removes only the test streams, test ballot games and sign-ups and puts the week back to empty. openWeek in lib/planner/plan.js takes an adopt option for this (the callables never pass it, so nothing changes for them). Run on staging: 2026-W42 now holds 4 planned test streams (Mon Monster Monday, Wed VR night, Sat Late night, Sun Backstage VOD), 3 ballot games and gbo's sign-up, unpublished.
