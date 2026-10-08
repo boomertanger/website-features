@@ -133,6 +133,21 @@ async function vault() {
   const covers = await loadCovers().catch(() => new Map());
   return (vaultCache = v.games.map((g: VCard) => ({ slug: g.slug, title: g.title, status: g.status, tags: g.tags, cover: covers.get(g.slug) ?? g.cover })));
 }
+/** A game just added through the Vault from the picker goes on the ballot in the same step (spec 4e). Returns the line the
+ *  Vault's result step shows under the game. Votes are untouched: fetchAll re-reads the member's own picks. */
+async function putOnBallot(g: { slug: string; title: string }): Promise<string> {
+  const week = ballot.week;
+  if (!week || !open()) return "It's in the Vault, but voting is closed, so it can't go on this week's ballot.";
+  if (ballot.games.some((x) => x.slug === g.slug)) return "It's already on this week's ballot.";
+  if (mine && mine.addsLeft <= 0) return "It's in the Vault, but you've already added 2 games to this week's ballot. Next week, then.";
+  try {
+    if (sample) { ballot.games.push({ slug: g.slug, title: g.title, cover: null, status: "wishlist", tags: [], votes: 0, wanted: 0, seededFrom: "member", addedBy: "you" }); if (mine) mine.addsLeft -= 1; }
+    else { await call("ballotAddGame", { week, slug: g.slug }); await fetchAll(); }
+  } catch (err) { return `It's in the Vault, but it didn't go on the ballot. ${ballotError(err, "Try adding it from the ballot's picker.")}`; }
+  vaultCache = null; notice = ""; render();
+  toast(`${g.title} is on the ballot. Now it needs votes.`, { kind: "ok" });
+  return "It's on this week's ballot too, with no votes yet. Close this and give it yours.";
+}
 async function openAdd() {
   if (!gate() || !ballot.week) return;
   if (mine && mine.addsLeft <= 0) { notice = ballotError({ details: { reason: "addLimit" } }); render(); return; }
@@ -147,7 +162,7 @@ async function openAdd() {
   };
   draw(); input.focus();
   input.addEventListener("input", draw);
-  m.modal.querySelector("[data-newgame]")!.addEventListener("click", async () => { m.close(); const { openAddGame } = await import("../vault/add"); vaultCache = null; await openAddGame(input.value.trim()); });
+  m.modal.querySelector("[data-newgame]")!.addEventListener("click", async () => { m.close(); const { openAddGame } = await import("../vault/add"); vaultCache = null; await openAddGame(input.value.trim(), { onAdded: putOnBallot, queuedNote: "Once it's approved, add it to the ballot from the picker." }); });
   list.addEventListener("click", async (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-add]"); if (!b) return;
     b.disabled = true; msg.textContent = "";

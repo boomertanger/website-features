@@ -29,7 +29,12 @@ const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const HOW_ADD = '<a class="bt-link-btn" href="/games/how-it-works#s-add" target="_blank" rel="noopener">How adding works</a>';
 const RULES_LINK = '<a href="/games/how-it-works#s-fair" target="_blank" rel="noopener">See the house rules</a>';
 
-export async function openAddGame(q = "") {
+export interface AddedGame { slug: string; title: string; decision: "added" | "duplicate" }
+/** Optional hooks for callers that follow up (the ballot picker): onAdded runs once the game is in the Vault (new or
+ *  already there) and may return a line to show in the result; queuedNote is appended when it goes to a mod instead. */
+export interface AddOptions { onAdded?: (g: AddedGame) => Promise<string | void> | string | void; queuedNote?: string }
+
+export async function openAddGame(q = "", opts: AddOptions = {}) {
   if (!(await requireVerified("Join to add games"))) return;
   const me = handleOf();
   const boomer = isAdmin();
@@ -151,20 +156,26 @@ export async function openAddGame(q = "") {
     m.modal.querySelector("[data-again]")?.addEventListener("click", () => { pick = null; results = []; q = ""; find(""); });
   }
   async function refreshVault() { try { (await import("./page")).vaultChanged(); } catch { /* not on /games */ } }
-  function done(r: AddReply, c: Candidate) {
+  async function followUp(r: AddReply, title: string) {
+    if (!opts.onAdded || !r.slug) return "";
+    try { const note = await opts.onAdded({ slug: r.slug, title, decision: r.decision as "added" | "duplicate" }); return note ? ` ${esc(note)}` : ""; } catch { return ""; }
+  }
+  async function done(r: AddReply, c: Candidate) {
     const title = r.title || c.title;
     if (r.decision === "added") {
       refreshVault();
-      return result("", `${title} is in the Vault`, boomer ? "It's on the Wishlist. Set its status and score from its page." : "It's on the Wishlist as your Community pick. When Boomer streams it, it moves to Playing and your name stays on it.", "Added to the Vault", [another(), view(r.slug!)], { lock: true, cover: c.cover, step: 3 });
+      const extra = await followUp(r, title);
+      return result("", `${title} is in the Vault`, (boomer ? "It's on the Wishlist. Set its status and score from its page." : "It's on the Wishlist as your Community pick. When Boomer streams it, it moves to Playing and your name stays on it.") + extra, "Added to the Vault", [another(), view(r.slug!)], { lock: true, cover: c.cover, step: 3 });
     }
     if (r.decision === "duplicate") {
       refreshVault();
+      const extra = await followUp(r, title);
       const want = r.status === "wishlist" && r.wantedCount ? `We counted you in: ${r.wantedCount} ${r.wantedCount === 1 ? "person wants" : "people want"} Boomer to play it.` : `It's ${r.status === "wishlist" ? "on the Wishlist" : `marked ${badge((r.status || "wishlist") as any)}`}.`;
-      return result("", `${title} is already here`, want, "Already in the Vault", [another(), view(r.slug!)], { cover: c.cover });
+      return result("", `${title} is already here`, want + extra, "Already in the Vault", [another(), view(r.slug!)], { cover: c.cover });
     }
     if (r.decision === "queued") {
       const again = r.code === "alreadyQueued";
-      return result("", again ? `${title} is already waiting` : `A mod will look at ${title} soon`, again ? "Someone sent it already. It joins the Vault once a mod approves it." : `It joins the Vault once it's approved.${isStaff() ? "" : " It doesn't count toward your 5 a day unless it's approved."}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: c.cover });
+      return result("", again ? `${title} is already waiting` : `A mod will look at ${title} soon`, again ? "Someone sent it already. It joins the Vault once a mod approves it." : `It joins the Vault once it's approved.${isStaff() ? "" : " It doesn't count toward your 5 a day unless it's approved."}${opts.queuedNote ? ` ${esc(opts.queuedNote)}` : ""}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: c.cover });
     }
     // refused: the plain reason (adult and profanity stay vague on purpose), and a way forward
     find(c.title, `<div class="bt-notice bt-notice--error">${esc(r.message || "That game can't be added.")} ${RULES_LINK}.${r.code === "adult" || r.code === "profanity" ? '<br><span class="bt-hint">Think that\'s a mistake? Ask a mod in chat.</span>' : ""}</div>`);
@@ -203,7 +214,7 @@ export async function openAddGame(q = "") {
         const r = await call<AddReply>("vaultAddGame", { byHand: { name: gameName, link }, ...(pendingCoverId ? { pendingCoverId } : {}) });
         if (r.decision === "refused") { err.innerHTML = `<p class="bt-notice bt-notice--error">${esc(r.message)} ${RULES_LINK}.</p>`; send.disabled = false; send.textContent = "Send for a check"; return; }
         if (r.decision === "duplicate") return done(r, { igdbId: null, steamAppId: null, title: gameName, year: null, cover: null, input: null, inVault: r.slug || null });
-        result("", `A mod will look at ${gameName} soon`, `It joins the Vault once it's approved.${blob ? " Your cover goes with it." : ""}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: null });
+        result("", `A mod will look at ${gameName} soon`, `It joins the Vault once it's approved.${blob ? " Your cover goes with it." : ""}${opts.queuedNote ? ` ${esc(opts.queuedNote)}` : ""}`, "Sent for a quick check", [another(), '<button type="button" class="bt-btn bt-btn--primary" data-bt-close>Done</button>'], { cover: null });
       } catch (e2) {
         err.innerHTML = `<p class="bt-notice bt-notice--error">${esc(messageFor(e2))}</p>`;
         send.disabled = false; send.textContent = "Send for a check";
