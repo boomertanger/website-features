@@ -44,6 +44,7 @@ const nsEvents = [];
 const fakeFactory = { recordFactoryEvent: async (uid, type, params, ref) => { nsEvents.push({ uid, type, params, ref }); return { counted: true }; } };
 const live = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, rng, factory: fakeFactory,
   fetchFn: fakeFetch, twitchClientId: "CID", twitchClientSecret: "TSEC", twitchLogin: "boomertanger",
+  eventSubSecret: "ES-TEST-SECRET-123",
   enqueue: async (data, opts) => { if (taskFail) throw taskFail; tasks.push({ data, opts }); }, sleep: async (ms) => { sleeps.push(ms); } });
 const fns = live.functions, ctx = live.hooks.ctx;
 const as = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: {} } : undefined, data });
@@ -660,7 +661,131 @@ async function main() {
   await as("boss", "stopStream", {});
   assert.equal(await why(as("fan", "backstageWatch", {})), "notLive");
 
-  // [3d section] [3e section]
+  // ================================================================ 3d: Twitch EventSub
+  const ES = live.hooks.eventsub.helpers, ESSECRET = "ES-TEST-SECRET-123";
+  const esReq = (type, body, o = {}) => {
+    const raw = o.raw || Buffer.from(JSON.stringify(body));
+    const id = o.id || `msg-${Math.random().toString(36).slice(2)}`, ts = o.ts || new Date(clock).toISOString();
+    return { method: o.method || "POST", rawBody: raw, headers: {
+      "twitch-eventsub-message-id": id, "twitch-eventsub-message-timestamp": ts, "twitch-eventsub-message-type": type,
+      "twitch-eventsub-message-signature": o.sig || ES.signMessage(o.secret || ESSECRET, id, ts, raw),
+    }, id };
+  };
+  const esHit = async (req) => { const res = mkRes(); await ES.handleTwitchEventSub(req, res); return res; };
+  const online = { subscription: { type: "stream.online", status: "enabled" }, event: { broadcaster_user_id: "B1", type: "live" } };
+  const offline = { subscription: { type: "stream.offline", status: "enabled" }, event: { broadcaster_user_id: "B1" } };
+  const esLog = []; const realWarn = console.warn, realErr = console.error;
+  console.warn = (...a) => { esLog.push(a.join(" ")); }; console.error = (...a) => { esLog.push(a.join(" ")); };
+
+  assert.equal((await esHit({ ...esReq("notification", online), method: "GET" })).code, 405);
+  const noHdr = esReq("notification", online); delete noHdr.headers["twitch-eventsub-message-signature"];
+  assert.equal((await esHit(noHdr)).code, 400);
+  // signature: wrong secret, tampered body, wrong length, missing prefix
+  assert.equal((await esHit(esReq("notification", online, { secret: "other-secret" }))).code, 403);
+  const goodMsg = esReq("notification", online);
+  assert.equal((await esHit({ ...goodMsg, rawBody: Buffer.from(JSON.stringify({ ...online, event: { broadcaster_user_id: "B1", x: 1 } })) })).code, 403, "a tampered body");
+  assert.equal((await esHit(esReq("notification", online, { sig: "sha256=abc" }))).code, 403, "wrong length");
+  assert.equal((await esHit(esReq("notification", online, { sig: ES.signMessage(ESSECRET, "x", "y", "z").slice(7) }))).code, 403);
+  assert.equal((await wdb.collection(`${S}/rateLimits`).get()).docs.filter((x) => x.id.startsWith("eventsub_")).length, 0, "a refused message leaves no trace");
+  // replay window: 10 minutes either side
+  assert.equal((await esHit(esReq("notification", online, { ts: new Date(clock - 11 * MIN).toISOString() }))).code, 403, "an old message");
+  assert.equal((await esHit(esReq("notification", online, { ts: new Date(clock + 11 * MIN).toISOString() }))).code, 403, "a message from the future");
+  assert.equal((await esHit(esReq("notification", online, { ts: "not a time" }))).code, 403);
+  // the challenge
+  r = await esHit(esReq("webhook_callback_verification", { challenge: "pogchamp-kappa-360", subscription: { type: "stream.online" } }));
+  assert.equal(r.code, 200); assert.equal(r.body, "pogchamp-kappa-360"); assert.equal(r.headers["Content-Type"], "text/plain");
+  assert.equal((await esHit(esReq("webhook_callback_verification", { challenge: "c", subscription: { type: "stream.online" } }, { secret: "wrong" }))).code, 403, "no challenge answer for a bad signature");
+  assert.equal((await esHit(esReq("webhook_callback_verification", { challenge: "c", subscription: { type: "channel.follow" } }))).code, 400);
+  // notifications: nothing live, then a live stream
+  r = await esHit(esReq("notification", online)); assert.equal(r.code, 200);
+  await mkStream("e1", { title: "EventSub night" });
+  await as("boss", "startStream", { streamId: "e1" });
+  clock += MIN;
+  const onMsg = esReq("notification", online);
+  assert.equal((await esHit(onMsg)).body, "ok"); assert.equal((await control("e1")).twitch.status, "live");
+  const seen = (await wdb.collection(`${S}/rateLimits`).get()).docs.filter((x) => x.id.startsWith("eventsub_"));
+  assert.ok(seen.length >= 1 && seen.every((x) => x.get("expireAt")), "message ids are remembered with a TTL");
+  clock += MIN;
+  const offMsg = esReq("notification", offline);
+  assert.equal((await esHit(offMsg)).body, "ok");
+  let tws = (await control("e1")).twitch; assert.equal(tws.status, "offline"); const offAt = tws.offlineSince; assert.equal(offAt, clock);
+  clock += MIN;
+  await esHit(esReq("notification", offline));
+  assert.equal((await control("e1")).twitch.offlineSince, offAt, "offline since the first offline");
+  // a replayed message id is acknowledged and ignored
+  r = await esHit(onMsg); assert.equal(r.code, 200); assert.equal(r.body, "duplicate");
+  assert.equal((await control("e1")).twitch.status, "offline", "the replayed online message did not flip the status back");
+  // another broadcaster's event, and a type we do not use, change nothing
+  assert.equal((await esHit(esReq("notification", { ...online, event: { broadcaster_user_id: "SOMEONE_ELSE" } }))).body, "ignored");
+  assert.equal((await esHit(esReq("notification", { subscription: { type: "channel.follow" }, event: { broadcaster_user_id: "B1" } }))).body, "ignored");
+  assert.equal((await control("e1")).twitch.status, "offline");
+  await esHit(esReq("notification", online)); assert.equal((await control("e1")).twitch.status, "live");
+  assert.equal((await stream("e1")).state, "live", "EventSub never stops a stream");
+  // revocation is noted, never a secret in the log
+  r = await esHit(esReq("revocation", { subscription: { type: "stream.offline", status: "authorization_revoked" } })); assert.equal(r.code, 200);
+  assert.equal((await get("live/main")).eventSubRevoked.stream_offline.status, "authorization_revoked");
+  assert.ok(esLog.some((l) => /revoked/.test(l)));
+  assert.ok(!esLog.join("\n").includes(ESSECRET), "the secret never reaches the log");
+  console.warn = realWarn; console.error = realErr;
+  await as("boss", "stopStream", {});
+  const esSrc = fs.readFileSync(path.join(__dirname, "..", "lib", "live", "eventsub.js"), "utf8");
+  assert.ok(/timingSafeEqual/.test(esSrc) && /createHmac\("sha256"/.test(esSrc), "HMAC-SHA256 with a constant-time compare");
+  assert.ok(/TWITCH_EVENTSUB_SECRET/.test(esSrc) && /firebase functions:secrets:set TWITCH_EVENTSUB_SECRET --project staging/.test(esSrc));
+  assert.ok(fns.twitchEventSub, "twitchEventSub is exported");
+
+  // ---------- scripts/twitch-eventsub.js ----------
+  const SUB = require("./twitch-eventsub");
+  const sub = (type, status, id, extra = {}) => ({ id, type, status, condition: { broadcaster_user_id: "B1" }, transport: { method: "webhook", callback: SUB.CALLBACK }, ...extra });
+  assert.deepEqual(SUB.planSubscriptions([], { broadcasterId: "B1" }), { create: ["stream.online", "stream.offline"], remove: [], keep: [] });
+  let plan = SUB.planSubscriptions([sub("stream.online", "enabled", "a"), sub("stream.offline", "webhook_callback_verification_pending", "b")], { broadcasterId: "B1" });
+  assert.deepEqual(plan.create, []); assert.deepEqual(plan.remove, []); assert.equal(plan.keep.length, 2);
+  plan = SUB.planSubscriptions([sub("stream.online", "webhook_callback_verification_failed", "a"), sub("stream.online", "enabled", "b"), sub("stream.online", "enabled", "c"), sub("stream.offline", "authorization_revoked", "d")], { broadcasterId: "B1" });
+  assert.deepEqual(plan.create, ["stream.offline"]); assert.deepEqual(plan.remove.map((x) => [x.id, x.why]).sort(), [["a", "stale"], ["c", "duplicate"], ["d", "stale"]]);
+  plan = SUB.planSubscriptions([sub("stream.online", "enabled", "x", { transport: { method: "webhook", callback: "https://elsewhere.example/hook" } }), sub("stream.online", "enabled", "y", { condition: { broadcaster_user_id: "OTHER" } })], { broadcasterId: "B1" });
+  assert.deepEqual(plan.create, ["stream.online", "stream.offline"], "other callbacks and other broadcasters are never considered");
+  assert.deepEqual(plan.remove, []);
+  assert.deepEqual(SUB.parseArgs([]), { apply: false, project: "staging" }); assert.equal(SUB.parseArgs(["--apply"]).apply, true);
+  assert.throws(() => SUB.parseArgs(["--force"]), /Unknown argument/);
+  // a fake Twitch: the dry run only reads; --apply creates and deletes; no secret is printed
+  const subs = [sub("stream.online", "webhook_callback_verification_failed", "stale1")];
+  const calls = [];
+  const helix = async (url, init = {}) => {
+    const method = init.method || "GET"; calls.push({ method, url, body: init.body });
+    if (url.startsWith("https://id.twitch.tv/oauth2/token")) return jr(200, { access_token: "APPTOK" });
+    if (url.startsWith("https://api.twitch.tv/helix/eventsub/subscriptions")) {
+      if (method === "GET") return jr(200, { data: subs, pagination: {} });
+      if (method === "DELETE") return jr(204, null);
+      if (method === "POST") return jr(202, { data: [{}] });
+    }
+    throw new Error("unexpected " + url);
+  };
+  const SECRETS = { TWITCH_CLIENT_SECRET: "CLIENT-SECRET-XYZ", TWITCH_EVENTSUB_SECRET: "ES-SECRET-ABC" };
+  const readSecret = async (n) => { if (!SECRETS[n]) throw new Error("missing " + n); return SECRETS[n]; };
+  const lines = [];
+  await assert.rejects(SUB.run({ apply: false, projectId: "boomertanger-prod", fetchFn: helix, readSecret, clientId: "CID", getBroadcasterId: "B1", log: (l) => lines.push(l) }), /only runs on staging/);
+  assert.equal(calls.length, 0);
+  const dry = await SUB.run({ apply: false, projectId: "boomertanger-staging", fetchFn: helix, readSecret, clientId: "CID", getBroadcasterId: async () => "B1", log: (l) => lines.push(l) });
+  assert.equal(dry.applied, false); assert.deepEqual(dry.plan.create, ["stream.online", "stream.offline"]); assert.deepEqual(dry.plan.remove.map((x) => x.id), ["stale1"]);
+  assert.deepEqual(calls.filter((c) => !["GET"].includes(c.method) && !c.url.includes("oauth2/token")), [], "the dry run only reads");
+  assert.ok(lines.some((l) => /Would create: stream.online/.test(l)) && lines.some((l) => /Would delete: stream.online stale1/.test(l)));
+  const live2 = []; calls.length = 0;
+  const done = await SUB.run({ apply: true, projectId: "boomertanger-staging", fetchFn: helix, readSecret, clientId: "CID", getBroadcasterId: "B1", log: (l) => live2.push(l) });
+  assert.equal(done.applied, true); assert.deepEqual(done.results.created, ["stream.online", "stream.offline"]); assert.deepEqual(done.results.deleted, ["stale1"]);
+  const posts = calls.filter((c) => c.method === "POST" && c.url.includes("eventsub"));
+  assert.equal(posts.length, 2);
+  const pb = JSON.parse(posts[0].body);
+  assert.equal(pb.transport.callback, "https://us-central1-boomertanger-staging.cloudfunctions.net/twitchEventSub"); assert.equal(pb.transport.method, "webhook"); assert.equal(pb.condition.broadcaster_user_id, "B1"); assert.equal(pb.version, "1"); assert.equal(pb.transport.secret, "ES-SECRET-ABC");
+  assert.ok(calls.some((c) => c.method === "DELETE" && c.url.includes("id=stale1")));
+  for (const out of [lines.join("\n"), live2.join("\n")]) for (const secret of Object.values(SECRETS).concat(["APPTOK"])) assert.ok(!out.includes(secret), "no secret or token is ever printed");
+  const scriptSrc = fs.readFileSync(path.join(__dirname, "twitch-eventsub.js"), "utf8");
+  assert.ok(/firebase functions:secrets:set TWITCH_EVENTSUB_SECRET --project staging/.test(scriptSrc), "the header carries the secret command");
+  assert.ok(/boomertanger-staging/.test(scriptSrc) && !/boomertanger-prod/.test(scriptSrc.replace(/This script only runs[^\n]*/g, "")), "staging only");
+  // nothing to do once the subscriptions exist
+  subs.length = 0; subs.push(sub("stream.online", "enabled", "k1"), sub("stream.offline", "enabled", "k2"));
+  const idle = []; const again = await SUB.run({ apply: true, projectId: "boomertanger-staging", fetchFn: helix, readSecret, clientId: "CID", getBroadcasterId: "B1", log: (l) => idle.push(l) });
+  assert.equal(again.applied, false); assert.ok(idle.some((l) => /Nothing to do/.test(l)));
+
+  // [3e section]
   console.log("check-live-wiring: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
