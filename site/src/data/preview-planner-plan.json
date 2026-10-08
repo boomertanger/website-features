@@ -3,21 +3,21 @@
   "tz": "America/Chicago",
   "me": { "uid": "me", "handle": "mothmanmike", "name": "Mothman Mike", "track": "mod", "grade": 2, "status": "active", "activityRules": false },
   "games": [
-    { "slug": "granny-2", "title": "Granny 2", "status": "playing", "tags": ["horror", "stealth"] },
-    { "slug": "granny-3", "title": "Granny 3", "status": "playing", "tags": ["horror", "stealth"] },
-    { "slug": "soul-hunt", "title": "Soul Hunt", "status": "wishlist", "tags": ["horror", "vr"] },
-    { "slug": "lethal-night", "title": "Lethal Night", "status": "playing", "tags": ["horror", "co-op"] },
-    { "slug": "iron-lung", "title": "Iron Lung", "status": "playing", "tags": ["horror"] },
-    { "slug": "dead-drop", "title": "Dead Drop", "status": "wishlist", "tags": ["horror", "co-op"] },
-    { "slug": "dark-room-vr", "title": "Dark Room VR", "status": "wishlist", "tags": ["horror", "vr"] },
-    { "slug": "phasmophobia", "title": "Phasmophobia", "status": "finished", "tags": ["horror", "co-op", "vr"] },
-    { "slug": "propagation-vr", "title": "Propagation VR", "status": "wishlist", "tags": ["horror", "vr"] },
-    { "slug": "content-warning", "title": "Content Warning", "status": "finished", "tags": ["co-op", "comedy"] },
-    { "slug": "lethal-company", "title": "Lethal Company", "status": "finished", "tags": ["co-op", "horror"] },
-    { "slug": "devour", "title": "Devour", "status": "wishlist", "tags": ["co-op", "horror"] },
-    { "slug": "slender", "title": "Slender: The Arrival", "status": "finished", "tags": ["horror"] }
+    {"slug":"granny-2","title":"Granny 2","status":"playing","tags":["horror","stealth"]},
+    {"slug":"granny-3","title":"Granny 3","status":"playing","tags":["horror","stealth"]},
+    {"slug":"soul-hunt","title":"Soul Hunt","status":"wishlist","tags":["horror","vr"]},
+    {"slug":"lethal-night","title":"Lethal Night","status":"playing","tags":["horror","co-op"]},
+    {"slug":"iron-lung","title":"Iron Lung","status":"playing","tags":["horror"],"cover":{"source":"steam","steamAppId":"1846030"}},
+    {"slug":"dead-drop","title":"Dead Drop","status":"wishlist","tags":["horror","co-op"],"cover":{"source":"steam","steamAppId":"381210"}},
+    {"slug":"dark-room-vr","title":"Dark Room VR","status":"wishlist","tags":["horror","vr"]},
+    {"slug":"phasmophobia","title":"Phasmophobia","status":"finished","tags":["horror","co-op","vr"],"cover":{"source":"steam","steamAppId":"739630"}},
+    {"slug":"propagation-vr","title":"Propagation VR","status":"wishlist","tags":["horror","vr"]},
+    {"slug":"content-warning","title":"Content Warning","status":"finished","tags":["co-op","comedy"],"cover":{"source":"steam","steamAppId":"2881650"}},
+    {"slug":"lethal-company","title":"Lethal Company","status":"finished","tags":["co-op","horror"],"cover":{"source":"steam","steamAppId":"1966720"}},
+    {"slug":"devour","title":"Devour","status":"wishlist","tags":["co-op","horror"],"cover":{"source":"steam","steamAppId":"1274570"}},
+    {"slug":"slender","title":"Slender: The Arrival","status":"finished","tags":["horror"]}
   ],
-  "ballot": { "soul-hunt": 58, "lethal-night": 33, "dead-drop": 41, "iron-lung": 12, "dark-room-vr": 9, "devour": 7 },
+  "ballot": { "soul-hunt": 3, "dead-drop": 2, "lethal-night": 1 },
   "people": [
     { "uid": "u-kat", "handle": "nightowlkat", "grade": 3, "track": "mod" },
     { "uid": "u-vex", "handle": "vex", "grade": 2, "track": "mod" },
@@ -27,42 +27,10 @@
     { "uid": "u-hannah", "handle": "hollowhannah", "grade": 2, "track": "mod" }
   ],
   "slots": [
-    { "id": "pv-mon", "dow": 1, "start": "19:00", "end": "21:00", "theme": { "label": "Granny day", "icon": "👵", "tagHints": ["stealth"], "gameHints": ["granny-2", "granny-3"] }, "count": 2, "games": ["granny-2"],
-      "minCrew": { "captain": true, "rooms": ["youtube"] }, "crew": { "captain": "nightowlkat", "twitch": { "lead": "vex" }, "ytLandscape": { "lead": "cryptjay" }, "ytVertical": { "lead": "cryptjay" } },
-      "signups": [
-        { "handle": "nightowlkat", "availability": "yes", "seats": [{ "room": "captain", "role": "captain", "status": "confirmed" }] },
-        { "handle": "vex", "availability": "yes", "seats": [{ "room": "twitch", "role": "lead", "status": "confirmed" }] },
-        { "handle": "cryptjay", "availability": "yes", "seats": [{ "room": "ytLandscape", "role": "lead", "status": "confirmed" }, { "room": "ytVertical", "role": "lead", "status": "confirmed" }] },
-        { "handle": "salem", "availability": "maybe", "seats": [{ "room": "twitch", "role": "deckhand", "status": "requested" }] },
-        { "handle": "mothmanmike", "uid": "me", "availability": "yes", "prefilled": true, "seats": [], "request": { "slug": "granny-3", "note": "It is the best one.", "status": "open" } }
-      ] },
-    { "id": "pv-wed", "dow": 3, "start": "20:00", "end": "22:00", "theme": { "label": "VR night", "icon": "🥽", "tagHints": ["vr"], "gameHints": [] }, "count": 2, "games": [],
-      "minCrew": { "captain": true, "rooms": ["youtube"] }, "crew": {},
-      "signups": [
-        { "handle": "vex", "availability": "yes", "seats": [{ "room": "ytLandscape", "role": "lead", "status": "requested" }], "request": { "slug": "dark-room-vr", "note": "VR night and a new one.", "status": "open" } },
-        { "handle": "cryptjay", "availability": "yes", "seats": [{ "room": "captain", "role": "captain", "status": "requested" }] },
-        { "handle": "mothmanmike", "uid": "me", "availability": "maybe", "prefilled": false, "seats": [{ "room": "twitch", "role": "deckhand", "status": "requested" }] },
-        { "handle": "hollowhannah", "availability": "yes", "seats": [] }
-      ] },
-    { "id": "pv-thu", "dow": 4, "start": "20:00", "end": "22:00", "theme": { "label": "Co-op day", "icon": "🎯", "tagHints": ["co-op"], "gameHints": [] }, "count": 2, "games": ["lethal-night"],
-      "minCrew": { "captain": true, "rooms": ["youtube"] }, "crew": { "captain": "nightowlkat", "twitch": { "lead": "vex", "deckhands": ["salem"] } },
-      "signups": [
-        { "handle": "nightowlkat", "availability": "yes", "seats": [{ "room": "captain", "role": "captain", "status": "confirmed" }] },
-        { "handle": "vex", "availability": "yes", "seats": [{ "room": "twitch", "role": "lead", "status": "confirmed" }] },
-        { "handle": "salem", "availability": "yes", "seats": [{ "room": "twitch", "role": "deckhand", "status": "confirmed" }] },
-        { "handle": "mothmanmike", "uid": "me", "availability": "no", "prefilled": false, "seats": [] }
-      ] },
-    { "id": "pv-fri", "dow": 5, "start": "21:00", "end": "23:00", "theme": { "label": "Fright Friday", "icon": "🩸", "tagHints": ["horror"], "gameHints": [] }, "count": 3, "games": ["soul-hunt", "lethal-night", "iron-lung"],
-      "minCrew": { "captain": true, "rooms": ["youtube"] }, "crew": { "captain": "cryptjay", "twitch": { "lead": "nightowlkat" }, "ytLandscape": { "lead": "cryptjay" }, "ytVertical": { "lead": "vex" }, "tiktok": { "lead": "salem" } },
-      "signups": [
-        { "handle": "cryptjay", "availability": "yes", "seats": [{ "room": "captain", "role": "captain", "status": "confirmed" }, { "room": "ytLandscape", "role": "lead", "status": "confirmed" }] },
-        { "handle": "nightowlkat", "availability": "yes", "seats": [{ "room": "twitch", "role": "lead", "status": "confirmed" }] },
-        { "handle": "vex", "availability": "yes", "seats": [{ "room": "ytVertical", "role": "lead", "status": "confirmed" }] },
-        { "handle": "salem", "availability": "yes", "seats": [{ "room": "tiktok", "role": "lead", "status": "confirmed" }] },
-        { "handle": "mothmanmike", "uid": "me", "availability": "yes", "prefilled": true, "seats": [] }
-      ] },
-    { "id": "pv-sun", "dow": 7, "start": "20:00", "end": "22:00", "type": "backstage", "theme": { "label": "Backstage hangout", "icon": "🎬", "tagHints": [], "gameHints": [] }, "count": 1, "games": [],
-      "minCrew": { "captain": false, "rooms": [] }, "crew": {}, "signups": [] }
+    {"id":"pv-mon","dow":1,"start":"19:00","end":"22:00","theme":{"label":"Monster Monday","icon":"👹","tagHints":["horror"],"gameHints":[]},"count":2,"games":["granny-2"],"minCrew":{"captain":true,"rooms":["youtube"]},"crew":{"captain":"nightowlkat","twitch":{"lead":"vex"}},"signups":[{"handle":"nightowlkat","availability":"yes","seats":[{"room":"captain","role":"captain","status":"confirmed"}]},{"handle":"vex","availability":"yes","seats":[{"room":"twitch","role":"lead","status":"confirmed"}]},{"handle":"salem","availability":"maybe","seats":[{"room":"ytLandscape","role":"lead","status":"requested"}]},{"handle":"mothmanmike","uid":"me","availability":"yes","prefilled":true,"seats":[],"request":{"slug":"soul-hunt","note":"Please, it is the one the chat keeps asking for.","status":"open"}}]},
+    {"id":"pv-wed","dow":3,"start":"19:00","end":"22:00","theme":{"label":"VR night","icon":"🥽","tagHints":["vr"],"gameHints":[]},"count":2,"games":[],"rooms":["twitch","ytLandscape","ytVertical"],"minCrew":{"captain":true,"rooms":["youtube"]},"crew":{},"signups":[{"handle":"cryptjay","availability":"yes","seats":[{"room":"captain","role":"captain","status":"requested"}]},{"handle":"hollowhannah","availability":"maybe","seats":[]},{"handle":"mothmanmike","uid":"me","availability":"maybe","prefilled":false,"seats":[{"room":"twitch","role":"deckhand","status":"requested"}]}]},
+    {"id":"pv-sat","dow":6,"start":"22:00","end":"02:00","theme":{"label":"Late night","icon":"🌙","tagHints":[],"gameHints":[]},"count":1,"games":[],"rooms":["twitch"],"minCrew":{"captain":false,"rooms":[]},"crew":{},"signups":[{"handle":"mothmanmike","uid":"me","availability":"no","prefilled":false,"seats":[]}]},
+    {"id":"pv-sun","dow":7,"start":"19:00","end":"21:00","type":"backstage","theme":{"label":"Backstage VOD recording","icon":"🎬","tagHints":[],"gameHints":[]},"count":1,"games":[],"minCrew":{"captain":false,"rooms":[]},"crew":{},"signups":[]}
   ],
   "usual": {
     "settings": {

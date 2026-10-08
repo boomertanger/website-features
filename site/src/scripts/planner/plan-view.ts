@@ -135,7 +135,7 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
   const gradeName = (g: number | null | undefined) => (g ? (gradeInfo("mod", g) as any).name : "");
   function trayLine(it: TrayItem, kind: string, s: Stream) {
     if (kind === "modRequests") return `<b class="pp-by">@${esc(it.byHandle || "?")}</b>${it.grade ? ` · ${esc(gradeName(it.grade))}` : ""}${it.seat ? ` · ${esc(it.seat)}` : ""}${it.fitsTheme ? ` · <span class="fit">fits ${esc(s.theme?.label || "the theme")}</span>` : ""}${it.note ? `<q>${esc(it.note)}</q>` : ""}`;
-    if (kind === "votes") return `<b class="pp-votes">${esc(it.votes ?? 0)} votes</b>${it.fitsTheme ? ` · <span class="fit">fits ${esc(s.theme?.label || "the theme")}</span>` : ""}`;
+    if (kind === "votes") return `<b class="pp-votes">${esc(it.votes ?? 0)} ${(it.votes ?? 0) === 1 ? "vote" : "votes"}</b>${it.fitsTheme ? ` · <span class="fit">fits ${esc(s.theme?.label || "the theme")}</span>` : ""}`;
     if (kind === "theme") { const hit = (s.theme?.gameHints || []).includes(it.slug); const tags = (it.tags || []).filter((t) => (s.theme?.tagHints || []).includes(t)); return `<span class="fit">${hit ? `Suggested for ${esc(s.theme?.label || "this slot")}` : `Tagged ${esc(tags.map((t) => (t.length <= 3 ? t.toUpperCase() : t[0].toUpperCase() + t.slice(1))).join(", "))}`}</span>`; }
     return it.status === "playing" ? "Playing now" : it.status ? esc(it.status[0].toUpperCase() + it.status.slice(1)) : "";
   }

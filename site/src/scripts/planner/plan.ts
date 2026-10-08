@@ -4,6 +4,8 @@
 import { onAccess } from "./layout";
 import { makeIo, whoAmI } from "./plan-io";
 import { messageFor } from "../../lib/errors";
+import { initCoverFallbacks } from "../../../../shared/ui/cover.js";
+initCoverFallbacks();
 
 const root = document.querySelector<HTMLElement>("[data-pp]")!;
 const body = root.querySelector<HTMLElement>("[data-pp-body]")!;

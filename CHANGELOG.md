@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Scream Planner /schedule/plan (owner, crew and dialogs) matches the mockup: sample data now shaped like the staging test week (4 slots, Vault covers, crew states), cover fallback to the mascot when art fails, singular '1 vote', ask-for-a-game cards show titles, crew bar shows duties inline, delay/cancel notes spacing, slot dialog time fields no longer clipped, no horizontal scroll on the crew fuse at 390px.
 fix(planner): /schedule/usual matches the mockup: the page loads again (the staff editor had replaced its script, now scripts/planner/usual-public.ts), and gets the Times in Central / My time switch on the posters
 fix(planner): /schedule matches the mockup: the Times in Central / My time switch beside Tickets / Timeline (shown to viewers outside Central; your clock leads, Central follows; saved per viewer); the kit's dualTimeHtml takes mode and localZoneName. Compared the marquee, all five door styles, the phone slider, tickets and timeline: those already matched
 feat(planner): make-test-week --publish (staging only) publishes the test week with a chosen --frame and --doors so the public pages show it; --remove still cleans everything

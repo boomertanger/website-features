@@ -7,7 +7,6 @@ import { triHtml, initTri } from "../../../../shared/ui/tri.js";
 import { fuseHtml } from "../../../../shared/ui/vote.js";
 import { dualTimeHtml, dayParts, SP_ICON } from "../../../../shared/ui/scream-planner.js";
 import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
-import { timecardHtml } from "../../../../shared/ui/crew.js";
 import { stampHtml } from "../../../../shared/ui/stamp.js";
 import { burst } from "../../../../shared/ui/burst.js";
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
@@ -65,8 +64,8 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const early = week().state === "published" && (week().earlySignupUntil ?? 0) > Date.now();
     return crewBarHtml({
       gradeHtml: who.track ? gradeChipHtml({ track: who.track, grade: who.grade }) : "", statusHtml: `<span class="bt-badge bt-badge--${tone}">${esc(text)}</span>`,
-      notes: [early ? `Seats taken until ${esc(fmtDayTime(week().earlySignupUntil, tz()))} earn <b>+3 Gears</b>` : `Seats taken within 48 h of publishing earn <b>+3 Gears</b>`, `YouTube seats earn <b>×1.5</b>`, who.activityRules ? `Your duties are on <a href="/crew/hq">Crew HQ</a>` : ""].filter(Boolean),
-    }) + (who.activityRules ? "" : `<div class="pp-timecard">${timecardHtml({ month: new Date().toLocaleDateString("en-US", { month: "long", timeZone: SITE_TZ }), need: 2, total: 4, state: "idle" })}</div>`);
+      notes: [early ? `Seats taken until ${esc(fmtDayTime(week().earlySignupUntil, tz()))} earn <b>+3 Gears</b>` : `Seats taken within 48 h of publishing earn <b>+3 Gears</b>`, `YouTube seats earn <b>×1.5</b>`, who.activityRules ? `Your duties are on <a href="/crew/hq">Crew HQ</a>` : `${esc(new Date().toLocaleDateString("en-US", { month: "long", timeZone: SITE_TZ }))} duties start with stream duty`].filter(Boolean),
+    });
   }
   function weeksHtml() {
     if (st.weeks.length < 2) return "";
@@ -195,7 +194,7 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const f = { pick: mine?.gameRequest?.gameSlug || "", note: mine?.gameRequest?.note || "", q: "" };
     const grid = () => {
       const needle = f.q.trim().toLowerCase(), list = ordered.filter((g) => !needle || g.title.toLowerCase().includes(needle) || (g.altNames || []).some((a) => a.toLowerCase().includes(needle))).slice(0, needle ? 24 : 12);
-      return list.length ? list.map((g) => `<button type="button" class="pp-lcard" data-pick="${esc(g.slug)}" aria-pressed="${f.pick === g.slug}">${coverOf(vault, g.slug, g.title)}<small>${fits(g) ? `<span class="fit">Fits ${esc(s.theme?.label || "this slot")}</span>` : esc(g.title)}</small></button>`).join("") : `<p class="bt-meta">No games match.</p>`;
+      return list.length ? list.map((g) => `<button type="button" class="pp-lcard" data-pick="${esc(g.slug)}" aria-pressed="${f.pick === g.slug}">${coverOf(vault, g.slug, g.title)}<small><b class="nm">${esc(g.title)}</b>${fits(g) ? `<span class="fit">Fits ${esc(s.theme?.label || "this slot")}</span>` : ""}</small></button>`).join("") : `<p class="bt-meta">No games match.</p>`;
     };
     const t = dayParts(s.start, s.tz);
     const { modal, close } = openModal({
@@ -204,7 +203,7 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
         + `<label class="bt-tray-search pp-asksearch"><span aria-hidden="true">🔍</span><input type="search" placeholder="Search the Vault" aria-label="Search the Vault" data-q></label>`
         + `<div class="pp-rgrid" data-grid>${grid()}</div>`
         + `<div class="bt-field"><label class="bt-label" for="pp-note">A note for Boomer (optional)</label><input class="bt-input" id="pp-note" maxlength="140" placeholder="Why this one?" autocomplete="off" value="${esc(f.note)}"></div>`
-        + `<p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions pp-dlg-acts">${mine?.gameRequest ? `<button type="button" class="bt-btn bt-btn--secondary" data-remove>Remove my request</button>` : ""}<span class="pp-dlg-spacer"></span><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Not now</button><button type="button" class="bt-btn bt-btn--primary" data-send disabled>Pick a game</button></div>`,
+        + `<p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions pp-dlg-acts">${mine?.gameRequest ? `<button type="button" class="bt-btn bt-btn--secondary" data-remove>Remove request</button>` : ""}<span class="pp-dlg-spacer"></span><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Not now</button><button type="button" class="bt-btn bt-btn--primary" data-send disabled>Pick a game</button></div>`,
     });
     const sync = () => { const b = modal.querySelector<HTMLButtonElement>("[data-send]")!; b.disabled = !f.pick; b.textContent = f.pick ? `Ask for ${vault.get(f.pick)?.title || "this game"}` : "Pick a game"; modal.querySelector("[data-grid]")!.innerHTML = grid(); };
     sync();

@@ -8,7 +8,7 @@ import {
 } from "./plan-data";
 
 const tz: string = raw.tz;
-const GAMES = raw.games as { slug: string; title: string; status: string; tags: string[] }[];
+const GAMES = raw.games as { slug: string; title: string; status: string; tags: string[]; cover?: { source: string; steamAppId?: string } }[];
 const game = (slug: string) => GAMES.find((g) => g.slug === slug);
 const PEOPLE = raw.people as { uid: string; handle: string; grade: number; track: string }[];
 const person = (handle: string) => PEOPLE.find((p) => p.handle === handle);
@@ -77,7 +77,7 @@ function build(): PState {
 }
 export const pv = () => (S ||= build());
 export const previewMe = () => ({ ...raw.me });
-export const previewVault = () => GAMES.map((g) => ({ slug: g.slug, title: g.title, sortTitle: g.title.toLowerCase(), altNames: [], status: g.status, tags: g.tags, cover: null, wanted: 0 }));
+export const previewVault = () => GAMES.map((g) => ({ slug: g.slug, title: g.title, sortTitle: g.title.toLowerCase(), altNames: [], status: g.status, tags: g.tags, cover: g.cover ?? null, wanted: 0 }));
 
 const seatLabel = (s: SeatReq) => `${s.role === "captain" ? "Captain" : `${ROOM_NAME[s.room as Room]} ${s.role}`}, ${s.status}`;
 const findStream = (id: string) => { for (const list of Object.values(pv().streams)) { const s = list.find((x) => x.id === id); if (s) return s; } throw new Error("No such stream in the preview."); };
@@ -107,7 +107,7 @@ function warnings(week: string) {
     if (!s.plannedGames.length) out.push({ streamId: s.id, kind: "noGames", text: `${name} has no games yet` });
     const need: string[] = [];
     if (s.minCrew.captain && !s.crew.captain) need.push("a Captain");
-    for (const g of s.minCrew.rooms) if (s.rooms.filter((r) => GROUP_OF[r] === g).some((r) => !s.crew.chats[r]?.lead)) need.push(`a ${g} Lead`);
+    for (const g of s.minCrew.rooms) if (s.rooms.filter((r) => GROUP_OF[r] === g).some((r) => !s.crew.chats[r]?.lead)) need.push(`a ${g === "youtube" ? "YouTube" : g[0].toUpperCase() + g.slice(1)} Lead`);
     if (need.length) out.push({ streamId: s.id, kind: "minCrew", text: `${name} needs ${need.join(" and ")}` });
   }
   return out;
