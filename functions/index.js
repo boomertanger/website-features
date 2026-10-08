@@ -945,4 +945,9 @@ Object.assign(exports, require("./lib/planner")({ adminLogEntry }));
 
 // YouTube events (docs/specs/scream-planner.md section 15): Connect YouTube, the event sync for published streams,
 // Retry, and the daily tidy of backstage videos. Lives in lib/youtube/.
-Object.assign(exports, require("./lib/youtube")({ adminLogEntry }));
+const youtubeModule = require("./lib/youtube").build({ adminLogEntry });
+Object.assign(exports, youtubeModule.functions);
+
+// Control Room (docs/specs/control-room.md): the stream controls, check-ins and presence, the live feeds and ticks, Twitch
+// EventSub. Lives in lib/live/; it reuses the youtube module for ad hoc streams, after-shows and Start.
+Object.assign(exports, require("./lib/live")({ adminLogEntry, youtube: youtubeModule.hooks }));

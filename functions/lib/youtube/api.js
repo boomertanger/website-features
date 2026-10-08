@@ -57,6 +57,17 @@ function makeApi({ fetchFn, token }) {
       }
       return items;
     },
+    /**
+     * GET videos?part=liveStreamingDetails,statistics for up to 50 ids (about 1 quota unit). Returns the items:
+     * { id, liveStreamingDetails: { actualStartTime, actualEndTime, concurrentViewers } }. concurrentViewers is a string and
+     * absent when the stream is not live (or the viewer count is hidden).
+     */
+    async videosList(ids) {
+      const list = [...new Set((ids || []).filter((x) => typeof x === "string" && x))].slice(0, 50);
+      if (!list.length) return [];
+      const d = await call("GET", `${API}/videos?part=liveStreamingDetails&id=${list.map(encodeURIComponent).join(",")}`);
+      return d.items || [];
+    },
     /** POST thumbnails.set with the raw image bytes (image/jpeg or image/png, at most 2 MB). */
     thumbnail(videoId, bytes, contentType) {
       if (!["image/jpeg", "image/png"].includes(contentType)) throw new YoutubeError("other", 0, "A thumbnail must be a jpg or png.");

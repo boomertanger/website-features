@@ -28,6 +28,11 @@ async function getJson(fetchFn, url, init, label) {
 }
 
 // ---------- Twitch: follower total (Helix, app access token) ----------
+/** An app access token (client credentials). Shared with the Control Room (lib/live): { access_token, expires_in }. */
+const twitchAppToken = (fetchFn, clientId, clientSecret) => getJson(fetchFn, "https://id.twitch.tv/oauth2/token", {
+  method: "POST",
+  body: new URLSearchParams({ client_id: clientId, client_secret: clientSecret, grant_type: "client_credentials" }),
+}, "twitch token");
 async function twitch({ fetchFn, cfg, configRef, config }) {
   if (!cfg.twitchClientId || !cfg.twitchClientSecret || !cfg.twitchLogin) throw new Error("twitch: not configured");
   const tok = await getJson(fetchFn, "https://id.twitch.tv/oauth2/token", {
@@ -157,4 +162,4 @@ async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now =
 const MANUAL_TIKTOK_MAX = 100000000;
 const validManualFollowers = (n) => Number.isInteger(n) && n >= 0 && n <= MANUAL_TIKTOK_MAX;
 
-module.exports = { collect, tiktokToken, dayKey, validManualFollowers, MANUAL_TIKTOK_MAX, TZ, YOUTUBE_GOAL };
+module.exports = { twitchAppToken, getJson, collect, tiktokToken, dayKey, validManualFollowers, MANUAL_TIKTOK_MAX, TZ, YOUTUBE_GOAL };

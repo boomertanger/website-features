@@ -105,13 +105,15 @@ function build({ adminLogEntry, fetchFn, clientId, clientSecret, now = Date.now,
    * ignores the stored hash and pending edits. Never throws: a YouTube failure becomes status "failed".
    * Returns { action, status }.
    */
-  async function syncStream(streamId, { before, after, force = false }) {
+  async function syncStream(streamId, { before, after, force = false, createNow = false }) {
     const y = ((await db.doc(path.watch(streamId)).get()).data() || {}).youtube || {};
     const eventId = y.landscapeId || y.backstageId || null;
     let a = after, b = before;
     if (force && after) { a = { ...after, hasUnpublishedChanges: false }; b = a; }
     const cover = await coverOf(a);
-    const d = L.decide(b, a, { synced: { eventId, hash: force ? null : y.hash }, cover });
+    // createNow: the Control Room's ad hoc stream and after-show are already live when their event is made (decide
+    // hands off live streams), so the create is asked for directly. Never when an event exists.
+    const d = createNow && !eventId && a ? { action: "create", reason: "adhoc" } : L.decide(b, a, { synced: { eventId, hash: force ? null : y.hash }, cover });
     const finish = async (status, error, warning) => {
       if (after) await writeStatus(streamId, L.statusDocShape(status, error, now(), warning));
       return { action: d.action, status };
@@ -180,6 +182,13 @@ function build({ adminLogEntry, fetchFn, clientId, clientSecret, now = Date.now,
     }
     await syncStream(streamId, { before, after });
   });
+
+  /** For the Control Room: a connected Data API client, or null when YouTube is not connected. Throws YoutubeAuthError on a dead token. */
+  async function apiClient() {
+    const au = auth();
+    if (!(await au.status()).connected) return null;
+    return makeApi({ fetchFn: doFetch, token: await au.accessToken() });
+  }
 
   // ---------- callables ----------
   const youtubeConnect = onCall({ secrets: SECRETS }, async (request) => {
@@ -267,7 +276,7 @@ function build({ adminLogEntry, fetchFn, clientId, clientSecret, now = Date.now,
 
   return {
     functions: { youtubeConnect, youtubeStatus, youtubeRetry, youtubeSync, youtubeTidy },
-    hooks: { syncStream, runTidy, tidyDays },
+    hooks: { syncStream, runTidy, tidyDays, apiClient },
   };
 }
 

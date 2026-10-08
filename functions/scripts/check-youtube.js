@@ -417,6 +417,17 @@ async function main() {
   m = mark();
   await edit("s3", { state: "live", actualStart: TS(NOW), title: "Changed while live" }); assert.equal(since(m).length, 0);
 
+  // The Control Room's ad hoc stream and after-show are live before their event exists: createNow asks for the create directly (once).
+  await wdb.doc(`${S}/streams/adhocLive`).set(wstream({ state: "live", actualStart: TS(NOW), adhoc: true, published: true }));
+  const adhocLive = await cur("adhocLive");
+  m = mark();
+  assert.equal((await staging.hooks.syncStream("adhocLive", { before: null, after: adhocLive })).action, "none", "a live stream is handed off without createNow");
+  assert.equal(since(m).length, 0);
+  assert.equal((await staging.hooks.syncStream("adhocLive", { before: null, after: adhocLive, createNow: true })).action, "create");
+  const nowId = (await watchOf("adhocLive")).youtube.landscapeId; assert.ok(nowId && eg.events.has(nowId));
+  assert.equal((await staging.hooks.syncStream("adhocLive", { before: null, after: adhocLive, createNow: true })).action, "none", "createNow never makes a second event");
+  assert.ok(await staging.hooks.apiClient(), "apiClient: a connected client for the Control Room");
+
   // ---------- every sync action is logged: action, stream id, event id (server log only) ----------
   {
     const log = []; const realLog = console.log; console.log = (...x) => { log.push(x.join(" ")); };
