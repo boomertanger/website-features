@@ -104,7 +104,9 @@ async function main() {
     }
     for (const w of adopted) {
       for (const d of (await w.ref.collection("ballot").where("test", "==", true).get()).docs) await d.ref.delete();
-      await w.ref.update({ streamIds: [], ballotSlugs: w.get("adoptedTest").prevBallotSlugs || [], adoptedTest: FieldValue.delete(), counts: { slots: 0, seatsOpen: 0, votes: 0 }, hasUnpublishedChanges: false });
+      const at = w.get("adoptedTest");
+      // put the week back as it was before the test: its state and close time, never published (a test publish closed the ballot and set the hero)
+      await w.ref.update({ streamIds: [], ballotSlugs: at.prevBallotSlugs || [], adoptedTest: FieldValue.delete(), counts: { slots: 0, seatsOpen: 0, votes: 0 }, hasUnpublishedChanges: false, publishedAt: null, publishedRev: 0, hero: null, earlySignupUntil: FieldValue.delete(), ...(at.prevState ? { state: at.prevState } : {}), ...(at.prevClosesAt ? { closesAt: at.prevClosesAt } : {}) });
     }
     await core.rebuildPublicBallot();
     await core.rebuildSchedule();

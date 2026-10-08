@@ -186,7 +186,7 @@ module.exports = function plan({ core }) {
     if (manual && closesAt <= nowMs) closesAt = nowMs + DAY_MS;
     const state = L.stateAt(nowMs, { closesAt });
     try {
-      if (have.exists) await ref.update({ adoptedTest: { prevBallotSlugs: have.get("ballotSlugs") || [] } });
+      if (have.exists) await ref.update({ adoptedTest: { prevBallotSlugs: have.get("ballotSlugs") || [], prevState: have.get("state"), prevClosesAt: have.get("closesAt") || null } });
       else await ref.create({ week, state, opensAt: ts(manual ? nowMs : dl.opensAt), closesAt: ts(closesAt), publishBy: ts(dl.publishBy), publishedAt: null, publishedRev: 0, hasUnpublishedChanges: false, weekOff: exp.weekOff, hero: null, streamIds: [], ballotSlugs: [], counts: { slots: 0, seatsOpen: 0, votes: 0 }, tz, ...(mark || {}), createdAt: FieldValue.serverTimestamp() });
     } catch (err) { if (err.code === 6 || /ALREADY_EXISTS/.test(String(err.message))) return { created: false }; throw err; }
     const made = [];
