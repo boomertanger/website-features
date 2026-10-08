@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+fix(planner): /schedule/usual matches the mockup: the page loads again (the staff editor had replaced its script, now scripts/planner/usual-public.ts), and gets the Times in Central / My time switch on the posters
 fix(planner): /schedule matches the mockup: the Times in Central / My time switch beside Tickets / Timeline (shown to viewers outside Central; your clock leads, Central follows; saved per viewer); the kit's dualTimeHtml takes mode and localZoneName. Compared the marquee, all five door styles, the phone slider, tickets and timeline: those already matched
 feat(planner): make-test-week --publish (staging only) publishes the test week with a chosen --frame and --doors so the public pages show it; --remove still cleans everything
 fix(planner): a new game added through the Vault from the ballot picker now goes on the ballot in the same step (2-a-week limit and closed ballot explained in the result, your votes untouched; a game sent to a mod says to add it once approved)
