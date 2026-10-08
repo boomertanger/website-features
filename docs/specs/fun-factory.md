@@ -169,6 +169,7 @@ Each later feature adds its events through its spec's "Night Shift and Trophy Ro
 | 365 | The Year of Fear | Legendary |
 
 ## 13b. Stream check-ins and stream streaks (needs the Control Room, workstream 5)
+> **Amended Oct 8, 2026 (`control-room.md` §4, §6, §12).** The rolling 15-minute code is replaced by **beat check-ins with a spoken word**: the stream has four beats (Start, Break 1, Break 2, End); each window opens when the owner presses Open check-in, shows one word on stream, and members type it on /live and pick their room. **Presence keeps Twitch chat and drops** (linked Twitch accounts seen in chat) and clocked-in mods are present automatically (no check-in XP); the "Check in" button and the code in the first bullet below are superseded. The daily button is renamed **"Punch the clock"** (spec text only; nothing is renamed in code yet).
 - **Presence counts three ways:** (1) a linked Twitch account seen in chat for at least 15 minutes of the stream; (2) the site's **Check in** button, shown only while live, with a short code shown on stream or said out loud that changes about every 15 minutes (works for YouTube and TikTok viewers); (3) claiming a live drop.
 - **Stream streak:** streams in a row you were at. Only scheduled streams (from the Schedule Planner) can break it; unscheduled streams extend it if you're there and cost nothing if you miss them.
 - **Stream savers:** one per 5 streams in a row, hold up to 2; a missed scheduled stream uses one automatically.

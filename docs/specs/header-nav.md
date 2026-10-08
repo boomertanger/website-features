@@ -11,7 +11,7 @@ Three menus and one plain link replace the flat links:
 
 | Header | Pages |
 |---|---|
-| Watch ▾ | Live, Schedule, Streams, Games ("What I'm playing") |
+| Watch ▾ | Live, Schedule, Streams, Games ("What I'm playing") (Live added Oct 8; see below) |
 | Play ▾ | Arcade, Night Shift, Trophy Room |
 | Community ▾ | Club, Crew, Goals; later Bug Zapper, Feature Lab, Horror Monthly |
 | Shop | plain link |
@@ -31,7 +31,7 @@ Everyone. Crew returns to Community (/crew is public). Admin stays green, admin-
 - The group containing the current page is highlighted (purple underline). Watch shows a red dot while live.
 
 ## Blurbs (approved in the mockup)
-- Live: Watch the stream right now, on any platform.
+- Live: Watch the stream right now, on any platform. (Live heads the Watch group; its feature tile is a live tile: "Live now" with the stream title and Watch now while live, the next stream otherwise. Added Oct 8, 2026 with the Control Room, `control-room.md` §7, §17.)
 - Schedule: When I'm on next, in your own time zone.
 - Streams: Past streams, highlights and clips.
 - Games: What I'm playing, and what's up next.

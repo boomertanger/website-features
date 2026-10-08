@@ -188,11 +188,12 @@ For crew while a stream is live; the owner sees it too.
 - **Rooms strip**: each room's lead and deckhands, a coverage chip (covered / needed / not streaming), viewer count where the platform gives it.
 - **Clock in / Step away / Take the lead** buttons (section 6).
 - **Chats**: Twitch and both YouTube chats embedded side by side (both platforms allow chat embeds; TikTok has none, so it links out).
-- **Quick lines**: copy buttons for the current check-in code for your room, your referral link, house rules, socials, today's schedule. One tap to copy, paste in any chat.
+- **Quick lines**: copy buttons for your room's link (Room Leads post a **room link**, not a per-room code; see control-room.md §4), your referral link, house rules, socials, today's schedule. One tap to copy, paste in any chat.
 - **Game cues**: the next clue or call for your room, with a "Posted" button (section 11).
 - **Captain tools**: Drop a badge (rewards.md 10a), reassign seats, mark an incident.
 - **Flag to owner**: short note for something serious (raid, threat, personal info posted); shows on the owner's Control Room.
 - Crew messages: use the existing crew Discord if there is one; otherwise a tiny "crew notes" strip that clears after 24 h (decision 8).
+- **Amended Oct 8, 2026 (`control-room.md` §3, §4, §9, §17):** the **Captain's launch panel** (start the stream and the after-show, the launch tiles) joins the Mod Deck, and the Captain can **unlock a member who is locked out** of a beat check-in (`liveUnlock`).
 
 ## 9. Recruiting
 **v1**
@@ -266,6 +267,7 @@ TikTok has no chat API and YouTube's is quota-limited, so Chat Games are **site-
 Crew rate the game (thumbs + optional note); turnout per room is recorded automatically. Both feed back into pool order.
 
 ### 11h. Starting formats
+> **Amended Oct 8, 2026 (control-room.md §4, §17):** there are no per-room codes. Room Leads post a **room link** that opens the site's check-in with the room already chosen, and **Scream Off scores rooms by the member's self-reported room** (the room picked when they check in to a beat).
 1. **Dead Air** (flagship murder mystery, one case per stream). 5 suspects, a weapon, a place. Six clues drop through the stream, **each in a different room**, posted by that room's lead from a Deck cue (no lead → the Captain posts it, or it goes straight to the site). The Case Board shows "Clue 3 dropped in YouTube Vertical chat" and reveals the text there 10 minutes later, so the fastest way to keep up is to visit the other chats. Members lock one accusation any time; earlier correct guesses earn more XP; reveal on stream at the end; solvers get a badge. Inside Job mode as above.
 2. **Scream Off** (rooms compete). Each room has its own check-in code posted by its lead, so check-ins and plays count per room. Scored per viewer, so a small YouTube chat can beat a big Twitch one. The winning room picks something (the next game from a shortlist, a forfeit). Also shows where viewers watch.
 3. **Scare Bingo**. A 5×5 card of horror tropes. Any duty mod calls a square from the Deck; the Captain can undo. First bingo gets a live drop.

@@ -1,6 +1,6 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-10-07. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-08. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -11,7 +11,8 @@ Last updated: 2026-10-07. Every planning chat reads this file first and proposes
 | 3 | Game Vault | In progress | Games and streams |
 | 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
 | 4b | Notifications (email, text, push from the Planner's outbox) | Later | Community services |
-| 5 | Live Beacon and Control Room | Later | Games and streams |
+| 5 | Live Beacon and Control Room | In progress (spec confirmed Oct 8, 2026) | Games and streams |
+| 5b | Live activities (Questions, Hot Seat, then the Chat Games engine) | Later (spec to come) | Community services |
 | 6 | Stream Library | Later | Games and streams |
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
@@ -74,6 +75,7 @@ Mod crew per stream: one stream lead (there the whole stream, others lean on the
 Update (Oct 6, Mod Machina): the crew roles are now Stream Captain (was stream lead) / Room Lead (was platform lead) / Deckhand (was helper), and YouTube counts as two chats (landscape and vertical), so a stream has up to four rooms (Twitch, YouTube Landscape, YouTube Vertical, TikTok); one YouTube Lead may cover both. The stream object's crew field should follow docs/specs/mod-machina.md section 16a: `crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`.
 Planner UI idea: week as columns with slot cards, a suggestions tray beside it, crew status on each card ("Lead ✓ · Twitch ✓ · YouTube needed"), a Publish week button.
 Depends on: Game Vault, the stream object.
+**Next: part 8, YouTube events** (see `docs/specs/scream-planner.md` section 15; built before the Control Room).
 Kickoff: "Start workstream 4 (Scream Planner) from docs/ROADMAP.md."
 
 ### 4b. Notifications
@@ -84,8 +86,17 @@ Kickoff: "Start workstream 4b (Notifications) from docs/ROADMAP.md."
 
 ### 5. Live Beacon and Control Room
 Goal: live and backstage states across the site (header beacon, mascot "aware" lenses, footer Twitch LIVE dot), and the owner's controls at /live for playing the scheduled streams: pick today's stream, Start (records the actual start, turns on live states), mark the game being played (records each game's start and end), Stop (records the end). An unscheduled stream can still be started ad hoc.
+Status: **In progress (spec confirmed Oct 8, 2026).**
+Spec: [docs/specs/control-room.md](specs/control-room.md); mockups `docs/design/mockups/control-room-review.html` and `control-room-batch-1.html` to `control-room-batch-4.html`.
+Parts (spec section 18, one commit each, staging first): 0. Scream Planner part 8, YouTube events (first); 1. docs (this commit); 2. logic (`lib/live/logic.js`, `check-live.js`); 3. backend wiring (callables, triggers, `liveTick`, `liveFlush`, `obsFeed`, `liveDeck`, `twitchEventSub`, rules, indexes; staging deploy); 4. kit pieces and the two looks on the UI kit page; 5. /live/control (Cockpit) with the checklist, its editor, the Scene card and the Stream Deck card; 6. /live and the live states across the site (beacon, mascot, footer, nav tile, live banner); 7. check-ins and presence, with the Night Shift and Trophy Room hooks; 8. the stream view (wide and tall, every scene, both looks); 9. backstage watching and the after-show.
 Depends on: Scream Planner, Game Vault, accounts (done), Twitch app (done).
 Kickoff: "Start workstream 5 (Live Beacon and Control Room) from docs/ROADMAP.md."
+
+### 5b. Live activities (Questions, Hot Seat, then the Chat Games engine)
+Goal: live things members do during a stream: Questions (ask and promote), Hot Seat, then the Chat Games engine shared with Mod Machina phase 4, then the ranked extras. Its own service, after the Control Room core.
+Spec: to come, `docs/specs/live-activities.md` (see control-room.md section 9 and decision 13).
+Status: Later.
+Depends on: Control Room (5), Mod Machina phase 4 (Chat Games).
 
 ### 6. Stream Library
 Goal: finished stream objects at /tv (boomertanger.tv redirects here): look up any past stream, its games played, crew and times, plus YouTube VODs and clips; each linked to its Game Vault game.
@@ -154,7 +165,7 @@ Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
 
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
-- [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5).
+- [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
 - [ ] Schedule votes: Scream Planner (4).
 - [ ] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10).
 - [ ] Feature Lab activities and The Architect badge (an idea that ships): porting (10).
@@ -178,6 +189,12 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
+
+### Control Room and YouTube in production
+- [ ] Set the YouTube OAuth app to **In production** (not Testing: a Testing app loses its refresh token every 7 days) and set the production `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` secrets.
+- [ ] Connect YouTube in production (Connect YouTube on /admin, once; click through the "unverified app" warning).
+- [ ] Generate a new stream view key and a new deck key in production (never reuse staging's).
+- [ ] Seed `live/main` in production.
 
 ### Mod Machina in production
 - [ ] Connect the Twitch broadcaster token for mod sync (twitchSync is off until then): store sites/boomertanger/private/twitchBroadcaster { accessToken, refreshToken, accessExpiresAt, scope incl. channel:manage:moderators }, then set crew/main.twitchSync = true in Crew settings. Until then every Twitch mod change is a to-do on /admin/crew.

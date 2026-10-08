@@ -110,7 +110,7 @@ says; the working copy lives in `streams/{id}/private/draft` until publish. New 
 | `plannedGames[].source.kind` | Adds `modRequest` (with `byHandle`) and `ballot` (with vote count) to `owner | suggestion | wishlist`. `suggestion` is kept for old data; new ballot picks use `ballot`. |
 | `week` | Already in the spec; used for all planner queries |
 
-Backstage watch details (the unlisted YouTube video ID) go in `streams/{id}/private/watch`,
+Backstage watch details (the unlisted YouTube video ID; since Oct 8 also **the YouTube event IDs** for every stream, see Part 8) go in `streams/{id}/private/watch`,
 filled by the Control Room and handed out by a callable to members with the right audience
 only. The Planner only sets `type` and `audience`.
 
@@ -203,6 +203,8 @@ YouTube needed ×1.5 · TikTok —" ("needed" in gold, never red).
   later weeks, and the outbox and activity event are written. A planned (unpublished) slot can
   simply be removed instead.
 
+- **YouTube (added Oct 8, 2026, Part 8):** publish, edits (Publish changes), delay and cancel also **sync the stream's YouTube event** (create, update, move, delete); a failure never blocks the Planner action: the card shows "YouTube failed · Retry".
+
 ## 7. Functions (`functions/lib/planner/*.js`, JavaScript)
 
 | Function | Caller | Does |
@@ -289,6 +291,7 @@ outbox.
 4. Scripts: `make-test-week.js`; dry run.
 5. Site (after mockups are approved): kit pieces + UI kit page, `/schedule`, `/schedule/plan`
    (both views), `/schedule/plan/usual`, /admin card, account menu link, design-system.md §8.
+8. YouTube events (Part 8, added Oct 8; see section 15): `functions/lib/youtube/`, Connect YouTube, the Planner chips, the staging rule and cleanup script; built before the Control Room.
 
 ## 12. Confirmed choices (all five confirmed 2026-10-07)
 
@@ -366,3 +369,41 @@ Common `details.reason` values: `notOwner`, `notAdmin`, `notAllowed` (delay and 
 - The Mod Machina early sign-up window is `planWeeks.earlySignupUntil` (48 h after the first publish); the first seat request in it pays +3 Gears through `grantGears` with source `earlySignup` (added to the Gears sources; idempotent per stream and person).
 - A partly covering `weekOff` exception acts as days off for the days it covers; only a range covering Monday to Sunday takes the whole week off.
 - `notifyOutbox` docs carry `expireAt` (30 days); the TTL policy is in `firestore.indexes.json` `fieldOverrides`.
+
+## 15. Part 8: YouTube events (added Oct 8, 2026)
+
+Built from `control-room.md` §11 and §18 item 0, **before** the Control Room, because publish, edits, delay and cancel start in the Planner. The Control Room reuses the same module for ad hoc streams, after-shows and Start.
+
+**Module:** `functions/lib/youtube/` (JavaScript), with the callables and triggers below. The site creates every YouTube event, so in Streamlabs the owner only picks it from the list.
+
+| Function | Kind | Does |
+| --- | --- | --- |
+| `youtubeConnect` | HTTPS | The Google sign-in callback for **Connect YouTube** on /admin (the Connect TikTok pattern; scope `youtube.force-ssl`; the token lives server-only at `sites/boomertanger/private/youtubeChannel`). The owner sets `YOUTUBE_CLIENT_ID` and `YOUTUBE_CLIENT_SECRET` himself. |
+| `youtubeSync` | Trigger | Creates, updates or deletes the YouTube event for a stream when the week is published, a published stream is edited and republished, a stream is delayed or cancelled (and, from the Control Room, for ad hoc streams and after-shows). |
+| `youtubeTidy` | Daily | Sets backstage videos to private the set number of days after the stream (7, on by default). |
+
+**What gets synced**
+
+| When | What the site does on YouTube |
+| --- | --- |
+| Week published | One event per stream: public for platform streams, unlisted for backstage. Title, a description with the /live link, scheduled start, Low latency, a thumbnail from the first game's Vault cover (a default card for backstage). Public events show as Upcoming so subscribers can tap Notify me. |
+| Published stream edited, then republished | Updates title, start and thumbnail. |
+| Delayed | Moves the scheduled start (immediately, like the delay itself). |
+| Cancelled | Deletes the event (it never went live). |
+
+The YouTube event IDs live in `streams/{id}/private/watch` (with `provider: "youtube"`); the video ID is only handed out by `backstageWatch` to the stream's audience.
+
+**UI**
+- A chip on each plan card and the public-facing card state: **"YouTube ✓"** when the event is in sync, **"YouTube failed · Retry"** when the last sync failed (Retry calls the sync again).
+- The **publish dialog** shows the event count ("5 YouTube events will be created") next to the unfinished list.
+- **Connect YouTube** on /admin shows connected / not connected and the app status.
+
+**Staging rule (always):** on staging every event is created **Private** with "[STAGING]" at the start of its title; a **cleanup script** (`functions/scripts/youtube-cleanup.js`, staging only, dry run first) deletes them. Only production creates public and unlisted events.
+
+**Things to know**
+- **Google's 7-day trap:** an OAuth app left in Testing loses its refresh token every 7 days. The app is set to **In production**; as its only user the owner clicks through the "unverified app" warning once (verify).
+- **Quota:** create, update and thumbnail cost about 50 units each (verify); a 7-stream week stays well under 1,000 of the 10,000 daily units.
+- **Fallbacks:** events made by hand in YouTube Studio are found at Start; a Paste link field is always on the controls; an event deleted by hand is recreated at the next sync, with a warning.
+- **Later switch:** `private/watch.provider` can become `cloudflare` (Cloudflare Stream Live with signed playback) if paid Sub Club content ever needs real protection.
+
+**Parts:** one commit with a CHANGELOG line; `check-youtube.js` for the pure parts (event bodies, what changed, staging title rule) in `npm run check`; staging deploy.
