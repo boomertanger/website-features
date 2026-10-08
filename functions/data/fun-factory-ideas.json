@@ -145,8 +145,12 @@
     {
       "id": "stream",
       "name": "Stream presence",
-      "enabled": false,
-      "needs": "Control Room"
+      "enabled": true,
+      "needs": null,
+      "source": "Control Room",
+      "description": "Be at a live stream: check in to a beat with the word on stream, check in to every beat, be counted present (chat, a drop or a check-in), or be one of the first three in.",
+      "actions": ["checkin", "all-beats", "present", "first-in"],
+      "params": ["action", "beat", "room"]
     },
     {
       "id": "streak",

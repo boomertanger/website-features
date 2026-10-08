@@ -29,7 +29,9 @@ const fakeYoutube = {
 const adminLogEntry = async (_d, f) => ({ ...f, createdAt: realFs.Timestamp.now() });
 let wordPick = 0;
 const rng = () => [0.0, 0.5, 0.9, 0.3, 0.7][wordPick++ % 5];
-const live = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, rng });
+const nsEvents = [];
+const fakeFactory = { recordFactoryEvent: async (uid, type, params, ref) => { nsEvents.push({ uid, type, params, ref }); return { counted: true }; } };
+const live = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, rng, factory: fakeFactory });
 const fns = live.functions, ctx = live.hooks.ctx;
 const as = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: {} } : undefined, data });
 const why = async (p) => { try { await p; return "ok"; } catch (e) { return e.details?.reason || e.message; } };
@@ -300,7 +302,120 @@ async function main() {
   assert.equal((await get("live/main")).look, "crt"); assert.equal((await get("public/live")).look, "crt");
   await as("boss", "liveSettings", { look: "hull" });
 
-  // [3b section] [3c section] [3d section] [3e section]
+  // ================================================================ 3b: check-ins and presence
+  assert.equal(await why(as(null, "streamCheckIn", { word: "x", room: "twitch" })), "signedOut");
+  assert.equal(await why(as("nobody", "streamCheckIn", { word: "x", room: "twitch" })), "needsSignup", "a signed-in visitor without a profile");
+  assert.equal(await why(as("boss", "streamCheckIn", { word: "x", room: "twitch" })), "ownerHosts");
+  assert.equal(await why(as("fan", "streamCheckIn", { word: "x", room: "twitch" })), "noWindow", "nothing is live");
+  for (const uid of [null, "fan", "nobody"]) assert.equal(await why(as(uid, "liveUnlock", { uid: "fan", beat: "start" })), uid ? "notCrew" : "signedOut", `liveUnlock: ${uid}`);
+  for (const n of ["fan3", "fan4", "late", "latest", "capped", "cap2"]) await person(n, []);
+  await wdb.doc(`${S}/live/main`).set({ look: "hull" }, { merge: true });
+  const xpOf = async (uid) => (await get(`profiles/${uid}`)).xp;
+
+  await mkStream("c1", { title: "Check-in night" });
+  await as("boss", "startStream", { streamId: "c1" });
+  assert.equal(await why(as("fan", "streamCheckIn", { word: "x", room: "twitch" })), "noWindow", "live but no window yet");
+  clock += MIN;
+  const w1 = await as("boss", "liveCheckInWindow", { action: "open", lengthMinutes: 5 });
+  const W1 = w1.word;
+  const ci = (uid, word, room) => as(uid, "streamCheckIn", { word, room });
+  // wrong words count tries; a wrong room or an empty answer costs nothing
+  assert.equal(await why(ci("fan", "", "twitch")), "empty");
+  assert.equal(await why(ci("fan", W1, "bogus")), "badRoom");
+  assert.equal(await why(ci("fan", W1, "site")), "badRoom", "On the site is only for backstage");
+  let err = await ci("fan", "wrongo", "twitch").catch((e) => e);
+  assert.equal(err.details.reason, "wrongWord"); assert.equal(err.details.triesLeft, 4);
+  assert.equal((await get("streams/c1/presence/fan")).wrongTries.start, 1);
+  for (let i = 0; i < 3; i++) await ci("fan", "wrongo", "twitch").catch(() => {});
+  err = await ci("fan", "wrongo", "twitch").catch((e) => e);
+  assert.equal(err.details.reason, "wrongWord"); assert.equal(err.details.locked, true);
+  assert.equal(await why(ci("fan", W1, "twitch")), "lockedOut", "locked even with the right word");
+  // the crew unlock (crew on duty), never a member or a visitor
+  assert.equal(await why(as("fan2", "liveUnlock", { uid: "fan", beat: "start" })), "notCrew");
+  assert.equal(await why(as("capt", "liveUnlock", { uid: "fan", beat: "nope" })), "badBeat");
+  assert.equal(await why(as("capt", "liveUnlock", { uid: "ghost", beat: "start" })), "noPresence");
+  assert.equal((await as("capt", "liveUnlock", { uid: "fan", beat: "start" })).ok, true);
+  assert.equal((await get("streams/c1/presence/fan")).wrongTries.start, 0);
+  assert.ok((await root("adminLog")).some((e) => e.action === "unlock" && e.actorUid === "capt" && e.feature === "controlRoom"));
+  // success: the stamp, +10 XP, the counter, first-in, the alias converted at the edge
+  nsEvents.length = 0;
+  const ok1 = await ci("fan", " " + W1.toUpperCase() + "! ", "ytv");
+  assert.equal(ok1.ok, true); assert.equal(ok1.room, "ytVertical", "the alias ytv is stored as ytVertical"); assert.equal(ok1.xp, 10); assert.equal(ok1.firstIn, 1); assert.equal(ok1.beat, "start");
+  const pf = await get("streams/c1/presence/fan");
+  assert.equal(pf.beats.start.room, "ytVertical"); assert.equal(pf.xpEarned, 10); assert.ok(pf.expireAt.toMillis() > clock + 390 * 86400000, "13 months");
+  assert.equal(await xpOf("fan"), 10);
+  assert.equal((await get("rewardLedger/live:c1:start:fan:checkin:fan")).amount, 10, "the ledger key is the section 12 key under live:");
+  assert.deepEqual(nsEvents.map((e) => [e.type, e.params.action, e.ref]), [["stream", "checkin", "c1:start:fan:checkin"], ["stream", "first-in", "c1:start:fan:first-in"]]);
+  // a second device: friendly already, nothing paid twice, counter unchanged
+  nsEvents.length = 0;
+  assert.deepEqual(await ci("fan", W1, "twitch"), { ok: true, already: true, beat: "start" });
+  assert.equal(await xpOf("fan"), 10); assert.equal(nsEvents.length, 0);
+  const sumNow = async (id) => L.sumShards(await col(`streams/${id}/counters`));
+  assert.deepEqual((await sumNow("c1")).byRoom, { ytVertical: 1 });
+  assert.ok((await col("streams/c1/counters")).every((c) => /^[0-9]$/.test(c.id)), "counter shards are 0 to 9");
+  // three people are first in; the fourth is not named
+  for (const [u, room] of [["fan2", "twitch"], ["fan3", "ytv"], ["fan4", "youtube"]]) await ci(u, W1, room);
+  assert.deepEqual((await control("c1")).firstIn.start.map((x) => x.handle), ["fan", "fan2", "fan3"]);
+  assert.equal((await get("streams/c1/presence/fan4")).beats.start.room, "ytLandscape", "youtube is stored as ytLandscape");
+  assert.equal(nsEvents.filter((e) => e.params.action === "first-in").length, 2, "fan2 and fan3 are second and third in; fan4 is not named");
+  assert.deepEqual((await sumNow("c1")).byRoom, { ytVertical: 2, twitch: 1, ytLandscape: 1 });
+  assert.equal((await sumNow("c1")).total, 4, "counted once each");
+  // crew: the Captain (seated) is present with no XP, no word, and is not counted in the room counters
+  const cap = await ci("capt", "", "twitch");
+  assert.equal(cap.crew, true); assert.equal(cap.xp, 0);
+  assert.equal(await xpOf("capt"), 0); assert.equal((await sumNow("c1")).total, 4); assert.equal((await get("streams/c1/presence/capt")).crew, true);
+  // an admin who is not seated checks in with the word: recorded, but "no prizes"
+  const adm = await ci("adm2", W1, "twitch");
+  assert.equal(adm.ok, true); assert.equal(adm.xp, 0); assert.equal((await get("streams/c1/presence/adm2")).noPrize, true);
+  assert.ok(!(await control("c1")).firstIn.start.some((x) => x.handle === "adm2"), "crew never take a first-in");
+  // the window: grace after close still counts, then it is closed
+  await as("boss", "liveCheckInWindow", { action: "close" });
+  clock += 20 * 1000;
+  assert.equal((await ci("late", W1, "twitch")).ok, true, "20 seconds after Close now is inside the 30 second grace");
+  clock += 15 * 1000;
+  assert.equal(await why(ci("latest", W1, "twitch")), "windowClosed", "past close + grace");
+
+  // all-beats and the 100 XP cap, through the callable path
+  await wdb.doc(`${S}/live/main`).set({ xpCheckin: 60 }, { merge: true });
+  clock += MIN;
+  await as("boss", "liveBeat", { action: "begin", beat: "break1" });
+  const w2 = await as("boss", "liveCheckInWindow", { action: "open" });
+  assert.notEqual(w2.word, W1);
+  assert.equal((await ci("capped", w2.word, "twitch")).xp, 60);
+  assert.equal((await ci("fan", w2.word, "ytVertical")).xp, 60, "fan had 10: 10 + 60 stays under the cap");
+  await wdb.doc(`${S}/streams/c1/presence/cap2`).set({ uid: "cap2", beats: { start: { room: "twitch", at: TS(clock) } }, xpEarned: 60 });
+  const b2c = await ci("cap2", w2.word, "twitch");
+  assert.equal(b2c.xp, 40); assert.equal(b2c.capped, true, "60 + 60 would be 120: only 40 is paid");
+  assert.equal(await xpOf("cap2"), 40); assert.equal((await get("streams/c1/presence/cap2")).xpEarned, 100);
+  await as("boss", "liveCheckInWindow", { action: "close" });
+  clock += MIN;
+  await as("boss", "liveBeat", { action: "skip", beat: "break2" });
+  await as("boss", "liveBeat", { action: "begin", beat: "end" });          // End has no window: not held
+  nsEvents.length = 0;
+  await as("boss", "stopStream", {});
+  const bonus = nsEvents.filter((e) => e.params.action === "all-beats");
+  assert.deepEqual(bonus.map((e) => e.uid).sort(), ["cap2", "fan"], "held beats: Start and Break 1; only members who checked in to both");
+  assert.ok(bonus.every((e) => /^c1:[a-z0-9]+:all-beats$/.test(e.ref) || e.ref.includes(":all-beats")));
+  assert.equal(await xpOf("fan"), 10 + 60 + 15, "the all-beats bonus (15) was paid through the ledger");
+  assert.equal(await xpOf("cap2"), 40, "cap2 is at the 100 XP cap: the bonus pays 0");
+  assert.equal(await get("rewardLedger/live:c1:cap2:all-beats:cap2"), undefined, "nothing paid, nothing recorded");
+  const present = nsEvents.filter((e) => e.params.action === "present").map((e) => e.uid).sort();
+  for (const u of ["fan", "capt", "cap2", "adm2", "fan2"]) assert.ok(present.includes(u), `present: ${u}`);
+  assert.ok(!bonus.some((e) => ["capt", "adm2", "capped"].includes(e.uid)), "crew and no-prize check-ins get no all-beats bonus");
+  nsEvents.length = 0;
+  await live.hooks.checkin.helpers.settle("c1");               // a second settle pays nothing new
+  assert.equal(await xpOf("fan"), 85);
+  assert.equal(await why(as("fan", "streamCheckIn", { word: W1, room: "twitch" })), "noWindow", "after Stop nothing is live");
+
+  // backstage: the room is On the site
+  await mkStream("c2", { type: "backstage", audience: "fanClub", title: "Backstage", rooms: [], platforms: [] });
+  await as("boss", "startStream", { streamId: "c2" });
+  const w3 = await as("boss", "liveCheckInWindow", { action: "open" });
+  assert.equal((await ci("fan", w3.word, "twitch").catch((e) => e)).details.reason, "badRoom", "a platform room on a backstage stream");
+  assert.equal((await ci("fan", w3.word, undefined)).room, "site", "backstage defaults to On the site");
+  await as("boss", "stopStream", {});
+
+  // [3c section] [3d section] [3e section]
   console.log("check-live-wiring: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
