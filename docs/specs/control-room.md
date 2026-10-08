@@ -121,13 +121,13 @@ word from a curated horror word list (no repeats within 30 days) and shows it on
 stream view (it scrambles, then settles). It is never sent to the public page. Length per beat in the
 templates: 2, 3, 5 or 10 minutes (default 5). The server accepts check-ins until close plus 30 seconds of
 grace (YouTube runs about 15 to 20 seconds behind on normal latency; Twitch low latency about 2 to 5) (verify).
-+1 minute and Close now on the controls; opening the next beat closes any open window.
++1 minute and Close now on the controls; opening the next beat closes any open window. A window can be **reopened once** per beat (after Close now or after it ran out, while the beat is still running): same word, so earlier check-ins stay valid, with the time that was left when it closed or 2 minutes if less; a second reopen is refused. Answers ignore case, spaces, punctuation and accents ("séance" = "seance"); no fuzzy matching. **Beats in order:** Start, Break 1, Break 2, End. End can begin from any beat and marks any break not yet begun as skipped; the other beats stay in strict order.
 
 **Checking in (members).** While a window is open a red **live banner** drops in under the header on every
 page (`.bt-live-banner`: "Check-in is open · Break 1 · 4:31 left · Check in"). Check in opens a dialog (a
 bottom sheet on phones): type the word, confirm where you're watching (Twitch, YouTube, YouTube Vertical,
-TikTok, or On the site for backstage; defaults to the last one). Room Leads post a room link
-(`/live?room=ytv`) instead of a code, which keeps Scream Off scoring by room. 5 wrong tries per beat, then
+TikTok, or On the site for backstage; defaults to the last one). Stored room names are always `twitch`, `ytLandscape`, `ytVertical`, `tiktok`, `site`; the links and the callable also accept the aliases `youtube` and `ytv` and convert them at the edge (`normaliseRoom`). Room Leads post a room link
+(`/live?room=ytv`, converted to `ytVertical`) instead of a code, which keeps Scream Off scoring by room. 5 wrong tries per beat, then
 that beat locks for that member (a mod or the Captain can unlock). Visitors get Join free (the Join dialog
 titled "Join to check in"). Success: the stamp slams on, +10 XP, stream streak and beats-so-far chips, the
 banner turns green ("You're in for Break 1"), the count ticks up, and the first three of each beat are named
@@ -352,7 +352,7 @@ Predictions cost nothing to enter (members can be 13; no wagering).
 | Event (Night Shift key) | Who | Pays (starting values, tunable in `live/main`) |
 | --- | --- | --- |
 | `stream-checkin` | Member, per beat | 10 XP |
-| `stream-all-beats` | Member who checked in to every beat held | 15 XP bonus |
+| `stream-all-beats` | Member who checked in to every beat held (a beat is held when it began and a check-in window was opened for it; skipped beats and beats with no window don't count; at least one beat held) | 15 XP bonus |
 | `stream-present` | Anyone counted present (check-in, 15 min in Twitch chat, or a drop) | Stream streak and the Loyalty ladder |
 | `question-answered` | The asker | 15 XP |
 | `hotseat-played` / `hotseat-won` | Players | 5 XP / 25 XP |

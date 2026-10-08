@@ -86,12 +86,17 @@ function currentBeat(beats) {
   return null;
 }
 
-/** The beats that were begun (not skipped), in order. "All beats held" means exactly these (§16: no breaks, nothing lost). */
-const beatsHeld = (beats) => BEATS.filter((k) => isBegun((beats || {})[k]));
+/**
+ * The beats HELD, in order: begun AND a check-in window was opened for them. Skipped beats and beats that were
+ * begun but never had Open check-in pressed are not held (they cost nobody anything). "All beats" = exactly these.
+ */
+const beatsHeld = (beats) => BEATS.filter((k) => isBegun((beats || {})[k]) && beats[k].windowOpenedAt != null);
 
 /**
  * Begins a beat at `at`. Returns { ok, patch: { beats, ...segments }, closeWindow: true }.
- * - `beat` must be nextBeat(); otherwise reason "outOfOrder" (this also covers "already begun").
+ * - `beat` must be nextBeat(); otherwise reason "outOfOrder" (this also covers "already begun"). The one exception:
+ *   End may begin from any beat once Start is handled; every break not yet begun is then marked skipped in the same
+ *   patch (skipped: true, costs nothing). Start, Break 1 and Break 2 stay in strict order.
  * - The stream must be live ("notLive").
  * - Beginning a beat ends the beat before it and closes any open window (closeWindow: true, the caller runs
  *   closeWindow()). It never opens a window by itself (§19 item 3).
@@ -102,9 +107,11 @@ function beginBeat(stream, beat, at) {
   if (!BEATS.includes(beat)) return { ok: false, reason: "badBeat" };
   if (!stream || stream.state !== "live") return { ok: false, reason: "notLive" };
   const beats = stream.beats || {};
-  if (nextBeat(beats) !== beat) return { ok: false, reason: "outOfOrder" };
+  const endJump = beat === "end" && !isHandled(beats.end) && isHandled(beats.start);
+  if (nextBeat(beats) !== beat && !endJump) return { ok: false, reason: "outOfOrder" };
   const next = {};
   for (const k of BEATS) if (beats[k]) next[k] = { ...beats[k] };
+  if (beat === "end") for (const k of BREAK_BEATS) if (!isHandled(beats[k])) next[k] = { skipped: true, skippedAt: at, checkins: 0 };
   const cur = currentBeat(beats);
   if (cur) next[cur] = { ...next[cur], endedAt: at };
   next[beat] = { startedAt: at, endedAt: null, checkins: 0 };
@@ -191,6 +198,27 @@ function openWindow(stream, current, beat, word, lengthMinutes, at, settings) {
   return { ok: true, window: { beat, word, openedAt: at, closesAt: at + len * MIN, lengthMinutes: len }, beatPatch: { windowOpenedAt: at } };
 }
 
+/**
+ * Reopens the beat's window ONCE (owner decision): same word and same openedAt, so earlier check-ins stay valid and
+ * nobody is asked twice. Works after Close now and after the window ran out, while the beat is still in progress
+ * and no window is open. Time given: what was unused when it was closed early (closesAt minus closedAt), or 2 minutes
+ * when that is less than 2 (a window that ran out gets 2). The grace applies to the new closesAt. The record gets
+ * reopened: true and closedAt is cleared. Refusals: noWindow, notLive, beatNotBegun (another beat began),
+ * windowOpen, reopenUsed. openWindow still refuses a beat that had a window (alreadyOpened): this is the only way.
+ */
+function reopenWindow(stream, current, beat, at) {
+  if (!current || current.beat !== beat) return { ok: false, reason: "noWindow" };
+  if (!stream || stream.state !== "live") return { ok: false, reason: "notLive" };
+  const b = (stream.beats || {})[beat];
+  if (!isBegun(b) || b.endedAt != null || currentBeat(stream.beats) !== beat) return { ok: false, reason: "beatNotBegun" };
+  if (windowOpenNow(current, at)) return { ok: false, reason: "windowOpen" };
+  if (current.reopened) return { ok: false, reason: "reopenUsed" };
+  const unused = Math.max(0, Number(current.unusedMs) || 0);            // recorded by closeWindow; 0 for a window that ran out
+  const give = Math.max(unused, 2 * MIN);
+  const { closedAt: _c, unusedMs: _u, ...rest } = current;
+  return { ok: true, window: { ...rest, closesAt: at + give, reopened: true } };
+}
+
 /** +1 minute (setting). Only while the window is open: reason "noWindow" or "windowClosed". */
 function extendWindow(current, at, settings) {
   if (!current) return { ok: false, reason: "noWindow" };
@@ -198,24 +226,23 @@ function extendWindow(current, at, settings) {
   return { ok: true, window: { ...current, closesAt: ms(current.closesAt) + resolveSettings(settings).windowExtendSeconds * SEC } };
 }
 
-/** Close now: closesAt becomes `at`, closedAt is set; the grace period still applies. Closing a closed window succeeds with already: true. */
+/** Close now: closesAt becomes `at`, closedAt is set and unusedMs records the time that was left (for reopenWindow); the grace period still applies. Closing a closed window succeeds with already: true. */
 function closeWindow(current, at) {
   if (!current) return { ok: false, reason: "noWindow" };
   if (current.closedAt != null || ms(current.closesAt) <= at) return { ok: true, already: true, window: current };
-  return { ok: true, already: false, window: { ...current, closesAt: at, closedAt: at } };
+  return { ok: true, already: false, window: { ...current, closesAt: at, closedAt: at, unusedMs: ms(current.closesAt) - at } };
 }
 
 // ---------------------------------------------------------------- 3. words
 const FALLBACK_NOTE = "every word was used inside the repeat window; used the least recently used";
 
 /**
- * Normalises a word or an answer: Unicode NFC, lowercase, everything that is not a letter or digit
- * removed (spaces and punctuation ignored). NO accent stripping and NO fuzzy matching: the spec
- * allows neither, so "séance" and "seance" are different answers (the word list has plain ASCII words).
+ * Normalises a word or an answer: Unicode NFD with the combining accent marks removed, lowercase, everything
+ * that is not a letter or digit removed (spaces and punctuation ignored). "séance" equals "seance". NO fuzzy matching.
  */
 function normalise(s) {
   if (typeof s !== "string") return "";
-  return s.normalize("NFC").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
+  return s.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
 }
 
 /**
@@ -249,20 +276,30 @@ function pickWord(list, recent, nowMs, rng = Math.random, settings) {
 }
 
 // ---------------------------------------------------------------- 4. check-in validation
-const ROOMS = ["twitch", "youtube", "ytv", "tiktok", "site"];
-const PLATFORM_ROOMS = ["twitch", "youtube", "ytv", "tiktok"];
-// The stream object names its rooms twitch / ytLandscape / ytVertical / tiktok (stream-object.md §3);
-// check-ins use twitch / youtube / ytv / tiktok. Both spellings are accepted in liveRooms / rooms.
-const ROOM_ALIASES = { ytLandscape: "youtube", ytVertical: "ytv", youtube: "youtube", ytv: "ytv", twitch: "twitch", tiktok: "tiktok" };
+// ONE canonical room set in all stored and returned data: the stream object's names (stream-object.md §3).
+const ROOMS = ["twitch", "ytLandscape", "ytVertical", "tiktok", "site"];
+const PLATFORM_ROOMS = ["twitch", "ytLandscape", "ytVertical", "tiktok"];
+const ROOM_ALIASES = { twitch: "twitch", tiktok: "tiktok", site: "site", ytlandscape: "ytLandscape", ytvertical: "ytVertical", youtube: "ytLandscape", ytv: "ytVertical" };
 
-/** The rooms a member may pick: backstage -> ["site"] only; platform -> liveRooms, else rooms, else all four (never "site"). */
+/**
+ * EDGE ONLY (the ?room= link, the streamCheckIn callable): turns what a person or a link sent into a canonical room.
+ * Accepts the canonical names and the aliases "youtube" (-> ytLandscape) and "ytv" (-> ytVertical), any case; anything
+ * else is null. validateCheckIn does NOT accept aliases, so an alias can never be stored.
+ */
+function normaliseRoom(input) {
+  if (typeof input !== "string") return null;
+  const k = input.trim().toLowerCase();
+  return Object.prototype.hasOwnProperty.call(ROOM_ALIASES, k) ? ROOM_ALIASES[k] : null;
+}
+
+/** The rooms a member may pick: backstage -> ["site"] only; platform -> liveRooms, else rooms (canonical names), else all four (never "site"). */
 function allowedRooms(stream) {
   if (stream && stream.type === "backstage") return ["site"];
   for (const key of ["liveRooms", "rooms"]) {
     const given = stream && Array.isArray(stream[key]) ? stream[key] : null;
     if (given && given.length) {
-      const mapped = new Set(given.map((r) => ROOM_ALIASES[r]).filter(Boolean));
-      if (mapped.size) return PLATFORM_ROOMS.filter((r) => mapped.has(r));
+      const ok = PLATFORM_ROOMS.filter((r) => given.includes(r));
+      if (ok.length) return ok;
     }
   }
   return [...PLATFORM_ROOMS];
@@ -457,7 +494,7 @@ function sumShards(shards) {
 /**
  * Builds the public/live summary (§13). Input:
  *   stream, window (only open + closesAt + beat are copied, never the word), counters (sumShards result or shards[]),
- *   viewers { twitch, youtube, ytv, tiktok }, peak, onDuty [handles clocked in], activity { kind, title, status } | null,
+ *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], activity { kind, title, status } | null,
  *   look ("hull" | "crt"), nowMs
  * Output: state (off | live | backstage | ended), streamId, title, type, audience, actualStart, actualEnd,
  * beat (current), beats { <beat>: { status: done | now | next | skipped, checkins } }, window { open, closesAt, beat },
@@ -591,9 +628,9 @@ function verifyKey(key, storedHash) {
 module.exports = {
   DEFAULT_SETTINGS, resolveSettings,
   BEATS, BREAK_BEATS, nextBeat, currentBeat, beatsHeld, beginBeat, skipBeat, backToGame, startLive, stopLive, autoEndLive,
-  windowOpenNow, windowAccepts, openWindow, extendWindow, closeWindow,
+  windowOpenNow, windowAccepts, openWindow, reopenWindow, extendWindow, closeWindow,
   normalise, pickWord,
-  ROOMS, PLATFORM_ROOMS, allowedRooms, validateCheckIn, unlockTries,
+  ROOMS, PLATFORM_ROOMS, normaliseRoom, allowedRooms, validateCheckIn, unlockTries,
   GRANT_KINDS, grantKey, grantXp, capPayout, planGrant, qualifiesAllBeats,
   streakPresence, SCENES, autoScene,
   sumShards, buildPublicLive, findSecrets,

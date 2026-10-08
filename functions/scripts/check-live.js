@@ -19,6 +19,9 @@ assert.equal(started.ok, true);
 const live0 = { ...scheduled, ...started.patch };
 assert.equal(live0.state, "live");
 
+// beats map with a check-in window opened on the given beats (held = begun + a window opened)
+const withWin = (beats, ...ks) => Object.fromEntries(Object.entries(beats).map(([k, b]) => [k, ks.includes(k) ? { ...b, windowOpenedAt: 1 } : b]));
+
 // ---------- settings: every number has the spec default ----------
 const D = L.DEFAULT_SETTINGS;
 assert.deepEqual([D.windowDefaultMinutes, D.windowGraceSeconds, D.maxWrongTries, D.xpCheckin, D.xpAllBeats, D.xpStreamCap, D.flushMinGapSeconds, D.wordRepeatDays, D.windowExtendSeconds],
@@ -48,7 +51,24 @@ assert.equal(L.startLive({ state: "planned" }, at(0)).ok, true, "ad hoc / planne
 assert.equal(L.startLive({ state: "scheduled" }, at(0)).patch.segments.length, 0, "no first game: no segment");
 // never out of order, never twice
 assert.equal(L.beginBeat(live0, "break2", at(10)).reason, "outOfOrder");
-assert.equal(L.beginBeat(live0, "end", at(10)).reason, "outOfOrder");
+assert.equal(L.beginBeat({ ...live0, beats: {} }, "end", at(10)).reason, "outOfOrder", "End needs Start handled first");
+{
+  // End from any beat marks every not-yet-begun break skipped in one step; the other beats stay strict
+  const e1 = L.beginBeat(live0, "end", at(10));
+  assert.equal(e1.ok, true);
+  assert.equal(e1.patch.beats.break1.skipped, true);
+  assert.equal(e1.patch.beats.break2.skipped, true);
+  assert.equal(e1.patch.beats.break1.startedAt, undefined);
+  assert.equal(e1.patch.beats.start.endedAt, at(10));
+  assert.equal(e1.patch.beats.end.startedAt, at(10));
+  assert.equal(e1.closeWindow, true);
+  assert.equal(L.nextBeat({ ...live0.beats, ...e1.patch.beats }), null);
+  assert.deepEqual(L.beatsHeld(withWin(e1.patch.beats, "start", "end")), ["start", "end"], "skipped breaks cost nothing");
+  assert.equal(L.beginBeat({ ...live0, ...e1.patch }, "end", at(13)).reason, "outOfOrder", "End never twice");
+  assert.equal(L.beginBeat({ ...live0, ...e1.patch }, "break1", at(13)).reason, "outOfOrder", "no break after End");
+  assert.equal(L.beginBeat({ ...live0, beats: live0.beats }, "break2", at(10)).reason, "outOfOrder", "Break 2 before Break 1: refused");
+  assert.equal(L.beginBeat(live0, "end", at(10)).patch.segments, undefined, "End opens no break segment");
+}
 assert.equal(L.beginBeat(live0, "start", at(10)).reason, "outOfOrder", "never twice");
 assert.equal(L.beginBeat(live0, "nope", at(10)).reason, "badBeat");
 assert.equal(L.beginBeat({ ...live0, state: "scheduled" }, "break1", at(10)).reason, "notLive");
@@ -66,6 +86,13 @@ assert.deepEqual(b1.patch.segments, S.switchSegment(live0, { kind: "break" }, at
 assert.equal(live0.beats.start.endedAt, null, "input is not mutated");
 const live1 = { ...live0, ...b1.patch };
 assert.equal(L.currentBeat(live1.beats), "break1");
+{
+  const e2 = L.beginBeat(live1, "end", at(12));            // from Break 1: Break 2 skipped, Break 1 kept
+  assert.equal(e2.ok, true);
+  assert.equal(e2.patch.beats.break2.skipped, true);
+  assert.equal(e2.patch.beats.break1.skipped, undefined);
+  assert.equal(e2.patch.beats.break1.endedAt, at(12));
+}
 assert.equal(L.beginBeat(live1, "break1", at(11)).reason, "outOfOrder");
 // back to the game closes the break (reused switchSegment)
 const back = L.backToGame(live1, { gameId: "g1", title: "One" }, at(14));
@@ -90,14 +117,16 @@ assert.equal(bEnd.patch.segments, undefined, "End opens no break segment");
 const live3 = { ...live2, ...bEnd.patch };
 assert.equal(L.nextBeat(live3.beats), null);
 assert.equal(L.currentBeat(live3.beats), "end");
-assert.deepEqual(L.beatsHeld(live3.beats), ["start", "break1", "end"], "held = begun, in order; the skipped one is not held");
+assert.deepEqual(L.beatsHeld(live3.beats), [], "begun beats that never opened a window are not held");
+assert.deepEqual(L.beatsHeld(withWin(live3.beats, "start", "break1", "end")), ["start", "break1", "end"], "held = begun + window opened, in order");
+assert.deepEqual(L.beatsHeld(withWin(live3.beats, "start", "break2", "end")), ["start", "end"], "a skipped beat is never held, even with a stray flag");
 assert.deepEqual(L.beatsHeld(null), []);
 assert.equal(L.nextBeat(null), "start");
 // a stream with no breaks: skip both, the beats never begun do not count
 let nb = live0;
 nb = { ...nb, ...L.skipBeat(nb, "break1", at(5)).patch };
 nb = { ...nb, ...L.skipBeat(nb, "break2", at(5)).patch };
-assert.deepEqual(L.beatsHeld(nb.beats), ["start"]);
+assert.deepEqual(L.beatsHeld(withWin(nb.beats, "start")), ["start"]);
 // stop: reuses stopStream (outcomes, segments) and ends the open beat; closeWindow true
 const stop = L.stopLive(live3, at(40));
 assert.equal(stop.ok, true);
@@ -138,7 +167,42 @@ assert.equal(L.openWindow(live0, null, "start", "lantern", undefined, at(1), { w
 // only when pressed: one window per beat, and not while one is open
 const liveW = { ...live0, beats: { ...live0.beats, start: { ...live0.beats.start, ...W0.beatPatch } } };
 assert.equal(L.openWindow(liveW, W0.window, "start", "crypt", 5, at(2)).reason, "windowOpen");
-assert.equal(L.openWindow(liveW, { ...W0.window, closedAt: at(2), closesAt: at(2) }, "start", "crypt", 5, at(3)).reason, "alreadyOpened", "one window per beat");
+assert.equal(L.openWindow(liveW, { ...W0.window, closedAt: at(2), closesAt: at(2) }, "start", "crypt", 5, at(3)).reason, "alreadyOpened", "one window per beat (use reopenWindow)");
+// reopen: ONE per beat, same word, same openedAt, the unused time or 2 minutes
+{
+  const R0 = (o) => L.reopenWindow(liveW, o, "start", at(4));
+  const early = L.closeWindow(W0.window, at(4)).window;             // closed with 2 minutes left (closes at(6))
+  const r = R0(early);
+  assert.equal(r.ok, true);
+  assert.equal(r.window.word, "lantern", "same word");
+  assert.equal(r.window.openedAt, W0.window.openedAt, "same openedAt: earlier check-ins stay valid");
+  assert.equal(r.window.reopened, true);
+  assert.equal(r.window.closedAt, undefined);
+  assert.equal(r.window.closesAt, at(4) + 2 * MIN, "unused time: 2 minutes left -> 2 minutes");
+  const e3 = L.closeWindow(W0.window, at(2)).window;                 // 4 minutes left
+  assert.equal(L.reopenWindow(liveW, e3, "start", at(3)).window.closesAt, at(3) + 4 * MIN, "reopened with what was unused");
+  const e4 = L.closeWindow(W0.window, at(5, 30)).window;             // 30 s left: floor 2 minutes
+  assert.equal(L.reopenWindow(liveW, e4, "start", at(5, 40)).window.closesAt, at(5, 40) + 2 * MIN, "less than 2 minutes left -> 2 minutes");
+  assert.equal(L.reopenWindow(liveW, W0.window, "start", at(7)).window.closesAt, at(7) + 2 * MIN, "a window that ran out gets 2 minutes");
+  assert.equal(L.reopenWindow(liveW, W0.window, "start", at(2)).reason, "windowOpen", "still open: nothing to reopen");
+  assert.equal(L.reopenWindow(liveW, r.window, "start", at(7)).reason, "reopenUsed", "second reopen refused");
+  assert.equal(L.reopenWindow(liveW, L.closeWindow(r.window, at(5)).window, "start", at(5, 10)).reason, "reopenUsed", "also after closing the reopened window");
+  assert.equal(L.reopenWindow(liveW, null, "start", at(4)).reason, "noWindow");
+  assert.equal(L.reopenWindow(liveW, early, "break1", at(4)).reason, "noWindow", "another beat's window");
+  assert.equal(L.reopenWindow({ ...liveW, state: "ended" }, early, "start", at(4)).reason, "notLive");
+  assert.equal(L.reopenWindow(live1, early, "start", at(11)).reason, "beatNotBegun", "the beat ended: too late");
+  assert.equal(L.openWindow(liveW, early, "start", "other", 5, at(4)).reason, "alreadyOpened", "openWindow can't be used to reopen");
+  assert.equal(L.windowOpenNow(r.window, at(5)), true);
+  assert.equal(L.windowAccepts(r.window, at(6, 30)), true, "grace applies to the reopened closesAt");
+  assert.equal(L.windowAccepts(r.window, at(6, 30) + 1), false);
+  // earlier check-ins stay valid: a member who checked in before the close is still "already"; others can still check in
+  const pre = { beats: { start: { room: "twitch", at: at(2) } }, wrongTries: {} };
+  const ciR = (o) => L.validateCheckIn({ member: { uid: "u1" }, stream: liveW, window: r.window, answer: "lantern", room: "twitch", presence: null, nowMs: at(5), ...o });
+  assert.equal(ciR({ presence: pre }).reason, "already");
+  assert.equal(ciR({}).ok, true, "a late member can now check in with the same word");
+  assert.equal(ciR({ answer: "crypt" }).reason, "wrongWord");
+  assert.equal(L.validateCheckIn({ member: { uid: "u1" }, stream: liveW, window: early, answer: "lantern", room: "twitch", nowMs: at(4, 40) }).reason, "windowClosed", "closed between close and reopen (past grace)");
+}
 // open / accepting / grace
 assert.equal(L.windowOpenNow(W0.window, at(1)), true);
 assert.equal(L.windowOpenNow(W0.window, at(6) - 1), true);
@@ -189,8 +253,12 @@ assert.equal(L.normalise("lan tern"), "lantern");
 assert.equal(L.normalise("lantern."), "lantern");
 assert.equal(L.normalise("l a n,t.e;r'n"), "lantern");
 assert.notEqual(L.normalise("lanturn"), L.normalise("lantern"), "no fuzzy matching");
-assert.notEqual(L.normalise("séance"), L.normalise("seance"), "accents are NOT stripped (the spec does not say so)");
-assert.equal(L.normalise("séance"), "séance");
+assert.equal(L.normalise("séance"), L.normalise("seance"), "accents are stripped (owner decision)");
+assert.equal(L.normalise("Séance"), "seance");
+assert.equal(L.normalise("crème brûlée!"), "cremebrulee");
+assert.equal(L.normalise("ñandú"), "nandu");
+assert.equal(W.normalise("séance"), "seance", "words.js uses the same normalise");
+assert.equal(W.normalise, L.normalise);
 assert.equal(L.normalise(null), "");
 assert.equal(L.normalise(42), "");
 assert.equal(L.normalise("   "), "");
@@ -243,24 +311,38 @@ assert.equal(ci({ nowMs: at(6, 31) }).reason, "windowClosed");
 assert.equal(ci({ nowMs: at(6, 29) }).ok, true, "inside the grace");
 assert.equal(ci({ nowMs: at(0, 59) }).reason, "windowClosed", "before it opened");
 // rooms
-for (const room of ["twitch", "youtube", "ytv", "tiktok"]) assert.equal(ci({ room }).ok, true, room);
+for (const room of ["twitch", "ytLandscape", "ytVertical", "tiktok"]) assert.equal(ci({ room }).ok, true, room);
+// canonical rooms only inside validateCheckIn: an alias is badRoom and can never be stored
+for (const room of ["youtube", "ytv", "YouTube", "TWITCH", "ytlandscape"]) assert.equal(ci({ room }).reason, "badRoom", `alias or wrong case refused: ${room}`);
+assert.deepEqual(L.ROOMS, ["twitch", "ytLandscape", "ytVertical", "tiktok", "site"]);
+assert.deepEqual(L.PLATFORM_ROOMS, ["twitch", "ytLandscape", "ytVertical", "tiktok"]);
+// aliases are converted at the EDGE only
+assert.equal(L.normaliseRoom("youtube"), "ytLandscape");
+assert.equal(L.normaliseRoom("ytv"), "ytVertical");
+assert.equal(L.normaliseRoom("YTV"), "ytVertical");
+assert.equal(L.normaliseRoom(" YouTube "), "ytLandscape");
+for (const c of ["twitch", "ytLandscape", "ytVertical", "tiktok", "site"]) assert.equal(L.normaliseRoom(c), c, c);
+assert.equal(L.normaliseRoom("YTLANDSCAPE"), "ytLandscape");
+for (const bad of ["discord", "", "yt", "ytvertical2", null, undefined, 3, {}, "__proto__", "constructor"]) assert.equal(L.normaliseRoom(bad), null, String(bad));
+assert.equal(ci({ room: L.normaliseRoom("ytv") }).patch.room, "ytVertical", "the edge converts, then validate stores the canonical name");
 assert.equal(ci({ room: "site" }).reason, "badRoom", "site is for backstage only");
 assert.equal(ci({ room: "discord" }).reason, "badRoom");
 assert.equal(ci({ room: undefined }).reason, "badRoom");
 assert.equal(ci({ room: "twitch", presence: { beats: {}, wrongTries: {} }, answer: "x" }).triesLeft, 4);
-assert.deepEqual(L.allowedRooms({ type: "platform" }), ["twitch", "youtube", "ytv", "tiktok"]);
-assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["twitch", "ytLandscape"] }), ["twitch", "youtube"], "restricted to the rooms streaming now");
-assert.deepEqual(L.allowedRooms({ type: "platform", rooms: ["ytVertical", "tiktok"] }), ["ytv", "tiktok"], "falls back to the planned rooms");
+assert.deepEqual(L.allowedRooms({ type: "platform" }), ["twitch", "ytLandscape", "ytVertical", "tiktok"]);
+assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["twitch", "ytLandscape"] }), ["twitch", "ytLandscape"], "restricted to the rooms streaming now");
+assert.deepEqual(L.allowedRooms({ type: "platform", rooms: ["ytVertical", "tiktok"] }), ["ytVertical", "tiktok"], "falls back to the planned rooms");
+assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["youtube", "ytv"] }), ["twitch", "ytLandscape", "ytVertical", "tiktok"], "aliases in stream data are not recognised");
 assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["tiktok"], rooms: ["twitch"] }), ["tiktok"], "liveRooms wins over rooms");
 assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: [], rooms: ["twitch"] }), ["twitch"]);
-assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["bogus"] }), ["twitch", "youtube", "ytv", "tiktok"]);
-assert.equal(ci({ stream: { type: "platform", liveRooms: ["twitch"] }, room: "youtube" }).reason, "badRoom");
+assert.deepEqual(L.allowedRooms({ type: "platform", liveRooms: ["bogus"] }), ["twitch", "ytLandscape", "ytVertical", "tiktok"]);
+assert.equal(ci({ stream: { type: "platform", liveRooms: ["twitch"] }, room: "ytLandscape" }).reason, "badRoom");
 assert.equal(ci({ stream: { type: "platform", liveRooms: ["twitch"] }, room: "twitch" }).ok, true);
 // backstage: the site is the only room
 const back1 = { state: "live", type: "backstage", rooms: [] };
 assert.deepEqual(L.allowedRooms(back1), ["site"]);
 assert.equal(ci({ stream: back1, room: "site" }).ok, true);
-for (const room of ["twitch", "youtube", "ytv", "tiktok"]) assert.equal(ci({ stream: back1, room }).reason, "badRoom", `backstage ${room}`);
+for (const room of ["twitch", "ytLandscape", "ytVertical", "tiktok"]) assert.equal(ci({ stream: back1, room }).reason, "badRoom", `backstage ${room}`);
 // two devices, same member: the second is a friendly "already"
 const done = { beats: { start: { room: "twitch", at: at(2) } }, wrongTries: {} };
 assert.equal(ci({ presence: done }).reason, "already");
@@ -294,15 +376,15 @@ assert.deepEqual(unl, { start: 0, break1: 2 });
 assert.equal(ci({ presence: { beats: {}, wrongTries: unl }, answer: "lantern" }).ok, true, "unlocked member can check in");
 assert.deepEqual(L.unlockTries(null, "start"), { start: 0 });
 // clocked-in crew count as present with no word, no XP, room from the seat
-const crewR = ci({ crew: { clockedIn: true, room: "ytv" }, answer: "", room: undefined });
+const crewR = ci({ crew: { clockedIn: true, room: "ytVertical" }, answer: "", room: undefined });
 assert.equal(crewR.ok, true);
 assert.equal(crewR.crew, true);
 assert.equal(crewR.awardXp, false);
-assert.equal(crewR.room, "ytv");
-assert.deepEqual(crewR.patch, { beat: "start", room: "ytv", at: at(2) });
+assert.equal(crewR.room, "ytVertical");
+assert.deepEqual(crewR.patch, { beat: "start", room: "ytVertical", at: at(2) });
 assert.equal(ci({ crew: { clockedIn: false }, answer: "x" }).reason, "wrongWord", "a crew member not clocked in is an ordinary member");
-assert.equal(ci({ crew: { clockedIn: true, room: "ytv" }, window: null }).reason, "noWindow", "crew still need a window");
-assert.equal(ci({ crew: { clockedIn: true, room: "ytv" }, member: null }).reason, "signedOut");
+assert.equal(ci({ crew: { clockedIn: true, room: "ytVertical" }, window: null }).reason, "noWindow", "crew still need a window");
+assert.equal(ci({ crew: { clockedIn: true, room: "ytVertical" }, member: null }).reason, "signedOut");
 assert.equal(L.planGrant("checkin", { streamId: "s1", uid: "u1", beat: "start", crew: true }, 0).paid, 0, "no check-in XP for crew");
 
 // ---------- 5. rewards ----------
@@ -357,16 +439,24 @@ assert.equal(L.planGrant("present", { streamId: "s1", uid: "u1" }, 0).paid, 0);
 assert.equal(L.planGrant("checkin", { streamId: "s1", uid: "u1", beat: "start" }, 0, { xpCheckin: 12, xpStreamCap: 100 }).paid, 12);
 assert.equal(L.planGrant("checkin", { streamId: "s1", uid: "u1", beat: "start" }, 95, { xpStreamCap: 100 }).paid, 5);
 // all-beats bonus: every begun beat checked in AND at least one began
+const HELD3 = withWin(live3.beats, "start", "break1", "end"), HELDNB = withWin(nb.beats, "start");
 const mine = (...ks) => Object.fromEntries(ks.map((k) => [k, { room: "twitch", at: 1 }]));
-assert.equal(L.qualifiesAllBeats(live3.beats, mine("start", "break1", "end")), true, "skipped break2 does not count against");
-assert.equal(L.qualifiesAllBeats(live3.beats, mine("start", "end")), false, "missed one begun beat");
-assert.equal(L.qualifiesAllBeats(live3.beats, mine("start", "break1", "end", "break2")), true, "extra check-ins don't matter");
-assert.equal(L.qualifiesAllBeats(nb.beats, mine("start")), true, "no breaks held: only Start must be checked");
-assert.equal(L.qualifiesAllBeats(nb.beats, mine()), false);
+assert.equal(L.qualifiesAllBeats(HELD3, mine("start", "break1", "end")), true, "skipped break2 does not count against");
+assert.equal(L.qualifiesAllBeats(HELD3, mine("start", "end")), false, "missed one begun beat");
+assert.equal(L.qualifiesAllBeats(HELD3, mine("start", "break1", "end", "break2")), true, "extra check-ins don't matter");
+assert.equal(L.qualifiesAllBeats(HELDNB, mine("start")), true, "no breaks held: only Start must be checked");
+assert.equal(L.qualifiesAllBeats(HELDNB, mine()), false);
 assert.equal(L.qualifiesAllBeats({}, mine("start")), false, "no beat began: no bonus");
 assert.equal(L.qualifiesAllBeats(null, null), false);
 assert.equal(L.qualifiesAllBeats({ start: { skipped: true }, break1: { skipped: true } }, mine("start")), false, "only skipped beats: none held");
-assert.equal(L.qualifiesAllBeats(live3.beats, null), false);
+assert.equal(L.qualifiesAllBeats(HELD3, null), false);
+
+// owner decision: only beats that had a window are held
+assert.equal(L.qualifiesAllBeats(live3.beats, mine("start")), false, "no window opened on any beat: nothing held, no bonus");
+assert.equal(L.qualifiesAllBeats(withWin(live3.beats, "start"), mine("start")), true, "begun beats without a window do not block the bonus");
+assert.equal(L.qualifiesAllBeats(withWin(live3.beats, "start"), mine("break1", "end")), false, "and a held beat still has to be checked in");
+assert.equal(L.qualifiesAllBeats(withWin(live3.beats, "start", "break1"), mine("start")), false);
+assert.equal(L.qualifiesAllBeats(withWin(live3.beats, "start", "break1"), mine("start", "break1")), true);
 
 // ---------- 6. stream streak presence ----------
 const P = (o) => L.streakPresence(o);
@@ -416,12 +506,12 @@ const fullStream = {
   private: { control: { word: WORD }, watch: { youtube: { landscape: VIDEO } } },
   watch: { videoId: VIDEO }, youtubeVideoId: VIDEO2, control: { word: WORD }, obsKeyHash: "a".repeat(64),
 };
-const shards = [{ beats: { start: { twitch: 3, youtube: 1 }, break1: { twitch: 2 } } }, { beats: { start: { twitch: 1, ytv: 2 } } }, {}, null];
+const shards = [{ beats: { start: { twitch: 3, ytLandscape: 1 }, break1: { twitch: 2 } } }, { beats: { start: { twitch: 1, ytVertical: 2 } } }, {}, null];
 const sums = L.sumShards(shards);
-assert.deepEqual(sums, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, youtube: 1, ytv: 2 } });
+assert.deepEqual(sums, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, ytLandscape: 1, ytVertical: 2 } });
 assert.deepEqual(L.sumShards(null), { total: 0, byBeat: {}, byRoom: {} });
 const winEnd = { beat: "end", word: WORD, openedAt: at(31), closesAt: at(36), lengthMinutes: 5 };
-const pub = L.buildPublicLive({ stream: fullStream, window: winEnd, counters: shards, viewers: { twitch: 120, youtube: 30, ytv: 5, tiktok: 0, discord: 99 }, peak: 160, onDuty: ["Ana", { handle: "Bo", uid: "u" }], activity: { kind: "questions", title: "Questions", status: "running", secretNote: "x" }, look: "crt", nowMs: at(32) });
+const pub = L.buildPublicLive({ stream: fullStream, window: winEnd, counters: shards, viewers: { twitch: 120, ytLandscape: 30, ytVertical: 5, tiktok: 0, youtube: 50, discord: 99 }, peak: 160, onDuty: ["Ana", { handle: "Bo", uid: "u" }], activity: { kind: "questions", title: "Questions", status: "running", secretNote: "x" }, look: "crt", nowMs: at(32) });
 assert.equal(pub.state, "live");
 assert.equal(pub.streamId, "s1");
 assert.equal(pub.title, "MONSTER MONDAY");
@@ -429,8 +519,8 @@ assert.equal(pub.actualStart, at(0));
 assert.equal(pub.beat, "end");
 assert.deepEqual(pub.beats, { start: { status: "done", checkins: 0 }, break1: { status: "done", checkins: 0 }, break2: { status: "skipped", checkins: 0 }, end: { status: "now", checkins: 0 } });
 assert.deepEqual(pub.window, { open: true, closesAt: at(36), beat: "end" });
-assert.deepEqual(pub.counts, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, youtube: 1, ytv: 2 } });
-assert.deepEqual(pub.viewers, { total: 155, byPlatform: { twitch: 120, youtube: 30, ytv: 5, tiktok: 0 } });
+assert.deepEqual(pub.counts, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, ytLandscape: 1, ytVertical: 2 } });
+assert.deepEqual(pub.viewers, { total: 155, byPlatform: { twitch: 120, ytLandscape: 30, ytVertical: 5, tiktok: 0 } });
 assert.equal(pub.peak, 160);
 assert.deepEqual(pub.crew, { captain: "Cap", chats: { twitch: { lead: "Ana", deckhands: ["Bo", "Cy"] }, tiktok: { lead: null, deckhands: [] } }, onDuty: ["Ana", "Bo"] });
 assert.deepEqual(pub.activity, { kind: "questions", title: "Questions", status: "running" });
@@ -553,8 +643,11 @@ assert.equal(W.normalise("Lan-Tern"), L.normalise("Lan-Tern"), "words.js normali
 assert.equal(new Set(words.map(L.normalise)).size, words.length, "unique after normalise");
 assert.equal(words.every((w) => /^[a-z]+$/.test(w)), true, "lowercase ASCII single words");
 assert.equal(words.every((w) => w === L.normalise(w)), true, "already normalised");
-const odd = words.filter((w) => w.length < 4 || w.length > 10);
-assert.deepEqual(odd, [], "4 to 10 letters");
+const SHORT_OK = ["fog"];                                   // owner-approved 3-letter word; everything else is 4 to 10 letters
+const odd = words.filter((w) => w.length < 3 || w.length > 10 || (w.length < 4 && !SHORT_OK.includes(w)));
+assert.deepEqual(odd, [], "4 to 10 letters (3 allowed only for the approved short words)");
+for (const w of ["fog", "tomb", "ghoul", "wraith", "haunted", "graveyard"]) assert.equal(words.includes(w), true, `owner-added word present: ${w}`);
+for (const w of ["asylum", "pentagram", "chainsaw", "cleaver", "hatchet", "scalpel", "specter", "bogeyman", "cauldron", "grimoire", "tarot"]) assert.equal(words.includes(w), false, `owner-removed word gone: ${w}`);
 assert.deepEqual(Object.values(W.GROUPS).flat(), [...words], "WORDS is exactly the groups");
 assert.equal(Object.keys(W.GROUPS).length >= 5, true, "grouped by theme");
 // deny list: words that must never appear (slurs and sexual terms are kept out by review; this list guards edits),
@@ -571,7 +664,10 @@ const CONFUSABLE = [
   ["mist", "missed"], ["gore", "gour"], ["bone", "bowl"], ["fear", "fierce"], ["owl", "foul"], ["bat", "bad"], ["summon", "salmon"], ["horror", "terror"], ["coffin", "coughing"],
   ["scare", "scar"], ["fright", "flight"], ["fright", "freight"], ["bury", "berry"], ["gloom", "groom"], ["roam", "rome"], ["raven", "ravine"], ["wraith", "wrath"], ["reaper", "keeper"],
 ];
-for (const [a, b] of CONFUSABLE) assert.equal(words.includes(a) && words.includes(b), false, `confusable pair both in list: ${a} / ${b}`);
+// pairs the owner reviewed and kept on purpose (reported to him): only these exact pairs may be close
+const ALLOWED_CLOSE = [["ghost", "ghoul"], ["tomb", "tombstone"]];
+const allowedClose = (a, b) => ALLOWED_CLOSE.some(([x, y]) => (a === x && b === y) || (a === y && b === x));
+for (const [a, b] of CONFUSABLE.filter(([a, b]) => !allowedClose(a, b))) assert.equal(words.includes(a) && words.includes(b), false, `confusable pair both in list: ${a} / ${b}`);
 // the list's own near-sounds: no two words one letter apart, and no singular/plural or prefix-extension pairs
 const lev = (a, b) => {
   const d = Array.from({ length: a.length + 1 }, (_, i) => [i, ...Array(b.length).fill(0)]);
@@ -582,6 +678,7 @@ const lev = (a, b) => {
 for (let i = 0; i < words.length; i++) {
   for (let j = i + 1; j < words.length; j++) {
     const a = words[i], b = words[j];
+    if (allowedClose(a, b)) continue;
     assert.equal(lev(a, b) > 1, true, `too close: ${a} / ${b}`);
     assert.equal(a.startsWith(b) || b.startsWith(a), false, `one word starts the other: ${a} / ${b}`);
   }
