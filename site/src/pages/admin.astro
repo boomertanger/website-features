@@ -26,7 +26,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   </div>
   <div class="bt-zone bt-when-admin" data-planner-card hidden>
     <div class="bt-card pc-card">
-      <div class="bt-card-head"><h2 class="bt-card-title">Scream Planner</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
+      <div class="bt-card-head"><h2 class="bt-card-title">Scream Planner</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
       <p class="bt-section-text" data-pc-deadlines></p>
       <p class="bt-fine bt-fine--left" data-pc-defaults></p>
       <p class="bt-fine bt-fine--left" data-pc-week></p>
@@ -236,3 +236,10 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
     });
   });
 </script>
+
+<style is:global>
+  .bt-root:not(#_) .pc-card { display: flex; flex-direction: column; gap: 10px; border-color: var(--bt-admin-panel-border); background: var(--bt-admin-panel-bg); }
+  .bt-root:not(#_) .pc-card .bt-card-title { color: var(--bt-admin-text); }
+  .bt-root:not(#_) .pc-card > p { margin: 0; }
+  .bt-root:not(#_) .pc-card .bt-row-center { margin-top: 4px; }
+</style>

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+The /admin Scream Planner card matches the mockup: admin-green panel and badge like the other admin settings, tighter spacing.
 Scream Planner /schedule/plan/usual matches the mockup: the slot editor now shows a live preview poster and what it means for the tray, and the Deadlines day dropdowns are no longer clipped on phones.
 fix(planner): /schedule/vote matches the mockup: the ballot header names the week's dates under the title (Oct 12 to 18); covers, race, tokens, closes badge and the phone 2-column grid already matched
 Scream Planner /schedule/plan (owner, crew and dialogs) matches the mockup: sample data now shaped like the staging test week (4 slots, Vault covers, crew states), cover fallback to the mascot when art fails, singular '1 vote', ask-for-a-game cards show titles, crew bar shows duties inline, delay/cancel notes spacing, slot dialog time fields no longer clipped, no horizontal scroll on the crew fuse at 390px.
