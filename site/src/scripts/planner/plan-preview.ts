@@ -47,7 +47,7 @@ function build(): PState {
       id, week, state: "planned", published: false, hasUnpublishedChanges: false, slug: id, title: slot.theme.label, tz, start, end, type: backstage ? "backstage" : "platform", audience: backstage ? "fanClub" : "public",
       rooms, plannedGameCount: slot.count, theme: { ...slot.theme }, minCrew: slot.minCrew, caps, crew: crewOf(slot.crew, rooms, caps),
       plannedGames: (slot.games as string[]).map((slug, order) => ({ gameId: slug, title: game(slug)?.title || slug, order, source: sourceOf(slug, sg, raw.ballot) })),
-      delay: null, cancel: null, actualStart: null,
+      delay: null, cancel: null, actualStart: null, youtube: null,
     };
   };
   const dates = weekDates(next);
@@ -60,6 +60,7 @@ function build(): PState {
     const date = localDate(t, tz), hhmm = new Date(t);
     const st = mk({ ...slot, id: key, start: "00:00", end: "01:00" }, cur, key, date);
     st.start = t; st.end = t + len * 3600000; st.state = "scheduled"; st.published = true; st.id = key;
+    st.youtube = i === 2 ? { status: "pending" } : i === 1 ? { status: "failed", error: "YouTube said no: quota exceeded" } : { status: "ok" };
     if (i === 0) st.delay = { originalStart: t - 3600000, originalEnd: t - 3600000 + len * 3600000, count: 1, reason: "Boomer is at the dentist" };
     void hhmm;
     return st;
@@ -147,7 +148,7 @@ export async function previewCall(name: string, d: any = {}): Promise<any> {
       const others = (st.streams[week] || []).filter((s) => s.id !== d.streamId && s.state !== "cancelled");
       if (others.some((o) => start < o.end && o.start < end)) throw err("overlap", "That overlaps another stream.");
       const cur = d.streamId ? findStream(d.streamId) : null;
-      const s: Stream = cur || { id: `pv-new${nid++}`, week, state: "planned", published: false, hasUnpublishedChanges: false, slug: "", title: "", tz, start, end, type: "platform", audience: "public", rooms, plannedGameCount: 2, theme: null, minCrew: { captain: true, rooms: ["youtube"] }, caps: { deckhands: 2 }, crew: crewOf({}, rooms, { deckhands: 2 }), plannedGames: [], delay: null, cancel: null, actualStart: null };
+      const s: Stream = cur || { id: `pv-new${nid++}`, week, state: "planned", published: false, hasUnpublishedChanges: false, slug: "", title: "", tz, start, end, type: "platform", audience: "public", rooms, plannedGameCount: 2, theme: null, minCrew: { captain: true, rooms: ["youtube"] }, caps: { deckhands: 2 }, crew: crewOf({}, rooms, { deckhands: 2 }), plannedGames: [], delay: null, cancel: null, actualStart: null, youtube: null };
       Object.assign(s, { start, end, type: backstage ? "backstage" : "platform", audience: backstage ? "fanClub" : "public", rooms, plannedGameCount: d.plannedGameCount ?? s.plannedGameCount, theme: d.theme ?? s.theme, minCrew: d.minCrew ?? s.minCrew });
       s.title = s.theme?.label || s.title || "Stream";
       s.crew.chats = Object.fromEntries(rooms.map((r) => [r, s.crew.chats[r] || { lead: null, deckhands: [] }]));
@@ -165,6 +166,8 @@ export async function previewCall(name: string, d: any = {}): Promise<any> {
       Object.assign(w, { state: "published", publishedAt: Date.now(), publishedRev: w.publishedRev + 1, hasUnpublishedChanges: false, hero, closesAt: Math.min(w.closesAt || Date.now(), Date.now()) });
       return { ok: true, week: w.id, publishedRev: w.publishedRev, published: st.streams[w.id].filter((s) => s.state !== "cancelled").length, changed, hero, warnings: warnings(w.id) };
     }
+    case "youtubeStatus": return { connected: new URLSearchParams(location.search).get("yt") !== "off", channelTitle: "Boomertanger" };
+    case "youtubeRetry": { const s = findStream(d.streamId); s.youtube = { status: "ok" }; return { ok: true }; }
     case "delayStream": {
       const s = findStream(d.streamId), len = s.end - s.start;
       const a = Number.isFinite(d.startMs) ? d.startMs : zonedToUtc(d.date, d.start, tz), b = Number.isFinite(d.endMs) ? d.endMs : a + len;

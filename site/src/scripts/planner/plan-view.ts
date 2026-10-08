@@ -93,6 +93,13 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
     const parts = [part(g.captain, "Captain"), ...g.groups.map((x) => part(x.state, x.group === "twitch" ? "Twitch" : x.group === "youtube" ? "YouTube" : "TikTok", x.group === "youtube" && x.state === "needed" ? " ×1.5" : ""))];
     return `<span class="pp-crew" aria-label="Crew so far">${parts.join(" · ")}</span>`;
   }
+  /** The YouTube event's state on a published stream: a green chip when it exists, a gold one with Retry when the sync failed, nothing while pending. */
+  function ytChip(s: Stream) {
+    if (!s.published || s.state === "cancelled" || !s.youtube) return "";
+    if (s.youtube.status === "ok") return ` <span class="bt-badge bt-badge--green" data-yt="ok">YouTube ✓</span>`;
+    if (s.youtube.status !== "failed") return "";
+    return ` <span class="bt-badge bt-badge--gold" data-yt="failed" title="${esc(s.youtube.error || "")}">YouTube failed</span>${who.a2 ? ` <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="yt-retry" data-id="${s.id}">Retry</button>` : ""}`;
+  }
   function slotCard(s: Stream) {
     const t = dayParts(s.start, s.tz || SITE_TZ), sg = st.signups.get(s.id) || [], yes = sg.filter((x) => x.availability === "yes"), maybe = sg.filter((x) => x.availability === "maybe");
     const cancelled = s.state === "cancelled", pub = s.published, canEdit = ["planned", "scheduled"].includes(s.state);
@@ -108,7 +115,7 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
     const fewer = s.plannedGames.length && s.plannedGames.length < s.plannedGameCount ? ` · +${s.plannedGameCount - s.plannedGames.length} picked on stream` : "";
     return `<div class="pp-sl" data-state="${s.state}">${slotHtml({
       id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, count: s.plannedGameCount, backstage: s.type === "backstage", selected: s.id === st.sel, published: pub && !cancelled,
-      timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined } as any), badgeHtml: badge ? badge + unpub : undefined, reorder: canEdit,
+      timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined } as any), badgeHtml: ytChip(s) ? (badge ? badge + unpub : `<span class="bt-badge bt-badge--gold">Scheduled</span>`) + ytChip(s) : badge ? badge + unpub : undefined, reorder: canEdit,
       metaHtml: cancelled ? esc(s.cancel?.reason || "Cancelled") : `${s.plannedGames.length} of ${s.plannedGameCount} games${esc(fewer)}${!badge && unpub ? ` ${unpub}` : ""}`,
       games: s.plannedGames.map((g) => ({ slug: g.gameId, title: g.title, coverHtml: coverOf(vault, g.gameId, g.title), src: SRC[g.source.kind] || "you", srcExtra: g.source.kind === "modRequest" && g.source.byHandle ? ` · @${g.source.byHandle}` : g.source.kind === "ballot" && g.source.votes ? ` · ${g.source.votes}` : "", fresh: g.gameId === st.fresh })),
       roomsHtml: s.type === "backstage" ? "" : roomsMiniHtml(slotRooms) + seatText(s),
@@ -240,6 +247,11 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
       case "crew": if (s) await crewDialog(ctx, s); break;
       case "delay": if (s) await delayDialog(ctx, s); break;
       case "cancel": if (s) await cancelDialog(ctx, s); break;
+      case "yt-retry": if (s) {
+        (btn as HTMLButtonElement).disabled = true; btn.textContent = "Retrying…";
+        try { await io.call("youtubeRetry", { streamId: s.id }); toast("Retrying the YouTube event. The chip updates when it's done."); await loadAll(); renderAll(); }
+        catch (e) { toast(messageFor(e, "Couldn't retry the YouTube event."), { kind: "error" }); (btn as HTMLButtonElement).disabled = false; btn.textContent = "Retry"; }
+      } break;
       case "reopen": await reopenDialog(ctx, week()); break;
       case "open-early": await openWeekDialog(ctx, btn.dataset.week!); break;
       case "sheet": st.sheet = !st.sheet; q("[data-pp-board]").dataset.sheet = st.sheet ? "open" : "closed"; (btn as HTMLElement).setAttribute("aria-expanded", String(st.sheet)); break;

@@ -83,6 +83,14 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
     </div>
   </div>
   <TrophyOrder />
+  <div class="bt-zone" data-yt-card hidden>
+    <div class="bt-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">YouTube events</h2><span class="bt-badge bt-badge--gray" data-yt-badge>Owner only</span></div>
+      <p class="bt-section-text">Connect your YouTube channel and every published stream gets its own YouTube event, and delays and cancellations follow. Google's app must be set to In production, or the connection expires after a week. Google may warn that the app is unverified: click Advanced, then continue. You only need to do that once.</p>
+      <div class="bt-row-center"><button type="button" class="bt-btn bt-btn--primary" data-yt-connect>Connect YouTube</button></div>
+      <p class="bt-fine" data-yt-status role="status"></p>
+    </div>
+  </div>
   <div class="bt-zone" data-owner-tools hidden>
     <div class="bt-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Growth collector</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
@@ -111,6 +119,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   // Owner and admin checks are for display only: the callables check on the server.
   import "../scripts/admin/award";
   import "../scripts/admin/planner-card";
+  import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";
@@ -216,6 +225,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
     if (isOwner || s.isAdmin) manualTikTok(db, doc, getDoc, SITE_ID);
     if (!isOwner) return;
     box.hidden = false;
+    void initYouTube();
     const { call } = await import("../lib/call");
     try {
       const st = await call<{ configured: boolean; connected: boolean }>("tiktokStatus");

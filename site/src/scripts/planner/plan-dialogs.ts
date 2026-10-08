@@ -137,6 +137,9 @@ export async function publishDialog(ctx: Ctx): Promise<{ published: boolean }> {
   let check: PublishCheck;
   try { check = await ctx.io.call<PublishCheck>("publishWeek", { week: week.id, check: true }); }
   catch (e) { toast(messageFor(e, "Couldn't check the week."), { kind: "error" }); return { published: false }; }
+  // The YouTube line: how many events this publish will create, or that none will. Silent if the status can't be read (a wrong line is worse than none).
+  let yt: { connected: boolean } | null = null;
+  try { yt = await ctx.io.call<{ connected: boolean }>("youtubeStatus"); } catch { yt = null; }
   return new Promise((resolve) => {
     const month = Number(weekMonday(week.id).slice(5, 7)), live = ctx.streams().filter((s) => s.state !== "cancelled");
     const f = { frame: check.hero.frame, doors: check.hero.doors };
@@ -152,10 +155,14 @@ export async function publishDialog(ctx: Ctx): Promise<{ published: boolean }> {
     const warn = check.warnings.length
       ? `<div class="pp-tell"><b>Still open</b><ul>${check.warnings.map((w) => `<li><span aria-hidden="true">${WARN_ICON[w.kind] || "⚠"}</span> ${esc(w.text)}.</li>`).join("")}</ul><span class="bt-meta">You can publish anyway and fill these in later with Publish changes.</span></div>`
       : `<div class="pp-tell pp-tell--ok"><span aria-hidden="true">✓</span> Every slot has games and its minimum crew. Ready to go.</div>`;
+    const ytN = live.filter((s) => s.state !== "ended" && s.youtube?.status !== "ok").length;
+    const ytLine = yt === null ? "" : yt.connected
+      ? (ytN ? `<div class="pp-tell" data-yt-line><span class="bt-meta">▶ ${ytN} YouTube event${ytN === 1 ? " will" : "s will"} be created</span></div>` : "")
+      : `<div class="pp-tell" data-yt-line><span class="bt-meta">▶ YouTube isn't connected: no events will be created</span></div>`;
     const preview = () => miniMarqueeHtml({ frame: f.frame === "surprise" ? "bulbs" : f.frame, kicker: first ? `${DAY_SHORT[(new Date(first.start).getDay() + 6) % 7]} · ${fmtClock(first.start, ctx.tz)}` : "Tonight", icon: first?.theme?.icon || "", title: themeOf(first), metaHtml: f.frame === "surprise" ? "Rolled when you publish" : esc(frameName(f.frame)) });
     let done = false;
     const content = modalHeader(esc(again ? "Publish changes" : "Publish next week"), esc(`${weekRange(week.id)} · ${live.length} stream${live.length === 1 ? "" : "s"}`))
-      + warn
+      + warn + ytLine
       + field(`Marquee frame · <span data-fname>${esc(f.frame === "surprise" ? "Surprise me" : frameName(f.frame))}</span>`, `${frames}<div class="pp-fprev" data-fprev>${preview()}</div>`)
       + field(`Doors for the week at a glance · <span data-dname>${esc(f.doors === "surprise" ? "Surprise me" : ((DOOR_STYLES as string[][]).find((d) => d[0] === f.doors) || [])[1] || "")}</span>`, doors)
       + actions("", `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Not yet</button><button type="button" class="bt-btn bt-btn--primary bt-btn--shine" data-publish>${again ? "Publish changes" : "Publish week"}</button>`);

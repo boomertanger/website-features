@@ -31,6 +31,8 @@ export interface Stream {
   rooms: Room[]; plannedGameCount: number; theme: Theme | null; minCrew: MinCrew; caps: { deckhands: number }; crew: Crew;
   plannedGames: PGame[]; delay: { originalStart: number; originalEnd: number; count: number; reason?: string } | null;
   cancel: { reason?: string } | null; actualStart: number | null;
+  /** The YouTube event's status only (event IDs are server-only). Absent until the first sync. */
+  youtube: { status: "ok" | "pending" | "failed"; error?: string } | null;
 }
 export interface SeatReq { room: string; role: "captain" | "lead" | "deckhand"; status: "requested" | "confirmed" | "declined" | "dropped"; needsOwnerOk?: boolean; why?: string }
 export interface GameReq { gameSlug: string; note: string; status: "open" | "planned" | "notPlanned" }
@@ -127,6 +129,7 @@ export function streamFrom(id: string, d: any): Stream {
     plannedGames: ((d.plannedGames || []) as PGame[]).slice().sort((a, b) => a.order - b.order),
     delay: d.delay ? { originalStart: ms(d.delay.originalStart) ?? 0, originalEnd: ms(d.delay.originalEnd) ?? 0, count: d.delay.count || 1, reason: d.delay.reason } : null,
     cancel: d.cancel || null, actualStart: ms(d.actualStart),
+    youtube: d.youtube && ["ok", "pending", "failed"].includes(d.youtube.status) ? { status: d.youtube.status, error: d.youtube.error } : null,
   };
 }
 /** The week's streams as the working copy (private/draft: unpublished changes and uids), by start time. */

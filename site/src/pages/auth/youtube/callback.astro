@@ -1,0 +1,41 @@
+---
+// Google comes back here after the owner's Connect YouTube on /admin. The page hands the
+// code to the youtubeConnect callable (owner only), then returns to /admin.
+import BaseLayout from "../../../layouts/BaseLayout.astro";
+import AuthStatus from "../../../components/AuthStatus.astro";
+---
+<BaseLayout title="YouTube" noindex>
+  <AuthStatus title="YouTube" message="Talking to Google…" />
+</BaseLayout>
+
+<script>
+  import { whenReady } from "../../../lib/auth";
+  import { call } from "../../../lib/call";
+  import { messageFor } from "../../../lib/errors";
+  import { takeYouTubeState, YOUTUBE_CALLBACK } from "../../../lib/youtube";
+
+  const msg = document.querySelector<HTMLElement>("[data-auth-msg]")!;
+  const actions = document.querySelector<HTMLElement>("[data-auth-actions]")!;
+  const back = document.querySelector<HTMLAnchorElement>("[data-auth-back]")!;
+  const fail = (text: string) => { msg.textContent = text; back.href = "/admin"; back.textContent = "Back to admin tools"; actions.hidden = false; };
+
+  (async () => {
+    const q = new URLSearchParams(location.search);
+    const state = takeYouTubeState();
+    // Don't leave the one-time code in the address bar or history.
+    history.replaceState(null, "", YOUTUBE_CALLBACK);
+    const e = q.get("error");
+    if (e === "access_denied") return fail("You didn't allow access, so YouTube isn't connected. Nothing changed. You can try again from admin tools whenever you like.");
+    if (e) return fail("Google stopped the connection (" + e.replace(/_/g, " ") + "). Please try again from admin tools.");
+    if (!state || !q.get("code") || q.get("state") !== state) return fail("That YouTube connection expired or didn't start here. Start again from admin tools.");
+    const s = await whenReady();
+    if (!s.user) return fail("Sign in as the site owner first, then connect YouTube from admin tools.");
+    try {
+      msg.textContent = "Connecting YouTube…";
+      await call("youtubeConnect", { code: q.get("code"), redirectUri: location.origin + YOUTUBE_CALLBACK });
+      location.replace("/admin?youtube=connected");
+    } catch (err) {
+      fail(messageFor(err, "YouTube didn't connect. Please try again."));
+    }
+  })();
+</script>

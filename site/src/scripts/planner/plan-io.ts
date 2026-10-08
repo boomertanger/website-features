@@ -45,7 +45,7 @@ async function makePreview(): Promise<Io> {
     usual: async () => ({ settings: st().settings, patterns: st().patterns, exceptions: st().exceptions }),
     todos: async () => st().todos,
     vault: async () => m.previewVault() as unknown as VCard[],
-    call: async (name, data: any) => { const r = await m.previewCall(name, data); if (name !== "planTray" && data?.check !== true) toast("Preview: nothing saved", { kind: "info" }); return r; },
+    call: async (name, data: any) => { const r = await m.previewCall(name, data); if (name !== "planTray" && name !== "youtubeStatus" && data?.check !== true) toast("Preview: nothing saved", { kind: "info" }); return r; },
   };
 }
 
