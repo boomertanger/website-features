@@ -398,7 +398,7 @@ The YouTube event IDs live in `streams/{id}/private/watch` (with `provider: "you
 - The **publish dialog** shows the event count ("5 YouTube events will be created") next to the unfinished list.
 - **Connect YouTube** on /admin shows connected / not connected and the app status.
 
-**Staging rule (always):** on staging every event is created **Private** with "[STAGING]" at the start of its title; a **cleanup script** (`functions/scripts/youtube-cleanup.js`, staging only, dry run first) deletes them. Only production creates public and unlisted events.
+**Staging rule (always):** on staging every event is created **Private** with "[STAGING]" at the start of its title; a **cleanup script** (`functions/scripts/youtube-cleanup.js`; it reads the client secret itself from Secret Manager with your Application Default Credentials, so nothing goes in the environment, staging only, dry run first) deletes them. Only production creates public and unlisted events.
 
 **Things to know**
 - **Google's 7-day trap:** an OAuth app left in Testing loses its refresh token every 7 days. The app is set to **In production**; as its only user the owner clicks through the "unverified app" warning once (verify).

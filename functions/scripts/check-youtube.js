@@ -5,6 +5,7 @@
 // no network, no credentials (Google is a fake fetch).
 //   npm run check      (or node scripts/check-youtube.js)
 const assert = require("assert/strict");
+const fs = require("fs");
 const { makeDb } = require("./fixtures/fake-firestore");
 const L = require("../lib/youtube/logic");
 const { makeAuth, authUrl, REDIRECTS, SCOPE, YoutubeAuthError } = require("../lib/youtube/auth");
@@ -526,6 +527,29 @@ async function main() {
 
   Object.defineProperty(admin, "firestore", { value: realFs, configurable: true, writable: true });
 
+
+  // ---------- youtube-cleanup.js: the client secret comes from Secret Manager, never the environment ----------
+  {
+    const { readSecret } = require("./youtube-cleanup");
+    const asked = [];
+    const getAuth = async () => ({ getAccessToken: async () => ({ token: "adc-token" }) });
+    const ok = async (url, init) => { asked.push({ url, init }); return { ok: true, status: 200, json: async () => ({ payload: { data: Buffer.from("s3cr3t-value").toString("base64") } }) }; };
+    assert.equal(await readSecret({ projectId: "boomertanger-staging", getAuth, fetchFn: ok }), "s3cr3t-value");
+    assert.equal(asked[0].url, "https://secretmanager.googleapis.com/v1/projects/boomertanger-staging/secrets/YOUTUBE_CLIENT_SECRET/versions/latest:access");
+    assert.equal(asked[0].init.headers.Authorization, "Bearer adc-token");
+    assert.equal(asked[0].init.headers["x-goog-user-project"], "boomertanger-staging");
+    const status = (code) => async () => ({ ok: false, status: code, json: async () => ({}) });
+    const msg = async (fetchFn, auth = getAuth) => { try { await readSecret({ projectId: "boomertanger-staging", getAuth: auth, fetchFn }); return "no error"; } catch (e) { return e.message; } };
+    assert.match(await msg(status(403)), /Secret Accessor role/);
+    assert.match(await msg(status(404)), /has no version/);
+    assert.match(await msg(status(500)), /returned 500/);
+    assert.match(await msg(async () => ({ ok: true, status: 200, json: async () => ({ payload: { data: "" } }) })), /is empty/);
+    assert.match(await msg(ok, async () => ({ getAccessToken: async () => null })), /gcloud auth application-default login/);
+    for (const m of [await msg(status(403)), await msg(status(404)), await msg(status(500))]) assert.equal(m.includes("s3cr3t"), false);   // an error never carries the value
+    const src = fs.readFileSync(require.resolve("./youtube-cleanup"), "utf8");
+    assert.equal(/process\.env\.YOUTUBE_CLIENT_SECRET/.test(src), false);                // the old way is gone
+    assert.equal(/console\.(log|error)\([^)]*clientSecret/.test(src), false);            // and the secret is never printed
+  }
   console.log("check-youtube: all checks passed");
 }
 

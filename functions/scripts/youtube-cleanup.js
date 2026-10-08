@@ -6,9 +6,11 @@
 // deletes ONLY those whose title starts with "[STAGING] ". Dry run by default: it prints what it would delete;
 // --apply deletes. Events made by hand are never touched.
 //
-// Needs Application Default Credentials for Firestore (gcloud auth application-default login: the stored Google
-// token is read from sites/boomertanger/private/youtubeChannel) and the OAuth client secret in the environment:
-//   YOUTUBE_CLIENT_SECRET=... node functions/scripts/youtube-cleanup.js [--apply]
+// Needs Application Default Credentials (gcloud auth application-default login). With them it reads the stored Google
+// token from sites/boomertanger/private/youtubeChannel (Firestore) and the latest version of the YOUTUBE_CLIENT_SECRET
+// secret from Secret Manager for the chosen project (your account needs Secret Manager Secret Accessor). The secret is
+// never printed and never has to be put in the environment:
+//   node functions/scripts/youtube-cleanup.js [--apply]
 // The client ID comes from YOUTUBE_CLIENT_ID or functions/.env.
 // --project  only "staging" (the default) is accepted
 const fs = require("fs");
@@ -19,6 +21,28 @@ const { makeApi } = require("../lib/youtube/api");
 const { STAGING_PROJECT, isStagingTitle } = require("../lib/youtube/logic");
 
 const STATUSES = ["upcoming", "active", "completed"];
+const SECRET_NAME = "YOUTUBE_CLIENT_SECRET";
+
+/**
+ * The latest version of a Secret Manager secret, read with Application Default Credentials (REST, so no extra
+ * package). Never logs the value; errors say what failed, not what the secret was.
+ * opts: { projectId, name, getAuth, fetchFn } (getAuth/fetchFn are injectable for the checks).
+ */
+async function readSecret({ projectId, name = SECRET_NAME, getAuth, fetchFn = fetch }) {
+  const auth = getAuth ? await getAuth() : await new (require("google-auth-library").GoogleAuth)({ scopes: ["https://www.googleapis.com/auth/cloud-platform"] }).getClient();
+  const tokenResp = await auth.getAccessToken();
+  const token = typeof tokenResp === "string" ? tokenResp : tokenResp?.token;
+  if (!token) throw new Error("No Application Default Credentials: run  gcloud auth application-default login  first.");
+  const url = `https://secretmanager.googleapis.com/v1/projects/${encodeURIComponent(projectId)}/secrets/${encodeURIComponent(name)}/versions/latest:access`;
+  const res = await fetchFn(url, { headers: { Authorization: `Bearer ${token}`, "x-goog-user-project": projectId } });
+  if (res.status === 403) throw new Error(`Secret Manager refused access to ${name} in ${projectId}: your account needs the Secret Manager Secret Accessor role on that project.`);
+  if (res.status === 404) throw new Error(`The secret ${name} has no version in ${projectId}: set it with  firebase functions:secrets:set ${name} --project staging.`);
+  if (!res.ok) throw new Error(`Secret Manager returned ${res.status} reading ${name} in ${projectId}.`);
+  const body = await res.json();
+  const value = Buffer.from(body?.payload?.data || "", "base64").toString("utf8");
+  if (!value) throw new Error(`The latest version of ${name} in ${projectId} is empty.`);
+  return value;
+}
 
 function parseArgs(argv) {
   const args = { apply: false, project: "staging" };
@@ -51,11 +75,10 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const projectId = resolveProjectId(args.project);
   if (projectId !== STAGING_PROJECT) throw new Error(`This helper only runs on staging (${STAGING_PROJECT}); got "${projectId}".`);
-  const clientSecret = process.env.YOUTUBE_CLIENT_SECRET;
-  if (!clientSecret) throw new Error("Set YOUTUBE_CLIENT_SECRET in the environment first (the same value as the Firebase secret; it is never stored in the repo).");
   const clientId = process.env.YOUTUBE_CLIENT_ID || clientIdFromEnvFile();
   if (!clientId) throw new Error("No YouTube client ID: set YOUTUBE_CLIENT_ID or add it to functions/.env.");
 
+  const clientSecret = await readSecret({ projectId });   // the latest version, straight from Secret Manager; never printed
   admin.initializeApp({ projectId });
   const db = admin.firestore();
   console.log(`Project: ${projectId}${args.apply ? "" : " (dry run: nothing is deleted)"}`);
@@ -82,4 +105,5 @@ async function main() {
   console.log(`\nDeleted ${deleted}${failed ? `, ${failed} failed` : ""}.`);
 }
 
-main().catch((err) => { console.error(err.message || err); process.exit(1); });
+module.exports = { readSecret };
+if (require.main === module) main().catch((err) => { console.error(err.message || err); process.exit(1); });
