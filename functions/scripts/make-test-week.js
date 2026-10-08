@@ -74,7 +74,7 @@ async function main() {
   console.log(`Time zone: ${tz}`);
 
   const build = require("../lib/planner").build({
-    adminLogEntry: async (_db, f) => ({ ...f, details: { ...(f.details || {}), test: true }, createdAt: FieldValue.serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 30 * 86400000) }),
+    adminLogEntry: async (_db, f) => ({ ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined)), details: { ...(f.details || {}), test: true }, createdAt: FieldValue.serverTimestamp(), expireAt: Timestamp.fromMillis(Date.now() + 30 * 86400000) }),
   });
   const { core, plan } = build.hooks;
 
