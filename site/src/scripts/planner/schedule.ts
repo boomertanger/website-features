@@ -15,7 +15,7 @@ import type { AuthState } from "../../lib/auth";
 import type { Cover } from "../vault/data";
 import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { coverHtml, initCoverFallbacks } from "../../../../shared/ui/cover.js";
-import { themeChipHtml, velvetHtml, platformsHtml, dualTimeHtml, timeRangeText, dayParts } from "../../../../shared/ui/scream-planner.js";
+import { themeChipHtml, velvetHtml, platformsHtml, dualTimeHtml, localZoneName, timeRangeText, dayParts } from "../../../../shared/ui/scream-planner.js";
 import { marqueeHtml, flipClockHtml, initFlipClocks } from "../../../../shared/ui/marquee.js";
 import { ticketHtml, initTickets } from "../../../../shared/ui/ticket.js";
 import { DOOR_STYLES, doorHtml, doorStateFor, setDoorStyle, initDoors } from "../../../../shared/ui/doors.js";
@@ -44,6 +44,7 @@ let M: Model | null = null;
 let auth: AuthState | null = null;
 let tab: "this" | "next" | null = null;
 let weekView: "tickets" | "timeline" = store.get() === "timeline" ? "timeline" : "tickets";
+let timesIn: "central" | "local" = (() => { try { return localStorage.getItem("bt.schedule.timesIn") === "local" ? "local" : "central"; } catch { return "central"; } })();
 let doorStyleOverride: string | null = null;     // the viewer's ‹ › flips: for fun, never saved
 let doorDay: string | null = null;               // the night open in the glance strip
 const selTicket: Record<string, string> = {};    // per week: the ticket whose detail shows
@@ -92,7 +93,7 @@ const delayedBy = (s: PubStream) => (s.delay?.originalStart != null ? Math.round
 const isBackstage = (s: PubStream) => s.type === "backstage";
 const visitor = () => !auth || auth.status === "signedOut";
 const roomsOf = (s: PubStream) => (s.rooms.length ? s.rooms : s.platforms.map((p) => (p === "youtube" ? "ytLandscape" : p)));
-const timeHtml = (s: PubStream) => dualTimeHtml({ start: s.start, end: s.end, was: s.delay?.originalStart ?? undefined, tz: M!.tz });
+const timeHtml = (s: PubStream) => dualTimeHtml({ start: s.start, end: s.end, was: s.delay?.originalStart ?? undefined, tz: M!.tz, mode: timesIn });
 const captainLine = (s: PubStream) => (s.crew?.captain ? `Captain ${handle(s.crew.captain)}` : "");
 const gamesLine = (s: PubStream) => {
   const n = s.games.length, more = Math.max(0, s.plannedGameCount - n);
@@ -257,11 +258,16 @@ function detailHtml(s: PubStream | undefined) {
     + `<div class="pp-detail-side">${watch}${crew}</div></div>`;
 }
 
+/** "Times in  Central | My time": only for a viewer whose clock differs from Central. */
+function timesInHtml() {
+  const zone = localZoneName(M!.tz);
+  return zone ? `<span class="pp-timesin"><span class="bt-meta">Times in</span>${viewSwitchHtml({ key: "timesIn", label: "Times in", value: timesIn, options: [{ value: "central", label: "Central" }, { value: "local", label: `My time · ${zone}` }] })}</span>` : "";
+}
 function renderWeek() {
   const id = tab === "next" ? M!.nxt : M!.cur, list = M!.streams[id] || [], w = weekOf(id), mon = mondayOf(id);
   const cur = tab !== "next";
   const sub = `${rangeLabel(mon)}${cur && !(w?.state === "published" && M!.streams[M!.nxt]?.length) ? " · next week lands Friday" : ""}`;
-  const head = sectionHeadHtml({ icon: "📅", title: cur ? "This week" : "Next week", count: list.length || null, sub, tools: `${tabsHtml()}${list.length ? viewSwitchHtml({ key: "weekView", label: "Week view", value: weekView, options: WEEK_VIEWS }) : ""}` });
+  const head = sectionHeadHtml({ icon: "📅", title: cur ? "This week" : "Next week", count: list.length || null, sub, tools: `${tabsHtml()}${list.length ? viewSwitchHtml({ key: "weekView", label: "Week view", value: weekView, options: WEEK_VIEWS }) : ""}${list.length ? timesInHtml() : ""}` });
   let body = "";
   if (w?.weekOff && !list.length) {
     body = mascotEmpty(`Week off${w.weekOff.label ? `: ${w.weekOff.label}` : ""}`, cur ? "Boomer is taking this week off. There are no streams." : "Boomer is taking next week off. The usual routine is back after that.");
@@ -283,7 +289,12 @@ function renderWeek() {
   }
   weekEl.innerHTML = `<div class="pp-week" id="pp-week">${head}${body}</div>`;
   initTickets(weekEl, { onOpen: (sid) => selectTicket(sid) });
-  initViewSwitch(weekEl, { onChange: (v) => { weekView = v === "timeline" ? "timeline" : "tickets"; store.set(weekView); renderWeek(); weekEl.querySelector<HTMLElement>(`.bt-view-switch [aria-checked="true"]`)?.focus(); } });
+  initViewSwitch(weekEl, { onChange: (v, key) => {
+    if (key === "timesIn") {
+      timesIn = v === "local" ? "local" : "central"; try { localStorage.setItem("bt.schedule.timesIn", timesIn); } catch { /* fine */ }
+      heroKey = ""; renderHero(); renderGlance(); renderWeek(); weekEl.querySelector<HTMLElement>('[data-key="timesIn"] [aria-checked="true"]')?.focus(); return;
+    }
+    weekView = v === "timeline" ? "timeline" : "tickets"; store.set(weekView); renderWeek(); weekEl.querySelector<HTMLElement>(`.bt-view-switch [aria-checked="true"]`)?.focus(); } });
 }
 function selectTicket(id: string) {
   const wk = tab === "next" ? M!.nxt : M!.cur;

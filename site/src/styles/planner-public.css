@@ -150,3 +150,6 @@
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .pp-posters .pp-day { flex: 0 0 38%; scroll-snap-align: start; }
 }
+
+/* "Times in  Central | My time": beside the Tickets / Timeline switch, only for viewers outside Central */
+.bt-root:not(#_) .pp-timesin { display: inline-flex; align-items: center; gap: 8px; }

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+fix(planner): /schedule matches the mockup: the Times in Central / My time switch beside Tickets / Timeline (shown to viewers outside Central; your clock leads, Central follows; saved per viewer); the kit's dualTimeHtml takes mode and localZoneName. Compared the marquee, all five door styles, the phone slider, tickets and timeline: those already matched
 feat(planner): make-test-week --publish (staging only) publishes the test week with a chosen --frame and --doors so the public pages show it; --remove still cleans everything
 fix(planner): a new game added through the Vault from the ballot picker now goes on the ballot in the same step (2-a-week limit and closed ballot explained in the result, your votes untouched; a game sent to a mod says to add it once approved)
 - functions: make-test-week.js no longer fails writing its adminLog entry (the script's stand-in for adminLogEntry passed an undefined changes field to Firestore, which refuses it); the real adminLogEntry already left undefined fields out. Run on staging: week 2026-W43 is open with 4 test streams, 3 ballot games and 1 crew sign-up; the site doc already has timezone America/Chicago.

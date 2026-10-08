@@ -52,12 +52,24 @@ export function dayParts(start, tz = CENTRAL) {
 }
 const clockKey = (d, tz) => new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "2-digit", minute: "2-digit", hour12: false, day: "numeric" }).format(d);
 
-export function dualTimeHtml({ start, end, was, tz = CENTRAL, localTz, central, local, localLabel = "your time" } = {}) {
+/** The viewer's zone as a short name ("Pacific"), or "" when it is the same clock as Central right now. */
+export function localZoneName(tz = CENTRAL, localTz) {
+  const ltz = localTz || (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : CENTRAL), now = new Date();
+  if (clockKey(now, tz) === clockKey(now, ltz)) return "";
+  const n = new Intl.DateTimeFormat("en-US", { timeZone: ltz, timeZoneName: "longGeneric" }).formatToParts(now).find((x) => x.type === "timeZoneName")?.value || "";
+  return n.replace(/ Time$/, "") || "your time";
+}
+// mode "local" (the viewer picked My time): their own clock leads, Central follows.
+export function dualTimeHtml({ start, end, was, tz = CENTRAL, localTz, central, local, localLabel = "your time", mode = "central" } = {}) {
   const ltz = localTz || (typeof Intl !== "undefined" ? Intl.DateTimeFormat().resolvedOptions().timeZone : CENTRAL);
   const c = central ?? (start != null && end != null ? timeRangeText(start, end, tz) : "");
   const sameClock = start != null && clockKey(toDate(start), tz) === clockKey(toDate(start), ltz);
   const l = local ?? (start != null && end != null && !sameClock ? timeRangeText(start, end, ltz) : "");
   const wasText = was == null ? "" : (typeof was === "string" && !/^[0-9]{4}-[0-9][0-9]/.test(was)) ? was : (() => { const h = hm(toDate(was), tz); return `${h.t} ${h.ap}`; })();
   const w = wasText ? `<s>${esc(wasText)}</s>` : "";
+  if (mode === "local" && l) {
+    const lz = localZoneName(tz, ltz), lw = was == null || typeof was === "string" ? wasText : (() => { const h = hm(toDate(was), ltz); return `${h.t} ${h.ap}`; })();
+    return `<span class="bt-dualtime"><b>${lw ? `<s>${esc(lw)}</s>` : ""}${esc(l)} <small>${esc(lz || "your time")}</small></b><span class="bt-dualtime-local">${esc(c)} Central</span></span>`;
+  }
   return `<span class="bt-dualtime"><b>${w}${esc(c)} <small>Central</small></b>${l ? `<span class="bt-dualtime-local">${esc(l)} ${esc(localLabel)}</span>` : ""}</span>`;
 }
