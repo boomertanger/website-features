@@ -327,6 +327,13 @@ async function main() {
   assert.equal(logs.length, 1); assert.equal(logs[0].feature, "screamPlanner"); assert.equal(logs[0].actorUid, "boss");
   assert.ok(!JSON.stringify(logs[0]).match(/AT1|RT1|SEC|GOODCODE/), "no secret in the admin log");
 
+  // videosList (the Control Room's liveTick): one call for the distinct ids, nothing for none.
+  const vlCalls = [];
+  const vlApi = makeApi({ fetchFn: async (url) => { vlCalls.push(url); return res(200, { items: [{ id: "A", liveStreamingDetails: { concurrentViewers: "5" } }] }); }, token: "T" });
+  assert.deepEqual((await vlApi.videosList(["A", "A", "B", ""])).map((x) => x.id), ["A"]);
+  assert.ok(vlCalls[0].includes("part=liveStreamingDetails&id=A,B"));
+  assert.deepEqual(await vlApi.videosList([]), []); assert.equal(vlCalls.length, 1, "no ids, no call");
+
   // ---------- youtubeStatus: owner and A2+ ----------
   for (const uid of ["boss", "adm1"]) { const s = await as(uid, "youtubeStatus"); assert.deepEqual(s, { connected: true, channelTitle: "Boomertanger" }); assert.ok(!/AT1|RT1/.test(JSON.stringify(s))); }
   for (const uid of ["adm0", "m1", "fan"]) assert.equal(await why(as(uid, "youtubeStatus")), "notAllowed");

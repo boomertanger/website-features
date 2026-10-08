@@ -256,6 +256,25 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     return { ok: true, streamId: s0.id, state: "ended", durationMs: at - ctx.ms(out.stream.actualStart), peak: res.peak, checkins: res.sum.total, checkinsByBeat: res.sum.byBeat };
   };
 
+  /** The 12-hour auto-end (liveTick): same beat and window handling as Stop, a correction is offered next time the controls open. */
+  const autoEnd = async (stream) => {
+    const r = L.autoEndLive(stream);
+    if (!r.ok) return r;
+    const at = r.patch.actualEnd;
+    await db.runTransaction(async (tx) => {
+      const cs = await tx.get(ctx.controlRef(stream.id));
+      tx.update(ctx.streamRef(stream.id), stamp(r.patch));
+      const w = (cs.data() || {}).window;
+      if (w) { const c = L.closeWindow(w, at); if (c.ok && !c.already) tx.update(ctx.controlRef(stream.id), { window: c.window }); }
+    });
+    const dr = db.doc(paths.draft(stream.id));
+    if ((await dr.get()).exists) await dr.update({ state: "ended", actualEnd: Timestamp.fromMillis(at) });
+    await afterEnd(null, stream, r.patch, { auto: true });
+    await ctx.logAdmin(null, { action: "autoEnd", streamId: stream.id, title: stream.title, reason: "Ran 12 hours: ended automatically" });
+    await ctx.publishLive();
+    return { ok: true, streamId: stream.id };
+  };
+
   // ---------- beats ----------
   const liveBeat = async (actor, data = {}) => {
     const at = now();
@@ -525,7 +544,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
   return {
     functions, SECRETS,
     ops: { startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow, liveChecklist, liveSettings },
-    helpers: { linkYoutube, createYoutubeEvent, afterEnd, cleanTemplates, copyChecklist, freshControl, vaultGame, crewPresent, tickShortcut },
+    helpers: { autoEnd, linkYoutube, createYoutubeEvent, afterEnd, cleanTemplates, copyChecklist, freshControl, vaultGame, crewPresent, tickShortcut },
   };
 };
 module.exports.SHORTCUTS = SHORTCUTS;

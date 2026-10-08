@@ -212,6 +212,13 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
     return { wrote: true, id: stream ? stream.id : null };
   };
 
+  ctx.currentStream = () => currentForPublic(now());
+  /** The next scheduled stream (for the stream view's Starting soon scene), or null. */
+  ctx.nextScheduled = async () => {
+    const snap = await db.collection(P.streams).where("state", "==", "scheduled").where("plannedStart", ">=", Timestamp.fromMillis(now() - 12 * 60 * 60 * 1000)).orderBy("plannedStart", "asc").limit(1).get();
+    const d = snap.docs[0];
+    return d ? { id: d.id, ...d.data() } : null;
+  };
   ctx.expireAt = (ms0) => Timestamp.fromMillis(ms0);
   return ctx;
 }

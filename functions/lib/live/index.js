@@ -2,18 +2,20 @@
 // and the youtube module's hooks, and spreads the result into its exports, the same way lib/planner and lib/youtube do.
 //
 //   checkin.js    streamCheckIn, liveUnlock (and settle: the all-beats bonus and stream-present at the end)
+//   feeds.js      onCheckInWritten, liveFlush, liveTick, obsFeed, liveDeck, liveViewerEntry, backstageWatch
 //   controls.js   startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow,
 //                 liveChecklist, liveObsKey, liveDeckKey, liveSettings
 // Pure rules are in logic.js (Part 2). `hooks` are for scripts/check-live-wiring.js (they are NOT exported as functions).
 const { makeCore } = require("./core");
 
 /** Builds everything. `deps` beyond adminLogEntry are for the checks (fake Google, clock, rng). */
-function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null } = {}) {
+function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null, fetchFn = null, enqueue = null, sleep = undefined, twitchClientId = null, twitchClientSecret = null, twitchLogin = null } = {}) {
   const ctx = makeCore({ adminLogEntry, now });
   const controls = require("./controls")(ctx, { youtube, rng });
   const checkin = require("./checkin")(ctx, { grant, factory });          // sets ctx.settle, which Stop and the auto-end call
-  const functions = { ...controls.functions, ...checkin.functions };
-  const hooks = { ctx, controls, checkin };
+  const feeds = require("./feeds")(ctx, { controls, fetchFn, enqueue, sleep, twitchClientId, twitchClientSecret, twitchLogin, youtube });
+  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions };
+  const hooks = { ctx, controls, checkin, feeds };
   return { functions, hooks };
 }
 

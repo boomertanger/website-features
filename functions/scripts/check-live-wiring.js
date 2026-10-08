@@ -21,9 +21,20 @@ const S = "sites/boomertanger";
 const H = 3600000, MIN = 60000;
 let clock = Date.UTC(2026, 9, 12, 1, 0);
 
-const yt = { active: [], created: [], listCalls: 0, down: false };
+const yt = { active: [], created: [], listCalls: 0, down: false, videos: {}, videosCalls: 0, videosFail: false };
+const net = [], tasks = [], sleeps = [];
+let taskFail = null;
+const tw = { live: false, viewers: 0 };
+const jr = (status, body) => ({ ok: status < 400, status, text: async () => JSON.stringify(body), json: async () => body });
+const fakeFetch = async (url, init = {}) => {
+  net.push({ url, ...init });
+  if (url.startsWith("https://id.twitch.tv/oauth2/token")) return jr(200, { access_token: "TWTOKEN", expires_in: 3600 });
+  if (url.startsWith("https://api.twitch.tv/helix/users")) return jr(200, { data: [{ id: "B1" }] });
+  if (url.startsWith("https://api.twitch.tv/helix/streams")) return jr(200, { data: tw.live ? [{ viewer_count: tw.viewers, started_at: new Date(clock).toISOString() }] : [] });
+  throw new Error("unexpected network call " + url);
+};
 const fakeYoutube = {
-  apiClient: async () => { if (yt.down) return null; return { list: async ({ status }) => { yt.listCalls++; assert.equal(status, "active"); return yt.active.map((id) => ({ id })); } }; },
+  apiClient: async () => { if (yt.down) return null; return { list: async ({ status }) => { yt.listCalls++; assert.equal(status, "active"); return yt.active.map((id) => ({ id })); }, videosList: async (ids) => { yt.videosCalls++; if (yt.videosFail) throw new Error("quota"); return ids.filter((id) => yt.videos[id] != null).map((id) => ({ id, liveStreamingDetails: { concurrentViewers: yt.videos[id] } })); } }; },
   syncStream: async (id, opts) => { yt.created.push({ id, ...opts }); return { action: "create", status: "ok" }; },
 };
 const adminLogEntry = async (_d, f) => ({ ...f, createdAt: realFs.Timestamp.now() });
@@ -31,7 +42,9 @@ let wordPick = 0;
 const rng = () => [0.0, 0.5, 0.9, 0.3, 0.7][wordPick++ % 5];
 const nsEvents = [];
 const fakeFactory = { recordFactoryEvent: async (uid, type, params, ref) => { nsEvents.push({ uid, type, params, ref }); return { counted: true }; } };
-const live = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, rng, factory: fakeFactory });
+const live = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, rng, factory: fakeFactory,
+  fetchFn: fakeFetch, twitchClientId: "CID", twitchClientSecret: "TSEC", twitchLogin: "boomertanger",
+  enqueue: async (data, opts) => { if (taskFail) throw taskFail; tasks.push({ data, opts }); }, sleep: async (ms) => { sleeps.push(ms); } });
 const fns = live.functions, ctx = live.hooks.ctx;
 const as = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: {} } : undefined, data });
 const why = async (p) => { try { await p; return "ok"; } catch (e) { return e.details?.reason || e.message; } };
@@ -284,15 +297,15 @@ async function main() {
   await as("boss", "stopStream", {});
 
   // ---------- keys: owner only, only hashes stored, shown once ----------
-  const obs = await as("boss", "liveObsKey", {}), deck = await as("boss", "liveDeckKey", {});
-  assert.ok(/^[0-9a-f]{64}$/.test(obs.key) && /^[0-9a-f]{64}$/.test(deck.key) && obs.key !== deck.key);
+  const kObs = await as("boss", "liveObsKey", {}), kDeck = await as("boss", "liveDeckKey", {});
+  assert.ok(/^[0-9a-f]{64}$/.test(kObs.key) && /^[0-9a-f]{64}$/.test(kDeck.key) && kObs.key !== kDeck.key);
   const main = await get("live/main");
-  assert.equal(main.obsKeyHash, L.hashKey(obs.key)); assert.equal(main.deckKeyHash, L.hashKey(deck.key));
-  assert.ok(!clean(main).includes(obs.key) && !clean(main).includes(deck.key), "no key in live/main");
-  for (const [name, docs] of [["adminLog", await root("adminLog")], ["activityLog", await root("activityLog")]]) assert.ok(!clean(docs).includes(obs.key) && !clean(docs).includes(deck.key) && !clean(docs).includes(main.obsKeyHash), `${name}: no key or hash`);
-  const obs2 = await as("boss", "liveObsKey", {});
-  assert.notEqual(obs2.key, obs.key); assert.equal(L.verifyKey(obs.key, (await get("live/main")).obsKeyHash), false, "rotating kills the old key");
-  assert.equal(L.verifyKey(obs2.key, (await get("live/main")).obsKeyHash), true);
+  assert.equal(main.obsKeyHash, L.hashKey(kObs.key)); assert.equal(main.deckKeyHash, L.hashKey(kDeck.key));
+  assert.ok(!clean(main).includes(kObs.key) && !clean(main).includes(kDeck.key), "no key in live/main");
+  for (const [name, docs] of [["adminLog", await root("adminLog")], ["activityLog", await root("activityLog")]]) assert.ok(!clean(docs).includes(kObs.key) && !clean(docs).includes(kDeck.key) && !clean(docs).includes(main.obsKeyHash), `${name}: no key or hash`);
+  const kObs2 = await as("boss", "liveObsKey", {});
+  assert.notEqual(kObs2.key, kObs.key); assert.equal(L.verifyKey(kObs.key, (await get("live/main")).obsKeyHash), false, "rotating kills the old key");
+  assert.equal(L.verifyKey(kObs2.key, (await get("live/main")).obsKeyHash), true);
   assert.equal((await as("boss", "liveObsKey", { revoke: true })).revoked, true); assert.equal((await get("live/main")).obsKeyHash, null);
   await as("boss", "liveObsKey", {});
   // settings
@@ -415,7 +428,239 @@ async function main() {
   assert.equal((await ci("fan", w3.word, undefined)).room, "site", "backstage defaults to On the site");
   await as("boss", "stopStream", {});
 
-  // [3c section] [3d section] [3e section]
+  // ================================================================ 3c: feeds and ticks
+  const FEEDS = live.hooks.feeds.helpers;
+  const mkRes = () => { const r = { headers: {}, status(c) { r.code = c; return r; }, json(b) { r.body = b; return r; }, send(b) { r.body = b; return r; }, set(k, v) { r.headers[k] = v; return r; } }; return r; };
+  const hit = async (handler, { method = "GET", query = {}, headers = {}, body } = {}) => { const res = mkRes(); await handler({ method, query, headers, body }, res); return res; };
+  const flushState = () => get("rateLimits/live_flush");
+  const setFlush = (st) => wdb.doc(`${S}/rateLimits/live_flush`).set(st);
+
+  clock += 3 * H;                                              // every earlier stream ended more than 2 hours ago
+  // ---------- liveTick with nothing live: nothing happens ----------
+  net.length = 0; const ytBefore = yt.listCalls;
+  await wdb.doc(`${S}/public/live`).delete();
+  assert.deepEqual(await FEEDS.runTick(), { idle: true });
+  assert.equal(net.length, 0, "no fetch at all when nothing is live"); assert.equal(yt.listCalls, ytBefore); assert.equal(yt.videosCalls, 0);
+  assert.equal(await get("public/live"), undefined, "an idle tick writes nothing");
+  await wdb.doc(`${S}/public/live`).set({ state: "ended", actualEnd: clock - 3 * H, updatedAt: clock - 3 * H });
+  await FEEDS.runTick();
+  assert.equal(net.length, 0); assert.equal((await get("public/live")).state, "off", "a finished stream's 2 hours are up: /live goes back off air");
+
+  // ---------- the flush debounce (at most one flush per 3 s) ----------
+  await setFlush({ lastFlushMs: null, scheduledAtMs: null });
+  tasks.length = 0;
+  clock += 10 * MIN;
+  let d = await FEEDS.requestFlush();
+  assert.equal(d.action, "flush"); assert.equal((await flushState()).lastFlushMs, clock); assert.equal(tasks.length, 0);
+  clock += 1000;
+  d = await FEEDS.requestFlush();
+  assert.equal(d.action, "schedule"); assert.equal(tasks.length, 1);
+  assert.equal(tasks[0].opts.scheduleDelaySeconds, 2); assert.match(tasks[0].opts.id, /^flush-\d+$/); assert.equal(tasks[0].data.atMs, clock + 2000);
+  assert.equal((await flushState()).scheduledAtMs, clock + 2000);
+  clock += 500;
+  d = await FEEDS.requestFlush();
+  assert.equal(d.action, "wait"); assert.equal(tasks.length, 1, "a third writer inside the window queues nothing");
+  clock += 1500;                                              // the task fires at lastFlush + 3 s
+  assert.deepEqual(await FEEDS.runFlushTask(), { flushed: true });
+  assert.equal((await flushState()).scheduledAtMs, null); assert.equal((await flushState()).lastFlushMs, clock);
+  clock += 1000;
+  assert.equal((await FEEDS.runFlushTask()).flushed, false, "a task running inside the 3 s gap does not flush, it queues once more");
+  assert.equal(tasks.length, 2);
+  // two flushes in a row are never closer than the gap
+  const stamps = [];
+  await setFlush({ lastFlushMs: null, scheduledAtMs: null });
+  for (let i = 0; i < 8; i++) { clock += 700; const r = await FEEDS.requestFlush(); if (r.action === "flush") stamps.push(clock); }
+  assert.ok(stamps.every((t, i) => i === 0 || t - stamps[i - 1] >= 3000), "flushes are at least 3 s apart");
+  // Cloud Tasks off (the API is disabled until the owner enables it): the trigger flushes inline and says so
+  await setFlush({ lastFlushMs: clock - 500, scheduledAtMs: null });
+  taskFail = new Error("7 PERMISSION_DENIED: Cloud Tasks API has not been used in project before or it is disabled.");
+  d = await FEEDS.requestFlush();
+  assert.equal(d.fallback, true); assert.equal((await flushState()).lastFlushMs, clock);
+  taskFail = new Error("6 ALREADY_EXISTS: task exists"); await setFlush({ lastFlushMs: clock - 500, scheduledAtMs: null });
+  assert.equal((await FEEDS.requestFlush()).action, "schedule", "a duplicate task id is fine");
+  taskFail = null;
+  // the trigger on a counter write queues the flush; another site's writes are ignored
+  await setFlush({ lastFlushMs: clock, scheduledAtMs: null }); tasks.length = 0; clock += 1000;
+  await fns.onCheckInWritten.run({ params: { siteId: "other", streamId: "x", shard: "0" }, data: {} });
+  assert.equal(tasks.length, 0);
+  await fns.onCheckInWritten.run({ params: { siteId: "boomertanger", streamId: "x", shard: "0" }, data: {} });
+  assert.equal(tasks.length, 1, "onCheckInWritten queued one debounced flush");
+  assert.ok(fns.liveFlush.run, "liveFlush is a task queue function");
+  assert.deepEqual(FEEDS.FLUSH_QUEUE.rateLimits, { maxDispatchesPerSecond: 1, maxConcurrentDispatches: 1 });
+  assert.ok(FEEDS.FLUSH_QUEUE.retryConfig.maxAttempts >= 2);
+
+  // ---------- a live stream for the feeds ----------
+  await person("tikt", ["mod"], { track: "mod", grade: 2 }); await person("subby", ["sub"]); await person("visitor0", []);
+  await wdb.doc(`${S}/profiles/visitor0`).delete();
+  await mkStream("f1", { title: "Feed night" });
+  await as("boss", "startStream", { streamId: "f1" });
+  await wdb.doc(`${S}/streams/f1/private/watch`).set({ provider: "youtube", youtube: { landscapeId: "LANDSCAPE11", backstageId: null, verticalId: "VERTICAL111" } });
+  yt.active = ["LANDSCAPE11", "VERTICAL111"]; yt.videos = { LANDSCAPE11: "31", VERTICAL111: "7" };
+  tw.live = true; tw.viewers = 120;
+  const w5 = await as("boss", "liveCheckInWindow", { action: "open", lengthMinutes: 10 });
+  const FW = w5.word;
+  await ci("fan", FW, "twitch"); await ci("fan2", FW, "ytv");
+
+  // liveViewerEntry: crew on duty (a mod or an admin), whole numbers only
+  assert.equal(await why(as(null, "liveViewerEntry", { viewers: 5 })), "signedOut");
+  for (const uid of ["fan", "subby", "nobody"]) assert.equal(await why(as(uid, "liveViewerEntry", { viewers: 5 })), "notCrew");
+  assert.equal(await why(as("tikt", "liveViewerEntry", { viewers: -1 })), "viewers");
+  assert.equal(await why(as("tikt", "liveViewerEntry", { viewers: 1.5 })), "viewers");
+  assert.equal((await as("tikt", "liveViewerEntry", { viewers: 15 })).viewers, 15);
+  assert.equal((await control("f1")).tiktok.viewers, 15);
+
+  // ---------- liveTick while live: Twitch, YouTube, TikTok, peak ----------
+  net.length = 0; yt.videosCalls = 0; clock += MIN;
+  let t = await FEEDS.runTick();
+  assert.equal(t.total, 120 + 31 + 7 + 15); assert.equal(t.peak, 173);
+  const tokenCall = net.find((c) => c.url.startsWith("https://id.twitch.tv/oauth2/token"));
+  assert.equal(new URLSearchParams(tokenCall.body).get("grant_type"), "client_credentials");
+  const scall = net.find((c) => c.url.startsWith("https://api.twitch.tv/helix/streams"));
+  assert.ok(scall.url.includes("user_id=B1")); assert.equal(scall.headers.Authorization, "Bearer TWTOKEN"); assert.equal(scall.headers["Client-Id"], "CID");
+  assert.equal(yt.videosCalls, 1, "one videos.list call for both ids");
+  let ctl2 = await control("f1");
+  assert.deepEqual(ctl2.viewers, { twitch: 120, ytLandscape: 31, ytVertical: 7, tiktok: 15 }); assert.equal(ctl2.peak, 173); assert.equal(ctl2.twitch.status, "live");
+  pub = await get("public/live");
+  assert.equal(pub.viewers.total, 173); assert.deepEqual(pub.viewers.byPlatform, { twitch: 120, ytLandscape: 31, ytVertical: 7, tiktok: 15 }); assert.equal(pub.peak, 173);
+  assert.equal(pub.counts.total, 2, "the counters are in public/live");
+  assert.deepEqual(L.findSecrets(pub, { words: [FW], videoIds: ["LANDSCAPE11", "VERTICAL111"] }), []);
+  assert.equal((await get("growthConfig".replace("growthConfig", "private/growthConfig"))).twitchBroadcasterId, "B1", "the broadcaster id is looked up once and kept");
+  // peak only goes up; offline is noticed; one platform failing does not stop the others
+  tw.viewers = 40; tw.live = false; yt.videosFail = true; clock += MIN;
+  t = await FEEDS.runTick();
+  assert.deepEqual(t.errors, ["youtube"]); assert.equal(t.peak, 173, "the peak stays");
+  ctl2 = await control("f1");
+  assert.equal(ctl2.twitch.status, "offline"); const since = ctl2.twitch.offlineSince; assert.equal(since, clock);
+  clock += MIN; await FEEDS.runTick(); assert.equal((await control("f1")).twitch.offlineSince, since, "offline since the first minute it was seen");
+  yt.videosFail = false; tw.live = true;
+  // TikTok count goes stale after 15 minutes
+  clock += 16 * MIN; await FEEDS.runTick(); assert.equal((await control("f1")).viewers.tiktok, undefined);
+  // the Twitch app token is reused, not fetched every minute
+  net.length = 0; clock += MIN; await FEEDS.runTick();
+  assert.equal(net.filter((c) => c.url.startsWith("https://id.twitch.tv")).length, 0, "the app token is cached");
+
+  // "Waiting for YouTube…": retries every 15 s inside the minute until the broadcast is found
+  await wdb.doc(`${S}/streams/f1/private/control`).update({ yt: { status: "waiting", since: clock, tries: 1 } });
+  yt.active = ["LANDSCAPE11"]; sleeps.length = 0; const lc = yt.listCalls;
+  await FEEDS.runTick();
+  assert.deepEqual(sleeps, [15000, 15000, 15000], "three 15 s waits, each followed by a look");
+  assert.equal(yt.listCalls - lc, 3); assert.equal((await control("f1")).yt.status, "waiting");
+  sleeps.length = 0; yt.active = ["LANDSCAPE11", "VERTICAL111"];
+  await wdb.doc(`${S}/streams/f1/private/control`).update({ yt: { status: "waiting", since: clock, tries: 1 } });
+  await FEEDS.runTick();
+  assert.deepEqual(sleeps, [15000], "found on the first retry: no more waiting"); assert.equal((await control("f1")).yt.status, "ok");
+
+  // ---------- obsFeed ----------
+  const obsKey = (await as("boss", "liveObsKey", {})).key;
+  await as("boss", "liveCheckInWindow", { action: "reopen" });          // the 10 minute window ran out while the ticks above moved the clock: reopen it (once)
+  const obs = (extra) => hit(FEEDS.handleObsFeed, extra);
+  let r1 = await obs({ query: {} }); assert.equal(r1.code, 403);
+  r1 = await obs({ query: { k: "0".repeat(64) } }); assert.equal(r1.code, 403); assert.deepEqual(r1.body, { ok: false, reason: "key" });
+  assert.ok(!JSON.stringify(r1.body).includes(FW));
+  assert.equal((await obs({ method: "POST", query: { k: obsKey } })).code, 405);
+  const pre = await obs({ method: "OPTIONS" }); assert.equal(pre.code, 204); assert.equal(pre.headers["Access-Control-Allow-Origin"], "*");
+  const good = await obs({ query: { k: obsKey } });
+  assert.equal(good.code, 200); assert.equal(good.body.ok, true);
+  const v = good.body.view;
+  assert.equal(v.word, FW, "a valid key gets the check-in word while the window is open");
+  assert.equal(v.scene, "break"); assert.equal(v.title, "Feed night"); assert.equal(v.beat, "start"); assert.equal(v.counts.total, 2);
+  assert.deepEqual(v.firstIn, ["fan", "fan2"]); assert.equal(v.viewers.total, 40 + 31 + 7, "the latest tick: Twitch 40, YouTube 31 and 7, the stale TikTok count dropped");
+  const viaHeader = await obs({ headers: { "x-live-key": obsKey } }); assert.equal(viaHeader.code, 200);
+  // never any other private data: no uids, no hashes, no video ids, no tokens, no other window fields
+  const viewJson = JSON.stringify(good.body);
+  for (const secret of ["LANDSCAPE11", "VERTICAL111", L.hashKey(obsKey), (await get("live/main")).deckKeyHash, "TWTOKEN", "RT1", "AT1", "xpEarned", "wrongTries", "presence"]) assert.ok(!viewJson.includes(secret), `obsFeed leaks ${secret}`);
+  assert.deepEqual(L.findSecrets({ ...v, word: undefined }, { videoIds: ["LANDSCAPE11", "VERTICAL111"] }).filter((h) => !/\.word/.test(h)), [], "no forbidden key anywhere but the word");
+  for (const uid of ["fan", "fan2", "boss", "capt", "mod1"]) assert.ok(!viewJson.includes(`"${uid}"`) || ["fan", "fan2", "capt", "mod1"].includes(uid), "handles only");
+  await as("boss", "liveCheckInWindow", { action: "close" });
+  assert.equal((await obs({ query: { k: obsKey } })).body.view.word, null, "no word once the window is closed");
+  await as("boss", "liveScene", { scene: "brb", brbMinutes: 5 });
+  const brb = (await obs({ query: { k: obsKey } })).body.view; assert.equal(brb.scene, "brb"); assert.equal(brb.brbUntil, clock + 5 * MIN);
+  await as("boss", "liveScene", { scene: "auto" });
+  // the old key dies when rotated
+  const obsKey2 = (await as("boss", "liveObsKey", {})).key;
+  assert.equal((await obs({ query: { k: obsKey } })).code, 403); assert.equal((await obs({ query: { k: obsKey2 } })).code, 200);
+  // without a stored key hash nothing works
+  await as("boss", "liveObsKey", { revoke: true }); assert.equal((await obs({ query: { k: obsKey2 } })).code, 403);
+  const obsKey3 = (await as("boss", "liveObsKey", {})).key;
+
+  // ---------- liveDeck ----------
+  const deckKey = (await as("boss", "liveDeckKey", {})).key;
+  const deck = (q, extra = {}) => hit(FEEDS.handleLiveDeck, { query: { k: deckKey, ...q }, ...extra });
+  assert.equal((await hit(FEEDS.handleLiveDeck, { query: { action: "nextBeat" } })).code, 403);
+  assert.equal((await hit(FEEDS.handleLiveDeck, { query: { k: obsKey3, action: "nextBeat" } })).code, 403, "the stream view key is not a deck key");
+  assert.equal((await hit(FEEDS.handleLiveDeck, { method: "PUT", query: { k: deckKey } })).code, 405);
+  // Start and Stop are never deck actions, whatever the key
+  for (const a of ["start", "stop", "afterShow", "startStream", "stopStream"]) { const r = await deck({ action: a }); assert.equal(r.code, 403); assert.equal(r.body.reason, "notOnDeck"); }
+  assert.equal((await stream("f1")).state, "live", "the deck did not stop the stream");
+  assert.equal((await deck({ action: "startQuestions" })).code, 501);
+  assert.equal((await deck({ action: "bogus" })).code, 400);
+  const logsBefore = (await root("adminLog")).length;
+  let dr = await deck({ action: "nextBeat" }); assert.equal(dr.code, 200); assert.equal(L.currentBeat((await stream("f1")).beats), "break1");
+  dr = await deck({ action: "openCheckin", minutes: "3" });
+  assert.equal(dr.code, 200); assert.equal(dr.body.word, undefined, "the deck response never carries the word"); assert.ok(!JSON.stringify(dr.body).includes((await control("f1")).window.word));
+  assert.equal((await control("f1")).window.lengthMinutes, 3);
+  assert.equal((await deck({ action: "extend" })).code, 200);
+  assert.equal((await deck({ action: "closeCheckin" })).code, 200);
+  assert.equal((await deck({ action: "scene", scene: "brb", brbMinutes: "2" })).code, 200); assert.equal((await control("f1")).pinned, "brb");
+  assert.equal((await deck({ action: "scene", scene: "starting" })).body.reason, "scene", "the deck only sets Auto, Be right back and Ending");
+  assert.equal((await deck({ action: "scene", scene: "auto" })).code, 200);
+  assert.equal((await deck({ action: "nextGame" })).code, 200); assert.equal((await stream("f1")).segments.find((g) => g.endedAt == null).gameId, "g2");
+  assert.equal((await deck({ action: "nextGame" })).body.reason, "noNextGame");
+  const dlogs = (await root("adminLog")).slice(logsBefore).filter((e) => e.feature === "controlRoom");
+  assert.ok(dlogs.length >= 6 && dlogs.every((e) => e.actorName === "Stream Deck" && e.actorUid === null), "every deck action is logged as Stream Deck");
+  assert.ok(!JSON.stringify(dlogs).includes(deckKey));
+  // rate limit: 30 a minute per key, then 429; the next minute starts fresh
+  const minuteStart = clock; let blocked = 0, okc = 0;
+  for (let i = 0; i < 40; i++) { const r = await deck({ action: "scene", scene: "auto" }); if (r.code === 429) blocked++; else okc++; }
+  assert.ok(blocked >= 10 && okc <= 30, `rate limit: ${okc} ok, ${blocked} blocked`);
+  assert.deepEqual((await deck({ action: "scene", scene: "auto" })).body, { ok: false, reason: "rateLimit" });
+  const counterDocs = (await wdb.collection(`${S}/rateLimits`).get()).docs.filter((x) => x.id.startsWith("live_deck_"));
+  assert.ok(counterDocs.length >= 1 && counterDocs[0].get("expireAt"), "a documented counter doc with a TTL");
+  assert.ok(!counterDocs.some((x) => x.id.includes(deckKey)), "the counter id holds only a hash prefix");
+  clock += 61 * 1000; assert.equal((await deck({ action: "scene", scene: "auto" })).code, 200, "a new minute, a new budget");
+  assert.ok(clock > minuteStart);
+  // bad keys are throttled too
+  let bad429 = 0; for (let i = 0; i < 70; i++) if ((await hit(FEEDS.handleLiveDeck, { query: { k: "bad" + i, action: "nextBeat" } })).code === 429) bad429++;
+  assert.ok(bad429 >= 5, "key guessing is throttled");
+  clock += 61 * 1000;
+  // no stream live: a clear refusal
+  const savedLive = await ctx.liveStream();
+  await as("boss", "stopStream", {});
+  assert.equal((await deck({ action: "nextBeat" })).body.reason, "notLive");
+  assert.equal(savedLive.id, "f1");
+  assert.equal(await why(as("boss", "liveViewerEntry", { viewers: 3 })), "notLive");
+
+  // ---------- 12 hour auto-end through liveTick ----------
+  await mkStream("f2", { title: "Marathon" });
+  await as("boss", "startStream", { streamId: "f2" });
+  clock += 12 * H + MIN;
+  t = await FEEDS.runTick();
+  assert.equal(t.autoEnded, true); const f2 = await stream("f2");
+  assert.equal(f2.state, "ended"); assert.equal(f2.autoEnded, true); assert.equal(f2.actualEnd.toMillis(), f2.actualStart.toMillis() + 12 * H);
+  assert.ok((await root("adminLog")).some((e) => e.action === "autoEnd" && e.actorName === "Automatic"));
+
+  // ---------- backstageWatch: the audience only ----------
+  await wdb.doc(`${S}/streams/f1/private/watch`).set({ provider: "youtube", youtube: { landscapeId: "LANDSCAPE11", backstageId: null, verticalId: "VERTICAL111" } });
+  await mkStream("bw1", { type: "backstage", audience: "fanClub", title: "Backstage live", rooms: [], platforms: [] });
+  yt.active = [];
+  await as("boss", "startStream", { streamId: "bw1" });
+  assert.equal(await why(as(null, "backstageWatch", {})), "signedOut");
+  assert.equal(await why(as("fan", "backstageWatch", {})), "noVideo", "live, audience ok, but the event has no id yet");
+  await wdb.doc(`${S}/streams/bw1/private/watch`).set({ provider: "youtube", youtube: { landscapeId: null, backstageId: "BACKSTAGE01", verticalId: null } });
+  assert.equal(await why(as("visitor0", "backstageWatch", {})), "audience", "signed in but never joined: Join free");
+  for (const uid of ["fan", "subby", "mod1", "adm1", "adm2", "boss"]) { const r = await as(uid, "backstageWatch", {}); assert.equal(r.videoId, "BACKSTAGE01", `${uid} may watch`); assert.equal(r.provider, "youtube"); }
+    assert.equal(await why(as("fan", "backstageWatch", { streamId: "f2" })), "notBackstage");
+  for (const [name, docs] of [["adminLog", await root("adminLog")], ["activityLog", await root("activityLog")], ["notifyOutbox", await root(`${S}/notifyOutbox`)], ["public/live", [await get("public/live")]], ["stream", [await stream("bw1")]], ["control", [await control("bw1")]]]) assert.ok(!clean(docs).includes("BACKSTAGE01"), `${name} never holds the backstage video id`);
+  assert.deepEqual(L.findSecrets(await get("public/live"), { videoIds: ["BACKSTAGE01"] }), []);
+  // Sub Club (billing, later): fans are refused, subs and staff pass
+  await wdb.doc(`${S}/streams/bw1`).update({ audience: "subClub" });
+  assert.equal(await why(as("fan", "backstageWatch", {})), "audience");
+  assert.equal((await as("subby", "backstageWatch", {})).videoId, "BACKSTAGE01"); assert.equal((await as("mod1", "backstageWatch", {})).videoId, "BACKSTAGE01");
+  await wdb.doc(`${S}/streams/bw1`).update({ audience: "fanClub" });
+  await as("boss", "stopStream", {});
+  assert.equal(await why(as("fan", "backstageWatch", {})), "notLive");
+
+  // [3d section] [3e section]
   console.log("check-live-wiring: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
