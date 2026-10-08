@@ -172,10 +172,13 @@ module.exports = function plan({ core }) {
    * `source` ({ patterns, exceptions }) replaces the stored usual week and `mark` ({ test: true }) is stamped on every
    * document created; both are for scripts/make-test-week.js only.
    */
-  async function openWeek(week, { w = null, manual = false, nowMs = Date.now(), source = null, mark = null } = {}) {
+  async function openWeek(week, { w = null, manual = false, nowMs = Date.now(), source = null, mark = null, adopt = false } = {}) {
     const tz = await core.siteTz(), settings = await core.loadSettings();
     const ref = db.doc(P.week(week));
-    if ((await ref.get()).exists) return { created: false };
+    const have = await ref.get();
+    // adopt (make-test-week.js only): fill an existing, empty, unpublished week instead of creating one; the week keeps its own
+    // dates and state, and remembers what it had so --remove can put it back.
+    if (have.exists && !(adopt && have.get("state") !== "published" && !(have.get("streamIds") || []).length && !have.get("weekOff"))) return { created: false };
     const dl = L.weekDeadlines(week, settings.deadlines, tz);
     const [pats, exs] = source ? [null, null] : await Promise.all([db.collection(P.patterns).get(), db.collection(P.exceptions).get()]);
     const exp = L.expandWeek({ week, patterns: source ? source.patterns : pats.docs.map((d) => ({ id: d.id, ...d.data() })), exceptions: source ? source.exceptions || [] : exs.docs.map((d) => ({ id: d.id, ...d.data() })), tz, defaults: settings.defaults });
@@ -183,7 +186,8 @@ module.exports = function plan({ core }) {
     if (manual && closesAt <= nowMs) closesAt = nowMs + DAY_MS;
     const state = L.stateAt(nowMs, { closesAt });
     try {
-      await ref.create({ week, state, opensAt: ts(manual ? nowMs : dl.opensAt), closesAt: ts(closesAt), publishBy: ts(dl.publishBy), publishedAt: null, publishedRev: 0, hasUnpublishedChanges: false, weekOff: exp.weekOff, hero: null, streamIds: [], ballotSlugs: [], counts: { slots: 0, seatsOpen: 0, votes: 0 }, tz, ...(mark || {}), createdAt: FieldValue.serverTimestamp() });
+      if (have.exists) await ref.update({ adoptedTest: { prevBallotSlugs: have.get("ballotSlugs") || [] } });
+      else await ref.create({ week, state, opensAt: ts(manual ? nowMs : dl.opensAt), closesAt: ts(closesAt), publishBy: ts(dl.publishBy), publishedAt: null, publishedRev: 0, hasUnpublishedChanges: false, weekOff: exp.weekOff, hero: null, streamIds: [], ballotSlugs: [], counts: { slots: 0, seatsOpen: 0, votes: 0 }, tz, ...(mark || {}), createdAt: FieldValue.serverTimestamp() });
     } catch (err) { if (err.code === 6 || /ALREADY_EXISTS/.test(String(err.message))) return { created: false }; throw err; }
     const made = [];
     for (const slot of exp.slots) {

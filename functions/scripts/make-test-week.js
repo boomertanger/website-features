@@ -29,7 +29,7 @@ const SITE_ID = "boomertanger";
 const STAGING = "boomertanger-staging";
 
 function parseArgs(argv) {
-  const args = { project: "staging", apply: false, remove: false, publish: false, week: null, frame: null, doors: null };
+  const args = { project: "staging", apply: false, remove: false, publish: false, adopt: false, week: null, frame: null, doors: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], next = () => argv[++i];
     if (a === "--project") args.project = next();
@@ -37,6 +37,7 @@ function parseArgs(argv) {
     else if (a === "--apply") args.apply = true;
     else if (a === "--remove") args.remove = true;
     else if (a === "--publish") args.publish = true;
+    else if (a === "--adopt") args.adopt = true;
     else if (a === "--frame") args.frame = next();
     else if (a === "--doors") args.doors = next();
     else if (a === "--week") args.week = next();
@@ -87,7 +88,9 @@ async function main() {
   // ---------- --remove ----------
   if (args.remove) {
     const weeks = (await db.collection(`${site}/planWeeks`).where("test", "==", true).get()).docs;
+    const adopted = (await db.collection(`${site}/planWeeks`).get()).docs.filter((d) => d.get("adoptedTest"));
     const streams = (await db.collection(`${site}/streams`).where("test", "==", true).get()).docs;
+    if (adopted.length) console.log(`Would put back (kept, not deleted): ${adopted.map((w) => w.id).join(", ")}: its test streams, test ballot games and sign-ups go, the week returns to empty.`);
     console.log(`Would remove: ${weeks.length} test week(s) (${weeks.map((w) => w.id).join(", ") || "none"}) and ${streams.length} test stream(s) with their drafts and sign-ups.`);
     if (!args.apply) return console.log("Dry run only. Add --apply to delete them.");
     for (const s of streams) {
@@ -98,6 +101,10 @@ async function main() {
     for (const w of weeks) {
       for (const sub of ["ballot", "votes"]) for (const d of (await w.ref.collection(sub).get()).docs) await d.ref.delete();
       await w.ref.delete();
+    }
+    for (const w of adopted) {
+      for (const d of (await w.ref.collection("ballot").where("test", "==", true).get()).docs) await d.ref.delete();
+      await w.ref.update({ streamIds: [], ballotSlugs: w.get("adoptedTest").prevBallotSlugs || [], adoptedTest: FieldValue.delete(), counts: { slots: 0, seatsOpen: 0, votes: 0 }, hasUnpublishedChanges: false });
     }
     await core.rebuildPublicBallot();
     await core.rebuildSchedule();
@@ -138,8 +145,13 @@ async function main() {
   // ---------- pick the week ----------
   const existing = new Set((await db.collection(`${site}/planWeeks`).get()).docs.map((d) => d.id));
   let week = args.week;
-  if (!week) { week = L.targetWeekAt(Date.now(), tz); while (existing.has(week)) week = L.nextWeek(week); }
-  if (existing.has(week)) throw new Error(`${week} already has a planWeeks document; pick another with --week, or --remove the test weeks first.`);
+  if (!week) { week = L.targetWeekAt(Date.now(), tz); if (!args.adopt) while (existing.has(week)) week = L.nextWeek(week); }
+  if (args.adopt) {
+    const have = existing.has(week) ? (await db.doc(`${site}/planWeeks/${week}`).get()) : null;
+    if (!have) throw new Error(`--adopt needs an existing empty week; ${week} has no planWeeks document (leave --adopt off to create one).`);
+    if (have.get("state") === "published" || (have.get("streamIds") || []).length || have.get("weekOff") || have.get("test")) throw new Error(`${week} isn't an empty, unpublished week (state ${have.get("state")}, ${(have.get("streamIds") || []).length} stream(s)); it won't be adopted.`);
+    console.log(`Adopting the existing empty week ${week} (state ${have.get("state")}); it is kept, never deleted.`);
+  } else if (existing.has(week)) throw new Error(`${week} already has a planWeeks document; pick another with --week, or --remove the test weeks first.`);
   if (week <= L.weekOf(Date.now(), tz)) throw new Error("The test week must be a coming week.");
 
   // ---------- what would be made ----------
@@ -159,7 +171,7 @@ async function main() {
 
   // ---------- write it, through the same code path as the real week opening ----------
   const mark = { test: true };
-  const r = await plan.openWeek(week, { manual: true, source: { patterns: SAMPLE_PATTERNS, exceptions: [] }, mark });
+  const r = await plan.openWeek(week, { manual: true, source: { patterns: SAMPLE_PATTERNS, exceptions: [] }, mark: args.adopt ? { test: true } : mark, adopt: args.adopt });
   if (!r.created) throw new Error(`${week} was not created (it already exists).`);
   const wk = db.doc(`${site}/planWeeks/${week}`);
   let slugs = (await wk.get()).get("ballotSlugs") || [];

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- functions: make-test-week.js --adopt fills an EXISTING empty, unpublished week (the one plannerTick opened) with the test streams, ballot games and crew sign-up instead of creating a week, and never deletes it: the week is marked adoptedTest, and --remove --apply removes only the test streams, test ballot games and sign-ups and puts the week back to empty. openWeek in lib/planner/plan.js takes an adopt option for this (the callables never pass it, so nothing changes for them). Run on staging: 2026-W42 now holds 4 planned test streams (Mon Monster Monday, Wed VR night, Sat Late night, Sun Backstage VOD), 3 ballot games and gbo's sign-up, unpublished.
 The /admin Scream Planner card matches the mockup: admin-green panel and badge like the other admin settings, tighter spacing.
 Scream Planner /schedule/plan/usual matches the mockup: the slot editor now shows a live preview poster and what it means for the tray, and the Deadlines day dropdowns are no longer clipped on phones.
 fix(planner): /schedule/vote matches the mockup: the ballot header names the week's dates under the title (Oct 12 to 18); covers, race, tokens, closes badge and the phone 2-column grid already matched
