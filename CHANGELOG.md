@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- functions: YouTube events, the backend wiring (Scream Planner part 8b): youtubeConnect (owner only, redirect allowlist), youtubeStatus and youtubeRetry (owner or A2+) callables, the youtubeSync trigger (creates, updates, moves and deletes a stream's YouTube event from the published stream doc, ids and sync hash server-only in streams/{id}/private/watch, a public youtube status on the stream, recreates an event deleted by hand, never loops), the daily youtubeTidy (makes ended backstage videos private after live/main.makeBackstagePrivateAfterDays, default 7), scripts/youtube-cleanup.js (staging only, deletes [STAGING] events) and a firestore.rules fix so streams/{id}/private/watch is server-only; check-youtube.js covers the wiring
 - functions: YouTube events, the lib layer (Scream Planner part 8a): lib/youtube/logic.js (event payload, staging rule, what-changed decision, sync hash, tidy rule, doc shapes), auth.js (Connect YouTube token exchange, refresh, redirect allowlist) and api.js (liveBroadcasts, thumbnails, videos.update with typed errors); check-youtube.js added to npm run check. No callables or triggers yet.
 - docs: Control Room spec (confirmed Oct 8), approved mockups, amendments to Night Shift, Mod Machina, Scream Planner (part 8 YouTube events), stream object, Boom Alerts, header nav, design system and ROADMAP.
 Type cleanup: astro check errors in the planner and crew pages and scripts fixed with annotations and casts only, no behaviour change (build output identical).

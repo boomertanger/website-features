@@ -756,8 +756,11 @@ service cloud.firestore {
         allow read: if resource.data.published == true || isSiteStaff(siteId);
         allow write: if false;
 
+        // private/watch holds the YouTube event and video IDs (the unlisted backstage video among them): server
+        // only. Rules from overlapping matches are OR-ed, so the exclusion lives in this one rule, not in a
+        // separate deny match.
         match /private/{docId} {
-          allow read: if isSiteStaff(siteId);
+          allow read: if docId != 'watch' && isSiteStaff(siteId);
           allow write: if false;
         }
 

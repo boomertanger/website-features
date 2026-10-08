@@ -145,8 +145,12 @@ function shouldMakePrivate(stream, nowMs, days = DEFAULT_TIDY_DAYS) {
 }
 
 /** streams/{id}/private/watch: ids only; the video ID is handed out by backstageWatch to the audience. */
-function watchDocShape(ids = {}) {
-  return { provider: "youtube", youtube: { landscapeId: ids.landscapeId || null, backstageId: ids.backstageId || null, verticalId: ids.verticalId || null } };
+function watchDocShape(ids = {}, { hash, syncedAt } = {}) {
+  const youtube = { landscapeId: ids.landscapeId || null, backstageId: ids.backstageId || null, verticalId: ids.verticalId || null };
+  // The sync hash and time live beside the ids (server-only doc), only when the sync supplies them.
+  if (hash !== undefined) youtube.hash = hash;
+  if (syncedAt !== undefined) youtube.syncedAt = syncedAt;
+  return { provider: "youtube", youtube };
 }
 
 /** Cuts anything that looks like a token or an id out of an error message before it's stored publicly. */
@@ -158,10 +162,11 @@ function safeError(text) {
 }
 
 /** The public stream's `youtube` field: { status, error?, syncedAt }. Never an id or a token. */
-function statusDocShape(status, error, at = Date.now()) {
+function statusDocShape(status, error, at = Date.now(), warning) {
   const st = ["ok", "pending", "failed"].includes(status) ? status : "failed";
   const out = { status: st, syncedAt: at };
   if (st === "failed" && error) out.error = safeError(error?.message ?? error);
+  if (st === "ok" && warning) out.warning = safeError(warning?.message ?? warning);
   return out;
 }
 

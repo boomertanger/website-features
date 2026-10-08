@@ -942,3 +942,7 @@ Object.assign(exports, require("./lib/crew")({ adminLogEntry }));
 // Scream Planner (docs/specs/scream-planner.md): the usual week, weekly planning, the ballot, publish, delay and cancel,
 // crew availability and seats, and plannerTick (every 15 minutes). Lives in lib/planner/.
 Object.assign(exports, require("./lib/planner")({ adminLogEntry }));
+
+// YouTube events (docs/specs/scream-planner.md section 15): Connect YouTube, the event sync for published streams,
+// Retry, and the daily tidy of backstage videos. Lives in lib/youtube/.
+Object.assign(exports, require("./lib/youtube")({ adminLogEntry }));
