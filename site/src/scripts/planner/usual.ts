@@ -130,6 +130,7 @@ async function mount(io: Io, who: Who) {
     };
     const content = modalHeader(esc(p ? `Edit ${p.label}` : "Add a slot to the usual week"), `<span class="bt-meta">Every ${DAY_LONG[f.dow - 1]}. Changes start with the next week that opens.</span>`)
       + `<form class="pp-form" novalidate>`
+      + `<div class="pu-prev"><div data-prev></div><p class="bt-meta" data-prev-t></p></div>`
       + field("Name and icon", `<input class="bt-input" id="pt-label" maxlength="60" value="${esc(f.label)}" placeholder="VR night" autocomplete="off"><div class="pp-icons" role="group" aria-label="Icon">${ICONS.map((i) => `<button type="button" class="pp-icon-b" data-icon="${i}" aria-pressed="${f.icon === i}" aria-label="Icon ${i}">${i}</button>`).join("")}</div>`, "pt-label")
       + field("Day", `<div class="pp-chips" data-days>${DAY_SHORT.map((d, i) => chip(`data-dow="${i + 1}"`, d, f.dow === i + 1)).join("")}</div>`)
       + `<div class="pp-row2 pu-row2">${field("Starts (Central)", `<input class="bt-input" type="time" step="900" id="pt-start" value="${f.start}">`, "pt-start")}${field("Ends", `<input class="bt-input" type="time" step="900" id="pt-end" value="${f.end}">`, "pt-end")}${field("Games per stream", `<input class="bt-input pp-num" type="number" id="pt-count" min="1" max="6" step="1" inputmode="numeric" value="${f.count}">`, "pt-count")}</div>`
@@ -148,7 +149,16 @@ async function mount(io: Io, who: Who) {
       q("[data-tags]").innerHTML = f.tags.map((t) => `<span class="pu-tok">#${esc(t)}<button type="button" data-rm-tag="${esc(t)}" aria-label="Remove ${esc(t)}">✕</button></span>`).join("");
       q("[data-games]").innerHTML = f.games.map((g) => `<span class="pu-tok is-game">${esc(vault.get(g)?.title || g)}<button type="button" data-rm-game="${esc(g)}" aria-label="Remove ${esc(vault.get(g)?.title || g)}">✕</button></span>`).join("");
     };
-    tokens();
+    // live preview of the poster as it will sit in the strip, with what it means for the tray
+    const renderPrev = () => {
+      const val = (s: string) => (form.querySelector(s) as HTMLInputElement | null)?.value || "";
+      const type = form.querySelector<HTMLElement>("[data-types] [aria-pressed=true]")?.dataset.type || f.type, dowN = Number(form.querySelector<HTMLElement>("[data-days] [aria-pressed=true]")?.dataset.dow || f.dow);
+      const rooms = [...form.querySelectorAll<HTMLElement>("[data-room][aria-pressed=true]")].map((x) => x.dataset.room as string), n = Math.max(1, Number(val("#pt-count")) || f.count);
+      q("[data-prev]").innerHTML = posterHtml({ day: DAY_SHORT[dowN - 1], icon: form.querySelector<HTMLElement>("[data-icon][aria-pressed=true]")?.dataset.icon || "", label: val("#pt-label").trim() || "Your slot", timeText: rangeText(val("#pt-start") || f.start, val("#pt-end") || f.end), backstage: type === "backstage", platformsHtml: platformsHtml(rooms) });
+      q("[data-prev-t]").textContent = `Next week this opens as a ${type === "backstage" ? "backstage" : "live"} slot with ${n} game spot${n === 1 ? "" : "s"}${f.tags.length ? `, and #${f.tags[0]} games at the top of the tray` : ""}.`;
+    };
+    tokens(); renderPrev();
+    form.addEventListener("input", renderPrev); form.addEventListener("click", () => queueMicrotask(renderPrev));
     form.addEventListener("click", (e) => {
       const t = e.target as HTMLElement, a = t.closest<HTMLElement>("[data-rm-tag]"), b = t.closest<HTMLElement>("[data-rm-game]");
       if (a) { f.tags = f.tags.filter((x) => x !== a.dataset.rmTag); tokens(); } else if (b) { f.games = f.games.filter((x) => x !== b.dataset.rmGame); tokens(); }
