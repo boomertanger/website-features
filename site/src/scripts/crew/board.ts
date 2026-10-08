@@ -50,7 +50,7 @@ function render() {
   }
   const top = rows.filter((r) => r.gears > 0).slice(0, 3);
   const pod = top.length === 3
-    ? podiumHtml({ label: "Top three", places: top.map((r) => { const w = who(r); return { rank: r.place, name: w.name, gradeHtml: w.gradeHtml + (r.staff ? STAFF : ""), value: num(r.gears), unit: "Gears", sub: r.duties || r.hours ? `${num(r.duties)} duties · ${hours(r.hours)} h` : "" }; }) })
+    ? podiumHtml({ label: "Top three", places: top.map((r) => { const w = who(r); return { rank: r.place, name: w.name, gradeHtml: w.gradeHtml + (r.staff ? STAFF : ""), value: num(r.gears), unit: "Gears", sub: r.duties || r.hours ? `${num(r.duties)} duties · ${hours(r.hours)} h` : "" }; }) } as any)
     : "";
   const vis = all ? rows : rows.slice(0, SHOWN);
   const pinned = mine && !vis.includes(mine);

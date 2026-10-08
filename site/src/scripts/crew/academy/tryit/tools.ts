@@ -33,7 +33,7 @@ export default function init(root: HTMLElement): void {
     const away = st.in && st.away && !st.back;
     const seatState = !st.in ? "off" : away ? "needed" : "covered";
     const seatText = !st.in ? "off the clock" : away ? "away" : "you're here";
-    body.innerHTML = `<div class="ta2-deck"><div class="ta2-bar"><span class="ta2-bar-name">Mod Deck</span><span class="ta2-seat">${roomHtml({ chat: "twitch", name: "Your seat: Twitch", state: seatState, text: seatText })}</span></div>`
+    body.innerHTML = `<div class="ta2-deck"><div class="ta2-bar"><span class="ta2-bar-name">Mod Deck</span><span class="ta2-seat">${roomHtml({ chat: "twitch", name: "Your seat: Twitch", state: seatState, text: seatText } as any)}</span></div>`
       + `<div class="ta2-deck-main"><ol class="ta2-steps">`
       + step(0, "Clock in", "Press this when you sit down for stream duty.", `<div class="ta2-row"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-act="in"${s === 0 ? "" : " disabled"}>Clock in</button></div>`)
       + step(1, "Step away", "Need a break? Say how long, so the Captain knows. Then come back.",

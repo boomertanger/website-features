@@ -139,7 +139,7 @@ function rosterRowHtml(r: Row) {
   const step = nextStep(r);
   if (step?.allowed && (r.ready || r.track === "admin" || r.grade === 4)) acts.push(`<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="promote" data-uid="${esc(r.uid)}">${esc(step.label)}</button>`);
   return `<div class="ca-row" role="listitem" data-uid="${esc(r.uid)}">
-    <div class="ca-who"><b>${esc(who(r))}</b>${gradeChipHtml({ track: r.track, grade: r.grade })}</div>
+    <div class="ca-who"><b>${esc(who(r))}</b>${gradeChipHtml({ track: r.track, grade: r.grade } as any)}</div>
     <div class="ca-st"><span class="bt-badge bt-badge--${st.tone}" title="${esc(st.note)}">${esc(st.label)}</span></div>
     <div class="ca-since"><span class="ca-lab">Since</span>${esc(fmtDate(r.since) || "Unknown")}</div>
     <div class="ca-flags">${strikes}${flags}</div>
@@ -170,7 +170,7 @@ function renderCoverage() {
     const text = gap ? (yt ? "most needed" : "needs help") : "enough crew";
     const seg = (cls: string, v: number, lab: string) => v ? `<i class="ca-seg ${cls}" style="--w:${(v / max) * 100}%" title="${esc(`${lab}: ${v}`)}"></i>` : "";
     return `<article class="bt-tile ca-cov-tile" data-state="${state}">
-      <div class="ca-cov-top">${roomHtml({ chat: c, name: CHAT_NAME[c], state, text })}</div>
+      <div class="ca-cov-top">${roomHtml({ chat: c, name: CHAT_NAME[c], state, text } as any)}</div>
       <p class="ca-cov-n"><b>${willing}</b> <span>${willing === 1 ? "person is" : "people are"} willing</span></p>
       <div class="ca-bar" role="img" aria-label="${esc(`${CHAT_NAME[c]}: ${fav} favourite, ${happy} happy to help, ${need} if needed`)}">${seg("is-fav", fav, "Favourite")}${seg("is-happy", happy, "Happy to help")}${seg("is-need", need, "If needed")}</div>
       <ul class="ca-cov-key"><li><i class="ca-dot is-fav"></i>Favourite <b>${fav}</b></li><li><i class="ca-dot is-happy"></i>Happy <b>${happy}</b></li><li><i class="ca-dot is-need"></i>If needed <b>${need}</b></li></ul>
@@ -193,7 +193,7 @@ function renderReady() {
     const crit = (CRITERIA[r.grade] || []).map((c) => `<li>${esc(c)}${DUTY_CRITERIA.has(c) ? ` <small>${settings.activityRules ? "met" : "counts once stream duty starts"}</small>` : ""}</li>`).join("");
     const note = to >= 4 ? "Only the owner makes Sentinels." : "The owner confirms every promotion. A Right Hand can confirm up to Warden, and the owner is told.";
     return `<article class="bt-card ca-ready-card" data-uid="${esc(r.uid)}">
-      <div class="ca-ready-top"><b>${esc(who(r))}</b><span class="ca-ready-move">${gradeChipHtml({ track: "mod", grade: r.grade })}<span aria-hidden="true">&rarr;</span>${gradeChipHtml({ track: "mod", grade: to })}</span></div>
+      <div class="ca-ready-top"><b>${esc(who(r))}</b><span class="ca-ready-move">${gradeChipHtml({ track: "mod", grade: r.grade } as any)}<span aria-hidden="true">&rarr;</span>${gradeChipHtml({ track: "mod", grade: to } as any)}</span></div>
       <p class="ca-ready-since">Met every step on ${esc(fmtDate(r.ready!.since))}.</p>
       <ul class="ca-crit">${crit}</ul>
       <p class="bt-fine bt-fine--left">${esc(note)}</p>
@@ -212,7 +212,7 @@ function renderQueue() {
   if (queueError) { el.innerHTML = `<div class="bt-empty"><div class="bt-empty-title">Couldn't load the queue</div><p>${esc(queueError)}</p></div>`; return; }
   if (!queue.length) { el.innerHTML = `<div class="bt-empty"><div class="bt-empty-title">The queue is empty</div><p>New applications show up here, best first.</p></div>`; return; }
   el.innerHTML = queue.map((a) => {
-    const vouches = a.vouches.length ? a.vouches.map((v) => `<span class="ca-vouch">${v.handle ? "@" + esc(v.handle) : "A mod"} ${gradeChipHtml({ track: "mod", grade: Math.min(4, Math.max(1, v.grade || 2)) })}</span>`).join("") : `<span class="ca-none">No vouches yet</span>`;
+    const vouches = a.vouches.length ? a.vouches.map((v) => `<span class="ca-vouch">${v.handle ? "@" + esc(v.handle) : "A mod"} ${gradeChipHtml({ track: "mod", grade: Math.min(4, Math.max(1, v.grade || 2)) } as any)}</span>`).join("") : `<span class="ca-none">No vouches yet</span>`;
     const concerns = (a.concerns || []).length ? `<div class="ca-concerns"><b>Concerns (admins only)</b>${a.concerns!.map((c) => `<p><span>${c.byHandle ? "@" + esc(c.byHandle) : "An admin"}:</span> ${esc(c.note)}</p>`).join("")}</div>` : "";
     const days = (a.availability?.days || []).map((d) => DAY_NAME[d] || d).join(", ");
     const acts = me.isOwner
@@ -240,7 +240,7 @@ function renderQueue() {
 function renderStrikes() {
   const withStrikes = rows.filter((r) => r.activeStrikes > 0);
   const list = withStrikes.length
-    ? `<ul class="ca-strikes">${withStrikes.map((r) => `<li><span><b>${esc(who(r))}</b> ${gradeChipHtml({ track: r.track, grade: r.grade })}</span><span>${badge(r.activeStrikes >= 3 ? "pink" : r.activeStrikes === 2 ? "gold" : "gray", plural(r.activeStrikes, "active strike"))}${r.ownerReview ? badge("pink", "Owner review") : ""}</span>${isA2() ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="strike" data-uid="${esc(r.uid)}">Add a strike</button>` : ""}</li>`).join("")}</ul>`
+    ? `<ul class="ca-strikes">${withStrikes.map((r) => `<li><span><b>${esc(who(r))}</b> ${gradeChipHtml({ track: r.track, grade: r.grade } as any)}</span><span>${badge(r.activeStrikes >= 3 ? "pink" : r.activeStrikes === 2 ? "gold" : "gray", plural(r.activeStrikes, "active strike"))}${r.ownerReview ? badge("pink", "Owner review") : ""}</span>${isA2() ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="strike" data-uid="${esc(r.uid)}">Add a strike</button>` : ""}</li>`).join("")}</ul>`
     : `<p class="ca-none">No one has an active strike.</p>`;
   $("[data-ca-strikes]").innerHTML = `<p class="bt-section-text">Strikes are private. 1 is a note and a chat. 2 means no Captain or Room Lead duty for 30 days. 3 goes to the owner for review. They expire after 6 months. Reasons stay with the person and the admins; this page shows counts only.</p>${list}
     ${isA2() ? `<div class="bt-row-center"><button type="button" class="bt-btn bt-btn--secondary" data-act="strike-pick">Log a strike</button></div>` : `<p class="bt-fine bt-fine--left">Logging a strike needs an Overseer or above.</p>`}`;

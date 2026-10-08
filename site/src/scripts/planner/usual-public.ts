@@ -32,14 +32,14 @@ function render(u: Usual | null) {
   }
   const cols = DOW_SHORT.map((d, i) => {
     const ps = u.patterns.filter((p) => p.dow === i + 1);
-    return `<div class="pp-day" role="group" aria-label="${DOW_LONG[i]}">${ps.length ? ps.map((p) => posterHtml({ day: d, icon: p.icon || "🎬", label: p.label, timeText: local ? localRange(p, tz) : rangeText(p.start, p.end), platformsHtml: chats(p.platforms), backstage: p.membersOnly })).join("") : posterHtml({ day: d, off: true })}</div>`;
+    return `<div class="pp-day" role="group" aria-label="${DOW_LONG[i]}">${ps.length ? ps.map((p) => posterHtml({ day: d, icon: p.icon || "🎬", label: p.label, timeText: local ? localRange(p, tz) : rangeText(p.start, p.end), platformsHtml: chats(p.platforms), backstage: p.membersOnly } as any)).join("") : posterHtml({ day: d, off: true })}</div>`;
   }).join("");
   const KIND: Record<string, string> = { weekOff: "week off", dayOff: "day off", skipPattern: "skipped" };
   const exc = u.exceptions.length
     ? `<div class="pp-exc"><span class="bt-label">Coming up</span>${u.exceptions.map((e) => `<span class="bt-badge bt-badge--gray">${esc(range(e.from, e.to))} · ${esc(KIND[e.kind] || "off")}${e.label ? `, ${esc(e.label)}` : ""}</span>`).join("")}</div>`
     : `<div class="pp-exc"><span class="bt-label">Coming up</span><span>No days off planned that Boomer has shared.</span></div>`;
-  body.innerHTML = `<section class="pp-usual">${sectionHeadHtml({ icon: "🕯️", title: "Usual week", sub: "Backstage streams are for Fan Club members, and Fan Club is free.", tools: `${zone ? `<span class="pp-timesin"><span class="bt-meta">Times in</span>${viewSwitchHtml({ key: "timesIn", label: "Times in", value: timesIn, options: [{ value: "central", label: "Central" }, { value: "local", label: `My time · ${zone}` }] })}</span>` : ""}<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/schedule">This week's schedule</a>` })}<div class="bt-posters pp-posters">${cols}</div>${exc}</section>`;
-  initViewSwitch(body, { onChange: (v) => { timesIn = v === "local" ? "local" : "central"; try { localStorage.setItem(TIMES_KEY, timesIn); } catch { /* fine */ } render(current); body.querySelector<HTMLElement>('[data-key="timesIn"] [aria-checked="true"]')?.focus(); } });
+  body.innerHTML = `<section class="pp-usual">${sectionHeadHtml({ icon: "🕯️", title: "Usual week", sub: "Backstage streams are for Fan Club members, and Fan Club is free.", tools: `${zone ? `<span class="pp-timesin"><span class="bt-meta">Times in</span>${viewSwitchHtml({ key: "timesIn", label: "Times in", value: timesIn, options: [{ value: "central", label: "Central" }, { value: "local", label: `My time · ${zone}` }] } as any)}</span>` : ""}<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/schedule">This week's schedule</a>` } as any)}<div class="bt-posters pp-posters">${cols}</div>${exc}</section>`;
+  initViewSwitch(body as unknown as Document, { onChange: (v: any) => { timesIn = v === "local" ? "local" : "central"; try { localStorage.setItem(TIMES_KEY, timesIn); } catch { /* fine */ } render(current); body.querySelector<HTMLElement>('[data-key="timesIn"] [aria-checked="true"]')?.focus(); } });
 }
 
 let done = false;

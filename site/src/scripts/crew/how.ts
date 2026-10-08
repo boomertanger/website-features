@@ -27,9 +27,9 @@ const drawCard = () => {
   if (!host) return;
   host.innerHTML = timecardHtml({
     month: "October", need: NEED, total: 4, slots: slots.slice(0, punched),
-    bonusHtml: medalHtml({ emoji: "⏱️", rarity: 2, size: 36 }),
+    bonusHtml: medalHtml({ emoji: "⏱️", rarity: 2, size: 36 } as any),
     foot: `<span class="cw-timecard-foot"><span><b>${punched} of ${NEED}</b> duties${punched > NEED ? ` · ${punched - NEED} extra` : ""}</span><button type="button" class="bt-link-btn" data-tc-reset>Reset</button></span>`,
-  });
+  } as any);
   host.querySelectorAll<HTMLElement>(".bt-timecard-slot").forEach((s, i) => {
     if (s.classList.contains("is-punched")) return;
     s.dataset.punch = String(i + 1);
@@ -120,6 +120,6 @@ if (calc) {
       + (yt ? ` The same time on Twitch would be ${num(same)}. That's the YouTube boost doing its job.` : "");
   };
   calc.querySelectorAll<HTMLElement>("[data-ctl]").forEach((g) => {
-    initRadioGroup(g, { onChange: (v) => { val[g.dataset.ctl!] = v; draw(); } });
+    initRadioGroup(g, { onChange: (v: any) => { val[g.dataset.ctl!] = v; draw(); } });
   });
 }

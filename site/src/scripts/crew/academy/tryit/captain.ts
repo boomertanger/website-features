@@ -47,7 +47,7 @@ export default function init(root: HTMLElement): void {
       el.dataset.state = state;
       el.disabled = !running;
       const secs = Math.ceil(t.left / 1000);
-      el.querySelector("[data-room]")!.innerHTML = roomHtml({ chat: CHATS[i].chat, name: CHATS[i].name, state, text: t.needed ? (t.helping ? "help is coming" : "needs help") : "covered" });
+      el.querySelector("[data-room]")!.innerHTML = roomHtml({ chat: CHATS[i].chat, name: CHATS[i].name, state, text: t.needed ? (t.helping ? "help is coming" : "needs help") : "covered" } as any);
       el.querySelector(".ta2-tile-lead")!.textContent = t.needed ? `A lead stepped away. ${secs}s left.` : running ? "All good here." : "Ready.";
       const bar = el.querySelector<HTMLElement>(".ta2-bar-t")!;
       bar.hidden = !t.needed;

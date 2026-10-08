@@ -81,9 +81,9 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
     const w = week(), now = Date.now(), pct = (a: number | null, b: number | null) => (a == null || b == null || b <= a ? 0 : Math.max(0, Math.min(100, Math.round(((now - a) / (b - a)) * 100))));
     if (w.weekOff) return "";
     const f = (t: number | null) => fmtDayTime(t, tz());
-    if (w.state === "published") return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Closed", when: f(w.closesAt), state: "done" }, { label: "Published", when: f(w.publishedAt), state: "done" }], progress: [100, 100] });
-    if (w.state === "closed") return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Closed", when: f(w.closesAt), state: "done" }, { label: "Publish by", when: f(w.publishBy), state: "next", n: 3 }], progress: [100, pct(w.closesAt, w.publishBy)], left: w.publishBy && now > w.publishBy ? "Overdue" : leftText(w.publishBy || now) });
-    return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Votes and requests close", when: f(w.closesAt), state: "next", n: 2 }, { label: "Publish by", when: f(w.publishBy), n: 3 }], progress: [pct(w.opensAt, w.closesAt), 0], left: leftText(w.closesAt || now) });
+    if (w.state === "published") return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Closed", when: f(w.closesAt), state: "done" }, { label: "Published", when: f(w.publishedAt), state: "done" }], progress: [100, 100] } as any);
+    if (w.state === "closed") return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Closed", when: f(w.closesAt), state: "done" }, { label: "Publish by", when: f(w.publishBy), state: "next", n: 3 }], progress: [100, pct(w.closesAt, w.publishBy)], left: w.publishBy && now > w.publishBy ? "Overdue" : leftText(w.publishBy || now) } as any);
+    return fuseHtml({ steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, { label: "Votes and requests close", when: f(w.closesAt), state: "next", n: 2 }, { label: "Publish by", when: f(w.publishBy), n: 3 }], progress: [pct(w.opensAt, w.closesAt), 0], left: leftText(w.closesAt || now) } as any);
   }
 
   // ---- slots ----
@@ -108,28 +108,28 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
     const fewer = s.plannedGames.length && s.plannedGames.length < s.plannedGameCount ? ` · +${s.plannedGameCount - s.plannedGames.length} picked on stream` : "";
     return `<div class="pp-sl" data-state="${s.state}">${slotHtml({
       id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, count: s.plannedGameCount, backstage: s.type === "backstage", selected: s.id === st.sel, published: pub && !cancelled,
-      timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined }), badgeHtml: badge ? badge + unpub : undefined, reorder: canEdit,
+      timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined } as any), badgeHtml: badge ? badge + unpub : undefined, reorder: canEdit,
       metaHtml: cancelled ? esc(s.cancel?.reason || "Cancelled") : `${s.plannedGames.length} of ${s.plannedGameCount} games${esc(fewer)}${!badge && unpub ? ` ${unpub}` : ""}`,
       games: s.plannedGames.map((g) => ({ slug: g.gameId, title: g.title, coverHtml: coverOf(vault, g.gameId, g.title), src: SRC[g.source.kind] || "you", srcExtra: g.source.kind === "modRequest" && g.source.byHandle ? ` · @${g.source.byHandle}` : g.source.kind === "ballot" && g.source.votes ? ` · ${g.source.votes}` : "", fresh: g.gameId === st.fresh })),
       roomsHtml: s.type === "backstage" ? "" : roomsMiniHtml(slotRooms) + seatText(s),
       availHtml: s.type === "backstage" ? "" : `${avatarsHtml(yes.map((x) => x.handle || "?"))}<b>${yes.length}</b> available${maybe.length ? ` · ${maybe.length} maybe` : ""}`,
       requests: open, actionsHtml: acts,
-    })}</div>`;
+    } as any)}</div>`;
   }
   function slotsHtml() {
     const w = week();
     if (w.weekOff) return `<div class="bt-notice pp-weekoff">🌴 <b>Week off: ${esc(w.weekOff.label)}.</b> This week opened empty and /schedule says so.${st.streams.length ? "" : " You can still add a slot if plans change."}</div>`;
     return weekDates(w.id).map((date) => {
       const list = st.streams.filter((s) => dayOfStream(s) === date), p = dateParts(date);
-      const body = list.length ? list.map(slotCard).join("") : slotOffHtml({ day: p.dow, num: p.num, actionHtml: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="add" data-date="${date}">+ Open a slot</button>` });
+      const body = list.length ? list.map(slotCard).join("") : slotOffHtml({ day: p.dow, num: p.num, actionHtml: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="add" data-date="${date}">+ Open a slot</button>` } as any);
       return `<div class="pp-day${date === st.day ? " is-day" : ""}" data-date="${date}">${body}</div>`;
     }).join("");
   }
   function daybarHtml() {
     const w = week();
-    return dayPickerHtml({ label: "Day", selected: [st.day], days: weekDates(w.id).map((d, i) => ({ key: d, label: DAY_SHORT[i], num: dateParts(d).num })) });
+    return dayPickerHtml({ label: "Day", selected: [st.day], days: weekDates(w.id).map((d, i) => ({ key: d, label: DAY_SHORT[i], num: dateParts(d).num })) } as any);
   }
-  const sechead = () => sectionHeadHtml({ icon: "🗓️", title: "Slots", count: st.streams.filter((s) => s.state !== "cancelled").length, tools: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="add">+ Add a slot</button>` });
+  const sechead = () => sectionHeadHtml({ icon: "🗓️", title: "Slots", count: st.streams.filter((s) => s.state !== "cancelled").length, tools: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-act="add">+ Add a slot</button>` } as any);
 
   // ---- tray ----
   const gradeName = (g: number | null | undefined) => (g ? (gradeInfo("mod", g) as any).name : "");
@@ -160,7 +160,7 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
         kind: KIND[g.id], empty: !st.tray && !st.trayErr ? "Loading…" : st.trayErr ? "Couldn't load the tray." : g.id === "modRequests" ? "No mod has asked for a game on this slot yet." : g.id === "theme" ? (s.theme?.tagHints?.length || s.theme?.gameHints?.length ? "No other games fit this theme." : "This slot has no theme hints. Add some in your usual week.") : needle ? "No games match." : "Nothing here yet.",
         items: g.items.map((it) => ({ slug: it.slug, title: it.title, coverHtml: coverOf(vault, it.slug, it.title), lineHtml: trayLine(it, g.id, s), kind: g.id === "picks" ? "you" : KIND[g.id], inSlot: inSlot.has(it.slug), also: (it.alsoOn || []).join(", "), full })),
       })),
-    });
+    } as any);
     const more = st.trayMore && !needle ? `<p class="bt-meta pp-more">${st.trayMore} more in the Vault. Search to find the rest.</p>` : "";
     return html.replace(/<\/div><\/aside>$/, `${more}</div></aside>`);
   }
@@ -250,7 +250,7 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
         await loadAll(); renderAll();
         const slots = q("[data-pp-slots]");
         root.dataset.celebrating = "1"; setTimeout(() => delete root.dataset.celebrating, 3200);
-        celebrate(slots, { selector: ".bt-slot" });
+        celebrate(slots as unknown as Document, { selector: ".bt-slot" });
         toast(again ? "Changes published. /schedule is up to date." : "Published. /schedule is live and the crew can sign up for seats.");
         void loadTray();
         break;
@@ -276,7 +276,7 @@ export async function mountPlan(root: HTMLElement, io: Io, who: Who) {
       const t = e.target as HTMLElement;
       if ((e.key === "Enter" || e.key === " ") && t.matches(".bt-slot")) { e.preventDefault(); select(t.dataset.slot!); t.focus(); }
     });
-    initTray(q("[data-pp-board]"), {
+    initTray(q("[data-pp-board]") as unknown as Document, {
       onAdd: (slug: string, kind: string, item: HTMLElement, sock: HTMLElement) => addGame(slug, kind, item, sock),
       onRemove: (id: string, i: number) => { const s = st.streams.find((x) => x.id === id); if (s) void setGames(s, s.plannedGames.map((g) => g.gameId).filter((_, k) => k !== i)); },
       onSearch: (v: string) => { st.q = v; window.clearTimeout(searchT); searchT = window.setTimeout(renderTray, 120); },

@@ -43,7 +43,7 @@ const nav: [string, string][] = [
   ...(mod.soon ? [["s-soon", "When it opens"] as [string, string]] : []),
   ["s-ask", "Ask BOOMBOT"],
 ];
-const quiz = showQuiz ? quizHtml({ questions: mod.quiz.map((q) => ({ text: q.q, options: q.options })), passMark: 4, label: `${mod.title} quiz` }) : "";
+const quiz = showQuiz ? quizHtml({ questions: mod.quiz.map((q) => ({ text: q.q, options: q.options })), passMark: 4, label: `${mod.title} quiz` } as any) : "";
 const medalHow = showQuiz ? "Pass the five-question quiz with 4 right. Your first pass pays 5 Gears." : "Opens with Chat Games.";
 const medalUn = mod.unlocks ? `Unlocks ${mod.unlocks}` : "Gears and know-how";
 ---

@@ -68,7 +68,7 @@ async function mount(io: Io, who: Who) {
     id: p.id, day: DAY_SHORT[p.dow - 1], icon: p.icon || "", label: p.label + (p.active ? "" : " · paused"), timeText: rangeText(p.start, p.end), backstage: p.type === "backstage",
     platformsHtml: platformsHtml((p.rooms || (p.platforms || ["twitch", "youtube", "tiktok"]).flatMap((x) => (x === "youtube" ? ["ytLandscape", "ytVertical"] : [x]))) as string[]),
     selected: p.id === selected, editable: true,
-  });
+  } as any);
   function strip() {
     return `<div class="bt-posters pu-strip">${DAY_SHORT.map((d, i) => {
       const list = data.patterns.filter((p) => p.dow === i + 1);
@@ -85,7 +85,7 @@ async function mount(io: Io, who: Who) {
       const names = x.kind === "skipPattern" ? (x.patternIds || []).map((id) => data.patterns.find((p) => p.id === id)?.label || "a slot").join(", ") : "";
       return `<div class="pu-exc"><span class="bt-badge bt-badge--${tone}">${text}</span><span class="pu-exc-t"><b>${esc(x.label)}</b><small>${esc(rangeDates(x))}${names ? ` · ${esc(names)}` : ""}</small></span><span class="pu-pub">${sw(`pub:${x.id}`, x.public, `Show ${x.label} on /schedule`)}<span>On /schedule</span></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-exc="${x.id}">Edit</button></div>`;
     }).join("") : `<div class="bt-empty bt-empty--compact"><div class="bt-empty-title">No exceptions</div><p>Add a week off, a day off or skip one slot once. They show on /schedule if you let them.</p></div>`;
-    return sectionHeadHtml({ icon: "🗓️", title: "Exceptions", count: list.length, sub: "Weeks off, days off, or skipping one slot once.", tools: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-exc="new">+ Add exception</button>` }) + `<div class="pu-exc-list">${rows}</div>`;
+    return sectionHeadHtml({ icon: "🗓️", title: "Exceptions", count: list.length, sub: "Weeks off, days off, or skipping one slot once.", tools: `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-exc="new">+ Add exception</button>` } as any) + `<div class="pu-exc-list">${rows}</div>`;
   }
 
   // ---- settings (owner) ----
@@ -154,7 +154,7 @@ async function mount(io: Io, who: Who) {
       const val = (s: string) => (form.querySelector(s) as HTMLInputElement | null)?.value || "";
       const type = form.querySelector<HTMLElement>("[data-types] [aria-pressed=true]")?.dataset.type || f.type, dowN = Number(form.querySelector<HTMLElement>("[data-days] [aria-pressed=true]")?.dataset.dow || f.dow);
       const rooms = [...form.querySelectorAll<HTMLElement>("[data-room][aria-pressed=true]")].map((x) => x.dataset.room as string), n = Math.max(1, Number(val("#pt-count")) || f.count);
-      q("[data-prev]").innerHTML = posterHtml({ day: DAY_SHORT[dowN - 1], icon: form.querySelector<HTMLElement>("[data-icon][aria-pressed=true]")?.dataset.icon || "", label: val("#pt-label").trim() || "Your slot", timeText: rangeText(val("#pt-start") || f.start, val("#pt-end") || f.end), backstage: type === "backstage", platformsHtml: platformsHtml(rooms) });
+      q("[data-prev]").innerHTML = posterHtml({ day: DAY_SHORT[dowN - 1], icon: form.querySelector<HTMLElement>("[data-icon][aria-pressed=true]")?.dataset.icon || "", label: val("#pt-label").trim() || "Your slot", timeText: rangeText(val("#pt-start") || f.start, val("#pt-end") || f.end), backstage: type === "backstage", platformsHtml: platformsHtml(rooms) } as any);
       q("[data-prev-t]").textContent = `Next week this opens as a ${type === "backstage" ? "backstage" : "live"} slot with ${n} game spot${n === 1 ? "" : "s"}${f.tags.length ? `, and #${f.tags[0]} games at the top of the tray` : ""}.`;
     };
     tokens(); renderPrev();

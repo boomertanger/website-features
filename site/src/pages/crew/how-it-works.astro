@@ -58,14 +58,14 @@ const LADDER_HTML = ladderHtml({
   selected: 1,
   rungs: LADDER.map((L, i) => {
     const admin = L.track === "admin";
-    const chip = gradeChipHtml({ track: L.track, grade: L.grade, code: true });
+    const chip = gradeChipHtml({ track: L.track, grade: L.grade, code: true } as any);
     const name = admin ? ["", "Steward", "Overseer", "Right Hand"][L.grade] : ["", "Initiate", "Watcher", "Warden", "Sentinel"][L.grade];
     return {
       admin,
       rungHtml: chip,
       tag: admin ? "Admin" : `Rung ${L.grade}`,
       detailHtml: ladderDetailHtml({
-        chipHtml: gradeChipHtml({ track: L.track, grade: L.grade, code: true }),
+        chipHtml: gradeChipHtml({ track: L.track, grade: L.grade, code: true } as any),
         meta: admin ? "Invitation only" : `Rung ${L.grade} of 4`,
         title: name,
         text: L.blurb,
@@ -74,10 +74,10 @@ const LADDER_HTML = ladderHtml({
         upLabel: i === 3 || i === 6 ? "Next" : "To move up",
         tags: [`Stay Active: ${L.min}`, ...(i < 4 ? ["Boomer confirms every promotion"] : [])],
         admin,
-      }),
+      } as any),
     };
   }),
-});
+} as any);
 
 const FLOW = [
   { k: "dk", ic: "🪝", t: "Deckhand", badge: ["teal", "0 to 2 per chat"], d: "Welcomes people, answers questions, backs up the lead. Come and go freely." },
@@ -117,7 +117,7 @@ const LADDERS: [string, string, Badge[], string][] = [
   ["Iron Shift", "Active months in a row (starts with stream duty)", ladder("iron-shift"), "months"],
   ["YouTube Pioneer", "YouTube rooms you've led (starts with stream duty)", ladder("youtube-pioneer"), "rooms"],
 ];
-const rung = (b: Badge, unit: string) => `<li class="cw-rung">${medalHtml({ emoji: b.emoji, rarity: b.rarity, size: 48 })}<span>${unit ? `${b.ladder!.step}` : ""}</span><b>${b.name}</b></li>`;
+const rung = (b: Badge, unit: string) => `<li class="cw-rung">${medalHtml({ emoji: b.emoji, rarity: b.rarity, size: 48 } as any)}<span>${unit ? `${b.ladder!.step}` : ""}</span><b>${b.name}</b></li>`;
 
 const PERKS = [["⭐", "Free Sub Club", "While you're Active"], ["👕", "Earliest merch", "Before anyone else"], ["🎖", "Crew badges", "A collection only the crew can earn"], ["🌙", "Crew missions", "Night Shift campaigns just for the crew"]];
 const CODE = [
@@ -147,7 +147,7 @@ const FAQS = [
 const TC_SLOTS = [
   { stamp: "Oct 3", text: "YT vertical · 2 h" }, { stamp: "Oct 9", text: "Twitch · 3 h" }, { stamp: "Oct 14", text: "YT landscape · 1 h" }, { stamp: "Oct 22", text: "TikTok · 2 h" },
 ];
-const TC_INITIAL = timecardHtml({ month: "October", need: 2, total: 4, slots: TC_SLOTS.slice(0, 1), bonusHtml: medalHtml({ emoji: "⏱️", rarity: 2, size: 36 }), foot: `<span class="cw-timecard-foot"><span><b>1 of 2</b> duties</span><button type="button" class="bt-link-btn" data-tc-reset>Reset</button></span>` });
+const TC_INITIAL = timecardHtml({ month: "October", need: 2, total: 4, slots: TC_SLOTS.slice(0, 1), bonusHtml: medalHtml({ emoji: "⏱️", rarity: 2, size: 36 } as any), foot: `<span class="cw-timecard-foot"><span><b>1 of 2</b> duties</span><button type="button" class="bt-link-btn" data-tc-reset>Reset</button></span>` } as any);
 ---
 <CrewLayout title="How the crew works" description="Mod Machina: what the Boomertanger crew does, how to join, the grade ladder, a stream from the crew's side, Gears and the rewards." section="how">
   <TocLayout items={NAV}>
@@ -226,7 +226,7 @@ const TC_INITIAL = timecardHtml({ month: "October", need: 2, total: 4, slots: TC
             <p>Leads can step away whenever they need to. Tap <b>Step away</b>: the Deckhands in that chat are asked to take the lead, the first to accept carries the lantern, and Gears follow the minutes each person held it. Nobody loses anything. Try it: nothing here is saved.</p>
             <div class="cw-status" data-lstatus role="status" aria-live="polite">Mothman Mike is leading the YouTube vertical chat.</div></div>
           <div class="cw-room-card">
-            <div class="cw-room-card-head"><Fragment set:html={roomHtml({ chat: "ytVertical", name: "YT vertical", state: "covered", text: "" })} /><span>8:41 pm</span></div>
+            <div class="cw-room-card-head"><Fragment set:html={roomHtml({ chat: "ytVertical", name: "YT vertical", state: "covered", text: "" } as any)} /><span>8:41 pm</span></div>
             <div class="cw-person has-lantern" data-p="a"><span class="bt-avatar-md" aria-hidden="true">MM</span><span><b>Mothman Mike</b><small data-role-a>Room Lead</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>
             <div class="cw-person" data-p="b"><span class="bt-avatar-md" aria-hidden="true">HH</span><span><b>Hollow Hannah</b><small data-role-b>Deckhand</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>
             <div class="cw-person" data-p="c"><span class="bt-avatar-md" aria-hidden="true">GG</span><span><b>Grim Gabe</b><small data-role-c>Deckhand</small></span><span class="cw-lamp-ic" aria-hidden="true">🏮</span></div>

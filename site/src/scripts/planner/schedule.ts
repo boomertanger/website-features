@@ -93,7 +93,7 @@ const delayedBy = (s: PubStream) => (s.delay?.originalStart != null ? Math.round
 const isBackstage = (s: PubStream) => s.type === "backstage";
 const visitor = () => !auth || auth.status === "signedOut";
 const roomsOf = (s: PubStream) => (s.rooms.length ? s.rooms : s.platforms.map((p) => (p === "youtube" ? "ytLandscape" : p)));
-const timeHtml = (s: PubStream) => dualTimeHtml({ start: s.start, end: s.end, was: s.delay?.originalStart ?? undefined, tz: M!.tz, mode: timesIn });
+const timeHtml = (s: PubStream) => dualTimeHtml({ start: s.start, end: s.end, was: s.delay?.originalStart ?? undefined, tz: M!.tz, mode: timesIn } as any);
 const captainLine = (s: PubStream) => (s.crew?.captain ? `Captain ${handle(s.crew.captain)}` : "");
 const gamesLine = (s: PubStream) => {
   const n = s.games.length, more = Math.max(0, s.plannedGameCount - n);
@@ -132,12 +132,12 @@ function renderHero() {
     ? `<a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to watch backstage streams">Join free to watch</a>`
     : `<a class="bt-btn bt-btn--primary" href="/live">${isLive ? "Watch live" : "Go to the live page"}</a>`;
   heroEl.innerHTML = marqueeHtml({
-    frame, kicker, icon: s.theme?.icon || "", title: titleOf(s), whenHtml: when, clockHtml: isLive ? "" : flipClockHtml({ startsAt: s.start }), metaHtml: meta,
+    frame, kicker, icon: s.theme?.icon || "", title: titleOf(s), whenHtml: when, clockHtml: isLive ? "" : flipClockHtml({ startsAt: s.start } as any), metaHtml: meta,
     ctaHtml: `${watch}<a class="bt-btn bt-btn--secondary" href="#pp-week">See the whole week</a>`,
     coversHtml: s.games.slice(0, 2).map((g) => coverHtml(coverOf(g.slug), { alt: g.title, eager: true })).join(""), label: "Next stream",
   });
   heroKey = `${s.id}:${s.state}:${isLive}`;
-  if (!isLive) clocks = initFlipClocks(heroEl, { onZero: () => { window.setTimeout(refresh, 4000); } });
+  if (!isLive) clocks = initFlipClocks(heroEl as unknown as Document, { onZero: () => { window.setTimeout(refresh, 4000); } });
 }
 
 // ---------- This week at a glance (doors) ----------
@@ -173,13 +173,13 @@ function renderGlance() {
   const ix = Math.max(0, days.indexOf(doorDay));
   const name = DOOR_STYLES.find((x) => x[0] === style)?.[1] || "Jaws";
   const stsw = `<span class="pp-stsw" role="group" aria-label="Door style"><button type="button" class="bt-chip bt-chip--small" data-dstep="-1" aria-label="Previous door style">‹</button><b data-dname>${esc(name)}</b><button type="button" class="bt-chip bt-chip--small" data-dstep="1" aria-label="Next door style">›</button></span>`;
-  glanceEl.innerHTML = `<div data-pp-glance-in>${sectionHeadHtml({ icon: "🚪", title: "This week at a glance", count: list.length, sub: "Open a night for a quick look. The full tickets are below.", tools: stsw })}`
-    + `<div class="pp-glance-doors" data-style="${esc(style)}">${sliderHtml({ cells, index: ix, label: "This week" })}</div><div class="pp-door-detail" data-pp-doordetail aria-live="polite"></div></div>`;
+  glanceEl.innerHTML = `<div data-pp-glance-in>${sectionHeadHtml({ icon: "🚪", title: "This week at a glance", count: list.length, sub: "Open a night for a quick look. The full tickets are below.", tools: stsw } as any)}`
+    + `<div class="pp-glance-doors" data-style="${esc(style)}">${sliderHtml({ cells, index: ix, label: "This week" } as any)}</div><div class="pp-door-detail" data-pp-doordetail aria-live="polite"></div></div>`;
   glanceEl.dataset.style = style;
   renderDoorDetail();
   const inner = glanceEl.querySelector<HTMLElement>("[data-pp-glance-in]")!;
-  initSlider(inner, { onChange: (_i, _c, id) => { doorDay = id || doorDay; renderDoorDetail(); } });
-  initDoors(inner, { onOpen: (id) => { doorDay = id; renderDoorDetail(); } });
+  initSlider(inner as unknown as Document, { onChange: (_i: any, _c: any, id: any) => { doorDay = id || doorDay; renderDoorDetail(); } });
+  initDoors(inner as unknown as Document, { onOpen: (id: any) => { doorDay = id; renderDoorDetail(); } });
 }
 function renderDoorDetail() {
   const el = glanceEl.querySelector<HTMLElement>("[data-pp-doordetail]");
@@ -192,7 +192,7 @@ function renderDoorDetail() {
   }
   const st = stateOf(s), d = delayedBy(s);
   const note = s.cancel ? `<span class="pp-why is-gray"><b>Off</b>${esc(s.cancel.reason || "This stream is cancelled.")}</span>` : d > 0 ? `<span class="pp-why"><b>Moved</b>${esc(s.delay?.reason || `Starts ${lengthText(d)} later than planned.`)}</span>` : "";
-  el.innerHTML = `${s.theme ? themeChipHtml(s.theme) : ""}<span class="pp-dd-time">${timeHtml(s)}</span>${isBackstage(s) ? velvetHtml() : platformsHtml(roomsOf(s).length ? roomsOf(s) : undefined)}`
+  el.innerHTML = `${s.theme ? themeChipHtml(s.theme as any) : ""}<span class="pp-dd-time">${timeHtml(s)}</span>${isBackstage(s) ? velvetHtml() : platformsHtml(roomsOf(s).length ? roomsOf(s) : undefined)}`
     + `<span class="bt-meta">${esc(s.games.map((g) => g.title).join(" · ") || "Games picked on stream")}</span>${note}`
     + `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm pp-dd-go" data-see="${esc(s.id)}" data-week="${esc(s.week)}">See the ticket ↓</button>`;
   void st; void dp;
@@ -210,11 +210,11 @@ function ticketFor(s: PubStream, open: boolean) {
     id: s.id, day: dp.dow, num: dp.num, month: dp.month, state: st === "scheduled" && today ? "tonight" : st, title: titleOf(s), icon: s.theme?.icon || "", timeHtml: timeHtml(s),
     was: d > 0 ? d : undefined, reason: s.cancel?.reason || s.delay?.reason || "", coversHtml: gameCovers(s), more: Math.max(0, s.plannedGameCount - Math.min(3, s.games.length)),
     platformsHtml: platformsHtml(roomsOf(s).length ? roomsOf(s) : undefined), backstage: isBackstage(s), crew: captainLine(s), open, interactive: true,
-  });
+  } as any);
 }
 function offTicket(day: string) {
   const dp = dayParts(zonedNoon(day), M!.tz);
-  return ticketHtml({ day: dp.dow, num: dp.num, month: dp.month, state: "off", reason: exceptionFor(day) || "" });
+  return ticketHtml({ day: dp.dow, num: dp.num, month: dp.month, state: "off", reason: exceptionFor(day) || "" } as any);
 }
 function timelineHtml(list: PubStream[], week: string, sel: string) {
   const tz = M!.tz, days = weekDays(week), today = ymd(Date.now(), tz);
@@ -241,7 +241,7 @@ function detailHtml(s: PubStream | undefined) {
   const kick = `${dp.dow} ${dp.month} ${dp.num} · ${st === "cancelled" ? "Cancelled" : st === "ended" ? "Ended" : st === "live" ? "Live now" : "Scheduled"}`;
   const srcOf = (g: PubStream["games"][number]) => g.kind === "modRequest" ? `<span class="bt-src bt-src--mod">Mod pick${g.byHandle ? ` · @${esc(g.byHandle)}` : ""}</span>`
     : g.kind === "ballot" ? `<span class="bt-src bt-src--vote">Votes${g.votes ? ` · ${esc(g.votes)}` : ""}</span>` : `<span class="bt-src bt-src--you">Boomer's pick</span>`;
-  const list = s.games.map((g, i) => `<li><span class="n">${i + 1}</span>${coverHtml(coverOf(g.slug), { alt: g.title, cls: "bt-cover--sm", size: "sm" })}<span class="t">${esc(g.title)}</span>${srcOf(g)}</li>`).join("");
+  const list = s.games.map((g, i) => `<li><span class="n">${i + 1}</span>${coverHtml(coverOf(g.slug), { alt: g.title, cls: "bt-cover--sm", size: "sm" } as any)}<span class="t">${esc(g.title)}</span>${srcOf(g)}</li>`).join("");
   const plan = s.games.length ? `<ul class="pp-gamelist">${list}</ul>` : `<p class="bt-meta">${s.plannedGameCount ? "Boomer picks the games on stream." : "The games aren't picked yet."}</p>`;
   const more = Math.max(0, s.plannedGameCount - s.games.length);
   const why = s.cancel ? `<span class="pp-why is-gray"><b>Why it's off</b>${esc(s.cancel.reason || "Boomer cancelled this stream.")}</span>` : d > 0 ? `<span class="pp-why"><b>Why it moved</b>${esc(s.delay?.reason || `Starts ${lengthText(d)} later than planned.`)}</span>` : "";
@@ -250,7 +250,7 @@ function detailHtml(s: PubStream | undefined) {
     : `<span class="bt-label">Where to watch</span><div class="pp-where">${platformsHtml(roomsOf(s).length ? roomsOf(s) : undefined)}<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/live">Go to the live page</a></div>`;
   const chats = s.crew?.chats && !back ? Object.entries(s.crew.chats) : [];
   const NAMES: Record<string, string> = { twitch: "Twitch", ytLandscape: "YT landscape", ytVertical: "YT vertical", tiktok: "TikTok" };
-  const crew = chats.length ? `<span class="bt-label">Crew</span><div class="bt-rooms">${chats.map(([c, v]) => roomHtml({ chat: c, name: NAMES[c] || c, state: v.lead ? "covered" : "needed", text: v.lead ? `@${v.lead}` : "lead needed" })).join("")}</div>` : "";
+  const crew = chats.length ? `<span class="bt-label">Crew</span><div class="bt-rooms">${chats.map(([c, v]) => roomHtml({ chat: c, name: NAMES[c] || c, state: v.lead ? "covered" : "needed", text: v.lead ? `@${v.lead}` : "lead needed" } as any)).join("")}</div>` : "";
   const tone = back ? "var(--bt-velvet)" : st === "cancelled" ? "var(--bt-gray)" : "var(--bt-title)";
   return `<div class="pp-detail" style="--tone:${tone}" aria-live="polite"><div class="pp-detail-games">${s.games.slice(0, 2).map((g) => coverHtml(coverOf(g.slug), { alt: g.title })).join("")}</div>`
     + `<div class="pp-detail-main"><span class="pp-kick">${esc(kick)}</span><h3 class="bt-heading pp-detail-title">${s.theme?.icon ? `${esc(s.theme.icon)} ` : ""}${esc(titleOf(s))}</h3><span class="pp-detail-time">${timeHtml(s)}</span>${why}`
@@ -261,13 +261,13 @@ function detailHtml(s: PubStream | undefined) {
 /** "Times in  Central | My time": only for a viewer whose clock differs from Central. */
 function timesInHtml() {
   const zone = localZoneName(M!.tz);
-  return zone ? `<span class="pp-timesin"><span class="bt-meta">Times in</span>${viewSwitchHtml({ key: "timesIn", label: "Times in", value: timesIn, options: [{ value: "central", label: "Central" }, { value: "local", label: `My time · ${zone}` }] })}</span>` : "";
+  return zone ? `<span class="pp-timesin"><span class="bt-meta">Times in</span>${viewSwitchHtml({ key: "timesIn", label: "Times in", value: timesIn, options: [{ value: "central", label: "Central" }, { value: "local", label: `My time · ${zone}` }] } as any)}</span>` : "";
 }
 function renderWeek() {
   const id = tab === "next" ? M!.nxt : M!.cur, list = M!.streams[id] || [], w = weekOf(id), mon = mondayOf(id);
   const cur = tab !== "next";
   const sub = `${rangeLabel(mon)}${cur && !(w?.state === "published" && M!.streams[M!.nxt]?.length) ? " · next week lands Friday" : ""}`;
-  const head = sectionHeadHtml({ icon: "📅", title: cur ? "This week" : "Next week", count: list.length || null, sub, tools: `${tabsHtml()}${list.length ? viewSwitchHtml({ key: "weekView", label: "Week view", value: weekView, options: WEEK_VIEWS }) : ""}${list.length ? timesInHtml() : ""}` });
+  const head = sectionHeadHtml({ icon: "📅", title: cur ? "This week" : "Next week", count: list.length || null, sub, tools: `${tabsHtml()}${list.length ? viewSwitchHtml({ key: "weekView", label: "Week view", value: weekView, options: WEEK_VIEWS } as any) : ""}${list.length ? timesInHtml() : ""}` } as any);
   let body = "";
   if (w?.weekOff && !list.length) {
     body = mascotEmpty(`Week off${w.weekOff.label ? `: ${w.weekOff.label}` : ""}`, cur ? "Boomer is taking this week off. There are no streams." : "Boomer is taking next week off. The usual routine is back after that.");
@@ -288,8 +288,8 @@ function renderWeek() {
     body += `<div data-pp-detail>${detailHtml(list.find((s) => s.id === sel))}</div>`;
   }
   weekEl.innerHTML = `<div class="pp-week" id="pp-week">${head}${body}</div>`;
-  initTickets(weekEl, { onOpen: (sid) => selectTicket(sid) });
-  initViewSwitch(weekEl, { onChange: (v, key) => {
+  initTickets(weekEl as unknown as Document, { onOpen: (sid: any) => selectTicket(sid) });
+  initViewSwitch(weekEl as unknown as Document, { onChange: (v: any, key: any) => {
     if (key === "timesIn") {
       timesIn = v === "local" ? "local" : "central"; try { localStorage.setItem("bt.schedule.timesIn", timesIn); } catch { /* fine */ }
       heroKey = ""; renderHero(); renderGlance(); renderWeek(); weekEl.querySelector<HTMLElement>('[data-key="timesIn"] [aria-checked="true"]')?.focus(); return;
@@ -322,9 +322,9 @@ function renderUsual() {
   usualEl.hidden = false;
   const posters = DOW_SHORT.map((d, i) => {
     const p = u.patterns.find((x) => x.dow === i + 1);
-    return p ? posterHtml({ day: d, icon: p.icon || "🎬", label: p.label, timeText: rangeText(p.start, p.end), platformsHtml: platformsHtml(p.platforms.map((x) => (x === "youtube" ? "ytLandscape" : x))), backstage: p.membersOnly }) : posterHtml({ day: d, off: true });
+    return p ? posterHtml({ day: d, icon: p.icon || "🎬", label: p.label, timeText: rangeText(p.start, p.end), platformsHtml: platformsHtml(p.platforms.map((x) => (x === "youtube" ? "ytLandscape" : x))), backstage: p.membersOnly } as any) : posterHtml({ day: d, off: true });
   }).join("");
-  usualEl.innerHTML = sectionHeadHtml({ icon: "🕯️", title: "Boomer's usual week", sub: "The routine. Each new week starts from this, then Boomer changes what's different.", tools: `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/schedule/usual">See the usual week</a>` })
+  usualEl.innerHTML = sectionHeadHtml({ icon: "🕯️", title: "Boomer's usual week", sub: "The routine. Each new week starts from this, then Boomer changes what's different.", tools: `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/schedule/usual">See the usual week</a>` } as any)
     + `<div class="bt-posters">${posters}</div>`;
 }
 

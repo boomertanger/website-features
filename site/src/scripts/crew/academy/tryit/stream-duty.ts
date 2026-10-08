@@ -25,7 +25,7 @@ export default function init(root: HTMLElement): void {
   function seat() {
     const state = phase === "lead" || phase === "back" ? "covered" : phase === "asking" || phase === "pinged" ? "needed" : "covered";
     const text = phase === "lead" ? "you're leading" : phase === "back" ? "you're leading" : phase === "asking" ? "asking Deckhands" : phase === "pinged" ? "Captain pinged" : `${taker} leads`;
-    return roomHtml({ chat: "twitch", name: "Twitch", state, text });
+    return roomHtml({ chat: "twitch", name: "Twitch", state, text } as any);
   }
 
   function render() {

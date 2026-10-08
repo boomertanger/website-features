@@ -73,7 +73,7 @@ function renderAwards(awards: Award[], members: PublicMember[]) {
   $("[data-cs-heroes-lede]").textContent = a
     ? "Hover or tap a medal to see who won it and why."
     : `The first awards land on ${first}. Hover or tap a medal to see how each one is won.`;
-  initFlipCards(el);
+  initFlipCards(el as unknown as Document);
 }
 
 // ---- 02 Where we need you: favourites per chat (not streams covered) ----
@@ -94,7 +94,7 @@ const quoteOf = (m: PublicMember) => (typeof m.quote === "string" ? m.quote.trim
 function cardHtml(m: PublicMember) {
   const w = who(m);
   const chats = Object.fromEntries((m.favourites || []).map((c) => [c, "favourite"]));
-  const html = crewCardHtml({ name: w.name, href: w.href, gradeHtml: w.gradeHtml, staff: m.track === "admin", onBreak: m.status === "goingDark", chats: m.favourites?.length ? chats : null });
+  const html = crewCardHtml({ name: w.name, href: w.href, gradeHtml: w.gradeHtml, staff: m.track === "admin", onBreak: m.status === "goingDark", chats: m.favourites?.length ? chats : null } as any);
   const q = quoteOf(m);
   return html
     .replace("bt-tile bt-crew-card", `bt-tile bt-crew-card cs-card${m.track === "admin" ? " is-staff" : ""}`)
@@ -126,8 +126,8 @@ function renderFame(awards: Award[]) {
     return;
   }
   const name = (n: string | null) => (n ? `<a href="/u/${encodeURIComponent(n)}">${esc(n)}</a>` : "Crew member");
-  el.innerHTML = `<ol class="ai-jr cs-fame" data-journey style="--n:${shown.length};--m:${Math.max(1, shown.length - 1)}">${shown.map((i, n) => `<li tabindex="0"><span class="ai-jr-num">${n + 1}</span>${medalHtml({ emoji: i.emoji, rarity: 4, size: 40 })}<b>${name(i.name)}</b><span class="ai-jr-t">${esc(i.k)} · ${esc(i.when)}</span></li>`).join("")}</ol>`;
-  initHowItWorks(el);
+  el.innerHTML = `<ol class="ai-jr cs-fame" data-journey style="--n:${shown.length};--m:${Math.max(1, shown.length - 1)}">${shown.map((i, n) => `<li tabindex="0"><span class="ai-jr-num">${n + 1}</span>${medalHtml({ emoji: i.emoji, rarity: 4, size: 40 } as any)}<b>${name(i.name)}</b><span class="ai-jr-t">${esc(i.k)} · ${esc(i.when)}</span></li>`).join("")}</ol>`;
+  initHowItWorks(el as unknown as Document);
 }
 
 // ---- Join or HQ ----

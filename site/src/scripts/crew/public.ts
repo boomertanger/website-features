@@ -31,7 +31,7 @@ export const loadMe = async (s: AuthState): Promise<A.Me> => {
   const v = q("apply");
   const me = JSON.parse(JSON.stringify(v === "blocked" ? preview.crewMeBlocked : preview.crewMe)) as A.Me;
   if (v === "sent" || v === "notNow" || v === "crew") me.application = { ...(preview.application as A.Me["application"])!, status: v === "notNow" ? "notNow" : "open", note: v === "notNow" ? "Thanks for applying. We'd like a little more time with you in chat first." : null, reapplyAt: v === "notNow" ? 1795000000000 : null };
-  if (v === "crew") me.crew = { track: "mod", grade: 1, name: "Initiate", status: "active", since: 1790000000000, gradeSince: null, platforms: {}, availability: { days: [], note: "" }, device: "phone", breakUntil: null, stats: {} };
+  if (v === "crew") me.crew = { track: "mod", grade: 1, name: "Initiate", status: "active", since: 1790000000000, gradeSince: null, platforms: {}, availability: { days: [], note: "" }, device: "phone", breakUntil: null, stats: {} } as any;
   return me;
 };
 export const loadBallot = async (s: AuthState) => {
@@ -49,7 +49,7 @@ export interface Ballot { open: boolean; month: string; opensOn: string; closesO
 export const who = (m: { handle: string | null; track?: "mod" | "admin"; grade: number }) => ({
   name: m.handle || "Crew member",
   href: m.handle ? `/u/${encodeURIComponent(m.handle)}` : "",
-  gradeHtml: gradeChipHtml({ track: m.track || "mod", grade: m.grade }),
+  gradeHtml: gradeChipHtml({ track: m.track || "mod", grade: m.grade } as any),
 });
 
 /** "2026-10-27" -> "October 27" (a calendar day, no time zone shifts). */

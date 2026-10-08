@@ -3,10 +3,10 @@
 // Static for now: Twitch and TikTok covered, both YouTube chats need help. Coverage data comes with stream duty.
 import { roomHtml } from "../../../../shared/ui/crew.js";
 const rooms = [
-  roomHtml({ chat: "twitch", name: "Twitch", state: "covered" }),
-  roomHtml({ chat: "ytLandscape", name: "YT landscape", state: "needed" }),
-  roomHtml({ chat: "ytVertical", name: "YT vertical", state: "needed" }),
-  roomHtml({ chat: "tiktok", name: "TikTok", state: "covered" }),
+  roomHtml({ chat: "twitch", name: "Twitch", state: "covered" } as any),
+  roomHtml({ chat: "ytLandscape", name: "YT landscape", state: "needed" } as any),
+  roomHtml({ chat: "ytVertical", name: "YT vertical", state: "needed" } as any),
+  roomHtml({ chat: "tiktok", name: "TikTok", state: "covered" } as any),
 ].join("");
 ---
 <div class="cp-need">

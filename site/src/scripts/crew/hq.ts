@@ -22,7 +22,7 @@ function nextCard(ctx: Ctx) {
   const li = (state: string, text: string) => `<li data-s="${state}"><span class="hq-mark" aria-hidden="true"></span><span>${esc(text)}</span>${state === "pending" ? `<span class="bt-badge bt-badge--gray hq-pend">Starts with stream duty</span>` : ""}</li>`;
   const total = n.met.length + n.missing.length + n.pending.length;
   const items = [...n.met.map((t) => li("met", t)), ...n.missing.map((t) => li("missing", t)), ...n.pending.map((t) => li("pending", t))].join("");
-  return `<div class="bt-card hq-card"><div class="bt-card-head"><span class="bt-card-title">Next grade</span>${gradeChipHtml({ track: "mod", grade: n.to })}</div>`
+  return `<div class="bt-card hq-card"><div class="bt-card-head"><span class="bt-card-title">Next grade</span>${gradeChipHtml({ track: "mod", grade: n.to } as any)}</div>`
     + (ctx.me.ready ? `<div class="bt-notice hq-ready"><b>Ready to promote to ${esc(ctx.me.ready.name)}.</b> You've met everything. The owner confirms promotions, so you'll hear from them soon.</div>` : "")
     + `<p class="hq-note">${n.met.length} of ${total} done on the way to ${esc(n.name)}. Everything has to be ticked, then the owner confirms.</p>`
     + `<ul class="hq-checks">${items}</ul>`
@@ -88,13 +88,13 @@ async function render(ctx: Ctx) {
   root.innerHTML = `${previewNote(ctx)}
     <header class="hq-me"><span class="bt-avatar-xl" aria-hidden="true">${esc(initials(ctx.name || ctx.handle || "?"))}</span>
       <div class="hq-me-txt"><h1 class="bt-title">Crew HQ</h1><p class="hq-hey">Hey, ${esc(ctx.name || ctx.handle)}</p>
-        <div class="hq-me-tags">${gradeChipHtml({ track: c.track, grade: c.grade })}${statusChip(c.status)}${since ? `<span class="bt-meta">${esc(since)}</span>` : ""}${statusLine(ctx)}</div></div>
+        <div class="hq-me-tags">${gradeChipHtml({ track: c.track, grade: c.grade } as any)}${statusChip(c.status)}${since ? `<span class="bt-meta">${esc(since)}</span>` : ""}${statusLine(ctx)}</div></div>
       <div class="hq-stats"><div><strong>${num(g)}</strong><span>Gears · ${esc(monthShort)}</span></div><div><strong>${num(ga)}</strong><span>All time</span></div><div><strong>${place ? `#${place}` : "–"}</strong><span>${place ? "Crew board" : "Unranked"}</span></div></div>
     </header>
     ${c.status === "goingDark" ? `<div class="bt-notice">You're on a planned break. No warnings and nothing to do. <a href="/crew/profile#going-dark">Come back early</a> whenever you like.</div>` : ""}
     <div class="hq-grid">
       <div class="hq-col">
-        ${timecardHtml({ month, need: 2, total: 4, state: "idle" })}
+        ${timecardHtml({ month, need: 2, total: 4, state: "idle" } as any)}
         <div data-hq-tasks>${taskStrip(ctx, tasks)}</div>
         ${strikesCard(ctx)}
       </div>

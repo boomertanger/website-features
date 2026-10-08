@@ -57,15 +57,15 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const w = week(), f = (t: number | null) => fmtDayTime(t, tz());
     if (w.weekOff) return "";
     const open = w.state === "open" && (w.closesAt ?? 0) > Date.now();
-    return fuseHtml({ short: true, steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, open ? { label: "Availability and requests close", when: f(w.closesAt), state: "next", n: 2 } : { label: "Availability closed", when: f(w.closesAt), state: "done" }], progress: [open && w.opensAt && w.closesAt ? Math.max(0, Math.min(100, Math.round(((Date.now() - w.opensAt) / (w.closesAt - w.opensAt)) * 100))) : 100], left: open ? leftText(w.closesAt || 0) : "" });
+    return fuseHtml({ short: true, steps: [{ label: "Opened", when: f(w.opensAt), state: "done" }, open ? { label: "Availability and requests close", when: f(w.closesAt), state: "next", n: 2 } : { label: "Availability closed", when: f(w.closesAt), state: "done" }], progress: [open && w.opensAt && w.closesAt ? Math.max(0, Math.min(100, Math.round(((Date.now() - w.opensAt) / (w.closesAt - w.opensAt)) * 100))) : 100], left: open ? leftText(w.closesAt || 0) : "" } as any);
   }
   function bar() {
     const [tone, text] = STATUS[who.status] || ["gray", who.status || "Crew"];
     const early = week().state === "published" && (week().earlySignupUntil ?? 0) > Date.now();
     return crewBarHtml({
-      gradeHtml: who.track ? gradeChipHtml({ track: who.track, grade: who.grade }) : "", statusHtml: `<span class="bt-badge bt-badge--${tone}">${esc(text)}</span>`,
+      gradeHtml: who.track ? gradeChipHtml({ track: who.track, grade: who.grade } as any) : "", statusHtml: `<span class="bt-badge bt-badge--${tone}">${esc(text)}</span>`,
       notes: [early ? `Seats taken until ${esc(fmtDayTime(week().earlySignupUntil, tz()))} earn <b>+3 Gears</b>` : `Seats taken within 48 h of publishing earn <b>+3 Gears</b>`, `YouTube seats earn <b>×1.5</b>`, who.activityRules ? `Your duties are on <a href="/crew/hq">Crew HQ</a>` : `${esc(new Date().toLocaleDateString("en-US", { month: "long", timeZone: SITE_TZ }))} duties start with stream duty`].filter(Boolean),
-    });
+    } as any);
   }
   function weeksHtml() {
     if (st.weeks.length < 2) return "";
@@ -97,24 +97,24 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
       const free = Math.max(0, caps - dh.length - myPending.length);
       return { chat: r, name: ROOM_SHORT[r], boost: GROUP_OF[r] === "youtube" ? "×1.5" : "", boxesHtml: lead + dh.join("") + myPending.join("") + (free ? open(`${r}:deckhand`, "deckhand", "Deckhand") : "") };
     });
-    return seatMapHtml({ captainHtml: cap, rooms });
+    return seatMapHtml({ captainHtml: cap, rooms } as any);
   }
   function slotCard(s: Stream) {
     const t = dayParts(s.start, s.tz), mine = st.mine.get(s.id) || null, ava = mine?.availability || "";
     const seats = activeSeats(mine), canAsk = requestsOpen() && live(s) && ava === "yes" && seats.length > 0;
     const left = s.plannedGameCount - s.plannedGames.length;
     const meta = s.state === "cancelled" ? esc(s.cancel?.reason ? `Cancelled: ${s.cancel.reason}` : "Cancelled") : `${s.plannedGames.length ? `So far: ${esc(s.plannedGames.map((g) => g.title).join(", "))}.` : "No games picked yet."}${left > 0 ? ` ${left} spot${left === 1 ? "" : "s"} still open.` : ""}${s.delay ? ` <b class="pp-moved-t">Moved from ${esc(fmtClock(s.delay.originalStart, s.tz))}.</b>` : ""}`;
-    if (s.state === "cancelled") return `<div class="pp-sl" data-state="cancelled">${cslotHtml({ id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz }), count: s.plannedGameCount, games: [], metaHtml: meta, sideHtml: `<span class="bt-badge bt-badge--gray">Cancelled</span>` })}</div>`;
+    if (s.state === "cancelled") return `<div class="pp-sl" data-state="cancelled">${cslotHtml({ id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz } as any), count: s.plannedGameCount, games: [], metaHtml: meta, sideHtml: `<span class="bt-badge bt-badge--gray">Cancelled</span>` } as any)}</div>`;
     const req = mine?.gameRequest;
     const ask = req ? myReqHtml({ coverHtml: coverOf(vault, req.gameSlug), title: vault.get(req.gameSlug)?.title || req.gameSlug, status: req.status, extra: req.status === "open" && requestsOpen() ? `closes ${fmtDayTime(week().closesAt, tz())}` : "" })
       + (requestsOpen() && req.status === "open" ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-ask="${s.id}">Change</button>` : "")
       : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-ask="${s.id}"${canAsk ? "" : " disabled"}>✋ Ask for a game</button>${canAsk ? "" : `<span class="bt-meta">${!requestsOpen() ? "Requests closed with the voting." : ava !== "yes" ? "Mark yourself Available and ask for a seat first." : "Ask for a seat first, you ask for a game on a slot you'll crew."}</span>`}`;
     const re = mine?.reconfirm?.needed ? `<div class="pp-reconfirm" role="status"><span>This slot moved${s.delay ? ` to <b>${esc(fmtClock(s.start, s.tz))}</b>` : ""}. Still on?</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-keep="${s.id}">Yes, keep my seat</button><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-dropall="${s.id}">Drop it</button></div>` : "";
     return `<div class="pp-sl">${cslotHtml({
-      id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined }), count: s.plannedGameCount, backstage: s.type === "backstage", state: ava === "yes" ? "yes" : "",
+      id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined } as any), count: s.plannedGameCount, backstage: s.type === "backstage", state: ava === "yes" ? "yes" : "",
       games: s.plannedGames.map((g) => ({ coverHtml: coverOf(vault, g.gameId, g.title) })), metaHtml: meta,
       sideHtml: `${re}<div class="bt-cslot-row">${triHtml({ value: ava, name: s.id, label: `Can you make ${s.theme?.label || "it"}?`, disabled: !requestsOpen() || !live(s) || !active })}${mine?.prefilled && ava ? `<span class="bt-tri-hint">Pre-filled from your usual times</span>` : ""}${!requestsOpen() ? `<span class="bt-tri-hint">Closed ${esc(fmtDayTime(week().closesAt, tz()))}. Seats stay open.</span>` : ""}</div>${seatMap(s, mine)}<div class="bt-cslot-row">${ask}</div>`,
-    })}</div>`;
+    } as any)}</div>`;
   }
   function slotsHtml() {
     const w = week();
@@ -134,10 +134,10 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
   function renderAll() {
     q("[data-pp-head]").innerHTML = head(); q("[data-pp-weeks]").innerHTML = weeksHtml(); q("[data-pp-bar]").innerHTML = bar(); renderSlots();
   }
-  function renderSlots() { q("[data-pp-slots]").innerHTML = slotsHtml(); initTri(q("[data-pp-slots]")); }
+  function renderSlots() { q("[data-pp-slots]").innerHTML = slotsHtml(); initTri(q("[data-pp-slots]") as unknown as Document); }
   function renderOne(id: string) {
     const s = st.streams.find((x) => x.id === id); const el = root.querySelector<HTMLElement>(`[data-slot="${id}"]`)?.closest<HTMLElement>(".pp-sl"); if (!s || !el) return renderSlots();
-    const tmp = document.createElement("div"); tmp.innerHTML = slotCard(s); el.replaceWith(tmp.firstElementChild!); initTri(root);
+    const tmp = document.createElement("div"); tmp.innerHTML = slotCard(s); el.replaceWith(tmp.firstElementChild!); initTri(root as unknown as Document);
   }
   async function reloadOne(id: string) {
     const [streams, sg] = await Promise.all([io.streams(st.wid), io.signups(id).catch(() => [] as Signup[])]);

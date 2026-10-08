@@ -87,9 +87,9 @@ function buildParts(locked: boolean) {
     chat: c, name: CHAT_NAME[c], iconHtml: platformIconHtml(c), value: prefs[c], needed: NEEDED.includes(c), boost: NEEDED.includes(c) ? 1.5 : 0,
     note: NOTE[c], previewHtml: chatPreviewHtml(MINI[c]),
   })).join("")}</div>`;
-  initChatTiles($("[data-cj-chats]"), { onChange: (chat, v) => { prefs[chat as Chat] = v as Pref; } });
+  initChatTiles($("[data-cj-chats]") as unknown as Document, { onChange: (chat: any, v: any) => { prefs[chat as Chat] = v as Pref; } });
 
-  $("[data-cj-when]").innerHTML = `${dayPickerHtml({ days: DAYS, selected: locked ? ["thu", "fri", "sat"] : [], label: "Days you're usually around" })}
+  $("[data-cj-when]").innerHTML = `${dayPickerHtml({ days: DAYS, selected: locked ? ["thu", "fri", "sat"] : [], label: "Days you're usually around" } as any)}
     <div class="cj-when">
       <div class="bt-field"><span class="bt-label" id="cj-l-time">Usual time (Central)</span><div class="cj-opt" role="group" aria-labelledby="cj-l-time">${TIMES.map((t, i) => `<button type="button" class="bt-chip bt-chip--small" data-time="${esc(t)}" aria-pressed="${locked && i === 0}">${t}</button>`).join("")}</div>
         <input class="bt-input" id="cj-note" maxlength="200" placeholder="Anything else about your times? (optional)" aria-label="Anything else about your times"></div>
@@ -97,7 +97,7 @@ function buildParts(locked: boolean) {
         <span class="bt-pref-seg cj-device" role="radiogroup" aria-labelledby="cj-l-dev" data-device>${DEVICES.map(([k, l], i) => `<button type="button" role="radio" aria-checked="${i === (locked ? 1 : 0)}" tabindex="${i === (locked ? 1 : 0) ? 0 : -1}" data-value="${k}">${l}</button>`).join("")}</span>
         <span class="bt-hint" data-cj-devhint>${locked ? DEV_HINT.phone : DEV_HINT.desktop}</span></div>
     </div>`;
-  initDayPicker($("[data-cj-when]"));
+  initDayPicker($("[data-cj-when]") as unknown as Document);
   const hint = $("[data-cj-devhint]");
   dev = initRadioGroup($("[data-device]"), { onChange: (v: string) => { hint.textContent = DEV_HINT[v] || DEV_HINT.desktop; } });
   $("[data-cj-when]").querySelectorAll<HTMLButtonElement>("[data-time]").forEach((b) => b.addEventListener("click", () => {

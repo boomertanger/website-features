@@ -74,7 +74,7 @@ export function slotDialog(ctx: Ctx, stream: Stream | null, presetDate?: string)
       + field("Games per stream", `<input class="bt-input pp-num" type="number" id="ps-count" name="count" min="${Math.max(1, stream?.plannedGames.length ?? 1)}" max="6" step="1" inputmode="numeric" value="${f.count}">`, "ps-count")
       + actions(stream && !published ? `<button type="button" class="bt-btn bt-btn--secondary" data-remove>Remove this slot</button>` : "", `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="submit" class="bt-btn bt-btn--admin" data-save>${stream ? "Save slot" : "Add slot"}</button>`)
       + `</form>`;
-    const { modal, close } = openModal({ content, title: stream ? "Edit slot" : "Add a slot", feature: FEATURE, onClose: () => { if (!saved) resolve(false); } });
+    const { modal, close } = openModal({ content, title: stream ? "Edit slot" : "Add a slot", feature: FEATURE, onClose: () => { if (!saved) resolve(false); } } as any);
     const form = modal.querySelector<HTMLFormElement>("form")!;
     const q = <T extends HTMLElement>(s: string) => form.querySelector<T>(s)!;
     const lenText = () => {
@@ -159,7 +159,7 @@ export async function publishDialog(ctx: Ctx): Promise<{ published: boolean }> {
       + field(`Marquee frame · <span data-fname>${esc(f.frame === "surprise" ? "Surprise me" : frameName(f.frame))}</span>`, `${frames}<div class="pp-fprev" data-fprev>${preview()}</div>`)
       + field(`Doors for the week at a glance · <span data-dname>${esc(f.doors === "surprise" ? "Surprise me" : ((DOOR_STYLES as string[][]).find((d) => d[0] === f.doors) || [])[1] || "")}</span>`, doors)
       + actions("", `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Not yet</button><button type="button" class="bt-btn bt-btn--primary bt-btn--shine" data-publish>${again ? "Publish changes" : "Publish week"}</button>`);
-    const { modal, close } = openModal({ content, title: again ? "Publish changes" : "Publish next week", wide: true, feature: FEATURE, onClose: () => { if (!done) resolve({ published: false }); } });
+    const { modal, close } = openModal({ content, title: again ? "Publish changes" : "Publish next week", wide: true, feature: FEATURE, onClose: () => { if (!done) resolve({ published: false }); } } as any);
     const sync = () => {
       modal.querySelectorAll<HTMLElement>("[data-frame]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.frame === f.frame)));
       modal.querySelectorAll<HTMLElement>("[data-door]").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.door === f.doors)));
@@ -186,9 +186,9 @@ function previewTicket(ctx: Ctx, s: Stream, o: { start: number; end: number; was
   const dp = dayParts(o.start, ctx.tz);
   const covers = s.plannedGames.slice(0, 3).map((g) => coverOf(ctx.vault, g.gameId, g.title)).join("");
   return `<div class="pp-preview-t">${ticketHtml({
-    day: dp.dow, num: dp.num, month: dp.month, state: o.state, title: s.theme?.label || s.title, icon: s.theme?.icon || "", timeHtml: dualTimeHtml({ start: o.start, end: o.end, tz: ctx.tz, was: o.was }),
+    day: dp.dow, num: dp.num, month: dp.month, state: o.state, title: s.theme?.label || s.title, icon: s.theme?.icon || "", timeHtml: dualTimeHtml({ start: o.start, end: o.end, tz: ctx.tz, was: o.was } as any),
     was: o.state === "scheduled" ? o.was : undefined, reason: o.reason, coversHtml: covers, backstage: s.type === "backstage", ...(s.type === "backstage" ? {} : { platformsHtml: platformsHtml(s.rooms) }),
-  })}${o.stamp || ""}</div>`;
+  } as any)}${o.stamp || ""}</div>`;
 }
 const crewCount = (s: Stream) => { const ids = new Set<string>(); if (s.crew.captain?.uid) ids.add(s.crew.captain.uid); for (const c of Object.values(s.crew.chats)) { if (c?.lead?.uid) ids.add(c.lead.uid); (c?.deckhands || []).forEach((d) => d.uid && ids.add(d.uid)); } return ids.size; };
 
@@ -213,7 +213,7 @@ export function delayDialog(ctx: Ctx, s: Stream): Promise<boolean> {
       + `<div class="pp-preview"><span class="bt-label">What everyone sees</span><div data-ticket></div></div>`
       + `<div class="pp-tell"><ul><li><span aria-hidden="true">📅</span> /schedule shows the new time right away.</li>${crewCount(s) ? `<li><span aria-hidden="true">⚓</span> ${crewCount(s)} crew get asked "Still on for <span data-ask-time></span>?" Dropping costs them nothing.</li>` : ""}<li><span aria-hidden="true">🔔</span> Members get an email, text or push once the Notifications service is built. Until then, the site only.</li></ul></div>`
       + actions("", `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Keep ${esc(fmtClock(s.start, tz))}</button><button type="button" class="bt-btn bt-btn--primary" data-do></button>`);
-    const { modal, close } = openModal({ content, title: "Delay stream", wide: true, feature: FEATURE, onClose: () => { if (!done) resolve(false); } });
+    const { modal, close } = openModal({ content, title: "Delay stream", wide: true, feature: FEATURE, onClose: () => { if (!done) resolve(false); } } as any);
     const q = <T extends HTMLElement>(sel: string) => modal.querySelector<T>(sel)!;
     let stamped = "";
     const draw = () => {
@@ -270,7 +270,7 @@ export function cancelDialog(ctx: Ctx, s: Stream): Promise<boolean> {
       toast("Cancelled. It stays on /schedule as a record.");
       await ctx.refresh();
     },
-  });
+  } as any);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -300,16 +300,16 @@ export async function crewDialog(ctx: Ctx, s: Stream): Promise<void> {
         return `<div class="pp-seatrow"><span class="pp-seatname">${esc(seatText(q))}</span><span class="bt-badge bt-badge--${q.status === "confirmed" ? "lime" : "gold"}">${q.status === "confirmed" ? "Confirmed ✓" : "Requested"}</span>${q.needsOwnerOk ? `<span class="bt-badge bt-badge--gray" title="Only the owner can confirm this">Needs owner's OK</span>` : ""}<span class="pp-seatbtns">${btns}</span></div>`;
       }).join("");
       const req = p.gameRequest ? `<div class="pp-req">✋ Asked for <b>${esc(ctx.vault.get(p.gameRequest.gameSlug)?.title || p.gameRequest.gameSlug)}</b>${p.gameRequest.note ? ` <q>${esc(p.gameRequest.note)}</q>` : ""} <span class="bt-badge bt-badge--${p.gameRequest.status === "planned" ? "lime" : "pink"}">${p.gameRequest.status === "planned" ? "Planned" : p.gameRequest.status === "notPlanned" ? "Not planned" : "Open"}</span></div>` : "";
-      return `<li class="pp-person"><div class="pp-person-h"><span class="bt-av" aria-hidden="true">${esc(initials(p.handle || "?"))}</span><b>@${esc(p.handle || "unknown")}</b>${p.grade ? gradeChipHtml({ track: p.track === "admin" ? "admin" : "mod", grade: p.grade }) : ""}<span class="bt-badge bt-badge--${tone}">${text}</span>${p.prefilled ? `<span class="bt-meta">pre-filled</span>` : ""}${p.reconfirm?.needed ? `<span class="bt-badge bt-badge--gold">Hasn't confirmed the new time</span>` : ""}</div>${seats}${req}</li>`;
+      return `<li class="pp-person"><div class="pp-person-h"><span class="bt-av" aria-hidden="true">${esc(initials(p.handle || "?"))}</span><b>@${esc(p.handle || "unknown")}</b>${p.grade ? gradeChipHtml({ track: p.track === "admin" ? "admin" : "mod", grade: p.grade } as any) : ""}<span class="bt-badge bt-badge--${tone}">${text}</span>${p.prefilled ? `<span class="bt-meta">pre-filled</span>` : ""}${p.reconfirm?.needed ? `<span class="bt-badge bt-badge--gold">Hasn't confirmed the new time</span>` : ""}</div>${seats}${req}</li>`;
     }).join("");
-    modal.querySelector("[data-body]")!.innerHTML = (cur.type === "backstage" ? `<p class="bt-meta">Backstage streams have no chats to crew.</p>` : seatMapHtml({ captainHtml: cur.crew.captain ? seatBoxHtml({ kind: "taken", name: cur.crew.captain.handle || "", role: "captain" }) : seatBoxHtml({ kind: "locked", label: cur.minCrew.captain ? "⚓ Captain needed" : "⚓ No Captain yet" }), rooms }))
+    modal.querySelector("[data-body]")!.innerHTML = (cur.type === "backstage" ? `<p class="bt-meta">Backstage streams have no chats to crew.</p>` : seatMapHtml({ captainHtml: cur.crew.captain ? seatBoxHtml({ kind: "taken", name: cur.crew.captain.handle || "", role: "captain" }) : seatBoxHtml({ kind: "locked", label: cur.minCrew.captain ? "⚓ Captain needed" : "⚓ No Captain yet" }), rooms } as any))
       + `<h3 class="pp-h3">Who signed up <span class="bt-section-head-n">${sg.length}</span></h3>${rows ? `<ul class="pp-people">${rows}</ul>` : `<p class="bt-meta">Nobody has answered for this slot yet.</p>`}`;
   };
   let cur = s;
   const { modal } = openModal({
     content: modalHeader(esc(`Crew · ${s.theme?.icon || ""} ${s.theme?.label || s.title}`), esc(`${fmtDayTime(s.start, tz)} to ${fmtClock(s.end, tz)} Central`)) + `<div data-body class="pp-crewbody"></div><p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Done</button></div>`,
     title: "Crew for a slot", wide: true, feature: FEATURE, onClose: () => void ctx.refresh(),
-  });
+  } as any);
   draw(cur, list, modal);
   modal.addEventListener("click", async (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-confirm],[data-decline],[data-release]");
@@ -345,6 +345,6 @@ export function reopenDialog(ctx: Ctx, w: WeekDoc): Promise<boolean> {
     confirmLabel: "Reopen voting", busyLabel: "Reopening…", danger: false, feature: FEATURE,
     onOpen: (modal: HTMLElement) => press(modal.querySelector<HTMLElement>("[data-hours]")!, "[data-h]", true, () => { hours = Number(modal.querySelector<HTMLElement>("[data-hours] [aria-pressed=true]")!.dataset.h); }),
     onConfirm: async () => { try { await ctx.io.call("weekReopen", { week: w.id, closesAt: Date.now() + hours * 3600000 }); } catch (e) { throw new Error(messageFor(e)); } toast("Voting reopened."); await ctx.refresh(); },
-  });
+  } as any);
 }
 void hhmm12;

@@ -62,7 +62,7 @@ function quizError(e: unknown) {
 interface Submit { ok: boolean; passed: boolean; score: number; passMark: number; results: { correct: boolean; say: string }[]; paid?: boolean }
 const quizBox = document.querySelector<HTMLElement>("[data-academy-quiz]");
 if (quizBox && moduleId) {
-  initQuiz(quizBox, {
+  initQuiz(quizBox as unknown as Document, {
     submit: async (answers: number[]) => {
       if (preview) {
         // Harmless stub: grading runs on the server, so the preview never has (or ships) the key.

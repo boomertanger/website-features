@@ -37,7 +37,7 @@ function render() {
     <div class="hq-prof-grid">
       <div class="bt-card hq-card" data-card="prefs"><div class="bt-card-head"><span class="bt-card-title">Chat preferences</span></div>
         <p class="hq-note">How do you feel about each chat? Favourites get your name first. "Only if needed" means we'll ask when a chat is short on help. YouTube's two chats are the ones we need most.</p>
-        ${prefHtml({ rows })}
+        ${prefHtml({ rows } as any)}
         <p class="bt-error" hidden></p><div><button type="button" class="bt-btn bt-btn--primary" data-save="prefs">Save preferences</button></div></div>
       <div class="bt-card hq-card" data-card="avail"><div class="bt-card-head"><span class="bt-card-title">Availability and device</span></div>
         <div class="bt-field"><span class="bt-label" id="hq-days-l">Days you can usually help</span><div class="hq-chips" role="group" aria-labelledby="hq-days-l">${days}</div></div>
@@ -55,7 +55,7 @@ function render() {
   root.setAttribute("aria-busy", "false");
 
   const chosen: Partial<Prefs> = { ...prefs };
-  initPrefs(root, { onChange: (chat: string, v: string) => { chosen[chat as Chat] = v as Pref; } });
+  initPrefs(root as unknown as Document, { onChange: (chat: string, v: string) => { chosen[chat as Chat] = v as Pref; } });
   const quoteEl = root.querySelector<HTMLInputElement>("#hq-quote")!, quoteCount = root.querySelector<HTMLElement>("[data-quote-count]")!;
   const countQuote = () => { quoteCount.textContent = `${quoteEl.value.length} of 90`; };
   countQuote(); quoteEl.addEventListener("input", countQuote);

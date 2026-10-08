@@ -80,7 +80,7 @@ const tagFor = (g: BallotGame) => g.addedBy ? `<span class="bt-badge bt-badge--b
 function gamesHtml() {
   const mineSet = votes(), total = ballot.votesPerMember, full = mineSet.size >= total, top = Math.max(1, ...ballot.games.map((g) => g.votes));
   const common = (g: BallotGame, i: number) => ({ slug: g.slug, title: g.title, coverHtml: coverHtml(g.cover, { alt: g.title, eager: true }), rank: i + 1, votes: g.votes, pct: Math.round((g.votes / top) * 100), mine: mineSet.has(g.slug), tagHtml: tagFor(g), voted: mineSet.has(g.slug), full, visitor: isVisitor() || needsSignup() });
-  if (view === "race") return `<div class="bt-race">${ballot.games.map((g, i) => raceRowHtml({ ...common(g, i), coverHtml: coverHtml(g.cover, { alt: "", cls: "bt-cover--sm", size: "sm" }) })).join("")}</div>${open() ? voteAddHtml({ row: true }) : ""}`;
+  if (view === "race") return `<div class="bt-race">${ballot.games.map((g, i) => raceRowHtml({ ...common(g, i), coverHtml: coverHtml(g.cover, { alt: "", cls: "bt-cover--sm", size: "sm" } as any) })).join("")}</div>${open() ? voteAddHtml({ row: true }) : ""}`;
   return `<div class="bt-vote-grid">${ballot.games.map((g, i) => voteCardHtml(common(g, i))).join("")}${open() ? voteAddHtml() : ""}</div>`;
 }
 function render() {
@@ -99,10 +99,10 @@ function render() {
   else if (unverified()) top = `<div class="pp-gate-note"><span>Verify your email to vote. It takes a minute and keeps the vote fair.</span><button type="button" class="bt-btn bt-btn--primary" data-verify>Verify email</button></div>`;
   const errBox = notice ? `<div class="bt-notice bt-notice--error" role="alert">${esc(notice)}</div>` : "";
   const hint = open() ? (canVote ? `Change your votes any time before it closes.${mine ? ` ${mine.addsLeft} of 2 game adds left.` : ""}` : "") : `${ballot.totalVotes} votes were cast.`;
-  body.innerHTML = `<section class="pp-ballot" aria-label="The ballot">${sectionHeadHtml({ icon: "🗳️", title: "The ballot", count: ballot.games.length, sub: `${ballot.week ? `${rangeLabel(mondayOf(ballot.week))}. ` : ""}The top games go to the front of Boomer's list.`, tools: `${viewSwitchHtml({ key: "voteView", label: "Ballot view", value: view, options: VOTE_VIEWS })}<span class="pp-closes">${closes}</span>` })}`
+  body.innerHTML = `<section class="pp-ballot" aria-label="The ballot">${sectionHeadHtml({ icon: "🗳️", title: "The ballot", count: ballot.games.length, sub: `${ballot.week ? `${rangeLabel(mondayOf(ballot.week))}. ` : ""}The top games go to the front of Boomer's list.`, tools: `${viewSwitchHtml({ key: "voteView", label: "Ballot view", value: view, options: VOTE_VIEWS } as any)}<span class="pp-closes">${closes}</span>` } as any)}`
     + `${top}${errBox}<div class="pp-ballot-top">${open() ? tokens : ""}<span class="bt-meta">${hint}</span></div>${gamesHtml()}</section>`;
   if (!open()) body.querySelectorAll(".bt-vote-btn").forEach((b) => b.remove());
-  initViewSwitch(body, { onChange: (v) => { view = v === "race" ? "race" : "covers"; store.set(view); render(); body.querySelector<HTMLElement>('.bt-view-switch [aria-checked="true"]')?.focus(); } });
+  initViewSwitch(body as unknown as Document, { onChange: (v: any) => { view = v === "race" ? "race" : "covers"; store.set(view); render(); body.querySelector<HTMLElement>('.bt-view-switch [aria-checked="true"]')?.focus(); } });
 }
 
 // ---------- actions ----------
@@ -157,7 +157,7 @@ async function openAdd() {
   const draw = () => {
     const q = input.value.trim().toLowerCase(), on = new Set(ballot.games.map((g) => g.slug));
     const rows = all.filter((g) => !q || g.title.toLowerCase().includes(q)).slice(0, 30);
-    list.innerHTML = rows.length ? rows.map((g) => `<div class="pp-add-row">${coverHtml(g.cover, { cls: "bt-cover--sm", size: "sm", alt: "" })}<b>${esc(g.title)}</b>${on.has(g.slug) ? `<span class="bt-badge bt-badge--gray">On the ballot</span>` : `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-add="${esc(g.slug)}">Add</button>`}</div>`).join("")
+    list.innerHTML = rows.length ? rows.map((g) => `<div class="pp-add-row">${coverHtml(g.cover, { cls: "bt-cover--sm", size: "sm", alt: "" } as any)}<b>${esc(g.title)}</b>${on.has(g.slug) ? `<span class="bt-badge bt-badge--gray">On the ballot</span>` : `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-add="${esc(g.slug)}">Add</button>`}</div>`).join("")
       : `<div class="bt-empty bt-empty--compact"><span class="bt-empty-title">No game called that in the Vault</span><span>Not there? Add it through the Vault, then come back.</span></div>`;
   };
   draw(); input.focus();
@@ -174,7 +174,7 @@ async function openAdd() {
   });
 }
 
-initVoteButtons(body, { onVote: (slug: string, on: boolean) => { void setVotes(slug, on); return undefined; }, onJoin: () => { void joinDialog(); }, onAdd: () => { void openAdd(); } });
+initVoteButtons(body as unknown as Document, { onVote: (slug: string, on: boolean) => { void setVotes(slug, on); return undefined; }, onJoin: () => { void joinDialog(); }, onAdd: () => { void openAdd(); } });
 body.addEventListener("click", (e) => {
   const t = e.target as HTMLElement;
   if (t.closest("[data-gate]")) void joinDialog();
