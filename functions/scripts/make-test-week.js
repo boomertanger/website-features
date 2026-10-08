@@ -15,6 +15,9 @@
 //   node functions/scripts/make-test-week.js --apply                # write it
 //   node functions/scripts/make-test-week.js --week 2026-W45 --apply
 //   node functions/scripts/make-test-week.js --remove --apply       # delete everything it made
+//   node functions/scripts/make-test-week.js --publish --apply      # publish the test week (public pages read published data only)
+//   node functions/scripts/make-test-week.js --publish --frame <frame> --doors <style> --apply   # choose the look; safe to re-run
+//   (--frame / --doors default to the first pool frame and door style; they are validated by the planner's own validateHero.)
 // --project  only "staging" (the default) is accepted
 
 const fs = require("fs");
@@ -26,13 +29,16 @@ const SITE_ID = "boomertanger";
 const STAGING = "boomertanger-staging";
 
 function parseArgs(argv) {
-  const args = { project: "staging", apply: false, remove: false, week: null };
+  const args = { project: "staging", apply: false, remove: false, publish: false, week: null, frame: null, doors: null };
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i], next = () => argv[++i];
     if (a === "--project") args.project = next();
     else if (a.startsWith("--project=")) args.project = a.slice("--project=".length);
     else if (a === "--apply") args.apply = true;
     else if (a === "--remove") args.remove = true;
+    else if (a === "--publish") args.publish = true;
+    else if (a === "--frame") args.frame = next();
+    else if (a === "--doors") args.doors = next();
     else if (a === "--week") args.week = next();
     else throw new Error(`Unknown argument: ${a}`);
   }
@@ -96,6 +102,37 @@ async function main() {
     await core.rebuildPublicBallot();
     await core.rebuildSchedule();
     return console.log(`Removed ${weeks.length} week(s) and ${streams.length} stream(s); public/ballot and public/schedule rebuilt.`);
+  }
+
+  // ---------- --publish ----------
+  // Writes what plan.js publishWeek writes (published copies of the drafts with state scheduled, the week's hero,
+  // state published), through the planner's own core.saveDraft / refreshCounts / rebuild*, minus the owner check, the
+  // outbox note and the activity entry (a test week must not notify anyone). Re-running only changes the hero.
+  if (args.publish) {
+    const weeks = (await db.collection(`${site}/planWeeks`).where("test", "==", true).get()).docs;
+    if (!weeks.length) throw new Error("There is no test week. Make one first (no flags, then --apply).");
+    const wk = args.week ? weeks.find((w) => w.id === args.week) : weeks.sort((a, b) => a.id.localeCompare(b.id))[0];
+    if (!wk) throw new Error(`${args.week} is not a test week.`);
+    const prev = wk.get("hero") || L.defaultHero(null);
+    const hero = { frame: args.frame || prev.frame, doors: args.doors || prev.doors };
+    const bad = L.validateHero(hero);
+    if (bad.length) throw new Error(`${bad.join("; ")}. Frames: ${[...L.FRAME_POOL, ...L.FRAMES_SEASONAL].join(", ")}. Doors: ${L.DOOR_STYLES.join(", ")}.`);
+    const first = wk.get("state") !== "published";
+    const drafts = (await core.draftsOfWeek(wk.id)).filter((d) => !(d.state === "cancelled" && d.published !== true));
+    console.log(`Week ${wk.id} (state ${wk.get("state")}): ${first ? "first publish" : "already published, only the hero changes"}`);
+    console.log(`  hero    frame ${hero.frame}, doors ${hero.doors}`);
+    console.log(`  streams ${drafts.length} stream(s) ${first ? "become published (planned -> scheduled)" : "stay as they are"}`);
+    if (first) console.log("  ballot  the open ballot closes (publishing ends voting, like the real thing)");
+    if (!args.apply) return console.log("\nDry run only. Add --apply to write it.");
+    if (first) {
+      for (const dr of drafts) await core.saveDraft(dr.id, { ...dr, state: dr.state === "planned" ? "scheduled" : dr.state, published: true, hasUnpublishedChanges: false, rev: (dr.rev || 0) + 1 }, { alsoPublic: true });
+      const now = Date.now();
+      await wk.ref.update({ state: "published", publishedAt: Timestamp.fromMillis(now), publishedRev: (wk.get("publishedRev") || 0) + 1, hasUnpublishedChanges: false, hero, ballotSlugs: [], earlySignupUntil: Timestamp.fromMillis(now + 48 * 3600000), closesAt: Timestamp.fromMillis(now), closedEarly: true });
+    } else await wk.ref.update({ hero });
+    await core.refreshCounts(wk.id);
+    await core.rebuildPublicBallot();
+    await core.rebuildSchedule();
+    return console.log(`\nDone. ${wk.id} is published with frame ${hero.frame} and doors ${hero.doors}. Remove it with: node functions/scripts/make-test-week.js --remove --apply`);
   }
 
   // ---------- pick the week ----------
