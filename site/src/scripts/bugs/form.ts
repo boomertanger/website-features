@@ -30,7 +30,7 @@ const MAX_SHOT = 10 * 1024 * 1024;
 export async function openForm({ page = "", onSent, openReport }: { page?: string; onSent: (id: string) => void; openReport: (id: string) => void }) {
   if (!(await requireVerified("Join to report bugs"))) return;
   const device = detectDevice();
-  const st = { severity: "major" as Severity, file: null as File | null, deviceOn: true, priv: false, token: newToken() };
+  const st = { severity: null as Severity | null, file: null as File | null, deviceOn: true, priv: false, token: newToken() };
   const m = openModal({ title: "Report a bug", feature: "bug-zapper", content: "" });
   const modal = m.modal;
 
@@ -42,7 +42,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     <div class="bt-field"><label class="bt-label" for="bz-f-exp">What did you expect instead?</label><textarea id="bz-f-exp" class="bt-textarea" rows="2" maxlength="2000" placeholder="Describe what should have happened.">${esc(keep.exp || "")}</textarea></div>
     <div class="bt-field"><label class="bt-label" for="bz-f-page">Which page or feature?</label><input id="bz-f-page" class="bt-input" type="text" maxlength="300" placeholder="e.g. www.boomertanger.com/live" value="${esc(keep.page ?? page)}" autocomplete="off"><span class="bt-hint">Paste the address of the page where it happened.</span></div>
     <div class="bt-field"><label class="bt-label" for="bz-f-steps">Steps to reproduce (optional)</label><textarea id="bz-f-steps" class="bt-textarea" rows="3" maxlength="2000" placeholder="1. Go to…&#10;2. Click…&#10;3. See…">${esc(keep.steps || "")}</textarea></div>
-    <div class="bt-field"><span class="bt-label" id="bz-f-sev">How bad is it?</span><div class="bz-sev-pick" role="radiogroup" aria-labelledby="bz-f-sev">${(Object.keys(SEVERITY) as Severity[]).map((k) => `<button type="button" role="radio" aria-checked="${st.severity === k}" data-sev-pick="${k}">${sevBadge(k)}<span>${SEVERITY[k].help}</span></button>`).join("")}</div></div>
+    <div class="bt-field"><span class="bt-label" id="bz-f-sev">How bad is it?</span><div class="bz-sev-pick" role="radiogroup" aria-labelledby="bz-f-sev" aria-required="true">${(Object.keys(SEVERITY) as Severity[]).map((k) => `<button type="button" role="radio" aria-checked="${st.severity === k}" data-sev-pick="${k}">${sevBadge(k)}<span>${SEVERITY[k].help}</span></button>`).join("")}</div><p class="bt-error" data-sev-err role="alert" hidden>Pick how bad it is.</p></div>
     <div class="bt-field"><span class="bt-label">Screenshot (optional)</span><div data-shot></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-file></div>
     <div class="bz-device-line${st.deviceOn ? "" : " is-off"}" data-device><span>We'll attach: ${esc(deviceText(device))}</span><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-device-toggle>${st.deviceOn ? "Don't attach" : "Attach"}</button></div>
     <label class="bt-check bz-private"><input type="checkbox" data-priv ${st.priv ? "checked" : ""}><span><b>This is a security or privacy problem.</b> Only you and the team will see this report, and it won't go on the public board.</span></label>
@@ -80,7 +80,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
   modal.addEventListener("click", async (e) => {
     const t = e.target as Element;
     const sev = t.closest<HTMLElement>("[data-sev-pick]");
-    if (sev) { st.severity = sev.dataset.sevPick as Severity; modal.querySelectorAll<HTMLElement>("[data-sev-pick]").forEach((x) => x.setAttribute("aria-checked", String(x === sev))); return; }
+    if (sev) { st.severity = sev.dataset.sevPick as Severity; modal.querySelector<HTMLElement>("[data-sev-err]")!.hidden = true; modal.querySelectorAll<HTMLElement>("[data-sev-pick]").forEach((x) => x.setAttribute("aria-checked", String(x === sev))); return; }
     if (t.closest("[data-shot-pick]")) { modal.querySelector<HTMLInputElement>("[data-file]")?.click(); return; }
     if (t.closest("[data-shot-remove]")) { st.file = null; drawShot(); return; }
     if (t.closest("[data-device-toggle]")) { st.deviceOn = !st.deviceOn; const line = modal.querySelector<HTMLElement>("[data-device]")!; line.classList.toggle("is-off", !st.deviceOn); line.querySelector("button")!.textContent = st.deviceOn ? "Don't attach" : "Attach"; return; }
@@ -92,13 +92,14 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     if (f.title.trim().length < 3) return fail("Give it a short name (3 to 200 characters).");
     if (f.what.trim().length < 10) return fail("Say what happened (at least 10 characters).");
     if (!f.page.trim()) return fail("Say which page or feature it was on.");
+    if (!st.severity) { const hint = modal.querySelector<HTMLElement>("[data-sev-err]")!; hint.hidden = false; modal.querySelector<HTMLElement>("[data-sev-pick]")?.focus(); return; }
     send.disabled = true;
     send.innerHTML = '<span class="bt-spinner" aria-hidden="true"></span>Sending…';
     modal.querySelectorAll<HTMLButtonElement>("[data-bt-close]").forEach((b) => (b.disabled = true));
     m.setDismissible(false);
     try {
       const blob = st.file ? await prepareShot(st.file) : null;
-      const res = await submit({ title: f.title.trim(), page: f.page.trim(), whatHappened: f.what.trim(), expected: f.exp.trim(), steps: f.steps.trim(), severity: st.severity, private: st.priv, device: st.deviceOn ? device : null, token: st.token }, blob);
+      const res = await submit({ title: f.title.trim(), page: f.page.trim(), whatHappened: f.what.trim(), expected: f.exp.trim(), steps: f.steps.trim(), severity: st.severity as Severity, private: st.priv, device: st.deviceOn ? device : null, token: st.token }, blob);
       m.setDismissible(true);
       onSent(res.id);
       done(res.id, res.counted, res.shot);
