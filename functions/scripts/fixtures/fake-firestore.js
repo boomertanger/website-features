@@ -2,7 +2,7 @@
 // emulator (scripts/check-factory-engine.js). Supports what lib/factory uses: doc / collection
 // paths, get, create (fails if it exists), set (with merge), update (dotted keys), delete,
 // where "==" / "<" / ">" / "in", orderBy, limit, count(), getAll, runTransaction (run straight
-// through), and the FieldValue sentinels increment, serverTimestamp, delete and arrayUnion.
+// through), recursiveDelete, and the FieldValue sentinels increment, serverTimestamp, delete, arrayUnion and arrayRemove.
 const admin = require("firebase-admin");
 
 const clone = (v) => (v && typeof v === "object" && !isSentinel(v) && !(v instanceof admin.firestore.Timestamp) ? (Array.isArray(v) ? v.map(clone) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clone(x)]))) : v);
@@ -13,6 +13,7 @@ function sentinelKind(v) {
   if (/ServerTimestamp/.test(n)) return "serverTimestamp";
   if (/Delete/.test(n)) return "delete";
   if (/ArrayUnion/.test(n)) return "arrayUnion";
+  if (/ArrayRemove/.test(n)) return "arrayRemove";
   return n;
 }
 const operand = (v) => v.operand ?? v._operand ?? v.incrementBy ?? Object.values(v).find((x) => typeof x === "number");
@@ -24,6 +25,7 @@ function applyValue(cur, v) {
   if (k === "serverTimestamp") return admin.firestore.Timestamp.now();
   if (k === "delete") return undefined;
   if (k === "arrayUnion") return [...new Set([...(Array.isArray(cur) ? cur : []), ...v.elements])];
+  if (k === "arrayRemove") return (Array.isArray(cur) ? cur : []).filter((x) => !v.elements.some((y) => cmp(x, y) === 0));
   throw new Error(`fake-firestore: unsupported sentinel ${k}`);
 }
 function merge(target, patch) {
@@ -103,6 +105,7 @@ function makeDb() {
     doc: (p) => new DocRef(p),
     collection: (p) => new Query(p),
     getAll: async (...refs) => Promise.all(refs.map((r) => r.get())),
+    recursiveDelete: async (ref) => { for (const p of [...store.keys()]) if (p === ref.path || p.startsWith(`${ref.path}/`)) store.delete(p); },
     batch() { const ops = []; return { set: (r, d, o) => ops.push(() => r.set(d, o)), update: (r, d) => ops.push(() => r.update(d)), delete: (r) => ops.push(() => r.delete()), commit: async () => { for (const op of ops) await op(); } }; },
     runTransaction: async (fn) => fn({ get: (r) => r.get(), set: (r, d, o) => r.set(d, o), update: (r, d) => r.update(d), create: (r, d) => r.create(d), delete: (r) => r.delete(), getAll: (...rs) => Promise.all(rs.map((r) => r.get())) }),
     _store: store,

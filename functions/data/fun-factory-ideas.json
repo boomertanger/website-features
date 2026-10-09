@@ -139,8 +139,18 @@
     {
       "id": "lab",
       "name": "Feature Lab",
-      "enabled": false,
-      "needs": "Feature Lab port"
+      "enabled": true,
+      "needs": null,
+      "source": "Feature Lab",
+      "description": "Help shape the site and the stream: post an idea on the board, vote on other members' ideas, and see your own idea ship.",
+      "actions": [
+        "post",
+        "vote",
+        "shipped"
+      ],
+      "params": [
+        "action"
+      ]
     },
     {
       "id": "stream",

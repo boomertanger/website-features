@@ -658,6 +658,8 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
   // The Game Vault's kind is gated on the site's roles (admin or owner), not on admins/{uid};
   // it lives in lib/vault/edit.js and has its own field rules.
   if (request.data?.feature === "vaultGame") return vaultModule.editVaultGame(request);
+  // Feature Lab ideas (the new board, lab/main/ideas) are the labIdea kind, in lib/lab/edit.js, gated the same way. The legacy featureLab kind below is untouched.
+  if (request.data?.feature === "labIdea") return labModule.editLabIdea(request);
 
   // 1. Verify admin.
   if (!(await isCallerAdmin(request.auth))) {
@@ -947,6 +949,11 @@ Object.assign(exports, require("./lib/planner")({ adminLogEntry }));
 // Retry, and the daily tidy of backstage videos. Lives in lib/youtube/.
 const youtubeModule = require("./lib/youtube").build({ adminLogEntry });
 Object.assign(exports, youtubeModule.functions);
+
+// Feature Lab (docs/specs/feature-lab.md): the member idea board, its callables and the labIdea kind of adminEditItem (lib/lab/). The legacy
+// featureRequests code above stays until launch.
+const labModule = require("./lib/lab")({ adminLogEntry });
+Object.assign(exports, labModule.functions);
 
 // Control Room (docs/specs/control-room.md): the stream controls, check-ins and presence, the live feeds and ticks, Twitch
 // EventSub. Lives in lib/live/; it reuses the youtube module for ad hoc streams, after-shows and Start.
