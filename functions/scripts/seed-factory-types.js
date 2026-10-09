@@ -13,6 +13,9 @@
 // Usage (from the repo root or functions/):
 //   node functions/scripts/seed-factory-types.js                 # dry run, staging
 //   node functions/scripts/seed-factory-types.js --apply         # write to staging
+//   node functions/scripts/seed-factory-types.js --only stream   # dry run for ONE type only (add --apply to write it)
+// --only <id>: touches only that one type and never the others (so edits made in the Night Shift builder to other types
+// are safe); for an existing doc it leaves `order` alone and writes only the fields the file owns (name is kept).
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
@@ -21,9 +24,10 @@ const FILE = path.join(__dirname, "..", "data", "fun-factory-ideas.json");
 const SITE_ID = "boomertanger";
 
 function parseArgs(argv) {
-  const args = { project: "staging", apply: false };
+  const args = { project: "staging", apply: false, only: null };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--apply") args.apply = true;
+    else if (argv[i] === "--only") args.only = argv[++i];
     else if (argv[i] === "--project") args.project = argv[++i];
     else if (argv[i].startsWith("--project=")) args.project = argv[i].slice("--project=".length);
     else throw new Error(`Unknown argument: ${argv[i]}`);
@@ -69,20 +73,25 @@ async function main() {
   console.log(`File: ${path.relative(process.cwd(), FILE)} · version ${data.version} · ${data.activityTypes.length} activity types\n`);
   const writes = [];
   let created = 0, changed = 0, unchanged = 0;
+  if (args.only && !ids.has(args.only)) throw new Error(`--only ${args.only}: no such type in the file.`);
   data.activityTypes.forEach((t, order) => {
+    if (args.only && t.id !== args.only) return;
     const next = typeDoc(t, order), cur = have.get(t.id);
     if (!cur) { created++; console.log(`NEW     ${t.id} (${t.enabled ? "on" : `off, needs ${t.needs}`})`); writes.push([col.doc(t.id), next]); return; }
-    const diff = Object.keys(next).filter((k) => !same(next[k], cur[k] ?? null));
+    const diff = Object.keys(next).filter((k) => !(args.only && k === "order") && !same(next[k], cur[k] ?? null));
     if (!diff.length) { unchanged++; return; }
     changed++;
     console.log(`CHANGE  ${t.id}: ${diff.join(", ")}`);
-    writes.push([col.doc(t.id), next]);
+    const { order: _o, ...patch } = next;
+    writes.push([col.doc(t.id), args.only ? Object.fromEntries(diff.map((k) => [k, next[k]])) : next]);
   });
   const extra = [...have.keys()].filter((id) => !ids.has(id));
   const on = data.activityTypes.filter((t) => t.enabled).map((t) => t.id);
   console.log(`\nTypes: ${created} new · ${changed} changed · ${unchanged} unchanged${extra.length ? ` · ${extra.length} in Firestore but not in the file (left alone: ${extra.join(", ")})` : ""}`);
+  if (!args.only) {
   console.log(`On (${on.length}): ${on.join(", ")}`);
   console.log(`Off (${data.activityTypes.length - on.length}): ${data.activityTypes.filter((t) => !t.enabled).map((t) => `${t.id} (${t.needs})`).join(", ")}`);
+  }
 
   if (!args.apply) { console.log("\nDry run: nothing written. Add --apply to write it."); return; }
   const batch = db.batch();
