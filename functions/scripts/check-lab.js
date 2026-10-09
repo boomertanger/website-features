@@ -146,4 +146,34 @@ const snap = L.snapshotOf({ title: "T", description: "d".repeat(3000), area: "si
 assert.deepEqual(Object.keys(snap).sort(), ["area", "author", "description", "status", "title"], "text only");
 assert.equal(snap.description.length, 2000); assert.equal(snap.author, "@gbo");
 
+// ---------- rules and indexes (the text of firestore.rules and firestore.indexes.json) ----------
+{
+  const fs = require("fs"), path = require("path");
+  const rules = fs.readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8").replace(/\r\n/g, "\n");
+  const start = rules.indexOf("// ---------- Feature Lab (docs/specs/feature-lab.md");
+  assert.ok(start > 0, "the Feature Lab rules are there");
+  const block = rules.slice(start, rules.indexOf("match /lab/main/submitTokens/{token} {", start) + 160);
+  for (const m of ["match /lab/main/ideas/{ideaId}", "match /comments/{commentId}", "match /votes/{uid}", "match /lab/main/myVotes/{uid}", "match /lab/main/submitTokens/{token}"]) assert.ok(block.includes(m), m);
+  // no client write anywhere in the block: only "write: if false" (and "read, write: if false") lines, never create, update, delete or a true write
+  const allows = [...block.matchAll(/allow ([a-z, ]+):/g)].map((x) => x[1].trim());
+  assert.ok(allows.length >= 6);
+  for (const k of allows) assert.ok(["read", "write", "read, write"].includes(k), `unexpected rule kind: ${k}`);
+  const writes = [...block.matchAll(/allow (?:read, )?write: if ([^;]+);/g)].map((x) => x[1].trim());
+  assert.equal(writes.length, 5, "every one of the five lab matches closes writes");
+  assert.ok(writes.every((w) => w === "false"), "every write is false");
+  assert.ok(/match \/lab\/main\/ideas\/\{ideaId\} \{\s+allow read: if resource\.data\.hidden == false \|\| isSiteStaff\(siteId\);/.test(block), "an idea: anyone unless hidden, staff always");
+  assert.ok(block.includes("get(/databases/$(database)/documents/sites/$(siteId)/lab/main/ideas/$(ideaId)).data.hidden == false"), "a comment follows its idea's hidden flag");
+  assert.ok(/match \/lab\/main\/myVotes\/\{uid\} \{\s+allow read: if request\.auth != null && request\.auth\.uid == uid;/.test(block), "a member reads only their own vote marks");
+  assert.ok(/match \/votes\/\{uid\} \{\s+allow read, write: if false;/.test(block), "votes are closed");
+  assert.ok(/match \/lab\/main\/submitTokens\/\{token\} \{\s+allow read, write: if false;/.test(block), "tokens are closed");
+  // the one legacy change: new-site admins read adminLog (and nobody writes it)
+  const alog = rules.slice(rules.indexOf("match /adminLog/{entryId} {"), rules.indexOf("match /adminSettings/{docId} {"));
+  assert.ok(alog.includes("allow read: if isAdmin() || hasSiteRole('boomertanger', 'admin');") && alog.includes("allow write: if false;"), "adminLog is readable by new-site admins too, and never writable");
+  const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "firestore.indexes.json"), "utf8")).indexes;
+  const has = (group, fields) => idx.some((i) => i.collectionGroup === group && i.queryScope === "COLLECTION" && JSON.stringify(i.fields.map((f) => [f.fieldPath, f.order])) === JSON.stringify(fields));
+  assert.ok(has("ideas", [["hidden", "ASCENDING"], ["createdAt", "DESCENDING"]]), "ideas: hidden, createdAt desc");
+  assert.ok(has("comments", [["hidden", "ASCENDING"], ["createdAt", "ASCENDING"]]), "comments: hidden, createdAt asc");
+  assert.ok(has("adminLog", [["itemPath", "ASCENDING"], ["createdAt", "DESCENDING"]]), "the adminLog index is still there");
+}
+
 console.log("check-lab: ok");

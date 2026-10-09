@@ -67,7 +67,8 @@ service cloud.firestore {
     // Functions via the Admin SDK; admins can read it; nobody writes from a
     // browser. Entries expire via a TTL policy on expireAt.
     match /adminLog/{entryId} {
-      allow read: if isAdmin();
+      // isAdmin() is the legacy allowlist (admins/{uid}); hasSiteRole is the new site's admin role (the Feature Lab's Admin activity list, docs/specs/feature-lab.md §5).
+      allow read: if isAdmin() || hasSiteRole('boomertanger', 'admin');
       allow write: if false;
     }
 
@@ -572,6 +573,32 @@ service cloud.firestore {
         allow read, write: if false;
       }
       match /vaultLimits/{uid} {
+        allow read, write: if false;
+      }
+
+      // ---------- Feature Lab (docs/specs/feature-lab.md §3, §5) ----------
+      // Written ONLY by Cloud Functions (functions/lib/lab). Everyone reads the board: an idea unless it is hidden, a comment unless it or its idea is
+      // hidden (clients query with hidden == false); staff read everything. Votes, the post tokens and everyone's vote marks are closed; a member
+      // reads only their own marks. Every write is false.
+      match /lab/main/ideas/{ideaId} {
+        allow read: if resource.data.hidden == false || isSiteStaff(siteId);
+        allow write: if false;
+
+        match /comments/{commentId} {
+          allow read: if (resource.data.hidden == false
+              && get(/databases/$(database)/documents/sites/$(siteId)/lab/main/ideas/$(ideaId)).data.hidden == false)
+            || isSiteStaff(siteId);
+          allow write: if false;
+        }
+        match /votes/{uid} {
+          allow read, write: if false;
+        }
+      }
+      match /lab/main/myVotes/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+      match /lab/main/submitTokens/{token} {
         allow read, write: if false;
       }
       // The mod queue (adds and cover suggestions). The submitter's uid is in private/submitter: admins only.
