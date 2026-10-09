@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+The owner's private checklist: the rail on /live/control (current beat open, tick pop, shortcuts that tick themselves, saved at once) and the /live/control/checklist editor for the four templates (add, edit, reorder by drag or keyboard, platform-only, shortcut picker).
 Control Room live controls: platform status with the TikTok switch and viewer entry, readouts, beats (Begin, Skip, Back to the game), the check-in control with the big word, ring and counts by room, the Scene card, the game switcher, the launch panel, After-show and Stop, and the Stream wrap-up.
 Control Room before the stream: today's streams to pick with readiness chips, Running late and Cancel, Start an unscheduled stream with its YouTube event status, and the Start dialog with the WE'RE LIVE power-up.
 Control Room page shell at /live/control: the CONTROLROOM bar, the stream's own title, the house look switch (owner), the Cockpit grid, platforms and readouts, beats, game and crew, a /live/control/checklist owner-only stub, and a Control Room card on /admin.

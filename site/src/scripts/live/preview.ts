@@ -201,7 +201,7 @@ export async function previewApi(): Promise<Api> {
         if (s.beats[cur]?.windowOpenedAt) throw fail("That beat already had its check-in. Reopen it instead.");
         const len = d.lengthMinutes || 5, word = raw.words[st.wordUsed++ % raw.words.length];
         c.window = { beat: cur, word, openedAt: now, closesAt: now + len * MIN, lengthMinutes: len };
-        s.beats[cur]!.windowOpenedAt = now; c.firstIn = { ...c.firstIn, [cur]: raw.firstIn.map((handle) => ({ handle })) };
+        s.beats[cur]!.windowOpenedAt = now; for (const it of st.checklist?.[cur] || []) if (it.shortcut === "openCheckin") it.done = true; c.firstIn = { ...c.firstIn, [cur]: raw.firstIn.map((handle) => ({ handle })) };
         st.counts.byBeat[cur] = 0; for (const r of s.rooms) st.counts.byRoom[r] = 0;
         return { ok: true, beat: cur, window: c.window, word };
       }

@@ -4,7 +4,7 @@
    .bt-launch, .bt-checklist, .bt-deckplan, .bt-stamp...) and the two looks from control-room-looks.css (data-look on .lc). Tokens only: no raw colours.
    Container queries (1024 / 640 / 420); every animation has a reduced-motion version. Dialog rules target .bt-portal[data-feature="live"]. */
 
-.bt-root:not(#_) .lc { position: relative; display: block; padding-bottom: var(--bt-space-8); }
+.bt-root:not(#_) .lc { position: relative; display: block; width: 100%; padding-bottom: var(--bt-space-8); }
 
 /* ---- Hero: a small scene (the radar scope), the stream's own title, the state and the house look ---- */
 .bt-root:not(#_) .lc-hero { position: relative; display: flex; align-items: center; gap: 18px; margin-bottom: 16px; padding: 14px 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden;
@@ -194,3 +194,27 @@
 .bt-root:not(#_) .lc-missed { margin: 0; padding-left: 18px; color: var(--bt-text); line-height: 1.7; }
 .bt-root:not(#_) .lc-missed small { color: var(--bt-text-muted); }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lc-wbar i { animation: none; } .bt-root:not(#_) .lc-bar i { transition: none; } }
+
+/* ---- The owner's checklist rail ---- */
+.bt-root:not(#_) .lc-private { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 12px 0 0; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .lc-a-list .bt-checklist { margin-top: 0; }
+
+/* ---- Checklist templates editor (/live/control/checklist) ---- */
+.bt-root:not(#_) .lt-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 14px; margin-bottom: 16px; }
+.bt-root:not(#_) .lt-save { display: flex; align-items: center; gap: 12px; position: relative; }
+.bt-root:not(#_) .lt-stamp { position: absolute; right: 0; top: -70px; pointer-events: none; }
+.bt-root:not(#_) .lt-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .lt-grid { grid-template-columns: minmax(0, 1fr); } }
+.bt-root:not(#_) .lt-list { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.bt-root:not(#_) .lt-row { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 10px; align-items: start; padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); transition: border-color 0.2s, opacity 0.2s; }
+.bt-root:not(#_) .lt-row.is-over { border-color: var(--bt-primary); }
+.bt-root:not(#_) .lt-row.is-drag { opacity: 0.5; }
+.bt-root:not(#_) .lt-grip { display: grid; place-items: center; width: 34px; height: 38px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-sm); background: var(--bt-surface); color: var(--bt-text-muted); cursor: grab; }
+.bt-root:not(#_) .lt-grip:hover, .bt-root:not(#_) .lt-grip:focus-visible { color: var(--bt-text); border-color: var(--bt-primary); }
+.bt-root:not(#_) .lt-fields { display: grid; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .lt-opts { display: flex; flex-wrap: wrap; gap: 8px 12px; }
+.bt-root:not(#_) .lt-sel { display: grid; gap: 2px; min-width: 150px; flex: 1; color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 600; }
+.bt-root:not(#_) .lt-tools { display: grid; gap: 4px; }
+.bt-root:not(#_) .lt-add { margin-top: 12px; }
+@container bt (max-width: 420px) { .bt-root:not(#_) .lt-row { grid-template-columns: 30px minmax(0, 1fr); } .bt-root:not(#_) .lt-tools { grid-column: 1 / -1; grid-auto-flow: column; justify-content: end; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lt-row { transition: none; } }
