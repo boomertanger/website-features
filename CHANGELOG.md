@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions, site: Cloud Stash upload gate. uploadGate runs first in vaultCoverSignature, vaultCoverSuggestSignature, factoryArtSignature and Bug Zapper's bugShotParams (and bugSubmit with a screenshot, which still saves the report and only skips the upload); paused uploads refuse members and let staff through, stopped refuses all but the owner, a status older than 48 hours fails open; every upload dialog shows "Uploads are paused for a bit. Try again later, or send it without a picture."
 functions: Cloud Stash callables and schedules (lib/stash): stashUsageRefresh, stashScan, stashPreview, stashPurge, stashPurgeUntracked, stashRuleDryRun, stashRuleSave, stashSweepNow, stashSettings, stashUsageDaily (05:15 LA) and stashScanWeekly (Mon 05:30 LA); scheduledAssetCleanup now runs the shared sweep (allowlist, per-run cap, storageUsage/sweep and per-rule lastRun); performAssetDeletion stops writing asset_purged to activityLog and logs title || name; the A1 Steward safety net is a server refusal; check-stash.
 functions: Cloud Stash shared helpers (no behaviour change). lib/cloudinary.js gains usage(), listResources() and cloudinaryDelete() (moved out of index.js, same code), lib/externalAssets.js gains recordUntrackedAsset(), lib/stash/targets.js is the cleanup allowlist (v1: Bug Zapper screenshots on reports closed for 14 to 730 days) and lib/stash/gate.js is uploadGate().
 docs: Cloud Stash confirmed spec and the approved mockups (I1 icon, S2 hero, P2 tabs, F2 rows, W1 How it works).

@@ -33,6 +33,7 @@ const RL = require("../rewards/logic");
 const { refs } = require("./record");
 const { makeSeason } = require("./season");
 const { callerInfo, requireStaff, requireAdmin } = require("../vault/common");
+const { uploadGate } = require("../stash/gate");
 const cloud = require("../vault/cloudinary");
 
 const SITE_ID = "boomertanger";
@@ -432,7 +433,8 @@ module.exports = function builder({ adminLogEntry, recordAssetCreated, performAs
 
   // ---------- art ----------
   const factoryArtSignature = onCall({ secrets: cloudSecrets }, async (request) => {
-    await crew(request);
+    const c = await crew(request);
+    await uploadGate(c, "seasonArt");   // Cloud Stash: paused or stopped uploads are refused first
     return { ok: true, ...cloud.uploadParams({ creds: cloudCreds(), folder: ART_FOLDER }) };
   });
   async function setArt(c, sSnap, data) {

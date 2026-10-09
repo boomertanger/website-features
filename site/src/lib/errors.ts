@@ -32,6 +32,8 @@ const REASONS: Record<string, string> = {
   linkedElsewhere: "That Twitch account is linked to another member.",
   emailInUse: "There's already an account with your Twitch email. Sign in the way you did before, then link Twitch from your account page.",
   lastMethod: "Add a password or Google first, so you can still sign in.",
+  // Cloud Stash's upload gate (every upload dialog: the Vault's covers, season art, Bug Zapper screenshots): the site is near its storage limit
+  uploadsPaused: "Uploads are paused for a bit. Try again later, or send it without a picture.",
 };
 
 /** The reason a callable gave (details.reason), if any. */

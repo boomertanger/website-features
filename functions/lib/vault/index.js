@@ -29,6 +29,7 @@ const { createSources, SourceError } = require("./sources");
 const C = require("./checks");
 const makeStore = require("./store");
 const cloud = require("./cloudinary");
+const { uploadGate } = require("../stash/gate");
 const { plannerRefs } = require("../planner/refs");
 const { fail, callerInfo, requireVerifiedMember, requireStaff, requireAdmin, sourceError } = require("./common");
 const factory = require("../factory/record");
@@ -406,12 +407,14 @@ module.exports = function vault(deps) {
 
   // ---------- covers ----------
   const vaultCoverSignature = onCall({ secrets: cloudSecrets }, async (request) => {
-    requireStaff(await callerInfo(request));
+    const c = requireStaff(await callerInfo(request));
+    await uploadGate(c, "vaultCover");   // Cloud Stash: paused or stopped uploads are refused first (staff may still upload when only members are paused)
     return { ok: true, ...cloud.uploadParams({ creds: cloudCreds(), folder: cloud.PUBLIC_FOLDER }) };
   });
 
   const vaultCoverSuggestSignature = onCall({ secrets: cloudSecrets }, async (request) => {
     const c = requireVerifiedMember(await callerInfo(request));
+    await uploadGate(c, "vaultSuggestion");   // Cloud Stash: first, before any other check
     const { slug } = request.data || {};
     if (slug != null) {
       if (typeof slug !== "string") throw fail("invalid-argument", "slug must be text.", "args");

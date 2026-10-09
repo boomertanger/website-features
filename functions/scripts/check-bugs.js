@@ -206,6 +206,19 @@ const outboxOf = async (type) => (await col(`${S}/notifyOutbox`)).filter((o) => 
   assert.equal(await why(as("gbo", "bugShotUrl", { id: second.id })), "noShot");
   assert.equal(await why(as(null, "bugShotUrl", { id: r1.id })), "signedOut");
 
+  // ================================================================ Cloud Stash's upload gate (paused uploads): the screenshot callable is refused first, the report itself is never lost
+  const gateDoc = (uploads, ago = 3600000) => wdb.doc("storageUsage/cloudinary").set({ uploads, fetchedAt: realFs.Timestamp.fromMillis(Date.now() - ago), status: "paused" });
+  await gateDoc("members-paused");
+  const gp = await as("gbo", "bugShotParams", { id: second.id }).catch((e) => e);
+  assert.equal(gp.details.reason, "uploadsPaused", "a member can't get signed screenshot params while uploads are paused"); assert.equal(gp.message, "Uploads are paused for a bit. Try again later, or send it without a picture.");
+  assert.equal(gp.code, "resource-exhausted"); assert.equal((await as("mod1", "bugShotParams", { id: second.id })).ok, true, "staff may still upload when only members are paused");
+  const paused = await as("gbo", "bugSubmit", { ...rep({ title: "Report while paused" }), wantsShot: true, token: token() });
+  assert.ok(paused.id && paused.ok, "the report is saved"); assert.equal(paused.upload, undefined, "no upload params while paused"); assert.equal(paused.uploadsPaused, true); assert.match(paused.uploadsPausedMessage, /paused for a bit/);
+  await gateDoc("stopped"); assert.equal((await as("mod1", "bugShotParams", { id: second.id }).catch((e) => e)).details.reason, "uploadsPaused", "stopped: staff are refused too");
+  await gateDoc("members-paused", 49 * 3600000); assert.equal((await as("gbo", "bugShotParams", { id: second.id })).ok, true, "a status older than 48 hours fails open");
+  await wdb.doc("storageUsage/cloudinary").delete(); assert.equal((await as("gbo", "bugShotParams", { id: second.id })).ok, true, "no status doc: open");
+  await wdb.doc(`${REPORTS}/${paused.id}`).delete();
+
   // ================================================================ bit me too
   assert.equal(await why(as(null, "bugMeToo", { id: r1.id, on: true })), "signedOut");
   assert.equal(await why(as("newbie", "bugMeToo", { id: r1.id, on: true })), "needsSignup");

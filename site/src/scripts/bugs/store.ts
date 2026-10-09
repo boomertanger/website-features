@@ -109,7 +109,7 @@ export async function prepareShot(file: File): Promise<Blob> {
 }
 
 /** Sends a report. The screenshot (if any) goes up after: a failed upload never loses the report (shot: "failed"). */
-export async function submit(input: NewReport, file: Blob | null): Promise<{ id: string; counted: boolean; shot: "none" | "ok" | "failed" }> {
+export async function submit(input: NewReport, file: Blob | null): Promise<{ id: string; counted: boolean; shot: "none" | "ok" | "failed" | "paused" }> {
   const s = getAuthState();
   if (isPreview(s)) {
     await wait();
@@ -120,8 +120,8 @@ export async function submit(input: NewReport, file: Blob | null): Promise<{ id:
     if (file) byId(id)!.shotRef = `bug-zapper/${id}/shot`;
     return { id, counted: true, shot: file ? "ok" : "none" };
   }
-  const res = await call<{ id: string; counted: boolean; upload?: { uploadUrl: string; fields: Record<string, string | number> } }>("bugSubmit", { ...input, wantsShot: !!file });
-  let shot: "none" | "ok" | "failed" = "none";
+  const res = await call<{ id: string; counted: boolean; uploadsPaused?: boolean; upload?: { uploadUrl: string; fields: Record<string, string | number> } }>("bugSubmit", { ...input, wantsShot: !!file });
+  let shot: "none" | "ok" | "failed" | "paused" = res.uploadsPaused ? "paused" : "none";   // paused: the report is saved, the screenshot just isn't offered (Cloud Stash's upload gate)
   if (file && res.upload) {
     try { await uploadShot(res.upload, file); await call("bugAttachShot", { id: res.id, publicId: `bug-zapper/${res.id}/shot` }); shot = "ok"; }
     catch (err) { console.warn("bugs: the screenshot didn't attach", err); shot = "failed"; }

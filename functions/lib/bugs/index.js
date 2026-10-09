@@ -28,6 +28,7 @@ const L = require("./logic");
 const { SITE_ID, fail, requireVerifiedMember, requireStaff, requireAdmin } = require("../vault/common");
 const { dayKey } = require("../arcade/logic");
 const { makeBoards, raise, idStr } = require("../boards");
+const { uploadGate } = require("../stash/gate");
 
 const TOKEN_TTL_MS = L.DAY_MS;
 const SHOT_SWEEP_FOLDER = "bug-zapper";
@@ -100,7 +101,10 @@ function build(deps = {}) {
     await outbox({ type: "bug-new", audience: "admins", priority: severity === "critical" ? "high" : "normal", payload: { kind: "bug-zapper", reportId: ref.id, title, severity, private: v.value.private, link: link(ref.id) } });
     const counted = await nightShift(c.uid, "report", `report-${ref.id}`);
     const out = { ok: true, id: ref.id, counted };
-    if (wantsShot) out.upload = { publicId: shotId(ref.id), ...cloud().uploadParams({ creds: creds(), type: "authenticated", publicId: shotId(ref.id), context: `owner=${c.uid}`, now: at }) };
+    // Cloud Stash's gate: when uploads are paused the report is still saved, the screenshot just isn't offered (the reporter is told; they can add it later)
+    let shotOk = wantsShot;
+    if (wantsShot) { try { await uploadGate(c, "bugShot"); } catch (err) { if (err && err.details && err.details.reason === "uploadsPaused") { shotOk = false; out.uploadsPaused = true; out.uploadsPausedMessage = err.message; } else throw err; } }
+    if (shotOk) out.upload = { publicId: shotId(ref.id), ...cloud().uploadParams({ creds: creds(), type: "authenticated", publicId: shotId(ref.id), context: `owner=${c.uid}`, now: at }) };
     return out;
   }
 
@@ -113,6 +117,7 @@ function build(deps = {}) {
   }
   async function shotParams(request) {
     const c = requireVerifiedMember(await caller(request));
+    await uploadGate(c, "bugShot");   // Cloud Stash: paused or stopped uploads are refused first
     const { id, report } = await loadForShot(request, c);
     const refusal = L.shotRefusal(report, c);
     if (refusal) throw raise(refusal);
