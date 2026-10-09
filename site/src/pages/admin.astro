@@ -8,6 +8,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 import ComingSoon from "../components/ComingSoon.astro";
 import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
+import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
 ---
 <BaseLayout title="Admin tools" noindex>
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
@@ -47,6 +48,17 @@ import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
       <div class="fl-admin-n"><span class="n" data-lab-n>…</span><span class="bt-meta" data-lab-what>new ideas waiting for a look</span></div>
       <p class="bt-meta fl-admin-oldest" data-lab-oldest></p>
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/feature-lab">Open the board</a></div>
+    </div>
+  </div>
+  <div class="bt-zone" data-bugs-card hidden>
+    <div class="bt-card bz-admin-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Bug Zapper</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
+      <div data-bugs-body>
+        <div class="bz-big-n"><b data-bugs-n>…</b><span class="bt-meta" data-bugs-what>new reports waiting for a look</span><span data-bugs-crit></span></div>
+        <div class="bz-oldest" data-bugs-oldest></div>
+      </div>
+      <div class="bt-empty bt-empty--compact" data-bugs-clear hidden><p class="bt-empty-title">No reports waiting</p><p>Every report has had a look.</p></div>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/bug-zapper">Open the board</a></div>
     </div>
   </div>
   <div class="bt-zone" data-ff-link hidden>
@@ -136,6 +148,7 @@ import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
   import "../scripts/admin/planner-card";
   import "../scripts/admin/live-card";
   import "../scripts/admin/lab-card";
+  import "../scripts/admin/bugs-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";

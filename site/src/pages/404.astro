@@ -10,6 +10,13 @@ import BaseLayout from "../layouts/BaseLayout.astro";
     <div class="bt-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Lost in the dark?</h2></div>
       <p class="bt-section-text">Head back <a href="/">home</a> to see what's on.</p>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/bug-zapper?new=1" data-report-link>Report this broken link</a></div>
     </div>
   </div>
 </BaseLayout>
+
+<script>
+  // Report this broken link: Bug Zapper's form opens with this address filled in as the page (?new=1&page=<path>).
+  const a = document.querySelector<HTMLAnchorElement>("[data-report-link]");
+  if (a) a.href = `/bug-zapper?new=1&page=${encodeURIComponent(location.pathname + location.search)}`;
+</script>
