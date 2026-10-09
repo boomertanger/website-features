@@ -1,7 +1,36 @@
 ---
+// /live: the public Control Room page (docs/specs/control-room.md §2 and §7; mockup docs/design/mockups/control-room-batch-1.html layout 1 "Bridge",
+// looks Hull map Mk II and CRT; design-system.md §8p). Everyone sees it. It reads ONE public document (public/live) and draws one of three views:
+//   room    the waiting room (off air and Starting soon): a story page in the Arcade How it works frame
+//   live    the Bridge (live, Break and backstage): a tool page built for speed
+//   ended   the wrap-up for the two hours after a stream
+// The static shell is here; scripts/live/pub.ts decides the view and fills it. The gold title is the stream's own (the next stream's when off air).
+// Preview (staging and previews only): ?live=off|public|backstage or ?state=off|soon|live|break|backstage|ended, ?as=visitor|member, ?look=crt.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import ComingSoon from "../components/ComingSoon.astro";
+import LiveBar from "../components/live/LiveBar.astro";
+import "../styles/live-layout.css";
+import "../styles/control-room-looks.css";
+import "../styles/live-public.css";
 ---
-<BaseLayout title="Live">
-  <ComingSoon title="Live" lead="Watch the stream, check in and join the Control Room." />
+<BaseLayout title="Live" description="Watch the stream, check in at every beat and see who is on the crew. When we're off air, see what's next.">
+  <LiveBar slot="bar" />
+  <div class="lp bt-zone" data-lp data-look="hull" data-view="loading" data-state="loading">
+    <header class="lp-head" data-lp-head hidden>
+      <h1 class="bt-title lp-title" data-lp-title>Live</h1>
+      <span class="lp-head-sub" data-lp-sub></span>
+      <span class="lp-sp"></span>
+      <span class="lp-tags" data-lp-tags></span>
+    </header>
+    <div class="lp-skel" data-lp-view="loading" aria-hidden="true">
+      <span class="bt-skeleton lp-skel-title"></span>
+      <span class="bt-skeleton lp-skel-card"></span>
+    </div>
+    <div class="lp-view" data-lp-view="room" hidden></div>
+    <div class="lp-view" data-lp-view="live" hidden></div>
+    <div class="lp-view" data-lp-view="ended" hidden></div>
+  </div>
 </BaseLayout>
+
+<script>
+  import "../scripts/live/pub";
+</script>

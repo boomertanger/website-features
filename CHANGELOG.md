@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Control Room /live page shell (6a): the public CONTROLROOM bar (Live, Questions as Soon, How it works), the house look from public/live (data-look hull or crt), the stream's own title in gold (the next stream's when off air) with its state tags, one shared public/live listener per tab (lib/live.ts: also sets data-live on the page root, lets go after a minute hidden) and the next-stream read (lib/next-stream.ts); non-production preview with ?state=off|soon|live|break|backstage|ended next to ?live=. The three views follow.
 site: the Start dialog's TikTok switch starts on when TikTok is a planned chat, and the owner's final choice is saved right before Start; the list of today's streams also refreshes straight after you change it.
 functions, site: livePlatformStatus (Twitch, the YouTube event and the vertical broadcast, read-only, for the Start dialog, which now fills in live every 5 s) and the TikTok switch saved on the stream with liveRoom (kept by Start, shown on /live and the stream view); public/live gains liveRooms.
 Control Room Stream Deck and stream view keys (owner only): make, rotate and revoke each key (shown once, then only the date it was set), every Stream Deck action as a copyable URL, and the wide and tall stream view URLs.

@@ -1,0 +1,21 @@
+/* site/src/styles/live-public.css — the public /live page (docs/specs/control-room.md §7; mockup docs/design/mockups/control-room-batch-1.html, layout 1
+   "Bridge"). Only what is unique to this page (lp-* prefix): the head, the waiting room's hero and ticket, the Bridge grid, the video frame, the wrap-up.
+   Components come from shared/bt-ui.css (.bt-cr-panel, .bt-cr-viewport, .bt-readout, .bt-beats, .bt-checkin, .bt-deckplan, .bt-ticket, .bt-timeline, .bt-chat,
+   .bt-toc, .bt-chapter--ghost, .bt-velvet, .bt-live-tag...) and the two looks from control-room-looks.css (data-look on .lp). Tokens only: no raw colours.
+   Layout uses container queries (1024 / 640 / 420); every animation has a reduced-motion version. */
+
+.bt-root:not(#_) .lp { position: relative; display: block; width: 100%; padding-bottom: var(--bt-space-8); }
+.bt-root:not(#_) .lp [hidden] { display: none; }
+
+/* ---- Head: the stream's own title in gold, a line under it and the state tags (live and ended views) ---- */
+.bt-root:not(#_) .lp-head { display: flex; align-items: center; flex-wrap: wrap; gap: 6px 14px; margin: 0 0 16px; }
+.bt-root:not(#_) .lp-title { margin: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lp-head-sub { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lp-head-sub b { color: var(--bt-text); font-weight: 700; }
+.bt-root:not(#_) .lp-sp { flex: 1; }
+.bt-root:not(#_) .lp-tags { display: inline-flex; align-items: center; gap: 8px; }
+
+/* ---- Loading skeleton ---- */
+.bt-root:not(#_) .lp-skel { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .lp-skel-title { display: block; width: 260px; max-width: 70%; height: 32px; }
+.bt-root:not(#_) .lp-skel-card { display: block; width: 100%; height: 360px; border-radius: var(--bt-radius-lg); }
