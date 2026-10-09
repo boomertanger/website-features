@@ -245,3 +245,12 @@
 .bt-root:not(#_) .ld-private { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 4px 0 10px; }
 .bt-root:not(#_) .ld-private-row { display: inline-flex; align-items: center; gap: 8px; }
 .bt-root:not(#_) .ld-days { width: 84px; }
+
+/* ---- Part 5: flags at the top, Captain tonight in the Crew card, Confirm tonight's crew after Stop ---- */
+.bt-root:not(#_) .lc-flags:not(:empty) { margin-bottom: 14px; }
+.bt-root:not(#_) .lc-capt { display: grid; gap: 6px; margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lc-capt-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 10px; padding: 6px 10px; border-radius: 10px; border: 1px solid var(--bt-border); background: var(--bt-bg); font-size: var(--bt-text-sm); transition: border-color 0.15s, transform 0.15s; }
+.bt-root:not(#_) .lc-capt-row:hover { border-color: var(--bt-border-2); transform: translateX(2px); }
+.bt-root:not(#_) .lc-capt-row small { display: block; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .lc-confirm { margin-top: 16px; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lc-capt-row { transition: none; } .bt-root:not(#_) .lc-capt-row:hover { transform: none; } }

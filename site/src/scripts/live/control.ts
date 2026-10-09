@@ -21,6 +21,7 @@ import { initLive } from "./live";
 import { initRail } from "./rail";
 import { initDeck } from "./deck";
 import { gamePickerHtml } from "./gamepick";
+import { initCrew, sampleCrew } from "./control-crew";
 
 const POLL_MS = 5000;
 const SITE_TILE = `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`;
@@ -153,7 +154,7 @@ function crewPanelHtml() {
   const body = st
     ? deckplanHtml({ bridge, bays: bays as any })
     : `<div class="lc-empty">${mascotHtml()}<p>Crew shows up here once a stream is picked.</p></div>`;
-  return crPanelHtml({ id: "lc-crew", cls: "lc-a-crew", title: "Crew on duty", icon: "crew", tagHtml: `<span class="lc-soon-tag">Mod Deck: soon</span>`, bodyHtml: body });
+  return crPanelHtml({ id: "lc-crew", cls: "lc-a-crew", title: "Crew on duty", icon: "crew", tagHtml: ctx.hooks.crewExtraHtml ? "" : `<span class="lc-soon-tag">Mod Deck: soon</span>`, bodyHtml: body + ((ctx.hooks.crewExtraHtml?.(ctx) as string) ?? "") });
 }
 
 /* ------------------------------------------------------------------ the page */
@@ -181,7 +182,7 @@ function render() {
     if (wasMode && !reduced()) crBoot(root);
   }
   slot("hero", heroHtml());
-  if (ctx.mode === "ended") { slot("banners", ""); slot("wrap", (ctx.hooks.wrapHtml?.(ctx) as string) ?? ""); ctx.after.forEach((f) => f(ctx)); return; }
+  if (ctx.mode === "ended") { slot("banners", ""); slot("wrap", ((ctx.hooks.wrapHtml?.(ctx) as string) ?? "") + ((ctx.hooks.confirmHtml?.(ctx) as string) ?? "")); ctx.after.forEach((f) => f(ctx)); return; }
   slot("status", statusHtml());
   slot("beats", beatsPanelHtml());
   slot("game", gamePanelHtml());
@@ -249,7 +250,7 @@ function schedule() {
 
 /* ------------------------------------------------------------------ boot */
 function chrome(root: HTMLElement) {
-  root.innerHTML = `<div data-slot="hero"></div><div class="lc-banners" data-slot="banners" aria-live="polite"></div><div data-lc-body></div>`;
+  root.innerHTML = `<div data-slot="hero"></div><div class="lc-flags" data-slot="flags"></div><div class="lc-banners" data-slot="banners" aria-live="polite"></div><div data-lc-body></div>`;
 }
 
 async function look(value: "hull" | "crt", btn: HTMLElement) {
@@ -288,6 +289,7 @@ onAccess(async (s, role) => {
   initLive(ctx);
   initRail(ctx);
   initDeck(ctx);
+  initCrew(ctx, ctx.api.preview ? sampleCrew(ctx.role === "owner") : undefined);
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;

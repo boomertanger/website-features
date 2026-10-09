@@ -140,6 +140,9 @@ export async function previewApi(): Promise<Api> {
   const handlers: Record<string, (d: any) => any> = {
     delayStream(d) { const s = stream(d.streamId); const len = s.end - s.start; s.start = d.startMs; s.end = d.endMs ?? d.startMs + len; s.delay = { count: (s.delay?.count || 0) + 1 }; return { ok: true }; },
     cancelStream(d) { const st = pv(); stream(d.streamId); st.streams = st.streams.filter((x) => x.id !== d.streamId); return { ok: true, state: "cancelled" }; },
+    liveFlagAck() { return { ok: true }; },
+    captainSet() { return { ok: true }; },
+    dutyConfirmNight() { return { ok: true }; },
     youtubeRetry(d) { const s = stream(d.streamId); s.youtube = { status: "ok" }; return { ok: true, status: "ok" }; },
     createAdhocStream(d) {
       const st = pv(), a = d.adhoc || d, now = Date.now(), id = `pv-adhoc-${Math.random().toString(36).slice(2, 7)}`;
