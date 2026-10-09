@@ -1807,6 +1807,16 @@
 .bt-root:not(#_) .bt-meter-fill { position: absolute; top: 0; bottom: 0; left: 0; background: var(--bt-meter-color); border-radius: var(--bt-radius-full); transition: width 0.4s ease; }
 .bt-root:not(#_) .bt-meter-marker { position: absolute; top: -5px; bottom: -5px; width: 2px; margin-left: -1px; background: var(--bt-text-muted); border-radius: 1px; }
 .bt-root:not(#_) .bt-meter-legend { display: flex; justify-content: space-between; gap: var(--bt-space-3); font-size: var(--bt-text-sm); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; position: relative; }
+/* Stacked meter (Cloud Stash's usage card): .bt-meter--stack splits the track into labelled segments, each .bt-meter-seg a width % and its own colour in --c, with a key list under it:
+   <div class="bt-meter bt-meter--stack"><div class="bt-meter-track" role="meter"><span class="bt-meter-seg" style="width:34%;--c:var(--bt-primary)"></span>…<div class="bt-meter-marker"></div></div>
+   <ul class="bt-meter-keys"><li style="--c:var(--bt-primary)"><i></i>Storage <b>34%</b></li>…</ul></div> */
+.bt-root:not(#_) .bt-meter--stack .bt-meter-track { display: flex; overflow: hidden; }
+.bt-root:not(#_) .bt-meter-seg { height: 100%; background: var(--c, var(--bt-primary)); }
+.bt-root:not(#_) .bt-meter-seg + .bt-meter-seg { box-shadow: inset 2px 0 0 var(--bt-bg); }
+.bt-root:not(#_) .bt-meter-keys { display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 8px 0 0; padding: 0; list-style: none; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-meter-keys li { display: inline-flex; align-items: center; gap: 6px; }
+.bt-root:not(#_) .bt-meter-keys i { width: 9px; height: 9px; border-radius: 3px; background: var(--c, var(--bt-primary)); }
+.bt-root:not(#_) .bt-meter-keys b { color: var(--bt-text); font-weight: 700; font-variant-numeric: tabular-nums; }
 /* Label that ends exactly at the marker: style="--bt-at: 80%" */
 .bt-root:not(#_) .bt-meter-legend-mark { position: absolute; top: 0; right: calc(100% - var(--bt-at, 50%)); padding-right: 6px; color: var(--bt-text-muted); white-space: nowrap; }
 
@@ -2882,6 +2892,22 @@
 .bt-root:not(#_) .bt-notice--error { border-color: color-mix(in srgb, var(--bt-danger) 55%, transparent); background: var(--bt-danger-bg); color: var(--bt-danger-text); }
 .bt-root:not(#_) .bt-notice--ok { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); background: var(--bt-lime-bg); color: var(--bt-text); }
 .bt-root:not(#_) .bt-notice .bt-btn { margin-top: 8px; }
+/* Cloud Stash additions (docs/specs/cloud-stash.md §10): the gold notice ("Uploads paused") next to --error and --ok, and --row, a notice laid out on one row:
+   <div class="bt-notice bt-notice--warn bt-notice--row"><b>Uploads paused</b><span>why</span><button class="bt-btn bt-btn--sm">Action</button></div> */
+.bt-root:not(#_) .bt-notice--warn { border-color: color-mix(in srgb, var(--bt-gold) 50%, transparent); background: var(--bt-gold-bg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-notice:is(.bt-notice--warn, .bt-notice--error, .bt-notice--ok).bt-notice--row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding: 12px 14px; }
+.bt-root:not(#_) .bt-notice--row > b { font-weight: 700; }
+.bt-root:not(#_) .bt-notice--row > span { flex: 1; min-width: 200px; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-notice--row .bt-btn { margin-top: 0; }
+
+/* File tile: .bt-file-thumb, a 52px tile for a file. An <img> fills it; --locked is a private file (a lock and "Private" instead of the picture); --lg is the full-width preview in a dialog.
+   <span class="bt-file-thumb"><img src alt=""></span>   <span class="bt-file-thumb bt-file-thumb--locked">lock svg<small>Private</small></span> */
+.bt-root:not(#_) .bt-file-thumb { position: relative; width: 52px; height: 52px; flex: none; display: grid; place-items: center; overflow: hidden; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-file-thumb > img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.bt-root:not(#_) .bt-file-thumb--locked { flex-direction: column; gap: 2px; background: repeating-linear-gradient(135deg, var(--bt-surface-2) 0 6px, var(--bt-bg) 6px 12px); }
+.bt-root:not(#_) .bt-file-thumb--locked svg { width: 16px; height: 16px; }
+.bt-root:not(#_) .bt-file-thumb--locked small { font-size: 9px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-file-thumb--lg { width: 100%; height: auto; aspect-ratio: 16 / 10; }
 
 /* Auth return pages (/auth/action, /auth/email-link, /auth/twitch/callback):
    .bt-card.bt-auth-card > .bt-auth-card-art (splat img + .bt-mascot), h1.bt-title,

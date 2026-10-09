@@ -454,6 +454,7 @@ at display time only.
 .bt-meter--{green|amber|red|blue}` > `.bt-meter-track` (role="meter") >
 `.bt-meter-fill` (width %) + optional `.bt-meter-marker` (left %); `.bt-meter-legend`
 with optional `.bt-meter-legend-mark` (`style="--bt-at:80%"`, ends at the marker).
+Cloud Stash additions (docs/specs/cloud-stash.md §10): `.bt-meter--stack` (add to `.bt-meter`: the track holds `.bt-meter-seg` segments with their own colour in `--c` and a width %, then `ul.bt-meter-keys` > `li` (`i` swatch, label, `b` figure) under it); `.bt-notice--warn` (the gold notice, beside `--error` and `--ok`) and `.bt-notice--row` (a notice on one row: `b` title, `span` line, an optional button); `.bt-file-thumb` (a 52px file tile: an `img`, or `--locked` for a private file with a lock and "Private", or `--lg` for the full-width preview in a dialog).
 `.bt-table-wrap` > `.bt-table` (`th`, `.bt-num` right-aligned numbers,
 `.bt-table-action`, `.bt-muted`). `.bt-code` = literal identifiers only (doc paths, field
 names) — the one monospace exception. `.bt-switch` = `<button role="switch"

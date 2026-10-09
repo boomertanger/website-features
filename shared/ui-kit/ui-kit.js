@@ -779,6 +779,25 @@ function pageHtml() {
       <div class="bt-meter bt-meter--red"><div class="bt-meter-track"><div class="bt-meter-fill" style="width:100%"></div><div class="bt-meter-marker" style="left:80%"></div></div><div class="bt-meter-legend"><span>Over limit</span><span>104%</span></div></div>
       <div class="bt-meter bt-meter--blue"><div class="bt-meter-track"><div class="bt-meter-fill" style="width:30%"></div></div><div class="bt-meter-legend"><span>Neutral progress, no marker</span><span>30%</span></div></div>
     </div>
+    <p class="kit-sub">Stacked meter (.bt-meter--stack: segments .bt-meter-seg with their own colour in --c, a marker, and .bt-meter-keys under it; Cloud Stash's usage card)</p>
+    <div class="bt-meter bt-meter--stack bt-meter--green">
+      <div class="bt-meter-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="62" aria-label="This month's usage, by what is driving it">
+        <span class="bt-meter-seg" style="width:34%;--c:var(--bt-primary)"></span><span class="bt-meter-seg" style="width:18%;--c:var(--bt-teal)"></span><span class="bt-meter-seg" style="width:10%;--c:var(--bt-gold)"></span>
+        <div class="bt-meter-marker" style="left:80%"></div>
+      </div>
+      <ul class="bt-meter-keys"><li style="--c:var(--bt-primary)"><i></i>Storage <b>34%</b></li><li style="--c:var(--bt-teal)"><i></i>Bandwidth <b>18%</b></li><li style="--c:var(--bt-gold)"><i></i>Transformations <b>10%</b></li></ul>
+    </div>
+    <p class="kit-sub">Notices (.bt-notice with --ok, --warn or --error; add --row to lay a short title, a line and a button on one row) and file tiles (.bt-file-thumb, --locked for a private file, --lg for a dialog preview)</p>
+    <div class="kit-stack">
+      <div class="bt-notice bt-notice--ok">Saved. The rule is on.</div>
+      <div class="bt-notice bt-notice--warn bt-notice--row"><b>Uploads paused</b><span>Storage is nearly full, so member uploads wait until it drops.</span><button type="button" class="bt-btn bt-btn--sm bt-btn--secondary">Limits</button></div>
+      <div class="bt-notice bt-notice--error bt-notice--row"><b>Over the limit</b><span>Only the owner can upload until the month rolls over.</span></div>
+    </div>
+    <div class="kit-row">
+      <span class="bt-file-thumb"><svg viewBox="0 0 52 52" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="52" height="52" fill="var(--bt-surface-2)"/><circle cx="26" cy="26" r="10" fill="var(--bt-primary)"/></svg></span>
+      <span class="bt-file-thumb bt-file-thumb--locked"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg><small>Private</small></span>
+      <span class="bt-file-thumb bt-file-thumb--lg" style="max-width:220px"><svg viewBox="0 0 160 100" width="100%" height="100%" preserveAspectRatio="xMidYMid slice" aria-hidden="true"><rect width="160" height="100" fill="var(--bt-surface-2)"/><circle cx="80" cy="50" r="24" fill="var(--bt-primary)"/></svg></span>
+    </div>
     <p class="kit-sub">Small buttons and switches</p>
     <div class="kit-row">
       <button type="button" class="bt-btn bt-btn--sm bt-btn--admin">${ICON.plus}Add rule</button>
