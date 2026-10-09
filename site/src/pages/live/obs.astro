@@ -1,0 +1,30 @@
+---
+// /live/obs?k=<stream view key>&layout=wide|tall: the stream view, a browser source for Streamlabs and TikTok LIVE Studio (docs/specs/control-room.md §8).
+// NOT a site page: no header, footer or chrome, a transparent background and a fixed canvas (1920 x 1080 wide, 1080 x 1920 tall). It gets its data
+// only from the obsFeed HTTPS function with the key (never Firestore), and with no key or a wrong one it renders nothing at all.
+// Staging only: /live/obs?demo=1&layout=wide|tall&scene=starting|stats|break|side|brb|ending&look=hull|crt[&guides=1][&bg=1] draws sample data.
+// Kit and looks as everywhere (bt-ui.css, control-room-looks.css); the page's own rules are styles/live-obs.css.
+import "../../../../shared/bt-ui.css";
+import "../../styles/control-room-looks.css";
+import "../../styles/live-obs.css";
+---
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="referrer" content="no-referrer" />
+    <title>Stream view</title>
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  </head>
+  <body class="bt-root bt-obs" data-look="hull">
+    <div id="obs" data-obs></div>
+    <script>
+      import "../../scripts/live/obs";
+    </script>
+  </body>
+</html>
