@@ -566,7 +566,7 @@ All paths under `sites/boomertanger/`. Every document below is written only by C
 | `crew/main/notes/{noteId}` | uid, handle, grade, text, createdAt, expireAt (+24 h, TTL) | crew |
 | `crew/main/roster/{uid}/private/record` | adds noShows [{ streamId, at }], lockUntil | self, admins, owner |
 | `crew/main` (settings) | adds activityRules, rulesSince, graceMonth | crew |
-| `streams/{id}/private/duty` (new, decided Oct 9, 2026) | the live duty state: captainNow { uid, handle, acting, since }, onDuty { uid: { handle, grade, roles [{ role, room }], away } }, prompts {}, handoffs, rooms coverage { room: { lead handle, deckhands, covered } } | crew (mods and admins, any grade) and the owner |
+| `streams/{id}/private/duty` (new, decided Oct 9, 2026) | the live duty state: captainNow { uid, handle, acting, since }, onDuty { uid: { handle, grade, roles [{ role, room }], away } }, prompts {}, handoffs, rooms coverage { room: { lead handle, deckhands, covered } }, youtube { landscapeId, verticalId } (the public chat ids for the Deck's embeds, copied from private/watch; never the backstage id) | crew (mods and admins, any grade) and the owner |
 | `streams/{id}/private/control` (existing) | adds recruitRush only; it keeps the check-in word, so it stays owner and A2+ | owner and A2+ |
 | `streams/{id}/flags/{flagId}` | type, room, note, byUid, byHandle, urgent, createdAt, seenAt, doneAt, expireAt (13 months) | owner, admins |
 | `public/live` (existing) | adds deck { rooms: { room: { lead handle, deckhands count, covered } } }, recruitRush { goal, count, reward, hitAt } | everyone |

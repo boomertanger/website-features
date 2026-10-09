@@ -109,6 +109,10 @@ async function main() {
   assert.equal(await why(as("dk1", "dutyClockIn", { streamId: "nope" })), "noStream");
   await as("adm2", "startStream", { streamId: "s1" });
   assert.equal((await st("s1")).state, "live", "the live duty state exists from Start"); assert.deepEqual((await st("s1")).onDuty, {});
+  // the Deck embeds the two public YouTube chats: those ids (never the backstage one) are copied where crew can read them
+  assert.equal(await duty.copyVideoIds("s1", { landscapeId: "LANDSCAPE1", verticalId: "VERTICAL01" }), true);
+  assert.deepEqual((await st("s1")).youtube, { landscapeId: "LANDSCAPE1", verticalId: "VERTICAL01" }); assert.equal(JSON.stringify(await st("s1")).includes("backstage"), false, "no backstage id in private/duty");
+  assert.equal(await duty.copyVideoIds("nope", { landscapeId: "X" }), false, "no duty state yet: nothing written");
 
   // ================================================================ clock in: seated, drop-in, refusals
   at(1);

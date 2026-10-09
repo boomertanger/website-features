@@ -107,6 +107,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
       const pick = pickYoutubeIds({ stream: s, known: w, active: await api.list({ status: "active" }) });
       if (pick.landscapeId || pick.backstageId || pick.verticalId) {
         await db.doc(paths.watch(id)).set({ provider: "youtube", youtube: { landscapeId: pick.landscapeId || w.landscapeId || null, backstageId: pick.backstageId || w.backstageId || null, verticalId: pick.verticalId || w.verticalId || null } }, { merge: true });
+        // the Mod Deck embeds the two public chats: copy those two ids (never the backstage one) where crew can read them
+        if (ctx.duty) { try { await ctx.duty.copyVideoIds(id, { landscapeId: pick.landscapeId || w.landscapeId || null, verticalId: pick.verticalId || w.verticalId || null }); } catch (err) { console.error("live: video ids not copied to the duty state", String((err && err.message) || err).slice(0, 140)); } }
       }
       return await note({ status: pick.ready ? "ok" : "waiting", since: prev.since || at, tries: (prev.tries || 0) + 1, waiting: pick.waiting });
     } catch (err) {

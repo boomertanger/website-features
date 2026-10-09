@@ -203,6 +203,12 @@
       "indexes": []
     },
     {
+      "collectionGroup": "notes",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
       "collectionGroup": "notifyOutbox",
       "fieldPath": "expireAt",
       "ttl": true,

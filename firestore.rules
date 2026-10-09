@@ -763,6 +763,12 @@ service cloud.firestore {
           allow write: if false;
         }
 
+        // Crew notes (Mod Machina phase 3 part 4): the Mod Deck's 24-hour strip. Crew (mods and admins) and the owner read it; only crewNote / crewNoteDelete write it. TTL on expireAt.
+        match /notes/{noteId} {
+          allow read: if isSiteStaff(siteId) || isSiteOwner(siteId);
+          allow write: if false;
+        }
+
         match /swaps/{swapId} {
           allow read: if isSiteStaff(siteId);
           allow write: if false;

@@ -7,7 +7,7 @@
 //   streams/{id}/private/duty        the LIVE state, readable by crew (mods and admins) and the owner; control stays owner + A2+ because it holds the check-in word:
 //        { streamId, state: "live"|"ended", startedAt, endedAt, afterShow, captainNow: { uid, handle, acting, owner?, since }|null, captainDeclined: [uid], onDuty: { uid: { handle, grade, since,
 //          roles: [{ role, room }], away: { until, kind, at, roles }|null, nudged } }, prompts: { id: { kind, to, room, ... expiresAt, status } }, handoffs: [..], takeovers: { uid: n },
-//          rooms: { room: { lead handle|null, deckhands n, covered } }, needsConfirm, confirmedAt, captainAtStop, updatedAt }
+//          rooms: { room: { lead handle|null, deckhands n, covered } }, youtube: { landscapeId, verticalId } (the two PUBLIC chat video ids for the Deck's embeds; never the backstage id), needsConfirm, confirmedAt, captainAtStop, updatedAt }
 //   crew/main/duties/{streamId}_{uid}  the durable, payable record, readable by that person, admins and the owner:
 //        { streamId, uid, handle, grade, scheduled: { role, room }|null, segments: [{ role, room, in, out }], lines: { "captain" | "lead:room" | "deckhand:room": minutes }, minutes, lastPing, showed,
 //          takeovers: [{ id, at }], addedMinutes, clockedInAt, endedAt, noShow, counted, led, gears, confirmedAt, confirmedBy }
@@ -147,7 +147,18 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
   async function onStart(sid, at, s) {
     const ref = db.doc(dutyPath(sid));
     if ((await ref.get()).exists) return;
-    await ref.set({ ...blank(sid, at, s), updatedAt: at });
+    const w = ((await db.doc(P.watch(sid)).get()).data() || {}).youtube || {};
+    await ref.set({ ...blank(sid, at, s), youtube: { landscapeId: w.landscapeId || null, verticalId: w.verticalId || null }, updatedAt: at });
+  }
+
+  /** The Mod Deck embeds the YouTube chats, and crew can't read private/watch. This copies the two PUBLIC video ids (landscape and vertical, never the backstage one) into private/duty.youtube,
+   * which crew can read. Called by the Control Room's linkYoutube whenever it knows the ids. Does nothing when there is no live duty state (the next call, or onStart, fills it in). */
+  async function copyVideoIds(sid, ids) {
+    const ref = db.doc(dutyPath(sid));
+    const youtube = { landscapeId: (ids && ids.landscapeId) || null, verticalId: (ids && ids.verticalId) || null };
+    if (!(await ref.get()).exists) return false;
+    await ref.update({ youtube });
+    return true;
   }
 
   /** Stop and the 12-hour auto-end: everyone clocked out, seated crew who never clocked in marked no-show, a "confirm" prompt for the Captain and the owner. Idempotent. */
@@ -741,6 +752,6 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
 
   return {
     functions: { dutyClockIn, dutyPing, dutyStepAway, dutyBack, dutyTakeLead, dutyDecline, dutyReassign, captainSet, dutyConfirmNight, dutyAutoConfirm, crewLockLift },
-    onStart, closeOut, tick, payNight, runAutoConfirm, creditPresence, loadState,
+    onStart, closeOut, copyVideoIds, tick, payNight, runAutoConfirm, creditPresence, loadState,
   };
 };
