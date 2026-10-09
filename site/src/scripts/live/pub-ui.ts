@@ -54,20 +54,20 @@ export const pad2 = (n: number) => String(n).padStart(2, "0");
 export const fmtHms = (msv: number) => { const s = Math.max(0, Math.floor(msv / 1000)); return `${Math.floor(s / 3600)}:${pad2(Math.floor((s % 3600) / 60))}:${pad2(s % 60)}`; };
 export const fmtDuration = (msv: number) => { const m = Math.max(0, Math.round(msv / 60000)); return m >= 60 ? `${Math.floor(m / 60)}h ${pad2(m % 60)}m` : `${m}m`; };
 
-/** A scene for an empty video or a gate: the corridor of the hero (drawn, not a screenshot). */
-export function corridorSvg(id: string) {
-  return `<svg class="lp-scene" viewBox="0 0 640 360" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false">
-  <defs><radialGradient id="${id}a" cx="50%" cy="46%" r="60%"><stop offset="0" stop-color="var(--bt-surface-2)"/><stop offset="1" stop-color="var(--bt-bg)"/></radialGradient>
-  <linearGradient id="${id}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="var(--bt-surface-2)"/><stop offset="1" stop-color="var(--bt-bg)"/></linearGradient></defs>
-  <rect width="640" height="360" fill="url(#${id}a)"/>
-  <path d="M0 0 L250 120 L390 120 L640 0 Z" fill="var(--bt-bg)"/><path d="M0 360 L250 240 L390 240 L640 360 Z" fill="var(--bt-surface)"/>
-  <path d="M0 0 L250 120 L250 240 L0 360 Z" fill="var(--bt-surface)"/><path d="M640 0 L390 120 L390 240 L640 360 Z" fill="var(--bt-surface)"/>
-  <g stroke="var(--bt-border-2)" stroke-width="2" fill="none"><path d="M60 30 L60 330"/><path d="M130 63 L130 297"/><path d="M190 92 L190 268"/><path d="M580 30 L580 330"/><path d="M510 63 L510 297"/><path d="M450 92 L450 268"/></g>
-  <rect x="250" y="120" width="140" height="120" fill="url(#${id}b)"/>
-  <rect x="290" y="150" width="60" height="90" fill="var(--bt-bg)" stroke="var(--bt-border-2)"/>
-  <rect class="lp-alarm" x="300" y="128" width="40" height="8" rx="2" fill="var(--bt-red)"/>
-  <rect class="lp-flicker" x="270" y="104" width="100" height="5" fill="var(--bt-lamp)" opacity=".9"/>
-  <g opacity=".08"><path class="lp-flicker" d="M270 109 L230 250 L410 250 L370 109Z" fill="var(--bt-lamp)"/></g>
-  <path d="M312 240 q8-40 8-58 q0-8 6-8 q6 0 6 8 q0 18 8 58z" fill="var(--bt-bg)" opacity=".9"/>
-</svg>`;
-}
+export { corridorSvg } from "../../lib/live-art.js";
+
+// The kit's .js helpers infer their option types from default values, so some options (rooms, start, end) look unknown to TypeScript. These are the same
+// functions with the options typed loosely, so the page parts call them without casts.
+import { checkinHtml as _checkinHtml, initCheckin as _initCheckin, applyCheckinResult as _apply, setCheckinCount as _setCount } from "../../../../shared/ui/checkin.js";
+import { dualTimeHtml as _dualTimeHtml } from "../../../../shared/ui/scream-planner.js";
+import { ticketHtml as _ticketHtml } from "../../../../shared/ui/ticket.js";
+import { initHowItWorks as _initHowItWorks } from "../../../../shared/ui/how-it-works.js";
+type Opts = Record<string, unknown>;
+export type CheckinOutcome = { ok: true; xp?: number; streak?: string | false; count?: number } | { ok: false; left: number } | { locked: true } | { error: string };
+export const checkinHtml = _checkinHtml as unknown as (o: Opts) => string;
+export const initCheckin = _initCheckin as unknown as (root: ParentNode, o: { onSubmit?: (word: string, room: string | null, el: HTMLElement) => CheckinOutcome | Promise<CheckinOutcome> }) => void;
+export const applyCheckinResult = _apply as unknown as (el: Element, r: CheckinOutcome) => void;
+export const setCheckinCount = _setCount as unknown as (el: Element, n: number) => void;
+export const dualTimeHtml = _dualTimeHtml as unknown as (o: Opts) => string;
+export const ticketHtml = _ticketHtml as unknown as (o: Opts) => string;
+export const initHowItWorks = _initHowItWorks as unknown as (root: ParentNode) => void;

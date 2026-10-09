@@ -34,6 +34,7 @@ const ctx = { root, pub: EMPTY, next: null, stream: null, vault: new Map(), how,
 const boxes = Object.fromEntries([...root.querySelectorAll<HTMLElement>("[data-lp-view]")].map((b) => [b.dataset.lpView!, b])) as Record<string, HTMLElement>;
 // One module per view, loaded the first time that view shows.
 const loaders: Partial<Record<View, () => Promise<{ default: ViewPart }>>> = {
+  room: () => import("./pub-room"),
 };
 const parts: Partial<Record<View, ViewPart>> = {};
 let view: View | null = null;
@@ -60,7 +61,7 @@ const AUDIENCE: Record<string, string> = { fanClub: "Fan Club", subClub: "Sub Cl
 /** The gold page title is the stream's own (the next stream's when off air); the head and its tags follow the state. */
 function paintHead(v: View, key: string) {
   const p = ctx.pub;
-  const title = v === "room" ? ctx.next?.title || "Off air" : p.title || (p.state === "backstage" ? "After-show" : "Live now");
+  const title = v === "room" ? (ctx.how && p.title) || ctx.next?.title || "Off air" : p.title || (p.state === "backstage" ? "After-show" : "Live now");
   document.querySelectorAll<HTMLElement>("[data-lp-title]").forEach((el) => { if (el.textContent !== title) el.textContent = title; });
   const head = root.querySelector<HTMLElement>("[data-lp-head]");
   if (!head) return;
