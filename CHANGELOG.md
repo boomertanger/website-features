@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Cloud Stash confirmed spec and the approved mockups (I1 icon, S2 hero, P2 tabs, F2 rows, W1 How it works).
 site: Feature Lab shows its authors through the shared live-profile chip (scripts/boards/profiles.ts), as Bug Zapper does: the member's current handle on rows, roadmap cards, the idea dialog and comments, and "Former member" for a deleted account.
 site: the Bug Zapper report form no longer pre-selects how bad it is; leaving it unpicked shows "Pick how bad it is." under it and nothing is sent.
 chore: docs/ui-audit.md is ignored (local audit notes, never committed).
