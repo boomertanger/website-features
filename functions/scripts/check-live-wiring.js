@@ -80,7 +80,7 @@ async function main() {
   const clean = (o) => JSON.stringify(o);
 
   // ================================================================ 3a: stream controls
-  const STAFF_FNS = ["startStream", "switchGame", "stopStream", "liveBeat", "liveCheckInWindow", "liveScene", "liveAfterShow"];
+  const STAFF_FNS = ["createAdhocStream", "startStream", "switchGame", "stopStream", "liveBeat", "liveCheckInWindow", "liveScene", "liveAfterShow"];
   const OWNER_FNS = ["liveChecklist", "liveObsKey", "liveDeckKey", "liveSettings"];
   // Role matrix: signed out, a member, a mod (Captain or not), A1 Steward are refused on the server; A2 and the owner pass the gate.
   for (const fn of [...STAFF_FNS, ...OWNER_FNS]) {
@@ -281,6 +281,38 @@ async function main() {
   await as("boss", "stopStream", {});
   r = await as("boss", "startStream", { adhoc: { title: "Backstage pop-up", type: "backstage" } });
   const adb = await stream(r.streamId); assert.equal(adb.type, "backstage"); assert.equal(adb.audience, "fanClub"); assert.deepEqual(adb.rooms, []);
+  await as("boss", "stopStream", {});
+
+  // ---------- createAdhocStream: step one of an unscheduled stream (scheduled, NOT live) ----------
+  assert.equal(await why(as("boss", "createAdhocStream", { adhoc: { title: "", type: "platform" } })), "field");
+  assert.equal(await why(as("boss", "createAdhocStream", { adhoc: { title: "Pop", durationMinutes: 5 } })), "durationMinutes");
+  assert.equal(await why(as("boss", "createAdhocStream", { adhoc: { title: "Pop", rooms: ["nope"] } })), "rooms");
+  assert.equal(await why(as("boss", "createAdhocStream", { adhoc: { title: "Pop", firstGame: { gameId: "zzz" } } })), "notInVault");
+  const logsN = (await root("adminLog")).length, actN = (await root("activityLog")).length, boxN = (await root(`${S}/notifyOutbox`)).length;
+  r = await as("adm2", "createAdhocStream", { adhoc: { title: "Pop-up two", type: "platform", rooms: ["twitch", "ytLandscape"], firstGame: { gameId: "g1" }, durationMinutes: 90 } });
+  assert.equal(r.state, "scheduled");
+  const cs = await stream(r.streamId);
+  assert.equal(cs.state, "scheduled"); assert.equal(cs.adhoc, true); assert.equal(cs.published, true); assert.equal(cs.actualStart, undefined);
+  assert.equal(cs.plannedStart.toMillis(), clock); assert.equal(cs.plannedEnd.toMillis(), clock + 90 * MIN); assert.match(cs.week, /^\d{4}-W\d{2}$/, "the week of now");
+  assert.deepEqual(cs.platforms, ["twitch", "youtube"]); assert.equal(cs.plannedGames[0].gameId, "g1");
+  assert.equal(await get(`streams/${r.streamId}/private/control`), undefined, "nothing live yet: no control, no checklist");
+  assert.equal((await root(`${S}/notifyOutbox`)).length, boxN); assert.equal((await root("activityLog")).length, actN, "no activity until it is live");
+  assert.ok((await root("adminLog")).slice(logsN).some((e) => e.action === "createAdhoc" && e.feature === "controlRoom" && e.actorUid === "adm2"));
+  assert.equal((await ctx.liveStream()), null, "creating it does not make it live");
+  assert.equal(require("../lib/youtube/logic").decide(null, cs, {}).action, "create", "decide(): a published scheduled adhoc stream gets its event at once");
+  // the real youtubeSync trigger (fake Google) makes the event straight away; Start then works on it
+  await wdb.doc(`${S}/private/youtubeChannel`).set({ accessToken: "AT", accessExpiresAt: clock + 3600000, refreshToken: "RT", channelId: "UC", channelTitle: "B" });
+  const gl = [];
+  const gfetch = async (url, init = {}) => { gl.push({ url, method: init.method || "GET", body: init.body }); if (url.includes("liveBroadcasts") && init.method === "POST") return { ok: true, status: 200, json: async () => ({ id: "EVADHOC1" }) }; throw new Error("unexpected " + url); };
+  const ytReal = require("../lib/youtube").build({ adminLogEntry, fetchFn: gfetch, clientId: "CID", clientSecret: "SEC", now: () => clock, projectId: "boomertanger-staging" });
+  await ytReal.functions.youtubeSync.run({ params: { siteId: "boomertanger", streamId: r.streamId }, data: { before: { exists: false, data: () => undefined }, after: { exists: true, data: () => cs } } });
+  const ev = JSON.parse(gl.find((c) => c.method === "POST").body);
+  assert.ok(ev.snippet.title.startsWith("[STAGING] Pop-up two")); assert.equal(ev.status.privacyStatus, "private");
+  assert.equal((await get(`streams/${r.streamId}/private/watch`)).youtube.landscapeId, "EVADHOC1", "the event is made before Start");
+  const st2 = await as("boss", "startStream", { streamId: r.streamId });
+  assert.equal(st2.state, "live"); assert.equal((await stream(r.streamId)).adhoc, true); assert.equal(L.currentBeat((await stream(r.streamId)).beats), "start");
+  assert.equal((await stream(r.streamId)).segments[0].gameId, "g1"); assert.equal((await get(`streams/${r.streamId}/private/watch`)).youtube.landscapeId, "EVADHOC1");
+  assert.ok((await root(`${S}/notifyOutbox`)).some((x) => x.type === "stream-live" && x.streamId === r.streamId));
   await as("boss", "stopStream", {});
 
   // ---------- checklist ticks (owner only) ----------

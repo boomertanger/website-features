@@ -1,6 +1,7 @@
 // Control Room, the stream controls (docs/specs/control-room.md §3, §4, §5, §14). Every rule comes from lib/live/logic.js and
 // lib/streams/logic.js; this file only reads, calls them, and writes the patch they return.
 //
+//   createAdhocStream owner, A2+  step one of an unscheduled stream: scheduled + adhoc + published, NOT live; youtubeSync makes its event
 //   startStream      owner, A2+   Start (or an ad hoc stream): the Start beat begins, the checklist is copied, alerts go out
 //   switchGame       owner, A2+   closes the open segment, opens the next game
 //   stopStream       owner, A2+   ends the stream, closes any window (grace still applies), settles rewards
@@ -121,7 +122,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
   }
 
   // ---------- start ----------
-  function adhocDoc(actor, a, firstGame, at, tz, slug) {
+  function adhocDoc(actor, a, firstGame, at, tz, slug, { state = "planned", durationMinutes = 180, week = null } = {}) {
     const type = a.type === "backstage" ? "backstage" : "platform";
     const rooms = type === "backstage" ? [] : Array.isArray(a.rooms) && a.rooms.length ? a.rooms : [...PL.ROOMS];
     const errs = type === "backstage" ? [] : PL.validateRooms(rooms);
@@ -129,9 +130,9 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     const audience = type === "backstage" ? "fanClub" : "public";
     if (a.audience != null && !PL.AUDIENCES.includes(a.audience)) throw fail("invalid-argument", "Audience is public or fanClub.", "audience");
     return {
-      state: "planned", published: true, hasUnpublishedChanges: false, adhoc: true, rev: 0, slug, tz,
+      state, published: true, hasUnpublishedChanges: false, adhoc: true, rev: 0, slug, tz, ...(week ? { week } : {}),
       title: text(a.title, S.TITLE_MAX, "title", { min: 1 }), description: "",
-      plannedStart: Timestamp.fromMillis(at), plannedEnd: Timestamp.fromMillis(at + 3 * HOUR),
+      plannedStart: Timestamp.fromMillis(at), plannedEnd: Timestamp.fromMillis(at + durationMinutes * 60 * 1000),
       type, audience: type === "backstage" ? "fanClub" : (a.audience || audience), platforms: type === "backstage" ? [] : PL.platformsForRooms(rooms), rooms, plannedGameCount: 1,
       crew: PL.emptyCrew(rooms, null), plannedGames: firstGame ? [{ gameId: firstGame.gameId, title: firstGame.title, order: 0, source: { kind: "owner" } }] : [], plannedGameIds: firstGame ? [firstGame.gameId] : [],
       createdAt: FieldValue.serverTimestamp(), createdBy: actor.uid || null,
@@ -149,6 +150,31 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     await ctx.activity(afterShow ? "after-show" : "stream-live", afterShow ? `${title} is on` : `${title} is live`, { streamId: id });
   }
 
+  /**
+   * "Start an unscheduled stream", step one: creates a stream that starts now but is NOT live yet: state scheduled, adhoc, published,
+   * plannedStart now, plannedEnd +3 h (or a.durationMinutes, 15 to 720), in this week's week id. The write triggers youtubeSync
+   * (a published scheduled adhoc stream => create at once), so the YouTube event is in Streamlabs' list before the owner presses
+   * Start (startStream {streamId}). adminLog only; the activity event comes when it goes live.
+   */
+  async function createAdhoc(actor, a, firstGame) {
+    const at = now();
+    const dm = a.durationMinutes == null ? 180 : Number(a.durationMinutes);
+    if (!Number.isFinite(dm) || dm < 15 || dm > 720) throw fail("invalid-argument", "A stream lasts 15 minutes to 12 hours.", "durationMinutes");
+    const tz = await ctx.planner.siteTz();
+    const id = db.collection(paths.streams).doc().id;
+    const near = (await db.collection(paths.streams).where("plannedStart", ">=", Timestamp.fromMillis(at - 36 * HOUR)).where("plannedStart", "<=", Timestamp.fromMillis(at + 36 * HOUR)).get()).docs.map((d) => d.get("slug"));
+    const doc = adhocDoc(actor, a, firstGame, at, tz, S.streamSlug(at, tz, near), { state: "scheduled", durationMinutes: dm, week: S.streamWeek(at, tz) });
+    await ctx.streamRef(id).set(doc);
+    await ctx.logAdmin(actor, { action: "createAdhoc", streamId: id, title: doc.title, details: { type: doc.type, firstGame: firstGame ? firstGame.gameId : null } });
+    return { id, doc };
+  }
+  const createAdhocStream = async (actor, data = {}) => {
+    const a = data.adhoc && typeof data.adhoc === "object" ? data.adhoc : data;
+    const firstGame = a.firstGame ? await vaultGame(a.firstGame) : null;
+    const { id, doc } = await createAdhoc(actor, a, firstGame);
+    return { ok: true, streamId: id, state: doc.state, type: doc.type };
+  };
+
   const startStream = async (actor, data = {}) => {
     const at = now();
     const a = data.adhoc && typeof data.adhoc === "object" ? data.adhoc : null;
@@ -156,39 +182,33 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     if (!a && (!id || id.includes("/"))) throw fail("invalid-argument", "streamId is required.", "args");
     const templates = ((await db.doc(paths.templates).get()).data()) || {};
     let firstGame = data.firstGame ? await vaultGame(data.firstGame) : a && a.firstGame ? await vaultGame(a.firstGame) : null;
-    let doc = null;
+    // The convenience form: create (step one), then start, in one call. The event is made directly (createNow) before Start.
     if (a) {
-      const tz = await ctx.planner.siteTz();
-      id = db.collection(paths.streams).doc().id;
-      const near = (await db.collection(paths.streams).where("plannedStart", ">=", Timestamp.fromMillis(at - 36 * HOUR)).where("plannedStart", "<=", Timestamp.fromMillis(at + 36 * HOUR)).get()).docs.map((d) => d.get("slug"));
-      doc = adhocDoc(actor, a, firstGame, at, tz, S.streamSlug(at, tz, near));
+      id = (await createAdhoc(actor, a, firstGame)).id;
+      await createYoutubeEvent(id);
     }
     const ref = ctx.streamRef(id);
     let started;
     await db.runTransaction(async (tx) => {
       const live = await tx.get(db.collection(paths.streams).where("state", "==", "live").limit(1));
       if (live.docs.length) throw fail("failed-precondition", live.docs[0].id === id ? "That stream is already live." : "Another stream is live. Stop it first.", live.docs[0].id === id ? "alreadyLive" : "otherLive");
-      let stream = doc;
-      if (!doc) {
-        const snap = await tx.get(ref);
-        if (!snap.exists) throw fail("not-found", "That stream isn't there.", "noStream");
-        stream = snap.data();
-      }
+      const snap = await tx.get(ref);
+      if (!snap.exists) throw fail("not-found", "That stream isn't there.", "noStream");
+      const stream = snap.data();
       const game = firstGame || firstPlanned(stream);
       const r = L.startLive(stream, at, game);
       if (!r.ok) throw refuse(r.reason);
       const patch = { ...r.patch, liveRooms: L.allowedRooms(stream) };
-      if (doc) tx.set(ref, { ...doc, ...stamp(patch) }); else tx.update(ref, stamp(patch));
+      tx.update(ref, stamp(patch));
       tx.set(ctx.controlRef(id), freshControl(at));
       tx.set(db.doc(paths.checklist(id)), copyChecklist(templates, stream.type));
       started = { ...stream, ...patch, id };
     });
     const mirror = Object.fromEntries(["state", "actualStart"].map((k) => [k, Timestamp.fromMillis(at)]));
     const dr = db.doc(paths.draft(id));
-    if (!doc && (await dr.get()).exists) await dr.update({ state: "live", actualStart: mirror.actualStart });
+    if ((await dr.get()).exists) await dr.update({ state: "live", actualStart: mirror.actualStart });
     await announceLive(actor, id, started);
-    await ctx.logAdmin(actor, { action: doc ? "startAdhoc" : "start", streamId: id, title: started.title, details: { adhoc: !!doc, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
-    if (doc) await createYoutubeEvent(id);
+    await ctx.logAdmin(actor, { action: a ? "startAdhoc" : "start", streamId: id, title: started.title, details: { adhoc: !!a, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
     const yt = await linkYoutube(id);
     await ctx.publishLive();
     return { ok: true, streamId: id, state: "live", type: started.type, youtube: yt.status, ...(yt.waiting ? { waiting: yt.waiting } : {}) };
@@ -529,6 +549,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
   const staff = (fn, opts = {}) => async (request) => fn(await ctx.requireStaff(request), request.data || {});
   const owner = (fn, opts = {}) => async (request) => fn(await ctx.requireStaff(request, { ownerOnly: true }), request.data || {});
   const functions = {
+    createAdhocStream: onCall(staff(createAdhocStream)),
     startStream: onCall({ secrets: SECRETS, timeoutSeconds: 120 }, staff(startStream)),
     switchGame: onCall(staff(switchGame)),
     stopStream: onCall({ timeoutSeconds: 300 }, staff(stopStream)),
@@ -543,7 +564,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
   };
   return {
     functions, SECRETS,
-    ops: { startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow, liveChecklist, liveSettings },
+    ops: { createAdhocStream, startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow, liveChecklist, liveSettings },
     helpers: { autoEnd, linkYoutube, createYoutubeEvent, afterEnd, cleanTemplates, copyChecklist, freshControl, vaultGame, crewPresent, tickShortcut },
   };
 };

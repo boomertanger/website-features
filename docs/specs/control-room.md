@@ -70,6 +70,7 @@ workstream: `startStream`, `switchGame`, `stopStream`. Delay and cancel reuse th
    of now, the next one first, with readiness chips (YouTube event ready, crew seats, open seats, check-in
    words ready). **Start an unscheduled stream** asks for a title, type (platform or backstage), rooms,
    audience and a first game, and creates the stream already live with `adhoc: true`.
+   *Unscheduled streams are two steps (owner decision, Oct 8):* `createAdhocStream` makes a stream that starts now but is not live yet (state `scheduled`, `adhoc: true`, `published: true`, planned end +3 h or the form's length, in this week's week id), so `youtubeSync` creates its YouTube event at once and the owner can pick it in Streamlabs before going live. He then presses Start like for any planned stream (`startStream {streamId}`). `startStream {adhoc: {...}}` stays as a convenience that does both steps in one call. On /schedule it shows as a ticket starting now.
 2. **Before Start.** Running late is one tap: +5, +10, +15, +30 minutes or a custom time (`delayStream`;
    Boom Alerts sends `stream-delayed`; the YouTube event moves). Cancel asks for a reason in `confirmAction`
    (`cancelStream`). Neither is red: nothing is destroyed.
