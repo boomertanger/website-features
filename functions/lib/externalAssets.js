@@ -89,4 +89,31 @@ async function recordAssetCreated({
   return assetRef.id;
 }
 
-module.exports = { recordAssetCreated };
+/**
+ * Records a file Cloudinary holds that no feature ever recorded (Cloud Stash's "untracked" files: legacy uploads, an upload whose record write failed). The record has
+ * feature "untracked" and linkedDoc null, so performAssetDeletion can purge it through the same one path (it already copes with a missing linked doc). Owner-only caller
+ * (stashPurgeUntracked); never called from a feature.
+ * @returns {Promise<string>} the new externalAssets doc id.
+ */
+async function recordUntrackedAsset({ publicId, resourceType = "image", deliveryType = "upload", sizeBytes = 0, url = "" }) {
+  if (!publicId || !Number.isFinite(sizeBytes)) throw new Error("recordUntrackedAsset: publicId and a numeric sizeBytes are required.");
+  const db = admin.firestore();
+  const assetRef = db.collection("externalAssets").doc();
+  const usageRef = db.collection("storageUsage").doc("current");
+  await db.runTransaction(async (tx) => {
+    tx.set(assetRef, {
+      url,
+      publicId,
+      resourceType,
+      ...(deliveryType !== "upload" ? { deliveryType } : {}),
+      feature: "untracked",
+      sizeBytes,
+      linkedDoc: null,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+    });
+    tx.set(usageRef, { totalBytes: admin.firestore.FieldValue.increment(sizeBytes), updatedAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+  });
+  return assetRef.id;
+}
+
+module.exports = { recordAssetCreated, recordUntrackedAsset };

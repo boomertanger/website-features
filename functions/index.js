@@ -4,6 +4,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { recordAssetCreated } = require("./lib/externalAssets");
+const { cloudinaryDelete } = require("./lib/cloudinary");
 
 admin.initializeApp();
 
@@ -299,33 +300,7 @@ exports.recordBugScreenshot = onCall(async (request) => {
   return { ok: true };
 });
 
-// Cloudinary's Admin API treats "already gone" as success (not an error),
-// which is what we want: a resource that was somehow already deleted
-// shouldn't block clearing the Firestore side.
-// type: the delivery type the file was uploaded with ("upload" by default; the Game Vault's
-// pending cover suggestions are "authenticated").
-async function cloudinaryDelete({ publicId, resourceType, type = "upload", cloudName, apiKey, apiSecret }) {
-  const basicAuth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
-  const url =
-    `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}` +
-    `/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(type)}` +
-    `?public_ids[]=${encodeURIComponent(publicId)}`;
-
-  const res = await fetch(url, {
-    method: "DELETE",
-    headers: { Authorization: `Basic ${basicAuth}` },
-  });
-  const body = await res.json().catch(() => ({}));
-
-  if (!res.ok) {
-    throw new Error(`Cloudinary delete request failed (${res.status}): ${JSON.stringify(body)}`);
-  }
-  const outcome = body.deleted?.[publicId];
-  if (outcome !== "deleted" && outcome !== "not_found") {
-    throw new Error(`Cloudinary did not confirm deletion of ${publicId}: ${JSON.stringify(body)}`);
-  }
-  return outcome;
-}
+// cloudinaryDelete (the one raw Cloudinary delete call) lives in lib/cloudinary.js with the other Cloudinary helpers; only performAssetDeletion and the approved sweeps call it.
 
 // Shared by the callable and the scheduled sweep below. Never call this
 // with an assetId you haven't verified the caller is allowed to touch —

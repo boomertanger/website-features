@@ -1,6 +1,6 @@
-// Cloudinary REST helpers shared by the Game Vault (covers) and Bug Zapper (screenshots). No SDK: signed upload parameters, the Admin API's read of an
-// uploaded file (so nothing the browser says about a file is trusted), expiring signed URLs and the folder listing a daily sweep uses. Deleting is NOT here:
-// the one delete path is performAssetDeletion in functions/index.js. A feature's own rules (a cover's size and ratio, a screenshot's bytes) live with the
+// Cloudinary REST helpers shared by the Game Vault (covers), Bug Zapper (screenshots), Fun Factory (season art) and Cloud Stash (usage, scans, purges). No SDK: signed upload parameters, the Admin API's read of an
+// uploaded file (so nothing the browser says about a file is trusted), expiring signed URLs, the usage numbers, the resource listing a scan or a sweep uses, and the
+// one raw delete call. A file is only ever deleted through performAssetDeletion in functions/index.js (or the approved sweeps), which calls cloudinaryDelete here. A feature's own rules (a cover's size and ratio, a screenshot's bytes) live with the
 // feature (lib/vault/cloudinary.js, lib/bugs); the folder is always a parameter.
 //
 // Every function takes the creds object ({ cloudName, apiKey, apiSecret }) and a fetch, so nothing reads secrets itself.
@@ -60,18 +60,50 @@ function previewUrl(creds, publicId, format, now = Date.now()) {
   return `https://api.cloudinary.com/v1_1/${encodeURIComponent(creds.cloudName)}/image/download?${q}`;
 }
 
-/** Up to 500 authenticated files under a folder: [{ publicId, createdAt (ms), bytes }]. */
-async function listFolder(fetchFn, creds, folder) {
+/**
+ * Files Cloudinary holds, newest page first as it returns them: [{ publicId, type, bytes, createdAt (ms), format }]. type is the delivery type ("upload" or "authenticated"),
+ * prefix narrows to a folder (no trailing slash needed), max caps the result (Cloud Stash's scan uses 2,000). `truncated` on the returned array says the cap was hit.
+ */
+async function listResources(fetchFn, creds, { type = "upload", prefix = "", max = 2000, resourceType = "image" } = {}) {
   const out = [];
   let cursor = null;
   do {
-    const q = `resources/image/authenticated?prefix=${encodeURIComponent(folder + "/")}&max_results=100${cursor ? `&next_cursor=${encodeURIComponent(cursor)}` : ""}`;
+    const q = `resources/${resourceType}/${type}?max_results=${Math.min(500, max)}${prefix ? `&prefix=${encodeURIComponent(prefix)}` : ""}${cursor ? `&next_cursor=${encodeURIComponent(cursor)}` : ""}`;
     const r = await api(fetchFn, creds, "GET", q);
     if (!r.ok) throw new Error(`Cloudinary list failed (${r.status})`);
-    for (const x of r.json.resources || []) out.push({ publicId: x.public_id, createdAt: Date.parse(x.created_at) || 0, bytes: x.bytes || 0 });
+    for (const x of r.json.resources || []) out.push({ publicId: x.public_id, type: x.type || type, bytes: x.bytes || 0, createdAt: Date.parse(x.created_at) || 0, format: x.format || "" });
     cursor = r.json.next_cursor || null;
-  } while (cursor && out.length < 500);
-  return out;
+  } while (cursor && out.length < max);
+  out.truncated = !!cursor && out.length >= max;
+  return out.slice(0, max);
 }
 
-module.exports = { ALLOWED_FORMATS, PREVIEW_TTL_S, signParams, uploadParams, api, resourceInfo, previewUrl, listFolder };
+/** Up to 500 authenticated files under a folder: [{ publicId, createdAt (ms), bytes }] (the sweeps of pending uploads). */
+async function listFolder(fetchFn, creds, folder) {
+  return (await listResources(fetchFn, creds, { type: "authenticated", prefix: folder + "/", max: 500 })).map((x) => ({ publicId: x.publicId, createdAt: x.createdAt, bytes: x.bytes }));
+}
+
+/** The account's usage for this billing period straight from the Admin API (the plan limit is in the response, never hardcoded). Throws if the call fails. */
+async function usage(fetchFn, creds) {
+  const r = await api(fetchFn, creds, "GET", "usage");
+  if (!r.ok) throw new Error(`Cloudinary usage lookup failed (${r.status})`);
+  return r.json;
+}
+
+/**
+ * The one raw delete call. Cloudinary's Admin API treats "already gone" as success (not an error), which is what we want: a resource that was somehow already deleted
+ * shouldn't block clearing the Firestore side. type: the delivery type the file was uploaded with ("upload" by default; private files are "authenticated").
+ * Resolves "deleted" or "not_found". NEVER call this directly from a feature: go through performAssetDeletion (functions/index.js) or an approved sweep.
+ */
+async function cloudinaryDelete({ publicId, resourceType, type = "upload", cloudName, apiKey, apiSecret }) {
+  const basicAuth = Buffer.from(`${apiKey}:${apiSecret}`).toString("base64");
+  const url = `https://api.cloudinary.com/v1_1/${encodeURIComponent(cloudName)}/resources/${encodeURIComponent(resourceType)}/${encodeURIComponent(type)}?public_ids[]=${encodeURIComponent(publicId)}`;
+  const res = await fetch(url, { method: "DELETE", headers: { Authorization: `Basic ${basicAuth}` } });
+  const body = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(`Cloudinary delete request failed (${res.status}): ${JSON.stringify(body)}`);
+  const outcome = body.deleted?.[publicId];
+  if (outcome !== "deleted" && outcome !== "not_found") throw new Error(`Cloudinary did not confirm deletion of ${publicId}: ${JSON.stringify(body)}`);
+  return outcome;
+}
+
+module.exports = { ALLOWED_FORMATS, PREVIEW_TTL_S, signParams, uploadParams, api, resourceInfo, previewUrl, listResources, listFolder, usage, cloudinaryDelete };

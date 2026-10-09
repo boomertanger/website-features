@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions: Cloud Stash shared helpers (no behaviour change). lib/cloudinary.js gains usage(), listResources() and cloudinaryDelete() (moved out of index.js, same code), lib/externalAssets.js gains recordUntrackedAsset(), lib/stash/targets.js is the cleanup allowlist (v1: Bug Zapper screenshots on reports closed for 14 to 730 days) and lib/stash/gate.js is uploadGate().
 docs: Cloud Stash confirmed spec and the approved mockups (I1 icon, S2 hero, P2 tabs, F2 rows, W1 How it works).
 site: Feature Lab shows its authors through the shared live-profile chip (scripts/boards/profiles.ts), as Bug Zapper does: the member's current handle on rows, roadmap cards, the idea dialog and comments, and "Former member" for a deleted account.
 site: the Bug Zapper report form no longer pre-selects how bad it is; leaving it unpicked shows "Pick how bad it is." under it and nothing is sent.
