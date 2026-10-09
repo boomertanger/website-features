@@ -8,6 +8,9 @@
 //                                       checklist, beats, stats, game, video, controls
 //   crPanelHeadHtml({ title, icon, tagHtml, actionsHtml, level })   the .bt-cr-panel-head row (title is a .bt-heading h2; level 2-4)
 //   crPanelHtml({ id, cls, title, icon, tagHtml, actionsHtml, bodyHtml, label, level })   the whole .bt-cr-panel section
+//   crViewportHtml({ innerHtml, overlayHtml, label })   .bt-cr-viewport: the frame round the video (gold corner brackets; the hull look draws a
+//        breathing targeting frame, the CRT look a TV with its control strip). innerHtml is the player, in a 16:9 .bt-cr-screen;
+//        overlayHtml sits on top of it (the live beacon, a tag).
 import { escapeHtml as esc } from "./dom.js";
 
 export const CR_HEAD_ICONS = {
@@ -35,3 +38,6 @@ export function crPanelHeadHtml({ title = "", icon = "", tagHtml = "", actionsHt
 export function crPanelHtml({ id = "", cls = "", title = "", icon = "", tagHtml = "", actionsHtml = "", bodyHtml = "", label = "", level = 2 } = {}) {
   return `<section class="bt-cr-panel${cls ? ` ${esc(cls)}` : ""}"${id ? ` id="${esc(id)}"` : ""} aria-label="${esc(label || title)}">${crPanelHeadHtml({ title, icon, tagHtml, actionsHtml, level })}${bodyHtml}</section>`;
 }
+
+export const crViewportHtml = ({ innerHtml = "", overlayHtml = "", label = "Video" } = {}) =>
+  `<div class="bt-cr-viewport" role="group" aria-label="${esc(label)}"><div class="bt-cr-screen">${innerHtml}${overlayHtml}</div><span class="bt-cr-strip" aria-hidden="true"></span></div>`;

@@ -1,0 +1,151 @@
+/* site/src/styles/control-room-looks.css — the Control Room's two looks (docs/specs/control-room.md §7c, docs/design-system.md §5 "Control
+   Room pieces", §8p). ONE stylesheet for every Control Room page (/live, /live/control, the Mod Deck, the stream view) and the UI kit page.
+
+   A look is data-look="hull" | "crt" on the page root (any element; on the kit page, the Control Room section) plus ONE block in this file.
+   A look may restyle surfaces, frames, motion and decoration ONLY. It never changes:
+     - colour meaning: purple stays clickable, gold stays headings and "needed", red stays the live tag, the beacon and the open check-in
+       (green backstage), green stays staff and "You're in". The decorative status and power lights here are lime, never red or green.
+     - the heading ladder: no look sets a font size on any heading, title or .bt-heading.
+     - what is clickable: no look hides, disables or restyles a link or button, and nothing here sits over one (overlays are pointer-events: none).
+   The live banner (.bt-live-banner) and the check-in dialog (.bt-checkin--dialog) are never touched by a look: they are identical in every look.
+   Looks are keyed on the piece classes of shared/bt-ui.css (.bt-cr-panel, .bt-readout, .bt-beats, .bt-checkin, .bt-deckplan, .bt-cr-viewport,
+   .bt-streamview), so the pages share one set of markup. To add a look (seasonal, Halloween) add one more block; no page changes.
+
+   Hull map Mk II: blueprint grid, blue corner brackets, lit section headers (icon tile, status light, gold scan line), amber readouts with
+   faint ghost digits and an amber flash on change, viewers as fuel cells, a breathing targeting frame on the viewport, marching edges on an
+   open check-in, the deck plan.
+   CRT: futuristic 80s bubble monitors: thick bezels, curved glass with scanlines and a reflection, amber phosphor numbers, power lights on
+   headers, the video on a TV with its control strip, a pink horizon grid scrolling under the page, screens switching on with the CRT line.
+
+   Reduced motion: colour and glow stay, movement stops (the stream view is exempt: it is a video overlay).
+   Unique colours: the three custom properties just below, declared once. Everything else is var(--bt-*), rgba(var(--bt-*-rgb), a) or color-mix. */
+:root {
+  --bt-crt-bezel: #1d1a22;       /* CRT bezel plastic */
+  --bt-crt-bezel-hi: #34303c;    /* its lit edge, and the control strip's knobs */
+  --bt-crt-glass: #0a0b09;       /* CRT phosphor glass */
+}
+[data-look="hull"], [data-look="crt"] {
+  --cr-line: color-mix(in srgb, var(--bt-blue) 22%, transparent);
+  --cr-line-soft: color-mix(in srgb, var(--bt-blue) 7%, transparent);
+  --cr-bezel: 0 0 0 10px var(--bt-crt-bezel), 0 0 0 11px var(--bt-crt-bezel-hi), 0 0 0 12px rgba(var(--bt-ink-rgb), 1), 0 24px 40px rgba(var(--bt-ink-rgb), 0.6), inset 0 0 60px rgba(var(--bt-ink-rgb), 0.9), inset 0 0 0 1px rgba(var(--bt-sheen-rgb), 0.04);
+  --cr-glass: radial-gradient(ellipse at 50% 40%, color-mix(in srgb, var(--bt-crt-glass) 88%, var(--bt-text)), var(--bt-crt-glass) 80%);
+}
+
+/* =================================================================== shared by both looks: the hull map's blueprint surfaces ======= */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel { background-color: var(--bt-surface); background-image: linear-gradient(var(--cr-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--cr-line-soft) 1px, transparent 1px); background-size: 20px 20px; border-color: var(--cr-line); border-radius: 4px; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel::before, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel::after { content: ""; position: absolute; width: 12px; height: 12px; border: 1px solid var(--bt-blue); pointer-events: none; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+
+/* lit section headers: icon tile, status light, scan line */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel-head { margin: -16px -16px 14px; padding: 12px 16px; overflow: hidden; border-bottom: 1px solid var(--cr-line);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--bt-blue) 12%, transparent), transparent 70%), repeating-linear-gradient(135deg, var(--cr-line-soft) 0 2px, transparent 2px 7px); }
+@container bt (max-width: 640px) { :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel-head { margin: -12px -12px 12px; padding: 10px 12px; } }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel-head .bt-heading::before { display: none; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-hico { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; border-radius: 7px; color: var(--bt-title); background: var(--bt-bg); border: 1px solid color-mix(in srgb, var(--bt-blue) 55%, transparent);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--bt-blue) 30%, transparent), inset 0 0 8px color-mix(in srgb, var(--bt-blue) 20%, transparent); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-hico svg { animation: bt-cr-icon 4s ease-in-out infinite; }
+@keyframes bt-cr-icon { 0%, 80%, 100% { filter: none; } 85% { filter: drop-shadow(0 0 4px var(--bt-title)); } }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-led { display: block; flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-lime); box-shadow: 0 0 8px var(--bt-lime); animation: bt-cr-led 2.6s ease-in-out infinite; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-checkin.is-open .bt-cr-led { background: var(--bt-cr-live); box-shadow: 0 0 10px var(--bt-cr-live); animation-duration: 0.8s; }
+@keyframes bt-cr-led { 50% { opacity: 0.35; } }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-scan { display: block; position: absolute; left: 0; bottom: -1px; width: 30%; height: 2px; background: linear-gradient(90deg, transparent, var(--bt-title), transparent); animation: bt-cr-hscan 3.8s ease-in-out infinite; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-panel:nth-child(2n) .bt-cr-scan { animation-delay: -1.7s; }
+@keyframes bt-cr-hscan { from { left: -30%; } to { left: 100%; } }
+
+/* amber readouts with ghost digits, and an amber flash on change */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout { background: var(--bt-glass); border-color: var(--cr-line); box-shadow: inset 0 2px 10px rgba(var(--bt-ink-rgb), 0.8); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout::after { display: none; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-v { color: var(--bt-title); text-shadow: 0 0 12px rgba(var(--bt-gold-rgb), 0.5); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-v::before { content: attr(data-ghost); content: attr(data-ghost) / ""; position: absolute; left: 0; top: 0; color: rgba(var(--bt-gold-rgb), 0.09); text-shadow: none; pointer-events: none; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout.is-tick .bt-readout-v { animation: bt-cr-tick-amber 0.5s ease-out; }
+@keyframes bt-cr-tick-amber { 0% { color: var(--bt-text); text-shadow: 0 0 22px rgba(var(--bt-gold-rgb), 1); } 100% { color: var(--bt-title); } }
+
+/* viewers as fuel cells */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-bars { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-bar { grid-template-columns: minmax(0, 1fr); justify-items: center; gap: 6px; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-bar .bt-readout-track { order: -1; display: flex; align-items: flex-end; width: 26px; height: 56px; padding: 2px; border: 1px solid var(--cr-line); border-radius: 4px; background: var(--bt-bg); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-bar .bt-readout-track i { width: 100%; height: calc(var(--f, 0) * 100%); border-radius: 2px; box-shadow: 0 0 10px var(--c); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-readout-bar b { color: var(--bt-title); }
+
+/* beats: a dashed line with a light travelling it */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-beats::before { background: repeating-linear-gradient(90deg, var(--cr-line) 0 6px, transparent 6px 10px); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-beat-dot { width: 34px; height: 34px; border-width: 1.5px; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-beats-fill::after { content: ""; position: absolute; top: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--bt-text); box-shadow: 0 0 12px var(--bt-cr-live), 0 0 4px var(--bt-text); animation: bt-cr-travel 2.4s ease-in-out infinite; }
+@keyframes bt-cr-travel { from { left: 0; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } to { left: calc(100% - 9px); opacity: 0; } }
+
+/* an open check-in: marching edges */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-checkin.is-open:not(.bt-checkin--dialog) { border: 2px solid transparent; box-shadow: 0 0 30px rgba(var(--bt-cr-live-rgb), 0.22);
+  background-image: linear-gradient(var(--bt-surface), var(--bt-surface)), repeating-linear-gradient(90deg, var(--bt-cr-live) 0 10px, transparent 10px 18px);
+  background-size: auto, auto; background-origin: border-box; background-clip: padding-box, border-box; animation: bt-cr-march 1s linear infinite; }
+@keyframes bt-cr-march { to { background-position: 0 0, 18px 0; } }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-checkin-count { color: var(--bt-title); text-shadow: 0 0 14px rgba(var(--bt-gold-rgb), 0.5); }
+
+/* the viewport frame (both looks drop the rounded console edge) */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-viewport { border-radius: 4px; background: var(--bt-bg); border-color: var(--cr-line); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-viewport::before, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-viewport::after { border-color: var(--bt-blue); border-radius: 0; }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-screen { border-radius: 2px; }
+
+/* the deck plan */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-deckplan-bay { border-color: var(--cr-line); }
+
+/* =================================================================== Hull map Mk II ======= */
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::after { width: 34px; height: 34px; border-color: var(--bt-title); animation: bt-cr-target 3s ease-in-out infinite; }
+@keyframes bt-cr-target { 50% { transform: scale(0.88); opacity: 0.6; } }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-screen { box-shadow: 0 0 0 1px var(--cr-line), 0 0 30px color-mix(in srgb, var(--bt-blue) 18%, transparent); }
+
+/* =================================================================== CRT ======= */
+[data-look="crt"] { position: relative; isolation: isolate; overflow-x: clip; }
+/* the pink horizon grid scrolling under the page */
+[data-look="crt"]::before { content: ""; position: absolute; z-index: -1; left: 0; right: 0; bottom: 0; height: 340px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--bt-pink) 22%, transparent) 0 1px, transparent 1px 60px), repeating-linear-gradient(0deg, color-mix(in srgb, var(--bt-pink) 22%, transparent) 0 1px, transparent 1px 40px);
+  transform: perspective(380px) rotateX(62deg); transform-origin: 50% 100%; -webkit-mask: linear-gradient(0deg, rgba(var(--bt-ink-rgb), 1), transparent 85%); mask: linear-gradient(0deg, rgba(var(--bt-ink-rgb), 1), transparent 85%); animation: bt-cr-grid 2.4s linear infinite; }
+@keyframes bt-cr-grid { to { background-position: 0 0, 0 40px; } }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-panel, :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-viewport { z-index: 1; margin: 12px; border: 0; border-radius: 26px / 30px; background: var(--cr-glass); box-shadow: var(--cr-bezel); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-panel::before { content: ""; inset: 0; z-index: 2; width: auto; height: auto; border: 0; border-radius: inherit; pointer-events: none;
+  background: radial-gradient(ellipse 60% 35% at 22% 12%, rgba(var(--bt-sheen-rgb), 0.07), transparent 70%), repeating-linear-gradient(0deg, rgba(var(--bt-sheen-rgb), 0.025) 0 1px, transparent 1px 3px); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-panel::after { display: none; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-panel-head { border-radius: 26px 26px 0 0 / 30px 30px 0 0; border-bottom-color: rgba(var(--bt-gold-rgb), 0.2); background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.08), transparent 70%); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-hico { border-radius: 50%; border-color: rgba(var(--bt-gold-rgb), 0.5); box-shadow: 0 0 12px rgba(var(--bt-gold-rgb), 0.3); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-scan { background: linear-gradient(90deg, transparent, var(--bt-pink), transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-cr-panel .bt-heading, .bt-launch-main b, .bt-deckplan-name b, .bt-checkin-note b) { text-shadow: 0 0 6px color-mix(in srgb, var(--bt-text) 25%, transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-checkin.is-open:not(.bt-checkin--dialog) { box-shadow: var(--cr-bezel), 0 0 40px rgba(var(--bt-cr-live-rgb), 0.25); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-readout, .bt-launch-tile, .bt-deckplan, .bt-deckplan-bay) { background: color-mix(in srgb, var(--bt-text) 3%, transparent); border-color: rgba(var(--bt-gold-rgb), 0.18); border-radius: 10px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-deckplan { clip-path: none; border-radius: 14px; padding-top: 14px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-beats-fill { background: linear-gradient(90deg, var(--bt-pink), var(--bt-cr-live)); }
+/* the video on a TV with a control strip */
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-viewport { padding: 14px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-viewport::before, :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-viewport::after { display: none; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-screen { border-radius: 22px / 34px; box-shadow: inset 0 0 70px rgba(var(--bt-ink-rgb), 0.95); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-screen::before { content: ""; position: absolute; inset: 0; z-index: 2; pointer-events: none; border-radius: inherit; background: radial-gradient(ellipse 55% 30% at 25% 12%, rgba(var(--bt-sheen-rgb), 0.1), transparent 70%); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cr-strip { display: block; height: 18px; margin: 12px 28px 0; border-radius: 0 0 10px 10px;
+  background: radial-gradient(circle, var(--bt-lime) 0 3px, transparent 4px) 12px 50% / 10px 10px no-repeat, radial-gradient(circle, var(--bt-crt-bezel-hi) 0 5px, transparent 6px) calc(100% - 14px) 50% / 14px 14px no-repeat, radial-gradient(circle, var(--bt-crt-bezel-hi) 0 5px, transparent 6px) calc(100% - 36px) 50% / 14px 14px no-repeat, linear-gradient(180deg, var(--bt-crt-bezel), var(--bt-crt-glass)); }
+/* screens switch on with the old CRT line when the state changes (shared/ui/control-room.js crBoot adds .is-boot and --i) */
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]).is-boot :is(.bt-cr-panel, .bt-cr-viewport), :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .is-boot :is(.bt-cr-panel, .bt-cr-viewport) { animation: bt-cr-on 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 80ms); }
+@keyframes bt-cr-on { 0% { transform: scale(1, 0.004); filter: brightness(4); opacity: 0.9; } 45% { transform: scale(1, 0.004); filter: brightness(3); } 70% { transform: scale(1, 1.03); filter: brightness(1.6); } 100% { transform: none; filter: none; opacity: 1; } }
+
+/* =================================================================== the stream view (its motion is NOT reduced: it is a video overlay) ======= */
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-streamview { --bt-sv-line: color-mix(in srgb, var(--bt-blue) 55%, transparent); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-sv-panel { border-radius: 8px; background-color: color-mix(in srgb, var(--bt-bg) 92%, transparent); background-image: linear-gradient(color-mix(in srgb, var(--bt-blue) 8%, transparent) 2px, transparent 2px), linear-gradient(90deg, color-mix(in srgb, var(--bt-blue) 8%, transparent) 2px, transparent 2px); background-size: 40px 40px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-sv-panel::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-sv-panel::after { content: ""; position: absolute; width: 40px; height: 40px; border: 5px solid var(--bt-title); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-sv-panel::before { left: -4px; top: -4px; border-width: 5px 0 0 5px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-sv-panel::after { right: -4px; bottom: -4px; border-width: 0 5px 5px 0; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-streamview { --bt-sv-line: var(--bt-crt-bezel-hi); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-streamview-frame::before { content: ""; position: absolute; z-index: 0; left: -20%; right: -20%; bottom: 0; height: 520px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, color-mix(in srgb, var(--bt-pink) 35%, transparent) 0 2px, transparent 2px 120px), repeating-linear-gradient(0deg, color-mix(in srgb, var(--bt-pink) 35%, transparent) 0 2px, transparent 2px 80px);
+  transform: perspective(700px) rotateX(64deg); transform-origin: 50% 100%; -webkit-mask: linear-gradient(0deg, rgba(var(--bt-ink-rgb), 1), transparent 85%); mask: linear-gradient(0deg, rgba(var(--bt-ink-rgb), 1), transparent 85%); animation: bt-sv-grid 2.4s linear infinite; }
+@keyframes bt-sv-grid { to { background-position: 0 0, 0 80px; } }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-panel { border: 0; border-radius: 60px / 70px; background: var(--cr-glass); box-shadow: 0 0 0 22px var(--bt-crt-bezel), 0 0 0 25px var(--bt-crt-bezel-hi), 0 0 0 28px rgba(var(--bt-ink-rgb), 1), 0 40px 80px rgba(var(--bt-ink-rgb), 0.7), inset 0 0 120px rgba(var(--bt-ink-rgb), 0.95); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-panel::before { content: ""; position: absolute; inset: 0; z-index: 3; border-radius: inherit; pointer-events: none; background: radial-gradient(ellipse 55% 30% at 22% 12%, rgba(var(--bt-sheen-rgb), 0.08), transparent 70%), repeating-linear-gradient(0deg, rgba(var(--bt-sheen-rgb), 0.035) 0 2px, transparent 2px 6px); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-panel > * { position: relative; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-sv-h, .bt-sv-word) { text-shadow: 0 0 10px color-mix(in srgb, var(--bt-text) 30%, transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-cam { border-radius: 50px / 60px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-cam::after { border-radius: 64px / 74px; border-width: 18px; border-color: var(--bt-crt-bezel); }
+
+/* =================================================================== reduced motion: colour and glow stay, movement stops (not the stream view) ======= */
+@media (prefers-reduced-motion: reduce) {
+  :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-hico svg, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-led, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-scan, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-checkin.is-open:not(.bt-checkin--dialog), :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::after { animation: none; }
+  :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-beats-fill::after { display: none; }
+  [data-look="crt"]::before { animation: none; }
+  :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]).is-boot :is(.bt-cr-panel, .bt-cr-viewport), :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .is-boot :is(.bt-cr-panel, .bt-cr-viewport) { animation: none; }
+}

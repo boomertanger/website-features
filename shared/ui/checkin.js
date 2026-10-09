@@ -16,6 +16,8 @@
 //     count    how many are checked in this beat;  tries  wrong tries left (wrong state);  stamps  { start, break1, break2, end } booleans
 //     first    ["@gbo", ...] the first in;  value  the typed text;  room  the chosen room;  rooms  which rooms to offer
 //     title / text  the heading and body of the locked and closed notes;  avatarHtml  the tile in the success row
+//     dialog   true: the card without its panel chrome (no head, border or look), for use inside the check-in dialog, which looks the same
+//              in every look
 //   initCheckin(root, { onSubmit(word, room, el) })     wires every .bt-checkin under root: the form, the room radiogroup and the
 //        countdown, which stops at closesAt (the form is disabled, "bt-checkin-closed" bubbles). onSubmit may return (or resolve to)
 //        { ok: true } | { ok: false, left: 3 } | { locked: true } | { error: "text" }; the card shows the matching state.
@@ -70,7 +72,7 @@ export const stampsHtml = (stamps = {}, label = "Your beats tonight") =>
 export function checkinHtml({
   state = "entry", beat = "break1", closesAt = 0, lengthMs = DEFAULT_LEN, time = "", count = 0, id = "", wordLabel = "The word from the stream",
   value = "", tries = 5, room = "", rooms, stamps = {}, first = [], message = "", avatarHtml = "", xp = 10, streak = "stream streak safe tonight",
-  title = "", text = "", countLabel = "checked in this beat",
+  title = "", text = "", countLabel = "checked in this beat", dialog = false,
 } = {}) {
   const uidv = id || `bt-ci-${++uid}`;
   const name = BEAT_NAMES[beat] || BEAT_NAMES.break1;
@@ -93,8 +95,8 @@ export function checkinHtml({
   else body = `${top}${form}`;
   const firstHtml = isOpen && first.length ? `<div class="bt-checkin-first">First in: ${first.map((h) => `<b>${esc(h)}</b>`).join(" ")}</div>` : "";
   const tag = isOpen ? `<span class="bt-live-tag"><i></i>${esc(name)}</span>` : "";
-  return `<section class="bt-cr-panel bt-checkin${isOpen ? " is-open" : ""}" data-state="${esc(state)}" data-beat="${esc(beat)}"${closesAt ? ` data-closes="${Number(closesAt)}" data-length="${Number(lengthMs)}"` : ""} aria-label="Check in">`
-    + `${crPanelHeadHtml({ title: "Check in", icon: "checkin", tagHtml: tag })}${body}${firstHtml}${state === "visitor" ? "" : stampsHtml(stamps)}</section>`;
+  return `<section class="${dialog ? "bt-checkin bt-checkin--dialog" : "bt-cr-panel bt-checkin"}${isOpen ? " is-open" : ""}" data-state="${esc(state)}" data-beat="${esc(beat)}"${closesAt ? ` data-closes="${Number(closesAt)}" data-length="${Number(lengthMs)}"` : ""} aria-label="Check in">`
+    + `${dialog ? "" : crPanelHeadHtml({ title: "Check in", icon: "checkin", tagHtml: tag })}${body}${firstHtml}${state === "visitor" ? "" : stampsHtml(stamps)}</section>`;
 }
 
 /* ---------- behaviour ---------- */
