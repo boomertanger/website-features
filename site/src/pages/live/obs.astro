@@ -7,6 +7,7 @@
 import "../../../../shared/bt-ui.css";
 import "../../styles/control-room-looks.css";
 import "../../styles/live-obs.css";
+import Mascot from "../../components/Mascot.astro";
 ---
 <!doctype html>
 <html lang="en">
@@ -23,6 +24,8 @@ import "../../styles/live-obs.css";
   </head>
   <body class="bt-root bt-obs" data-look="hull">
     <div id="obs" data-obs></div>
+    <!-- The real mascot for the scenes (scripts/live/obs-scenes.ts clones it). -->
+    <template id="bt-mascot-tpl"><Mascot decorative /></template>
     <script>
       import "../../scripts/live/obs";
     </script>

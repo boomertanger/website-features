@@ -13,3 +13,58 @@ html { overflow: hidden; background: transparent; }
 /* the demo's stand-in for the game picture (?bg=1): the real source is transparent */
 .bt-root.bt-obs:not(#_) .obs-game { position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 45%, var(--bt-surface-2), var(--bt-bg) 75%); }
 .bt-root.bt-obs:not(#_) .obs-scene { position: absolute; inset: 0; }
+
+/* ---- scene extras (scripts/live/obs-scenes.ts), canvas pixels ---- */
+.bt-root.bt-obs:not(#_) .obs-view { position: absolute; inset: 0; }
+.bt-root.bt-obs:not(#_) .obs-stack { display: grid; gap: 30px; align-content: start; min-width: 0; }
+.bt-root.bt-obs:not(#_) .obs-center { justify-items: center; align-content: center; text-align: center; }
+.bt-root.bt-obs:not(#_) .obs-title { font-weight: 900; color: var(--bt-title); line-height: 1; text-transform: uppercase; overflow-wrap: anywhere; text-shadow: 0 0 30px rgba(var(--bt-gold-rgb), 0.35); }
+.bt-root.bt-obs:not(#_) .obs-sub { font-size: 40px; color: var(--bt-text-muted); line-height: 1.3; }
+.bt-root.bt-obs:not(#_) .obs-lab { font-size: 34px; color: var(--bt-text-muted); font-weight: 700; }
+.bt-root.bt-obs:not(#_) .obs-w { color: var(--bt-text); font-weight: 800; }
+.bt-root.bt-obs:not(#_) .obs-num { font-size: 76px; font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.bt-root.bt-obs:not(#_) .obs-count-big { font-weight: 900; line-height: 1; font-variant-numeric: tabular-nums; }
+.bt-root.bt-obs:not(#_) .obs-two { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.bt-root.bt-obs:not(#_) .obs-plats { display: flex; flex-wrap: wrap; gap: 18px 30px; font-size: 36px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.bt-root.bt-obs:not(#_) .obs-plat { display: flex; align-items: center; gap: 12px; }
+.bt-root.bt-obs:not(#_) .obs-plat .bt-platform-icon { width: 44px; height: 44px; border-radius: 11px; font-size: 18px; }
+.bt-root.bt-obs:not(#_) .obs-chips { display: flex; flex-wrap: wrap; gap: 16px; }
+.bt-root.bt-obs:not(#_) .obs-chip { padding: 10px 28px; border: 2px solid var(--bt-sv-line); border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bt-bg) 70%, transparent); font-size: 36px; font-weight: 800; }
+.bt-root.bt-obs:not(#_) .obs-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 30px 70px; }
+.bt-root.bt-obs:not(#_) .obs-rail { position: absolute; padding: 18px 28px; border-radius: 22px; background: color-mix(in srgb, var(--bt-bg) 80%, transparent); border: 2px solid var(--bt-sv-line); }
+.bt-root.bt-obs:not(#_) .obs-view .bt-mascot { display: block; height: auto; }
+.bt-root.bt-obs:not(#_) .obs-float { width: 240px; animation: obs-float 3.2s ease-in-out infinite; }
+.bt-root.bt-obs:not(#_) .obs-mascot-tall { width: 220px; }
+.bt-root.bt-obs:not(#_) .obs-mascot-brb { width: 210px; }
+.bt-root.bt-obs:not(#_) .obs-mascot-end { width: 150px; }
+.bt-root.bt-obs:not(#_) .obs-on { animation: obs-in 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+@keyframes obs-in { from { transform: translateY(26px) scale(0.97); opacity: 0; } }
+@keyframes obs-float { 50% { transform: translateY(-14px); } }
+
+/* ---- the 32 px floor: the kit's scene parts are drawn smaller in the Control Room's UI kit page; on the real canvas nothing is under 32 px ---- */
+.bt-root.bt-obs:not(#_) .bt-sv-h { font-size: 38px; }
+.bt-root.bt-obs:not(#_) .bt-sv-url { font-size: 38px; }
+.bt-root.bt-obs:not(#_) .bt-sv-count small { font-size: 34px; }
+.bt-root.bt-obs:not(#_) .bt-sv-room { grid-template-columns: 44px 270px 1fr 100px; font-size: 34px; }
+.bt-root.bt-obs:not(#_) .bt-sv-room .bt-platform-icon { width: 44px; height: 44px; font-size: 18px; }
+.bt-root.bt-obs:not(#_) .bt-sv-first { font-size: 34px; }
+.bt-root.bt-obs:not(#_) .bt-sv-first span { padding: 8px 22px; }
+.bt-root.bt-obs:not(#_) .bt-sv-first .obs-first-l { padding: 0; background: none; color: var(--bt-text-muted); animation: none; }
+.bt-root.bt-obs:not(#_) .bt-sv-beat { width: 190px; font-size: 32px; }
+.bt-root.bt-obs:not(#_) .bt-sv-beat:not(:last-child)::before { top: 20px; }
+.bt-root.bt-obs:not(#_) .bt-sv-ticker { height: 84px; }
+.bt-root.bt-obs:not(#_) .bt-sv-ticker div { font-size: 34px; }
+.bt-root.bt-obs:not(#_) .bt-sv-cam { font-size: 34px; }
+
+/* ---- demo only (?demo=1&guides=1): where the platforms' own UI sits on the tall canvas ---- */
+.bt-root.bt-obs:not(#_) .obs-guides { position: absolute; inset: 0; pointer-events: none; z-index: 20; }
+.bt-root.bt-obs:not(#_) .obs-guides i { position: absolute; background: rgba(var(--bt-red-rgb), 0.16); border: 2px dashed var(--bt-red); }
+.bt-root.bt-obs:not(#_) .obs-guides b { position: absolute; color: var(--bt-red); font-size: 32px; font-weight: 800; }
+.bt-root.bt-obs:not(#_) .bt-sv-beat i { width: 56px; height: 56px; font-size: 32px; }
+.bt-root.bt-obs:not(#_) .bt-sv-beat:not(:last-child)::before { top: 28px; }
+.bt-root.bt-obs:not(#_) { max-width: none; box-sizing: border-box; }
+html[data-shape="wide"] .bt-root.bt-obs:not(#_) { width: 1920px; height: 1080px; }
+html[data-shape="tall"] .bt-root.bt-obs:not(#_) { width: 1080px; height: 1920px; }
+.bt-root.bt-obs:not(#_) .bt-sv-room { grid-template-columns: 44px 340px 1fr 100px; }
+.bt-root.bt-obs:not(#_) .bt-sv-first .obs-first-l { border: 0; box-shadow: none; }
+html[data-shape="tall"] .bt-root.bt-obs:not(#_) .bt-sv-beat { width: 168px; }
