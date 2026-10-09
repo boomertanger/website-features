@@ -218,3 +218,19 @@
 .bt-root:not(#_) .lt-add { margin-top: 12px; }
 @container bt (max-width: 420px) { .bt-root:not(#_) .lt-row { grid-template-columns: 30px minmax(0, 1fr); } .bt-root:not(#_) .lt-tools { grid-column: 1 / -1; grid-auto-flow: column; justify-content: end; } }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lt-row { transition: none; } }
+
+/* ---- Stream Deck and stream view (owner only) ---- */
+.bt-root:not(#_) .ld-wrap { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .ld-wrap { grid-template-columns: minmax(0, 1fr); } }
+.bt-root:not(#_) .ld-lead { margin: 0 0 12px; line-height: 1.5; }
+.bt-root:not(#_) .ld-key { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; padding: 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-root:not(#_) .ld-key small { display: block; margin-top: 2px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ld-key-acts { display: flex; align-items: center; gap: 12px; }
+.bt-root:not(#_) .ld-list { display: grid; gap: 8px; margin-top: 12px; }
+.bt-root:not(#_) .ld-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); }
+.bt-root:not(#_) .ld-row.is-off { opacity: 0.6; border-style: dashed; }
+.bt-root:not(#_) .ld-row b { display: block; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .ld-row small { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ld-row code, .bt-portal[data-feature="live"] .ld-keybox code { display: block; margin-top: 4px; padding: 6px 8px; border-radius: var(--bt-radius-sm); background: var(--bt-surface-2); color: var(--bt-primary-soft); font-size: var(--bt-text-xs); overflow-wrap: anywhere; user-select: all; }
+.bt-portal[data-feature="live"] .ld-keybox { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; margin: 14px 0; }
+.bt-portal[data-feature="live"] .ld-keybox code { margin: 0; padding: 12px; font-size: var(--bt-text-md); }

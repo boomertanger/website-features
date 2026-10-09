@@ -12,6 +12,8 @@ import { livePreview } from "./layout";
 import { controlFrom, streamFrom, BEATS, type Role, type Snapshot, type Main, type CBeats, type PubLive, type LStream } from "./model";
 
 const base = `sites/${SITE_ID}`;
+/** Counts the owner-only reads (a check in the browser: for an Overseer both stay 0). */
+export const countRead = (k: "checklist" | "templates") => { const w = window as any; (w.__lvReads ||= { checklist: 0, templates: 0 })[k]++; };
 export interface Templates { beats: CBeats }
 
 export interface Api {
@@ -66,6 +68,7 @@ const real: Api = {
       if (s?.exists()) live = streamFrom(liveId, s.data());
       control = c.exists() ? controlFrom(c.data()) : null;
       if (role === "owner") {
+        countRead("checklist");
         const cl = await getDoc(doc(db, `${base}/streams/${liveId}/private/checklist`));
         if (cl.exists()) checklist = (cl.data().beats || null) as CBeats | null;
       }
@@ -74,6 +77,7 @@ const real: Api = {
   },
   async main() { const s = await getDoc(doc(db, `${base}/live/main`)); return s.exists() ? mainFrom(s.data()) : mainFrom({}); },
   async templates() {
+    countRead("templates");
     const s = await getDoc(doc(db, `${base}/live/main/private/checklistTemplates`));
     const b = s.exists() ? s.data().beats : null;
     const beats = {} as CBeats;

@@ -19,6 +19,7 @@ import { esc, $, withBusy, toast, messageFor, reduced, mascotHtml } from "./ui";
 import { stageHtml, initStage } from "./stage";
 import { initLive } from "./live";
 import { initRail } from "./rail";
+import { initDeck } from "./deck";
 import { gamePickerHtml } from "./gamepick";
 
 const POLL_MS = 5000;
@@ -185,6 +186,7 @@ function render() {
   slot("game", gamePanelHtml());
   slot("crew", crewPanelHtml());
   if (ctx.role === "owner") slot("rail", (ctx.hooks.railHtml?.(ctx) as string) ?? "");
+  if (ctx.role === "owner") slot("deck", (ctx.hooks.deckHtml?.(ctx) as string) ?? "");
   slot("stage", stageHtml(ctx));
   slot("scene", (ctx.hooks.sceneHtml?.(ctx) as string) ?? "");
   slot("launch", (ctx.hooks.launchHtml?.(ctx) as string) ?? "");
@@ -283,6 +285,7 @@ onAccess(async (s, role) => {
   initStage(ctx);
   initLive(ctx);
   initRail(ctx);
+  initDeck(ctx);
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;

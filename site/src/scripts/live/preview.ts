@@ -7,7 +7,7 @@ import raw from "../../data/preview-live-control.json";
 import { toast } from "../../../../shared/ui/toast.js";
 import { previewVault } from "../planner/plan-preview";
 import type { VCard } from "../vault/data";
-import type { Api, Templates } from "./api";
+import { countRead, type Api, type Templates } from "./api";
 import { livePreview } from "./layout";
 import { BEATS, type Beat, type CBeats, type Control, type LStream, type Main, type PubLive, type Room, type Snapshot, type Window } from "./model";
 
@@ -124,7 +124,7 @@ function tick(st: PState) {
 
 const snapshot = (st: PState, role: "owner" | "a2", streams: boolean): Snapshot => ({
   pub: mkPub(st), streams: streams ? st.streams.map((s) => ({ ...s })) : [], live: st.live, control: st.control,
-  main: null, checklist: role === "owner" ? st.checklist : null,
+  main: null, checklist: role === "owner" ? (countRead("checklist"), st.checklist) : null,
 });
 
 export async function previewApi(): Promise<Api> {
@@ -245,7 +245,7 @@ export async function previewApi(): Promise<Api> {
     preview: true,
     async read({ role: r, streams }) { const st = pv(); tick(st); return snapshot(st, r, streams); },
     async main() { return { ...pv().main }; },
-    async templates(): Promise<Templates | null> { ownerOnly(); const t = {} as CBeats; for (const k of BEATS) t[k] = pv().templates[k].map((x) => ({ ...x })); return { beats: t }; },
+    async templates(): Promise<Templates | null> { ownerOnly(); countRead("templates"); const t = {} as CBeats; for (const k of BEATS) t[k] = pv().templates[k].map((x) => ({ ...x })); return { beats: t }; },
     async vault() { return previewVault() as unknown as VCard[]; },
     async call(name, data) { const h = handlers[name]; if (!h) throw fail(`The preview doesn't fake ${name}.`); await new Promise((r) => setTimeout(r, 250)); return h(data || {}); },
   };
