@@ -47,7 +47,16 @@ function deckHtml(ctx: Ctx) {
     bodyHtml: `<p class="lc-hint ld-lead">Each key on the Stream Deck software calls one of these URLs (a web-request plugin; verify which). Replace <code>&lt;your deck key&gt;</code> with the key you made. It is shown once, then only a hash is kept. 30 requests a minute at most.</p>${keyCard("deck", !!m?.deckKeySet, m?.deckKeyAt ?? null)}<div class="ld-list">${list}</div>` });
   const view = crPanelHtml({ id: "lc-obs", cls: "lc-deckpanel", title: "Stream view", icon: "video", tagHtml: `<span class="bt-badge bt-badge--admin">Owner only</span>`,
     bodyHtml: `<p class="lc-hint ld-lead">Browser sources for Streamlabs and TikTok LIVE Studio. The key is required because the scene shows the check-in word. Add a Browser Source in each app with the right size. The scene follows the Scene card. For a manual Side rail break scene, add &amp;break=side to a second source.</p>${keyCard("obs", !!m?.obsKeySet, m?.obsKeyAt ?? null)}<div class="ld-list">${copyRow("Wide (1920×1080): Streamlabs, Twitch and YouTube", wide)}${copyRow("Tall (1080×1920): Dual Output vertical and TikTok LIVE Studio", tall)}</div>` });
-  return `<div class="ld-wrap">${deck}${view}</div>`;
+  const days = m?.privateAfterDays ?? null;
+  const priv = crPanelHtml({ id: "lc-private", cls: "lc-deckpanel", title: "Backstage videos", icon: "backstage", tagHtml: `<span class="bt-badge bt-badge--admin">Owner only</span>`,
+    bodyHtml: `<p class="lc-hint ld-lead">After-shows and backstage streams are unlisted YouTube videos. Once a stream is over for this many days, the daily tidy sets its video to private (staging never makes anything public). It never touches a video that is still live.</p>
+      <form class="ld-private" data-private-form>
+        <label class="ld-private-row"><button type="button" class="bt-switch" role="switch" aria-checked="${days != null}" aria-label="Make backstage videos private" data-private-switch></button><span>Make backstage videos private</span></label>
+        <label class="ld-private-row" for="ld-days"><span>after</span><input class="bt-input ld-days" id="ld-days" type="number" min="1" max="365" step="1" inputmode="numeric" value="${days ?? 7}" ${days == null ? "disabled" : ""} data-private-days><span>days</span></label>
+        <button type="submit" class="bt-btn bt-btn--secondary bt-btn--sm">Save</button>
+      </form>
+      <p class="lc-hint" data-private-state>${days == null ? "Off: backstage videos stay unlisted until you change it." : `On: private ${days} ${days === 1 ? "day" : "days"} after the stream.`}</p>` });
+  return `<div class="ld-wrap">${deck}${view}${priv}</div>`;
 }
 
 function keyDialog(kind: "deck" | "obs", key: string) {
@@ -77,5 +86,26 @@ export function initDeck(ctx: Ctx) {
     const kind = b.dataset.kind as "deck" | "obs";
     await askLive({ title: "Revoke the key?", message: "It stops working at once and no new one is made. You can make a key again any time.", confirmLabel: "Revoke it", busyLabel: "Revoking…", onConfirm: async () => { try { await call(kind, { revoke: true }); } catch (err) { throw new Error(messageFor(err)); } toast("Key revoked."); await reload(); } });
   };
+  // Backstage videos: private after N days (live/main.makeBackstagePrivateAfterDays, read by youtubeTidy). Off sends false.
+  ctx.root.addEventListener("click", (e) => {
+    const sw = (e.target as HTMLElement).closest<HTMLElement>("[data-private-switch]");
+    if (!sw) return;
+    const on = sw.getAttribute("aria-checked") !== "true";
+    sw.setAttribute("aria-checked", String(on));
+    const i = ctx.root.querySelector<HTMLInputElement>("[data-private-days]"); if (i) i.disabled = !on;
+  });
+  ctx.root.addEventListener("submit", async (e) => {
+    const f = (e.target as HTMLElement).closest<HTMLFormElement>("[data-private-form]");
+    if (!f) return;
+    e.preventDefault();
+    const on = f.querySelector("[data-private-switch]")!.getAttribute("aria-checked") === "true";
+    const n = Number(f.querySelector<HTMLInputElement>("[data-private-days]")!.value);
+    if (on && (!Number.isInteger(n) || n < 1 || n > 365)) { toast("Type a whole number of days, 1 to 365.", { kind: "error" }); return; }
+    const btn = f.querySelector<HTMLButtonElement>("button[type=submit]")!;
+    await withBusy(btn, "Saving…", async () => {
+      try { await ctx.api.call("liveSettings", { makeBackstagePrivateAfterDays: on ? n : false }); toast(on ? `Backstage videos go private ${n} ${n === 1 ? "day" : "days"} after the stream.` : "Backstage videos stay unlisted."); await reload(); }
+      catch (err) { toast(messageFor(err), { kind: "error" }); }
+    });
+  });
   ctx.acts["copy-url"] = async (b) => { toast((await copyText(b.dataset.text || "")) ? "URL copied. Swap in your key." : "Couldn't copy: select the URL and copy by hand.", { kind: "info" }); };
 }

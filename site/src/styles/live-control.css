@@ -240,3 +240,8 @@
 .bt-root:not(#_) .lc-steps { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 6px; font-size: var(--bt-text-md); }
 .bt-root:not(#_) .lc-steps code { padding: 2px 8px; border-radius: var(--bt-radius-sm); background: var(--bt-surface-2); color: var(--bt-title); font-weight: 800; overflow-wrap: anywhere; }
 .bt-root:not(#_) .lc-sw-status { margin: 0 0 10px; padding: 10px 12px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-md); }
+
+/* ---- Backstage videos: private after N days (owner only, deck.ts) ---- */
+.bt-root:not(#_) .ld-private { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px; margin: 4px 0 10px; }
+.bt-root:not(#_) .ld-private-row { display: inline-flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .ld-days { width: 84px; }

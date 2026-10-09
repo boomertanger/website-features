@@ -410,6 +410,12 @@ async function main() {
   assert.deepEqual((await as("boss", "liveSettings", { look: "crt", windowDefaultMinutes: 3 })).saved, ["look", "windowDefaultMinutes"]);
   assert.equal((await get("live/main")).look, "crt"); assert.equal((await get("public/live")).look, "crt");
   await as("boss", "liveSettings", { look: "hull" });
+  // the backstage privacy setting: a number of days, or false for off; nonsense is refused; only the owner
+  assert.deepEqual((await as("boss", "liveSettings", { makeBackstagePrivateAfterDays: 3 })).saved, ["makeBackstagePrivateAfterDays"]); assert.equal((await get("live/main")).makeBackstagePrivateAfterDays, 3);
+  await as("boss", "liveSettings", { makeBackstagePrivateAfterDays: false }); assert.equal((await get("live/main")).makeBackstagePrivateAfterDays, false, "off is saved as false");
+  assert.equal(await why(as("boss", "liveSettings", { makeBackstagePrivateAfterDays: "soon" })), "days");
+  assert.equal(await why(as("boss", "liveSettings", { makeBackstagePrivateAfterDays: -2 })), "days");
+  await as("boss", "liveSettings", { makeBackstagePrivateAfterDays: 7 });
 
   // ================================================================ 3b: check-ins and presence
   assert.equal(await why(as(null, "streamCheckIn", { word: "x", room: "twitch" })), "signedOut");

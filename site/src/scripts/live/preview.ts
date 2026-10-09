@@ -262,7 +262,7 @@ export async function previewApi(): Promise<Api> {
     },
     liveObsKey(d) { ownerOnly(); const st = pv(); if (d.revoke) { st.main.obsKeySet = false; st.main.obsKeyAt = Date.now(); return { ok: true, revoked: true }; } st.main.obsKeySet = true; st.main.obsKeyAt = Date.now(); toast("Preview: nothing saved", { kind: "info" }); return { ok: true, key: "preview-obs-key-not-real-0000000000" }; },
     liveDeckKey(d) { ownerOnly(); const st = pv(); if (d.revoke) { st.main.deckKeySet = false; st.main.deckKeyAt = Date.now(); return { ok: true, revoked: true }; } st.main.deckKeySet = true; st.main.deckKeyAt = Date.now(); toast("Preview: nothing saved", { kind: "info" }); return { ok: true, key: "preview-deck-key-not-real-000000000" }; },
-    liveSettings(d) { ownerOnly(); if (d.look) pv().main.look = d.look === "crt" ? "crt" : "hull"; toast("Preview: nothing saved", { kind: "info" }); return { ok: true, saved: Object.keys(d) }; },
+    liveSettings(d) { ownerOnly(); if (d.look) pv().main.look = d.look === "crt" ? "crt" : "hull"; if (d.makeBackstagePrivateAfterDays !== undefined) pv().main.privateAfterDays = d.makeBackstagePrivateAfterDays === false ? null : Number(d.makeBackstagePrivateAfterDays); toast("Preview: nothing saved", { kind: "info" }); return { ok: true, saved: Object.keys(d) }; },
   };
 
   return {
