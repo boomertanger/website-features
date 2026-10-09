@@ -44,6 +44,7 @@ import { dayPickerHtml, initDayPicker, DAYS } from "../ui/day-picker.js";
 import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../ui/chat-tile.js";
 import { initJourney } from "../ui/how-it-works.js";
 import { screamPlannerKitHtml, initScreamPlannerKit } from "./kit-scream-planner.js";
+import { controlRoomKitHtml, initControlRoomKit } from "./kit-control-room.js";
 import { initNavGroups, featureLoadingHtml, watchFeatureHtml, playFeatureHtml, communityFeatureHtml, initWatchTile } from "../ui/navgroup.js";
 
 const KIT_VERSION = "dev";
@@ -813,7 +814,7 @@ ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
 ${roadKitHtml()}
-${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}`;
+${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}${controlRoomKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -1002,6 +1003,7 @@ function init() {
   initStoryPiecesKit(mount);
   initNavgroupKit(mount);
   initScreamPlannerKit(mount);
+  initControlRoomKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 

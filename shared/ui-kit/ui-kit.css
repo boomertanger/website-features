@@ -130,3 +130,11 @@
 #bt-ui-kit .kit-sp-tris { display: flex; flex-direction: column; gap: 10px; max-width: 420px; }
 #bt-ui-kit .kit-sp-tris .bt-tri { min-width: 260px; }
 #bt-ui-kit .kit-sp-fly-from .bt-cover { width: 44px; }
+
+/* Control Room section (kit-control-room.js) */
+#bt-ui-kit .kit-cr-ci { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
+#bt-ui-kit .kit-cr-stage { overflow: hidden; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); }
+#bt-ui-kit .kit-cr-phone { container: bt / inline-size; width: 390px; max-width: 100%; }
+#bt-ui-kit .kit-cr-sv { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--bt-space-4); align-items: start; }
+@container bt (max-width: 1024px) { #bt-ui-kit .kit-cr-sv { grid-template-columns: minmax(0, 1fr); } }
+#bt-ui-kit .kit-cr-stamps .bt-checkin-stamps { margin: 0; padding: 0; border: 0; }

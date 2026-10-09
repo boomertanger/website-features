@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+UI Kit page: Control Room section showing every new piece in every state with the Hull map / CRT Look switch and the radar wordmark; design-system.md catalog, JS modules and 8p updated
 Control Room looks (hull map Mk II and CRT in site/src/styles/control-room-looks.css) and the CONTROL ROOM radar wordmark (shared/ui/control-room.js, .bt-cr-icon, .bt-cr-viewport)
 Control Room kit pieces: readout, beats, check-in, live banner, launch panel, checklist, deck plan and stream view frames (shared/bt-ui.css, shared/ui/)
 functions: Control Room, one way to make an unscheduled stream, and delay and cancel for it. startStream now refuses an adhoc argument (reason args): createAdhocStream then startStream {streamId}, so a YouTube event is never made twice. delayStream and cancelStream (owner and A2+, A1 refused) work on an adhoc stream that is not live yet and has no planner draft, acting on the public stream doc (same overlap refusal, stream-delayed and stream-cancelled alerts, activity and adminLog); youtubeSync moves the event on a delay and deletes it on a cancel, the cancelled stream stays as a record; planned streams with a draft are unchanged. check-live-wiring covers it with the real youtubeSync and a fake Google; control-room.md section 3 updated.
