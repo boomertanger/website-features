@@ -14,7 +14,7 @@ import { coverHtml } from "../../../../shared/ui/cover.js";
 import { onAccess } from "./layout";
 import { makeApi } from "./api";
 import { ctx, current } from "./state";
-import { BEATS, BEAT_LABEL, ROOMS, ROOM_LABEL, fmtTime, fmtUptime, fmtDur, plural, type Room, type Snapshot, type LStream } from "./model";
+import { BEATS, BEAT_LABEL, ROOMS, ROOM_LABEL, tiktokOf, fmtTime, fmtUptime, fmtDur, plural, type Room, type Snapshot, type LStream } from "./model";
 import { esc, $, withBusy, toast, messageFor, reduced, mascotHtml } from "./ui";
 import { stageHtml, initStage } from "./stage";
 import { initLive } from "./live";
@@ -168,6 +168,7 @@ function grid() {
 }
 
 let lastMode = "";
+let tiktokBusy = false;
 function render() {
   const root = ctx.root;
   const m = ctx.snap.pub?.state;
@@ -236,6 +237,7 @@ function derive() {
   if (liveNow) { ctx.mode = "live"; ctx.wrap = ctx.wrap; }
   else if (s.pub?.state === "ended" && !ctx.wrapDismissed && (ctx.wrap || now - (s.pub.actualEnd || 0) < 2 * 3600000)) ctx.mode = "ended";
   else ctx.mode = "idle";
+  if (!tiktokBusy) ctx.tiktokOn = tiktokOf(s.live);
   ctx.todays = s.streams.filter((x) => Math.abs(x.start - now) <= 12 * 3600000).sort((a, b) => a.start - b.start);
   if (!ctx.todays.some((x) => x.id === ctx.pickedId)) ctx.pickedId = ctx.todays[0]?.id || null;
 }
@@ -299,7 +301,14 @@ onAccess(async (s, role) => {
       catch (err) { toast(messageFor(err), { kind: "error" }); }
     });
   };
-  ctx.acts["tiktok-switch"] = (btn) => { ctx.tiktokOn = btn.getAttribute("aria-checked") !== "true"; ctx.render(); };
+  // The TikTok switch is the stream's liveRooms, saved with liveRoom: optimistic, reverted if the server refuses.
+  ctx.acts["tiktok-switch"] = async (btn) => {
+    if (tiktokBusy) return;
+    const was = ctx.tiktokOn, on = btn.getAttribute("aria-checked") !== "true";
+    tiktokBusy = true; ctx.tiktokOn = on; ctx.render();
+    try { await ctx.api.call("liveRoom", { streamId: ctx.snap.live?.id, room: "tiktok", on }); tiktokBusy = false; await ctx.refresh(); }
+    catch (err) { tiktokBusy = false; ctx.tiktokOn = was; ctx.render(); toast(messageFor(err), { kind: "error" }); }
+  };
   void ctx.api.vault().then((g) => { ctx.vault = new Map(g.map((x) => [x.slug, x])); ctx.render(); }, () => {});
   await refresh();
   setInterval(tickTimers, 1000);

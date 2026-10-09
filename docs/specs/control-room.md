@@ -78,7 +78,10 @@ workstream: `startStream`, `switchGame`, `stopStream`. Delay and cancel reuse th
    the vertical broadcast found, a TikTok switch). `startStream` records `actualStart`, opens the first
    game's segment, sets the site's live state (`public` or `backstage`), writes `stream-live` or
    `backstage-live` to `notifyOutbox`, posts the activity event, copies the checklist templates and begins
-   the Start beat. A short "WE'RE LIVE" power-up plays on the controls.
+   the Start beat. A short "WE'RE LIVE" power-up plays on the controls. While the dialog is open it asks
+   `livePlatformStatus {streamId}` every 5 s (owner and A2+, no writes, never an id or token): Twitch live, the YouTube event live,
+   the vertical broadcast active. **The TikTok switch** is the stream's `liveRooms` (callable `liveRoom {streamId?, room: "tiktok", on}`, owner and A2+,
+   platform streams, adminLog `room`): set before Start, `startStream` keeps it; unset, Start goes live without TikTok. /live (`public/live.liveRooms`) and the stream view follow it.
 4. **Switch game.** Tonight's planned games first, then a Game Vault search. `switchGame` closes the open
    segment and opens the next. A game not in the Vault can be added as a wishlist entry in the same step.
 5. **Beats.** Four stations: Start, Break 1, Break 2, End. Each beat changes the stream view's scene (when the

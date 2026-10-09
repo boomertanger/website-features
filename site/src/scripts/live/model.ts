@@ -24,6 +24,7 @@ export interface PubLive {
   beat: Beat | null;
   beats: Partial<Record<Beat, { status: "now" | "done" | "skipped" | "next"; checkins: number }>>;
   window: { open: boolean; closesAt: number | null; beat: Beat | null };
+  liveRooms?: string[];
   counts: { total: number; byBeat: Partial<Record<Beat, number>>; byRoom: Record<string, number> };
   viewers: { total: number; byPlatform: Partial<Record<Room, number>> };
   peak: number;
@@ -36,7 +37,7 @@ export interface PubLive {
 export interface Seg { kind: string; gameId?: string; title?: string; startedAt: number | null; endedAt: number | null }
 export interface LStream {
   id: string; title: string; state: string; type: "platform" | "backstage"; audience: string; adhoc: boolean;
-  start: number; end: number; actualStart: number | null; rooms: Room[]; week: string | null;
+  start: number; end: number; actualStart: number | null; rooms: Room[]; /** The rooms live (the TikTok switch lives here). Empty until Start or the first switch. */ liveRooms: Room[]; week: string | null;
   crew: { captain: string | null; chats: Partial<Record<Room, { lead: string | null; deckhands: string[] }>> };
   minCrew: { captain: boolean; rooms: string[] };
   plannedGames: { gameId: string; title: string; order: number }[];
@@ -70,7 +71,7 @@ export function streamFrom(id: string, d: any): LStream {
   for (const [k, b] of Object.entries<any>(d.beats || {})) beats[k as Beat] = { startedAt: ms(b.startedAt), endedAt: ms(b.endedAt), skipped: b.skipped === true, checkins: b.checkins || 0, windowOpenedAt: ms(b.windowOpenedAt) };
   return {
     id, title: d.title || d.theme?.label || "Stream", state: d.state, type: d.type === "backstage" ? "backstage" : "platform", audience: d.audience || "public", adhoc: d.adhoc === true,
-    start: ms(d.plannedStart) ?? 0, end: ms(d.plannedEnd) ?? 0, actualStart: ms(d.actualStart), rooms: (d.rooms || []) as Room[], week: d.week || null,
+    start: ms(d.plannedStart) ?? 0, end: ms(d.plannedEnd) ?? 0, actualStart: ms(d.actualStart), rooms: (d.rooms || []) as Room[], liveRooms: (Array.isArray(d.liveRooms) ? d.liveRooms : []) as Room[], week: d.week || null,
     crew: { captain: handleOf(d.crew?.captain), chats },
     minCrew: d.minCrew || { captain: false, rooms: [] },
     plannedGames: ((d.plannedGames || []) as any[]).map((g, i) => ({ gameId: g.gameId, title: g.title || g.gameId, order: g.order ?? i })).sort((a, b) => a.order - b.order),
@@ -103,3 +104,12 @@ export const fmtUptime = (msv: number) => { const s = Math.max(0, Math.floor(msv
 export const fmtDur = (msv: number) => { const m = Math.max(0, Math.round(msv / 60000)); return m >= 60 ? `${Math.floor(m / 60)}h ${pad(m % 60)}m` : `${m}m`; };
 export const fmtTime = (t: number | null | undefined, tz = SITE_TZ) => (t ? new Intl.DateTimeFormat("en-US", { timeZone: tz, hour: "numeric", minute: "2-digit" }).format(new Date(t)) : "");
 export const plural = (n: number, one: string, many = one + "s") => `${n} ${n === 1 ? one : many}`;
+
+/** What livePlatformStatus answers (functions/lib/live/feeds.js): never an id or a token. */
+export interface PlatformStatus {
+  twitch: { live: boolean; viewers?: number; error?: string };
+  youtube: { eventStatus: "ok" | "pending" | "failed" | null; connected: boolean; live: boolean; verticalWanted: boolean; verticalActive: boolean; error?: string };
+  tiktok: { planned: boolean; on: boolean };
+  checkedAt: number;
+}
+export const tiktokOf = (s: LStream | null) => !!s && s.type !== "backstage" && s.liveRooms.includes("tiktok");

@@ -9,7 +9,7 @@ import { previewVault } from "../planner/plan-preview";
 import type { VCard } from "../vault/data";
 import { countRead, type Api, type Templates } from "./api";
 import { livePreview } from "./layout";
-import { BEATS, type Beat, type CBeats, type Control, type LStream, type Main, type PubLive, type Room, type Snapshot, type Window } from "./model";
+import { BEATS, ROOMS, type Beat, type CBeats, type Control, type LStream, type Main, type PubLive, type Room, type Snapshot, type Window } from "./model";
 
 const MIN = 60000;
 const jitter = (n: number, spread: number) => Math.max(0, Math.round(n + (Math.random() - 0.45) * spread));
@@ -21,10 +21,11 @@ interface PState {
   adhocAt: Record<string, number>;
 }
 let S: PState | null = null;
+const pstatusCalls: Record<string, number> = {};
 
 const stream = (r: any, now: number): LStream => ({
   id: r.id, title: r.title, state: "scheduled", type: r.type, audience: r.audience, adhoc: false, start: now + r.startInMin * MIN, end: now + (r.startInMin + r.lenMin) * MIN, actualStart: null,
-  rooms: r.rooms as Room[], week: null, crew: JSON.parse(JSON.stringify(r.crew)), minCrew: r.minCrew,
+  rooms: r.rooms as Room[], liveRooms: [], week: null, crew: JSON.parse(JSON.stringify(r.crew)), minCrew: r.minCrew,
   plannedGames: (r.games as any[]).map((g, i) => ({ gameId: g.gameId, title: g.title, order: i })), segments: [], beats: {},
   youtube: { status: r.youtube, ...(r.youtube === "failed" ? { error: "The event could not be created" } : {}) }, delay: null,
 });
@@ -42,6 +43,7 @@ function goLive(st: PState, s: LStream, now: number, beat: Beat, windowOpen: boo
   const order = BEATS.indexOf(beat);
   BEATS.slice(0, order + 1).forEach((k, i) => { s.beats[k] = { startedAt: startedAt + i * 25 * MIN, endedAt: i < order ? startedAt + (i + 1) * 25 * MIN : null, checkins: st.counts.byBeat[k] || 0, windowOpenedAt: i < order || windowOpen ? startedAt + i * 25 * MIN + 3 * MIN : null }; });
   if (order > 0 && order < 3 && q.get("seg") !== "game") s.segments = [{ ...s.segments[0], endedAt: now - 5 * MIN }, { kind: "break", startedAt: now - 5 * MIN, endedAt: null }];
+  s.liveRooms = s.liveRooms.length ? s.liveRooms : s.type === "backstage" ? ["site" as Room] : s.rooms.filter((r) => r !== "tiktok");
   st.live = s;
   st.streams = st.streams.filter((x) => x.id !== s.id);
   const word = raw.words[st.wordUsed++ % raw.words.length];
@@ -98,7 +100,7 @@ function mkPub(st: PState): PubLive {
   const total2 = Object.values(st.counts.byBeat).reduce((a, b) => a + (b || 0), 0);
   return {
     state: s.type === "backstage" ? "backstage" : "live", look: st.main.look, streamId: s.id, title: s.title, type: s.type, audience: s.audience, actualStart: s.actualStart, actualEnd: null, beat: current, beats,
-    window: { open, closesAt: open ? w!.closesAt : null, beat: open ? w!.beat : null },
+    window: { open, closesAt: open ? w!.closesAt : null, beat: open ? w!.beat : null }, liveRooms: s.liveRooms,
     counts: { total: total2, byBeat: { ...st.counts.byBeat }, byRoom: { ...st.counts.byRoom } }, viewers: { total, byPlatform: by }, peak: Math.max(c.peak, total),
     game: seg ? { gameId: seg.gameId!, title: seg.title!, startedAt: seg.startedAt! } : null, nextGame: next ? { gameId: next.gameId, title: next.title } : null,
     crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] }, activity: null,
@@ -143,7 +145,7 @@ export async function previewApi(): Promise<Api> {
       const g = a.firstGame ? previewVault().find((v) => v.slug === a.firstGame.gameId) : null;
       const s: LStream = {
         id, title: a.title, state: "scheduled", type: a.type === "backstage" ? "backstage" : "platform", audience: a.type === "backstage" ? "fanClub" : a.audience || "public", adhoc: true, start: now, end: now + (a.durationMinutes || 180) * MIN, actualStart: null,
-        rooms: a.type === "backstage" ? [] : (a.rooms || ["twitch", "ytLandscape", "ytVertical", "tiktok"]), week: null, crew: { captain: null, chats: {} }, minCrew: { captain: false, rooms: [] },
+        rooms: a.type === "backstage" ? [] : (a.rooms || ["twitch", "ytLandscape", "ytVertical", "tiktok"]), liveRooms: [], week: null, crew: { captain: null, chats: {} }, minCrew: { captain: false, rooms: [] },
         plannedGames: g ? [{ gameId: g.slug, title: g.title, order: 0 }] : [], segments: [], beats: {}, youtube: { status: "pending" }, delay: null,
       };
       st.streams.unshift(s); st.adhocAt[id] = now;
@@ -212,6 +214,26 @@ export async function previewApi(): Promise<Api> {
       return { ok: true, beat: w.beat, window: w, word: w.word };
     },
     liveScene(d) { const c = ctl(); c.pinned = d.scene === "auto" || d.scene == null ? null : d.scene; c.brbUntil = c.pinned === "brb" && d.brbMinutes ? Date.now() + d.brbMinutes * MIN : null; return { ok: true, scene: c.pinned || "auto" }; },
+    livePlatformStatus(d) {
+      const s = stream(d.streamId), mode = new URLSearchParams(location.search).get("pstatus") || "progress";
+      const n = (pstatusCalls[d.streamId] = (pstatusCalls[d.streamId] || 0) + 1); (window as any).__lvPstatus = ((window as any).__lvPstatus || 0) + 1;
+      const level = mode === "live" ? 3 : mode === "partial" ? 2 : mode === "none" ? 0 : Math.min(3, Math.floor((n - 1) / 2));
+      const back = s.type === "backstage", vert = !back && s.rooms.includes("ytVertical");
+      return {
+        twitch: back || !s.rooms.includes("twitch") ? { live: false } : level >= 1 ? { live: true, viewers: 48 } : { live: false },
+        youtube: { eventStatus: s.youtube?.status ?? null, connected: true, live: level >= 2, verticalWanted: vert, verticalActive: vert && level >= 3 },
+        tiktok: { planned: !back && s.rooms.includes("tiktok"), on: !back && s.liveRooms.includes("tiktok") }, checkedAt: Date.now(),
+      };
+    },
+    liveRoom(d) {
+      const s = d.streamId ? stream(d.streamId) : liveS();
+      if (s.type === "backstage") throw fail("Backstage streams are on the site only.");
+      if (d.room !== "tiktok") throw fail("Only TikTok has a switch.");
+      const cur = s.liveRooms.length ? s.liveRooms : s.rooms.filter((r) => r !== "tiktok");
+      s.liveRooms = d.on ? ROOMS.filter((r) => r === "tiktok" || cur.includes(r)) : cur.filter((r) => r !== "tiktok");
+      if (!d.on && pv().control && pv().live?.id === s.id) { pv().control!.tiktok = null; delete pv().control!.viewers.tiktok; }
+      return { ok: true, on: d.on, liveRooms: s.liveRooms };
+    },
     liveViewerEntry(d) { const c = ctl(); c.tiktok = { viewers: d.viewers, at: Date.now() }; c.viewers.tiktok = d.viewers; return { ok: true, viewers: d.viewers }; },
     stopStream() {
       const st = pv(), s = liveS(), now = Date.now(), pub = mkPub(st);

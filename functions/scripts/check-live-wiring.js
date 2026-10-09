@@ -723,6 +723,89 @@ async function main() {
   assert.equal(savedLive.id, "f1");
   assert.equal(await why(as("boss", "liveViewerEntry", { viewers: 3 })), "notLive");
 
+  // ---------- livePlatformStatus (Start dialog, NO WRITES) and the TikTok switch (liveRoom) ----------
+  await mkStream("t1", { title: "TikTok night", rooms: ["twitch", "ytLandscape", "ytVertical", "tiktok"], youtube: { status: "ok" } });
+  await mkStream("tb", { title: "Backstage", type: "backstage", audience: "fanClub", rooms: [] });
+  await wdb.doc(`${S}/streams/t1/private/watch`).set({ provider: "youtube", youtube: { landscapeId: "VID-LAND-1", verticalId: null } });
+  const storeSnap = () => JSON.stringify([...wdb._store.entries()]);
+  // who may ask
+  assert.equal(await why(as(null, "livePlatformStatus", { streamId: "t1" })), "signedOut");
+  for (const uid of ["fan", "mod1", "adm1"]) assert.equal(await why(as(uid, "livePlatformStatus", { streamId: "t1" })), "notAllowed", uid + " is refused");
+  assert.equal(await why(as("adm2", "livePlatformStatus", {})), "args");
+  assert.equal(await why(as("boss", "livePlatformStatus", { streamId: "nope" })), "noStream");
+  // the shape, with Twitch and YouTube both live
+  tw.live = true; tw.viewers = 77; yt.active = ["VID-LAND-1", "VID-VERT-9"]; yt.down = false; net.length = 0; yt.listCalls = 0;
+  const before = storeSnap();
+  const ps = await as("adm2", "livePlatformStatus", { streamId: "t1" });
+  assert.deepEqual(ps.twitch, { live: true, viewers: 77 });
+  assert.deepEqual(ps.youtube, { eventStatus: "ok", connected: true, live: true, verticalWanted: true, verticalActive: true });
+  assert.deepEqual(ps.tiktok, { planned: true, on: false });
+  assert.equal(typeof ps.checkedAt, "number");
+  const psJson = JSON.stringify(ps);
+  assert.ok(!/VID-|TWTOKEN|B1|token/i.test(psJson), "no id, video id or token in the response");
+  assert.equal(storeSnap(), before, "livePlatformStatus writes NOTHING (no document changed, none created)");
+  assert.ok(net.every((n) => (n.method || "GET") === "GET" || n.url.includes("oauth2/token")), "only reads on the network");
+  // partial and none
+  yt.active = ["VID-LAND-1"]; assert.deepEqual((await as("boss", "livePlatformStatus", { streamId: "t1" })).youtube, { eventStatus: "ok", connected: true, live: true, verticalWanted: true, verticalActive: false });
+  tw.live = false; yt.active = []; const none = await as("boss", "livePlatformStatus", { streamId: "t1" });
+  assert.deepEqual(none.twitch, { live: false }); assert.equal(none.youtube.live, false); assert.equal(none.youtube.verticalActive, false);
+  yt.down = true; const off = await as("boss", "livePlatformStatus", { streamId: "t1" });
+  assert.deepEqual(off.youtube, { eventStatus: "ok", connected: false, live: false, verticalWanted: false, verticalActive: false }); yt.down = false;
+  const bsPs = await as("boss", "livePlatformStatus", { streamId: "tb" });
+  assert.deepEqual(bsPs.twitch, { live: false }); assert.deepEqual(bsPs.tiktok, { planned: false, on: false });
+  // Twitch not configured: an answer, not a crash
+  const noTw = require("../lib/live").build({ adminLogEntry, youtube: fakeYoutube, now: () => clock, fetchFn: fakeFetch, twitchClientId: "", twitchClientSecret: "", twitchLogin: "boomertanger" }).functions;
+  const nt = await noTw.livePlatformStatus.run({ auth: { uid: "boss", token: {} }, data: { streamId: "t1" } });
+  assert.deepEqual(nt.twitch, { live: false, error: "notConfigured" });
+  assert.equal(storeSnap(), before, "still nothing written");
+
+  // the TikTok switch: who, what, persistence
+  assert.equal(await why(as(null, "liveRoom", { streamId: "t1", room: "tiktok", on: true })), "signedOut");
+  for (const uid of ["fan", "mod1", "adm1"]) assert.equal(await why(as(uid, "liveRoom", { streamId: "t1", room: "tiktok", on: true })), "notAllowed");
+  assert.equal(await why(as("adm2", "liveRoom", { streamId: "t1", room: "twitch", on: true })), "room");
+  assert.equal(await why(as("adm2", "liveRoom", { streamId: "t1", room: "tiktok", on: "yes" })), "args");
+  assert.equal(await why(as("adm2", "liveRoom", { streamId: "tb", room: "tiktok", on: true })), "backstage");
+  assert.equal(await why(as("adm2", "liveRoom", { streamId: "s2", room: "tiktok", on: true })), "notInStream");
+  const on1 = await as("adm2", "liveRoom", { streamId: "t1", room: "tiktok", on: true });
+  assert.deepEqual(on1.liveRooms, ["twitch", "ytLandscape", "ytVertical", "tiktok"]);
+  assert.deepEqual((await stream("t1")).liveRooms, ["twitch", "ytLandscape", "ytVertical", "tiktok"], "persisted on the stream before Start");
+  assert.equal((await as("boss", "livePlatformStatus", { streamId: "t1" })).tiktok.on, true);
+  assert.ok((await root("adminLog")).some((e) => e.feature === "controlRoom" && e.action === "room" && e.actorUid === "adm2"));
+  const off1 = await as("boss", "liveRoom", { streamId: "t1", room: "ytv", on: false }).then(() => "ok", (e) => e.details.reason);
+  assert.equal(off1, "room", "only the canonical tiktok room has a switch");
+  await as("boss", "liveRoom", { streamId: "t1", room: "TikTok", on: false });
+  assert.deepEqual((await stream("t1")).liveRooms, ["twitch", "ytLandscape", "ytVertical"]);
+  await as("boss", "liveRoom", { streamId: "t1", room: "tiktok", on: true });
+  // Start keeps the owner's pre-set choice
+  await as("boss", "startStream", { streamId: "t1" });
+  assert.deepEqual((await stream("t1")).liveRooms, ["twitch", "ytLandscape", "ytVertical", "tiktok"], "Start keeps TikTok when the switch was on");
+  let pubT = await get("public/live");
+  assert.deepEqual(pubT.liveRooms, ["twitch", "ytLandscape", "ytVertical", "tiktok"], "public/live shows TikTok live");
+  assert.deepEqual((await FEEDS.viewData()).liveRooms, ["twitch", "ytLandscape", "ytVertical", "tiktok"], "the stream view feed carries it too");
+  // live: type a TikTok count, switch off -> the count and the room go, public/live follows, it survives a re-read
+  await as("boss", "liveViewerEntry", { viewers: 40 });
+  assert.equal((await control("t1")).tiktok.viewers, 40);
+  const off2 = await as("adm2", "liveRoom", { room: "tiktok", on: false });
+  assert.deepEqual(off2.liveRooms, ["twitch", "ytLandscape", "ytVertical"]);
+  assert.equal((await control("t1")).tiktok, undefined); assert.equal((await control("t1")).viewers.tiktok, undefined);
+  pubT = await get("public/live"); assert.deepEqual(pubT.liveRooms, ["twitch", "ytLandscape", "ytVertical"]); assert.equal(pubT.viewers.byPlatform.tiktok, undefined);
+  assert.deepEqual((await FEEDS.viewData()).liveRooms, ["twitch", "ytLandscape", "ytVertical"]);
+  await as("adm2", "liveRoom", { room: "tiktok", on: true });
+  assert.ok((await get("public/live")).liveRooms.includes("tiktok"));
+  // default Start (no switch touched): TikTok is NOT live until the owner says so
+  await as("boss", "stopStream", {});
+  await mkStream("t2", { title: "Default", rooms: ["twitch", "tiktok"] });
+  await as("boss", "startStream", { streamId: "t2" });
+  assert.deepEqual((await stream("t2")).liveRooms, ["twitch"], "TikTok is off by default at Start");
+  await as("boss", "stopStream", {});
+  assert.equal(await why(as("boss", "liveRoom", { streamId: "t2", room: "tiktok", on: true })), "badState", "an ended stream has no switch");
+  // a TikTok-only stream can't switch its only chat off
+  await mkStream("t3", { title: "Only TikTok", rooms: ["tiktok"] });
+  assert.equal(await why(as("boss", "liveRoom", { streamId: "t3", room: "tiktok", on: false })), "lastRoom");
+  assert.deepEqual(L.startRooms({ type: "platform", rooms: ["tiktok"] }), ["tiktok"]);
+  assert.deepEqual(L.startRooms({ type: "platform", rooms: ["twitch", "tiktok"] }), ["twitch"]);
+  assert.deepEqual(L.startRooms({ type: "platform", rooms: ["twitch", "tiktok"], liveRooms: ["tiktok", "bogus"] }), ["tiktok"]);
+
   // ---------- 12 hour auto-end through liveTick ----------
   await mkStream("f2", { title: "Marathon" });
   await as("boss", "startStream", { streamId: "f2" });

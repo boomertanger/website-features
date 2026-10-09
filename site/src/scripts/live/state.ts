@@ -20,7 +20,7 @@ export interface Ctx {
   vault: Map<string, VCard>;
   /** A celebration or dialog result the render should know about. */
   wrap: { durationMs: number; peak: number; checkins: number; byBeat: Record<string, number>; title: string } | null;
-  /** The TikTok switch on the controls: nobody reports TikTok to the server, so it is the owner's own note (this page only). */
+  /** The TikTok switch, from the stream's liveRooms (written by liveRoom); an optimistic value while a change is in flight. */
   tiktokOn: boolean;
   /** The owner left the wrap-up for the controls. */
   wrapDismissed: boolean;

@@ -7,6 +7,7 @@
 //   obsFeed           HTTPS GET, a valid stream view key only: the stream view's data, INCLUDING the check-in word while open
 //   liveDeck          HTTPS, a valid deck key only, rate-limited: the Stream Deck's actions. NEVER Start, Stop or After-show
 //   liveViewerEntry   callable, crew on duty: the TikTok Room Lead's viewer count
+//   livePlatformStatus callable, owner and A2+, NO WRITES: Twitch, the YouTube event and the vertical broadcast, for the Start dialog
 //   backstageWatch    callable, the stream's audience only: the stored YouTube video id (never logged)
 //
 // THE DEBOUNCE. state doc sites/boomertanger/rateLimits/live_flush { lastFlushMs, scheduledAtMs, expireAt } (the rateLimits TTL
@@ -27,6 +28,7 @@ const S = require("../streams/logic");
 const { P, ENDED_VISIBLE_MS } = require("./core");
 const { makeTwitch } = require("./twitch");
 const { YoutubeError } = require("../youtube/api");
+const { pickYoutubeIds } = require("./ytlink");
 
 const TWITCH_CLIENT_ID = defineString("TWITCH_CLIENT_ID");
 const TWITCH_LOGIN = defineString("TWITCH_LOGIN", { default: "boomertanger" });
@@ -323,6 +325,44 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     return { ok: true, streamId: stream.id, viewers: n };
   };
 
+  // ---------- livePlatformStatus ----------
+  /**
+   * livePlatformStatus { streamId }: what the Start dialog shows while it is open. Owner and A2+. NO WRITES. Never returns an id, a video id or a token.
+   *   { twitch: { live, viewers?, error? }, youtube: { eventStatus, connected, live, verticalWanted, verticalActive, error? }, tiktok: { planned, on }, checkedAt }
+   * Twitch is Helix Get Streams on the app token exactly as liveTick does (the broadcaster id is resolved but never stored here). A missing
+   * Twitch config is { live: false, error: "notConfigured" }. YouTube asks the active broadcasts with the same logic Start uses (pickYoutubeIds).
+   */
+  const livePlatformStatus = async (request) => {
+    await ctx.requireStaff(request);
+    const data = request.data || {};
+    if (typeof data.streamId !== "string" || !data.streamId) throw fail("invalid-argument", "streamId is required.", "args");
+    const stream = await ctx.loadStream(data.streamId);
+    const backstage = stream.type === "backstage";
+    const out = { twitch: { live: false }, youtube: { eventStatus: (stream.youtube && stream.youtube.status) || null, connected: false, live: false, verticalWanted: false, verticalActive: false }, tiktok: { planned: Array.isArray(stream.rooms) && stream.rooms.includes("tiktok") && !backstage, on: Array.isArray(stream.liveRooms) && stream.liveRooms.includes("tiktok") && !backstage }, checkedAt: now() };
+    if (!backstage && (stream.rooms || []).includes("twitch")) {
+      try {
+        const cfg = (await db.doc(P.growthConfig).get()).data() || {};
+        const id = cfg.twitchBroadcasterId ? String(cfg.twitchBroadcasterId) : await twitch().userId(twitchLogin ?? TWITCH_LOGIN.value());
+        if (id) { const st = await twitch().streamStatus(id); out.twitch = { live: st.live, ...(st.live ? { viewers: st.viewers } : {}) }; }
+        else out.twitch = { live: false, error: "unavailable" };
+      } catch (err) { out.twitch = { live: false, error: /not configured/.test(String((err && err.message) || "")) ? "notConfigured" : "unavailable" }; }
+    }
+    if (youtube && youtube.apiClient) {
+      try {
+        const api = await youtube.apiClient();
+        if (api) {
+          out.youtube.connected = true;
+          const w = (((await db.doc(P.watch(stream.id)).get()).data()) || {}).youtube || {};
+          const pick = pickYoutubeIds({ stream, known: w, active: await api.list({ status: "active" }) });
+          out.youtube.live = !pick.waiting.includes(backstage ? "event" : "landscape");
+          out.youtube.verticalWanted = !backstage && (!Array.isArray(stream.rooms) || stream.rooms.includes("ytVertical"));
+          out.youtube.verticalActive = out.youtube.verticalWanted && !pick.waiting.includes("vertical");
+        }
+      } catch (err) { out.youtube.error = "unavailable"; }
+    }
+    return out;
+  };
+
   // ---------- backstageWatch ----------
   const backstageWatch = async (request) => {
     const uid = ctx.crew.requireAuth(request);
@@ -345,9 +385,9 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
   };
 
   return {
-    functions: { onCheckInWritten, liveFlush, liveTick, obsFeed, liveDeck, liveViewerEntry: onCall(liveViewerEntry), backstageWatch: onCall(backstageWatch) },
+    functions: { onCheckInWritten, liveFlush, liveTick, obsFeed, liveDeck, liveViewerEntry: onCall(liveViewerEntry), livePlatformStatus: onCall({ secrets }, livePlatformStatus), backstageWatch: onCall(backstageWatch) },
     SECRETS: secrets,
-    ops: { liveViewerEntry, backstageWatch },
+    ops: { liveViewerEntry, livePlatformStatus, backstageWatch },
     helpers: { requestFlush, runFlushTask, flushNow, runTick, handleObsFeed, handleLiveDeck, viewData, FLUSH_QUEUE },
   };
 };

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions, site: livePlatformStatus (Twitch, the YouTube event and the vertical broadcast, read-only, for the Start dialog, which now fills in live every 5 s) and the TikTok switch saved on the stream with liveRoom (kept by Start, shown on /live and the stream view); public/live gains liveRooms.
 Control Room Stream Deck and stream view keys (owner only): make, rotate and revoke each key (shown once, then only the date it was set), every Stream Deck action as a copyable URL, and the wide and tall stream view URLs.
 The owner's private checklist: the rail on /live/control (current beat open, tick pop, shortcuts that tick themselves, saved at once) and the /live/control/checklist editor for the four templates (add, edit, reorder by drag or keyboard, platform-only, shortcut picker).
 Control Room live controls: platform status with the TikTok switch and viewer entry, readouts, beats (Begin, Skip, Back to the game), the check-in control with the big word, ring and counts by room, the Scene card, the game switcher, the launch panel, After-show and Stop, and the Stream wrap-up.

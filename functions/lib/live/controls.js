@@ -8,6 +8,7 @@
 //   liveBeat         owner, A2+   begin / skip a beat (Begin End skips the breaks), back to the game
 //   liveCheckInWindow owner, A2+  open / extend / close / reopen once; the word is stored ONLY in private/control
 //   liveScene        owner, A2+   Auto or a pinned scene with an optional Be right back timer
+//   liveRoom         owner, A2+   the TikTok switch: adds or removes tiktok in the stream's liveRooms (before Start or live)
 //   liveAfterShow    owner, A2+   stop the platform stream and start its linked backstage after-show in one step
 //   liveChecklist    OWNER ONLY   save the four templates, tick items of a stream's copy
 //   liveObsKey / liveDeckKey  OWNER ONLY  generate or rotate: only the SHA-256 hash is stored (live/main), the key is returned once
@@ -194,7 +195,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
       const game = firstGame || firstPlanned(stream);
       const r = L.startLive(stream, at, game);
       if (!r.ok) throw refuse(r.reason);
-      const patch = { ...r.patch, liveRooms: L.allowedRooms(stream) };
+      const patch = { ...r.patch, liveRooms: L.startRooms(stream) };
       tx.update(ref, stamp(patch));
       tx.set(ctx.controlRef(id), freshControl(at));
       tx.set(db.doc(paths.checklist(id)), copyChecklist(templates, stream.type));
@@ -414,6 +415,39 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     return { ok: true, streamId: s0.id, scene: scene || "auto", brbUntil };
   };
 
+  // ---------- the TikTok switch ----------
+  /**
+   * liveRoom { streamId?, room: "tiktok", on }: the TikTok switch, persisted in the stream's liveRooms (the rooms live now: check-ins, public/live
+   * and the stream view all read it). Before Start it sets the choice startStream keeps (L.startRooms); while live it changes the room at once,
+   * drops the typed TikTok count when turned off, and republishes public/live. Platform streams only; the stream must be live or scheduled.
+   */
+  const liveRoom = async (actor, data = {}) => {
+    const room = L.normaliseRoom(data.room);
+    if (room !== "tiktok") throw fail("invalid-argument", "Only TikTok has a switch.", "room");
+    if (typeof data.on !== "boolean") throw fail("invalid-argument", "on is true or false.", "args");
+    const s0 = await ctx.target(data);
+    if (s0.type === "backstage") throw fail("failed-precondition", "Backstage streams are on the site only.", "backstage");
+    if (!["live", "scheduled"].includes(s0.state)) throw refuse("badState");
+    if (!(Array.isArray(s0.rooms) ? s0.rooms : []).includes("tiktok") && !(Array.isArray(s0.liveRooms) && s0.liveRooms.includes("tiktok"))) throw fail("failed-precondition", "TikTok isn't one of this stream's chats.", "notInStream");
+    let next;
+    await db.runTransaction(async (tx) => {
+      const snap = await tx.get(ctx.streamRef(s0.id));
+      const s = { id: s0.id, ...snap.data() };
+      const cur = s.state === "live" ? L.allowedRooms(s) : L.startRooms(s);
+      next = data.on ? L.PLATFORM_ROOMS.filter((r) => r === "tiktok" || cur.includes(r)) : cur.filter((r) => r !== "tiktok");
+      if (!next.length) throw fail("failed-precondition", "A stream needs at least one chat.", "lastRoom");
+      tx.update(ctx.streamRef(s0.id), { liveRooms: next });
+    });
+    if (s0.state === "live" && !data.on) {
+      const control = await ctx.control(s0.id);
+      const { tiktok: _t, ...viewers } = control.viewers || {};
+      await ctx.controlRef(s0.id).update({ tiktok: FieldValue.delete(), viewers });
+    }
+    await ctx.logAdmin(actor, { action: "room", streamId: s0.id, title: s0.title, details: { room: "tiktok", on: data.on } });
+    if (s0.state === "live") await ctx.publishLive();
+    return { ok: true, streamId: s0.id, room: "tiktok", on: data.on, liveRooms: next };
+  };
+
   // ---------- after-show ----------
   const liveAfterShow = async (actor, data = {}) => {
     const at = now();
@@ -552,6 +586,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     liveBeat: onCall(staff(liveBeat)),
     liveCheckInWindow: onCall(staff(liveCheckInWindow)),
     liveScene: onCall(staff(liveScene)),
+    liveRoom: onCall(staff(liveRoom)),
     liveAfterShow: onCall({ secrets: SECRETS, timeoutSeconds: 300 }, staff(liveAfterShow)),
     liveChecklist: onCall(owner(liveChecklist)),
     liveObsKey: onCall(owner(keyOp("obs"))),
@@ -560,7 +595,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
   };
   return {
     functions, SECRETS,
-    ops: { createAdhocStream, startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow, liveChecklist, liveSettings },
+    ops: { createAdhocStream, startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveRoom, liveAfterShow, liveChecklist, liveSettings },
     helpers: { autoEnd, linkYoutube, createYoutubeEvent, afterEnd, cleanTemplates, copyChecklist, freshControl, vaultGame, crewPresent, tickShortcut },
   };
 };

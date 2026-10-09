@@ -306,6 +306,19 @@ function allowedRooms(stream) {
 }
 
 /**
+ * The rooms a stream goes live in at Start: the owner's own choice (liveRooms, set by the TikTok switch before Start) when valid, else the planned
+ * rooms WITHOUT TikTok (TikTok is live only when the owner says so with the switch), else all of them when TikTok is the only chat.
+ */
+function startRooms(stream) {
+  if (stream && stream.type === "backstage") return ["site"];
+  const pre = stream && Array.isArray(stream.liveRooms) ? PLATFORM_ROOMS.filter((r) => stream.liveRooms.includes(r)) : [];
+  if (pre.length) return pre;
+  const all = allowedRooms(stream);
+  const noTikTok = all.filter((r) => r !== "tiktok");
+  return noTikTok.length ? noTikTok : all;
+}
+
+/**
  * Validates one check-in. Input:
  *   member   { uid, signedIn }              (signedIn false or no uid -> signedOut)
  *   stream   the stream (type, liveRooms / rooms)
@@ -538,6 +551,7 @@ function buildPublicLive(input) {
     title: typeof stream.title === "string" ? stream.title : null,
     type: stream.type || "platform",
     audience: stream.audience || "public",
+    liveRooms: allowedRooms(stream),
     actualStart: stream.actualStart == null ? null : ms(stream.actualStart),
     actualEnd: stream.actualEnd == null ? null : ms(stream.actualEnd),
     beat: live ? currentBeat(sb) : null,
@@ -630,7 +644,7 @@ module.exports = {
   BEATS, BREAK_BEATS, nextBeat, currentBeat, beatsHeld, beginBeat, skipBeat, backToGame, startLive, stopLive, autoEndLive,
   windowOpenNow, windowAccepts, openWindow, reopenWindow, extendWindow, closeWindow,
   normalise, pickWord,
-  ROOMS, PLATFORM_ROOMS, normaliseRoom, allowedRooms, validateCheckIn, unlockTries,
+  ROOMS, PLATFORM_ROOMS, normaliseRoom, allowedRooms, startRooms, validateCheckIn, unlockTries,
   GRANT_KINDS, grantKey, grantXp, capPayout, planGrant, qualifiesAllBeats,
   streakPresence, SCENES, autoScene,
   sumShards, buildPublicLive, findSecrets,

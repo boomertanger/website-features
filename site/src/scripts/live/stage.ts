@@ -7,7 +7,7 @@ import { burst } from "../../../../shared/ui/burst.js";
 import { modalHeader } from "../../../../shared/ui/modal.js";
 import type { Ctx } from "./state";
 import { current, picked } from "./state";
-import { BEAT_LABEL, ROOMS, ROOM_LABEL, fmtTime, plural, seatsOf, type LStream, type Room } from "./model";
+import { BEAT_LABEL, ROOMS, ROOM_LABEL, fmtTime, plural, seatsOf, tiktokOf, type LStream, type PlatformStatus, type Room } from "./model";
 import { esc, openLive, askLive, withBusy, toast, messageFor, mascotHtml, reduced } from "./ui";
 import { gamePickerHtml, initGamePicker, type Pick } from "./gamepick";
 
@@ -159,30 +159,72 @@ function adhocDialog(ctx: Ctx) {
   form();
 }
 
-/** The Start dialog. Pre-start the platforms can't be asked (only the YouTube event is known); a gold note says so and Start stays allowed. */
+/**
+ * The Start dialog. While it is open it asks livePlatformStatus every 5 s (one request at a time, errors quiet, stopped when it closes) and fills each
+ * row in: Looking… then Live ✓ or Not live yet. TikTok has no API: its row is the switch (the stream's liveRooms, saved with liveRoom, optimistic).
+ * Start stays allowed whatever the rows say; a gold note tells what isn't live yet.
+ */
 function startDialog(ctx: Ctx) {
   const s = picked(ctx); if (!s) return;
   let first: Pick | null = s.plannedGames[0] ? { gameId: s.plannedGames[0].gameId, title: s.plannedGames[0].title } : null;
   const back = s.type === "backstage";
-  const ytOk = s.youtube?.status === "ok";
-  const row = (name: string, state: string, text: string) => `<div class="lc-chk" data-state="${state}"><b aria-hidden="true">${state === "ok" ? "✓" : state === "warn" ? "!" : "·"}</b><span><b>${esc(name)}</b><small>${text}</small></span></div>`;
-  const rows = back
-    ? row("YouTube event (unlisted)", ytOk ? "ok" : "warn", ytOk ? "Ready: pick it in Streamlabs." : "Not ready yet.")
-    : [row("Twitch", "wait", "Checked once you start: it shows on the Platforms card."), row("YouTube event", ytOk ? "ok" : "warn", ytOk ? "Ready: pick it in Streamlabs." : s.youtube?.status === "failed" ? "The event failed: retry it on the controls." : "Not ready yet."),
-      s.rooms.includes("ytVertical") ? row("YouTube vertical", "wait", "Streamlabs Dual Output makes it at go-live; the controls look for it.") : "",
-      s.rooms.includes("tiktok") ? row("TikTok", "wait", "Start TikTok LIVE Studio, then flip the TikTok switch on the controls.") : ""].join("");
-  const warn = !ytOk ? `<p class="bt-notice lc-gold" role="note">The YouTube event isn't ready. You can still start; the controls keep looking for it.</p>` : `<p class="bt-notice lc-gold" role="note">Make sure you are live in Streamlabs. If a platform isn't live yet you can still start; the controls show what's missing.</p>`;
-  const { modal, close } = openLive({ title: `Start ${s.title}?`, wide: true, content: `${modalHeader(esc(`Start ${s.title}?`), "This turns on the live lights across the site, tells members you're live and begins the Start beat.")}
-    <div class="lc-chks">${rows}</div>${warn}
+  let ps: PlatformStatus | null = null, tt = tiktokOf(s), ttBusy = false;
+  const row = (id: string, name: string) => `<div class="lc-chk" data-row="${id}" data-state="wait"><b aria-hidden="true">·</b><span><b>${esc(name)}</b><small data-t>Looking…</small></span></div>`;
+  const rows = back ? row("yt", "YouTube event (unlisted)")
+    : [s.rooms.includes("twitch") ? row("tw", "Twitch") : "", row("yt", "YouTube event"), s.rooms.includes("ytVertical") ? row("vt", "YouTube vertical broadcast") : "",
+      s.rooms.includes("tiktok") ? `<div class="lc-chk" data-row="tk" data-state="wait"><b aria-hidden="true">·</b><span><b>TikTok</b><small data-t>Start TikTok LIVE Studio, then switch it on here.</small></span><button type="button" class="bt-switch" role="switch" aria-checked="${tt}" aria-label="Live on TikTok" data-tt></button></div>` : ""].join("");
+  const { modal, close } = openLive({ title: `Start ${s.title}?`, wide: true, onClose: () => stop(), content: `${modalHeader(esc(`Start ${s.title}?`), "This turns on the live lights across the site, tells members you're live and begins the Start beat.")}
+    <div class="lc-chks">${rows}</div><p class="bt-notice lc-gold" role="note" data-note></p>
     <div class="bt-field"><span class="bt-label">First game</span><p class="lc-picked" data-first>${first ? esc(first.title) : "None planned: you can switch once you're live."}</p>${gamePickerHtml("start")}</div>
     <p class="bt-fine bt-fine--left" data-err role="alert"></p>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Not yet</button><button type="button" class="bt-btn bt-btn--primary lc-big" data-go>Start the stream</button></div>` });
+  const set = (id: string, ok: boolean | null, text: string) => {
+    const r = modal.querySelector<HTMLElement>(`[data-row="${id}"]`); if (!r) return;
+    r.dataset.state = ok === null ? "wait" : ok ? "ok" : "warn";
+    r.querySelector("b")!.textContent = ok === null ? "·" : ok ? "✓" : "!";
+    r.querySelector("[data-t]")!.textContent = text;
+  };
+  const note = () => {
+    const miss: string[] = [];
+    if (ps) {
+      if (!back && s.rooms.includes("twitch") && !ps.twitch.live) miss.push("Twitch");
+      if (!ps.youtube.live) miss.push(back ? "the YouTube event" : "YouTube");
+      if (ps.youtube.verticalWanted && !ps.youtube.verticalActive) miss.push("the vertical broadcast");
+    }
+    modal.querySelector("[data-note]")!.textContent = !ps ? "Make sure you are live in Streamlabs. You can still start if something isn't live yet; the controls show what's missing."
+      : miss.length ? `${miss.join(", ").replace(/^./, (c) => c.toUpperCase())} ${miss.length === 1 ? "isn't" : "aren't"} live yet. You can still start; the controls keep looking.` : "Everything we can see is live. Start when you're ready.";
+  };
+  const draw = () => {
+    if (!ps) return;
+    if (!back && s.rooms.includes("twitch")) set("tw", ps.twitch.live, ps.twitch.live ? `Live ✓${ps.twitch.viewers != null ? ` · ${ps.twitch.viewers} watching` : ""}` : ps.twitch.error ? "Can't check Twitch from here" : "Not live yet");
+    set("yt", ps.youtube.live, !ps.youtube.connected ? "YouTube isn't connected" : ps.youtube.live ? "Live ✓" : ps.youtube.eventStatus === "ok" ? "Event ready, not live yet" : "Not live yet");
+    if (ps.youtube.verticalWanted) set("vt", ps.youtube.verticalActive, ps.youtube.verticalActive ? "Live ✓" : "Not found yet: Dual Output makes it at go-live");
+    note();
+  };
+  // the poll: one request at a time, quiet on errors, stopped when the dialog closes
+  let timer = 0, busy = false, closed = false;
+  const poll = async () => {
+    if (busy || closed) return;
+    busy = true;
+    try { const r = await ctx.api.call<PlatformStatus>("livePlatformStatus", { streamId: s.id }); if (!closed) { ps = r; draw(); } } catch { /* quiet: the rows keep their last answer */ }
+    finally { busy = false; }
+  };
+  const stop = () => { closed = true; clearInterval(timer); };
+  note(); void poll(); timer = window.setInterval(poll, 5000);
+  modal.querySelector<HTMLButtonElement>("[data-tt]")?.addEventListener("click", async (e) => {
+    if (ttBusy) return;
+    const btn = e.currentTarget as HTMLElement, on = btn.getAttribute("aria-checked") !== "true", was = tt;
+    ttBusy = true; tt = on; btn.setAttribute("aria-checked", String(on));
+    try { await ctx.api.call("liveRoom", { streamId: s.id, room: "tiktok", on }); s.liveRooms = on ? [...new Set([...s.liveRooms, "tiktok" as Room])] : s.liveRooms.filter((r) => r !== "tiktok"); }
+    catch (err) { tt = was; btn.setAttribute("aria-checked", String(was)); toast(messageFor(err), { kind: "error" }); }
+    finally { ttBusy = false; }
+  });
   initGamePicker(modal.querySelector<HTMLElement>("[data-gp]")!, ctx, { actionLabel: "First game", onPick: (g) => { first = g; modal.querySelector("[data-first]")!.textContent = g.title; } });
   modal.querySelector<HTMLButtonElement>("[data-go]")!.addEventListener("click", async (e) => {
     await withBusy(e.currentTarget as HTMLButtonElement, "Starting…", async () => {
       try {
         await ctx.api.call("startStream", { streamId: s.id, ...(first ? { firstGame: { gameId: first.gameId } } : {}) });
-        close();
+        stop(); close();
         await ctx.refresh();
         wereLive(ctx);
       } catch (err) { modal.querySelector("[data-err]")!.textContent = messageFor(err); }
