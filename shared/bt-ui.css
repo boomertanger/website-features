@@ -4861,3 +4861,28 @@
 .bt-root:not(#_) .bt-cr-screen > :is(iframe, video, img) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 .bt-root:not(#_) .bt-cr-strip { display: none; }
 /* ================= END Control Room: wordmark icon and video viewport ================= */
+
+/* ================= Mod Machina phase 3 part 1: the swap board (docs/specs/mod-machina.md section 17a; mockup docs/design/mockups/mod-deck.html section 4) ================= */
+/* .bt-swap: a seat on the swap board: a day stub, room and role, a notice line and Take it (shared/ui/swap.js swapRowHtml). Open is GOLD ("needed"), never red. States: (none) open, .is-taken, .is-mine-now. */
+.bt-root:not(#_) .bt-swaps { display: grid; gap: 8px; }
+.bt-root:not(#_) .bt-swap { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--bt-radius-lg); border: 1px solid color-mix(in srgb, var(--bt-gold) 50%, transparent); background: linear-gradient(90deg, var(--bt-gold-bg), var(--bt-bg) 65%); transition: transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .bt-swap:hover { transform: translateY(-2px); box-shadow: 0 10px 22px var(--bt-lift-shadow); }
+.bt-root:not(#_) .bt-swap-day { display: flex; flex-direction: column; align-items: center; padding: 5px 0; border-radius: 10px; background: var(--bt-bg); border: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-swap-day small { font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.12em; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-swap-day b { font-size: var(--bt-text-xl); font-weight: 900; line-height: 1.1; }
+.bt-root:not(#_) .bt-swap-main { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bt-root:not(#_) .bt-swap-main b { font-size: var(--bt-text-md); display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+.bt-root:not(#_) .bt-swap-main small { font-size: var(--bt-text-xs); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-swap-main .bt-platform-icon { width: 20px; height: 20px; font-size: 8px; border-radius: 5px; display: inline-grid; vertical-align: -5px; }
+.bt-root:not(#_) .bt-swap.is-taken { border-color: var(--bt-border); background: var(--bt-bg); opacity: 0.7; }
+.bt-root:not(#_) .bt-swap.is-taken:hover { transform: none; box-shadow: none; }
+.bt-root:not(#_) .bt-swap.is-mine-now { border-color: var(--bt-primary); background: linear-gradient(90deg, var(--bt-primary-bg), var(--bt-bg) 65%); opacity: 1; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-swap { grid-template-columns: 46px minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-swap > .bt-btn { grid-column: 1 / -1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-swap { transition: none; }
+  .bt-root:not(#_) .bt-swap:hover { transform: none; box-shadow: none; }
+}
+/* ================= END swap board ================= */

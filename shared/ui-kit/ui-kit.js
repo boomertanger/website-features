@@ -36,6 +36,7 @@ import { initTree } from "../ui/tree.js";
 import { gradeChipHtml } from "../ui/grade-chip.js";
 import { MM_ICON } from "../ui/mod-machina.js";
 import { platformIconHtml, roomHtml, crewCardHtml, podiumHtml, timecardHtml, ringHtml } from "../ui/crew.js";
+import { swapRowHtml, swapsHtml } from "../ui/swap.js";
 import { prefHtml, initPrefs, PREF_OPTIONS } from "../ui/pref.js";
 import { ladderHtml, ladderDetailHtml, initLadder } from "../ui/ladder.js";
 import { quizHtml, initQuiz, showQuizResults } from "../ui/quiz.js";
@@ -1529,6 +1530,14 @@ function modMachinaKitHtml() {
       ${card({ name: "Ghoul Girl Gem", handle: "ghoulgem", gradeHtml: gradeChipHtml({ track: "mod", grade: 2 }), onBreak: true, chats: { twitch: "no", ytLandscape: "no", ytVertical: "no", tiktok: "favourite" }, meta: "15 duties" })}
       ${card({ name: "Lantern Lou", handle: "lanternlou", gradeHtml: gradeChipHtml({ track: "mod", grade: 1 }) })}
     </div>
+
+    <p class="kit-sub">Swap board: .bt-swap in .bt-swaps, swapRowHtml({ id, dow, day, chat, role, roomName, note, state }) (shared/ui/swap.js). Open is gold ("needed", never red) with Take it; is-taken is dimmed with no button; is-mine-now is purple with a lime "Yours" badge. Hover lifts a row (not under reduced motion); on phones the button drops under the row</p>
+    <div class="kit-grid-2">${swapsHtml([
+      swapRowHtml({ id: "k1", dow: "FRI", day: "16", chat: "ytVertical", role: "Lead", roomName: "YT Vertical", note: "Dropped by @mothlight · 3 days ahead · 7:00 PM", state: "open" }),
+      swapRowHtml({ id: "k2", dow: "SAT", day: "17", chat: "twitch", role: "Deckhand", roomName: "Twitch", note: "Dropped by @kitwick · 20 h ahead · late drop, costs them nothing if taken", state: "open" }),
+      swapRowHtml({ id: "k3", dow: "WED", day: "14", chat: "ytLandscape", role: "Lead", roomName: "YouTube", note: "Taken by @hollowgrin", state: "taken" }),
+      swapRowHtml({ id: "k4", dow: "FRI", day: "16", chat: "captain", role: "Captain", roomName: "", note: "Yours now · confirmed · the Captain can see it", state: "mine" }),
+    ].join(""))}</div>
 
     <p class="kit-sub">Podium (B2): .bt-podium, podiumHtml({ places }), 1st in the middle; one column on phones. With the board table below: .bt-board.bt-board--crew (.bt-board-rooms, .bt-board-n, .bt-board-hide, tr.is-staff, tr.is-me) and .bt-board-legend</p>
     ${podiumHtml({ places: [
