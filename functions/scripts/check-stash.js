@@ -358,11 +358,16 @@ const logs = async (action) => (await col("adminLog")).filter((e) => e.feature =
   assert.deepStrictEqual(seed.settingsToAdd(undefined), { pauseAtPct: 80, manualPause: false, manualPauseReason: "", runCap: 100 }, "a missing settings doc gets every default");
   assert.deepStrictEqual(seed.settingsToAdd({ pauseAtPct: 70, runCap: 50 }), { manualPause: false, manualPauseReason: "" }, "stored limits are never overwritten");
   assert.deepStrictEqual(seed.settingsToAdd({ pauseAtPct: 80, manualPause: true, manualPauseReason: "x", runCap: 100 }), {}, "a complete settings doc adds nothing");
-  const newRule = seed.ruleToAdd([{ id: "bugZapperScreenshots", enabled: true, ageThresholdDays: 60 }]);
-  assert.ok(newRule && newRule.enabled === false && newRule.name === "Old bug screenshots" && newRule.days === 60 && newRule.target === "bugScreenshots", "the seeded rule is disabled and 60 days");
-  assert.deepStrictEqual(newRule.statuses, T.BUG_SCREENSHOTS.statuses, "it covers every closed status");
-  assert.ok(T.queryOf(newRule).ok && !T.isLegacyShaped(newRule), "the sweep accepts the seeded rule");
-  assert.strictEqual(seed.ruleToAdd([{ id: "x", target: "bugScreenshots" }]), null, "no second rule when one for the target exists");
+  const f = seed.ruleFields();
+  assert.ok(f.enabled === false && f.name === "Old bug screenshots" && f.days === 60 && f.target === "bugScreenshots", "the seeded rule is disabled and 60 days");
+  assert.deepEqual(f.statuses, T.BUG_SCREENSHOTS.statuses, "it covers every closed status"); assert.ok(T.queryOf(f).ok && !T.isLegacyShaped(f) && !T.isUnsafe(f), "the sweep accepts the seeded rule");
+  assert.equal(seed.RULE_ID, "bugZapperScreenshots", "the seed creates or upgrades only this id");
+  const oldShape = { feature: "bugZapper", collection: "sites/boomertanger/bugs/main/reports", matchField: "closed", matchValue: true, ageField: "closedAt", ageThresholdDays: 60, enabled: true };
+  assert.equal(T.isUnsafe(oldShape), true); let pl = seed.planRules(oldShape, undefined);
+  assert.equal(pl.rule, "upgrade", "an old-shape rule at the id is rewritten in place"); assert.equal(pl.fields.enabled, false, "and switched off"); assert.equal(pl.remove, false);
+  assert.equal(seed.planRules(undefined, undefined).rule, "create"); assert.equal(seed.planRules({ ...f, enabled: true }, undefined).rule, "keep", "an allowlisted rule is left alone, including its enabled state");
+  pl = seed.planRules(oldShape, { ...f, enabled: false }); assert.equal(pl.remove, true, "the disabled duplicate with no lastRun is removed"); assert.equal(pl.stop, null);
+  assert.ok(seed.planRules(oldShape, { ...f, enabled: true }).stop, "an enabled duplicate stops the seed"); assert.ok(seed.planRules(oldShape, { ...f, enabled: false, lastRun: { purged: 0 } }).stop, "a duplicate with a lastRun stops the seed");
   assert.throws(() => seed.parseArgs(["--project", "production"]), /staging only/, "the seed refuses any project but staging");
 
   console.log("check-stash: ok");
