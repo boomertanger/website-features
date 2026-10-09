@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Night Shift: the daily button and its copy say Punch the clock instead of Clock in (the /shift button, the header menu item, toasts, How it works, the kit's clock), so Clock in means crew duty everywhere; visible text only, internal names, data and event ids are unchanged. The seeded activity and badge texts in functions/data still say Clock in until they are re-seeded.
 site: /live shows First in under the open check-in (the beat's first three handles) and a grade chip on each crew member (deck plan and list), both from public/live.
 site: the Live Beacon, the phone Live tab and the Watch tile never show a placeholder: with no stream in public/schedule they say just Offline (no time); a scheduled stream adds Next stream and its time in the viewer's own zone (one read round per visit, kept 5 minutes in sessionStorage; lib/offline-next.ts), and the Watch tile reads the live stream's title or the next published stream.
 site: twitchChannel in site.json is the same channel as TWITCH_LOGIN (functions/.env); check-live fails if site.json, functions/.env or the lib/live/feeds.js default differ. The TODO is gone.

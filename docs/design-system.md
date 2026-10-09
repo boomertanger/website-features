@@ -701,7 +701,7 @@ any multi-stage editor).
   card (icon tile, `b` + `p`, a button).
 - **Clock: `.bt-clock`** (`clockHtml({ streak, savers, cap, done })`): the streak number in
   `.bt-clock-flame`, `.bt-clock-txt` with saver pips (`.bt-clock-savers i`, `.is-empty`), and a
-  `[data-clock-btn]` button; `.is-done` (and `aria-disabled`) once clocked in today.
+  `[data-clock-btn]` button; `.is-done` (and `aria-disabled`) once punched in today.
 - **Path: `.bt-path`** (`pathHtml({ nodes })`): the story path, an `ol` of `.bt-path-node`s (`i` icon, `b`,
   `small`) on a line that fills gold to the first node not done (`--fill` 0 to 1); `.is-done`, `.is-now`,
   `.is-locked`. Scrolls sideways when narrow.
@@ -711,7 +711,7 @@ any multi-stage editor).
   `--bottom-right`. Absolutely placed, so it never moves the layout. It glints every few seconds and pops
   away with `.is-claimed`; neither animates under reduced motion.
 - **Account menu meta: `.bt-account-menu-meta`**: a right-aligned value in an account menu item (the
-  Clock in item's 🔥 streak). A menu item with `aria-disabled="true"` doesn't highlight on hover.
+  Punch the clock item's 🔥 streak). A menu item with `aria-disabled="true"` doesn't highlight on hover.
 
 **Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500 })`,
 returns dismiss). A short confirmation at the bottom of the screen, above the tab bar on phones

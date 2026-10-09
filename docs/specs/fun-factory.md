@@ -148,7 +148,7 @@ Stage tracker / stepper, countdown chip, locked card, campaign card with progres
 Each later feature adds its events through its spec's "Night Shift and Trophy Room hooks" section; ROADMAP.md gets a "Night Shift hooks" checklist.
 
 ## 13a. Daily check-in and streaks
-- **Punch the clock:** a Clock in button on `/shift` (and in the header menu) once per Central day. It counts for check-in activities and the streak.
+- **Punch the clock:** the daily button (renamed from "Clock in" on Oct 9, 2026, so "Clock in" means crew duty everywhere; internal names and event ids are unchanged) on `/shift` (and in the header menu) once per Central day. It counts for check-in activities and the streak.
 - **Streak savers:** every 7 days in a row earns one saver (hold up to 2; Sub Club up to 3). A missed day uses a saver automatically instead of breaking the streak.
 - **The streak never resets with the season**; your best streak is kept on your profile.
 - **Streak ladder** (Trophy Room badges, Loyalty collection, rarity rises with length):

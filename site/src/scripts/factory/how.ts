@@ -1,5 +1,5 @@
 // Night Shift How it works (docs/design/mockups/fun-factory-how-it-works.html). Ask BOOMBOT, the example
-// time card's Clock in and the example hidden medal (both local: nothing is saved), and the hero's season
+// time card's Punch the clock and the example hidden medal (both local: nothing is saved), and the hero's season
 // card. The one Firestore read is the public summary (sites/{siteId}/public/factory): a live season, or the
 // next scheduled one, replaces the example card; with neither, the example stays, marked Example.
 import { initChat } from "../../../../shared/ui/chat.js";
@@ -13,19 +13,19 @@ const DAY = 86400000;
 
 initChat(document);
 
-// The example time card: Clock in fills today's punch and adds a day. The hero's example clock does the same.
+// The example time card: Punch the clock fills today's punch and adds a day. The hero's example clock does the same.
 document.addEventListener("click", (e) => {
   const btn = (e.target as HTMLElement).closest<HTMLButtonElement>(".ff-hw [data-clock-btn]");
   if (!btn || btn.getAttribute("aria-disabled") === "true") return;
   document.querySelectorAll<HTMLButtonElement>(".ff-hw [data-clock-btn]").forEach((b) => {
-    b.textContent = "Clocked in ✓";
+    b.textContent = "Punched in ✓";
     b.classList.add("is-done");
     b.setAttribute("aria-disabled", "true");
     b.closest(".bt-clock")?.classList.add("is-done");
   });
   document.querySelectorAll<HTMLElement>(".ff-hw [data-streak]").forEach((s) => (s.textContent = String(Number(s.textContent) + 1)));
   const today = document.querySelector<HTMLElement>(".ff-hw-punch .is-today");
-  if (today) { today.classList.add("is-on"); const sr = today.querySelector(".bt-sr-only"); if (sr) sr.textContent = ": today, clocked in"; }
+  if (today) { today.classList.add("is-on"); const sr = today.querySelector(".bt-sr-only"); if (sr) sr.textContent = ": today, punched in"; }
 });
 
 // The example hidden medal.

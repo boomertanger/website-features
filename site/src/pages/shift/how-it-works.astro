@@ -26,20 +26,20 @@ const EX_STREAK = 12;
 
 const CHAPTERS = [["Ch 1 · The Awakening", "Oct 5 to 25", "is-done"], ["Ch 2 · The Rift Opens", "Oct 26 to Nov 15", "is-now"], ["Ch 3 · Unlocks Nov 16", "4 weeks", "is-locked"], ["Ch 4 · Unlocks Dec 14", "3 weeks", "is-locked"]];
 const CAD = [
-  ["☀️", "Daily", "blue", "Resets every day", "Quick jobs: clock in, play a round, add a game to your wishlist. A couple of minutes.", "Daily Ops"],
+  ["☀️", "Daily", "blue", "Resets every day", "Quick jobs: punch the clock, play a round, add a game to your wishlist. A couple of minutes.", "Daily Ops"],
   ["📅", "Weekly", "gold", "Resets Mondays", "Bigger jobs for the week: three Splat runs, a personal best, two wishlist votes.", "Weekly Rotations"],
   ["📖", "Story", "rank-3", "Open all season", "The season's theme as a path of missions. Finish it for the season badge.", "Investigate the Signal"],
-  ["🏔", "Milestone", "pink", "Open all season", "Long counts for the dedicated: 30 clock-ins, 25 runs, every medal found.", "The Long Haul"],
+  ["🏔", "Milestone", "pink", "Open all season", "Long counts for the dedicated: 30 punches, 25 runs, every medal found.", "The Long Haul"],
   ["⚡", "Event", "teal", "A few days only", "Surprise windows: a Halloween hunt, a game night, an anniversary.", "Full Moon Event"],
 ];
 const AUD = [["👥", "Everyone", "gray", "Most campaigns. Every member, free or paid."], ["⭐", "Sub Club", "gold", "Extra campaigns with more ways to earn. Fan Club members see them locked."], ["🛡", "Crew", "teal", "Missions for mods and admins: patrols, recaps, events."]];
 const ACTS = [
-  { icon: "⏱", title: "Clock in", sub: "Daily Ops", n: 1, of: 1, xp: 10 },
+  { icon: "⏱", title: "Punch the clock", sub: "Daily Ops", n: 1, of: 1, xp: 10 },
   { icon: "🩸", title: "Splat run", sub: "Weekly · finish Tap the Splat 3 times", n: 2, of: 3, xp: 60 },
   { icon: "🗺", title: "Site tour", sub: "Storyline · visit 6 sections", n: 6, of: 6, xp: 100 },
   { icon: "🏅", title: "Hidden medals", sub: "Storyline · find all 5", n: 3, of: 5, xp: 150 },
   { icon: "⭐", title: "Wishlist voter", sub: "Weekly · want 2 wishlist games", n: 1, of: 2, xp: 50 },
-  { icon: "🏔", title: "Month of shifts", sub: "Milestone · clock in on 30 days", n: 12, of: 30, xp: 250 },
+  { icon: "🏔", title: "Month of shifts", sub: "Milestone · punch the clock on 30 days", n: 12, of: 30, xp: 250 },
   { icon: "📺", title: "Check in to the stream", sub: "Needs the Control Room", soon: true },
   { icon: "🗳", title: "Pick the games", sub: "Needs the Schedule Planner", soon: true },
 ];
@@ -47,7 +47,7 @@ const PUNCH = [["Mon", "is-on"], ["Tue", "is-on"], ["Wed", "is-save"], ["Thu", "
 const POD = [[4, "@vhs_ghost", 70], [2, "@gbo", 118], [1, "@nightjar", 150], [3, "@skullkid", 96], [5, "@mothman", 52]] as const;
 const ENDS = [["🏆", "Top 3 members", "win gold, silver and bronze season trophies."], ["🎖", "Top 10 members", "get a season plaque on their profile."], ["🛡", "Staff race too", "with a Staff tag and their real rank. Member prizes go to members, so staff get a Staff Finish trophy for a top 10 place instead."], ["👑", "Beat the Boss", "finish a season with more season XP than Boomertanger (once he has 500) and the Beat the Boss badge is yours."], ["🏅", "Finish the story", "and the season badge is yours, wherever you rank."], ["⚡", "Your lifetime XP and level", "keep everything you earned. Only the race resets."]];
 const PLANS = [
-  { k: "", t: "Everyone", price: "Fan Club, free", tag: ["gray", "Free"], items: ["The whole season: daily, weekly, story, milestone and event campaigns", "Clock in, streaks and streak savers (hold 2)", "The season leaderboard and its trophies", "Hidden medal hunts"], foot: "Every member starts here." },
+  { k: "", t: "Everyone", price: "Fan Club, free", tag: ["gray", "Free"], items: ["The whole season: daily, weekly, story, milestone and event campaigns", "Punch the clock, streaks and streak savers (hold 2)", "The season leaderboard and its trophies", "Hidden medal hunts"], foot: "Every member starts here." },
   { k: "sub", t: "Sub Club", price: "$7.99 a month", tag: ["gold", "Paid"], plus: "Everything for everyone, plus", items: ["Sub Club campaigns each chapter", "Hold up to 3 streak savers", "Early looks at new Arcade versions"], foot: "Same XP per task as everyone else." },
   { k: "crew", t: "Crew", price: "Mods and admins", tag: ["teal", "Invite only"], plus: "Everything in Sub Club, plus", items: ["Crew missions: patrols, recaps, events", "Mods and admins race on the season board too (admins with a Staff tag)", "Mod MVP on the crew board"], foot: "Admins plan and publish seasons, and race with a Staff tag." },
 ];
@@ -68,18 +68,18 @@ const FAQS = [
   ["Can mods win the season?", "Yes. Mods race on the season leaderboard and win prizes like everyone else. Admins race too, with a Staff tag and their real rank, but the season trophies and plaques go to members, so an admin in the top 10 gets a Staff Finish trophy instead."],
   ["Can I beat the Boss?", "Maybe. The Boss is Boomertanger, racing on the same board. If you finish a season with more season XP than he has (and he has at least 500), you earn the Beat the Boss badge, and your profile counts every season you did it. The season pass and the leaderboard show where he is and how far behind you are."],
 ];
-const NAV: [string, string][] = [["s-season", "How a season works"], ["s-camp", "Campaigns"], ["s-acts", "Activities"], ["s-clock", "Clock in and streaks"], ["s-hunt", "Hidden medals"], ["s-lb", "Season leaderboard"], ["s-plan", "Your plan"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
+const NAV: [string, string][] = [["s-season", "How a season works"], ["s-camp", "Campaigns"], ["s-acts", "Activities"], ["s-clock", "Punch the clock and streaks"], ["s-hunt", "Hidden medals"], ["s-lb", "Season leaderboard"], ["s-plan", "Your plan"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
 const chapter = (n: number, id: string, title: string, lede?: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
 const rung = (cur: number) => (b: { n: number; name: string; rarity: number; emoji: string }) => `<li class="ff-hw-rung${b.n > cur ? " is-locked" : ""}">${medal(b.emoji, b.rarity, 52)}<span>${b.n}</span><b>${b.name}</b></li>`;
 const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
 ---
-<FactoryLayout title="How Night Shift works" description="Seasons, campaigns, daily clock-ins, streaks, hidden medals and the season leaderboard: how Night Shift works on Boomertanger." section="how">
+<FactoryLayout title="How Night Shift works" description="Seasons, campaigns, daily punch-ins, streaks, hidden medals and the season leaderboard: how Night Shift works on Boomertanger." section="how">
   <TocLayout items={NAV}>
     <div class="ff-hw">
       <section class="ff-hw-hero" aria-labelledby="h-hero">
         <div>
           <span class="ff-kicker">Night Shift</span>
-          <h1 class="bt-title bt-title--hero" id="h-hero">Clock in. Run missions. Survive the season.</h1>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Punch the clock. Run missions. Survive the season.</h1>
           <p>Every few months a new season opens with its own theme, missions and badges. Do a few things each day, finish the weekly jobs, follow the season's story, and race everyone else up the season leaderboard.</p>
           <div class="ff-hw-acts">
             <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
@@ -102,7 +102,7 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
             <span class="ff-hw-box-lab">📡 Season 01 · Dark Signal</span>
             <div class="ff-hw-box-row">
               <div class="ff-hw-box ff-hw-box--chap"><span class="ff-hw-box-lab">Ch 2 · The Rift Opens</span>
-                <div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">Daily Ops</span><span class="ff-hw-act is-done">Clock in</span><span class="ff-hw-act">Play a round</span></div>
+                <div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">Daily Ops</span><span class="ff-hw-act is-done">Punch the clock</span><span class="ff-hw-act">Play a round</span></div>
                 <div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">Storyline</span><span class="ff-hw-act is-done">Site tour</span><span class="ff-hw-act is-done">Link up</span><span class="ff-hw-act">Hidden medals</span></div>
               </div>
               <div class="ff-hw-box ff-hw-box--chap is-locked"><span class="ff-hw-box-lab">Ch 3 · 🔒</span><div class="ff-hw-box ff-hw-box--camp"><span class="ff-hw-box-lab">???</span><span class="ff-hw-act">Unlocks Nov 16</span></div></div>
@@ -136,16 +136,16 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
       <section class="ff-hw-sec" id="s-acts" aria-labelledby="h-acts">
         <Fragment set:html={chapter(3, "h-acts", "Activities", "Real things around the site: play, wishlist, explore. New kinds appear as new parts of the site open.")} />
         <div class="bt-task-list ff-hw-acts-list" set:html={ACTS.map((a) => taskRowHtml(a)).join("")} />
-        <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: want a game, finish a run, clock in.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
+        <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: want a game, finish a run, punch the clock.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
       </section>
 
       <section class="ff-hw-sec" id="s-clock" aria-labelledby="h-clock">
-        <Fragment set:html={chapter(4, "h-clock", "Clock in and streaks", "Two streaks: one for days, one for streams. Both carry over from season to season, and both earn badges.")} />
+        <Fragment set:html={chapter(4, "h-clock", "Punch the clock and streaks", "Two streaks: one for days, one for streams. Both carry over from season to season, and both earn badges.")} />
         <div class="ff-hw-two">
           <div class="ff-hw-timecard" data-hw-card>
             <h3>⏱ Daily streak <Fragment set:html={example} /></h3>
-            <p>Press <b>Clock in</b> once a day. Every 7 days in a row earns a streak saver, which covers a missed day automatically. Hold up to 2, or 3 with Sub Club.</p>
-            <ol class="ff-hw-punch" aria-label="This week's time card">{PUNCH.map(([d, c]) => <li class={c}><i aria-hidden="true"></i>{d}<span class="bt-sr-only">{c === "is-on" ? ": clocked in" : c === "is-save" ? ": covered by a saver" : c === "is-today" ? ": today" : ""}</span></li>)}</ol>
+            <p>Press <b>Punch the clock</b> once a day. Every 7 days in a row earns a streak saver, which covers a missed day automatically. Hold up to 2, or 3 with Sub Club.</p>
+            <ol class="ff-hw-punch" aria-label="This week's time card">{PUNCH.map(([d, c]) => <li class={c}><i aria-hidden="true"></i>{d}<span class="bt-sr-only">{c === "is-on" ? ": punched in" : c === "is-save" ? ": covered by a saver" : c === "is-today" ? ": today" : ""}</span></li>)}</ol>
             <Fragment set:html={clockHtml({ streak: EX_STREAK, unit: "days", title: "Best streak: 31 days", sub: nextDaily ? `Next badge: ${nextDaily.name} in ${nextDaily.n - EX_STREAK} days` : "" })} />
           </div>
           <div class="ff-hw-sc">
@@ -229,8 +229,8 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
 
       <section class="ff-hw-cta" aria-labelledby="h-cta">
         <h2 id="h-cta">Your shift starts now</h2>
-        <p class="bt-when-visitor">Join free, clock in, and your first XP lands today.</p>
-        <p class="bt-when-signed-in">Clock in, pick a job, and your first XP lands today.</p>
+        <p class="bt-when-visitor">Join free, punch the clock, and your first XP lands today.</p>
+        <p class="bt-when-signed-in">Punch the clock, pick a job, and your first XP lands today.</p>
         <div class="ff-hw-acts">
           <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_TITLE}>Join free</a>
           <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/shift">Open this season</a>

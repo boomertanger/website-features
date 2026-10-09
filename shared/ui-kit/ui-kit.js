@@ -1186,12 +1186,12 @@ function seasonKitHtml() {
     <h2 class="kit-h">Task row, timer, lock card, clock and path</h2>
     <p class="kit-p">The season pass pieces (docs/specs/fun-factory.md §8; shared/ui/season.js builds them, shared/ui/countdown.js ticks the timers once a minute). Reduced motion: no bar or line animation.</p>
     <p class="kit-sub">Task row: .bt-task-row in a .bt-task-list (two across, one on phones). .is-done gold edge; .is-soon dashed and dimmed</p>
-    <div class="bt-task-list">${taskRowHtml({ icon: "⏱", title: "Clock in", sub: "Press Clock in up top", n: 1, of: 1, xp: 10 })}${taskRowHtml({ icon: "🩸", title: "Splat run", sub: "Finish Tap the Splat 3 times", n: 2, of: 3, xp: 60 })}${taskRowHtml({ icon: "📺", title: "Check in to the stream", sub: "Needs the Control Room", soon: true })}${taskRowHtml({ icon: "🏔", title: "Month of shifts", sub: "Clock in on 30 days", n: 12, of: 30, xp: 250 })}</div>
+    <div class="bt-task-list">${taskRowHtml({ icon: "⏱", title: "Punch the clock", sub: "Press Punch the clock up top", n: 1, of: 1, xp: 10 })}${taskRowHtml({ icon: "🩸", title: "Splat run", sub: "Finish Tap the Splat 3 times", n: 2, of: 3, xp: 60 })}${taskRowHtml({ icon: "📺", title: "Check in to the stream", sub: "Needs the Control Room", soon: true })}${taskRowHtml({ icon: "🏔", title: "Month of shifts", sub: "Clock in on 30 days", n: 12, of: 30, xp: 250 })}</div>
     <p class="kit-sub">Timer: .bt-timer, a countdown pill (--locked grey). Not .bt-countdown, which is the home hero's next-stream digits</p>
     <div class="kit-row">${timerHtml({ until: Date.now() + 7 * H + 12 * 60000, label: "Resets in" })}${timerHtml({ until: Date.now() + 10 * D + 14 * H, label: "Ch 3 in" })}${timerHtml({ until: Date.now() + 2 * D + 3 * H, label: "Ends in", icon: "⚡" })}${timerHtml({ until: Date.now() + 40 * D, label: "Unlocks in", icon: "🔒", locked: true })}</div>
     <p class="kit-sub">Lock card: .bt-lock-card, the upsell a Fan Club member sees in place of Sub Club campaigns</p>
     ${lockCardHtml({ icon: "⭐", title: "2 Sub Club campaigns this chapter", text: "Hidden gems and the Inner circle run: more ways to earn season XP. Same XP per task as everyone.", href: "#kit-season", label: "See Sub Club" })}
-    <p class="kit-sub">Clock: .bt-clock (data-clock-btn; .is-done once clocked in today). Click it</p>
+    <p class="kit-sub">Clock: .bt-clock (data-clock-btn; .is-done once punched in today). Click it</p>
     <div class="kit-grid" style="grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px" data-kit-clock>${clockHtml({ streak: 12, savers: 1, cap: 2 })}${clockHtml({ streak: 31, savers: 3, cap: 3, done: true })}</div>
     <p class="kit-sub">Path: .bt-path, the story path; the line fills gold to the next node</p>
     ${pathHtml({ nodes: [{ icon: "🗺", label: "Site tour", state: "done" }, { icon: "🔗", label: "Link up", state: "done" }, { icon: "🏅", label: "Hidden medals 3/5", state: "now" }, { icon: "🕹", label: "Finish the season game" }, { icon: "🔒", label: "Chapter 4", state: "locked" }] })}
@@ -1249,8 +1249,8 @@ function initSeasonKit(mount) {
     const clock = b.closest(".bt-clock");
     const n = clock.querySelector("[data-streak]");
     n.textContent = String(Number(n.textContent) + 1);
-    clock.classList.add("is-done"); b.classList.add("is-done"); b.setAttribute("aria-disabled", "true"); b.textContent = "Clocked in ✓";
-    clock.querySelector(".bt-clock-txt b").textContent = "Clocked in for today";
+    clock.classList.add("is-done"); b.classList.add("is-done"); b.setAttribute("aria-disabled", "true"); b.textContent = "Punched in ✓";
+    clock.querySelector(".bt-clock-txt b").textContent = "Punched in for today";
   });
   mount.querySelector("[data-kit-hunt]")?.addEventListener("click", (e) => {
     const b = e.target.closest(".bt-hunt-medal");

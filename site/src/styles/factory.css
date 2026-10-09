@@ -470,7 +470,7 @@
 .bt-root:not(#_) .ff-hw-flow div::before { content: counter(ffhw); position: absolute; left: 12px; top: 12px; width: 24px; height: 24px; display: grid; place-items: center; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 12px; font-weight: 900; }
 .bt-root:not(#_) .ff-hw-flow b { color: var(--bt-text); }
 
-/* 04 Clock in and streaks */
+/* 04 Punch the clock and streaks */
 .bt-root:not(#_) .ff-hw-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px; }
 .bt-root:not(#_) .ff-hw-timecard, .bt-root:not(#_) .ff-hw-sc { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); min-width: 0; }
 .bt-root:not(#_) .ff-hw-timecard { border-color: var(--bt-border-2); background: repeating-linear-gradient(180deg, transparent 0 27px, color-mix(in srgb, var(--bt-text) 4%, transparent) 27px 28px), var(--bt-surface); }

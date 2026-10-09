@@ -610,8 +610,8 @@
                    and dimmed (a feature that isn't live yet). .bt-task-list lays them out two across.
    .bt-timer       the gold pill with a timer ("Resets in 7h 12m"); --locked is grey. Ticks once a minute.
    .bt-lock-card   the dashed gold upsell card: .bt-lock-card-ic, a b + p block, a button.
-   .bt-clock       Clock in: .bt-clock-flame (the streak number), .bt-clock-txt (b, savers .bt-clock-savers
-                   with i pips, i.is-empty), and a button; .is-done when clocked in today.
+   .bt-clock       Punch the clock: .bt-clock-flame (the streak number), .bt-clock-txt (b, savers .bt-clock-savers
+                   with i pips, i.is-empty), and a button; .is-done when punched in today.
    .bt-path        the story path: ol of .bt-path-node (i icon, b, small) on a line that fills gold to
                    --fill (0 to 1); .is-done gold, .is-now ringed. Phones: a sideways strip.
    Reduced motion: no bar or line transitions, no pulse. */

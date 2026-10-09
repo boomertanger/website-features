@@ -1,5 +1,5 @@
 // Night Shift pieces on every page (docs/specs/fun-factory.md §8, §13a), for signed-up members only:
-//   - the account menu's Clock in item: today's state and the streak, calling factoryCheckIn. Shown only
+//   - the account menu's Punch the clock item: today's state and the streak, calling factoryCheckIn. Shown only
 //     while a season is live or the streak is above 0.
 //   - factoryVisit: once a day per site-tour section (functions/lib/factory/logic.js VISIT_SECTIONS),
 //     remembered in localStorage, and only while a season is live.
@@ -42,7 +42,7 @@ const store = {
   set: (k: string, v: string) => { try { localStorage.setItem(k, v); } catch { /* no storage */ } },
 };
 
-// ---------- account menu: Clock in ----------
+// ---------- account menu: Punch the clock ----------
 interface StreakLite { current: number; lastCheckIn: string | null; at: number }
 async function streakOf(uid: string, fresh = false): Promise<StreakLite> {
   const k = `ff-streak-${uid}`;
@@ -65,7 +65,7 @@ async function clockItem(uid: string, live: boolean) {
     for (const b of items) {
       b.hidden = false;
       b.setAttribute("aria-disabled", String(done));
-      b.querySelector("[data-ff-clock-label]")!.textContent = done ? "Clocked in today" : "Clock in";
+      b.querySelector("[data-ff-clock-label]")!.textContent = done ? "Punched in today" : "Punch the clock";
       b.querySelector("[data-ff-clock-icon]")!.textContent = done ? "✅" : "⏱";
       const meta = b.querySelector<HTMLElement>("[data-ff-clock-meta]")!;
       meta.hidden = !(st.current > 0);
@@ -89,9 +89,9 @@ async function clockItem(uid: string, live: boolean) {
       }
       if (r.streak.spent) toast(`A streak saver covered ${r.streak.spent === 1 ? "a missed day" : `${r.streak.spent} missed days`}. Your streak lives on.`, { kind: "info" });
       if (r.streak.earnedSaver) toast("7 days in a row: you earned a streak saver.");
-      toast(r.streak.already ? "You already clocked in today." : `Clocked in. ${r.streak.current} ${r.streak.current === 1 ? "day" : "days"} in a row.`);
+      toast(r.streak.already ? "You already punched in today." : `Punched in. ${r.streak.current} ${r.streak.current === 1 ? "day" : "days"} in a row.`);
     } catch (err) {
-      toast(messageFor(err, "Clock in didn't go through. Try again."), { kind: "error" });
+      toast(messageFor(err, "Punching the clock didn't go through. Try again."), { kind: "error" });
     }
     paint();
   });

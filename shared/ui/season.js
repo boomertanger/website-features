@@ -6,7 +6,7 @@
 //                                                               soon: a "Soon" badge instead (is-soon)
 //   lockCardHtml({ icon, title, text, href, label })           .bt-lock-card: the dashed gold upsell card
 //   clockHtml({ streak, savers, cap, done, title, sub, label }) .bt-clock: streak flame, saver pips, button
-//                                                               (data-clock-btn; .is-done once clocked in)
+//                                                               (data-clock-btn; .is-done once punched in)
 //   pathHtml({ nodes, label })                                 .bt-path: nodes on a line that fills gold;
 //                                                               nodes: [{ icon, label, state: "done" | "now" | "" }]
 import { escapeHtml as esc } from "./dom.js";
@@ -27,10 +27,10 @@ export function lockCardHtml({ icon = "⭐", title = "", text = "", href = "", l
   return `<div class="bt-lock-card"><span class="bt-lock-card-ic" aria-hidden="true">${esc(icon)}</span><div><b>${esc(title)}</b>${text ? `<p>${esc(text)}</p>` : ""}</div>${href ? `<a class="bt-btn bt-btn--primary" href="${esc(href)}">${esc(label)}</a>` : ""}</div>`;
 }
 
-export function clockHtml({ streak = 0, savers = 0, cap = 2, done = false, title = "", sub = "", label = "Clock in", doneLabel = "Clocked in ✓", unit = "day streak", disabled = false } = {}) {
+export function clockHtml({ streak = 0, savers = 0, cap = 2, done = false, title = "", sub = "", label = "Punch the clock", doneLabel = "Punched in ✓", unit = "day streak", disabled = false } = {}) {
   const pips = Array.from({ length: Math.max(0, cap) }, (_, i) => `<i class="${i < savers ? "" : "is-empty"}"></i>`).join("");
   return `<div class="bt-clock${done ? " is-done" : ""}" data-clock><div class="bt-clock-flame"><b data-streak>${Number(streak) || 0}</b><span>${esc(unit)}</span></div>`
-    + `<div class="bt-clock-txt"><b>${esc(title || (done ? "Clocked in for today" : "Clock in for today"))}</b><span>${sub ? esc(sub) : `Savers <span class="bt-clock-savers" role="img" aria-label="${savers} of ${cap} streak savers">${pips}</span>`}</span></div>`
+    + `<div class="bt-clock-txt"><b>${esc(title || (done ? "Punched in for today" : "Punch the clock for today"))}</b><span>${sub ? esc(sub) : `Savers <span class="bt-clock-savers" role="img" aria-label="${savers} of ${cap} streak savers">${pips}</span>`}</span></div>`
     + `<button type="button" class="bt-btn bt-btn--primary${done ? " is-done" : ""}" data-clock-btn${done || disabled ? ' aria-disabled="true"' : ""}>${esc(done ? doneLabel : label)}</button></div>`;
 }
 

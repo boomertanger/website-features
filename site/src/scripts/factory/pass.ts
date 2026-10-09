@@ -2,7 +2,7 @@
 // Reads after sign-in: the public summary (what's on), the season tree (revealed parts only; cached 5
 // minutes), the member's progress and streak, the "all" board and their standing (plus a rank count
 // past the top 100), the streak badges from the catalog (cached) and the factory lines of their reward
-// history. Clock in calls factoryCheckIn. ?preview= renders factoryPreview for mods and admins.
+// history. Punch the clock calls factoryCheckIn. ?preview= renders factoryPreview for mods and admins.
 import { onAccess, isCrew } from "./layout";
 import { SHIFT_ICON } from "./art";
 import { call } from "../../lib/call";
@@ -114,7 +114,7 @@ function introCard() {
   let seen = false;
   try { seen = localStorage.getItem("ff-pass-intro") === "1"; } catch { /* no storage */ }
   if (seen || M.preview) return "";
-  return `<div class="ff-intro" data-intro><span aria-hidden="true">${SHIFT_ICON}</span><div><b>New to Night Shift?</b><span>Clock in each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
+  return `<div class="ff-intro" data-intro><span aria-hidden="true">${SHIFT_ICON}</span><div><b>New to Night Shift?</b><span>Punch the clock each day, finish the jobs, follow the story and climb the season.</span></div><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/shift/how-it-works">How it works</a><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-intro-close aria-label="Dismiss">×</button></div>`;
 }
 
 // ---------- hero ----------
@@ -289,14 +289,14 @@ root.addEventListener("click", async (e) => {
 
 async function clockIn(btn: HTMLButtonElement) {
   btn.setAttribute("aria-disabled", "true");
-  btn.textContent = "Clocking in…";
+  btn.textContent = "Punching in…";
   try {
     const r = await call<{ day: string; streak: { current: number; best: number; savers: number; saversCap: number; already: boolean; spent: number; earnedSaver: boolean; badges: string[] }; completed: string[] }>("factoryCheckIn", {});
     M.streak = { ...M.streak, current: r.streak.current, best: r.streak.best, savers: r.streak.savers, saversCap: r.streak.saversCap, lastCheckIn: r.day };
     for (const id of r.streak.badges) toast(`New badge: ${M.badges.get(id)?.name || "a streak badge"}`);
     if (r.streak.spent) toast(`A streak saver covered ${r.streak.spent === 1 ? "a missed day" : `${r.streak.spent} missed days`}. Your streak lives on.`, { kind: "info" });
     if (r.streak.earnedSaver) toast("7 days in a row: you earned a streak saver.");
-    if (!r.streak.already) toast(`Clocked in. ${plural(r.streak.current, "day")} in a row.`);
+    if (!r.streak.already) toast(`Punched in. ${plural(r.streak.current, "day")} in a row.`);
     if (M.summary?.liveSeasonId) M.progress = await D.loadProgress(M.summary.liveSeasonId, me.user!.uid);
     root.querySelector("[data-clock-wrap]")!.innerHTML = clockHtml({ streak: M.streak.current, savers: Math.min(M.streak.savers, M.streak.saversCap), cap: M.streak.saversCap, done: true });
     root.querySelector("[data-main]")!.innerHTML = mainHtml();
@@ -305,7 +305,7 @@ async function clockIn(btn: HTMLButtonElement) {
     if (M.summary?.liveSeasonId) void loadLately(M.summary.liveSeasonId);
   } catch (err) {
     btn.removeAttribute("aria-disabled");
-    btn.textContent = "Clock in";
-    toast(messageFor(err, "Clock in didn't go through. Try again."), { kind: "error" });
+    btn.textContent = "Punch the clock";
+    toast(messageFor(err, "Punching the clock didn't go through. Try again."), { kind: "error" });
   }
 }
