@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Feature Lab spec (confirmed Oct 8, 2026) and the approved mockups (the board, How it works, every state; the wordmark icon options).
 docs: ROADMAP before-launch list drops the Twitch channel item (settled: boomertanger, equal to TWITCH_LOGIN, enforced by check-live).
 docs: Control Room wrap-up. The test plan opens with six walk-throughs (check-in from another page, the two-tab live test, the stream view in Streamlabs, the Stream Deck, Twitch EventSub, a real Start); ROADMAP workstream 5 is Built on staging (parts 0-9) with real-world tests pending, links the test plan and lists the commits per part, 5b (live activities) is Next, and four production items join the before-launch list; design-system 8p states everything is built except the live-activities pieces and quotes the looks rule word for word.
 Control Room backstage gate checks (9e): check-live-wiring proves backstageWatch refuses signed-out callers, signed-in people who never finished signup and a non-backstage or not-live stream, lets the Fan Club audience, Sub Club and staff in, and that the backstage video id never reaches public/live, obsFeed (valid key), the stream doc, adminLog, activityLog, the outbox or any log line; docs/testing/control-room-test-plan.md (new) walks the after-show, the backstage Start, /live backstage as member and visitor, the privacy setting and the server gate. No function changed.
