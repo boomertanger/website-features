@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: the CONTROL ROOM wordmark has no space between CONTROL and ROOM, like GAMEVAULT, NIGHTSHIFT, MODMACHINA and the other feature wordmarks (crWordmarkHtml in shared/ui/control-room.js).
 UI Kit page: Control Room section showing every new piece in every state with the Hull map / CRT Look switch and the radar wordmark; design-system.md catalog, JS modules and 8p updated
 Control Room looks (hull map Mk II and CRT in site/src/styles/control-room-looks.css) and the CONTROL ROOM radar wordmark (shared/ui/control-room.js, .bt-cr-icon, .bt-cr-viewport)
 Control Room kit pieces: readout, beats, check-in, live banner, launch panel, checklist, deck plan and stream view frames (shared/bt-ui.css, shared/ui/)

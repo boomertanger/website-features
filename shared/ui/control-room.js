@@ -8,7 +8,7 @@
 //   crWordmarkHtml({ href, label })   the whole wordmark link:
 //     <a class="bt-wordmark bt-wordmark--power" href="/live" aria-label="Control Room">
 //       <span class="bt-wordmark-icon">${CR_ICON}</span>
-//       <span class="bt-wordmark-text" aria-hidden="true">CONTROL <span class="bt-wordmark-accent">ROOM</span></span></a>
+//       <span class="bt-wordmark-text" aria-hidden="true">CONTROL<span class="bt-wordmark-accent">ROOM</span></span></a>
 //     Put it in a .bt-topbar; call initPowerWordmarks(root) from shared/ui/wordmark.js for the touch power-on.
 //   LOOKS            [{ value: "hull", label: "Hull map" }, { value: "crt", label: "CRT" }]: the two shipped looks
 //   setLook(root, look)   sets data-look on the page root ("hull" | "crt"; anything else falls back to "hull"); returns the look
@@ -19,7 +19,7 @@ import { escapeHtml as esc } from "./dom.js";
 export const CR_ICON = `<svg class="bt-cr-icon" viewBox="0 0 32 32" aria-hidden="true" focusable="false"><circle class="ring" cx="16" cy="16" r="13"/><circle class="ring2" cx="16" cy="16" r="8.5"/><path class="sweep" d="M16 16 L16 3 A13 13 0 0 1 27.3 9.5 Z"/><line class="arm" x1="16" y1="16" x2="16" y2="3"/><circle class="blip" cx="22" cy="11" r="1.8"/><circle class="hub" cx="16" cy="16" r="1.6"/></svg>`;
 
 export const crWordmarkHtml = ({ href = "/live", label = "Control Room" } = {}) =>
-  `<a class="bt-wordmark bt-wordmark--power" href="${esc(href)}" aria-label="${esc(label)}"><span class="bt-wordmark-icon">${CR_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">CONTROL <span class="bt-wordmark-accent">ROOM</span></span></a>`;
+  `<a class="bt-wordmark bt-wordmark--power" href="${esc(href)}" aria-label="${esc(label)}"><span class="bt-wordmark-icon">${CR_ICON}</span><span class="bt-wordmark-text" aria-hidden="true">CONTROL<span class="bt-wordmark-accent">ROOM</span></span></a>`;
 
 export const LOOKS = [{ value: "hull", label: "Hull map" }, { value: "crt", label: "CRT" }];
 
