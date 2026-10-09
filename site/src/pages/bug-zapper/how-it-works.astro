@@ -1,0 +1,177 @@
+---
+// /bug-zapper/how-it-works: Bug Zapper's story page (docs/specs/bug-zapper.md §8; docs/design/mockups/bug-zapper-mockups.html, screen 5). TocLayout and the shared How it works blocks
+// (styles/how-it-works.css, shared/ui/how-it-works.js): hero "Spot it. Report it. We zap it." with the large porch-light scene, four stage cards with hover scenes, the report's journey
+// (four steps and the closed-status note), Try it (fix a vague report: six fixes, a meter, a lime "Ready to zap" stamp; nothing is saved), the roles flow, flip medals (Bug Finder, Bug
+// hunter, Exterminator), the House rules placard (seven rules), Ask BOOMBOT and the closing call to action. The only read is the all-time zapped count (one count query; the number is
+// hidden if it can't be read); scripts/bugs/how.ts fills it in. Only the calls to action change by viewer.
+import BugLayout from "../../layouts/BugLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { porchIcon, mothSvg, BITE, I } from "../../scripts/bugs/art";
+
+const JOIN_TITLE = "Join to report bugs";
+const NAV: [string, string][] = [["s-what", "What it's for"], ["s-journey", "A report's journey"], ["s-try", "Try it"], ["s-who", "Who does what"], ["s-rewards", "Rewards"], ["s-rules", "House rules"], ["s-faq", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const badge = (tone: string, label: string) => `<span class="bt-badge bt-badge--${tone}"><span class="bt-badge-dot"></span>${label}</span>`;
+
+const STAGES = [
+  ["👀", "Spot it", "Something looks wrong, does nothing, or breaks. On the site or on stream.", `<div class="bzs-win"><div class="bzs-win-bar"><i></i><i></i><i></i></div><div class="bzs-win-body"><span class="bzs-line" style="width:80%"></span><span class="bzs-line" style="width:55%"></span><span class="bzs-btn"></span><span class="bz-moth">${mothSvg()}</span></div></div>`],
+  ["📝", "Report it", "Say what happened, what you expected, and where. A screenshot helps.", `<div class="bzs-form"><span class="bzs-line"></span><span class="bzs-line"></span><span class="bzs-line"></span><span class="bzs-send">SEND</span></div>`],
+  ["🦟", "Bit me too", "Happening to you as well? Add yours. The most-bit bugs get fixed first.", `<div class="bzs-bite"><span class="bt-tally is-active">${BITE}<span class="bt-tally-count">12</span><span class="bt-tally-label">bit me</span></span><span class="bzs-faces">${["hm", "jw", "ck", "rv"].map((x) => `<span class="bt-avatar">${x.toUpperCase()}</span>`).join("")}</span></div>`],
+  ["⚡", "Zapped", "The fix ships. You and everyone it bit get a heads-up.", `<div class="bzs-zap">${porchIcon()}${badge("lime", "Fixed")}</div>`],
+] as const;
+const JOURNEY = [
+  ["📮", "Open", "Your report lands on the board. Others can add a “bit me too”.", "blue"],
+  ["🔎", "Confirmed", "An admin makes it happen too. You earn Bug Finder.", "gold"],
+  ["🛠", "In progress", "Boomer is fixing it.", "green"],
+  ["⚡", "Fixed", "Zapped. Everyone it bit hears about it.", "lime"],
+] as const;
+const ROLES = {
+  pl: ["🧑‍💻", "You", "Report bugs, add a “bit me too”, answer the team in your thread.", ["blue", "Members"]],
+  kp: ["🔎", "Admins", "Confirm reports, set priority, link duplicates, and close what's done.", ["gold", "Triage"]],
+  bt: ["", "Boomertanger", "Builds the fixes and has the final say.", ["pink", "Final say"]],
+  pi: ["🦟", "Everyone it bites", "Each “bit me too” moves a bug up the list.", ["blue", "Members"]],
+  md: ["🛡", "Mods", "Keep the board clean: hide spam and rude replies, and help out in threads.", ["teal", "Mod team"]],
+} as const;
+const FIXES = [["title", "🏷", "Give it a real name"], ["page", "📍", "Say where it happened"], ["what", "👀", "Say what you saw"], ["expected", "✅", "Say what should happen"], ["steps", "🪜", "Add the steps"], ["sev", "📶", "Pick how bad it is"]] as const;
+const FLIPS = [
+  ["🐛", "Bug Finder", "Badge · Uncommon", "Report a bug that gets confirmed.", "+25 XP, on your profile", "gold"],
+  ["🌙", "Bug hunter", "Night Shift weekly mission", "Report a bug this week.", "+75 XP", "teal"],
+  ["☠", "Exterminator", "Night Shift milestone", "Get 3 bug reports confirmed.", "+250 XP", "red"],
+] as const;
+const RULES = [
+  ["🐛", "One bug per report", "Two problems? Two reports. They often get fixed at different times."],
+  ["🔎", "Look before you report", "Already on the board? Add a “bit me too” instead. It moves the bug up the list."],
+  ["🔒", "Security problems stay private", "Tick the security box. Only you and the team will see it. Never use what you found."],
+  ["🖼", "Hide other people's details", "Cover names, emails and messages in screenshots before you upload them."],
+  ["🖐", "Five a day", "Members with a verified email can send up to 5 reports a day."],
+  ["💬", "Be kind in threads", "The team reads every reply. Rude or off-topic replies get hidden."],
+  ["🚫", "No spam or joke reports", "They get hidden by a mod, and repeat offenders lose reporting."],
+] as const;
+const FAQS = [
+  ["Who can see my report?", "Everyone can see the report itself, so others can say it got them too. Your screenshot, your device details and your thread with the team are only for you and the team. Tick the security box and the whole report is private."],
+  ["What does “bit me too” do?", "It tells the team how many people a bug is hitting, and bugs that hit more people get fixed sooner. You also get a heads-up when it's fixed."],
+  ["Why is my report “Can't reproduce”?", "The team tried and couldn't make it happen. Add anything you can in your thread (your browser, what you clicked) and they'll look again."],
+  ["Do I get anything for reporting?", "Yes. A report that gets confirmed earns you Bug Finder (+25 XP), and reporting counts toward Night Shift missions like Bug hunter and Exterminator."],
+  ["I found a security problem. What now?", "Report it with the security box ticked, so only the team sees it. Don't test it further or share it. The team will reply in your thread."],
+] as const;
+const acts = `<a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title="${JOIN_TITLE}">Join free</a><button type="button" class="bt-btn bt-btn--primary bt-when-signed-in" data-bz-new>${I.plus}Report a bug</button><a class="bt-btn bt-btn--secondary" href="/bug-zapper">Browse the board</a>`;
+---
+<BugLayout title="How Bug Zapper works" description="Spot it. Report it. We zap it. How to report a bug, add a “bit me too”, and earn Bug Finder." section="how">
+  <TocLayout items={NAV}>
+    <div class="ai-main bz-howpage" data-bzh>
+      <section class="ai-hero" aria-labelledby="h-hero">
+        <div class="bzh-hero">
+          <div>
+            <span class="ai-kicker">Bug Zapper</span>
+            <h1 class="bt-title bt-title--hero" id="h-hero">Spot it. Report it. We zap it.</h1>
+            <p>Found something broken on the site or the stream? Tell the team, see who else it's hitting, and watch it get fixed. A confirmed report earns you a badge.</p>
+            <div class="ai-acts" set:html={acts} />
+          </div>
+          <div data-bz-how-scene class="bz-how-scene" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-what" aria-labelledby="h-s-what">
+        <Fragment set:html={chapter(1, "s-what", "What it's for", "Bug Zapper is where broken things get reported and fixed. Point at a card to see each part.")} />
+        <div class="ai-stage">
+          {STAGES.map(([ic, t, d, scene]) => (
+            <div class="bt-card ai-part bt-spotlight" tabindex="0">
+              <div class="ai-scene" aria-hidden="true" set:html={scene} />
+              <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{ic}</span>
+              <div class="ai-part-copy"><h3>{t}</h3><p>{d}</p></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-journey" aria-labelledby="h-s-journey">
+        <Fragment set:html={chapter(2, "s-journey", "A report's journey", "Every report moves along the same line. You'll get a note in your alerts at each step.")} />
+        <ol class="ai-jr ai-jr--4" data-journey>
+          {JOURNEY.map(([ic, t, d, tone], i) => (
+            <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span><span style="margin-top:6px" set:html={badge(tone, t)} /></li>
+          ))}
+        </ol>
+        <div class="bz-closed-note"><span>Some reports close without a fix:</span><Fragment set:html={badge("gray", "Won't fix") + badge("gray", "Can't reproduce") + badge("gray", "Duplicate")} /><span>The history always says why.</span></div>
+      </section>
+
+      <section class="ai-sec" id="s-try" aria-labelledby="h-s-try">
+        <Fragment set:html={chapter(3, "s-try", "Try it: fix a vague report", "The team can only fix what they can make happen. Tap each fix and watch this report go from a shrug to ready to zap. Nothing is sent.")} />
+        <div class="bzt" data-try>
+          <div class="bzt-card"><span class="bt-label">The report</span><div data-try-fields></div><div class="bzt-stamp" data-try-stamp></div></div>
+          <div class="bzt-fixes">
+            <div class="bt-meter bt-meter--amber bzt-meter" data-try-meter><div class="bt-meter-track" role="meter" aria-valuemin="0" aria-valuemax="100" aria-valuenow="8" aria-label="How fixable this report is"><div class="bt-meter-fill" style="width:8%"></div></div></div>
+            <p class="bzt-verdict" data-try-verdict aria-live="polite">Nobody could fix this yet. Try a fix below.</p>
+            {FIXES.map(([k, ic, t]) => <button type="button" class="bzt-fix" data-fix={k} aria-pressed="false"><i aria-hidden="true">{ic}</i>{t}</button>)}
+            <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-try-reset>Start again</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-who" aria-labelledby="h-s-who">
+        <Fragment set:html={chapter(4, "s-who", "Who does what", "Point at anyone to see who they work with.")} />
+        <div class="ai-flow" data-flow>
+          <div class="bt-card ai-node ai-node--pl" data-role="pl" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{ROLES.pl[0]}</span><span class="bt-badge bt-badge--blue">Members</span></div><h3>{ROLES.pl[1]}</h3><p>{ROLES.pl[2]}</p></div>
+          <div class="ai-arr ai-arr--1" data-links="pl kp" aria-hidden="true"><span>Reports</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--kp" data-role="kp" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{ROLES.kp[0]}</span><span class="bt-badge bt-badge--gold">Triage</span></div><h3>{ROLES.kp[1]}</h3><p>{ROLES.kp[2]}</p></div>
+          <div class="ai-arr ai-arr--2" data-links="kp bt" aria-hidden="true"><span>Confirmed bugs</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--bt" data-role="bt" tabindex="0"><div class="ai-node-top"><Mascot decorative /><span class="bt-badge bt-badge--pink">Final say</span></div><h3>{ROLES.bt[1]}</h3><p>{ROLES.bt[2]}</p></div>
+          <div class="bt-card ai-node ai-node--pi" data-role="pi" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{ROLES.pi[0]}</span><span class="bt-badge bt-badge--blue">Members</span></div><h3>{ROLES.pi[1]}</h3><p>{ROLES.pi[2]}</p></div>
+          <div class="ai-arr ai-arr--3" data-links="pi bt" aria-hidden="true"><span>Bit me too: what to fix first</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--md" data-role="md" tabindex="0"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{ROLES.md[0]}</span><div class="ai-node-txt"><h3>{ROLES.md[1]}</h3><p>{ROLES.md[2]}</p></div><span class="bt-badge bt-badge--teal">Mod team</span></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rewards" aria-labelledby="h-s-rewards">
+        <Fragment set:html={chapter(5, "s-rewards", "Rewards", "Good reports get noticed. Flip a card to see how to earn it.")} />
+        <div class="bt-flip-grid bz-flips">
+          {FLIPS.map(([ic, t, sub, how, gets, c]) => (
+            <button type="button" class={`bt-flip bt-flip--${c}`} aria-label={`${t}: ${sub}. How to earn: ${how} You get: ${gets}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{ic}</span><b>{t}</b><span class="bt-flip-sub">{sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">{how}</span><span class="bt-flip-k">You get</span><span class="bt-flip-tag">{gets}</span></span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rules" aria-labelledby="h-s-rules">
+        <Fragment set:html={chapter(6, "s-rules", "House rules", "Seven rules keep the board useful.")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {RULES.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-faq" aria-labelledby="h-s-faq">
+        <Fragment set:html={chapter(7, "s-faq", "Ask BOOMBOT")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`bz-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`bz-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`bz-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Seen something broken?</h2>
+        <p class="bt-when-visitor">Report it in a minute. Joining is free.</p>
+        <p class="bt-when-signed-in">Report it in a minute. The team reads every one.</p>
+        <div class="ai-acts" set:html={acts} />
+      </section>
+    </div>
+  </TocLayout>
+</BugLayout>
+
+<script>
+  import "../../scripts/bugs/how";
+</script>

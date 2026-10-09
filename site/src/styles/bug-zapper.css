@@ -328,3 +328,5 @@
   .bt-root:not(#_) .bz-topbar .bz-act > .bt-btn-label { display: none; }
   .bt-root:not(#_) .bz-topbar .bz-act svg { width: 18px; height: 18px; }
 }
+.bt-root:not(#_) .bz-flips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bz-flips { grid-template-columns: minmax(0, 1fr); } }
