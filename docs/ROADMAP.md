@@ -232,3 +232,6 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Set sites/boomertanger.flags.founderStart in production to the launch date (Founder badge window).
 - [ ] Remove the staging test season (seed-test-season.js --remove) once Season 01 is ready on staging.
 - [ ] Deploy firestore rules and functions to production (rules first, separately; retry once on an Eventarc/IAM error) and confirm rewardsNightly, factoryTick and factoryStreakSweep are scheduled in the production console.
+
+### Squarespace switch-off cleanup
+- [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.

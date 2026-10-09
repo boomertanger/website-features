@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: ROADMAP launch checklist gains the Squarespace switch-off cleanup (MemberSpace leftovers).
 site: the swap board on the site (Mod Machina phase 3 part 1). /crew/hq gets a Swap board card ("N up for grabs", Take it through confirmAction, toast "Yours. See you <day> at <time>.", mascot empty state); the crew view on /schedule/plan shows a gold "Up for grabs: <room>" chip on stream cards and the dropped seat gold and dashed with Take it in the seat map; dropping a confirmed seat on a published stream first shows the early or late notice ("Keep my seat" / "Put it on the swap board"). Preview data covers early, late and taken swaps.
 docs: MemberSpace is cancelled (Oct 9, 2026; it never went live and had no members, so nothing migrates). ROADMAP drops its renewal deadline and notes it under Before launch; foundation.md, design-system.md and CLAUDE.md mark the forward-looking MemberSpace mentions as no longer applicable (historical mentions kept). No code removed.
 kit: .bt-swap, the swap board row (Mod Machina phase 3 part 1): a day stub, platform tile, role and room, a notice line and Take it; open is gold, is-taken is dimmed, is-mine-now is purple with a Yours badge. shared/ui/swap.js (swapRowHtml, swapsHtml), shown in every state on the UI kit page and documented in design-system §5 and §6.
