@@ -30,7 +30,7 @@ export async function openCoverSuggest(g: { slug: string; title: string }) {
   let blob: Blob | null = null;
   const m = openModal({
     title: `Suggest a cover for ${g.title}`, feature: "game-vault",
-    content: `${modalHeader(`Suggest a cover`, `For ${esc(g.title)}. A mod checks it before it shows.`)}<div class="bt-stack" style="gap:14px"><div data-pick></div><p class="bt-fine bt-fine--left">${RULES_TEXT} One suggestion per game, 3 a day. Only a picture of the game's box art or key art, please.</p><div data-err role="alert"></div></div><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-send disabled>Send for a check</button></div>`,
+    content: `${modalHeader(`Suggest a cover`, `For ${esc(g.title)}. A mod checks it before it shows.`)}<div class="bt-stack" style="gap:14px"><div data-pick></div><p class="bt-fine bt-fine--left">${RULES_TEXT} One suggestion per game, 3 a day. Only a picture of the game's box art or key art, please. <a href="/cloud-stash/how-it-works" target="_blank" rel="noopener">What happens to your upload?</a></p><div data-err role="alert"></div></div><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-send disabled>Send for a check</button></div>`,
   });
   const send = m.modal.querySelector<HTMLButtonElement>("[data-send]")!, err = m.modal.querySelector<HTMLElement>("[data-err]")!;
   coverPicker(m.modal.querySelector<HTMLElement>("[data-pick]")!, { onReady: (b) => { blob = b; send.disabled = !b; } });

@@ -1,0 +1,144 @@
+---
+// /cloud-stash/how-it-works: Cloud Stash's story page for everyone (docs/specs/cloud-stash.md §9; mockup docs/design/mockups/cloud-stash.html, W1 "Into the cloud"). TocLayout and the
+// shared How it works blocks: hero "What happens to your uploads" with screenshots, a cover and season art floating up into a smiling cloud, four stage cards with hover scenes, a
+// file's journey (five steps), Try it (close a pretend bug, skip 60 days, the SWEPT stamp; nothing is saved), the roles flow, the "Kept until" placard, our promises, Ask BOOMBOT and a
+// closing call to action. No limits or credit numbers on this page. Nothing is read: it's all copy. "Deleted with your account, within 7 days" is left out until account-deletion file
+// cleanup exists (ROADMAP launch checklist). scripts/stash/how.ts drives Try it.
+import StashLayout from "../../layouts/StashLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+
+const NAV: [string, string][] = [["c-what", "What we store"], ["c-journey", "A file's journey"], ["c-try", "Try it"], ["c-who", "Who does what"], ["c-keep", "How long we keep things"], ["c-promise", "Our promises"], ["c-faq", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const badge = (tone: string, label: string) => `<span class="bt-badge bt-badge--${tone}">${label}</span>`;
+
+const PARTS = [
+  ["🐞", "Bug screenshots", "The picture you attach to a bug report. Private: only staff can open it.", `<div class="ai-scene ch-sc ch-sc--shot" aria-hidden="true"><span class="bt-file-thumb"><span class="cs-art cs-art--shot"></span></span><span class="ch-tag">🔒 Private</span></div>`, "You, with a report"],
+  ["🗝", "Game covers", "Most covers come from the game databases. When a mod uploads one, it's public, like the rest of the Vault.", `<div class="ai-scene ch-sc ch-sc--cover" aria-hidden="true"><span class="bt-file-thumb ch-cover"><span class="cs-art" style="--cs-c1:var(--bt-teal);--cs-c2:var(--bt-blue-bg)"></span></span><span class="ch-tag">Public</span></div>`, "Mods and admins"],
+  ["🖼", "Cover suggestions", "A cover you suggest stays private until a mod approves it. Never sent? It's gone within a day.", `<div class="ai-scene ch-sc ch-sc--pend" aria-hidden="true"><span class="bt-file-thumb ch-cover"><span class="cs-art" style="--cs-c1:var(--bt-primary);--cs-c2:var(--bt-surface-2)"></span></span><span class="ch-clock">⏳ 24 h</span></div>`, "You, in the Vault"],
+  ["🌙", "Season art", "The artwork for each Night Shift season. Public, and kept as part of the season's history.", `<div class="ai-scene ch-sc ch-sc--art" aria-hidden="true"><span class="bt-file-thumb ch-cover"><span class="cs-art" style="--cs-c1:var(--bt-title);--cs-c2:var(--bt-primary-bg)"></span></span></div>`, "Boomertanger and mods"],
+] as const;
+const JR = [["⬆", "You upload", "Attach a screenshot or suggest a cover."], ["🔍", "We check it", "Type, size and shape are checked on our side, not just in your browser."], ["📝", "It's written down", "Every file gets a record: what it is and what it belongs to."], ["✅", "Its job ends", "The bug is closed, or the suggestion is decided."], ["🧹", "The sweep tidies up", "Once its time is up, the file is deleted for good."]] as const;
+const KEEP = [["🐞", "Bug screenshots", "Deleted 60 days after the report is closed. The report itself stays."], ["🖼", "Cover suggestions", "Never sent: deleted within 24 hours. Declined: deleted straight away. Approved: it becomes the game's cover."], ["🗝", "Game covers", "Kept while the game is in the Vault."], ["🌙", "Season art", "Kept with the season, even after it ends."], ["🚫", "Nowhere else", "We don't keep extra copies anywhere else."]] as const;
+const PROMISES = [["🔒", "Private means private", "Bug screenshots and pending covers can't be opened by a link. Staff see them through a link that stops working after 10 minutes."], ["📒", "Every look is logged", "When staff open a private file, it goes in the admin log. So does every deletion."], ["🧯", "Nothing half-deleted", "A file is removed from storage first, then its record. If anything fails, nothing changes and the next sweep tries again."], ["🙅", "Never sold, never shared", "Your uploads are used for the reason you sent them, and nothing else."]] as const;
+const FAQS = [
+  ["Can other members see my bug screenshot?", "No. Bug screenshots are private. Only mods and admins can open them, through a link that expires after 10 minutes, and every look is logged."],
+  ["My bug was fixed. Is the screenshot gone?", "Not straight away. It stays for 60 days after the report is closed, in case the bug comes back. Then the daily sweep deletes it. The report and its comments stay."],
+  ["I suggested a cover and changed my mind.", "If you never sent it, it's deleted within a day. If you sent it, a mod decides; a declined cover is deleted straight away. Nothing goes public until a mod approves it."],
+  ["Why are uploads paused sometimes?", "We use a free storage plan with a monthly limit. If we get close, new uploads from members pause for a while. Post your bug without a picture, or try again in a few days."],
+  ["Can I get one of my uploads deleted?", "Yes. Ask a mod on the bug report or in chat, and an admin can delete it."],
+] as const;
+const FLOW = {
+  pl: ["📤", "You", ["blue", "Members"], "Send a screenshot with a bug, or suggest a cover."],
+  kp: ["💾", "The site", ["gold", "Automatic"], "Checks each file, stores it privately or publicly, and writes down what it belongs to."],
+  pi: ["🛡", "Admins", ["green", "Staff"], "Watch the storage, tidy loose files, and open private files only when they need to."],
+  md: ["🧹", "The daily sweep", ["teal", "Every morning"], "Deletes files whose time is up, with a safety cap, and logs every one."],
+} as const;
+const node = (k: "pl" | "kp" | "pi") => `<div class="bt-card ai-node ai-node--${k}" data-role="${k}" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">${FLOW[k][0]}</span>${badge(FLOW[k][2][0], FLOW[k][2][1])}</div><h3>${FLOW[k][1]}</h3><p>${FLOW[k][3]}</p></div>`;
+---
+<StashLayout title="What happens to your uploads" description="Where your bug screenshots, cover suggestions and season art go, who can see them, and when they're tidied away." section="how">
+  <TocLayout items={NAV}>
+    <div class="ai-main cs-howpage" data-csh>
+      <section class="ai-hero" aria-labelledby="h-hero">
+        <div class="ch-hero">
+          <div>
+            <span class="ai-kicker">Cloud Stash</span>
+            <h1 class="bt-title bt-title--hero" id="h-hero">What happens to your uploads</h1>
+            <p>Screenshots you send with a bug, covers you suggest for the Vault, art for a Night Shift season: here's where they go, who can see them, and when they're tidied away.</p>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#c-keep">How long we keep things</a><a class="bt-btn bt-btn--secondary" href="#c-try">Try it</a></div>
+          </div>
+          <div class="ch-hero-scene" aria-hidden="true">
+            <svg class="ch-cloud" viewBox="0 0 230 110" aria-hidden="true"><path class="cl" d="M40 96H186A30 30 0 0 0 190 36.5A46 46 0 0 0 104 22A40 40 0 0 0 46 46A26 26 0 0 0 40 96Z"/><path class="cl-puff" d="M80 46a24 24 0 0 1 22-12M148 36a20 20 0 0 1 16 10"/><circle class="ln" cx="96" cy="70" r="3"/><circle class="ln" cx="134" cy="70" r="3"/><path d="M104 82q11 7 22 0" fill="none" stroke="var(--bt-title)" stroke-width="2.6" stroke-linecap="round"/></svg>
+            <span class="ch-up" style="--x:6%;--d:0s;--r:-6deg"><span class="cs-art cs-art--shot"></span><small>Bug screenshot</small></span>
+            <span class="ch-up ch-up--cover" style="--x:38%;--d:2s;--r:4deg"><span class="cs-art" style="--cs-c1:var(--bt-teal);--cs-c2:var(--bt-blue-bg)"></span><small>Cover</small></span>
+            <span class="ch-up" style="--x:62%;--d:4s;--r:-3deg"><span class="cs-art" style="--cs-c1:var(--bt-title);--cs-c2:var(--bt-primary-bg)"></span><small>Season art</small></span>
+            <span class="ch-shelf"></span>
+            <Mascot decorative />
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="c-what" aria-labelledby="h-c-what">
+        <Fragment set:html={chapter(1, "c-what", "What we store", "Only four kinds of file, each for one job. Point at a card.")} />
+        <div class="ai-stage">
+          {PARTS.map(([ic, t, d, scene, who]) => (
+            <div class="bt-card ai-part bt-spotlight" tabindex="0">
+              <Fragment set:html={scene} />
+              <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{ic}</span>
+              <div class="ai-part-copy"><h3>{t}</h3><p>{d}</p><div class="ai-part-foot"><span class="ai-who-chip">{who}</span></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="c-journey" aria-labelledby="h-c-journey">
+        <Fragment set:html={chapter(2, "c-journey", "A file's journey", "From your upload to the tidy-up. Point at a step.")} />
+        <ol class="ai-jr ch-jr" data-journey>
+          {JR.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+        </ol>
+      </section>
+
+      <section class="ai-sec" id="c-try" aria-labelledby="h-c-try">
+        <Fragment set:html={chapter(3, "c-try", "Try it", "A pretend bug report with a screenshot. Close it, then skip ahead. Nothing here is saved.")} />
+        <div class="ch-try" data-try></div>
+      </section>
+
+      <section class="ai-sec" id="c-who" aria-labelledby="h-c-who">
+        <Fragment set:html={chapter(4, "c-who", "Who does what", "Point at anyone to see who they work with.")} />
+        <div class="ai-flow" data-flow>
+          <Fragment set:html={node("pl")} />
+          <div class="ai-arr ai-arr--1" data-links="pl kp" aria-hidden="true"><span>Your file</span><i><b></b></i></div>
+          <Fragment set:html={node("kp")} />
+          <div class="ai-arr ai-arr--2" data-links="kp bt" aria-hidden="true"><span>Alerts</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--bt" data-role="bt" tabindex="0"><div class="ai-node-top"><Mascot decorative /><span class="bt-badge bt-badge--gold">Owner</span></div><h3>Boomertanger</h3><p>Approves the cleanup rules and gets an alert if anything goes wrong.</p></div>
+          <Fragment set:html={node("pi")} />
+          <div class="ai-arr ai-arr--3" data-links="pi bt" aria-hidden="true"><span>Rules he approves</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--md" data-role="md" tabindex="0"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">{FLOW.md[0]}</span><div class="ai-node-txt"><h3>{FLOW.md[1]}</h3><p>{FLOW.md[3]}</p></div><Fragment set:html={badge(FLOW.md[2][0], FLOW.md[2][1])} /></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="c-keep" aria-labelledby="h-c-keep">
+        <Fragment set:html={chapter(5, "c-keep", "How long we keep things")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>Kept until</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {KEEP.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="c-promise" aria-labelledby="h-c-promise">
+        <Fragment set:html={chapter(6, "c-promise", "Our promises")} />
+        <div class="ch-promises">
+          {PROMISES.map(([ic, t, d]) => <div class="bt-card ch-promise bt-spotlight"><span class="bt-icon-tile--lg" aria-hidden="true">{ic}</span><div><h3>{t}</h3><p>{d}</p></div></div>)}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="c-faq" aria-labelledby="h-c-faq">
+        <Fragment set:html={chapter(7, "c-faq", "Ask BOOMBOT")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ch-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`ch-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`ch-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Found a bug?</h2>
+        <p>Send it with a screenshot. It's private, and it's tidied away once the bug is fixed.</p>
+        <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/bug-zapper">Report a bug</a><a class="bt-btn bt-btn--secondary" href="/games">Suggest a cover</a></div>
+      </section>
+    </div>
+  </TocLayout>
+</StashLayout>
+
+<script>
+  import "../../scripts/stash/how";
+</script>

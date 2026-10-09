@@ -1,0 +1,19 @@
+---
+// /cloud-stash: the front door (docs/specs/cloud-stash.md §8). Admins go to the tool (/admin/stash); everyone else goes to How it works. Decided in the browser once auth is known (the
+// page is static); the link is there for anyone without scripts. Display only: /admin/stash checks again. Not indexed.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+---
+<BaseLayout title="Cloud Stash" noindex>
+  <div class="bt-zone">
+    <p class="bt-section-text">Taking you to <a href="/cloud-stash/how-it-works" data-cs-go>What happens to your uploads</a>…</p>
+  </div>
+</BaseLayout>
+
+<script>
+  import { whenReady } from "../../lib/auth";
+  import { isPreview } from "../../scripts/stash/gate";
+  whenReady().then((s) => {
+    const to = s.isAdmin || isPreview(s) ? "/admin/stash" : "/cloud-stash/how-it-works";
+    location.replace(to + (isPreview(s) ? location.search : ""));
+  });
+</script>

@@ -57,7 +57,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     if (!box) return;
     box.innerHTML = st.file
       ? `<div class="bz-device-line"><span>📎 ${esc(st.file.name)} · ${(st.file.size / 1048576).toFixed(1)} MB</span><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-shot-remove>Remove</button></div>`
-      : `<button type="button" class="bt-dropzone" data-shot-pick><span><b>Drop a screenshot</b> or click to choose</span><span class="bt-hint">JPG, PNG or WebP, up to 10 MB. Only you and the team will see it.</span></button>`;
+      : `<button type="button" class="bt-dropzone" data-shot-pick><span><b>Drop a screenshot</b> or click to choose</span><span class="bt-hint">JPG, PNG or WebP, up to 10 MB. Only you and the team will see it.</span></button><p class="bt-hint"><a href="/cloud-stash/how-it-works" target="_blank" rel="noopener">What happens to your screenshot?</a></p>`;
   };
   const read = () => ({ title: modal.querySelector<HTMLInputElement>("#bz-f-title")!.value, what: modal.querySelector<HTMLTextAreaElement>("#bz-f-what")!.value, exp: modal.querySelector<HTMLTextAreaElement>("#bz-f-exp")!.value, page: modal.querySelector<HTMLInputElement>("#bz-f-page")!.value, steps: modal.querySelector<HTMLTextAreaElement>("#bz-f-steps")!.value });
   const setFile = async (f: File | undefined) => {
