@@ -216,11 +216,11 @@ function tickTimers() {
 /* ------------------------------------------------------------------ polling */
 let timer = 0, polls = 0, inflight = false;
 const livePub = (s: Snapshot | undefined) => !!s?.pub && (s.pub.state === "live" || s.pub.state === "backstage");
-async function refresh() {
+async function refresh(auto = false) {
   if (inflight) return;
   inflight = true;
   try {
-    const wantList = !livePub(ctx.snap) && (polls % 2 === 0 || !ctx.snap.streams.length);
+    const wantList = !livePub(ctx.snap) && (!auto || polls % 2 === 0 || !ctx.snap.streams.length);
     const next = await ctx.api.read({ role: ctx.role, streams: wantList || !ctx.snap.pub });
     polls++;
     const prev = ctx.snap;
@@ -244,7 +244,7 @@ function derive() {
 function schedule() {
   clearTimeout(timer);
   if (document.hidden) return;
-  timer = window.setTimeout(async () => { await refresh(); schedule(); }, POLL_MS);
+  timer = window.setTimeout(async () => { await refresh(true); schedule(); }, POLL_MS);
 }
 
 /* ------------------------------------------------------------------ boot */
@@ -274,7 +274,7 @@ onAccess(async (s, role) => {
   ctx.root = root; ctx.role = role; ctx.uid = s.user?.uid || "preview";
   ctx.api = await makeApi(s);
   ctx.acts = ctx.acts || {}; ctx.hooks = ctx.hooks || {}; ctx.after = ctx.after || [];
-  ctx.render = render; ctx.refresh = refresh;
+  ctx.render = render; ctx.refresh = () => refresh();
   ctx.wrapDismissed = false; ctx.vault = new Map(); ctx.tiktokOn = false; ctx.wrap = null; ctx.todays = []; ctx.pickedId = null;
   ctx.snap = { pub: null, streams: [], live: null, control: null, main: null, checklist: null };
   root.dataset.owner = role === "owner" ? "1" : "0";
@@ -313,5 +313,5 @@ onAccess(async (s, role) => {
   await refresh();
   setInterval(tickTimers, 1000);
   schedule();
-  document.addEventListener("visibilitychange", () => { if (!document.hidden) { void refresh().then(schedule); } else clearTimeout(timer); });
+  document.addEventListener("visibilitychange", () => { if (!document.hidden) { void refresh(true).then(schedule); } else clearTimeout(timer); });
 });

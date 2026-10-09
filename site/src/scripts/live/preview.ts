@@ -64,6 +64,7 @@ function build(): PState {
     checklist: null, templates, ended: null, counts: { byBeat: { ...raw.checkins.byBeat }, byRoom: { ...raw.checkins.byRoom } }, viewers: { ...raw.viewers } as any, peak: 1412, wordUsed: 0, adhocAt: {},
   };
   st.main.obsKeyAt = null;
+  if (q.get("ttset") === "1") st.streams[0].liveRooms = st.streams[0].rooms.slice();   // TikTok already saved on the stream (before Start)
   if (state === "live") {
     const beat = (BEATS.includes(q.get("beat") as Beat) ? q.get("beat") : "start") as Beat;
     goLive(st, st.streams[0], now, beat, q.get("window") === "1");
@@ -226,6 +227,7 @@ export async function previewApi(): Promise<Api> {
       };
     },
     liveRoom(d) {
+      ((window as any).__lvRoomCalls ||= []).push({ streamId: d.streamId, on: d.on });
       const s = d.streamId ? stream(d.streamId) : liveS();
       if (s.type === "backstage") throw fail("Backstage streams are on the site only.");
       if (d.room !== "tiktok") throw fail("Only TikTok has a switch.");

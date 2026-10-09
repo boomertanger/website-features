@@ -161,14 +161,17 @@ function adhocDialog(ctx: Ctx) {
 
 /**
  * The Start dialog. While it is open it asks livePlatformStatus every 5 s (one request at a time, errors quiet, stopped when it closes) and fills each
- * row in: Looking… then Live ✓ or Not live yet. TikTok has no API: its row is the switch (the stream's liveRooms, saved with liveRoom, optimistic).
+ * row in: Looking… then Live ✓ or Not live yet. TikTok has no API: its row is the switch (ON when TikTok is a planned chat; saved with liveRoom right before Start).
  * Start stays allowed whatever the rows say; a gold note tells what isn't live yet.
  */
 function startDialog(ctx: Ctx) {
   const s = picked(ctx); if (!s) return;
   let first: Pick | null = s.plannedGames[0] ? { gameId: s.plannedGames[0].gameId, title: s.plannedGames[0].title } : null;
   const back = s.type === "backstage";
-  let ps: PlatformStatus | null = null, tt = tiktokOf(s), ttBusy = false;
+  let ps: PlatformStatus | null = null;
+  const persisted = tiktokOf(s), planned = !back && s.rooms.includes("tiktok");
+  let tt = planned;   // ON when TikTok is one of the planned chats; the write happens when Start is pressed
+
   const row = (id: string, name: string) => `<div class="lc-chk" data-row="${id}" data-state="wait"><b aria-hidden="true">·</b><span><b>${esc(name)}</b><small data-t>Looking…</small></span></div>`;
   const rows = back ? row("yt", "YouTube event (unlisted)")
     : [s.rooms.includes("twitch") ? row("tw", "Twitch") : "", row("yt", "YouTube event"), s.rooms.includes("ytVertical") ? row("vt", "YouTube vertical broadcast") : "",
@@ -211,18 +214,12 @@ function startDialog(ctx: Ctx) {
   };
   const stop = () => { closed = true; clearInterval(timer); };
   note(); void poll(); timer = window.setInterval(poll, 5000);
-  modal.querySelector<HTMLButtonElement>("[data-tt]")?.addEventListener("click", async (e) => {
-    if (ttBusy) return;
-    const btn = e.currentTarget as HTMLElement, on = btn.getAttribute("aria-checked") !== "true", was = tt;
-    ttBusy = true; tt = on; btn.setAttribute("aria-checked", String(on));
-    try { await ctx.api.call("liveRoom", { streamId: s.id, room: "tiktok", on }); s.liveRooms = on ? [...new Set([...s.liveRooms, "tiktok" as Room])] : s.liveRooms.filter((r) => r !== "tiktok"); }
-    catch (err) { tt = was; btn.setAttribute("aria-checked", String(was)); toast(messageFor(err), { kind: "error" }); }
-    finally { ttBusy = false; }
-  });
+  modal.querySelector<HTMLElement>("[data-tt]")?.addEventListener("click", (e) => { tt = !tt; (e.currentTarget as HTMLElement).setAttribute("aria-checked", String(tt)); });
   initGamePicker(modal.querySelector<HTMLElement>("[data-gp]")!, ctx, { actionLabel: "First game", onPick: (g) => { first = g; modal.querySelector("[data-first]")!.textContent = g.title; } });
   modal.querySelector<HTMLButtonElement>("[data-go]")!.addEventListener("click", async (e) => {
     await withBusy(e.currentTarget as HTMLButtonElement, "Starting…", async () => {
       try {
+        if (planned && tt !== persisted) await ctx.api.call("liveRoom", { streamId: s.id, room: "tiktok", on: tt });   // the owner's final choice, saved right before Start
         await ctx.api.call("startStream", { streamId: s.id, ...(first ? { firstGame: { gameId: first.gameId } } : {}) });
         stop(); close();
         await ctx.refresh();

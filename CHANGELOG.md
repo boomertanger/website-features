@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: the Start dialog's TikTok switch starts on when TikTok is a planned chat, and the owner's final choice is saved right before Start; the list of today's streams also refreshes straight after you change it.
 functions, site: livePlatformStatus (Twitch, the YouTube event and the vertical broadcast, read-only, for the Start dialog, which now fills in live every 5 s) and the TikTok switch saved on the stream with liveRoom (kept by Start, shown on /live and the stream view); public/live gains liveRooms.
 Control Room Stream Deck and stream view keys (owner only): make, rotate and revoke each key (shown once, then only the date it was set), every Stream Deck action as a copyable URL, and the wide and tall stream view URLs.
 The owner's private checklist: the rail on /live/control (current beat open, tick pop, shortcuts that tick themselves, saved at once) and the /live/control/checklist editor for the four templates (add, edit, reorder by drag or keyboard, platform-only, shortcut picker).
