@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: Mod Deck phone fixes from the 390 px pass. The pinned duty dock sits above the staging preview chip (Step away and Flag were hidden under it); the owner's You're hosting card in the dock has a solid background (flags showed through it); the Confirm tonight's crew minute column has a fixed width so the − and + buttons line up (Deck and Control Room).
 site: Mod Deck preview ?confirm=1 opens the Captain's Confirm tonight's crew panel on its own (the ended view with you as the Captain who stopped the night), no ?state=ended needed.
 site: the Mod Deck's Chat Games launch tiles follow the agreed contract. Tiles come from sites/boomertanger/chatGames/main/formats and show only when window.btChatGames is loaded and the formats can be read (otherwise nothing: no toast, no placeholder). Start and Swap call window.btChatGames.openLaunch({ formatId, streamId }); the running tile (the active run on this stream, from private/duty.chatGames.activeRunIds and its run doc) calls window.btChatGames.end({ runId }). The After-show tile points to the Control Room instead of the old Chat Games toast. Preview: ?formats=1 (with a stand-in btChatGames), ?run=1, ?cgapi=0.
 kit: JSDoc option types on initDutyBar, initPrompt and initCountUp, so TypeScript callers (the Mod Deck) can pass onAway, onAccept and an element root; clears the six tsc errors they caused.

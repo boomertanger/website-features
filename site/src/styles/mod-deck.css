@@ -169,8 +169,11 @@
   .bt-root:not(#_) .md-rail { display: flex; }
   .bt-root:not(#_) .md-promptlayer { display: none; }
   .bt-root:not(#_) .md-dock { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 35; display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; }
+  /* staging only: the preview chip floats just above the bottom nav, so the dock sits above it and Step away / Flag stay reachable */
+  .bt-root:not(#_):has(.bt-preview-chip) .md-dock { bottom: calc(128px + env(safe-area-inset-bottom, 0px)); }
   .bt-root:not(#_) .md-dock [data-slot]:empty { display: none; }
   .bt-root:not(#_) .md-dock .md-clockin { padding: 10px; gap: 10px; background-color: var(--bt-surface); }
+  .bt-root:not(#_) .md-dock .md-host { max-width: none; background-color: var(--bt-surface); }
   .bt-root:not(#_) .md-dock .md-clockin > .bt-btn { padding: 10px 16px; font-size: var(--bt-text-base); }
   .bt-root:not(#_) .md-dock .bt-prompt { width: 100%; }
 }
@@ -223,7 +226,7 @@
 .bt-root:not(#_) .md-step { display: inline-flex; align-items: center; gap: 4px; }
 .bt-root:not(#_) .md-step button { width: 26px; height: 26px; border-radius: 8px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-primary-soft); font: inherit; font-weight: 800; cursor: pointer; }
 .bt-root:not(#_) .md-step button:hover { border-color: var(--bt-primary); }
-.bt-root:not(#_) .md-step b { min-width: 58px; text-align: center; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .md-step b { min-width: 10ch; text-align: center; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .md-added { color: var(--bt-title); font-size: var(--bt-text-2xs); font-weight: 800; display: block; text-align: center; }
 .bt-root:not(#_) .md-confirm-f { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; margin-top: 12px; }
 .bt-root:not(#_) .md-flagtypes { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
