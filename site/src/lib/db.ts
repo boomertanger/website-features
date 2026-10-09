@@ -3,5 +3,5 @@ import { getFirestore } from "firebase/firestore/lite";
 import { app } from "./firebase";
 
 export const db = getFirestore(app);
-export { doc, getDoc, collection, getDocs, query, where, getCount } from "firebase/firestore/lite";
+export { doc, getDoc, collection, getDocs, query, where, getCount, orderBy, limit } from "firebase/firestore/lite";
 export { SITE_ID } from "./firebase";

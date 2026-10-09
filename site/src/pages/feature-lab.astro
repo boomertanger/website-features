@@ -1,0 +1,38 @@
+---
+// /feature-lab, the member idea board (docs/specs/feature-lab.md §7; docs/design/mockups/feature-lab-mockups.html, board option 3).
+// A tool page: the hero with the bench scene, the Join strip, the controls and the list or roadmap. Everyone sees the ideas; posting,
+// voting and commenting need a verified member (the callables check). Everything below the bar is drawn by scripts/lab/board.ts
+// from sites/{siteId}/lab/main/ideas; until it loads the page shows skeleton rows, and without JavaScript a plain note.
+import LabLayout from "../layouts/LabLayout.astro";
+import { I } from "../scripts/lab/art";
+const skeleton = [0, 1, 2];
+---
+<LabLayout title="Feature requests" description="Suggest ideas for the site or the stream, vote on your favorites, and track progress, all in one place.">
+  <div class="fl-page" data-fl>
+    <section class="fl-hero" aria-labelledby="fl-title">
+      <div>
+        <h1 class="bt-title" id="fl-title">Feature requests</h1>
+        <p>Suggest ideas for the site or the stream, vote on your favorites, and track progress, all in one place.</p>
+        <div class="fl-hero-acts">
+          <button type="button" class="bt-btn bt-btn--primary" data-fl-new><Fragment set:html={I.plus} />Post an idea</button>
+          <a class="bt-btn bt-btn--secondary" href="/feature-lab/how-it-works">How it works</a>
+        </div>
+      </div>
+      <div data-fl-bench></div>
+    </section>
+    <div class="fl-join" data-fl-join data-join hidden></div>
+    <div class="fl-gate fl-gate--warn fl-strip" data-fl-verify hidden></div>
+    <div class="fl-strip" data-fl-ship hidden></div>
+    <div data-fl-controls></div>
+    <div data-fl-view aria-busy="true" aria-live="polite">
+      {skeleton.map(() => (
+        <div class="bt-skeleton-row" aria-hidden="true"><span class="bt-skeleton fl-sk-tally"></span><div class="bt-skeleton-lines"><span class="bt-skeleton fl-sk-a"></span><span class="bt-skeleton fl-sk-b"></span><span class="bt-skeleton fl-sk-c"></span></div></div>
+      ))}
+      <noscript><p class="bt-empty-title">The Feature Lab needs JavaScript to show the ideas.</p></noscript>
+    </div>
+  </div>
+</LabLayout>
+
+<script>
+  import "../scripts/lab/board";
+</script>

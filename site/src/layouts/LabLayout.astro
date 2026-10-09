@@ -1,0 +1,19 @@
+---
+// One layout for the Feature Lab's pages (docs/specs/feature-lab.md §7, §8): the site shell, the sticky FEATURELAB bar in BaseLayout's
+// "bar" slot (so it stays stuck to the end of the page), then the page. Both pages are public; member actions check in the scripts.
+import BaseLayout from "./BaseLayout.astro";
+import LabBar from "../components/lab/LabBar.astro";
+import "../styles/how-it-works.css";   // the How it works blocks (shared with the Arcade and the Vault); before feature-lab.css so the Lab's scenes win ties
+import "../styles/feature-lab.css";
+
+interface Props { title: string; description?: string; section?: string | null }
+const { title, description, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <LabBar slot="bar" section={section} />
+  <div class="fl-wrap"><slot /></div>
+</BaseLayout>
+
+<script>
+  import "../scripts/lab/layout";
+</script>

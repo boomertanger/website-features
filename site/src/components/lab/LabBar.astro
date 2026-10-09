@@ -1,0 +1,22 @@
+---
+// The Feature Lab's feature bar (docs/specs/feature-lab.md §7): the kit's .bt-topbar in a .bt-sticky-bar like the Vault's, with the
+// FEATURELAB .bt-wordmark--power (the Bright idea bulb-flask rests; on hover or focus the bubbles rise and the filament lights; touch
+// screens play it once as it scrolls into view). Right: a ghost How it works link (current on that page) and a primary New idea button
+// (visitors get the Join dialog titled "Join to post ideas"). Under 640px the words become icons, each a 40px target with an aria-label.
+// Wired in scripts/lab/layout.ts.
+import { FL_ICON, I } from "../../scripts/lab/art";
+interface Props { section?: string | null }
+const { section = null } = Astro.props;
+---
+<div class="bt-sticky-bar fl-dock" data-fl-dock>
+  <div class="bt-topbar fl-bar">
+    <a class="bt-wordmark bt-wordmark--power fl-wm" href="/feature-lab" aria-label="Feature Lab">
+      <span class="bt-wordmark-icon" set:html={FL_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">FEATURE<span class="bt-wordmark-accent">LAB</span></span>
+    </a>
+    <div class="bt-topnav">
+      <a class="bt-btn bt-btn--ghost bt-btn--sm fl-act fl-how-link" href="/feature-lab/how-it-works" aria-label="How it works" aria-current={section === "how" ? "page" : undefined}><Fragment set:html={I.help} /><span class="bt-btn-label">How it works</span></a>
+      <button type="button" class="bt-btn bt-btn--primary bt-btn--sm fl-act" data-fl-new aria-label="New idea"><Fragment set:html={I.plus} /><span class="bt-btn-label">New idea</span></button>
+    </div>
+  </div>
+</div>

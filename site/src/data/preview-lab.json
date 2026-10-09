@@ -1,0 +1,455 @@
+{
+  "_note": "PREVIEW DATA for the non-production ?as= switch only (scripts/lab/data-source.ts). Never shown on production.",
+  "me": {
+    "uid": "u_gbo",
+    "handle": "gbo",
+    "name": "gbo",
+    "voted": [
+      "a2",
+      "a1"
+    ],
+    "owner": true
+  },
+  "ideas": [
+    {
+      "id": "a1",
+      "title": "Add stream reminders to my phone calendar",
+      "description": "A button on the schedule that adds every stream to Google or Apple Calendar, and keeps it updated when times change.",
+      "area": "site",
+      "status": "shipped",
+      "priority": "high",
+      "by": {
+        "uid": "u_gbo",
+        "handle": "gbo",
+        "name": "gbo"
+      },
+      "voteCount": 57,
+      "commentCount": 9,
+      "hidden": false,
+      "statusChangedAt": 1791298800000,
+      "shippedAt": 1791298800000,
+      "createdAt": 1787324400000,
+      "updatedAt": 1791298800000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_gbo",
+            "handle": "gbo"
+          },
+          "changedAt": 1787324400000
+        },
+        {
+          "status": "planned",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1788361200000
+        },
+        {
+          "status": "in_progress",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1789916400000
+        },
+        {
+          "status": "shipped",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791298800000,
+          "note": "Live on /schedule. Thanks @gbo!"
+        }
+      ]
+    },
+    {
+      "id": "a2",
+      "title": "Countdown timer for movie nights",
+      "description": "A big on-screen countdown before the movie starts, so chat knows when to grab snacks.",
+      "area": "stream",
+      "status": "planned",
+      "priority": "high",
+      "by": {
+        "uid": "u_nightowl",
+        "handle": "nightowl",
+        "name": "nightowl"
+      },
+      "voteCount": 42,
+      "commentCount": 3,
+      "hidden": false,
+      "statusChangedAt": 1791039600000,
+      "shippedAt": 0,
+      "createdAt": 1790780400000,
+      "updatedAt": 1791039600000,
+      "editedAt": 1790953200000,
+      "editCount": 1,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_nightowl",
+            "handle": "nightowl"
+          },
+          "changedAt": 1790780400000
+        },
+        {
+          "status": "planned",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790953200000,
+          "note": "Building it into the stream controls."
+        },
+        {
+          "kind": "note",
+          "note": "Aiming for the Halloween movie night.",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791039600000
+        }
+      ]
+    },
+    {
+      "id": "a3",
+      "title": "Jump-scare counter on the overlay",
+      "description": "Count every jump scare that gets me, with a running total for the game and a record board.",
+      "area": "stream",
+      "status": "in_progress",
+      "priority": "medium",
+      "by": {
+        "uid": "u_spookyjen",
+        "handle": "spookyjen",
+        "name": "spookyjen"
+      },
+      "voteCount": 38,
+      "commentCount": 11,
+      "hidden": false,
+      "statusChangedAt": 1790866800000,
+      "shippedAt": 0,
+      "createdAt": 1789225200000,
+      "updatedAt": 1790866800000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_spookyjen",
+            "handle": "spookyjen"
+          },
+          "changedAt": 1789225200000
+        },
+        {
+          "status": "planned",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1789484400000
+        },
+        {
+          "status": "in_progress",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790866800000
+        }
+      ]
+    },
+    {
+      "id": "a4",
+      "title": "Let chat vote on the difficulty",
+      "description": "Before a new game, chat picks Easy, Normal or Nightmare and I have to stick with it.",
+      "area": "stream",
+      "status": "under_review",
+      "priority": null,
+      "by": {
+        "uid": "u_vhsghost",
+        "handle": "vhsghost",
+        "name": "vhsghost"
+      },
+      "voteCount": 21,
+      "commentCount": 3,
+      "hidden": false,
+      "statusChangedAt": 1791212400000,
+      "shippedAt": 0,
+      "createdAt": 1791126000000,
+      "updatedAt": 1791212400000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_vhsghost",
+            "handle": "vhsghost"
+          },
+          "changedAt": 1791126000000
+        },
+        {
+          "status": "under_review",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791212400000
+        }
+      ]
+    },
+    {
+      "id": "a5",
+      "title": "Subtitles on past streams",
+      "description": "Captions on the VODs in the Stream Library, for people watching muted at work.",
+      "area": "site",
+      "status": "planned",
+      "priority": "low",
+      "by": {
+        "uid": "u_quietcrow",
+        "handle": "quietcrow",
+        "name": "quietcrow"
+      },
+      "voteCount": 17,
+      "commentCount": 2,
+      "hidden": false,
+      "statusChangedAt": 1790694000000,
+      "shippedAt": 0,
+      "createdAt": 1790434800000,
+      "updatedAt": 1790694000000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_quietcrow",
+            "handle": "quietcrow"
+          },
+          "changedAt": 1790434800000
+        },
+        {
+          "status": "planned",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790694000000
+        }
+      ]
+    },
+    {
+      "id": "a6",
+      "title": "A horror trivia night once a month",
+      "description": "Trivia about the games we've played on stream, with a badge for the winner.",
+      "area": "stream",
+      "status": "submitted",
+      "priority": null,
+      "by": {
+        "uid": "u_lurker_lou",
+        "handle": "lurker_lou",
+        "name": "lurker_lou"
+      },
+      "voteCount": 14,
+      "commentCount": 0,
+      "hidden": false,
+      "statusChangedAt": 1791385200000,
+      "shippedAt": 0,
+      "createdAt": 1791385200000,
+      "updatedAt": 1791385200000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_lurker_lou",
+            "handle": "lurker_lou"
+          },
+          "changedAt": 1791385200000
+        }
+      ]
+    },
+    {
+      "id": "a7",
+      "title": "Clip of the week on the home page",
+      "description": "Members vote on the best clip of the week and it gets a spot on the home page.",
+      "area": "site",
+      "status": "submitted",
+      "priority": null,
+      "by": {
+        "uid": "u_mothman",
+        "handle": "mothman",
+        "name": "mothman"
+      },
+      "voteCount": 9,
+      "commentCount": 1,
+      "hidden": false,
+      "statusChangedAt": 1791471600000,
+      "shippedAt": 0,
+      "createdAt": 1791471600000,
+      "updatedAt": 1791471600000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_mothman",
+            "handle": "mothman"
+          },
+          "changedAt": 1791471600000
+        }
+      ]
+    },
+    {
+      "id": "a8",
+      "title": "Profile banners you can unlock",
+      "description": "Unlockable banner art for public profiles, earned with XP.",
+      "area": "site",
+      "status": "declined",
+      "priority": null,
+      "by": {
+        "uid": "u_pixelwraith",
+        "handle": "pixelwraith",
+        "name": "pixelwraith"
+      },
+      "voteCount": 5,
+      "commentCount": 4,
+      "hidden": false,
+      "statusChangedAt": 1786374000000,
+      "shippedAt": 0,
+      "createdAt": 1785769200000,
+      "updatedAt": 1786374000000,
+      "editedAt": 0,
+      "editCount": 0,
+      "statusHistory": [
+        {
+          "status": "submitted",
+          "changedBy": {
+            "uid": "u_pixelwraith",
+            "handle": "pixelwraith"
+          },
+          "changedAt": 1785769200000
+        },
+        {
+          "status": "declined",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1786374000000,
+          "note": "Too much art to keep up with for now."
+        }
+      ]
+    }
+  ],
+  "comments": {
+    "a2": [
+      {
+        "id": "c1",
+        "text": "Yes please. Ten minutes is perfect, long enough to make popcorn.",
+        "by": {
+          "uid": "u_spookyjen",
+          "handle": "spookyjen",
+          "name": "spookyjen"
+        },
+        "staffTag": null,
+        "hidden": false,
+        "createdAt": 1790866800000
+      },
+      {
+        "id": "c2",
+        "text": "Love it. I'll build it into the stream controls so it starts on its own.",
+        "by": {
+          "uid": "u_boomertanger",
+          "handle": "boomertanger",
+          "name": "boomertanger"
+        },
+        "staffTag": "admin",
+        "hidden": false,
+        "createdAt": 1790953200000
+      },
+      {
+        "id": "c3",
+        "text": "first lol",
+        "by": {
+          "uid": "u_rando_77",
+          "handle": "rando_77",
+          "name": "rando_77"
+        },
+        "staffTag": null,
+        "hidden": true,
+        "hiddenBy": {
+          "uid": "u_deadairdan",
+          "handle": "deadairdan"
+        },
+        "hiddenReason": "off topic",
+        "createdAt": 1791039600000
+      },
+      {
+        "id": "c4",
+        "text": "Could it play a creepy music box tune for the last ten seconds?",
+        "by": {
+          "uid": "u_quietcrow",
+          "handle": "quietcrow",
+          "name": "quietcrow"
+        },
+        "staffTag": null,
+        "hidden": false,
+        "createdAt": 1791212400000
+      }
+    ],
+    "a1": [
+      {
+        "id": "c5",
+        "text": "This is the one I wanted most. Thank you!",
+        "by": {
+          "uid": "u_nightowl",
+          "handle": "nightowl",
+          "name": "nightowl"
+        },
+        "staffTag": null,
+        "hidden": false,
+        "createdAt": 1787410800000
+      },
+      {
+        "id": "c6",
+        "text": "On it. Next up after the schedule update.",
+        "by": {
+          "uid": "u_boomertanger",
+          "handle": "boomertanger",
+          "name": "boomertanger"
+        },
+        "staffTag": "admin",
+        "hidden": false,
+        "createdAt": 1788361200000
+      }
+    ]
+  },
+  "log": {
+    "a2": [
+      {
+        "id": "l1",
+        "action": "edit",
+        "actorName": "boomertanger",
+        "reason": "fixed a typo",
+        "createdAt": 1790953200000,
+        "changes": {
+          "description": {
+            "before": "A big on-screen countdown before the movie starts",
+            "after": "A big on-screen countdown before the movie starts, so chat knows when to grab snacks."
+          }
+        }
+      }
+    ]
+  }
+}
