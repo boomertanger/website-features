@@ -13,6 +13,8 @@
 // Usage (from the repo root or functions/):
 //   node functions/scripts/seed-factory-ideas.js            # dry run, staging
 //   node functions/scripts/seed-factory-ideas.js --apply    # write to staging
+//   node functions/scripts/seed-factory-ideas.js --wording "Punch the clock"   # dry run: ONLY the text fields containing that phrase, on ideas that already exist
+//   (see scripts/wording.js; add --apply to write exactly those fields)
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
@@ -24,6 +26,7 @@ function parseArgs(argv) {
   const args = { project: "staging", apply: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--apply") args.apply = true;
+    else if (argv[i] === "--wording") args.wording = argv[++i];
     else if (argv[i] === "--project") args.project = argv[++i];
     else if (argv[i].startsWith("--project=")) args.project = argv[i].slice("--project=".length);
     else throw new Error(`Unknown argument: ${argv[i]}`);
@@ -45,7 +48,7 @@ function ideasFrom(data) {
   for (const t of data.themes || []) add("theme", t.name, { name: t.name, pitch: t.pitch || "", tags: t.tags || [], emoji: t.emoji || null });
   for (const g of data.chapterNames || []) for (const n of g.names || []) add("chapter", `${g.theme}-${n}`, { name: n, theme: g.theme || "Any theme" });
   for (const g of data.campaignNames || []) for (const n of g.names || []) add("campaign", `${g.cadence}-${g.audience}-${n}`, { name: n, cadence: g.cadence === "any" ? null : g.cadence, audience: g.audience || "all" });   // "any": a Sub Club or Crew name for any cadence
-  for (const a of data.activities || []) add("activity", `${a.type}-${a.title}`, { title: a.title, instructions: a.instructions || "", typeId: a.type, target: a.target, xp: a.xp, cadence: a.cadence, audience: a.audience || "all", params: a.params || {} });
+  for (const a of data.activities || []) add("activity", a.id ? a.id.replace(/^activity-/, "") : `${a.type}-${a.title}`, { title: a.title, instructions: a.instructions || "", typeId: a.type, target: a.target, xp: a.xp, cadence: a.cadence, audience: a.audience || "all", params: a.params || {} });
   for (const n of data.rewardNames || []) add("reward", n, { name: n });
   return out;
 }
@@ -70,6 +73,10 @@ async function main() {
   console.log(`Project: ${projectId} (${args.apply ? "writing" : "dry run: nothing is written"})`);
   console.log(`File: ${path.relative(process.cwd(), FILE)} · version ${data.version}\n`);
 
+  if (args.wording) {
+    const entries = ideas.map(([id, doc]) => ({ ref: col.doc(id), path: `${col.path}/${id}`, id, next: doc, cur: have.get(id) }));
+    return require("./wording").runWording(db, entries, args.wording, args.apply);
+  }
   const writes = [];
   const counts = {};
   let created = 0, changed = 0, unchanged = 0;

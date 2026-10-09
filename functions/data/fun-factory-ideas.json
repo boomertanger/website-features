@@ -8,7 +8,7 @@
       "enabled": true,
       "needs": null,
       "source": "Night Shift",
-      "description": "Clock in once per Central day on the Night Shift page.",
+      "description": "Punch the clock once per Central day on the Night Shift page.",
       "actions": [],
       "params": []
     },
@@ -597,8 +597,9 @@
   ],
   "activities": [
     {
-      "title": "Clock in",
-      "instructions": "Press Clock in on the Night Shift page.",
+      "id": "activity-checkin-clock-in",
+      "title": "Punch the clock",
+      "instructions": "Press Punch the clock on the Night Shift page.",
       "type": "checkin",
       "target": 1,
       "xp": 10,
@@ -664,7 +665,7 @@
     },
     {
       "title": "Five-day shift",
-      "instructions": "Clock in on 5 days this week.",
+      "instructions": "Punch the clock on 5 days this week.",
       "type": "checkin",
       "target": 5,
       "xp": 75,
@@ -869,7 +870,7 @@
     },
     {
       "title": "Month of shifts",
-      "instructions": "Clock in on 30 days this season.",
+      "instructions": "Punch the clock on 30 days this season.",
       "type": "checkin",
       "target": 30,
       "xp": 250,

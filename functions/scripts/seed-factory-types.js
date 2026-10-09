@@ -14,6 +14,7 @@
 //   node functions/scripts/seed-factory-types.js                 # dry run, staging
 //   node functions/scripts/seed-factory-types.js --apply         # write to staging
 //   node functions/scripts/seed-factory-types.js --only stream   # dry run for ONE type only (add --apply to write it)
+//   node functions/scripts/seed-factory-types.js --wording "Punch the clock"   # dry run: ONLY the text fields containing that phrase (scripts/wording.js)
 // --only <id>: touches only that one type and never the others (so edits made in the Night Shift builder to other types
 // are safe); for an existing doc it leaves `order` alone and writes only the fields the file owns (name is kept).
 const fs = require("fs");
@@ -28,6 +29,7 @@ function parseArgs(argv) {
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--apply") args.apply = true;
     else if (argv[i] === "--only") args.only = argv[++i];
+    else if (argv[i] === "--wording") args.wording = argv[++i];
     else if (argv[i] === "--project") args.project = argv[++i];
     else if (argv[i].startsWith("--project=")) args.project = argv[i].slice("--project=".length);
     else throw new Error(`Unknown argument: ${argv[i]}`);
@@ -71,6 +73,10 @@ async function main() {
 
   console.log(`Project: ${projectId} (${args.apply ? "writing" : "dry run: nothing is written"})`);
   console.log(`File: ${path.relative(process.cwd(), FILE)} · version ${data.version} · ${data.activityTypes.length} activity types\n`);
+  if (args.wording) {
+    const entries = data.activityTypes.map((t, order) => ({ ref: col.doc(t.id), path: `${col.path}/${t.id}`, id: t.id, next: typeDoc(t, order), cur: have.get(t.id) }));
+    return require("./wording").runWording(db, entries, args.wording, args.apply);
+  }
   const writes = [];
   let created = 0, changed = 0, unchanged = 0;
   if (args.only && !ids.has(args.only)) throw new Error(`--only ${args.only}: no such type in the file.`);

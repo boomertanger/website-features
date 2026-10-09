@@ -12,6 +12,7 @@
 // Usage (from the repo root or functions/):
 //   node functions/scripts/seed-badges.js                 # dry run, staging
 //   node functions/scripts/seed-badges.js --apply         # write to staging
+//   node functions/scripts/seed-badges.js --wording "Punch the clock"   # dry run: ONLY the text fields containing that phrase (scripts/wording.js)
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
@@ -24,6 +25,7 @@ function parseArgs(argv) {
   const args = { project: "staging", apply: false };
   for (let i = 0; i < argv.length; i++) {
     if (argv[i] === "--apply") args.apply = true;
+    else if (argv[i] === "--wording") args.wording = argv[++i];
     else if (argv[i] === "--project") args.project = argv[++i];
     else if (argv[i].startsWith("--project=")) args.project = argv[i].slice("--project=".length);
     else throw new Error(`Unknown argument: ${argv[i]}`);
@@ -59,6 +61,10 @@ async function main() {
   console.log(`Project: ${projectId} (${args.apply ? "writing" : "dry run: nothing is written"})`);
   console.log(`File: ${path.relative(process.cwd(), FILE)} · version ${data.version} · ${data.badges.length} badges · ${data.collections.length} collections\n`);
 
+  if (args.wording) {
+    const entries = data.badges.map((b) => ({ ref: site.collection("badges").doc(b.id), path: `${site.path}/badges/${b.id}`, id: b.id, next: badgeDoc(b), cur: have.get(b.id) }));
+    return require("./wording").runWording(db, entries, args.wording, args.apply);
+  }
   const writes = [];
   let created = 0, changed = 0, unchanged = 0;
   for (const b of data.badges) {
