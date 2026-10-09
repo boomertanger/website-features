@@ -5,14 +5,15 @@
 //   makeGears({ db }) -> { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview,
 //                          grantLabReview, grantBugTriage, grantAcademy, rebuildBoards }
 //
-// Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Duty sources come in phase 3.
+// Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Phase 3 (the Mod Deck, lib/crew/duty.js) adds duty, showed and takeover, whose ledger ids are given exactly by the caller
+// (extra.key, e.g. duty:{streamId}:{uid}:lead:{room}) so a retry can never pay twice.
 // Never earn Gears: timeouts, bans, deleted messages, raw message counts (they would reward spam).
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { SITE_ID, paths, loadSettings } = require("./settings");
 const { dayKey } = require("../arcade/logic");
 
-const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
+const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage", "duty", "showed", "takeover"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
 const NEVER = ["timeout", "ban", "deletedMessage", "messages", "messageCount"];
 const safe = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 100);
 const ms = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
@@ -29,12 +30,13 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     if (!uid || !source || ref == null) throw new Error("grantGears: uid, source and ref are required");
     if (NEVER.includes(source) || !SOURCES.includes(source)) return { granted: false, reason: "badSource" };
     if (!(n > 0) || n > 1000) return { granted: false, reason: "badAmount" };
-    const key = gearKey(source, ref, uid), at = now();
+    const { key: keyOverride, ...more } = extra;
+    const key = typeof keyOverride === "string" && /^[A-Za-z0-9_:-]{1,200}$/.test(keyOverride) ? keyOverride : gearKey(source, ref, uid), at = now();
     const out = await db.runTransaction(async (tx) => {
       const [ledger, roster] = await Promise.all([tx.get(db.doc(paths.gear(key))), tx.get(db.doc(paths.roster(uid)))]);
       if (ledger.exists) return { granted: false, reason: "paid" };
       if (!roster.exists || roster.get("status") === "alumni") return { granted: false, reason: "notCrew" };
-      tx.set(db.doc(paths.gear(key)), { uid, source, ref: String(ref), amount: n, month: monthOf(at), atMs: at, at: Timestamp.fromMillis(at), ...extra });
+      tx.set(db.doc(paths.gear(key)), { uid, source, ref: String(ref), amount: n, month: monthOf(at), atMs: at, at: Timestamp.fromMillis(at), ...more });
       return { granted: true, amount: n, key };
     });
     if (out.granted) { try { await rebuildBoards(at); } catch (err) { console.error("crew: board rebuild failed", err); } }

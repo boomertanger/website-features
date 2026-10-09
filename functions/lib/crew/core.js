@@ -5,7 +5,7 @@
 //   crewDecide (owner), crewWaive (owner)                              approve or "not now"; waive the check-ins
 //   crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile
 //   crewMe (own HQ data), crewAdminOverview (admins: roster, ready to promote, queue size)
-//   crewNightly (03:10 Central): expire applications, refresh the queue, flag "ready to promote" (never promotes)
+//   crewNightly (03:30 Central): expire applications, refresh the queue, flag "ready to promote" (never promotes), and (Mod Machina phase 3) reliability and no-shows (reliability.js)
 const { onCall } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
 const L = require("./logic");
@@ -483,7 +483,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     return { ok: true, settings: after };
   });
 
-  // ---------- crewNightly (03:10 Central) ----------
+  // ---------- crewNightly (03:30 Central) ----------
   async function runNightly(now = Date.now()) {
     const settings = await loadSettings(db);
     const open = await appsCol().where("status", "==", "open").get();
@@ -514,11 +514,13 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       } else if (rec.ready) await recordRef(d.id).set({ ready: FieldValue.delete() }, { merge: true });
     }
     await require("./publicRoster").rebuildPublicCrew(db);     // handles can change; the roster page stays fresh
-    return { expired, flagged, served };
+    // reliability = showed / kept seats over 90 days, no-shows, and the 30-day lockout at 3 no-shows (docs/specs/mod-machina.md section 17a)
+    const rel = await require("./reliability").makeReliability({ db, now: () => now }).run(now);
+    return { expired, flagged, served, reliability: rel };
   }
-  const crewNightly = onSchedule({ schedule: "every day 03:10", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
+  const crewNightly = onSchedule({ schedule: "every day 03:30", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
     const r = await runNightly();
-    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges`);
+    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges, ${r.reliability.people} reliability records, ${r.reliability.locked} newly locked`);
   });
 
   return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewSaveSettings, crewNightly };

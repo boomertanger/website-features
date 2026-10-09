@@ -6,6 +6,8 @@ const L = require("./logic");
 const { P, fail, ms } = require("./core");
 const crewSettings = require("../crew/settings");
 const { swapPath } = require("../crew/swap");
+const { lockUntilOf } = require("../crew/lock");
+const { lockMessage } = require("../crew/dutyLogic");
 
 module.exports = function crewFns({ core, gears, swap = null }) {
   const { db, FieldValue } = core;
@@ -66,6 +68,10 @@ module.exports = function crewFns({ core, gears, swap = null }) {
     if (problems.length || !Array.isArray(asked) || !asked.length) throw fail("invalid-argument", problems[0] || "Pick at least one seat.", "args");
     const { id, draft } = await loadLive(streamId);
     const wanted = asked.map(L.normalizeSeat);
+    if (wanted.some((x) => x && x.role !== "deckhand")) {          // the no-show lockout (3 no-shows in 90 days): no Lead or Captain seats; Deckhand is fine
+      const lock = await lockUntilOf(db, w.uid);
+      if (lock > Date.now()) throw fail("permission-denied", lockMessage(lock), "locked", { until: lock });
+    }
     for (const seat of wanted) {
       if (seat.role !== "captain" && !(draft.rooms || []).includes(seat.room)) throw fail("failed-precondition", "That stream has no such room.", "roomOff", { room: seat.room });
       const e = L.seatEligibility(w.person, seat, Date.now());
@@ -190,8 +196,8 @@ module.exports = function crewFns({ core, gears, swap = null }) {
     if (!e.ok) throw fail("permission-denied", seatMessage(e.reason), e.reason, { seat });
     if (e.needsOwnerOk) throw fail("permission-denied", swapRefusal.needsOwner, "needsOwner");
     if (seat.role !== "deckhand") {      // the no-show lockout (part 2 writes roster/{uid}/private/record.lockUntil; a missing field is no lock)
-      const lockUntil = ms((await db.doc(crewSettings.paths.record(w.uid)).get()).get("lockUntil"));
-      if (lockUntil > Date.now()) throw fail("permission-denied", `${swapRefusal.locked} It ends ${new Date(lockUntil).toISOString().slice(0, 10)}.`, "locked", { until: lockUntil });
+      const lockUntil = await lockUntilOf(db, w.uid);
+      if (lockUntil > Date.now()) throw fail("permission-denied", lockMessage(lockUntil), "locked", { until: lockUntil });
     }
     const held = L.seatsHeldBy(draft.crew, w.uid);
     if (held.length && !(seat.role === "lead" && held.every((h) => h.role === "captain"))) throw fail("failed-precondition", swapRefusal.alreadySeated, "alreadySeated");

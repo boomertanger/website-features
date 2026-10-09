@@ -175,6 +175,8 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     const total = L.PLATFORM_ROOMS.reduce((n, r) => n + (Number.isFinite(viewers[r]) ? viewers[r] : 0), 0);
     patch.viewers = viewers; patch.viewersAt = at; patch.peak = Math.max(control.peak || 0, total);
     await ctx.controlRef(stream.id).update(patch);
+    // Mod Machina phase 3 part 2: prompts expire, breaks end, the Captain seat is kept filled, quiet leads are nudged (reads one document and does nothing when nobody is on duty)
+    if (ctx.duty) { try { out.duty = await ctx.duty.tick(stream, at); } catch (err) { out.errors.push("duty"); console.error("liveTick: duty failed", String((err && err.message) || err).slice(0, 160)); } }
     // "Waiting for YouTube…": ask again every 15 seconds for the rest of this minute (control.yt.status stays "waiting" until found)
     if ((control.yt || {}).status === "waiting") {
       for (let i = 0; i < 3; i++) {

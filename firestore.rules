@@ -756,6 +756,13 @@ service cloud.firestore {
 
         // The swap board (Mod Machina phase 3 part 1, docs/specs/mod-machina.md section 17a): seats dropped after publish, open until the stream starts. Crew read it; only functions write it.
         // (Handles only: no reliability data here.)
+        // Duty records (Mod Machina phase 3 part 2): one per person per stream, crew/main/duties/{streamId}_{uid}. The person it is about, admins and the owner read it (the uid is a field, because a rule
+        // can't take it out of the id); only functions write it.
+        match /duties/{dutyId} {
+          allow read: if request.auth != null && (resource.data.uid == request.auth.uid || hasSiteRole(siteId, 'admin') || isSiteOwner(siteId));
+          allow write: if false;
+        }
+
         match /swaps/{swapId} {
           allow read: if isSiteStaff(siteId);
           allow write: if false;
@@ -849,10 +856,13 @@ service cloud.firestore {
         // separate deny match. The Control Room adds two more (docs/specs/control-room.md §13), again inside this one rule:
         // private/control holds the CURRENT check-in word, so only the owner and A2+ read it (never a mod); private/checklist
         // is the owner's own list: the owner's uid only (an A2 cannot read it). Everything else here (the draft) stays staff.
+        // private/duty (Mod Machina phase 3 part 2) is the live duty state the Mod Deck reads: captainNow, who is on duty, prompts and room coverage. It never holds the check-in word,
+        // so crew (mods and admins, any grade) and the owner read it. Only functions write it.
         match /private/{docId} {
           allow read: if (docId == 'control' && isOwnerOrA2Plus(siteId))
             || (docId == 'checklist' && isSiteOwner(siteId))
-            || (docId != 'watch' && docId != 'control' && docId != 'checklist' && isSiteStaff(siteId));
+            || (docId == 'duty' && (isSiteStaff(siteId) || isSiteOwner(siteId)))
+            || (docId != 'watch' && docId != 'control' && docId != 'checklist' && docId != 'duty' && isSiteStaff(siteId));
           allow write: if false;
         }
 

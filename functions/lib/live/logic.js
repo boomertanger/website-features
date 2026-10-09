@@ -527,6 +527,21 @@ function sumShards(shards) {
  * counts { total, byBeat, byRoom }, viewers { total, byPlatform }, peak, game, nextGame, crew { captain, chats, onDuty }
  * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, activity, look, updatedAt. "off" is the waiting room (no stream fields).
  */
+/**
+ * The Deck's room coverage for public/live (Mod Machina phase 3 part 2): { rooms: { room: { lead: handle|null, deckhands: n, covered } } }. Handles only and counts; only the known rooms; anything else
+ * (a uid, a stray key) is dropped here, and findSecrets scans the whole output again before anything is written.
+ */
+function deckOf(deck) {
+  const rooms = {};
+  const src = deck && deck.rooms && typeof deck.rooms === "object" ? deck.rooms : {};
+  for (const r of ROOMS) {
+    const x = src[r];
+    if (!x || typeof x !== "object") continue;
+    rooms[r] = { lead: typeof x.lead === "string" && x.lead ? x.lead : null, deckhands: Number.isFinite(x.deckhands) ? x.deckhands : 0, covered: x.covered === true };
+  }
+  return { rooms };
+}
+
 function buildPublicLive(input) {
   const { stream, window: win, viewers, peak, onDuty, activity, look, nowMs } = input;
   const counters = Array.isArray(input.counters) ? sumShards(input.counters) : input.counters || { total: 0, byBeat: {}, byRoom: {} };
@@ -536,7 +551,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, activity: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -583,6 +598,7 @@ function buildPublicLive(input) {
     game: openGame ? { gameId: openGame.gameId, title: openGame.title, startedAt: ms(openGame.startedAt) } : null,
     nextGame: nextPlanned ? { gameId: nextPlanned.gameId, title: nextPlanned.title || null } : null,
     crew: { captain: handleOf(crew.captain), chats, onDuty: (onDuty || []).map(handleOf).filter(Boolean), grades },
+    deck: live ? deckOf(input.deck) : { rooms: {} },
     firstIn,
     firstInBeat: live && firstIn.length ? (open ? win.beat : currentBeat(sb)) : null,
     activity: activity ? { kind: String(activity.kind || ""), title: activity.title == null ? null : String(activity.title), status: activity.status == null ? null : String(activity.status) } : null,

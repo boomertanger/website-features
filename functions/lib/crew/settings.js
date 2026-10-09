@@ -21,6 +21,9 @@ const paths = {
   awardVote: (ym, uid) => `${ROOT}/awards/${ym}/votes/${uid}`,
   waiver: (uid) => `${ROOT}/waivers/${uid}`,
   referral: (uid) => `${ROOT}/referrals/${uid}`,
+  swapsCol: () => `${ROOT}/swaps`,
+  dutiesCol: () => `${ROOT}/duties`,
+  duty: (streamId, uid) => `${ROOT}/duties/${streamId}_${uid}`,
 };
 
 /** crew/main merged over the defaults. Creates the document with the defaults the first time. */

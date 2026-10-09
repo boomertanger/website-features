@@ -206,6 +206,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     const dr = db.doc(paths.draft(id));
     if ((await dr.get()).exists) await dr.update({ state: "live", actualStart: mirror.actualStart });
     await announceLive(actor, id, started);
+    // Mod Machina phase 3 part 2: the live duty state exists from the first second (the Deck reads one document)
+    if (ctx.duty) { try { await ctx.duty.onStart(id, at, started); } catch (err) { console.error("live: duty state not created", String((err && err.message) || err).slice(0, 140)); } }
     // Mod Machina phase 3 part 1: open swaps close at Start (an untaken late drop counts as a no-show, part 2 counts it)
     try { await swaps.closeAtStart(id, { title: started.title, actor }); } catch (err) { console.error("live: closing the swap board failed", err); }
     await ctx.logAdmin(actor, { action: "start", streamId: id, title: started.title, details: { adhoc: started.adhoc === true, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
@@ -251,6 +253,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     for (const k of Object.keys(beats)) beats[k] = { ...beats[k], checkins: sum.byBeat[k] || 0 };
     await ctx.patchStream(s.id, { beats, stats: { peak, checkins: sum.total, byRoom: sum.byRoom } });
     await ctx.settle(s.id);
+    // Mod Machina phase 3 part 2: everyone is clocked out, seats nobody clocked into become no-shows, the Captain and owner get "Confirm tonight's crew"
+    if (ctx.duty) { try { await ctx.duty.closeOut(s.id, patch.actualEnd != null ? ctx.ms(patch.actualEnd) : now()); } catch (err) { console.error("live: duty close-out failed", String((err && err.message) || err).slice(0, 140)); } }
     await ctx.activity("stream-ended", `${s.title || "The stream"} has ended`, { streamId: s.id });
     return { sum, peak };
   }

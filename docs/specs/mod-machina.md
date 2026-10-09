@@ -439,7 +439,7 @@ Gears follow the minutes each person held each role. While you're stepped away y
 
 ### The Captain
 
-Every live stream has one Captain at a time, stored as `crew.captainNow` on the stream's private control doc. The Captain's tools appear on the Deck; the owner has the same tools on /live/control.
+Every live stream has one Captain at a time, stored as `captainNow` on the stream's duty doc, `streams/{id}/private/duty` (not `private/control`, which holds the check-in word and stays owner and A2+ only). The Captain's tools appear on the Deck; the owner has the same tools on /live/control.
 
 **Who is Captain**
 
@@ -483,7 +483,7 @@ One duty record per person per stream, `crew/main/duties/{streamId}_{uid}`, writ
 | Stream Captain | 12 / hour | `duty:{streamId}:{uid}:captain` |
 | Room Lead | 10 / hour | `duty:{streamId}:{uid}:lead:{room}` |
 | Deckhand | 6 / hour | `duty:{streamId}:{uid}:deckhand:{room}` |
-| YouTube rooms | × the room's boost (1.5 by default, from the stream's `crew.caps`) | on the role line |
+| YouTube rooms | × the boost: `youtubeBoost` from the crew settings (`crew/main`, 1.5 by default) for ytLandscape and ytVertical; a per-room boost on the stream's `crew.caps` would win (none is set today) | on the role line |
 | Showed up for a scheduled seat | + 5 (clocked in within 15 min of start) | `showed:{streamId}:{uid}` |
 | Took over as lead | + 5, at most 3 a stream | `takeover:{streamId}:{handoffId}:{uid}` |
 
@@ -566,12 +566,13 @@ All paths under `sites/boomertanger/`. Every document below is written only by C
 | `crew/main/notes/{noteId}` | uid, handle, grade, text, createdAt, expireAt (+24 h, TTL) | crew |
 | `crew/main/roster/{uid}/private/record` | adds noShows [{ streamId, at }], lockUntil | self, admins, owner |
 | `crew/main` (settings) | adds activityRules, rulesSince, graceMonth | crew |
-| `streams/{id}/private/control` (existing) | adds crew.captainNow { uid, acting, since }, onDuty { uid: { role, room } }, prompts {}, recruitRush | staff |
+| `streams/{id}/private/duty` (new, decided Oct 9, 2026) | the live duty state: captainNow { uid, handle, acting, since }, onDuty { uid: { handle, grade, roles [{ role, room }], away } }, prompts {}, handoffs, rooms coverage { room: { lead handle, deckhands, covered } } | crew (mods and admins, any grade) and the owner |
+| `streams/{id}/private/control` (existing) | adds recruitRush only; it keeps the check-in word, so it stays owner and A2+ | owner and A2+ |
 | `streams/{id}/flags/{flagId}` | type, room, note, byUid, byHandle, urgent, createdAt, seenAt, doneAt, expireAt (13 months) | owner, admins |
 | `public/live` (existing) | adds deck { rooms: { room: { lead handle, deckhands count, covered } } }, recruitRush { goal, count, reward, hitAt } | everyone |
 
 - Handles and grades only in anything crew-wide or public; no uid ever in public/live (check-live-wiring already proves this and gets new cases).
-- The live on-duty state is on the private control doc so the Deck reads one document; the duty record is the durable, payable copy.
+- The live on-duty state is on the private duty doc so the Deck reads one document that crew are allowed to read (private/control holds the check-in word and stays owner and A2+); the duty record is the durable, payable copy.
 - adminLog keys: `crewSwap`, `crewRules`, `crewLockLift`, `crewFlag`, `dutyConfirmNight`, `dutyReassign`, `captainSet`. activityLog: none new (duty is private).
 
 ### Functions and rules

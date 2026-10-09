@@ -36,6 +36,7 @@ const P = {
   stream: (id) => `${SITE}/streams/${id}`,
   draft: (id) => `${SITE}/streams/${id}/private/draft`,
   control: (id) => `${SITE}/streams/${id}/private/control`,
+  duty: (id) => `${SITE}/streams/${id}/private/duty`,
   checklist: (id) => `${SITE}/streams/${id}/private/checklist`,
   watch: (id) => `${SITE}/streams/${id}/private/watch`,
   presenceCol: (id) => `${SITE}/streams/${id}/presence`,
@@ -73,7 +74,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
   const { FieldValue, Timestamp } = admin.firestore;
   const crew = makeStore({ db, adminLogEntry });
   const planner = makePlannerCore({ db, adminLogEntry });
-  const ctx = { db, FieldValue, Timestamp, crew, planner, now, P, fail, ms, settle: async () => {} };
+  const ctx = { db, FieldValue, Timestamp, crew, planner, now, P, fail, ms, adminLogEntry, settle: async () => {}, duty: null };
 
   // ---------- who may call ----------
   /** Owner or A2+ (the owner always counts); { ownerOnly } narrows to the owner. A1 Steward is refused. */
@@ -213,11 +214,14 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
       secrets.videoIds = [y.landscapeId, y.backstageId, y.verticalId].filter(Boolean);
     }
     const counts = L.sumShards(shards);
+    // the Deck's room coverage (handles and counts from private/duty; a uid never reaches public/live)
+    const deckState = stream && stream.state === "live" ? ((await db.doc(P.duty(stream.id)).get()).data() || null) : null;
     const sb = {};
     for (const k of L.BEATS) if (stream && stream.beats && stream.beats[k]) sb[k] = { ...stream.beats[k], checkins: counts.byBeat[k] != null ? counts.byBeat[k] : stream.beats[k].checkins || 0 };
     const out = L.buildPublicLive({
       stream: stream ? { ...stream, beats: sb } : null, window: control.window || null, counters: counts, viewers: control.viewers || {},
       peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), activity: control.activity || null, look: main.look, nowMs,
+      deck: deckState ? { rooms: deckState.rooms || {} } : null,
       grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
     });
     const hits = L.findSecrets(out, secrets);
