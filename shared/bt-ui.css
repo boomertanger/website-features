@@ -5037,16 +5037,13 @@
 /* ---- .bt-cue-card ---- */
 .bt-root:not(#_) .bt-cue-card { display: flex; flex-direction: column; gap: 10px; padding: 12px 14px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border); background: var(--bt-surface); }
 .bt-root:not(#_) .bt-cue-head { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bt-root:not(#_) .bt-cue-kicker { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-cue-label { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-cue-kicker { font-size: var(--bt-text-md); font-weight: 800; color: var(--bt-text); line-height: 1.3; }
 .bt-root:not(#_) .bt-cue-due { margin-left: auto; font-size: var(--bt-text-xs); font-weight: 800; color: var(--bt-gold); font-variant-numeric: tabular-nums; white-space: nowrap; }
 .bt-root:not(#_) .bt-cue-text { margin: 0; padding: 10px 12px; border-radius: 10px; border: 1.5px dashed var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.45; overflow-wrap: anywhere; }
 .bt-root:not(#_) .bt-cue-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
-.bt-root:not(#_) .bt-cue-copy { padding: 4px 10px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-primary-soft); font: inherit; font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; }
-.bt-root:not(#_) .bt-cue-copy:hover { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-text); }
-.bt-root:not(#_) .bt-cue-copy:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-.bt-root:not(#_) .bt-cue-copy.is-done { border-color: var(--bt-lime); color: var(--bt-lime); background: var(--bt-bg); }
+.bt-root:not(#_) .bt-cue-copy.is-done { border-color: var(--bt-lime); color: var(--bt-lime); }
 .bt-root:not(#_) .bt-cue-acts { display: flex; gap: 6px; margin-left: auto; }
-.bt-root:not(#_) .bt-cue-acts .bt-btn { padding: 6px 14px; font-size: var(--bt-text-sm); }
 .bt-root:not(#_) .bt-cue-card.is-posted { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); }
 .bt-root:not(#_) .bt-cue-card.is-done { opacity: 0.6; background: var(--bt-bg); }
 .bt-root:not(#_) .bt-cue-card.is-done .bt-cue-text { border-style: solid; color: var(--bt-text-muted); }

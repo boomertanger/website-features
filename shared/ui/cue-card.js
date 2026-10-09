@@ -4,7 +4,7 @@
 // The Deck itself never changes when a new game ships: Chat Games registers what goes here. Text is escaped.
 //
 //   cueCardHtml({ id, kicker, text, due, state, readonly })   markup string
-//     kicker  the format's name ("Dead Air · clue 2");  due  "9:15 PM" (shown in gold as "Due 9:15 PM");  state  "pending" | "posted" | "done";  readonly  true for no buttons
+//     kicker  the format's name ("Dead Air · clue 2");  due  "9:15 PM" or "9:15 PM · in 6 min" (shown in gold as "Due …");  state  "pending" | "posted" | "done";  readonly  true for no buttons
 //   cueEmptyHtml({ mascotHtml, title, text })   the empty state
 //   initCueCards(root, { onPosted(id), onDone(id), onCopy(id, text) })   Copy writes the cue to the clipboard (falls back to selecting it), shows "Copied" for 2 s
 import { escapeHtml as esc } from "./dom.js";
@@ -14,10 +14,10 @@ const STATES = ["pending", "posted", "done"];
 export function cueCardHtml({ id = "", kicker = "", text = "", due = "", state = "pending", readonly = false } = {}) {
   const st = STATES.includes(state) ? state : "pending";
   const tag = st === "posted" ? `<span class="bt-badge bt-badge--lime"><span class="bt-badge-dot"></span>Posted</span>` : st === "done" ? `<span class="bt-badge bt-badge--gray">Done</span>` : "";
-  const acts = readonly || st === "done" ? "" : `<span class="bt-cue-acts">${st === "pending" ? `<button type="button" class="bt-btn bt-btn--secondary" data-cue-posted>Posted</button>` : ""}<button type="button" class="bt-btn bt-btn--primary" data-cue-done>Done</button></span>`;
-  const copy = st === "done" ? "" : `<button type="button" class="bt-cue-copy" data-cue-copy>Copy</button>`;
-  return `<div class="bt-cue-card is-${st}${readonly ? " is-readonly" : ""}" data-cue="${esc(id)}"><div class="bt-cue-head"><span class="bt-cue-kicker">${esc(kicker)}</span>${tag}${due && st !== "done" ? `<span class="bt-cue-due">Due ${esc(due)}</span>` : ""}</div>`
-    + `<p class="bt-cue-text" data-cue-text>${esc(text)}</p>${copy || acts ? `<div class="bt-cue-foot">${copy}${acts}</div>` : ""}</div>`;
+  const acts = readonly || st === "done" ? "" : `<span class="bt-cue-acts">${st === "pending" ? `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-cue-posted>Posted it</button>` : ""}<button type="button" class="bt-btn ${st === "posted" ? "bt-btn--primary" : "bt-btn--secondary"} bt-btn--sm" data-cue-done>Done</button></span>`;
+  const copy = st === "done" ? "" : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm bt-cue-copy" data-cue-copy>Copy</button>`;
+  return `<div class="bt-cue-card is-${st}${readonly ? " is-readonly" : ""}" data-cue="${esc(id)}"><div class="bt-cue-head"><span class="bt-cue-label">Chat Game cue</span>${tag}${due && st !== "done" ? `<span class="bt-cue-due">Due ${esc(due)}</span>` : ""}</div>`
+    + `<b class="bt-cue-kicker">${esc(kicker)}</b><p class="bt-cue-text" data-cue-text>${esc(text)}</p>${copy || acts ? `<div class="bt-cue-foot">${copy}${acts}</div>` : ""}</div>`;
 }
 
 export function cueEmptyHtml({ mascotHtml = "", title = "No cues for your room yet", text = "When a game has something to post in your chat, it shows up here." } = {}) {
