@@ -851,6 +851,22 @@ async function main() {
     assert.equal(await why(as("fan", "backstageWatch", { streamId: "f2" })), "notBackstage");
   for (const [name, docs] of [["adminLog", await root("adminLog")], ["activityLog", await root("activityLog")], ["notifyOutbox", await root(`${S}/notifyOutbox`)], ["public/live", [await get("public/live")]], ["stream", [await stream("bw1")]], ["control", [await control("bw1")]]]) assert.ok(!clean(docs).includes("BACKSTAGE01"), `${name} never holds the backstage video id`);
   assert.deepEqual(L.findSecrets(await get("public/live"), { videoIds: ["BACKSTAGE01"] }), []);
+  // 9e: the backstage video id reaches ONLY the audience's answer. Not obsFeed (a valid key), not any log line, not the stream doc a visitor reads.
+  {
+    const logged = [], keep = {};
+    for (const k of ["log", "error", "warn", "info"]) { keep[k] = console[k]; console[k] = (...args) => { logged.push(args.map((x) => (typeof x === "string" ? x : JSON.stringify(x))).join(" ")); keep[k](...args); }; }
+    try {
+      for (const uid of ["fan", "subby"]) assert.equal((await as(uid, "backstageWatch", {})).videoId, "BACKSTAGE01");
+      for (const bad of [as(null, "backstageWatch", {}), as("visitor0", "backstageWatch", {}), as("fan", "backstageWatch", { streamId: "f2" })]) await why(bad);
+      const ok = (await as("boss", "liveObsKey", {})).key;
+      const ov = await obs({ query: { k: ok } });
+      assert.equal(ov.code, 200); assert.ok(!JSON.stringify(ov.body).includes("BACKSTAGE01"), "obsFeed never carries the backstage video id");
+      assert.equal(ov.body.view.state, "backstage");
+      await as("boss", "liveObsKey", { revoke: true });
+      assert.ok(!JSON.stringify(await get("streams/bw1")).includes("BACKSTAGE01"), "the public stream doc holds no video id");
+    } finally { for (const k of Object.keys(keep)) console[k] = keep[k]; }
+    assert.ok(!logged.join("\n").includes("BACKSTAGE01"), "no log line carries the backstage video id");
+  }
   // Sub Club (billing, later): fans are refused, subs and staff pass
   await wdb.doc(`${S}/streams/bw1`).update({ audience: "subClub" });
   assert.equal(await why(as("fan", "backstageWatch", {})), "audience");
