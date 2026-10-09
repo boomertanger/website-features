@@ -1,0 +1,31 @@
+---
+// One layout for Cloud Stash's pages (docs/specs/cloud-stash.md §8): the site shell, the sticky CLOUDSTASH bar in BaseLayout's "bar" slot, then the page. The tool page (/admin/stash) is
+// admin only: a skeleton shows while auth loads, visitors get the sign-in dialog first, members are sent to How it works. How it works (section="how") is public. Display only: the
+// callables and the rules do the real checking. scripts/stash/layout.ts sets .cs-page[data-access] = loading | join | page.
+import BaseLayout from "./BaseLayout.astro";
+import StashBar from "../components/stash/StashBar.astro";
+import "../styles/how-it-works.css";   // the shared How it works blocks; before cloud-stash.css so the scenes win ties
+import "../styles/cloud-stash.css";
+
+interface Props { title: string; description?: string; section?: string | null }
+const { title, description, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex={section !== "how"}>
+  <StashBar slot="bar" section={section} />
+  <div class="cs-page" data-cs-page data-access={section === "how" ? "page" : "loading"} data-admin-only={section === "how" ? undefined : ""}>
+    <div class="bt-zone cs-skel" aria-hidden="true">
+      <span class="bt-skeleton cs-sk-hero"></span>
+      <span class="bt-skeleton cs-sk-card"></span>
+    </div>
+    <section class="bt-zone cs-gate" aria-labelledby="cs-gate-title">
+      <h1 class="bt-title" id="cs-gate-title">Admins only</h1>
+      <p class="cs-gate-lead">Cloud Stash is for site admins. If you're an admin, sign in with your admin account.</p>
+      <div class="cs-gate-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a><a class="bt-btn bt-btn--ghost" href="/cloud-stash/how-it-works">How it works</a></div>
+    </section>
+    <div class="cs-slot"><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/stash/layout";
+</script>

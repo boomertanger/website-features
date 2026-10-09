@@ -1,0 +1,22 @@
+---
+// Cloud Stash's feature bar (docs/specs/cloud-stash.md §8): the kit's .bt-topbar in a .bt-sticky-bar like Bug Zapper's, with the CLOUDSTASH .bt-wordmark--power (I1 Storm stash: three disk bars
+// in a cloud; on hover or focus rain falls and the bars light gold; touch screens play it once on scroll-in). Right: a ghost How it works link (the tool link on that page) and, on the tool
+// page, a green Scan now button. Under 640px the words become icons, each a 40px target with an aria-label. Cloud Stash is not in the header nav. Wired in scripts/stash/layout.ts.
+import { STASH_ICON, IC } from "../../scripts/stash/art";
+interface Props { section?: string | null }
+const { section = null } = Astro.props;
+---
+<div class="bt-sticky-bar cs-dock" data-cs-dock>
+  <div class="bt-topbar cs-bar">
+    <a class="bt-wordmark bt-wordmark--power cs-wm" href="/admin/stash" aria-label="Cloud Stash">
+      <span class="bt-wordmark-icon" set:html={STASH_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">CLOUD<span class="bt-wordmark-accent">STASH</span></span>
+    </a>
+    <div class="bt-topnav">
+      {section === "how"
+        ? <a class="bt-btn bt-btn--ghost bt-btn--sm cs-act bt-when-admin" href="/admin/stash" aria-label="Back to Cloud Stash"><Fragment set:html={IC.arrow} /><span class="bt-btn-label">The tool</span></a>
+        : <a class="bt-btn bt-btn--ghost bt-btn--sm cs-act" href="/cloud-stash/how-it-works" aria-label="How it works"><Fragment set:html={IC.help} /><span class="bt-btn-label">How it works</span></a>}
+      {section === null && <button type="button" class="bt-btn bt-btn--admin bt-btn--sm cs-act" data-cs="scan" aria-label="Scan now" hidden><Fragment set:html={IC.scan} /><span class="bt-btn-label">Scan now</span></button>}
+    </div>
+  </div>
+</div>

@@ -1,0 +1,13 @@
+---
+// /admin/stash: Cloud Stash, the admin tool page (docs/specs/cloud-stash.md §8; approved mockup docs/design/mockups/cloud-stash.html: P2 Overview and tabs, S2 hero, F2 rows, I1 icon).
+// Admins only (StashLayout redirects members to How it works and gives visitors a sign-in gate). Tabs are in ?tab= (overview, files, rules, activity). All reads and writes are in
+// scripts/stash/; every change goes through the stash callables. Not in the header nav.
+import StashLayout from "../../layouts/StashLayout.astro";
+---
+<StashLayout title="Cloud Stash">
+  <div class="cs-root" id="cs-root" data-cs-root></div>
+</StashLayout>
+
+<script>
+  import "../../scripts/stash/page";
+</script>

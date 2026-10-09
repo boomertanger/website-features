@@ -9,6 +9,7 @@ import ComingSoon from "../components/ComingSoon.astro";
 import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
 import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
+import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
 ---
 <BaseLayout title="Admin tools" noindex>
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
@@ -59,6 +60,13 @@ import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
       </div>
       <div class="bt-empty bt-empty--compact" data-bugs-clear hidden><p class="bt-empty-title">No reports waiting</p><p>Every report has had a look.</p></div>
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/bug-zapper">Open the board</a></div>
+    </div>
+  </div>
+  <div class="bt-zone" data-stash-card hidden>
+    <div class="bt-card cs-admin-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Cloud Stash</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
+      <div data-stash-body><div class="bt-skeleton" style="height:44px"></div></div>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/stash">Open Cloud Stash</a></div>
     </div>
   </div>
   <div class="bt-zone" data-ff-link hidden>
@@ -149,6 +157,7 @@ import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
   import "../scripts/admin/live-card";
   import "../scripts/admin/lab-card";
   import "../scripts/admin/bugs-card";
+  import "../scripts/admin/stash-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";

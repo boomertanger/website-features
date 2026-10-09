@@ -1,0 +1,414 @@
+{
+  "_note": "PREVIEW DATA for the non-production ?as=admin switch only (scripts/stash/store.ts: ?tier=owner|overseer|steward, ?usage=healthy|paused|over). Never shown on production.",
+  "me": {
+    "uid": "u_gbo",
+    "handle": "gbo",
+    "name": "@gbo"
+  },
+  "usage": {
+    "healthy": {
+      "credits": {
+        "used": 11.2,
+        "limit": 25,
+        "pct": 45
+      },
+      "storage": {
+        "usage": 424673280,
+        "credits": 0.42
+      },
+      "bandwidth": {
+        "usage": 96636764160,
+        "credits": 9.6
+      },
+      "transformations": {
+        "usage": 4200,
+        "credits": 1.2
+      },
+      "plan": "Free",
+      "status": "healthy",
+      "uploads": "open",
+      "fetchedAtAgo": 10800000,
+      "failures": 0
+    },
+    "paused": {
+      "credits": {
+        "used": 21.1,
+        "limit": 25,
+        "pct": 84
+      },
+      "storage": {
+        "usage": 424673280,
+        "credits": 0.5
+      },
+      "bandwidth": {
+        "usage": 96636764160,
+        "credits": 18.9
+      },
+      "transformations": {
+        "usage": 4200,
+        "credits": 1.7
+      },
+      "plan": "Free",
+      "status": "paused",
+      "uploads": "members-paused",
+      "fetchedAtAgo": 10800000,
+      "failures": 0
+    },
+    "over": {
+      "credits": {
+        "used": 25.6,
+        "limit": 25,
+        "pct": 102.4
+      },
+      "storage": {
+        "usage": 424673280,
+        "credits": 0.5
+      },
+      "bandwidth": {
+        "usage": 96636764160,
+        "credits": 23.2
+      },
+      "transformations": {
+        "usage": 4200,
+        "credits": 1.9
+      },
+      "plan": "Free",
+      "status": "over",
+      "uploads": "stopped",
+      "fetchedAtAgo": 10800000,
+      "failures": 0
+    }
+  },
+  "current": {
+    "totalBytes": 427483464,
+    "byFeature": {
+      "bugZapper": {
+        "bytes": 224395264,
+        "files": 148
+      },
+      "gameVault": {
+        "bytes": 176160768,
+        "files": 402
+      },
+      "funFactory": {
+        "bytes": 24117248,
+        "files": 6
+      }
+    },
+    "recountedAgo": 172800000
+  },
+  "scan": {
+    "agoMs": 172800000,
+    "by": "Automatic",
+    "counts": {
+      "orphan": 1,
+      "stale": 1,
+      "unrecorded": 0,
+      "untracked": 2
+    },
+    "untracked": [
+      {
+        "publicId": "disk-stash/legacy_8f2a",
+        "type": "upload",
+        "bytes": 1153434,
+        "ageMs": 37152000000
+      },
+      {
+        "publicId": "game-vault/pending/x9",
+        "type": "authenticated",
+        "bytes": 524288,
+        "ageMs": 172800000
+      }
+    ],
+    "unrecorded": [],
+    "truncated": false
+  },
+  "sweep": {
+    "lastRunAgo": 21600000,
+    "status": "ok",
+    "purged": 0,
+    "bytes": 0,
+    "failures": [],
+    "perRule": {},
+    "trigger": "schedule"
+  },
+  "alerts": [
+    {
+      "kind": "stash-usage-80",
+      "title": "Cloudinary storage is nearly full",
+      "body": "Usage is at 84% of this month's credits. Member uploads are paused until it drops.",
+      "severity": "warn",
+      "agoMs": 1468800000
+    }
+  ],
+  "settings": {
+    "pauseAtPct": 80,
+    "manualPause": false,
+    "manualPauseReason": "",
+    "runCap": 100
+  },
+  "retentionDays": 365,
+  "rules": [
+    {
+      "id": "r1",
+      "name": "Old bug screenshots",
+      "target": "bugScreenshots",
+      "statuses": [
+        "fixed",
+        "wont_fix",
+        "cant_reproduce",
+        "duplicate"
+      ],
+      "days": 60,
+      "enabled": false,
+      "legacy": false,
+      "updatedAgo": 518400000,
+      "lastRun": null
+    },
+    {
+      "id": "r0",
+      "name": "Legacy: old Squarespace bug reports",
+      "target": null,
+      "statuses": [],
+      "days": 60,
+      "enabled": true,
+      "legacy": true,
+      "updatedAgo": 7776000000,
+      "lastRun": {
+        "agoMs": 21600000,
+        "purged": 0,
+        "bytes": 0,
+        "failed": 0
+      },
+      "legacyText": "Delete files on bugReports where status is Fixed for 60 days."
+    }
+  ],
+  "assets": [
+    {
+      "id": "a1",
+      "publicId": "bug-zapper/k3f9x2/shot",
+      "url": "https://res.example/bug-zapper/k3f9x2/shot.png",
+      "feature": "bugZapper",
+      "sizeBytes": 1887437,
+      "deliveryType": "authenticated",
+      "ageMs": 6134400000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/bugs/main/reports",
+        "docId": "k3f9x2",
+        "field": "shotRef"
+      },
+      "scan": {
+        "state": "linked",
+        "due": "r1"
+      }
+    },
+    {
+      "id": "a7",
+      "publicId": "bug-zapper/zq0p1d/shot",
+      "url": "https://res.example/bug-zapper/zq0p1d/shot.png",
+      "feature": "bugZapper",
+      "sizeBytes": 1006633,
+      "deliveryType": "authenticated",
+      "ageMs": 259200000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/bugs/main/reports",
+        "docId": "zq0p1d",
+        "field": "shotRef"
+      },
+      "scan": {
+        "state": "linked"
+      }
+    },
+    {
+      "id": "a2",
+      "publicId": "game-vault/covers/still-wakes-the-deep",
+      "url": "https://res.example/game-vault/covers/still-wakes-the-deep.png",
+      "feature": "gameVault",
+      "sizeBytes": 429916,
+      "deliveryType": "upload",
+      "ageMs": 12960000000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/vaultGames",
+        "docId": "still-wakes-the-deep",
+        "field": "cover.url"
+      },
+      "scan": {
+        "state": "linked"
+      }
+    },
+    {
+      "id": "a3",
+      "publicId": "game-vault/pending/p_7hq2",
+      "url": "https://res.example/game-vault/pending/p_7hq2.png",
+      "feature": "gameVault",
+      "sizeBytes": 660603,
+      "deliveryType": "authenticated",
+      "ageMs": 6912000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/vaultQueue",
+        "docId": "q7hq2",
+        "field": "coverUrl"
+      },
+      "scan": {
+        "state": "linked"
+      }
+    },
+    {
+      "id": "a4",
+      "publicId": "fun-factory/seasons/s03-art",
+      "url": "https://res.example/fun-factory/seasons/s03-art.png",
+      "feature": "funFactory",
+      "sizeBytes": 1258291,
+      "deliveryType": "upload",
+      "ageMs": 1814400000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/factory/main/seasons",
+        "docId": "s03",
+        "field": "art.url"
+      },
+      "scan": {
+        "state": "linked"
+      }
+    },
+    {
+      "id": "a5",
+      "publicId": "bug-zapper/m2x81c/shot",
+      "url": "https://res.example/bug-zapper/m2x81c/shot.png",
+      "feature": "bugZapper",
+      "sizeBytes": 2411725,
+      "deliveryType": "authenticated",
+      "ageMs": 10368000000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/bugs/main/reports",
+        "docId": "m2x81c",
+        "field": "shotRef"
+      },
+      "scan": {
+        "state": "orphan"
+      }
+    },
+    {
+      "id": "a6",
+      "publicId": "game-vault/covers/mouthwashing-old",
+      "url": "https://res.example/game-vault/covers/mouthwashing-old.png",
+      "feature": "gameVault",
+      "sizeBytes": 398459,
+      "deliveryType": "upload",
+      "ageMs": 20736000000,
+      "linkedDoc": {
+        "collection": "sites/boomertanger/vaultGames",
+        "docId": "mouthwashing",
+        "field": "cover.url"
+      },
+      "scan": {
+        "state": "stale"
+      }
+    }
+  ],
+  "items": {
+    "sites/boomertanger/bugs/main/reports/k3f9x2": {
+      "title": "Footer game freezes on Safari",
+      "kind": "Bug · fixed",
+      "link": "/bug-zapper?report=k3f9x2"
+    },
+    "sites/boomertanger/bugs/main/reports/zq0p1d": {
+      "title": "Join dialog cuts off on iPhone SE",
+      "kind": "Bug · open",
+      "link": "/bug-zapper?report=zq0p1d"
+    },
+    "sites/boomertanger/vaultGames/still-wakes-the-deep": {
+      "title": "Still Wakes the Deep",
+      "kind": "Game · cover",
+      "link": "/games/still-wakes-the-deep"
+    },
+    "sites/boomertanger/vaultQueue/q7hq2": {
+      "title": "Cover for Fears to Fathom",
+      "kind": "Queue · waiting for a mod",
+      "link": "/games/queue"
+    },
+    "sites/boomertanger/factory/main/seasons/s03": {
+      "title": "Season 3: The Long Night",
+      "kind": "Season art",
+      "link": "/shift/builder"
+    },
+    "sites/boomertanger/vaultGames/mouthwashing": {
+      "title": "Mouthwashing",
+      "kind": "Game · cover",
+      "link": "/games/mouthwashing"
+    }
+  },
+  "dry": {
+    "count": 23,
+    "bytes": 43620762,
+    "examples": [
+      {
+        "title": "Footer game freezes on Safari",
+        "link": "/bug-zapper?report=k3f9x2",
+        "days": 64,
+        "bytes": 1887437
+      },
+      {
+        "title": "Vault search ignores accents",
+        "link": null,
+        "days": 90,
+        "bytes": 2516582
+      },
+      {
+        "title": "Night Shift badge shows twice",
+        "link": null,
+        "days": 61,
+        "bytes": 838861
+      },
+      {
+        "title": "Typo on the Join page",
+        "link": null,
+        "days": 120,
+        "bytes": 314573
+      },
+      {
+        "title": "Planner time shows in UTC",
+        "link": null,
+        "days": 75,
+        "bytes": 1153434
+      }
+    ]
+  },
+  "log": [
+    {
+      "action": "purge",
+      "actorName": "@boomertanger",
+      "itemTitle": "m2x81c",
+      "reason": "",
+      "agoMs": 7200000,
+      "details": {
+        "bytes": 2411724.8
+      }
+    },
+    {
+      "action": "preview",
+      "actorName": "@gbo",
+      "itemTitle": "zq0p1d",
+      "reason": "",
+      "agoMs": 86400000
+    },
+    {
+      "action": "rule-toggle",
+      "actorName": "@gbo",
+      "itemTitle": "Old bug screenshots",
+      "reason": "Checking the dry run first",
+      "agoMs": 259200000
+    },
+    {
+      "action": "sweep-run",
+      "actorName": "Automatic",
+      "itemTitle": "Sweep",
+      "reason": "",
+      "agoMs": 518400000,
+      "details": {
+        "purged": 4,
+        "bytes": 7549747.2,
+        "status": "ok"
+      }
+    }
+  ]
+}
