@@ -1,11 +1,11 @@
 // Feature Lab data (docs/specs/feature-lab.md §3, §7). The board reads sites/{siteId}/lab/main/ideas (everyone sees the visible
 // ones; staff see hidden ones too), an idea's comments and the member's own vote marks. Every write goes through the callables
 // (labSubmit, labVote, labComment, labTriage, labHide, labDelete, adminEditItem kind labIdea). Times are ms.
+import type { Status, Priority, Area } from "./status";
+export { STATUS_KEYS, STATUS, PRIORITY, AREA, voteLocked } from "./status";
+export type { Status, Priority, Area } from "./status";
 import { db, doc, getDoc, collection, getDocs, query, where, orderBy, limit, SITE_ID } from "../../lib/db";
 
-export type Status = "submitted" | "under_review" | "planned" | "in_progress" | "shipped" | "declined";
-export type Priority = "low" | "medium" | "high";
-export type Area = "site" | "stream" | "other";
 export interface By { uid: string; handle: string; name?: string }
 export interface HistoryItem { status?: Status; kind?: "note"; note?: string; changedBy?: { uid?: string; handle?: string }; changedAt: number }
 export interface Idea {
@@ -15,17 +15,6 @@ export interface Idea {
 }
 export interface Comment { id: string; text: string; by: By; staffTag: "admin" | "mod" | null; hidden: boolean; hiddenBy?: { uid?: string; handle?: string }; hiddenReason?: string; createdAt: number }
 export interface LogEntry { id: string; action: string; actorName: string; reason: string; createdAt: number; changes?: Record<string, { before: unknown; after: unknown }>; details?: Record<string, unknown> }
-
-export const STATUS_KEYS: Status[] = ["submitted", "under_review", "planned", "in_progress", "shipped", "declined"];
-export const STATUS: Record<Status, { label: string; tone: string }> = {
-  submitted: { label: "Submitted", tone: "blue" }, under_review: { label: "Under review", tone: "teal" }, planned: { label: "Planned", tone: "gold" },
-  in_progress: { label: "In progress", tone: "green" }, shipped: { label: "Shipped", tone: "lime" }, declined: { label: "Declined", tone: "gray" },
-};
-export const PRIORITY: Record<Priority, { label: string; tone: string; level: number }> = {
-  low: { label: "Low", tone: "blue", level: 1 }, medium: { label: "Medium", tone: "gold", level: 2 }, high: { label: "High", tone: "pink", level: 3 },
-};
-export const AREA: Record<Area, string> = { site: "Site", stream: "Stream", other: "Other" };
-export const voteLocked = (i: Pick<Idea, "status">) => i.status === "shipped" || i.status === "declined";
 
 const ms = (v: any): number => (v == null ? 0 : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : 0);
 const col = (...p: string[]) => collection(db, "sites", SITE_ID, "lab", "main", ...p);

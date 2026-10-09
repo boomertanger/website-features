@@ -5,7 +5,8 @@ import { medalHtml } from "../../../../shared/ui/medal.js";
 import { stampHtml } from "../../../../shared/ui/stamp.js";
 import { reducedMotion } from "../../../../shared/ui/burst.js";
 import { I } from "./art";
-import { STATUS, PRIORITY, AREA, voteLocked, type Idea, type Status, type Priority } from "./data";
+import { STATUS, PRIORITY, AREA, voteLocked, type Status, type Priority } from "./status";
+import type { Idea } from "./data";
 
 export { esc };
 export const reduce = reducedMotion;

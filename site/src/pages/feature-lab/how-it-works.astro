@@ -1,0 +1,158 @@
+---
+// /feature-lab/how-it-works: the Feature Lab's story page (docs/specs/feature-lab.md §8; docs/design/mockups/feature-lab-mockups.html, hero 1).
+// TocLayout and the shared How it works blocks (styles/how-it-works.css, shared/ui/how-it-works.js): hero with the bench scene, stage
+// cards with hover scenes, the journey, a working example (a sample idea to vote on and move to Shipped; nothing is saved), the roles flow,
+// flip medals, the House rules placard, Ask BOOMBOT and the closing call to action. The only read is the jar counts (one capped query;
+// an empty bench if it fails); scripts/lab/how.ts fills them in. Only the calls to action change by viewer.
+import LabLayout from "../../layouts/LabLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { sBadge, architect } from "../../scripts/lab/ui";
+
+const JOIN_TITLE = "Join to post ideas";
+const NAV: [string, string][] = [["s-what", "What it's for"], ["s-journey", "An idea's journey"], ["s-try", "Try it"], ["s-who", "Who does what"], ["s-rewards", "Rewards"], ["s-rules", "House rules"], ["s-faq", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+
+const PARTS = [
+  ["post", "💡", "Pitch an idea", "Something for the site or the stream: a feature, an overlay, a stream format. Say what it should do.", "Members · up to 3 a day", `<div class="fl-note"><b>Countdown timer</b><span></span><span></span><span></span></div>`],
+  ["vote", "🗳", "Vote on ideas", "One vote per idea, and you can take it back any time while it's open. The most wanted ideas rise.", "Members", `<div class="fl-sc-vote"><i style="--h:30px"></i><i style="--h:52px"></i><i style="--h:40px"></i><i style="--h:22px"></i></div>`],
+  ["move", "🔎", "Watch it move", "Admins review every idea, plan the good ones and leave notes in the history, so you always know where yours stands.", "Everyone can follow along", `<div class="fl-sc-move">${sBadge("under_review")}${sBadge("planned")}${sBadge("in_progress")}</div>`],
+  ["ship", "🏛", "Ship it", "When an idea ships, its author earns The Architect, an Epic badge with 100 XP, on their public profile.", "The idea's author", `<div class="fl-sc-ship">${architect(78)}</div>`],
+] as const;
+const JOURNEY = [
+  ["submitted", "💡", "Submitted", "Posted on the board. Your own vote is already on it."],
+  ["under_review", "🔎", "Under review", "An admin is looking at it: is it doable, and does it fit?"],
+  ["planned", "📐", "Planned", "It's going to happen. A note in the history often says when."],
+  ["in_progress", "🛠", "In progress", "Being built right now. Voting stays open until it ships."],
+  ["shipped", "🚀", "Shipped", "Live on the site or the stream. The author earns The Architect."],
+] as const;
+const FLIPS = [
+  { ic: "🏛", t: "The Architect", sub: "An idea you posted shipped", how: "Post an idea that gets built and shipped.", un: "Epic · +100 XP · on your profile", c: "primary" },
+  { ic: "⏱", t: "Big idea", sub: "Night Shift mission", how: "Post an idea in Feature Lab while the mission is live.", un: "Season XP when a season runs it", c: "gold" },
+  { ic: "🗳", t: "Vote on ideas", sub: "Night Shift mission", how: "Vote on ideas (each idea counts once, never your own).", un: "Season XP when a season runs it", c: "teal" },
+] as const;
+const RULES = [
+  ["🔎", "Search first", "If someone already posted it, vote and comment there instead of posting it again."],
+  ["🎯", "One idea per post", "Two ideas in one post can't both be planned. Split them up."],
+  ["🧩", "Say what it should do", "Describe what you want to happen, not just how. It helps a lot when we plan it."],
+  ["🎮", "New games go to the Arcade Studio", "Feature Lab is for the site and the stream. Game pitches have their own home."],
+  ["🤝", "Be kind", "Critique ideas, not people. Mods hide comments that break the rules."],
+  ["🗳", "Votes are a signal, not a promise", "The most wanted ideas get a close look, but some can't be built, and that's okay."],
+] as const;
+const FAQS = [
+  ["Who can see the ideas?", "Everyone, even visitors. Posting, voting and commenting need a free account with a verified email."],
+  ["Why was my idea declined?", "Usually because it can't be built, it doesn't fit the site or stream, or it's already covered. The history says why when there's a reason to give."],
+  ["Can I edit my idea after posting?", "Not yet. Add details in a comment. Admins can fix typos, and every admin edit is marked on the idea."],
+  ["Does my vote ever expire?", "No. It stays until you take it back or the idea ships or is declined; then the count is frozen."],
+  ["How do I earn The Architect?", "Post an idea that gets built. When an admin moves it to Shipped, the badge lands in your trophy case right away."],
+] as const;
+const acts = `<a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title="${JOIN_TITLE}">Join free</a><button type="button" class="bt-btn bt-btn--primary bt-when-signed-in" data-fl-new>Post an idea</button><a class="bt-btn bt-btn--secondary" href="/feature-lab">See the ideas</a>`;
+---
+<LabLayout title="How Feature Lab works" description="Pitch ideas for the site or the stream, vote on what others want, and watch the best ones get built. Ship one and earn The Architect." section="how">
+  <TocLayout items={NAV}>
+    <div class="ai-main fl-howpage" data-flh>
+      <section class="ai-hero" aria-labelledby="h-hero">
+        <div class="fl-how-hero">
+          <div>
+            <span class="ai-kicker">Feature Lab</span>
+            <h1 class="bt-title bt-title--hero" id="h-hero">Your ideas, built for real</h1>
+            <p>Pitch something for the site or the stream, vote on what others want, and watch the best ideas move from the board to the stream. Ship one and you earn The Architect.</p>
+            <div class="ai-acts" set:html={acts} />
+          </div>
+          <div data-fl-how-bench class="fl-how-bench" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-what" aria-labelledby="h-s-what">
+        <Fragment set:html={chapter(1, "s-what", "What it's for", "A place to tell me what you want next, for the site or the stream, and to see what's already on the way.")} />
+        <div class="ai-stage">
+          {PARTS.map(([k, ic, t, d, who, scene]) => (
+            <div class="bt-card ai-part bt-spotlight" tabindex="0">
+              <div class={`ai-scene fl-sc-${k}`} aria-hidden="true" set:html={scene} />
+              <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{ic}</span>
+              <div class="ai-part-copy"><h3>{t}</h3><p>{d}</p><div class="ai-part-foot"><span class="ai-who-chip">{who}</span></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-journey" aria-labelledby="h-s-journey">
+        <Fragment set:html={chapter(2, "s-journey", "An idea's journey", "Five steps from the board to the stream. Hover or tap a step.")} />
+        <ol class="ai-jr fl-jr" data-journey>
+          {JOURNEY.map(([k, ic, t, d], n) => (
+            <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{n + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span><Fragment set:html={sBadge(k)} /></li>
+          ))}
+        </ol>
+        <div class="fl-declined"><Fragment set:html={sBadge("declined")} /><span>Some ideas are declined: they can't be built, don't fit, or are already covered. They stay on the board, dimmed, with the reason in their history.</span></div>
+      </section>
+
+      <section class="ai-sec" id="s-try" aria-labelledby="h-s-try">
+        <Fragment set:html={chapter(3, "s-try", "Try it", "Vote on this sample idea, then play admin and move it all the way to Shipped.")} />
+        <div data-try></div>
+      </section>
+
+      <section class="ai-sec" id="s-who" aria-labelledby="h-s-who">
+        <Fragment set:html={chapter(4, "s-who", "Who does what", "Members bring the ideas, admins sort them, Boomertanger builds them. Hover a card.")} />
+        <div class="ai-flow" data-flow>
+          <div class="bt-card ai-node ai-node--pl" data-role="pl" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">💡</span><span class="bt-badge bt-badge--blue">Members</span></div><h3>You</h3><p>Post ideas, vote, comment. Earn The Architect when one ships.</p></div>
+          <div class="ai-arr ai-arr--1" data-links="pl kp" aria-hidden="true"><span>Ideas and votes</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--kp" data-role="kp" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">🔎</span><span class="bt-badge bt-badge--gold">Admins</span></div><h3>Admins</h3><p>Review every idea, set status and priority, and leave notes in the history.</p></div>
+          <div class="ai-arr ai-arr--2" data-links="kp bt" aria-hidden="true"><span>The plan</span><i><b></b></i></div>
+          <div class="bt-card ai-node ai-node--bt" data-role="bt" tabindex="0"><div class="ai-node-top"><Mascot decorative /><span class="bt-badge bt-badge--pink">Final say</span></div><h3>Boomertanger</h3><p>Picks what gets built, builds it, and ships it.</p></div>
+          <div class="bt-card ai-node ai-node--md" data-role="md" tabindex="0"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true">🛡</span><div class="ai-node-txt"><h3>Mods</h3><p>Keep the comments friendly: they can hide a comment or an idea that breaks the House rules.</p></div><span class="bt-badge bt-badge--teal">Mod team</span></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rewards" aria-labelledby="h-s-rewards">
+        <Fragment set:html={chapter(5, "s-rewards", "Rewards", "One badge for ideas that ship, and Night Shift missions when a season runs them.")} />
+        <div class="bt-flip-grid fl-flips">
+          {FLIPS.map((b) => (
+            <button type="button" class={`bt-flip bt-flip--${b.c}`} aria-label={`${b.t}: ${b.sub}. How to earn: ${b.how} You get: ${b.un}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{b.ic}</span><b>{b.t}</b><span class="bt-flip-sub">{b.sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">{b.how}</span><span class="bt-flip-k">You get</span><span class="bt-flip-tag">{b.un}</span></span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rules" aria-labelledby="h-s-rules">
+        <Fragment set:html={chapter(6, "s-rules", "House rules")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {RULES.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-faq" aria-labelledby="h-s-faq">
+        <Fragment set:html={chapter(7, "s-faq", "Ask BOOMBOT")} />
+        <div class="bt-chat">
+          {FAQS.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`fl-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`fl-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`fl-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta" aria-labelledby="h-cta">
+        <h2 id="h-cta">Got an idea?</h2>
+        <p class="bt-when-visitor">Join free to post it, and vote on the ones you want too.</p>
+        <p class="bt-when-signed-in">Post it on the board. Your vote goes on it straight away.</p>
+        <div class="ai-acts" set:html={acts} />
+      </section>
+    </div>
+  </TocLayout>
+</LabLayout>
+
+<script>
+  import "../../scripts/lab/how";
+</script>

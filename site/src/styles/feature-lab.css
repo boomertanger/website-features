@@ -253,3 +253,7 @@
   .bt-root:not(#_) .fl-bar .fl-how-link { border: 1px solid var(--bt-border-2); border-radius: 50%; text-decoration: none; }
 }
 .bt-root:not(#_) .fl-ship-art { margin-right: 40px; margin-bottom: 18px; }
+.bt-root:not(#_) .fl-flips { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bt-root:not(#_) .fl-try-note { margin: 0; display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .fl-how-bench { min-height: 190px; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .fl-flips { grid-template-columns: minmax(0, 1fr); } }
