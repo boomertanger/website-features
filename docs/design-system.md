@@ -380,6 +380,8 @@ Invalid: `aria-invalid="true"`. Grouping: `.bt-form`, `.bt-form-grid`, `.bt-form
 `<span class="bt-admin-tag">${SHIELD_ICON}Admin only</span>`); `.bt-comments` >
 `.bt-comment` > `.bt-comment-head` (`.bt-comment-author`, optional
 `.bt-admin-tag.bt-admin-tag--small`, `.bt-comment-time`) + `.bt-comment-text`;
+`.bt-comment--hidden` is a hidden comment as staff see it (Feature Lab: dashed border, faded, the text struck through) followed by a
+`.bt-comment-hidden-note` line ("Hidden by @handle: reason. Only staff see this."); members never receive hidden comments, so it only ever renders for staff;
 `.bt-history` > `.bt-history-item` > `.bt-history-line` (`.bt-history-dot
 .bt-history-dot--{tone}` + `.bt-history-rule`) + `.bt-history-body`;
 `.bt-modal-actions` last.

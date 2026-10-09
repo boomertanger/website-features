@@ -1155,6 +1155,11 @@
 .bt-root:not(#_) .bt-composer-count.is-over { color: var(--bt-danger-text); }
 .bt-root:not(#_) .bt-composer .bt-btn:disabled { opacity: 1; background: var(--bt-surface-2); border-color: var(--bt-border-2); color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-comment-text { font-size: var(--bt-text-base); line-height: var(--bt-leading-body); color: var(--bt-text); white-space: pre-wrap; }
+/* A hidden comment as staff see it (Feature Lab, docs/specs/feature-lab.md §6): dashed, faded, struck through, with a "Hidden by @handle: reason.
+   Only staff see this." line (.bt-comment-hidden-note). Members never receive the comment at all. */
+.bt-root:not(#_) .bt-comment--hidden { opacity: 0.55; padding: 8px 10px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-md); }
+.bt-root:not(#_) .bt-comment--hidden .bt-comment-text { text-decoration: line-through; text-decoration-color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-comment-hidden-note { display: block; margin-top: var(--bt-space-1); font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-faint); }
 
 .bt-root:not(#_) .bt-history { display: flex; flex-direction: column; }
 .bt-root:not(#_) .bt-history-item { display: flex; gap: var(--bt-space-3); }

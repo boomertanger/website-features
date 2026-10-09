@@ -803,6 +803,15 @@ function pageHtml() {
         <div class="bt-modal-section"><p class="bt-section-label">History</p>${historyHtml()}</div>
       </div>
     </div>
+    <p class="kit-sub">Hidden comment (.bt-comment--hidden, the staff view of a comment a mod hid: dashed, faded, struck through, with who hid it and why; members never receive it). Beside it, a visible comment for comparison</p>
+    <div class="kit-grid-2">
+      <div class="bt-comments">
+        <div class="bt-comment"><div class="bt-comment-head"><span class="bt-comment-author">Vera Crane</span><span class="bt-comment-time">Sep 13, 2026</span></div><p class="bt-comment-text">Would love this for the Resident Evil marathon next month.</p></div>
+      </div>
+      <div class="bt-comments">
+        <div class="bt-comment bt-comment--hidden"><div class="bt-comment-head"><span class="bt-comment-author">Hollow Moth</span><span class="bt-admin-tag bt-admin-tag--small">${SHIELD_ICON}Mod</span><span class="bt-comment-time">Sep 13, 2026</span></div><p class="bt-comment-text">Buy my gold at the link in my profile, cheapest on the web!</p><span class="bt-comment-hidden-note">Hidden by @deadairdan: spam. Only staff see this.</span></div>
+      </div>
+    </div>
   </section>
 ${navHtml()}
 ${arcadeHtml()}
