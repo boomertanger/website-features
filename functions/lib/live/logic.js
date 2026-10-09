@@ -508,11 +508,12 @@ function sumShards(shards) {
  * Builds the public/live summary (§13). Input:
  *   stream, window (only open + closesAt + beat are copied, never the word), counters (sumShards result or shards[]),
  *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], activity { kind, title, status } | null,
- *   look ("hull" | "crt"), nowMs
+ *   look ("hull" | "crt"), nowMs, firstIn [handles of the current beat's first check-ins, first three kept],
+ *   grades { <handle>: { track, grade } } (the public crew mirror, public/crew; only crew shown on the page are copied)
  * Output: state (off | live | backstage | ended), streamId, title, type, audience, actualStart, actualEnd,
  * beat (current), beats { <beat>: { status: done | now | next | skipped, checkins } }, window { open, closesAt, beat },
  * counts { total, byBeat, byRoom }, viewers { total, byPlatform }, peak, game, nextGame, crew { captain, chats, onDuty }
- * (handles only), activity, look, updatedAt. "off" is the waiting room (no stream fields).
+ * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, activity, look, updatedAt. "off" is the waiting room (no stream fields).
  */
 function buildPublicLive(input) {
   const { stream, window: win, viewers, peak, onDuty, activity, look, nowMs } = input;
@@ -523,7 +524,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [] }, activity: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -544,6 +545,13 @@ function buildPublicLive(input) {
   for (const [room, seat] of Object.entries(crew.chats || {})) {
     chats[room] = { lead: handleOf(seat && seat.lead), deckhands: ((seat && seat.deckhands) || []).map(handleOf).filter(Boolean) };
   }
+  const people = new Set([handleOf(crew.captain), ...Object.values(chats).flatMap((c) => [c.lead, ...c.deckhands]), ...(onDuty || []).map(handleOf)].filter(Boolean));
+  const gradeMap = input.grades && typeof input.grades === "object" ? input.grades : {};
+  const grades = [...people].sort().map((h) => {
+    const g = Object.prototype.hasOwnProperty.call(gradeMap, h) ? gradeMap[h] : null;
+    return g && Number.isInteger(g.grade) ? { handle: h, track: g.track === "admin" ? "admin" : "mod", grade: g.grade } : null;
+  }).filter(Boolean);
+  const firstIn = live ? (Array.isArray(input.firstIn) ? input.firstIn : []).filter((h) => typeof h === "string" && h).slice(0, 3) : [];
   const open = live && windowOpenNow(win, nowMs);
   return {
     ...base,
@@ -562,7 +570,9 @@ function buildPublicLive(input) {
     peak: num(peak),
     game: openGame ? { gameId: openGame.gameId, title: openGame.title, startedAt: ms(openGame.startedAt) } : null,
     nextGame: nextPlanned ? { gameId: nextPlanned.gameId, title: nextPlanned.title || null } : null,
-    crew: { captain: handleOf(crew.captain), chats, onDuty: (onDuty || []).map(handleOf).filter(Boolean) },
+    crew: { captain: handleOf(crew.captain), chats, onDuty: (onDuty || []).map(handleOf).filter(Boolean), grades },
+    firstIn,
+    firstInBeat: live && firstIn.length ? (open ? win.beat : currentBeat(sb)) : null,
     activity: activity ? { kind: String(activity.kind || ""), title: activity.title == null ? null : String(activity.title), status: activity.status == null ? null : String(activity.status) } : null,
   };
 }

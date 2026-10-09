@@ -522,7 +522,9 @@ assert.deepEqual(pub.window, { open: true, closesAt: at(36), beat: "end" });
 assert.deepEqual(pub.counts, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, ytLandscape: 1, ytVertical: 2 } });
 assert.deepEqual(pub.viewers, { total: 155, byPlatform: { twitch: 120, ytLandscape: 30, ytVertical: 5, tiktok: 0 } });
 assert.equal(pub.peak, 160);
-assert.deepEqual(pub.crew, { captain: "Cap", chats: { twitch: { lead: "Ana", deckhands: ["Bo", "Cy"] }, tiktok: { lead: null, deckhands: [] } }, onDuty: ["Ana", "Bo"] });
+assert.deepEqual(pub.crew, { captain: "Cap", chats: { twitch: { lead: "Ana", deckhands: ["Bo", "Cy"] }, tiktok: { lead: null, deckhands: [] } }, onDuty: ["Ana", "Bo"], grades: [] });
+assert.deepEqual(pub.firstIn, []);
+assert.equal(pub.firstInBeat, null);
 assert.deepEqual(pub.activity, { kind: "questions", title: "Questions", status: "running" });
 assert.equal(pub.look, "crt");
 assert.equal(pub.updatedAt, at(32));
@@ -530,6 +532,20 @@ assert.deepEqual(pub.game, null, "no open game segment at the End beat in this f
 assert.deepEqual(pub.nextGame, { gameId: "g2", title: "Two" }, "next = first planned game not yet played");
 assert.deepEqual(L.findSecrets(pub, { words: [WORD], videoIds: [VIDEO, VIDEO2] }), [], "public/live never contains the word, private data or a video id");
 assert.equal(JSON.stringify(pub).includes("UID-CAPTAIN"), false, "no uids");
+// first in (public handles, at most three) and the crew's grades (only people shown on the page, from the public crew mirror)
+const pubFirst = L.buildPublicLive({
+  stream: fullStream, window: winEnd, counters: shards, viewers: {}, onDuty: ["Ana"], nowMs: at(32),
+  firstIn: ["gbo", "cryptkeeper", "lanternjaw", "fourth", { handle: "x", uid: "UID-X" }, 7],
+  grades: { Ana: { track: "mod", grade: 2 }, Cap: { track: "admin", grade: 3 }, Cy: { track: "mod", grade: 1 }, Stranger: { track: "mod", grade: 4 }, Bo: { track: "mod", grade: "x" } },
+});
+assert.deepEqual(pubFirst.firstIn, ["gbo", "cryptkeeper", "lanternjaw"], "three handles at most");
+assert.equal(pubFirst.firstInBeat, "end");
+assert.deepEqual(pubFirst.crew.grades, [{ handle: "Ana", track: "mod", grade: 2 }, { handle: "Cap", track: "admin", grade: 3 }, { handle: "Cy", track: "mod", grade: 1 }], "grades only for crew on the page, no bad grades");
+assert.deepEqual(L.findSecrets(pubFirst, { words: [WORD], videoIds: [VIDEO, VIDEO2] }), [], "first in and grades leak nothing");
+assert.equal(JSON.stringify(pubFirst).includes("UID-"), false, "no uids from first in");
+assert.equal(L.findSecrets({ crew: { grades: [{ uid: "u1", grade: 2 }] } }).length, 1, "a uid in a grade entry would be caught");
+assert.deepEqual(L.buildPublicLive({ stream: { ...fullStream, state: "ended" }, window: null, counters: sums, viewers: {}, firstIn: ["a"], nowMs: at(41) }).firstIn, [], "no first in once the stream has ended");
+assert.deepEqual(L.buildPublicLive({ stream: null, nowMs: 5 }).crew.grades, []);
 assert.equal(JSON.stringify(pub).includes(WORD), false);
 // window closed or absent: open false, no closesAt leaks, never the word either way
 const pubClosed = L.buildPublicLive({ stream: fullStream, window: { ...winEnd, closesAt: at(31, 30) }, counters: sums, viewers: {}, nowMs: at(32) });
@@ -686,5 +702,17 @@ for (let i = 0; i < words.length; i++) {
 // every list word can be picked, checked in with, and survives the deny scan of the public doc
 const picked = L.pickWord(words, [], at(0), () => 0.5);
 assert.equal(words.includes(picked.word), true);
+
+// ---------- one source for the Twitch channel ----------
+// The site's player embeds site.json twitchChannel; the functions use TWITCH_LOGIN (functions/.env, defaults in lib/live/feeds.js): they must match.
+{
+  const fs = require("fs"), path = require("path");
+  const env = fs.readFileSync(path.join(__dirname, "..", ".env"), "utf8").match(/^TWITCH_LOGIN=(.*)$/m);
+  const site = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "site", "src", "data", "site.json"), "utf8"));
+  assert.ok(env && env[1].trim(), "functions/.env has TWITCH_LOGIN");
+  assert.equal(site.twitchChannel, env[1].trim(), "site.json twitchChannel must equal functions/.env TWITCH_LOGIN");
+  const feedsSrc = fs.readFileSync(path.join(__dirname, "..", "lib", "live", "feeds.js"), "utf8");
+  assert.ok(feedsSrc.includes(`defineString("TWITCH_LOGIN", { default: "${env[1].trim()}" })`), "lib/live/feeds.js TWITCH_LOGIN default must equal functions/.env");
+}
 
 console.log("check-live: ok");

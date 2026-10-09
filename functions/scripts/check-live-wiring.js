@@ -555,6 +555,7 @@ async function main() {
   assert.equal(d.action, "wait"); assert.equal(tasks.length, 1, "a third writer inside the window queues nothing");
   clock += 1500;                                              // the task fires at lastFlush + 3 s
   assert.deepEqual(await FEEDS.runFlushTask(), { flushed: true });
+  { const pf = await get("public/live"); assert.ok(Array.isArray(pf.firstIn) && pf.firstIn.length <= 3, "public/live carries the first three handles"); assert.ok(pf.firstIn.every((h) => typeof h === "string"), "handles only"); assert.ok(Array.isArray(pf.crew.grades), "public/live carries crew grades"); assert.equal(JSON.stringify(pf).includes("uid"), false, "no uid key or value in public/live"); }
   assert.equal((await flushState()).scheduledAtMs, null); assert.equal((await flushState()).lastFlushMs, clock);
   clock += 1000;
   assert.equal((await FEEDS.runFlushTask()).flushed, false, "a task running inside the 3 s gap does not flush, it queues once more");

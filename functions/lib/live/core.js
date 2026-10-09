@@ -169,6 +169,11 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
   };
 
   // ---------- public/live ----------
+  /** The current beat's first check-ins as public handles (private/control holds { uid, handle }; the uid never leaves it). */
+  const firstInOf = (control, stream) => {
+    const beat = control.window && control.window.beat && L.windowOpenNow(control.window, now()) ? control.window.beat : L.currentBeat(stream.beats);
+    return ((control.firstIn || {})[beat] || []).map((x) => (x && typeof x.handle === "string" ? x.handle : null)).filter(Boolean).slice(0, 3);
+  };
   /** The stream /live shows: the live one, else the one that ended in the last 2 hours, else null (off air). */
   async function currentForPublic(nowMs) {
     const live = await ctx.liveStream();
@@ -182,6 +187,18 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
    * Rebuilds public/live (logic.buildPublicLive) and writes it ONLY when it changed (updatedAt aside). Refuses to write
    * anything findSecrets flags (a forbidden key, a video id, a key hash, a uid). Returns { wrote, id }.
    */
+  // The public crew mirror (public/crew: handle, track, grade), read at most once a minute: grade chips on /live.
+  let gradeCache = { at: 0, map: {} };
+  ctx.crewGrades = async () => {
+    if (now() - gradeCache.at < 60000) return gradeCache.map;
+    try {
+      const d = (await db.doc(`${SITE}/public/crew`).get()).data() || {};
+      const map = {};
+      for (const m of d.members || []) if (m && typeof m.handle === "string" && Number.isInteger(m.grade)) map[m.handle] = { track: m.track === "admin" ? "admin" : "mod", grade: m.grade };
+      gradeCache = { at: now(), map };
+    } catch (err) { console.error("live: couldn't read public/crew", String((err && err.message) || err).slice(0, 120)); gradeCache = { at: now(), map: gradeCache.map }; }
+    return gradeCache.map;
+  };
   ctx.publishLive = async () => {
     const nowMs = now();
     const stream = await currentForPublic(nowMs);
@@ -201,6 +218,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
     const out = L.buildPublicLive({
       stream: stream ? { ...stream, beats: sb } : null, window: control.window || null, counters: counts, viewers: control.viewers || {},
       peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), activity: control.activity || null, look: main.look, nowMs,
+      grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
     });
     const hits = L.findSecrets(out, secrets);
     if (hits.length) { console.error("live: public/live not written, it would expose:", hits.join(", ")); return { wrote: false, id: stream ? stream.id : null, blocked: hits }; }
