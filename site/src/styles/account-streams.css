@@ -1,0 +1,25 @@
+/* site/src/styles/account-streams.css — /account#streams (docs/specs/control-room.md §6): the stream streak, one row per recent stream, and the note on what is
+   never recorded. Only what is unique (ac-st-*); the card, badges and the four beat stamps (.bt-checkin-stamps) are the kit's. Tokens only; container queries. */
+.bt-root:not(#_) .ac-st-skel { display: block; width: 100%; height: 180px; margin-top: 12px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .ac-st-streak { display: flex; align-items: center; gap: 14px; margin: 14px 0 6px; padding: 14px 16px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: radial-gradient(ellipse at 6% 50%, rgba(var(--bt-gold-rgb), 0.12), transparent 60%), var(--bt-surface-2); }
+.bt-root:not(#_) .ac-st-flame { font-size: 30px; line-height: 1; }
+.bt-root:not(#_) .ac-st-streak b { display: block; color: var(--bt-title); font-size: var(--bt-text-xl); font-weight: 900; }
+.bt-root:not(#_) .ac-st-streak small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ac-st-list { display: grid; gap: 10px; margin: 12px 0 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .ac-st-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 16px; align-items: center; padding: 12px 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); transition: border-color 0.2s, transform 0.2s; }
+.bt-root:not(#_) .ac-st-row:hover { border-color: var(--bt-border-2); transform: translateY(-1px); }
+.bt-root:not(#_) .ac-st-row.is-present { border-left: 3px solid var(--bt-green); }
+.bt-root:not(#_) .ac-st-main { display: grid; gap: 4px; min-width: 0; }
+.bt-root:not(#_) .ac-st-main b { overflow-wrap: anywhere; }
+.bt-root:not(#_) .ac-st-main time, .bt-root:not(#_) .ac-st-main small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ac-st-why { color: var(--bt-text); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .ac-st-side { display: grid; justify-items: end; gap: 6px; }
+.bt-root:not(#_) .ac-st-xp { color: var(--bt-primary-soft); font-size: var(--bt-text-sm); font-weight: 800; }
+.bt-root:not(#_) .ac-st-note { margin-top: 18px; padding: 14px 16px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-md); color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.55; }
+.bt-root:not(#_) .ac-st-note b { color: var(--bt-text); }
+.bt-root:not(#_) .ac-st-note p { margin: 6px 0 0; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ac-st-row { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .ac-st-side { justify-items: start; }
+}
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .ac-st-row { transition: none; } .bt-root:not(#_) .ac-st-row:hover { transform: none; } }
