@@ -34,6 +34,7 @@ export function awayPopoverHtml({ lead = false } = {}) {
     + `<button type="button" class="bt-btn bt-btn--secondary" data-away="done">I'm done for tonight</button></div>`;
 }
 
+/** @param {HTMLElement} root @param {{ onClockIn?: () => void, onAway?: (kind: string) => void, onBack?: () => void, onFlag?: () => void, lead?: boolean }} [opts] */
 export function initDutyBar(root, { onClockIn, onAway, onBack, onFlag, lead = false } = {}) {
   const bar = root.matches?.(".bt-duty-bar") ? root : root.querySelector(".bt-duty-bar");
   if (!bar || bar._duty) return { close() {} };

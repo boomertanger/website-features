@@ -24,6 +24,7 @@ function run(el) {
   requestAnimationFrame(step);
 }
 
+/** @param {ParentNode} [root] */
 export function initCountUp(root = document) {
   if (!io) return;
   root.querySelectorAll("[data-count-to]:not([data-counted])").forEach((el) => { el.dataset.counted = ""; io.observe(el); });

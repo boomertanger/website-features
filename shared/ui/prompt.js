@@ -25,6 +25,7 @@ export function promptHtml({ kind = "handoff", kicker = "", title = "", text = "
     + `<span class="bt-prompt-acts"><button type="button" class="bt-btn bt-btn--secondary" data-prompt="decline">${esc(decline)}</button><button type="button" class="bt-btn bt-btn--primary" data-prompt="accept">${esc(accept)}</button></span></div>`;
 }
 
+/** @param {HTMLElement} el @param {{ onAccept?: () => void, onDecline?: () => void, onExpire?: () => void, focus?: boolean }} [opts] */
 export function initPrompt(el, { onAccept, onDecline, onExpire, focus = true } = {}) {
   if (!el || el._prompt) return { stop() {}, remaining: () => 0 };
   const deadline = Number(el.dataset.deadline) || 0, total = Number(el.dataset.total) || PROMPT_TOTAL_MS;
