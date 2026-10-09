@@ -1,0 +1,39 @@
+/* site/src/styles/live-layout.css — the Control Room staff pages' shared frame (docs/specs/control-room.md §2): the bar, gates and skeleton
+   (lv-* prefix; tokens only; container queries 1024/640/420). Page-specific rules are in live-control.css. */
+
+/* ---- The bar (the page content width, like the Scream Planner's) ---- */
+.bt-root:not(#_) .lv-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
+.bt-root:not(#_) .lv-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .lv-barico { display: none; }
+.bt-root:not(#_) .lv-owner-slot { display: contents; }
+.bt-root:not(#_) .lv-owner-slot[hidden] { display: none; }
+/* Mod Deck is not built yet: shown, dimmed, not a link yet */
+.bt-root:not(#_) .lv-soon { opacity: 0.55; cursor: default; pointer-events: none; }
+.bt-root:not(#_) .lv-soon small { margin-left: 4px; padding: 1px 6px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 700; }
+
+/* ---- Gated pages: .lv[data-access] picks skeleton, gate or page ---- */
+.bt-root:not(#_) .lv :is(.lv-skel, .lv-gate) { display: none; }
+.bt-root:not(#_) .lv[data-access="loading"] .lv-skel { display: flex; }
+.bt-root:not(#_) .lv:is([data-access="join"], [data-access="signup"], [data-access="gate"]) .lv-gate { display: flex; }
+.bt-root:not(#_) .lv:not([data-access="page"]) > .lv-page { display: none; }
+.bt-root:not(#_) .lv-skel { flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .lv-skel-title { display: block; width: 260px; height: 32px; }
+.bt-root:not(#_) .lv-skel-line { display: block; width: min(420px, 80%); height: 14px; }
+.bt-root:not(#_) .lv-skel-card { display: block; width: 100%; height: 260px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .lv-gate { flex-direction: column; align-items: center; gap: 14px; max-width: 560px; padding-top: 40px; padding-bottom: 56px; text-align: center; }
+.bt-root:not(#_) .lv-gate .bt-title { margin: 0 auto; }
+.bt-root:not(#_) .lv-gate-art { display: inline-flex; width: 72px; height: 72px; color: var(--bt-title); }
+.bt-root:not(#_) .lv-gate-art svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .lv-gate-lead { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
+.bt-root:not(#_) .lv-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+.bt-root:not(#_) .lv-gate-acts[hidden] { display: none; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lv-barlinks { display: none; }
+  .bt-root:not(#_) .lv-barico { display: inline-flex; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .lv-brand .bt-wordmark-text { display: none; }
+  .bt-root:not(#_) .lv-bar { gap: 8px; }
+  .bt-root:not(#_) .lv-barico { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+}

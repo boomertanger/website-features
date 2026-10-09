@@ -1,0 +1,14 @@
+---
+// /live/control/checklist: the owner's four checklist templates (docs/specs/control-room.md §5). OWNER ONLY: LiveLayout's ownerOnly gate gives an
+// Overseer and everyone else the no-access state, and the page script never reads the templates for them.
+import LiveLayout from "../../../layouts/LiveLayout.astro";
+import "../../../styles/control-room-looks.css";
+import "../../../styles/live-control.css";
+---
+<LiveLayout title="Checklist templates" section="checklist" ownerOnly>
+  <div class="lc lc-templates" data-lt data-look="hull"></div>
+</LiveLayout>
+
+<script>
+  import "../../../scripts/live/templates";
+</script>

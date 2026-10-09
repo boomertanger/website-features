@@ -1,0 +1,60 @@
+{
+  "_note": "PREVIEW DATA for /live/control and /live/control/checklist (?as=admin is the owner, ?as=a2 an Overseer; non-production, signed out; ?state=idle|live|ended, ?beat=start|break1|break2|end, ?window=1 for an open check-in, ?look=crt). Same shapes as the Control Room reads in docs/specs/control-room.md section 13; times are minutes relative to now and are turned into real times at load. People, games and numbers are examples only. Never used for real accounts.",
+  "tz": "America/Chicago",
+  "streams": [
+    {
+      "id": "pv-monday", "title": "Monster Monday", "startInMin": 55, "lenMin": 170, "type": "platform", "audience": "public",
+      "rooms": ["twitch", "ytLandscape", "ytVertical", "tiktok"], "minCrew": { "captain": true, "rooms": ["youtube", "tiktok"] }, "youtube": "ok",
+      "crew": {
+        "captain": "nightowl",
+        "chats": {
+          "twitch": { "lead": "vexx", "deckhands": ["mothlight"] },
+          "ytLandscape": { "lead": "hollowgrin", "deckhands": [] },
+          "ytVertical": { "lead": "hollowgrin", "deckhands": [] },
+          "tiktok": { "lead": null, "deckhands": [] }
+        }
+      },
+      "games": [
+        { "gameId": "soul-hunt", "title": "Soul Hunt" },
+        { "gameId": "lethal-night", "title": "Lethal Night" },
+        { "gameId": "granny-2", "title": "Granny 2" }
+      ]
+    },
+    {
+      "id": "pv-backstage", "title": "Late-night backstage", "startInMin": 330, "lenMin": 90, "type": "backstage", "audience": "fanClub",
+      "rooms": [], "minCrew": { "captain": false, "rooms": [] }, "youtube": "pending",
+      "crew": { "captain": null, "chats": {} },
+      "games": [{ "gameId": "iron-lung", "title": "Iron Lung" }]
+    }
+  ],
+  "viewers": { "twitch": 812, "ytLandscape": 301, "ytVertical": 96, "tiktok": 75 },
+  "checkins": { "byBeat": { "start": 214, "break1": 302 }, "byRoom": { "twitch": 410, "ytLandscape": 62, "ytVertical": 31, "tiktok": 13 } },
+  "firstIn": ["gbo", "cryptkeeper", "lanternjaw"],
+  "words": ["mortuary", "lantern", "seance", "marrow", "hollow", "cobweb", "reliquary"],
+  "templates": {
+    "start": [
+      { "id": "start-welcome", "text": "Welcome chat, room by room" },
+      { "id": "start-word", "text": "Say the word and open check-in", "shortcut": "openCheckin" },
+      { "id": "start-games", "text": "Tell chat tonight's games" },
+      { "id": "start-socials", "text": "Socials", "shortcut": "copySocials" },
+      { "id": "start-queue", "text": "Point to the question queue" }
+    ],
+    "break1": [
+      { "id": "break1-checkin", "text": "Open check-in", "shortcut": "openCheckin" },
+      { "id": "break1-questions", "text": "Questions, 8 minutes", "shortcut": "startQuestions" },
+      { "id": "break1-hydrate", "text": "Hydrate" },
+      { "id": "break1-firstin", "text": "Shout out the first-ins" }
+    ],
+    "break2": [
+      { "id": "break2-checkin", "text": "Open check-in", "shortcut": "openCheckin" },
+      { "id": "break2-hotseat", "text": "Hot Seat, 2 rounds", "shortcut": "startHotSeat" },
+      { "id": "break2-schedule", "text": "Plug the schedule" }
+    ],
+    "end": [
+      { "id": "end-checkin", "text": "Open check-in", "shortcut": "openCheckin" },
+      { "id": "end-crew", "text": "Thank the crew by name" },
+      { "id": "end-next", "text": "Say when the next stream is" },
+      { "id": "end-aftershow", "text": "After-show or goodbye", "only": "platform" }
+    ]
+  }
+}

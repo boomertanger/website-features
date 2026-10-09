@@ -1,0 +1,98 @@
+/* site/src/styles/live-control.css — the Control Room pages' own layout (docs/specs/control-room.md §3 to §5; mockup
+   docs/design/mockups/control-room-batch-2.html layout A "Cockpit"). Only what is unique to these pages (lc-* prefix): the hero, the Cockpit grid, the
+   platform cards, the check-in word, the celebrations. Components come from shared/bt-ui.css (.bt-cr-panel, .bt-readout, .bt-beats, .bt-checkin,
+   .bt-launch, .bt-checklist, .bt-deckplan, .bt-stamp...) and the two looks from control-room-looks.css (data-look on .lc). Tokens only: no raw colours.
+   Container queries (1024 / 640 / 420); every animation has a reduced-motion version. Dialog rules target .bt-portal[data-feature="live"]. */
+
+.bt-root:not(#_) .lc { position: relative; display: block; padding-bottom: var(--bt-space-8); }
+
+/* ---- Hero: a small scene (the radar scope), the stream's own title, the state and the house look ---- */
+.bt-root:not(#_) .lc-hero { position: relative; display: flex; align-items: center; gap: 18px; margin-bottom: 16px; padding: 14px 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden;
+  background: radial-gradient(ellipse at 8% 50%, rgba(var(--bt-gold-rgb), 0.1), transparent 55%), var(--bt-surface); }
+.bt-root:not(#_) .lc-radar { flex: none; display: inline-flex; width: 64px; height: 64px; color: var(--bt-title); }
+.bt-root:not(#_) .lc-radar svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .lc-hero-main { flex: 1; min-width: 0; }
+.bt-root:not(#_) .lc-hero-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; }
+.bt-root:not(#_) .lc-title { margin: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lc-hero-sub { margin: 4px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lc-hero-side { display: flex; align-items: center; gap: 10px; flex: none; }
+.bt-root:not(#_) .lc-look { color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 600; }
+.bt-root:not(#_) .lc-hero-side .bt-pills { min-width: 190px; }
+.bt-root:not(#_) .lc-hero-side .bt-pills button { padding: 6px 12px; font-size: var(--bt-text-sm); }
+
+/* ---- The Cockpit grid: checklist rail left (owner only), platforms / beats / the main control, launch panel right ---- */
+.bt-root:not(#_) .lc-grid { display: grid; gap: 16px; align-items: start; grid-template-columns: minmax(0, 1fr) 300px;
+  grid-template-areas: "status launch" "beats launch" "stage launch" "scene launch" "game crew" "deck deck"; }
+.bt-root:not(#_) .lc-grid[data-owner="1"] { grid-template-columns: 270px minmax(0, 1fr) 300px;
+  grid-template-areas: "list status launch" "list beats launch" "list stage launch" "list scene launch" "list game crew" "list deck deck"; }
+.bt-root:not(#_) .lc-grid > :empty { display: none; }
+.bt-root:not(#_) .lc-grid > * { min-width: 0; }
+.bt-root:not(#_) .lc-a-list { grid-area: list; position: sticky; top: calc(var(--bt-sticky-top, 0px) + 12px); }
+.bt-root:not(#_) .lc-a-status { grid-area: status; } .bt-root:not(#_) .lc-a-beats { grid-area: beats; } .bt-root:not(#_) .lc-a-stage { grid-area: stage; } .bt-root:not(#_) .lc-a-scene { grid-area: scene; }
+.bt-root:not(#_) .lc-a-launch { grid-area: launch; } .bt-root:not(#_) .lc-a-game { grid-area: game; } .bt-root:not(#_) .lc-a-crew { grid-area: crew; } .bt-root:not(#_) .lc-a-deck { grid-area: deck; }
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .lc-grid, .bt-root:not(#_) .lc-grid[data-owner="1"] { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "status status" "beats beats" "stage stage" "scene scene" "launch list" "game crew" "deck deck"; }
+  .bt-root:not(#_) .lc-grid[data-owner="0"] { grid-template-areas: "status status" "beats beats" "stage stage" "scene scene" "launch launch" "game crew" "deck deck"; }
+  .bt-root:not(#_) .lc-a-list { position: static; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lc-grid, .bt-root:not(#_) .lc-grid[data-owner="1"], .bt-root:not(#_) .lc-grid[data-owner="0"] { grid-template-columns: minmax(0, 1fr); gap: 12px;
+    grid-template-areas: "status" "beats" "stage" "scene" "launch" "list" "game" "crew" "deck"; }
+  .bt-root:not(#_) .lc-hero { flex-wrap: wrap; padding: 12px; gap: 12px; }
+  .bt-root:not(#_) .lc-radar { width: 48px; height: 48px; }
+  .bt-root:not(#_) .lc-hero-side { width: 100%; justify-content: space-between; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .lc-hero-side { flex-wrap: wrap; }
+  .bt-root:not(#_) .lc-hero-side .bt-pills { min-width: 0; flex: 1; }
+}
+
+/* ---- Platforms ---- */
+.bt-root:not(#_) .lc-hint { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-plats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-top: 12px; }
+.bt-root:not(#_) .lc-plats:first-child { margin-top: 0; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .lc-plats { grid-template-columns: 1fr 1fr; } }
+@container bt (max-width: 420px) { .bt-root:not(#_) .lc-plats { grid-template-columns: 1fr; } }
+.bt-root:not(#_) .lc-plat { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 4px 8px; align-items: center; padding: 10px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: var(--bt-bg); font-size: var(--bt-text-sm); transition: border-color 0.2s, transform 0.2s; }
+.bt-root:not(#_) .lc-plat:hover { border-color: var(--bt-border-2); transform: translateY(-1px); }
+.bt-root:not(#_) .lc-plat > :is(.bt-platform-icon) { grid-row: span 2; }
+.bt-root:not(#_) .lc-plat b { font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lc-plat small { grid-column: 2; display: flex; flex-wrap: wrap; gap: 4px 6px; align-items: center; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-plat small b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lc-plat .bt-switch { grid-column: 3; grid-row: 1 / span 2; }
+.bt-root:not(#_) .lc-ok { color: var(--bt-green); font-weight: 700; }
+.bt-root:not(#_) .lc-wait { color: var(--bt-title); font-weight: 700; }
+.bt-root:not(#_) .lc-bad { color: var(--bt-danger-text); font-weight: 700; }
+.bt-root:not(#_) .lc-a-status .bt-readouts { margin-bottom: 4px; }
+
+/* ---- Beats ---- */
+.bt-root:not(#_) .lc-beat-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.bt-root:not(#_) .lc-beat-acts:empty { display: none; }
+
+/* ---- Game ---- */
+.bt-root:not(#_) .lc-game-now { display: grid; grid-template-columns: 54px minmax(0, 1fr); gap: 12px; align-items: center; }
+.bt-root:not(#_) .lc-game-t { margin: 2px 0; font-size: var(--bt-text-lg); font-weight: 800; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lc-game-now small, .bt-root:not(#_) .lc-game-row small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-game-min { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lc-game-list { display: grid; gap: 8px; margin-top: 14px; }
+.bt-root:not(#_) .lc-game-row { display: grid; grid-template-columns: 40px minmax(0, 1fr) auto; gap: 10px; align-items: center; }
+.bt-root:not(#_) .lc-game-row b { display: block; font-size: var(--bt-text-md); overflow-wrap: anywhere; }
+.bt-root:not(#_) .lc-game-now .bt-cover, .bt-root:not(#_) .lc-game-row .bt-cover { width: 100%; }
+
+/* ---- Empty states with the mascot ---- */
+.bt-root:not(#_) .lc-empty { display: grid; justify-items: center; gap: 8px; padding: 16px 8px; text-align: center; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lc-empty p { margin: 0; }
+.bt-root:not(#_) .lc-empty .bt-mascot { width: 54px; }
+.bt-root:not(#_) .lc-soon-tag { color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 600; }
+
+/* ---- Pick rows (today's streams) ---- */
+.bt-root:not(#_) .lc-pick-row { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: var(--bt-bg); }
+.bt-root:not(#_) .lc-pick-row.is-on { border-color: rgba(var(--bt-primary-rgb), 0.6); }
+.bt-root:not(#_) .lc-pick-row b { display: block; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lc-pick-row small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .lc-plat { transition: none; }
+  .bt-root:not(#_) .lc-plat:hover { transform: none; }
+}

@@ -34,6 +34,12 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin" href="/schedule/plan">Plan the week</a><a class="bt-btn bt-btn--secondary" href="/schedule/plan/usual">My usual week</a></div>
     </div>
   </div>
+  <div class="bt-zone" data-live-card hidden>
+    <a class="bt-card bt-card--door" href="/live/control">
+      <div class="bt-card-head"><h2 class="bt-card-title">Control Room</h2><span class="bt-badge bt-badge--admin">Owner and Overseers</span></div>
+      <p class="bt-section-text">Start and stop the stream, run the beats and check-ins, switch games, and set the house look. The owner also keeps the private checklist here.</p>
+    </a>
+  </div>
   <div class="bt-zone" data-ff-link hidden>
     <a class="bt-card bt-card--door" href="/shift/builder">
       <div class="bt-card-head"><h2 class="bt-card-title">Night Shift builder</h2><span class="bt-badge bt-badge--teal">Mods and admins</span></div>
@@ -119,6 +125,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   // Owner and admin checks are for display only: the callables check on the server.
   import "../scripts/admin/award";
   import "../scripts/admin/planner-card";
+  import "../scripts/admin/live-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";

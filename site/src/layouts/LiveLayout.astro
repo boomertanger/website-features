@@ -1,0 +1,43 @@
+---
+// One layout for the Control Room's staff pages (docs/specs/control-room.md §2): the site shell, the sticky CONTROLROOM bar in BaseLayout's
+// "bar" slot, then the page. Like Mod Machina's and the Scream Planner's, gated:
+//   staffOnly   the owner and A2 Overseer and up see the page; visitors get the Sign in gate, mid-signup Finish signup, everyone else
+//               (including an A1 Steward) the no-access state
+//   ownerOnly   the owner's uid only (the checklist templates); an A2 gets the no-access state
+// Display-only: pages are static and read their data in scripts; the server and the rules check again.
+// scripts/live/layout.ts sets .lv[data-access] = loading | gate | join | signup | page.
+import BaseLayout from "./BaseLayout.astro";
+import CrBar from "../components/live/CrBar.astro";
+import { CR_ICON } from "../../../shared/ui/control-room.js";
+import "../styles/live-layout.css";
+
+interface Props { title: string; description?: string; ownerOnly?: boolean; section?: string | null }
+const { title, description, ownerOnly = false, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex>
+  <CrBar slot="bar" section={section} gated />
+  <div class="lv" data-lv data-access="loading" data-owner-only={ownerOnly ? "" : undefined}>
+    <div class="bt-zone lv-skel" aria-hidden="true">
+      <span class="bt-skeleton lv-skel-title"></span>
+      <span class="bt-skeleton lv-skel-line"></span>
+      <span class="bt-skeleton lv-skel-card"></span>
+    </div>
+    <section class="bt-zone lv-gate" aria-labelledby="lv-gate-title">
+      <span class="lv-gate-art" aria-hidden="true" set:html={CR_ICON} />
+      <h1 class="bt-title" id="lv-gate-title">{ownerOnly ? "Owner only" : "Control Room"}</h1>
+      <p class="lv-gate-lead" data-lv-gate-lead>{ownerOnly ? "The checklist templates are private to the owner." : "The Control Room is for the owner and the Overseers. If you're one, sign in with your admin account."}</p>
+      <div class="lv-gate-acts" data-lv-gate-visitor hidden>
+        <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
+      </div>
+      <div class="lv-gate-acts" data-lv-gate-signup hidden>
+        <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+      </div>
+      <a class="bt-btn bt-btn--ghost" href="/live">Go to the live page</a>
+    </section>
+    <div class="lv-page" data-lv-page><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/live/layout";
+</script>

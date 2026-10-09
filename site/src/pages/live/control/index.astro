@@ -1,0 +1,15 @@
+---
+// /live/control: the Control Room's controls (docs/specs/control-room.md §3; mockup docs/design/mockups/control-room-batch-2.html, layout A "Cockpit").
+// Owner and A2 Overseer and up (LiveLayout gates it; the callables and rules check again). Everything is drawn by scripts/live/control.ts.
+// Non-production, signed out: ?as=admin (the owner) or ?as=a2 shows sample data; ?state=idle|live|ended, ?beat=, ?window=1, ?look=crt.
+import LiveLayout from "../../../layouts/LiveLayout.astro";
+import "../../../styles/control-room-looks.css";
+import "../../../styles/live-control.css";
+---
+<LiveLayout title="Control Room" section="control">
+  <div class="lc" data-lc data-look="hull"></div>
+</LiveLayout>
+
+<script>
+  import "../../../scripts/live/control";
+</script>
