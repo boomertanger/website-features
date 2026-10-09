@@ -3,12 +3,9 @@
 // (docs/specs/header-nav.md, design-system.md §5 "Header nav groups"). Without
 // JavaScript the trigger is a link to the group's first page and the panel stays
 // hidden; shared/ui/navgroup.js upgrades it to a disclosure button.
-// The Watch tile is built here (next stream and the live state, the same sources
-// as the Live Beacon); Play and Community show a shimmer until scripts/nav-features.ts
-// fills them the first time their panel opens.
-import site from "../data/site.json";
-import { watchFeatureHtml, featureLoadingHtml } from "../../../shared/ui/navgroup.js";
-import { formatStreamTime } from "../lib/time.js";
+// All three feature tiles show a shimmer until scripts/nav-features.ts fills them the first time their panel opens
+// (Watch: the live stream or the next one from the real schedule, or "Offline"; never a placeholder).
+import { featureLoadingHtml } from "../../../shared/ui/navgroup.js";
 import { isCurrent, isInSection, groupIsCurrent } from "../lib/nav.js";
 
 interface Item { id: string; label: string; href: string; icon: string; blurb: string }
@@ -16,9 +13,6 @@ interface Props { group: { id: string; label: string; items: Item[] }; path: str
 const { group, path } = Astro.props;
 const current = groupIsCurrent(group, path);
 const panelId = `bt-ng-${group.id}`;
-const { startsAt, title } = site.nextStream;
-const day = formatStreamTime(startsAt, "day", site.timezone);
-const watchTile = watchFeatureHtml({ title, startsAt, whenHtml: `<time data-stream-time="day" datetime="${startsAt}">${day}</time>, your time.` });
 ---
 <span class="bt-navgroup" data-navgroup={group.id}>
   <a class:list={["bt-navgroup-btn", current && "is-current"]} href={group.items[0].href} data-navgroup-trigger aria-controls={panelId}>
@@ -37,7 +31,7 @@ const watchTile = watchFeatureHtml({ title, startsAt, whenHtml: `<time data-stre
       ))}
     </div>
     {group.id === "watch" && (
-      <div class="bt-navgroup-feature is-watch" data-navgroup-feature="watch" set:html={watchTile} />
+      <div class="bt-navgroup-feature is-watch" data-navgroup-feature="watch" aria-live="polite" set:html={featureLoadingHtml("Next stream")} />
     )}
     {group.id === "play" && (
       <div class="bt-navgroup-feature" data-navgroup-feature="play" aria-live="polite" set:html={featureLoadingHtml("Today in the Arcade")} />

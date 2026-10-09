@@ -79,6 +79,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       // The live state (data-live on <body>): ONE public/live listener per tab, opened once the page is idle (lib/live.ts).
       import { startLiveWhenIdle } from "../lib/live";
       startLiveWhenIdle();
+      // "Offline" or the next stream's time on the beacon and the phone tab (the real schedule; never a placeholder).
+      import { paintNextLabels } from "../lib/offline-next";
+      if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
       import "../scripts/account/ui";
       import "../scripts/factory/site-wide";
       // Header menus (Watch / Play / Community): hover or click opens a panel.

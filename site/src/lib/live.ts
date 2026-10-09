@@ -15,7 +15,7 @@ const HIDDEN_MS = 60_000;
 const blank = (): PubLive => ({
   state: "off", look: "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
   counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-  crew: { captain: null, chats: {}, onDuty: [] }, activity: null,
+  crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null,
 });
 
 /** What public/live holds, with every field present (a missing document is the off-air state). */
@@ -30,7 +30,8 @@ export function normaliseLive(d: any): PubLive {
     window: { ...b.window, ...(d.window || {}) },
     counts: { total: d.counts?.total || 0, byBeat: d.counts?.byBeat || {}, byRoom: d.counts?.byRoom || {} },
     viewers: { total: d.viewers?.total || 0, byPlatform: d.viewers?.byPlatform || {} },
-    crew: { captain: d.crew?.captain ?? null, chats: d.crew?.chats || {}, onDuty: d.crew?.onDuty || [] },
+    crew: { captain: d.crew?.captain ?? null, chats: d.crew?.chats || {}, onDuty: d.crew?.onDuty || [], grades: Array.isArray(d.crew?.grades) ? d.crew.grades : [] },
+    firstIn: Array.isArray(d.firstIn) ? d.firstIn.filter((h: unknown) => typeof h === "string").slice(0, 3) : [], firstInBeat: d.firstInBeat ?? null,
     peak: d.peak || 0,
     game: d.game || null, nextGame: d.nextGame || null, activity: d.activity || null,
   };
@@ -60,7 +61,7 @@ function apply(p: PubLive) {
     document.body.dataset.live = bodyLive(p);
     // The beacon's second line and the footer's LIVE dot (hooks in LiveBeacon.astro and SiteFooter.astro).
     const sub = p.game?.title || p.title || "";
-    document.querySelectorAll<HTMLElement>("[data-live-sub]").forEach((el) => { if (sub) el.textContent = sub; });
+    document.querySelectorAll<HTMLElement>("[data-live-sub]").forEach((el) => { el.textContent = sub; el.hidden = !sub; });
     document.querySelectorAll<HTMLElement>("[data-live-hook]").forEach((el) => { el.hidden = p.state !== "live"; });
   }
   subs.forEach((fn) => { try { fn(p); } catch (err) { console.error(err); } });

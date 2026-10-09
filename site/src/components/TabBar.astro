@@ -1,19 +1,15 @@
 ---
 // Phone tab bar: Home, Schedule, raised Live, Games, More. The raised Live
-// glows by data-live and shows the next stream time while offline. "More"
+// glows by data-live and says Offline, plus the next stream time once the real schedule has one (lib/offline-next.ts). "More"
 // opens a sheet with the rest of the navigation, grouped like the header menus
 // (Watch / Play / Community / Shop, a line under each page) under a small live tile.
-import site from "../data/site.json";
 import { navItems, moreGroups, isCurrent, isInSection, hasModule } from "../lib/nav.js";
-import { formatStreamTime } from "../lib/time.js";
 
 const path = Astro.url.pathname;
 const byId = Object.fromEntries(navItems.map((i) => [i.id, i]));
 const tabs = ["home", "schedule"].filter(hasModule).map((id) => byId[id]);
 const after = ["games"].filter(hasModule).map((id) => byId[id]);
 const liveOn = hasModule("live");
-const { startsAt, game } = site.nextStream;
-const short = formatStreamTime(startsAt, "short", site.timezone);
 ---
 <nav class="bt-tabbar bt-site-tabbar" aria-label="Main (tabs)">
   {tabs.map((t) => (
@@ -23,7 +19,7 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
     <a class="bt-tab-raised" href="/live" aria-label="Live" aria-current={isCurrent("/live", path) ? "page" : undefined}>
       <span class="bt-tab-raise"><svg aria-hidden="true"><use href="#i-live" /></svg></span>
       <span class="bt-when-live">Live</span>
-      <span class="bt-tab-next bt-when-off"><time data-stream-time="short" datetime={startsAt}>{short}</time></span>
+      <span class="bt-tab-next bt-when-off"><span data-next-sub hidden><time></time></span></span>
     </a>
   )}
   {after.map((t) => (
@@ -34,7 +30,7 @@ const short = formatStreamTime(startsAt, "short", site.timezone);
 <div class="bt-menu-sheet bt-site-more" id="bt-more-sheet" hidden>
   <a class="bt-menu-sheet-feature is-live bt-when-public" href="/live">
     <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-live" /></svg></span>
-    <span><b>Live now</b><small>{game}. Watch now.</small></span>
+    <span><b>Live now</b><small>Watch now, on any platform.</small></span>
   </a>
   <a class="bt-menu-sheet-feature bt-menu-sheet-notlive" href="/arcade" data-sheet-feature>
     <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href="#i-joystick" /></svg></span>

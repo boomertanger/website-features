@@ -1,12 +1,12 @@
 // Header nav feature tiles (docs/specs/header-nav.md, design-system.md §5 "Header nav groups").
 // Loaded by BaseLayout's script; every read happens the first time a panel opens, never on page
 // load, and Firebase is only imported then (dynamic imports). Existing data only:
-//   Watch      site.json nextStream + the live state on <body data-live> (the Live Beacon's sources)
+//   Watch      the live state on <body data-live> + the next published stream (lib/next-stream.ts); "Offline" when none
 //   Play       sites/{siteId}/games (public) and, signed in, the member's own bests doc (public read)
 //   Community  sites/{siteId}/crew/main/awards (public read), via scripts/crew/api.ts awards()
 // Each tile falls back to its call to action when the data is missing or the read fails.
 import site from "../data/site.json";
-import { initWatchTile, playFeatureHtml, communityFeatureHtml } from "../../../shared/ui/navgroup.js";
+import { initWatchTile, playFeatureHtml, communityFeatureHtml, watchFeatureHtml } from "../../../shared/ui/navgroup.js";
 import { escapeHtml } from "../../../shared/ui/dom.js";
 import { liveNow, onLive } from "../lib/live";
 import { loadNextStream } from "../lib/next-stream";
@@ -72,17 +72,25 @@ export async function loadSheetFeature(tile: HTMLAnchorElement) {
  * stream. site.json's nextStream is the fallback when nothing is scheduled or the read fails. Runs once, the first time the panel opens.
  */
 async function startWatch(tile: Element) {
-  let title = site.nextStream.title, startsAt = site.nextStream.startsAt;
-  const strong = tile.querySelector("strong"), when = tile.querySelector<HTMLTimeElement>("time[data-stream-time]");
+  const fmtDay = (t: number) => new Intl.DateTimeFormat("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" }).format(t);
+  const paint = (title: string, startsAt: string, when: number) => {
+    tile.innerHTML = watchFeatureHtml({ title, startsAt, whenHtml: `<time datetime="${escapeHtml(startsAt)}">${escapeHtml(fmtDay(when))}</time>, your time.` });
+    watch = initWatchTile(tile, { title, startsAt, url: `${location.origin}/live`, name: site.name });
+    watch.start();
+  };
   const live = liveNow();
-  if (!(live && live.state !== "off" && live.state !== "ended" && live.title)) {
+  const shellLive = document.body.dataset.live === "public" || document.body.dataset.live === "backstage";   // also the ?live= preview
+  if (shellLive) paint(live?.title || "Live now", new Date().toISOString(), Date.now());
+  else {
     const n = await withTimeout(loadNextStream().catch(() => null), SETTLE_MS);
-    if (n) { title = n.title; startsAt = new Date(n.start).toISOString(); if (when) { when.setAttribute("datetime", startsAt); when.textContent = ""; when.removeAttribute("data-stream-time"); when.textContent = new Intl.DateTimeFormat("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" }).format(n.start); } }
-  } else title = live.title!;
-  if (strong) strong.textContent = title;
-  onLive((p) => { if ((p.state === "live" || p.state === "backstage") && p.title && strong) strong.textContent = p.title; });
-  watch = initWatchTile(tile, { title, startsAt, url: `${location.origin}/live`, name: site.name });
-  watch.start();
+    if (n) paint(n.title, new Date(n.start).toISOString(), n.start);
+    else tile.innerHTML = `<span class="bt-label">Offline</span><strong>No stream scheduled</strong><p>The schedule shows what is coming up.</p><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/schedule">See the schedule</a>`;
+  }
+  // When the stream goes live (or ends) while the panel is open, the tile follows.
+  onLive((p) => {
+    const strong = tile.querySelector("strong");
+    if ((p.state === "live" || p.state === "backstage") && p.title && strong && tile.querySelector(".bt-navgroup-livenow")) strong.textContent = p.title;
+  });
 }
 
 /** navgroup.js onOpen: fills a group's feature tile the first time its panel opens (Watch's countdown runs while open). */

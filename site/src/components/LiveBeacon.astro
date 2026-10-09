@@ -1,12 +1,7 @@
 ---
-// Live Beacon. Offline: "Next stream · Thu 7 PM" from site data. Public (red
-// glow) and backstage (green glow) come from data-live on <body>.
-import site from "../data/site.json";
-import { formatStreamTime } from "../lib/time.js";
-
-const { startsAt, game } = site.nextStream;
-const short = formatStreamTime(startsAt, "short", site.timezone);
+// Live Beacon. Offline it says just "Offline"; lib/offline-next.ts adds "Next stream · Thu 7 PM" once the real schedule has one (never a placeholder).
+// Public (red glow, with the game's name from public/live) and backstage (green glow) come from data-live on <body>.
 ---
-<a class="bt-beacon bt-when-off" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Next stream<span class="bt-beacon-sub"><time data-stream-time="short" datetime={startsAt}>{short}</time></span></a>
-<a class="bt-beacon bt-beacon--public bt-when-public" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Live<span class="bt-beacon-sub" data-live-sub>{game}</span></a>
+<a class="bt-beacon bt-when-off" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span><span data-next-label>Offline</span><span class="bt-beacon-sub" data-next-sub hidden><time></time></span></a>
+<a class="bt-beacon bt-beacon--public bt-when-public" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Live<span class="bt-beacon-sub" data-live-sub hidden></span></a>
 <a class="bt-beacon bt-beacon--backstage bt-when-backstage" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Backstage<span class="bt-beacon-sub">Members only</span></a>
