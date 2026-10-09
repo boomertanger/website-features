@@ -467,11 +467,49 @@ module.exports = function plan({ core }) {
   /** The uids with a confirmed seat or a requested one, for the crew's notes. */
   const crewOf = (draft) => L.crewUids(draft.crew);
 
+  // Control Room unscheduled streams (createAdhocStream: scheduled, adhoc, published, no planner draft) are moved and cancelled on the
+  // public stream doc itself. A stream WITH a draft (every planned one) never takes this path.
+  async function adhocTop(streamId) {
+    if (typeof streamId !== "string" || !streamId || streamId.includes("/")) return null;
+    const [top, dr] = await Promise.all([db.doc(P.stream(streamId)).get(), db.doc(P.draft(streamId)).get()]);
+    return top.exists && top.get("adhoc") === true && !dr.exists ? { id: streamId, ...top.data() } : null;
+  }
+  async function adhocDelay(w, stream, d, tz) {
+    const startMs = Number.isFinite(d.startMs) ? d.startMs : (d.date && d.start ? L.zonedToUtc(d.date, d.start, tz) : null);
+    const endMs = Number.isFinite(d.endMs) ? d.endMs : (d.date && d.end ? L.zonedToUtc(d.end <= d.start ? L.addDays(d.date, 1) : d.date, d.end, tz) : null);
+    const reason = typeof d.reason === "string" ? d.reason.trim() : "";
+    const newWeek = Number.isFinite(startMs) ? ST.streamWeek(startMs, tz) : stream.week;
+    const others = await core.streamsOfWeek(newWeek);
+    const r = L.planDelay(stream, { startMs, endMs, reason, atMs: Date.now(), by: w.name }, others);
+    if (!r.ok) throw fail("failed-precondition", delayMessage(r.reason), r.reason, r.with ? { with: r.with } : {});
+    const stamped = toStamps(r.patch);
+    await db.doc(P.stream(stream.id)).update({ ...stamped, week: newWeek, rev: (stream.rev || 0) + 1, updatedAt: FieldValue.serverTimestamp() });
+    const summary = L.delayedSummary(r.patch, Date.now(), tz);
+    await core.outbox({ type: "stream-delayed", audience: "members", streamId: stream.id, week: newWeek, payload: { title: summary, newStart: r.patch.plannedStart, newEnd: r.patch.plannedEnd, originalStart: r.patch.delay.originalStart, reason: reason || null, link: "/schedule" } });
+    await core.activity("stream-delayed", summary, { streamId: stream.id });
+    await core.logAdmin(w, { action: "delay", path: P.stream(stream.id), title: stream.title, reason, details: { week: newWeek, adhoc: true, from: ms(stream.plannedStart), to: r.patch.plannedStart, count: stamped.delay.count } });
+    return { ok: true, streamId: stream.id, plannedStart: r.patch.plannedStart, plannedEnd: r.patch.plannedEnd, delayCount: stamped.delay.count };
+  }
+  async function adhocCancel(w, stream, d, tz) {
+    const reason = typeof d.reason === "string" ? d.reason.trim() : "";
+    const r = L.planCancel(stream, { reason, atMs: Date.now(), by: w.name });
+    if (!r.ok) throw fail("failed-precondition", delayMessage(r.reason), r.reason);
+    await db.doc(P.stream(stream.id)).update({ ...toStamps(r.patch), hasUnpublishedChanges: false, rev: (stream.rev || 0) + 1, updatedAt: FieldValue.serverTimestamp() });   // stays as a record
+    const title = `${stream.title || "A stream"} on ${L.dayLabel(ms(stream.plannedStart), tz)} is cancelled`;
+    await core.outbox({ type: "stream-cancelled", audience: "members", streamId: stream.id, week: stream.week || null, payload: { title, reason: reason || null, start: ms(stream.plannedStart), link: "/schedule" } });
+    await core.activity("stream-cancelled", title, { streamId: stream.id });
+    if (stream.week) await core.refreshCounts(stream.week);
+    await core.logAdmin(w, { action: "cancel", path: P.stream(stream.id), title: stream.title, reason, details: { week: stream.week || null, adhoc: true } });
+    return { ok: true, streamId: stream.id, state: "cancelled" };
+  }
+
   const delayStream = onCall(async (request) => {
     const w = await core.whoPlus(core.requireAuth(request));
     mayMove(w);
     const d = request.data || {};
     const tz = await core.siteTz();
+    const ad = await adhocTop(d.streamId);
+    if (ad) return adhocDelay(w, ad, d, tz);
     const { id, top, draft } = await core.loadStream(d.streamId);
     const week = await core.loadWeek(draft.week);
     const startMs = Number.isFinite(d.startMs) ? d.startMs : (d.date && d.start ? L.zonedToUtc(d.date, d.start, tz) : null);
@@ -507,6 +545,8 @@ module.exports = function plan({ core }) {
     mayMove(w);
     const d = request.data || {};
     const tz = await core.siteTz();
+    const ad = await adhocTop(d.streamId);
+    if (ad) return adhocCancel(w, ad, d, tz);
     const { id, top, draft } = await core.loadStream(d.streamId);
     const reason = typeof d.reason === "string" ? d.reason.trim() : "";
     const r = L.planCancel({ id, ...draft, actualStart: top.actualStart ?? draft.actualStart ?? null }, { reason, atMs: Date.now(), by: w.name });

@@ -267,20 +267,16 @@ async function main() {
   assert.equal(await why(as("boss", "liveAfterShow", {})), "notPlatform", "an after-show cannot have an after-show");
   await as("boss", "stopStream", {});
 
-  // ---------- ad hoc stream ----------
+  // ---------- ad hoc: startStream refuses {adhoc}; createAdhocStream is the only way ----------
   yt.created.length = 0;
-  assert.equal(await why(as("boss", "startStream", { adhoc: { title: "", type: "platform" } })), "field");
-  assert.equal(await why(as("boss", "startStream", { adhoc: { title: "Pop-up", type: "platform", rooms: ["nope"] } })), "rooms");
-  assert.equal(await why(as("boss", "startStream", { adhoc: { title: "Pop-up", firstGame: { gameId: "zzz" } } })), "notInVault");
-  r = await as("adm2", "startStream", { adhoc: { title: "Pop-up Party", type: "platform", rooms: ["twitch", "ytLandscape"], firstGame: { gameId: "g2" } } });
-  const ad = await stream(r.streamId);
-  assert.equal(ad.adhoc, true); assert.equal(ad.state, "live"); assert.equal(ad.title, "Pop-up Party"); assert.equal(ad.segments[0].gameId, "g2"); assert.deepEqual(ad.platforms, ["twitch", "youtube"]);
-  assert.equal(yt.created.length, 1); assert.equal(yt.created[0].createNow, true);
-  assert.ok((await root(`${S}/notifyOutbox`)).some((x) => x.type === "stream-live" && x.streamId === r.streamId));
-  assert.ok((await root("adminLog")).some((x) => x.action === "startAdhoc"));
-  await as("boss", "stopStream", {});
-  r = await as("boss", "startStream", { adhoc: { title: "Backstage pop-up", type: "backstage" } });
-  const adb = await stream(r.streamId); assert.equal(adb.type, "backstage"); assert.equal(adb.audience, "fanClub"); assert.deepEqual(adb.rooms, []);
+  const nStreams = (await col("streams")).length;
+  assert.equal(await why(as("boss", "startStream", { adhoc: { title: "Pop-up", type: "platform" } })), "args");
+  assert.equal(await why(as("boss", "startStream", { streamId: "s2", adhoc: { title: "Pop-up" } })), "args", "even with a streamId");
+  assert.equal((await col("streams")).length, nStreams, "a refused startStream creates nothing"); assert.equal(yt.created.length, 0);
+  r = await as("boss", "createAdhocStream", { adhoc: { title: "Backstage pop-up", type: "backstage" } });
+  const adb0 = await stream(r.streamId); assert.equal(adb0.type, "backstage"); assert.equal(adb0.audience, "fanClub"); assert.deepEqual(adb0.rooms, []); assert.equal(adb0.state, "scheduled");
+  await as("boss", "startStream", { streamId: r.streamId });
+  assert.equal((await stream(r.streamId)).state, "live"); assert.equal(yt.created.length, 0, "Start makes no event: the trigger made it at creation");
   await as("boss", "stopStream", {});
 
   // ---------- createAdhocStream: step one of an unscheduled stream (scheduled, NOT live) ----------
@@ -302,8 +298,10 @@ async function main() {
   assert.equal(require("../lib/youtube/logic").decide(null, cs, {}).action, "create", "decide(): a published scheduled adhoc stream gets its event at once");
   // the real youtubeSync trigger (fake Google) makes the event straight away; Start then works on it
   await wdb.doc(`${S}/private/youtubeChannel`).set({ accessToken: "AT", accessExpiresAt: clock + 3600000, refreshToken: "RT", channelId: "UC", channelTitle: "B" });
-  const gl = [];
-  const gfetch = async (url, init = {}) => { gl.push({ url, method: init.method || "GET", body: init.body }); if (url.includes("liveBroadcasts") && init.method === "POST") return { ok: true, status: 200, json: async () => ({ id: "EVADHOC1" }) }; throw new Error("unexpected " + url); };
+  const gl = []; let gEv = 0;
+  const gfetch = async (url, init = {}) => { gl.push({ url, method: init.method || "GET", body: init.body }); if (url.includes("liveBroadcasts") && init.method === "POST") return { ok: true, status: 200, json: async () => ({ id: `EVADHOC${++gEv}` }) };
+    if (url.includes("liveBroadcasts") && init.method === "PUT") return { ok: true, status: 200, json: async () => ({ id: JSON.parse(init.body).id }) };
+    if (url.includes("liveBroadcasts") && init.method === "DELETE") return { ok: true, status: 204, json: async () => ({}) }; throw new Error("unexpected " + url); };
   const ytReal = require("../lib/youtube").build({ adminLogEntry, fetchFn: gfetch, clientId: "CID", clientSecret: "SEC", now: () => clock, projectId: "boomertanger-staging" });
   await ytReal.functions.youtubeSync.run({ params: { siteId: "boomertanger", streamId: r.streamId }, data: { before: { exists: false, data: () => undefined }, after: { exists: true, data: () => cs } } });
   const ev = JSON.parse(gl.find((c) => c.method === "POST").body);
@@ -314,6 +312,68 @@ async function main() {
   assert.equal((await stream(r.streamId)).segments[0].gameId, "g1"); assert.equal((await get(`streams/${r.streamId}/private/watch`)).youtube.landscapeId, "EVADHOC1");
   assert.ok((await root(`${S}/notifyOutbox`)).some((x) => x.type === "stream-live" && x.streamId === r.streamId));
   await as("boss", "stopStream", {});
+
+
+  // ---------- delay and cancel of an unscheduled stream that is not live yet (the planner callables, no draft) ----------
+  const planFns = require("../lib/planner").build({ adminLogEntry }).functions;
+  const pas = (uid, fn, data = {}) => planFns[fn].run({ auth: uid ? { uid, token: {} } : undefined, data });
+  const mkAd = async (title, o = {}) => (await as("boss", "createAdhocStream", { adhoc: { title, type: "platform", rooms: ["twitch", "ytLandscape"], ...o } })).streamId;
+  const syncAd = async (id, before) => { const after = await stream(id); await ytReal.functions.youtubeSync.run({ params: { siteId: "boomertanger", streamId: id }, data: { before: before ? { exists: true, data: () => before } : { exists: false, data: () => undefined }, after: { exists: true, data: () => after } } }); return after; };
+  const DAY = 24 * H;
+  const A = await mkAd("Pop-up A"), B = await mkAd("Pop-up B");
+  const a0 = await syncAd(A, null);                                   // the trigger: event at once
+  const evA = (await get(`streams/${A}/private/watch`)).youtube.landscapeId; assert.ok(evA);
+  // roles: signed out, member, mod, A1 refused; A2 and the owner pass
+  for (const fn of ["delayStream", "cancelStream"]) {
+    assert.equal(await why(pas(null, fn, { streamId: A, startMs: clock + 9 * DAY })), "signedOut");
+    for (const uid of ["fan", "mod1", "capt", "adm1"]) assert.equal(await why(pas(uid, fn, { streamId: A, startMs: clock + 9 * DAY })), "notAllowed", `${fn}: ${uid}`);
+  }
+  assert.equal((await stream(A)).state, "scheduled", "refused calls changed nothing");
+  // overlap: B moved onto A's time is refused, exactly as for planned streams
+  assert.equal(await why(pas("adm2", "delayStream", { streamId: B, startMs: a0.plannedStart.toMillis() + 30 * MIN })), "overlap");
+  assert.equal(await why(pas("adm2", "delayStream", { streamId: B })), "noStart");
+  // delay: A2 moves A ten days out; the public doc and the YouTube event move, Boom Alerts and the feed hear about it
+  const boxD = (await root(`${S}/notifyOutbox`)).length, actD = (await root("activityLog")).length;
+  gl.length = 0;
+  const newStart = clock + 10 * DAY;
+  const dl = await pas("adm2", "delayStream", { streamId: A, startMs: newStart, reason: "Running late" });
+  assert.equal(dl.plannedStart, newStart); assert.equal(dl.delayCount, 1);
+  const a1 = await stream(A);
+  assert.equal(a1.plannedStart.toMillis(), newStart); assert.equal(a1.plannedEnd.toMillis(), newStart + 3 * H); assert.equal(a1.delay.count, 1); assert.equal(a1.delay.originalStart.toMillis(), a0.plannedStart.toMillis());
+  assert.equal(a1.delay.reason, "Running late"); assert.equal(a1.delay.by, "@adm2"); assert.ok(a1.delay.at); assert.equal(a1.state, "scheduled"); assert.equal(a1.adhoc, true);
+  assert.match(a1.week, /^\d{4}-W\d{2}$/); assert.equal(await get(`streams/${A}/private/draft`), undefined, "still no planner draft");
+  const boxes = await root(`${S}/notifyOutbox`);
+  assert.equal(boxes.length, boxD + 1); assert.equal(boxes[boxes.length - 1].type, "stream-delayed"); assert.equal(boxes[boxes.length - 1].audience, "members");
+  assert.equal((await root("activityLog")).length, actD + 1);
+  assert.ok((await root("adminLog")).some((e) => e.action === "delay" && e.actorUid === "adm2" && e.details && e.details.adhoc));
+  await syncAd(A, a0);                                                // the real youtubeSync: the event moves
+  assert.equal(gl.filter((c) => c.method === "PUT").length, 1); assert.equal(JSON.parse(gl.find((c) => c.method === "PUT").body).snippet.scheduledStartTime, new Date(newStart).toISOString());
+  assert.equal((await get(`streams/${A}/private/watch`)).youtube.landscapeId, evA, "same event, moved");
+  // cancel: the owner cancels; the stream stays as a record, the event is deleted and the watch ids are cleared
+  const boxC = (await root(`${S}/notifyOutbox`)).length; gl.length = 0;
+  assert.deepEqual(await pas("boss", "cancelStream", { streamId: A, reason: "Not tonight" }), { ok: true, streamId: A, state: "cancelled" });
+  const a2 = await stream(A);
+  assert.equal(a2.state, "cancelled"); assert.equal(a2.cancel.reason, "Not tonight"); assert.equal(a2.cancel.by, "@boss"); assert.ok(a2.cancel.at); assert.equal(a2.title, "Pop-up A", "kept as a record");
+  const boxes2 = await root(`${S}/notifyOutbox`); assert.equal(boxes2.length, boxC + 1); assert.equal(boxes2[boxes2.length - 1].type, "stream-cancelled");
+  assert.ok((await root("activityLog")).some((e) => e.type === "stream-cancelled" && e.streamId === A));
+  assert.ok((await root("adminLog")).some((e) => e.action === "cancel" && e.actorUid === "boss" && e.details && e.details.adhoc));
+  await syncAd(A, a1);
+  assert.equal(gl.filter((c) => c.method === "DELETE").length, 1, "the YouTube event is deleted");
+  const wA = await get(`streams/${A}/private/watch`); assert.equal(wA.youtube.landscapeId, null); assert.equal(wA.youtube.hash, null);
+  assert.equal(await why(pas("boss", "cancelStream", { streamId: A })), "badState", "cancelled is final");
+  assert.equal(await why(pas("boss", "delayStream", { streamId: A, startMs: clock + 12 * DAY })), "badState");
+  assert.equal(await why(as("boss", "startStream", { streamId: A })), "badState", "a cancelled stream cannot start");
+  // a live (started) adhoc stream is refused: the Control Room owns it
+  await as("boss", "startStream", { streamId: B });
+  assert.equal(await why(pas("boss", "delayStream", { streamId: B, startMs: clock + 15 * DAY })), "badState");
+  assert.equal(await why(pas("boss", "cancelStream", { streamId: B })), "badState");
+  await as("boss", "stopStream", {});
+  assert.equal(await why(pas("boss", "cancelStream", { streamId: B })), "badState");
+  // planned streams WITH a draft keep the draft path: an adhoc-flagged stream that has a draft is not treated as unscheduled
+  await mkStream("pd2", { adhoc: true });
+  assert.equal(await why(pas("boss", "delayStream", { streamId: "pd2", startMs: clock + 13 * DAY })), "args", "the draft path (needs its week) ran, not the adhoc one");
+  assert.equal((await stream("pd2")).delay, undefined);
+  assert.equal(await why(pas("boss", "cancelStream", { streamId: "ghost" })), "noStream");
 
   // ---------- checklist ticks (owner only) ----------
   await mkStream("s5"); await as("boss", "startStream", { streamId: "s5" });

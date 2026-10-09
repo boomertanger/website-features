@@ -2,7 +2,7 @@
 // lib/streams/logic.js; this file only reads, calls them, and writes the patch they return.
 //
 //   createAdhocStream owner, A2+  step one of an unscheduled stream: scheduled + adhoc + published, NOT live; youtubeSync makes its event
-//   startStream      owner, A2+   Start (or an ad hoc stream): the Start beat begins, the checklist is copied, alerts go out
+//   startStream      owner, A2+   Start (a planned stream or one made by createAdhocStream; never {adhoc}): the Start beat begins, the checklist is copied, alerts go out
 //   switchGame       owner, A2+   closes the open segment, opens the next game
 //   stopStream       owner, A2+   ends the stream, closes any window (grace still applies), settles rewards
 //   liveBeat         owner, A2+   begin / skip a beat (Begin End skips the breaks), back to the game
@@ -177,16 +177,12 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
 
   const startStream = async (actor, data = {}) => {
     const at = now();
-    const a = data.adhoc && typeof data.adhoc === "object" ? data.adhoc : null;
-    let id = typeof data.streamId === "string" ? data.streamId : null;
-    if (!a && (!id || id.includes("/"))) throw fail("invalid-argument", "streamId is required.", "args");
+    // One way to make an unscheduled stream: createAdhocStream, then startStream { streamId }. An event can never be made twice.
+    if (data.adhoc != null) throw fail("invalid-argument", "Create an unscheduled stream with createAdhocStream, then start it by its streamId.", "args");
+    const id = typeof data.streamId === "string" ? data.streamId : null;
+    if (!id || id.includes("/")) throw fail("invalid-argument", "streamId is required.", "args");
     const templates = ((await db.doc(paths.templates).get()).data()) || {};
-    let firstGame = data.firstGame ? await vaultGame(data.firstGame) : a && a.firstGame ? await vaultGame(a.firstGame) : null;
-    // The convenience form: create (step one), then start, in one call. The event is made directly (createNow) before Start.
-    if (a) {
-      id = (await createAdhoc(actor, a, firstGame)).id;
-      await createYoutubeEvent(id);
-    }
+    const firstGame = data.firstGame ? await vaultGame(data.firstGame) : null;
     const ref = ctx.streamRef(id);
     let started;
     await db.runTransaction(async (tx) => {
@@ -208,7 +204,7 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     const dr = db.doc(paths.draft(id));
     if ((await dr.get()).exists) await dr.update({ state: "live", actualStart: mirror.actualStart });
     await announceLive(actor, id, started);
-    await ctx.logAdmin(actor, { action: a ? "startAdhoc" : "start", streamId: id, title: started.title, details: { adhoc: !!a, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
+    await ctx.logAdmin(actor, { action: "start", streamId: id, title: started.title, details: { adhoc: started.adhoc === true, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
     const yt = await linkYoutube(id);
     await ctx.publishLive();
     return { ok: true, streamId: id, state: "live", type: started.type, youtube: yt.status, ...(yt.waiting ? { waiting: yt.waiting } : {}) };
