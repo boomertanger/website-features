@@ -5,7 +5,7 @@
 // One-off reads: the stream doc (my seat; public handles), the next stream, the swap board, the crew settings (the YouTube boost).
 // Display only: every write is a callable the server checks again. Preview (non-production, signed out, ?state= / ?as=): a local copy in mod-deck-preview.ts.
 import { call } from "../../lib/call";
-import { db as lite, doc as liteDoc, getDoc } from "../../lib/db";
+import { db as lite, doc as liteDoc, getDoc, getDocs, collection as liteCollection } from "../../lib/db";
 import { SITE_ID } from "../../lib/firebase";
 import { loadNextStream } from "../../lib/next-stream";
 import { onLive } from "../../lib/live";
@@ -37,7 +37,19 @@ export interface DutyState {
   youtube?: { landscapeId: string | null; verticalId: string | null };
   chatGames?: { activeRunIds?: string[] };
   needsConfirm: boolean; confirmedAt: number | null;
+  /** Members locked out of a beat's check-in (mirrored from the check-in; crew can read it, private/control they cannot). */
+  lockedOut: LockedOut[];
+  /** The flags I sent that the owner has seen (a bare mirror, no text). */
+  flagsSeen: Record<string, boolean>;
+  /** At Stop: everyone's minutes by role, for "Confirm tonight's crew". */
+  night: { minutes: number; rows: NightRow[] } | null;
+  captainAtStop: string | null;
 }
+export interface LockedOut { uid: string; handle: string | null; room: string | null; beat: string }
+export interface NightRow { uid: string; handle: string | null; grade: number | null; lines: Record<string, number>; minutes: number }
+export type FlagType = "threat" | "pii" | "raid" | "harassment" | "other";
+export interface Flag { id: string; type: FlagType; room: string; note: string; byHandle: string | null; urgent: boolean; createdAt: number; seenAt: number | null; doneAt: number | null }
+export interface ChatFormat { id: string; title: string; icon: string; sub: string; order: number }
 export interface DutyRec {
   streamId: string; minutes: number; lines: Record<string, number>; scheduled: SeatRole | null; showed: boolean; counted: boolean; led: boolean;
   gears: number | null; confirmedAt: number | null; addedMinutes: number; clockedInAt: number | null; endedAt: number | null; noShow: boolean;
@@ -52,6 +64,8 @@ export interface Handlers {
   rec(r: DutyRec | null): void;
   notes(n: Note[]): void;
   cues(c: Cue[]): void;
+  /** The flags (owner: all; admins: urgent ones). Crew who are not admins never get any. */
+  flags(f: Flag[]): void;
 }
 export interface Source {
   preview: boolean;
@@ -64,6 +78,8 @@ export interface Source {
   loadNext(): Promise<StreamInfo | null>;
   swaps(): Promise<Swap[]>;
   youtubeBoost(): Promise<number>;
+  /** Chat Games' enabled formats (sites/boomertanger/chatGames/main/formats, by order). [] when they can't be read yet: the slot renders nothing. */
+  formats(): Promise<ChatFormat[]>;
 }
 
 export const HIDDEN_MS = 60_000;
@@ -117,6 +133,10 @@ export function dutyFrom(d: any): DutyState | null {
     captainNow: d.captainNow ? { uid: String(d.captainNow.uid), handle: d.captainNow.handle ?? null, acting: d.captainNow.acting === true, owner: d.captainNow.owner === true, since: num(d.captainNow.since) } : null,
     onDuty, prompts, rooms: d.rooms || {}, youtube: yt, chatGames: d.chatGames && typeof d.chatGames === "object" ? d.chatGames : undefined,
     needsConfirm: d.needsConfirm === true, confirmedAt: d.confirmedAt == null ? null : num(d.confirmedAt),
+    lockedOut: Object.values<any>(d.lockedOut || {}).filter((x) => x && typeof x.uid === "string" && typeof x.beat === "string").map((x) => ({ uid: x.uid, handle: x.handle ?? null, room: x.room ?? null, beat: x.beat })).sort((a, b) => a.beat.localeCompare(b.beat) || String(a.handle).localeCompare(String(b.handle))),
+    flagsSeen: d.flagsSeen && typeof d.flagsSeen === "object" ? d.flagsSeen : {},
+    night: d.night && Array.isArray(d.night.rows) ? { minutes: num(d.night.minutes), rows: d.night.rows.map((r: any) => ({ uid: String(r.uid), handle: r.handle ?? null, grade: Number.isFinite(r.grade) ? r.grade : null, lines: r.lines && typeof r.lines === "object" ? r.lines : {}, minutes: num(r.minutes) })) } : null,
+    captainAtStop: typeof d.captainAtStop === "string" ? d.captainAtStop : null,
   };
 }
 export function recFrom(d: any): DutyRec | null {
@@ -133,6 +153,11 @@ export function noteFrom(id: string, d: any): Note | null {
   return { id, uid: String(d.uid || ""), handle: String(d.handle || "crew"), grade: Number.isFinite(d.grade) ? d.grade : null, track: d.track === "admin" ? "admin" : "mod", text: d.text, createdAt: t };
 }
 /** Newest first, nothing older than 24 hours (the TTL removes them later, but the Deck never shows an old one). */
+export function flagFrom(id: string, d: any): Flag | null {
+  const t = ms(d?.createdAt);
+  if (!d || t == null || typeof d.type !== "string") return null;
+  return { id, type: d.type, room: String(d.room || ""), note: String(d.note || ""), byHandle: d.byHandle ?? null, urgent: d.urgent === true, createdAt: t, seenAt: ms(d.seenAt), doneAt: ms(d.doneAt) };
+}
 export const freshNotes = (notes: Note[], at = Date.now()) => notes.filter((n) => at - n.createdAt < DAY).sort((a, b) => b.createdAt - a.createdAt);
 function cueFrom(runId: string, id: string, d: any): Cue {
   return { id, runId, order: num(d?.order), kicker: String(d?.kicker || d?.title || d?.format || "Chat Game"), text: String(d?.text || ""), due: ms(d?.dueAt ?? d?.due), state: d?.done ? "done" : d?.posted ? "posted" : "pending" };
@@ -164,7 +189,15 @@ export function realSource(me: Me): Source {
     if (!streamId || !h) return;
     const sid = streamId;
     listen("duty", fs.doc(fdb, `${base}/streams/${sid}/private/duty`), (s: any) => h!.duty(s.exists() ? dutyFrom(s.data()) : null), () => h!.duty(null));
+    openFlags();
     listen("rec", fs.doc(fdb, `${base}/crew/main/duties/${sid}_${me.uid}`), (s: any) => h!.rec(s.exists() ? recFrom({ ...s.data(), streamId: sid }) : null), () => h!.rec(null));
+  }
+  /** Flags: the owner reads them all, admins read them too (the rules); anyone else never asks. Admins on duty see the urgent ones. */
+  function openFlags() {
+    if (!streamId || !h || !me.admin) return;
+    const sid = streamId;
+    listen("flags", fs.query(fs.collection(fdb, `${base}/streams/${sid}/flags`), fs.orderBy("createdAt", "desc"), fs.limit(20)),
+      (s: any) => h!.flags(s.docs.map((d: any) => flagFrom(d.id, d.data())).filter((f: Flag | null): f is Flag => !!f && f.doneAt == null && (me.owner || f.urgent))), () => h!.flags([]));
   }
   function openNotes() {
     if (!h) return;
@@ -199,7 +232,7 @@ export function realSource(me: Me): Source {
       onLive((p) => {
         handlers.pub(p as PubDeck);
         const sid = p.state !== "off" ? p.streamId : null;
-        if (sid !== streamId) { dropPrefix("duty"); dropPrefix("rec"); streamId = sid; runIds = []; if (fs && !closed) openStream(); else if (!fs) void openAll(); if (!sid) { handlers.duty(null); handlers.rec(null); } }
+        if (sid !== streamId) { dropPrefix("duty"); dropPrefix("rec"); dropPrefix("flags"); streamId = sid; runIds = []; if (fs && !closed) openStream(); else if (!fs) void openAll(); if (!sid) { handlers.duty(null); handlers.rec(null); handlers.flags([]); } }
       });
       void openAll();
     },
@@ -208,6 +241,12 @@ export function realSource(me: Me): Source {
     async loadStream(id) { const s = await getDoc(liteDoc(lite, `${base}/streams/${id}`)); return s.exists() ? infoOf(id, s.data(), me.handle) : null; },
     async loadNext() { const n = await loadNextStream(); return n ? this.loadStream(n.id) : null; },
     swaps: () => loadSwaps(),
+    async formats() {
+      try {
+        const snap = await getDocs(liteCollection(lite, `${base}/chatGames/main/formats`));
+        return snap.docs.map((d: any) => ({ id: d.id, title: String(d.get("title") || d.get("name") || d.id), icon: String(d.get("icon") || "🎲"), sub: String(d.get("blurb") || d.get("sub") || ""), order: Number(d.get("order")) || 0, on: d.get("enabled") !== false && d.get("on") !== false })).filter((f: any) => f.on).sort((a: any, b: any) => a.order - b.order);
+      } catch { return []; }   // not readable (or not built) yet: the slot renders nothing
+    },
     async youtubeBoost() { try { const s = await getDoc(liteDoc(lite, `${base}/crew/main`)); const b = s.exists() ? Number(s.get("youtubeBoost")) : NaN; return Number.isFinite(b) && b > 0 ? b : 1.5; } catch { return 1.5; } },
   };
 }

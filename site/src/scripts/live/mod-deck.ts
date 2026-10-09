@@ -21,9 +21,14 @@ import { isOwner, crewMe } from "../planner/plan-data";
 import { takeSwap } from "../crew/swaps";
 import type { Io } from "../planner/plan-io";
 import site from "../../data/site.json";
-import { toast, messageFor, copyText, reduced } from "./ui";
+import { toast, messageFor, copyText, reduced, esc } from "./ui";
 import { realSource, freshNotes, myRoomOf, roleLine, type Me, type Room, type Source } from "./mod-deck-data";
 import { previewRequest, previewMe, previewSource } from "./mod-deck-preview";
+import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
+import { initFlags } from "../../../../shared/ui/flag-card.js";
+import { initLaunch } from "../../../../shared/ui/launch.js";
+import { ROOM_NAME, ROOM_ORDER } from "./mod-deck-data";
+import { FLAG_TYPES, flagFormHtml, flagSubtitle, flagStackHtml, helmHtml, moveOptions, moveListHtml, confirmNightHtml, makeChime, flagTitle, type Tool } from "./mod-deck-tools";
 import {
   derive, takeFor, heroHtml, barHtml, awayText, promptBlockHtml, roomsStripHtml, wallHtml, wallKey, linesHtml, linesTexts, notesHtml, cuesHtml, liveBodyHtml, tabsHtml, offHtml, endedHtml,
   defaultDrop, fmtClock, type Model, type Derived, type Tab,
@@ -81,6 +86,7 @@ function mount(me: Me, src: Source) {
   const M: Model = {
     me, pub: null, duty: null, rec: null, stream: null, next: null, notes: [], cues: [], swaps: [], boost: 1.5,
     phone: false, tab: "chats", focus: false, chatRoom: "twitch", dropRoom: null, away: false, now: Date.now(), answered: new Set(),
+    flags: [], tool: null, unlocked: [], formats: [], added: {}, confirmBusy: false,
     site: { twitchChannel: site.twitchChannel, host: location.hostname, tiktokUrl: (site.socials.find((x) => x.id === "tiktok")?.url || "") === "#" ? "" : site.socials.find((x) => x.id === "tiktok")?.url || "", houseRules: (site as any).houseRules || "", socials: site.socials, origin },
   };
   let D: Derived = derive(M);
@@ -140,13 +146,17 @@ function mount(me: Me, src: Source) {
       const w = slot("wall", wallHtml(M, d), wallKey(M, d));
       void w;
       slot("layer", "", "");
+      renderFlags();
+      renderHelm(d);
       slot("cues", cuesHtml(M, d));
       slot("lines", linesHtml(M, d));
     } else if (d.phase === "off") {
       slot("main", offHtml(M, d), `off|${M.next?.id}|${M.next?.seat.map((r) => r.role + r.room).join()}|${JSON.stringify(M.swaps.map((s) => [s.id, s.status]))}`);
       slot("lines", linesHtml(M, d));
     } else {
-      slot("main", endedHtml(M, d), `ended|${JSON.stringify(M.rec)}|${M.duty?.confirmedAt}`);
+      const night = M.duty?.night;
+      const cp = d.canConfirm && night ? confirmNightHtml({ rows: night.rows, streamMinutes: night.minutes, added: M.added, confirmed: !!M.duty?.confirmedAt, busy: M.confirmBusy, autoAt: M.duty?.endedAt ? M.duty.endedAt + 24 * 3600000 : null }) : "";
+      slot("main", endedHtml(M, d, cp), `ended|${JSON.stringify(M.rec)}|${M.duty?.confirmedAt}|${d.canConfirm}|${JSON.stringify(M.added)}|${M.confirmBusy}`);
     }
     const notes = slot("notes", notesHtml(M));
     if (notes && !(notes as any)._wired) { (notes as any)._wired = true; initCrewNotes(notes, { onPost: postNote, onDelete: deleteNote }); }
@@ -173,7 +183,7 @@ function mount(me: Me, src: Source) {
     slot(other, "", "");
     if (!el) return;
     if (fresh(el)) {
-      initDutyBar(el, { lead: d.isLead || d.isCaptain, onAway: (kind) => void stepAway(kind), onBack: () => void back(), onFlag: () => toast("Flags arrive in the next update", { kind: "info" }) });
+      initDutyBar(el, { lead: d.isLead || d.isCaptain, onAway: (kind) => void stepAway(kind), onBack: () => void back(), onFlag: () => openFlagDialog() });
     }
     // minutes tick inside the bar without redrawing it (so an open Step away chooser stays open)
     const mins = el.querySelector(".bt-duty-min");
@@ -295,6 +305,128 @@ function mount(me: Me, src: Source) {
     catch (err) { if ((err as any)?.code === "functions/not-found") toast("Chat Games isn't switched on yet.", { kind: "info" }); else fail(err, "Couldn't mark that cue. Try again."); }
   }
 
+  // ---- Part 5: flags, the helm strip (Captain tools), Reassign, Confirm tonight's crew
+  const chime = makeChime();
+  let stopTitle: (() => void) | null = null, knownFlags = new Set<string>(), flagsInit = false;
+  const sid = () => M.pub?.streamId || "";
+  function renderFlags() {
+    const html = flagStackHtml(M.flags, { now: M.now, soundOff: M.flags.length > 0 && !chime.isReady(), extra: "also sent to admins on duty" });
+    const el = slot("flags", html, `${M.flags.map((f) => f.id + (f.seenAt ? "s" : "n")).join()}|${chime.isReady()}`);
+    if (el && !(el as any)._flags) {
+      (el as any)._flags = true;
+      initFlags(el, { onSeen: (id: string) => void ackFlag(id, "seen"), onDone: (id: string) => void ackFlag(id, "done"), onSound: () => { chime.arm(); schedule(); } });
+    }
+  }
+  async function ackFlag(flagId: string, action: "seen" | "done") {
+    try { await src.call("liveFlagAck", { streamId: sid(), flagId, action }); if (action === "done") M.flags = M.flags.filter((f) => f.id !== flagId); else M.flags = M.flags.map((f) => (f.id === flagId ? { ...f, seenAt: Date.now() } : f)); schedule(); }
+    catch (err) { fail(err, "Couldn't answer that flag. Try again."); }
+  }
+  function onFlags(list: typeof M.flags) {
+    const fresh = list.filter((f) => !knownFlags.has(f.id) && !f.seenAt);
+    knownFlags = new Set(list.map((f) => f.id));
+    M.flags = list;
+    if (flagsInit && fresh.length) { chime.play(); stopTitle?.(); stopTitle = flagTitle("Mod Deck"); }
+    flagsInit = true;
+    if (!list.some((f) => !f.seenAt)) { stopTitle?.(); stopTitle = null; }
+    schedule();
+  }
+  function renderHelm(d: Derived) {
+    const kind = d.isCaptain ? "captain" : d.isLead ? "lead" : null;
+    const tiktokRoom = d.roles.some((r) => r.room === "tiktok");
+    if (!kind || d.after || (M.me.owner && !d.isCaptain)) { slot("helm", "", ""); return; }
+    const duty = M.duty;
+    const people = Object.entries(duty?.onDuty || {}).map(([uid, entry]) => ({ uid, entry, me: uid === M.me.uid }));
+    const gaps = d.rooms.filter((r) => r.state === "needed").map((r) => ({ room: r.room, name: r.name }));
+    const locked = (duty?.lockedOut || []).filter((x) => kind === "captain" || x.room === d.myRoom);
+    const input = { kind, open: M.tool, lockedOut: locked, done: M.unlocked, tiktok: M.pub?.viewers.byPlatform?.tiktok ?? null, people, gaps, owner: M.me.owner, afterShow: d.after, formats: M.formats, runningFormat: null, haveChatGames: !!duty?.chatGames?.activeRunIds, streamId: sid(), tiktokRoom } as Parameters<typeof helmHtml>[0];
+    const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.length]);
+    const el = slot("helm", helmHtml(input), key);
+    if (el && fresh(el)) initLaunch(el as any, { onLaunch: () => toast("Chat Games starts from here when it's switched on.", { kind: "info" }) });
+  }
+  function openFlagDialog() {
+    const rooms = D.streamRooms.length ? D.streamRooms : ROOM_ORDER;
+    let type = "", room: Room | null = D.myRoom || (rooms[0] as Room) || null, busy = false;
+    const m = openModal({ title: "Flag to Boomer", feature: "mod-deck", content: modalHeader("Flag to Boomer", flagSubtitle(false)) + `<div class="bt-modal-body" data-flagform></div>` });
+    const box = m.modal.querySelector<HTMLElement>("[data-flagform]")!;
+    const paint = () => {
+      const note = box.querySelector<HTMLTextAreaElement>("[data-fnote]")?.value || "";
+      box.innerHTML = flagFormHtml({ rooms: rooms as Room[], room, type });
+      const ta = box.querySelector<HTMLTextAreaElement>("[data-fnote]")!; ta.value = note;
+      const sendBtn = box.querySelector<HTMLButtonElement>('[data-act="send-flag"]')!;
+      const sync = () => { box.querySelector<HTMLElement>("[data-fcount]")!.textContent = `${ta.value.length} / 280`; sendBtn.disabled = busy || !type || !room || ta.value.trim().length < 10; };
+      ta.addEventListener("input", sync); sync();
+      const sub = m.modal.querySelector<HTMLElement>(".bt-modal-subtitle"); if (sub) sub.textContent = flagSubtitle(!!FLAG_TYPES.find((t) => t.key === type)?.urgent);
+    };
+    paint();
+    box.addEventListener("click", async (e) => {
+      const t = e.target as HTMLElement;
+      const ft = t.closest<HTMLElement>("[data-ftype]"); if (ft) { type = ft.dataset.ftype!; return paint(); }
+      const fr = t.closest<HTMLElement>("[data-froom]"); if (fr) { room = fr.dataset.froom as Room; return paint(); }
+      if (!t.closest('[data-act="send-flag"]')) return;
+      busy = true; paint();
+      try {
+        await src.call("liveFlag", { streamId: sid(), type, room, note: box.querySelector<HTMLTextAreaElement>("[data-fnote]")!.value.trim() });
+        m.close(); toast("Flag sent to Boomer.");
+      } catch (err) {
+        busy = false; paint();
+        const e2 = box.querySelector<HTMLElement>(".bt-error"); if (e2) { e2.textContent = messageFor(err, "Couldn't send that flag. Try again."); e2.hidden = false; }
+      }
+    });
+  }
+  async function unlock(uid: string, beat: string) {
+    const who = M.duty?.lockedOut.find((x) => x.uid === uid && x.beat === beat);
+    try { await src.call("liveUnlock", { streamId: sid(), uid, beat }); M.unlocked = [...M.unlocked, { uid, handle: who?.handle ?? null, beat }]; if (M.duty) M.duty = { ...M.duty, lockedOut: M.duty.lockedOut.filter((x) => !(x.uid === uid && x.beat === beat)) }; toast("Unlocked. They get one more try."); schedule(); }
+    catch (err) { fail(err, "Couldn't unlock them. Try again."); }
+  }
+  async function saveTiktok() {
+    const input = root.querySelector<HTMLInputElement>("[data-tiktok-in]"); if (!input) return;
+    const n = Number(input.value);
+    if (!Number.isInteger(n) || n < 0) return void toast("Type the viewer count as a whole number.", { kind: "error" });
+    try { await src.call("liveViewerEntry", { streamId: sid(), viewers: n }); toast("TikTok viewers saved."); }
+    catch (err) { fail(err, "Couldn't save that. Try again."); }
+  }
+  function openMove(uid: string, fillRoom?: Room) {
+    const entry = M.duty?.onDuty[uid]; if (!entry && !fillRoom) return;
+    const rooms = D.rooms.filter((r) => r.state !== "off").map((r) => ({ room: r.room, name: r.name, lead: r.lead, boost: r.boost ? String(Math.round(M.boost * 10) / 10) : "" }));
+    const m = openModal({ title: "Reassign", feature: "mod-deck", content: modalHeader(`Move @${entry?.handle || "crew"}`, "A Deckhand move is immediate. Lead and Captain need their accept.") + `<div class="bt-modal-body" data-move></div>` });
+    const box = m.modal.querySelector<HTMLElement>("[data-move]")!;
+    const opts = moveOptions(entry!, rooms, D.isCaptain);
+    if (entry && D.isCaptain) opts.push({ key: "captain:", chat: "twitch", title: "Stream Captain", sub: "They get an accept prompt" });
+    opts.push({ key: "free:", chat: "twitch", title: "Free the seat", sub: "A Lead steps down to Deckhand, a Deckhand clocks out" });
+    let chosen = fillRoom ? `lead:${fillRoom}` : "";
+    const paint = () => { box.innerHTML = moveListHtml(opts, chosen) + `<p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-act="do-move"${chosen ? "" : " disabled"}>Move</button></div>`; };
+    paint();
+    box.addEventListener("click", async (e) => {
+      const t = e.target as HTMLElement;
+      const pick = t.closest<HTMLElement>("[data-pick]"); if (pick) { chosen = pick.dataset.pick!; return paint(); }
+      if (!t.closest('[data-act="do-move"]')) return;
+      const [role, room] = chosen.split(":");
+      const free = role === "free" ? (entry?.roles.find((r) => r.role !== "captain")?.room ?? undefined) : room;
+      try {
+        const r = await src.call("dutyReassign", { streamId: sid(), uid, role, ...(role === "captain" ? {} : { room: free }) });
+        m.close(); toast(r?.prompt ? "Sent. They have a few minutes to accept." : "Done.");
+      } catch (err) { const e2 = box.querySelector<HTMLElement>(".bt-error"); if (e2) { e2.textContent = messageFor(err, "Couldn't move them. Try again."); e2.hidden = false; } }
+    });
+  }
+  /** Fill a lead gap: pick who among the people on duty. Opens the Reassign list scoped to that room. */
+  function openFill(room: Room) {
+    const cands = Object.entries(M.duty?.onDuty || {}).filter(([, e]) => e.grade >= 2 && !e.away && !e.roles.some((r) => r.role === "lead"));
+    if (!cands.length) return void toast("Nobody on duty is a Lead grade yet.", { kind: "info" });
+    const m = openModal({ title: "Fill the lead", feature: "mod-deck", content: modalHeader(`Fill ${ROOM_NAME[room]}`, "Pick who to ask.") + `<div class="bt-modal-body"><div class="bt-pick-list">${cands.map(([uid, e]) => `<button type="button" class="bt-pick" data-who="${uid}"><span class="bt-pick-main"><b>@${esc(e.handle || "crew")}</b><small>${esc(e.roles.map((r) => r.role + " " + (r.room || "")).join(", "))}</small></span><span class="bt-pick-act">Ask</span></button>`).join("")}</div></div>` });
+    m.modal.addEventListener("click", async (e) => {
+      const b = (e.target as HTMLElement).closest<HTMLElement>("[data-who]"); if (!b) return;
+      try { await src.call("dutyReassign", { streamId: sid(), uid: b.dataset.who, role: "lead", room }); m.close(); toast("Sent. They have a few minutes to accept."); }
+      catch (err) { fail(err, "Couldn't ask them. Try again."); }
+    });
+  }
+  async function confirmNight() {
+    if (M.confirmBusy) return;
+    M.confirmBusy = true; schedule();
+    try { await src.call("dutyConfirmNight", { streamId: sid(), added: Object.fromEntries(Object.entries(M.added).filter(([, v]) => v > 0)) }); toast("Crew confirmed. Gears are paid."); if (M.duty) M.duty = { ...M.duty, confirmedAt: Date.now(), needsConfirm: false }; }
+    catch (err) { fail(err, "Couldn't confirm the crew. Try again."); }
+    finally { M.confirmBusy = false; schedule(); }
+  }
+
   // ---- clicks on the page (the kit's duty bar, prompt, notes and cue cards wire themselves)
   root.addEventListener("click", (e) => {
     const t = e.target as HTMLElement;
@@ -309,6 +441,13 @@ function mount(me: Me, src: Source) {
       else if (how === "clockin") void clockIn({ room, role: "lead" });
       return;
     }
+    const tool = q("[data-tool]"); if (tool) { const k = tool.dataset.tool as Tool; M.tool = M.tool === k ? null : k; return schedule(); }
+    const ul = q("[data-unlock]"); if (ul) { const [u, b] = (ul.dataset.unlock || "").split("|"); return void unlock(u, b); }
+    if (q('[data-act="tiktok-save"]')) return void saveTiktok();
+    const mv = q("[data-move]"); if (mv && mv.closest(".md-reassign")) return openMove(mv.dataset.move || "");
+    const fl = q("[data-fill]"); if (fl) return openFill(fl.dataset.fill as Room);
+    const stp = q("[data-step]"); if (stp) { const [u, dv] = (stp.dataset.step || "").split("|"); M.added = { ...M.added, [u]: Math.max(0, (M.added[u] || 0) + Number(dv)) }; return schedule(); }
+    if (q('[data-act="confirm-night"]')) return void confirmNight();
     if (q('[data-act="focus"]')) { M.focus = !M.focus; return schedule(); }
     const cr = q("[data-chat-room]"); if (cr) { M.chatRoom = cr.dataset.chatRoom as Room; return schedule(); }
     const tab = q("[data-tab]"); if (tab) { M.tab = tab.dataset.tab as Tab; root.dataset.tab = M.tab; root.querySelectorAll<HTMLElement>("[data-tab]").forEach((b) => { const on = b === tab; b.classList.toggle("is-on", on); b.setAttribute("aria-selected", String(on)); }); return; }
@@ -352,7 +491,9 @@ function mount(me: Me, src: Source) {
     },
     notes: (n) => { M.notes = freshNotes(n); schedule(); },
     cues: (c) => { M.cues = c; schedule(); },
+    flags: onFlags,
   });
+  void src.formats().then((f) => { M.formats = f; schedule(); });
   void src.youtubeBoost().then((b) => { M.boost = b; schedule(); });
   void src.swaps().then((s) => { M.swaps = s; schedule(); }).catch(() => {});
   void loadSeats().then(schedule);

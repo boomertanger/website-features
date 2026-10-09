@@ -4,7 +4,7 @@
 import type { Swap } from "../planner/plan-data";
 import { isProduction } from "../../lib/env.js";
 import { BEATS, type Beat } from "./model";
-import { dutyFrom, myRoomOf, recFrom, roleLine, type Cue, type DutyRec, type DutyState, type Handlers, type Me, type Note, type OnDutyEntry, type PubDeck, type Room, type SeatRole, type Source, type StreamInfo } from "./mod-deck-data";
+import { dutyFrom, myRoomOf, recFrom, roleLine, type ChatFormat, type Flag, type Cue, type DutyRec, type DutyState, type Handlers, type Me, type Note, type OnDutyEntry, type PubDeck, type Room, type SeatRole, type Source, type StreamInfo } from "./mod-deck-data";
 
 export type Kind = "off" | "open" | "duty" | "away" | "prompt" | "acting" | "ended" | "after";
 export const KINDS: Kind[] = ["off", "open", "duty", "away", "prompt", "acting", "ended", "after"];
@@ -36,6 +36,8 @@ const PEOPLE: Record<string, { handle: string; grade: number; roles: SeatRole[] 
   vexx: { handle: "vexx", grade: 2, roles: [{ role: "lead", room: "twitch" }] },
 };
 const ROOMS: Room[] = ["twitch", "ytLandscape", "ytVertical", "tiktok"];
+const lineKeyOf = (r: SeatRole) => (r.role === "captain" ? "captain" : `${r.role}:${r.room}`);
+const primaryOf = (as: As): SeatRole => (seatFor(as).find((r) => r.role === "captain") || seatFor(as)[0] || { role: "deckhand", room: "twitch" }) as SeatRole;
 
 function coverage(onDuty: Record<string, OnDutyEntry>, rooms: Room[]) {
   const out: DutyState["rooms"] = {};
@@ -84,6 +86,15 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     streamId: "pv-deck", state: kind === "ended" ? "ended" : "live", startedAt: now - 72 * MIN, endedAt: kind === "ended" ? now - 9 * MIN : null, afterShow: after,
     captainNow: captain, onDuty: kind === "ended" ? {} : onDuty, prompts, rooms: kind === "ended" ? {} : coverage(onDuty, rooms), needsConfirm: kind === "ended", confirmedAt: kind === "ended" && q().get("paid") === "1" ? now - 2 * MIN : null,
     chatGames: q().get("cue") === "0" ? undefined : { activeRunIds: ["pv-run"] },
+    lockedOut: live ? { "u1_start": { uid: "u1", handle: "dreadfern", room: "twitch", beat: "start" }, "u2_start": { uid: "u2", handle: "kitwick", room: "ytLandscape", beat: "start" } } : {},
+    flagsSeen: {},
+    captainAtStop: kind === "ended" && (as === "captain" || q().get("confirm") === "1") ? ME_ID : "u-no",
+    night: kind === "ended" ? { minutes: 192, rows: [
+      { uid: ME_ID, handle: me.handle, grade: me.level, lines: { [lineKeyOf(primaryOf(as))]: 192 }, minutes: 192 },
+      { uid: "u-no", handle: "nightowl", grade: 4, lines: { "deckhand:twitch": 141 }, minutes: 141 },
+      { uid: "u-hg", handle: "hollowgrin", grade: 2, lines: { "lead:ytLandscape": 176 }, minutes: 176 },
+      { uid: "u-ml", handle: "mothlight", grade: 1, lines: { "lead:tiktok": 54 }, minutes: 54 },
+    ] } : null,
   }) : null;
 
   const lineKey = (r: SeatRole) => (r.role === "captain" ? "captain" : `${r.role}:${r.room}`);
@@ -117,9 +128,15 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     { id: "pv-s2", streamId: "pv-y", room: "twitch", role: "deckhand", fromUid: "u-no", fromHandle: "nightowl", droppedAt: now - HOUR, startsAt: now + 9 * HOUR, notice: "late", status: "open", takenBy: null, takenByHandle: null, takenAt: null },
   ];
 
+  let flags: Flag[] = q().get("flag") && live ? [
+    { id: "f1", type: "pii", room: "ytVertical", note: "Someone posted what looks like a home address. I deleted it and hid the user; screenshot saved.", byHandle: "hollowgrin", urgent: true, createdAt: now - MIN, seenAt: null, doneAt: null },
+    ...(q().get("flag") === "plain" ? [{ id: "f2", type: "raid" as const, room: "twitch", note: "Raid incoming from a channel with about 40 viewers, they seem friendly.", byHandle: "vexx", urgent: false, createdAt: now - 6 * MIN, seenAt: null, doneAt: null }] : []),
+  ] : [];
+  if (q().get("flag") === "urgent") flags = flags.filter((f) => f.urgent);
+  const formats: ChatFormat[] = q().get("formats") === "1" ? [{ id: "dead-air", title: "Dead Air", icon: "🕯", sub: "Clues to post, one chat at a time", order: 1 }, { id: "scream-off", title: "Scream Off", icon: "😱", sub: "Rooms compete on one scream", order: 2 }] : [];
   let h: Handlers | null = null;
   const sync = () => { if (!duty) return; duty.rooms = coverage(duty.onDuty, rooms); pub.deck = { rooms: duty.rooms }; };
-  const emit = () => { sync(); h?.pub({ ...pub }); h?.duty(duty ? { ...duty } : null); h?.rec(rec ? { ...rec } : null); h?.notes([...notes]); h?.cues([...cues]); };
+  const emit = () => { sync(); h?.pub({ ...pub }); h?.duty(duty ? { ...duty } : null); h?.rec(rec ? { ...rec } : null); h?.notes([...notes]); h?.cues([...cues]); h?.flags(me.admin ? [...flags] : []); };
   const wait = <T,>(v: T) => new Promise<T>((r) => setTimeout(() => r(v), 260));
   const myRoom = () => (duty?.onDuty[ME_ID] ? myRoomOf(duty.onDuty[ME_ID].roles) : null);
   void roleLine;
@@ -141,6 +158,7 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     },
     dutyBack() { const e = duty?.onDuty[ME_ID]; if (e) e.away = null; return { ok: true }; },
     dutyTakeLead(d) {
+      if (d?.promptId == null && d?.room) { const e0 = duty?.onDuty[ME_ID]; if (!e0) throw Object.assign(new Error("You're not clocked in."), { code: "bt/msg" }); e0.roles = [...e0.roles.filter((r) => r.role !== "deckhand"), { role: "lead", room: d.room as Room }]; return { ok: true, kind: "vacant", role: "lead", room: d.room }; }
       const p = duty?.prompts[d?.promptId]; const e = duty?.onDuty[ME_ID]; if (!p || !e || !duty) throw Object.assign(new Error("That prompt is gone."), { code: "bt/msg" });
       if (p.kind === "handoff") { e.roles = [{ role: "lead", room: (p.room as Room) || "twitch" }]; if (duty.onDuty["u-hg"]) duty.onDuty["u-hg"].away = null; }
       else duty.captainNow = { uid: ME_ID, handle: me.handle, acting: true, since: Date.now() };
@@ -151,6 +169,16 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     crewNoteDelete(d) { notes = notes.filter((n) => n.id !== d?.noteId); return { ok: true }; },
     chatGameCue(d) { cues = cues.map((c) => (c.id === d?.cueId ? { ...c, state: d.action === "done" ? "done" : "posted" } : c)); return { ok: true }; },
     dutySwapTake() { return { ok: true }; },
+    liveUnlock(d) { if (duty) duty.lockedOut = duty.lockedOut.filter((x) => !(x.uid === d?.uid && x.beat === d?.beat)); return { ok: true }; },
+    liveViewerEntry(d) { pub.viewers = { ...pub.viewers, byPlatform: { ...pub.viewers.byPlatform, tiktok: Number(d?.viewers) || 0 } }; return { ok: true }; },
+    liveFlag(d) { const id = `f${Date.now()}`; return { ok: true, flagId: id, urgent: d?.type === "threat" || d?.type === "pii", id }; },
+    liveFlagAck(d) { flags = d?.action === "done" ? flags.filter((f) => f.id !== d.flagId) : flags.map((f) => (f.id === d?.flagId ? { ...f, seenAt: Date.now() } : f)); if (duty) duty.flagsSeen = { ...duty.flagsSeen, [d?.flagId]: true }; return { ok: true }; },
+    dutyReassign(d) {
+      const target = duty?.onDuty[d?.uid]; if (!target || !duty) throw Object.assign(new Error("They aren't on duty."), { code: "bt/msg" });
+      if (d.role === "free") delete duty.onDuty[d.uid]; else target.roles = [{ role: d.role, room: d.role === "captain" ? null : d.room }];
+      return { ok: true };
+    },
+    dutyConfirmNight() { if (duty) { duty.confirmedAt = Date.now(); duty.needsConfirm = false; } if (rec) rec = { ...rec, counted: true, gears: 38, confirmedAt: Date.now() }; return { ok: true }; },
   };
   return {
     preview: true, me,
@@ -161,5 +189,6 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     loadNext: async () => nextInfo,
     swaps: async () => swaps,
     youtubeBoost: async () => 1.5,
+    formats: async () => formats,
   };
 }

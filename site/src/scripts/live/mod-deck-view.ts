@@ -17,7 +17,8 @@ import type { Swap } from "../planner/plan-data";
 import { boardCardHtml } from "../crew/swaps";
 import { BEATS, BEAT_LABEL, fmtDur, type Beat } from "./model";
 import { esc, mascotHtml } from "./ui";
-import { ROOM_NAME, ROOM_ORDER, myRoomOf, roleLine, type Cue, type DutyRec, type DutyState, type Me, type Note, type Prompt, type PubDeck, type Room, type SeatRole, type StreamInfo } from "./mod-deck-data";
+import type { Tool } from "./mod-deck-tools";
+import { ROOM_NAME, ROOM_ORDER, myRoomOf, roleLine, type ChatFormat, type Flag, type Cue, type DutyRec, type DutyState, type Me, type Note, type Prompt, type PubDeck, type Room, type SeatRole, type StreamInfo } from "./mod-deck-data";
 
 export type Tab = "chats" | "crew" | "tools";
 export interface SiteConf { twitchChannel: string; host: string; tiktokUrl: string; houseRules: string; socials: { id: string; label: string; url: string }[]; origin: string }
@@ -27,12 +28,16 @@ export interface Model {
   phone: boolean; tab: Tab; focus: boolean; chatRoom: Room; dropRoom: Room | null; away: boolean; site: SiteConf; now: number;
   /** The prompt ids the person already answered here (hidden at once, before the doc catches up). */
   answered: Set<string>;
+  /** Part 5: the flags I may see (admins: urgent; owner: all), the open Captain tool, the unlocks done here, Chat Games' formats, minutes added in the confirm panel. */
+  flags: Flag[]; tool: Tool | null; unlocked: { uid: string; handle: string | null; beat: string }[]; formats: ChatFormat[]; added: Record<string, number>; confirmBusy: boolean;
 }
 export type Phase = "off" | "live" | "ended";
 export interface RoomRow { room: Room; name: string; state: "covered" | "needed" | "off"; lead: string | null; deckhands: number; viewers: number | null; mine: boolean; boost: boolean }
 export interface Derived {
   phase: Phase; after: boolean; clock: "out" | "in" | "away" | "owner"; roles: SeatRole[]; seat: SeatRole[]; myRoom: Room | null; isCaptain: boolean; isLead: boolean;
   prompt: Prompt | null; rooms: RoomRow[]; streamRooms: Room[]; title: string; canLead: boolean;
+  /** At Stop: this person is the Captain who ended the night (or the owner) and so confirms tonight's crew. */
+  canConfirm: boolean;
 }
 
 const ROOM_SHORT: Record<Room, string> = ROOM_NAME;
@@ -50,7 +55,8 @@ const minText = (m: number) => (m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min
 export function derive(m: Model): Derived {
   const pub = m.pub, duty = m.duty;
   const live = !!pub && (pub.state === "live" || pub.state === "backstage");
-  const ended = !!pub && pub.state === "ended" && !!m.rec;
+  const canConfirm = !!duty && duty.state === "ended" && (m.me.owner || duty.captainAtStop === m.me.uid);
+  const ended = !!pub && pub.state === "ended" && (!!m.rec || canConfirm);
   const phase: Phase = live ? "live" : ended ? "ended" : "off";
   const after = pub?.state === "backstage" || (duty?.afterShow ?? false);
   const mine = duty?.onDuty[m.me.uid] || null;
@@ -70,14 +76,14 @@ export function derive(m: Model): Derived {
     return { room, name: ROOM_SHORT[room], state: off ? "off" : c && c.covered ? "covered" : "needed", lead: c?.lead ? `@${c.lead}` : null, deckhands: c?.deckhands || 0, viewers: pub?.viewers.byPlatform?.[room as "twitch"] ?? null, mine: room === myRoom, boost: room === "ytLandscape" || room === "ytVertical" };
   });
   const title = phase === "live" || phase === "ended" ? pub?.title || "The stream" : "Nobody is on air right now";
-  return { phase, after, clock, roles, seat, myRoom, isCaptain, isLead, prompt: prompts[0] || null, rooms, streamRooms, title, canLead: !m.me.owner && m.me.level >= 2 };
+  return { phase, after, clock, roles, seat, myRoom, isCaptain, isLead, prompt: prompts[0] || null, rooms, streamRooms, title, canLead: !m.me.owner && m.me.level >= 2, canConfirm };
 }
 /** The room a Take the lead button applies to, and how: a handoff prompt for that room (accept it), or a clock in as lead (only when not on duty yet). */
-export function takeFor(m: Model, d: Derived, room: Room): "prompt" | "clockin" | null {
+export function takeFor(m: Model, d: Derived, room: Room): "prompt" | "clockin" | "vacant" | null {
   if (d.phase !== "live" || d.after || !d.canLead) return null;
   const p = Object.values(m.duty?.prompts || {}).find((x) => x.kind === "handoff" && x.room === room && x.status === "open" && x.expiresAt > m.now && !m.answered.has(x.id) && Array.isArray(x.to) && x.to.includes(m.me.uid));
   if (p) return "prompt";
-  return d.clock === "out" ? "clockin" : null;
+  return d.clock === "out" ? "clockin" : d.clock === "in" ? "vacant" : null;
 }
 
 // ---------------------------------------------------------------------------------------------- hero
@@ -233,7 +239,7 @@ export function cuesHtml(m: Model, d: Derived): string {
 
 // ---------------------------------------------------------------------------------------------- the live page, off air, ended
 export function liveBodyHtml(): string {
-  return `<div data-slot="rooms"></div><div data-slot="helm"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="notes"></div></div></div>`;
+  return `<div data-slot="flags"></div><div data-slot="rooms"></div><div data-slot="helm"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="notes"></div></div></div>`;
 }
 export function tabsHtml(m: Model, d: Derived): string {
   if (d.phase !== "live" || d.after) return "";
@@ -247,8 +253,19 @@ export function offHtml(m: Model, d: Derived): string {
     : empty("Nobody's on air", "Nothing is scheduled yet. When the next stream is on the calendar, your seat shows here.");
   return `<div class="md-off">${panel("md-seat", "", "Your next seat", "now", seatBody)}<div data-slot="swaps" class="md-swaps">${boardCardHtml(m.swaps, m.me.uid, mascot())}</div><div class="md-rail"><div data-slot="lines"></div><div data-slot="notes"></div></div></div>`;
 }
-export function endedHtml(m: Model, d: Derived): string {
-  const rec = m.rec!;
+export function endedHtml(m: Model, d: Derived, confirmPanel = ""): string {
+  const rec = m.rec;
+  const night = rec ? nightPanel(m, rec) : "";
+  const duty = m.duty;
+  // the Captain (or the owner) confirms the crew in [data-confirm-slot]; everyone else waits for them
+  const autoAt = duty?.endedAt ? duty.endedAt + 24 * 3600000 : null;
+  const autoTxt = autoAt ? new Intl.DateTimeFormat("en-US", { weekday: "short", hour: "numeric", minute: "2-digit" }).format(autoAt) : "24 hours after Stop";
+  const confirm = d.canConfirm && confirmPanel ? `<div data-confirm-slot>${confirmPanel}</div>`
+    : duty?.confirmedAt ? panel("md-confirm", "", "Crew confirmed", "crew", empty("Confirmed", "Gears are paid. Thank you for tonight."))
+      : panel("md-confirm", "", "Waiting for the Captain", "crew", `<div data-confirm-slot>${empty("The Captain is confirming the crew", `Your minutes are in. Gears land when the Captain confirms, or on their own at ${autoTxt}.`)}</div>`);
+  return `<div class="md-wrap${night ? "" : " md-wrap--1"}">${night}${confirm}</div><div class="md-ended-rail"><div data-slot="notes"></div></div>`;
+}
+function nightPanel(m: Model, rec: DutyRec): string {
   const roleRows = Object.entries(rec.lines).filter(([, v]) => v > 0).map(([k, v]) => {
     const [role, room] = k.split(":");
     const label = role === "captain" ? "Stream Captain" : role === "lead" ? `Room Lead · ${ROOM_SHORT[room as Room] || room}` : `Deckhand · ${ROOM_SHORT[room as Room] || room}`;
@@ -258,11 +275,7 @@ export function endedHtml(m: Model, d: Derived): string {
   const month = new Intl.DateTimeFormat("en-US", { month: "short" }).format(m.now);
   const stamp = rec.counted ? stampHtml({ kicker: month, label: "Counted", tone: "lime", size: "sm" }) : "";
   const gears = paid ? `<div class="md-gears"><b data-count-to="${rec.gears}">${rec.gears}</b><span>Gears paid</span></div>` : `<div class="md-gears is-wait"><b>${rec.gears ?? "…"}</b><span>Gears waiting for the crew to be confirmed</span></div>`;
-  const night = panel("md-night", "", "Your night", "stats", `<div class="md-night"><div class="md-night-top">${gears}${stamp}</div><div class="md-night-rows">${roleRows}${rec.showed && rec.scheduled ? `<div class="md-night-row"><span>Showed up on time</span><b>+5</b></div>` : ""}<div class="md-night-row"><span>Duty counted toward ${esc(new Intl.DateTimeFormat("en-US", { month: "long" }).format(m.now))}</span><b>${rec.counted ? "Yes ✓" : "Pending"}</b></div></div></div>`);
-  const duty = m.duty;
-  // part 5 puts the Captain's "Confirm tonight's crew" in [data-confirm-slot]; until then everyone sees the waiting card
-  const confirm = duty?.confirmedAt ? panel("md-confirm", "", "Crew confirmed", "crew", empty("Confirmed", "Gears are paid. Thank you for tonight.")) : panel("md-confirm", "", "Waiting for the Captain", "crew", `<div data-confirm-slot>${empty("The Captain is confirming the crew", "Your minutes are in. Gears land when the Captain confirms, or on their own 24 hours after Stop.")}</div>`);
-  return `<div class="md-wrap">${night}${confirm}</div><div class="md-ended-rail"><div data-slot="notes"></div></div>`;
+  return panel("md-night", "", "Your night", "stats", `<div class="md-night"><div class="md-night-top">${gears}${stamp}</div><div class="md-night-rows">${roleRows}${rec.showed && rec.scheduled ? `<div class="md-night-row"><span>Showed up on time</span><b>+5</b></div>` : ""}<div class="md-night-row"><span>Duty counted toward ${esc(new Intl.DateTimeFormat("en-US", { month: "long" }).format(m.now))}</span><b>${rec.counted ? "Yes ✓" : "Pending"}</b></div></div></div>`);
 }
 
 export { initials };
