@@ -110,3 +110,90 @@
   .bt-root:not(#_) :is(.lp-alarm, .lp-flicker) { animation: none; }
   .bt-root:not(#_) .ai-jr li.is-on :is(.lp-st-dot, .lp-st-word, .lp-st-c1, .lp-st-c2, .lp-st-c3, .lp-st-line) { animation: none; }
 }
+
+/* ======================================================================== the Bridge (live, Break, backstage) ======================================================================== */
+.bt-root:not(#_) .lp-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+.bt-root:not(#_) .lp-main, .bt-root:not(#_) .lp-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.bt-root:not(#_) .lp-main > *, .bt-root:not(#_) .lp-side > * { min-width: 0; }
+.bt-root:not(#_) .lp-grid [data-p]:empty { display: none; }
+
+/* Video: the ship's viewport, a foot with uptime and viewers, the YouTube chat beside it for backstage */
+.bt-root:not(#_) .lp-vbox { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.bt-root:not(#_) .lp-vbox.has-chat { grid-template-columns: minmax(0, 1fr) 300px; }
+.bt-root:not(#_) .lp-ytchat { width: 100%; height: 100%; min-height: 320px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .lp-ytchat--stub { padding: 12px; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .lp-ytchat--stub i { display: block; margin-bottom: 8px; color: var(--bt-title); font-style: normal; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .lp-ytchat--stub p { margin: 0 0 6px; }
+.bt-root:not(#_) .lp-ytchat--stub b { color: var(--bt-text); }
+.bt-root:not(#_) .lp-embed { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; z-index: 2; }
+.bt-root:not(#_) .bt-cr-screen > .lp-scene { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bt-root:not(#_) .lp-beacon { position: absolute; top: 12px; left: 12px; z-index: 2; }
+.bt-root:not(#_) .lp-screen-tag { position: absolute; left: 12px; bottom: 10px; z-index: 2; padding: 3px 9px; border-radius: var(--bt-radius-full); background: var(--bt-scrim-strong); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .lp-play { position: absolute; top: 50%; left: 50%; z-index: 3; display: grid; place-items: center; width: 76px; height: 76px; margin: -38px 0 0 -38px; padding: 0; border: 0; border-radius: 50%; background: var(--bt-primary); color: var(--bt-text); cursor: pointer; box-shadow: 0 0 0 8px rgba(var(--bt-ink-rgb), 0.35), 0 10px 30px rgba(var(--bt-ink-rgb), 0.6); transition: transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .lp-play svg { width: 34px; height: 34px; margin-left: 4px; fill: currentColor; }
+.bt-root:not(#_) .lp-play:is(:hover, :focus-visible) { transform: scale(1.08); box-shadow: 0 0 0 10px rgba(var(--bt-primary-rgb, var(--bt-ink-rgb)), 0.3), 0 10px 34px rgba(var(--bt-ink-rgb), 0.7); }
+.bt-root:not(#_) .lp-play:focus-visible { outline: 2px solid var(--bt-title); outline-offset: 4px; }
+.bt-root:not(#_) .lp-vfoot { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 10px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lp-vfoot b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+
+/* The velvet curtain gate (backstage for people who are not in) */
+.bt-root:not(#_) .lp-curtain { position: absolute; top: 0; bottom: 0; z-index: 2; width: 24%; background: repeating-linear-gradient(90deg, var(--bt-velvet) 0 12px, color-mix(in srgb, var(--bt-velvet) 55%, var(--bt-bg)) 12px 24px); box-shadow: 0 0 40px rgba(var(--bt-ink-rgb), 0.7); }
+.bt-root:not(#_) .lp-curtain.is-l { left: 0; border-radius: 0 0 60% 0 / 0 0 14% 0; }
+.bt-root:not(#_) .lp-curtain.is-r { right: 0; border-radius: 0 0 0 60% / 0 0 0 14%; }
+.bt-root:not(#_) .lp-gate { position: absolute; inset: 0; z-index: 3; display: grid; place-items: center; padding: 12px; background: color-mix(in srgb, var(--bt-bg) 62%, transparent); }
+.bt-root:not(#_) .lp-gate-in { display: grid; justify-items: center; gap: 8px; max-width: 340px; text-align: center; }
+.bt-root:not(#_) .lp-gate-in .bt-mascot { width: 60px; height: auto; }
+.bt-root:not(#_) .lp-gate-in strong { color: var(--bt-title); font-size: var(--bt-text-lg); font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; }
+.bt-root:not(#_) .lp-gate-in p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+
+/* Now playing, Play, crew list, Watch on */
+.bt-root:not(#_) .lp-now-row { display: grid; grid-template-columns: 74px minmax(0, 1fr); gap: 14px; align-items: start; }
+.bt-root:not(#_) .lp-now-row h3 { margin: 0 0 6px; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lp-now-row small { color: var(--bt-text-muted); }
+.bt-root:not(#_) .lp-mascot-tile { display: grid; place-items: center; background: var(--bt-bg); }
+.bt-root:not(#_) .lp-mascot-tile .bt-mascot { width: 70%; height: auto; }
+.bt-root:not(#_) .lp-now-stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: 10px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lp-now-stats b { display: block; color: var(--bt-title); font-size: var(--bt-text-lg); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lp-next { display: grid; gap: 8px; margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lp-next-row { display: flex; align-items: center; gap: 10px; }
+.bt-root:not(#_) .lp-next-row small { display: block; color: var(--bt-text-muted); }
+.bt-root:not(#_) .lp-note { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.55; }
+.bt-root:not(#_) .lp-activity { display: flex; align-items: center; gap: 12px; }
+.bt-root:not(#_) .lp-activity .bt-mascot { flex: none; width: 56px; height: auto; }
+.bt-root:not(#_) .lp-activity p { margin: 2px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lp-crew { display: grid; gap: 8px; }
+.bt-root:not(#_) .lp-crew-row { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: center; padding: 8px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); }
+.bt-root:not(#_) .lp-crew-row small { display: block; color: var(--bt-text-muted); }
+.bt-root:not(#_) .lp-crew-row.is-open { border-style: dashed; border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); color: var(--bt-gold); }
+.bt-root:not(#_) .lp-crew-av { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%; background: var(--bt-surface-2); color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 800; }
+.bt-root:not(#_) .lp-watch { display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 8px; }
+.bt-root:not(#_) .lp-watch-link { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 2px 8px; align-items: center; padding: 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); color: var(--bt-text); text-decoration: none; font-weight: 700; transition: border-color 0.2s, transform 0.2s; }
+.bt-root:not(#_) .lp-watch-link small { grid-column: 2; color: var(--bt-text-muted); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lp-watch-link:is(:hover, :focus-visible) { border-color: var(--bt-primary); transform: translateY(-1px); }
+
+/* Phones and tablets: one column, in the order video, beats, check-in, Play, Now playing, crew, readouts, Watch on */
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .lp-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .bt-root:not(#_) :is(.lp-main, .lp-side) { display: contents; }
+  .bt-root:not(#_) .lp-grid [data-p="video"] { order: 1; }
+  .bt-root:not(#_) .lp-grid [data-p="rail"] { order: 2; }
+  .bt-root:not(#_) .lp-grid [data-p="checkin"] { order: 3; }
+  .bt-root:not(#_) .lp-grid [data-p="play"] { order: 4; }
+  .bt-root:not(#_) .lp-grid [data-p="now"] { order: 5; }
+  .bt-root:not(#_) .lp-grid [data-p="crew"] { order: 6; }
+  .bt-root:not(#_) .lp-grid [data-p="readouts"] { order: 7; }
+  .bt-root:not(#_) .lp-grid [data-p="watch"] { order: 8; }
+  .bt-root:not(#_) .lp-vbox.has-chat { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .lp-ytchat { height: 360px; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lp-play { width: 60px; height: 60px; margin: -30px 0 0 -30px; }
+  .bt-root:not(#_) .lp-curtain { width: 18%; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .lp-now-row { grid-template-columns: 60px minmax(0, 1fr); gap: 10px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .lp-play, .bt-root:not(#_) .lp-watch-link { transition: none; }
+  .bt-root:not(#_) .lp-play:is(:hover, :focus-visible), .bt-root:not(#_) .lp-watch-link:is(:hover, :focus-visible) { transform: none; }
+}

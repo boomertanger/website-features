@@ -35,6 +35,7 @@ const boxes = Object.fromEntries([...root.querySelectorAll<HTMLElement>("[data-l
 // One module per view, loaded the first time that view shows.
 const loaders: Partial<Record<View, () => Promise<{ default: ViewPart }>>> = {
   room: () => import("./pub-room"),
+  live: () => import("./pub-bridge"),
 };
 const parts: Partial<Record<View, ViewPart>> = {};
 let view: View | null = null;
