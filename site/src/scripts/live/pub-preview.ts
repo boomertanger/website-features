@@ -23,6 +23,7 @@ export function previewKind(): Kind {
 
 const monday = raw.streams[0], backstageRaw = raw.streams[1];
 const WORD = "mortuary";
+const GRADES = [{ handle: "nightowl", track: "mod" as const, grade: 3 }, { handle: "vexx", track: "mod" as const, grade: 2 }, { handle: "hollowgrin", track: "mod" as const, grade: 2 }, { handle: "mothlight", track: "mod" as const, grade: 1 }];
 let tries = 5;
 const checked = new Set<string>((q().get("checked") || "").split(",").filter(Boolean));
 const start = Date.now();
@@ -64,7 +65,8 @@ function liveSnapshot(kind: Kind): PubLive {
     counts: { total: Object.values(raw.checkins.byBeat).reduce((a, b) => a + b, 0), byBeat: { ...raw.checkins.byBeat }, byRoom: { ...raw.checkins.byRoom } },
     viewers: { total, byPlatform: by as any }, peak: Math.max(1412, total), game: e ? null : game,
     nextGame: e || backstage ? null : { gameId: "lethal-night", title: "Lethal Night" },
-    crew: { captain: (backstage ? crew : mc).captain, chats, onDuty: [(backstage ? crew : mc).captain] },
+    crew: { captain: (backstage ? crew : mc).captain, chats, onDuty: [(backstage ? crew : mc).captain], grades: GRADES },
+    firstIn: e ? [] : raw.firstIn.slice(0, 3), firstInBeat: e ? null : beat,
     activity: null,
   };
 }
@@ -72,7 +74,7 @@ function liveSnapshot(kind: Kind): PubLive {
 function snapshot(kind: Kind): PubLive {
   if (kind === "off" || kind === "soon") {
     return { state: "off", look: q().get("look") === "crt" ? "crt" : "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} },
-      viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, activity: null };
+      viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null };
   }
   return liveSnapshot(kind);
 }

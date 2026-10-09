@@ -13,6 +13,7 @@ import { coverHtml } from "../../../../shared/ui/cover.js";
 import { crPanelHtml, crViewportHtml } from "../../../../shared/ui/cr-panel.js";
 import { platformIconHtml } from "../../../../shared/ui/crew.js";
 import { deckplanHtml } from "../../../../shared/ui/deckplan.js";
+import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
 import { readoutBarsHtml, readoutHtml, readoutsHtml, setReadout } from "../../../../shared/ui/readout.js";
 import { velvetHtml } from "../../../../shared/ui/scream-planner.js";
 import { burst } from "../../../../shared/ui/burst.js";
@@ -195,14 +196,15 @@ function drawCheckin(c: PubCtx) {
   else if (open) state = done ? "success" : locked ? "locked" : "entry";
   else state = "closed";
   const stamps = Object.fromEntries(BEATS.map((k) => [k, !!presence?.beats[k]]));
-  const key = `${state}|${beat}|${open ? w.closesAt : 0}|${rooms.join()}|${Object.keys(presence?.beats || {}).join()}|${isBackstage(c)}`;
+  const first = open && p.firstInBeat === beat ? (p.firstIn || []).map((h) => `@${h}`) : [];
+  const key = `${state}|${beat}|${open ? w.closesAt : 0}|${rooms.join()}|${Object.keys(presence?.beats || {}).join()}|${isBackstage(c)}|${first.join()}`;
   if (keys.checkin === "__adopt") { keys.checkin = key; return; }   // a check-in just succeeded: the kit already shows it
   patch("checkin", key, () => {
     const closedTitle = c.member && done && !open ? `You checked in for ${BEAT_LABEL[beat]}` : nextKey ? `Next check-in: ${BEAT_LABEL[nextKey]}` : "Check-in is closed";
     const closedText = c.member && done && !open ? "Nice. The next window opens at the next beat." : isBackstage(c) ? "Opens when Boomer calls it. It counts toward tonight's stream like any other beat." : "When Boomer opens it, listen for the word on stream and type it here. Each beat you check in to earns 10 XP.";
     return checkinHtml({
       id: "lp-ci", state: state === "success" ? "success" : state, beat, closesAt: open ? w.closesAt : 0, count: p.counts.byBeat?.[beat] || 0, rooms: rooms.length ? rooms : undefined,
-      room: defaultRoom(rooms), stamps, title: state === "closed" ? closedTitle : undefined, text: state === "closed" ? closedText : undefined, xp: 10,
+      room: defaultRoom(rooms), stamps, first, title: state === "closed" ? closedTitle : undefined, text: state === "closed" ? closedText : undefined, xp: 10,
       streak: "stream streak safe tonight", wordLabel: "The word from the stream",
     });
   }, (el) => {
@@ -256,10 +258,12 @@ function drawNow(c: PubCtx) {
 }
 
 /* ------------------------------------------------------------------ crew */
-const SEAT = (people: { name: string; role: string }[]) => people.map((x) => ({ name: `@${x.name}`, role: x.role }));
+const gradeOf = (c: PubCtx, handle: string) => (c.pub.crew.grades || []).find((g) => g.handle === handle) || null;
+const chip = (c: PubCtx, handle: string) => { const g = gradeOf(c, handle); return g ? (gradeChipHtml as unknown as (o: Record<string, unknown>) => string)({ track: g.track, grade: g.grade }) : ""; };
+const SEAT = (c: PubCtx, people: { name: string; role: string }[]) => people.map((x) => ({ name: `@${x.name}`, role: x.role, gradeHtml: chip(c, x.name) }));
 function crewBays(c: PubCtx) {
   const chats = c.pub.crew.chats || {}, rooms = roomsOf(c).filter((r) => r !== "site");
-  const out: { name: string; iconHtml: string; people: { name: string; role: string }[]; open: boolean; need: string }[] = [];
+  const out: { name: string; iconHtml: string; people: { name: string; role: string; gradeHtml?: string }[]; open: boolean; need: string }[] = [];
   const has = (r: string) => (rooms as string[]).includes(r);
   const seat = (rs: string[], name: string) => {
     const list = rs.filter(has);
@@ -268,7 +272,7 @@ function crewBays(c: PubCtx) {
     const leads = [...new Set(list.map((r) => chats[r]?.lead).filter(Boolean) as string[])];
     leads.forEach((l) => people.push({ name: l, role: list.length > 1 && list.every((r) => chats[r]?.lead === l) ? "Lead · both rooms" : "Lead" }));
     [...new Set(list.flatMap((r) => chats[r]?.deckhands || []))].forEach((d) => people.push({ name: d, role: "Deckhand" }));
-    out.push({ name, iconHtml: list.map((r) => platformIconHtml(r)).join(""), people: SEAT(people), open: !leads.length, need: "Lead needed" });
+    out.push({ name, iconHtml: list.map((r) => platformIconHtml(r)).join(""), people: SEAT(c, people), open: !leads.length, need: "Lead needed" });
   };
   seat(["twitch"], "Twitch"); seat(["ytLandscape", "ytVertical"], "YouTube"); seat(["tiktok"], "TikTok");
   return out;
@@ -276,15 +280,15 @@ function crewBays(c: PubCtx) {
 function drawCrew(c: PubCtx) {
   const p = c.pub, look = c.root.dataset.look || "";
   const bays = crewBays(c);
-  const key = `${look}|${p.crew.captain}|${JSON.stringify(p.crew.chats)}|${roomsOf(c).join()}`;
+  const key = `${look}|${p.crew.captain}|${JSON.stringify(p.crew.chats)}|${roomsOf(c).join()}|${JSON.stringify(p.crew.grades || [])}`;
   patch("crew", key, () => {
-    const cap = p.crew.captain ? [{ name: `@${p.crew.captain}`, role: "Stream Captain" }] : [];
+    const cap = p.crew.captain ? [{ name: `@${p.crew.captain}`, role: "Stream Captain", gradeHtml: chip(c, p.crew.captain) }] : [];
     const action = `<a class="bt-link-btn" href="/crew">Meet the crew</a>`;
     if (look === "hull" || look === "crt") {
       return crPanelHtml({ id: "lp-crew", title: "Crew on duty", icon: "crew", actionsHtml: action, bodyHtml: deckplanHtml({ bridge: { name: "Bridge", people: cap, need: "Captain needed" }, bays: (isBackstage(c) ? [] : bays) as never[] }) });
     }
-    const rows = [...cap.map((x) => `<div class="lp-crew-row is-captain"><span class="lp-crew-av">${esc(x.name.slice(1, 3).toUpperCase())}</span><div><b>${esc(x.name)}</b><small>${x.role}</small></div></div>`),
-      ...bays.flatMap((b) => b.open ? [`<div class="lp-crew-row is-open"><span class="lp-crew-av">+</span><div><b>${esc(b.name)} lead needed</b><small>Crew can clock in from the Mod Deck</small></div></div>`] : b.people.map((x) => `<div class="lp-crew-row"><span class="lp-crew-av">${esc(x.name.slice(1, 3).toUpperCase())}</span><div><b>${esc(x.name)}</b><small>${esc(b.name)} · ${esc(x.role)}</small></div></div>`))];
+    const rows = [...cap.map((x) => `<div class="lp-crew-row is-captain"><span class="lp-crew-av">${esc(x.name.slice(1, 3).toUpperCase())}</span><div><b>${esc(x.name)}</b><small>${x.role}</small></div>${x.gradeHtml}</div>`),
+      ...bays.flatMap((b) => b.open ? [`<div class="lp-crew-row is-open"><span class="lp-crew-av">+</span><div><b>${esc(b.name)} lead needed</b><small>Crew can clock in from the Mod Deck</small></div></div>`] : b.people.map((x) => `<div class="lp-crew-row"><span class="lp-crew-av">${esc(x.name.slice(1, 3).toUpperCase())}</span><div><b>${esc(x.name)}</b><small>${esc(b.name)} · ${esc(x.role)}</small></div>${x.gradeHtml}</div>`))];
     return crPanelHtml({ id: "lp-crew", title: "Crew on duty", icon: "crew", actionsHtml: action, bodyHtml: `<div class="lp-crew">${rows.join("")}</div>` });
   });
 }

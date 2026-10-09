@@ -30,7 +30,9 @@ export interface PubLive {
   peak: number;
   game: { gameId: string; title: string; startedAt: number } | null;
   nextGame: { gameId: string; title: string | null } | null;
-  crew: { captain: string | null; chats: Record<string, { lead: string | null; deckhands: string[] }>; onDuty: string[] };
+  crew: { captain: string | null; chats: Record<string, { lead: string | null; deckhands: string[] }>; onDuty: string[]; /** Grade of each person shown, from the public crew mirror. */ grades?: { handle: string; track: "mod" | "admin"; grade: number }[] };
+  /** The current beat's first three check-ins (public handles) and the beat they are for. */
+  firstIn?: string[]; firstInBeat?: Beat | null;
   activity: { kind: string; title: string | null; status: string | null } | null;
 }
 

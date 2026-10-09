@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: /live shows First in under the open check-in (the beat's first three handles) and a grade chip on each crew member (deck plan and list), both from public/live.
 site: the Live Beacon, the phone Live tab and the Watch tile never show a placeholder: with no stream in public/schedule they say just Offline (no time); a scheduled stream adds Next stream and its time in the viewer's own zone (one read round per visit, kept 5 minutes in sessionStorage; lib/offline-next.ts), and the Watch tile reads the live stream's title or the next published stream.
 site: twitchChannel in site.json is the same channel as TWITCH_LOGIN (functions/.env); check-live fails if site.json, functions/.env or the lib/live/feeds.js default differ. The TODO is gone.
 functions, site: public/live gains firstIn (the current beat's first three check-ins, public handles only, with firstInBeat) and each crew person's grade from the public crew mirror (crew.grades, read at most once a minute); the pure builder in live/logic.js and its deep-scan check cover both (no word, uid, private data or video id), and check-live-wiring proves public/live carries no uid. Deployed to staging: startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow, liveRoom, liveSettings, liveViewerEntry, liveFlush, liveTick, onCheckInWritten, twitchEventSub.
