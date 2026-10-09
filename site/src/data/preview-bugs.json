@@ -1,0 +1,1026 @@
+{
+  "_note": "PREVIEW DATA for the non-production ?as= switch only (scripts/bugs/store.ts). Never shown on production.",
+  "me": {
+    "uid": "u_gbo",
+    "handle": "gbo",
+    "name": "gbo",
+    "owner": true,
+    "bitOn": [
+      "b1"
+    ]
+  },
+  "zapped": 31,
+  "reports": [
+    {
+      "id": "b1",
+      "title": "Tap the Splat timer keeps running after I pause",
+      "page": "/arcade/tap-the-splat",
+      "whatHappened": "I paused mid-run to answer the door. When I came back the timer had kept going the whole time and my run was ruined.",
+      "expected": "The timer should stop while the game is paused, and pick up where it left off when I resume.",
+      "steps": "1. Start a run of Tap the Splat\n2. Splat a few, then press Pause (or Esc)\n3. Wait ten seconds, then press Resume\n4. The timer has jumped ahead by ten seconds",
+      "severity": "major",
+      "status": "in_progress",
+      "priority": "high",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_hollowmoth",
+        "handle": "hollowmoth",
+        "name": "hollowmoth"
+      },
+      "meTooCount": 12,
+      "threadCount": 3,
+      "shotRef": "bug-zapper/b1/shot",
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_hollowmoth",
+            "handle": "hollowmoth"
+          },
+          "changedAt": 1791298800000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791298800000,
+          "note": "Reproduced on Chrome and Firefox."
+        },
+        {
+          "status": "in_progress",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791471600000,
+          "note": "Fix is on staging."
+        }
+      ],
+      "statusChangedAt": 1791471600000,
+      "confirmedAt": 1791298800000,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791295200000,
+      "updatedAt": 1791471600000
+    },
+    {
+      "id": "b2",
+      "title": "Schedule shows streams an hour off after the clocks change",
+      "page": "/schedule",
+      "whatHappened": "Streams after Nov 2 show at 8 PM for me but the stream is at 7 PM Central.",
+      "expected": "Times in my own timezone, including after daylight saving ends.",
+      "steps": "1. Open the schedule\n2. Go to the week of Nov 2",
+      "severity": "minor",
+      "status": "confirmed",
+      "priority": "normal",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_nightowl_jess",
+        "handle": "nightowl_jess",
+        "name": "nightowl_jess"
+      },
+      "meTooCount": 8,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_nightowl_jess",
+            "handle": "nightowl_jess"
+          },
+          "changedAt": 1791212400000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791385200000
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 1791385200000,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791208800000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b3",
+      "title": "“I want this too” does nothing on iPhone",
+      "page": "/games",
+      "whatHappened": "Tapping the button on a wishlist game does nothing. No count change, no error.",
+      "expected": "The count goes up and the button lights.",
+      "steps": "1. Open the Vault on an iPhone\n2. Tap “I want this too” on any wishlist game",
+      "severity": "major",
+      "status": "open",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_cryptkeeper",
+        "handle": "cryptkeeper",
+        "name": "cryptkeeper"
+      },
+      "meTooCount": 5,
+      "threadCount": 0,
+      "shotRef": "bug-zapper/b3/shot",
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_cryptkeeper",
+            "handle": "cryptkeeper"
+          },
+          "changedAt": 1791471600000
+        }
+      ],
+      "statusChangedAt": 1791471600000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791468000000,
+      "updatedAt": 1791471600000
+    },
+    {
+      "id": "b4",
+      "title": "Night Shift counted my clock-in twice",
+      "page": "/shift",
+      "whatHappened": "I clocked in once this morning and my streak went up by two.",
+      "expected": "One clock-in, one day on the streak.",
+      "steps": "1. Clock in on /shift\n2. Refresh the page",
+      "severity": "minor",
+      "status": "open",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_gbo",
+        "handle": "gbo",
+        "name": "gbo"
+      },
+      "meTooCount": 2,
+      "threadCount": 1,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_gbo",
+            "handle": "gbo"
+          },
+          "changedAt": 1791471600000
+        }
+      ],
+      "statusChangedAt": 1791471600000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791468000000,
+      "updatedAt": 1791471600000
+    },
+    {
+      "id": "b5",
+      "title": "Trophy case medals overlap on small phones",
+      "page": "/u/hollowmoth",
+      "whatHappened": "On my profile the medals in the trophy case sit on top of each other.",
+      "expected": "A tidy grid.",
+      "steps": "1. Open your profile on a phone",
+      "severity": "cosmetic",
+      "status": "fixed",
+      "priority": "low",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_hollowmoth",
+        "handle": "hollowmoth",
+        "name": "hollowmoth"
+      },
+      "meTooCount": 4,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_hollowmoth",
+            "handle": "hollowmoth"
+          },
+          "changedAt": 1790866800000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790953200000
+        },
+        {
+          "status": "fixed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791385200000
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 1790953200000,
+      "fixedAt": 1791385200000,
+      "closedAt": 1791385200000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1790863200000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b6",
+      "title": "Another member’s email showed on my account page",
+      "page": "/account",
+      "whatHappened": "For a second after signing in, the account page showed someone else's email address before switching to mine.",
+      "expected": "Only ever my own details.",
+      "steps": "1. Sign out\n2. Sign in with Twitch\n3. Watch the email field as the page loads",
+      "severity": "critical",
+      "status": "confirmed",
+      "priority": "urgent",
+      "duplicateOf": null,
+      "private": true,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_gbo",
+        "handle": "gbo",
+        "name": "gbo"
+      },
+      "meTooCount": 0,
+      "threadCount": 2,
+      "shotRef": "bug-zapper/b6/shot",
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_gbo",
+            "handle": "gbo"
+          },
+          "changedAt": 1791385200000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791385200000,
+          "note": "Reproduced. Fixing first."
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 1791385200000,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791381600000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b7",
+      "title": "Footer splat sound plays twice",
+      "page": "/",
+      "whatHappened": "When I splat in the footer game I hear it twice.",
+      "expected": "One splat, one sound.",
+      "steps": "1. Play the footer game",
+      "severity": "cosmetic",
+      "status": "cant_reproduce",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_lantern_lou",
+        "handle": "lantern_lou",
+        "name": "lantern_lou"
+      },
+      "meTooCount": 1,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_lantern_lou",
+            "handle": "lantern_lou"
+          },
+          "changedAt": 1790607600000
+        },
+        {
+          "status": "cant_reproduce",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790953200000,
+          "note": "Tried four browsers. Tell us your sound settings in the thread?"
+        }
+      ],
+      "statusChangedAt": 1790953200000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 1790953200000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1790604000000,
+      "updatedAt": 1790953200000
+    },
+    {
+      "id": "b8",
+      "title": "Twitch sign-in loops back to the Join dialog",
+      "page": "/join",
+      "whatHappened": "After approving on Twitch I land back on Join, signed out.",
+      "expected": "Signed in after Twitch.",
+      "steps": "1. Open Join\n2. Choose Twitch\n3. Approve",
+      "severity": "critical",
+      "status": "fixed",
+      "priority": "urgent",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_static_sam",
+        "handle": "static_sam",
+        "name": "static_sam"
+      },
+      "meTooCount": 15,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_static_sam",
+            "handle": "static_sam"
+          },
+          "changedAt": 1790434800000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790434800000
+        },
+        {
+          "status": "in_progress",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790521200000
+        },
+        {
+          "status": "fixed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790694000000
+        }
+      ],
+      "statusChangedAt": 1790694000000,
+      "confirmedAt": 1790434800000,
+      "fixedAt": 1790694000000,
+      "closedAt": 1790694000000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1790431200000,
+      "updatedAt": 1790694000000
+    },
+    {
+      "id": "b9",
+      "title": "Stream times are wrong since Sunday",
+      "page": "/schedule",
+      "whatHappened": "Everything on the schedule is an hour late.",
+      "expected": "The right times.",
+      "steps": "",
+      "severity": "minor",
+      "status": "duplicate",
+      "priority": null,
+      "duplicateOf": "b2",
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_pale_rider",
+        "handle": "pale_rider",
+        "name": "pale_rider"
+      },
+      "meTooCount": 0,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_pale_rider",
+            "handle": "pale_rider"
+          },
+          "changedAt": 1791298800000
+        },
+        {
+          "status": "duplicate",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791385200000
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 1791385200000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791295200000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b10",
+      "title": "Live chat spills out of its box on Firefox",
+      "page": "/live",
+      "whatHappened": "The chat panel is wider than its box and covers the player edge.",
+      "expected": "Chat stays in its column.",
+      "steps": "1. Open /live in Firefox\n2. Make the window about 1100px wide",
+      "severity": "minor",
+      "status": "open",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_vhs_witch",
+        "handle": "vhs_witch",
+        "name": "vhs_witch"
+      },
+      "meTooCount": 3,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_vhs_witch",
+            "handle": "vhs_witch"
+          },
+          "changedAt": 1791385200000
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791381600000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b11",
+      "title": "free skins click here!!!",
+      "page": "/",
+      "whatHappened": "visit my site for free skins",
+      "expected": "",
+      "steps": "",
+      "severity": "cosmetic",
+      "status": "open",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": true,
+      "hiddenBy": {
+        "uid": "u_ravenmod",
+        "handle": "ravenmod"
+      },
+      "hiddenReason": "Spam link",
+      "closed": false,
+      "by": {
+        "uid": "u_skinz4u",
+        "handle": "skinz4u",
+        "name": "skinz4u"
+      },
+      "meTooCount": 0,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_skinz4u",
+            "handle": "skinz4u"
+          },
+          "changedAt": 1791471600000
+        }
+      ],
+      "statusChangedAt": 1791471600000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791468000000,
+      "updatedAt": 1791471600000
+    },
+    {
+      "id": "b12",
+      "title": "Arcade board still shows my old handle",
+      "page": "/arcade",
+      "whatHappened": "I changed my handle but my old scores still say the old one.",
+      "expected": "My new handle everywhere.",
+      "steps": "",
+      "severity": "minor",
+      "status": "wont_fix",
+      "priority": null,
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_grave_digits",
+        "handle": "grave_digits",
+        "name": "grave_digits"
+      },
+      "meTooCount": 2,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_grave_digits",
+            "handle": "grave_digits"
+          },
+          "changedAt": 1790953200000
+        },
+        {
+          "status": "wont_fix",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791126000000,
+          "note": "Boards keep the handle you had when you set the score. A new score shows the new one."
+        }
+      ],
+      "statusChangedAt": 1791126000000,
+      "confirmedAt": 0,
+      "fixedAt": 0,
+      "closedAt": 1791126000000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1790949600000,
+      "updatedAt": 1791126000000
+    },
+    {
+      "id": "b13",
+      "title": "Crew HQ tasks don't refresh after I finish one",
+      "page": "/crew/hq",
+      "whatHappened": "The task stays on my list until I reload.",
+      "expected": "It moves to Done.",
+      "steps": "1. Finish a task on Crew HQ",
+      "severity": "minor",
+      "status": "in_progress",
+      "priority": "normal",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_ravenmod",
+        "handle": "ravenmod",
+        "name": "ravenmod"
+      },
+      "meTooCount": 6,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_ravenmod",
+            "handle": "ravenmod"
+          },
+          "changedAt": 1791126000000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791212400000
+        },
+        {
+          "status": "in_progress",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791385200000
+        }
+      ],
+      "statusChangedAt": 1791385200000,
+      "confirmedAt": 1791212400000,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791122400000,
+      "updatedAt": 1791385200000
+    },
+    {
+      "id": "b14",
+      "title": "Join dialog's birthday picker is cut off on Android",
+      "page": "/join",
+      "whatHappened": "The year list runs off the bottom of the screen.",
+      "expected": "The whole picker on screen.",
+      "steps": "1. Open Join on an Android phone",
+      "severity": "major",
+      "status": "fixed",
+      "priority": "high",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": true,
+      "by": {
+        "uid": "u_mothlight",
+        "handle": "mothlight",
+        "name": "mothlight"
+      },
+      "meTooCount": 9,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_mothlight",
+            "handle": "mothlight"
+          },
+          "changedAt": 1790780400000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1790866800000
+        },
+        {
+          "status": "fixed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791212400000
+        }
+      ],
+      "statusChangedAt": 1791212400000,
+      "confirmedAt": 1790866800000,
+      "fixedAt": 1791212400000,
+      "closedAt": 1791212400000,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1790776800000,
+      "updatedAt": 1791212400000
+    },
+    {
+      "id": "b15",
+      "title": "Vault search can't find games with accents",
+      "page": "/games",
+      "whatHappened": "Searching “pokemon” doesn't find “Pokémon”.",
+      "expected": "Accents shouldn't matter.",
+      "steps": "1. Search the Vault for pokemon",
+      "severity": "minor",
+      "status": "confirmed",
+      "priority": "low",
+      "duplicateOf": null,
+      "private": false,
+      "hidden": false,
+      "closed": false,
+      "by": {
+        "uid": "u_cryptkeeper",
+        "handle": "cryptkeeper",
+        "name": "cryptkeeper"
+      },
+      "meTooCount": 4,
+      "threadCount": 0,
+      "shotRef": null,
+      "statusHistory": [
+        {
+          "status": "open",
+          "changedBy": {
+            "uid": "u_cryptkeeper",
+            "handle": "cryptkeeper"
+          },
+          "changedAt": 1791039600000
+        },
+        {
+          "status": "confirmed",
+          "changedBy": {
+            "uid": "u_boomertanger",
+            "handle": "boomertanger"
+          },
+          "changedAt": 1791212400000
+        }
+      ],
+      "statusChangedAt": 1791212400000,
+      "confirmedAt": 1791212400000,
+      "fixedAt": 0,
+      "closedAt": 0,
+      "editedAt": 0,
+      "editCount": 0,
+      "createdAt": 1791036000000,
+      "updatedAt": 1791212400000
+    }
+  ],
+  "info": {
+    "b1": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": {
+        "publicId": "bug-zapper/b1/shot",
+        "format": "png",
+        "bytes": 180000,
+        "width": 960,
+        "height": 540
+      }
+    },
+    "b2": {
+      "device": {
+        "browser": "Safari 18",
+        "os": "macOS",
+        "viewport": "1512 × 982"
+      },
+      "shot": null
+    },
+    "b3": {
+      "device": {
+        "browser": "Safari",
+        "os": "iOS 18",
+        "viewport": "393 × 852"
+      },
+      "shot": {
+        "publicId": "bug-zapper/b3/shot",
+        "format": "png",
+        "bytes": 180000,
+        "width": 960,
+        "height": 540
+      }
+    },
+    "b4": {
+      "device": {
+        "browser": "Firefox 131",
+        "os": "Windows 11",
+        "viewport": "2560 × 1440"
+      },
+      "shot": null
+    },
+    "b5": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Android 15",
+        "viewport": "412 × 915"
+      },
+      "shot": null
+    },
+    "b6": {
+      "device": {
+        "browser": "Edge 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": {
+        "publicId": "bug-zapper/b6/shot",
+        "format": "png",
+        "bytes": 180000,
+        "width": 960,
+        "height": 540
+      }
+    },
+    "b7": {
+      "device": {
+        "browser": "Opera GX",
+        "os": "Windows 10",
+        "viewport": "1920 × 1080"
+      },
+      "shot": null
+    },
+    "b8": {
+      "device": {
+        "browser": "Chrome 128",
+        "os": "ChromeOS",
+        "viewport": "1366 × 768"
+      },
+      "shot": null
+    },
+    "b9": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": null
+    },
+    "b10": {
+      "device": {
+        "browser": "Firefox 131",
+        "os": "Linux",
+        "viewport": "1100 × 900"
+      },
+      "shot": null
+    },
+    "b11": {
+      "device": null,
+      "shot": null
+    },
+    "b12": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": null
+    },
+    "b13": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": null
+    },
+    "b14": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Android 14",
+        "viewport": "360 × 780"
+      },
+      "shot": null
+    },
+    "b15": {
+      "device": {
+        "browser": "Chrome 129",
+        "os": "Windows 11",
+        "viewport": "1920 × 1080"
+      },
+      "shot": null
+    }
+  },
+  "thread": {
+    "b1": [
+      {
+        "id": "b1-t0",
+        "text": "Got it. Does it happen if you pause with the button and with Esc, or only one of them?",
+        "by": {
+          "uid": "u_boomertanger",
+          "handle": "boomertanger",
+          "name": "boomertanger"
+        },
+        "staffTag": "admin",
+        "hidden": false,
+        "createdAt": 1791288000000
+      },
+      {
+        "id": "b1-t1",
+        "text": "Both. Also when I switch tabs.",
+        "by": {
+          "uid": "u_hollowmoth",
+          "handle": "hollowmoth",
+          "name": "hollowmoth"
+        },
+        "staffTag": null,
+        "hidden": false,
+        "createdAt": 1791291600000
+      },
+      {
+        "id": "b1-t2",
+        "text": "Same here on Firefox, switching tabs is the quickest way to see it.",
+        "by": {
+          "uid": "u_ravenmod",
+          "handle": "ravenmod",
+          "name": "ravenmod"
+        },
+        "staffTag": "mod",
+        "hidden": false,
+        "createdAt": 1791381600000
+      },
+      {
+        "id": "b1-t3",
+        "text": "lol this site is trash",
+        "by": {
+          "uid": "u_hollowmoth",
+          "handle": "hollowmoth",
+          "name": "hollowmoth"
+        },
+        "staffTag": null,
+        "hidden": true,
+        "hiddenBy": {
+          "uid": "u_ravenmod",
+          "handle": "ravenmod"
+        },
+        "hiddenReason": "Not kind",
+        "createdAt": 1791385200000
+      }
+    ],
+    "b4": [
+      {
+        "id": "b4-t0",
+        "text": "Thanks! Did you have the page open in two tabs?",
+        "by": {
+          "uid": "u_ravenmod",
+          "handle": "ravenmod",
+          "name": "ravenmod"
+        },
+        "staffTag": "mod",
+        "hidden": false,
+        "createdAt": 1791460800000
+      }
+    ],
+    "b6": [
+      {
+        "id": "b6-t0",
+        "text": "Thank you for marking this private. Reproduced, and it's the first thing being fixed. Please don't share the address you saw.",
+        "by": {
+          "uid": "u_boomertanger",
+          "handle": "boomertanger",
+          "name": "boomertanger"
+        },
+        "staffTag": "admin",
+        "hidden": false,
+        "createdAt": 1791374400000
+      },
+      {
+        "id": "b6-t1",
+        "text": "Of course. Glad it was quick to find.",
+        "by": {
+          "uid": "u_gbo",
+          "handle": "gbo",
+          "name": "gbo"
+        },
+        "staffTag": null,
+        "hidden": false,
+        "createdAt": 1791378000000
+      }
+    ]
+  },
+  "log": {
+    "b1": [
+      {
+        "id": "l1",
+        "action": "triage",
+        "actorName": "boomertanger",
+        "reason": "Reproduced on Chrome and Firefox.",
+        "createdAt": 1791302400000,
+        "changes": {
+          "status": {
+            "before": "open",
+            "after": "confirmed"
+          }
+        }
+      }
+    ]
+  }
+}

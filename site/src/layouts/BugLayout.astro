@@ -1,0 +1,19 @@
+---
+// One layout for Bug Zapper's pages (docs/specs/bug-zapper.md §7, §8): the site shell, the sticky BUGZAPPER bar in BaseLayout's "bar" slot (so it stays stuck to the end of the page),
+// then the page. Both pages are public; member actions check in the scripts.
+import BaseLayout from "./BaseLayout.astro";
+import BugBar from "../components/bugs/BugBar.astro";
+import "../styles/how-it-works.css";   // the How it works blocks (shared with the Arcade, the Vault and Feature Lab); before bug-zapper.css so the scenes win ties
+import "../styles/bug-zapper.css";
+
+interface Props { title: string; description?: string; section?: string | null }
+const { title, description, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <BugBar slot="bar" section={section} />
+  <div class="bz-wrap"><slot /></div>
+</BaseLayout>
+
+<script>
+  import "../scripts/bugs/layout";
+</script>

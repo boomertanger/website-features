@@ -1,0 +1,37 @@
+---
+// /bug-zapper, the member bug board (docs/specs/bug-zapper.md §7; docs/design/mockups/bug-zapper-mockups.html, Board B, Hero H1 Porch light). A tool page: the hero with the
+// porch-light scene, the Join and verify strips, the controls and the list or the columns. Everyone sees the public reports; reporting and "bit me too" need a verified member (the
+// callables check). Everything below the bar is drawn by scripts/bugs/board.ts from sites/{siteId}/bugs/main/reports; until it loads the page shows skeleton rows, and without
+// JavaScript a plain note.
+import BugLayout from "../../layouts/BugLayout.astro";
+import { I } from "../../scripts/bugs/art";
+const skeleton = [0, 1, 2];
+---
+<BugLayout title="Bug reports" description="Spotted something broken on the site or the stream? Report it, add a “bit me too” when it gets you too, and watch it get fixed.">
+  <div class="bz-page" data-bz>
+    <section class="bz-hero" aria-labelledby="bz-h">
+      <div class="bz-hero-copy">
+        <h1 class="bt-title" id="bz-h">Bug reports</h1>
+        <p>Spotted something broken on the site or the stream? Report it, add a “bit me too” when it gets you too, and watch it get fixed.</p>
+        <div class="bz-hero-acts">
+          <button type="button" class="bt-btn bt-btn--primary" data-bz-new><Fragment set:html={I.plus} />Report a bug</button>
+          <a class="bt-btn bt-btn--secondary" href="/bug-zapper/how-it-works">How it works</a>
+        </div>
+      </div>
+      <div data-bz-scene></div>
+    </section>
+    <div class="bz-strip" data-bz-join data-join hidden></div>
+    <div class="bz-strip bz-strip--gold" data-bz-verify hidden></div>
+    <div class="bz-controls" data-bz-controls></div>
+    <div data-bz-view aria-busy="true" aria-live="polite">
+      {skeleton.map(() => (
+        <div class="bt-skeleton-row" aria-hidden="true"><span class="bt-skeleton bz-sk-tally"></span><div class="bt-skeleton-lines"><span class="bt-skeleton bz-sk-a"></span><span class="bt-skeleton bz-sk-b"></span><span class="bt-skeleton bz-sk-c"></span></div></div>
+      ))}
+      <noscript><p class="bt-empty-title">Bug Zapper needs JavaScript to show the reports.</p></noscript>
+    </div>
+  </div>
+</BugLayout>
+
+<script>
+  import "../../scripts/bugs/board";
+</script>

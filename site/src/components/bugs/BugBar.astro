@@ -1,0 +1,23 @@
+---
+// Bug Zapper's feature bar (docs/specs/bug-zapper.md §7): the kit's .bt-topbar in a .bt-sticky-bar like the Vault's and Feature Lab's, with the BUGZAPPER .bt-wordmark--power (the
+// Porch zapper lamp rests; on hover or focus the tube lights and a moth is zapped; touch screens play it once as it scrolls into view). Right: a ghost How it works link (the board
+// link on that page) and a primary Report a bug button (visitors get the Join dialog titled "Join to report bugs"; unverified members the verify dialog). Under 640px the words
+// become icons, each a 40px target with an aria-label. Wired in scripts/bugs/layout.ts.
+import { BZ_ICON, I } from "../../scripts/bugs/art";
+interface Props { section?: string | null }
+const { section = null } = Astro.props;
+---
+<div class="bt-sticky-bar bz-dock" data-bz-dock>
+  <div class="bt-topbar bz-topbar">
+    <a class="bt-wordmark bt-wordmark--power bz-wm" href="/bug-zapper" aria-label="Bug Zapper board">
+      <span class="bt-wordmark-icon" set:html={BZ_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">BUG<span class="bt-wordmark-accent">ZAPPER</span></span>
+    </a>
+    <div class="bt-topnav">
+      {section === "how"
+        ? <a class="bt-btn bt-btn--ghost bt-btn--sm bz-act" href="/bug-zapper" aria-label="Back to the board"><Fragment set:html={I.book} /><span class="bt-btn-label">The board</span></a>
+        : <a class="bt-btn bt-btn--ghost bt-btn--sm bz-act" href="/bug-zapper/how-it-works" aria-label="How it works"><Fragment set:html={I.book} /><span class="bt-btn-label">How it works</span></a>}
+      <button type="button" class="bt-btn bt-btn--primary bt-btn--sm bz-act" data-bz-new aria-label="Report a bug"><Fragment set:html={I.plus} /><span class="bt-btn-label">Report a bug</span></button>
+    </div>
+  </div>
+</div>
