@@ -2101,6 +2101,8 @@
 /* While an account banner shows under the header (verify email, finish signup), the
    overlay header joins the flow so the banner isn't hidden beneath it. */
 .bt-root:not(#_):is([data-auth-state="unverified"], [data-auth-state="needsSignup"]) .bt-site-header--overlay { position: relative; background: var(--bt-bg); border-bottom-color: var(--bt-border); }
+/* The check-in banner (a check-in window is open) sits under the header like the verify banner: the overlay header steps out of the hero while it shows. */
+.bt-root:not(#_):has([data-live-banner]:not([hidden])) .bt-site-header--overlay { position: relative; background: var(--bt-bg); border-bottom-color: var(--bt-border); }
 
 /* Main navigation */
 /* The nav shrinks first and scrolls sideways when the modules don't fit, so it never runs under the beacon. */
@@ -4654,7 +4656,30 @@
 .bt-root:not(#_) .bt-live-banner-cd { font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .bt-live-banner-cd [data-cd] { font-weight: 800; color: var(--bt-text); }
 .bt-root:not(#_) .bt-live-banner-sp { flex: 1; }
-@container bt (max-width: 640px) { .bt-root:not(#_) .bt-live-banner { padding: 10px 12px; } .bt-root:not(#_) .bt-live-banner-sp { display: none; } .bt-root:not(#_) .bt-live-banner .bt-btn { width: 100%; margin-top: 4px; } }
+.bt-root:not(#_) .bt-live-banner[hidden] { display: none; }
+.bt-root:not(#_) .bt-live-banner-x { display: inline-grid; place-items: center; flex: none; width: 28px; height: 28px; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--bt-text-muted); font-size: var(--bt-text-md); cursor: pointer; transition: background 0.15s, color 0.15s; }
+.bt-root:not(#_) .bt-live-banner-x:is(:hover, :focus-visible) { background: rgba(var(--bt-sheen-rgb), 0.1); color: var(--bt-text); }
+.bt-root:not(#_) .bt-live-banner-x:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+/* The check-in dialog (openModal variant "sheet", docs/specs/control-room.md §4): a centred dialog; on phones a bottom sheet. Its success view: the
+   stamp slams, chips pop (+XP, streak, beats so far), the four stamps, and a button. The card inside is .bt-checkin--dialog (no look touches it). */
+.bt-root:not(#_) .bt-modal--sheet { max-width: 460px; gap: var(--bt-space-4); }
+.bt-root:not(#_) .bt-ci-win { display: grid; gap: var(--bt-space-4); }
+.bt-root:not(#_) .bt-ci-win > p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.5; }
+.bt-root:not(#_) .bt-ci-done { position: relative; display: grid; justify-items: center; gap: var(--bt-space-3); text-align: center; }
+.bt-root:not(#_) .bt-ci-done h2 { margin: 0; }
+.bt-root:not(#_) .bt-ci-done p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .bt-ci-chips { display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; }
+.bt-root:not(#_) .bt-ci-chips span { padding: 6px 12px; border-radius: var(--bt-radius-full); font-size: var(--bt-text-sm); font-weight: 800; animation: bt-ci-pop 0.5s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.bt-root:not(#_) .bt-ci-chips .is-xp { background: rgba(var(--bt-primary-rgb), 0.18); color: var(--bt-primary-soft); animation-delay: 0.35s; }
+.bt-root:not(#_) .bt-ci-chips .is-streak { background: rgba(var(--bt-gold-rgb), 0.15); color: var(--bt-title); animation-delay: 0.55s; }
+.bt-root:not(#_) .bt-ci-chips .is-beats { background: var(--bt-lime-bg); color: var(--bt-lime); animation-delay: 0.75s; }
+@keyframes bt-ci-pop { from { transform: scale(0.4); opacity: 0; } }
+@container bt (max-width: 640px) {
+  .bt-root.bt-portal:not(#_) .bt-modal-backdrop:has(.bt-modal--sheet) { align-items: flex-end; padding: 0; }
+  .bt-root:not(#_) .bt-modal--sheet { max-width: none; border-radius: 22px 22px 0 0; border-bottom: 0; padding-bottom: calc(28px + env(safe-area-inset-bottom, 0px)); animation: bt-ci-sheet 0.25s ease-out; }
+}
+@keyframes bt-ci-sheet { from { transform: translateY(100%); } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-live-banner { position: relative; padding: 10px 40px 10px 12px; } .bt-root:not(#_) .bt-live-banner-x { position: absolute; top: 6px; right: 6px; } .bt-root:not(#_) .bt-live-banner-sp { display: none; } .bt-root:not(#_) .bt-live-banner .bt-btn { width: 100%; margin-top: 4px; } }
 
 /* ---------- launch panel ---------- */
 .bt-root:not(#_) .bt-launch { display: grid; gap: 10px; }
@@ -4765,7 +4790,7 @@
 
 /* ---------- reduced motion: colour and glow stay, movement stops (NOT the stream view: it is a video overlay) ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) :is(.bt-readout, .bt-beat-dot, .bt-checkin-word, .bt-checkin-stamp, .bt-live-banner, .bt-live-banner-dot, .bt-deckplan-scan, .bt-deckplan-bay, .bt-deckplan-dot, .bt-cr-led, .bt-cr-scan, .bt-cr-hico svg),
+  .bt-root:not(#_) :is(.bt-readout, .bt-beat-dot, .bt-checkin-word, .bt-checkin-stamp, .bt-live-banner, .bt-live-banner-dot, .bt-ci-chips span, .bt-modal--sheet, .bt-deckplan-scan, .bt-deckplan-bay, .bt-deckplan-dot, .bt-cr-led, .bt-cr-scan, .bt-cr-hico svg),
   .bt-root:not(#_) :is(.bt-beat-dot, .bt-readout-v)::before, .bt-root:not(#_) :is(.bt-beat-dot)::after { animation: none !important; }
   .bt-root:not(#_) :is(.bt-beats-fill, .bt-readout-track i, .bt-checkin-room, .bt-launch-tile, .bt-checklist-box, .bt-checklist-box svg, .bt-deckplan-bay) { transition: none; }
   .bt-root:not(#_) .bt-checklist-head::before { transition: none; }

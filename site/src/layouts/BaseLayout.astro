@@ -58,6 +58,8 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       <a class="bt-skip" href="#main">Skip to content</a>
       <SiteHeader overlay={overlayHeader} />
       <AccountBanners />
+      <!-- The check-in banner (scripts/live/site-banner.ts) drops in here while a window is open. -->
+      <div class="bt-live-banner-host" data-live-banner hidden></div>
       <!-- A section's sticky bar (the Arcade's): here in the frame, not inside <main>, so it
            stays stuck to the end of the page, footer included. -->
       <slot name="bar" />
@@ -80,6 +82,13 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       import { startLiveWhenIdle } from "../lib/live";
       startLiveWhenIdle();
       // "Offline" or the next stream's time on the beacon and the phone tab (the real schedule; never a placeholder).
+      import { onLive, livePreview } from "../lib/live";
+      import { rememberRoomFromLink } from "../scripts/live/checkin-flow";
+      rememberRoomFromLink();   // a ?room= link on any page sets the room the check-in preselects
+      // The check-in banner: its code loads only when public/live says a window is open (preview: ?state=break on any page).
+      const startBanner = () => import("../scripts/live/site-banner").then((m) => m.startSiteBanner());
+      if (livePreview()) { if (["break"].includes(livePreview()!.state || "")) void startBanner(); }
+      else setTimeout(() => onLive((p) => { if (p.state !== "off" && p.window.open) void startBanner(); }), 1500);
       import { paintNextLabels } from "../lib/offline-next";
       if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
       import "../scripts/account/ui";

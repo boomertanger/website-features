@@ -24,7 +24,7 @@
 //   applyCheckinResult(el, result)     the same, for a result that arrives some other way
 //   setCheckinCount(el, n)             the "checked in this beat" number
 //   fmtClock(ms)                       "4:31"
-//   liveBannerHtml({ state, beat, closesAt, time, cta })    "open" (red, countdown and a Check in button) | "in" (green "You're in for Break 1")
+//   liveBannerHtml({ state, beat, closesAt, time, cta, extra, dismissible })    (extra: text after You're in for; dismissible: a close button, data-banner-dismiss)    "open" (red, countdown and a Check in button) | "in" (green "You're in for Break 1")
 //   initLiveBanner(root, { onCheckIn(banner) })   ticks the banner's countdown to closesAt and wires the button; also fires a bubbling
 //        "bt-checkin-open" CustomEvent from the banner (the page opens the check-in dialog). At zero the banner gets .is-ended and hidden.
 import { escapeHtml as esc } from "./dom.js";
@@ -207,20 +207,25 @@ export function initCheckin(root = document, { onSubmit } = {}) {
 
 /* ---------- the site-wide banner ---------- */
 
-export function liveBannerHtml({ state = "open", beat = "break1", closesAt = 0, time = "", cta = "Check in" } = {}) {
+export function liveBannerHtml({ state = "open", beat = "break1", closesAt = 0, time = "", cta = "Check in", extra = "", dismissible = false } = {}) {
   const name = BEAT_NAMES[beat] || BEAT_NAMES.break1;
   const left = closesAt ? Math.max(0, closesAt - Date.now()) : 0;
   const t = time || (closesAt ? fmtClock(left) : "");
   const sep = `<span class="bt-live-banner-sep" aria-hidden="true">·</span>`;
+  const x = dismissible ? `<button type="button" class="bt-live-banner-x" data-banner-dismiss aria-label="Dismiss">✕</button>` : "";
   if (state === "in") {
-    return `<div class="bt-live-banner" role="status" data-state="in"><span class="bt-live-banner-ic" aria-hidden="true">${TICK}</span><b>You're in for ${esc(name)}</b></div>`;
+    return `<div class="bt-live-banner" role="status" data-state="in"><span class="bt-live-banner-ic" aria-hidden="true">${TICK}</span><b>You're in for ${esc(name)}</b>${extra ? `${sep}<span>${esc(extra)}</span>` : ""}<span class="bt-live-banner-sp"></span>${x}</div>`;
   }
-  return `<div class="bt-live-banner" role="status" data-state="open"${closesAt ? ` data-closes="${Number(closesAt)}"` : ""}><span class="bt-live-banner-dot" aria-hidden="true"></span><b>Check-in is open</b>${sep}<span>${esc(name)}</span>${t ? `${sep}<span class="bt-live-banner-cd"><span data-cd>${esc(t)}</span> left</span>` : ""}<span class="bt-live-banner-sp"></span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-checkin-open>${esc(cta)}</button></div>`;
+  return `<div class="bt-live-banner" role="status" data-state="open"${closesAt ? ` data-closes="${Number(closesAt)}"` : ""}><span class="bt-live-banner-dot" aria-hidden="true"></span><b>Check-in is open</b>${sep}<span>${esc(name)}</span>${t ? `${sep}<span class="bt-live-banner-cd"><span data-cd>${esc(t)}</span> left</span>` : ""}<span class="bt-live-banner-sp"></span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-checkin-open>${esc(cta)}</button>${x}</div>`;
 }
 
 export function initLiveBanner(root = document, { onCheckIn } = {}) {
   root.querySelectorAll(".bt-live-banner:not([data-lb-ready])").forEach((el) => {
     el.dataset.lbReady = "";
+    el.querySelector("[data-banner-dismiss]")?.addEventListener("click", () => {
+      el.hidden = true;
+      el.dispatchEvent(new CustomEvent("bt-banner-dismiss", { bubbles: true }));
+    });
     el.querySelector("[data-checkin-open]")?.addEventListener("click", () => {
       onCheckIn?.(el);
       el.dispatchEvent(new CustomEvent("bt-checkin-open", { bubbles: true }));

@@ -71,3 +71,6 @@ export const setCheckinCount = _setCount as unknown as (el: Element, n: number) 
 export const dualTimeHtml = _dualTimeHtml as unknown as (o: Opts) => string;
 export const ticketHtml = _ticketHtml as unknown as (o: Opts) => string;
 export const initHowItWorks = _initHowItWorks as unknown as (root: ParentNode) => void;
+import { liveBannerHtml as _liveBannerHtml, initLiveBanner as _initLiveBanner } from "../../../../shared/ui/checkin.js";
+export const liveBannerHtml = _liveBannerHtml as unknown as (o: Opts) => string;
+export const initLiveBanner = _initLiveBanner as unknown as (root: ParentNode, o?: { onCheckIn?: (el: HTMLElement) => void }) => void;

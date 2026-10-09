@@ -23,13 +23,12 @@ import type { Presence, Room } from "./pub-data";
 import { checkinHtml, clock, esc, fmtDuration, fmtHms, initCheckin, mascotHtml, reduced, setCheckinCount, type CheckinOutcome, type PubCtx, type ViewPart } from "./pub-ui";
 import { corridorSvg } from "./pub-ui";
 import { messageFor } from "./ui";
+import { defaultRoom, roomsOf as flowRoomsOf, submitCheckIn } from "./checkin-flow";
 import { reasonOf } from "../../lib/errors";
 
 const PLATFORM_ROOMS = ["twitch", "ytLandscape", "ytVertical", "tiktok"] as const;
 const SOCIAL: Record<string, string> = { twitch: "twitch", ytLandscape: "youtube", ytVertical: "youtube", tiktok: "tiktok" };
 const ROOM_NAME: Record<string, string> = { twitch: "Twitch", ytLandscape: "YouTube", ytVertical: "YouTube Vertical", tiktok: "TikTok" };
-const ALIASES: Record<string, string> = { twitch: "twitch", tiktok: "tiktok", site: "site", ytlandscape: "ytLandscape", ytvertical: "ytVertical", youtube: "ytLandscape", ytv: "ytVertical" };
-const ROOM_KEY = "lp-room";
 
 let box: HTMLElement;
 let cur: PubCtx;
@@ -50,7 +49,7 @@ function patch(name: string, key: string, html: () => string, after?: (el: HTMLE
 }
 
 /** The rooms live now (a platform stream), in the page's order. The backstage stream is always "site". */
-const roomsOf = (c: PubCtx): Room[] => (c.pub.state === "backstage" ? ["site"] : PLATFORM_ROOMS.filter((r) => (c.pub.liveRooms || []).includes(r)) as Room[]);
+const roomsOf = (c: PubCtx): Room[] => flowRoomsOf(c.pub);
 const isBackstage = (c: PubCtx) => c.pub.state === "backstage";
 const scoreHtml = (s: number | null | undefined) => (s == null ? `<span class="bt-score-none">Not rated</span>` : `<span class="bt-score"><b>${esc(s)}</b><small>/10</small></span>`);
 
@@ -176,12 +175,6 @@ function drawRail(c: PubCtx) {
 }
 
 /* ------------------------------------------------------------------ check-in */
-const defaultRoom = (rooms: Room[]): string => {
-  const link = ALIASES[(new URLSearchParams(location.search).get("room") || "").toLowerCase()];
-  if (link && rooms.includes(link as Room)) return link;
-  try { const saved = localStorage.getItem(ROOM_KEY); if (saved && rooms.includes(saved as Room)) return saved; } catch { /* private mode */ }
-  return rooms.length === 1 ? rooms[0] : "";
-};
 
 function drawCheckin(c: PubCtx) {
   const p = c.pub, now = Date.now();
@@ -216,21 +209,14 @@ function drawCheckin(c: PubCtx) {
 }
 
 async function submit(c: PubCtx, word: string, room: string | null, card: HTMLElement): Promise<CheckinOutcome> {
-  const bs = isBackstage(c);
-  if (!bs && !room) return { error: "Pick where you're watching." };
-  const r = await c.api.checkIn(word, bs ? "site" : (room as Room));
-  if ("ok" in r && r.ok) {
-    if (room) { try { localStorage.setItem(ROOM_KEY, room); } catch { /* private mode */ } }
-    const beat = (r.beat || c.pub.window.beat || c.pub.beat) as Beat;
-    presence = { beats: { ...(presence?.beats || {}), [beat]: { room: room || "site" } }, wrongTries: presence?.wrongTries || {} };
-    // The kit shows the success state itself (and slams the stamp); the key is updated so the next update doesn't redraw over it.
+  const r = await submitCheckIn(c.api, c.pub, presence, word, room);
+  presence = r.presence;
+  if ("ok" in r.outcome && r.outcome.ok) {
+    // The kit shows the success state itself (and slams the stamp); the key is adopted so the next update does not redraw over it.
     keys.checkin = "__adopt";
-    const stamp = () => { const st = card.querySelector<HTMLElement>(".bt-checkin-stamp.is-new"); if (st && !reduced()) burst(st, { n: 18 }); };
-    setTimeout(stamp, 50);
-    return { ok: true, xp: r.already ? 0 : r.xp ?? 10, streak: r.already ? "already checked in" : "stream streak safe tonight" };
-  }
-  if ("locked" in r) { presence = { beats: presence?.beats || {}, wrongTries: { ...(presence?.wrongTries || {}), [c.pub.window.beat || c.pub.beat || "start"]: 5 } }; keys.checkin = ""; return r; }
-  return r;
+    setTimeout(() => { const st = card.querySelector<HTMLElement>(".bt-checkin-stamp.is-new"); if (st && !reduced()) burst(st, { n: 18 }); }, 50);
+  } else if ("locked" in r.outcome) keys.checkin = "";
+  return r.outcome;
 }
 
 /* ------------------------------------------------------------------ now playing */
