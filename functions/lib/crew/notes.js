@@ -27,7 +27,7 @@ module.exports = function crewNotes({ adminLogEntry }) {
     const mine = await db.collection(`${ROOT}/notes`).where("uid", "==", uid).get();
     if (mine.docs.filter((d) => (ms(d.get("createdAt")) || 0) > at - DAY_MS).length >= MAX_PER_DAY) throw fail("resource-exhausted", "That's 10 notes today. Try again tomorrow.", "limit");
     const ref = db.collection(`${ROOT}/notes`).doc();
-    await ref.set({ uid, handle: w.handle, grade: w.grade, track: w.roster && w.roster.track === "admin" || (!w.roster && w.isAdmin) ? "admin" : "mod", text, createdAt: Timestamp.fromMillis(at), expireAt: Timestamp.fromMillis(at + DAY_MS) });
+    await ref.set({ uid, handle: w.handle, grade: w.roster && Number.isInteger(w.roster.grade) ? w.roster.grade : null, track: w.roster && w.roster.track === "admin" || (!w.roster && w.isAdmin) ? "admin" : "mod", text, createdAt: Timestamp.fromMillis(at), expireAt: Timestamp.fromMillis(at + DAY_MS) });
     return { ok: true, noteId: ref.id };
   });
 
