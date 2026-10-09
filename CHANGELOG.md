@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Mod Machina phase 3 spec (the Mod Deck) and approved mockups (H1, P1, R1).
 docs: Chat Games are merged into live activities (decided Oct 9, 2026). ROADMAP 5b now absorbs Mod Machina phase 4: one engine, two member-facing names (Questions, Chat Games), crew-hosted games last. control-room.md section 9, mod-machina.md sections 11 and 15 and the ROADMAP point to 5b; the game designs and crew-vote rules stay in mod-machina.md section 11 until docs/specs/live-activities.md moves them.
 functions, docs: retired functions/scripts/seed-bug-cleanup-rule.js (deleted). Production setup of the Bug Zapper screenshot cleanup rule runs only seed-cloud-stash.js; docs/specs/bug-zapper.md, the ROADMAP launch checklist and check-bugs.js no longer point at the old script.
 functions: seed-cloud-stash.js now creates or upgrades only cleanupRules/bugZapperScreenshots: an old-shape rule is rewritten in place to the allowlisted Bug Zapper target (name "Old bug screenshots", all four closed statuses, 60 days, switched off, updatedBy seed), and the duplicate oldBugScreenshots rule from the earlier seed is deleted only if it is disabled with no lastRun (otherwise the seed stops before writing). Both changes are logged to adminLog (rule-save, rule-delete, actor seed).
