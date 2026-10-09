@@ -4,6 +4,7 @@
 import type { Swap } from "../planner/plan-data";
 import { isProduction } from "../../lib/env.js";
 import { BEATS, type Beat } from "./model";
+import { toast } from "./ui";
 import { dutyFrom, myRoomOf, recFrom, roleLine, type ChatFormat, type Flag, type Cue, type DutyRec, type DutyState, type Handlers, type Me, type Note, type OnDutyEntry, type PubDeck, type Room, type SeatRole, type Source, type StreamInfo } from "./mod-deck-data";
 
 export type Kind = "off" | "open" | "duty" | "away" | "prompt" | "acting" | "ended" | "after";
@@ -134,6 +135,11 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
   ] : [];
   if (q().get("flag") === "urgent") flags = flags.filter((f) => f.urgent);
   const formats: ChatFormat[] = q().get("formats") === "1" ? [{ id: "dead-air", title: "Dead Air", icon: "🕯", sub: "Clues to post, one chat at a time", order: 1 }, { id: "scream-off", title: "Scream Off", icon: "😱", sub: "Rooms compete on one scream", order: 2 }] : [];
+  // Chat Games isn't built yet: ?formats=1 also stands in a btChatGames that says what it was asked (?cgapi=0 leaves it out, to see the tiles vanish).
+  if (formats.length && q().get("cgapi") !== "0" && !window.btChatGames) {
+    const say = (t: string) => toast(t, { kind: "info" });
+    window.btChatGames = { openLaunch: (a) => { say(`Preview: Chat Games would open the launch for ${a.formatId}.`); }, end: (a) => { say(`Preview: Chat Games would end ${a.runId}.`); } };
+  }
   let h: Handlers | null = null;
   const sync = () => { if (!duty) return; duty.rooms = coverage(duty.onDuty, rooms); pub.deck = { rooms: duty.rooms }; };
   const emit = () => { sync(); h?.pub({ ...pub }); h?.duty(duty ? { ...duty } : null); h?.rec(rec ? { ...rec } : null); h?.notes([...notes]); h?.cues([...cues]); h?.flags(me.admin ? [...flags] : []); };
@@ -190,5 +196,6 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     swaps: async () => swaps,
     youtubeBoost: async () => 1.5,
     formats: async () => formats,
+    activeRun: async () => (q().get("run") === "1" && formats.length ? { runId: "pv-run", formatId: formats[0].id } : null),
   };
 }

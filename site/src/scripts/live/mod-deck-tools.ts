@@ -74,7 +74,7 @@ function reassignPanel(i: HelmInput): string {
 }
 function launchPanel(i: HelmInput): string {
   const tiles: any[] = [{ id: "afterShow", icon: "🎬", title: "After-show", sub: i.owner ? "Ends the stream and opens Fan Club backstage" : "The owner and admins start the after-show", state: i.owner && !i.afterShow ? "idle" : "off" }];
-  const cg = i.haveChatGames && i.formats.length ? i.formats.map((f) => ({ id: `cg:${f.id}`, icon: f.icon, title: f.title, sub: f.sub, state: i.runningFormat === f.id ? "running" : "idle", action: i.runningFormat ? "Swap" : "Start", statusText: "On stream" })) : [];
+  const cg = i.haveChatGames && i.formats.length ? i.formats.map((f) => ({ id: `cg:${f.id}`, icon: f.icon, title: f.title, sub: f.sub, state: i.runningFormat === f.id ? "running" : "idle", action: i.runningFormat ? "Swap" : "Start", statusText: "On stream · End" })) : [];
   return `<div class="md-launch">${launchHtml({ tiles: [...tiles, ...cg] as any })}</div>`;
 }
 export function helmHtml(i: HelmInput): string {

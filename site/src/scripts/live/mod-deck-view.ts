@@ -18,7 +18,7 @@ import { boardCardHtml } from "../crew/swaps";
 import { BEATS, BEAT_LABEL, fmtDur, type Beat } from "./model";
 import { esc, mascotHtml } from "./ui";
 import type { Tool } from "./mod-deck-tools";
-import { ROOM_NAME, ROOM_ORDER, myRoomOf, roleLine, type ChatFormat, type Flag, type Cue, type DutyRec, type DutyState, type Me, type Note, type Prompt, type PubDeck, type Room, type SeatRole, type StreamInfo } from "./mod-deck-data";
+import { ROOM_NAME, ROOM_ORDER, myRoomOf, roleLine, type ChatFormat, type ActiveRun, type Flag, type Cue, type DutyRec, type DutyState, type Me, type Note, type Prompt, type PubDeck, type Room, type SeatRole, type StreamInfo } from "./mod-deck-data";
 
 export type Tab = "chats" | "crew" | "tools";
 export interface SiteConf { twitchChannel: string; host: string; tiktokUrl: string; houseRules: string; socials: { id: string; label: string; url: string }[]; origin: string }
@@ -29,7 +29,7 @@ export interface Model {
   /** The prompt ids the person already answered here (hidden at once, before the doc catches up). */
   answered: Set<string>;
   /** Part 5: the flags I may see (admins: urgent; owner: all), the open Captain tool, the unlocks done here, Chat Games' formats, minutes added in the confirm panel. */
-  flags: Flag[]; tool: Tool | null; unlocked: { uid: string; handle: string | null; beat: string }[]; formats: ChatFormat[]; added: Record<string, number>; confirmBusy: boolean;
+  flags: Flag[]; tool: Tool | null; unlocked: { uid: string; handle: string | null; beat: string }[]; formats: ChatFormat[]; run: ActiveRun | null; added: Record<string, number>; confirmBusy: boolean;
 }
 export type Phase = "off" | "live" | "ended";
 export interface RoomRow { room: Room; name: string; state: "covered" | "needed" | "off"; lead: string | null; deckhands: number; viewers: number | null; mine: boolean; boost: boolean }

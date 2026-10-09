@@ -86,7 +86,7 @@ function mount(me: Me, src: Source) {
   const M: Model = {
     me, pub: null, duty: null, rec: null, stream: null, next: null, notes: [], cues: [], swaps: [], boost: 1.5,
     phone: false, tab: "chats", focus: false, chatRoom: "twitch", dropRoom: null, away: false, now: Date.now(), answered: new Set(),
-    flags: [], tool: null, unlocked: [], formats: [], added: {}, confirmBusy: false,
+    flags: [], tool: null, unlocked: [], formats: [], run: null, added: {}, confirmBusy: false,
     site: { twitchChannel: site.twitchChannel, host: location.hostname, tiktokUrl: (site.socials.find((x) => x.id === "tiktok")?.url || "") === "#" ? "" : site.socials.find((x) => x.id === "tiktok")?.url || "", houseRules: (site as any).houseRules || "", socials: site.socials, origin },
   };
   let D: Derived = derive(M);
@@ -338,10 +338,28 @@ function mount(me: Me, src: Source) {
     const people = Object.entries(duty?.onDuty || {}).map(([uid, entry]) => ({ uid, entry, me: uid === M.me.uid }));
     const gaps = d.rooms.filter((r) => r.state === "needed").map((r) => ({ room: r.room, name: r.name }));
     const locked = (duty?.lockedOut || []).filter((x) => kind === "captain" || x.room === d.myRoom);
-    const input = { kind, open: M.tool, lockedOut: locked, done: M.unlocked, tiktok: M.pub?.viewers.byPlatform?.tiktok ?? null, people, gaps, owner: M.me.owner, afterShow: d.after, formats: M.formats, runningFormat: null, haveChatGames: !!duty?.chatGames?.activeRunIds, streamId: sid(), tiktokRoom } as Parameters<typeof helmHtml>[0];
-    const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.length]);
+    const input = { kind, open: M.tool, lockedOut: locked, done: M.unlocked, tiktok: M.pub?.viewers.byPlatform?.tiktok ?? null, people, gaps, owner: M.me.owner, afterShow: d.after, formats: M.formats, runningFormat: M.run?.formatId ?? null, haveChatGames: !!window.btChatGames, streamId: sid(), tiktokRoom } as Parameters<typeof helmHtml>[0];
+    const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.map((f) => f.id), M.run, !!window.btChatGames]);
     const el = slot("helm", helmHtml(input), key);
-    if (el && fresh(el)) initLaunch(el as any, { onLaunch: () => toast("Chat Games starts from here when it's switched on.", { kind: "info" }) });
+    if (el && fresh(el)) initLaunch(el as any, { onLaunch: (id: string, state: string) => launch(id, state) });
+  }
+  /** The launch tiles. Chat Games (agreed contract): Start and Swap open its launch flow, End ends the run; it owns every message after that. */
+  function launch(id: string, state: string) {
+    if (id === "afterShow") { toast("Start the after-show from the Control Room.", { kind: "info" }); return; }
+    const cg = window.btChatGames;
+    if (!id.startsWith("cg:") || !cg) return;
+    if (state === "running" && M.run) void cg.end({ runId: M.run.runId });
+    else void cg.openLaunch({ formatId: id.slice(3), streamId: sid() });
+  }
+  /** Which active run is on this stream (re-read when private/duty's activeRunIds or the stream change). */
+  let runKey = "";
+  function syncRun() {
+    const s = sid(), ids = (M.duty?.chatGames?.activeRunIds || []).filter((x) => typeof x === "string");
+    const key = `${s}|${ids.join(",")}`;
+    if (key === runKey) return;
+    runKey = key;
+    if (!s || !ids.length) { M.run = null; return; }
+    void src.activeRun(s, ids).then((r) => { if (runKey === key) { M.run = r; schedule(); } }, () => {});
   }
   function openFlagDialog() {
     const rooms = D.streamRooms.length ? D.streamRooms : ROOM_ORDER;
@@ -482,7 +500,7 @@ function mount(me: Me, src: Source) {
   }
   src.start({
     pub: (p) => { const was = M.pub?.streamId, st = M.pub?.state; M.pub = p; if (p.streamId !== was || p.state !== st) { void loadSeats().then(schedule); if (p.state === "off") void src.swaps().then((s) => { M.swaps = s; schedule(); }).catch(() => {}); } schedule(); },
-    duty: (d) => { M.duty = d; schedule(); },
+    duty: (d) => { M.duty = d; syncRun(); schedule(); },
     rec: (r) => {
       const prev = M.rec; M.rec = r;
       if (r && prev && prev.minutes < 60 && r.minutes >= 60 && !celebrated.duty60) { celebrated.duty60 = true; toast("Duty counted. That's one more for this month."); const ring = root.querySelector<HTMLElement>(".bt-duty-ring"); if (ring) burst(ring, { n: 12 }); }

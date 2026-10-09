@@ -50,6 +50,11 @@ export interface NightRow { uid: string; handle: string | null; grade: number | 
 export type FlagType = "threat" | "pii" | "raid" | "harassment" | "other";
 export interface Flag { id: string; type: FlagType; room: string; note: string; byHandle: string | null; urgent: boolean; createdAt: number; seenAt: number | null; doneAt: number | null }
 export interface ChatFormat { id: string; title: string; icon: string; sub: string; order: number }
+/** The Chat Game on stream now: one of private/duty.chatGames.activeRunIds whose run doc (chatGames/main/runs/{runId}) is this stream's and not over. */
+export interface ActiveRun { runId: string; formatId: string }
+/** Chat Games' launch API (agreed contract): loaded by the Chat Games script when it exists. The Deck never shows Chat Games tiles without it. */
+export interface ChatGamesApi { openLaunch(a: { formatId: string; streamId: string }): unknown; end(a: { runId: string }): unknown }
+declare global { interface Window { btChatGames?: ChatGamesApi } }
 export interface DutyRec {
   streamId: string; minutes: number; lines: Record<string, number>; scheduled: SeatRole | null; showed: boolean; counted: boolean; led: boolean;
   gears: number | null; confirmedAt: number | null; addedMinutes: number; clockedInAt: number | null; endedAt: number | null; noShow: boolean;
@@ -80,6 +85,8 @@ export interface Source {
   youtubeBoost(): Promise<number>;
   /** Chat Games' enabled formats (sites/boomertanger/chatGames/main/formats, by order). [] when they can't be read yet: the slot renders nothing. */
   formats(): Promise<ChatFormat[]>;
+  /** Which of the active runs is on this stream (null when none, or when runs can't be read). */
+  activeRun(streamId: string, runIds: string[]): Promise<ActiveRun | null>;
 }
 
 export const HIDDEN_MS = 60_000;
@@ -246,6 +253,16 @@ export function realSource(me: Me): Source {
         const snap = await getDocs(liteCollection(lite, `${base}/chatGames/main/formats`));
         return snap.docs.map((d: any) => ({ id: d.id, title: String(d.get("title") || d.get("name") || d.id), icon: String(d.get("icon") || "🎲"), sub: String(d.get("blurb") || d.get("sub") || ""), order: Number(d.get("order")) || 0, on: d.get("enabled") !== false && d.get("on") !== false })).filter((f: any) => f.on).sort((a: any, b: any) => a.order - b.order);
       } catch { return []; }   // not readable (or not built) yet: the slot renders nothing
+    },
+    async activeRun(sid, ids) {
+      for (const id of ids) {
+        try {
+          const s = await getDoc(liteDoc(lite, `${base}/chatGames/main/runs/${id}`));
+          const st = s.exists() ? String(s.get("state") || "") : "";
+          if (s.exists() && s.get("streamId") === sid && typeof s.get("formatId") === "string" && !["ended", "done", "cancelled"].includes(st)) return { runId: id, formatId: s.get("formatId") };
+        } catch { /* not readable yet: no running tile */ }
+      }
+      return null;
     },
     async youtubeBoost() { try { const s = await getDoc(liteDoc(lite, `${base}/crew/main`)); const b = s.exists() ? Number(s.get("youtubeBoost")) : NaN; return Number.isFinite(b) && b > 0 ? b : 1.5; } catch { return 1.5; } },
   };
