@@ -242,6 +242,9 @@ async function main() {
   assert.ok(bl && bl.audience === "fanClub" && bl.streamId === "sb", "backstage-live to the audience"); assert.equal(bl.payload.link, "/live");
   assert.equal((await get("public/live")).state, "backstage");
   assert.deepEqual((await stream("sb")).liveRooms, ["site"]);
+  assert.deepEqual((await get("public/live")).liveRooms, ["site"], "a planned backstage stream is live in the site room only");
+  assert.equal(await why(as("boss", "liveRoom", { streamId: "sb", room: "tiktok", on: true })), "backstage", "no TikTok switch on a backstage stream");
+  assert.equal(await why(as("boss", "startStream", { streamId: "sb" })), "alreadyLive", "a second Start is refused");
   assert.ok(!(await get("streams/sb/private/checklist")).beats.start.some((i) => i.text === "Platform only"), "platform-only items skipped on backstage");
   assert.ok((await get("streams/sb/private/checklist")).beats.start.some((i) => i.text === "Backstage only"));
   await as("boss", "stopStream", {});

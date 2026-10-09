@@ -176,7 +176,7 @@ function startDialog(ctx: Ctx) {
   const rows = back ? row("yt", "YouTube event (unlisted)")
     : [s.rooms.includes("twitch") ? row("tw", "Twitch") : "", row("yt", "YouTube event"), s.rooms.includes("ytVertical") ? row("vt", "YouTube vertical broadcast") : "",
       s.rooms.includes("tiktok") ? `<div class="lc-chk" data-row="tk" data-state="wait"><b aria-hidden="true">·</b><span><b>TikTok</b><small data-t>Start TikTok LIVE Studio, then switch it on here.</small></span><button type="button" class="bt-switch" role="switch" aria-checked="${tt}" aria-label="Live on TikTok" data-tt></button></div>` : ""].join("");
-  const { modal, close } = openLive({ title: `Start ${s.title}?`, wide: true, onClose: () => stop(), content: `${modalHeader(esc(`Start ${s.title}?`), "This turns on the live lights across the site, tells members you're live and begins the Start beat.")}
+  const { modal, close } = openLive({ title: `Start ${s.title}?`, wide: true, onClose: () => stop(), content: `${modalHeader(esc(`Start ${s.title}?`), back ? "A members-only backstage show: it plays on /live for the Fan Club (chat rooms: the site only), tells them it is on and begins the Start beat. Twitch and TikTok stay off." : "This turns on the live lights across the site, tells members you're live and begins the Start beat.")}
     <div class="lc-chks">${rows}</div><p class="bt-notice lc-gold" role="note" data-note></p>
     <div class="bt-field"><span class="bt-label">First game</span><p class="lc-picked" data-first>${first ? esc(first.title) : "None planned: you can switch once you're live."}</p>${gamePickerHtml("start")}</div>
     <p class="bt-fine bt-fine--left" data-err role="alert"></p>
