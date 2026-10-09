@@ -7,7 +7,7 @@
 // an error. A cheaper way of equal speed does not exist without changing obsFeed: Firestore listeners would need the viewer to be signed in, and an ETag or
 // If-None-Match answer would still run the function; polling keeps the cost to one small function call per second only while a window is open.
 // STAGING ONLY demo: ?demo=1 (refused on production: the page stays blank) draws sample data without a key (scripts/live/obs-demo.ts).
-import { isProduction, projectId } from "../../lib/env.js";
+import { projectId } from "../../lib/env.js";
 import { streamViewHtml } from "../../../../shared/ui/streamview.js";
 import { setLook } from "../../../../shared/ui/control-room.js";
 import type { PubLive } from "./model";
@@ -77,7 +77,8 @@ async function poll(key: string) {
   }
 }
 
-if (!isProduction && q.get("demo") === "1") {
+// The test is spelled out on import.meta.env so a production build drops the demo (and its sample data) entirely instead of shipping it unused.
+if ((import.meta.env.PUBLIC_FIREBASE_ENV || "staging") !== "production" && q.get("demo") === "1") {
   void import("./obs-demo").then((m) => m.runDemo(show, params));
 } else {
   const key = (q.get("k") || "").trim();
