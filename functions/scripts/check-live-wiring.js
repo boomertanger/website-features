@@ -653,22 +653,34 @@ async function main() {
   assert.ok(!JSON.stringify(r1.body).includes(FW));
   assert.equal((await obs({ method: "POST", query: { k: obsKey } })).code, 405);
   const pre = await obs({ method: "OPTIONS" }); assert.equal(pre.code, 204); assert.equal(pre.headers["Access-Control-Allow-Origin"], "*");
+  // seed what the stream view may show beyond public/live: a Vault cover (g1; g2 is hidden) and the next PUBLISHED stream (an earlier unpublished one is skipped)
+  await wdb.doc(`${S}/vaultGames/g1`).set({ title: "Cult of the Lamb", cover: { source: "igdb", igdbImageId: "co2abc", byHandle: "someone" }, hidden: false, secretNote: "SECRETNOTE" });
+  await wdb.doc(`${S}/vaultGames/g2`).set({ title: "Lethal Company", cover: { source: "steam", steamAppId: "1966720" }, hidden: true });
+  await mkStream("n0", { title: "Hidden draft", published: false, plannedStart: TS(clock + 5 * MIN), plannedEnd: TS(clock + H) });
+  await mkStream("n1", { title: "Next night", plannedStart: TS(clock + 20 * H), plannedEnd: TS(clock + 23 * H) });
   const good = await obs({ query: { k: obsKey } });
   assert.equal(good.code, 200); assert.equal(good.body.ok, true);
-  const v = good.body.view;
+  const good2 = await obs({ query: { k: obsKey } });
+  assert.deepEqual(good2.body.view.gameCovers, ["https://images.igdb.com/igdb/image/upload/t_cover_big/co2abc.jpg", null], "public cover URLs only; a hidden game gives null");
+  assert.equal(good2.body.view.nextStream.title !== "Hidden draft", true, "an unpublished stream is never the next stream");
+  assert.equal(typeof good2.body.view.nextStream.start, "number"); assert.deepEqual(Object.keys(good2.body.view.nextStream).sort(), ["start", "title"]);
+  const v = good2.body.view;
   assert.equal(v.word, FW, "a valid key gets the check-in word while the window is open");
   assert.equal(v.scene, "break"); assert.equal(v.title, "Feed night"); assert.equal(v.beat, "start"); assert.equal(v.counts.total, 2);
   assert.deepEqual(v.firstIn, ["fan", "fan2"]); assert.equal(v.viewers.total, 40 + 31 + 7, "the latest tick: Twitch 40, YouTube 31 and 7, the stale TikTok count dropped");
   const viaHeader = await obs({ headers: { "x-live-key": obsKey } }); assert.equal(viaHeader.code, 200);
   // never any other private data: no uids, no hashes, no video ids, no tokens, no other window fields
-  const viewJson = JSON.stringify(good.body);
-  for (const secret of ["LANDSCAPE11", "VERTICAL111", L.hashKey(obsKey), (await get("live/main")).deckKeyHash, "TWTOKEN", "RT1", "AT1", "xpEarned", "wrongTries", "presence"]) assert.ok(!viewJson.includes(secret), `obsFeed leaks ${secret}`);
+  const viewJson = JSON.stringify(good2.body);
+  for (const secret of ["SECRETNOTE", "someone", "co2abc.jpg?", "LANDSCAPE11", "VERTICAL111", L.hashKey(obsKey), (await get("live/main")).deckKeyHash, "TWTOKEN", "RT1", "AT1", "xpEarned", "wrongTries", "presence"]) assert.ok(!viewJson.includes(secret), `obsFeed leaks ${secret}`);
   assert.deepEqual(L.findSecrets({ ...v, word: undefined }, { videoIds: ["LANDSCAPE11", "VERTICAL111"] }).filter((h) => !/\.word/.test(h)), [], "no forbidden key anywhere but the word");
   for (const uid of ["fan", "fan2", "boss", "capt", "mod1"]) assert.ok(!viewJson.includes(`"${uid}"`) || ["fan", "fan2", "capt", "mod1"].includes(uid), "handles only");
   await as("boss", "liveCheckInWindow", { action: "close" });
   assert.equal((await obs({ query: { k: obsKey } })).body.view.word, null, "no word once the window is closed");
   await as("boss", "liveScene", { scene: "brb", brbMinutes: 5 });
   const brb = (await obs({ query: { k: obsKey } })).body.view; assert.equal(brb.scene, "brb"); assert.equal(brb.brbUntil, clock + 5 * MIN);
+  await as("boss", "liveScene", { scene: "break-side" });
+  assert.equal((await control("f1")).pinned, "break-side", "the Break side rail can be pinned");
+  assert.equal((await obs({ query: { k: obsKey } })).body.view.scene, "break-side");
   await as("boss", "liveScene", { scene: "auto" });
   // the old key dies when rotated
   const obsKey2 = (await as("boss", "liveObsKey", {})).key;
@@ -697,6 +709,7 @@ async function main() {
   assert.equal((await deck({ action: "closeCheckin" })).code, 200);
   assert.equal((await deck({ action: "scene", scene: "brb", brbMinutes: "2" })).code, 200); assert.equal((await control("f1")).pinned, "brb");
   assert.equal((await deck({ action: "scene", scene: "starting" })).body.reason, "scene", "the deck only sets Auto, Be right back and Ending");
+  assert.equal((await deck({ action: "scene", scene: "break-side" })).code, 200); assert.equal((await control("f1")).pinned, "break-side", "the deck pins the Break side rail");
   assert.equal((await deck({ action: "scene", scene: "auto" })).code, 200);
   assert.equal((await deck({ action: "nextGame" })).code, 200); assert.equal((await stream("f1")).segments.find((g) => g.endedAt == null).gameId, "g2");
   assert.equal((await deck({ action: "nextGame" })).body.reason, "noNextGame");

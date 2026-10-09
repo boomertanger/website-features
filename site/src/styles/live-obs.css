@@ -68,3 +68,10 @@ html[data-shape="tall"] .bt-root.bt-obs:not(#_) { width: 1080px; height: 1920px;
 .bt-root.bt-obs:not(#_) .bt-sv-room { grid-template-columns: 44px 340px 1fr 100px; }
 .bt-root.bt-obs:not(#_) .bt-sv-first .obs-first-l { border: 0; box-shadow: none; }
 html[data-shape="tall"] .bt-root.bt-obs:not(#_) .bt-sv-beat { width: 168px; }
+
+/* tonight's games as real Game Vault covers (Starting soon) */
+.bt-root.bt-obs:not(#_) .obs-covers { display: flex; flex-wrap: wrap; gap: 24px; align-items: flex-start; }
+.bt-root.bt-obs:not(#_) .obs-covers figure { display: grid; gap: 10px; width: 210px; margin: 0; }
+.bt-root.bt-obs:not(#_) .obs-covers.is-small figure { width: 190px; }
+.bt-root.bt-obs:not(#_) .obs-covers img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 14px; border: 2px solid var(--bt-sv-line); box-shadow: 0 10px 30px rgba(var(--bt-ink-rgb), 0.6); }
+.bt-root.bt-obs:not(#_) .obs-covers figcaption { font-size: 32px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }

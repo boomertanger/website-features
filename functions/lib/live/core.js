@@ -231,6 +231,35 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
   };
 
   ctx.currentStream = () => currentForPublic(now());
+  // Public cover URLs of Game Vault games (docs/specs/control-room.md §8: the Starting soon scene shows the real covers). One vaultGames read per slug,
+  // kept 10 minutes in memory; hidden games and games without a cover give null. Only the URL leaves, nothing else of the game.
+  const coverCache = new Map();
+  ctx.vaultCovers = async (slugs) => {
+    const out = [];
+    for (const slug of slugs) {
+      if (typeof slug !== "string" || !slug || slug.includes("/")) { out.push(null); continue; }
+      const hit = coverCache.get(slug);
+      if (hit && now() - hit.at < 600000) { out.push(hit.url); continue; }
+      let url = null;
+      try { const d = (await db.doc(P.vaultGame(slug)).get()).data(); if (d && d.hidden !== true) url = L.coverUrl(d.cover); } catch (err) { /* no cover: the scene shows the title only */ }
+      coverCache.set(slug, { at: now(), url });
+      out.push(url);
+    }
+    return out;
+  };
+  // The next published stream still to come ({ title, start } in ms) from the published schedule, or null; kept a minute in memory.
+  let nextCache = { at: -Infinity, v: null };
+  ctx.nextPublished = async () => {
+    if (now() - nextCache.at < 60000) return nextCache.v;
+    let v = null;
+    try {
+      const snap = await db.collection(P.streams).where("state", "==", "scheduled").where("plannedStart", ">=", Timestamp.fromMillis(now())).orderBy("plannedStart", "asc").limit(5).get();
+      const d = snap.docs.map((x) => x.data()).find((x) => x.published === true);
+      if (d) v = { title: typeof d.title === "string" && d.title ? d.title : (d.theme && d.theme.label) || "Stream", start: ms(d.plannedStart) };
+    } catch (err) { console.error("live: next stream read failed", String((err && err.message) || err).slice(0, 120)); }
+    nextCache = { at: now(), v };
+    return v;
+  };
   /** The next scheduled stream (for the stream view's Starting soon scene), or null. */
   ctx.nextScheduled = async () => {
     const snap = await db.collection(P.streams).where("state", "==", "scheduled").where("plannedStart", ">=", Timestamp.fromMillis(now() - 12 * 60 * 60 * 1000)).orderBy("plannedStart", "asc").limit(1).get();

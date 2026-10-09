@@ -217,6 +217,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     const win = control.window;
     const open = stream.state === "live" && L.windowOpenNow(win, nowMs);
     const first = ((control.firstIn || {})[win ? win.beat : L.currentBeat(stream.beats)] || []).map((x) => x.handle).filter(Boolean);
+    const planned = stream.plannedGames || [];
     return {
       ...pub,
       streamId: stream.id,
@@ -224,7 +225,9 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
       crew: pub.state === "off" ? { captain: (stream.crew && stream.crew.captain) || null, chats: pub.crew.chats, onDuty: ctx.dutyHandles(stream) } : pub.crew,
       state: stream.state === "scheduled" ? "starting" : pub.state === "off" ? "off" : pub.state,
       plannedStart: stream.plannedStart ? L_ms(stream.plannedStart) : null,
-      plannedGames: (stream.plannedGames || []).map((g) => g.title).filter(Boolean).slice(0, 8),
+      plannedGames: planned.map((g) => g.title).filter(Boolean).slice(0, 8),
+      gameCovers: await ctx.vaultCovers(planned.filter((g) => g.title).slice(0, 8).map((g) => g.gameId)),   // public cover URLs, aligned with plannedGames
+      nextStream: await ctx.nextPublished(),                // { title, start } of the next published stream, or null
       scene, brbUntil: scene === "brb" && control.brbUntil ? control.brbUntil : null,
       word: open ? win.word : null,                 // the check-in word, only while the window is open and only with a valid key
       firstIn: first,
@@ -271,7 +274,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
       case "closeCheckin": return o.liveCheckInWindow(DECK, { ...base, action: "close" });
       case "scene": {
         const scene = q.scene;
-        if (!["auto", "brb", "ending"].includes(scene)) throw fail("invalid-argument", "The deck sets Auto, Be right back (brb) or Ending.", "scene");
+        if (!["auto", "brb", "ending", "break-side"].includes(scene)) throw fail("invalid-argument", "The deck sets Auto, Be right back (brb), Ending or the Break side rail (break-side).", "scene");
         return o.liveScene(DECK, { ...base, scene, brbMinutes: q.brbMinutes != null ? Number(q.brbMinutes) : undefined });
       }
       case "nextGame": return o.switchGame(DECK, { ...base, next: true });

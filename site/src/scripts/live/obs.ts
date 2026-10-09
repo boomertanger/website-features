@@ -15,12 +15,16 @@ import type { PubLive } from "./model";
 /** What obsFeed returns as `view` (functions/lib/live/feeds.js viewData): public/live plus the scene, the word and the Starting soon data. */
 export type ObsView = Omit<PubLive, "state"> & {
   state: PubLive["state"] | "starting";
-  scene: "starting" | "stats" | "break" | "brb" | "ending";
+  scene: "starting" | "stats" | "break" | "break-side" | "brb" | "ending";
   brbUntil: number | null;
   word: string | null;
   firstIn: string[];
   plannedStart?: number | null;
   plannedGames?: string[];
+  /** Public cover image URLs of the planned games (the Game Vault's), aligned with plannedGames; null where a game has none. */
+  gameCovers?: (string | null)[];
+  /** The next published stream (title and start in ms) from the schedule, or null. */
+  nextStream?: { title: string; start: number } | null;
   twitchStatus?: string | null;
 };
 
@@ -52,7 +56,7 @@ async function show(view: ObsView) {
 function delayFor(view: ObsView): number {
   if (view.state === "off" || view.state === "ended") return 10_000;
   if (view.state === "starting") return 2_000;
-  const moving = view.window?.open || view.scene === "break" || view.scene === "brb";
+  const moving = view.window?.open || view.scene === "break" || view.scene === "break-side" || view.scene === "brb";
   return moving ? 1_000 : 2_000;
 }
 

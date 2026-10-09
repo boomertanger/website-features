@@ -495,7 +495,14 @@ assert.equal(sc({ stream: live0, window: winOpen, pinned: "brb" }), "brb", "pinn
 assert.equal(sc({ stream: null, pinned: "ending" }), "ending");
 assert.equal(sc({ stream: live1, pinned: "bogus" }), "break", "an unknown pin is ignored");
 assert.equal(sc({ stream: live1, pinned: null }), "break", "released: auto again");
-assert.deepEqual(L.SCENES, ["starting", "stats", "break", "brb", "ending"]);
+assert.deepEqual(L.SCENES, ["starting", "stats", "break", "break-side", "brb", "ending"]);
+assert.equal(sc({ stream: live0, window: null, pinned: "break-side" }), "break-side", "the side rail can be pinned");
+assert.equal(L.coverUrl({ source: "igdb", igdbImageId: "co2abc" }), "https://images.igdb.com/igdb/image/upload/t_cover_big/co2abc.jpg");
+assert.equal(L.coverUrl({ source: "steam", steamAppId: 123 }), "https://cdn.cloudflare.steamstatic.com/steam/apps/123/library_600x900.jpg");
+assert.equal(L.coverUrl({ source: "upload", url: "https://example.com/a.jpg" }), "https://example.com/a.jpg");
+assert.equal(L.coverUrl({ source: "upload", url: "http://example.com/a.jpg" }), null);
+assert.equal(L.coverUrl({ source: "igdb", igdbImageId: "../x" }), null);
+assert.equal(L.coverUrl(null), null);
 
 // ---------- 8. public/live ----------
 const WORD = "lantern", VIDEO = "dQw4w9WgXcQ", VIDEO2 = "AbCdEfGhIjK";

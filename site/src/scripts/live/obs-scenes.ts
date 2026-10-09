@@ -38,7 +38,8 @@ export function sceneOf(v: ObsView, p: URLSearchParams): Scene {
   const s = v.scene;
   if (v.state === "ended") return "ending";
   if (v.state === "off" || v.state === "starting") return s === "ending" ? "ending" : "starting";
-  if (s === "break" && p.get("break") === "side") return "side";
+  if (s === "break-side") return "side";                          // pinned on the Scene card
+  if (s === "break" && p.get("break") === "side") return "side";  // or asked for by this source's address (&break=side)
   return s;
 }
 
@@ -55,6 +56,18 @@ const wordHtml = (v: ObsView, big: number) => `<div class="bt-sv-word bt-sv-ambe
 const ringCount = (labelled = true) => `<div style="display:flex;align-items:center;gap:40px"><div class="bt-sv-ring" data-ring><span data-cd>0:00</span></div><div class="bt-sv-count bt-sv-amber"><span data-count>0</span>${labelled ? "<small>checked in</small>" : ""}</div></div>`;
 const firstHtml = () => `<div class="bt-sv-first" data-first><span class="obs-first-l">First in</span></div>`;
 const gameChips = (v: ObsView, max: number) => (v.plannedGames || []).slice(0, max).map((g) => `<span class="obs-chip">${esc(g)}</span>`).join("");
+/** The tonight's games with their real Game Vault covers where there are some (a cover that fails to load simply drops out), else just the titles. */
+const gamesBlock = (v: ObsView, max: number, small: boolean) => {
+  const games = (v.plannedGames || []).slice(0, max), covers = v.gameCovers || [];
+  if (!covers.some((c) => c)) return `<div class="obs-chips">${gameChips(v, max)}</div>`;
+  return `<div class="obs-covers${small ? " is-small" : ""}">${games.map((g, i) => `<figure>${covers[i] ? `<img src="${esc(covers[i])}" alt="" referrerpolicy="no-referrer" onerror="this.remove()">` : ""}<figcaption>${esc(g)}</figcaption></figure>`).join("")}</div>`;
+};
+const CENTRAL = "America/Chicago";
+/** "Thu · Monster Monday · 7:00 PM CDT": the next published stream, in the site's own zone (the stream PC's clock is not the audience's). */
+const nextLine = (n: { title: string; start: number }) => {
+  const f = (o: Intl.DateTimeFormatOptions) => new Intl.DateTimeFormat("en-US", { timeZone: CENTRAL, ...o }).format(n.start);
+  return `${f({ weekday: "short" })} · ${esc(n.title)} · ${f({ hour: "numeric", minute: "2-digit", timeZoneName: "short" })}`;
+};
 
 function startingScene(v: ObsView, wide: boolean) {
   const title = v.title || "Starting soon";
@@ -62,11 +75,11 @@ function startingScene(v: ObsView, wide: boolean) {
   const tsz = title.length <= 16 ? (wide ? 120 : 92) : title.length <= 26 ? (wide ? 92 : 72) : (wide ? 72 : 60);
   const when = v.plannedStart ? `<div class="bt-sv-amber obs-count-big" style="font-size:${wide ? 150 : 130}px" data-soon>--:--</div>` : `<div class="obs-count-big bt-sv-amber" style="font-size:72px">Stay tuned</div>`;
   const lead = games.length ? `Tonight: ${games.slice(0, 3).map(esc).join(", then ")}` : "The bridge is waking up";
-  const left = `<div class="obs-stack">${head("Starting soon")}<div class="obs-title" style="font-size:${tsz}px">${esc(title)}</div><div class="obs-sub">${lead}</div>${games.length ? `<div class="obs-chips">${gameChips(v, wide ? 4 : 3)}</div>` : ""}</div>`;
+  const left = `<div class="obs-stack">${head("Starting soon")}<div class="obs-title" style="font-size:${tsz}px">${esc(title)}</div><div class="obs-sub">${lead}</div>${games.length ? gamesBlock(v, wide ? 4 : 3, false) : ""}</div>`;
   const right = `<div class="obs-stack obs-center">${mascot("bt-mascot--aware obs-float")}${when}<div class="bt-sv-url">Check in at <b>boomertanger.com/live</b></div></div>`;
   return wide
     ? `<div class="bt-sv-panel obs-on" style="left:110px;top:100px;width:1700px;height:780px;padding:70px 80px;display:grid;grid-template-columns:1fr 560px;gap:60px">${left}${right}</div>${tickerHtml(v)}`
-    : `<div class="bt-sv-panel obs-on" style="left:70px;top:200px;width:780px;height:1300px;padding:60px 50px;display:grid;justify-items:center;align-content:start;gap:34px;text-align:center">${head("Starting soon")}${mascot("bt-mascot--aware obs-float obs-mascot-tall")}<div class="obs-title" style="font-size:${tsz}px">${esc(title)}</div>${when}<div class="obs-chips" style="justify-content:center">${gameChips(v, 3)}</div><div class="bt-sv-url">boomertanger.com/<b>live</b></div></div>${tickerHtml(v, "top:160px;bottom:auto")}`;
+    : `<div class="bt-sv-panel obs-on" style="left:70px;top:200px;width:780px;height:1300px;padding:60px 50px;display:grid;justify-items:center;align-content:start;gap:34px;text-align:center">${head("Starting soon")}${mascot("bt-mascot--aware obs-float obs-mascot-tall")}<div class="obs-title" style="font-size:${tsz}px">${esc(title)}</div>${when}${games.length ? gamesBlock(v, 3, true) : ""}<div class="bt-sv-url">boomertanger.com/<b>live</b></div></div>${tickerHtml(v, "top:160px;bottom:auto")}`;
 }
 
 function statsScene(v: ObsView, wide: boolean) {
@@ -115,7 +128,7 @@ function endingScene(v: ObsView, wide: boolean) {
   return `<div class="bt-sv-panel obs-on" style="${style};padding:60px;display:grid;justify-items:center;align-content:center;text-align:center;gap:${wide ? 34 : 40}px"><div class="obs-title" style="font-size:${wide ? 118 : 84}px">THANKS FOR WATCHING</div>
     <div class="obs-stats">${stats.map(([l, val]) => `<div><div class="bt-sv-amber obs-num">${val}</div><div class="obs-lab">${l}</div></div>`).join("")}</div>
     ${crew.length ? `<div class="obs-sub">Crew tonight: ${crew.map((h) => `<b class="obs-w">@${esc(h)}</b>`).join(" · ")}</div>` : ""}
-    <div class="obs-sub">See you next time · <b class="obs-w">boomertanger.com/schedule</b></div>${mascot("bt-mascot--aware obs-float obs-mascot-end")}</div>`;
+    ${v.nextStream ? `<div class="obs-sub">Next: <b class="obs-w">${nextLine(v.nextStream)}</b></div>` : `<div class="obs-sub">See you next time · <b class="obs-w">boomertanger.com/schedule</b></div>`}${mascot("bt-mascot--aware obs-float obs-mascot-end")}</div>`;
 }
 
 /* ------------------------------------------------------------------ the engine */
@@ -186,7 +199,7 @@ export function createScenes(host: HTMLElement, shape: Shape, params: URLSearchP
     render(v: ObsView) {
       view = v;
       scene = sceneOf(v, params);
-      const k = [scene, v.state, v.beat, !!v.word, (v.liveRooms || []).join(), crewOf(v).join(), (v.plannedGames || []).join("|"), v.title, !!v.brbUntil, !!v.nextGame, v.game?.title].join("~");
+      const k = [scene, v.state, v.beat, !!v.word, (v.liveRooms || []).join(), crewOf(v).join(), (v.plannedGames || []).join("|"), (v.gameCovers || []).join("|"), v.nextStream ? `${v.nextStream.title}${v.nextStream.start}` : "", v.title, !!v.brbUntil, !!v.nextGame, v.game?.title].join("~");
       if (k !== key) {
         key = k; wordShown = ""; beatOfFirst = "";
         host.dataset.scene = scene;

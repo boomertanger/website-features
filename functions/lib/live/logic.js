@@ -454,7 +454,7 @@ function streakPresence(input, settings) {
 }
 
 // ---------------------------------------------------------------- 7. scene
-const SCENES = ["starting", "stats", "break", "brb", "ending"];     // Starting soon, Live stats, Break, Be right back, Ending
+const SCENES = ["starting", "stats", "break", "break-side", "brb", "ending"];     // Starting soon, Live stats, Break (B1 Takeover), Break side rail (B2), Be right back, Ending
 
 /**
  * The scene the stream view shows. A pinned scene (one of SCENES) wins until released (pinned = null).
@@ -476,6 +476,18 @@ function autoScene({ stream, window: win, pinned, nowMs }) {
     return open && open.kind === "break" ? "break" : "stats";
   }
   return "stats";
+}
+
+/**
+ * The public image URL of a Game Vault cover ({ source: "igdb" | "steam" | "upload", ... }), or null: the same URLs the site builds for .bt-cover
+ * (shared/ui/cover.js). Only what is already public; nothing else of the game is ever copied.
+ */
+function coverUrl(cover) {
+  if (!cover || typeof cover !== "object") return null;
+  if (cover.source === "igdb" && typeof cover.igdbImageId === "string" && /^[\w-]+$/.test(cover.igdbImageId)) return `https://images.igdb.com/igdb/image/upload/t_cover_big/${cover.igdbImageId}.jpg`;
+  if (cover.source === "steam" && cover.steamAppId != null && /^\d+$/.test(String(cover.steamAppId))) return `https://cdn.cloudflare.steamstatic.com/steam/apps/${cover.steamAppId}/library_600x900.jpg`;
+  if (cover.source === "upload" && typeof cover.url === "string" && /^https:\/\//.test(cover.url)) return cover.url;
+  return null;
 }
 
 // ---------------------------------------------------------------- 8. public/live
@@ -656,7 +668,7 @@ module.exports = {
   normalise, pickWord,
   ROOMS, PLATFORM_ROOMS, normaliseRoom, allowedRooms, startRooms, validateCheckIn, unlockTries,
   GRANT_KINDS, grantKey, grantXp, capPayout, planGrant, qualifiesAllBeats,
-  streakPresence, SCENES, autoScene,
+  streakPresence, SCENES, autoScene, coverUrl,
   sumShards, buildPublicLive, findSecrets,
   flushDecision, generateKey, hashKey, verifyKey,
 };
