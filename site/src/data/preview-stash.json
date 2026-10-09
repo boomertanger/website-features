@@ -181,6 +181,18 @@
         "failed": 0
       },
       "legacyText": "Delete files on bugReports where status is Fixed for 60 days."
+    },
+    {
+      "id": "r-unsafe",
+      "name": "Bug screenshots (no target)",
+      "target": null,
+      "statuses": [],
+      "days": 60,
+      "enabled": false,
+      "legacy": false,
+      "unsafe": true,
+      "updatedAgo": 86400000,
+      "lastRun": null
     }
   ],
   "assets": [

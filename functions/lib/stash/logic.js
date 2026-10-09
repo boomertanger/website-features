@@ -145,7 +145,7 @@ const dayKey = (now) => new Date(now).toISOString().slice(0, 10);
  */
 function alertKinds({ before, after, pauseAtPct, failures, sweep, scan, prevScan }) {
   const out = [];
-  if (sweep && (sweep.status === "failed" || sweep.status === "partial")) out.push("stash-sweep-failed");
+  if (sweep && (sweep.status === "failed" || sweep.status === "partial" || sweep.skipped > 0)) out.push("stash-sweep-failed");
   if (sweep && sweep.status === "capped") out.push("stash-sweep-capped");
   const b = before && typeof before.pct === "number" ? before.pct : 0, a = after && typeof after.pct === "number" ? after.pct : null;
   if (a != null && a >= 100 && b < 100) out.push("stash-usage-100");

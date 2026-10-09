@@ -250,6 +250,7 @@ function build(deps = {}) {
       if (!snap.exists) throw fail("not-found", "That rule isn't there any more.", "noRule");
       const r = snap.data();
       if (enabled && T.isLegacyShaped(r)) throw fail("failed-precondition", "A rule from the old page can only be switched off.", "legacy");
+      if (enabled && T.isUnsafe(r)) throw fail("failed-precondition", "This rule isn't in a safe shape. Edit it first.", "unsafe");
       if (enabled) {
         const found = await sweeper.candidates(r);
         if (!found.ok) throw fail("failed-precondition", found.message, found.reason);

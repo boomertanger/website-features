@@ -17,7 +17,7 @@ const LINK = "/admin/stash";
 function messageFor(kind, info = {}) {
   const n = (v) => (Number.isFinite(v) ? v : 0);
   switch (kind) {
-    case "stash-sweep-failed": return { title: "The Cloud Stash sweep had problems", body: `${n(info.failures)} file${n(info.failures) === 1 ? "" : "s"} couldn't be purged. The page says which.`, severity: "warn" };
+    case "stash-sweep-failed": return { title: "The Cloud Stash sweep had problems", body: n(info.skipped) && !n(info.failures) ? `${n(info.skipped)} cleanup rule${n(info.skipped) === 1 ? " isn't" : "s aren't"} in a safe shape, so the sweep skipped ${n(info.skipped) === 1 ? "it" : "them"}. The Rules tab says which.` : `${n(info.failures)} file${n(info.failures) === 1 ? "" : "s"} couldn't be purged${n(info.skipped) ? `, and ${n(info.skipped)} rule${n(info.skipped) === 1 ? " was" : "s were"} skipped` : ""}. The page says which.`, severity: "warn" };
     case "stash-sweep-capped": return { title: "The Cloud Stash sweep hit its limit", body: `It purged ${n(info.purged)} files and stopped at the per-run cap. The rest waits for the next run.`, severity: "info" };
     case "stash-usage-80": return { title: "Cloudinary storage is nearly full", body: `Usage is at ${n(info.pct)}% of this month's credits. Member uploads are paused until it drops.`, severity: "warn" };
     case "stash-usage-100": return { title: "Cloudinary is over its limit", body: `Usage is at ${n(info.pct)}% of this month's credits. Only the owner can upload until it drops.`, severity: "critical" };

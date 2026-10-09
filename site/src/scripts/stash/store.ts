@@ -23,10 +23,10 @@ function buildDemo(): Snapshot {
   return {
     usage, current: { totalBytes: p.current.totalBytes, byFeature: p.current.byFeature, recountedAt: now - p.current.recountedAgo },
     scan: { at: now - p.scan.agoMs, by: p.scan.by, counts: p.scan.counts, untracked: p.scan.untracked.map((x: any) => ({ publicId: x.publicId, type: x.type, bytes: x.bytes, createdAt: now - x.ageMs })), unrecorded: [], truncated: false },
-    sweep: { lastRunAt: now - p.sweep.lastRunAgo, status: p.sweep.status, purged: p.sweep.purged, bytes: p.sweep.bytes, failures: [], perRule: {}, trigger: p.sweep.trigger },
+    sweep: { lastRunAt: now - p.sweep.lastRunAgo, status: p.sweep.status, purged: p.sweep.purged, bytes: p.sweep.bytes, failures: [], skipped: [], perRule: {}, trigger: p.sweep.trigger },
     alerts: p.alerts.map((a: any) => ({ kind: a.kind, title: a.title, body: a.body, severity: a.severity, at: now - a.agoMs })),
     settings: { ...DEFAULT_SETTINGS, ...p.settings }, retentionDays: p.retentionDays,
-    rules: p.rules.map((r: any) => ({ id: r.id, name: r.name, target: r.target, statuses: r.statuses, days: r.days, enabled: r.enabled, legacy: r.legacy, updatedAt: now - r.updatedAgo, lastRun: r.lastRun ? { at: now - r.lastRun.agoMs, purged: r.lastRun.purged, bytes: r.lastRun.bytes, failed: r.lastRun.failed } : null, legacyText: r.legacyText })),
+    rules: p.rules.map((r: any) => ({ id: r.id, name: r.name, target: r.target, statuses: r.statuses, days: r.days, enabled: r.enabled, legacy: r.legacy, unsafe: r.unsafe === true, updatedAt: now - r.updatedAgo, lastRun: r.lastRun ? { at: now - r.lastRun.agoMs, purged: r.lastRun.purged, bytes: r.lastRun.bytes, failed: r.lastRun.failed } : null, legacyText: r.legacyText })),
     assets: p.assets.map((a: any) => ({ id: a.id, publicId: a.publicId, url: a.url, feature: a.feature, sizeBytes: a.sizeBytes, deliveryType: a.deliveryType, createdAt: now - a.ageMs, linkedDoc: a.linkedDoc, scan: a.scan })),
     assetsCapped: false,
   };
@@ -118,7 +118,7 @@ export async function saveRule(o: { op: "create" | "update" | "toggle" | "delete
     if (demo) {
       if (o.op === "toggle") { const r = demo.rules.find((x) => x.id === o.id); if (r) r.enabled = !!o.enabled; }
       else if (o.op === "delete") demo.rules = demo.rules.filter((x) => x.id !== o.id);
-      else if (o.rule) { const base = { name: o.rule.name, target: o.rule.target, statuses: o.rule.statuses, days: o.rule.days, legacy: false, updatedAt: Date.now(), lastRun: null as Rule["lastRun"] }; if (o.op === "update") { const r = demo.rules.find((x) => x.id === o.id); if (r) Object.assign(r, base); } else demo.rules.push({ id: `r${Date.now()}`, enabled: o.rule.enabled === true, ...base }); }
+      else if (o.rule) { const base = { name: o.rule.name, target: o.rule.target, statuses: o.rule.statuses, days: o.rule.days, legacy: false, unsafe: false, updatedAt: Date.now(), lastRun: null as Rule["lastRun"] }; if (o.op === "update") { const r = demo.rules.find((x) => x.id === o.id); if (r) Object.assign(r, base); } else demo.rules.push({ id: `r${Date.now()}`, enabled: o.rule.enabled === true, ...base }); }
     }
     logLocal(o.op === "toggle" ? "rule-toggle" : o.op === "delete" ? "rule-delete" : "rule-save", o.rule?.name || o.id || "rule");
     return { ok: true };
@@ -133,7 +133,7 @@ export async function sweepNow() {
     const due = demo?.assets.filter((a) => a.scan?.due && demo!.rules.find((r) => r.id === a.scan!.due && r.enabled)) || [];
     let bytes = 0;
     due.forEach((a) => { bytes += a.sizeBytes; removeAsset(a.id); });
-    if (demo) demo.sweep = { lastRunAt: Date.now(), status: "ok", purged: due.length, bytes, failures: [], perRule: {}, trigger: "manual" };
+    if (demo) demo.sweep = { lastRunAt: Date.now(), status: "ok", purged: due.length, bytes, failures: [], skipped: [], perRule: {}, trigger: "manual" };
     logLocal("sweep-run", "Sweep", { purged: due.length, bytes, status: "ok" });
     return demo?.sweep;
   }

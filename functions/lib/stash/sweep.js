@@ -53,13 +53,15 @@ function makeSweep(deps) {
   async function run({ actor = { uid: null, name: "Automatic" }, trigger = "schedule" } = {}) {
     const s = await settings();
     const rules = (await db.collection("cleanupRules").where("enabled", "==", true).get()).docs;
-    const perRule = {}, failures = [];
+    const perRule = {}, failures = [], skipped = [];
     let purged = 0, bytes = 0, attempted = 0, capped = false;
     const fail = (ruleId, assetId, err) => { if (failures.length < FAIL_CAP) failures.push({ ruleId, ...(assetId ? { assetId } : {}), message: text(err) }); };
     for (const ruleDoc of rules) {
       const rule = ruleDoc.data();
       const stats = { purged: 0, bytes: 0, failed: 0 };
       perRule[ruleDoc.id] = stats;
+      // a rule that is neither allowlisted nor a legacy rule is never queried and never deletes anything: it is recorded as skipped and raises the sweep alert
+      if (T.isUnsafe(rule)) { stats.skipped = true; skipped.push({ ruleId: ruleDoc.id, reason: T.UNSAFE_MESSAGE }); continue; }
       let found;
       try { found = await candidates(rule); } catch (err) { stats.failed++; fail(ruleDoc.id, null, err); continue; }   // one bad or unindexed rule never blocks the others
       if (!found.ok) { stats.failed++; fail(ruleDoc.id, null, found.message); continue; }
@@ -78,19 +80,20 @@ function makeSweep(deps) {
       if (capped) break;
     }
     const status = L.sweepStatus({ purged, failures: failures.length, capped, attempted });
-    const summary = { lastRunAt: Timestamp.fromMillis(now()), status, purged, bytes, failures, perRule, trigger };
+    const summary = { lastRunAt: Timestamp.fromMillis(now()), status, purged, bytes, failures, skipped, perRule, trigger };
     try {
       await db.doc("storageUsage/sweep").set(summary);
       for (const ruleDoc of rules) {
         const st = perRule[ruleDoc.id];
+        if (st.skipped) continue;
         await ruleDoc.ref.set({ lastRun: { at: summary.lastRunAt, purged: st.purged, bytes: st.bytes, failed: st.failed } }, { merge: true });
       }
     } catch (err) { console.error("stash sweep: couldn't record the run", text(err)); }
     try {
-      const entry = await deps.adminLogEntry(db, { feature: "cloudStash", action: "sweep-run", itemPath: "storageUsage/sweep", itemTitle: "Sweep", actorUid: actor.uid ?? null, actorName: actor.name, details: { status, purged, bytes, rules: rules.length, trigger } });
+      const entry = await deps.adminLogEntry(db, { feature: "cloudStash", action: "sweep-run", itemPath: "storageUsage/sweep", itemTitle: "Sweep", actorUid: actor.uid ?? null, actorName: actor.name, details: { status, purged, bytes, rules: rules.length, skipped: skipped.map((s) => s.ruleId), trigger } });
       await db.collection("adminLog").add(entry);
     } catch (err) { console.error("stash sweep: couldn't write the log entry", text(err)); }
-    for (const kind of L.alertKinds({ sweep: { status } })) await alert(kind, { status, purged, failures: failures.length });
+    for (const kind of L.alertKinds({ sweep: { status, skipped: skipped.length } })) await alert(kind, { status, purged, failures: failures.length, skipped: skipped.length });
     return { ...summary, lastRunAt: summary.lastRunAt.toMillis() };
   }
 

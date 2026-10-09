@@ -85,7 +85,7 @@ function sweepCard() {
   const sw = S.snap?.sweep;
   const b = sw ? SWEEP_BADGE[sw.status] || SWEEP_BADGE.ok : null;
   return `<div class="bt-card cs-tile"><div class="bt-card-head"><h2 class="bt-card-title">Last sweep</h2>${b ? badge(b[0], b[1]) : ""}</div>
-    ${sw ? `<dl class="cs-kv"><dt>Ran</dt><dd>${esc(pacific(sw.lastRunAt))}</dd><dt>Purged</dt><dd>${plural(sw.purged, "file")}${sw.bytes ? ` (${fmtBytes(sw.bytes)})` : ""}</dd><dt>Next</dt><dd>${esc(pacific(nextSweepAt()))}</dd></dl>${sw.failures.length ? `<p class="cs-why">${plural(sw.failures.length, "problem")}: ${esc(sw.failures[0].message)}${sw.failures.length > 1 ? ` and ${sw.failures.length - 1} more.` : ""}</p>` : ""}` : `<p class="cs-why">The sweep hasn't run yet. It runs every morning at 9:00 AM Pacific. Next: ${esc(pacific(nextSweepAt()))}.</p>`}
+    ${sw ? `<dl class="cs-kv"><dt>Ran</dt><dd>${esc(pacific(sw.lastRunAt))}</dd><dt>Purged</dt><dd>${plural(sw.purged, "file")}${sw.bytes ? ` (${fmtBytes(sw.bytes)})` : ""}</dd><dt>Next</dt><dd>${esc(pacific(nextSweepAt()))}</dd></dl>${sw.skipped.length ? `<p class="cs-why">${plural(sw.skipped.length, "rule")} skipped because ${sw.skipped.length === 1 ? "it isn't" : "they aren't"} in a safe shape. The Rules tab says which.</p>` : ""}${sw.failures.length ? `<p class="cs-why">${plural(sw.failures.length, "problem")}: ${esc(sw.failures[0].message)}${sw.failures.length > 1 ? ` and ${sw.failures.length - 1} more.` : ""}</p>` : ""}` : `<p class="cs-why">The sweep hasn't run yet. It runs every morning at 9:00 AM Pacific. Next: ${esc(pacific(nextSweepAt()))}.</p>`}
     <div class="cs-actions">${canChange(S.tier) ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-cs="sweep">${IC.play}Run the sweep now</button>` : lock(`Running it now ${NEEDS_OVERSEER.toLowerCase()}`)}</div></div>`;
 }
 
@@ -152,6 +152,7 @@ export function filesCard(limit = F.limit, compact = false) {
 
 // ---------- rules ----------
 export function ruleSentence(r: Rule) {
+  if (r.unsafe) return "This rule isn't in a safe shape, so the sweep skips it.";
   if (r.legacy) return esc(r.legacyText || "A rule from the old Cloud Stash page.");
   const all = r.statuses.length >= T.BUG.statuses.length;
   const which = all ? "closed" : `closed as ${T.list(r.statuses.map((s) => BUG_STATUS[s as keyof typeof BUG_STATUS]?.label || s))}`;
@@ -161,9 +162,9 @@ function rulesCard() {
   const rules = S.snap?.rules || [];
   const can = canChange(S.tier);
   return `<div class="bt-card cs-tile"><div class="bt-card-head"><h2 class="bt-card-title">Cleanup rules</h2>${can ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-cs="rule">${IC.plus}Add rule</button>` : ""}</div>
-    ${rules.length ? `<div class="bt-items">${rules.map((r) => `<div class="bt-item cs-rule${r.enabled ? "" : " bt-item--off"}${r.legacy ? " cs-rule--legacy" : ""}">
-      <div class="bt-item-head"><span class="bt-item-title">${esc(r.name)}${r.legacy ? badge("gray", "Read only", false) : ""}</span>
-        <div class="bt-item-actions"><button type="button" class="bt-switch" role="switch" aria-checked="${r.enabled}" aria-label="Run ${esc(r.name)}" data-cs="toggle" data-id="${esc(r.id)}"${!can && !r.enabled ? ` disabled title="Switching a rule on ${NEEDS_OVERSEER.toLowerCase()}"` : r.legacy && !r.enabled ? ' disabled title="A rule from the old page can only be switched off."' : ""}></button>${!r.legacy && can ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-cs="rule" data-id="${esc(r.id)}">Edit</button>` : ""}</div></div>
+    ${rules.length ? `<div class="bt-items">${rules.map((r) => `<div class="bt-item cs-rule${r.enabled ? "" : " bt-item--off"}${r.legacy || r.unsafe ? " cs-rule--legacy" : ""}">
+      <div class="bt-item-head"><span class="bt-item-title">${esc(r.name)}${r.legacy ? badge("gray", "Read only", false) : ""}${r.unsafe ? badge("gold", "Needs updating", false) : ""}</span>
+        <div class="bt-item-actions"><button type="button" class="bt-switch" role="switch" aria-checked="${r.enabled}" aria-label="Run ${esc(r.name)}" data-cs="toggle" data-id="${esc(r.id)}"${!can && !r.enabled ? ` disabled title="Switching a rule on ${NEEDS_OVERSEER.toLowerCase()}"` : r.legacy && !r.enabled ? ' disabled title="A rule from the old page can only be switched off."' : r.unsafe && !r.enabled ? ' disabled title="Edit this rule first."' : ""}></button>${!r.legacy && can ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-cs="rule" data-id="${esc(r.id)}">Edit</button>` : ""}</div></div>
       <p class="bt-item-desc">${ruleSentence(r)}</p>
       <div class="cs-rule-meta"><span><b>Last run:</b> ${r.lastRun ? `${esc(ago(r.lastRun.at))}, ${r.lastRun.purged ? `${plural(r.lastRun.purged, "file")} purged` : "nothing to delete"}${r.lastRun.failed ? `, ${r.lastRun.failed} failed` : ""}` : r.enabled ? "not yet" : "never (switched off)"}</span></div></div>`).join("")}</div>` : `<div class="bt-empty bt-empty--compact cs-empty">${mascot()}<p class="bt-empty-title">No cleanup rules</p><p>Rules tidy old files by themselves. Add one to start.</p></div>`}
     ${!can ? `<p class="cs-lock-note">${IC.lock}Stewards can switch a rule off. Adding, editing or switching one on needs the owner or an Overseer.</p>` : ""}

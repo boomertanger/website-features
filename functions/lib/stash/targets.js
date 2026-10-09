@@ -56,14 +56,23 @@ function validateRule(rule) {
   return { ok: true, value: { name, target: t.key, statuses: t.statuses.filter((s) => statuses.includes(s)), days } };
 }
 
-/** A rule written by the legacy Squarespace page has no target (it names a collection and fields by hand). The new page shows it read-only. */
-const isLegacyShaped = (rule) => !!rule && typeof rule === "object" && !rule.target;
+/**
+ * The top-level collections the old Squarespace Cloud Stash page could write rules for (its RULE_TARGETS: only bugReports). A rule with no target that names one of these is a
+ * legacy rule: it keeps running as written until launch and the page shows it read-only. A rule with no valid target that names ANY OTHER collection (for example the new
+ * site's sites/boomertanger/bugs/main/reports) is never legacy: it is unsafe, and the sweep skips it.
+ */
+const LEGACY_COLLECTIONS = ["bugReports"];
+const isLegacyShaped = (rule) => !!rule && typeof rule === "object" && !rule.target && LEGACY_COLLECTIONS.includes(rule.collection);
+/** A rule that is neither on the allowlist nor a legacy rule: the sweep skips it (no queries, no deletes) and the page says it needs updating. */
+const isUnsafe = (rule) => !!rule && typeof rule === "object" && !targetOf(rule.target) && !isLegacyShaped(rule);
+const UNSAFE_MESSAGE = "This rule isn't in a safe shape, so the sweep skips it.";
 
 /**
  * What the sweep and the dry run actually query for a rule of either shape: { collection, matchField, matchValue, ageField, days, statuses|null, statusField|null }.
  * A new-shape rule must still agree with its target (a hand-edited rule doc that drifts is refused here); a legacy-shaped rule keeps running as written until launch.
  */
 function queryOf(rule) {
+  if (isUnsafe(rule)) return no("unsafe", UNSAFE_MESSAGE);
   if (isLegacyShaped(rule)) {
     const days = Number(rule.ageThresholdDays);
     if (!rule.collection || !rule.matchField || !rule.ageField || !Number.isFinite(days) || days <= 0) return no("invalid", "This legacy rule is incomplete.");
@@ -85,4 +94,4 @@ function sentence(rule) {
   return `Purge the screenshot of any bug report ${all ? "that has been closed" : `closed as ${joinList(rule.statuses.map((s) => t.statusLabels[s]))}`} for ${rule.days} days.`;
 }
 
-module.exports = { TARGETS, BUG_SCREENSHOTS, DAYS_MIN, DAYS_MAX, NAME_MAX, targetOf, validateRule, isLegacyShaped, queryOf, sentence };
+module.exports = { TARGETS, BUG_SCREENSHOTS, DAYS_MIN, DAYS_MAX, NAME_MAX, LEGACY_COLLECTIONS, UNSAFE_MESSAGE, targetOf, validateRule, isLegacyShaped, isUnsafe, queryOf, sentence };

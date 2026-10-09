@@ -3,6 +3,9 @@
 // "cloudStash" (index: feature asc, createdAt desc). Everything that changes anything goes through the stash callables. Times are ms.
 import { db, doc, getDoc, collection, getDocs, query, where, orderBy, limit } from "../../lib/db";
 import type { UsageStatus } from "./status";
+import * as T from "./targets";
+
+const LEGACY_COLLECTIONS = ["bugReports"];
 
 export interface Usage {
   credits: { used: number; limit: number; pct: number | null }; storage: { usage: number; credits: number }; bandwidth: { usage: number; credits: number }; transformations: { usage: number; credits: number };
@@ -11,10 +14,10 @@ export interface Usage {
 export interface Current { totalBytes: number; byFeature: Record<string, { bytes: number; files: number }>; recountedAt: number }
 export interface ScanFile { publicId: string; type: string; bytes: number; createdAt: number }
 export interface Scan { at: number; by: string; counts: { orphan: number; stale: number; unrecorded: number; untracked: number }; untracked: ScanFile[]; unrecorded: { path: string; field: string; publicId: string }[]; truncated: boolean }
-export interface Sweep { lastRunAt: number; status: "ok" | "partial" | "capped" | "failed"; purged: number; bytes: number; failures: { ruleId: string; assetId?: string; message: string }[]; perRule: Record<string, { purged: number; bytes: number; failed: number }>; trigger: string }
+export interface Sweep { lastRunAt: number; status: "ok" | "partial" | "capped" | "failed"; purged: number; bytes: number; failures: { ruleId: string; assetId?: string; message: string }[]; skipped: { ruleId: string; reason: string }[]; perRule: Record<string, { purged: number; bytes: number; failed: number }>; trigger: string }
 export interface Alert { kind: string; title: string; body: string; severity: string; at: number }
 export interface Settings { pauseAtPct: number; manualPause: boolean; manualPauseReason: string; runCap: number }
-export interface Rule { id: string; name: string; target: string | null; statuses: string[]; days: number; enabled: boolean; legacy: boolean; updatedAt: number; lastRun: { at: number; purged: number; bytes: number; failed: number } | null; legacyText?: string }
+export interface Rule { id: string; name: string; target: string | null; statuses: string[]; days: number; enabled: boolean; legacy: boolean; unsafe: boolean; updatedAt: number; lastRun: { at: number; purged: number; bytes: number; failed: number } | null; legacyText?: string }
 export interface Asset { id: string; publicId: string; url: string; feature: string; sizeBytes: number; deliveryType: "upload" | "authenticated"; createdAt: number; linkedDoc: { collection: string; docId: string; field: string } | null; scan: { state: "linked" | "orphan" | "stale"; due?: string } | null }
 export interface LogEntry { id: string; action: string; actorName: string; reason: string; createdAt: number; itemTitle: string; details?: Record<string, any>; changes?: Record<string, any> }
 export interface Snapshot { usage: Usage | null; current: Current | null; scan: Scan | null; sweep: Sweep | null; alerts: Alert[]; settings: Settings; retentionDays: number | null; rules: Rule[]; assets: Asset[]; assetsCapped: boolean }
@@ -35,14 +38,15 @@ export async function loadSnapshot(): Promise<Snapshot> {
     usage: u ? { credits: { used: u.credits?.used || 0, limit: u.credits?.limit || 0, pct: u.credits?.pct ?? null }, storage: u.storage || { usage: 0, credits: 0 }, bandwidth: u.bandwidth || { usage: 0, credits: 0 }, transformations: u.transformations || { usage: 0, credits: 0 }, plan: u.plan || "", status: u.status || "healthy", uploads: u.uploads || "open", fetchedAt: ms(u.fetchedAt), failures: u.failures || 0 } : null,
     current: c ? { totalBytes: c.totalBytes || 0, byFeature: c.byFeature || {}, recountedAt: ms(c.recountedAt) } : null,
     scan: sc ? { at: ms(sc.at), by: sc.by || "", counts: { orphan: 0, stale: 0, unrecorded: 0, untracked: 0, ...(sc.counts || {}) }, untracked: (sc.untracked || []).map((x: any) => ({ ...x, createdAt: ms(x.createdAt) })), unrecorded: sc.unrecorded || [], truncated: sc.truncated === true } : null,
-    sweep: sw ? { lastRunAt: ms(sw.lastRunAt), status: sw.status || "ok", purged: sw.purged || 0, bytes: sw.bytes || 0, failures: sw.failures || [], perRule: sw.perRule || {}, trigger: sw.trigger || "" } : null,
+    sweep: sw ? { lastRunAt: ms(sw.lastRunAt), status: sw.status || "ok", purged: sw.purged || 0, bytes: sw.bytes || 0, failures: sw.failures || [], skipped: sw.skipped || [], perRule: sw.perRule || {}, trigger: sw.trigger || "" } : null,
     alerts: ((al && al.items) || []).map((a: any) => ({ ...a, at: ms(a.at) })),
     settings: { ...DEFAULT_SETTINGS, ...(st || {}) },
     retentionDays: lg && Number.isFinite(lg.retentionDays) ? lg.retentionDays : null,
     rules: rulesSnap.docs.map((d) => {
       const r: any = d.data();
-      const legacy = !r.target;
-      return { id: d.id, name: r.name || (legacy ? "Legacy rule" : d.id), target: r.target || null, statuses: r.statuses || [], days: r.days ?? r.ageThresholdDays ?? 0, enabled: r.enabled === true, legacy, updatedAt: ms(r.updatedAt), lastRun: r.lastRun ? { ...r.lastRun, at: ms(r.lastRun.at) } : null, legacyText: legacy ? `Delete files on ${r.collection || "a collection"} where ${r.matchField || "a field"} is ${String(r.matchValue)} for ${r.ageThresholdDays || "?"} days.` : undefined };
+      // mirrors functions/lib/stash/targets.js: legacy = no target on an old Squarespace collection; unsafe = no allowlisted target on anything else (the sweep skips it)
+      const legacy = !r.target && LEGACY_COLLECTIONS.includes(r.collection), unsafe = !legacy && r.target !== T.BUG.key;
+      return { id: d.id, name: r.name || (legacy ? "Legacy rule" : d.id), target: r.target || null, statuses: r.statuses || [], days: r.days ?? r.ageThresholdDays ?? 0, enabled: r.enabled === true, legacy, unsafe, updatedAt: ms(r.updatedAt), lastRun: r.lastRun ? { ...r.lastRun, at: ms(r.lastRun.at) } : null, legacyText: legacy ? `Delete files on ${r.collection || "a collection"} where ${r.matchField || "a field"} is ${String(r.matchValue)} for ${r.ageThresholdDays || "?"} days.` : undefined };
     }),
     assets: assetsSnap.docs.map((d) => { const a: any = d.data(); return { id: d.id, publicId: a.publicId || "", url: a.url || "", feature: a.feature || "", sizeBytes: a.sizeBytes || 0, deliveryType: a.deliveryType === "authenticated" ? "authenticated" : "upload", createdAt: ms(a.createdAt), linkedDoc: a.linkedDoc || null, scan: a.scan ? { state: a.scan.state, due: a.scan.due } : null } as Asset; }),
     assetsCapped: assetsSnap.size >= 1000,

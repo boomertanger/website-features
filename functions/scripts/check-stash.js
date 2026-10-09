@@ -54,6 +54,7 @@ const G = require("../lib/stash/gate");
   assert.equal(L.sweepStatus({ purged: 0, failures: 2, capped: false, attempted: 2 }), "failed"); assert.equal(L.sweepStatus({ purged: 100, failures: 0, capped: true, attempted: 100 }), "capped");
   assert.equal(L.sweepStatus({ purged: 0, failures: 1, capped: false, attempted: 0 }), "partial", "a rule that couldn't even run is a partial run");
   const k = (o) => L.alertKinds({ pauseAtPct: 80, failures: 0, ...o });
+  assert.deepEqual(k({ sweep: { status: "ok", skipped: 1 } }), ["stash-sweep-failed"], "a skipped rule alone raises the sweep alert");
   assert.deepEqual(k({ sweep: { status: "failed" } }), ["stash-sweep-failed"]); assert.deepEqual(k({ sweep: { status: "partial" } }), ["stash-sweep-failed"]); assert.deepEqual(k({ sweep: { status: "capped" } }), ["stash-sweep-capped"]); assert.deepEqual(k({ sweep: { status: "ok" } }), []);
   assert.deepEqual(k({ before: { pct: 70 }, after: { pct: 85 } }), ["stash-usage-80"]); assert.deepEqual(k({ before: { pct: 85 }, after: { pct: 90 } }), [], "already past the pause point: no new crossing");
   assert.deepEqual(k({ before: { pct: 95 }, after: { pct: 101 } }), ["stash-usage-100"]); assert.deepEqual(k({ before: { pct: 10 }, after: { pct: 120 } }), ["stash-usage-100"], "jumping past both fires only the 100% one");
@@ -68,9 +69,14 @@ const G = require("../lib/stash/gate");
   bad(T.validateRule({ ...rule, days: 60.5 }), "invalid", "days"); bad(T.validateRule({ ...rule, name: "" }), "invalid", "name"); bad(T.validateRule(null), "invalid"); assert.equal(T.validateRule({ ...rule, days: 14 }).ok, true); assert.equal(T.validateRule({ ...rule, days: 730 }).ok, true);
   assert.equal(T.targetOf("constructor"), null, "only own keys");
   assert.equal(T.BUG_SCREENSHOTS.collection, "sites/boomertanger/bugs/main/reports"); assert.equal(T.BUG_SCREENSHOTS.screenshotField, "shotRef"); assert.equal(T.BUG_SCREENSHOTS.link("r1"), "/bug-zapper?report=r1"); assert.deepEqual(T.BUG_SCREENSHOTS.statuses, require("../lib/bugs/logic").CLOSED);
-  assert.equal(T.isLegacyShaped({ collection: "x" }), true); assert.equal(T.isLegacyShaped(rule), false);
+  assert.equal(T.isLegacyShaped({ collection: "bugReports" }), true, "a target-less rule on an old Squarespace collection is legacy"); assert.equal(T.isLegacyShaped(rule), false);
+  assert.deepEqual(T.LEGACY_COLLECTIONS, ["bugReports"]);
+  const newSiteNoTarget = { feature: "bugZapper", collection: "sites/boomertanger/bugs/main/reports", matchField: "closed", matchValue: true, ageField: "closedAt", ageThresholdDays: 60, enabled: true };
+  assert.equal(T.isLegacyShaped(newSiteNoTarget), false, "a target-less rule on a new-site collection is NOT legacy"); assert.equal(T.isUnsafe(newSiteNoTarget), true);
+  assert.equal(T.isUnsafe({ ...rule, target: "vaultCovers" }), true, "an unknown target is unsafe"); assert.equal(T.isUnsafe(rule), false); assert.equal(T.isUnsafe({ collection: "bugReports" }), false);
+  assert.equal(T.queryOf(newSiteNoTarget).ok, false); assert.equal(T.queryOf(newSiteNoTarget).reason, "unsafe");
   const q = T.queryOf(rule); assert.equal(q.ok, true); assert.equal(q.value.collection, "sites/boomertanger/bugs/main/reports"); assert.equal(q.value.matchField, "closed"); assert.equal(q.value.matchValue, true); assert.equal(q.value.ageField, "closedAt"); assert.equal(q.value.days, 60);
-  const lq = T.queryOf({ collection: "anything", matchField: "status", matchValue: "x", ageField: "at", ageThresholdDays: 30 }); assert.equal(lq.ok, true); assert.equal(lq.legacy, true); assert.equal(lq.value.statuses, null);
+  const lq = T.queryOf({ collection: "bugReports", matchField: "status", matchValue: "x", ageField: "at", ageThresholdDays: 30 }); assert.equal(lq.ok, true); assert.equal(lq.legacy, true); assert.equal(lq.value.statuses, null);
   assert.equal(T.queryOf({ collection: "x" }).ok, false, "an incomplete legacy rule");
   assert.equal(T.sentence(rule), "Purge the screenshot of any bug report that has been closed for 60 days."); assert.equal(T.sentence({ ...rule, statuses: ["fixed"] }), "Purge the screenshot of any bug report closed as Fixed for 60 days.");
   assert.equal(T.sentence({ ...rule, statuses: ["fixed", "duplicate"] }), "Purge the screenshot of any bug report closed as Fixed or Duplicate for 60 days."); assert.match(T.sentence({ collection: "x" }), /old Cloud Stash page/);
@@ -265,14 +271,23 @@ const logs = async (action) => (await col("adminLog")).filter((e) => e.feature =
   const part = (await as("adm2", "stashSweepNow")).sweep; assert.equal(part.status, "failed", "every purge it tried failed"); assert.equal(part.purged, 0); assert.ok(alerts.some((x) => x.kind === "stash-sweep-failed"));
   failIds = new Set(["a-c10"]); await wdb.doc("adminSettings/storage").set({ runCap: 100 }); alerts.length = 0;
   const part2 = (await as("adm2", "stashSweepNow")).sweep; assert.equal(part2.status, "partial"); assert.equal(part2.failures.length, 1); assert.equal(part2.failures[0].assetId, "a-c10"); assert.ok(alerts.some((a) => a.kind === "stash-sweep-failed"), "failures become alerts, not silence"); failIds = new Set();
-  // a rule that can't run (bad shape) is a failure of that rule only
+  // a rule that isn't in a safe shape (no allowlisted target, not a legacy collection) is SKIPPED: no queries, no deletes, recorded in storageUsage/sweep, and it raises the alert
   await wdb.doc("cleanupRules/broken").set({ name: "x", target: "vaultCovers", statuses: ["fixed"], days: 60, enabled: true });
-  alerts.length = 0; const brk = (await as("adm2", "stashSweepNow")).sweep; assert.equal(brk.status, "partial"); assert.equal(brk.perRule.broken.failed, 1, "the bad rule is reported"); assert.ok(brk.failures.some((f) => f.ruleId === "broken")); await wdb.doc("cleanupRules/broken").delete();
+  alerts.length = 0; const brk = (await as("adm2", "stashSweepNow")).sweep; assert.deepEqual(brk.skipped.map((s) => s.ruleId), ["broken"], "the bad rule is recorded as skipped"); assert.equal(brk.perRule.broken.skipped, true); assert.equal(brk.failures.length, 0); assert.ok(alerts.some((a) => a.kind === "stash-sweep-failed"), "a skipped rule raises the sweep alert"); assert.deepEqual((await get("storageUsage/sweep")).skipped.map((s) => s.ruleId), ["broken"]); assert.equal((await get("cleanupRules/broken")).lastRun, undefined, "a skipped rule gets no lastRun"); await wdb.doc("cleanupRules/broken").delete();
+  // the hole this closes: a target-less rule on the NEW site's reports collection would have run as a legacy rule and purged without the allowlist
+  await report("r-hole", { closedAt: ts(clock - 200 * DAY) }); await rec("a-hole", { feature: "bugZapper", publicId: "hole/shot", linkedDoc: { collection: "sites/boomertanger/bugs/main/reports", docId: "r-hole", field: "shotRef" } }); remote["hole/shot"] = { type: "authenticated", bytes: 10 };
+  await wdb.doc("cleanupRules/hole").set({ feature: "bugZapper", collection: "sites/boomertanger/bugs/main/reports", matchField: "closed", matchValue: true, ageField: "closedAt", ageThresholdDays: 60, enabled: true });
+  await wdb.doc("cleanupRules/rule-on").set({ enabled: false }, { merge: true }); deletedOrder.length = 0; alerts.length = 0; const hole = (await as("adm2", "stashSweepNow")).sweep;
+  assert.equal(deletedOrder.length, 0, "nothing is deleted by an unsafe rule"); assert.ok(remote["hole/shot"], "the file is still in Cloudinary"); assert.equal(hole.perRule.hole.skipped, true); assert.ok(hole.skipped.some((s) => s.ruleId === "hole"));
+  assert.ok(alerts.some((a) => a.kind === "stash-sweep-failed"), "skipping it raises stash-sweep-failed");
+  assert.equal(await why(as("adm2", "stashRuleSave", { op: "toggle", id: "hole", enabled: true, expectCount: 0 })), "unsafe", "it can't be switched on until it is edited");
+  assert.equal((await as("adm1", "stashRuleSave", { op: "toggle", id: "hole", enabled: false })).ok, true, "it can be switched off");
+  await wdb.doc("cleanupRules/hole").delete(); await wdb.doc("externalAssets/a-hole").delete(); delete remote["hole/shot"]; await wdb.doc("sites/boomertanger/bugs/main/reports/r-hole").delete();
   // the scheduled run is the same code with Automatic as the actor; legacy-shaped rules keep running until launch
   await wdb.doc("cleanupRules/rule-on").set({ enabled: false }, { merge: true });
-  await wdb.doc("bugReportsLegacy/x").set({ status: "Closed", updatedAt: ts(clock - 40 * DAY) });
-  await rec("a-legacy", { feature: "bugZapper", publicId: "legacy/bug/shot", linkedDoc: { collection: "bugReportsLegacy", docId: "x", field: "screenshotUrl" } }); remote["legacy/bug/shot"] = { type: "upload", bytes: 1000 };
-  await wdb.doc("cleanupRules/legacy2").set({ feature: "bugZapper", collection: "bugReportsLegacy", matchField: "status", matchValue: "Closed", ageField: "updatedAt", ageThresholdDays: 30, enabled: true }); deletedOrder.length = 0;
+  await wdb.doc("bugReports/x").set({ status: "Closed", updatedAt: ts(clock - 40 * DAY) });
+  await rec("a-legacy", { feature: "bugZapper", publicId: "legacy/bug/shot", linkedDoc: { collection: "bugReports", docId: "x", field: "screenshotUrl" } }); remote["legacy/bug/shot"] = { type: "upload", bytes: 1000 };
+  await wdb.doc("cleanupRules/legacy2").set({ feature: "bugZapper", collection: "bugReports", matchField: "status", matchValue: "Closed", ageField: "updatedAt", ageThresholdDays: 30, enabled: true }); deletedOrder.length = 0;
   const auto = await stash.runSweep({ trigger: "schedule" }); assert.equal(auto.status, "ok"); assert.equal(auto.purged, 1); assert.equal(deletedOrder[0].actor, "Automatic", "the schedule's actor is Automatic"); assert.equal(auto.trigger, "schedule");
   assert.equal((await logs("sweep-run")).at(-1).actorName, "Automatic");
   // an empty sweep is ok
