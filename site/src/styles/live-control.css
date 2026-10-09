@@ -234,3 +234,9 @@
 .bt-root:not(#_) .ld-row code, .bt-portal[data-feature="live"] .ld-keybox code { display: block; margin-top: 4px; padding: 6px 8px; border-radius: var(--bt-radius-sm); background: var(--bt-surface-2); color: var(--bt-primary-soft); font-size: var(--bt-text-xs); overflow-wrap: anywhere; user-select: all; }
 .bt-portal[data-feature="live"] .ld-keybox { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; margin: 14px 0; }
 .bt-portal[data-feature="live"] .ld-keybox code { margin: 0; padding: 12px; font-size: var(--bt-text-md); }
+
+/* ---- the after-show: Switch Streamlabs card (scripts/live/live.ts) ---- */
+.bt-root:not(#_) .lc-switch { border-color: color-mix(in srgb, var(--bt-green) 50%, transparent); }
+.bt-root:not(#_) .lc-steps { margin: 0 0 12px; padding-left: 22px; display: grid; gap: 6px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lc-steps code { padding: 2px 8px; border-radius: var(--bt-radius-sm); background: var(--bt-surface-2); color: var(--bt-title); font-weight: 800; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lc-sw-status { margin: 0 0 10px; padding: 10px 12px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-md); }

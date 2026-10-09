@@ -38,7 +38,7 @@ export interface PubLive {
 
 export interface Seg { kind: string; gameId?: string; title?: string; startedAt: number | null; endedAt: number | null }
 export interface LStream {
-  id: string; title: string; state: string; type: "platform" | "backstage"; audience: string; adhoc: boolean;
+  id: string; title: string; state: string; type: "platform" | "backstage"; audience: string; adhoc: boolean; /** The platform stream this after-show follows. */ afterShowOf: string | null;
   start: number; end: number; actualStart: number | null; rooms: Room[]; /** The rooms live (the TikTok switch lives here). Empty until Start or the first switch. */ liveRooms: Room[]; week: string | null;
   crew: { captain: string | null; chats: Partial<Record<Room, { lead: string | null; deckhands: string[] }>> };
   minCrew: { captain: boolean; rooms: string[] };
@@ -56,7 +56,7 @@ export interface Control {
   twitch: { status: "live" | "offline"; offlineSince?: number } | null;
   tiktok: { viewers: number; at: number; by?: string | null } | null;
 }
-export interface Main { look: "hull" | "crt"; windowLengthChoices: number[]; windowDefaultMinutes: number; obsKeyAt: number | null; deckKeyAt: number | null; obsKeySet: boolean; deckKeySet: boolean }
+export interface Main { /** Days after a stream before its backstage video is made private; null = off (live/main.makeBackstagePrivateAfterDays). */ privateAfterDays: number | null; look: "hull" | "crt"; windowLengthChoices: number[]; windowDefaultMinutes: number; obsKeyAt: number | null; deckKeyAt: number | null; obsKeySet: boolean; deckKeySet: boolean }
 export interface CItem { id: string; text: string; note?: string; shortcut?: string; only?: "platform" | "backstage"; done?: boolean; doneAt?: number }
 export type CBeats = Record<Beat, CItem[]>;
 export interface Snapshot {
@@ -72,7 +72,7 @@ export function streamFrom(id: string, d: any): LStream {
   const beats: LStream["beats"] = {};
   for (const [k, b] of Object.entries<any>(d.beats || {})) beats[k as Beat] = { startedAt: ms(b.startedAt), endedAt: ms(b.endedAt), skipped: b.skipped === true, checkins: b.checkins || 0, windowOpenedAt: ms(b.windowOpenedAt) };
   return {
-    id, title: d.title || d.theme?.label || "Stream", state: d.state, type: d.type === "backstage" ? "backstage" : "platform", audience: d.audience || "public", adhoc: d.adhoc === true,
+    id, title: d.title || d.theme?.label || "Stream", state: d.state, type: d.type === "backstage" ? "backstage" : "platform", audience: d.audience || "public", adhoc: d.adhoc === true, afterShowOf: typeof d.afterShowOf === "string" ? d.afterShowOf : null,
     start: ms(d.plannedStart) ?? 0, end: ms(d.plannedEnd) ?? 0, actualStart: ms(d.actualStart), rooms: (d.rooms || []) as Room[], liveRooms: (Array.isArray(d.liveRooms) ? d.liveRooms : []) as Room[], week: d.week || null,
     crew: { captain: handleOf(d.crew?.captain), chats },
     minCrew: d.minCrew || { captain: false, rooms: [] },

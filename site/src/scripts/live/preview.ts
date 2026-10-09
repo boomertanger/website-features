@@ -24,7 +24,7 @@ let S: PState | null = null;
 const pstatusCalls: Record<string, number> = {};
 
 const stream = (r: any, now: number): LStream => ({
-  id: r.id, title: r.title, state: "scheduled", type: r.type, audience: r.audience, adhoc: false, start: now + r.startInMin * MIN, end: now + (r.startInMin + r.lenMin) * MIN, actualStart: null,
+  id: r.id, title: r.title, state: "scheduled", type: r.type, audience: r.audience, adhoc: false, afterShowOf: null, start: now + r.startInMin * MIN, end: now + (r.startInMin + r.lenMin) * MIN, actualStart: null,
   rooms: r.rooms as Room[], liveRooms: [], week: null, crew: JSON.parse(JSON.stringify(r.crew)), minCrew: r.minCrew,
   plannedGames: (r.games as any[]).map((g, i) => ({ gameId: g.gameId, title: g.title, order: i })), segments: [], beats: {},
   youtube: { status: r.youtube, ...(r.youtube === "failed" ? { error: "The event could not be created" } : {}) }, delay: null,
@@ -60,7 +60,7 @@ function build(): PState {
   for (const k of BEATS) templates[k] = (raw.templates as any)[k].map((x: any) => ({ ...x }));
   const st: PState = {
     streams: (raw.streams as any[]).map((r) => stream(r, now)), live: null, control: null,
-    main: { look: q.get("look") === "crt" ? "crt" : "hull", windowLengthChoices: [2, 3, 5, 10], windowDefaultMinutes: 5, obsKeyAt: null, deckKeyAt: Date.now() - 12 * 86400000, obsKeySet: false, deckKeySet: true },
+    main: { privateAfterDays: 7, look: q.get("look") === "crt" ? "crt" : "hull", windowLengthChoices: [2, 3, 5, 10], windowDefaultMinutes: 5, obsKeyAt: null, deckKeyAt: Date.now() - 12 * 86400000, obsKeySet: false, deckKeySet: true },
     checklist: null, templates, ended: null, counts: { byBeat: { ...raw.checkins.byBeat }, byRoom: { ...raw.checkins.byRoom } }, viewers: { ...raw.viewers } as any, peak: 1412, wordUsed: 0, adhocAt: {},
   };
   st.main.obsKeyAt = null;
@@ -145,7 +145,7 @@ export async function previewApi(): Promise<Api> {
       const st = pv(), a = d.adhoc || d, now = Date.now(), id = `pv-adhoc-${Math.random().toString(36).slice(2, 7)}`;
       const g = a.firstGame ? previewVault().find((v) => v.slug === a.firstGame.gameId) : null;
       const s: LStream = {
-        id, title: a.title, state: "scheduled", type: a.type === "backstage" ? "backstage" : "platform", audience: a.type === "backstage" ? "fanClub" : a.audience || "public", adhoc: true, start: now, end: now + (a.durationMinutes || 180) * MIN, actualStart: null,
+        id, title: a.title, state: "scheduled", type: a.type === "backstage" ? "backstage" : "platform", audience: a.type === "backstage" ? "fanClub" : a.audience || "public", adhoc: true, afterShowOf: null, start: now, end: now + (a.durationMinutes || 180) * MIN, actualStart: null,
         rooms: a.type === "backstage" ? [] : (a.rooms || ["twitch", "ytLandscape", "ytVertical", "tiktok"]), liveRooms: [], week: null, crew: { captain: null, chats: {} }, minCrew: { captain: false, rooms: [] },
         plannedGames: g ? [{ gameId: g.slug, title: g.title, order: 0 }] : [], segments: [], beats: {}, youtube: { status: "pending" }, delay: null,
       };
@@ -246,7 +246,7 @@ export async function previewApi(): Promise<Api> {
     },
     liveAfterShow() {
       const st = pv(), s = liveS(), now = Date.now(), pub = mkPub(st);
-      const id = "pv-aftershow", next: LStream = { ...s, id, title: `${s.title}: after-show`, type: "backstage", audience: "fanClub", rooms: [], adhoc: true, state: "live", actualStart: now, beats: { start: { startedAt: now, endedAt: null, checkins: 0, windowOpenedAt: null } }, segments: [], youtube: { status: "ok" } };
+      const id = "pv-aftershow", next: LStream = { ...s, id, title: `${s.title}: after-show`, type: "backstage", audience: "fanClub", rooms: [], adhoc: true, afterShowOf: s.id, state: "live", actualStart: now, beats: { start: { startedAt: now, endedAt: null, checkins: 0, windowOpenedAt: null } }, segments: [], youtube: { status: "ok" } };
       st.ended = { ...pub, state: "ended", actualEnd: now, beat: null, window: { open: false, closesAt: null, beat: null }, viewers: { total: 0, byPlatform: {} } };
       st.live = next; st.counts = { byBeat: {}, byRoom: {} };
       st.control = { window: null, pinned: null, brbUntil: null, firstIn: {}, viewers: {}, peak: 0, yt: { status: "ok" }, twitch: null, tiktok: null };

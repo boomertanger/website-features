@@ -13,6 +13,8 @@ import { platformIconHtml } from "../../../../shared/ui/crew.js";
 import type { Ctx } from "./state";
 import { BEATS, BEAT_LABEL, ROOMS, ROOM_LABEL, fmtDur, plural, type Beat, type Room } from "./model";
 import { esc, askLive, withBusy, toast, messageFor, mascotHtml, reduced } from "./ui";
+import { isProduction } from "../../lib/env.js";
+import type { PlatformStatus } from "./model";
 import { gamePickerHtml, initGamePicker } from "./gamepick";
 
 let len = 0;                       // the chosen window length (minutes)
@@ -123,10 +125,54 @@ function launchPanel(ctx: Ctx): string {
   return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${live ? "One on stream at a time" : "Ready when you are live"}</small>`, bodyHtml: `${launchHtml({ tiles: tiles as any })}<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Questions and Hot Seat arrive with the live activities.</p></div>` });
 }
 
+/* ------------------------------------------------------------------ the after-show: switch Streamlabs (docs/specs/control-room.md §3, §11) */
+// After "Start after-show" the controls switch to the new backstage stream and this card says what to do in Streamlabs. The event's status fills in
+// from livePlatformStatus every 5 s (one request at a time, quiet on errors, stopped when the card goes): Waiting for YouTube... then Live. Done hides it.
+const swDismissed = new Set<string>();
+let swTimer = 0, swBusy = false, swFor = "", swStatus: PlatformStatus | null = null;
+const swShown = (ctx: Ctx) => !!ctx.snap.live && ctx.mode === "live" && ctx.snap.live.type === "backstage" && !!ctx.snap.live.afterShowOf && !swDismissed.has(ctx.snap.live.id);
+
+function swStatusHtml(ps: PlatformStatus | null): string {
+  if (!ps) return `<span class="lc-wait">Waiting for YouTube…</span>`;
+  if (ps.youtube.live) return `<span class="lc-ok">● Live ✓</span> The after-show is on. Members can watch it on /live.`;
+  if (!ps.youtube.connected) return `<span class="lc-bad">YouTube isn't connected.</span> Connect it on /admin, then pick the event by hand.`;
+  if (ps.youtube.eventStatus === "failed") return `<span class="lc-bad">The event wasn't found.</span> Use Retry on the YouTube chip, or paste its link.`;
+  return ps.youtube.eventStatus === "ok" ? `<span class="lc-wait">Event ready. Waiting for YouTube…</span> Go live in Streamlabs.` : `<span class="lc-wait">Waiting for YouTube…</span> The event is being made.`;
+}
+function switchCardHtml(ctx: Ctx): string {
+  if (!swShown(ctx)) return "";
+  const s = ctx.snap.live!;
+  const name = `${isProduction ? "" : "[STAGING] "}${s.title}`;
+  const live = !!swStatus?.youtube.live;
+  const body = `<ol class="lc-steps"><li>In Streamlabs, <b>stop streaming</b>.</li><li>Turn off <b>Twitch</b> and the <b>vertical output</b> (Dual Output).</li><li>Pick the YouTube event named <code>${esc(name)}</code> (refresh the list once if it isn't there).</li><li><b>Go live.</b></li></ol>
+    <p class="lc-sw-status" data-sw-status role="status" aria-live="polite">${swStatusHtml(swStatus)}</p>
+    <p class="lc-hint">TikTok LIVE Studio is ended separately: stop it there. There is about a minute's gap while you switch.</p>
+    <div class="lc-banner-acts"><button type="button" class="bt-btn ${live ? "bt-btn--primary" : "bt-btn--secondary"} bt-btn--sm" data-act="sw-done">${live ? "Done" : "Hide this"}</button></div>`;
+  return crPanelHtml({ id: "lc-switch", cls: "lc-switch", title: "Switch Streamlabs to the after-show", icon: "backstage", tagHtml: `<span class="bt-velvet">Backstage · Fan Club</span>`, bodyHtml: body });
+}
+function swPoll(ctx: Ctx) {
+  const s = ctx.snap.live;
+  if (!s || !swShown(ctx)) { clearInterval(swTimer); swTimer = 0; return; }
+  if (swFor !== s.id) { swFor = s.id; swStatus = null; }
+  if (swBusy) return;
+  swBusy = true;
+  ctx.api.call<PlatformStatus>("livePlatformStatus", { streamId: s.id }).then((r) => {
+    swStatus = r;
+    const el = ctx.root.querySelector<HTMLElement>("[data-sw-status]");
+    if (el) el.innerHTML = swStatusHtml(r);
+    const btn = ctx.root.querySelector<HTMLElement>('[data-act="sw-done"]');
+    if (btn && r.youtube.live) { btn.textContent = "Done"; btn.className = "bt-btn bt-btn--primary bt-btn--sm"; }
+  }, () => { /* quiet: the card keeps its last answer */ }).finally(() => { swBusy = false; });
+}
+function swEnsure(ctx: Ctx) {
+  if (!swShown(ctx)) { clearInterval(swTimer); swTimer = 0; return; }
+  if (!swTimer) { swPoll(ctx); swTimer = window.setInterval(() => swPoll(ctx), 5000); }
+}
+
 function bannersHtml(ctx: Ctx): string {
   const c = ctx.snap.control, s = ctx.snap.live;
   if (ctx.mode !== "live" || !c || !s) return "";
-  const now = Date.now(), out: string[] = [];
+  const now = Date.now(), out: string[] = [switchCardHtml(ctx)].filter(Boolean);
   if (c.twitch?.status === "offline" && s.rooms.includes("twitch") && s.type !== "backstage") {
     const since = c.twitch.offlineSince || now;
     if (now - since >= 3 * 60000 && dismissedBanner !== `tw${since}`) out.push(`<div class="bt-notice lc-gold" role="alert"><b>Twitch says you're offline</b> (for ${esc(fmtDur(now - since))}). If Streamlabs or the PC crashed, restart it: nothing ends on its own for 12 hours.<div class="lc-banner-acts"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="stop">Stop the stream</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-act="banner-wait" data-k="tw${since}">Wait</button></div></div>`);
@@ -212,9 +258,11 @@ export function initLive(ctx: Ctx) {
       },
     });
   };
+  A["sw-done"] = () => { const id = ctx.snap.live?.id; if (id) swDismissed.add(id); ctx.render(); };
+  ctx.after.push(() => swEnsure(ctx));
   A["after-show"] = () => {
     void askLive({
-      title: "Start the after-show?", message: "Ends the public stream and starts the Fan Club after-show in one step. Then in Streamlabs: stop, turn off Twitch and the vertical output, pick the new unlisted event and go live (about a minute's gap). End TikTok LIVE Studio separately.",
+      title: "Start the after-show?", message: "In one step: (1) the public stream ends and its stats are saved; (2) a backstage stream for the Fan Club starts, on the site only, with its own beats, check-ins and Stop; (3) its unlisted YouTube event is created. Then the controls show the Streamlabs steps: stop streaming, turn off Twitch and the vertical output, pick the new event and go live (about a minute's gap). End TikTok LIVE Studio separately.",
       confirmLabel: "Start the after-show", busyLabel: "Starting…",
       onConfirm: async () => {
         try { await ctx.api.call("liveAfterShow", {}); } catch (err) { throw new Error(messageFor(err)); }

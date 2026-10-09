@@ -42,6 +42,7 @@ export async function detectRole(s: AuthState): Promise<Role | null> {
 }
 
 const mainFrom = (d: any): Main => ({
+  privateAfterDays: d?.makeBackstagePrivateAfterDays === false || d?.makeBackstagePrivateAfterDays === 0 ? null : Number.isFinite(d?.makeBackstagePrivateAfterDays) ? d.makeBackstagePrivateAfterDays : 7,
   look: d?.look === "crt" ? "crt" : "hull",
   windowLengthChoices: Array.isArray(d?.windowLengthChoices) && d.windowLengthChoices.length ? d.windowLengthChoices : [2, 3, 5, 10],
   windowDefaultMinutes: Number.isFinite(d?.windowDefaultMinutes) ? d.windowDefaultMinutes : 5,
