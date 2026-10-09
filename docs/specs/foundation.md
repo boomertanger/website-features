@@ -257,7 +257,7 @@ That order is build sequence only: Fan Club membership access and paid Sub Club 
 
 ## Open items and reminders
 
-- [ ] Cancel MemberSpace before its renewal on Oct 31, 2026 (reminder Oct 20, 2026). Check whether access continues to the end of the term.
+- [x] ~~Cancel MemberSpace before its renewal on Oct 31, 2026 (reminder Oct 20, 2026).~~ No longer applicable: MemberSpace was cancelled Oct 9, 2026. It never went live and had no members, so there is nothing to migrate.
 - [ ] Cancel Squarespace once the new site is live, before its August 2027 renewal (reminder Jul 1, 2027).
 - [ ] Update site-architecture.md and the project custom instructions: domains on Cloudflare, redirect plan, email addresses, retired Squarespace assumptions.
 - [ ] Export historical Twitch, YouTube and TikTok analytics.

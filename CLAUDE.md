@@ -77,7 +77,7 @@ Building an admin-only feature, auditing status colors, or picking up
 follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 
 ## Other conventions
-- MemberSpace: use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.
+- MemberSpace (legacy Squarespace Code Blocks only; **cancelled Oct 9, 2026, no longer applicable to new work**: the new site never uses it): where old code still does, use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.
   `memberInfo.id` is a NUMBER — `String()` it before writing to Firestore.
 - Firebase: modular imports only, via `shared/firebase-init.js`. Never compat scripts.
 - Client-side membership checks are visual only; real protection is Firestore rules /

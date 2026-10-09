@@ -1033,7 +1033,7 @@ Built for `docs/specs/control-room.md` §15 (mockups `docs/design/mockups/contro
 
 Visual/markup refactor only: no changes to Firestore data shapes, rules, Cloud
 Functions, enum values, identity sources (Bug Zapper's `meTooBy` uses Firebase uid,
-Feature Lab's `votes` uses MemberSpace id — keep both), or comment visibility.
+Feature Lab's `votes` uses MemberSpace id — keep both; legacy only, MemberSpace was cancelled Oct 9, 2026 and the new site uses Firebase uids), or comment visibility.
 
 **Class mapping** (`bz-`/`fl-` shown; Cloud Stash equivalents below)
 | Old | New |

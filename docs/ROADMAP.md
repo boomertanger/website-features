@@ -188,10 +188,10 @@ Activity types (and automatic badges) that wait for another workstream. Tick one
 Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** section listing what it can reward (activity types, automatic badges) and the event it fires, so the hook is built with the feature.
 
 ## Deadlines
-- MemberSpace: turn off auto-renew before 2026-10-20 (it renews 2026-10-31). Nobody uses it and nothing live depends on it, so it doesn't need renewing.
 - Squarespace: cancel by 2027-07-01.
 
 ## Before launch
+- [x] MemberSpace cancelled Oct 9, 2026. It never went live and had no members, so there is nothing to migrate; the new site's accounts start fresh. (The renewal deadline of Oct 31 and its Oct 20 reminder no longer apply.)
 - [ ] Set the effective date in the Privacy Policy and Terms (the day they go live).
 - [ ] Confirm support@boomertanger.com exists and is monitored.
 - [ ] Lawyer review of the Privacy Policy and Terms.
