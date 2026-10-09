@@ -202,6 +202,8 @@ function textSnapshot(data, fields) {
 const ACTIVITY_LINKS = {
   featureRequests: { feature: "feature-lab", idField: "requestId" },
   bugReports: { feature: "bug-zapper", idField: "reportId" },
+  // the new board (docs/specs/bug-zapper.md §4): bugDelete removes its own events; this keeps find-orphans honest
+  "sites/boomertanger/bugs/main/reports": { feature: "bug-zapper", idField: "reportId" },
 };
 
 async function deleteActivityEvents(collectionName, docId) {
@@ -660,6 +662,8 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
   if (request.data?.feature === "vaultGame") return vaultModule.editVaultGame(request);
   // Feature Lab ideas (the new board, lab/main/ideas) are the labIdea kind, in lib/lab/edit.js, gated the same way. The legacy featureLab kind below is untouched.
   if (request.data?.feature === "labIdea") return labModule.editLabIdea(request);
+  // Bug Zapper reports (the new board, bugs/main/reports) are the bugReport kind, in lib/bugs/edit.js, gated the same way. The legacy bugZapper kind below is untouched.
+  if (request.data?.feature === "bugReport") return bugsModule.editBugReport(request);
 
   // 1. Verify admin.
   if (!(await isCallerAdmin(request.auth))) {
@@ -954,6 +958,18 @@ Object.assign(exports, youtubeModule.functions);
 // featureRequests code above stays until launch.
 const labModule = require("./lib/lab")({ adminLogEntry });
 Object.assign(exports, labModule.functions);
+
+// Bug Zapper (docs/specs/bug-zapper.md): the member bug board, its callables, the daily bugTidy and the bugReport kind of adminEditItem (lib/bugs/). Screenshots
+// go through the one Cloudinary delete path above (performAssetDeletion). The legacy bugReports code above stays until launch.
+const bugsModule = require("./lib/bugs")({
+  adminLogEntry,
+  performAssetDeletion,
+  cloudinaryDelete,
+  recordAssetCreated,
+  cloudSecrets: CLOUDINARY_SECRETS,
+  cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+});
+Object.assign(exports, bugsModule.functions);
 
 // Control Room (docs/specs/control-room.md): the stream controls, check-ins and presence, the live feeds and ticks, Twitch
 // EventSub. Lives in lib/live/; it reuses the youtube module for ad hoc streams, after-shows and Start.

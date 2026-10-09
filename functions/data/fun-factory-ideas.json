@@ -133,8 +133,17 @@
     {
       "id": "bugs",
       "name": "Bug Zapper",
-      "enabled": false,
-      "needs": "Bug Zapper port"
+      "enabled": true,
+      "needs": null,
+      "source": "Bug Zapper",
+      "description": "Help fix the site: report a bug, get a report confirmed.",
+      "actions": [
+        "report",
+        "confirmed"
+      ],
+      "params": [
+        "action"
+      ]
     },
     {
       "id": "lab",
@@ -644,7 +653,10 @@
       "target": 3,
       "xp": 15,
       "cadence": "daily",
-      "audience": "all"
+      "audience": "all",
+      "params": {
+        "action": "vote"
+      }
     },
     {
       "title": "Check in to the stream",
@@ -759,7 +771,10 @@
       "target": 1,
       "xp": 75,
       "cadence": "weekly",
-      "audience": "all"
+      "audience": "all",
+      "params": {
+        "action": "report"
+      }
     },
     {
       "title": "Big idea",
@@ -768,7 +783,10 @@
       "target": 1,
       "xp": 75,
       "cadence": "weekly",
-      "audience": "all"
+      "audience": "all",
+      "params": {
+        "action": "post"
+      }
     },
     {
       "title": "Collector",
@@ -927,7 +945,10 @@
       "target": 3,
       "xp": 250,
       "cadence": "milestone",
-      "audience": "all"
+      "audience": "all",
+      "params": {
+        "action": "confirmed"
+      }
     },
     {
       "title": "Front row season",

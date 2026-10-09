@@ -3,7 +3,7 @@
 // boards rebuilt after each grant. Internal: features require() this; nothing here is callable.
 //
 //   makeGears({ db }) -> { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview,
-//                          grantLabReview, grantAcademy, rebuildBoards }
+//                          grantLabReview, grantBugTriage, grantAcademy, rebuildBoards }
 //
 // Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Duty sources come in phase 3.
 // Never earn Gears: timeouts, bans, deleted messages, raw message counts (they would reward spam).
@@ -12,7 +12,7 @@ const L = require("./logic");
 const { SITE_ID, paths, loadSettings } = require("./settings");
 const { dayKey } = require("../arcade/logic");
 
-const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted)
+const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
 const NEVER = ["timeout", "ban", "deletedMessage", "messages", "messageCount"];
 const safe = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 100);
 const ms = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
@@ -55,6 +55,8 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
   const grantTask = async (uid, taskId, amount) => grantGears(uid, "task", taskId, amount);
   /** Feature Lab review: the admin who first moves an idea out of Submitted, +3 (gearsValues.triage), once per idea (the ledger key is source:ideaId:uid). */
   const grantLabReview = async (uid, ideaId) => grantGears(uid, "labReview", ideaId, (await loadSettings(db)).gearsValues.triage);
+  /** Bug Zapper triage: the admin who first moves a report out of Open, +3 (gearsValues.triage), once per report (the ledger key is source:reportId:uid). */
+  const grantBugTriage = async (uid, reportId) => grantGears(uid, "bugTriage", reportId, (await loadSettings(db)).gearsValues.triage);
   const grantAcademy = async (uid, moduleId) => grantGears(uid, "academy", moduleId, (await loadSettings(db)).gearsValues.academyModule);
   /** A recruit counted: +10 for the referrer, up to recruitCapPerMonth recruits a month. */
   async function grantRecruit(referrerUid, newUid) {
@@ -107,7 +109,7 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     return boards;
   }
 
-  return { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview, grantLabReview, grantAcademy, rebuildBoards };
+  return { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview, grantLabReview, grantBugTriage, grantAcademy, rebuildBoards };
 }
 
 module.exports = { makeGears, gearKey, SOURCES, NEVER };

@@ -1,6 +1,7 @@
 // Mod Machina hooks for other features (internal, lazy, never throw): a recruit's first real action.
 //   noteRecruitAction(uid, "checkin" | "arcade")   from the Night Shift check-in and a finished Arcade run
 //   noteLabReview(uid, ideaId)                      Feature Lab: the admin who first moves an idea out of Submitted earns +3 Gears (labReview)
+//   noteBugTriage(uid, reportId)                    Bug Zapper: the admin who first moves a report out of Open earns +3 Gears (bugTriage)
 const admin = require("firebase-admin");
 
 let shared = null;
@@ -21,4 +22,11 @@ async function noteLabReview(uid, ideaId) {
     return await require("./gears").makeGears({ db }).grantLabReview(uid, ideaId);
   } catch (err) { console.error("crew: noteLabReview failed", err); return { granted: false, reason: "error" }; }
 }
-module.exports = { noteRecruitAction, noteLabReview };
+/** Bug Zapper triage Gears for an admin. Lazy and never throws (a failed grant is logged, the triage still stands). */
+async function noteBugTriage(uid, reportId) {
+  try {
+    const db = admin.firestore();
+    return await require("./gears").makeGears({ db }).grantBugTriage(uid, reportId);
+  } catch (err) { console.error("crew: noteBugTriage failed", err); return { granted: false, reason: "error" }; }
+}
+module.exports = { noteRecruitAction, noteLabReview, noteBugTriage };

@@ -30,6 +30,7 @@ const admin = require("firebase-admin");
 const ACTIVITY_LINKS = {
   featureRequests: { feature: "feature-lab", idField: "requestId" },
   bugReports: { feature: "bug-zapper", idField: "reportId" },
+  "sites/boomertanger/bugs/main/reports": { feature: "bug-zapper", idField: "reportId" },
 };
 const ITEM_COLLECTIONS = Object.keys(ACTIVITY_LINKS);
 
