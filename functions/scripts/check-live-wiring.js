@@ -183,6 +183,13 @@ async function main() {
   pub = await get("public/live");
   assert.equal(pub.window.open, true); assert.equal(pub.window.beat, o.beat);
   assert.deepEqual(L.findSecrets(pub, { words: [WORD], videoIds: ["LAND123456", "VERT123456"] }), [], "public/live has no word and no video id");
+  // the Deck's room coverage (Mod Machina phase 3 part 2): public/live carries deck { rooms } with handles and counts only, never a uid, and the deep scan would catch one
+  assert.deepEqual(Object.keys(pub.deck.rooms), [], "no one is on duty: an empty deck");
+  const deckPub = L.buildPublicLive({ stream: { id: "dk", state: "live", beats: {} }, deck: { rooms: { twitch: { lead: "mod_h", deckhands: 2, covered: true, uid: "UID-1" } } }, nowMs: 1 });
+  assert.deepEqual(deckPub.deck, { rooms: { twitch: { lead: "mod_h", deckhands: 2, covered: true } } }, "the builder drops everything but handle, count and covered");
+  assert.deepEqual(L.findSecrets(deckPub, {}), [], "a built deck is clean");
+  assert.ok(L.findSecrets({ deck: { rooms: { twitch: { lead: "mod_h", uid: "UID-1" } } } }, {}).some((h) => /uid/.test(h)), "a uid anywhere in deck is flagged by the deep scan");
+  assert.ok(L.findSecrets({ deck: { rooms: { twitch: { uids: ["UID-1"] } } } }, {}).some((h) => /uids/.test(h)));
   for (const [name, docs] of [["notifyOutbox", await root(`${S}/notifyOutbox`)], ["activityLog", await root("activityLog")], ["adminLog", await root("adminLog")]]) assert.ok(!clean(docs).includes(WORD), `${name} never holds the word`);
   assert.ok(!clean(await stream("s1")).includes(WORD), "the stream doc never holds the word");
   assert.ok(!clean(await get("streams/s1/private/checklist")).includes(`"${WORD}"`));
@@ -1027,6 +1034,7 @@ async function main() {
   assert.deepEqual(who("control"), ["a2", "owner"], "private/control (the current word): the owner and A2+, never a mod or A1");
   assert.deepEqual(who("checklist"), ["owner"], "private/checklist: the owner's uid only, an A2 cannot read it");
   assert.deepEqual(who("watch"), [], "private/watch (the video id): nobody on the client");
+  assert.deepEqual(who("duty"), ["mod", "a1", "a2", "owner"], "private/duty (the live duty state, Mod Machina phase 3): crew (mods and admins) and the owner read it, members and visitors do not");
   assert.deepEqual(who("draft"), ["mod", "a1", "a2", "owner"], "the planner draft stays staff");
   assert.equal(rule(privateBlock, "write"), "false");
   // presence (own doc + admins), counters (owner + A2+), live/main (owner + A2+), its private templates (owner only), the word log (nobody)

@@ -331,7 +331,12 @@ async function main() {
   assert.equal((await gears.grantGears("m1", "task", "task-x", 20)).reason, "paid");
   assert.equal((await gears.grantGears("m1", "task", "task-x", 99)).reason, "paid");         // the same key never pays again, whatever the amount
   assert.equal((await gears.grantGears("fan", "task", "task-y", 20)).reason, "notCrew");
-  for (const bad of ["timeout", "ban", "messages", "deletedMessage", "duty", "made-up"]) assert.equal((await gears.grantGears("m1", bad, "r", 5)).reason, "badSource", bad);
+  for (const bad of ["timeout", "ban", "messages", "deletedMessage", "made-up"]) assert.equal((await gears.grantGears("m1", bad, "r", 5)).reason, "badSource", bad);
+  // Mod Machina phase 3 (lib/crew/duty.js): duty, showed and takeover are sources now, with the ledger id given exactly by the caller so a retry never pays twice
+  assert.equal((await gears.grantGears("m1", "duty", "s9:m1:lead:twitch", 17, { key: "duty:s9:m1:lead:twitch" })).granted, true);
+  assert.equal((await gears.grantGears("m1", "duty", "s9:m1:lead:twitch", 17, { key: "duty:s9:m1:lead:twitch" })).reason, "paid");
+  assert.equal((await db.doc("sites/boomertanger/crew/main/gears/duty:s9:m1:lead:twitch").get()).get("amount"), 17);
+  await db.doc("sites/boomertanger/crew/main/gears/duty:s9:m1:lead:twitch").delete();
   assert.equal((await gears.grantGears("m1", "task", "task-z", 0)).reason, "badAmount");
   assert.equal((await gears.grantGears("m1", "task", "task-z", 5000)).reason, "badAmount");
   assert.equal((await mine("m1")).reduce((n, d) => n + d.get("amount"), 0), 20);
