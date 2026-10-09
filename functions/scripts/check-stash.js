@@ -291,6 +291,25 @@ const logs = async (action) => (await col("adminLog")).filter((e) => e.feature =
   const la = (await logs()).map((e) => e.action); for (const a of ["limits", "pause", "retention"]) assert.ok(la.includes(a), a + " is logged"); assert.deepEqual((await logs("retention"))[0].changes.retentionDays, { before: 365, after: 180 });
   assert.equal((await logs("limits")).length, 2); assert.equal((await logs("pause")).length, 2);
 
+  // ================================================================ alerts: admin-health items through notifyOutbox, once per kind per day
+  const A = require("../lib/stash/alerts");
+  const al = A.makeAlerts({ db: wdb, now: () => clock, adminLogEntry });
+  const outboxDocs = async () => (await col(`${S}/notifyOutbox`)).filter((o) => o.type === "admin-health");
+  const o0 = (await outboxDocs()).length;
+  for (const kind of ["stash-sweep-failed", "stash-sweep-capped", "stash-usage-80", "stash-usage-100", "stash-usage-stale", "stash-loose-ends"]) assert.equal(await al.raise(kind, { failures: 2, purged: 100, pct: 84.2, orphan: 3, untracked: 4 }), true, kind + " is sent");
+  const sent = (await outboxDocs()).slice(o0);
+  assert.equal(sent.length, 6); assert.ok(sent.every((o) => o.audience === "admins" && o.status === "pending" && o.expireAt && o.payload.link === "/admin/stash" && o.payload.feature === "cloudStash"), "each is an admin-health item for the admins");
+  assert.deepEqual(sent.map((o) => o.payload.kind).sort(), ["stash-loose-ends", "stash-sweep-capped", "stash-sweep-failed", "stash-usage-100", "stash-usage-80", "stash-usage-stale"]);
+  assert.equal(await al.raise("stash-sweep-failed", { failures: 5 }), false, "at most one per kind per day"); assert.equal((await outboxDocs()).length, o0 + 6);
+  assert.equal(await al.raise("stash-nonsense"), false);
+  clock += DAY; assert.equal(await al.raise("stash-sweep-failed", { failures: 1 }), true, "the next day it can fire again"); assert.equal(await al.raise("stash-usage-80", { pct: 85 }), false, "the usage alerts are once per month");
+  clock += 31 * DAY; assert.equal(await al.raise("stash-usage-80", { pct: 85 }), true, "and again in a new month");
+  const hist = (await get("storageUsage/alerts")).items; assert.equal(hist[0].kind, "stash-usage-80"); assert.ok(hist[0].at && hist[0].title && hist[0].body, "the page's alert history is kept, newest first");
+  for (let i = 0; i < 40; i++) { clock += DAY; await al.raise("stash-sweep-capped", { purged: i }); }
+  assert.equal((await get("storageUsage/alerts")).items.length, 30, "the history keeps the newest 30");
+  assert.match(A.messageFor("stash-usage-80", { pct: 84.2 }).body, /84\.2%/); assert.equal(A.messageFor("stash-usage-100", {}).severity, "critical");
+  assert.equal(A.idFor("stash-sweep-failed", Date.UTC(2026, 9, 9)), "stash-sweep-failed-2026-10-09"); assert.equal(A.idFor("stash-usage-80", Date.UTC(2026, 9, 9)), "stash-usage-80-2026-10");
+
   // ================================================================ rules, indexes, performAssetDeletion and the nothing-in-the-feed promise (text checks: no emulator here)
   const root = path.join(__dirname, "..");
   const idx = fs.readFileSync(path.join(root, "index.js"), "utf8");

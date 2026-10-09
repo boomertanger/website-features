@@ -36,7 +36,8 @@ function build(deps = {}) {
   const cloud = () => (cloudMod ||= require("../cloudinary"));
   const fetchFn = deps.fetch || ((...a) => fetch(...a));
   const creds = () => deps.cloudCreds();
-  const alert = deps.alert || (async () => {});
+  // the six admin-health alerts go through the existing notifyOutbox writer (lib/stash/alerts.js); a check can pass its own to capture them
+  const alert = deps.alert || require("./alerts").makeAlerts({ db, now, adminLogEntry: deps.adminLogEntry }).raise;
   const sweeper = makeSweep({ db, now, creds, performAssetDeletion: deps.performAssetDeletion, adminLogEntry: deps.adminLogEntry, alert });
   const ms = (v) => (v == null ? 0 : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : 0);
 
