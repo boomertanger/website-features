@@ -29,7 +29,7 @@ Decided (Oct 8, 2026):
 7. The owner's setup: Streamlabs Desktop to Twitch and YouTube (YouTube Vertical through Streamlabs Dual
    Output); TikTok LIVE Studio to TikTok; Stream Deck software on a dedicated iPad (hardware Deck later).
 
-Out of scope: the Chat Games formats (Mod Machina phase 4), Contests (ws 12), the Stream Library pages
+Out of scope: the Chat Games formats (live activities, ROADMAP 5b; formerly Mod Machina phase 4), Contests (ws 12), the Stream Library pages
 (ws 6), connecting the Twitch broadcaster token (planned for here behind a switch).
 
 ## 2. Pages and who sees what
@@ -264,6 +264,8 @@ pieces and look the same in every look.
 The Control Room owns the launch panel; the activities run in one **live activities** engine shared with
 Chat Games, specified in `docs/specs/live-activities.md` (next spec) and built after the Control Room core.
 Contests stay ws 12 and plug in later.
+
+Note (Oct 9, 2026): Chat Games are merged into live activities. One engine; members see "Questions" and "Chat Games" (Hot Seat and the rest are Chat Games). Crew-hosted games need the Mod Deck, so they come last. ROADMAP 5b has the order; `mod-machina.md` section 11 keeps the game designs.
 
 **Launch panel** (on /live/control, and for the Captain in the Mod Deck): Questions, Hot Seat, tonight's
 planned Chat Game, the quick Chat Games, Drop a badge, Recruit Rush. One activity is on stream at a time; the

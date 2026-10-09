@@ -219,6 +219,8 @@ For crew while a stream is live; the owner sees it too.
 - The queue is generic (`role: mod | keeper`) so the Arcade's Keeper volunteers reuse it.
 
 ## 11. Chat Games (run by the crew, played by members, live in every chat)
+> **Decided Oct 9, 2026: Chat Games are merged into live activities (workstream 5b).** One service and one engine, called "live activities" internally. Members see two names only: **Questions** (the queue) and **Chat Games** (every game: Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo, Body Count). A game can be crew-hosted (it needs Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. Spec: `docs/specs/live-activities.md` (to come). The game designs, crew votes, pledges and packs below stay valid and move into that spec when it is written; this section is the source until then.
+
 Name decided Oct 6: **Chat Games** (not "Side Quests", which would blur with Night Shift campaigns). On stream they can carry a branded line ("Chat Games, tonight on the Kill Floor"); the site name stays Chat Games. Keeps the three kinds of game apart: Boom Arcade games (played on the site any time), Game Vault games (what Boomertanger streams), Chat Games (live, during a stream, with chat).
 
 TikTok has no chat API and YouTube's is quota-limited, so Chat Games are **site-powered, chat-voiced**: the logic and scores live on the site, the talking happens in every chat, mods drive the moments from the Mod Deck, and results go on the stream overlay.
@@ -335,7 +337,7 @@ Triggers: referral activation (on the first qualifying event), presence → duty
 1. **Crew core** (needs only accounts + Trophy Room core). Until stream duty exists (phase 3): the monthly activity rules stay off (site setting `crew.activityRules = false`, the time card says "Starts with stream duty"); the join requirement "3 stream check-ins" and the Fan Favourite voter rule "a stream check-in that month" use Night Shift daily check-ins instead (3 in the last 30 days / 1 that month), owner can waive. Includes: grades and status, crew profiles and platform preferences, the queue (/crew/join, vouch, owner decision), Academy with modules 1-7 and 9, task board + Gears + crew board, referral links, monthly awards, /crew and how-it-works pages, /admin/crew with coverage map (preferences only at first). Twitch moderator sync.
 2. **With the Schedule Planner**: seats, sign-ups, swap board, reliability, reminders.
 3. **With the Control Room**: Mod Deck, clock in, handoffs, duty Gears, per-room check-in codes, YouTube moderator sync, Recruit Rush.
-4. **Chat Games**: the pool and crew votes, Planner slot, Play panel; Dead Air + Scream Off, then Bingo + Body Count; module 8 and the Captain's course.
+4. **Chat Games: now live activities (workstream 5b, ROADMAP).** The pool and crew votes, Planner slot, Play panel; Dead Air + Scream Off, then Bingo + Body Count; module 8 and the Captain's course. Built in 5b in the order set in section 11 (Questions and Hot Seat, quick formats, then crew-hosted games after the Mod Deck from phase 3).
 5. **Later**: Houses, a chat bot for !join / !code on Twitch and YouTube, Stream Deck buttons.
 
 ## 16. Kit pieces (new)
