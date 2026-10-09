@@ -28,7 +28,9 @@ Squarespace Bug Zapper (`bugReports`, its rules, `recordBugScreenshot`, `deleteB
    scales anything over 3840 px down first). One per report. Viewing: signed links that expire after 10 minutes.
    Recorded with `recordAssetCreated` (`deliveryType: "authenticated"`). A failed upload never loses the report; the
    reporter can add it later. Uploads never attached are cleared by a daily sweep. A `cleanupRules` doc purges
-   screenshots 60 days after a report closes (`closed == true`, age on `closedAt`).
+   screenshots 60 days after a report closes (`closed == true`, age on `closedAt`). That rule is Cloud Stash's allowlisted
+   Bug Zapper screenshots target, set up by `functions/scripts/seed-cloud-stash.js` (the only script that does it); it is created
+   switched off and the owner switches it on in Cloud Stash after a dry run.
 4. **Confirmed.** New status **Confirmed** (gold). A report counts as confirmed the first time it reaches Confirmed,
    In progress or Fixed: that grants Bug Finder and Night Shift `confirmed`. Duplicates never count (the original
    does); Won't fix and Can't reproduce don't.
@@ -194,7 +196,7 @@ member"). Twitch accounts without email ("Add an email in Account, then verify i
 `lib/cloudinary.js` and client `scripts/boards` (Feature Lab unchanged). 3. `lib/bugs`, the edit kind, Gears,
 Night Shift data, `ACTIVITY_LINKS`, `check-bugs`. 4. Rules, indexes, the cleanup rule (staging). 5. /bug-zapper.
 6. How it works. 7. /admin card, 404 button, module on. 8. Docs. Deploy to staging: rules and indexes, then
-functions, then `seed-factory-types.js`, then the cleanup rule.
+functions, then `seed-factory-types.js`, then `seed-cloud-stash.js` (the cleanup rule).
 
 ## Appendix A: the wordmark icon (I1, Porch zapper)
 

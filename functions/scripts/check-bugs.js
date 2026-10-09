@@ -429,9 +429,8 @@ const outboxOf = async (type) => (await col(`${S}/notifyOutbox`)).filter((o) => 
   assert.ok(has("reports", [["closed", "ASCENDING"], ["closedAt", "ASCENDING"]]), "the cleanup rule");
   assert.ok(has("thread", [["hidden", "ASCENDING"], ["createdAt", "ASCENDING"]]), "the thread");
   assert.ok(idx.fieldOverrides.some((o) => o.collectionGroup === "submitTokens" && o.fieldPath === "expireAt" && o.ttl === true), "post tokens expire");
-  const seed = require("./seed-bug-cleanup-rule");
-  assert.deepEqual(seed.RULE, { feature: "bugZapper", collection: "sites/boomertanger/bugs/main/reports", matchField: "closed", matchValue: true, ageField: "closedAt", ageThresholdDays: 60 });
-  assert.throws(() => seed.parseArgs(["--project", "production"]), /staging only/); assert.throws(() => seed.parseArgs([]), /staging only/); assert.equal(seed.parseArgs(["--project", "staging"]).project, "staging");
+  // the cleanup rule's setup lives in seed-cloud-stash.js (checked in check-stash.js); seed-bug-cleanup-rule.js is retired
+  assert.ok(!fsx.existsSync(pathx.join(__dirname, "seed-bug-cleanup-rule.js")), "the old cleanup-rule seed script is gone");
 
   console.log("check-bugs: ok");
 })().catch((e) => { console.error(e); process.exit(1); });
