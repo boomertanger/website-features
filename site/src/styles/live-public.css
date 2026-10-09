@@ -197,3 +197,25 @@
   .bt-root:not(#_) .lp-play, .bt-root:not(#_) .lp-watch-link { transition: none; }
   .bt-root:not(#_) .lp-play:is(:hover, :focus-visible), .bt-root:not(#_) .lp-watch-link:is(:hover, :focus-visible) { transform: none; }
 }
+
+/* ======================================================================== just ended (the wrap-up) ======================================================================== */
+.bt-root:not(#_) .lp-wrap { display: grid; gap: 16px; }
+.bt-root:not(#_) .lp-wrap-top { position: relative; overflow: hidden; display: grid; grid-template-columns: 84px minmax(0, 1fr) auto; gap: 18px; align-items: center; padding: 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: radial-gradient(ellipse at 8% 50%, rgba(var(--bt-gold-rgb), 0.1), transparent 55%), var(--bt-surface); }
+.bt-root:not(#_) .lp-wrap-top > .bt-mascot { width: 84px; height: auto; }
+.bt-root:not(#_) .lp-wrap-stamp { order: 3; position: relative; min-height: 96px; }
+.bt-root:not(#_) .lp-wrap-h { margin: 0 0 4px; }
+.bt-root:not(#_) .lp-wrap-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+.bt-root:not(#_) .lp-wbars { display: flex; align-items: flex-end; justify-content: space-around; gap: 10px; height: 120px; margin-top: 16px; }
+.bt-root:not(#_) .lp-wbar { display: flex; flex-direction: column; justify-content: flex-end; align-items: center; gap: 4px; flex: 1; height: 100%; color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .lp-wbar b { color: var(--bt-title); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lp-wbar i { display: block; width: min(34px, 60%); height: calc(var(--h) * 0.6px); min-height: 3px; border-radius: 4px 4px 0 0; background: linear-gradient(180deg, var(--bt-title), color-mix(in srgb, var(--bt-title) 40%, var(--bt-blood))); transform-origin: bottom; animation: lp-grow 0.7s cubic-bezier(0.3, 1.2, 0.4, 1) both; }
+@keyframes lp-grow { from { transform: scaleY(0); } }
+.bt-root:not(#_) .lp-games-list { margin-top: 12px; }
+.bt-root:not(#_) .lp-next-h { margin: 8px 0 0; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .lp-wrap-grid { grid-template-columns: minmax(0, 1fr); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lp-wrap-top { grid-template-columns: 60px minmax(0, 1fr); padding: 12px; gap: 12px; }
+  .bt-root:not(#_) .lp-wrap-top > .bt-mascot { width: 60px; }
+  .bt-root:not(#_) .lp-wrap-stamp { order: 0; grid-column: 1 / -1; display: flex; justify-content: center; }
+}
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lp-wbar i { animation: none; } }

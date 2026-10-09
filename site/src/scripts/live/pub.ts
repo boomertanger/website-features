@@ -36,6 +36,7 @@ const boxes = Object.fromEntries([...root.querySelectorAll<HTMLElement>("[data-l
 const loaders: Partial<Record<View, () => Promise<{ default: ViewPart }>>> = {
   room: () => import("./pub-room"),
   live: () => import("./pub-bridge"),
+  ended: () => import("./pub-ended"),
 };
 const parts: Partial<Record<View, ViewPart>> = {};
 let view: View | null = null;

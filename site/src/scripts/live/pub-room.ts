@@ -51,7 +51,7 @@ function countdownTick() {
 /* ------------------------------------------------------------------ the ticket */
 const listOf = (a: string[]) => (a.length <= 1 ? a.join("") : `${a.slice(0, -1).join(", ")}, then ${a[a.length - 1]}`);
 
-function ticketMarkup(ctx: PubCtx): string {
+export function ticketMarkup(ctx: PubCtx): string {
   const n = ctx.next;
   if (!n) {
     return `<div class="bt-card lp-empty">${mascotHtml()}<div><h3>Nothing scheduled yet</h3><p>When Boomer publishes the week's streams they show up here, with a countdown and a reminder.</p>
