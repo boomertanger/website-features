@@ -197,8 +197,7 @@ function textSnapshot(data, fields) {
 //      events today, but any future one must carry reportId to be cleaned)
 //   2. the item doc AND every subcollection under it (recursiveDelete)
 // Events go first so a retry after a partial failure still finds the item.
-// Cloud Stash's "asset_purged" events are deliberately NOT removed: they're
-// the purge audit trail and store no linked doc id anyway.
+// (Cloud Stash no longer writes "asset_purged" events; older ones are left alone.)
 // functions/scripts/find-orphans.js mirrors this ACTIVITY_LINKS map.
 const ACTIVITY_LINKS = {
   featureRequests: { feature: "feature-lab", idField: "requestId" },
@@ -359,21 +358,14 @@ async function performAssetDeletion(assetId, cloudinaryCreds, options = {}) {
   );
   await batch.commit();
 
-  await db.collection("activityLog").add({
-    feature: "cloud-stash",
-    type: "asset_purged",
-    summary: `Purged a ${asset.feature} asset (${asset.publicId})`,
-    link: null,
-    actorName: null,
-    createdAt: admin.firestore.FieldValue.serverTimestamp(),
-  });
+  // Cloud Stash writes nothing to activityLog (docs/specs/cloud-stash.md §6): the adminLog entry below is the audit trail.
 
   if (logActor) {
     let itemPath = `externalAssets/${assetId}`;
     let itemTitle = asset.publicId;
     if (linkedSnap?.exists) {
       itemPath = `${linkedCollection}/${linkedDocId}`;
-      itemTitle = linkedSnap.get("title") || asset.publicId;
+      itemTitle = linkedSnap.get("title") || linkedSnap.get("name") || asset.publicId;
     }
     const details = {
       assetId,
@@ -812,57 +804,21 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
 // error in the logs with a direct console link to create it — same
 // one-time-setup shape as the Eventarc propagation delay noted elsewhere
 // in this repo, not a real bug.
+// Cloud Stash (docs/specs/cloud-stash.md): the admin tool's callables, the usage and scan schedules, the upload gate's numbers and the sweep. The sweep code (lib/stash/sweep.js) is the
+// one thing the daily scheduledAssetCleanup below and "Sweep now" both run: it purges through performAssetDeletion only, honours the allowlist (lib/stash/targets.js; legacy-shaped rules
+// from the old page still run until launch), stops at the per-run cap, records itself in storageUsage/sweep and raises alerts. The legacy deleteExternalAsset above stays until launch.
+const stashModule = require("./lib/stash")({
+  adminLogEntry,
+  performAssetDeletion,
+  recordUntrackedAsset: require("./lib/externalAssets").recordUntrackedAsset,
+  cloudSecrets: CLOUDINARY_SECRETS,
+  cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+});
+Object.assign(exports, stashModule.functions);
+
 exports.scheduledAssetCleanup = onSchedule(
-  { schedule: "every day 09:00", timeZone: "America/Los_Angeles", secrets: CLOUDINARY_SECRETS },
-  async () => {
-    const db = admin.firestore();
-    const creds = {
-      cloudName: CLOUDINARY_CLOUD_NAME.value(),
-      apiKey: CLOUDINARY_API_KEY.value(),
-      apiSecret: CLOUDINARY_API_SECRET.value(),
-    };
-
-    const rulesSnap = await db.collection("cleanupRules").where("enabled", "==", true).get();
-
-    for (const ruleDoc of rulesSnap.docs) {
-      const rule = ruleDoc.data();
-      const cutoff = admin.firestore.Timestamp.fromMillis(
-        Date.now() - rule.ageThresholdDays * 24 * 60 * 60 * 1000
-      );
-
-      let candidates;
-      try {
-        candidates = await db
-          .collection(rule.collection)
-          .where(rule.matchField, "==", rule.matchValue)
-          .where(rule.ageField, "<=", cutoff)
-          .get();
-      } catch (err) {
-        console.error(`scheduledAssetCleanup: query failed for rule ${ruleDoc.id}`, err);
-        continue; // one bad/unindexed rule shouldn't block the others
-      }
-
-      for (const linkedDoc of candidates.docs) {
-        const assetsSnap = await db
-          .collection("externalAssets")
-          .where("linkedDoc.collection", "==", rule.collection)
-          .where("linkedDoc.docId", "==", linkedDoc.id)
-          .get();
-
-        for (const assetDoc of assetsSnap.docs) {
-          try {
-            await performAssetDeletion(assetDoc.id, creds, {
-              logActor: { uid: null, name: "Automatic" },
-              cleanupRule: { id: ruleDoc.id, ...rule },
-            });
-          } catch (err) {
-            console.error(`scheduledAssetCleanup: failed to purge ${assetDoc.id}`, err);
-            // Keep sweeping — one failure shouldn't stop the rest.
-          }
-        }
-      }
-    }
-  }
+  { schedule: "every day 09:00", timeZone: "America/Los_Angeles", secrets: CLOUDINARY_SECRETS, timeoutSeconds: 540 },
+  async () => { await stashModule.runSweep({ trigger: "schedule" }); }
 );
 
 // ---------- Accounts (docs/specs/accounts.md) ----------
