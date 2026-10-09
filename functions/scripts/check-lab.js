@@ -168,7 +168,7 @@ assert.equal(snap.description.length, 2000); assert.equal(snap.author, "@gbo");
   assert.ok(/match \/lab\/main\/submitTokens\/\{token\} \{\s+allow read, write: if false;/.test(block), "tokens are closed");
   // the one legacy change: new-site admins read adminLog (and nobody writes it)
   const alog = rules.slice(rules.indexOf("match /adminLog/{entryId} {"), rules.indexOf("match /adminSettings/{docId} {"));
-  assert.ok(alog.includes("allow read: if isAdmin() || hasSiteRole('boomertanger', 'admin');") && alog.includes("allow write: if false;"), "adminLog is readable by new-site admins too, and never writable");
+  assert.ok(alog.includes("allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');") && alog.includes("allow write: if false;"), "adminLog is readable by new-site admins too, and never writable");
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "firestore.indexes.json"), "utf8")).indexes;
   const has = (group, fields) => idx.some((i) => i.collectionGroup === group && i.queryScope === "COLLECTION" && JSON.stringify(i.fields.map((f) => [f.fieldPath, f.order])) === JSON.stringify(fields));
   assert.ok(has("ideas", [["hidden", "ASCENDING"], ["createdAt", "DESCENDING"]]), "ideas: hidden, createdAt desc");

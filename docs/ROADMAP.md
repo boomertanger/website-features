@@ -157,7 +157,7 @@ Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 ### 10. Porting existing features
 Goal: move Bug Zapper, Feature Lab and Cloud Stash from Squarespace Code Blocks to the new site, and build the Night Watch admin hub.
 Must be done before launch.
-Status: Feature Lab is built on staging (spec `docs/specs/feature-lab.md`: /feature-lab, /feature-lab/how-it-works, the /admin card, the lab callables, rules and indexes). Bug Zapper is built on staging too (spec `docs/specs/bug-zapper.md`: /bug-zapper, /bug-zapper/how-it-works, the /admin card, the 404 report link, the bug callables, rules, indexes and the 60-day screenshot cleanup rule). Cloud Stash and Night Watch are still to do.
+Status: Feature Lab is built on staging (spec `docs/specs/feature-lab.md`: /feature-lab, /feature-lab/how-it-works, the /admin card, the lab callables, rules and indexes). Bug Zapper is built on staging too (spec `docs/specs/bug-zapper.md`: /bug-zapper, /bug-zapper/how-it-works, the /admin card, the 404 report link, the bug callables, rules, indexes and the 60-day screenshot cleanup rule). Cloud Stash is built on staging too (spec `docs/specs/cloud-stash.md`: /admin/stash with the Overview, Files, Rules and Activity tabs, /cloud-stash/how-it-works, the /cloud-stash redirect, the /admin card, the stash callables and schedules, the upload gate in every upload-signature callable, the six admin-health alerts, rules, indexes and `functions/scripts/seed-cloud-stash.js`). Night Watch is still to do.
 Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 
 ### 11. Plans and billing
@@ -215,6 +215,13 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Admin Academy text before the first Steward is invited (outline at the bottom of docs/specs/crew-academy.md; the hub shows it as a locked card).
 - [ ] Deploy the crew functions and rules to production (rules first, separately; staging done) and check crewNightly, crewReferralSweep and crewMonthlyAwards are scheduled in the production console.
 - [ ] Seed the crew badges in production with the rest of the Trophy Room catalog (seed-badges.js, dry run first).
+
+### Cloud Stash in production
+- [ ] Account-deletion file cleanup: deleting an account must also delete that member's uploads (bug screenshots, pending covers) within 7 days. Until it exists, the "deleted with your account, within 7 days" line is left out of /cloud-stash/how-it-works and the FAQ; add it back when the cleanup ships.
+- [ ] Retire the legacy Cloud Stash page (the Squarespace Code Block), the `deleteExternalAsset` callable and the legacy `externalAssets` / `cleanupRules` rules, and the old enabled rule `cleanupRules/bugZapperScreenshots` (seed-bug-cleanup-rule.js). Until then it keeps sweeping alongside the new rules.
+- [ ] Set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET for production (staging values never carry over).
+- [ ] Run functions/scripts/seed-cloud-stash.js on production (it is staging only today: allow the production project name deliberately, dry run first). Then open /admin/stash, run Dry run on "Old bug screenshots" and switch it on: the How it works page promises screenshots are deleted 60 days after a report closes, which is only true while that rule is on.
+- [ ] Deploy rules and indexes, then functions, to production (rules first, separately; retry once on an Eventarc/IAM error) and confirm the stash callables, stashUsageDaily, stashScanWeekly and scheduledAssetCleanup in the production console, and the adminLog (feature, createdAt) index is Enabled.
 
 ### Trophy Room and Night Shift in production
 - [ ] Seed the Trophy Room badge catalog in production: functions/scripts/seed-badges.js --project prod (dry run, then --apply). Includes beat-the-boss and the streak badges; check boomer-s-blessing is owner only.
