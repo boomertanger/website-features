@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+refactor: shared boards helpers for Feature Lab and Bug Zapper, no behaviour change. functions/lib/boards (caller, rate limit, post token, hide, replies, logs, delete tree, the triage plan) and lib/cloudinary.js (the Vault's Cloudinary helpers with a folder parameter; lib/vault/cloudinary.js re-exports), and site scripts/boards (gate, hide dialog, replies and gate boxes, live author chip, remembered choices); lib/lab and the Feature Lab pages now use them.
 docs: Bug Zapper spec (confirmed Oct 8, 2026) and the approved mockups (report form, board, report dialog, every state, How it works).
 docs: Feature Lab. design-system 8q (the picks, the Bright idea icon, .bt-comment--hidden, the rule that new-site admins read adminLog through hasSiteRole) and ROADMAP workstream 10 status (Feature Lab built on staging; Bug Zapper, Cloud Stash, Night Watch to do) with the Night Shift hook ticked.
 site: Feature Lab on /admin (a card with how many new ideas wait for a look, the oldest one and Open the board) and the featurelab module on in site.json, so Feature Lab shows in the header Community panel and the phone More sheet.

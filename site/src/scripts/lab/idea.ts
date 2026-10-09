@@ -3,7 +3,9 @@
 // Opened with openModal (wide); the deep link ?idea=<id> is set while it's open. Everything re-renders from the store after each action.
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
-import { composerHtml, initComposer } from "../../../../shared/ui/composer.js";
+import { confirmHide } from "../boards/hide";
+import { replyHtml, replyBoxHtml, handleGateClick } from "../boards/replies";
+import { initComposer } from "../../../../shared/ui/composer.js";
 import { toast } from "../../../../shared/ui/toast.js";
 import { burst } from "../../../../shared/ui/burst.js";
 import { PENCIL_ICON } from "../../../../shared/ui/admin-menu.js";
@@ -11,8 +13,8 @@ import { getAuthState } from "../../lib/auth";
 import { messageFor } from "../../lib/errors";
 import { STATUS, PRIORITY, AREA, voteLocked, type Idea, type Comment, type LogEntry, type Status, type Priority, type Area } from "./data";
 import { S, byId, freshIdea, commentsOf, logOf, comment as postComment, triage, hide, edit, remove } from "./store";
-import { isAdmin, isStaff, canDelete, needOf, verifyLine } from "./gate";
-import { esc, sBadge, pBadge, architect, tally, initialsOf, longDate, areaLabel, plural } from "./ui";
+import { isAdmin, isStaff, canDelete, needOf } from "./gate";
+import { esc, sBadge, pBadge, architect, tally, longDate, areaLabel, plural } from "./ui";
 import { handleVote } from "./vote";
 import { I } from "./art";
 
@@ -25,14 +27,7 @@ const setIdeaParam = (id: string | null) => {
   history.replaceState(null, "", u);
 };
 
-function commentHtml(c: Comment, staff: boolean) {
-  if (c.hidden && !staff) return "";
-  const tag = c.staffTag === "admin" ? `<span class="bt-admin-tag bt-admin-tag--small">${I.shield}Admin</span>` : c.staffTag === "mod" ? '<span class="bt-badge bt-badge--teal">Mod</span>' : "";
-  const tools = staff && !c.staffTag ? `<span class="fl-cmt-tools"><button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-hide-comment="${esc(c.id)}" data-hidden="${c.hidden}" aria-label="${c.hidden ? "Unhide comment" : "Hide comment"}">${I.eye}<span class="bt-btn-label">${c.hidden ? "Unhide" : "Hide"}</span></button></span>` : "";
-  const who = c.by.handle ? `<a href="/u/${encodeURIComponent(c.by.handle)}">@${esc(c.by.handle)}</a>` : '<span class="bt-meta">Former member</span>';
-  const note = c.hidden ? `<span class="bt-comment-hidden-note">Hidden by @${esc(c.hiddenBy?.handle || "a mod")}${c.hiddenReason ? `: ${esc(c.hiddenReason)}` : ""}. Only staff see this.</span>` : "";
-  return `<div class="bt-comment${c.hidden ? " bt-comment--hidden" : ""}">${tools}<div class="bt-comment-head"><span class="bt-avatar">${initialsOf(c.by.handle)}</span>${who}${tag}<span class="bt-comment-time">${longDate(c.createdAt)}</span></div><p class="bt-comment-text">${esc(c.text)}</p>${note}</div>`;
-}
+const commentHtml = (c: Comment, staff: boolean) => replyHtml(c, { staff, px: "fl", icons: { shield: I.shield, eye: I.eye }, date: longDate });
 
 function historyHtml(i: Idea) {
   const list = [...i.statusHistory].reverse();
@@ -85,11 +80,7 @@ function dialogHtml(i: Idea, cmts: Comment[], log: LogEntry[], mayDelete: boolea
   const tools = adminOn ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-edit aria-label="Edit">${I.pencil}<span class="bt-btn-label">Edit</span></button>` : "";
   const line = locked ? (i.status === "shipped" ? "Shipped. Voting is closed; the count stays as a thank-you." : "Voting is closed.")
     : need === "signedOut" ? "Join free to vote. Votes help decide what gets built next." : voted ? "You voted for this. Tap again to take it back." : "Want this too? Vote for it.";
-  const gate = need === "signedOut"
-    ? `<div class="fl-gate"><p><b>Join the conversation.</b> Members can comment, vote and post their own ideas. It's free.</p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-join-dlg>Join free</button><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-signin-dlg>Sign in</button></div></div>`
-    : need === "needsSignup" ? `<div class="fl-gate"><p><b>Finish signing up to join in.</b> Pick your handle and you can comment, vote and post ideas.</p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-finish-dlg>Finish signup</button></div></div>`
-    : need === "unverified" ? `<div class="fl-gate fl-gate--warn"><p><b>Verify your email to post, vote and comment.</b> ${verifyLine(s.user?.email || "")}</p><div class="bt-modal-actions">${s.user?.email ? '<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-resend-dlg>Send a new link</button>' : '<a class="bt-btn bt-btn--secondary bt-btn--sm" href="/account">Open Account</a>'}</div></div>`
-    : composerHtml({ placeholder: "Ask a question or add context…", maxLength: 1000, id: "fl-cmt" });
+  const gate = replyBoxHtml(need, { px: "fl", email: s.user?.email || "", composerId: "fl-cmt", placeholder: "Ask a question or add context…", joinLine: "<b>Join the conversation.</b> Members can comment, vote and post their own ideas. It's free.", finishLine: "<b>Finish signing up to join in.</b> Pick your handle and you can comment, vote and post ideas.", verifyLead: "Verify your email to post, vote and comment." });
   const hideBtn = staff ? `<button type="button" class="bt-btn bt-btn--admin" data-hide-idea data-hidden="${i.hidden}">${I.eye}${i.hidden ? "Unhide idea" : "Hide idea"}</button>` : "";
   const danger = adminOn && mayDelete ? `<button type="button" class="bt-btn bt-btn--danger" data-delete>${I.trash}Delete idea</button>` : "";
   return `${modalHeader(esc(i.title), sub, tools)}
@@ -166,10 +157,7 @@ export async function openIdea(id: string, onChange: Done = () => {}) {
     const t = e.target as Element;
     const vb = t.closest<HTMLElement>("[data-vote]");
     if (vb) { e.preventDefault(); await handleVote(vb, vb.dataset.vote!, async () => { draw(); onChange(); }); return; }
-    if (t.closest("[data-join-dlg]")) { const { openSignIn } = await import("../account/dialog"); openSignIn({ mode: "join", title: "Join to vote and comment" }); return; }
-    if (t.closest("[data-signin-dlg]")) { const { openSignIn } = await import("../account/dialog"); openSignIn({ mode: "signin" }); return; }
-    if (t.closest("[data-finish-dlg]")) { const { openSignIn } = await import("../account/dialog"); openSignIn({}); return; }
-    if (t.closest("[data-resend-dlg]")) { const { sendVerification } = await import("../../lib/auth"); try { await sendVerification(); toast("Sent. Check your inbox."); } catch { toast("Couldn't send it. Wait a minute and try again.", { kind: "error" }); } return; }
+    if (await handleGateClick(t, "Join to vote and comment")) return;
     if (t.closest("[data-edit]")) { openEdit(idea!, async () => { await refresh(); }); return; }
     const hc = t.closest<HTMLElement>("[data-hide-comment]");
     if (hc) { await toggleHide(id, hc.dataset.hidden !== "true", hc.dataset.hideComment!, idea!.title, refresh); return; }
@@ -194,14 +182,9 @@ async function toggleHide(id: string, hidden: boolean, commentId: string | undef
     catch (err) { toast(messageFor(err, "Couldn't unhide it. Try again."), { kind: "error" }); }
     return;
   }
-  void confirmAction({ title: `Hide this ${what}?`, message: commentId ? "Members won't see it. Staff still do, with your reason." : `"${title}" will leave the board for members and visitors. Staff still see it.`, confirmLabel: `Hide ${what}`, busyLabel: "Hiding…", danger: false, feature: "feature-lab",
-    bodyHtml: `<div class="bt-field" style="margin-top:var(--bt-space-3)"><label class="bt-label" for="fl-why">Why? (required, staff see it)</label><input class="bt-input" id="fl-why" type="text" maxlength="200" placeholder="Off topic, spam, unkind…"></div>`,
-    onConfirm: async (mod: { modal: HTMLElement } | HTMLElement) => {
-      const root = (mod as any).modal || mod;
-      const reason = (root.querySelector("#fl-why") as HTMLInputElement | null)?.value.trim() || "";
-      if (!reason) throw new Error("Say why you are hiding it.");
-      try { await hide(id, true, reason, commentId); } catch (err) { throw new Error(messageFor(err, "Couldn't hide it. Try again.")); }
-    } }).then(async (ok: boolean) => { if (ok) { toast(`${what === "idea" ? "Idea" : "Comment"} hidden.`); await after(); } });
+  void confirmHide({ title: `Hide this ${what}?`, message: commentId ? "Members won't see it. Staff still do, with your reason." : `"${title}" will leave the board for members and visitors. Staff still see it.`, confirmLabel: `Hide ${what}`, feature: "feature-lab",
+    run: async (reason: string) => { try { await hide(id, true, reason, commentId); } catch (err) { throw new Error(messageFor(err, "Couldn't hide it. Try again.")); } },
+  }).then(async (ok: boolean) => { if (ok) { toast(`${what === "idea" ? "Idea" : "Comment"} hidden.`); await after(); } });
 }
 
 /** Admin Edit: title, description and area (adminEditItem kind labIdea). Sends only what changed, with the values it loaded. */

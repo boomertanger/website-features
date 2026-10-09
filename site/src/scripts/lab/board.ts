@@ -6,6 +6,7 @@ import { initRowSpotlight } from "../../../../shared/ui/effects.js";
 import { viewSwitchHtml, initViewSwitch } from "../../../../shared/ui/view-switch.js";
 import { burst } from "../../../../shared/ui/burst.js";
 import { toast } from "../../../../shared/ui/toast.js";
+import { seenOnce, viewPref } from "../boards/seen";
 import { onAuth, getAuthState, sendVerification } from "../../lib/auth";
 import { STATUS, STATUS_KEYS, AREA, voteLocked, type Idea, type Status } from "./data";
 import { S, loadBoard, counts } from "./store";
@@ -17,8 +18,8 @@ import { handleVote } from "./vote";
 import { openIdea } from "./idea";
 
 const root = document.querySelector<HTMLElement>("[data-fl]");
-const VIEW_KEY = "bt.lab.view", SEEN_KEY = "bt.lab.shippedSeen";
-const f = { status: "all" as "all" | Status, area: "all", sort: "newest", view: (() => { try { return localStorage.getItem(VIEW_KEY) === "road" ? "road" : "list"; } catch { return "list"; } })() };
+const viewMemory = viewPref("bt.lab.view", "list", "road"), shippedSeen = seenOnce("bt.lab.shippedSeen");
+const f = { status: "all" as "all" | Status, area: "all", sort: "newest", view: viewMemory.get() };
 let shipShown = "";
 
 const get = (sel: string) => root!.querySelector<HTMLElement>(sel)!;
@@ -59,13 +60,11 @@ function shippedMoment() {
   const box = get("[data-fl-ship]");
   if (!S.loaded || needOf() !== "ok") { box.hidden = true; return; }
   const me = meOf();
-  let seen: string[] = [];
-  try { seen = JSON.parse(localStorage.getItem(SEEN_KEY) || "[]"); } catch { /* none yet */ }
-  const mine = S.ideas.find((i) => i.status === "shipped" && i.by.uid === me.uid && (!seen.includes(i.id) || i.id === shipShown));
+  const mine = S.ideas.find((i) => i.status === "shipped" && i.by.uid === me.uid && (!shippedSeen.has(i.id) || i.id === shipShown));
   if (!mine) { box.hidden = true; return; }
   if (shipShown !== mine.id) {
     shipShown = mine.id;
-    if (!isPreview()) { try { localStorage.setItem(SEEN_KEY, JSON.stringify([...seen, mine.id].slice(-100))); } catch { /* it just shows again next time */ } }
+    if (!isPreview()) shippedSeen.add(mine.id);
   }
   box.hidden = false;
   box.innerHTML = `<div class="fl-ship" data-burst><span class="fl-ship-art">${architect(74, "The Architect, Epic")}${stamp("Shipped", "", "", "lime", "sm")}</span><div><h3>Your idea shipped</h3><p>"${esc(mine.title)}" is live. You earned <b>The Architect</b> (Epic, +100 XP).</p><div class="fl-ship-acts"><a class="bt-btn bt-btn--primary bt-btn--sm" href="/trophies">See it in your trophy case</a><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-ship-close>Close</button></div></div></div>`;
@@ -78,7 +77,7 @@ function controlsHtml() {
   const areas = [["all", "All areas"], ...Object.entries(AREA)].map(([k, l]) => `<button type="button" class="bt-chip bt-chip--small${f.area === k ? " is-active" : ""}" data-area="${k}" aria-pressed="${f.area === k}">${l}</button>`).join("");
   const sorts = [["newest", "Newest"], ["votes", "Most voted"], ["updated", "Recently updated"]].map(([k, l]) => `<button type="button" class="bt-chip bt-chip--small${f.sort === k ? " is-active" : ""}" data-sort="${k}" aria-pressed="${f.sort === k}">${l}</button>`).join("");
   get("[data-fl-controls]").innerHTML = `<div class="bt-filters">${chips}</div><div class="fl-tools"><div class="bt-sortbar"><span class="bt-sortbar-label">Area</span>${areas}<span class="bt-sortbar-label fl-sort-gap">Sort</span>${sorts}</div>${viewSwitchHtml({ key: "lab", label: "View", value: f.view, options: [{ value: "list", icon: "☰", label: "List" }, { value: "road", icon: "▦", label: "Roadmap" }] })}</div>`;
-  initViewSwitch(get("[data-fl-controls]"), { onChange: (v: string) => { f.view = v === "road" ? "road" : "list"; try { localStorage.setItem(VIEW_KEY, f.view); } catch { /* not remembered */ } drawView(); } });
+  initViewSwitch(get("[data-fl-controls]"), { onChange: (v: string) => { f.view = v === "road" ? "road" : "list"; viewMemory.set(f.view); drawView(); } });
 }
 
 const emptyFilter = () => `<div class="bt-empty fl-empty">${mascot()}<p class="bt-empty-title">No ${f.status === "all" ? "" : `${STATUS[f.status].label.toLowerCase()} `}ideas${f.area !== "all" ? ` for ${areaLabel(f.area)}` : ""} yet</p><p>Try another filter, or post the first one.</p></div>`;
@@ -133,7 +132,7 @@ if (root) {
     if (flt) {
       const k = flt.dataset.filter as "all" | Status;
       f.status = flt.classList.contains("fl-jar") && f.status === k ? "all" : k;
-      if (f.view === "road") { f.view = "list"; try { localStorage.setItem(VIEW_KEY, "list"); } catch { /* fine */ } }
+      if (f.view === "road") { f.view = "list"; viewMemory.set("list"); }
       draw();
       return;
     }
@@ -142,7 +141,7 @@ if (root) {
     const so = t.closest<HTMLElement>("[data-sort]");
     if (so) { f.sort = so.dataset.sort!; draw(); return; }
     const lv = t.closest<HTMLElement>("[data-lv]");
-    if (lv) { e.preventDefault(); f.view = "list"; f.status = (lv.dataset.only as Status) || f.status; try { localStorage.setItem(VIEW_KEY, "list"); } catch { /* fine */ } draw(); get("[data-fl-view]").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); return; }
+    if (lv) { e.preventDefault(); f.view = "list"; f.status = (lv.dataset.only as Status) || f.status; viewMemory.set("list"); draw(); get("[data-fl-view]").scrollIntoView({ behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth", block: "start" }); return; }
     if (t.closest("[data-fl-resend]")) { void sendVerification().then(() => toast("Sent. Check your inbox."), () => toast("Couldn't send it. Wait a minute and try again.", { kind: "error" })); return; }
     if (t.closest("[data-ship-close]")) { get("[data-fl-ship]").hidden = true; return; }
     if (t.closest("[data-fl-retry]")) { get("[data-fl-view]").setAttribute("aria-busy", "true"); void start(); return; }

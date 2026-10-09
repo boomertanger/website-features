@@ -16,19 +16,14 @@
 //
 // build(deps) is what scripts/check-lab-wiring.js runs against the in-memory Firestore. deps: adminLogEntry, now(), factory { recordFactoryEvent },
 // grant { grantBadge }, crewHooks { noteLabReview }, crewStore (for the grade check on delete).
-const crypto = require("crypto");
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall } = require("firebase-functions/v2/https");
 const admin = require("firebase-admin");
 const L = require("./logic");
-const { SITE_ID, fail, callerInfo, requireVerifiedMember, requireStaff, requireAdmin } = require("../vault/common");
+const { SITE_ID, fail, requireVerifiedMember, requireStaff, requireAdmin } = require("../vault/common");
 const { dayKey } = require("../arcade/logic");
+const { makeBoards, raise, idStr } = require("../boards");   // the generic half (caller, rate limit, token, hide, replies, logs, delete tree)
 
-const OUTBOX_TTL_MS = 30 * L.DAY_MS;
 const TOKEN_TTL_MS = L.DAY_MS;
-const sha = (s) => crypto.createHash("sha256").update(s).digest("hex");
-
-/** A refusal from lib/lab/logic.js as the HttpsError the site reads (details.reason, details.field). */
-const raise = (r) => new HttpsError(r.code, r.message, { reason: r.reason, ...(r.field ? { field: r.field } : {}) });
 
 function build(deps = {}) {
   const db = deps.db || admin.firestore();
@@ -49,51 +44,12 @@ function build(deps = {}) {
   const hooks = () => (hooksMod ||= require("../crew/hooks"));
   const crewStore = () => (crewStoreMod ||= require("../crew/store").makeStore({ db, adminLogEntry: deps.adminLogEntry }));
 
-  const idStr = (v) => (typeof v === "string" && v && v.length <= 100 && !v.includes("/") ? v : null);
-
-  /** The caller, with the display name the idea and comment snapshots keep. */
-  async function caller(request) {
-    const c = await callerInfo(request);
-    const prof = await db.doc(`sites/${SITE_ID}/profiles/${c.uid}`).get();
-    const displayName = prof.exists ? prof.get("displayName") || c.handle : null;
-    return { ...c, displayName: typeof displayName === "string" ? displayName.slice(0, 60) : c.handle };
-  }
-  const byOf = (c) => ({ uid: c.uid, handle: c.handle, name: c.displayName || c.handle });
-
-  // ---------- rate limits ----------
-  async function bump(kind, uid) {
-    const at = now();
-    const ref = db.doc(`sites/${SITE_ID}/rateLimits/lab_${kind}_${sha(`${uid}|${L.periodKey(kind, at, dayKey)}`).slice(0, 32)}`);
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(ref);
-      const count = snap.exists ? snap.get("count") || 0 : 0;
-      if (L.overLimit(kind, count)) throw fail("resource-exhausted", L.LIMITS[kind].message, "rateLimit");
-      tx.set(ref, { count: count + 1, expireAt: Timestamp.fromMillis(at + L.limitTtlMs(kind)) }, { merge: true });
-    });
-  }
-
-  // ---------- logs ----------
-  async function adminLog(c, { action, id, title, reason = "", changes, details, snapshot }) {
-    try {
-      const entry = await deps.adminLogEntry(db, { feature: "featureLab", action, itemPath: itemPath(id), itemTitle: title, actorUid: c.uid, actorName: c.name || c.displayName || "Admin", reason, changes, snapshot, details });
-      await db.collection("adminLog").add(entry);
-    } catch (err) { console.error("lab: adminLog write failed", String((err && err.message) || err).slice(0, 160)); }
-  }
-  async function activity(type, summary, actorName, idea, id, extra = {}) {
-    if (idea.hidden === true) return;
-    try {
-      await db.collection("activityLog").add({ feature: "feature-lab", type, summary, link: `/feature-lab?idea=${id}`, actorName: actorName || null, ideaId: id, ...extra, createdAt: FieldValue.serverTimestamp() });
-    } catch (err) { console.error("lab: activityLog write failed", String((err && err.message) || err).slice(0, 160)); }
-  }
-  async function outbox(doc) {
-    try { await db.collection(`sites/${SITE_ID}/notifyOutbox`).add({ ...doc, streamId: null, week: null, status: "pending", createdAt: FieldValue.serverTimestamp(), expireAt: Timestamp.fromMillis(now() + OUTBOX_TTL_MS) }); }
-    catch (err) { console.error("lab: notifyOutbox write failed", String((err && err.message) || err).slice(0, 160)); }
-  }
-  /** A Night Shift event (never throws; recordFactoryEvent already logs its own failures). */
-  async function nightShift(uid, action, ref) {
-    try { const r = await factory().recordFactoryEvent(uid, "lab", { action }, ref, { keep: true }); return !!(r && r.counted); }
-    catch (err) { console.error("lab: Night Shift event failed", String((err && err.message) || err).slice(0, 160)); return false; }
-  }
+  const B = makeBoards({
+    db, now, adminLogEntry: deps.adminLogEntry, label: "lab", logKey: "featureLab", itemPath, factory: deps.factory,
+    activityFeature: "feature-lab", linkOf: (id) => `/feature-lab?idea=${id}`, idField: "ideaId", factoryType: "lab",
+    rate: { prefix: "lab", limits: L.LIMITS, periodKey: (kind, at) => L.periodKey(kind, at, dayKey), ttlMs: L.limitTtlMs, overLimit: L.overLimit },
+  });
+  const { caller, byOf, bump, adminLog, activity, outbox, nightShift } = B;
 
   // ---------- labSubmit ----------
   async function submit(request) {
@@ -102,11 +58,8 @@ function build(deps = {}) {
     if (!v.ok) throw raise(v);
     const { title, description, area, token } = v.value;
     // a double click or a retry with the same token is the same idea, and costs no part of the daily limit
-    const seen = await tokenRef(token).get();
-    if (seen.exists) {
-      if (seen.get("uid") === c.uid) return { ok: true, id: seen.get("ideaId"), already: true, counted: false };
-      throw fail("failed-precondition", "Reload the page and try again.", "token");
-    }
+    const already = await B.seenToken(tokenRef(token), c.uid, "ideaId");
+    if (already) return { ok: true, id: already, already: true, counted: false };
     await bump("submit", c.uid);
     const at = now();
     const ref = db.collection(`${base}/ideas`).doc();
@@ -117,9 +70,7 @@ function build(deps = {}) {
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     };
     await db.runTransaction(async (tx) => {
-      const t = await tx.get(tokenRef(token));
-      if (t.exists) throw fail("failed-precondition", "Reload the page and try again.", "token");
-      tx.set(tokenRef(token), { uid: c.uid, ideaId: ref.id, expireAt: Timestamp.fromMillis(at + TOKEN_TTL_MS) });
+      await B.claimToken(tx, tokenRef(token), { uid: c.uid, ideaId: ref.id }, at, TOKEN_TTL_MS);
       tx.set(ref, idea);
       tx.set(voteRef(ref.id, c.uid), { createdAt: FieldValue.serverTimestamp() });
       tx.set(myVotesRef(c.uid), { ids: FieldValue.arrayUnion(ref.id) }, { merge: true });
@@ -167,14 +118,8 @@ function build(deps = {}) {
     const v = L.validateComment(text);
     if (!v.ok) throw raise(v);
     await bump("comment", c.uid);
-    const ref = commentsOf(id).doc();
-    await db.runTransaction(async (tx) => {
-      const snap = await tx.get(ideaRef(id));
-      if (!snap.exists || snap.get("hidden") === true) throw fail("not-found", "This idea is no longer here.", "noIdea");
-      tx.set(ref, { text: v.value, by: byOf(c), staffTag: c.isAdmin ? "admin" : c.isMod ? "mod" : null, hidden: false, createdAt: FieldValue.serverTimestamp() });
-      tx.update(ideaRef(id), { commentCount: FieldValue.increment(1) });
-    });
-    return { ok: true, commentId: ref.id };
+    const commentId = await B.addReply({ itemRef: ideaRef(id), repliesRef: commentsOf(id), value: v.value, c, countField: "commentCount", missing: ["noIdea", "This idea is no longer here."] });
+    return { ok: true, commentId };
   }
 
   // ---------- labTriage ----------
@@ -231,22 +176,8 @@ function build(deps = {}) {
     const v = L.validateHide(request.data);
     if (!v.ok) throw raise(v);
     const { hidden, reason } = v.value;
-    const out = await db.runTransaction(async (tx) => {
-      const iSnap = await tx.get(ideaRef(id));
-      if (!iSnap.exists) throw fail("not-found", "This idea is no longer here.", "noIdea");
-      const target = commentId ? commentsOf(id).doc(commentId) : ideaRef(id);
-      const tSnap = commentId ? await tx.get(target) : iSnap;
-      if (!tSnap.exists) throw fail("not-found", "That comment is no longer here.", "noComment");
-      if ((tSnap.get("hidden") === true) === hidden) return { changed: false, idea: iSnap.data() };
-      const update = hidden
-        ? { hidden: true, hiddenBy: { uid: c.uid, handle: c.handle }, hiddenReason: reason }
-        : { hidden: false, hiddenBy: FieldValue.delete(), hiddenReason: FieldValue.delete() };
-      if (!commentId) update.updatedAt = FieldValue.serverTimestamp();
-      tx.update(target, update);
-      // the public comment count is the number of comments people can see
-      if (commentId) tx.update(ideaRef(id), { commentCount: FieldValue.increment(hidden ? -1 : 1) });
-      return { changed: true, idea: iSnap.data() };
-    });
+    const out0 = await B.setHidden({ itemRef: ideaRef(id), repliesRef: commentsOf(id), replyId: commentId || null, hidden, reason, c, countField: "commentCount", missing: { item: ["noIdea", "This idea is no longer here."], reply: ["noComment", "That comment is no longer here."] } });
+    const out = { changed: out0.changed, idea: out0.item };
     if (out.changed) await adminLog(c, { action: hidden ? "hide" : "unhide", id, title: out.idea.title, reason, details: commentId ? { commentId } : undefined });
     return { ok: true, changed: out.changed, hidden };
   }
@@ -265,16 +196,11 @@ function build(deps = {}) {
     if (!snap.exists) throw fail("not-found", "This idea is no longer here.", "noIdea");
     const idea = snap.data();
     // 1. the events first, so a retry after a partial failure still finds the idea
-    const ev = (await db.collection("activityLog").where("ideaId", "==", id).get()).docs.filter((d) => d.get("feature") === "feature-lab");
-    for (let i = 0; i < ev.length; i += 400) { const b = db.batch(); ev.slice(i, i + 400).forEach((d) => b.delete(d.ref)); await b.commit(); }
-    // 2. the idea with its comments and votes, then the marks it left behind
-    await db.recursiveDelete(ideaRef(id));
-    const marks = (await db.collection(`${base}/myVotes`).where("ids", "array-contains", id).get()).docs;
-    for (let i = 0; i < marks.length; i += 400) { const b = db.batch(); marks.slice(i, i + 400).forEach((d) => b.update(d.ref, { ids: FieldValue.arrayRemove(id) })); await b.commit(); }
-    const toks = (await db.collection(`${base}/submitTokens`).where("ideaId", "==", id).get()).docs;
-    for (let i = 0; i < toks.length; i += 400) { const b = db.batch(); toks.slice(i, i + 400).forEach((d) => b.delete(d.ref)); await b.commit(); }
-    await adminLog({ uid, name: w.name }, { action: "delete", id, title: idea.title, snapshot: L.snapshotOf(idea), details: { activityDeleted: ev.length, votesCleared: marks.length } });
-    return { ok: true, activityDeleted: ev.length };
+    const activityDeleted = await B.deleteEvents(id);
+    // 2. the idea with its comments and votes, then the marks it left behind and its post tokens
+    const votesCleared = await B.deleteTree({ id, itemRef: ideaRef(id), marksCollection: `${base}/myVotes`, tokensCollection: `${base}/submitTokens`, tokenField: "ideaId" });
+    await adminLog({ uid, name: w.name }, { action: "delete", id, title: idea.title, snapshot: L.snapshotOf(idea), details: { activityDeleted, votesCleared } });
+    return { ok: true, activityDeleted };
   }
 
   const functions = {
