@@ -157,6 +157,7 @@ Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 ### 10. Porting existing features
 Goal: move Bug Zapper, Feature Lab and Cloud Stash from Squarespace Code Blocks to the new site, and build the Night Watch admin hub.
 Must be done before launch.
+Status: Feature Lab is built on staging (spec `docs/specs/feature-lab.md`: /feature-lab, /feature-lab/how-it-works, the /admin card, the lab callables, rules and indexes). Bug Zapper, Cloud Stash and Night Watch are still to do.
 Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 
 ### 11. Plans and billing
@@ -178,7 +179,7 @@ Activity types (and automatic badges) that wait for another workstream. Tick one
 - [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
 - [ ] Schedule votes: Scream Planner (4).
 - [ ] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10).
-- [ ] Feature Lab activities and The Architect badge (an idea that ships): porting (10).
+- [x] Feature Lab activities and The Architect badge (an idea that ships): porting (10). Done: the lab Night Shift type (post, vote, shipped) is on, and the first move to Shipped grants The Architect.
 - [ ] Moderation activities and crew awards by mods: Mod Machina (9).
 - [ ] Contests: Contests (12).
 - [ ] Polls, comments, shout-outs, clips and Discord: not planned yet.

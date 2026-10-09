@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Feature Lab. design-system 8q (the picks, the Bright idea icon, .bt-comment--hidden, the rule that new-site admins read adminLog through hasSiteRole) and ROADMAP workstream 10 status (Feature Lab built on staging; Bug Zapper, Cloud Stash, Night Watch to do) with the Night Shift hook ticked.
 site: Feature Lab on /admin (a card with how many new ideas wait for a look, the oldest one and Open the board) and the featurelab module on in site.json, so Feature Lab shows in the header Community panel and the phone More sheet.
 site: /feature-lab/how-it-works (docs/specs/feature-lab.md §8). TocLayout story page: hero with the bench scene (jar counts from one capped read), four stage cards with hover scenes, the idea journey, Try it (a sample idea to vote on and move to Shipped, nothing saved), the roles flow, flip medals (The Architect, Big idea, Vote on ideas), the House rules placard, Ask BOOMBOT and the closing call to action.
 site: /feature-lab, the Feature Lab board (docs/specs/feature-lab.md §7). FEATURELAB bar with the Bright idea icon, hero with the bench scene (jars filter), List and Roadmap views (remembered in bt.lab.view), the idea dialog with deep link ?idea=<id> (vote, comments, history, admin panel, Edit, Hide, Delete), Post an idea with the IDEA IN stamp, the Your idea shipped moment, and every state; preview data for ?as=.
