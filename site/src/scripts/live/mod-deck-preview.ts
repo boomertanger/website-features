@@ -1,5 +1,5 @@
 // Sample data for the Mod Deck (non-production only, signed out): /live/deck?state=off|open|duty|away|prompt|acting|ended|after and ?as=deckhand|lead|captain|owner.
-// Also ?look=crt (the house look), ?paid=1 (the ended view after the Captain confirmed), ?cue=0 (no Chat Games cue). Same shapes as the real reads (mod-deck-data.ts); times are relative to
+// Also ?look=crt (the house look), ?paid=1 (the ended view after the Captain confirmed), ?confirm=1 (the Confirm tonight's crew panel, no ?state needed), ?cue=0 (no Chat Games cue). Same shapes as the real reads (mod-deck-data.ts); times are relative to
 // now. Practice only: Clock in, Step away, I'm back, Take the lead, notes and cues all run on this local copy and say so in the toast. Nothing here reaches Firestore or a callable.
 import type { Swap } from "../planner/plan-data";
 import { isProduction } from "../../lib/env.js";
@@ -17,7 +17,8 @@ const q = () => new URLSearchParams(location.search);
 export function previewRequest(): { kind: Kind; as: As } | null {
   if (isProduction) return null;
   const p = q(), s = p.get("state"), a = p.get("as");
-  const kind = KINDS.includes(s as Kind) ? (s as Kind) : null, as = AS_LIST.includes(a as As) ? (a as As) : null;
+  // ?confirm=1 is the Captain's "Confirm tonight's crew" panel on its own: the ended view, with this person as the Captain who stopped the night
+  const kind = p.get("confirm") === "1" ? "ended" : KINDS.includes(s as Kind) ? (s as Kind) : null, as = AS_LIST.includes(a as As) ? (a as As) : null;
   if (!kind && !as) return null;
   return { kind: kind || "duty", as: as || "captain" };
 }
