@@ -73,7 +73,7 @@ is texted until a phone is verified and the member turns it on.
 
 ### Community (as features ship)
 `badge-earned`, `contest-open`, `contest-won` (always email too), `report-update` (your Bug
-Zapper / Feature Lab item changed status, after the ports), `night-shift` (season starts, ends,
+Zapper / Feature Lab item changed status, after the ports; Bug Zapper also sends it on every staff reply in your thread, and to everyone who added a "bit me too" when the report is Fixed), `night-shift` (season starts, ends,
 your final rank).
 
 ### Crew (crew only)
@@ -91,7 +91,7 @@ your final rank).
 
 ### Admin (owner and admins)
 `admin-health` (send failures, SMS budget at 80% and 100%, provider down, Twilio verification
-status, collector failures), `admin-todo` (week not published, crew to-dos, new mod application).
+status, collector failures), `admin-todo` (week not published, crew to-dos, new mod application), `bug-new` (a new Bug Zapper report: inbox; a **Critical** report also goes by push and email; added Oct 9, 2026, `docs/specs/bug-zapper.md` §2.6, queued by `bugSubmit` through `notifyOutbox` with `audience: "admins"`).
 Inbox and email; texts only for "provider down" and "budget reached", max one an hour.
 
 ### Account (can't be turned off; inbox + email, never text or push)
