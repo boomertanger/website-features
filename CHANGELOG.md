@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Control Room before the stream: today's streams to pick with readiness chips, Running late and Cancel, Start an unscheduled stream with its YouTube event status, and the Start dialog with the WE'RE LIVE power-up.
 Control Room page shell at /live/control: the CONTROLROOM bar, the stream's own title, the house look switch (owner), the Cockpit grid, platforms and readouts, beats, game and crew, a /live/control/checklist owner-only stub, and a Control Room card on /admin.
 - site: the CONTROL ROOM wordmark has no space between CONTROL and ROOM, like GAMEVAULT, NIGHTSHIFT, MODMACHINA and the other feature wordmarks (crWordmarkHtml in shared/ui/control-room.js).
 UI Kit page: Control Room section showing every new piece in every state with the Hull map / CRT Look switch and the radar wordmark; design-system.md catalog, JS modules and 8p updated
