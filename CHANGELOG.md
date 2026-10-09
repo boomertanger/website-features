@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: Feature Lab on /admin (a card with how many new ideas wait for a look, the oldest one and Open the board) and the featurelab module on in site.json, so Feature Lab shows in the header Community panel and the phone More sheet.
 site: /feature-lab/how-it-works (docs/specs/feature-lab.md §8). TocLayout story page: hero with the bench scene (jar counts from one capped read), four stage cards with hover scenes, the idea journey, Try it (a sample idea to vote on and move to Shipped, nothing saved), the roles flow, flip medals (The Architect, Big idea, Vote on ideas), the House rules placard, Ask BOOMBOT and the closing call to action.
 site: /feature-lab, the Feature Lab board (docs/specs/feature-lab.md §7). FEATURELAB bar with the Bright idea icon, hero with the bench scene (jars filter), List and Roadmap views (remembered in bt.lab.view), the idea dialog with deep link ?idea=<id> (vote, comments, history, admin panel, Edit, Hide, Delete), Post an idea with the IDEA IN stamp, the Your idea shipped moment, and every state; preview data for ?as=.
 kit: .bt-comment--hidden (a hidden comment as staff see it: dashed, faded, struck through) with its .bt-comment-hidden-note line (Hidden by @handle: reason. Only staff see this.), shown on the UI kit page next to a visible comment and in design-system.md section 5.

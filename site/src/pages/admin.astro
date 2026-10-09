@@ -7,6 +7,7 @@
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ComingSoon from "../components/ComingSoon.astro";
 import TrophyOrder from "../components/trophies/TrophyOrder.astro";
+import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
 ---
 <BaseLayout title="Admin tools" noindex>
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
@@ -39,6 +40,14 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
       <div class="bt-card-head"><h2 class="bt-card-title">Control Room</h2><span class="bt-badge bt-badge--admin">Owner and Overseers</span></div>
       <p class="bt-section-text">Start and stop the stream, run the beats and check-ins, switch games, and set the house look. The owner also keeps the private checklist here.</p>
     </a>
+  </div>
+  <div class="bt-zone" data-lab-card hidden>
+    <div class="bt-card fl-admin-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Feature Lab</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
+      <div class="fl-admin-n"><span class="n" data-lab-n>…</span><span class="bt-meta" data-lab-what>new ideas waiting for a look</span></div>
+      <p class="bt-meta fl-admin-oldest" data-lab-oldest></p>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/feature-lab">Open the board</a></div>
+    </div>
   </div>
   <div class="bt-zone" data-ff-link hidden>
     <a class="bt-card bt-card--door" href="/shift/builder">
@@ -126,6 +135,7 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
   import "../scripts/admin/award";
   import "../scripts/admin/planner-card";
   import "../scripts/admin/live-card";
+  import "../scripts/admin/lab-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";

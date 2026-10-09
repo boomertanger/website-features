@@ -154,8 +154,8 @@
 .bt-root:not(#_) .fl-ship-art { position: relative; width: 96px; height: 96px; display: grid; place-items: center; }
 .bt-root:not(#_) .fl-ship-art .bt-stamp { position: absolute; right: -58px; bottom: -26px; transform: scale(.62); transform-origin: center; }
 .bt-root:not(#_) .fl-admin-card { gap: 10px; }
-.bt-root:not(#_) .fl-admin-card .row { display: flex; align-items: baseline; gap: 10px; }
-.bt-root:not(#_) .fl-admin-card .n { font-size: var(--bt-text-3xl); font-weight: 900; color: var(--bt-text); line-height: 1; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .fl-admin-n { display: flex; align-items: baseline; gap: 10px; }
+.bt-root:not(#_) .fl-admin-n .n { font-size: var(--bt-text-3xl); font-weight: 900; color: var(--bt-text); line-height: 1; font-variant-numeric: tabular-nums; }
 
 /* How it works scenes (stage cards) and the working example */
 .bt-root:not(#_) .fl-sc-post .fl-note { width: 150px; padding: 10px 12px; border-radius: 10px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); transform: rotate(-4deg); transition: transform .4s cubic-bezier(.3, 1.6, .4, 1); font-size: 12px; text-align: left; box-shadow: 0 10px 22px var(--bt-lift-shadow); }
@@ -257,3 +257,4 @@
 .bt-root:not(#_) .fl-try-note { margin: 0; display: flex; align-items: center; gap: 8px; }
 .bt-root:not(#_) .fl-how-bench { min-height: 190px; }
 @container bt (max-width: 640px) { .bt-root:not(#_) .fl-flips { grid-template-columns: minmax(0, 1fr); } }
+.bt-root:not(#_) .fl-admin-oldest { margin: 0; }
