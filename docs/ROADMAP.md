@@ -206,7 +206,6 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Generate a new stream view key and a new deck key in production (never reuse staging's).
 - [ ] Seed `live/main` in production.
 - [ ] Production Twitch EventSub: set `TWITCH_EVENTSUB_SECRET` and create the stream.online and stream.offline subscriptions for the production callback (scripts/twitch-eventsub.js is staging only).
-- [ ] Confirm `twitchChannel` in site.json with the owner (it must equal `TWITCH_LOGIN`; `check-live` enforces that).
 - [ ] Re-seed the "Punch the clock" wording in production (`seed-factory-ideas.js`, `seed-factory-types.js`, `seed-badges.js` with `--wording "Punch the clock"`; so far only staging was done).
 - [ ] Walk through every item in docs/testing/control-room-test-plan.md on staging first, and note whether TikTok LIVE Studio accepts a browser source.
 
