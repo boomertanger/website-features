@@ -1,0 +1,12 @@
+---
+// /live/deck: the Mod Deck (docs/specs/mod-machina.md §17a "The /live/deck page"; mockup docs/design/mockups/mod-deck.html section 1; docs/design-system.md §8t). Where the crew works the stream:
+// your seat and duty bar, the rooms, the chats, the quick lines and the crew notes. A TOOL page in the Control Room's look system (data-look from live/main.look, Hull or CRT).
+// Crew (any grade, any status except Paused and Alumni) and the owner only (DeckLayout gates it; the callables and the rules check again). Everything is drawn by scripts/live/mod-deck.ts.
+// NOT the Stream Deck key card (scripts/live/deck.ts). Non-production, signed out: ?state=off|open|duty|away|prompt|acting|ended|after and ?as=deckhand|lead|captain|owner show sample data; ?look=crt.
+import DeckLayout from "../../layouts/DeckLayout.astro";
+import "../../styles/control-room-looks.css";
+import "../../styles/mod-deck.css";
+---
+<DeckLayout title="Mod Deck" description="Your seat, the chats and the tools.">
+  <div class="md bt-zone" data-md data-look="hull"></div>
+</DeckLayout>

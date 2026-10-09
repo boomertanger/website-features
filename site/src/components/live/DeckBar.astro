@@ -1,0 +1,31 @@
+---
+// The Mod Deck's feature bar (docs/specs/mod-machina.md §17a, mockup docs/design/mockups/mod-deck.html): the kit's .bt-topbar in a .bt-sticky-bar with the MOD DECK
+// .bt-wordmark--power (the Control Room's radar scope) and a seg nav: Live page, Crew HQ, How duty works and, for admins, the Control Room. Icon-only on phones.
+// Same classes as the Control Room's bar (CrBar.astro, styles/live-layout.css); wired by scripts/live/mod-deck.ts.
+import { CR_ICON } from "../../../../shared/ui/control-room.js";
+
+interface Props { gated?: boolean }
+const { gated = false } = Astro.props;
+const links = [
+  { id: "live", label: "Live page", href: "/live", icon: "live", admin: false },
+  { id: "hq", label: "Crew HQ", href: "/crew/hq", icon: "home", admin: false },
+  { id: "control", label: "Control Room", href: "/live/control", icon: "wrench", admin: true },
+  { id: "how", label: "How duty works", href: "/crew/how-it-works", icon: "help", admin: false },
+];
+---
+<div class="bt-sticky-bar lv-dock" data-lv-dock data-gated={gated ? "" : undefined}>
+  <div class="bt-topbar lv-bar">
+    <div class="lv-brand">
+      <a class="bt-wordmark bt-wordmark--power" href="/live/deck" aria-label="Mod Deck">
+        <span class="bt-wordmark-icon" set:html={CR_ICON} />
+        <span class="bt-wordmark-text" aria-hidden="true">MOD<span class="bt-wordmark-accent">DECK</span></span>
+      </a>
+    </div>
+    <nav class="bt-seg-nav lv-barlinks" aria-label="Mod Deck">
+      {links.map((l) => <a class:list={[l.admin && "bt-when-admin"]} href={l.href}>{l.label}</a>)}
+    </nav>
+    <nav class="bt-seg-nav bt-seg-nav--icons lv-barico" aria-label="Mod Deck">
+      {links.map((l) => <a class:list={[l.admin && "bt-when-admin"]} href={l.href} aria-label={l.label} title={l.label}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
+    </nav>
+  </div>
+</div>

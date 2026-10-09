@@ -1,0 +1,43 @@
+---
+// The Mod Deck's layout (/live/deck; docs/specs/mod-machina.md §17a "Who sees it"): the site shell, the sticky MOD DECK bar in BaseLayout's "bar" slot, then the page.
+// Like the Control Room's staff pages (LiveLayout) it is gated, but for the crew: crew (any grade, any status except Paused and Alumni) and the owner see the page; visitors get the
+// Sign in gate, mid-signup Finish signup, everyone else the mascot gate "This is where the crew works the stream" with a link to /crew/join.
+// Display-only: scripts/live/mod-deck.ts sets .lv[data-access] = loading | gate | join | signup | page; the callables and the rules decide.
+import BaseLayout from "./BaseLayout.astro";
+import DeckBar from "../components/live/DeckBar.astro";
+import Mascot from "../components/Mascot.astro";
+import "../styles/live-layout.css";
+
+interface Props { title: string; description?: string }
+const { title, description } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex>
+  <DeckBar slot="bar" gated />
+  <div class="lv" data-deck data-access="loading">
+    <div class="bt-zone lv-skel" aria-hidden="true">
+      <span class="bt-skeleton lv-skel-title"></span>
+      <span class="bt-skeleton lv-skel-line"></span>
+      <span class="bt-skeleton lv-skel-card"></span>
+    </div>
+    <section class="bt-zone lv-gate" aria-labelledby="lv-gate-title">
+      <span class="lv-gate-art lv-gate-mascot" aria-hidden="true"><Mascot decorative /></span>
+      <h1 class="bt-title" id="lv-gate-title">This is where the crew works the stream</h1>
+      <p class="lv-gate-lead" data-deck-gate-lead>The Mod Deck is for the crew: the chats, your seat and the tools, all in one place. Want to help run the chats? Apply to join.</p>
+      <div class="lv-gate-acts" data-lv-gate-visitor hidden>
+        <a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a>
+      </div>
+      <div class="lv-gate-acts" data-lv-gate-signup hidden>
+        <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+      </div>
+      <div class="lv-gate-acts">
+        <a class="bt-btn bt-btn--secondary" href="/crew/join">Apply to join the crew</a>
+        <a class="bt-btn bt-btn--ghost" href="/live">Go to the live page</a>
+      </div>
+    </section>
+    <div class="lv-page" data-lv-page><slot /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/live/mod-deck";
+</script>

@@ -1,7 +1,6 @@
 ---
 // Control Room's feature bar (the Mod Machina / Scream Planner pattern): the kit's .bt-topbar in a .bt-sticky-bar with the CONTROLROOM
-// .bt-wordmark--power (the radar scope, crWordmarkHtml) and a seg nav: Live page, Controls, Mod Deck (not built yet: shown as "Soon", not a
-// link) and, for the owner's uid only, Checklist templates (added by scripts/live/layout.ts: there is never an empty slot for anyone else).
+// .bt-wordmark--power (the radar scope, crWordmarkHtml) and a seg nav: Live page, Controls, Mod Deck (/live/deck, the crew's page) and, for the owner's uid only, Checklist templates (added by scripts/live/layout.ts: there is never an empty slot for anyone else).
 // Icon-only on phones.
 import { crWordmarkHtml } from "../../../../shared/ui/control-room.js";
 
@@ -10,6 +9,7 @@ const { section = null, gated = false } = Astro.props;
 const links = [
   { id: "live", label: "Live page", href: "/live", icon: "live" },
   { id: "control", label: "Controls", href: "/live/control", icon: "wrench" },
+  { id: "deck", label: "Mod Deck", href: "/live/deck", icon: "club" },
 ];
 ---
 <div class="bt-sticky-bar lv-dock" data-lv-dock data-gated={gated ? "" : undefined}>
@@ -17,12 +17,10 @@ const links = [
     <div class="lv-brand" set:html={crWordmarkHtml({ href: "/live/control" })} />
     <nav class="bt-seg-nav lv-barlinks" aria-label="Control Room">
       {links.map((l) => <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
-      <a class="lv-soon" href="/live/deck" aria-disabled="true" tabindex="-1">Mod Deck <small>Soon</small></a>
       <span class="lv-owner-slot" data-lv-owner-slot hidden></span>
     </nav>
     <nav class="bt-seg-nav bt-seg-nav--icons lv-barico" aria-label="Control Room">
       {links.map((l) => <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
-      <a class="lv-soon" href="/live/deck" aria-disabled="true" tabindex="-1" aria-label="Mod Deck (soon)" title="Mod Deck (soon)"><svg aria-hidden="true"><use href="#i-club" /></svg></a>
       <span class="lv-owner-slot" data-lv-owner-slot data-icon="1" hidden></span>
     </nav>
   </div>

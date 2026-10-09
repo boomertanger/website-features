@@ -40,7 +40,7 @@ const liveOn = hasModule("live");
     <>
       <p class="bt-menu-sheet-h">{g.label}</p>
       {g.items.map((i) => (
-        <a class="bt-menu-sheet-link" href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
+        <a class:list={["bt-menu-sheet-link", i.staff && "bt-when-staff"]} href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
           <svg aria-hidden="true"><use href={`#i-${i.icon}`} /></svg>
           <span>{i.label}<small>{i.blurb}</small></span>
         </a>

@@ -1,0 +1,187 @@
+/* site/src/styles/mod-deck.css — the Mod Deck's own layout (/live/deck; docs/specs/mod-machina.md §17a; mockup docs/design/mockups/mod-deck.html section 1, "dk-*" there, "md-*" here).
+   Only what is unique to this page: the hero with its scene, the clock in card, the chat wall and its rail, the phone dock and tabs, the prompt layer, the ended view. Every component is the kit's
+   (shared/bt-ui.css: .bt-duty-bar, .bt-room-tile, .bt-chat-feed, .bt-prompt, .bt-crew-notes, .bt-cue-card, .bt-cr-panel, .bt-stamp) and the two looks come from control-room-looks.css (data-look on
+   .md). Tokens only: no raw colours. Container queries (bt: 1024 / 640 / 420), never @media for layout; every animation has a reduced-motion end state. */
+
+.bt-root:not(#_) .md { --md-chat-h: clamp(420px, 66vh, 780px); position: relative; display: block; width: 100%; padding-bottom: var(--bt-space-8); }
+.bt-root:not(#_) .md-body { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .md-body > [data-slot]:empty { display: none; }
+.bt-root:not(#_) .md-preview { margin: 0; }
+.bt-root:not(#_) .md-skel-hero { display: block; width: 100%; height: 120px; border-radius: var(--bt-radius-xl); }
+.bt-root:not(#_) .md-skel-row { display: block; width: 100%; height: 64px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .md-skel-wall { display: block; width: 100%; height: 360px; border-radius: var(--bt-radius-lg); }
+
+/* ---- Hero header with a small scene: the radar scope, the stream, the clock, the beats and your duty bar ---- */
+.bt-root:not(#_) .md-hero { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 14px 20px; padding: 16px 18px; border-radius: var(--bt-radius-xl); border: 1px solid var(--bt-border-2); overflow: hidden;
+  background: radial-gradient(60% 120% at 100% 0%, rgba(var(--bt-gold-rgb), 0.08), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .md-radar { display: inline-flex; width: 56px; height: 56px; color: var(--bt-title); }
+.bt-root:not(#_) .md-radar svg { width: 100%; height: 100%; }
+.bt-root:not(#_) .md-hero-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .md-hero-l1 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.bt-root:not(#_) .md-kicker { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; color: var(--bt-text-muted); }
+.bt-root:not(#_) .md-kicker b { color: var(--bt-title); font-weight: 800; }
+.bt-root:not(#_) .md-title { margin: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .md-hero-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 14px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .md-hero-meta b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .md-clock { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--bt-text); padding: 2px 8px; border-radius: 6px; background: var(--bt-glass); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .md-beatrail { display: inline-flex; align-items: center; }
+.bt-root:not(#_) .md-beatrail i { width: 10px; height: 10px; border-radius: 50%; border: 1.5px solid var(--bt-border-2); background: var(--bt-bg); }
+.bt-root:not(#_) .md-beatrail i + i { margin-left: 14px; position: relative; }
+.bt-root:not(#_) .md-beatrail i + i::before { content: ""; position: absolute; right: 100%; top: 3px; width: 14px; height: 1.5px; background: var(--bt-border-2); }
+.bt-root:not(#_) .md-beatrail i.is-done { border-color: var(--bt-lime); background: var(--bt-lime); }
+.bt-root:not(#_) .md-beatrail i.is-now { border-color: var(--bt-cr-live); background: var(--bt-cr-live); box-shadow: 0 0 10px var(--bt-cr-live); }
+.bt-root:not(#_) .md-beatrail i.is-skip { border-style: dashed; }
+.bt-root:not(#_) .md-beatrail small { margin-left: 10px; font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-muted); }
+.bt-root:not(#_) .md-hero-right { position: relative; z-index: 1; display: flex; justify-content: flex-end; }
+.bt-root:not(#_) .md-hero-right [data-slot]:empty { display: none; }
+.bt-root:not(#_) .md-scene { position: absolute; right: -18px; bottom: -26px; width: 128px; opacity: 0.16; pointer-events: none; }
+.bt-root:not(#_) .md-scene .bt-mascot { width: 128px; transform: rotate(-10deg); transition: transform 0.4s var(--bt-ease-glide), opacity 0.4s; }
+.bt-root:not(#_) .md-hero:hover .md-scene { opacity: 0.26; }
+.bt-root:not(#_) .md-hero:hover .md-scene .bt-mascot { transform: rotate(-4deg) translateY(-4px); }
+.bt-root:not(#_) .md-host { display: flex; flex-direction: column; gap: 2px; max-width: 30ch; padding: 10px 14px; border-radius: var(--bt-radius-lg); border: 1px dashed var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-xs); line-height: 1.4; }
+.bt-root:not(#_) .md-host b { font-size: var(--bt-text-md); color: var(--bt-text); }
+
+/* ---- Clock in: your seat, or the open rooms for a drop-in ---- */
+.bt-root:not(#_) .md-clockin { position: relative; z-index: 1; display: flex; align-items: center; gap: 14px; padding: 10px 10px 10px 16px; border-radius: var(--bt-radius-xl); border: 1px solid var(--bt-primary);
+  background: radial-gradient(90% 140% at 0% 50%, var(--bt-primary-bg), transparent 70%), var(--bt-bg); box-shadow: 0 0 26px var(--bt-primary-glow); transition: transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .md-clockin:hover { transform: translateY(-1px); box-shadow: 0 0 34px var(--bt-primary-glow); }
+.bt-root:not(#_) .md-clockin-txt { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.bt-root:not(#_) .md-clockin small { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .md-clockin b { display: block; font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .md-clockin > .bt-btn { padding: 12px 22px; font-size: var(--bt-text-lg); font-weight: 800; border-radius: var(--bt-radius-full); flex: none; }
+.bt-root:not(#_) .md-drop { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+
+/* ---- Rooms strip ---- */
+.bt-root:not(#_) .md-rooms .bt-room-tile { height: 100%; }
+.bt-root:not(#_) .md-rooms .bt-room-tiles { gap: 8px; }
+
+/* ---- Main area: the chat wall and its rail ---- */
+.bt-root:not(#_) .md-main { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 12px; align-items: start; }
+.bt-root:not(#_) .md-main > * { min-width: 0; }
+.bt-root:not(#_) .md-wallbox { position: relative; }
+.bt-root:not(#_) .md-wall-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 8px; }
+.bt-root:not(#_) .md-wall-h .bt-label { margin: 0; }
+.bt-root:not(#_) .md-chats { display: grid; grid-template-columns: repeat(var(--md-n, 3), minmax(0, 1fr)); gap: 8px; }
+.bt-root:not(#_) .md-chats.is-focus { grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); }
+.bt-root:not(#_) .md-chats--1 { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .md-feed { min-width: 0; }
+.bt-root:not(#_) .md-feed .bt-chat-feed { --bt-feed-h: var(--md-chat-h); height: 100%; }
+.bt-root:not(#_) .md-feed--out { margin-top: 8px; }
+.bt-root:not(#_) .md-feed--out .bt-chat-feed { --bt-feed-h: 92px; }
+.bt-root:not(#_) .md-feed--out .bt-chat-feed-body { flex-direction: row; flex-wrap: wrap; gap: 10px 14px; padding: 12px; }
+.bt-root:not(#_) .md-feed--out .bt-chat-feed-body p { max-width: 56ch; }
+.bt-root:not(#_) .md-roomswitch, .bt-root:not(#_) .md-ptabs { display: none; }
+
+/* ---- Rail: quick lines, crew notes, the cue slot (renders nothing until a Chat Game has a cue) ---- */
+.bt-root:not(#_) .md-rail { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .md-rail [data-slot]:empty { display: none; }
+.bt-root:not(#_) .md-panel { padding: 14px; }
+.bt-root:not(#_) .md-panel .bt-cr-panel-head .bt-heading { font-size: var(--bt-text-base); }
+.bt-root:not(#_) .md-cues { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .md-line { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; padding: 7px 0; border-top: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .md-line:first-of-type { border-top: 0; padding-top: 0; }
+.bt-root:not(#_) .md-line span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root:not(#_) .md-line span b { color: var(--bt-text); font-weight: 700; }
+.bt-root:not(#_) .md-line .bt-btn.is-done { border-color: var(--bt-lime); color: var(--bt-lime); }
+.bt-root:not(#_) .md-hint { font-size: var(--bt-text-xs); color: var(--bt-text-faint); line-height: 1.45; }
+
+/* ---- The prompt over the chat wall (P1): drops in at the top of the wall on wide screens ---- */
+.bt-root:not(#_) .md-promptlayer { position: absolute; left: 0; right: 0; top: 52px; z-index: 40; display: flex; justify-content: center; padding: 0 12px; pointer-events: none; }
+.bt-root:not(#_) .md-promptlayer:empty { display: none; }
+.bt-root:not(#_) .md-promptlayer > * { pointer-events: auto; }
+
+/* ---- Off air and the ended view ---- */
+.bt-root:not(#_) .md-off { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-items: start; }
+.bt-root:not(#_) .md-off > * { min-width: 0; }
+.bt-root:not(#_) .md-swaps .bt-card { margin: 0; }
+.bt-root:not(#_) .md-empty { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 18px 12px; text-align: center; }
+.bt-root:not(#_) .md-empty-m { display: inline-flex; width: 84px; transition: transform 0.3s var(--bt-ease-glide); }
+.bt-root:not(#_) .md-empty:hover .md-empty-m { transform: translateY(-3px) rotate(-3deg); }
+.bt-root:not(#_) .md-empty-m .bt-mascot { width: 100%; }
+.bt-root:not(#_) .md-empty b { font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .md-empty p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; max-width: 34ch; }
+.bt-root:not(#_) .md-wrap { display: grid; grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr); gap: 12px; align-items: start; }
+.bt-root:not(#_) .md-wrap > * { min-width: 0; }
+.bt-root:not(#_) .md-ended-rail { margin-top: 12px; max-width: 520px; }
+.bt-root:not(#_) .md-night { position: relative; display: flex; flex-direction: column; gap: 12px; align-items: flex-start; }
+.bt-root:not(#_) .md-night-rows { width: 100%; display: grid; gap: 6px; }
+.bt-root:not(#_) .md-night-row { display: flex; justify-content: space-between; gap: 10px; padding: 8px 10px; border-radius: 10px; background: var(--bt-bg); border: 1px solid var(--bt-border); font-size: var(--bt-text-sm); color: var(--bt-text-muted); transition: border-color 0.2s, transform 0.2s; }
+.bt-root:not(#_) .md-night-row:hover { border-color: var(--bt-border-2); transform: translateX(2px); }
+.bt-root:not(#_) .md-night-row b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .md-gears { display: flex; align-items: baseline; gap: 8px; }
+.bt-root:not(#_) .md-gears b { font-size: 40px; font-weight: 900; color: var(--bt-title); line-height: 1; font-variant-numeric: tabular-nums; text-shadow: 0 0 18px rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .md-gears span { color: var(--bt-text-muted); font-weight: 700; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .md-gears.is-wait b { color: var(--bt-text-faint); text-shadow: none; }
+.bt-root:not(#_) .md-night-top { display: flex; align-items: center; justify-content: space-between; gap: 12px; width: 100%; }
+.bt-root:not(#_) .md-night-top .bt-stamp { transform: rotate(-8deg); }
+
+/* ---- The moment: the ON the clock stamp over the page ---- */
+.bt-root:not(#_) .md-stampwrap { position: fixed; inset: 0; z-index: 60; display: none; place-items: center; pointer-events: none; }
+.bt-root:not(#_) .md-stampwrap[data-on="1"] { display: grid; }
+.bt-root:not(#_) .md-stampwrap .bt-stamp { background: color-mix(in srgb, var(--bt-bg) 70%, transparent); animation: md-stamp-out 2s ease forwards; }
+@keyframes md-stamp-out { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+
+/* ---- The dock: only on phones (the duty bar, Clock in and the prompt, pinned above the site's tab bar) ---- */
+.bt-root:not(#_) .md-dock { display: none; }
+
+/* ---- The house looks, for the page's own surfaces ---- */
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.md-hero) { background-color: var(--bt-surface); background-image: linear-gradient(var(--cr-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--cr-line-soft) 1px, transparent 1px); background-size: 20px 20px; border-color: var(--cr-line); border-radius: 4px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-hero::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-hero::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--bt-blue); pointer-events: none; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-hero::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-hero::after { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-clockin { border-radius: 6px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .md-hero { border-radius: 16px; border-color: rgba(var(--bt-gold-rgb), 0.25); background-color: color-mix(in srgb, var(--bt-surface) 60%, var(--bt-crt-glass)); box-shadow: inset 0 0 40px rgba(var(--bt-ink-rgb), 0.6); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.md-title, .md-clock, .md-gears b) { text-shadow: 0 0 8px color-mix(in srgb, var(--bt-title) 30%, transparent); }
+.bt-root:not(#_) .md-radar .bt-cr-icon { width: 100%; height: 100%; }
+
+/* ---- Container widths (bt: 1024 / 640 / 420) ---- */
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .md-main { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .md-rail { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: start; }
+  .bt-root:not(#_) .md-rail > * { min-width: 0; }
+  .bt-root:not(#_) .md-hero { grid-template-columns: auto minmax(0, 1fr); }
+  .bt-root:not(#_) .md-hero-right { grid-column: 1 / -1; justify-content: flex-start; }
+  .bt-root:not(#_) .md-off { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .bt-root:not(#_) .md-wrap { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .md-chats { --md-chat-h: 420px; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .md { --md-chat-h: clamp(360px, 56vh, 560px); padding-bottom: 150px; }
+  .bt-root:not(#_) .md-hero { padding: 14px; gap: 10px 14px; }
+  .bt-root:not(#_) .md-radar { width: 40px; height: 40px; }
+  .bt-root:not(#_) .md-hero-right { display: none; }
+  .bt-root:not(#_) .md-ptabs { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  /* the three tabs: Chats (the wall), Crew (rooms and notes), Tools (cue slot and quick lines) */
+  .bt-root:not(#_) .md[data-tab="chats"] :is(.md-rooms, .md-rail) { display: none; }
+  .bt-root:not(#_) .md[data-tab="crew"] :is(.md-wallbox, .md-tools-only, [data-slot="helm"]) { display: none; }
+  .bt-root:not(#_) .md[data-tab="tools"] :is(.md-wallbox, .md-rooms, .md-crew-only) { display: none; }
+  .bt-root:not(#_) .md[data-tab="crew"] .md-rail, .bt-root:not(#_) .md[data-tab="tools"] .md-rail { display: flex; }
+  .bt-root:not(#_) .md-rail [data-slot="cues"], .bt-root:not(#_) .md-rail [data-slot="lines"], .bt-root:not(#_) .md-rail [data-slot="notes"] { min-width: 0; }
+  .bt-root:not(#_) .md-roomswitch { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 8px; }
+  .bt-root:not(#_) .md-roomswitch button { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 10px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; }
+  .bt-root:not(#_) .md-roomswitch button[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-text); }
+  .bt-root:not(#_) .md-roomswitch .bt-platform-icon { width: 16px; height: 16px; font-size: 7px; border-radius: 4px; }
+  .bt-root:not(#_) .md-roomswitch .bt-platform-or { display: none; }
+  .bt-root:not(#_) .md-wall-h .md-focus { display: none; }
+  .bt-root:not(#_) .md-chats { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .md-feed--out .bt-chat-feed { --bt-feed-h: 200px; }
+  .bt-root:not(#_) .md-off { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .md-rail { display: flex; }
+  .bt-root:not(#_) .md-promptlayer { display: none; }
+  .bt-root:not(#_) .md-dock { position: sticky; bottom: calc(76px + env(safe-area-inset-bottom, 0px)); z-index: 35; display: flex; flex-direction: column; gap: 8px; margin: 12px 0 0; }
+  .bt-root:not(#_) .md-dock [data-slot]:empty { display: none; }
+  .bt-root:not(#_) .md-dock .md-clockin { padding: 10px; gap: 10px; background-color: var(--bt-surface); }
+  .bt-root:not(#_) .md-dock .md-clockin > .bt-btn { padding: 10px 16px; font-size: var(--bt-text-base); }
+  .bt-root:not(#_) .md-dock .bt-prompt { width: 100%; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .md-radar { display: none; }
+  .bt-root:not(#_) .md-hero { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---- Reduced motion: everything stands still; colour and glow stay ---- */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.md-clockin, .md-scene .bt-mascot, .md-empty-m, .md-night-row) { transition: none; }
+  .bt-root:not(#_) .md-clockin:hover, .bt-root:not(#_) .md-night-row:hover, .bt-root:not(#_) .md-empty:hover .md-empty-m, .bt-root:not(#_) .md-hero:hover .md-scene .bt-mascot { transform: none; }
+  .bt-root:not(#_) .md-stampwrap .bt-stamp { animation: none; }
+}

@@ -8,7 +8,7 @@
 import { featureLoadingHtml } from "../../../shared/ui/navgroup.js";
 import { isCurrent, isInSection, groupIsCurrent } from "../lib/nav.js";
 
-interface Item { id: string; label: string; href: string; icon: string; blurb: string }
+interface Item { id: string; label: string; href: string; icon: string; blurb: string; staff?: boolean }
 interface Props { group: { id: string; label: string; items: Item[] }; path: string }
 const { group, path } = Astro.props;
 const current = groupIsCurrent(group, path);
@@ -23,7 +23,7 @@ const panelId = `bt-ng-${group.id}`;
   <div class="bt-navgroup-panel" id={panelId} hidden>
     <div class="bt-navgroup-links">
       {group.items.map((i) => (
-        <a class:list={["bt-navgroup-link", i.id === "live" && "bt-navgroup-link--live"]} href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
+        <a class:list={["bt-navgroup-link", i.id === "live" && "bt-navgroup-link--live", i.staff && "bt-when-staff"]} href={i.href} aria-current={isCurrent(i.href, path) || isInSection(i.href, path) ? "page" : undefined}>
           <span class="bt-navgroup-ic" aria-hidden="true"><svg><use href={`#i-${i.icon}`} /></svg></span>
           <span class="bt-navgroup-name">{i.label}{i.id === "live" && <span class="bt-badge bt-badge--red bt-when-public" aria-hidden="true">Live</span>}</span>
           <span class="bt-navgroup-blurb">{i.blurb}</span>

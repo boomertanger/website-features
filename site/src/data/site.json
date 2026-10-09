@@ -48,6 +48,8 @@
   ],
   "termsVersion": "2026-09-28",
   "_aboutTerms": "Version of the Terms and Privacy Policy that signup records. Bump it when either changes: seed-site.js copies it into sites/{siteId}, and completeSignup only accepts the current one.",
+  "houseRules": "Be kind. No spoilers. No self-promo. Mods have the final say. 💜",
+  "_aboutHouseRules": "The short house rules the crew copy from the Mod Deck (/live/deck) quick lines.",
   "twitchChannel": "boomertanger",
   "_aboutTwitchChannel": "The Twitch channel the /live page embeds (the player's channel= value). It is the same channel as TWITCH_LOGIN in functions/.env: check-live fails if they differ. The player's parent= is always the current host, so it works on staging and boomertanger.com.",
   "twitchClientId": "59qwrarfotu1bcpzrbc5w6ksw0v6yb",

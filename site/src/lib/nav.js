@@ -15,6 +15,8 @@ const MODULE_PAGES = {
   streams: { label: "Streams", href: "/streams", icon: "film", blurb: "Past streams, highlights and clips." },
   shop: { label: "Shop", href: "/shop", icon: "bag", blurb: "Merch and crew drops." },
   club: { label: "Club", href: "/club", icon: "club", blurb: "Fan Club is free. Sub Club adds the extras." },
+  // Crew only (display only: the header and More sheet hide it with .bt-when-staff; /live/deck gates itself and the callables decide).
+  deck: { label: "Mod Deck", href: "/live/deck", icon: "club", blurb: "Your seat, the chats and the tools", staff: true },
   // Later: not in site.json modules yet, so they stay out of the navigation until enabled.
   bugzapper: { label: "Bug Zapper", href: "/bug-zapper", icon: "wrench", blurb: "Report something broken." },
   featurelab: { label: "Feature Lab", href: "/feature-lab", icon: "bulb", blurb: "Suggest ideas and vote on them." },
@@ -24,13 +26,14 @@ const MODULE_PAGES = {
 
 // Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md).
 const ALWAYS_ON = ["crew"];
-const enabled = new Set([...site.modules, ...ALWAYS_ON]);
+const STAFF_ONLY = ["deck"];   // on for everyone in the data, shown to staff only
+const enabled = new Set([...site.modules, ...ALWAYS_ON, ...STAFF_ONLY]);
 const isOn = (id) => enabled.has(id) && !!MODULE_PAGES[id];
 const page = (id) => ({ id, ...MODULE_PAGES[id] });
 
 // Header groups (docs/specs/header-nav.md): three menus and Shop as a plain link.
 const GROUPS = [
-  { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games"] },
+  { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "factory", "trophies"] },
   { id: "community", label: "Community", pages: ["club", "crew", "goals", "bugzapper", "featurelab", "monthly"] },
 ];
