@@ -142,6 +142,35 @@
 :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-cam { border-radius: 50px / 60px; }
 :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-sv-cam::after { border-radius: 64px / 74px; border-width: 18px; border-color: var(--bt-crt-bezel); }
 
+/* =================================================================== the Mod Deck pieces (Mod Machina phase 3 part 3; docs/specs/mod-machina.md section 17a; mockup docs/design/mockups/mod-deck.html) ======= */
+/* surfaces, frames, glow and decoration for .bt-duty-bar, .bt-room-tile, .bt-chat-feed, .bt-prompt, .bt-flag-card, .bt-crew-notes and .bt-cue-card. Colour meaning is untouched: needed and prompts stay gold,
+   done and counted stay lime, mine stays purple, and nothing here is red. No look changes what is clickable, and every overlay is pointer-events: none. */
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-crew-note { border-color: var(--cr-line); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) :is(.bt-room-tile-v strong, .bt-duty-min b) { color: var(--bt-title); text-shadow: 0 0 10px rgba(var(--bt-gold-rgb), 0.45); }
+:is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-chat-feed-body:not([data-embed]):not(.bt-chat-feed-empty) { box-shadow: inset 0 2px 12px rgba(var(--bt-ink-rgb), 0.8); }
+/* Hull map: blueprint grid, square corners, corner brackets */
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-room-tile, .bt-cue-card) { background-color: var(--bt-surface); background-image: linear-gradient(var(--cr-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--cr-line-soft) 1px, transparent 1px); background-size: 20px 20px; border-color: var(--cr-line); border-radius: 4px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-room-tile[data-state="needed"] { background-image: linear-gradient(180deg, var(--bt-gold-bg), transparent 70%), linear-gradient(var(--cr-line-soft) 1px, transparent 1px), linear-gradient(90deg, var(--cr-line-soft) 1px, transparent 1px); background-size: auto, 20px 20px, 20px 20px; border-color: color-mix(in srgb, var(--bt-gold) 50%, transparent); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-room-tile.is-mine, .bt-chat-feed.is-mine) { border-color: var(--bt-primary); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cue-card.is-posted { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-cue-card)::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-cue-card)::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--bt-blue); pointer-events: none; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-cue-card)::before { top: 0; left: 0; border-width: 2px 0 0 2px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-cue-card)::after { bottom: 0; right: 0; border-width: 0 2px 2px 0; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-chat-feed, .bt-cue-card) { position: relative; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-duty-bar { border-color: var(--cr-line); border-radius: 6px; }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-duty-bar.is-away { border-color: color-mix(in srgb, var(--bt-gold) 60%, transparent); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.bt-prompt, .bt-flag-card) { border-radius: 6px; }
+/* CRT: rounded phosphor glass, scan lines, glowing type */
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-chat-feed, .bt-room-tile, .bt-cue-card) { border-radius: 14px; border-color: rgba(var(--bt-gold-rgb), 0.2); background-color: color-mix(in srgb, var(--bt-surface) 60%, var(--bt-crt-glass)); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-cue-card.is-posted { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-chat-feed-body { background-color: var(--bt-crt-glass); background-image: repeating-linear-gradient(0deg, rgba(var(--bt-sheen-rgb), 0.02) 0 1px, transparent 1px 3px); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-chat-feed-body:not([data-embed]):not(.bt-chat-feed-empty) { box-shadow: inset 0 0 40px rgba(var(--bt-ink-rgb), 0.9); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-room-tile.is-mine, .bt-chat-feed.is-mine) { border-color: var(--bt-primary); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-room-tile[data-state="needed"] { border-color: color-mix(in srgb, var(--bt-gold) 55%, transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-room-tile-name, .bt-chat-feed-body p, .bt-cue-text) { text-shadow: 0 0 6px color-mix(in srgb, var(--bt-text) 22%, transparent); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .bt-duty-bar { border-color: rgba(var(--bt-gold-rgb), 0.25); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.bt-prompt, .bt-flag-card) { border-radius: 22px / 26px; }
+
 /* =================================================================== reduced motion: colour and glow stay, movement stops (not the stream view) ======= */
 @media (prefers-reduced-motion: reduce) {
   :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-hico svg, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-led, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-cr-scan, :is(.bt-root:not(#_):is([data-look="hull"], [data-look="crt"]), .bt-root:not(#_) :is([data-look="hull"], [data-look="crt"])) .bt-checkin.is-open:not(.bt-checkin--dialog), :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::after { animation: none; }

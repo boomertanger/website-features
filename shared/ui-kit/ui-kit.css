@@ -138,3 +138,12 @@
 #bt-ui-kit .kit-cr-sv { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 420px); gap: var(--bt-space-4); align-items: start; }
 @container bt (max-width: 1024px) { #bt-ui-kit .kit-cr-sv { grid-template-columns: minmax(0, 1fr); } }
 #bt-ui-kit .kit-cr-stamps .bt-checkin-stamps { margin: 0; padding: 0; border: 0; }
+
+/* Mod Deck section (kit-mod-deck.js): stages for the duty bar states, feed rows and note panels */
+#bt-ui-kit .kit-md-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: var(--bt-space-4); align-items: start; }
+#bt-ui-kit .kit-md-grid--wide { grid-template-columns: repeat(auto-fit, minmax(min(100%, 560px), 1fr)); }
+#bt-ui-kit .kit-md-stage { position: relative; padding: var(--bt-space-4); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+#bt-ui-kit .kit-md-note { margin: var(--bt-space-3) 0 0; }
+#bt-ui-kit .kit-md-feeds { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: var(--bt-space-3); }
+#bt-ui-kit .kit-md-panel { position: relative; }
+#bt-ui-kit #kit-mod-deck .bt-room-tiles { margin-bottom: var(--bt-space-3); }

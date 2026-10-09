@@ -618,7 +618,7 @@ The Deck is built from the kit and the Control Room pieces; seven new pieces joi
 | `.bt-crew-notes` | The crew notes strip (.bt-notes is already the Warm Fuzzies pinboard) |
 | `.bt-swap` | A seat on the swap board: day stub, room and role, notice line, Take it; is-taken, is-mine-now |
 
-No kit piece for the activity slots until Chat Games ships. Colour meaning holds: purple clickable, gold for needed, prompts and flags, green for staff-only controls, red only for the live tag and an open check-in. The goal bar uses `.bt-meter` with gold; no new colours.
+The activity slots' contents are Chat Games' (ROADMAP 5b): the cue slot shows `.bt-cue-card`s (a kit piece added in part 3 so the slot has something to wear) and the launch tiles use the existing `.bt-launch`. Colour meaning holds: purple clickable, gold for needed, prompts and flags, green for staff-only controls, red only for the live tag and an open check-in. The goal bar uses `.bt-meter` with gold; no new colours.
 
 ### Edge cases
 
