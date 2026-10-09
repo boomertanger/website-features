@@ -392,5 +392,33 @@ const outboxOf = async (type) => (await col(`${S}/notifyOutbox`)).filter((o) => 
   await wdb.collection("externalAssets").doc("a_old2").set({ publicId: "bug-zapper/old2/shot", linkedDoc: { collection: REPORTS, docId: "old2", field: "shotRef" } });
   assert.equal(await bugs.ops.tidy(), 1); assert.deepEqual(Object.keys(remote).sort(), ["bug-zapper/new1/shot", "bug-zapper/old2/shot", "game-vault/pending/x"]);
 
+  // ================================================================ rules, indexes and the cleanup rule (text checks: no emulator here)
+  const fsx = require("fs"), pathx = require("path");
+  const root = pathx.join(__dirname, "..", "..");
+  const rules = fsx.readFileSync(pathx.join(root, "firestore.rules"), "utf8");
+  const a = rules.indexOf("// ---------- Bug Zapper (docs/specs/bug-zapper.md"); assert.ok(a > 0, "the Bug Zapper rules block is there");
+  const block = rules.slice(a, rules.indexOf("// The mod queue", a));
+  for (const m of ["match /bugs/main/reports/{reportId}", "match /staff/{docId}", "match /thread/{replyId}", "match /meToo/{uid}", "match /bugs/main/myMeToos/{uid}", "match /bugs/main/submitTokens/{token}"]) assert.ok(block.includes(m), m);
+  const writes = block.match(/allow [a-z, ]*write[a-z, ]*:[^;]*;/g) || [];
+  assert.ok(writes.length >= 6 && writes.every((w) => w.endsWith("if false;")), "every client write in the Bug Zapper block is false: " + writes.join(" | "));
+  assert.ok(!/allow (create|update|delete)/.test(block), "no create, update or delete rule");
+  const reports = block.slice(block.indexOf("match /bugs/main/reports/{reportId}"), block.indexOf("match /staff/{docId}"));
+  assert.ok(reports.includes("resource.data.hidden == false") && reports.includes("resource.data.private == false") && reports.includes("resource.data.by.uid") && reports.includes("isSiteStaff(siteId)"), "public if neither private nor hidden; the reporter's own; staff always");
+  const thread = block.slice(block.indexOf("match /thread/{replyId}"), block.indexOf("match /meToo/{uid}"));
+  assert.ok(thread.includes("by.uid") && thread.includes("isSiteStaff(siteId)") && thread.includes("resource.data.hidden == false"), "the thread is for the reporter and staff, and a hidden reply is staff only");
+  assert.ok(block.slice(block.indexOf("match /meToo/{uid}"), block.indexOf("match /bugs/main/myMeToos")).includes("allow read, write: if false;"), "bit me too records are closed");
+  assert.ok(block.slice(block.indexOf("match /bugs/main/myMeToos")).includes("request.auth.uid == uid"), "a member reads only their own list");
+  assert.ok(/match \/adminLog\/\{entryId\}[\s\S]{0,400}hasSiteRole\('boomertanger', 'admin'\)/.test(rules), "new-site admins already read adminLog (Feature Lab)");
+  const idx = JSON.parse(fsx.readFileSync(pathx.join(root, "firestore.indexes.json"), "utf8"));
+  const has = (group, fields) => idx.indexes.some((i) => i.collectionGroup === group && i.queryScope === "COLLECTION" && JSON.stringify(i.fields.map((x) => [x.fieldPath, x.order])) === JSON.stringify(fields));
+  assert.ok(has("reports", [["private", "ASCENDING"], ["hidden", "ASCENDING"], ["createdAt", "DESCENDING"]]), "public reports, newest first");
+  assert.ok(has("reports", [["by.uid", "ASCENDING"], ["createdAt", "DESCENDING"]]), "my reports");
+  assert.ok(has("reports", [["closed", "ASCENDING"], ["closedAt", "ASCENDING"]]), "the cleanup rule");
+  assert.ok(has("thread", [["hidden", "ASCENDING"], ["createdAt", "ASCENDING"]]), "the thread");
+  assert.ok(idx.fieldOverrides.some((o) => o.collectionGroup === "submitTokens" && o.fieldPath === "expireAt" && o.ttl === true), "post tokens expire");
+  const seed = require("./seed-bug-cleanup-rule");
+  assert.deepEqual(seed.RULE, { feature: "bugZapper", collection: "sites/boomertanger/bugs/main/reports", matchField: "closed", matchValue: true, ageField: "closedAt", ageThresholdDays: 60 });
+  assert.throws(() => seed.parseArgs(["--project", "production"]), /staging only/); assert.throws(() => seed.parseArgs([]), /staging only/); assert.equal(seed.parseArgs(["--project", "staging"]).project, "staging");
+
   console.log("check-bugs: ok");
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -601,6 +601,45 @@ service cloud.firestore {
       match /lab/main/submitTokens/{token} {
         allow read, write: if false;
       }
+
+      // ---------- Bug Zapper (docs/specs/bug-zapper.md §3, §5) ----------
+      // Written ONLY by Cloud Functions (functions/lib/bugs). A report is public unless it is private (a security or privacy problem) or hidden: its
+      // reporter reads their own if it isn't hidden, staff read everything. A report's staff/info (device, screenshot record) and its thread are for the
+      // reporter and staff only (a reply is also gone for the reporter once hidden). Clients query public reports with private == false and hidden == false,
+      // a member's own with by.uid == their uid and hidden == false. "Bit me too" records, the members' own lists and the post tokens are closed (a member
+      // reads only their own myMeToos). Every write is false.
+      match /bugs/main/reports/{reportId} {
+        allow read: if (resource.data.hidden == false
+            && (resource.data.private == false || (request.auth != null && request.auth.uid == resource.data.by.uid)))
+          || isSiteStaff(siteId);
+        allow write: if false;
+
+        match /staff/{docId} {
+          allow read: if isSiteStaff(siteId)
+            || (request.auth != null
+              && request.auth.uid == get(/databases/$(database)/documents/sites/$(siteId)/bugs/main/reports/$(reportId)).data.by.uid
+              && get(/databases/$(database)/documents/sites/$(siteId)/bugs/main/reports/$(reportId)).data.hidden == false);
+          allow write: if false;
+        }
+        match /thread/{replyId} {
+          allow read: if isSiteStaff(siteId)
+            || (request.auth != null
+              && request.auth.uid == get(/databases/$(database)/documents/sites/$(siteId)/bugs/main/reports/$(reportId)).data.by.uid
+              && get(/databases/$(database)/documents/sites/$(siteId)/bugs/main/reports/$(reportId)).data.hidden == false
+              && resource.data.hidden == false);
+          allow write: if false;
+        }
+        match /meToo/{uid} {
+          allow read, write: if false;
+        }
+      }
+      match /bugs/main/myMeToos/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+      match /bugs/main/submitTokens/{token} {
+        allow read, write: if false;
+      }
       // The mod queue (adds and cover suggestions). The submitter's uid is in private/submitter: admins only.
       match /vaultQueue/{id} {
         allow read: if isSiteStaff(siteId);
