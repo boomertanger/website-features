@@ -376,12 +376,42 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
   });
 
   /** Accepts a prompt addressed to the caller: a handoff ("Take the lead?", first accept wins), the Captain's seat, acting Captain, or a reassignment. */
+  /** Take the lead of a room that has none, without a prompt: a clocked-in crew member (the Deck's room tile). The same checks as clocking in as Lead; their minutes move to Lead from now. */
+  async function takeVacantLead(w, sid, s, state0, room, at, rooms) {
+    if (isAfterShow(s)) throw fail("failed-precondition", "The after-show has no seats; stay a Deckhand.", "afterShow");
+    if (typeof room !== "string" || !rooms.includes(room)) throw fail("invalid-argument", "Pick a room that is streaming.", "badRoom", { rooms });
+    if (!state0 || !state0.onDuty[w.uid]) throw fail("failed-precondition", "You're not clocked in.", "notOnDuty");
+    const draft = await draftOf(sid);
+    const e0 = PL.seatEligibility(w.person || { isAdmin: w.isAdmin, isMod: w.isMod, grade: w.grade, rosterStatus: w.roster ? w.roster.status : null, leadBlockedUntilMs: ms(w.roster && w.roster.leadBlockedUntil) }, { room, role: "lead" }, at);
+    if (!e0.ok) throw fail("permission-denied", { gradeTooLow: "Room Lead needs Watcher or above.", leadBlocked: "Lead and Captain seats are paused for you for now.", notActive: "Your crew status isn't Active or Check-in." }[e0.reason] || "You can't take that seat.", e0.reason);
+    const lock = await lockUntilOf(db, w.uid);
+    if (lock > at) throw fail("permission-denied", D.lockMessage(lock), "locked", { until: lock });
+    if (ms(w.roster && w.roster.leadBlockedUntil) > at) throw fail("permission-denied", "Lead and Captain seats are paused for you for now.", "leadBlocked");
+    const info = await gather(sid, state0, s, [w.uid]);
+    const out = await txn(sid, [w.uid], (state, duties) => {
+      const e = state.onDuty[w.uid], d = duties[w.uid];
+      if (!e || !d) throw fail("failed-precondition", "You're not clocked in.", "notOnDuty");
+      if (e.away) throw fail("failed-precondition", "Come back from your break first.", "away");
+      if (hasRole(e.roles, { role: "lead", room })) return { already: true, role: "lead", room };
+      const seated = draft.crew && draft.crew.chats && draft.crew.chats[room] && draft.crew.chats[room].lead;
+      const taken = (seated && seated.uid !== w.uid) || Object.values(state.onDuty).some((p) => (p.roles || []).some((r) => r.role === "lead" && r.room === room));
+      if (taken) throw fail("failed-precondition", "That room already has a Lead.", "leadTaken");
+      e.roles = e.roles.filter((r) => r.role !== "deckhand"); e.roles.push({ role: "lead", room });
+      applyRoles(d, e.roles, at);
+      recompute(state, rooms);
+      reconcileCaptain(state, info, at);
+      return { kind: "vacant", role: "lead", room };
+    });
+    await publish();
+    return { ok: true, ...out };
+  }
   const dutyTakeLead = onCall(async (request) => {
     const w = await needCrew(request);
-    const { streamId, promptId } = request.data || {};
+    const { streamId, promptId, room: askedRoom } = request.data || {};
     const sid = idArg(streamId);
     const s = await liveStreamFor(sid), at = now(), rooms = roomsOf(s);
     const state0 = await loadState(sid);
+    if (promptId == null && askedRoom != null) return takeVacantLead(w, sid, s, state0, askedRoom, at, rooms);
     const p0 = state0 && state0.prompts ? state0.prompts[promptId] : null;
     if (!p0) throw fail("not-found", "That prompt is gone.", "noPrompt");
     const info = await gather(sid, state0, s, [w.uid]);

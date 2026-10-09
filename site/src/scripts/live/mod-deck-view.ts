@@ -155,6 +155,8 @@ const demoLines = (room: Room) => chatLinesHtml(room === "twitch"
   : room === "ytLandscape"
     ? [{ user: "Mara K", text: "hello from portugal", tone: "--bt-blue" }, { user: "hollowgrin", text: "hi Mara! check-in link is pinned", tone: "--bt-teal", kind: "mod" }, { user: "Dree", text: "what difficulty is this", tone: "--bt-gold" }]
     : [{ user: "jxk", text: "how do i get the badge", tone: "--bt-gold", kind: "new" }, { user: "pumpkn", text: "vertical gang", tone: "--bt-pink" }, { user: "", text: "No lead in this room · ×1.5 Gears", kind: "sys" }]);
+/** The site's own mark (the "BT" tile /live and the Control Room use for the site room) instead of the platform tile the kit draws for an unknown chat. */
+const siteMark = (html: string) => html.replace(/<span class="bt-platform-icon[^>]*>[^]*?<[/]span>(?=[^<]*<)/, `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`);
 const iframe = (src: string, title: string) => `<iframe src="${esc(src)}" title="${esc(title)}" loading="lazy" referrerpolicy="strict-origin-when-cross-origin"></iframe>`;
 function embedFor(m: Model, room: Room): { html: string; live: boolean } | null {
   if (m.site.host === "") return null;
@@ -180,7 +182,7 @@ export function wallHtml(m: Model, d: Derived): string {
   const tt = d.rooms.find((r) => r.room === "tiktok" && r.state !== "off");
   const ttHtml = tt ? `<div class="md-feed md-feed--out" data-room="tiktok">${chatFeedOutHtml({ chat: "tiktok", name: "TikTok", lead: tt.lead || "no lead", viewers: tt.viewers == null ? null : tt.viewers.toLocaleString("en-US"), href: m.site.tiktokUrl || "#", label: "Open TikTok LIVE", mine: tt.mine } as any)}</div>` : "";
   if (d.after) {
-    const feed = `<div class="md-feed" data-room="site">${chatFeedEmptyHtml({ chat: "site", name: "The site", lead: "no seats", viewers: m.pub?.viewers.total ?? null, mascotHtml: mascot(), text: "The after-show lives on the stream page. Drop in as a Deckhand and keep the room friendly.", foot: "Site room" } as any)}</div>`;
+    const feed = `<div class="md-feed" data-room="site">${siteMark(chatFeedEmptyHtml({ chat: "site", name: "The site", lead: "no seats", viewers: m.pub?.viewers.total ?? null, mascotHtml: mascot(), text: "The after-show lives on the stream page. Drop in as a Deckhand and keep the room friendly.", foot: "Site room" } as any))}</div>`;
     return `<div class="md-wall"><div class="md-wall-h"><span class="bt-label">Chats</span></div><div class="md-chats md-chats--1">${feed}</div></div>`;
   }
   const rows = d.rooms.filter((r) => CHAT_ROOMS.includes(r.room));

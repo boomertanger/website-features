@@ -397,6 +397,29 @@ async function main() {
   assert.deepEqual(await duty.tick({ id: "s4" }, clock), { idle: true }, "nothing live: the tick does nothing");
   assert.deepEqual(await duty.tick({ id: "none" }, clock), { idle: true });
 
+  // ================================================================ take the lead of a vacant room without a prompt (clocked in already)
+  clock = T0 + 80 * H; await mkStream("s5", { plannedStart: TS(clock) }, { captain: null, chats: { twitch: { lead: null, deckhands: [] }, ytLandscape: { lead: null, deckhands: [] }, ytVertical: { lead: null, deckhands: [] } }, caps: { deckhands: 2 } });
+  await as("adm2", "startStream", { streamId: "s5" });
+  for (const u of ["w2", "dk3", "lockee", "blocked"]) await as(u, "dutyClockIn", { streamId: "s5", room: "twitch" });
+  assert.equal(await why(as("fan", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "notCrew");
+  assert.equal(await why(as("dk9", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "notOnDuty", "not clocked in");
+  assert.equal(await why(as("dk3", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "gradeTooLow", "an Initiate can't take a lead");
+  assert.equal(await why(as("lockee", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "locked", "the no-show lockout refuses");
+  assert.equal(await why(as("blocked", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "leadBlocked", "a strike refuses");
+  assert.equal(await why(as("w2", "dutyTakeLead", { streamId: "s5", room: "nowhere" })), "badRoom");
+  clock += 10 * MIN;
+  r = await as("w2", "dutyTakeLead", { streamId: "s5", room: "twitch" });
+  assert.deepEqual([r.role, r.room], ["lead", "twitch"]);
+  let on5 = (await st("s5")).onDuty.w2; assert.deepEqual(on5.roles, [{ role: "lead", room: "twitch" }], "the Deckhand role became Lead");
+  assert.equal((await st("s5")).rooms.twitch.lead, "w2_h", "the room shows its Lead");
+  let d5 = await rec("s5", "w2"); assert.equal(d5.segments.filter((x) => x.out == null).length, 1); assert.equal(d5.segments.find((x) => x.out == null).role, "lead"); assert.ok(d5.segments.some((x) => x.role === "deckhand" && x.out === clock), "the Deckhand segment closed at that moment");
+  assert.equal((await as("w2", "dutyTakeLead", { streamId: "s5", room: "twitch" })).already, true);
+  assert.equal(await why(as("dk3", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "gradeTooLow");
+  assert.equal(await why(as("adm2", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "notOnDuty");
+  await as("adm2", "dutyClockIn", { streamId: "s5", room: "ytVertical" });
+  assert.equal(await why(as("adm2", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "leadTaken", "a room with a Lead has none to give");
+  await as("adm2", "stopStream", { streamId: "s5" });
+
   // ================================================================ rules and the shared-file wiring
   const rules = fs.readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8");
   assert.ok(/docId == 'duty' && \(isSiteStaff\(siteId\) \|\| isSiteOwner\(siteId\)\)/.test(rules), "private/duty: crew and the owner read it");
