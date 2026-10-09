@@ -18,7 +18,7 @@ import { gamePickerHtml, initGamePicker } from "./gamepick";
 let len = 0;                       // the chosen window length (minutes)
 let brbMin = 5;
 let dismissedBanner = "";
-const SCENES: [string, string][] = [["auto", "Auto"], ["starting", "Starting soon"], ["stats", "Live stats"], ["break", "Break"], ["brb", "Be right back"], ["ending", "Ending"]];
+const SCENES: [string, string][] = [["auto", "Auto"], ["starting", "Starting soon"], ["stats", "Live stats"], ["break", "Break"], ["break-side", "Break · side rail"], ["brb", "Be right back"], ["ending", "Ending"]];
 
 const winOf = (ctx: Ctx) => {
   const w = ctx.snap.control?.window, now = Date.now();

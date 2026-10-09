@@ -18,6 +18,7 @@ const ACTIONS: Act[] = [
   { label: "+1 minute", note: "Extends the open check-in", url: q("extend") },
   { label: "Close check-in", note: "Closes it now", url: q("closeCheckin") },
   { label: "Scene: Auto", note: "The stream view follows the beat", url: q("scene", "&scene=auto") },
+  { label: "Scene: Break · side rail", note: "Pins the Break scene with the side rail (B2)", url: q("scene", "&scene=break-side") },
   { label: "Scene: Be right back", note: "Add &brbMinutes=5 for a timer", url: q("scene", "&scene=brb") },
   { label: "Scene: Ending", note: "Pins the Ending scene", url: q("scene", "&scene=ending") },
   { label: "Next planned game", note: "Switches to tonight's next game", url: q("nextGame") },

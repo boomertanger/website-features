@@ -13,7 +13,6 @@ const FIRST = raw.firstIn;
 export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchParams) {
   const asked = (params.get("scene") || "break").toLowerCase();
   const scene = (SCENES as readonly string[]).includes(asked) ? asked : "break";
-  if (scene === "side") params.set("break", "side");
   const look = params.get("look") === "crt" ? "crt" : "hull";
   const t0 = Date.now();
   const crew = raw.streams[0].crew as any;
@@ -28,7 +27,7 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
     const open = scene === "break" || scene === "side";
     const started = now - (2 * 3600 + 14 * 60 + 37) * 1000;
     return {
-      state: scene === "starting" ? "starting" : ended ? "ended" : "live", look, scene: (scene === "side" ? "break" : scene) as ObsView["scene"], streamId: "demo", title: "Monster Monday",
+      state: scene === "starting" ? "starting" : ended ? "ended" : "live", look, scene: (scene === "side" ? "break-side" : scene) as ObsView["scene"], streamId: "demo", title: "Monster Monday",
       type: "platform", audience: "public", liveRooms: ["twitch", "ytLandscape", "ytVertical", "tiktok"], actualStart: started, actualEnd: ended ? now - 2 * MIN : null,
       beat: scene === "stats" ? "start" : "break1",
       beats: { start: { status: scene === "stats" ? "now" : "done", checkins: 214 }, break1: { status: scene === "stats" ? "next" : "now", checkins: ci }, break2: { status: "next", checkins: 0 }, end: { status: "next", checkins: 0 } },
@@ -42,6 +41,8 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
       firstIn: open ? FIRST.slice(0, Math.min(FIRST.length, Math.floor((now - t0) / 2500))) : [],
       plannedStart: scene === "starting" ? now + 5 * MIN - ((now - t0) % (5 * MIN)) : null,
       plannedGames: raw.streams[0].games.map((g) => g.title),
+      gameCovers: raw.streams[0].games.map(() => null),
+      nextStream: { title: "Granny Gauntlet", start: Date.now() + 26 * 3600_000 },
     };
   };
   const tick = () => {
