@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+chore: docs/ui-audit.md is ignored (local audit notes, never committed).
 docs: Bug Zapper. ROADMAP workstream 10 status and the Bug Finder Night Shift hook ticked, design-system §5 bug status (Confirmed gold, lowercase stored keys) and §8r Bug Zapper (picks, feature CSS scope, the porch-light scene), Boom Alerts gets the bug-new admin topic (inbox; Critical also push and email).
 site: Bug Zapper on in the nav (the bugzapper module in site.json: the header Community panel and the phone More sheet), a Bug Zapper card on /admin (new reports waiting, a red critical badge, the oldest one, Open the board) and a Report this broken link button on the 404 page (/bug-zapper?new=1&page=<path>).
 site: /bug-zapper/how-it-works (docs/specs/bug-zapper.md §8). TocLayout story page: hero "Spot it. Report it. We zap it." with the large porch-light scene (zapped count from one count query), four stage cards with hover scenes, the report's journey and the closed-status note, Try it (fix a vague report: six fixes, a meter, a Ready to zap stamp, nothing saved), the roles flow, flip medals (Bug Finder, Bug hunter, Exterminator), the seven House rules, Ask BOOMBOT and the closing call to action.

@@ -13,3 +13,6 @@ site/.astro/
 
 # Staff-only material (the mod guide); the repo is public, so never committed
 functions/scripts/private/
+
+# Local audit notes, never committed
+docs/ui-audit.md
