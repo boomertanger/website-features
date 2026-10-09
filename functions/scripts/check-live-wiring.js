@@ -452,12 +452,14 @@ async function main() {
   err = await ci("fan", "wrongo", "twitch").catch((e) => e);
   assert.equal(err.details.reason, "wrongWord"); assert.equal(err.details.locked, true);
   assert.equal(await why(ci("fan", W1, "twitch")), "lockedOut", "locked even with the right word");
+  { const lo = ((await get("streams/c1/private/duty")) || {}).lockedOut || {}; assert.deepEqual(Object.keys(lo), ["fan_start"], "the lock is mirrored into private/duty.lockedOut for the Deck"); assert.equal(lo.fan_start.beat, "start"); assert.equal(lo.fan_start.room, "twitch"); assert.equal(lo.fan_start.uid, "fan"); assert.ok(!("word" in lo.fan_start)); }
   // the crew unlock (crew on duty), never a member or a visitor
   assert.equal(await why(as("fan2", "liveUnlock", { uid: "fan", beat: "start" })), "notCrew");
   assert.equal(await why(as("capt", "liveUnlock", { uid: "fan", beat: "nope" })), "badBeat");
   assert.equal(await why(as("capt", "liveUnlock", { uid: "ghost", beat: "start" })), "noPresence");
   assert.equal((await as("capt", "liveUnlock", { uid: "fan", beat: "start" })).ok, true);
   assert.equal((await get("streams/c1/presence/fan")).wrongTries.start, 0);
+  assert.deepEqual(Object.keys(((await get("streams/c1/private/duty")) || {}).lockedOut || {}), [], "Unlock removes the entry");
   assert.ok((await root("adminLog")).some((e) => e.action === "unlock" && e.actorUid === "capt" && e.feature === "controlRoom"));
   // success: the stamp, +10 XP, the counter, first-in, the alias converted at the edge
   nsEvents.length = 0;

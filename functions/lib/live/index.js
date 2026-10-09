@@ -20,7 +20,8 @@ function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.rando
   const checkin = require("./checkin")(ctx, { grant, factory });          // sets ctx.settle, which Stop and the auto-end call
   const feeds = require("./feeds")(ctx, { controls, fetchFn, enqueue, sleep, twitchClientId, twitchClientSecret, twitchLogin, youtube });
   const eventsub = require("./eventsub")(ctx, { eventSubSecret });
-  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions };
+  const flags = require("../crew/flags")(ctx);
+  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions };
   const hooks = { ctx, controls, checkin, feeds, eventsub, duty };
   return { functions, hooks };
 }

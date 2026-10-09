@@ -72,8 +72,9 @@ module.exports = function checkin(ctx, { grant = null, factory = null } = {}) {
     const onDuty = ctx.isCrewOnDuty(w);
     const at = now();
     const cRef = ctx.controlRef(stream.id), pRef = db.doc(P.presence(stream.id, uid)), shard = db.doc(P.counter(stream.id, shardOf(uid)));
-    let out;
+    let out, lockedNow = false;
     await db.runTransaction(async (tx) => {
+      lockedNow = false;
       const [cs, ps] = await Promise.all([tx.get(cRef), tx.get(pRef)]);
       const control = cs.data() || {}, presence = ps.exists ? ps.data() : null;
       const v = L.validateCheckIn({
@@ -81,6 +82,7 @@ module.exports = function checkin(ctx, { grant = null, factory = null } = {}) {
         crew: seat ? { clockedIn: true, room: seat.room || room } : null, nowMs: at,
       }, settings);
       if (!v.ok) {
+        if (v.reason === "wrongWord") lockedNow = !!v.locked;
         if (v.reason === "wrongWord") tx.set(pRef, { uid, wrongTries: { [control.window.beat]: v.wrongTries }, expireAt: Timestamp.fromMillis(at + PRESENCE_TTL_MS) }, { merge: true });
         out = { ...v, beat: control.window ? control.window.beat : null };
         return;
@@ -95,6 +97,8 @@ module.exports = function checkin(ctx, { grant = null, factory = null } = {}) {
       out = { ...v, position, earned: (presence && presence.xpEarned) || 0 };
     });
     if (!out.ok) {
+      // the Deck's Unlock list: a member who just ran out of tries is mirrored where crew can read it
+      if (lockedNow && out.beat && ctx.duty) { try { await ctx.duty.mirrorLock(stream.id, { uid, handle: w.handle || null, room, beat: out.beat }); } catch (err) { console.error("live: lockedOut mirror failed", String((err && err.message) || err).slice(0, 120)); } }
       if (out.reason === "already") return { ok: true, already: true, beat: out.beat };
       if (out.reason === "signedOut") throw fail("unauthenticated", "Sign in first.", "signedOut");
       const [code, msg] = ERRORS[out.reason] || ["failed-precondition", "That didn't work."];
@@ -126,6 +130,7 @@ module.exports = function checkin(ctx, { grant = null, factory = null } = {}) {
     if (!snap.exists) throw fail("not-found", "They haven't tried this stream.", "noPresence");
     const tries = L.unlockTries(snap.get("wrongTries"), data.beat);
     await ref.update({ wrongTries: tries });
+    if (ctx.duty) { try { await ctx.duty.clearLock(stream.id, data.uid, data.beat); } catch (err) { console.error("live: lockedOut clear failed", String((err && err.message) || err).slice(0, 120)); } }
     await ctx.logAdmin(w, { action: "unlock", streamId: stream.id, title: stream.title, details: { beat: data.beat, member: data.uid } });
     return { ok: true, streamId: stream.id, beat: data.beat };
   };

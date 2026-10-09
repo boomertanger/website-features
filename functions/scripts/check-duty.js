@@ -420,11 +420,59 @@ async function main() {
   assert.equal(await why(as("adm2", "dutyTakeLead", { streamId: "s5", room: "twitch" })), "leadTaken", "a room with a Lead has none to give");
   await as("adm2", "stopStream", { streamId: "s5" });
 
+  // ================================================================ flags to the owner, the Deck's locked-out mirror, the night summary
+  clock = T0 + 90 * H; await mkStream("s6", { plannedStart: TS(clock) }, { captain: null, chats: { twitch: { lead: null, deckhands: [] }, ytLandscape: { lead: null, deckhands: [] }, ytVertical: { lead: null, deckhands: [] } }, caps: { deckhands: 2 } });
+  await as("adm2", "startStream", { streamId: "s6" });
+  await as("w2", "dutyClockIn", { streamId: "s6", room: "twitch" }); await as("dk1", "dutyClockIn", { streamId: "s6", room: "twitch" });
+  const note = "Someone posted what looks like a home address. I removed it.";
+  assert.equal(await why(as(null, "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note })), "signedOut");
+  assert.equal(await why(as("fan", "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note })), "notCrew");
+  assert.equal(await why(as("dk2", "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note })), "notOnDuty", "clock in before you flag");
+  assert.equal(await why(as("dk1", "liveFlag", { streamId: "s6", type: "boom", room: "twitch", note })), "type");
+  assert.equal(await why(as("dk1", "liveFlag", { streamId: "s6", type: "raid", room: "mars", note })), "room");
+  assert.equal(await why(as("dk1", "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note: "too short" })), "note");
+  assert.equal(await why(as("dk1", "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note: "x".repeat(281) })), "note");
+  assert.equal(await why(as("boss", "liveFlag", { streamId: "s6", type: "raid", room: "twitch", note })), "ownerHosts");
+  const fl = await as("dk1", "liveFlag", { streamId: "s6", type: "pii", room: "twitch", note });
+  assert.equal(fl.urgent, true);
+  const raid = await as("dk1", "liveFlag", { streamId: "s6", type: "raid", room: "ytLandscape", note: "Raid incoming from a friendly channel." });
+  assert.equal(raid.urgent, false);
+  let fdoc = await get(`streams/s6/flags/${fl.flagId}`);
+  assert.deepEqual([fdoc.type, fdoc.room, fdoc.byUid, fdoc.byHandle, fdoc.urgent, fdoc.seenAt, fdoc.doneAt], ["pii", "twitch", "dk1", "dk1_h", true, null, null]);
+  assert.ok(fdoc.expireAt.toMillis() - fdoc.createdAt.toMillis() >= 390 * 86400000, "expires after about 13 months");
+  assert.ok((await wdb.collection("adminLog").get()).docs.some((x) => x.get("action") === "crewFlag" && !JSON.stringify(x.data()).includes("home address")), "adminLog crewFlag, with no note text");
+  assert.ok((await wdb.collection(`${S}/notifyOutbox`).get()).docs.some((x) => x.get("type") === "crewFlag" && x.get("payload").kind === "crewFlag"), "a notifyOutbox entry kind crewFlag");
+  for (let i = 0; i < 3; i++) await as("dk1", "liveFlag", { streamId: "s6", type: "other", room: "site", note: "Something else is going on here." });
+  assert.equal(await why(as("dk1", "liveFlag", { streamId: "s6", type: "other", room: "site", note: "Something else is going on here." })), "limit", "5 flags per person per stream");
+  assert.equal(await why(as("dk1", "liveFlagAck", { streamId: "s6", flagId: fl.flagId, action: "seen" })), "notAllowed", "crew can't answer flags");
+  assert.equal(await why(as("adm2", "liveFlagAck", { streamId: "s6", flagId: raid.flagId, action: "seen" })), "notAllowed", "admins answer urgent flags only");
+  assert.equal((await as("adm2", "liveFlagAck", { streamId: "s6", flagId: fl.flagId, action: "seen" })).ok, true);
+  assert.equal(await why(as("boss", "liveFlagAck", { streamId: "s6", flagId: "ghost", action: "seen" })), "noFlag");
+  assert.equal(await why(as("boss", "liveFlagAck", { streamId: "s6", flagId: raid.flagId, action: "maybe" })), "action");
+  assert.equal(((await st("s6")).flagsSeen || {})[raid.flagId], undefined, "not seen yet: no mirror");
+  await as("boss", "liveFlagAck", { streamId: "s6", flagId: raid.flagId, action: "seen" });
+  assert.equal((await st("s6")).flagsSeen[raid.flagId], true, "the flagger can learn Seen by Boomer from private/duty");
+  assert.ok(!JSON.stringify((await st("s6")).flagsSeen).includes("Raid"), "the mirror carries no text");
+  await as("boss", "liveFlagAck", { streamId: "s6", flagId: raid.flagId, action: "done" });
+  fdoc = await get(`streams/s6/flags/${raid.flagId}`); assert.ok(fdoc.seenAt && fdoc.doneAt, "Done closes it (and counts as seen)");
+  // the Deck's Unlock list: mirrored, then removed by liveUnlock
+  assert.equal(await duty.mirrorLock("s6", { uid: "m-x", handle: "xx_h", room: "twitch", beat: "start" }), true);
+  assert.deepEqual(Object.keys((await st("s6")).lockedOut), ["m-x_start"]); assert.equal((await st("s6")).lockedOut["m-x_start"].handle, "xx_h");
+  await wdb.doc(`${S}/streams/s6/presence/m-x`).set({ uid: "m-x", wrongTries: { start: 5 } });
+  await as("w2", "liveUnlock", { uid: "m-x", beat: "start", streamId: "s6" });
+  assert.deepEqual(Object.keys((await st("s6")).lockedOut || {}), [], "liveUnlock removes the entry");
+  // Stop: the night summary for Confirm tonight's crew (crew can't read the duty records)
+  clock += 40 * MIN; await as("adm2", "stopStream", { streamId: "s6" });
+  const nightDoc = (await st("s6")).night; assert.ok(nightDoc.minutes >= 1); assert.deepEqual(nightDoc.rows.map((x) => x.handle).sort(), ["dk1_h", "w2_h"]); assert.ok(nightDoc.rows.every((x) => x.uid && typeof x.minutes === "number" && !("segments" in x)));
+  assert.deepEqual((await st("s6")).lockedOut, {}, "Stop clears the locked-out list");
+
   // ================================================================ rules and the shared-file wiring
   const rules = fs.readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8");
   assert.ok(/docId == 'duty' && \(isSiteStaff\(siteId\) \|\| isSiteOwner\(siteId\)\)/.test(rules), "private/duty: crew and the owner read it");
   assert.ok(/docId == 'control' && isOwnerOrA2Plus\(siteId\)/.test(rules), "private/control stays owner and A2+");
   assert.ok(/match \/duties\/\{dutyId\} \{\s+allow read: if request\.auth != null && \(resource\.data\.uid == request\.auth\.uid \|\| hasSiteRole\(siteId, 'admin'\) \|\| isSiteOwner\(siteId\)\);\s+allow write: if false;/.test(rules), "duties: the person, admins and the owner read; no client writes");
+  assert.ok(rules.includes("match /flags/{flagId}") && rules.includes("allow read: if isSiteOwner(siteId) || hasSiteRole(siteId, 'admin');"), "flags: the owner and admins read, no client writes");
+  assert.ok(JSON.parse(fs.readFileSync(path.join(__dirname, "..", "..", "firestore.indexes.json"), "utf8")).fieldOverrides.some((o) => o.collectionGroup === "flags" && o.ttl === true), "TTL on flags.expireAt");
   const src = (f) => fs.readFileSync(path.join(__dirname, "..", "lib", f), "utf8");
   assert.ok(/ctx\.duty\.onStart\(/.test(src("live/controls.js")) && /ctx\.duty\.closeOut\(/.test(src("live/controls.js")), "startStream and Stop call the duty hooks");
   assert.ok(/ctx\.duty\.tick\(/.test(src("live/feeds.js")), "liveTick runs the duty tick after the stream-live check");

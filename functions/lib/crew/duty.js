@@ -161,6 +161,27 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
     return true;
   }
 
+  /** The Deck's "Unlock" list: members locked out of a beat's check-in (5 wrong tries) are mirrored into private/duty.lockedOut (uid, handle, room, beat), which crew can read; private/control stays owner and A2+. */
+  async function mirrorLock(sid, { uid, handle = null, room = null, beat }) {
+    const ref = db.doc(dutyPath(sid));
+    if (!(await ref.get()).exists) return false;
+    await ref.update({ [`lockedOut.${uid}_${beat}`]: { uid, handle, room, beat, at: now() } });
+    return true;
+  }
+  async function clearLock(sid, uid, beat) {
+    const ref = db.doc(dutyPath(sid));
+    if (!(await ref.get()).exists) return false;
+    await ref.update({ [`lockedOut.${uid}_${beat}`]: FieldValue.delete() });
+    return true;
+  }
+  /** "Seen by Boomer": a bare mirror (no text) so the flagger can tell without reading the flags collection. */
+  async function markFlagSeen(sid, flagId) {
+    const ref = db.doc(dutyPath(sid));
+    if (!(await ref.get()).exists) return false;
+    await ref.update({ [`flagsSeen.${flagId}`]: true });
+    return true;
+  }
+
   /** Stop and the 12-hour auto-end: everyone clocked out, seated crew who never clocked in marked no-show, a "confirm" prompt for the Captain and the owner. Idempotent. */
   async function closeOut(sid, at = now()) {
     const s = await ctx.loadStream(sid);
@@ -181,11 +202,19 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
       const role = st.room == null ? "captain" : (draft.crew && draft.crew.chats && draft.crew.chats[st.room] && draft.crew.chats[st.room].lead && draft.crew.chats[st.room].lead.uid === st.uid ? "lead" : "deckhand");
       await db.doc(recPath(sid, st.uid)).set({ ...freshDuty(sid, st.uid, w, at), scheduled: { role, room: st.room }, lastPing: null, clockedInAt: null, endedAt: at, noShow: true });
     }
+    // the minutes everyone held, for the Captain's "Confirm tonight's crew" (crew can't read the duty records themselves)
+    const night = { minutes: Math.max(1, Math.round((at - ms(s.actualStart || at)) / D.MIN)), rows: [] };
+    for (const d of (await db.collection(paths.dutiesCol()).where("streamId", "==", sid).get()).docs) {
+      const x = d.data();
+      if (x.noShow && !D.totalMinutes(x.lines)) continue;
+      night.rows.push({ uid: x.uid, handle: x.handle || null, grade: x.grade || null, lines: x.lines || {}, minutes: D.totalMinutes(x.lines) });
+    }
+    night.rows.sort((a, b) => b.minutes - a.minutes);
     // seated people with a duty record keep their scheduled seat (set at clock in); anyone seated who clocked in is not a no-show
     await txn(sid, [], (state) => {
       if (state.state === "ended") return;
       state.captainAtStop = state.captainNow ? state.captainNow.uid : null;
-      state.onDuty = {}; state.captainNow = null; state.state = "ended"; state.endedAt = at; state.needsConfirm = true; state.rooms = {};
+      state.night = night; state.lockedOut = {}; state.onDuty = {}; state.captainNow = null; state.state = "ended"; state.endedAt = at; state.needsConfirm = true; state.rooms = {};
       const to = state.captainAtStop || owner.uid;
       state.prompts = { confirm: { id: "confirm", kind: "confirm", to, createdAt: at, expiresAt: at + 7 * 24 * 3600000, status: "open", text: "Confirm tonight's crew" } };
     }, { create: blank(sid, at, s) });
@@ -782,6 +811,6 @@ module.exports = function duty(ctx, { gears = null, grant = null } = {}) {
 
   return {
     functions: { dutyClockIn, dutyPing, dutyStepAway, dutyBack, dutyTakeLead, dutyDecline, dutyReassign, captainSet, dutyConfirmNight, dutyAutoConfirm, crewLockLift },
-    onStart, closeOut, copyVideoIds, tick, payNight, runAutoConfirm, creditPresence, loadState,
+    onStart, closeOut, copyVideoIds, mirrorLock, clearLock, markFlagSeen, tick, payNight, runAutoConfirm, creditPresence, loadState,
   };
 };

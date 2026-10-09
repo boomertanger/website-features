@@ -203,6 +203,12 @@
       "indexes": []
     },
     {
+      "collectionGroup": "flags",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
       "collectionGroup": "notes",
       "fieldPath": "expireAt",
       "ttl": true,

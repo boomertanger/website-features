@@ -872,6 +872,12 @@ service cloud.firestore {
           allow write: if false;
         }
 
+        // Flags to the owner (Mod Machina phase 3 part 5): the owner and admins read them; only liveFlag and liveFlagAck write. The flagger learns "Seen by Boomer" from private/duty.flagsSeen, so crew never read this.
+        match /flags/{flagId} {
+          allow read: if isSiteOwner(siteId) || hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
+
         // Check-in presence: that member reads their own record ("What we recorded for this stream"), admins read all.
         // Written by streamCheckIn and the settle step only; it expires after 13 months (TTL on expireAt).
         match /presence/{uid} {
