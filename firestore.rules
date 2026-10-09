@@ -67,15 +67,17 @@ service cloud.firestore {
     // Functions via the Admin SDK; admins can read it; nobody writes from a
     // browser. Entries expire via a TTL policy on expireAt.
     match /adminLog/{entryId} {
-      // isAdmin() is the legacy allowlist (admins/{uid}); hasSiteRole is the new site's admin role (the Feature Lab's Admin activity list, docs/specs/feature-lab.md §5).
-      allow read: if isAdmin() || hasSiteRole('boomertanger', 'admin');
+      // isAdmin() is the legacy allowlist (admins/{uid}); hasSiteRole is the new site's admin role (the Feature Lab's Admin activity list, docs/specs/feature-lab.md §5); the owner is
+      // named too (Cloud Stash's Activity tab, docs/specs/cloud-stash.md §7).
+      allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');
       allow write: if false;
     }
 
     // Admin settings (e.g. adminSettings/log { retentionDays }), edited by
     // hand in the Firebase console. Read by Cloud Functions via the Admin SDK.
+    // New-site admins read these too (Cloud Stash's Limits and settings, docs/specs/cloud-stash.md §7); every write stays false (the stash callables write them).
     match /adminSettings/{docId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');
       allow write: if false;
     }
 
@@ -160,8 +162,9 @@ service cloud.firestore {
     // safely be trusted to do (an interrupted client write could delete the
     // Firestore record while the file stays live in Cloudinary, or clear a
     // linked doc's field while the Cloudinary asset survives).
+    // Reads: the legacy allowlist, the owner and new-site admins (Cloud Stash, docs/specs/cloud-stash.md §7).
     match /externalAssets/{assetId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');
       allow write: if false;
     }
 
@@ -169,7 +172,7 @@ service cloud.firestore {
     // ever move this counter, so client writes (even correct-looking ones)
     // are refused rather than trusted to stay in sync.
     match /storageUsage/{docId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');
       allow write: if false;
     }
 
@@ -179,8 +182,9 @@ service cloud.firestore {
     // create/update validate the new doc; delete gets its own line because
     // a delete has no request.resource (a combined "write" rule errored on
     // it, so admins could never delete a rule).
+    // New-site admins READ rules here; the new page changes them only through the stash callables (the legacy isAdmin() writes below stay until launch).
     match /cleanupRules/{ruleId} {
-      allow read: if isAdmin();
+      allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');
       allow delete: if isAdmin();
       allow create, update: if isAdmin()
         && request.resource.data.feature is string

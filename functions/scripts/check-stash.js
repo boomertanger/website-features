@@ -323,5 +323,20 @@ const logs = async (action) => (await col("adminLog")).filter((e) => e.feature =
   assert.equal(typeof require("../lib/cloudinary").cloudinaryDelete, "function"); assert.equal(typeof require("../lib/cloudinary").usage, "function"); assert.equal(typeof require("../lib/cloudinary").listResources, "function"); assert.equal(typeof require("../lib/externalAssets").recordUntrackedAsset, "function");
   const vc = require("../lib/vault/cloudinary"); assert.equal(vc.signParams, require("../lib/cloudinary").signParams, "the Vault re-exports the shared helpers, no copies");
 
+  // ================================================================ rules and indexes (text checks: no emulator here)
+  const rules = fs.readFileSync(path.join(root, "..", "firestore.rules"), "utf8").replace(/\r\n/g, "\n");
+  const NEWREAD = "allow read: if isAdmin() || isSiteOwner('boomertanger') || hasSiteRole('boomertanger', 'admin');";
+  const block = (name) => { const i = rules.indexOf("match /" + name + " {"); assert.ok(i > 0, name); return rules.slice(i, rules.indexOf("\n    }\n", i)); };
+  for (const m of ["adminLog/{entryId}", "adminSettings/{docId}", "externalAssets/{assetId}", "storageUsage/{docId}", "cleanupRules/{ruleId}"]) assert.ok(block(m).includes(NEWREAD), m + " is readable by the legacy allowlist, the owner and new-site admins");
+  for (const m of ["adminLog/{entryId}", "adminSettings/{docId}", "externalAssets/{assetId}", "storageUsage/{docId}"]) assert.ok(/allow write: if false;/.test(block(m)), m + ": no client writes");
+  assert.ok(/allow create, update: if isAdmin\(\)/.test(block("cleanupRules/{ruleId}")) && /allow delete: if isAdmin\(\);/.test(block("cleanupRules/{ruleId}")), "the legacy cleanupRules writes stay until launch");
+  assert.ok(!/legacy.*removed/i.test(block("externalAssets/{assetId}")), "nothing in the legacy rules was removed");
+  const idxJson = JSON.parse(fs.readFileSync(path.join(root, "..", "firestore.indexes.json"), "utf8"));
+  const has = (group, fields) => idxJson.indexes.some((i) => i.collectionGroup === group && i.queryScope === "COLLECTION" && JSON.stringify(i.fields.map((x) => [x.fieldPath, x.order])) === JSON.stringify(fields));
+  assert.ok(has("adminLog", [["feature", "ASCENDING"], ["createdAt", "DESCENDING"]]), "adminLog by feature, newest first (the Activity tab)");
+  assert.ok(has("adminLog", [["itemPath", "ASCENDING"], ["createdAt", "DESCENDING"]]), "the existing adminLog index is still there");
+  const ti = T.BUG_SCREENSHOTS.index; assert.ok(has(ti.collectionGroup, ti.fields), "each allowlisted target's composite index ships (reports: closed, closedAt)");
+  assert.ok(idxJson.indexes.every((i, n) => idxJson.indexes.findIndex((j) => JSON.stringify(j) === JSON.stringify(i)) === n), "no duplicate index entries");
+
   console.log("check-stash: ok");
 })().catch((e) => { console.error(e); process.exit(1); });

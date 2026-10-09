@@ -61,6 +61,14 @@
       "collectionGroup": "adminLog",
       "queryScope": "COLLECTION",
       "fields": [
+        { "fieldPath": "feature", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
+      "collectionGroup": "adminLog",
+      "queryScope": "COLLECTION",
+      "fields": [
         { "fieldPath": "itemPath", "order": "ASCENDING" },
         { "fieldPath": "createdAt", "order": "DESCENDING" }
       ]
