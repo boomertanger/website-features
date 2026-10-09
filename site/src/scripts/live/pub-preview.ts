@@ -112,8 +112,11 @@ export function previewApi(): PubApi {
       fn(snapshot(kind));
       const live = kind !== "off" && kind !== "soon" && kind !== "ended";
       if (!live) return () => {};
-      const t = setInterval(() => fn(snapshot(kind)), 3000);
-      return () => clearInterval(t);
+      // ?handover=1: a public stream hands over to the after-show after 4 seconds (the page changes over without a reload)
+      let k: Kind = kind;
+      const h = q().get("handover") === "1" && kind === "live" ? setTimeout(() => { k = "backstage"; fn(snapshot(k)); }, 4000) : 0;
+      const t = setInterval(() => fn(snapshot(k)), 3000);
+      return () => { clearInterval(t); clearTimeout(h); };
     },
     next: async () => (kind === "off" || kind === "soon" || kind === "ended" ? nextStream(kind) : null),
     stream: async () => streamDoc(kind),

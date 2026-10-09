@@ -58,7 +58,7 @@ function twitchSrc(autoplay: boolean) {
   const q = new URLSearchParams({ channel: site.twitchChannel, parent: location.hostname, muted: "false", autoplay: String(autoplay) });
   return `https://player.twitch.tv/?${q}`;
 }
-function ytSrc(id: string) { return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&modestbranding=1`; }
+function ytSrc(id: string) { return `https://www.youtube-nocookie.com/embed/${encodeURIComponent(id)}?rel=0&modestbranding=1&enablejsapi=1&origin=${encodeURIComponent(location.origin)}`; }
 function ytChatSrc(id: string) { return `https://www.youtube.com/live_chat?v=${encodeURIComponent(id)}&embed_domain=${encodeURIComponent(location.hostname)}`; }
 
 const beacon = (bs: boolean) => bs
@@ -95,16 +95,42 @@ function videoHtml(c: PubCtx): string {
   const chat = bs && c.member && backstage.state === "ok" && backstage.videoId && !c.api.preview
     ? `<iframe class="lp-ytchat" src="${esc(ytChatSrc(backstage.videoId))}" title="YouTube chat" referrerpolicy="strict-origin-when-cross-origin"></iframe>`
     : bs && c.member && backstage.state === "ok" && c.api.preview ? `<div class="lp-ytchat lp-ytchat--stub"><i>YouTube chat</i><p><b>cryptkeeper</b> the hallway noise</p><p><b>nightowl</b> welcome backstage everyone</p></div>` : "";
-  const foot = `<div class="lp-vfoot"><span>Uptime <b data-up>0:00:00</b></span><span aria-hidden="true">·</span><span><b data-total>0</b> watching</span></div>`;
+  const reload = bs && c.member && backstage.state === "ok" && !c.api.preview ? `<button type="button" class="bt-link-btn lp-reload" data-lp-reload>Video not playing? Reload it</button>` : "";
+  const foot = `<div class="lp-vfoot"><span>Uptime <b data-up>0:00:00</b></span><span aria-hidden="true">·</span><span><b data-total>0</b> watching</span>${reload}</div>`;
   return `<div class="lp-vbox${chat ? " has-chat" : ""}">${viewport}${chat}</div>${foot}`;
 }
 
+let lastBs: boolean | null = null, fresh = false;
+/** A public stream handing over to the after-show: the curtains close over the picture, then the green backstage view opens (no reload; held still under reduced motion). */
+function curtainsClosing() {
+  keys.video = "handover";
+  panel("video").innerHTML = crViewportHtml({ label: "Switching to the after-show", innerHtml: `${corridorSvg("lp-vid")}<span class="lp-curtain is-l is-close" aria-hidden="true"></span><span class="lp-curtain is-r is-close" aria-hidden="true"></span><span class="lp-screen-tag">Switching to the after-show…</span>` });
+  setTimeout(() => { fresh = true; keys.video = ""; drawVideo(cur); }, reduced() ? 700 : 1400);
+}
 function drawVideo(c: PubCtx) {
   const bs = isBackstage(c);
+  if (keys.video === "handover") return;
+  if (lastBs === false && bs) { lastBs = true; curtainsClosing(); return; }
+  lastBs = bs;
   const key = `${bs}|${c.pub.streamId}|${c.member}|${played}|${backstage.state}|${c.api.preview}`;
-  patch("video", key, () => videoHtml(c));
+  patch("video", key, () => videoHtml(c), (el) => { if (fresh) { fresh = false; el.querySelector(".lp-vbox")?.classList.add("is-fresh"); el.querySelectorAll(".lp-curtain").forEach((x) => x.classList.add("is-open-in")); } });
 }
 
+/**
+ * The embed reports its errors by postMessage (enablejsapi): the page then asks backstageWatch for the id AGAIN (it is never kept in localStorage or anywhere
+ * but this closure), at most 3 times in 2 minutes; after that the video box says so and offers Try again. "Reload it" under the video does the same on demand.
+ */
+let retries: number[] = [];
+function onEmbedMessage(e: MessageEvent) {
+  if (e.origin !== "https://www.youtube-nocookie.com" || typeof e.data !== "string") return;
+  let m: any; try { m = JSON.parse(e.data); } catch { return; }
+  if (m?.event !== "onError") return;
+  const now = Date.now();
+  retries = retries.filter((t) => now - t < 120_000);
+  if (retries.length >= 3) { backstage = { state: "error", message: "The video keeps failing. Give it a minute.", for: backstage.for }; keys.video = ""; drawVideo(cur); return; }
+  retries.push(now);
+  void loadBackstage(cur, true);
+}
 async function loadBackstage(c: PubCtx, force = false) {
   const id = c.pub.streamId || "";
   if (!isBackstage(c) || !c.member || !id) { if (backstage.state !== "idle" && (!c.member || !isBackstage(c))) backstage = { state: "idle" }; return; }
@@ -320,12 +346,16 @@ function redraw(c: PubCtx) {
 
 const part: ViewPart = {
   mount(ctx, el) {
-    box = el; cur = ctx; keys = {}; presence = null; presenceFor = ""; played = false; backstage = { state: "idle" }; firstNumbers = true;
+    box = el; cur = ctx; keys = {}; presence = null; presenceFor = ""; played = false; backstage = { state: "idle" }; firstNumbers = true; lastBs = null; fresh = false; retries = [];
     el.innerHTML = `<div class="lp-grid"><div class="lp-main"><div data-p="video" class="lp-video"></div><div data-p="rail"></div><div data-p="now"></div><div data-p="play"></div></div>
       <div class="lp-side"><div data-p="readouts"></div><div data-p="checkin"></div><div data-p="crew"></div><div data-p="watch"></div></div></div>`;
+    window.addEventListener("message", onEmbedMessage);
+    // when the backstage iframe has loaded, ask YouTube to send its events (errors) to this page
+    el.addEventListener("load", (e) => { const f = e.target as HTMLIFrameElement; if (f?.classList?.contains("lp-embed") && f.src.includes("youtube-nocookie")) f.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), "https://www.youtube-nocookie.com"); }, true);
     el.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
-      if (t.closest("[data-lp-play]")) { played = true; keys.video = ""; drawVideo(cur); }
+      if (t.closest("[data-lp-reload]")) { retries = []; void loadBackstage(cur, true); }
+      else if (t.closest("[data-lp-play]")) { played = true; keys.video = ""; drawVideo(cur); }
       else if (t.closest("[data-lp-retry]")) void loadBackstage(cur, true);
     });
     clearInterval(timer);
@@ -338,6 +368,6 @@ const part: ViewPart = {
     void loadPresence(ctx);
     void loadBackstage(ctx);
   },
-  unmount() { clearInterval(timer); timer = 0; box.innerHTML = ""; },
+  unmount() { clearInterval(timer); timer = 0; window.removeEventListener("message", onEmbedMessage); box.innerHTML = ""; },
 };
 export default part;

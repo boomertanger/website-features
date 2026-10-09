@@ -219,3 +219,19 @@
   .bt-root:not(#_) .lp-wrap-stamp { order: 0; grid-column: 1 / -1; display: flex; justify-content: center; }
 }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lp-wbar i { animation: none; } }
+
+/* ---- the hand-over to the after-show: the curtains close over the picture, then the green backstage view opens ---- */
+.bt-root:not(#_) .lp-curtain.is-close { width: 52%; animation: lp-curtain-close 0.9s cubic-bezier(0.5, 0, 0.3, 1) both; }
+.bt-root:not(#_) .lp-curtain.is-l.is-close { border-radius: 0; }
+.bt-root:not(#_) .lp-curtain.is-r.is-close { border-radius: 0; }
+.bt-root:not(#_) .lp-curtain.is-open-in { animation: lp-curtain-open 0.9s cubic-bezier(0.3, 0.7, 0.2, 1) both; }
+.bt-root:not(#_) .lp-vbox.is-fresh { animation: lp-fresh 0.8s ease-out both; }
+@keyframes lp-curtain-close { from { transform: translateX(-100%); } }
+.bt-root:not(#_) .lp-curtain.is-r.is-close { animation-name: lp-curtain-close-r; }
+@keyframes lp-curtain-close-r { from { transform: translateX(100%); } }
+@keyframes lp-curtain-open { from { width: 52%; } }
+@keyframes lp-fresh { from { opacity: 0; transform: scale(0.98); } }
+.bt-root:not(#_) .lp-reload { margin-left: auto; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.lp-curtain.is-close, .lp-curtain.is-open-in, .lp-vbox.is-fresh) { animation: none; }
+}
