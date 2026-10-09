@@ -76,6 +76,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       // and a signed-in member always wins over it.
       import { startAuth } from "../lib/auth";
       startAuth();
+      // The live state (data-live on <body>): ONE public/live listener per tab, opened once the page is idle (lib/live.ts).
+      import { startLiveWhenIdle } from "../lib/live";
+      startLiveWhenIdle();
       import "../scripts/account/ui";
       import "../scripts/factory/site-wide";
       // Header menus (Watch / Play / Community): hover or click opens a panel.

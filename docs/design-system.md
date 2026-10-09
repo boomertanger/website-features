@@ -1634,7 +1634,7 @@ Spec `docs/specs/scream-planner.md` (§13), mockups `docs/design/mockups/scream-
 - **Colours and tone:** purple clickable, gold "needed" and headings, green staff controls, no red (nothing in the Planner destroys data; cancel uses `confirmAction` in the non-destructive tone).
 
 ### 8p. Control Room
-Spec `docs/specs/control-room.md` (confirmed Oct 8, 2026); mockups `docs/design/mockups/control-room-review.html` and `control-room-batch-1.html` to `control-room-batch-4.html`. **Kit pieces and the two looks are built (Oct 8, 2026; §5 "Control Room pieces", UI Kit page section "Control Room"). The Control Room pages are not built yet.**
+Spec `docs/specs/control-room.md` (confirmed Oct 8, 2026); mockups `docs/design/mockups/control-room-review.html` and `control-room-batch-1.html` to `control-room-batch-4.html`. **Kit pieces and the two looks are built (Oct 8, 2026; §5 "Control Room pieces", UI Kit page section "Control Room"). /live/control and the public /live page are built (part 6): `/live` is `site/src/pages/live.astro` + `scripts/live/pub*.ts` + `styles/live-public.css` (prefix `lp-`), one controller choosing the waiting room (story page, also `/live?how=1`), the Bridge (live, Break, backstage) or the wrap-up; the live state across the site is `site/src/lib/live.ts` (one `public/live` listener per tab, sets `data-live` on `<body>`, released after a minute hidden). Staging preview: `?live=off|public|backstage` or `?state=off|soon|live|break|backstage|ended`, `?as=visitor|member`, `?look=crt`.**
 
 **Mockup picks (spec §19):**
 - **/live layout 1 "Bridge".** One column on phones in this order: video, beats, check-in, Play panel, Now playing, crew, readouts, Watch on.

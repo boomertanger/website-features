@@ -8,6 +8,8 @@
 import site from "../data/site.json";
 import { initWatchTile, playFeatureHtml, communityFeatureHtml } from "../../../shared/ui/navgroup.js";
 import { escapeHtml } from "../../../shared/ui/dom.js";
+import { liveNow, onLive } from "../lib/live";
+import { loadNextStream } from "../lib/next-stream";
 
 type Tile = { start: () => void; stop: () => void };
 let watch: Tile | null = null;
@@ -65,13 +67,31 @@ export async function loadSheetFeature(tile: HTMLAnchorElement) {
   if (body) body.innerHTML = `<b>Today in the Arcade</b><small>${escapeHtml(d.title)}${d.best ? `. ${escapeHtml(d.bestNote.replace(/.$/, ""))}: ${escapeHtml(d.best)}` : ". Tap to play."}</small>`;
 }
 
+/**
+ * The Watch tile's real content: the live stream's own title while live (kept in step by the shared public/live listener), otherwise the next published
+ * stream. site.json's nextStream is the fallback when nothing is scheduled or the read fails. Runs once, the first time the panel opens.
+ */
+async function startWatch(tile: Element) {
+  let title = site.nextStream.title, startsAt = site.nextStream.startsAt;
+  const strong = tile.querySelector("strong"), when = tile.querySelector<HTMLTimeElement>("time[data-stream-time]");
+  const live = liveNow();
+  if (!(live && live.state !== "off" && live.state !== "ended" && live.title)) {
+    const n = await withTimeout(loadNextStream().catch(() => null), SETTLE_MS);
+    if (n) { title = n.title; startsAt = new Date(n.start).toISOString(); if (when) { when.setAttribute("datetime", startsAt); when.textContent = ""; when.removeAttribute("data-stream-time"); when.textContent = new Intl.DateTimeFormat("en-US", { weekday: "long", hour: "numeric", minute: "2-digit" }).format(n.start); } }
+  } else title = live.title!;
+  if (strong) strong.textContent = title;
+  onLive((p) => { if ((p.state === "live" || p.state === "backstage") && p.title && strong) strong.textContent = p.title; });
+  watch = initWatchTile(tile, { title, startsAt, url: `${location.origin}/live`, name: site.name });
+  watch.start();
+}
+
 /** navgroup.js onOpen: fills a group's feature tile the first time its panel opens (Watch's countdown runs while open). */
 export function onNavOpen(name: string, panel: HTMLElement, { first }: { first: boolean }) {
   const tile = panel.querySelector("[data-navgroup-feature]");
   if (!tile) return;
   if (name === "watch") {
-    if (first) watch = initWatchTile(tile, { title: site.nextStream.title, startsAt: site.nextStream.startsAt, url: `${location.origin}/live`, name: site.name });
-    watch?.start();
+    if (first) void startWatch(tile);
+    else watch?.start();
   } else if (first && name === "play") void loadPlay(tile);
   else if (first && name === "community") void loadCommunity(tile);
 }

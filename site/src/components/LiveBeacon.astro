@@ -8,5 +8,5 @@ const { startsAt, game } = site.nextStream;
 const short = formatStreamTime(startsAt, "short", site.timezone);
 ---
 <a class="bt-beacon bt-when-off" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Next stream<span class="bt-beacon-sub"><time data-stream-time="short" datetime={startsAt}>{short}</time></span></a>
-<a class="bt-beacon bt-beacon--public bt-when-public" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Live<span class="bt-beacon-sub">{game}</span></a>
+<a class="bt-beacon bt-beacon--public bt-when-public" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Live<span class="bt-beacon-sub" data-live-sub>{game}</span></a>
 <a class="bt-beacon bt-beacon--backstage bt-when-backstage" href="/live"><span class="bt-beacon-dot" aria-hidden="true"></span>Backstage<span class="bt-beacon-sub">Members only</span></a>
