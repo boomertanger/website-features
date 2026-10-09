@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: the service is named Chat Games, not live activities (decided Oct 9, 2026). Chat Games is the one service and engine for Questions and every game; the future spec is docs/specs/chat-games.md and ROADMAP 5b is "Chat Games (Questions and every game)". control-room.md, mod-machina.md, ROADMAP, design-system.md and the control-room test plan are updated, and the "Coming with live activities" text on /live, the Deck feed and the Stream Deck list now says Chat Games.
 docs: Mod Machina phase 3 spec (the Mod Deck) and approved mockups (H1, P1, R1).
 docs: Chat Games are merged into live activities (decided Oct 9, 2026). ROADMAP 5b now absorbs Mod Machina phase 4: one engine, two member-facing names (Questions, Chat Games), crew-hosted games last. control-room.md section 9, mod-machina.md sections 11 and 15 and the ROADMAP point to 5b; the game designs and crew-vote rules stay in mod-machina.md section 11 until docs/specs/live-activities.md moves them.
 functions, docs: retired functions/scripts/seed-bug-cleanup-rule.js (deleted). Production setup of the Bug Zapper screenshot cleanup rule runs only seed-cloud-stash.js; docs/specs/bug-zapper.md, the ROADMAP launch checklist and check-bugs.js no longer point at the old script.

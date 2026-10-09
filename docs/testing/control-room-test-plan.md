@@ -1,6 +1,6 @@
 # Control Room test plan
 
-Hand-run checks for the Control Room on staging (`PUBLIC_FIREBASE_ENV=staging`), with real accounts. The automated checks (`npm run check` in `functions/`, the Playwright runs in the build notes) cover the logic and the layouts; this plan is what only a person with Streamlabs, a second browser and a few accounts can prove. It opens with six walk-throughs (W1 to W6: check-in from another page, the two-tab test, the stream view in Streamlabs, the Stream Deck, Twitch EventSub and a real Start), then the part 9 checks (A to E: after-show and backstage). Add Questions and Hot Seat here when the live activities are built.
+Hand-run checks for the Control Room on staging (`PUBLIC_FIREBASE_ENV=staging`), with real accounts. The automated checks (`npm run check` in `functions/`, the Playwright runs in the build notes) cover the logic and the layouts; this plan is what only a person with Streamlabs, a second browser and a few accounts can prove. It opens with six walk-throughs (W1 to W6: check-in from another page, the two-tab test, the stream view in Streamlabs, the Stream Deck, Twitch EventSub and a real Start), then the part 9 checks (A to E: after-show and backstage). Add Questions and Hot Seat here when the Chat Games are built.
 
 Accounts you need: **Owner** (boss), **Overseer** (A2), a **Fan Club member** (signed up, free), a **visitor** (signed out), and a **signed-in non-member** (signed in, signup unfinished) if you can make one.
 Staging safety: every YouTube event is Private and starts with `[STAGING] `; nothing here reaches production.
@@ -49,7 +49,7 @@ Tab A: the owner on /live/control. Tab B: /live as a signed-in member (and a thi
 2. In the Stream Deck software add three web-request keys (a plugin such as API Ninja or Web Requests): **Begin next beat** (`.../liveDeck?k=<key>&action=nextBeat`), **Open check-in** (`&action=openCheckin&minutes=3`) and **Be right back** (`&action=scene&scene=brb&brbMinutes=5`). The card lists every URL with a Copy button.
 3. With the Dry run live, press each key. Expect: the beat begins, the window opens, the stream view shows Be right back with its timer, and the controls page updates within about two seconds. The Admin log shows the actor **Stream Deck**.
 4. Add a **Multi Action** key: first the Streamlabs plugin's switch-scene action (your Break scene), then the Open check-in request, then "Begin next beat". One press should switch Streamlabs, begin Break 1 and open the check-in.
-5. Negative checks: a wrong key gives 403; the key made for the stream view does not work here; `action=start` or `action=stop` is refused ("Start and Stop stay on the controls page"); Questions and Hot Seat actions say they arrive with the live activities; more than 30 presses a minute are refused (429).
+5. Negative checks: a wrong key gives 403; the key made for the stream view does not work here; `action=start` or `action=stop` is refused ("Start and Stop stay on the controls page"); Questions and Hot Seat actions say they arrive with Chat Games; more than 30 presses a minute are refused (429).
 
 ### W5. Twitch EventSub (next real Twitch stream)
 

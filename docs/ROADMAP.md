@@ -12,7 +12,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
 | 4b | Notifications (email, text, push from the Planner's outbox) | Later | Community services |
 | 5 | Live Beacon and Control Room | Built on staging (parts 0-9); real-world tests pending | Games and streams |
-| 5b | Live activities (Questions and Chat Games; absorbs Mod Machina phase 4) | Next | Community services |
+| 5b | Chat Games (Questions and every game; absorbs Mod Machina phase 4) | Next | Community services |
 | 6 | Stream Library | Later | Games and streams |
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
@@ -102,10 +102,10 @@ Parts (spec section 18; one or more commits each, staging first; all built):
 Depends on: Scream Planner, Game Vault, accounts (done), Twitch app (done).
 Kickoff: "Start workstream 5 (Live Beacon and Control Room) from docs/ROADMAP.md."
 
-### 5b. Live activities (Questions and Chat Games; absorbs Mod Machina phase 4)
-Decided Oct 9, 2026: Chat Games are merged into live activities. One service and one engine, called "live activities" internally; members see two names only, **Questions** (the queue) and **Chat Games** (every game, including Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo and Body Count). Some games are crew-hosted (they need Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. The game designs and crew-vote rules stay in `docs/specs/mod-machina.md` section 11 until the spec moves them.
-Goal: live things members do during a stream: Questions (ask and promote), Chat Games, then the ranked extras. Its own service, after the Control Room core. The Control Room already has the places for it: the Play panel on /live, the launch panel on /live/control and in the Mod Deck, the question card and the Hot Seat pickers still to add to the kit (`.bt-qcard`, `.bt-seance`, `.bt-wheel`), and the stream view scenes.
-Spec: to come, `docs/specs/live-activities.md` (see control-room.md section 9 and decision 13).
+### 5b. Chat Games (Questions and every game; absorbs Mod Machina phase 4)
+Decided Oct 9, 2026: **Chat Games** is the one service and the one engine for Questions and every game (the earlier working name "Chat Games" is retired). Members see two names only, **Questions** (the queue) and **Chat Games** (every game, including Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo and Body Count). Some games are crew-hosted (they need Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. The game designs and crew-vote rules stay in `docs/specs/mod-machina.md` section 11 until the spec moves them.
+Goal: live things members do during a stream: Questions (ask and promote) and every Chat Game, then the ranked extras. Its own service, after the Control Room core. The Control Room already has the places for it: the Play panel on /live, the launch panel on /live/control and in the Mod Deck, the question card and the Hot Seat pickers still to add to the kit (`.bt-qcard`, `.bt-seance`, `.bt-wheel`), and the stream view scenes.
+Spec: to come, `docs/specs/chat-games.md` (see control-room.md section 9 and decision 13).
 Status: **Next.**
 Depends on: Control Room (5); the crew-hosted games also need the Mod Deck (Mod Machina phase 3).
 
@@ -151,7 +151,7 @@ Next, in order:
 1. **Header nav redesign (done, pushed Oct 7).** The header is now Watch, Play and Community menus plus Shop (spec `docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html`), each with a live feature tile, and Crew is back in Community. The phone More sheet is grouped the same way; Crew also stays in the account menu and the footer. Bug Zapper, Feature Lab and Horror Monthly join Community when their modules are enabled.
 2. **Phase 2: Scream Planner seats** (the Planner's backend provides `dutySignUp` / `dutyDrop` / `dutyConfirm`, availability and reminders) and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
 3. **Phase 3: Control Room / Mod Deck**: clock in, handoffs, duty Gears, per-room check-in codes, YouTube moderator sync, Recruit Rush, and the activity rules switched on (`crew.activityRules`; the HQ time card stops saying "Starts with stream duty").
-4. **Phase 4: Chat Games, now part of workstream 5b (live activities).** The pool, crew votes, Planner slot and Play panel (Dead Air and Scream Off first among the crew-hosted games) are built there, after the Mod Deck; Academy module 8 and the Captain's course content go live with them.
+4. **Phase 4: Chat Games, now part of workstream 5b (Chat Games).** The pool, crew votes, Planner slot and Play panel (Dead Air and Scream Off first among the crew-hosted games) are built there, after the Mod Deck; Academy module 8 and the Captain's course content go live with them.
 Depends on: Badges.
 Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 

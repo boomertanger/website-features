@@ -49,7 +49,7 @@ async function runShortcut(ctx: Ctx, name: string) {
     shortcutUsed(ctx, name);
     return;
   }
-  toast("That arrives with the live activities.", { kind: "info" });
+  toast("That arrives with Chat Games.", { kind: "info" });
 }
 
 /** A control the owner used ticks the matching row of the current beat. */

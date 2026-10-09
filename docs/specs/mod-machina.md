@@ -219,7 +219,7 @@ For crew while a stream is live; the owner sees it too.
 - The queue is generic (`role: mod | keeper`) so the Arcade's Keeper volunteers reuse it.
 
 ## 11. Chat Games (run by the crew, played by members, live in every chat)
-> **Decided Oct 9, 2026: Chat Games are merged into live activities (workstream 5b).** One service and one engine, called "live activities" internally. Members see two names only: **Questions** (the queue) and **Chat Games** (every game: Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo, Body Count). A game can be crew-hosted (it needs Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. Spec: `docs/specs/live-activities.md` (to come). The game designs, crew votes, pledges and packs below stay valid and move into that spec when it is written; this section is the source until then.
+> **Decided Oct 9, 2026: Chat Games is the one service and the one engine for Questions and every game (workstream 5b); the earlier working name "Chat Games" is retired.** Members see two names only: **Questions** (the queue) and **Chat Games** (every game: Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo, Body Count). A game can be crew-hosted (it needs Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. Spec: `docs/specs/chat-games.md` (to come). The game designs, crew votes, pledges and packs below stay valid and move into that spec when it is written; this section is the source until then.
 
 Name decided Oct 6: **Chat Games** (not "Side Quests", which would blur with Night Shift campaigns). On stream they can carry a branded line ("Chat Games, tonight on the Kill Floor"); the site name stays Chat Games. Keeps the three kinds of game apart: Boom Arcade games (played on the site any time), Game Vault games (what Boomertanger streams), Chat Games (live, during a stream, with chat).
 
@@ -337,7 +337,7 @@ Triggers: referral activation (on the first qualifying event), presence → duty
 1. **Crew core** (needs only accounts + Trophy Room core). Until stream duty exists (phase 3): the monthly activity rules stay off (site setting `crew.activityRules = false`, the time card says "Starts with stream duty"); the join requirement "3 stream check-ins" and the Fan Favourite voter rule "a stream check-in that month" use Night Shift daily check-ins instead (3 in the last 30 days / 1 that month), owner can waive. Includes: grades and status, crew profiles and platform preferences, the queue (/crew/join, vouch, owner decision), Academy with modules 1-7 and 9, task board + Gears + crew board, referral links, monthly awards, /crew and how-it-works pages, /admin/crew with coverage map (preferences only at first). Twitch moderator sync.
 2. **With the Schedule Planner**: seats, sign-ups, swap board, reliability, reminders.
 3. **With the Control Room: the Mod Deck (confirmed Oct 9, 2026, see section 17a)**: swap board, /live/deck, clock in, handoffs, duty Gears, activity rules on, Recruit Rush. YouTube moderator sync stays later (section 17a, out of scope).
-4. **Chat Games: now live activities (workstream 5b, ROADMAP).** The pool and crew votes, Planner slot, Play panel; Dead Air + Scream Off, then Bingo + Body Count; module 8 and the Captain's course. Built in 5b in the order set in section 11 (Questions and Hot Seat, quick formats, then crew-hosted games after the Mod Deck from phase 3).
+4. **Chat Games: now workstream 5b (ROADMAP).** The pool and crew votes, Planner slot, Play panel; Dead Air + Scream Off, then Bingo + Body Count; module 8 and the Captain's course. Built in 5b in the order set in section 11 (Questions and Hot Seat, quick formats, then crew-hosted games after the Mod Deck from phase 3).
 5. **Later**: Houses, a chat bot for !join / !code on Twitch and YouTube, Stream Deck buttons.
 
 ## 16. Kit pieces (new)
@@ -453,7 +453,7 @@ Every live stream has one Captain at a time, stored as `crew.captainNow` on the 
 
 | Tool | What it does | Built on |
 | --- | --- | --- |
-| Launch panel | The same panel and permissions control-room.md gives the Captain (§3, §4, §9); its activity tiles are a slot live activities fills | `.bt-launch` and its callables |
+| Launch panel | The same panel and permissions control-room.md gives the Captain (§3, §4, §9); its activity tiles are a slot Chat Games fills | `.bt-launch` and its callables |
 | Unlock a member | Lists members locked out of the current beat's check-in, with Unlock | liveUnlock |
 | TikTok viewers | Type tonight's TikTok viewer count from the app | liveViewerEntry |
 | Reassign seats | Move someone on duty to another room or role (within their grade), or free a seat whose holder left. Moving someone into Lead or Captain sends them an accept prompt. | new dutyReassign |
@@ -532,7 +532,7 @@ A tool page in the Control Room's look system: the approved D1 chat wall, wearin
 - **Captain's helm strip (H1):** for the Captain only, one row under the rooms strip with Unlock (count of locked-out members), TikTok viewers (current count), Reassign and Launch panel; each opens its panel under the strip, one at a time. On phones the strip is in the Tools tab.
 - **Chat wall:** Twitch, YouTube Landscape and YouTube Vertical side by side in `.bt-chat-feed` columns; TikTok is a link-out tile (no embed exists). A Focus toggle (D2) makes your chat big with one beside it.
 - **Side rail:** quick lines (room link, referral link, house rules, socials, today's schedule), the Recruit Rush bar when on, and the crew notes strip.
-- **Activity slots:** two empty places live activities fills later: the cue slot at the top of the rail (your room's next cue, with Posted) and the launch panel's activity tiles. This build ships them empty; an empty slot renders nothing. Live activities registers what goes in them, so the Deck never changes when a new activity ships.
+- **Activity slots:** two empty places Chat Games fills later: the cue slot at the top of the rail (your room's next cue, with Posted) and the launch panel's activity tiles. This build ships them empty; an empty slot renders nothing. Chat Games registers what goes in them, so the Deck never changes when a new activity ships.
 - **Lantern prompt (P1):** handoff and acting-Captain prompts drop over the chat wall on desktop; on phones they sit in the dock above the duty bar.
 
 **Phone layout:** three tabs, Chats · Crew · Tools, one chat at a time with a room switcher; the duty bar stays pinned at the bottom above the tab bar.
@@ -617,7 +617,7 @@ The Deck is built from the kit and the Control Room pieces; seven new pieces joi
 | `.bt-crew-notes` | The crew notes strip (.bt-notes is already the Warm Fuzzies pinboard) |
 | `.bt-swap` | A seat on the swap board: day stub, room and role, notice line, Take it; is-taken, is-mine-now |
 
-No kit piece for the activity slots until live activities ships. Colour meaning holds: purple clickable, gold for needed, prompts and flags, green for staff-only controls, red only for the live tag and an open check-in. The goal bar uses `.bt-meter` with gold; no new colours.
+No kit piece for the activity slots until Chat Games ships. Colour meaning holds: purple clickable, gold for needed, prompts and flags, green for staff-only controls, red only for the live tag and an open check-in. The goal bar uses `.bt-meter` with gold; no new colours.
 
 ### Edge cases
 
@@ -648,12 +648,12 @@ Eight parts, one Claude Code prompt each, in this order; each commits to dev wit
 7. **Activity rules on:** crewSetRules and the owner switch, the monthly run with the grace month, reminders, the HQ time card, the /admin/crew lists, duty-based promotion criteria and the Fan Favourite ballot rule.
 8. **Docs:** design-system.md §8 (Mod Deck), ROADMAP, CLAUDE.md if needed, and walk-throughs added to docs/testing/control-room-test-plan.md.
 
-Mockups approved Oct 9, 2026 (docs/design/mockups/mod-deck.html): **H1** helm strip for the Captain tools, **P1** lantern prompt over the Deck, **R1** Recruit Rush goal meter. The cue slot and the launch panel's activity tiles are empty slots that live activities fills.
+Mockups approved Oct 9, 2026 (docs/design/mockups/mod-deck.html): **H1** helm strip for the Captain tools, **P1** lantern prompt over the Deck, **R1** Recruit Rush goal meter. The cue slot and the launch panel's activity tiles are empty slots that Chat Games fills.
 
 ### Out of scope and later
 
 - YouTube moderator sync (needs members to link YouTube); until then, the YouTube Lead checklist stays on the owner's list.
-- Game cues on the Deck: they come with live activities (workstream 5b, which merged Chat Games and absorbed Mod Machina phase 4, Oct 9). The Deck only provides the slots.
+- Game cues on the Deck: they come with Chat Games (workstream 5b, which absorbed Mod Machina phase 4, Oct 9). The Deck only provides the slots.
 - Twitch chat presence counting toward duty minutes: built to plug in once the broadcaster token is connected.
 - Texting flags to the owner's phone (when Boom Alerts sending exists; the outbox entry is already written).
 - Mark an incident (a private incident log), not chosen for this build.

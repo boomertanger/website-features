@@ -1,6 +1,6 @@
 // Just ended on /live (docs/specs/control-room.md §7a): for 2 hours after a stream, the wrap-up from public/live (state ended) and the stream's own document:
 // confetti (none under reduced motion), duration, peak, check-ins, the beats, the games timeline, and the next stream. Hot Seat champion and questions
-// answered join when live activities exist (public/live does not carry them yet).
+// answered join when Chat Games exist (public/live does not carry them yet).
 import { beatsHtml } from "../../../../shared/ui/beats.js";
 import { burst } from "../../../../shared/ui/burst.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";

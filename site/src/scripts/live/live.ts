@@ -118,11 +118,11 @@ function sceneHtml(ctx: Ctx): string {
 
 function launchPanel(ctx: Ctx): string {
   const tiles = [
-    { id: "questions", icon: "❓", title: "Questions", sub: "Coming with live activities", state: "off" },
-    { id: "hotseat", icon: "🔥", title: "Hot Seat", sub: "Coming with live activities", state: "off" },
+    { id: "questions", icon: "❓", title: "Questions", sub: "Coming with Chat Games", state: "off" },
+    { id: "hotseat", icon: "🔥", title: "Hot Seat", sub: "Coming with Chat Games", state: "off" },
   ];
   const live = ctx.mode === "live";
-  return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${live ? "One on stream at a time" : "Ready when you are live"}</small>`, bodyHtml: `${launchHtml({ tiles: tiles as any })}<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Questions and Hot Seat arrive with the live activities.</p></div>` });
+  return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${live ? "One on stream at a time" : "Ready when you are live"}</small>`, bodyHtml: `${launchHtml({ tiles: tiles as any })}<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Questions and Hot Seat arrive with the Chat Games.</p></div>` });
 }
 
 /* ------------------------------------------------------------------ the after-show: switch Streamlabs (docs/specs/control-room.md §3, §11) */

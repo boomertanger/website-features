@@ -19,7 +19,7 @@ Decided (Oct 8, 2026):
 1. Name: **Control Room**.
 2. Check-ins: one window per beat, opened with a word the owner says on stream. The rolling 15-minute code
    (Night Shift §13b) is dropped. Passive Twitch presence still counts for stream streaks.
-3. Crew: the Stream Captain runs live activities, any mod on duty moderates, only the owner and admins
+3. Crew: the Stream Captain runs Chat Games, any mod on duty moderates, only the owner and admins
    (A2+) control the stream.
 4. Backstage: its own stream (as planned) or a members-only after-show handed over at End. No second video
    output during public streams.
@@ -29,7 +29,7 @@ Decided (Oct 8, 2026):
 7. The owner's setup: Streamlabs Desktop to Twitch and YouTube (YouTube Vertical through Streamlabs Dual
    Output); TikTok LIVE Studio to TikTok; Stream Deck software on a dedicated iPad (hardware Deck later).
 
-Out of scope: the Chat Games formats (live activities, ROADMAP 5b; formerly Mod Machina phase 4), Contests (ws 12), the Stream Library pages
+Out of scope: the Chat Games formats (workstream 5b, formerly Mod Machina phase 4), Contests (ws 12), the Stream Library pages
 (ws 6), connecting the Twitch broadcaster token (planned for here behind a switch).
 
 ## 2. Pages and who sees what
@@ -209,7 +209,7 @@ one column in this order: video, beats, check-in, Play panel, Now playing, crew,
 | Check in | Closed: when the next one opens. Open: the form. Your four stamps | `public/live` + your presence |
 | Now playing | Vault cover, Boomer's score, tonight's time, streams, all-time; Up next | Game Vault + segments |
 | Crew on duty | Hull look: the **deck plan** (Bridge with the Captain, one compartment per room, lit and pinging when crewed, gold "Lead needed" when open). Base look: a list | Stream crew + clock-ins |
-| Play panel | The running activity (Questions, Hot Seat, a Chat Game), otherwise the next questions | Live activities |
+| Play panel | The running activity (Questions, Hot Seat, a Chat Game), otherwise the next questions | Chat Games |
 | Watch on | One button per platform live, with its viewers | Stream rooms |
 | Video | Public streams: the Twitch player. Backstage: the unlisted YouTube player for the audience | Section 11 |
 
@@ -259,19 +259,19 @@ pieces and look the same in every look.
   stays on (it's video); nothing flashes faster than 3 times a second.
 - The view shows nothing beyond handles that are already public.
 
-## 9. Launch panel and live activities
+## 9. Launch panel and Chat Games
 
-The Control Room owns the launch panel; the activities run in one **live activities** engine shared with
-Chat Games, specified in `docs/specs/live-activities.md` (next spec) and built after the Control Room core.
+The Control Room owns the launch panel; the activities run in one **Chat Games** engine (Questions and every game),
+specified in `docs/specs/chat-games.md` (next spec) and built after the Control Room core.
 Contests stay ws 12 and plug in later.
 
-Note (Oct 9, 2026): Chat Games are merged into live activities. One engine; members see "Questions" and "Chat Games" (Hot Seat and the rest are Chat Games). Crew-hosted games need the Mod Deck, so they come last. ROADMAP 5b has the order; `mod-machina.md` section 11 keeps the game designs.
+Note (Oct 9, 2026): the service is named Chat Games (the working name "Chat Games" is retired). One engine; members see "Questions" and "Chat Games" (Hot Seat and the rest are Chat Games). Crew-hosted games need the Mod Deck, so they come last. ROADMAP 5b has the order; `mod-machina.md` section 11 keeps the game designs.
 
 **Launch panel** (on /live/control, and for the Captain in the Mod Deck): Questions, Hot Seat, tonight's
 planned Chat Game, the quick Chat Games, Drop a badge, Recruit Rush. One activity is on stream at a time; the
 running tile is marked.
 
-**Questions** (settled here, built in live activities): /live/questions with Tonight and Standing lanes,
+**Questions** (settled here, built in Chat Games): /live/questions with Tonight and Standing lanes,
 sorted Top or New. Up to 200 characters, at most 3 open per member, one vote each (can be taken back).
 Accounts under 7 days are held for a mod; others post at once behind a word filter. Cards show asker is here,
 On air, Pinned next, Answered on stream with the time. At Stop, Tonight questions with 5+ votes move to
@@ -279,7 +279,7 @@ Standing; the rest clear; Standing questions unanswered for 30 days are archived
 Standing, Merge (votes fold into the original, voters counted once); every action logged. Sessions default
 to 10 minutes on a visible timer, Tonight first; Answered, Skip, Pin next.
 
-**Hot Seat** (settled here, built in live activities): run by the owner or the Captain. Draw a card (the
+**Hot Seat** (settled here, built in Chat Games): run by the owner or the Captain. Draw a card (the
 owner writes the deck; mods suggest cards for approval) → the picker chooses three from members checked in
 this beat plus volunteers, nobody twice in a stream → each has 15 seconds to tap I'm in → 60 seconds to type
 an answer (140 characters; a mod can hide one before reveal) → everyone checked in votes for 30 seconds (not
@@ -287,7 +287,7 @@ for themselves) → the winner (+25 XP; others +5; a tie means both win). Picker
 (default: a planchette glides over a board of names with YES, NO and GOODBYE and stops on each player) and
 **W1 Wheel** (selectable per round; it lands on each pick).
 
-Ranked for later (live activities spec): Scream-o-meter, Predictions (free picks), next-game vote, Polls,
+Ranked for later (Chat Games spec): Scream-o-meter, Predictions (free picks), next-game vote, Polls,
 Last Words, Beat Goal, Clip it! (with the Stream Library). Twitch's Polls and Predictions only reach Twitch
 viewers, which is why these run on the site. Scare Bingo and Body Count are already Chat Games.
 
@@ -366,7 +366,7 @@ Predictions cost nothing to enter (members can be 13; no wagering).
 | Hosting Questions or Hot Seat | Captain | Gears, as Mod Machina pays for hosting Chat Games |
 | Duty | Mods clocked in | Gears per hour (unchanged); present for streaks; no check-in XP |
 
-Cap: 100 XP per member per stream from the Control Room and live activities together. Badge hooks (Stream
+Cap: 100 XP per member per stream from the Control Room and Chat Games together. Badge hooks (Stream
 Moments and Loyalty): All Four Beats, Hot Seat Champion (1, 5, 25 wins), First In (10 times), Question of the
 Night. This workstream fires the events; the badge editor adds the badges.
 
@@ -388,7 +388,7 @@ All under `sites/boomertanger/`. No client writes anywhere; every write goes thr
 | `public/live` | Everyone | State, stream id and title, `actualStart`, current beat, window `{ open, closesAt }`, counts, viewers per platform and peak, current and next game, crew on duty, the running activity, `look`, `updatedAt` |
 
 Questions and Hot Seat data (`live/main/questions`, `hotSeatDecks`, `streams/{id}/hotseat/{round}`) are
-defined in the live activities spec.
+defined in the Chat Games spec.
 
 ## 14. Functions
 
@@ -467,7 +467,7 @@ motion keeps colour and glow and drops movement on the site (not in the stream v
 | `boom-alerts.md` §3 | An after-show sends `backstage-live` to its audience. |
 | `header-nav.md` | /live joins the Watch group with a blurb and a live tile. |
 | `design-system.md` §8 | A new "Control Room" subsection: the picks, the looks rule, the planned kit pieces. |
-| `docs/ROADMAP.md` | Workstream 5 in progress (spec, mockups, parts); Scream Planner part 8 next; a new entry for the live activities service; the launch checklist items below. |
+| `docs/ROADMAP.md` | Workstream 5 in progress (spec, mockups, parts); Scream Planner part 8 next; a new entry for the Chat Games service; the launch checklist items below. |
 
 ## 18. Parts and phasing
 
@@ -487,8 +487,8 @@ One commit per part, each with a line under Unreleased in CHANGELOG.md; staging 
 8. The stream view (wide and tall, every scene, both looks).
 9. Backstage watching and the after-show.
 
-Then the **live activities** spec and build (Questions and Hot Seat first, then the Chat Games engine with
-Mod Machina phase 4, then the ranked extras). Later: the Twitch broadcaster token (presence, followers, subs,
+Then the **Chat Games** spec and build (Questions and Hot Seat first, then the quick formats and the crew-hosted
+games once the Mod Deck exists, then the ranked extras). Later: the Twitch broadcaster token (presence, followers, subs,
 clips) behind its switch; Connect Streamlabs; Stream Deck key titles with live state; member-chosen looks.
 
 **Before launch (add to the ROADMAP checklist):** the YouTube OAuth app set to In production and production
@@ -510,7 +510,7 @@ key generated in production; `live/main` seeded in production.
 11. Questions: 200 characters, 3 open per member, accounts under 7 days held, promote at 5 votes,
     10-minute sessions.
 12. Hot Seat: 15 seconds to accept, 60 to answer, 30 to vote, once per stream per player.
-13. Live activities as its own spec and service, sharing the Chat Games engine, after the Control Room core.
+13. Chat Games as its own spec and service (Questions and every game), after the Control Room core.
 14. A wide and a tall stream view.
 15. The Twitch player on /live during public streams.
 16. The site creates, moves and deletes YouTube events (Planner and ad hoc), the owner only picks the event

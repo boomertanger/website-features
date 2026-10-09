@@ -1,6 +1,6 @@
 // The stream view's scenes (docs/specs/control-room.md §8; mockup control-room-batch-3.html section 1). The scene engine: given the feed's view it draws the scene
 // the feed names (Auto follows the beat, or the owner's Scene card pins one): Starting soon, Live stats, Break (B1 Takeover; B2 Side rail with &break=side on a
-// second browser source, the manual scene), Be right back and Ending. Questions and Hot Seat scenes arrive with the live activities.
+// second browser source, the manual scene), Be right back and Ending. Questions and Hot Seat scenes arrive with Chat Games.
 // Built from the kit's .bt-sv-* parts at canvas pixels (1920 x 1080 wide, 1080 x 1920 tall); text is at least 32 px (live-obs.css); the tall scenes keep clear of the
 // platforms' UI: the top bar (y < 150), the buttons down the right (x > 900 between y 600 and 1620) and the captions at the bottom (y > 1620).
 // A scene is drawn once per change of scene, beat, window or crew; every number is then set in place (so nothing flickers) and ticks 4 times a second from the

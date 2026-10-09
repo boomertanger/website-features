@@ -22,9 +22,9 @@ const ACTIONS: Act[] = [
   { label: "Scene: Be right back", note: "Add &brbMinutes=5 for a timer", url: q("scene", "&scene=brb") },
   { label: "Scene: Ending", note: "Pins the Ending scene", url: q("scene", "&scene=ending") },
   { label: "Next planned game", note: "Switches to tonight's next game", url: q("nextGame") },
-  { label: "Start or end Questions, answered, skip", note: "Coming with live activities", url: "", later: true },
-  { label: "Start Hot Seat, spin, next step", note: "Coming with live activities", url: "", later: true },
-  { label: "Drop the preset badge", note: "Coming with live activities", url: "", later: true },
+  { label: "Start or end Questions, answered, skip", note: "Coming with Chat Games", url: "", later: true },
+  { label: "Start Hot Seat, spin, next step", note: "Coming with Chat Games", url: "", later: true },
+  { label: "Drop the preset badge", note: "Coming with Chat Games", url: "", later: true },
   { label: "Start the stream, Stop the stream", note: "Never on the deck: a key can't confirm. Use the controls page.", url: "", never: true },
 ];
 const fmtDate = (t: number | null | undefined) => (t ? new Date(t).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");

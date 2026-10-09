@@ -39,7 +39,7 @@ const FLUSH_QUEUE = { retryConfig: { maxAttempts: 3, minBackoffSeconds: 2, maxBa
 const YT_RETRY_MS = 15 * 1000;
 const TIKTOK_FRESH_MS = 15 * 60 * 1000;
 const DECK_ACTIONS = ["nextBeat", "openCheckin", "extend", "closeCheckin", "scene", "nextGame"];
-const DECK_LATER = ["startQuestions", "endQuestions", "answered", "skip", "startHotSeat", "spin", "nextStep", "dropBadge"];   // live activities (not built yet)
+const DECK_LATER = ["startQuestions", "endQuestions", "answered", "skip", "startHotSeat", "spin", "nextStep", "dropBadge"];   // Chat Games (not built yet)
 const DECK_REFUSED = ["start", "stop", "afterShow", "startStream", "stopStream"];
 
 const sleepReal = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -297,7 +297,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     const q = { ...(req.query || {}), ...(req.body && typeof req.body === "object" ? req.body : {}) };
     const action = typeof q.action === "string" ? q.action : "";
     if (DECK_REFUSED.includes(action)) { send(res, 403, { ok: false, reason: "notOnDeck", message: "Start and Stop stay on the controls page." }); return; }
-    if (DECK_LATER.includes(action)) { send(res, 501, { ok: false, reason: "notBuilt", message: "That arrives with the live activities." }); return; }
+    if (DECK_LATER.includes(action)) { send(res, 501, { ok: false, reason: "notBuilt", message: "That arrives with Chat Games." }); return; }
     if (!DECK_ACTIONS.includes(action)) { send(res, 400, { ok: false, reason: "action" }); return; }
     try {
       const r = await deckAction(action, q);
