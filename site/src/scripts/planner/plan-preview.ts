@@ -4,7 +4,7 @@
 import raw from "../../data/preview-planner-plan.json";
 import {
   ROOMS, ROOM_NAME, GROUP_OF, DAY_SHORT, currentWeekId, nextWeekId, weekDates, zonedToUtc, addDays, localDate, dowOf, fmtDayTime,
-  type Stream, type Signup, type WeekDoc, type Settings, type Pattern, type Exception, type Todo, type Room, type SeatReq, type TrayGroup, type TrayItem, type Crew,
+  type Stream, type Signup, type Swap, type WeekDoc, type Settings, type Pattern, type Exception, type Todo, type Room, type SeatReq, type TrayGroup, type TrayItem, type Crew,
 } from "./plan-data";
 
 const tz: string = raw.tz;
@@ -13,7 +13,7 @@ const game = (slug: string) => GAMES.find((g) => g.slug === slug);
 const PEOPLE = raw.people as { uid: string; handle: string; grade: number; track: string }[];
 const person = (handle: string) => PEOPLE.find((p) => p.handle === handle);
 
-interface PState { weeks: WeekDoc[]; streams: Record<string, Stream[]>; signups: Record<string, Signup[]>; settings: Settings; patterns: Pattern[]; exceptions: Exception[]; todos: Todo[]; ballot: Record<string, number> }
+interface PState { weeks: WeekDoc[]; streams: Record<string, Stream[]>; signups: Record<string, Signup[]>; settings: Settings; patterns: Pattern[]; exceptions: Exception[]; todos: Todo[]; ballot: Record<string, number>; swaps: Swap[] }
 let S: PState | null = null;
 let nid = 1;
 
@@ -65,6 +65,14 @@ function build(): PState {
     void hhmm;
     return st;
   });
+  // the swap board: a late drop (starts in a few hours), an early drop (more than 24 h ahead) and one someone took a while ago. The seats they freed are empty on the stream.
+  const emptySeat = (s: Stream, room: Room, role: "lead" | "deckhand") => { const c = s.crew.chats[room]; if (!c) return; if (role === "lead") c.lead = null; else c.deckhands = c.deckhands.slice(1); };
+  emptySeat(cs[0], "twitch", "deckhand"); emptySeat(cs[1], "ytVertical", "lead"); emptySeat(cs[2], "ytLandscape", "lead");
+  const swaps: Swap[] = [
+    { id: `${cs[0].id}_twitch:deckhand`, streamId: cs[0].id, room: "twitch", role: "deckhand", fromUid: "kitwick", fromHandle: "kitwick", droppedAt: now - 2 * 3600000, startsAt: cs[0].start, notice: "late", status: "open", takenBy: null, takenByHandle: null, takenAt: null },
+    { id: `${cs[1].id}_ytVertical:lead`, streamId: cs[1].id, room: "ytVertical", role: "lead", fromUid: "mothlight", fromHandle: "mothlight", droppedAt: now - 5 * 3600000, startsAt: cs[1].start, notice: "early", status: "open", takenBy: null, takenByHandle: null, takenAt: null },
+    { id: `${cs[2].id}_ytLandscape:lead`, streamId: cs[2].id, room: "ytLandscape", role: "lead", fromUid: "mothlight", fromHandle: "mothlight", droppedAt: now - 9 * 3600000, startsAt: cs[2].start, notice: "early", status: "taken", takenBy: "hollowgrin", takenByHandle: "hollowgrin", takenAt: now - 3 * 3600000 },
+  ];
   const settings = raw.usual.settings as unknown as Settings;
   return {
     weeks: [
@@ -73,7 +81,7 @@ function build(): PState {
     ],
     streams: { [next]: nextStreams, [cur]: cs }, signups, settings,
     patterns: (raw.usual.patterns as unknown as Pattern[]).map((p) => ({ ...p })), exceptions: (raw.usual.exceptions as unknown as Exception[]).map((e) => ({ ...e })),
-    todos: (raw.usual.todos as any[]).map((t) => ({ ...t, week: t.week === "next" ? next : t.week })), ballot: { ...raw.ballot },
+    todos: (raw.usual.todos as any[]).map((t) => ({ ...t, week: t.week === "next" ? next : t.week })), ballot: { ...raw.ballot }, swaps,
   };
 }
 export const pv = () => (S ||= build());
@@ -201,8 +209,28 @@ export async function previewCall(name: string, d: any = {}): Promise<any> {
     case "dutyDrop": {
       const s = findStream(d.streamId), uid = d.uid || "me", me = (st.signups[s.id] || []).find((x) => x.uid === uid);
       if (me) { me.seats = me.seats.map((q) => (["requested", "confirmed"].includes(q.status) && (!d.seat || (q.room === (d.seat.role === "captain" ? "captain" : d.seat.room) && q.role === d.seat.role)) ? { ...q, status: "dropped" } : q)); if (!me.seats.some((q) => ["requested", "confirmed"].includes(q.status))) me.gameRequest = null; }
+      // after publish a confirmed seat goes on the swap board (early = 24 h or more before the start)
+      const held = [...(s.crew.captain?.uid === uid ? [{ room: "captain", role: "captain" as const }] : []), ...ROOMS.flatMap((r) => { const c = s.crew.chats[r]; return c ? [...(c.lead?.uid === uid ? [{ room: r as string, role: "lead" as const }] : []), ...(c.deckhands.some((x) => x.uid === uid) ? [{ room: r as string, role: "deckhand" as const }] : [])] : []; })]
+        .filter((h) => !d.seat || (h.role === d.seat.role && (h.role === "captain" || h.room === d.seat.room)));
       unplace(s, uid, d.seat);
-      return { ok: true, dropped: 1, released: 1 };
+      if (s.published && s.state === "scheduled") for (const h of held) { const id = `${s.id}_${h.role === "captain" ? "captain" : `${h.room}:${h.role}`}`; st.swaps = st.swaps.filter((x) => x.id !== id); st.swaps.push({ id, streamId: s.id, room: h.room, role: h.role, fromUid: uid, fromHandle: uid === "me" ? raw.me.handle : uid, droppedAt: Date.now(), startsAt: s.start, notice: s.start - Date.now() >= 24 * 3600000 ? "early" : "late", status: "open", takenBy: null, takenByHandle: null, takenAt: null }); }
+      return { ok: true, dropped: 1, released: 1, swaps: s.published && s.state === "scheduled" ? held.length : 0 };
+    }
+    case "dutySwapTake": {
+      const sw = st.swaps.find((x) => x.id === d.swapId);
+      if (!sw) throw err("noSwap", "That seat isn't on the board any more.");
+      if (sw.status === "taken") throw err("beaten", "Someone beat you to it.");
+      if (sw.status !== "open") throw err("closed", "That seat is no longer up for grabs.");
+      if (sw.fromUid === "me") throw err("ownSeat", "That's the seat you dropped.");
+      const s = findStream(sw.streamId), me = raw.me;
+      if (sw.role !== "deckhand" && me.grade < 2) throw err("gradeTooLow", "Your grade doesn't cover that seat yet.");
+      const held = [s.crew.captain, ...ROOMS.flatMap((r) => { const c = s.crew.chats[r]; return c ? [c.lead, ...c.deckhands] : []; })].some((p) => p?.uid === "me");
+      if (held) throw err("alreadySeated", "You already have a seat on that stream.");
+      place(s, { room: sw.room, role: sw.role, status: "confirmed" }, { uid: "me", handle: me.handle });
+      const list = st.signups[s.id] ||= [], mine = list.find((x) => x.uid === "me") || (list[list.push({ uid: "me", availability: "yes", prefilled: false, seats: [], gameRequest: null, handle: me.handle, grade: me.grade, track: "mod" }) - 1]);
+      mine.seats = [...mine.seats.filter((q) => !(q.room === sw.room && q.role === sw.role)), { room: sw.room, role: sw.role, status: "confirmed" }];
+      sw.status = "taken"; sw.takenBy = "me"; sw.takenByHandle = me.handle; sw.takenAt = Date.now();
+      return { ok: true, status: "taken", seat: { room: sw.room, role: sw.role }, startsAt: sw.startsAt };
     }
     case "dutyConfirm": {
       const s = findStream(d.streamId), x = (st.signups[s.id] || []).find((y) => y.uid === d.uid);

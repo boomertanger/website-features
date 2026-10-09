@@ -11,8 +11,12 @@ import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
 import { timecardHtml, ringHtml } from "../../../../shared/ui/crew.js";
 import { initials } from "../../../../shared/ui/dom.js";
 import { toast } from "../../../../shared/ui/toast.js";
+import { makeIo, type Io } from "../planner/plan-io";
+import type { Swap } from "../planner/plan-data";
+import { boardCardHtml, wireBoard } from "./swaps";
 
 const root = document.querySelector<HTMLElement>("[data-hq]")!;
+const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML || "";
 const SITE_URL = "https://boomertanger.com";
 const CORE = ["m1", "m2", "m3", "m4", "m5", "m6"];
 
@@ -76,7 +80,10 @@ async function render(ctx: Ctx) {
     root.setAttribute("aria-busy", "false");
     return;
   }
-  const [standing, tasks0] = await Promise.all([loadStanding(ctx), loadTasks(ctx).catch(() => [] as Task[])]);
+  const io: Io = await makeIo();
+  const [standing, tasks0, swaps0] = await Promise.all([loadStanding(ctx), loadTasks(ctx).catch(() => [] as Task[]), io.swaps().catch(() => [] as Swap[])]);
+  let swaps = swaps0;
+  const meUid = io.preview ? "me" : ctx.uid;   // the planner preview names its pretend crew member "me"
   let tasks = tasks0;
   const month = new Date().toLocaleDateString("en-US", { month: "long", timeZone: "America/Chicago" });
   const monthShort = new Date().toLocaleDateString("en-US", { month: "short", timeZone: "America/Chicago" });
@@ -95,6 +102,7 @@ async function render(ctx: Ctx) {
     <div class="hq-grid">
       <div class="hq-col">
         ${timecardHtml({ month, need: 2, total: 4, state: "idle" } as any)}
+        <div data-hq-swaps>${boardCardHtml(swaps, meUid, mascot())}</div>
         <div data-hq-tasks>${taskStrip(ctx, tasks)}</div>
         ${strikesCard(ctx)}
       </div>
@@ -108,6 +116,9 @@ async function render(ctx: Ctx) {
   root.setAttribute("aria-busy", "false");
 
   wireTaskActions(root.querySelector<HTMLElement>("[data-hq-tasks]")!, ctx, async () => tail(await loadTasks(ctx)));
+  // the swap board: Take it through confirmAction; the card redraws from the latest swaps afterwards
+  const swapBox = root.querySelector<HTMLElement>("[data-hq-swaps]")!;
+  wireBoard(swapBox, io, (id) => swaps.find((x) => x.id === id), async () => { swaps = await io.swaps().catch(() => swaps); swapBox.innerHTML = boardCardHtml(swaps, meUid, mascot()); });
   root.querySelector<HTMLButtonElement>("[data-hq-copy]")?.addEventListener("click", async (e) => {
     const url = `${SITE_URL}/join/@${ctx.handle}`;
     try { await navigator.clipboard.writeText(url); toast("Link copied. One link post per room an hour, please."); }

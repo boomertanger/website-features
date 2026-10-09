@@ -6,6 +6,7 @@
 //        kind  "taken" (someone else, with their avatar, name and role) · "open" (a dashed gold button: data-seat="seat")
 //              · "mine" (you: primary edge; with `seat` it becomes a button, data-drop="seat", to drop it)
 //              · "locked" (dimmed, dashed: your grade doesn't cover it; `title` says why)
+//              · "swap" (a seat someone dropped after publish: a gold dashed "Take it" button, data-swap-seat="<swap id>" in `seat`; Mod Machina phase 3 part 1)
 //        seat  "captain" or "room:role" ("ytLandscape:lead", "twitch:deckhand"); role is the small word under the name
 //   seatMapHtml({ captainHtml, rooms })   .bt-smap: the Captain row, then one .bt-smap-room per chat
 //        rooms  [{ chat, name, boost, boxesHtml }]; boost ("×1.5") shows in gold at the right of the room's title
@@ -25,6 +26,7 @@ const ROLE = { captain: "Captain", lead: "Lead", deckhand: "Deckhand" };
 export function seatBoxHtml({ kind = "open", name = "", role = "", note = "", seat = "", label = "", title = "" } = {}) {
   const who = `<span class="bt-av" aria-hidden="true">${esc(initials(name || "?"))}</span><span><b>${esc(name)}</b><i>${esc(note || ROLE[role] || role)}</i></span>`;
   if (kind === "open") return `<button type="button" class="bt-sbox is-open" data-seat="${esc(seat)}"${title ? ` title="${esc(title)}"` : ""}>+ ${esc(label || ROLE[role] || "Seat")}</button>`;
+  if (kind === "swap") return `<button type="button" class="bt-sbox is-open is-swap" data-swap-seat="${esc(seat)}"${title ? ` title="${esc(title)}"` : ""}>Take it</button>`;
   if (kind === "locked") return `<span class="bt-sbox is-locked" aria-disabled="true"${title ? ` title="${esc(title)}"` : ""}>${esc(label)}</span>`;
   if (kind === "mine") {
     const inner = `<span class="bt-av" aria-hidden="true">${esc(initials(name || "You"))}</span><span><b>You</b><i>${esc(note || ROLE[role] || "")}</i></span>`;

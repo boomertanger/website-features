@@ -4522,6 +4522,7 @@
 .bt-root:not(#_) .bt-sbox > span:not(.bt-av) i { font-style: normal; color: var(--bt-text-faint); font-size: 9px; text-transform: uppercase; letter-spacing: 0.05em; }
 .bt-root:not(#_) .bt-sbox.is-open { justify-content: center; border-style: dashed; border-color: color-mix(in srgb, var(--bt-gold) 60%, transparent); color: var(--bt-gold); cursor: pointer; padding-left: 6px; transition: background 0.15s, transform 0.15s; }
 .bt-root:not(#_) .bt-sbox.is-open:hover { background: var(--bt-gold-bg); transform: translateY(-1px); }
+.bt-root:not(#_) .bt-sbox.is-swap { background: var(--bt-gold-bg); font-weight: 800; }
 .bt-root:not(#_) .bt-sbox.is-mine { border-color: var(--bt-primary); background: var(--bt-primary-bg); box-shadow: 0 0 12px rgba(var(--bt-primary-rgb), 0.35); }
 .bt-root:not(#_) button.bt-sbox.is-mine { cursor: pointer; }
 .bt-root:not(#_) .bt-sbox.is-locked { justify-content: center; border-style: dashed; opacity: 0.5; }

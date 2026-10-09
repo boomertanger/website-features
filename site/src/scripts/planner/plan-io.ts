@@ -5,8 +5,8 @@ import { coverHtml } from "../../../../shared/ui/cover.js";
 import type { AuthState } from "../../lib/auth";
 import { previewAs } from "./layout";
 import {
-  loadWeeks, loadStreams, loadSignups, loadSettings, loadPatterns, loadExceptions, loadTodos, isOwner, crewMe, planCall,
-  type WeekDoc, type Stream, type Signup, type Settings, type Pattern, type Exception, type Todo, type Me,
+  loadWeeks, loadStreams, loadSignups, loadSwaps, loadSettings, loadPatterns, loadExceptions, loadTodos, isOwner, crewMe, planCall,
+  type WeekDoc, type Stream, type Signup, type Settings, type Pattern, type Exception, type Todo, type Me, type Swap,
 } from "./plan-data";
 import { loadVault, type VCard } from "../vault/data";
 
@@ -16,6 +16,8 @@ export interface Io {
   weeks(): Promise<WeekDoc[]>;
   streams(week: string): Promise<Stream[]>;
   signups(streamId: string): Promise<Signup[]>;
+  /** The swap board: seats dropped after publish (open ones for streams that haven't started, and recently taken ones). */
+  swaps(): Promise<Swap[]>;
   settings(): Promise<Settings>;
   usual(): Promise<{ settings: Settings; patterns: Pattern[]; exceptions: Exception[] }>;
   todos(): Promise<Todo[]>;
@@ -27,7 +29,7 @@ export type VGame = VCard;
 
 const real: Io = {
   preview: false,
-  weeks: loadWeeks, streams: loadStreams, signups: loadSignups, settings: loadSettings, todos: loadTodos,
+  weeks: loadWeeks, streams: loadStreams, signups: loadSignups, swaps: loadSwaps, settings: loadSettings, todos: loadTodos,
   usual: async () => { const [settings, patterns, exceptions] = await Promise.all([loadSettings(), loadPatterns(), loadExceptions()]); return { settings, patterns, exceptions }; },
   vault: async () => (await loadVault()).games,
   call: planCall,
@@ -41,6 +43,7 @@ async function makePreview(): Promise<Io> {
     weeks: async () => st().weeks.slice().sort((a, b) => b.id.localeCompare(a.id)),
     streams: async (w) => (st().streams[w] || []).slice().sort((a, b) => a.start - b.start),
     signups: async (id) => st().signups[id] || [],
+    swaps: async () => st().swaps.map((x) => ({ ...x })),
     settings: async () => st().settings,
     usual: async () => ({ settings: st().settings, patterns: st().patterns, exceptions: st().exceptions }),
     todos: async () => st().todos,

@@ -15,9 +15,10 @@ import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { messageFor } from "../../lib/errors";
 import {
   ROOMS, ROOM_SHORT, GROUP_OF, SITE_TZ, weekRange, nextWeekId, currentWeekId, fmtDayTime, fmtClock, leftText,
-  type WeekDoc, type Stream, type Signup, type Room, type SeatReq,
+  type WeekDoc, type Stream, type Signup, type Room, type SeatReq, type Swap,
 } from "./plan-data";
 import { coverOf, vaultOf, type Io, type Who, type VGame } from "./plan-io";
+import { boardOf, dropDialog, roleName, roomName, takeSwap } from "../crew/swaps";
 
 const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML || "";
 const STATUS: Record<string, [string, string]> = { active: ["lime", "Active"], checkIn: ["gold", "Check-in"], goingDark: ["blue", "Going dark"], reserve: ["gray", "Reserve"], alumni: ["teal", "Alumni"], paused: ["pink", "Paused"] };
@@ -26,7 +27,7 @@ const GRADE_NAME = ["", "Initiate", "Watcher", "Warden", "Sentinel"];
 
 export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
   const vault = await vaultOf(io);
-  const st = { weeks: [] as WeekDoc[], wid: "", streams: [] as Stream[], mine: new Map<string, Signup | null>(), busy: false };
+  const st = { weeks: [] as WeekDoc[], wid: "", streams: [] as Stream[], mine: new Map<string, Signup | null>(), swaps: [] as Swap[], busy: false };
   const week = () => st.weeks.find((w) => w.id === st.wid)!;
   const curWeek = currentWeekId(SITE_TZ);
   const q = <T extends HTMLElement>(sel: string) => root.querySelector<T>(sel)!;
@@ -36,7 +37,16 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     st.wid = id; st.streams = id ? await io.streams(id) : [];
     const lists = await Promise.all(st.streams.map((s) => io.signups(s.id).catch(() => [] as Signup[])));
     st.mine = new Map(st.streams.map((s, i) => [s.id, lists[i].find((x) => x.uid === who.uid) || null]));
+    st.swaps = await io.swaps().catch(() => [] as Swap[]);
   }
+  /** Open swaps on a stream (seats dropped after publish, up for grabs), and the one for a seat if there is one. */
+  const openSwaps = (s: Stream) => boardOf(st.swaps.filter((x) => x.streamId === s.id)).open;
+  /** The gold "Up for grabs: <room>" chip on a stream card that has an open swap. */
+  const grabs = (s: Stream) => {
+    const o = openSwaps(s);
+    return o.length ? ` <span class="bt-badge bt-badge--gold pp-grabs"><span class="bt-badge-dot"></span>Up for grabs: ${esc([...new Set(o.map((x) => (x.role === "captain" ? "Captain" : roomName(x.room))))].join(", "))}</span>` : "";
+  };
+  const swapFor = (s: Stream, key: string) => openSwaps(s).find((x) => (x.role === "captain" ? "captain" : `${x.room}:${x.role}`) === key);
   async function loadAll() {
     st.weeks = await io.weeks();
     const id = st.weeks.some((w) => w.id === st.wid) ? st.wid : (st.weeks.find((w) => w.state !== "published") || st.weeks[0])?.id || "";
@@ -80,6 +90,8 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const mineBox = (seat: string, role: string, confirmed: boolean) => seatBoxHtml({ kind: "mine", role, name: who.handle || "You", note: confirmed ? "confirmed" : "waiting for the Captain", seat: confirmed && s.state === "scheduled" ? seat : seat });
     const open = (seat: string, role: "captain" | "lead" | "deckhand", label: string) => {
       const need = GRADE_NEED[role];
+      const sw = swapFor(s, seat);
+      if (sw && can && grade >= need - (role === "captain" ? 1 : 0) && sw.fromUid !== who.uid) return seatBoxHtml({ kind: "swap", seat: sw.id, title: `Dropped by @${sw.fromHandle}. Take it: it's yours straight away` });
       if (grade < need - (role === "captain" ? 1 : 0)) return seatBoxHtml({ kind: "locked", label: role === "captain" ? "⚓ Captain · Warden+" : `${label} · ${GRADE_NAME[need]}+`, title: `${role === "captain" ? "Captain" : label} is ${GRADE_NAME[need]} and up` });
       if (!can) return seatBoxHtml({ kind: "locked", label: `+ ${label}`, title: reason || "This slot has started" });
       return seatBoxHtml({ kind: "open", seat, role, label, title: role === "captain" && grade < need ? "A Watcher as Captain needs the owner's OK" : `Ask for the ${label.toLowerCase()} seat` });
@@ -112,7 +124,7 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const re = mine?.reconfirm?.needed ? `<div class="pp-reconfirm" role="status"><span>This slot moved${s.delay ? ` to <b>${esc(fmtClock(s.start, s.tz))}</b>` : ""}. Still on?</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-keep="${s.id}">Yes, keep my seat</button><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-dropall="${s.id}">Drop it</button></div>` : "";
     return `<div class="pp-sl">${cslotHtml({
       id: s.id, day: t.dow, num: t.num, icon: s.theme?.icon || "", label: s.theme?.label || s.title, timeHtml: dualTimeHtml({ start: s.start, end: s.end, tz: s.tz, was: s.delay ? s.delay.originalStart : undefined } as any), count: s.plannedGameCount, backstage: s.type === "backstage", state: ava === "yes" ? "yes" : "",
-      games: s.plannedGames.map((g) => ({ coverHtml: coverOf(vault, g.gameId, g.title) })), metaHtml: meta,
+      games: s.plannedGames.map((g) => ({ coverHtml: coverOf(vault, g.gameId, g.title) })), metaHtml: meta + grabs(s),
       sideHtml: `${re}<div class="bt-cslot-row">${triHtml({ value: ava, name: s.id, label: `Can you make ${s.theme?.label || "it"}?`, disabled: !requestsOpen() || !live(s) || !active })}${mine?.prefilled && ava ? `<span class="bt-tri-hint">Pre-filled from your usual times</span>` : ""}${!requestsOpen() ? `<span class="bt-tri-hint">Closed ${esc(fmtDayTime(week().closesAt, tz()))}. Seats stay open.</span>` : ""}</div>${seatMap(s, mine)}<div class="bt-cslot-row">${ask}</div>`,
     } as any)}</div>`;
   }
@@ -140,7 +152,8 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const tmp = document.createElement("div"); tmp.innerHTML = slotCard(s); el.replaceWith(tmp.firstElementChild!); initTri(root as unknown as Document);
   }
   async function reloadOne(id: string) {
-    const [streams, sg] = await Promise.all([io.streams(st.wid), io.signups(id).catch(() => [] as Signup[])]);
+    const [streams, sg, swaps] = await Promise.all([io.streams(st.wid), io.signups(id).catch(() => [] as Signup[]), io.swaps().catch(() => st.swaps)]);
+    st.swaps = swaps;
     const i = st.streams.findIndex((x) => x.id === id), n = streams.find((x) => x.id === id);
     if (i >= 0 && n) st.streams[i] = n;
     st.mine.set(id, sg.find((x) => x.uid === who.uid) || null); renderOne(id);
@@ -181,8 +194,27 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
   }
   async function dropSeat(id: string, key: string) {
     const seat = key === "captain" ? { role: "captain" } : { room: key.split(":")[0], role: key.split(":")[1] };
+    const s = st.streams.find((x) => x.id === id)!;
+    const held = key === "captain" ? s.crew.captain?.uid === who.uid : (() => { const [room, role] = key.split(":"); const c = s.crew.chats[room as Room]; return role === "lead" ? c?.lead?.uid === who.uid : !!c?.deckhands.some((d) => d.uid === who.uid); })();
+    // After publish a confirmed seat goes on the swap board: say which kind of drop it is first (the notices are word for word from the approved mockup)
+    if (held && s.published && s.state === "scheduled" && live(s)) {
+      const [room, role] = key === "captain" ? ["captain", "captain"] : key.split(":");
+      dropDialog({ chat: room, role, room, start: s.start, tz: s.tz, onDrop: async () => {
+        await io.call("dutyDrop", { streamId: id, seat });
+        toast(s.start - Date.now() >= 24 * 3600000 ? "Your seat is on the swap board. No harm done." : "Your seat is on the swap board. If someone takes it before the stream, you're clear.");
+        await reloadOne(id);
+      } });
+      return;
+    }
     const r = await run(() => io.call("dutyDrop", { streamId: id, seat }), id);
     if (r) { toast("Seat dropped. No harm done."); await reloadOne(id); }
+  }
+  async function takeSwapSeat(id: string, swapId: string, box: Element | null) {
+    const sw = st.swaps.find((x) => x.id === swapId);
+    if (!sw) return void reloadOne(id);
+    const ok = await takeSwap(io, sw, box);
+    await reloadOne(id);
+    void ok;
   }
 
   // ---- ask for a game ----
@@ -233,7 +265,9 @@ export async function mountCrew(root: HTMLElement, io: Io, who: Who) {
     const t = e.target as HTMLElement;
     const seat = t.closest<HTMLElement>("[data-seat]"), drop = t.closest<HTMLElement>("[data-drop]"), ask = t.closest<HTMLButtonElement>("[data-ask]"), keep = t.closest<HTMLElement>("[data-keep]"), all = t.closest<HTMLElement>("[data-dropall]"), wk = t.closest<HTMLElement>("[data-week]");
     const slotOf = (el: HTMLElement) => el.closest<HTMLElement>("[data-slot]")!.dataset.slot!;
-    if (seat) void takeSeat(slotOf(seat), seat.dataset.seat!);
+    const swapSeat = t.closest<HTMLElement>("[data-swap-seat]");
+    if (swapSeat) void takeSwapSeat(slotOf(swapSeat), swapSeat.dataset.swapSeat!, swapSeat);
+    else if (seat) void takeSeat(slotOf(seat), seat.dataset.seat!);
     else if (drop) void dropSeat(slotOf(drop), drop.dataset.drop!);
     else if (ask && !ask.disabled) askDialog(ask.dataset.ask!);
     else if (keep) void run(() => io.call("dutyKeep", { streamId: keep.dataset.keep }), keep.dataset.keep!).then((r) => { if (r) { toast("Great, you're still on."); void reloadOne(keep.dataset.keep!); } });

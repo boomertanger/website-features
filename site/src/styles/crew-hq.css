@@ -32,6 +32,11 @@
 .bt-root:not(#_) .hq-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 .bt-root:not(#_) .hq-col { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .bt-root:not(#_) .hq-card { display: flex; flex-direction: column; gap: 12px; }
+/* the Swap board card (Mod Machina phase 3 part 1): rows are the kit's .bt-swap; the empty state carries the mascot */
+.bt-root:not(#_) .hq-swaps .bt-card-head { align-items: center; }
+.bt-root:not(#_) .hq-swaps-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; text-align: center; padding: 18px 12px; }
+.bt-root:not(#_) .hq-swaps-m { display: block; width: 64px; }
+.bt-root:not(#_) .hq-swaps-m svg { width: 100%; height: auto; }
 
 /* Next-grade checklist */
 .bt-root:not(#_) .hq-checks { display: flex; flex-direction: column; gap: 10px; margin: 0; padding: 0; list-style: none; }

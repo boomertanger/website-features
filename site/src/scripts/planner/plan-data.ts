@@ -142,6 +142,12 @@ export async function loadStreams(week: string): Promise<Stream[]> {
   }));
   return out.sort((a, b) => a.start - b.start);
 }
+/** A seat dropped after publish and up for grabs (crew/main/swaps; Mod Machina phase 3 part 1). Handles only, no uids beyond the two that identify the people. */
+export interface Swap { id: string; streamId: string; room: string; role: "captain" | "lead" | "deckhand"; fromUid: string; fromHandle: string; droppedAt: number; startsAt: number; notice: "early" | "late"; status: "open" | "taken" | "closed"; takenBy: string | null; takenByHandle: string | null; takenAt: number | null }
+export async function loadSwaps(): Promise<Swap[]> {
+  const snap = await getDocs(collection(db, `${base}/crew/main/swaps`));
+  return snap.docs.map((d: any) => { const x = d.data(); return { id: d.id, streamId: x.streamId, room: x.room, role: x.role, fromUid: x.fromUid, fromHandle: x.fromHandle || "", droppedAt: ms(x.droppedAt) ?? 0, startsAt: ms(x.startsAt) ?? 0, notice: x.notice === "late" ? "late" : "early", status: x.status, takenBy: x.takenBy ?? null, takenByHandle: x.takenByHandle ?? null, takenAt: ms(x.takenAt) } as Swap; });
+}
 export async function loadSignups(streamId: string): Promise<Signup[]> {
   const snap = await getDocs(collection(db, `${base}/streams/${streamId}/signups`));
   return snap.docs.map((d: any) => { const x = d.data(); return { uid: d.id, availability: x.availability || "", prefilled: x.prefilled === true, seats: x.seats || [], gameRequest: x.gameRequest || null, handle: x.handle || null, grade: x.grade ?? null, track: x.track || "mod", reconfirm: x.reconfirm || null } as Signup; });
