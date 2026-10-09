@@ -5,18 +5,20 @@
 // Data (api.ts): public/live + the stream doc + private/control + live/main, polled every 5 s while the tab is visible. Preview (non-production,
 // signed out, ?as=admin owner / ?as=a2): src/data/preview-live-control.json and a local copy of the callables.
 import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
-import { crWordmarkHtml, CR_ICON, setLook, crBoot } from "../../../../shared/ui/control-room.js";
+import { CR_ICON, setLook, crBoot } from "../../../../shared/ui/control-room.js";
 import { readoutHtml, readoutsHtml, readoutBarsHtml, setReadout } from "../../../../shared/ui/readout.js";
 import { beatsHtml } from "../../../../shared/ui/beats.js";
 import { deckplanHtml } from "../../../../shared/ui/deckplan.js";
-import { platformIconHtml, PLATFORMS } from "../../../../shared/ui/crew.js";
+import { platformIconHtml } from "../../../../shared/ui/crew.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { onAccess } from "./layout";
 import { makeApi } from "./api";
-import { ctx, isLive, current, picked } from "./state";
+import { ctx, current } from "./state";
 import { BEATS, BEAT_LABEL, ROOMS, ROOM_LABEL, fmtTime, fmtUptime, fmtDur, plural, type Room, type Snapshot, type LStream } from "./model";
 import { esc, $, withBusy, toast, messageFor, reduced, mascotHtml } from "./ui";
 import { stageHtml, initStage } from "./stage";
+import { initLive } from "./live";
+import { gamePickerHtml } from "./gamepick";
 
 const POLL_MS = 5000;
 const SITE_TILE = `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`;
@@ -84,7 +86,7 @@ function statusHtml() {
     { key: "game", value: "0m", label: "On this game" },
   ], { cols: 2 }) : "";
   const tag = live ? "" : st ? `<small class="lc-hint">Go live in Streamlabs, then press Start</small>` : "";
-  return crPanelHtml({ id: "lc-status", cls: "lc-a-status", title: "Platforms", icon: "watch", tagHtml: tag, bodyHtml: `${ros}<div class="lc-plats">${cards.join("")}</div>` });
+  return crPanelHtml({ id: "lc-status", cls: "lc-a-status", title: "Platforms", icon: "watch", tagHtml: tag, bodyHtml: `${ros}<div class="lc-plats">${cards.join("")}</div>${(ctx.hooks.ttForm?.(ctx) as string) ?? ""}` });
 }
 
 /** Fills the numbers in place (so they tick and flash instead of being redrawn). */
@@ -115,7 +117,7 @@ function beatsPanelHtml() {
   const open = pub?.window?.open ? pub.window.beat : null;
   const chips = open ? { [open]: "Check-in open" } : {};
   const body = beatsHtml({ beats: beats as any, now: live ? pub?.beat || "" : "", chips, label: "Stream beats" });
-  return crPanelHtml({ id: "lc-beats", cls: "lc-a-beats", title: "Beats", icon: "beats", bodyHtml: `${body}<div class="lc-beat-acts" data-slot-inner="beat-acts"></div>` });
+  return crPanelHtml({ id: "lc-beats", cls: "lc-a-beats", title: "Beats", icon: "beats", bodyHtml: `${body}<div class="lc-beat-acts">${(ctx.hooks.beatActs?.(ctx) as string) ?? ""}</div>` });
 }
 
 /* ------------------------------------------------------------------ game (switching is added by live.ts) */
@@ -124,7 +126,7 @@ function gamePanelHtml() {
   const planned = st?.plannedGames || [];
   const now = live ? pub?.game : null;
   const first = planned[0];
-  const nowGame = now ? { gameId: now.gameId, title: now.title } : first ? { gameId: first.gameId, title: first.title } : null;
+  const nowGame = now ? { gameId: now.gameId, title: now.title } : !live && first ? { gameId: first.gameId, title: first.title } : null;
   const cover = (id: string, title: string) => coverHtml(ctx.vault.get(id)?.cover ?? null, { alt: title, cls: "bt-cover--sm" });
   const played = new Set((st?.segments || []).filter((x) => x.kind === "game").map((x) => x.gameId));
   const upNext = planned.filter((g) => g.gameId !== nowGame?.gameId && !played.has(g.gameId));
@@ -132,7 +134,7 @@ function gamePanelHtml() {
     ? `<div class="lc-game-now">${cover(nowGame.gameId, nowGame.title)}<div><small>${live ? "Playing now" : "First up"}</small><h3 class="lc-game-t">${esc(nowGame.title)}</h3><small>${live ? `<b data-gm class="lc-game-min"></b> on this game` : "Opens its segment when you press Start"}</small></div></div>`
     : `<div class="lc-empty">${live ? "No game is playing: this is a break." : "No game is planned yet."}</div>`;
   const list = upNext.length ? `<div class="lc-game-list"><span class="bt-label">Up next tonight</span>${upNext.map((g) => `<div class="lc-game-row">${cover(g.gameId, g.title)}<div><b>${esc(g.title)}</b><small>Planned</small></div>${live ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-act="switch-game" data-id="${esc(g.gameId)}" data-title="${esc(g.title)}">Switch</button>` : ""}</div>`).join("")}</div>` : "";
-  return crPanelHtml({ id: "lc-game", cls: "lc-a-game", title: "Game", icon: "game", bodyHtml: `${nowHtml}${list}<div data-slot-inner="game-search"></div>` });
+  return crPanelHtml({ id: "lc-game", cls: "lc-a-game", title: "Game", icon: "game", bodyHtml: `${nowHtml}${list}${live ? gamePickerHtml("switch", { placeholder: "Switch to another game", label: "Search the Game Vault" }) : ""}` });
 }
 
 /* ------------------------------------------------------------------ crew on duty */
@@ -176,12 +178,15 @@ function render() {
     if (wasMode && !reduced()) crBoot(root);
   }
   slot("hero", heroHtml());
-  if (ctx.mode === "ended") { ctx.after.forEach((f) => f(ctx)); return; }
+  if (ctx.mode === "ended") { slot("banners", ""); slot("wrap", (ctx.hooks.wrapHtml?.(ctx) as string) ?? ""); ctx.after.forEach((f) => f(ctx)); return; }
   slot("status", statusHtml());
   slot("beats", beatsPanelHtml());
   slot("game", gamePanelHtml());
   slot("crew", crewPanelHtml());
   slot("stage", stageHtml(ctx));
+  slot("scene", (ctx.hooks.sceneHtml?.(ctx) as string) ?? "");
+  slot("launch", (ctx.hooks.launchHtml?.(ctx) as string) ?? "");
+  slot("banners", (ctx.hooks.bannersHtml?.(ctx) as string) ?? "");
   ctx.after.forEach((f) => f(ctx));
   const fresh = root.querySelector<HTMLElement>(".lc-a-status[data-fresh]");
   applyLive(!!fresh);
@@ -225,7 +230,7 @@ function derive() {
   const s = ctx.snap, now = Date.now();
   const liveNow = livePub(s) && !!s.live;
   if (liveNow) { ctx.mode = "live"; ctx.wrap = ctx.wrap; }
-  else if (s.pub?.state === "ended" && (ctx.wrap || now - (s.pub.actualEnd || 0) < 2 * 3600000)) ctx.mode = "ended";
+  else if (s.pub?.state === "ended" && !ctx.wrapDismissed && (ctx.wrap || now - (s.pub.actualEnd || 0) < 2 * 3600000)) ctx.mode = "ended";
   else ctx.mode = "idle";
   ctx.todays = s.streams.filter((x) => Math.abs(x.start - now) <= 12 * 3600000).sort((a, b) => a.start - b.start);
   if (!ctx.todays.some((x) => x.id === ctx.pickedId)) ctx.pickedId = ctx.todays[0]?.id || null;
@@ -264,7 +269,7 @@ onAccess(async (s, role) => {
   ctx.api = await makeApi(s);
   ctx.acts = ctx.acts || {}; ctx.hooks = ctx.hooks || {}; ctx.after = ctx.after || [];
   ctx.render = render; ctx.refresh = refresh;
-  ctx.vault = new Map(); ctx.tiktokOn = false; ctx.wrap = null; ctx.todays = []; ctx.pickedId = null;
+  ctx.wrapDismissed = false; ctx.vault = new Map(); ctx.tiktokOn = false; ctx.wrap = null; ctx.todays = []; ctx.pickedId = null;
   ctx.snap = { pub: null, streams: [], live: null, control: null, main: null, checklist: null };
   root.dataset.owner = role === "owner" ? "1" : "0";
   chrome(root);
@@ -274,6 +279,7 @@ onAccess(async (s, role) => {
   setLook(root, l || "hull");
   if (ctx.main && l) ctx.main.look = l === "crt" ? "crt" : "hull";
   initStage(ctx);
+  initLive(ctx);
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;
@@ -293,5 +299,4 @@ onAccess(async (s, role) => {
   setInterval(tickTimers, 1000);
   schedule();
   document.addEventListener("visibilitychange", () => { if (!document.hidden) { void refresh().then(schedule); } else clearTimeout(timer); });
-  void picked; void isLive; void crWordmarkHtml; void PLATFORMS; void esc;
 });

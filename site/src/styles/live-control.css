@@ -148,3 +148,49 @@
 @keyframes lc-golive-pop { from { transform: scale(0.4); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes lc-golive-ring { from { transform: scale(0.2); opacity: 1; } to { transform: scale(3); opacity: 0; } }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lc-golive, .bt-root:not(#_) .lc-golive * { animation: none; } button.lc-pick-row { transition: none; } }
+
+/* ---- The check-in control: the big amber word, the ring, counts by room ---- */
+.bt-root:not(#_) .lc-banners:not(:empty) { display: grid; gap: 8px; margin-bottom: 14px; }
+.bt-root:not(#_) .lc-gold { border-color: rgba(var(--bt-gold-rgb), 0.5); background: var(--bt-gold-bg); color: var(--bt-text); }
+.bt-root:not(#_) .lc-banner-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
+.bt-root:not(#_) .lc-word { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 18px; align-items: center; }
+.bt-root:not(#_) .lc-word .bt-checkin-count { grid-column: 1 / -1; display: flex; align-items: baseline; gap: 10px; }
+.bt-root:not(#_) .lc-word .bt-checkin-ring { width: 92px; height: 92px; }
+.bt-root:not(#_) .lc-word-say { font-size: clamp(28px, 5cqi, 54px); overflow-wrap: anywhere; font-weight: 900; letter-spacing: 0.1em; text-transform: uppercase; color: var(--bt-title); line-height: 1; text-shadow: 0 0 24px rgba(var(--bt-gold-rgb), 0.45); }
+.bt-root:not(#_) .lc-word-hint { margin-top: 6px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .lc-word { grid-template-columns: 1fr; justify-items: start; } }
+.bt-root:not(#_) .lc-rooms { display: grid; gap: 6px; margin-top: 14px; }
+.bt-root:not(#_) .lc-room { display: grid; grid-template-columns: 22px 130px minmax(0, 1fr) 44px; gap: 10px; align-items: center; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-room b { color: var(--bt-text); text-align: right; font-variant-numeric: tabular-nums; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .lc-room { grid-template-columns: 22px 96px minmax(0, 1fr) 38px; } }
+.bt-root:not(#_) .lc-bar { display: block; height: 8px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); overflow: hidden; }
+.bt-root:not(#_) .lc-bar i { display: block; height: 100%; width: calc(var(--f, 0) * 100%); background: var(--bt-primary); transition: width 0.4s; }
+.bt-root:not(#_) .lc-acts, .bt-root:not(#_) .lc-stop-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.bt-root:not(#_) .lc-stop-row { justify-content: flex-end; padding-top: 14px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lc-idle { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.bt-root:not(#_) .lc-idle p { margin: 4px 0 8px; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .lc-idle { grid-template-columns: 1fr; } }
+.bt-root:not(#_) .lc-brb { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 14px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lc-brb-t { color: var(--bt-title); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lc-empty--sm .bt-mascot { width: 40px; }
+.bt-root:not(#_) .lc-a-launch .bt-launch { margin-bottom: 4px; }
+.bt-root:not(#_) .lc-tt-form { margin-top: 14px; }
+.bt-root:not(#_) .lc-tt-row { display: flex; gap: 8px; max-width: 320px; }
+.bt-root:not(#_) .lc-gp-res { display: grid; gap: 8px; margin-top: 8px; }
+.bt-root:not(#_) .lc-gp-add { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-a-game .lc-gp { margin-top: 14px; }
+
+/* ---- Stream wrap-up ---- */
+.bt-root:not(#_) .lc-wrap { display: grid; justify-items: center; gap: 14px; text-align: center; max-width: 920px; margin: 0 auto; }
+.bt-root:not(#_) .lc-wrap > .bt-mascot { width: 76px; }
+.bt-root:not(#_) .lc-wrap .bt-readouts { width: 100%; }
+.bt-root:not(#_) .lc-wrap-stamp { position: relative; }
+.bt-root:not(#_) .lc-wrap-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; width: 100%; text-align: left; }
+.bt-root:not(#_) .lc-wbars { display: flex; align-items: flex-end; gap: 12px; height: 150px; }
+.bt-root:not(#_) .lc-wbar { flex: 1; display: grid; justify-items: center; align-content: end; gap: 6px; height: 100%; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lc-wbar b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lc-wbar i { display: block; width: 100%; max-width: 48px; height: calc(var(--h, 0) * 0.8%); min-height: 4px; border-radius: 6px 6px 0 0; background: var(--bt-primary); transform-origin: bottom; animation: lc-grow 0.7s cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+@keyframes lc-grow { from { transform: scaleY(0); } }
+.bt-root:not(#_) .lc-missed { margin: 0; padding-left: 18px; color: var(--bt-text); line-height: 1.7; }
+.bt-root:not(#_) .lc-missed small { color: var(--bt-text-muted); }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .lc-wbar i { animation: none; } .bt-root:not(#_) .lc-bar i { transition: none; } }

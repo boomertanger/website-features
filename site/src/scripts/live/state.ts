@@ -22,6 +22,8 @@ export interface Ctx {
   wrap: { durationMs: number; peak: number; checkins: number; byBeat: Record<string, number>; title: string } | null;
   /** The TikTok switch on the controls: nobody reports TikTok to the server, so it is the owner's own note (this page only). */
   tiktokOn: boolean;
+  /** The owner left the wrap-up for the controls. */
+  wrapDismissed: boolean;
   /** Re-read the data and redraw. */
   refresh(): Promise<void>;
   /** Redraw from what is already read. */
