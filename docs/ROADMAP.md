@@ -235,3 +235,6 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
+
+### Code health
+- [ ] Clear the 78 older tsc errors across site features (factory, vault and others) so the type check is clean before launch.
