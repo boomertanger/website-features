@@ -11,8 +11,8 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 3 | Game Vault | In progress | Games and streams |
 | 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
 | 4b | Notifications (email, text, push from the Planner's outbox) | Later | Community services |
-| 5 | Live Beacon and Control Room | In progress (spec confirmed Oct 8, 2026) | Games and streams |
-| 5b | Live activities (Questions, Hot Seat, then the Chat Games engine) | Later (spec to come) | Community services |
+| 5 | Live Beacon and Control Room | Built on staging (parts 0-9); real-world tests pending | Games and streams |
+| 5b | Live activities (Questions, Hot Seat, then the Chat Games engine) | Next | Community services |
 | 6 | Stream Library | Later | Games and streams |
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
@@ -86,16 +86,26 @@ Kickoff: "Start workstream 4b (Notifications) from docs/ROADMAP.md."
 
 ### 5. Live Beacon and Control Room
 Goal: live and backstage states across the site (header beacon, mascot "aware" lenses, footer Twitch LIVE dot), and the owner's controls at /live for playing the scheduled streams: pick today's stream, Start (records the actual start, turns on live states), mark the game being played (records each game's start and end), Stop (records the end). An unscheduled stream can still be started ad hoc.
-Status: **In progress (spec confirmed Oct 8, 2026).**
+Status: **Built on staging (parts 0-9); real-world tests pending.** Everything below runs on staging with sample data, the logic and wiring checks (`npm run check`) and Playwright; what still needs a real stream, Streamlabs, a Stream Deck and a real Twitch go-live is the walk-through list in [docs/testing/control-room-test-plan.md](testing/control-room-test-plan.md) (W1 to W6, then the after-show and backstage checks A to E). Not built: Questions, Hot Seat and the Chat Games scenes and panels (workstream 5b), the Mod Deck (Mod Machina phase 3), Connect Streamlabs, Stream Deck key titles with live state and member-chosen looks (spec section 18, "Later").
 Spec: [docs/specs/control-room.md](specs/control-room.md); mockups `docs/design/mockups/control-room-review.html` and `control-room-batch-1.html` to `control-room-batch-4.html`.
-Parts (spec section 18, one commit each, staging first): 0. Scream Planner part 8, YouTube events (first); 1. docs (this commit); 2. logic (`lib/live/logic.js`, `check-live.js`); 3. backend wiring (callables, triggers, `liveTick`, `liveFlush`, `obsFeed`, `liveDeck`, `twitchEventSub`, rules, indexes; staging deploy); 4. kit pieces and the two looks on the UI kit page; 5. /live/control (Cockpit) with the checklist, its editor, the Scene card and the Stream Deck card; 6. /live and the live states across the site (beacon, mascot, footer, nav tile, live banner); 7. check-ins and presence, with the Night Shift and Trophy Room hooks; 8. the stream view (wide and tall, every scene, both looks); 9. backstage watching and the after-show.
+Parts (spec section 18; one or more commits each, staging first; all built):
+0. **Scream Planner part 8, YouTube events:** `004ceb9`, `3274042`, `e8272c7`, `e2ce5b0`, `9e54c3b`.
+1. **Docs** (spec, mockups, amendments): `ce29d53`.
+2. **Logic** (`lib/live/logic.js`, `check-live.js`): `51b869a`, `2e84323`.
+3. **Backend wiring** (callables, check-ins, feeds and ticks, EventSub, rules, indexes, ad hoc streams; staging deployed): `1b7b06c`, `ac8979e`, `37fd037`, `02bff5d`, `39ed8c5`, `06454e6`, `dd31e45`, `2ea5e64` (livePlatformStatus and the TikTok switch).
+4. **Kit pieces and the two looks** (UI kit page section "Control Room"): `79508fd`, `f15238e`, `cb95e97`, `21976d7`.
+5. **/live/control** (Cockpit): `674f427` shell, `39b6105` before the stream, `5086565` live controls, `5235cf4` the owner's checklist, `fad3f20` Stream Deck and stream view keys, `8820b46` the Start dialog's TikTok switch.
+6. **/live and the live states across the site:** `8b4abe4` shell, `5c8290d` waiting room, `1f6195f` the Bridge and backstage, `e65a04a` Just ended, `b5b5d18` live states site-wide; follow-ups `32df1bc` (firstIn and crew grades in public/live, one Twitch channel source), `405d65d` (Offline without a placeholder), `4f784f5` (First in and grade chips).
+7. **Check-ins site-wide:** `9e21a88` banner and dialog (7a, 7b), `3dd642c` /account Streams (7c), `1e7e8cf` Punch the clock (7d), `b4d9a2a` the seeded wording with the `--wording` seed mode (applied to staging).
+8. **The stream view** (/live/obs): `29ca3ab` page, key and polling, `5cd2ebf` scenes, `82f2984` staging demo; follow-ups `408562f` (covers and next stream in obsFeed, break-side accepted) and `9e88698` (Break · side rail on the Scene card and the deck).
+9. **Backstage watching and the after-show:** `6e9fb5a` after-show card, `b65c244` backstage Start, `e6faefb` hand-over and embed retry, `a51f0e9` privacy setting, `93978a2` gate checks and the test plan.
 Depends on: Scream Planner, Game Vault, accounts (done), Twitch app (done).
 Kickoff: "Start workstream 5 (Live Beacon and Control Room) from docs/ROADMAP.md."
 
 ### 5b. Live activities (Questions, Hot Seat, then the Chat Games engine)
-Goal: live things members do during a stream: Questions (ask and promote), Hot Seat, then the Chat Games engine shared with Mod Machina phase 4, then the ranked extras. Its own service, after the Control Room core.
+Goal: live things members do during a stream: Questions (ask and promote), Hot Seat, then the Chat Games engine shared with Mod Machina phase 4, then the ranked extras. Its own service, after the Control Room core. The Control Room already has the places for it: the Play panel on /live, the launch panel on /live/control and in the Mod Deck, the question card and the Hot Seat pickers still to add to the kit (`.bt-qcard`, `.bt-seance`, `.bt-wheel`), and the stream view scenes.
 Spec: to come, `docs/specs/live-activities.md` (see control-room.md section 9 and decision 13).
-Status: Later.
+Status: **Next.**
 Depends on: Control Room (5), Mod Machina phase 4 (Chat Games).
 
 ### 6. Stream Library
@@ -195,6 +205,10 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Connect YouTube in production (Connect YouTube on /admin, once; click through the "unverified app" warning).
 - [ ] Generate a new stream view key and a new deck key in production (never reuse staging's).
 - [ ] Seed `live/main` in production.
+- [ ] Production Twitch EventSub: set `TWITCH_EVENTSUB_SECRET` and create the stream.online and stream.offline subscriptions for the production callback (scripts/twitch-eventsub.js is staging only).
+- [ ] Confirm `twitchChannel` in site.json with the owner (it must equal `TWITCH_LOGIN`; `check-live` enforces that).
+- [ ] Re-seed the "Punch the clock" wording in production (`seed-factory-ideas.js`, `seed-factory-types.js`, `seed-badges.js` with `--wording "Punch the clock"`; so far only staging was done).
+- [ ] Walk through every item in docs/testing/control-room-test-plan.md on staging first, and note whether TikTok LIVE Studio accepts a browser source.
 
 ### Mod Machina in production
 - [ ] Connect the Twitch broadcaster token for mod sync (twitchSync is off until then): store sites/boomertanger/private/twitchBroadcaster { accessToken, refreshToken, accessExpiresAt, scope incl. channel:manage:moderators }, then set crew/main.twitchSync = true in Crew settings. Until then every Twitch mod change is a to-do on /admin/crew.

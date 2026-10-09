@@ -1,9 +1,72 @@
 # Control Room test plan
 
-Hand-run checks for the Control Room on staging (`PUBLIC_FIREBASE_ENV=staging`), with real accounts. The automated checks (`npm run check` in `functions/`, the Playwright runs in the build notes) cover the logic and the layouts; this plan is what only a person with Streamlabs, a second browser and a few accounts can prove. This file did not exist before part 9; it starts with the after-show and backstage steps and is the place to add the rest (stream view, check-ins, Questions) as they are walked through.
+Hand-run checks for the Control Room on staging (`PUBLIC_FIREBASE_ENV=staging`), with real accounts. The automated checks (`npm run check` in `functions/`, the Playwright runs in the build notes) cover the logic and the layouts; this plan is what only a person with Streamlabs, a second browser and a few accounts can prove. It opens with six walk-throughs (W1 to W6: check-in from another page, the two-tab test, the stream view in Streamlabs, the Stream Deck, Twitch EventSub and a real Start), then the part 9 checks (A to E: after-show and backstage). Add Questions and Hot Seat here when the live activities are built.
 
 Accounts you need: **Owner** (boss), **Overseer** (A2), a **Fan Club member** (signed up, free), a **visitor** (signed out), and a **signed-in non-member** (signed in, signup unfinished) if you can make one.
 Staging safety: every YouTube event is Private and starts with `[STAGING] `; nothing here reaches production.
+
+## Walk-throughs (do these first)
+
+Real-world checks of parts 3 to 8. Each has the exact steps and what you should see. Do them in order W1 to W6; W5 and W6 need a real Twitch stream. Use a throwaway stream so nothing public is announced: **Start an unscheduled stream** on /live/control with the title **Dry run** (type Platform, chats Twitch only), which makes the stream and its YouTube event, then **Start**.
+
+### W1. Check in from another page
+
+1. Owner, /live/control: Start an unscheduled stream "Dry run" (Twitch only). Press **Start**, pick any first game, Start. WE'RE LIVE plays; the Start beat is on.
+2. Press **Begin Break 1**. Press **Open check-in** (3 minutes). The big word shows on the controls (and only there and on the stream view).
+3. In a second browser signed in as **@gbo** (a signed-up Fan Club member; the owner cannot check in), open the Game Vault (/games). Expect: a red banner under the header, "Check-in is open · Break 1 · 2:5x left" with **Check in**. It is not on /live or /live/control.
+4. Press **Check in**. The dialog opens (a bottom sheet on a phone-sized window). Type a **wrong word**: the field shakes and says "That's not tonight's word. 4 tries left for this beat." Pick **where you are watching** (Twitch).
+5. Type the **right word** (any case, spaces or accents are ignored). Expect: the stamp slams in, a burst (none with reduced motion), chips "+10 XP", "Stream streak safe tonight" and "1 of N beats", the four stamps with B1 filled, and **Back to the page**. The banner behind turns green: "You're in for Break 1 · +10 XP".
+6. Dismiss test: reload, the banner is back in the green state; on the next window use the ✕, go to another page: it stays hidden for that window.
+7. On the controls: the check-in count is 1 and @gbo is under First in. Press **Stop the stream** (confirm). The wrap-up shows.
+8. As @gbo open **/account#streams**. Expect: "Dry run" at the top with **Counted** "because you checked in", Checked in from Twitch, the B1 stamp filled, **+10 XP**, and "1 stream in a row". The page also says what is never recorded and that details are deleted after 13 months.
+
+### W2. Two-tab live test
+
+Tab A: the owner on /live/control. Tab B: /live as a signed-in member (and a third window as a visitor).
+
+1. Before Start: B shows the waiting room (Off air or Starting soon, the next stream's ticket). The header beacon says Offline or the next stream's time.
+2. Start in A. Within a few seconds B switches by itself to the Bridge: the title in gold, the red Live tag, the beacon and mascot red, the Watch dot red on every page.
+3. Begin Break 1 in A: B's beat rail moves (Start done, Break 1 now). Open check-in in A: B's Check in panel opens with the countdown ring and a red edge; the visitor window says "Join free to check in"; the site banner shows on any other page.
+4. Check in from another account: the count on A and B goes up within about 3 seconds, and the first three handles appear under First in on both, in order.
+5. Close the window in A: B's panel says Check-in is closed (or shows your stamp); the banner goes.
+6. Stop in A. B changes to **Just ended**: confetti (none with reduced motion), on-air time, peak, check-ins by beat, the games timeline and the next stream. A shows its own wrap-up. After two hours (or `?state=off` in preview) /live is the waiting room again.
+
+### W3. Stream view in Streamlabs
+
+1. /live/control, owner: the **Stream view** card, **Make a key**. The key is shown once: copy it into the browser source URL at once (never into chat). The wide URL is `https://<site>/live/obs?k=<key>&layout=wide`; the tall one has `layout=tall`.
+2. Streamlabs Desktop: Add Source, **Browser Source**. URL = the wide URL. **Width 1920, Height 1080.** Leave "Shutdown source when not visible" off and "Refresh browser when scene becomes active" on. Expect nothing visible at first (it is transparent) while nothing is live.
+3. Wrong key check: set a wrong key for a moment. Expect the source to be completely empty (no text, no error). Put the right key back.
+4. Dual Output: in the **vertical** canvas add another Browser Source with the tall URL, **Width 1080, Height 1920**.
+5. With the Dry run stream live, use the **Scene card** on /live/control and look at the source after each: **Auto** (follows the beat), **Starting soon** (countdown, games with covers, crew ticker), **Live stats** (corner panel and beat rail), **Break** (camera window, the word scrambling then settling, ring, counts by room, First in popping in), **Break · side rail**, **Be right back** (5 minutes: the timer counts down), **Ending** (thanks, stats, crew, "Next: day · title · time"). Each should change within about a second.
+6. **Line up the camera:** in the Break scene put your camera source behind the browser source and size it to fill the dashed "Your camera" frame (wide: left 90, top 120, 880 by 760 on the 1920 by 1080 canvas; tall: left 70, top 190, 780 by 460). The picture should show through the window with the frame drawn around it.
+7. **Tall safe zones:** with the platform's phone preview open, nothing important sits under the top bar, the buttons down the right or the captions at the bottom.
+8. Open check-in and say the word: the ring counts down, the count climbs, First in pops in one by one. Nothing flashes faster than about three times a second; all text is easy to read at stream size.
+9. **TikTok LIVE Studio:** add a Browser or Link/Web source with the tall URL. Write down whether it accepts it and whether it is transparent. If it does not, say so here and in the ROADMAP: the fallback is a window capture of the stream view in a browser.
+
+### W4. Stream Deck
+
+1. /live/control, owner: the **Stream Deck** card, **Make a key** (shown once; copy it into the Stream Deck software only).
+2. In the Stream Deck software add three web-request keys (a plugin such as API Ninja or Web Requests): **Begin next beat** (`.../liveDeck?k=<key>&action=nextBeat`), **Open check-in** (`&action=openCheckin&minutes=3`) and **Be right back** (`&action=scene&scene=brb&brbMinutes=5`). The card lists every URL with a Copy button.
+3. With the Dry run live, press each key. Expect: the beat begins, the window opens, the stream view shows Be right back with its timer, and the controls page updates within about two seconds. The Admin log shows the actor **Stream Deck**.
+4. Add a **Multi Action** key: first the Streamlabs plugin's switch-scene action (your Break scene), then the Open check-in request, then "Begin next beat". One press should switch Streamlabs, begin Break 1 and open the check-in.
+5. Negative checks: a wrong key gives 403; the key made for the stream view does not work here; `action=start` or `action=stop` is refused ("Start and Stop stay on the controls page"); Questions and Hot Seat actions say they arrive with the live activities; more than 30 presses a minute are refused (429).
+
+### W5. Twitch EventSub (next real Twitch stream)
+
+Setup once: the staging EventSub subscriptions exist (`node functions/scripts/twitch-eventsub.js` for a dry run, then `--apply`) and `TWITCH_EVENTSUB_SECRET` is set. Then:
+
+1. Start streaming on Twitch and press **Start** on the controls. Expect: the Twitch card says ● Live with viewers, and the function logs for `twitchEventSub` show a `stream.online` notification (signature accepted, no errors).
+2. Stop streaming on Twitch (leave the site stream running). Expect a `stream.offline` notification in the logs, the Twitch card going to Offline, and after **3 minutes** the gold banner "Twitch says you're offline" with **Stop the stream** and **Wait**. The stream is **not** ended by itself.
+3. **Crash test:** go live again, then kill Streamlabs or the PC mid-stream and restart it. Expect: the site stream is still live the whole time (nothing ends it), `/live` still shows the Bridge, and the banner offers Stop or Wait. Go live again: the banner clears when Twitch reports live. Only Stop, or the 12-hour auto-end, ends it.
+4. Replays: nothing changes if the same notification arrives twice (message ids are de-duplicated).
+
+### W6. Real Start
+
+1. Streamlabs ready: the Twitch output, the YouTube event picked from the list and Dual Output on. **Do not go live yet.** Open the Start dialog on /live/control.
+2. Expect the rows to say Looking…, then **Not live yet** for Twitch, **Event ready, not live yet** for YouTube and **Not found yet: Dual Output makes it at go-live** for the vertical broadcast, with a gold note naming what is missing. Start stays allowed.
+3. Go live in Streamlabs while the dialog is open. Within about 5 seconds each row flips to **Live ✓** (Twitch with its viewer count, YouTube, the vertical broadcast).
+4. The TikTok row is a switch, ON when TikTok is a planned chat, independent of any check. Press **Start the stream**. Expect the controls' Platforms card to show the same three as live.
+5. Stop the stream in Streamlabs before pressing Start (dialog still open): the rows go back to Not live yet on the next check, still without errors.
 
 ## A. After-show: public stream to backstage
 
