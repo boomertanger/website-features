@@ -338,5 +338,17 @@ const logs = async (action) => (await col("adminLog")).filter((e) => e.feature =
   const ti = T.BUG_SCREENSHOTS.index; assert.ok(has(ti.collectionGroup, ti.fields), "each allowlisted target's composite index ships (reports: closed, closedAt)");
   assert.ok(idxJson.indexes.every((i, n) => idxJson.indexes.findIndex((j) => JSON.stringify(j) === JSON.stringify(i)) === n), "no duplicate index entries");
 
+  // ---- the seed script (functions/scripts/seed-cloud-stash.js): adds only what is missing, never touches what exists ----
+  const seed = require("./seed-cloud-stash");
+  assert.deepStrictEqual(seed.settingsToAdd(undefined), { pauseAtPct: 80, manualPause: false, manualPauseReason: "", runCap: 100 }, "a missing settings doc gets every default");
+  assert.deepStrictEqual(seed.settingsToAdd({ pauseAtPct: 70, runCap: 50 }), { manualPause: false, manualPauseReason: "" }, "stored limits are never overwritten");
+  assert.deepStrictEqual(seed.settingsToAdd({ pauseAtPct: 80, manualPause: true, manualPauseReason: "x", runCap: 100 }), {}, "a complete settings doc adds nothing");
+  const newRule = seed.ruleToAdd([{ id: "bugZapperScreenshots", enabled: true, ageThresholdDays: 60 }]);
+  assert.ok(newRule && newRule.enabled === false && newRule.name === "Old bug screenshots" && newRule.days === 60 && newRule.target === "bugScreenshots", "the seeded rule is disabled and 60 days");
+  assert.deepStrictEqual(newRule.statuses, T.BUG_SCREENSHOTS.statuses, "it covers every closed status");
+  assert.ok(T.queryOf(newRule).ok && !T.isLegacyShaped(newRule), "the sweep accepts the seeded rule");
+  assert.strictEqual(seed.ruleToAdd([{ id: "x", target: "bugScreenshots" }]), null, "no second rule when one for the target exists");
+  assert.throws(() => seed.parseArgs(["--project", "production"]), /staging only/, "the seed refuses any project but staging");
+
   console.log("check-stash: ok");
 })().catch((e) => { console.error(e); process.exit(1); });
