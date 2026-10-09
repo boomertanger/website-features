@@ -35,6 +35,7 @@ const BRB_MAX_MIN = 60;
 
 module.exports = function controls(ctx, { youtube = null, rng = Math.random, hooks = {} } = {}) {
   const { db, FieldValue, Timestamp, fail, P: paths, now } = ctx;
+  const swaps = require("../crew/swap").makeSwap({ db, FieldValue, Timestamp, log: (a) => ctx.logAdmin(a.actor || null, { action: a.action, streamId: a.streamId, title: a.title, details: a.details }) });
 
   const refusal = (r) => ({
     badState: ["failed-precondition", "That stream can't do that in its current state.", "badState"],
@@ -205,6 +206,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     const dr = db.doc(paths.draft(id));
     if ((await dr.get()).exists) await dr.update({ state: "live", actualStart: mirror.actualStart });
     await announceLive(actor, id, started);
+    // Mod Machina phase 3 part 1: open swaps close at Start (an untaken late drop counts as a no-show, part 2 counts it)
+    try { await swaps.closeAtStart(id, { title: started.title, actor }); } catch (err) { console.error("live: closing the swap board failed", err); }
     await ctx.logAdmin(actor, { action: "start", streamId: id, title: started.title, details: { adhoc: started.adhoc === true, type: started.type, firstGame: firstGame ? firstGame.gameId : null } });
     const yt = await linkYoutube(id);
     await ctx.publishLive();

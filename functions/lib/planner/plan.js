@@ -9,7 +9,7 @@ const { P, fail, ms, requireOwner, requireAdmin } = require("./core");
 const DAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"];
 const DAY_MS = 86400000;
 
-module.exports = function plan({ core }) {
+module.exports = function plan({ core, swap = null }) {
   const { db, FieldValue, Timestamp, ts } = core;
   const owner = async (request) => { const w = await core.whoPlus(core.requireAuth(request)); requireOwner(w); return w; };
   const admin = async (request) => { const w = await core.whoPlus(core.requireAuth(request)); requireAdmin(w); return w; };
@@ -523,6 +523,7 @@ module.exports = function plan({ core }) {
     const stamped = toStamps(r.patch);
     const next = { ...draft, ...stamped, rev: (draft.rev || 0) + 1 };
     await core.saveDraft(id, next, { alsoPublic: true, fields: ["plannedStart", "plannedEnd", "delay", "rev"] });
+    if (swap) await swap.closeForStream(id, { title: draft.title, actor: w, why: "delay" });   // open swaps close with no effect on anyone's record
     // Crew seats stay; each person with a seat is asked "Still on for the new time?" (keep or drop, no reliability hit).
     for (const uid of crewOf(draft)) await db.doc(P.signup(id, uid)).set({ reconfirm: { count: stamped.delay.count, needed: true } }, { merge: true });
     const pub = draft.published === true && draft.state === "scheduled";
@@ -561,6 +562,7 @@ module.exports = function plan({ core }) {
     }
     const next = { ...draft, ...stamped, crew: L.emptyCrew(draft.rooms, draft.caps), plannedGameIds: [], hasUnpublishedChanges: false, rev: (draft.rev || 0) + 1 };
     await core.saveDraft(id, next, { alsoPublic: true });
+    if (swap) await swap.closeForStream(id, { title: draft.title, actor: w, why: "cancel" });   // open swaps close with no effect on anyone's record
     const pub = draft.published === true;
     if (pub) {
       const title = `${draft.title || "A stream"} on ${L.dayLabel(ms(draft.plannedStart), tz)} is cancelled`;

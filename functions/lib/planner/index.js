@@ -4,7 +4,7 @@
 //
 //   plan.js    plannerSaveSettings, patternSave/Delete, exceptionSave/Delete, weekOpen, weekReopen, planSlot,
 //              planGames, publishWeek, delayStream, cancelStream
-//   crew.js    crewAvailability, dutySignUp, dutyDrop, dutyConfirm, dutyKeep, modGameRequest
+//   crew.js    crewAvailability, dutySignUp, dutyDrop, dutySwapTake, dutyConfirm, dutyKeep, modGameRequest (the swap board: lib/crew/swap.js)
 //   ballot.js  ballotVote, ballotAddGame, ballotMine
 //   tick.js    plannerTick (every 15 minutes)
 const admin = require("firebase-admin");
@@ -15,11 +15,16 @@ function build({ adminLogEntry } = {}) {
   const db = admin.firestore();
   const core = makeCore({ db, adminLogEntry });
   const gears = require("../crew/gears").makeGears({ db });
-  const plan = require("./plan")({ core });
-  const crewFns = require("./crew")({ core, gears });
+  // The swap board (Mod Machina phase 3 part 1): one store, shared by dropping, taking, Delay/Cancel and the tick; adminLog (feature screamPlanner, action crewSwap) and notifyOutbox through the planner's writers.
+  const swap = require("../crew/swap").makeSwap({
+    db, FieldValue: core.FieldValue, Timestamp: admin.firestore.Timestamp, outbox: core.outbox,
+    log: (a) => core.logAdmin(a.actor || null, { action: a.action, path: require("./core").P.stream(a.streamId), title: a.title, details: a.details }),
+  });
+  const plan = require("./plan")({ core, swap });
+  const crewFns = require("./crew")({ core, gears, swap });
   const ballot = require("./ballot")({ core });
-  const tick = require("./tick")({ core, plan, crewFns, ballot });
-  return { functions: { ...plan.functions, ...crewFns.functions, ...ballot.functions, plannerTick: tick.plannerTick }, hooks: { core, plan, crewFns, ballot, runTick: tick.runTick } };
+  const tick = require("./tick")({ core, plan, crewFns, ballot, swap });
+  return { functions: { ...plan.functions, ...crewFns.functions, ...ballot.functions, plannerTick: tick.plannerTick }, hooks: { core, plan, crewFns, ballot, swap, runTick: tick.runTick } };
 }
 
 module.exports = (deps) => build(deps).functions;

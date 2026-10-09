@@ -6,11 +6,11 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const L = require("./logic");
 const { P, ms } = require("./core");
 
-module.exports = function tick({ core, plan, crewFns, ballot }) {
+module.exports = function tick({ core, plan, crewFns, ballot, swap = null }) {
   const { db, FieldValue, ts } = core;
 
   async function runTick(nowMs = Date.now()) {
-    const out = { opened: null, closed: [], nudged: [], reminders: 0, released: 0, pruned: 0 };
+    const out = { opened: null, closed: [], nudged: [], reminders: 0, released: 0, pruned: 0, swapsClosed: 0 };
     const tz = await core.siteTz();
     const settings = await core.loadSettings();
 
@@ -72,6 +72,9 @@ module.exports = function tick({ core, plan, crewFns, ballot }) {
         out.released++;
       }
     }
+
+    // 6b. Swap board: a stream whose start time has passed closes its open swaps (startStream does it at Start; this catches a stream that started without it). An untaken late drop counts as a no-show.
+    if (swap) out.swapsClosed = await swap.closeStarted(nowMs);
 
     // 7. The public documents (exceptions expire, the ballot closes on time).
     await core.rebuildUsualWeek();

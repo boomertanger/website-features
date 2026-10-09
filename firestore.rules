@@ -754,6 +754,13 @@ service cloud.firestore {
           }
         }
 
+        // The swap board (Mod Machina phase 3 part 1, docs/specs/mod-machina.md section 17a): seats dropped after publish, open until the stream starts. Crew read it; only functions write it.
+        // (Handles only: no reliability data here.)
+        match /swaps/{swapId} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+        }
+
         // Applications: the applicant reads their own (it carries only their band, never the score);
         // Watcher and above and admins read all; vouches follow; concerns are admins and owner only.
         match /applications/{appId} {

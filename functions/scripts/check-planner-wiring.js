@@ -1,6 +1,8 @@
 // Wiring checks for the Scream Planner (called by check-planner.js): the callables and plannerTick against the
 // in-memory Firestore (scripts/fixtures/fake-firestore.js). Same pattern as check-crew.js. No credentials needed.
 const assert = require("assert/strict");
+const fs = require("fs");
+const path = require("path");
 const admin = require("firebase-admin");
 const { makeDb } = require("./fixtures/fake-firestore");
 
@@ -450,6 +452,122 @@ module.exports = async function wiring(L) {
   assert.equal((await db.doc(`${S}/planWeeks/${B}/ballot/granny`).get()).exists, false);
   assert.deepEqual((await get(`planWeeks/${B}/votes/fan`)).slugs, ["vr-one"]);
   assert.deepEqual((await get(`planWeeks/${B}`)).ballotSlugs, ["vr-one"]);
+
+  // ---------- the swap board (Mod Machina phase 3 part 1, docs/specs/mod-machina.md section 17a) ----------
+  {
+    const swapsOf = () => list("crew/main/swaps");
+    const crewOf = async () => (await draftOf(mon.id)).crew;
+    const setStart = async (id, startMs) => { const x = { plannedStart: T.fromMillis(startMs), plannedEnd: T.fromMillis(startMs + 3 * 3600000) }; await db.doc(`${S}/streams/${id}`).update(x); await db.doc(`${S}/streams/${id}/private/draft`).update(x); };
+    const sign = async (uid, seat) => { await call("dutySignUp", uid, { streamId: mon.id, seats: [seat] }); await call("dutyConfirm", "m1", { streamId: mon.id, uid, seat }); };
+    const crewOutbox = async (event) => (await list("notifyOutbox")).filter((o) => o.type === "crewSwap" && o.payload.event === event);
+    await db.doc(`${S}/crew/main/roster/m2`).update({ status: "active" });
+    await db.doc(`${S}/crew/main/roster/m1`).update({ platforms: { twitch: "no" } });
+    const DK = { room: "twitch", role: "deckhand" }, LEAD = { room: "twitch", role: "lead" };
+    const DKID = `${mon.id}_twitch:deckhand`, LEADID = `${mon.id}_twitch:lead`;
+    assert.equal(typeof fns.dutySwapTake, "function", "dutySwapTake is exported");
+    for (const u of ["m2", "m4", "m5", "adm1"]) await db.doc(`${S}/streams/${mon.id}/signups/${u}`).set({ availability: "yes" }, { merge: true });   // earlier checks left some of them unavailable
+
+    // before publish dutyDrop works exactly as it did: the seat is released, nothing goes on the board
+    await db.doc(`${S}/streams/${mon.id}/private/draft`).update({ published: false, state: "planned" });
+    await sign("m4", DK);
+    const noticesBefore = (await list("notifyOutbox")).length;
+    const pre = await call("dutyDrop", "m4", { streamId: mon.id, seat: DK });
+    assert.equal(pre.released, 1); assert.equal(pre.swaps, 0); assert.equal((await swapsOf()).length, 0, "no swap before publish"); assert.deepEqual((await crewOf()).chats.twitch.deckhands, []);
+    assert.equal((await list("notifyOutbox")).length, noticesBefore, "and no notice");
+    assert.equal((await get(`streams/${mon.id}/signups/m4`)).seats.find((s) => s.room === "twitch").status, "dropped");
+    await db.doc(`${S}/streams/${mon.id}/private/draft`).update({ published: true, state: "scheduled" });
+
+    // Delay closes open swaps with no effect on anyone's record
+    await sign("m4", DK);
+    assert.equal((await call("dutyDrop", "m4", { streamId: mon.id, seat: DK })).swaps, 1);
+    assert.equal((await swapsOf())[0].status, "open");
+    assert.equal(await reason(call("delayStream", "adm1", { streamId: mon.id, date: monA, start: "20:45", end: "22:30" })), "ok");
+    const dsw = (await swapsOf())[0]; assert.equal(dsw.status, "closed"); assert.equal(dsw.noRecord, true); assert.equal(dsw.countsAsNoShow, false); assert.equal(dsw.closedWhy, "delay");
+    assert.ok((await db.collection("adminLog").get()).docs.filter((d) => d.get("action") === "crewSwap").length >= 2, "adminLog crewSwap for drop and close");
+
+    // an early drop (48 hours out): on the board, seat open on the stream, the right crew told
+    const t48 = Date.now() + 48 * 3600000;
+    await setStart(mon.id, t48);
+    await sign("m4", DK);
+    const early = await call("dutyDrop", "m4", { streamId: mon.id, seat: DK });
+    assert.equal(early.swaps, 1);
+    let sw = await swapsOf(); assert.equal(sw.length, 1); const s1 = sw[0];
+    assert.equal(s1.id, DKID); assert.equal(s1.status, "open"); assert.equal(s1.notice, "early"); assert.equal(s1.fromUid, "m4"); assert.equal(s1.fromHandle, "m4"); assert.equal(s1.room, "twitch"); assert.equal(s1.role, "deckhand");
+    assert.equal(s1.startsAt.toMillis(), t48); assert.equal(s1.countsAsNoShow, false); assert.equal(s1.noRecord, false);
+    assert.deepEqual((await crewOf()).chats.twitch.deckhands, [], "the seat shows as open on the stream");
+    assert.deepEqual((await get(`streams/${mon.id}`)).crew.chats.twitch.deckhands, [], "and on the public stream");
+    const open1 = (await crewOutbox("open")).at(-1);
+    assert.ok(open1.uids.includes("m2") && open1.uids.includes("m5"), "crew whose grade allows the seat are told");
+    assert.ok(!open1.uids.includes("m4") && !open1.uids.includes("m3") && !open1.uids.includes("m1"), "not the dropper, not Going dark, not someone whose preference for that room is No");
+    assert.equal(open1.payload.link, "/crew/hq");
+
+    // who can take it
+    assert.equal(await reason(call("dutySwapTake", "fan", { swapId: DKID })), "notCrew");
+    assert.equal(await reason(call("dutySwapTake", "m3", { swapId: DKID })), "notCrew");
+    assert.equal(await reason(call("dutySwapTake", "m4", { swapId: DKID })), "ownSeat", "the dropper can't take their own seat back");
+    assert.equal(await reason(call("dutySwapTake", "m1", { swapId: DKID })), "alreadySeated", "the Captain holds a seat; only a Room Lead seat may be added");
+    assert.equal(await reason(call("dutySwapTake", "m2", { swapId: "nope" })), "noSwap");
+    assert.equal(await reason(call("dutySwapTake", "m2", { swapId: "a/b" })), "args");
+
+    // grade, strike block and the no-show lockout (part 2 writes lockUntil; a missing field is no lock)
+    await sign("m4", LEAD);
+    assert.equal((await call("dutyDrop", "m4", { streamId: mon.id, seat: LEAD })).swaps, 1);
+    assert.equal(await reason(call("dutySwapTake", "m2", { swapId: LEADID })), "gradeTooLow", "an Initiate can't take a Lead seat");
+    assert.equal(await reason(call("dutySwapTake", "m5", { swapId: LEADID })), "leadBlocked");
+    await db.doc(`${S}/crew/main/roster/m5`).update({ leadBlockedUntil: admin.firestore.FieldValue.delete() });
+    await db.doc(`${S}/crew/main/roster/m5/private/record`).set({ lockUntil: T.fromMillis(Date.now() + 10 * 86400000) });
+    assert.equal(await reason(call("dutySwapTake", "m5", { swapId: LEADID })), "locked", "locked out by the no-show rule");
+    await db.doc(`${S}/crew/main/roster/m5/private/record`).set({ lockUntil: T.fromMillis(Date.now() - 86400000) });
+    const tookLead = await call("dutySwapTake", "m5", { swapId: LEADID });
+    assert.equal(tookLead.status, "taken"); assert.equal(tookLead.crew.chats.twitch.lead, "m5");
+    const ls = (await swapsOf()).find((x) => x.id === LEADID); assert.equal(ls.status, "taken"); assert.equal(ls.takenBy, "m5"); assert.equal(ls.takenByHandle, "m5"); assert.ok(ls.takenAt);
+    assert.equal((await crewOf()).chats.twitch.lead.uid, "m5", "confirmed straight away in the crew field");
+    assert.equal((await get(`streams/${mon.id}/signups/m5`)).seats.some((s) => s.room === "twitch" && s.role === "lead" && s.status === "confirmed"), true);
+    assert.equal(await reason(call("dutySwapTake", "adm1", { swapId: LEADID })), "beaten", "a taken seat: someone beat you to it");
+    assert.ok((await crewOutbox("taken")).some((o) => o.uids.includes("m4")), "the dropper hears who took it");
+    // the Captain may also take a Room Lead seat
+    assert.equal((await call("dutyDrop", "m5", { streamId: mon.id, seat: LEAD })).swaps, 1);
+    assert.equal(await reason(call("dutySwapTake", "m1", { swapId: LEADID })), "ok");
+    assert.equal((await crewOf()).chats.twitch.lead.uid, "m1"); assert.equal((await crewOf()).captain.uid, "m1");
+
+    // two takers at once: first write wins, the other gets "Someone beat you to it"
+    const race = await Promise.all([reason(call("dutySwapTake", "m2", { swapId: DKID })), reason(call("dutySwapTake", "adm1", { swapId: DKID }))]);
+    assert.deepEqual(race.slice().sort(), ["beaten", "ok"], "exactly one taker wins");
+    const winner = race[0] === "ok" ? "m2" : "adm1";
+    assert.equal((await swapsOf()).find((x) => x.id === DKID).takenBy, winner);
+    assert.deepEqual((await crewOf()).chats.twitch.deckhands.map((d) => d.uid), [winner], "one Deckhand, not two");
+
+    // close at the stream's start: an untaken LATE drop counts as a no-show, an EARLY one sets nothing
+    assert.equal((await call("dutyDrop", "m1", { streamId: mon.id, seat: LEAD })).swaps, 1);          // early (48 h out)
+    const lateStart = Date.now() + 10 * 3600000;
+    await setStart(mon.id, lateStart);
+    assert.equal((await call("dutyDrop", winner, { streamId: mon.id, seat: DK })).swaps, 1);        // late (10 h out)
+    sw = await swapsOf();
+    assert.equal(sw.find((x) => x.id === LEADID).notice, "early"); assert.equal(sw.find((x) => x.id === DKID).notice, "late"); assert.equal(sw.find((x) => x.id === DKID).countsAsNoShow, false, "not yet: it counts only if nobody takes it");
+    r = await hooks.runTick(lateStart + 2 * MIN);
+    assert.equal(r.swapsClosed, 1, "only the swap whose start has passed");
+    sw = await swapsOf();
+    const lateDone = sw.find((x) => x.id === DKID); assert.equal(lateDone.status, "closed"); assert.equal(lateDone.countsAsNoShow, true, "late and untaken: counts as a no-show (part 2)"); assert.equal(lateDone.closedWhy, "started");
+    assert.equal(sw.find((x) => x.id === LEADID).status, "open");
+    r = await hooks.runTick(t48 + 2 * MIN);
+    const earlyDone = (await swapsOf()).find((x) => x.id === LEADID); assert.equal(earlyDone.status, "closed"); assert.equal(earlyDone.countsAsNoShow, false, "early and untaken: counts as nothing");
+    assert.equal(await reason(call("dutySwapTake", "m2", { swapId: LEADID })), "closed");
+    // startStream closes them through the same store call, and a seat an admin released never counts
+    await db.doc(`${S}/crew/main/swaps/${mon.id}_x`).set({ streamId: mon.id, room: "twitch", role: "deckhand", fromUid: "m4", status: "open", notice: "late", noRecord: true, startsAt: T.fromMillis(Date.now() + 1000), countsAsNoShow: false });
+    const closed = await hooks.swap.closeAtStart(mon.id);
+    assert.deepEqual(closed.map((c) => c.countsAsNoShow), [false], "released by an admin: never counts");
+    assert.ok(/swaps\.closeAtStart\(/.test(fs.readFileSync(path.join(__dirname, "..", "lib", "live", "controls.js"), "utf8")), "startStream closes the swap board");
+
+    const rulesText = fs.readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8"); const sb = rulesText.slice(rulesText.indexOf("match /swaps/{swapId}"));
+    assert.ok(/match \/swaps\/\{swapId\} \{\s+allow read: if isSiteStaff\(siteId\);\s+allow write: if false;/.test(sb), "swaps: crew read, no client writes");
+    // Cancel closes open swaps with no effect on anyone's record
+    await setStart(mon.id, Date.now() + 72 * 3600000);
+    await sign("m4", DK);
+    assert.equal((await call("dutyDrop", "m4", { streamId: mon.id, seat: DK })).swaps, 1);
+    assert.equal((await swapsOf()).find((x) => x.id === DKID).status, "open");
+    assert.equal(await reason(call("cancelStream", "boss", { streamId: mon.id, reason: "Swap test" })), "ok");
+    const cs = (await swapsOf()).find((x) => x.id === DKID); assert.equal(cs.status, "closed"); assert.equal(cs.noRecord, true); assert.equal(cs.countsAsNoShow, false); assert.equal(cs.closedWhy, "cancel");
+  }
 
   // ---------- no time zone: the planner stops instead of guessing ----------
   await db.doc(S).update({ timezone: admin.firestore.FieldValue.delete() });
