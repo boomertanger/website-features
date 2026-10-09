@@ -40,7 +40,7 @@ function initTry(scope: HTMLElement) {
 }
 
 if (root) {
-  initHowItWorks(root);
+  initHowItWorks(root as unknown as Document);
   root.querySelectorAll<HTMLElement>("[data-flow]").forEach(initFlow);
   initTry(root);
 }
