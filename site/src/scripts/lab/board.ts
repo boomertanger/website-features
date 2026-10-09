@@ -15,6 +15,7 @@ import { esc, sBadge, pBadge, architect, row, stamp, areaLabel } from "./ui";
 import { benchHtml } from "./bench";
 import { I, bigFlask, mascot } from "./art";
 import { handleVote } from "./vote";
+import { authorText, fillAuthors } from "../boards/profiles";
 import { openIdea } from "./idea";
 
 const root = document.querySelector<HTMLElement>("[data-fl]");
@@ -96,7 +97,7 @@ function roadHtml() {
   const card = (i: Idea) => {
     const on = S.voted.has(i.id);
     const v = voteLocked(i) ? `<span class="fl-mini-vote" aria-label="${i.voteCount} votes">${I.up}${i.voteCount}</span>` : `<button type="button" class="fl-mini-vote${on ? " is-active" : ""}" data-vote="${esc(i.id)}" aria-pressed="${on}" aria-label="${on ? "Remove your vote" : "Vote"}">${I.up}${i.voteCount}</button>`;
-    return `<div class="bt-card fl-card" tabindex="0" role="button" data-open="${esc(i.id)}" aria-label="${esc(i.title)}. Open"><b>${esc(i.title)}</b>${i.priority ? `<span>${pBadge(i.priority)}</span>` : ""}<div class="fl-card-foot"><span>@${esc(i.by.handle || "former member")}${i.status === "shipped" ? ` ${architect(16)}` : ""}</span>${v}</div></div>`;
+    return `<div class="bt-card fl-card" tabindex="0" role="button" data-open="${esc(i.id)}" aria-label="${esc(i.title)}. Open"><b>${esc(i.title)}</b>${i.priority ? `<span>${pBadge(i.priority)}</span>` : ""}<div class="fl-card-foot"><span>${authorText(i.by)}${i.status === "shipped" ? ` ${architect(16)}` : ""}</span>${v}</div></div>`;
   };
   const names = fresh.slice(0, 3).map((i) => esc(i.title)).join(", ") + (fresh.length > 3 ? ` and ${fresh.length - 3} more` : "");
   const strip = fresh.length ? `<div class="fl-new">${sBadge("submitted")}<span><b>${fresh.length} new ${fresh.length === 1 ? "idea" : "ideas"}</b> waiting for a look: ${names}.</span><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-lv="list" data-only="submitted">See them in the list</button></div>` : "";
@@ -110,6 +111,7 @@ function drawView() {
   if (!S.ideas.some((i) => isStaff() || !i.hidden)) { box.innerHTML = emptyBoard(); return; }
   box.innerHTML = f.view === "road" ? roadHtml() : listHtml();
   initRowSpotlight(box);
+  if (!isPreview()) void fillAuthors(box);   // the live handles (a preview has no profiles to read)
 }
 
 /** Redraw everything, keeping keyboard focus on the same control. */

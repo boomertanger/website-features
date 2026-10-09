@@ -7,6 +7,7 @@ import { reducedMotion } from "../../../../shared/ui/burst.js";
 import { I } from "./art";
 import { STATUS, PRIORITY, AREA, voteLocked, type Status, type Priority } from "./status";
 import type { Idea } from "./data";
+import { authorLink, type Author } from "../boards/profiles";
 
 export { esc };
 export const reduce = reducedMotion;
@@ -36,7 +37,8 @@ export function ago(t: number) {
   return d < 30 ? `${plural(d, "day")} ago` : shortDate(t);
 }
 export const areaLabel = (a: string) => AREA[a as keyof typeof AREA] || "Other";
-export const handleLink = (handle: string) => (handle ? `<a href="/u/${encodeURIComponent(handle)}" data-noopen>@${esc(handle)}</a>` : `<span class="bt-meta">Former member</span>`);
+/** The author chip: the live handle from the member's profile (scripts/boards/profiles.ts; fillAuthors() swaps it in), "Former member" for a deleted account. */
+export const handleLink = (by: Author) => authorLink(by);
 
 /** The vote tally (.bt-tally). Locked (disabled) once an idea is Shipped or Declined. */
 export function tally(i: Idea, voted: boolean) {
@@ -52,7 +54,7 @@ export function row(i: Idea, voted: boolean, staff: boolean) {
   return `<div class="bt-row bt-row--clickable${dim ? " bt-row--dimmed" : ""}" tabindex="0" role="button" data-open="${esc(i.id)}" aria-label="${esc(i.title)}. Open">
     ${tally(i, voted)}
     <div class="bt-row-body"><div class="bt-row-title">${esc(i.title)}</div><div class="bt-row-desc">${esc(i.description)}</div>
-      <div class="bt-row-meta"><span class="bt-avatar">${initialsOf(i.by.handle)}</span>${handleLink(i.by.handle)}${arch}<span class="fl-area">· ${areaLabel(i.area)}</span></div></div>
+      <div class="bt-row-meta"><span class="bt-avatar">${initialsOf(i.by.handle)}</span>${handleLink(i.by)}${arch}<span class="fl-area">· ${areaLabel(i.area)}</span></div></div>
     <div class="bt-row-side"><div class="bt-row-badges">${i.hidden && staff ? '<span class="bt-badge bt-badge--gray">Hidden</span>' : ""}${pBadge(i.priority)}${sBadge(i.status)}</div>
       ${i.commentCount ? `<span class="bt-count">${I.cmt}${i.commentCount}</span>` : ""}<span class="bt-row-date">${shortDate(i.createdAt)}</span></div></div>`;
 }

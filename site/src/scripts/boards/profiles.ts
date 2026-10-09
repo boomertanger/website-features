@@ -21,8 +21,15 @@ export function liveHandle(uid: string): Promise<Live> {
 /** The chip's markup with a data-author uid, so fillAuthors() can swap in the live handle afterwards. */
 export const authorLink = (a: Author) => (a.handle ? `<a href="/u/${encodeURIComponent(a.handle)}" data-author="${esc(a.uid)}" data-noopen>@${esc(a.handle)}</a>` : `<span class="bt-meta" data-author="${esc(a.uid)}">Former member</span>`);
 
+/** The same as plain text (for a card that is itself a button, where a link would nest): "@handle", live after fillAuthors(). */
+export const authorText = (a: Author) => `<span data-author-text="${esc(a.uid)}">${a.handle ? `@${esc(a.handle)}` : "Former member"}</span>`;
+
 /** Replaces every [data-author] under root with the live handle (the snapshot stays if the read failed). */
 export async function fillAuthors(root: ParentNode) {
+  root.querySelectorAll<HTMLElement>("[data-author-text]").forEach(async (el) => {
+    const h = await liveHandle(el.dataset.authorText || "");
+    if (h !== undefined) el.textContent = h ? `@${h}` : "Former member";
+  });
   const els = [...root.querySelectorAll<HTMLElement>("[data-author]")];
   await Promise.all(els.map(async (el) => {
     const h = await liveHandle(el.dataset.author || "");

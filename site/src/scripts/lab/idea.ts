@@ -5,6 +5,7 @@ import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
 import { confirmHide } from "../boards/hide";
 import { replyHtml, replyBoxHtml, handleGateClick } from "../boards/replies";
+import { authorLink, authorText, fillAuthors } from "../boards/profiles";
 import { initComposer } from "../../../../shared/ui/composer.js";
 import { toast } from "../../../../shared/ui/toast.js";
 import { burst } from "../../../../shared/ui/burst.js";
@@ -13,7 +14,7 @@ import { getAuthState } from "../../lib/auth";
 import { messageFor } from "../../lib/errors";
 import { STATUS, PRIORITY, AREA, voteLocked, type Idea, type Comment, type LogEntry, type Status, type Priority, type Area } from "./data";
 import { S, byId, freshIdea, commentsOf, logOf, comment as postComment, triage, hide, edit, remove } from "./store";
-import { isAdmin, isStaff, canDelete, needOf } from "./gate";
+import { isAdmin, isStaff, canDelete, needOf, isPreview } from "./gate";
 import { esc, sBadge, pBadge, architect, tally, longDate, areaLabel, plural } from "./ui";
 import { handleVote } from "./vote";
 import { I } from "./art";
@@ -27,7 +28,7 @@ const setIdeaParam = (id: string | null) => {
   history.replaceState(null, "", u);
 };
 
-const commentHtml = (c: Comment, staff: boolean) => replyHtml(c, { staff, px: "fl", icons: { shield: I.shield, eye: I.eye }, date: longDate });
+const commentHtml = (c: Comment, staff: boolean) => replyHtml(c, { staff, px: "fl", icons: { shield: I.shield, eye: I.eye }, date: longDate, author: authorLink });
 
 function historyHtml(i: Idea) {
   const list = [...i.statusHistory].reverse();
@@ -75,7 +76,7 @@ function dialogHtml(i: Idea, cmts: Comment[], log: LogEntry[], mayDelete: boolea
   const locked = voteLocked(i);
   const visible = cmts.filter((c) => !c.hidden).length;
   const edited = i.editedAt ? `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on ${longDate(i.editedAt)}</span>` : "";
-  const who = i.by.handle ? `<a href="/u/${encodeURIComponent(i.by.handle)}">@${esc(i.by.handle)}</a>` : "Former member";
+  const who = authorLink(i.by);
   const sub = `<span class="bt-meta">Requested by ${who} on ${longDate(i.createdAt)} · ${areaLabel(i.area)}</span>${edited}`;
   const tools = adminOn ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-edit aria-label="Edit">${I.pencil}<span class="bt-btn-label">Edit</span></button>` : "";
   const line = locked ? (i.status === "shipped" ? "Shipped. Voting is closed; the count stays as a thank-you." : "Voting is closed.")
@@ -84,7 +85,7 @@ function dialogHtml(i: Idea, cmts: Comment[], log: LogEntry[], mayDelete: boolea
   const hideBtn = staff ? `<button type="button" class="bt-btn bt-btn--admin" data-hide-idea data-hidden="${i.hidden}">${I.eye}${i.hidden ? "Unhide idea" : "Hide idea"}</button>` : "";
   const danger = adminOn && mayDelete ? `<button type="button" class="bt-btn bt-btn--danger" data-delete>${I.trash}Delete idea</button>` : "";
   return `${modalHeader(esc(i.title), sub, tools)}
-    <div class="fl-dlg-badges">${i.hidden ? '<span class="bt-badge bt-badge--gray">Hidden</span>' : ""}${sBadge(i.status)}${pBadge(i.priority)}${i.status === "shipped" ? `<span class="bt-meta">${architect(18)} ${i.by.handle ? `@${esc(i.by.handle)}` : "The author"} earned The Architect</span>` : ""}</div>
+    <div class="fl-dlg-badges">${i.hidden ? '<span class="bt-badge bt-badge--gray">Hidden</span>' : ""}${sBadge(i.status)}${pBadge(i.priority)}${i.status === "shipped" ? `<span class="bt-meta">${architect(18)} ${authorText(i.by)} earned The Architect</span>` : ""}</div>
     <div class="fl-dlg-vote">${tally(i, voted)}<p>${line}</p></div>
     <div class="bt-modal-section"><p class="bt-section-label">Description</p><p class="bt-section-text">${esc(i.description)}</p></div>
     ${adminOn ? adminPanel(i, log, mayDelete) : ""}
@@ -127,6 +128,7 @@ export async function openIdea(id: string, onChange: Done = () => {}) {
       if (ta && keep) { ta.value = keep; ta.dispatchEvent(new Event("input")); }
       void c;
     }
+    if (!isPreview()) void fillAuthors(modal);   // the live handles (a preview has no profiles to read)
     modal.scrollTop = top;
     wirePanel();
   };

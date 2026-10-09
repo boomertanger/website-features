@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+site: Feature Lab shows its authors through the shared live-profile chip (scripts/boards/profiles.ts), as Bug Zapper does: the member's current handle on rows, roadmap cards, the idea dialog and comments, and "Former member" for a deleted account.
 site: the Bug Zapper report form no longer pre-selects how bad it is; leaving it unpicked shows "Pick how bad it is." under it and nothing is sent.
 chore: docs/ui-audit.md is ignored (local audit notes, never committed).
 docs: Bug Zapper. ROADMAP workstream 10 status and the Bug Finder Night Shift hook ticked, design-system §5 bug status (Confirmed gold, lowercase stored keys) and §8r Bug Zapper (picks, feature CSS scope, the porch-light scene), Boom Alerts gets the bug-new admin topic (inbox; Critical also push and email).
