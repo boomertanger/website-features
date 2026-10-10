@@ -1,0 +1,85 @@
+/* site/src/styles/crew-games.css — the Chat Games pool, /crew/games (docs/specs/chat-games.md §10; Chat Games part 3; mockup chat-games-batch-1.html "Pool").
+   Prefix cgp-. A tool page: the hero with the fanned cards and the mascot, the format tabs (.bt-seg-nav), the pack list, the card rows, the Suggested lane,
+   Suggest a card and Your suggestions; the card editor and the small dialogs live in the modal portal (.bt-portal[data-feature="chat-games"]).
+   Feature colour: --cgp-card-back, the dark back of a card in the hero scene. Tokens otherwise; container queries only; reduced motion respected. */
+.bt-root:not(#_) .cgp { --cgp-card-back: #151014; display: grid; gap: 16px; }
+.bt-root:not(#_) .cgp-skel { display: grid; gap: 14px; }
+.bt-root:not(#_) .cgp-skel-hero { height: 150px; border-radius: 18px; }
+.bt-root:not(#_) .cgp-skel-body { height: 360px; border-radius: 18px; }
+
+/* the hero */
+.bt-root:not(#_) .cgp-hero { position: relative; overflow: hidden; display: grid; grid-template-columns: minmax(0, 1fr) 260px; align-items: center; gap: 16px; padding: 22px 24px; border-radius: 18px; border: 1px solid var(--bt-border-2); background: radial-gradient(ellipse 60% 120% at 100% 50%, rgba(var(--bt-gold-rgb), 0.1), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .cgp-hero .bt-title { margin: 0 0 6px; }
+.bt-root:not(#_) .cgp-hero p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.55; max-width: 52ch; }
+.bt-root:not(#_) .cgp-stats { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 12px; }
+.bt-root:not(#_) .cgp-scene { position: relative; height: 140px; }
+.bt-root:not(#_) .cgp-fan { position: absolute; inset: 0; }
+.bt-root:not(#_) .cgp-fan span { position: absolute; left: 50%; bottom: 6px; width: 84px; height: 118px; margin-left: -42px; border-radius: 10px; border: 1.5px solid rgba(var(--bt-gold-rgb), 0.55); background: repeating-linear-gradient(45deg, rgba(var(--bt-gold-rgb), 0.07) 0 6px, transparent 6px 12px), var(--cgp-card-back); transform-origin: 50% 140%; transform: rotate(var(--r)); transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.bt-root:not(#_) .cgp-fan span:last-child { background: var(--cgp-card-back); display: grid; place-items: center; font-size: 11px; font-weight: 800; color: var(--bt-title); text-align: center; padding: 8px; line-height: 1.3; }
+@media (hover: hover) and (pointer: fine) { .bt-root:not(#_) .cgp-hero:hover .cgp-fan span { transform: rotate(calc(var(--r) * 1.6)); } }
+.bt-root:not(#_) .cgp-scene .bt-mascot { position: absolute; right: 0; bottom: 0; width: 64px; height: auto; }
+
+/* the owner's format switches */
+.bt-root:not(#_) .cgp-switches { display: flex; flex-wrap: wrap; gap: 10px 22px; align-items: center; }
+.bt-root:not(#_) .cgp-switch { display: inline-flex; align-items: center; gap: 10px; font-size: var(--bt-text-md); font-weight: 700; color: var(--bt-text); }
+.bt-root:not(#_) .cgp-switch small { font-weight: 500; color: var(--bt-text-faint); }
+
+/* the pool: packs, then the cards and the side lane */
+.bt-root:not(#_) .cgp-pool { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 16px; align-items: start; }
+.bt-root:not(#_) .cgp-main { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 340px); gap: 16px; align-items: start; }
+.bt-root:not(#_) .cgp-col { display: grid; gap: 16px; }
+.bt-root:not(#_) .cgp-packs { display: grid; gap: 10px; }
+.bt-root:not(#_) .cgp-pack { display: grid; gap: 6px; padding: 14px; border-radius: 14px; border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text); font: inherit; text-align: left; cursor: pointer; transition: border-color 0.2s, transform 0.2s; }
+@media (hover: hover) and (pointer: fine) { .bt-root:not(#_) .cgp-pack:hover { border-color: var(--bt-primary); transform: translateY(-1px); } }
+.bt-root:not(#_) .cgp-pack:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .cgp-pack[aria-current="true"] { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary) inset; }
+.bt-root:not(#_) .cgp-pack b { font-size: var(--bt-text-base); }
+.bt-root:not(#_) .cgp-pack small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .cgp-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+.bt-root:not(#_) .cgp-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bt-root:not(#_) .cgp-rows { display: grid; }
+.bt-root:not(#_) .cgp-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 12px; align-items: center; padding: 12px 4px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .cgp-row:first-child { border-top: 0; }
+.bt-root:not(#_) .cgp-row p { margin: 0; font-size: var(--bt-text-md); line-height: 1.45; overflow-wrap: anywhere; }
+.bt-root:not(#_) .cgp-row small { grid-column: 1; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .cgp-row .cgp-acts { grid-row: 1 / span 2; grid-column: 2; }
+.bt-root:not(#_) .cgp-opts { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.bt-root:not(#_) .cgp-row.is-new { animation: cgp-in 0.6s ease-out; background: color-mix(in srgb, var(--bt-lime) 8%, transparent); border-radius: 10px; }
+@keyframes cgp-in { from { opacity: 0; transform: translateY(-6px); } }
+.bt-root:not(#_) .cgp-note { margin: 8px 0 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .cgp-sug { display: grid; gap: 10px; }
+.bt-root:not(#_) .cgp-sug-card { display: grid; gap: 8px; padding: 14px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--bt-teal) 40%, transparent); background: var(--bt-bg); transition: border-color 0.2s; }
+@media (hover: hover) and (pointer: fine) { .bt-root:not(#_) .cgp-sug-card:hover { border-color: var(--bt-teal); } }
+.bt-root:not(#_) .cgp-sug-card p { margin: 0; font-size: var(--bt-text-base); font-weight: 700; line-height: 1.45; overflow-wrap: anywhere; }
+.bt-root:not(#_) .cgp-sug-card small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .cgp-mine { display: grid; gap: 8px; }
+.bt-root:not(#_) .cgp-mine > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; padding: 10px 12px; border-radius: 10px; background: var(--bt-bg); border: 1px solid var(--bt-border); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .cgp-mine span:first-child { overflow-wrap: anywhere; }
+.bt-root:not(#_) .cgp-empty { display: grid; justify-items: center; gap: 8px; text-align: center; padding: 26px 12px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cgp-empty .bt-mascot { width: 64px; height: auto; }
+.bt-root:not(#_) .cgp-empty b { color: var(--bt-text); }
+.bt-root:not(#_) .cgp-form { display: grid; gap: 10px; }
+.bt-root:not(#_) .cgp-form .bt-field { margin: 0; }
+.bt-root:not(#_) .cgp-count { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .cgp-main { grid-template-columns: minmax(0, 1fr); } }
+@container bt (max-width: 900px) { .bt-root:not(#_) .cgp-pool { grid-template-columns: minmax(0, 1fr); } }
+@container bt (max-width: 640px) {
+  /* the three format tabs scroll inside their own bar rather than widening the page */
+  .bt-root:not(#_) .cgp > .bt-seg-nav { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .bt-root:not(#_) .cgp > .bt-seg-nav a { white-space: nowrap; }
+  .bt-root:not(#_) .cgp-hero { grid-template-columns: minmax(0, 1fr); padding: 18px; }
+  .bt-root:not(#_) .cgp-scene { display: none; }
+  .bt-root:not(#_) .cgp-row { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cgp-row .cgp-acts { grid-row: auto; grid-column: 1; }
+}
+
+/* the dialogs (modal portal) */
+.bt-portal[data-feature="chat-games"]:not(#_) .cgp-form { display: grid; gap: 12px; margin: 4px 0 8px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .cgp-form .bt-field { margin: 0; }
+.bt-portal[data-feature="chat-games"]:not(#_) .cgp-count { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-portal[data-feature="chat-games"]:not(#_) .cgp-opt-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.cgp-fan span, .cgp-pack, .cgp-sug-card) { transition: none; }
+  .bt-root:not(#_) .cgp-row.is-new { animation: none; }
+}

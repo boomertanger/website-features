@@ -113,6 +113,7 @@ async function render(ctx: Ctx) {
         ${recruitCard(ctx, rec, recAll)}
         ${academyCard(ctx)}
         <a class="bt-card hq-card hq-prof" href="/live/deck"><span class="hq-acad-txt"><b>Mod Deck</b><span class="bt-meta">Your seat, the chats and the tools while Boomer is live</span></span><span aria-hidden="true">›</span></a>
+        <a class="bt-card hq-card hq-prof" href="/crew/games"><span class="hq-acad-txt"><b>Chat Games pool</b><span class="bt-meta">Suggest cards for Hot Seat and more: +2 Gears when one is approved</span></span><span aria-hidden="true">›</span></a>
         <a class="bt-card hq-card hq-prof" href="/crew/profile"><span class="hq-acad-txt"><b>Your chats and availability</b><span class="bt-meta">Preferences, days, device and Going dark</span></span><span aria-hidden="true">›</span></a>
       </div>
     </div>`;

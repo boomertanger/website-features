@@ -657,6 +657,16 @@ service cloud.firestore {
           allow update: if false;
         }
       }
+      // Packs and the pool (part 3): the crew reads packs and the Suggested lane (/crew/games); every write goes through
+      // chatGamePackSave, chatGameCardSuggest and chatGameCardDecide. Pack answers stay server-only until the reveal (they are not stored here).
+      match /chatGames/main/packs/{packId} {
+        allow read: if isSiteStaff(siteId);
+        allow write: if false;
+        match /suggested/{sid} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+        }
+      }
       match /chatGames/{document=**} {
         allow read, write: if false;
       }

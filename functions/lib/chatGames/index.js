@@ -293,6 +293,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
   const wrap = (fn) => async (request) => fn(await caller(request), request.data || {});
   // Questions (part 2): its callables, the vote trigger, the daily archive; it registers the "questions" format handler
   const questions = require("./questions")(ctx, { grant, factory, log, caller, refuse, syncPointer });
+  // Packs and the pool (part 3): the callables behind /crew/games, and draw / markUsed for the pack formats
+  const packs = require("./packs")(ctx, { gears, log, caller, refuse });
   const functions = {
     chatGameStart: onCall(wrap((w, d) => startRun(w, d))),
     chatGameSwap: onCall(wrap((w, d) => startRun(w, d, { swap: true }))),
@@ -301,7 +303,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     chatGameCue: onCall(wrap(cue)),
     chatGameDeadline,
     ...questions.functions,
+    ...packs.functions,
   };
-  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops }, closeOut, sweep };
+  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops, ...packs.ops }, closeOut, sweep, draw: packs.ops.draw, markUsed: packs.ops.markUsed };
 };
 module.exports.BASE = BASE;

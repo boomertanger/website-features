@@ -171,6 +171,7 @@ The pool from mod-machina.md §11c-11g, starting with what Hot Seat, Would You R
 - **Suggested lane.** Card text, who, Approve (green), Edit then approve, Reject (optional reason; the mod sees "Not used this time"). Approval pays the mod +2 Gears (key `cardSuggest:{cardId}`).
 - **Draw rules.** Skip cards used in the last 30 days unless none are left; the launch dialog always offers Skip card and, for Would You Rather and Predictions, Type my own.
 - **Page shape.** Tool page: hero header with a small scene (fanned cards and the mascot), format tabs (`.bt-seg-nav`), pack list, card rows, the Suggested lane; empty states with the mascot; a celebratory moment on approve.
+- **As built (part 3).** Cards are `{ id, text, options?, usedOn: [{ streamId, at }] }`: Hot Seat `text` (140); Would You Rather `text` is the lead line (80, "Would you rather…" when empty) plus two `options` of 80; Predictions `text` is the question (120) plus 2 to 4 `options` of 40. The same text filter as Questions (the profanity list, no links). Suggestions: `packs/{packId}/suggested/{id}` = `{ text, options?, formatId, packId, by, byHandle, createdAt, status: pending | approved | rejected, reason, cardId? }`, at most 10 pending per mod per pack, approved packs only. "Wardens and up" includes admins. Deleting a card: the owner, only a card with no `usedOn`; used cards are edited. Packs are never deleted (op `retire`). The owner's format switches use a small owner-only callable, `chatGameFormatSet({ formatId, enabled })`, which writes `enabled` only (not `adminEditItem`, which is admin-wide and lives in the shared `functions/index.js`). Draw helper for parts 4 and 5: `draw(packId, { skip })` picks at random among cards not used in the last 30 days, else the one used longest ago; drafts and retired packs are never drawn; `markUsed(packId, cardId, streamId)` records the use. The page is in the crew bar (Games) and on Crew HQ ("Chat Games pool: Suggest cards for Hot Seat and more").
 
 ## 11. Rewards
 
@@ -230,7 +231,8 @@ Functions in `functions/lib/chatGames/*.js`. Every callable checks auth, role an
 | `chatGameModerate` | Mod on duty, Captain, owner | Hide a Hot Seat answer before reveal |
 | `predictionPropose` | Mod on duty | Propose the result |
 | `predictionSettle` | Captain, owner | Confirm, reject, settle directly, void, correct once |
-| `chatGamePackSave` | Owner (Wardens+ drafts) | Create or edit packs and cards; Save to pack |
+| `chatGamePackSave` | Owner (Wardens+ drafts) | `op`: create, edit, addCard, editCard, deleteCard (owner, unused cards only), approve and retire (owner); Save to pack |
+| `chatGameFormatSet` | Owner | Switch a format's `enabled` on or off (/crew/games) |
 | `chatGameCardSuggest` / `chatGameCardDecide` | Mods / owner | Suggested lane |
 | `chatGameCue` | §9 | Posted / Done |
 

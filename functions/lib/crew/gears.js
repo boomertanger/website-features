@@ -5,7 +5,7 @@
 //   makeGears({ db }) -> { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview,
 //                          grantLabReview, grantBugTriage, grantAcademy, rebuildBoards }
 //
-// Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Phase 3 (the Mod Deck, lib/crew/duty.js) adds duty, showed and takeover, and Chat Games (lib/chatGames) adds chatGame (+5 for hosting, key chatGame:{runId}:{uid}), whose ledger ids are given exactly by the caller
+// Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Phase 3 (the Mod Deck, lib/crew/duty.js) adds duty, showed and takeover, and Chat Games (lib/chatGames) adds chatGame (+5 for hosting, key chatGame:{runId}:{uid}) and cardSuggest (+2 for an approved card, key cardSuggest:{cardId}:{uid}), whose ledger ids are given exactly by the caller
 // (extra.key, e.g. duty:{streamId}:{uid}:lead:{room}) so a retry can never pay twice.
 // Never earn Gears: timeouts, bans, deleted messages, raw message counts (they would reward spam).
 const admin = require("firebase-admin");
@@ -13,7 +13,7 @@ const L = require("./logic");
 const { SITE_ID, paths, loadSettings } = require("./settings");
 const { dayKey } = require("../arcade/logic");
 
-const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage", "duty", "showed", "takeover", "chatGame"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
+const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage", "duty", "showed", "takeover", "chatGame", "cardSuggest"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
 const NEVER = ["timeout", "ban", "deletedMessage", "messages", "messageCount"];
 const safe = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 100);
 const ms = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);

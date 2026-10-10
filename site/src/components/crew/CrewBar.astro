@@ -1,7 +1,7 @@
 ---
 // Mod Machina's feature bar (design-system.md §8h pattern, like Night Shift's): the kit's .bt-topbar in a
 // .bt-sticky-bar with the MOD MACHINA .bt-wordmark--power (gear and eye). Everyone sees The crew, How it works,
-// Board and Join; crew members (.bt-when-staff, display only) also see HQ, Academy and Queue. Icon-only
+// Board and Join; crew members (.bt-when-staff, display only) also see HQ, Academy, Queue and Games (the Chat Games pool). Icon-only
 // .bt-seg-nav--icons on phones. Wired in scripts/crew/layout.ts.
 import { MM_ICON } from "../../../../shared/ui/mod-machina.js";
 
@@ -15,6 +15,7 @@ const links = [
   { id: "hq", label: "HQ", href: "/crew/hq", icon: "home", staff: true },
   { id: "academy", label: "Academy", href: "/crew/academy", icon: "bulb", staff: true },
   { id: "queue", label: "Queue", href: "/crew/queue", icon: "eye", staff: true },
+  { id: "games", label: "Games", href: "/crew/games", icon: "game", staff: true },
 ];
 ---
 <div class="bt-sticky-bar cr-dock" data-cr-dock data-gated={gated ? "" : undefined}>

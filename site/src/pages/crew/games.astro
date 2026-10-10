@@ -1,0 +1,18 @@
+---
+// /crew/games: the Chat Games pool (docs/specs/chat-games.md §10; mod-machina.md §11c; Chat Games part 3; mockup docs/design/mockups/chat-games-batch-1.html
+// "Pool /crew/games"). A tool page for the crew: the hero with fanned cards and the mascot, the format tabs, the packs and their cards, and the Suggested lane.
+// The owner writes and approves; Wardens and up write draft packs; Watchers and up suggest cards (+2 Gears when approved). Crew only (CrewLayout gates it;
+// the callables and rules check again). Drawn by scripts/crew/games-pool.ts. Preview (staging, signed out): ?as=admin (the owner), &owner=0 for a mod,
+// &grade=3 for a Warden.
+import CrewLayout from "../../layouts/CrewLayout.astro";
+import "../../styles/crew-games.css";
+---
+<CrewLayout title="Chat Games pool" description="Packs of cards and prompts for every Chat Game. The crew suggests; Boomertanger approves." crewOnly section="games">
+  <div class="bt-zone cgp" data-cgp aria-busy="true">
+    <div class="cgp-skel" aria-hidden="true"><span class="bt-skeleton cgp-skel-hero"></span><span class="bt-skeleton cgp-skel-body"></span></div>
+  </div>
+</CrewLayout>
+
+<script>
+  import "../../scripts/crew/games-pool";
+</script>

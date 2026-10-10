@@ -175,6 +175,8 @@ async function main() {
 
   // ================= Questions (part 2) =================
   await questionsPart();
+  // ================= Packs and the pool (part 3) =================
+  await packsPart();
 
   // ---------- rules text (the emulator needs Java 11+; same style as the other checks) ----------
   const rules = fs.readFileSync(path.join(__dirname, "../../firestore.rules"), "utf8");
@@ -199,7 +201,107 @@ async function main() {
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "../../firestore.indexes.json"), "utf8"));
   assert.ok(idx.fieldOverrides.some((f) => f.collectionGroup === "questions" && f.fieldPath === "expireAt" && f.ttl === true), "TTL on questions.expireAt");
   assert.ok(idx.indexes.some((i) => i.collectionGroup === "questions" && i.fields.map((f) => f.fieldPath).join() === "status,votes,createdAt"));
+  // Packs rules: the crew reads packs and the Suggested lane; nobody writes
+  assert.match(rules, /match \/chatGames\/main\/packs\/\{packId\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;\s*match \/suggested\/\{sid\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;/);
   console.log("check-chat-games: ok");
+}
+
+async function packsPart() {
+  const PL = require("../lib/chatGames/plogic");
+  const PB = `${B}/packs`;
+  const DAY = 24 * H;
+  // ---------- card limits per format ----------
+  assert.equal(PL.cardShape("hot-seat", { text: "x".repeat(140) }).ok, true);
+  assert.equal(PL.cardShape("hot-seat", { text: "x".repeat(141) }).reason, "tooLong");
+  assert.equal(PL.cardShape("hot-seat", { text: "see https://x.y" }).reason, "link");
+  assert.equal(PL.cardShape("hot-seat", { text: "bad" }, { isProfane: () => true }).reason, "blocked");
+  assert.deepEqual(PL.cardShape("would-you-rather", { text: "", options: ["Hide in a locker", "Crawl a vent"] }).card, { text: "Would you rather…", options: ["Hide in a locker", "Crawl a vent"] });
+  assert.equal(PL.cardShape("would-you-rather", { options: ["a", "b", "c"] }).reason, "options");
+  assert.equal(PL.cardShape("would-you-rather", { options: ["a", "y".repeat(81)] }).reason, "tooLong");
+  assert.equal(PL.cardShape("would-you-rather", { options: ["Same", "same"] }).reason, "duplicate");
+  assert.equal(PL.cardShape("predictions", { text: "Shotgun first?", options: ["Yes"] }).reason, "options");
+  assert.equal(PL.cardShape("predictions", { text: "Shotgun first?", options: ["1", "2", "3", "4", "5"] }).reason, "options");
+  assert.equal(PL.cardShape("predictions", { text: "q".repeat(121), options: ["Yes", "No"] }).reason, "tooLong");
+  assert.equal(PL.cardShape("predictions", { text: "Tries for the boss?", options: ["1", "2-3", "z".repeat(41)] }).reason, "tooLong");
+  assert.equal(PL.cardShape("predictions", { text: "", options: ["Yes", "No"] }).reason, "empty");
+  assert.equal(PL.cardShape("questions", { text: "x" }).reason, "badFormat");
+  // ---------- the draw: cards used in the last 30 days are skipped unless none are left ----------
+  const pk = { cards: [{ id: "a", usedOn: [{ at: clock - 2 * DAY }] }, { id: "b", usedOn: [] }, { id: "c", usedOn: [{ at: clock - 40 * DAY }] }] };
+  const seen = new Set(); for (const r of [0, 0.3, 0.6, 0.99]) seen.add(PL.drawCard(pk, { nowMs: clock, rng: () => r }).id);
+  assert.deepEqual([...seen].sort(), ["b", "c"], "the one used 2 days ago is skipped");
+  assert.equal(PL.drawCard(pk, { nowMs: clock, skip: ["b", "c"] }).id, "a", "none left: the recent one after all");
+  const all = { cards: [{ id: "x", usedOn: [{ at: clock - 5 * DAY }] }, { id: "y", usedOn: [{ at: clock - 9 * DAY }] }] };
+  assert.equal(PL.drawCard(all, { nowMs: clock }).id, "y", "all recent: the one used longest ago");
+  assert.equal(PL.drawCard({ cards: [] }, { nowMs: clock }), null);
+
+  // ---------- permissions by grade ----------
+  // the cast from part 1: boss owner, adm2 admin, cap Watcher (grade 2), lead1 Warden (grade 3), hand1 Initiate (grade 1), fan member
+  assert.equal(await why(as("hand1", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Outlast night" })), "notWarden");
+  assert.equal(await why(as("cap", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Outlast night" })), "notWarden", "a Watcher suggests; Wardens write packs");
+  assert.equal(await why(as("fan", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Outlast night" })), "notWarden");
+  const draft = await as("lead1", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Outlast night", vaultGameIds: ["outlast"] });
+  assert.equal(draft.status, "draft", "a Warden's pack is a draft");
+  const gen = await as("boss", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "General" });
+  assert.equal(gen.status, "approved", "the owner's pack is approved on save");
+  assert.equal(await why(as("boss", "chatGamePackSave", { op: "create", formatId: "questions", title: "Nope" })), "bad-input");
+  const c1 = await as("lead1", "chatGamePackSave", { op: "addCard", packId: draft.packId, card: { text: "What's on the night-vision camera you wish you hadn't seen?" } });
+  assert.ok(c1.cardId);
+  assert.equal(await why(as("lead1", "chatGamePackSave", { op: "addCard", packId: gen.packId, card: { text: "Not mine to add" } })), "notAllowed", "Wardens edit drafts only");
+  assert.equal(await why(as("lead1", "chatGamePackSave", { op: "approve", packId: draft.packId })), "notOwner");
+  await as("boss", "chatGamePackSave", { op: "approve", packId: draft.packId });
+  assert.equal((await get(`${PB}/${draft.packId}`)).status, "approved");
+  assert.equal(await why(as("lead1", "chatGamePackSave", { op: "editCard", packId: draft.packId, cardId: c1.cardId, card: { text: "Edit after approval" } })), "notAllowed");
+  const g1 = await as("boss", "chatGamePackSave", { op: "addCard", packId: gen.packId, card: { text: "What is the worst place to hide from a monster?" } });
+  const g2 = await as("boss", "chatGamePackSave", { op: "addCard", packId: gen.packId, card: { text: "Which horror villain would be the worst roommate?" } });
+  assert.equal(await why(as("boss", "chatGamePackSave", { op: "addCard", packId: gen.packId, card: { text: "x".repeat(141) } })), "tooLong");
+
+  // ---------- suggestions and the 2 Gears ----------
+  assert.equal(await why(as("hand1", "chatGameCardSuggest", { packId: gen.packId, card: { text: "An Initiate's idea" } })), "notWatcher");
+  const s1 = await as("cap", "chatGameCardSuggest", { packId: gen.packId, card: { text: "What would a ghost complain about on a review site?" } });
+  const s2 = await as("lead1", "chatGameCardSuggest", { packId: gen.packId, card: { text: "Give the final boss a terrible day job." } });
+  const wyr = await as("boss", "chatGamePackSave", { op: "create", formatId: "would-you-rather", title: "Classics" });
+  assert.equal(await why(as("cap", "chatGameCardSuggest", { packId: wyr.packId, card: { options: ["one", "two", "three"] } })), "options");
+  const pred = await as("boss", "chatGamePackSave", { op: "create", formatId: "predictions", title: "Resident Evil 4" });
+  assert.equal(await why(as("cap", "chatGameCardSuggest", { packId: pred.packId, card: { text: "Lake boss tries?", options: ["1", "2", "3", "4", "5"] } })), "options");
+  const draft2 = await as("lead1", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Draft only" });
+  assert.equal(await why(as("cap", "chatGameCardSuggest", { packId: draft2.packId, card: { text: "Into a draft?" } })), "notApproved");
+  assert.equal(await why(as("lead1", "chatGameCardDecide", { packId: gen.packId, suggestionId: s1.suggestionId, action: "approve" })), "notOwner");
+  const ap = await as("boss", "chatGameCardDecide", { packId: gen.packId, suggestionId: s1.suggestionId, action: "approve", card: { text: "What would a ghost write in a one-star review?" } });
+  assert.equal(ap.status, "approved"); assert.equal(ap.gears, 2);
+  const gl = await get(`${S}/crew/main/gears/cardSuggest:${ap.cardId}:cap`);
+  assert.equal(gl.amount, 2, "keyed cardSuggest:{cardId}:{uid}"); assert.equal(gl.source, "cardSuggest");
+  const gp = await get(`${PB}/${gen.packId}`);
+  assert.equal(gp.cards.find((c) => c.id === ap.cardId).text, "What would a ghost write in a one-star review?", "Edit then approve");
+  assert.equal((await get(`${PB}/${gen.packId}/suggested/${s1.suggestionId}`)).status, "approved");
+  assert.equal(await msg(as("boss", "chatGameCardDecide", { packId: gen.packId, suggestionId: s1.suggestionId, action: "approve" })), "Already done.");
+  await as("boss", "chatGameCardDecide", { packId: gen.packId, suggestionId: s2.suggestionId, action: "reject", reason: "Too close to one we have" });
+  const rj = await get(`${PB}/${gen.packId}/suggested/${s2.suggestionId}`);
+  assert.equal(rj.status, "rejected"); assert.equal(rj.reason, "Too close to one we have");
+  assert.ok((await docs("adminLog")).some((e) => e.feature === "chatGames" && e.action === "card:approve"));
+
+  // ---------- deleting: owner only, never a used card; used cards can be edited ----------
+  assert.equal(await why(as("lead1", "chatGamePackSave", { op: "deleteCard", packId: gen.packId, cardId: g2.cardId })), "notAllowed");
+  await cg.markUsed(gen.packId, g1.cardId, "s2");
+  assert.equal((await get(`${PB}/${gen.packId}`)).cards.find((c) => c.id === g1.cardId).usedOn[0].streamId, "s2");
+  assert.equal(await why(as("boss", "chatGamePackSave", { op: "deleteCard", packId: gen.packId, cardId: g1.cardId })), "usedCard");
+  await as("boss", "chatGamePackSave", { op: "editCard", packId: gen.packId, cardId: g1.cardId, card: { text: "What is the WORST place to hide from a monster?" } });
+  await as("boss", "chatGamePackSave", { op: "deleteCard", packId: gen.packId, cardId: g2.cardId });
+  assert.equal((await get(`${PB}/${gen.packId}`)).cards.some((c) => c.id === g2.cardId), false);
+  // the draw skips the card used tonight
+  for (const r of [0, 0.5, 0.99]) assert.notEqual((await cg.draw(gen.packId, { rng: () => r })).card.id, g1.cardId);
+  assert.equal(await cg.draw(draft2.packId), null, "drafts are never drawn");
+  // retire, never delete
+  await as("boss", "chatGamePackSave", { op: "retire", packId: draft2.packId });
+  assert.equal((await get(`${PB}/${draft2.packId}`)).status, "retired");
+  assert.equal(await why(as("boss", "chatGamePackSave", { op: "delete", packId: draft2.packId })), "bad-input");
+
+  // ---------- format switches (owner only, enabled only) ----------
+  assert.equal(await why(as("adm2", "chatGameFormatSet", { formatId: "hot-seat", enabled: true })), "notOwner");
+  assert.equal((await as("boss", "chatGameFormatSet", { formatId: "hot-seat", enabled: true })).enabled, true);
+  assert.equal((await get(`${B}/formats/hot-seat`)).enabled, true);
+  assert.equal(await why(as("boss", "chatGameFormatSet", { formatId: "hot-seat", enabled: "yes" })), "bad-input");
+  await as("boss", "chatGameFormatSet", { formatId: "hot-seat", enabled: false });
+  assert.ok(fns.chatGamePackSave && fns.chatGameCardSuggest && fns.chatGameCardDecide && fns.chatGameFormatSet);
 }
 
 async function questionsPart() {
