@@ -553,13 +553,13 @@ function publicRush(rush, count) {
 /**
  * Builds the public/live summary (§13). Input:
  *   stream, window (only open + closesAt + beat are copied, never the word), counters (sumShards result or shards[]),
- *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], chatGame (private/control.chatGame: { runId, formatId, state, round, title } | null),
+ *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], chatGame (private/control.chatGame: { runId, formatId, state, round, title } | null), chatGameWaiting (private/control.chatGameWaiting: [{ runId, title }]), chatGameSettled (private/control.chatGameSettled, kept 15 s),
  *   look ("hull" | "crt"), nowMs, firstIn [handles of the current beat's first check-ins, first three kept],
  *   grades { <handle>: { track, grade } } (the public crew mirror, public/crew; only crew shown on the page are copied)
  * Output: state (off | live | backstage | ended), streamId, title, type, audience, actualStart, actualEnd,
  * beat (current), beats { <beat>: { status: done | now | next | skipped, checkins } }, window { open, closesAt, beat },
  * counts { total, byBeat, byRoom }, viewers { total, byPlatform }, peak, game, nextGame, crew { captain, chats, onDuty }
- * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, chatGame (the active Chat Games run, live only), look, updatedAt. "off" is the waiting room (no stream fields).
+ * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, chatGame (the active Chat Games run, live only), chatGameWaiting (locked Predictions waiting for a result, live only, [] otherwise), look, updatedAt. "off" is the waiting room (no stream fields).
  */
 /**
  * The Deck's room coverage for public/live (Mod Machina phase 3 part 2): { rooms: { room: { lead: handle|null, deckhands: n, covered } } }. Handles only and counts; only the known rooms; anything else
@@ -584,8 +584,23 @@ function chatGameOf(p) {
   return { runId: p.runId, formatId: p.formatId, state: p.state, round: Number.isInteger(p.round) ? p.round : 0, title: typeof p.title === "string" ? p.title : null };
 }
 
+/** The locked Predictions waiting for a result (docs/specs/chat-games.md §7): private/control.chatGameWaiting = [{ runId, title }], at most 3. */
+function chatGameWaitingOf(list) {
+  return (Array.isArray(list) ? list : []).filter((x) => x && typeof x.runId === "string" && x.runId).slice(0, 3)
+    .map((x) => ({ runId: x.runId, title: typeof x.title === "string" ? x.title.slice(0, 120) : null }));
+}
+
+/** A Prediction settled while another game held the slot (§7): { runId, title, answer, count, at } for 15 s after it settled, else null. */
+const SETTLED_MS = 15000;
+function chatGameSettledOf(s, nowMs) {
+  if (!s || typeof s !== "object" || typeof s.runId !== "string" || typeof s.answer !== "string") return null;
+  const at = typeof s.at === "number" ? s.at : s.at && typeof s.at.toMillis === "function" ? s.at.toMillis() : 0;
+  if (!at || nowMs - at > SETTLED_MS || nowMs < at - 60000) return null;
+  return { runId: s.runId, title: typeof s.title === "string" ? s.title.slice(0, 120) : null, answer: s.answer.slice(0, 40), count: Number.isInteger(s.count) ? s.count : 0, at };
+}
+
 function buildPublicLive(input) {
-  const { stream, window: win, viewers, peak, onDuty, chatGame, look, nowMs } = input;
+  const { stream, window: win, viewers, peak, onDuty, chatGame, chatGameWaiting, chatGameSettled, look, nowMs } = input;
   const counters = Array.isArray(input.counters) ? sumShards(input.counters) : input.counters || { total: 0, byBeat: {}, byRoom: {} };
   const live = !!stream && stream.state === "live";
   const state = !stream ? "off" : live ? (stream.type === "backstage" ? "backstage" : "live") : stream.state === "ended" ? "ended" : "off";
@@ -593,7 +608,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null, chatGameWaiting: [], chatGameSettled: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -644,6 +659,8 @@ function buildPublicLive(input) {
     firstIn,
     firstInBeat: live && firstIn.length ? (open ? win.beat : currentBeat(sb)) : null,
     chatGame: live ? chatGameOf(chatGame) : null,
+    chatGameWaiting: live ? chatGameWaitingOf(chatGameWaiting) : [],
+    chatGameSettled: live ? chatGameSettledOf(chatGameSettled, nowMs) : null,
     ...(publicRush(input.rush, input.rush && input.rush.count) ? { recruitRush: publicRush(input.rush, input.rush.count) } : {}),
   };
 }

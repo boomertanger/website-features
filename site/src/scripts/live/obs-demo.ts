@@ -6,6 +6,7 @@ import type { ObsView } from "./obs";
 import { shape } from "./obs";
 import raw from "../../data/preview-live-control.json";
 import { hsDemoAt, hsSampleDisplay, HS_LOOP } from "./hotseat-sample";
+import { stepAt, wyrSampleDisplay, predSampleDisplay, WYR_STEPS, PRED_STEPS, WAITING_SAMPLE } from "./choices-sample";
 
 const MIN = 60_000;
 const SCENES = ["starting", "stats", "break", "side", "brb", "ending"] as const;
@@ -46,6 +47,17 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
         return { chatGame: { runId: `preview-hs-${Math.floor((now - t0) / HS_LOOP)}`, formatId: "hot-seat", state: at.phase === "reveal" ? "revealed" : "open", round: 1, title: "Hot Seat" },
           chatGameDisplay: hsSampleDisplay(at.phase, { picker: params.get("picker") === "wheel" ? "wheel" : "seance", closesAt: at.closesAt, into: at.into }) };
       })() : {}),
+      // ?game=wyr | predictions: R2 Two cards and P1 Odds board on a loop (part 5); &step= pins one; &waiting=1 adds the "Waiting on" chip
+      ...(["wyr", "predictions"].includes(params.get("game") || "") && !ended ? (() => {
+        const wyr = params.get("game") === "wyr";
+        const at = stepAt(wyr ? WYR_STEPS : PRED_STEPS, now, t0, params.get("step"));
+        const s = at.step === "called" ? "locked" : at.step;
+        return { chatGame: { runId: `preview-${wyr ? "wyr" : "pred"}-${at.lap}`, formatId: wyr ? "would-you-rather" : "predictions", state: s === "open" ? "open" : s === "locked" ? "locked" : "revealed", round: wyr ? 2 : 1, title: wyr ? "Would You Rather" : "Predictions" },
+          chatGameDisplay: wyr ? wyrSampleDisplay(s, { closesAt: at.closesAt, into: at.into }) : predSampleDisplay(s, { closesAt: at.closesAt }) };
+      })() : {}),
+      chatGameWaiting: params.get("waiting") === "1" && !ended ? WAITING_SAMPLE : [],
+      // ?settled=1: a Prediction settled while another game holds the slot: the result chip for 15 s, then 5 s without it, on a loop (part 5)
+      chatGameSettled: params.get("settled") === "1" && !ended ? { runId: "preview-wait", title: WAITING_SAMPLE[0].title, answer: "Yes", count: 61, at: now - ((now - t0) % 20000) } : null,
       brbUntil: scene === "brb" ? now + 2 * MIN + 41_000 - ((now - t0) % (2 * MIN + 41_000)) : null,
       word: open ? "mortuary" : null,
       firstIn: open ? FIRST.slice(0, Math.min(FIRST.length, Math.floor((now - t0) / 2500))) : [],

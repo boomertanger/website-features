@@ -61,7 +61,7 @@ async function main() {
   assert.equal(CG.canCue({ uid: "boss", isOwner: true }, null, { room: "site" }), true);
   assert.equal(CG.cueMove({ status: "posted" }, "posted").reason, "already");
   assert.equal(CG.cueMove({ status: "pending" }, "done").ok, true);
-  assert.equal(CG.handlerFor("would-you-rather"), null, "a format without its part has no handler");
+  assert.equal(CG.handlerFor("caption-this"), null, "a format without its part has no handler");
   // public/live: only the five pointer fields, and only while live
   const pub = LL.buildPublicLive({ stream: { id: "s", state: "live", beats: {} }, chatGame: { runId: "r", formatId: "x", state: "open", round: 1, title: "X", uid: "leak" }, nowMs: 1 });
   assert.deepEqual(pub.chatGame, { runId: "r", formatId: "x", state: "open", round: 1, title: "X" });
@@ -85,10 +85,10 @@ async function main() {
   await wdb.doc(`${B}/formats/test`).set({ title: "Test game", enabled: true, order: 9, crewHosted: true });
 
   // ---------- who may start ----------
-  assert.equal(await why(as("fan", "chatGameStart", { formatId: "would-you-rather" })), "notCaptain");
-  assert.equal(await why(as("adm2", "chatGameStart", { formatId: "would-you-rather" })), "notCaptain", "an Overseer who isn't Captain can't start");
-  assert.equal(await why(as(null, "chatGameStart", { formatId: "would-you-rather" })), "signedOut");
-  assert.equal(await msg(as("cap", "chatGameStart", { formatId: "would-you-rather" })), "Not available yet.", "no handler yet");
+  assert.equal(await why(as("fan", "chatGameStart", { formatId: "caption-this" })), "notCaptain");
+  assert.equal(await why(as("adm2", "chatGameStart", { formatId: "caption-this" })), "notCaptain", "an Overseer who isn't Captain can't start");
+  assert.equal(await why(as(null, "chatGameStart", { formatId: "caption-this" })), "signedOut");
+  assert.equal(await msg(as("cap", "chatGameStart", { formatId: "caption-this" })), "Not available yet.", "no handler yet");
   assert.equal(await msg(as("boss", "chatGameStart", { formatId: "nope" })), "Not available yet.");
   CG.HANDLERS.test = TEST;
   await wdb.doc(`${B}/formats/test`).update({ enabled: false });
@@ -179,6 +179,8 @@ async function main() {
   await packsPart();
   // ================= Hot Seat (part 4) =================
   await hotSeatPart();
+  // ================= Would You Rather and Predictions (part 5) =================
+  await choicesPart();
 
   // ---------- rules text (the emulator needs Java 11+; same style as the other checks) ----------
   const rules = fs.readFileSync(path.join(__dirname, "../../firestore.rules"), "utf8");
@@ -203,12 +205,194 @@ async function main() {
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "../../firestore.indexes.json"), "utf8"));
   assert.ok(idx.fieldOverrides.some((f) => f.collectionGroup === "questions" && f.fieldPath === "expireAt" && f.ttl === true), "TTL on questions.expireAt");
   assert.ok(idx.indexes.some((i) => i.collectionGroup === "questions" && i.fields.map((f) => f.fieldPath).join() === "status,votes,createdAt"));
+  // Would You Rather and Predictions: the ballots stay server-only (no rule of their own; the catch-all denies)
+  assert.ok(!/ballots/.test(rules.replace(/\/\/.*$/gm, "")), "ballots have no rule of their own");
   // Hot Seat rules: a member reads only their own volunteer doc; nobody writes; hotSeatPicked falls to the catch-all
   assert.match(rules, /match \/chatGames\/main\/volunteers\/\{vid\} \{\s*allow read: if request\.auth != null && resource\.data\.uid == request\.auth\.uid;\s*allow write: if false;/);
   assert.ok(!/hotSeatPicked/.test(rules.replace(/\/\/.*$/gm, "")), "hotSeatPicked has no rule of its own");
   // Packs rules: the crew reads packs and the Suggested lane; nobody writes
   assert.match(rules, /match \/chatGames\/main\/packs\/\{packId\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;\s*match \/suggested\/\{sid\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;/);
   console.log("check-chat-games: ok");
+}
+
+async function choicesPart() {
+  const C5 = require("../lib/chatGames/clogic");
+  const R = (id) => `${B}/runs/${id}`;
+  const ledger = (key) => get(`${S}/rewardLedger/${key}`);
+  // ---------- pure rules ----------
+  assert.deepEqual(C5.tally({ a: 0, b: 1, c: 0, d: 9 }, 2), { counts: [2, 1], total: 3, pct: [67, 33] });
+  assert.deepEqual(C5.leaders([2, 2, 1]), [0, 1]); assert.deepEqual(C5.leaders([0, 0]), []);
+  let wl = [];
+  for (const id of ["p1", "p2", "p3"]) wl = C5.waitingAdd(wl, { runId: id, title: id }).list;
+  assert.equal(C5.waitingAdd(wl, { runId: "p4", title: "x" }).reason, "waitingFull", "at most 3 wait");
+  assert.deepEqual(C5.waitingDrop(wl, "p2").map((x) => x.runId), ["p1", "p3"]);
+  assert.equal(C5.promptOf("would-you-rather", { options: ["Hide", "Run"] }).prompt.text, "Would you rather…");
+  assert.equal(C5.promptOf("predictions", { text: "Does he die?", options: ["Yes"] }).reason, "options");
+  assert.equal(C5.secondsOf(99), 45);
+
+  // ---------- the cast: a new live stream, hand1 (grade 1) is Captain, lead1 a mod on duty ----------
+  await wdb.doc(`${S}/streams/s3`).update({ state: "ended" });
+  await wdb.doc(`${S}/streams/s5`).set({ title: "Night 5", state: "live", published: true, type: "platform", beats: { start: { startedAt: TS(clock - H) } }, actualStart: TS(clock - H), crew: {} });
+  await wdb.doc(`${S}/streams/s5/private/control`).set({});
+  await wdb.doc(`${S}/streams/s5/private/duty`).set({ streamId: "s5", state: "live", captainNow: { uid: "hand1", handle: "hand1" }, onDuty: { hand1: { roles: [{ role: "captain", room: null }] }, lead1: { roles: [{ role: "lead", room: "twitch" }] } } });
+  const M = ["m1", "m2", "m3", "m4"];
+  for (const u of M) { await wdb.doc(`${S}/profiles/${u}`).set({ handle: u, xp: 50 }); await wdb.doc(`${S}/members/${u}`).set({ roles: [] }); await wdb.doc(`users/${u}`).set({ signedUpAt: TS(clock - 40 * 24 * H) }); }
+  await wdb.doc(`${S}/streams/s5/presence/m3`).set({ uid: "m3", xpEarned: 99 });
+  await as("boss", "chatGameFormatSet", { formatId: "would-you-rather", enabled: true });
+  await as("boss", "chatGameFormatSet", { formatId: "predictions", enabled: true });
+  const classics = (await docs(`${B}/packs`)).find((p) => p.formatId === "would-you-rather");
+
+  // ================= Would You Rather =================
+  assert.equal(await why(as("lead1", "chatGameStart", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["A", "B"] } } })), "notCaptain");
+  const w1 = await as("hand1", "chatGameStart", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["Hide in a locker", "Crawl a vent"] }, seconds: 30 } });
+  let run = await get(R(w1.runId));
+  assert.equal(run.state, "open"); assert.equal(run.prompt.text, "Would you rather…"); assert.equal(run.source, "typed"); assert.equal(tasks[tasks.length - 1].delay, 30, "30 s to vote");
+  // any member votes, checked in or not, and can change until it closes; the split stays secret
+  await as("m1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 });
+  await as("m2", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 1 });
+  await as("m3", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 });
+  await as("lead1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 });
+  await as("m1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 1 });
+  assert.equal((await get(`${R(w1.runId)}/ballots/1_m1`)).pick, 1, "a changed vote");
+  assert.equal((await get(`${R(w1.runId)}/staff/r1`)).total, 4, "voters counted once each");
+  assert.equal((await get(`${R(w1.runId)}/plays/m1`)).r[1].pick, 1);
+  run = await get(R(w1.runId));
+  assert.equal(run.display.counts, undefined, "no split in the public run before the reveal");
+  assert.equal(await why(as("m4", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 2 })), "bad-input");
+  // the deadline reveals: counts, a 2-2 tie, 3 XP each under the cap, nothing for the mod on duty
+  clock += 31000;
+  await cg.sweep({ id: "s5" });
+  run = await get(R(w1.runId));
+  assert.equal(run.state, "revealed");
+  assert.deepEqual(run.display.counts, [2, 2]); assert.deepEqual(run.display.winners, [0, 1]); assert.equal(run.display.total, 4);
+  assert.equal((await ledger(`chatGames:${w1.runId}:1:m1`)).amount, 3, "ref {runId}:{round}");
+  assert.equal(await ledger(`chatGames:${w1.runId}:1:lead1`), undefined, "a mod clocked in earns no game XP");
+  assert.equal((await get(`${R(w1.runId)}/plays/lead1`)).r[1].result.crew, true);
+  const m3r = (await get(`${R(w1.runId)}/plays/m3`)).r[1].result;
+  assert.equal(m3r.xp, 1); assert.equal(m3r.capped, true, "capped at the stream's 100");
+  assert.equal(await why(as("m4", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 })), "closed");
+  // Save to pack: the Captain (grade 1) lands in Suggested
+  await as("hand1", "chatGameControl", { runId: w1.runId, action: "saveToPack", data: { packId: classics.id } });
+  const sug = await docs(`${B}/packs/${classics.id}/suggested`);
+  assert.ok(sug.some((s) => s.by === "hand1" && s.status === "pending" && s.options[0] === "Hide in a locker"), "the Captain's save is a suggestion");
+  assert.equal(await msg(as("hand1", "chatGameControl", { runId: w1.runId, action: "saveToPack", data: { packId: classics.id } })), "Already saved.");
+  // Next prompt (typed), Pause adds the time back, Reveal now; the owner's save adds the card
+  await as("hand1", "chatGameControl", { runId: w1.runId, action: "nextRound", data: { source: "typed", prompt: { text: "Would you rather…", options: ["Lose the map", "Lose the flashlight"] }, seconds: 60 } });
+  run = await get(R(w1.runId));
+  assert.equal(run.state, "open"); assert.equal(run.round, 2); assert.equal((await get(`${S}/public/live`)).chatGame.round, 2);
+  const before = run.closesAt.toMillis();
+  clock += 5000; await as("hand1", "chatGameControl", { runId: w1.runId, action: "pause" });
+  assert.equal(await why(as("m1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 })), "paused");
+  clock += 60000; await as("hand1", "chatGameControl", { runId: w1.runId, action: "resume" });
+  assert.equal((await get(R(w1.runId))).closesAt.toMillis(), before + 60000, "paused time added");
+  await as("m1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 });
+  await as("hand1", "chatGameControl", { runId: w1.runId, action: "reveal" });
+  assert.equal(await msg(as("boss", "chatGameControl", { runId: w1.runId, action: "reveal" })), "It's already revealed.");
+  assert.ok(await ledger(`chatGames:${w1.runId}:2:m1`));
+  const cardsBefore = (await get(`${B}/packs/${classics.id}`)).cards.length;
+  await as("boss", "chatGameControl", { runId: w1.runId, action: "saveToPack", data: { packId: classics.id } });
+  assert.equal((await get(`${B}/packs/${classics.id}`)).cards.length, cardsBefore + 1, "the owner's save adds the card");
+  assert.ok((await docs("adminLog")).some((e) => e.feature === "chatGames" && e.action === "saveToPack:added"));
+  await as("hand1", "chatGameEnd", { runId: w1.runId });
+  assert.equal((await get(R(w1.runId))).state, "ended");
+
+  // ================= Predictions =================
+  const Q = { source: "typed", prompt: { text: "Does Boomer die before the save room?", options: ["Yes", "No", "At the save room"] } };
+  const p1 = await as("hand1", "chatGameStart", { formatId: "predictions", options: Q });
+  assert.equal(tasks[tasks.length - 1].delay, 180, "locks itself after 3 minutes");
+  for (const [u, c] of [["m1", 0], ["m2", 1], ["m3", 0], ["m4", 2], ["lead1", 0]]) await as(u, "chatGamePlay", { runId: p1.runId, action: "vote", choice: c });
+  await as("m4", "chatGamePlay", { runId: p1.runId, action: "vote", choice: 1 });
+  assert.equal((await get(R(p1.runId))).display.counts, undefined, "picks hidden until the lock");
+  assert.equal(await why(as("lead1", "predictionPropose", { runId: p1.runId, answer: 0 })), "notLocked");
+  // Lock: the lock XP (kept whatever happens), the slot freed, the waiting list
+  await as("hand1", "chatGameControl", { runId: p1.runId, action: "lock" });
+  run = await get(R(p1.runId));
+  assert.equal(run.state, "locked"); assert.deepEqual(run.display.counts, [3, 2, 0], "the mod on duty picks too (no XP)");
+  assert.equal((await ledger(`chatGames:${p1.runId}:lock:m1`)).amount, 3, "ref {runId}:lock");
+  assert.equal(await ledger(`chatGames:${p1.runId}:lock:lead1`), undefined);
+  assert.equal((await get(`${S}/streams/s5/private/control`)).chatGame, null, "a locked Prediction doesn't hold the slot");
+  assert.deepEqual((await get(`${S}/public/live`)).chatGameWaiting, [{ runId: p1.runId, title: "Does Boomer die before the save room?" }]);
+  assert.equal(await why(as("m1", "chatGamePlay", { runId: p1.runId, action: "vote", choice: 1 })), "closed");
+  const w2 = await as("hand1", "chatGameStart", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["Stay", "Go"] } } });
+  assert.ok(w2.runId, "another game runs while it waits");
+  // propose, reject, propose again, confirm (the slot is busy: it ends with its result)
+  assert.equal(await why(as("fan", "predictionPropose", { runId: p1.runId, answer: 0 })), "notOnDuty");
+  await as("lead1", "predictionPropose", { runId: p1.runId, answer: 1 });
+  assert.equal((await get(`${R(p1.runId)}/staff/p`)).proposal.answer, 1);
+  assert.equal(await msg(as("lead1", "predictionPropose", { runId: p1.runId, answer: 0 })), "Already done by @lead1.");
+  assert.equal(await why(as("lead1", "predictionSettle", { runId: p1.runId, action: "confirm" })), "notCaptain");
+  await as("hand1", "predictionSettle", { runId: p1.runId, action: "reject" });
+  assert.equal((await get(`${R(p1.runId)}/staff/p`)).proposal, null);
+  await as("lead1", "predictionPropose", { runId: p1.runId, answer: 0 });
+  await as("hand1", "predictionSettle", { runId: p1.runId, action: "confirm" });
+  run = await get(R(p1.runId));
+  assert.equal(run.state, "ended"); assert.equal(run.result.answer, 0); assert.equal(run.display.correct, 0);
+  assert.equal((await ledger(`chatGames:${p1.runId}:win:m1`)).amount, 10, "ref {runId}:win");
+  assert.equal(await ledger(`chatGames:${p1.runId}:win:m2`), undefined);
+  assert.equal(await ledger(`chatGames:${p1.runId}:win:lead1`), undefined, "no game XP on duty");
+  assert.deepEqual((await get(`${S}/public/live`)).chatGameWaiting, []);
+  assert.equal((await get(`${S}/public/live`)).chatGame.runId, w2.runId, "the running game keeps the slot");
+  assert.deepEqual((await get(`${S}/public/live`)).chatGameSettled, { runId: p1.runId, title: "Does Boomer die before the save room?", answer: "Yes", count: 3, at: clock }, "the result chip: answer and how many got it");
+  assert.equal(LL.buildPublicLive({ stream: { id: "s", state: "live", beats: {} }, chatGameSettled: { runId: "r", answer: "Yes", count: 2, at: 1000 }, nowMs: 16001 }).chatGameSettled, null, "gone after 15 s");
+  assert.equal(LL.buildPublicLive({ stream: { id: "s", state: "live", beats: {} }, chatGameSettled: { runId: "r", answer: "Yes", count: 2, at: 1000 }, nowMs: 15000 }).chatGameSettled.count, 2);
+  // correct once: the first winners' +10 reversed, the new winners paid; then final
+  const m1xp = (await get(`${S}/profiles/m1`)).xp, m1earned = (await get(`${S}/streams/s5/presence/m1`)).xpEarned;
+  await as("hand1", "predictionSettle", { runId: p1.runId, action: "correct", answer: 1 });
+  const rev = await ledger(`chatGames:${p1.runId}:win_rev:m1`);
+  assert.equal(rev.amount, -10); assert.equal(rev.kind, "xp-reverse"); assert.equal(rev.reverses, `chatGames:${p1.runId}:win:m1`);
+  assert.equal((await get(`${S}/profiles/m1`)).xp, m1xp - 10, "the profile total goes down");
+  assert.equal((await get(`${S}/streams/s5/presence/m1`)).xpEarned, m1earned - 10, "and the stream's XP counter");
+  assert.equal((await ledger(`chatGames:${p1.runId}:win2:m2`)).amount, 10, "ref {runId}:win2");
+  assert.ok(await ledger(`chatGames:${p1.runId}:lock:m1`), "lock XP stays");
+  const RG = require("../lib/rewards/grant").makeGrant({ db: wdb });
+  assert.equal((await RG.reverseXp("m1", { feature: "chatGames", ref: `${p1.runId}:win_rev`, of: `${p1.runId}:win` })).reason, "done", "a retried reversal does nothing");
+  assert.equal((await RG.reverseXp("m4", { feature: "chatGames", ref: `${p1.runId}:win_rev`, of: `${p1.runId}:win` })).reason, "notPaid", "nothing paid, nothing taken");
+  assert.equal((await get(`${S}/profiles/m1`)).xp, m1xp - 10);
+  assert.equal(await why(as("hand1", "predictionSettle", { runId: p1.runId, action: "correct", answer: 2 })), "corrected", "a second correction is refused");
+  const run1 = await get(R(p1.runId));
+  assert.equal(run1.result.answer, 1); assert.equal(run1.result.was, 0); assert.equal(run1.corrected, true);
+  await as("hand1", "chatGameEnd", { runId: w2.runId });
+
+  // ---------- the waiting cap: three wait, a 4th Lock is refused, an automatic lock keeps the slot ----------
+  const startP = async (t) => (await as("hand1", "chatGameStart", { formatId: "predictions", options: { source: "typed", prompt: { text: t, options: ["Yes", "No"] } } })).runId;
+  const pA = await startP("Will the chainsaw guy come back?");
+  await as("m2", "chatGamePlay", { runId: pA, action: "vote", choice: 1 });
+  clock += 181000; await cg.sweep({ id: "s5" });
+  assert.equal((await get(R(pA))).state, "locked", "auto-lock at 3 minutes");
+  assert.ok(await ledger(`chatGames:${pA}:lock:m2`));
+  const pB = await startP("Two?"); await as("hand1", "chatGameControl", { runId: pB, action: "lock" });
+  const pC = await startP("Three?"); await as("hand1", "chatGameControl", { runId: pC, action: "lock" });
+  assert.equal((await get(`${S}/streams/s5/private/control`)).chatGameWaiting.length, 3);
+  const pD = await startP("Four?");
+  await as("m1", "chatGamePlay", { runId: pD, action: "vote", choice: 0 });
+  assert.equal(await msg(as("hand1", "chatGameControl", { runId: pD, action: "lock" })), "3 Predictions are already waiting. Settle one first.");
+  clock += 181000; await cg.sweep({ id: "s5" });
+  assert.equal((await get(R(pD))).state, "locked");
+  assert.equal((await get(`${S}/public/live`)).chatGame.runId, pD, "an automatic lock with 3 waiting keeps the slot");
+  // direct settle (slot busy: ends), void (lock XP stays), settle the slot holder (its result goes on stream)
+  await as("hand1", "predictionSettle", { runId: pB, action: "settle", answer: 0 });
+  assert.equal((await get(R(pB))).state, "ended");
+  await as("hand1", "predictionSettle", { runId: pA, action: "void" });
+  assert.equal((await get(R(pA))).state, "void");
+  assert.ok(await ledger(`chatGames:${pA}:lock:m2`), "void keeps the lock XP");
+  assert.equal(await ledger(`chatGames:${pA}:win:m2`), undefined, "and pays no +10");
+  assert.deepEqual((await get(`${S}/streams/s5/private/control`)).chatGameWaiting.map((x) => x.runId), [pC]);
+  await as("hand1", "predictionSettle", { runId: pD, action: "settle", answer: 0 });
+  assert.equal((await get(R(pD))).state, "revealed");
+  assert.equal((await get(`${S}/public/live`)).chatGame.state, "revealed", "the result is on stream");
+  assert.ok(await ledger(`chatGames:${pD}:win:m1`));
+  const w3 = await as("hand1", "chatGameStart", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["X", "Y"] } } });
+  assert.equal((await get(R(pD))).state, "ended", "a shown result ends when the next game starts");
+  // Stop: the unsettled one is voided, the waiting list cleared
+  await ctx.chatGames.closeOut("s5");
+  assert.equal((await get(R(pC))).state, "void");
+  assert.equal((await get(R(w3.runId))).state, "void");
+  assert.equal((await get(R(pD))).state, "ended", "a settled result stays");
+  assert.deepEqual((await get(`${S}/streams/s5/private/control`)).chatGameWaiting, []);
+  assert.equal((await get(`${S}/streams/s5/private/control`)).chatGameSettled, null, "Stop clears the result chip");
+  assert.ok(fns.predictionPropose && fns.predictionSettle);
+  await as("boss", "chatGameFormatSet", { formatId: "would-you-rather", enabled: false });
+  await as("boss", "chatGameFormatSet", { formatId: "predictions", enabled: false });
 }
 
 async function hotSeatPart() {

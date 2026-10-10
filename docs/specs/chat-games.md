@@ -54,7 +54,7 @@ Every game and every Questions session is a **run**: one document under `runs/{r
 
 A format may loop states in rounds (Hot Seat: pick → answer → vote → reveal, per card; Would You Rather: one prompt per round) by keeping `round` on the run; each round has its own sub-state in `runs/{runId}/rounds/{n}`.
 
-**One at a time.** `public/live.chatGame = { runId, formatId, state, round, title }` points at the active run. It is stored in `streams/{streamId}/private/control.chatGame` (function-written) and copied into `public/live` by the Control Room's `buildPublicLive`, because `publishLive` rebuilds and overwrites `public/live` in full: every writer keeps the field, and the stream view's `obsFeed` gets it too. It replaces the never-written `activity` field. It is only present while the stream is live; Start refuses when it is set ("Hot Seat is running. End it first or use Swap"). Swap = void the current run and start the new one, in one callable. The Mod Deck launch tiles read this pointer. A locked Prediction does not hold this slot (§7). Crew-hosted runs also appear in `streams/{streamId}/private/duty.chatGames.activeRunIds` (§9).
+**One at a time.** `public/live.chatGame = { runId, formatId, state, round, title }` points at the active run. It is stored in `streams/{streamId}/private/control.chatGame` (function-written) and copied into `public/live` by the Control Room's `buildPublicLive`, because `publishLive` rebuilds and overwrites `public/live` in full: every writer keeps the field, and the stream view's `obsFeed` gets it too. It replaces the never-written `activity` field. It is only present while the stream is live; Start refuses when it is set ("Hot Seat is running. End it first or use Swap"). Swap = void the current run and start the new one, in one callable. The Mod Deck launch tiles read this pointer. A locked Prediction does not hold this slot (§7): at the lock it leaves `chatGame` and waits in `private/control.chatGameWaiting = [{ runId, title }]` (at most 3), which `buildPublicLive` copies to `public/live.chatGameWaiting` (live only, `[]` otherwise). A settled Prediction shown on stream (`revealed`) only fills the slot until the next game: Start ends it instead of refusing. Swap ends a revealed run with its result instead of voiding it. Crew-hosted runs also appear in `streams/{streamId}/private/duty.chatGames.activeRunIds` (§9).
 
 **Timers.** Deadlines are server timestamps (`closesAt`). Clients count down from them; a Cloud Task (`chatGameDeadline`, `onTaskDispatched`, the same default region as `liveFlush`; one task per deadline) closes the state on the server, so a closed laptop never leaves a run open. A task whose deadline was moved (pause, next round) does nothing. `liveTick` (every minute) sweeps any deadline a task missed, so a queue failure costs at most a minute. A client action after the deadline is refused by the callable.
 
@@ -137,7 +137,37 @@ A question about what happens next on screen, 2 to 4 answers; members pick; a mo
 - **Open** until the Captain taps **Lock**, 3 minutes at most. Members can change their pick until it locks. Picks per answer are hidden until the lock.
 - **Locked.** Waits for its result for as long as the stream runs. It does **not** hold the one-at-a-time slot; it shows as a "Waiting on: …" strip on the Play panel and a chip on the stream view. At most 3 locked Predictions at once.
 - **Settle.** A mod on duty taps what happened (**Propose**; shown to the Captain and owner, not to members). The Captain or owner taps **Confirm** or **Reject** (clears the proposal), or settles directly. Confirm = `revealed`: result on stream, XP goes out.
-- **Void.** The Captain or owner can void; at Stop every unsettled Prediction is voided. No XP; logged.
+- **Void.** The Captain or owner can void; at Stop every unsettled Prediction is voided. No +10; the lock XP already paid stays; logged.
+
+**As built (part 5), Would You Rather and Predictions.**
+- **Picks.** A pick is `chatGamePlay` `{ runId, action: "vote", choice }` (the option's index), from any signed-up member; Would You Rather doesn't need a check-in, and neither do Predictions. Each pick is a ballot at `runs/{runId}/ballots/{round}_{uid}` (`{ uid, round, pick, at }`), which the rules leave server-only (the catch-all), so the split stays secret. Changing a pick overwrites the ballot. `staff/r{n}.total` (Would You Rather) or `staff/p.total` (Predictions) counts the voters for the run panel. The member's own pick is in `plays/{uid}.r.{n}.pick`, with `result` (Would You Rather), `lock` and `win` (Predictions) as `{ xp, capped, crew }`.
+- **Prompts.** `{ text, options }` on the run: typed live (`options.source: "typed"`, `prompt`), checked through the pack card rules, or a pack card (`source: "pack"`, `packId`, `cardId` from the launch dialog's first card, else the part 3 draw). A pack card is marked used when its round starts.
+- **Would You Rather.**
+  - Each round opens for `voteMs` (30, 45 or 60 s).
+  - The reveal (the deadline or Reveal now) moves the run to `revealed` first, so a second caller is refused. It then tallies the ballots, pays every voter 3 XP (ref `{runId}:{round}`) and writes the counts, percentages and winners (ties: every top option) to `display` and `rounds/{n}`.
+  - Controls: `reveal`, `pause` / `resume` (paused time is added back), `nextRound` (Next prompt: `{ source, prompt?, seconds? }`, the next card from the run's pack by default), `saveToPack`.
+- **Predictions.**
+  - Open for 3 minutes or until `lock`.
+  - The lock (a transaction) moves the run to `locked` and, when fewer than 3 wait, frees the slot and joins `chatGameWaiting`; a 4th Lock is refused. An automatic lock with 3 already waiting keeps the slot instead (`waiting: false`).
+  - Then the split goes into `display`, and every pick gets 3 XP (ref `{runId}:lock`).
+  - `predictionPropose { runId, answer }` (anyone on `private/duty.onDuty`, the Captain or the owner; one call at a time) writes `staff/p.proposal`.
+  - `predictionSettle { runId, action, answer? }` (the Captain or the owner):
+    - `confirm` takes the proposal; `reject` clears it (kept in `staff/p.rejected`); `settle` sets the answer directly. A result moves the run to `revealed` and onto the slot when the slot is free (the result shows on stream), otherwise to `ended`. It leaves `chatGameWaiting` and pays +10 to each correct pick (ref `{runId}:win`).
+    - `void` uses the engine's move: no +10, and the lock XP stays.
+    - `correct` works once, only while the same stream is live. The run gets `corrected: true` and `result.was`. The first winners' +10 is reversed with `grant.reverseXp` (ref `{runId}:win_rev`), and their `presence.xpEarned` drops by the same amount. The new winners get +10 (ref `{runId}:win2`). A second correction is refused.
+- **Both formats.**
+  - Mods clocked in get no game XP.
+  - The shared cap applies (over it, the play is marked `capped`).
+  - Night Shift `stream` `{ action: "chat-game-played" }` for each voter at the Would You Rather reveal and each pick at the Prediction lock.
+  - Every staff action writes adminLog (`predict:lock`, `predict:propose`, `predict:confirm`, `predict:settle`, `predict:reject`, `predict:void`, `predict:correct`, `saveToPack:added` / `saveToPack:suggested`, `control:*`).
+  - Save to pack (`chatGameControl` `saveToPack { packId }`, after a typed round): the owner's adds the card through `chatGamePackSave`'s addCard; the Captain's (any grade) goes into the pack's Suggested lane.
+  - At Stop, `closeOut` voids every unsettled run, ends revealed ones with their result and clears `chatGameWaiting`.
+- **On the page.**
+  - The Play panel on `/live` shows the "Waiting on" strip under any game (one listener per waiting run, at most 3). A settled one stays with the member's result until dismissed.
+  - Mods on duty get "Call it" there.
+  - `/live/control` lists the waiting ones in the launch panel, each openable to settle.
+  - The stream view shows the "⏳ Waiting on" chip under any Chat Games scene.
+  - **Result chip.** A Prediction settled while another game holds the slot doesn't go on stream. Instead the settle writes `private/control.chatGameSettled = { runId, title, answer, count, at }` (the waiting list's path), and `buildPublicLive` copies it to `public/live.chatGameSettled` only for 15 s after `at`. For those 15 s the same dashed chip reads "✓ Called it: <answer> · <n> got it", then disappears (or shows the waiting list again). Stop clears it. Preview: `/live/obs?demo=1&game=wyr&settled=1` (15 s on, 5 s off, on a loop).
 - **Correct once.** In the same stream, the owner or Captain can change a confirmed result once: the first winners' +10 is reversed and the new winners are granted (§11). Then it's final.
 
 ## 8. Caption This (next) and later formats
@@ -197,7 +227,7 @@ All XP goes through the Trophy Room's `grantXp(uid, amount, { feature: "chatGame
 | Predictions locked pick | 3 | `chatGames:{runId}:lock:{uid}` |
 | Predictions correct | +10 | `chatGames:{runId}:win:{uid}` |
 
-Correcting a Prediction: reverse with `chatGames:{runId}:win-rev:{uid}`; new winners get `chatGames:{runId}:win2:{uid}`. Lock XP stays. `grant.js` has no XP reversal yet (only `revokeBadge`); part 5 adds one.
+The lock XP is paid at the lock and kept whatever happens next, a void included. Correcting a Prediction: reverse with `chatGames:{runId}:win_rev:{uid}`; new winners get `chatGames:{runId}:win2:{uid}`. Lock XP stays. The reversal is `grant.reverseXp(uid, { feature, ref, of })` (part 5), the mirror of `grantXp`. In one transaction it reads the original ledger entry `{feature}:{of}:{uid}` for the amount, lowers the profile's xp, level and rank by it (never below 0), and writes a `kind: "xp-reverse"` ledger entry with a negative amount and `reverses: <original key>`. That entry existing makes a retry a no-op; no original means nothing to take back. Chat Games also lowers `presence.xpEarned` by the same amount.
 
 Mods clocked in for the stream earn no game XP; hosting pays Gears through `grantGears(uid, source, ref, amount, { key })` (`lib/crew/gears.js`): +5 per crew-hosted game (source `chatGame`, key `chatGame:{runId}:{uid}`, a Chat Games constant); +2 per approved card (source `cardSuggest`, added in part 3).
 
@@ -217,13 +247,14 @@ Everything under `sites/boomertanger/chatGames/main/`, function-written unless n
 | `runs/{runId}` | formatId, streamId, state, round, closesAt, packId, cardId, prompt, options, startedBy, env, result after reveal | Everyone | None |
 | `runs/{runId}/rounds/{n}` | Round state, players, deadlines, tallies after reveal | Everyone (answers and running tallies hidden until reveal) | None |
 | `runs/{runId}/secret/{doc}` | Answers before reveal, running tallies, picker pool, proposals | Functions only (proposals mirrored to crew via `runs/{runId}/staff`) | None |
-| `runs/{runId}/staff/{doc}` | Prediction proposal, hidden-answer list | Crew | None |
+| `runs/{runId}/staff/{doc}` | Prediction proposal (`p`), voter counts (`r{n}`, `p`), hidden-answer list | Crew | None |
+| `runs/{runId}/ballots/{round}_{uid}` | One pick `{ uid, round, pick, at }` (Would You Rather, Predictions) | Functions only | None |
 | `runs/{runId}/plays/{uid}` | A member's vote, pick, answer status | That member; crew | None |
 | `runs/{runId}/cues/{cueId}` | §9 | Crew | None |
 | `volunteers/{streamId}_{uid}` | Hot Seat "Put me in" `{ uid, handle, streamId, at }` | That member (`resource.data.uid`) | None |
 | `hotSeatPicked/{streamId}` | `uids` picked this stream (nobody twice) | Functions only | None |
 
-Also written: `streams/{streamId}/private/control.chatGame` (copied to `public/live.chatGame`), `streams/{streamId}/private/duty.chatGames.activeRunIds`, `streams/{streamId}.chatGames`, adminLog (key `chatGames`), activityLog (`chat-game-won`, `question-answered`).
+Also written: `streams/{streamId}/private/control.chatGame` (copied to `public/live.chatGame`), `streams/{streamId}/private/control.chatGameWaiting` (copied to `public/live.chatGameWaiting`), `streams/{streamId}/private/duty.chatGames.activeRunIds`, `streams/{streamId}.chatGames`, adminLog (key `chatGames`), activityLog (`chat-game-won`, `question-answered`).
 
 ## 13. Callables, triggers and logs
 
@@ -237,12 +268,12 @@ Functions in `functions/lib/chatGames/*.js`. Every callable checks auth, role an
 | `chatGameStart` | Captain, owner | Start a run (refuses if one is active) |
 | `chatGameSwap` | Captain, owner | Void the active run and start another |
 | `chatGameEnd` | Captain, owner | End or void the active run |
-| `chatGameControl` | Captain, owner | Answered, Skip, Pin next, Next round, Lock, Reveal now, Pause/Resume, Skip card, switch picker |
+| `chatGameControl` | Captain, owner | Answered, Skip, Pin next, Next round, Lock, Reveal now, Pause/Resume, Skip card, switch picker, Save to pack |
 | `chatGameVolunteer` | Member | Hot Seat Put me in / take back |
 | `chatGamePlay` | Member | Accept seat, answer, vote, pick |
 | `chatGameModerate` | Mod on duty, Captain, owner | Hide a Hot Seat answer before reveal |
-| `predictionPropose` | Mod on duty | Propose the result |
-| `predictionSettle` | Captain, owner | Confirm, reject, settle directly, void, correct once |
+| `predictionPropose` | Mod on duty (or the Captain, the owner) | Call the result (one call at a time) |
+| `predictionSettle` | Captain, owner | Confirm, reject, settle directly, void, correct once (same stream) |
 | `chatGamePackSave` | Owner (Wardens+ drafts) | `op`: create, edit, addCard, editCard, deleteCard (owner, unused cards only), approve and retire (owner); Save to pack |
 | `chatGameFormatSet` | Owner | Switch a format's `enabled` on or off (/crew/games) |
 | `chatGameCardSuggest` / `chatGameCardDecide` | Mods / owner | Suggested lane |

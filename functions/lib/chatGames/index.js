@@ -10,8 +10,9 @@
 //                                                     (grantGears source "chatGame", key chatGame:{runId}:{uid}).
 //   chatGameDeadline                                  Cloud Tasks (onTaskDispatched, one task per deadline): closes a state whose closesAt has passed.
 //   sweep(stream)                                     liveTick's backstop: the same for any deadline a task missed.
-//   closeOut(streamId)                                the Control Room's Stop (and the auto-end, and the after-show handover): voids open runs, clears
-//                                                     private/control.chatGame and private/duty.chatGames, writes streams/{id}.chatGames.
+//   closeOut(streamId)                                the Control Room's Stop (and the auto-end, and the after-show handover): voids unsettled runs (a
+//                                                     revealed one ends with its result), clears private/control.chatGame and .chatGameWaiting and
+//                                                     private/duty.chatGames, writes streams/{id}.chatGames.
 //
 // DATA (sites/boomertanger/, function-written only): chatGames/main/formats/{formatId}, chatGames/main/runs/{runId} (+ rounds, secret, staff, plays, cues).
 // The one-at-a-time pointer is streams/{id}/private/control.chatGame = { runId, formatId, state, round, title }; publishLive copies it to public/live.chatGame
@@ -100,15 +101,19 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
       const ptr = (cs.data() || {}).chatGame || null;
       let cur = null;
       if (ptr && ptr.runId) { cur = asRun(await tx.get(runRef(ptr.runId))); }
-      const busy = cur && L.ACTIVE.includes(cur.state);
+      // a settled Prediction showing its result (part 5) only fills the slot until the next game: it ends, it doesn't block
+      const shown = !!cur && cur.formatId === "predictions" && cur.state === "revealed";
+      const busy = cur && L.ACTIVE.includes(cur.state) && !shown;
       if (busy && !swap) throw refuse("busy", { title: cur.title || ptr.title });
       const dRef = dutyRef(stream.id);
       const ds = await tx.get(dRef);
-      // void the current run (Swap)
-      if (busy) {
-        const t = L.transition(cur, "void", { at });
+      // end the shown result, or void the current run (Swap; a revealed run keeps its result and ends)
+      if (shown) tx.update(runRef(cur.id), stampPatch(L.transition(cur, "ended", { at }).patch));
+      else if (busy) {
+        const to = cur.state === "revealed" ? "ended" : "void";
+        const t = L.transition(cur, to, { at });
         if (!t.ok) throw refuse(t.reason);
-        tx.update(runRef(cur.id), { ...stampPatch(t.patch), voidReason: "swap" });
+        tx.update(runRef(cur.id), { ...stampPatch(t.patch), ...(to === "void" ? { voidReason: "swap" } : {}) });
       }
       // the new run: the handler decides what happens in "ready"
       const base = { formatId: format.id, streamId: stream.id, state: "ready", round: 0, title: format.title || format.id, crewHosted: format.crewHosted === true,
@@ -173,6 +178,9 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
       const ptr = (cs.data() || {}).chatGame;
       const next = { ...run, ...t.patch, ...extra };
       if (ptr && ptr.runId === runId) tx.set(cRef, { chatGame: L.pointerOf(next) }, { merge: true });
+      // a locked Prediction leaves private/control.chatGameWaiting once it's settled, voided or ended (part 5)
+      const waiting = (cs.data() || {}).chatGameWaiting;
+      if ((to === "revealed" || L.FINAL.includes(to)) && Array.isArray(waiting) && waiting.some((x) => x && x.runId === runId)) tx.set(cRef, { chatGameWaiting: waiting.filter((x) => x && x.runId !== runId) }, { merge: true });
       if (L.FINAL.includes(to) && ds.exists) {
         const ids = (((ds.data() || {}).chatGames || {}).activeRunIds || []).filter((x) => x !== runId);
         tx.update(dRef, { "chatGames.activeRunIds": ids });
@@ -319,11 +327,12 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     let voided = 0;
     for (const r of runs) {
       if (!L.ACTIVE.includes(r.state)) continue;
-      try { await move(r.id, "void", { reason: "stop" }); voided++; } catch (err) { if (!["already", "over"].includes(err && err.details && err.details.reason)) throw err; }
+      const to = r.state === "revealed" ? "ended" : "void";   // a revealed round (or a settled Prediction on stream) keeps its result; anything unsettled is void
+      try { await move(r.id, to, { reason: to === "void" ? "stop" : null }); if (to === "void") voided++; } catch (err) { if (!["already", "over"].includes(err && err.details && err.details.reason)) throw err; }
     }
     for (const h of Object.values(L.HANDLERS)) if (h && h.atStop) { try { await h.atStop(streamId); } catch (err) { console.error("chatGames: format stop clean-up failed", String((err && err.message) || err).slice(0, 140)); } }
     const fresh = (await runsCol().where("streamId", "==", streamId).get()).docs.map(asRun);
-    await ctx.controlRef(streamId).set({ chatGame: null }, { merge: true });
+    await ctx.controlRef(streamId).set({ chatGame: null, chatGameWaiting: [], chatGameSettled: null }, { merge: true });
     const d = dutyRef(streamId);
     if ((await d.get()).exists) await d.update({ chatGames: FieldValue.delete() });
     await ctx.streamRef(streamId).set({ chatGames: L.nightSummary(fresh.map((r) => ({ ...r, startedAt: ms(r.startedAt) }))) }, { merge: true });
@@ -338,6 +347,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
   const packs = require("./packs")(ctx, { gears, log, caller, refuse });
   // Hot Seat (part 4): the "hot-seat" handler and chatGameVolunteer; cards through packs.draw / markUsed
   const hotSeat = require("./hotseat")(ctx, { grant, factory, log, caller, refuse, packs: packs.ops, move, rng: hotSeatRng });
+  // Would You Rather and Predictions (part 5): their handlers, predictionPropose and predictionSettle; prompts through packs.draw / markUsed
+  const choices = require("./choices")(ctx, { grant, factory, log, caller, refuse, packs: packs.ops, move, syncPointer });
   const functions = {
     chatGameStart: onCall(wrap((w, d) => startRun(w, d))),
     chatGameSwap: onCall(wrap((w, d) => startRun(w, d, { swap: true }))),
@@ -348,9 +359,10 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     ...questions.functions,
     ...packs.functions,
     ...hotSeat.functions,
+    ...choices.functions,
     chatGamePlay: onCall(wrap(play)),
     chatGameModerate: onCall(wrap(moderateRun)),
   };
-  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops, ...packs.ops, hotSeat: hotSeat.ops, play, moderateRun }, closeOut, sweep, draw: packs.ops.draw, markUsed: packs.ops.markUsed };
+  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops, ...packs.ops, hotSeat: hotSeat.ops, choices: choices.ops, play, moderateRun }, closeOut, sweep, draw: packs.ops.draw, markUsed: packs.ops.markUsed };
 };
 module.exports.BASE = BASE;

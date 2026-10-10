@@ -667,6 +667,8 @@ service cloud.firestore {
           allow write: if false;
         }
       }
+      // Would You Rather and Predictions (part 5): the ballots (runs/{runId}/ballots/{round}_{uid}, every pick while the split is secret) have no rule
+      // of their own, so the catch-all below keeps them server-only; a member sees their own pick in plays/{uid}, the crew the proposal in staff/p.
       // Hot Seat (part 4): a member reads their own Put me in (volunteers/{streamId}_{uid}); chatGameVolunteer writes it. hotSeatPicked stays
       // server-only (the catch-all below).
       match /chatGames/main/volunteers/{vid} {

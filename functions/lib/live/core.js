@@ -229,7 +229,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
     for (const k of L.BEATS) if (stream && stream.beats && stream.beats[k]) sb[k] = { ...stream.beats[k], checkins: counts.byBeat[k] != null ? counts.byBeat[k] : stream.beats[k].checkins || 0 };
     const out = L.buildPublicLive({
       stream: stream ? { ...stream, beats: sb } : null, window: control.window || null, counters: counts, viewers: control.viewers || {},
-      peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, look: main.look, nowMs,
+      peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, chatGameWaiting: control.chatGameWaiting || [], chatGameSettled: control.chatGameSettled || null, look: main.look, nowMs,
       deck: deckState ? { rooms: deckState.rooms || {} } : null,
       grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
       rush: await ctx.rushFor(stream),

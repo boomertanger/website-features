@@ -2,6 +2,7 @@
 // and XP. Internal: features require() these; nothing here is callable from a browser.
 //
 //   grantXp(uid, amount, { feature, ref, reason, grantedBy })
+//   reverseXp(uid, { feature, ref, of, reason, grantedBy })   takes back what grantXp paid under (feature, of)
 //   grantBadge(uid, badgeId, { feature, ref, grantedBy, reason })
 //   grantTrophy(uid, { kind, place, label, period, ref })
 //   hasBadge(uid, badgeId)
@@ -64,6 +65,28 @@ function makeGrant({ db = admin.firestore() } = {}) {
       tx.update(R.profile(uid), x.patch);
       tx.set(R.ledger(key), { uid, kind: "xp", amount: n, badgeId: null, feature, ref: String(ref), grantedBy, reason, createdAt: FieldValue.serverTimestamp() });
       return { granted: true, xp: x.after.xp, level: x.after.level, leveledUp: x.leveledUp };
+    });
+  }
+
+  /**
+   * The mirror of grantXp: takes back the XP that grantXp paid under (feature, of) for uid. One transaction: the original ledger entry tells the amount;
+   * the profile's xp, level and rank go down by it (never below 0 XP); a ledger entry under (feature, ref) records it with a negative amount and points at
+   * the original. That entry existing means "already reversed", so a retry does nothing; no original entry means nothing was paid, so nothing is taken.
+   * Results: { reversed: true, amount, xp, level } or { reversed: false, reason: "done" | "notPaid" | "noProfile" }.
+   */
+  async function reverseXp(uid, { feature, ref, of, reason = "", grantedBy = null } = {}) {
+    if (!uid || !feature || ref == null || of == null) throw new Error("reverseXp: uid, feature, ref and of are required");
+    const key = L.ledgerKey(feature, ref, uid), originalKey = L.ledgerKey(feature, of, uid);
+    return db.runTransaction(async (tx) => {
+      const [ledger, original, profile] = await Promise.all([tx.get(R.ledger(key)), tx.get(R.ledger(originalKey)), tx.get(R.profile(uid))]);
+      if (ledger.exists) return { reversed: false, reason: "done" };
+      if (!original.exists || original.get("kind") !== "xp" || !(original.get("amount") > 0)) return { reversed: false, reason: "notPaid" };
+      if (!profile.exists) return { reversed: false, reason: "noProfile" };
+      const n = original.get("amount");
+      const p = L.progress(Math.max(0, (profile.get("xp") || 0) - n));
+      tx.update(R.profile(uid), { xp: p.xp, level: p.level, rank: p.rank });
+      tx.set(R.ledger(key), { uid, kind: "xp-reverse", amount: -n, badgeId: null, feature, ref: String(ref), reverses: originalKey, grantedBy, reason, createdAt: FieldValue.serverTimestamp() });
+      return { reversed: true, amount: n, xp: p.xp, level: p.level };
     });
   }
 
@@ -159,7 +182,7 @@ function makeGrant({ db = admin.firestore() } = {}) {
     });
   }
 
-  return { grantXp, grantBadge, grantTrophy, hasBadge, revokeBadge, refs: R };
+  return { grantXp, reverseXp, grantBadge, grantTrophy, hasBadge, revokeBadge, refs: R };
 }
 
 // The default instance, for features that just need to pay out (lazy, after initializeApp).
@@ -168,6 +191,7 @@ const get = () => (shared ||= makeGrant());
 module.exports = {
   makeGrant, SITE_ID, FEATURE,
   grantXp: (...a) => get().grantXp(...a),
+  reverseXp: (...a) => get().reverseXp(...a),
   grantBadge: (...a) => get().grantBadge(...a),
   grantTrophy: (...a) => get().grantTrophy(...a),
   hasBadge: (...a) => get().hasBadge(...a),

@@ -5228,3 +5228,43 @@
   .bt-root:not(#_) .bt-wheel:not([data-motion="always"]) .bt-wheel-ptr { animation: none; }
 }
 /* ================= END .bt-seance and .bt-wheel ================= */
+
+/* ================= .bt-choice — one tappable option (docs/specs/chat-games.md §6, §7, §14; mockup chat-games-batch-1.html) =================
+   shared/ui/choice.js choicesHtml() / choiceHtml(). Would You Rather A / B, Predictions 2 to 4, later Polls.
+   .bt-choices            the group (a column); .bt-choices--two: side by side with the OR badge (.bt-choice-or), stacked at 420 px
+   .bt-choice             data-state open (tappable) · locked · revealed · result · void; aria-pressed = the viewer's pick ("✓ Your pick")
+   .is-shown              the split is out: a gold fill (--f, 0 to 1) and the percentage (.bt-choice-pct)
+   .is-correct            lime outline and fill (the right answer, or the Would You Rather winner) · .is-out dimmed · .is-void dimmed and struck
+   Reduced motion: no lift, no fill growth. */
+.bt-root:not(#_) .bt-choices { display: grid; gap: 10px; width: 100%; }
+.bt-root:not(#_) .bt-choices--two { grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: stretch; }
+.bt-root:not(#_) .bt-choice-or { align-self: center; justify-self: center; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-size: var(--bt-text-xs); font-weight: 900; color: var(--bt-title); border: 1px solid rgba(var(--bt-gold-rgb), 0.45); background: var(--bt-bg); }
+.bt-root:not(#_) .bt-choice { position: relative; overflow: hidden; display: grid; gap: 6px; align-content: start; min-height: 64px; padding: 14px 16px; border-radius: var(--bt-radius-md); border: 1.5px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text); font: inherit; font-size: var(--bt-text-md); font-weight: 700; line-height: 1.35; text-align: left; cursor: pointer; transition: border-color 0.2s, background 0.2s, transform 0.2s, box-shadow 0.2s, opacity 0.2s; }
+.bt-root:not(#_) .bt-choices--two .bt-choice { min-height: 120px; align-content: center; justify-items: center; text-align: center; font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .bt-choice:hover:not(:disabled) { border-color: var(--bt-primary); transform: translateY(-1px); box-shadow: 0 6px 20px rgba(var(--bt-primary-rgb), 0.18); }
+.bt-root:not(#_) .bt-choice:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-choice[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
+.bt-root:not(#_) .bt-choice:disabled { cursor: default; }
+.bt-root:not(#_) .bt-choice > * { position: relative; z-index: 1; }
+.bt-root:not(#_) .bt-choice-mine { position: absolute; top: 8px; right: 10px; font-size: var(--bt-text-xs); font-weight: 800; color: var(--bt-primary-soft); }
+.bt-root:not(#_) .bt-choice-letter { font-size: var(--bt-text-xl); font-weight: 900; line-height: 1; color: rgba(var(--bt-gold-rgb), 0.6); }
+.bt-root:not(#_) .bt-choice .bt-choice-fill { position: absolute; z-index: 0; left: 0; top: 0; bottom: 0; width: calc(var(--f, 0) * 100%); background: rgba(var(--bt-gold-rgb), 0.12); border-right: 2px solid rgba(var(--bt-gold-rgb), 0.55); transition: width 0.7s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.bt-root:not(#_) .bt-choice-pct { font-size: var(--bt-text-2xl); font-weight: 900; color: var(--bt-title); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.bt-root:not(#_) .bt-choice-meta { font-size: var(--bt-text-xs); font-weight: 600; color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-choice[data-state="locked"]:not(.is-shown) { opacity: 0.85; }
+.bt-root:not(#_) .bt-choice.is-correct { border-color: var(--bt-lime); box-shadow: 0 0 0 1px var(--bt-lime) inset, 0 0 22px color-mix(in srgb, var(--bt-lime) 18%, transparent); }
+.bt-root:not(#_) .bt-choice.is-correct .bt-choice-fill { background: color-mix(in srgb, var(--bt-lime) 14%, transparent); border-right-color: var(--bt-lime); }
+.bt-root:not(#_) .bt-choice.is-correct .bt-choice-meta { color: var(--bt-lime); }
+.bt-root:not(#_) .bt-choice.is-out { opacity: 0.5; }
+.bt-root:not(#_) .bt-choice.is-void { opacity: 0.45; }
+.bt-root:not(#_) .bt-choice.is-void .bt-choice-t { text-decoration: line-through; text-decoration-color: var(--bt-text-faint); }
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .bt-choices--two { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bt-choices--two .bt-choice { min-height: 84px; }
+  .bt-root:not(#_) .bt-choice-or { margin: -4px 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-choice, .bt-root:not(#_) .bt-choice .bt-choice-fill { transition: none; }
+  .bt-root:not(#_) .bt-choice:hover:not(:disabled) { transform: none; }
+}
+/* ================= END .bt-choice ================= */

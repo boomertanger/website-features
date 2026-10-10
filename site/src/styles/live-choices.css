@@ -1,0 +1,94 @@
+/* site/src/styles/live-choices.css — Would You Rather and Predictions (docs/specs/chat-games.md §6, §7, §14; Chat Games part 5; mockup
+   chat-games-batch-1.html). Prefix lcg-. The Play panel on /live (the choices are the kit's .bt-choice), the "Waiting on" strip and "Call it", the run
+   panels and the Waiting panel on /live/control, and the launch, Save to pack, Next prompt, settle and correct dialogs (in the modal portal:
+   .bt-portal[data-feature="chat-games"]). Tokens only; container queries only; reduced motion respected (the burst is skipped in JS). */
+
+/* ---------- the Play panel ---------- */
+.bt-root:not(#_) .lcg-play { display: grid; gap: 12px; }
+.bt-root:not(#_) .lcg-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bt-root:not(#_) .lcg-duty { margin: 0; }
+.bt-root:not(#_) .lcg-lead { margin: 0; text-align: center; color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 700; }
+.bt-root:not(#_) .lcg-center { text-align: center; justify-content: center; }
+.bt-root:not(#_) .lcg-note { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.55; }
+.bt-root:not(#_) .lcg-timer { font-variant-numeric: tabular-nums; font-weight: 800; color: var(--bt-title); }
+.bt-root:not(#_) .lcg-bar { height: 6px; border-radius: 4px; background: var(--bt-surface-2); overflow: hidden; }
+.bt-root:not(#_) .lcg-bar i { display: block; height: 100%; width: 100%; background: var(--bt-red); transition: width 1s linear; }
+.bt-root:not(#_) .lcg-prompt { padding: 16px 18px; border-radius: var(--bt-radius-md); background: radial-gradient(ellipse at 0% 0%, rgba(var(--bt-gold-rgb), 0.12), transparent 60%), var(--bt-bg); border: 1px solid rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .lcg-prompt small { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .lcg-prompt p { margin: 6px 0 0; font-size: var(--bt-text-lg); font-weight: 800; line-height: 1.35; color: var(--bt-text); }
+.bt-root:not(#_) .lcg-win { position: relative; display: grid; gap: 8px; justify-items: center; text-align: center; }
+.bt-root:not(#_) .lcg-win p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lcg-won { margin: 0; font-size: var(--bt-text-2xl); font-weight: 900; color: var(--bt-title); text-transform: uppercase; }
+.bt-root:not(#_) .lcg-xp { display: flex; gap: 8px; flex-wrap: wrap; justify-content: center; }
+.bt-root:not(#_) .lcg-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bt-root:not(#_) .lcg-sp { flex: 1; }
+
+/* ---------- the waiting strip and Call it ---------- */
+.bt-root:not(#_) .lp-cg-wait:empty { display: none; }
+.bt-root:not(#_) .lp-cg-wait { margin-top: 12px; }
+.bt-root:not(#_) .lcg-waits { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+.bt-root:not(#_) .lcg-wait { position: relative; display: flex; gap: 10px; align-items: center; padding: 10px 12px; border-radius: var(--bt-radius-md); border: 1px dashed rgba(var(--bt-gold-rgb), 0.5); background: rgba(var(--bt-gold-rgb), 0.05); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lcg-wait.is-won { border-style: solid; border-color: var(--bt-lime); background: color-mix(in srgb, var(--bt-lime) 8%, transparent); }
+.bt-root:not(#_) .lcg-wait-ic { flex: none; width: 28px; height: 28px; border-radius: var(--bt-radius-sm); display: grid; place-items: center; background: rgba(var(--bt-gold-rgb), 0.12); }
+.bt-root:not(#_) .lcg-wait-ic svg { width: 16px; height: 16px; stroke: var(--bt-title); fill: none; stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) .lcg-wait > div { flex: 1 1 auto; min-width: 0; }
+.bt-root:not(#_) .lcg-wait > .bt-badge, .bt-root:not(#_) .lcg-wait > .bt-btn { flex: none; }
+.bt-root:not(#_) .lcg-wait > .lcg-sp { display: none; }
+.bt-root:not(#_) .lcg-wait small { display: block; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .lcg-wait b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--bt-text); }
+.bt-root:not(#_) .lcg-wait-line { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .lcg-waitbox { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; }
+.bt-root:not(#_) .lcg-callbox { display: grid; gap: 8px; padding: 12px; border-radius: var(--bt-radius-md); border: 1px solid color-mix(in srgb, var(--bt-teal) 45%, transparent); background: var(--bt-bg); }
+.bt-root:not(#_) .lcg-callh { display: flex; gap: 8px; align-items: center; font-weight: 800; font-size: var(--bt-text-sm); color: var(--bt-text); }
+.bt-root:not(#_) .lcg-callit { display: grid; gap: 8px; }
+.bt-root:not(#_) .lcg-settle { display: grid; gap: 8px; }
+.bt-root:not(#_) .lcg-settle-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
+.bt-root:not(#_) .lcg-proposal { display: grid; gap: 10px; padding: 14px 16px; border-radius: var(--bt-radius-md); border: 1px solid color-mix(in srgb, var(--bt-teal) 55%, transparent); background: var(--bt-teal-bg); }
+.bt-root:not(#_) .lcg-proposal p { margin: 0; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) .lcg-proposal p b { color: var(--bt-text); }
+
+/* ---------- /live/control: the run panels and the Waiting panel ---------- */
+.bt-root:not(#_) .lcg-run, .bt-root:not(#_) .lcg-waitpanel { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lcg-run--dialog { margin-top: 0; padding-top: 0; border-top: 0; }
+.bt-root:not(#_) .lcg-waitpanel h3 { margin: 0; }
+.bt-root:not(#_) .lcg-run-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+.bt-root:not(#_) .lcg-steps { display: grid; grid-template-columns: repeat(var(--n, 3), minmax(0, 1fr)); gap: 6px; }
+.bt-root:not(#_) .lcg-step { padding: 7px 8px; border-radius: var(--bt-radius-sm); border: 1px solid var(--bt-border); font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-text-faint); text-align: center; }
+.bt-root:not(#_) .lcg-step.is-done { color: var(--bt-lime); border-color: color-mix(in srgb, var(--bt-lime) 40%, transparent); }
+.bt-root:not(#_) .lcg-step.is-now { color: var(--bt-text); border-color: var(--bt-red); box-shadow: 0 0 14px rgba(var(--bt-red-rgb), 0.3); }
+.bt-root:not(#_) .lcg-info { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .lcg-info b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lcg-tally { display: grid; gap: 8px; }
+.bt-root:not(#_) .lcg-tally-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; font-size: var(--bt-text-sm); color: var(--bt-text); }
+.bt-root:not(#_) .lcg-tally-row b { font-variant-numeric: tabular-nums; color: var(--bt-text-muted); }
+.bt-root:not(#_) .lcg-tally-row .lcg-bar { grid-column: 1 / -1; height: 8px; }
+.bt-root:not(#_) .lcg-tally-row .lcg-bar i { background: var(--bt-title); transition: width 0.6s; }
+.bt-root:not(#_) .lcg-tally-row.is-correct span { color: var(--bt-lime); font-weight: 700; }
+.bt-root:not(#_) .lcg-tally-row.is-correct .lcg-bar i { background: var(--bt-lime); }
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .lcg-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+
+/* ---------- the dialogs (modal portal) ---------- */
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-launch { display: grid; gap: 14px; margin: 4px 0 8px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-launch .bt-field { margin: 0; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-launch .bt-select, .bt-portal[data-feature="chat-games"]:not(#_) .lcg-launch .bt-input { width: 100%; box-sizing: border-box; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-two { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-card { display: grid; gap: 6px; justify-items: start; padding: 12px 14px; border-radius: var(--bt-radius-md); border: 1px solid rgba(var(--bt-gold-rgb), 0.4); background: radial-gradient(ellipse at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-bg); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-card p { margin: 0; font-weight: 800; line-height: 1.4; color: var(--bt-text); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-card small { font-weight: 600; color: var(--bt-text-muted); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-warn { margin: 0; padding: 12px 14px; border-radius: var(--bt-radius-md); border: 1px solid rgba(var(--bt-gold-rgb), 0.45); background: rgba(var(--bt-gold-rgb), 0.07); font-size: var(--bt-text-sm); color: var(--bt-text-muted); line-height: 1.5; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-warn b { color: var(--bt-text); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-answers { display: grid; gap: 8px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-ans { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; gap: 8px; align-items: center; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-ans small { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-chips .bt-chip[aria-pressed="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-note { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.55; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lcg-settle-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 150px), 1fr)); gap: 8px; }
+@container bt (max-width: 640px) {
+  .bt-portal[data-feature="chat-games"]:not(#_) .lcg-two { grid-template-columns: minmax(0, 1fr); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .lcg-bar i, .bt-root:not(#_) .lcg-tally-row .lcg-bar i { transition: none; }
+}

@@ -35,6 +35,10 @@ export interface PubLive {
   firstIn?: string[]; firstInBeat?: Beat | null;
   /** The active Chat Games run (docs/specs/chat-games.md §3): copied from private/control.chatGame while live. */
   chatGame: { runId: string; formatId: string; state: "ready" | "open" | "locked" | "revealed"; round: number; title: string | null } | null;
+  /** Locked Predictions waiting for a result (chat-games.md §7): private/control.chatGameWaiting while live, at most 3. */
+  chatGameWaiting?: { runId: string; title: string | null }[];
+  /** A Prediction settled while another game held the slot: shown as a result chip on the stream view for 15 s after `at`. */
+  chatGameSettled?: { runId: string; title: string | null; answer: string; count: number; at: number } | null;
   /** Recruit Rush (Mod Machina §17a): only while a Rush is on; the main stream's during an after-show. */
   recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null };
 }

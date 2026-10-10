@@ -17,7 +17,7 @@ export interface HsRun { id: string; state: string; phase: string; round: number
 export interface HsPlay { seat?: boolean; answer?: string; answerId?: string; vote?: string; result?: { winner: boolean; votes: number; pct?: number; xp: number; capped: boolean; crew: boolean; hidden: boolean } }
 export interface HsStaff { answers: Record<string, { text: string; handle: string }>; hidden: Record<string, { by: string; byHandle: string | null }> }
 export interface HsRound { n: number; phase: string; card: string; seats: { uid: string; handle: string; status: string; volunteer?: boolean }[]; results?: { uid: string; handle: string; text: string | null; votes: number; pct: number; winner: boolean; xpPaid: number; capped: boolean; crew: boolean; hidden?: boolean }[]; noVotes?: boolean }
-export interface HsPack { id: string; title: string; cards: { id: string; text: string; lastUsed: number }[]; vaultGameIds: string[] }
+export interface HsPack { id: string; title: string; cards: { id: string; text: string; options?: string[]; lastUsed: number }[]; vaultGameIds: string[] }
 
 /** The preview: staging only, signed out, asked for. */
 export const hsPreview = (signedIn: boolean) => !isProduction && !signedIn && q().get("game") === "hot-seat";
@@ -100,8 +100,16 @@ export async function myVolunteer(streamId: string, uid: string, preview = false
 }
 
 // ---------- the launch dialog ----------
-/** Approved Hot Seat packs with cards (the crew reads packs), the default first: tagged to a game planned tonight, else General, else the first. */
-export async function launchPacks(streamId: string, preview = false): Promise<{ packs: HsPack[]; defaultId: string; tagged: boolean }> {
+/** Approved packs of a format with cards (the crew reads packs; Hot Seat, Would You Rather and Predictions use it), the default first: tagged to a game
+ *  planned tonight, else General, else the first. */
+export async function launchPacks(streamId: string, preview = false, formatId = "hot-seat"): Promise<{ packs: HsPack[]; defaultId: string; tagged: boolean }> {
+  if (preview && formatId === "would-you-rather") {
+    const card = (id: string, a: string, b: string) => ({ id, text: "Would you rather…", options: [a, b], lastUsed: 0 });
+    return { packs: [{ id: "classics", title: "Classics", vaultGameIds: [], cards: [card("w1", "Always hear footsteps behind you", "Never see your own reflection again"), card("w2", "Lose your flashlight", "Lose your map"), card("w3", "Be the last one alive", "Be the first one to see it")] }], defaultId: "classics", tagged: false };
+  }
+  if (preview && formatId === "predictions") {
+    return { packs: [{ id: "re4", title: "Resident Evil 4", vaultGameIds: ["resident-evil-4"], cards: [{ id: "p1", text: "Does Boomer use the shotgun before the village bell?", options: ["Yes", "No"], lastUsed: 0 }, { id: "p2", text: "How many deaths before the first boss?", options: ["None", "1 or 2", "3 or more"], lastUsed: 0 }] }], defaultId: "re4", tagged: true };
+  }
   if (preview) {
     const packs: HsPack[] = [
       { id: "re", title: "Resident Evil night", vaultGameIds: ["resident-evil-4"], cards: [{ id: "c1", text: "What's the worst thing to hear on a walkie-talkie at 3 a.m.?", lastUsed: 0 }, { id: "c2", text: "Pitch a terrible new item for the merchant.", lastUsed: 0 }] },
@@ -109,9 +117,9 @@ export async function launchPacks(streamId: string, preview = false): Promise<{ 
     ];
     return { packs, defaultId: "re", tagged: true };
   }
-  const snap = await getDocs(query(collection(db, ...base(), "packs"), where("formatId", "==", "hot-seat"), where("status", "==", "approved")));
+  const snap = await getDocs(query(collection(db, ...base(), "packs"), where("formatId", "==", formatId), where("status", "==", "approved")));
   const packs: HsPack[] = snap.docs.map((d: any) => ({ id: d.id, title: String(d.get("title") || d.id), vaultGameIds: d.get("vaultGameIds") || [],
-    cards: (d.get("cards") || []).map((c: any) => ({ id: String(c.id), text: String(c.text || ""), lastUsed: Math.max(0, ...((c.usedOn || []) as any[]).map((u) => ms(u.at))) })) }))
+    cards: (d.get("cards") || []).map((c: any) => ({ id: String(c.id), text: String(c.text || ""), options: Array.isArray(c.options) ? c.options.map(String) : undefined, lastUsed: Math.max(0, ...((c.usedOn || []) as any[]).map((u) => ms(u.at))) })) }))
     .filter((p: HsPack) => p.cards.length).sort((a: HsPack, b: HsPack) => a.title.localeCompare(b.title));
   let tonight: string[] = [];
   try { tonight = (((await getDoc(doc(db, "sites", SITE_ID, "streams", streamId))).data() as any)?.plannedGames || []).map((g: any) => g.gameId).filter(Boolean); } catch { /* no plan: General */ }

@@ -354,8 +354,16 @@ function drawWatch(c: PubCtx) {
 /** The Play panel: Chat Games renders it (shared/ui/chatgames.js mountPlay, from public/live.chatGame). */
 function drawPlay(c: PubCtx) {
   const g = c.pub.chatGame;
-  patch("play", `${g?.runId}|${g?.state}|${g?.round}`, () => crPanelHtml({ id: "lp-play", title: g ? "On now" : "Play", icon: "questions", bodyHtml: `<div data-cg-play></div>` }),
-    (el) => { const host = el.querySelector<HTMLElement>("[data-cg-play]"); if (host) void import("./chatgames-site").then(({ chatGames }) => chatGames.mountPlay?.(host, { chatGame: g })); });
+  const waiting = c.pub.chatGameWaiting || [];
+  patch("play", `${g?.runId}|${g?.state}|${g?.round}`, () => crPanelHtml({ id: "lp-play", title: g ? "On now" : "Play", icon: "questions", bodyHtml: `<div data-cg-play></div><div class="lp-cg-wait" data-cg-wait></div>` }),
+    (el) => { const host = el.querySelector<HTMLElement>("[data-cg-play]"); if (host) void import("./chatgames-site").then(({ chatGames }) => chatGames.mountPlay?.(host, { chatGame: g })); keys.cgwait = ""; });
+  // locked Predictions waiting for a result (Chat Games part 5): the strip under whatever game is on, kept across Play panel redraws
+  const wkey = waiting.map((w) => w.runId).join();
+  if (keys.cgwait !== wkey) {
+    keys.cgwait = wkey;
+    const host = panel("play").querySelector<HTMLElement>("[data-cg-wait]");
+    if (host) void import("./cg-choices").then(({ mountWaiting }) => mountWaiting(host, { waiting }));
+  }
 }
 
 /* ------------------------------------------------------------------ the part */

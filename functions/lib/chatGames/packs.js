@@ -98,9 +98,10 @@ module.exports = function packs(ctx, { gears = null, log, caller, refuse } = {})
   const vaultIds = (v) => (Array.isArray(v) ? v.filter((x) => typeof x === "string" && L.ID_SAFE.test(x)).slice(0, 20) : []);
 
   // ---------- the Suggested lane ----------
-  async function suggest(w0, d) {
+  /** asCaptain: Save to pack from a Would You Rather or Predictions run (part 5): the Captain of the stream, any grade, suggests the typed prompt. */
+  async function suggest(w0, d, { asCaptain = false } = {}) {
     const w = person(w0);
-    if (!PL.isWatcherPlus(w)) throw denied("Crew Watcher and up suggest cards.", "notWatcher");
+    if (!asCaptain && !PL.isWatcherPlus(w)) throw denied("Crew Watcher and up suggest cards.", "notWatcher");
     if (!idOk(d && d.packId)) throw bad("Which pack?", "bad-input", { field: "packId" });
     const p = asPack(await packRef(d.packId).get());
     if (!p) throw fail("not-found", "That pack is gone.", "gone");
@@ -177,6 +178,6 @@ module.exports = function packs(ctx, { gears = null, log, caller, refuse } = {})
   const wrap = (fn) => async (request) => fn(await caller(request), request.data || {});
   return {
     functions: { chatGamePackSave: onCall(wrap(save)), chatGameCardSuggest: onCall(wrap(suggest)), chatGameCardDecide: onCall(wrap(decide)), chatGameFormatSet: onCall(wrap(formatSet)) },
-    ops: { packSave: save, cardSuggest: suggest, cardDecide: decide, formatSet, draw, markUsed },
+    ops: { packSave: save, cardSuggest: suggest, suggestAsCaptain: (w, d) => suggest(w, d, { asCaptain: true }), cardDecide: decide, formatSet, draw, markUsed },
   };
 };

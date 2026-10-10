@@ -10,6 +10,7 @@
 import { projectId } from "../../lib/env.js";
 import { streamViewHtml } from "../../../../shared/ui/streamview.js";
 import { setLook } from "../../../../shared/ui/control-room.js";
+import { escapeHtml } from "../../../../shared/ui/dom.js";
 import type { PubLive } from "./model";
 
 /** What obsFeed returns as `view` (functions/lib/live/feeds.js viewData): public/live plus the scene, the word and the Starting soon data. */
@@ -45,7 +46,7 @@ async function mount() {
   if (mounted) return;
   mounted = true;
   // [data-cg-scene]: Chat Games' scene (shared/ui/chatgames.js mountScene, from obsFeed's chatGame); empty until a format ships
-  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div>` });
+  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div><div class="obs-cg-waitchip" data-cg-wait hidden></div>` });
   scenes = (await import("./obs-scenes")).createScenes(root.querySelector<HTMLElement>("[data-obs-scene]")!, shape, params);
 }
 
@@ -64,8 +65,21 @@ async function showGame(view: ObsView) {
   if (!cgEl) return;
   const g = (view as any).chatGame || null, display = (view as any).chatGameDisplay || null;
   const { initChatGames } = await import("../../../../shared/ui/chatgames.js");
-  await Promise.all([import("./cg-questions-scene"), import("./cg-hotseat-scene")]);
+  await Promise.all([import("./cg-questions-scene"), import("./cg-hotseat-scene"), import("./cg-choices-scene")]);
   const api = initChatGames();
+  // the "⏳ Waiting on" chip: a locked Prediction waiting for its result, in the footer of any Chat Games scene (part 5). When one settles while another
+  // game holds the slot, the same dashed chip shows the result for 15 s ("Called it: <answer> · <n> got it"), then the waiting list again (or nothing).
+  const chip = root.querySelector<HTMLElement>("[data-cg-wait]");
+  const waiting = ((view as any).chatGameWaiting || []) as { runId: string; title: string | null }[];
+  const settled = (view as any).chatGameSettled as { answer: string; count: number; at: number } | null;
+  const fresh = !!settled && Date.now() - settled.at <= 15000;
+  if (chip) {
+    const html = fresh ? `<span>✓ Called it:</span><b>${escapeHtml(settled!.answer)}</b><span>· ${settled!.count} got it</span>`
+      : waiting.length ? `<span>⏳ Waiting on</span><b>${escapeHtml(waiting[0].title || "a prediction")}</b>${waiting.length > 1 ? `<span>+${waiting.length - 1} more</span>` : ""}` : "";
+    if (chip.innerHTML !== html) chip.innerHTML = html;
+    chip.classList.toggle("is-result", fresh);
+    chip.hidden = !html;
+  }
   if (g) {
     if (cgTimer) { clearTimeout(cgTimer); cgTimer = 0; }
     const key = JSON.stringify([g.runId, g.state, g.round, display]);

@@ -221,7 +221,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     const counts = L.sumShards(shards);
     const pub = L.buildPublicLive({
       stream: stream.state === "scheduled" ? { ...stream, state: "scheduled" } : { ...stream, beats: Object.fromEntries(Object.entries(stream.beats || {}).map(([k, b]) => [k, { ...b, checkins: counts.byBeat[k] != null ? counts.byBeat[k] : b.checkins || 0 }])) },
-      window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, look: main.look, nowMs,
+      window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, chatGameWaiting: control.chatGameWaiting || [], chatGameSettled: control.chatGameSettled || null, look: main.look, nowMs,
       rush: stream.state === "scheduled" ? null : await ctx.rushFor(stream),
     });
     const scene = L.autoScene({ stream, window: control.window, pinned: control.pinned, nowMs });

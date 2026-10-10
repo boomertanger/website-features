@@ -106,7 +106,11 @@ function mkPub(st: PState): PubLive {
     game: seg ? { gameId: seg.gameId!, title: seg.title!, startedAt: seg.startedAt! } : null, nextGame: next ? { gameId: next.gameId, title: next.title } : null,
     crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] },
     chatGame: new URLSearchParams(location.search).get("game") === "questions" ? { runId: "preview", formatId: "questions", state: "open", round: 1, title: "Questions" }   // ?game=questions (Chat Games part 2)
-      : new URLSearchParams(location.search).get("game") === "hot-seat" ? { runId: "preview-hs", formatId: "hot-seat", state: "open", round: 1, title: "Hot Seat" } : null,   // ?game=hot-seat (part 4)
+      : new URLSearchParams(location.search).get("game") === "hot-seat" ? { runId: "preview-hs", formatId: "hot-seat", state: "open", round: 1, title: "Hot Seat" }   // ?game=hot-seat (part 4)
+      : new URLSearchParams(location.search).get("game") === "wyr" ? { runId: "preview-wyr", formatId: "would-you-rather", state: "open", round: 2, title: "Would You Rather" }   // ?game=wyr (part 5)
+      : new URLSearchParams(location.search).get("game") === "predictions" ? { runId: "preview-pred", formatId: "predictions", state: "open", round: 1, title: "Predictions" } : null,   // ?game=predictions (part 5)
+    // ?waiting=1: a locked Prediction waiting for its result (part 5)
+    chatGameWaiting: new URLSearchParams(location.search).get("waiting") === "1" ? [{ runId: "preview-wait", title: "Does the chainsaw guy come back before the boss?" }] : [],
   };
 }
 
