@@ -76,6 +76,9 @@ first, and `docs/design-system.md` §5 "Site shell" and §8d before changing it.
 Building an admin-only feature, auditing status colors, or picking up
 follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 
+## New feature checklist
+- **Service Hub manifest:** every new feature or page adds or updates its Service Hub manifest in `services/` (type, area, routes, version bump when it changes, talkBack `note` / `pins` (sections) / `rate` / `skip`). `npm run check` (in `site/`) warns about pages no manifest claims. Fields: `services/README.md`; spec `docs/specs/service-hub.md` §3, §8a.
+
 ## Other conventions
 - MemberSpace (legacy Squarespace Code Blocks only; **cancelled Oct 9, 2026, no longer applicable to new work**: the new site never uses it): where old code still does, use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.
   `memberInfo.id` is a NUMBER — `String()` it before writing to Firestore.

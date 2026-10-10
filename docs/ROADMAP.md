@@ -255,7 +255,7 @@ Activity types (and automatic badges) that wait for another workstream. Tick one
 - [ ] Contests: Contests (12).
 - [ ] Polls, comments, shout-outs, clips and Discord: not planned yet.
 
-Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** section listing what it can reward (activity types, automatic badges) and the event it fires, so the hook is built with the feature.
+Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** section listing what it can reward (activity types, automatic badges) and the event it fires, so the hook is built with the feature. It also adds or updates its **Service Hub manifest** in `services/` (type, area, routes, version bump when it changes, talkBack note / pins (sections) / rate / skip); `npm run check` warns about pages no manifest claims (CLAUDE.md "New feature checklist").
 
 ## Deadlines
 - Squarespace: cancel by 2027-07-01.
