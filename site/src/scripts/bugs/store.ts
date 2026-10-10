@@ -81,7 +81,7 @@ export async function meToo(id: string): Promise<{ on: boolean; count: number }>
 const token = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
 export const newToken = token;
 
-export interface NewReport { title: string; page: string; whatHappened: string; expected: string; steps: string; severity: Severity; private: boolean; device: { browser: string; os: string; viewport: string } | null; token: string }
+export interface NewReport { title: string; page: string; whatHappened: string; expected: string; steps: string; severity: Severity; private: boolean; device: { browser: string; os: string; viewport: string } | null; token: string; /** "Which part of the site?" (left out: the server goes by the page) */ serviceId?: string }
 
 /** Uploads to Cloudinary with the signed fields the server made (the Vault's way: a plain multipart POST). */
 async function uploadShot(upload: { uploadUrl: string; fields: Record<string, string | number> }, file: Blob) {
@@ -114,7 +114,7 @@ export async function submit(input: NewReport, file: Blob | null): Promise<{ id:
   if (isPreview(s)) {
     await wait();
     const me = meOf(s), now = Date.now(), id = `n${now}`;
-    upsert({ id, title: input.title, page: input.page, whatHappened: input.whatHappened, expected: input.expected, steps: input.steps, severity: input.severity, status: "open", priority: null, duplicateOf: null, private: input.private, hidden: false, closed: false,
+    upsert({ id, title: input.title, page: input.page, whatHappened: input.whatHappened, expected: input.expected, steps: input.steps, severity: input.severity, serviceId: input.serviceId || null, status: "open", priority: null, duplicateOf: null, private: input.private, hidden: false, closed: false,
       by: { uid: me.uid, handle: me.handle, name: me.name }, meTooCount: 0, threadCount: 0, shotRef: null, statusHistory: [{ status: "open", changedBy: { uid: me.uid, handle: me.handle }, changedAt: now }], statusChangedAt: now, confirmedAt: 0, fixedAt: 0, closedAt: 0, editedAt: 0, editCount: 0, createdAt: now, updatedAt: now });
     demo().info[id] = { device: input.device, shot: file ? { publicId: `bug-zapper/${id}/shot`, format: "png", bytes: 1, width: null, height: null } : null };
     if (file) byId(id)!.shotRef = `bug-zapper/${id}/shot`;

@@ -1,4 +1,5 @@
-// Post an idea (docs/specs/feature-lab.md §7; mockup "Post an idea"): It's for (Site, Stream, Other), Title, What should it do?, then the
+// Post an idea (docs/specs/feature-lab.md §7; mockup "Post an idea"): It's for (Site, Stream, Other), Title, What should it do?, About (optional: the Service
+// Hub service it is about, default "Not about one thing"), then the
 // success view: the IDEA IN stamp with a bubble burst, "It's on the board", and the Night Shift line when a live mission counted it.
 // Visitors get the Join dialog titled "Join to post ideas"; members with an unverified email get the verify prompt. A token per open
 // dialog makes a double click post one idea.
@@ -7,7 +8,8 @@ import { burst } from "../../../../shared/ui/burst.js";
 import { messageFor } from "../../lib/errors";
 import { AREA, type Area } from "./data";
 import { post, newToken } from "./store";
-import { requireVerified } from "./gate";
+import { requireVerified, isPreview } from "./gate";
+import { loadServices, serviceSelectHtml } from "../services-pick";
 import { esc, stamp } from "./ui";
 import { bigFlask } from "./art";
 
@@ -15,7 +17,7 @@ const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "
 
 export async function openPost(onPosted: (id: string) => void, openIdea: (id: string) => void) {
   if (!(await requireVerified("Join to post ideas"))) return;
-  let area: Area = "site", tok = newToken();
+  let area: Area = "site", tok = newToken(), service = "";
   const m = openModal({ title: "New idea", feature: "feature-lab", content: "" });
   const modal = m.modal;
 
@@ -24,8 +26,11 @@ export async function openPost(onPosted: (id: string) => void, openIdea: (id: st
       <div class="bt-field"><span class="bt-label">It's for</span><div class="bt-pills fl-area-pick" role="radiogroup" aria-label="Area">${(Object.keys(AREA) as Area[]).map((k) => `<button type="button" role="radio" aria-checked="${area === k}" class="${area === k ? "is-on" : ""}" data-subarea="${k}">${AREA[k]}</button>`).join("")}</div></div>
       <div class="bt-field"><label class="bt-label" for="fl-t">Title</label><input id="fl-t" class="bt-input" type="text" maxlength="200" value="${esc(keep.title)}" autocomplete="off"><span class="bt-hint">3–200 characters</span></div>
       <div class="bt-field"><label class="bt-label" for="fl-d">What should it do?</label><textarea id="fl-d" class="bt-textarea" rows="4" maxlength="2000">${esc(keep.description)}</textarea><span class="bt-hint">10–2,000 characters. A new game idea? Pitch it in the Arcade Studio instead.</span></div>
+      <div data-svc-slot></div>
       <p class="bt-error" hidden data-err role="alert"></p>
       <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-go>Post idea</button></div>`;
+    // About (optional): filled once the list is in, keeping the member's pick across redraws
+    void loadServices({ preview: isPreview() }).then((list) => { const slot = modal.querySelector<HTMLElement>("[data-svc-slot]"); if (slot && list.length) slot.innerHTML = serviceSelectHtml({ id: "fl-svc", label: "About (optional)", list, value: service, none: "Not about one thing" }); });
     modal.querySelector<HTMLInputElement>("#fl-t")?.focus();
   };
   const done = (id: string, counted: boolean) => {
@@ -35,7 +40,7 @@ export async function openPost(onPosted: (id: string) => void, openIdea: (id: st
       <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-again>Post another</button><button type="button" class="bt-btn bt-btn--primary" data-see>See it on the board</button></div>`;
     burst(modal.querySelector<HTMLElement>("[data-burst]"));
     modal.querySelector<HTMLButtonElement>("[data-see]")!.focus();
-    modal.querySelector("[data-again]")!.addEventListener("click", () => { tok = newToken(); form(); });
+    modal.querySelector("[data-again]")!.addEventListener("click", () => { tok = newToken(); service = ""; form(); });
     modal.querySelector("[data-see]")!.addEventListener("click", () => { m.close(); openIdea(id); });
   };
 
@@ -57,7 +62,7 @@ export async function openPost(onPosted: (id: string) => void, openIdea: (id: st
     go.disabled = true;
     go.innerHTML = '<span class="bt-spinner" aria-hidden="true"></span>Posting…';
     try {
-      const res = await post({ title, description, area, token: tok });
+      const res = await post({ title, description, area, token: tok, ...(service ? { serviceId: service } : {}) });
       onPosted(res.id);
       done(res.id, res.counted);
     } catch (ex) {
@@ -67,5 +72,6 @@ export async function openPost(onPosted: (id: string) => void, openIdea: (id: st
       go.textContent = "Post idea";
     }
   });
+  modal.addEventListener("change", (e) => { const t = e.target as HTMLSelectElement; if (t.matches("#fl-svc")) service = t.value; });
   form();
 }

@@ -10,6 +10,7 @@ export interface By { uid: string; handle: string; name?: string }
 export interface HistoryItem { status?: Status; kind?: "note"; note?: string; changedBy?: { uid?: string; handle?: string }; changedAt: number }
 export interface Idea {
   id: string; title: string; description: string; area: Area; status: Status; priority: Priority | null;
+  /** The Service Hub service it is about (services/<id>.json), or null. */ serviceId: string | null;
   by: By; voteCount: number; commentCount: number; hidden: boolean; hiddenBy?: { uid?: string; handle?: string }; hiddenReason?: string;
   statusChangedAt: number; shippedAt: number; createdAt: number; updatedAt: number; editedAt: number; editCount: number; statusHistory: HistoryItem[];
 }
@@ -21,7 +22,7 @@ const col = (...p: string[]) => collection(db, "sites", SITE_ID, "lab", "main", 
 
 function toIdea(id: string, d: any): Idea {
   return {
-    id, title: d.title || "", description: d.description || "", area: d.area || "other", status: d.status || "submitted", priority: d.priority || null,
+    id, title: d.title || "", description: d.description || "", area: d.area || "other", serviceId: typeof d.serviceId === "string" && d.serviceId ? d.serviceId : null, status: d.status || "submitted", priority: d.priority || null,
     by: d.by || { uid: "", handle: "" }, voteCount: d.voteCount || 0, commentCount: d.commentCount || 0, hidden: d.hidden === true, hiddenBy: d.hiddenBy, hiddenReason: d.hiddenReason,
     statusChangedAt: ms(d.statusChangedAt), shippedAt: ms(d.shippedAt), createdAt: ms(d.createdAt), updatedAt: ms(d.updatedAt), editedAt: ms(d.editedAt), editCount: d.editCount || 0,
     statusHistory: (d.statusHistory || []).map((h: any) => ({ ...h, changedAt: ms(h.changedAt) })),

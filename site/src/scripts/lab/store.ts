@@ -68,13 +68,13 @@ export async function vote(id: string): Promise<{ voted: boolean; count: number 
 const token = () => (crypto.randomUUID ? crypto.randomUUID() : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 12)}`);
 export const newToken = token;
 
-export async function post(input: { title: string; description: string; area: Area; token: string }): Promise<{ id: string; counted: boolean }> {
+export async function post(input: { title: string; description: string; area: Area; token: string; serviceId?: string }): Promise<{ id: string; counted: boolean }> {
   const s = getAuthState();
   if (isPreview(s)) {
     await wait();
     const me = meOf(s), now = Date.now();
     const id = `n${now}`;
-    upsert({ id, title: input.title, description: input.description, area: input.area, status: "submitted", priority: null, by: { uid: me.uid, handle: me.handle, name: me.name }, voteCount: 1, commentCount: 0, hidden: false, statusChangedAt: now, shippedAt: 0, createdAt: now, updatedAt: now, editedAt: 0, editCount: 0, statusHistory: [{ status: "submitted", changedBy: { uid: me.uid, handle: me.handle }, changedAt: now }] });
+    upsert({ id, title: input.title, description: input.description, area: input.area, serviceId: input.serviceId || null, status: "submitted", priority: null, by: { uid: me.uid, handle: me.handle, name: me.name }, voteCount: 1, commentCount: 0, hidden: false, statusChangedAt: now, shippedAt: 0, createdAt: now, updatedAt: now, editedAt: 0, editCount: 0, statusHistory: [{ status: "submitted", changedBy: { uid: me.uid, handle: me.handle }, changedAt: now }] });
     S.voted.add(id);
     return { id, counted: true };
   }

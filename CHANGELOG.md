@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 4b: Bug Zapper's "Which part of the site?" and Feature Lab's "About" selects (in the forms and the admin Edit), pre-selected from ?page=, and the service shown as a tag on reports and ideas (site/src/scripts/services-pick.ts).
 Service Hub part 4a: reports and ideas link to a service (serviceForPath from the report's page, an optional serviceId on bugSubmit and labSubmit, editable through adminEditItem), open bug and idea counts on the service (onBugReportService, onLabIdeaService), and scripts/backfill-service-links.js; the test Firestore's == no longer matches null.
 Service Hub: sync-services.js leaves undefined fields out of its adminLog entry (Firestore refused the first staging sync's log).
 Service Hub part 3d: 12 Community badges (First Verdict, Critic I-IV, Full Coverage, Tester I-III, Vault Critic I-III), the Night Shift services type and ratings switched on, Mod Machina system tasks (createSystemTask; 15 and 10 Gears), rating and testing need a verified email, and the Accounts 2b deletion line.

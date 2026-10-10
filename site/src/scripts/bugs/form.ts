@@ -1,6 +1,7 @@
 // The Report a bug dialog (docs/specs/bug-zapper.md §7; mockup "Report form"): Give it a short name / What happened? / What did you expect instead? / Which page or feature?
 // (prefilled only from ?page=) / Steps (optional) / How bad is it? (four cards) / Screenshot (.bt-dropzone) / "We'll attach: BROWSER on OS, W × H" with Don't attach / the
-// security checkbox. Sending: a spinner. Sent: the ZAPPED IN stamp with an ice-and-lamp burst, "It's on the board", the Night Shift line when a live mission counted it,
+// security checkbox, and "Which part of the site?" (Service Hub: a select of the services, pre-selected from ?page= when it matches; "Not sure" lets the server
+// go by the page). Sending: a spinner. Sent: the ZAPPED IN stamp with an ice-and-lamp burst, "It's on the board", the Night Shift line when a live mission counted it,
 // See your report / Report another. A screenshot that fails to upload never loses the report (the saved-anyway notice and Add the screenshot). Rate limit: its own view.
 // Visitors get the Join dialog titled "Join to report bugs"; members with an unverified email get the verify dialog. A token per open dialog makes a double click send one report.
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
@@ -11,6 +12,8 @@ import { submit, newToken, prepareShot } from "./store";
 import { requireVerified, verifyPrompt } from "./gate";
 import { getAuthState } from "../../lib/auth";
 import { esc, sevBadge, stamp, longDate } from "./ui";
+import { isPreview } from "./gate";
+import { loadServices, serviceForPage, serviceSelectHtml } from "../services-pick";
 
 export interface Device { browser: string; os: string; viewport: string }
 
@@ -30,7 +33,7 @@ const MAX_SHOT = 10 * 1024 * 1024;
 export async function openForm({ page = "", onSent, openReport }: { page?: string; onSent: (id: string) => void; openReport: (id: string) => void }) {
   if (!(await requireVerified("Join to report bugs"))) return;
   const device = detectDevice();
-  const st = { severity: null as Severity | null, file: null as File | null, deviceOn: true, priv: false, token: newToken() };
+  const st = { severity: null as Severity | null, file: null as File | null, deviceOn: true, priv: false, token: newToken(), service: "", serviceTouched: false };
   const m = openModal({ title: "Report a bug", feature: "bug-zapper", content: "" });
   const modal = m.modal;
 
@@ -41,6 +44,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     <div class="bt-field"><label class="bt-label" for="bz-f-what">What happened?</label><textarea id="bz-f-what" class="bt-textarea" rows="3" maxlength="2000" placeholder="Describe what you saw.">${esc(keep.what || "")}</textarea></div>
     <div class="bt-field"><label class="bt-label" for="bz-f-exp">What did you expect instead?</label><textarea id="bz-f-exp" class="bt-textarea" rows="2" maxlength="2000" placeholder="Describe what should have happened.">${esc(keep.exp || "")}</textarea></div>
     <div class="bt-field"><label class="bt-label" for="bz-f-page">Which page or feature?</label><input id="bz-f-page" class="bt-input" type="text" maxlength="300" placeholder="e.g. www.boomertanger.com/live" value="${esc(keep.page ?? page)}" autocomplete="off"><span class="bt-hint">Paste the address of the page where it happened.</span></div>
+    <div data-svc-slot></div>
     <div class="bt-field"><label class="bt-label" for="bz-f-steps">Steps to reproduce (optional)</label><textarea id="bz-f-steps" class="bt-textarea" rows="3" maxlength="2000" placeholder="1. Go to…&#10;2. Click…&#10;3. See…">${esc(keep.steps || "")}</textarea></div>
     <div class="bt-field"><span class="bt-label" id="bz-f-sev">How bad is it?</span><div class="bz-sev-pick" role="radiogroup" aria-labelledby="bz-f-sev" aria-required="true">${(Object.keys(SEVERITY) as Severity[]).map((k) => `<button type="button" role="radio" aria-checked="${st.severity === k}" data-sev-pick="${k}">${sevBadge(k)}<span>${SEVERITY[k].help}</span></button>`).join("")}</div><p class="bt-error" data-sev-err role="alert" hidden>Pick how bad it is.</p></div>
     <div class="bt-field"><span class="bt-label">Screenshot (optional)</span><div data-shot></div><input type="file" accept="image/png,image/jpeg,image/webp" hidden data-file></div>
@@ -50,7 +54,16 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     </div>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-send>Send report</button></div>`;
     drawShot();
+    void drawService(keep.page ?? page);
     modal.querySelector<HTMLInputElement>("#bz-f-title")?.focus();
+  };
+  /** "Which part of the site?": filled once the list is in (the form never waits for it); the reporter's own pick is kept across redraws. */
+  const drawService = async (pageText: string) => {
+    const list = await loadServices({ preview: isPreview() });
+    const slot = modal.querySelector<HTMLElement>("[data-svc-slot]");
+    if (!slot || !list.length) return;
+    if (!st.serviceTouched) { const guess = await serviceForPage(pageText); st.service = guess && list.some((s) => s.id === guess) ? guess : ""; }
+    slot.innerHTML = serviceSelectHtml({ id: "bz-f-svc", label: "Which part of the site?", list, value: st.service, none: "Not sure" });
   };
   const drawShot = () => {
     const box = modal.querySelector<HTMLElement>("[data-shot]");
@@ -74,7 +87,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
       `<button type="button" class="bt-btn bt-btn--secondary" data-again>Report another</button><button type="button" class="bt-btn bt-btn--primary" data-see>See your report</button>`);
     burst(modal.querySelector<HTMLElement>("[data-done-art]"), { colors: ["var(--bt-ice)", "var(--bt-lamp)", "var(--bt-title)"], n: 20 });
     modal.querySelectorAll("[data-see]").forEach((b) => b.addEventListener("click", () => { m.close(); openReport(id); }));
-    modal.querySelector("[data-again]")?.addEventListener("click", () => { st.file = null; st.token = newToken(); st.priv = false; form({ page: "" }); });
+    modal.querySelector("[data-again]")?.addEventListener("click", () => { st.file = null; st.token = newToken(); st.priv = false; st.service = ""; st.serviceTouched = false; form({ page: "" }); });
   };
 
   modal.addEventListener("click", async (e) => {
@@ -99,7 +112,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     m.setDismissible(false);
     try {
       const blob = st.file ? await prepareShot(st.file) : null;
-      const res = await submit({ title: f.title.trim(), page: f.page.trim(), whatHappened: f.what.trim(), expected: f.exp.trim(), steps: f.steps.trim(), severity: st.severity as Severity, private: st.priv, device: st.deviceOn ? device : null, token: st.token }, blob);
+      const res = await submit({ title: f.title.trim(), page: f.page.trim(), whatHappened: f.what.trim(), expected: f.exp.trim(), steps: f.steps.trim(), severity: st.severity as Severity, private: st.priv, device: st.deviceOn ? device : null, token: st.token, ...(st.service ? { serviceId: st.service } : {}) }, blob);
       m.setDismissible(true);
       onSent(res.id);
       done(res.id, res.counted, res.shot);
@@ -121,6 +134,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     const t = e.target as HTMLInputElement;
     if (t.matches("[data-file]")) void setFile(t.files?.[0]);
     if (t.matches("[data-priv]")) st.priv = t.checked;
+    if (t.matches("#bz-f-svc")) { st.service = (t as unknown as HTMLSelectElement).value; st.serviceTouched = true; }
   });
   modal.addEventListener("dragover", (e) => { if ((e.target as Element).closest("[data-shot-pick]")) e.preventDefault(); });
   modal.addEventListener("drop", (e) => { const z = (e.target as Element).closest("[data-shot-pick]"); if (!z) return; e.preventDefault(); void setFile((e as DragEvent).dataTransfer?.files?.[0]); });

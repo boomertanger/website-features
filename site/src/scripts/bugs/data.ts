@@ -10,6 +10,7 @@ export interface By { uid: string; handle: string; name?: string }
 export interface HistoryItem { status?: Status; kind?: "note"; note?: string; changedBy?: { uid?: string; handle?: string }; changedAt: number }
 export interface Report {
   id: string; title: string; page: string; whatHappened: string; expected: string; steps: string; severity: Severity; status: Status; priority: Priority | null; duplicateOf: string | null;
+  /** The Service Hub service it is about (services/<id>.json), or null. */ serviceId: string | null;
   private: boolean; hidden: boolean; hiddenBy?: { uid?: string; handle?: string }; hiddenReason?: string; closed: boolean; by: By; meTooCount: number; threadCount: number; shotRef: string | null;
   statusHistory: HistoryItem[]; statusChangedAt: number; confirmedAt: number; fixedAt: number; closedAt: number; editedAt: number; editCount: number; createdAt: number; updatedAt: number;
 }
@@ -23,7 +24,7 @@ const col = (...p: string[]) => collection(db, "sites", SITE_ID, "bugs", "main",
 function toReport(id: string, d: any): Report {
   return {
     id, title: d.title || "", page: d.page || "", whatHappened: d.whatHappened || "", expected: d.expected || "", steps: d.steps || "", severity: d.severity || "minor", status: d.status || "open",
-    priority: d.priority || null, duplicateOf: d.duplicateOf || null, private: d.private === true, hidden: d.hidden === true, hiddenBy: d.hiddenBy, hiddenReason: d.hiddenReason, closed: d.closed === true,
+    priority: d.priority || null, duplicateOf: d.duplicateOf || null, serviceId: typeof d.serviceId === "string" && d.serviceId ? d.serviceId : null, private: d.private === true, hidden: d.hidden === true, hiddenBy: d.hiddenBy, hiddenReason: d.hiddenReason, closed: d.closed === true,
     by: d.by || { uid: "", handle: "" }, meTooCount: d.meTooCount || 0, threadCount: d.threadCount || 0, shotRef: d.shotRef || null,
     statusHistory: (d.statusHistory || []).map((h: any) => ({ ...h, changedAt: ms(h.changedAt) })),
     statusChangedAt: ms(d.statusChangedAt), confirmedAt: ms(d.confirmedAt), fixedAt: ms(d.fixedAt), closedAt: ms(d.closedAt), editedAt: ms(d.editedAt), editCount: d.editCount || 0, createdAt: ms(d.createdAt), updatedAt: ms(d.updatedAt),

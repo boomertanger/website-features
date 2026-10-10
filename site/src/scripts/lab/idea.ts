@@ -18,6 +18,7 @@ import { isAdmin, isStaff, canDelete, needOf, isPreview } from "./gate";
 import { esc, sBadge, pBadge, architect, tally, longDate, areaLabel, plural } from "./ui";
 import { handleVote } from "./vote";
 import { I } from "./art";
+import { loadServices, serviceSelectHtml, serviceTagHtml } from "../services-pick";
 
 type Done = () => void;
 let current: { id: string; close: () => void } | null = null;
@@ -40,7 +41,7 @@ function historyHtml(i: Idea) {
   }).join("")}</div>`;
 }
 
-const FIELD_LABEL: Record<string, string> = { title: "title", description: "description", area: "area" };
+const FIELD_LABEL: Record<string, string> = { serviceId: "what it's about", title: "title", description: "description", area: "area" };
 function logTitle(e: LogEntry): { label: string; note: string } {
   const keys = Object.keys(e.changes || {});
   if (e.action === "edit") return { label: `Edited ${keys.map((k) => FIELD_LABEL[k] || k).join(", ") || "the idea"}`, note: e.reason ? `Reason: ${e.reason}` : "" };
@@ -77,7 +78,7 @@ function dialogHtml(i: Idea, cmts: Comment[], log: LogEntry[], mayDelete: boolea
   const visible = cmts.filter((c) => !c.hidden).length;
   const edited = i.editedAt ? `<br><span class="bt-edited">${PENCIL_ICON}Edited by an admin on ${longDate(i.editedAt)}</span>` : "";
   const who = authorLink(i.by);
-  const sub = `<span class="bt-meta">Requested by ${who} on ${longDate(i.createdAt)} · ${areaLabel(i.area)}</span>${edited}`;
+  const sub = `<span class="bt-meta">Requested by ${who} on ${longDate(i.createdAt)} · ${areaLabel(i.area)}</span>${i.serviceId ? ` ${serviceTagHtml(i.serviceId)}` : ""}${edited}`;
   const tools = adminOn ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-edit aria-label="Edit">${I.pencil}<span class="bt-btn-label">Edit</span></button>` : "";
   const line = locked ? (i.status === "shipped" ? "Shipped. Voting is closed; the count stays as a thank-you." : "Voting is closed.")
     : need === "signedOut" ? "Join free to vote. Votes help decide what gets built next." : voted ? "You voted for this. Tap again to take it back." : "Want this too? Vote for it.";
@@ -110,6 +111,7 @@ export async function openIdea(id: string, onChange: Done = () => {}) {
     const fresh = await freshIdea(id);
     if (!fresh) { toast("This idea is no longer here.", { kind: "info" }); onChange(); m.close(); return false; }
     idea = fresh;
+    await loadServices({ preview: isPreview() });   // the service tag's name (Service Hub)
     [cmts, log, mayDelete] = await Promise.all([commentsOf(id).catch(() => cmts), isAdmin() ? logOf(id) : Promise.resolve([] as LogEntry[]), canDelete()]);
     return true;
   };
@@ -196,10 +198,12 @@ function openEdit(i: Idea, done: () => Promise<void>) {
     <div class="bt-field"><span class="bt-label">It's for</span><div class="bt-pills fl-area-pick" role="radiogroup" aria-label="Area">${(Object.keys(AREA) as Area[]).map((k) => `<button type="button" role="radio" aria-checked="${k === area}" class="${k === area ? "is-on" : ""}" data-subarea="${k}">${AREA[k]}</button>`).join("")}</div></div>
     <div class="bt-field"><label class="bt-label" for="fl-et">Title</label><input id="fl-et" class="bt-input" type="text" maxlength="200" value="${esc(i.title)}"></div>
     <div class="bt-field"><label class="bt-label" for="fl-ed">Description</label><textarea id="fl-ed" class="bt-textarea" rows="5" maxlength="2000">${esc(i.description)}</textarea></div>
+    <div data-svc-edit></div>
     <div class="bt-field"><label class="bt-label" for="fl-er">Reason (optional, logged)</label><input id="fl-er" class="bt-input" type="text" maxlength="300" placeholder="Fixed a typo"></div>
     <p class="bt-error" hidden data-err></p>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--admin" data-go>Save edit</button></div>` });
   const q = <T extends HTMLElement>(s: string) => m.modal.querySelector<T>(s)!;
+  void loadServices({ preview: isPreview() }).then((list) => { const slot = m.modal.querySelector<HTMLElement>("[data-svc-edit]"); if (slot && list.length) slot.innerHTML = serviceSelectHtml({ id: "fl-esvc", label: "About", list, value: i.serviceId || "", none: "Not about one thing" }); });
   m.modal.addEventListener("click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-subarea]");
     if (!b) return;
@@ -208,8 +212,8 @@ function openEdit(i: Idea, done: () => Promise<void>) {
   });
   q<HTMLButtonElement>("[data-go]").addEventListener("click", async (e) => {
     const btn = e.currentTarget as HTMLButtonElement, err = q("[data-err]");
-    const now = { title: q<HTMLInputElement>("#fl-et").value.trim(), description: q<HTMLTextAreaElement>("#fl-ed").value.trim(), area };
-    const was = { title: i.title, description: i.description, area: i.area };
+    const now = { title: q<HTMLInputElement>("#fl-et").value.trim(), description: q<HTMLTextAreaElement>("#fl-ed").value.trim(), area, serviceId: m.modal.querySelector<HTMLSelectElement>("#fl-esvc")?.value ?? (i.serviceId || "") };
+    const was = { title: i.title, description: i.description, area: i.area, serviceId: i.serviceId || "" };
     const changes: Record<string, string> = {}, before: Record<string, string> = {};
     (Object.keys(now) as (keyof typeof now)[]).forEach((k) => { if (now[k] !== was[k]) { changes[k] = now[k]; before[k] = was[k]; } });
     if (!Object.keys(changes).length) { err.textContent = "Nothing was changed."; err.hidden = false; return; }

@@ -19,6 +19,7 @@ import { isAdmin, isStaff, canDelete, needOf, isPreview } from "./gate";
 import { esc, sevBadge, prioBadge, statusBadge, privTag, hiddenTag, bugFinder, mine, insider, tally, longDate, plural, visible } from "./ui";
 import { handleBite } from "./bite";
 import { I, LINK, LOCK } from "./art";
+import { loadServices, serviceSelectHtml, serviceTagHtml } from "../services-pick";
 
 type Done = () => void;
 let current: { id: string; close: () => void } | null = null;
@@ -42,7 +43,7 @@ function historyHtml(r: Report) {
   }).join("")}</div>`;
 }
 
-const LOG_LABEL: Record<string, string> = { title: "title", whatHappened: "what happened", expected: "what should have happened", steps: "steps", page: "page", severity: "how bad" };
+const LOG_LABEL: Record<string, string> = { title: "title", whatHappened: "what happened", expected: "what should have happened", steps: "steps", page: "page", severity: "how bad", serviceId: "part of the site" };
 function logTitle(e: LogEntry): { label: string; note: string } {
   const keys = Object.keys(e.changes || {});
   if (e.action === "edit") return { label: e.details?.removedShot ? "Removed the screenshot" + (keys.length ? ` and edited ${keys.map((k) => LOG_LABEL[k] || k).join(", ")}` : "") : `Edited ${keys.map((k) => LOG_LABEL[k] || k).join(", ") || "the report"}`, note: e.reason ? `Reason: ${e.reason}` : "" };
@@ -121,7 +122,7 @@ function dialogHtml(r: Report, c: Ctx) {
   const staff = isStaff(), adminOn = isAdmin();
   const tools = adminOn ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-edit aria-label="Edit">${I.pencil}<span class="bt-btn-label">Edit</span></button>` : "";
   const edited = r.editedAt ? `<br><span class="bt-edited">${I.pencil}Edited by an admin on ${longDate(r.editedAt)}</span>` : "";
-  const sub = `Reported by ${authorLink(r.by)} on ${longDate(r.createdAt)} · <span class="bz-page-ref">${LINK}${esc(r.page)}</span>${edited}`;
+  const sub = `Reported by ${authorLink(r.by)} on ${longDate(r.createdAt)} · <span class="bz-page-ref">${LINK}${esc(r.page)}</span>${r.serviceId ? ` ${serviceTagHtml(r.serviceId)}` : ""}${edited}`;
   const dup = r.duplicateOf ? (c.dup && visible(c.dup) && !c.dup.private ? `<div class="bz-dup">${LINK.replace("<svg", '<svg width="16" height="16"')}<span>Duplicate of <a href="/bug-zapper?report=${esc(c.dup.id)}" data-open-report="${esc(c.dup.id)}">${esc(c.dup.title)}</a></span>${statusBadge(c.dup.status)}</div>` : `<div class="bz-dup">${LINK.replace("<svg", '<svg width="16" height="16"')}<span>This one is linked to a report the team is already on.</span></div>`) : "";
   const bars = [
     r.hidden && staff ? `<div class="bz-hiddenbar">${I.eyeOff}<p>Hidden by @${esc(r.hiddenBy?.handle || "a mod")}${r.hiddenReason ? `: ${esc(r.hiddenReason)}` : ""}. Only staff see this.</p><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-hide-report data-hidden="true">Unhide</button></div>` : "",
@@ -162,6 +163,7 @@ export async function openReport(id: string, onChange: Done = () => {}) {
     if (!fresh || !visible(fresh)) { toast("This report isn't here anymore.", { kind: "info" }); onChange(); m.close(); return false; }
     report = fresh;
     const ins = insider(fresh);
+    await loadServices({ preview: isPreview() });   // the service tag's name (Service Hub)
     const [thread, info, log, mayDelete] = await Promise.all([ins ? threadOf(id) : Promise.resolve([] as Reply[]), ins ? infoOf(id) : Promise.resolve({ device: null, shot: null } as Info), isAdmin() ? logOf(id) : Promise.resolve([] as LogEntry[]), canDelete()]);
     ctx = { ...ctx, thread, info, log, mayDelete, dup: fresh.duplicateOf ? (byId(fresh.duplicateOf) || (await freshReport(fresh.duplicateOf))) : null };
     if (ins && fresh.shotRef && !ctx.link) { shotLink(id).then((u) => { ctx.link = u; if (!closed) draw(); }).catch(() => {}); }
@@ -277,6 +279,7 @@ function openEdit(r: Report, done: () => Promise<void>) {
   const m = openModal({ title: "Edit report", feature: "bug-zapper", content: `${modalHeader("Edit report", "Fix typos and details, or correct how bad it is. The change is marked on the report and logged under Admin activity.")}
     <div class="bt-field"><label class="bt-label" for="bz-et">Name</label><input id="bz-et" class="bt-input" type="text" maxlength="200" value="${esc(r.title)}"></div>
     <div class="bt-field"><label class="bt-label" for="bz-ep">Page or feature</label><input id="bz-ep" class="bt-input" type="text" maxlength="300" value="${esc(r.page)}"></div>
+    <div data-svc-edit></div>
     <div class="bt-field"><label class="bt-label" for="bz-ew">What happened</label><textarea id="bz-ew" class="bt-textarea" rows="4" maxlength="2000">${esc(r.whatHappened)}</textarea></div>
     <div class="bt-field"><label class="bt-label" for="bz-ex">What should have happened</label><textarea id="bz-ex" class="bt-textarea" rows="2" maxlength="2000">${esc(r.expected)}</textarea></div>
     <div class="bt-field"><label class="bt-label" for="bz-es">Steps</label><textarea id="bz-es" class="bt-textarea" rows="3" maxlength="2000">${esc(r.steps)}</textarea></div>
@@ -286,6 +289,7 @@ function openEdit(r: Report, done: () => Promise<void>) {
     <p class="bt-error" hidden data-err></p>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--admin" data-go>Save edit</button></div>` });
   const q = <T extends HTMLElement>(s: string) => m.modal.querySelector<T>(s)!;
+  void loadServices({ preview: isPreview() }).then((list) => { const slot = m.modal.querySelector<HTMLElement>("[data-svc-edit]"); if (slot && list.length) slot.innerHTML = serviceSelectHtml({ id: "bz-esvc", label: "Which part of the site?", list, value: r.serviceId || "", none: "Not sure" }); });
   m.modal.addEventListener("click", (e) => {
     const b = (e.target as Element).closest<HTMLElement>("[data-sev-pick]");
     if (!b) return;
@@ -294,8 +298,8 @@ function openEdit(r: Report, done: () => Promise<void>) {
   });
   q<HTMLButtonElement>("[data-go]").addEventListener("click", async (e) => {
     const btn = e.currentTarget as HTMLButtonElement, err = q("[data-err]");
-    const now: Record<string, string> = { title: q<HTMLInputElement>("#bz-et").value.trim(), page: q<HTMLInputElement>("#bz-ep").value.trim(), whatHappened: q<HTMLTextAreaElement>("#bz-ew").value.trim(), expected: q<HTMLTextAreaElement>("#bz-ex").value.trim(), steps: q<HTMLTextAreaElement>("#bz-es").value.trim(), severity };
-    const was: Record<string, string> = { title: r.title, page: r.page, whatHappened: r.whatHappened, expected: r.expected, steps: r.steps, severity: r.severity };
+    const now: Record<string, string> = { title: q<HTMLInputElement>("#bz-et").value.trim(), page: q<HTMLInputElement>("#bz-ep").value.trim(), whatHappened: q<HTMLTextAreaElement>("#bz-ew").value.trim(), expected: q<HTMLTextAreaElement>("#bz-ex").value.trim(), steps: q<HTMLTextAreaElement>("#bz-es").value.trim(), severity, serviceId: m.modal.querySelector<HTMLSelectElement>("#bz-esvc")?.value ?? (r.serviceId || "") };
+    const was: Record<string, string> = { title: r.title, page: r.page, whatHappened: r.whatHappened, expected: r.expected, steps: r.steps, severity: r.severity, serviceId: r.serviceId || "" };
     const changes: Record<string, string> = {}, before: Record<string, string> = {};
     Object.keys(now).forEach((k) => { if (now[k] !== was[k]) { changes[k] = now[k]; before[k] = was[k]; } });
     const removeShot = !!m.modal.querySelector<HTMLInputElement>("[data-remove-shot]")?.checked;
