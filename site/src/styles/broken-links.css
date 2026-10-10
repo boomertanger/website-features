@@ -1,0 +1,10 @@
+/* site/src/styles/broken-links.css — the /admin Broken links card (docs/specs/not-found.md "Data"; scripts/admin/broken-links-card.ts). Prefix bl-.
+   The card is the kit's .bt-admin-panel with the Admin only tag and a .bt-table; this file only sizes the columns and the empty state's mascot. Tokens only. */
+.bt-root:not(#_) .bl-admin-card .bl-head { display: flex; align-items: center; justify-content: space-between; gap: var(--bt-space-3); flex-wrap: wrap; }
+.bt-root:not(#_) .bl-admin-card .bl-path { white-space: normal; word-break: break-all; }
+.bt-root:not(#_) .bl-admin-card :is(.bl-n, .bl-when) { white-space: nowrap; }
+.bt-root:not(#_) .bl-admin-card .bl-n { font-weight: 700; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bl-admin-card .bl-from { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bl-admin-card .bl-act { text-align: right; }
+.bt-root:not(#_) .bl-admin-card .bl-act .bt-btn { white-space: nowrap; gap: var(--bt-space-2); }
+.bt-root:not(#_) .bl-admin-card .bl-empty .bt-mascot { width: 72px; }

@@ -10,6 +10,9 @@ import TrophyOrder from "../components/trophies/TrophyOrder.astro";
 import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
 import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
 import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
+import "../styles/broken-links.css";  // the Broken links card (.bl-admin-card; docs/specs/not-found.md)
+import Mascot from "../components/Mascot.astro";
+import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
 ---
 <BaseLayout title="Admin tools" noindex>
   <ComingSoon title="Admin tools" lead="Member management and role controls.">
@@ -75,6 +78,14 @@ import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
       <div class="bt-card-head"><h2 class="bt-card-title">Cloud Stash</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
       <div data-stash-body><div class="bt-skeleton" style="height:44px"></div></div>
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/stash">Open Cloud Stash</a></div>
+    </div>
+  </div>
+  <div class="bt-zone" data-bl-card hidden>
+    <div class="bt-admin-panel bl-admin-card">
+      <div class="bl-head"><h2 class="bt-card-title">Broken links</h2><span class="bt-admin-tag"><Fragment set:html={SHIELD_ICON} />Admin only</span></div>
+      <p class="bt-meta">Addresses people reported from the 404 page, most reported first. Fix or redirect them (public/_redirects), then mark them fixed.</p>
+      <div data-bl-body><div class="bt-skeleton" style="height:44px"></div></div>
+      <div class="bt-empty bt-empty--compact bl-empty" data-bl-empty hidden><Mascot decorative /><p class="bt-empty-title">No broken links reported.</p></div>
     </div>
   </div>
   <div class="bt-zone" data-ff-link hidden>
@@ -167,6 +178,7 @@ import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
   import "../scripts/admin/bugs-card";
   import "../scripts/admin/hotline-card";
   import "../scripts/admin/stash-card";
+  import "../scripts/admin/broken-links-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";

@@ -515,6 +515,13 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
+      // Broken links reported from the 404 page (docs/specs/not-found.md "Data"): written ONLY by reportBrokenLink and
+      // brokenLinkFix (functions/lib/brokenLinks). The /admin card reads them; no client writes.
+      match /brokenLinks/{id} {
+        allow read: if isSiteOwner(siteId) || hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+
       // ---------- Growth collector (docs/specs/growth-collector.md) ----------
       // Written ONLY by Cloud Functions (functions/lib/growth). The daily history is
       // for site admins; the footer's summary (public/socials) is public. TikTok

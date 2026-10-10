@@ -134,7 +134,10 @@ function initReport(root, path) {
   });
 }
 
-/** Sends the path (and the referrer; the server keeps only its host). Wired to reportBrokenLink in part 5. */
-async function sendReport(_path) {
-  throw new Error("not wired yet");
+/** Sends the path and the referrer (reportBrokenLink: the server strips the query and hash again and keeps only the referrer's host). */
+async function sendReport(path) {
+  const { call } = await import("../../lib/call");
+  let referrer = "";
+  try { referrer = document.referrer ? new URL(document.referrer).origin : ""; } catch { /* none */ }   // only ever the origin leaves the page
+  await call("reportBrokenLink", { path, referrer });
 }
