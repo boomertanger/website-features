@@ -2,6 +2,8 @@
 // game loads. Drawn from the approved prototype; every colour is a --tts-*
 // feature property declared once at the top of tap-the-splat.css.
 
+import { FIREFLY_SVG } from "../../../../shared/ui/firefly.js";
+
 const f = (fill, stroke, sw) => `style="fill:var(--tts-${fill})${stroke ? `;stroke:var(--tts-${stroke})` : ""}"${sw ? ` stroke-width="${sw}"` : ""}`;
 
 // The fuse ends at the bomb's cap (bottom-right corner of the viewBox).
@@ -17,7 +19,8 @@ const HAMMER = `<svg viewBox="0 0 40 40" aria-hidden="true"><rect x="17" y="12" 
 
 const CUTTERS = `<svg viewBox="0 0 40 40" aria-hidden="true"><g class="jaw1"><path d="M20 20 L6 11 L3 14 L18 22z" ${f("jaw", "jaw-edge", "1")}/></g><g class="jaw2"><path d="M20 20 L6 29 L3 26 L18 18z" ${f("jaw-2", "jaw-edge", "1")}/></g><path d="M20 19 C 26 16, 32 10, 37 9 L38 12 C 33 14, 27 19, 22 21z" ${f("grip", "grip-edge", "1")}/><path d="M20 21 C 26 24, 32 30, 37 31 L38 28 C 33 26, 27 21, 22 19z" ${f("grip-2", "grip-edge", "1")}/><circle cx="20" cy="20" r="2.4" ${f("pivot", "jaw-edge", "1")}/></svg>`;
 
-export const FIREFLY = `<svg viewBox="0 0 26 26" aria-hidden="true"><ellipse class="wing" cx="10" cy="9" rx="5" ry="3.5" ${f("ff-wing")}/><ellipse class="wing" cx="15" cy="9" rx="5" ry="3.5" ${f("ff-wing")} opacity=".85"/><ellipse cx="12" cy="14" rx="4" ry="5" ${f("ff-body")}/><ellipse cx="11" cy="18.5" rx="3.6" ry="3.4" ${f("ff-light")}/><circle cx="16.5" cy="11" r="2.6" ${f("ff-head")}/></svg>`;
+// The firefly is the kit's drawing (shared/ui/firefly.js, coloured by the --bt-firefly-* tokens); the game keeps its own wrapper and motion (.bt-tts-bug).
+export const FIREFLY = FIREFLY_SVG;
 
 const BREAKER = `<svg viewBox="0 0 34 48" aria-hidden="true"><rect x="1" y="1" width="32" height="46" rx="4" ${f("box", "box-edge", "1.2")}/><rect x="7" y="8" width="20" height="30" rx="3" ${f("box-slot", "box-slot-edge", "1")}/><g class="lever"><rect x="12" y="10" width="10" height="14" rx="2.5" ${f("lever", "lever-edge", "1")}/></g><circle class="led" cx="17" cy="42" r="2"/><text x="17" y="35" font-size="5" text-anchor="middle" font-family="monospace" ${f("lever-edge")}>ON</text></svg>`;
 

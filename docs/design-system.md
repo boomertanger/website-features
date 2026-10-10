@@ -1009,6 +1009,9 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
   - `.bt-choices--two`: two options side by side with the OR badge (`.bt-choice-or`), stacked at 420 px.
   - Wording options: `unit` ("pick" → "12 picks"), `mark` (the correct option's note: "it happened", or "the winner" in the two-option layout) and `mineLabel` ("✓ Your pick", or "✓" in the two-option layout). Hot Seat's vote passes "vote", "the winner" and "✓ Your vote".
 
+### Firefly (.bt-firefly)
+**`.bt-firefly`** (`shared/ui/firefly.js` `FIREFLY_SVG`; tokens `--bt-firefly` (the lamp), `--bt-firefly-shell`, `--bt-firefly-head`, `--bt-firefly-wing`): the firefly from the Tap the Splat footer game, now a kit piece shared with the 404 page's workshop (`docs/specs/not-found.md`). The drawing's parts (`.ff-wing`, `.ff-shell`, `.ff-head`, `.ff-lamp`) take the tokens anywhere; inside `.bt-firefly` (30 px, `position: absolute`, `pointer-events: none`, moved with `transform`) it gets the glow, the wing flap and the pulsing lamp. Reduced motion: no flap, no pulse. The footer game keeps its own wrapper (`.bt-tts-bug`, faster flap) around the same drawing. UI Kit section "Firefly".
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -1048,6 +1051,7 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 | `crew-notes.js` | `crewNotesHtml`, `initCrewNotes`, `NOTE_MAX`: `.bt-crew-notes` (not `.bt-notes`) |
 | `cue-card.js` | `cueCardHtml`, `cueEmptyHtml`, `initCueCards`: `.bt-cue-card` for Chat Games cues |
 | `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` · `choicesHtml`, `choiceHtml` (Chat Games pieces, §5) |
+| `firefly.js` | `FIREFLY_SVG`: the firefly drawing (§5 "Firefly") |
 | `chatgames.js` | `initChatGames({ call, toast, mascotHtml })` → `window.btChatGames = { openLaunch, end, mountPlay, mountScene, mountRun }`, `registerFormat(formatId, { launch, play, scene, run, waiting })`: Chat Games' one entry point (§8w) |
 | `swap.js` | `swapRowHtml({ id, dow, day, chat, role, roomName, note, state, actionLabel })`, `swapsHtml(rows)`: the `.bt-swap` row (state `open`, `taken` or `mine`) and its `.bt-swaps` wrapper (text escaped) |
 | `day-picker.js` | `dayPickerHtml({ days, selected, label, disabled })`, `initDayPicker(root, { onChange(selected, key) })`, `dayPickerValue(picker)`, `DAYS` |
@@ -1736,3 +1740,7 @@ Questions and every live game as one service (spec `docs/specs/chat-games.md`, c
 - **How Chat Games work** is its own story page, `/live/chat-games`, with hero **H2 Live wall** (a tap on the phone's Play panel, the split on stream, +3 XP; one still frame under reduced motion). It's in the Play nav group; every Try it works signed out with local state only.
 - **Live listeners, never polling.** Live pages follow a run with listeners (`site/src/scripts/live/cg-watch.ts`: `watchDoc`, `watchQuery`; one listener per document per tab, let go after a minute hidden): the run doc and the current round (or question) doc only. Anything else is a one-off read when a watched doc changes. The stream view reads `obsFeed`, never Firestore.
 - **One entry point.** Pages call only `window.btChatGames` (`shared/ui/chatgames.js`); each format registers its launch dialog, Play panel, stream view scene, run panel and (Predictions) Waiting panel with `registerFormat`. `/live/control` and the Mod Deck mount the same run panels (`mountRun`).
+
+### 8x. 404 page (the workshop)
+The 404 page (spec `docs/specs/not-found.md`, confirmed Oct 9, 2026; mockup `not-found-workshop.html`, level 4 "Don't stay", Glow Bright core, Light 2 Dim). **Recorded decisions:**
+- **Firefly is a kit component; lamp yellow-green is not admin green.** The firefly is `.bt-firefly` with `FIREFLY_SVG` and the `--bt-firefly*` tokens (§5), shared by the Tap the Splat footer game and the 404 workshop; neither keeps its own copy. Its lamp colour (`--bt-firefly`) is a light source in the art, never a status: admin green (`--bt-admin`) keeps meaning "admin", and purple keeps meaning "clickable".

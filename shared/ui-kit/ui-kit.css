@@ -155,3 +155,9 @@
 /* Choice (kit-choice.js) */
 #bt-ui-kit .kit-choice-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bt-space-4); }
 @container bt (max-width: 640px) { #bt-ui-kit .kit-choice-grid { grid-template-columns: minmax(0, 1fr); } }
+/* Firefly (kit-firefly.js) */
+#bt-ui-kit .kit-ff-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--bt-space-4); align-items: center; }
+#bt-ui-kit .kit-ff-stage { position: relative; height: 160px; border-radius: var(--bt-radius-md); background: var(--bt-footer-bg); border: 1px solid var(--bt-border); overflow: hidden; }
+#bt-ui-kit .kit-ff-big { width: 104px; height: 104px; }
+#bt-ui-kit .kit-ff-big svg { width: 100%; height: 100%; }
+@container bt (max-width: 640px) { #bt-ui-kit .kit-ff-row { grid-template-columns: minmax(0, 1fr); } }

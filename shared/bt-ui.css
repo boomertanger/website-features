@@ -2017,6 +2017,12 @@
   --bt-rank-bronze: var(--bt-rank-3);
   --bt-lamp: #ffd400;
   --bt-lamp-rgb: 255, 212, 0;
+  /* The firefly (.bt-firefly, shared/ui/firefly.js; the Tap the Splat footer game and the 404 workshop): its lamp is a yellow-green
+     light, never a status colour and never admin green (design-system.md §8). */
+  --bt-firefly: #d9ff4d;
+  --bt-firefly-shell: #3b2b1a;
+  --bt-firefly-head: #2a1d10;
+  --bt-firefly-wing: rgba(230, 255, 200, 0.34);
   --bt-game-spot: rgba(var(--bt-blood-rgb), 0.14);
   /* The version cycle's eight stage colours (.bt-cycle-wheel, palette 1 "Spectrum" in
      docs/design/mockups/how-it-works-sections-2-3.html): hot to cool, decorative only, never
@@ -5268,3 +5274,22 @@
   .bt-root:not(#_) .bt-choice:hover:not(:disabled) { transform: none; }
 }
 /* ================= END .bt-choice ================= */
+
+/* ================= .bt-firefly — the firefly (shared/ui/firefly.js FIREFLY_SVG; docs/specs/not-found.md; design-system.md §5) =================
+   A 30 px firefly with its glow, flapping wings and a pulsing lamp. The page moves it (transform on .bt-firefly); it never takes the pointer.
+   The SVG's parts take the kit tokens through .ff-wing, .ff-shell, .ff-head and .ff-lamp, so the footer game's own wrapper can reuse them.
+   Reduced motion: no flap, no pulse. */
+.bt-root:not(#_) .bt-firefly { position: absolute; left: 0; top: 0; width: 30px; height: 30px; pointer-events: none; will-change: transform; }
+.bt-root:not(#_) .bt-firefly svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 6px var(--bt-firefly)) drop-shadow(0 0 16px color-mix(in srgb, var(--bt-firefly) 60%, transparent)); }
+.bt-root:not(#_) .ff-wing { fill: var(--bt-firefly-wing); }
+.bt-root:not(#_) .ff-shell { fill: var(--bt-firefly-shell); }
+.bt-root:not(#_) .ff-head { fill: var(--bt-firefly-head); }
+.bt-root:not(#_) .ff-lamp { fill: var(--bt-firefly); }
+.bt-root:not(#_) .bt-firefly .ff-wing { transform-box: fill-box; transform-origin: 50% 100%; animation: bt-ff-flap 110ms linear infinite alternate; }
+.bt-root:not(#_) .bt-firefly::after { content: ""; position: absolute; left: 30%; top: 55%; width: 10px; height: 10px; border-radius: 50%; background: var(--bt-firefly); filter: blur(6px); opacity: 0.7; animation: bt-ff-pulse 900ms ease-in-out infinite; }
+@keyframes bt-ff-flap { from { transform: scaleY(1); } to { transform: scaleY(0.45); } }
+@keyframes bt-ff-pulse { 0%, 100% { opacity: 0.45; transform: scale(0.85); } 50% { opacity: 0.9; transform: scale(1.2); } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-firefly .ff-wing, .bt-root:not(#_) .bt-firefly::after { animation: none; }
+}
+/* ================= END .bt-firefly ================= */
