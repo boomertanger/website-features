@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 3d: 12 Community badges (First Verdict, Critic I-IV, Full Coverage, Tester I-III, Vault Critic I-III), the Night Shift services type and ratings switched on, Mod Machina system tasks (createSystemTask; 15 and 10 Gears), rating and testing need a verified email, and the Accounts 2b deletion line.
 Service Hub part 3c: firestore.rules for services/main (admins read items, ratings, tests and the summary; a member reads their own ratings, tests and my/{uid}; no client writes), checked in check-services-fn.js.
 Service Hub part 3b: serviceRate, serviceTest, serviceSync, serviceAdmin, the rating, test, Arcade game, Vault game and ended-stream triggers (lib/services), and scripts/sync-services.js.
 Service Hub part 3a: lib/services/logic.js (popularity, core services, versions, video and test states, coverage, ratings, tests, manifest sync plan, badge ladders) and check-services-fn.js in npm run check.

@@ -176,9 +176,13 @@ const SITE = "sites/boomertanger", BASE = `${SITE}/services/main`;
 let clock = Date.UTC(2026, 9, 20, 15, 0);
 const logs = [];
 const adminLogEntry = async (_d, f) => { logs.push(f); return { ...f, createdAt: realFs.Timestamp.now() }; };
-const hub = require("../lib/services").build({ adminLogEntry, now: () => clock });
+const nsEvents = [], badgeCalls = [];
+const fakeFactory = { recordFactoryEvent: async (uid, type, params, ref, opts) => { nsEvents.push({ uid, type, params, ref, opts }); return { counted: true }; } };
+const ledger = new Set();
+const fakeGrant = { grantBadge: async (uid, id, o) => { badgeCalls.push({ uid, id, ...o }); const k = `${uid}:${id}`; if (ledger.has(k)) return { granted: false, reason: "paid" }; ledger.add(k); return { granted: true }; } };
+const hub = require("../lib/services").build({ adminLogEntry, now: () => clock, grant: fakeGrant, factory: fakeFactory });
 const fns = hub.functions;
-const call = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: { email_verified: true } } : undefined, data });
+const call = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: { email_verified: uid !== "unver" } } : undefined, data });
 const why = async (p) => { try { await p; return "ok"; } catch (e) { return (e.details && e.details.reason) || e.code || e.message; } };
 const get = async (p) => { const s = await wdb.doc(p).get(); return s.exists ? s.data() : null; };
 const { readManifests } = require("./sync-services");
@@ -187,7 +191,7 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
 
 (async () => {
   await wdb.doc(SITE).set({ ownerUid: "boss" });
-  for (const [uid, roles, handle] of [["boss", ["admin"], "boomertanger"], ["adm", ["admin"], "adm"], ["mod", ["mod"], "modd"], ["fan", [], "fan"], ["fan2", [], "fan2"], ["nohandle", [], null]]) {
+  for (const [uid, roles, handle] of [["boss", ["admin"], "boomertanger"], ["adm", ["admin"], "adm"], ["mod", ["mod"], "modd"], ["fan", [], "fan"], ["fan2", [], "fan2"], ["nohandle", [], null], ["unver", [], "unver"]]) {
     await wdb.doc(`${SITE}/members/${uid}`).set({ roles });
     if (handle) await wdb.doc(`${SITE}/profiles/${uid}`).set({ handle, displayName: handle });
   }
@@ -208,6 +212,8 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   const pub = (await get(`${SITE}/public/services`)).services;
   assert.ok(pub.some((p) => p.id === "bug-zapper") && !pub.some((p) => p.type === "adminTool"), "public/services: member-safe rows, no admin tools");
   assert.ok(!pub.some((p) => "ratings" in p), "no counts in public");
+  const taskCount = async () => (await wdb.collection("sites/boomertanger/crew/main/tasks").get()).size;
+  assert.equal(await taskCount(), 0, "the first sync posts no Test task (new items, not version bumps)");
   const sum = await get(`${BASE}/summary/main`);
   assert.equal(Object.keys(sum.rows).length, list.length, "one summary row per service");
   assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === "sync"), "adminLog serviceHub sync");
@@ -233,10 +239,14 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal(tts.version, "2.0", "a new Arcade version bumps the service");
   assert.ok(tts.versionHistory.some((h) => h.version === "2.0"));
   assert.equal((await hub.syncManifests(edited, { buildHash: "a".repeat(64), apply: false })).bump.length, 0, "the manifest's 1.0 doesn't undo the game's 2.0");
+  const before = await taskCount();
+  await hub.onArcadeGame("newGame", null, { title: "New Game", slug: "new-game", status: "live", currentVersion: "v3" });
+  assert.equal(await taskCount(), before, "a new live Arcade game posts no Test task");
   await hub.onArcadeGame("splatRush", null, { title: "Splat Rush", slug: "splat-rush", status: "draft", currentVersion: "v1" });
   assert.equal((await get(`${BASE}/items/splat-rush`)).status, "building", "a game that isn't live is building");
   // a Vault game: one item per non-hidden game; hidden retires it
   await hub.onVaultGame("silent-hill-2", null, { title: "Silent Hill 2", hidden: false });
+  assert.equal(await taskCount(), before, "a new Vault game posts no Test task");
   assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).type, "vaultGame");
   assert.deepEqual(await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: false, editCount: 1 }, { title: "Silent Hill 2", hidden: false, editCount: 2 }), { skipped: true });
   await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: false }, { title: "Silent Hill 2", hidden: true });
@@ -253,6 +263,9 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   // ---------- serviceRate ----------
   assert.equal(await why(call(null, "serviceRate", { serviceId: "bug-zapper", value: "love" })), "signedOut");
   assert.equal(await why(call("nohandle", "serviceRate", { serviceId: "bug-zapper", value: "love" })), "needsSignup", "signed-up members only");
+  assert.equal(await why(call("unver", "serviceRate", { serviceId: "bug-zapper", value: "love" })), "emailNotVerified", "a verified email, as Feature Lab");
+  assert.equal(await why(call("unver", "serviceTest", { serviceId: "bug-zapper", device: "phone", results: [] })), "emailNotVerified", "testing too");
+  assert.equal(await why(call("nohandle", "serviceTest", { serviceId: "bug-zapper", device: "phone", results: [] })), "needsSignup");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "nope", value: "love" })), "noService");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "bug-zapper", value: "dislike" })), "commentNeeded");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "crew-admin", value: "like" })), "adminTool", "admin tools aren't rated");
@@ -328,6 +341,43 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   for (const a of ["markTested", "linkVideo", "setCoversVersion", "hideComment", "hide", "retire"]) assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === a), `adminLog ${a}`);
 
 
+
+  // ---------- hooks: badges, Night Shift, crew tasks ----------
+  const paidTo = (uid) => badgeCalls.filter((b) => b.uid === uid && ledger.has(`${uid}:${b.id}`)).map((b) => b.id);
+  assert.ok(paidTo("fan").includes("services-first-rating"), "First Verdict on the first rating");
+  assert.ok(badgeCalls.every((b) => b.feature === "serviceHub" && b.ref === `badge-${b.id}`), "keyed: feature serviceHub, ref badge-<id>");
+  assert.equal(badgeCalls.filter((b) => b.uid === "fan" && b.id === "services-first-rating").length, 1, "my/{uid}.badges stops a second ask");
+  assert.deepEqual((await get(`${BASE}/my/fan`)).badges["services-first-rating"], true);
+  const rateEvents = nsEvents.filter((e) => e.type === "services" && e.params.action === "rate");
+  assert.ok(rateEvents.some((e) => e.uid === "fan" && e.params.serviceId === "bug-zapper" && e.params.type === "feature" && e.ref === "rate:bug-zapper" && e.opts.keep === true), "Night Shift services rate, once per service");
+  assert.equal(rateEvents.filter((e) => e.uid === "fan" && e.params.serviceId === "bug-zapper").length, 1, "changing a rating is not a new rate event");
+  assert.ok(nsEvents.some((e) => e.type === "services" && e.params.action === "test" && e.uid === "fan" && e.ref === "test:bug-zapper:1.1"), "Night Shift services test");
+  assert.ok(badgeCalls.some((b) => b.uid === "fan" && b.id === "services-tester-1"), "Tester I on the first counted test");
+  // a Vault game's rating also counts for Rate a game
+  await hub.onVaultGame("outlast", null, { title: "Outlast", hidden: false });
+  await rateAs("fan", { serviceId: "vault-outlast", value: "love" });
+  assert.ok(nsEvents.some((e) => e.type === "ratings" && e.params.action === "rate" && e.params.gameId === "outlast" && e.ref === "outlast"), "Night Shift ratings (Rate a game)");
+  // Full Coverage: every core service open to you rated
+  const H = require("../lib/services/hooks").makeHooks({ db: wdb, grant: fakeGrant, factory: fakeFactory });
+  const fc = await H.afterRating({ rating: { uid: "fan2", serviceId: "b", type: "feature" }, first: true, rated: { a: { value: "like" }, b: { value: "love" } }, coreIds: ["a", "b"] });
+  assert.ok(fc.full && fc.paid.includes("services-full-coverage"), "Full Coverage when every core service is rated");
+  assert.ok(nsEvents.some((e) => e.uid === "fan2" && e.params.action === "rateAll" && e.ref === "rateAll"), "Night Shift rateAll");
+  assert.ok(!(await H.afterRating({ rating: { uid: "fan2", serviceId: "c" }, first: true, rated: { a: {}, c: {} }, coreIds: ["a", "b", "c"] })).full, "a new core service is not full coverage, and the badge stays paid");
+  assert.equal(badgeCalls.filter((b) => b.uid === "fan2" && b.id === "services-full-coverage").length, 1, "paid once");
+  // crew tasks: a version bump of a live service, and a member test with problems (once per service version)
+  const tasks = Object.fromEntries((await wdb.collection("sites/boomertanger/crew/main/tasks").get()).docs.map((d) => [d.id, d.data()]));
+  assert.equal(tasks["sys-test-bug-zapper-1.1"].title, "Test v1.1 of Bug Zapper on phone and desktop");
+  assert.equal(tasks["sys-test-tap-the-splat-2.0"].title, "Test v2.0 of Tap the Splat on phone and desktop");
+  assert.equal(tasks["sys-problems-bug-zapper-1.1"].title, "Check the problems members found on Bug Zapper");
+  assert.deepEqual([tasks["sys-test-bug-zapper-1.1"].gears, tasks["sys-problems-bug-zapper-1.1"].gears], [15, 10], "the default Gears");
+  assert.ok(Object.values(tasks).every((t) => t.postedBy === "system" && t.status === "open" && t.system === true));
+  assert.ok(!Object.keys(tasks).some((k) => k.includes("splat-rush")), "a game that is not live posts no test task");
+  assert.deepEqual(await H.onBumps([{ id: "bug-zapper", from: "1.1", to: "1.0", name: "Bug Zapper" }, { id: "x", from: null, to: "1.0", name: "X" }]), [], "a version going down, or no earlier version, posts nothing");
+  const again = await require("../lib/crew/tasks").createSystemTask(wdb, { key: "test-bug-zapper-1.1", kind: "test", title: "x" });
+  assert.equal(again.created, false, "a system task is once-only");
+  await wdb.doc("sites/boomertanger/crew/main").set({ serviceTaskGears: { test: 25 } }, { merge: true });
+  assert.equal((await require("../lib/crew/tasks").createSystemTask(wdb, { key: "test-x-1.0", kind: "test", title: "x" })).gears, 25, "crew settings can set the Gears");
+
   // ---------- rules (the text of firestore.rules) ----------
   {
     const path = require("path");
@@ -345,6 +395,6 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
     assert.equal(reads.filter((r) => r === "hasSiteRole(siteId, 'admin') || (request.auth != null && resource.data.uid == request.auth.uid)").length, 2, "ratings and tests: admins, or that member's own");
     assert.ok(reads.includes("request.auth != null && request.auth.uid == uid"), "my/{uid}: that member only");
   }
-  console.log("check-services-fn: wiring and rules ok");
+  console.log("check-services-fn: wiring, hooks and rules ok");
 })().catch((err) => { console.error(err); process.exit(1); });
 

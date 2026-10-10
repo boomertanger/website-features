@@ -171,6 +171,8 @@ Kickoff: "Start workstream 7b (Night Shift) from docs/ROADMAP.md."
 ### 8. Accounts part 2b
 Goal: App Check, a signup challenge (Turnstile), rate limits, download my data, account deletion, the admin member list, automated rules tests (needs Java 11+ for the emulator), backups and budget alerts.
 Must be done before launch.
+Account deletion also removes:
+- Delete a member's Service Hub ratings and tests (`sites/boomertanger/services/main/ratings` and `tests` where uid is theirs, and `my/{uid}`; docs/specs/service-hub.md §4).
 Kickoff: "Start workstream 8 (Accounts part 2b) from docs/ROADMAP.md."
 
 ### 9. Mod Machina

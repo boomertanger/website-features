@@ -1,9 +1,9 @@
 // Service Hub backend (docs/specs/service-hub.md §3-§11). Every document under sites/boomertanger/services/main is written ONLY here (Admin SDK);
 // firestore.rules gives admins read access, a member read access to their own ratings, tests and my/{uid}, and nobody write access.
 //
-//   serviceRate    signed-up members   { serviceId, value: love|like|dislike, comment? }: one doc per member per service, history kept (last 20, with the
+//   serviceRate    verified members    { serviceId, value: love|like|dislike, comment? }: one doc per member per service, history kept (last 20, with the
 //                                      version); owner and admin ratings are stored but left out of the totals; 60 an hour (rateLimits)
-//   serviceTest    signed-up members   { serviceId, device, results[] }: one counted test per member per version; 10 an hour
+//   serviceTest    verified members    { serviceId, device, results[] }: one counted test per member per version; 10 an hour
 //   serviceSync    admins              { manifests, buildHash }: upserts items from services/*.json; a version change appends versionHistory;
 //                                      a manifest that disappeared retires its item (never deleted). scripts/sync-services.js runs the same code.
 //   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment, retire, hide (adminLog "serviceHub")
@@ -13,12 +13,12 @@
 // Data (sites/boomertanger/services/main/…): the main doc { buildHash, syncedAt, count }; items/{serviceId}; ratings/{serviceId}__{uid};
 // tests/{serviceId}__{uid}__{version}; my/{uid}; summary/main { rows: { id: row } } (admin views); and public/services { services: [member-safe rows] }.
 // Item ids: the manifest id; an Arcade game's slug (so it meets its manifest, tap-the-splat); vault-<slug>; stream-<streamId>.
-// build(deps) is what scripts/check-services-fn.js runs against the in-memory Firestore. deps: db, now(), adminLogEntry, factory, grant, crewTasks.
+// build(deps) is what scripts/check-services-fn.js runs against the in-memory Firestore. deps: db, now(), adminLogEntry, factory, grant, tasks, hooks.
 const { onCall } = require("firebase-functions/v2/https");
 const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 const L = require("./logic");
-const { SITE_ID, fail, requireAdmin } = require("../vault/common");
+const { SITE_ID, fail, requireAdmin, requireVerifiedMember } = require("../vault/common");
 const { makeBoards, raise, idStr } = require("../boards");
 
 const ACTIONS = ["markTested", "linkVideo", "setCoversVersion", "hideComment", "retire", "hide"];
@@ -50,7 +50,8 @@ function build(deps = {}) {
     activityFeature: "service-hub", linkOf: (id) => `/admin/services?service=${id}`, idField: "serviceId", factoryType: "services",
     rate: { prefix: "services", limits: L.LIMITS, periodKey: L.periodKey, ttlMs: L.limitTtlMs, overLimit: L.overLimit },
   });
-  const hooks = deps.hooks || null;   // part 3d: badges, Night Shift, crew tasks (set by withHooks below)
+  // badges, Night Shift and crew tasks (hooks.js); deps.hooks = null turns them off, and the check passes fakes for grant and factory
+  const hooks = deps.hooks !== undefined ? deps.hooks : require("./hooks").makeHooks({ db, grant: deps.grant, factory: deps.factory, tasks: deps.tasks });
   const who = (c) => ({ member: !!c.member, staff: !!c.isStaff, admin: !!c.isAdmin, owner: !!c.isOwner });
   const ts = (ms) => Timestamp.fromMillis(ms);
 
@@ -79,8 +80,8 @@ function build(deps = {}) {
 
   // ---------------------------------------------------------------------------------------------- serviceRate
   async function rate(request) {
-    const c = await B.caller(request);
-    if (!c.member) throw fail("permission-denied", "Finish joining to rate.", "needsSignup");
+    // a finished signup and a verified email, Feature Lab's check (Google and Twitch sign-ins count as verified; staff skip the email check)
+    const c = requireVerifiedMember(await B.caller(request));
     const d = request.data || {};
     const sid = idStr(d.serviceId);
     if (!sid) throw fail("invalid-argument", "Say which service.", "args");
@@ -110,8 +111,7 @@ function build(deps = {}) {
 
   // ---------------------------------------------------------------------------------------------- serviceTest
   async function test(request) {
-    const c = await B.caller(request);
-    if (!c.member) throw fail("permission-denied", "Finish joining to test.", "needsSignup");
+    const c = requireVerifiedMember(await B.caller(request));
     const d = request.data || {};
     const sid = idStr(d.serviceId);
     if (!sid) throw fail("invalid-argument", "Say which service.", "args");

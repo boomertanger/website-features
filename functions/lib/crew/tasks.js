@@ -79,3 +79,26 @@ module.exports = function crewTasks({ adminLogEntry, gears }) {
 
   return { taskPost, taskClaim, taskDone, taskConfirm };
 };
+
+// System tasks (docs/specs/service-hub.md §9): a task another service posts, not a person. key makes it once-only (the doc id is sys-<key>, so a retry
+// or a second trigger posts nothing). postedBy "system": an Overseer and above confirms it (taskConfirm above). Gears: crew/main.serviceTaskGears
+// { test, problems } when set, else the defaults below (5 to 50, like taskPost). Never throws; returns { created, taskId }.
+const SYSTEM_GEARS = { test: 15, problems: 10 };
+async function createSystemTask(db, { key, kind, title, detail = "" }) {
+  try {
+    const id = `sys-${String(key).replace(/[^A-Za-z0-9_.-]+/g, "-").slice(0, 120)}`;
+    const crew = (await db.doc(paths.settings()).get()).data() || {};
+    const set = crew.serviceTaskGears || {};
+    const g = Number.isInteger(set[kind]) && set[kind] >= 5 && set[kind] <= 50 ? set[kind] : SYSTEM_GEARS[kind] || 10;
+    const ref = db.doc(paths.task(id));
+    let created = false;
+    await db.runTransaction(async (tx) => {
+      if ((await tx.get(ref)).exists) return;
+      tx.set(ref, { title: String(title).slice(0, 100), detail: String(detail).slice(0, 600), gears: g, status: "open", postedBy: "system", postedByHandle: null, system: true, systemKey: String(key), claimedBy: null, claimedByHandle: null, confirmedBy: null, createdAt: require("firebase-admin").firestore.Timestamp.now() });
+      created = true;
+    });
+    return { created, taskId: id, gears: g };
+  } catch (err) { console.error("crew: system task failed", String((err && err.message) || err).slice(0, 160)); return { created: false, taskId: null }; }
+}
+module.exports.createSystemTask = createSystemTask;
+module.exports.SYSTEM_GEARS = SYSTEM_GEARS;

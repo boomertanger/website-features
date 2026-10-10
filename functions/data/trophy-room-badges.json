@@ -2250,6 +2250,228 @@
       "ladder": null,
       "status": "active",
       "awardableBy": null
+    },
+    {
+      "id": "services-first-rating",
+      "name": "First Verdict",
+      "collection": "community",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Rate any service on the site for the first time.",
+      "emoji": "👍",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-rated-10",
+      "name": "Critic I",
+      "collection": "community",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Rate 10 services.",
+      "emoji": "📝",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "critic",
+        "step": 10
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-rated-25",
+      "name": "Critic II",
+      "collection": "community",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Rate 25 services.",
+      "emoji": "📝",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "critic",
+        "step": 25
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-rated-50",
+      "name": "Critic III",
+      "collection": "community",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Rate 50 services.",
+      "emoji": "📝",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "critic",
+        "step": 50
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-rated-100",
+      "name": "Critic IV",
+      "collection": "community",
+      "rarity": 4,
+      "source": "auto",
+      "how": "Rate 100 services.",
+      "emoji": "📝",
+      "xp": 100,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "critic",
+        "step": 100
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-full-coverage",
+      "name": "Full Coverage",
+      "collection": "community",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Rate every core service open to you. Once earned, a new service never takes it away.",
+      "emoji": "🗺️",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-tester-1",
+      "name": "Tester I",
+      "collection": "community",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Run a service's test checks and send your results.",
+      "emoji": "🧪",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "tester",
+        "step": 1
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-tester-5",
+      "name": "Tester II",
+      "collection": "community",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Test 5 services (or 5 versions).",
+      "emoji": "🧪",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "tester",
+        "step": 5
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "services-tester-15",
+      "name": "Tester III",
+      "collection": "community",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Test 15 services (or 15 versions).",
+      "emoji": "🧪",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "tester",
+        "step": 15
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "vault-critic-5",
+      "name": "Vault Critic I",
+      "collection": "community",
+      "rarity": 1,
+      "source": "auto",
+      "how": "Rate 5 games in the Game Vault.",
+      "emoji": "🎮",
+      "xp": 10,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "vault-critic",
+        "step": 5
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "vault-critic-15",
+      "name": "Vault Critic II",
+      "collection": "community",
+      "rarity": 2,
+      "source": "auto",
+      "how": "Rate 15 games in the Game Vault.",
+      "emoji": "🎮",
+      "xp": 25,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "vault-critic",
+        "step": 15
+      },
+      "status": "active",
+      "awardableBy": null
+    },
+    {
+      "id": "vault-critic-30",
+      "name": "Vault Critic III",
+      "collection": "community",
+      "rarity": 3,
+      "source": "auto",
+      "how": "Rate 30 games in the Game Vault.",
+      "emoji": "🎮",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": {
+        "id": "vault-critic",
+        "step": 30
+      },
+      "status": "active",
+      "awardableBy": null
     }
   ]
 }

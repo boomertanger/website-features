@@ -124,11 +124,17 @@
     {
       "id": "ratings",
       "name": "Member ratings",
-      "enabled": false,
-      "needs": "Member ratings",
-      "description": "Rate games in the Game Vault (members can't rate games yet).",
-      "actions": [],
-      "params": []
+      "enabled": true,
+      "needs": null,
+      "source": "Service Hub",
+      "description": "Rate a game in the Game Vault (through the Service Hub's rating buttons).",
+      "actions": [
+        "rate"
+      ],
+      "params": [
+        "action",
+        "gameId"
+      ]
     },
     {
       "id": "bugs",
@@ -159,6 +165,24 @@
       ],
       "params": [
         "action"
+      ]
+    },
+    {
+      "id": "services",
+      "name": "Service Hub",
+      "enabled": true,
+      "needs": null,
+      "source": "Service Hub",
+      "description": "Rate the site's services, run a service's test checks, and rate every core service open to you.",
+      "actions": [
+        "rate",
+        "test",
+        "rateAll"
+      ],
+      "params": [
+        "action",
+        "type",
+        "serviceId"
       ]
     },
     {

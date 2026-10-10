@@ -195,7 +195,11 @@ const types = new Map(data.activityTypes.map((x) => [x.id, x]));
 assert.equal(types.size, data.activityTypes.length, "unique type ids");
 for (const x of data.activityTypes) assert.ok(x.enabled || x.needs, `${x.id}: off types say what they need`);
 for (const id of ["checkin", "visit", "medals", "profile", "arcade", "badges", "vault"]) assert.equal(types.get(id)?.enabled, true, `${id} is on`);
-assert.equal(types.get("ratings")?.enabled, false, "ratings waits for member ratings");
+assert.equal(types.get("ratings")?.enabled, true, "ratings is on: the Service Hub rates Vault games (docs/specs/service-hub.md §9)");
+assert.deepEqual(types.get("ratings").actions, ["rate"]);
+assert.equal(types.get("services")?.enabled, true, "services is on (Service Hub)");
+assert.deepEqual(types.get("services").actions, ["rate", "test", "rateAll"]);
+assert.deepEqual(types.get("services").params, ["action", "type", "serviceId"]);
 assert.deepEqual(types.get("vault").actions, ["want", "add", "cover"]);
 for (const a of data.activities) {
   assert.ok(types.has(a.type), `${a.title}: type ${a.type}`);
