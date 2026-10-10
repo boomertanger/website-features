@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Live drops part 4: the drop panel on /live/control and the Mod Deck helm strip.
 Live drops part 3: kit additions (.bt-live-banner drop variants, .bt-dropfuse, .bt-drop-timer, shared/ui/drop.js) and the UI kit page section.
 - Live drops part 2: drop functions (dropOpen, dropAdjust, claimDrop, dropSweep), Stop hook, public/live.drop, Rush reward badge (server).
 - Live drops part 1: badge drop presets and drops rules.

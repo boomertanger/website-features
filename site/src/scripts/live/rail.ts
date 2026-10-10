@@ -9,7 +9,7 @@ import type { Ctx } from "./state";
 import { BEATS, BEAT_LABEL, type Beat, type CBeats, type CItem } from "./model";
 import { toast, messageFor, mascotHtml, copyText } from "./ui";
 
-export const SHORTCUT_LABEL: Record<string, string> = { openCheckin: "Open check-in", startQuestions: "Start Questions", startHotSeat: "Start Hot Seat", dropBadge: "Drop a badge", copySocials: "Copy socials" };
+export const SHORTCUT_LABEL: Record<string, string> = { openCheckin: "Open check-in", startQuestions: "Start Questions", startHotSeat: "Start Hot Seat", copySocials: "Copy socials" };
 
 let open = new Set<string>();
 let openFor = "";

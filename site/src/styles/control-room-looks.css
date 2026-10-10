@@ -93,6 +93,9 @@
 :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::before, :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-viewport::after { width: 34px; height: 34px; border-color: var(--bt-title); animation: bt-cr-target 3s ease-in-out infinite; }
 @keyframes bt-cr-target { 50% { transform: scale(0.88); opacity: 0.6; } }
 :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-cr-screen { box-shadow: 0 0 0 1px var(--cr-line), 0 0 30px color-mix(in srgb, var(--bt-blue) 18%, transparent); }
+/* the drop panel (scripts/live/drop-panel.ts): blueprint cards, the countdown glows in the drop's gold */
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) :is(.dp-pick, .dp-sum) { border-radius: 3px; border-color: var(--cr-line); }
+:is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .dp .bt-drop-timer { color: var(--bt-title); text-shadow: 0 0 14px rgba(var(--bt-gold-rgb), 0.45); }
 
 /* =================================================================== CRT ======= */
 [data-look="crt"] { position: relative; isolation: isolate; overflow-x: clip; }
@@ -123,6 +126,13 @@
 /* screens switch on with the old CRT line when the state changes (shared/ui/control-room.js crBoot adds .is-boot and --i) */
 :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]).is-boot :is(.bt-cr-panel, .bt-cr-viewport), :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .is-boot :is(.bt-cr-panel, .bt-cr-viewport) { animation: bt-cr-on 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both; animation-delay: calc(var(--i, 0) * 80ms); }
 @keyframes bt-cr-on { 0% { transform: scale(1, 0.004); filter: brightness(4); opacity: 0.9; } 45% { transform: scale(1, 0.004); filter: brightness(3); } 70% { transform: scale(1, 1.03); filter: brightness(1.6); } 100% { transform: none; filter: none; opacity: 1; } }
+
+/* the drop panel: cards sit in the glass, the countdown is amber phosphor; the popover's monitor keeps its bezel inside the strip */
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) :is(.dp-pick, .dp-sum) { background: rgba(var(--bt-ink-rgb), 0.35); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .dp-live-name { text-shadow: 0 0 8px rgba(var(--bt-sheen-rgb), 0.3); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .dp .bt-drop-timer { color: var(--bt-title); text-shadow: 0 0 16px rgba(var(--bt-gold-rgb), 0.55); }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .dp-pop > .bt-cr-panel { margin: 12px; }
+:is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .dp-pop { border-radius: 26px / 30px; }
 
 /* =================================================================== the stream view (its motion is NOT reduced: it is a video overlay) ======= */
 :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .bt-streamview { --bt-sv-line: color-mix(in srgb, var(--bt-blue) 55%, transparent); }

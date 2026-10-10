@@ -40,7 +40,15 @@ export interface PubLive {
   /** A Prediction settled while another game held the slot: shown as a result chip on the stream view for 15 s after `at`. */
   chatGameSettled?: { runId: string; title: string | null; answer: string; count: number; at: number } | null;
   /** Recruit Rush (Mod Machina §17a): only while a Rush is on; the main stream's during an after-show. */
-  recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null };
+  recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null; /** A reward badge to drop: set while the goal is hit and no Rush drop has opened (docs/specs/live-drops.md §3). */ dropReady?: string };
+  /** The live drop (docs/specs/live-drops.md §3): no uids; removed 60 s after it closes. */
+  drop?: PubDrop | null;
+}
+
+/** public/live.drop. art is the badge art URL, or its emoji when it has no art yet. closesAt is null for a drop that runs until the stream ends. */
+export interface PubDrop {
+  id: string; badgeId: string; name: string; art: string | null; rarity: number; mode: "timed" | "streamEnd" | "draw";
+  state: "open" | "closing" | "drawing" | "closed"; closesAt: number | null; graceUntil: number | null; cap: number | null; claims: number; winners: string[]; closedAt: number | null;
 }
 
 export interface Seg { kind: string; gameId?: string; title?: string; startedAt: number | null; endedAt: number | null }

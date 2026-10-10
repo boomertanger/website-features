@@ -27,6 +27,7 @@ import { previewRequest, previewMe, previewSource } from "./mod-deck-preview";
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { initFlags } from "../../../../shared/ui/flag-card.js";
 import { initLaunch } from "../../../../shared/ui/launch.js";
+import { mountHelmDrop, previewDropIo, type HelmDrop } from "./drop-panel";
 import { ROOM_NAME, ROOM_ORDER } from "./mod-deck-data";
 import { FLAG_TYPES, flagFormHtml, flagSubtitle, flagStackHtml, helmHtml, moveOptions, moveListHtml, confirmNightHtml, makeChime, flagTitle, type Tool } from "./mod-deck-tools";
 import {
@@ -356,7 +357,7 @@ function mount(me: Me, src: Source) {
   function renderHelm(d: Derived) {
     const kind = d.isCaptain ? "captain" : d.isLead ? "lead" : null;
     const tiktokRoom = d.roles.some((r) => r.room === "tiktok");
-    if (!kind || d.after || (M.me.owner && !d.isCaptain)) { slot("helm", "", ""); return; }
+    if (!kind || d.after || (M.me.owner && !d.isCaptain)) { slot("helm", "", ""); helmDrop(false); return; }
     const duty = M.duty;
     const people = Object.entries(duty?.onDuty || {}).map(([uid, entry]) => ({ uid, entry, me: uid === M.me.uid }));
     const gaps = d.rooms.filter((r) => r.state === "needed").map((r) => ({ room: r.room, name: r.name }));
@@ -365,6 +366,19 @@ function mount(me: Me, src: Source) {
     const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.map((f) => f.id), curRun(), !!window.btChatGames]);
     const el = slot("helm", helmHtml(input), key);
     if (el && fresh(el)) initLaunch(el as any, { onLaunch: (id: string, state: string) => launch(id, state) });
+    helmDrop(kind === "captain");
+  }
+  /** Live drops: the live Captain's "Drop a badge" (the owner too when the owner is Captain; never a Room Lead). One button for the page's life,
+   * moved into each new helm row, so an open popover survives a redraw of the strip. */
+  let drop: HelmDrop | null = null;
+  function helmDrop(on: boolean) {
+    if (!on) { drop?.destroy(); drop = null; return; }
+    if (!drop) {
+      const io = M.me.preview ? previewDropIo(() => ({ state: M.pub?.state || "off", streamId: M.pub?.streamId || null })) : undefined;
+      drop = mountHelmDrop({ role: M.me.owner ? "owner" : "captain", io, phone: () => M.phone });
+    }
+    const spot = root.querySelector<HTMLElement>("[data-helm-drop]");
+    if (spot && drop.host.parentElement !== spot) spot.appendChild(drop.host);
   }
   /** The launch tiles. Chat Games (agreed contract): Start and Swap open its launch flow, End ends the run; it owns every message after that. */
   function launch(id: string, state: string) {

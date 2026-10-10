@@ -5,7 +5,7 @@
 // arguments ending in Html are trusted markup.
 //
 //   CR_HEAD_ICONS                       small stroke icons by key: checkin, now, crew, questions, watch, backstage, launch,
-//                                       checklist, beats, stats, game, video, controls
+//                                       checklist, beats, stats, game, video, controls, drop (a sparkle: live drops)
 //   crPanelHeadHtml({ title, icon, tagHtml, actionsHtml, level })   the .bt-cr-panel-head row (title is a .bt-heading h2; level 2-4)
 //   crPanelHtml({ id, cls, title, icon, tagHtml, actionsHtml, bodyHtml, label, level })   the whole .bt-cr-panel section
 //   crViewportHtml({ innerHtml, overlayHtml, label })   .bt-cr-viewport: the frame round the video (gold corner brackets; the hull look draws a
@@ -27,6 +27,7 @@ export const CR_HEAD_ICONS = {
   game: `<rect x="3" y="6" width="18" height="12" rx="3"/><path d="M8 12h3M9.5 10.5v3M15 11h.01M17 13h.01"/>`,
   video: `<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z"/>`,
   controls: `<path d="M4 7h10M18 7h2M4 17h2M10 17h10"/><circle cx="16" cy="7" r="2"/><circle cx="8" cy="17" r="2"/>`,
+  drop: `<path d="M11 3l1.8 5.2L18 10l-5.2 1.8L11 17l-1.8-5.2L4 10l5.2-1.8z"/><path d="M18.5 15l.6 1.6 1.6.6-1.6.6-.6 1.7-.6-1.7-1.6-.6 1.6-.6z"/>`,
 };
 
 export function crPanelHeadHtml({ title = "", icon = "", tagHtml = "", actionsHtml = "", level = 2 } = {}) {

@@ -1,0 +1,88 @@
+/* site/src/styles/live-drops.css — the drop panel (scripts/live/drop-panel.ts; docs/specs/live-drops.md §5 part 1; mockup
+   docs/design/mockups/live-drops.html sections 1 and 2, the dp- rules). Loaded by /live/control (the owner's panel) and the Mod Deck (the
+   Captain's helm button, its popover and sheet). The kit gives .bt-cr-panel, .bt-dropfuse, .bt-drop-timer, .bt-medal, .bt-chip, .bt-switch,
+   .bt-btn; this file is the panel's own layout only. var(--bt-*) only. The panel body is its own "bt" container, so it lays out by its own
+   width (300 px in the Cockpit's launch column, 380 px in the popover, the phone in the sheet). Looks: control-room-looks.css. */
+
+.bt-root:not(#_) .dp-wrap { container: bt / inline-size; }
+.bt-root:not(#_) .dp { display: grid; gap: 14px; }
+.bt-root:not(#_) .dp-meta { font-size: var(--bt-text-sm); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; white-space: nowrap; }
+
+/* pick a badge */
+.bt-root:not(#_) .dp-picks { display: grid; grid-template-columns: repeat(auto-fill, minmax(86px, 1fr)); gap: 8px; }
+.bt-root:not(#_) .dp-pick { display: grid; justify-items: center; align-content: start; gap: 6px; padding: 10px 6px 9px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); color: var(--bt-text); cursor: pointer; text-align: center; transition: border-color 0.15s, background 0.15s, transform 0.15s; }
+.bt-root:not(#_) .dp-pick:hover:not(:disabled) { border-color: var(--bt-primary); background: var(--bt-primary-bg); transform: translateY(-1px); }
+.bt-root:not(#_) .dp-pick:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .dp-pick[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); box-shadow: 0 0 0 1px var(--bt-primary) inset; }
+.bt-root:not(#_) .dp-pick .bt-medal { --bt-medal-size: 40px; }
+.bt-root:not(#_) .dp-pick b { font-size: var(--bt-text-sm); line-height: 1.2; }
+.bt-root:not(#_) .dp-pick small { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .dp-pick:disabled { cursor: default; opacity: 0.45; }
+.bt-root:not(#_) .dp-pick:disabled small { color: var(--bt-text-muted); }
+
+/* set up: the window chips (the preset has a gold dot), the claim limit */
+.bt-root:not(#_) .dp-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_) .dp-chips .bt-chip { position: relative; }
+.bt-root:not(#_) .dp-chips .bt-chip.is-active { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .dp-chips .bt-chip:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .dp-chips .bt-chip[data-preset]::after { content: ""; position: absolute; top: 3px; right: 4px; width: 5px; height: 5px; border-radius: 50%; background: var(--bt-title); }
+.bt-root:not(#_) .dp-cap { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) .dp-cap .bt-input { width: 92px; padding: 6px 10px; }
+.bt-root:not(#_) .dp-note { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.5; }
+.bt-root:not(#_) .dp-note:empty { display: none; }
+.bt-root:not(#_) .dp-note--gap { margin-top: 8px; }
+
+/* open: the fuse, the timer, the counts, +1 / +5 / Close now (purple: it ends a window, it deletes nothing) */
+.bt-root:not(#_) .dp-live { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.bt-root:not(#_) .dp-live .bt-dropfuse { --fz: 92px; }
+.bt-root:not(#_) .dp-live-name { font-weight: 800; font-size: var(--bt-text-lg); margin-bottom: 8px; }
+.bt-root:not(#_) .dp-live-name small { display: block; font-weight: 500; font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .dp-timer--words { font-size: 24px; }
+.bt-root:not(#_) .dp-stats { display: flex; gap: 18px; margin-top: 10px; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .dp-stats b { display: block; font-size: var(--bt-text-2xl); color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .dp-capbar { height: 5px; border-radius: 3px; background: var(--bt-surface-2); overflow: hidden; margin-top: 8px; }
+.bt-root:not(#_) .dp-capbar i { display: block; height: 100%; background: var(--bt-title); width: calc(var(--f, 0) * 100%); transition: width 0.3s; }
+.bt-root:not(#_) .dp-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.bt-root:not(#_) .dp-actions .bt-btn { flex: 1 1 auto; }
+.bt-root:not(#_) .dp-actions .is-arm { border-color: var(--bt-title); color: var(--bt-title); }
+
+/* the Rush prompt, the closed summary, not live */
+.bt-root:not(#_) .dp-rush { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; border-radius: var(--bt-radius-md); border: 1px dashed rgba(var(--bt-gold-rgb), 0.7); background: rgba(var(--bt-gold-rgb), 0.07); animation: dp-rush 2.4s ease-in-out infinite; }
+.bt-root:not(#_) .dp-rush .bt-medal { --bt-medal-size: 44px; }
+.bt-root:not(#_) .dp-rush b { color: var(--bt-title); display: block; }
+.bt-root:not(#_) .dp-rush span { font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) .dp-rush .dp-actions { grid-column: 1 / -1; }
+@keyframes dp-rush { 50% { box-shadow: 0 0 22px rgba(var(--bt-gold-rgb), 0.25); } }
+.bt-root:not(#_) .dp-sum { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 12px; align-items: center; padding: 12px; border-radius: var(--bt-radius-md); background: var(--bt-bg); border: 1px solid var(--bt-border); }
+.bt-root:not(#_) .dp-sum .bt-dropfuse { --fz: 48px; }
+.bt-root:not(#_) .dp-sum b { display: block; }
+.bt-root:not(#_) .dp-sum span { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .dp-off { text-align: center; padding: 18px 8px; color: var(--bt-text-muted); font-size: var(--bt-text-md); border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-md); }
+
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .dp-live .bt-dropfuse { --fz: 64px; }
+  .bt-root:not(#_) .dp-live { gap: 12px; }
+  .bt-root:not(#_) .dp-live .bt-drop-timer { font-size: 32px; }
+  .bt-root:not(#_) .dp-live .dp-timer--words { font-size: 20px; }
+}
+
+/* the Mod Deck helm strip: the button (a mini countdown while a drop is open) and its popover; the sheet is openModal's (variant "sheet") */
+.bt-root:not(#_) .dp-helm { position: relative; display: inline-flex; }
+.bt-root:not(#_) .dp-helm-in { display: inline-flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .dp-helm .bt-dropfuse { --fz: 20px; }
+.bt-root:not(#_) .dp-helm b { font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .dp-helm-btn.is-live { border-color: rgba(var(--bt-gold-rgb), 0.6); }
+.bt-root:not(#_) .dp-pop { position: absolute; right: 0; top: calc(100% + 8px); z-index: 30; width: 380px; max-width: calc(100vw - 32px); text-align: left; box-shadow: var(--bt-shadow-dropdown); border-radius: var(--bt-radius-lg); animation: dp-pop 0.16s var(--bt-ease-glide); }
+.bt-root:not(#_) .dp-pop:focus { outline: none; }
+.bt-root:not(#_) .dp-pop > .bt-cr-panel { margin: 0; }
+@keyframes dp-pop { from { opacity: 0; transform: translateY(-4px); } }
+/* in the sheet the dialog header is the title, so the panel loses its own head and frame */
+.bt-portal:not(#_)[data-feature="live"] .dp-sheet > .bt-cr-panel { border: 0; padding: 0; background: none; box-shadow: none; }
+.bt-portal:not(#_)[data-feature="live"] .dp-sheet > .bt-cr-panel::before, .bt-portal:not(#_)[data-feature="live"] .dp-sheet > .bt-cr-panel::after { display: none; }
+.bt-portal:not(#_)[data-feature="live"] .dp-sheet .bt-cr-panel-head { display: none; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .dp-rush, .bt-root:not(#_) .dp-pop { animation: none; }
+  .bt-root:not(#_) .dp-pick, .bt-root:not(#_) .dp-capbar i { transition: none; }
+  .bt-root:not(#_) .dp-pick:hover:not(:disabled) { transform: none; }
+}

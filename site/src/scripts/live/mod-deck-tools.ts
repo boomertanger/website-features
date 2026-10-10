@@ -1,6 +1,7 @@
 // The Mod Deck's Captain tools, flags and "Confirm tonight's crew" (Mod Machina phase 3 part 5; docs/specs/mod-machina.md §17a "The Captain" and "Flag to owner"; mockup docs/design/mockups/mod-deck.html
 // sections 1 to 3). Markup only (pure functions from plain data to strings), shared by /live/deck (mod-deck.ts) and /live/control (control.ts, for the flags and the confirm panel). Text is escaped.
 // H1 helm strip: one row under the rooms strip (Unlock with a gold count, TikTok viewers with the count, Reassign, Launch panel), each opening its panel under the strip, one at a time.
+// The Captain's row ends with a [data-helm-drop] spot: mod-deck.ts moves the "Drop a badge" button into it (drop-panel.ts mountHelmDrop; live drops).
 import { launchHtml } from "../../../../shared/ui/launch.js";
 import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
 import { flagCardHtml, flagsHtml } from "../../../../shared/ui/flag-card.js";
@@ -82,7 +83,7 @@ export function helmHtml(i: HelmInput): string {
   const n = i.lockedOut.length;
   const btn = (t: Tool) => `<button type="button" class="md-tool" data-tool="${t}" aria-expanded="${i.open === t}">${t === "unlock" ? `Unlock${n ? `<span class="md-tool-n">${n}</span>` : ""}` : t === "tiktok" ? `TikTok viewers${i.tiktok != null ? ` <span class="md-tool-v">${i.tiktok}</span>` : ""}` : TOOL_LABEL[t]}</button>`;
   const body = i.open === "unlock" ? unlockPanel(i) : i.open === "tiktok" ? tiktokPanel(i) : i.open === "reassign" ? reassignPanel(i) : i.open === "launch" ? launchPanel(i) : "";
-  return `<div class="md-helm md-helm--${i.kind}" aria-label="${i.kind === "captain" ? "Captain tools" : "Room Lead tools"}"><div class="md-helm-row"><span class="md-helm-lab"><i aria-hidden="true">⎈</i> ${i.kind === "captain" ? "Captain" : "Room Lead"}</span>${tools.map(btn).join("")}<span class="md-helm-sp"></span>${i.kind === "captain" ? `<span class="md-helm-note">Drop a badge joins this strip with live drops</span>` : ""}</div>${body ? `<div class="md-helm-panel" data-helm-panel>${body}</div>` : ""}</div>`;
+  return `<div class="md-helm md-helm--${i.kind}" aria-label="${i.kind === "captain" ? "Captain tools" : "Room Lead tools"}"><div class="md-helm-row"><span class="md-helm-lab"><i aria-hidden="true">⎈</i> ${i.kind === "captain" ? "Captain" : "Room Lead"}</span>${tools.map(btn).join("")}<span class="md-helm-sp"></span>${i.kind === "captain" ? `<span class="md-helm-drop" data-helm-drop></span>` : ""}</div>${body ? `<div class="md-helm-panel" data-helm-panel>${body}</div>` : ""}</div>`;
 }
 
 // ---------------------------------------------------------------------------------------------- Reassign dialog
