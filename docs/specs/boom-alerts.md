@@ -94,6 +94,14 @@ your final rank).
 status, collector failures), `admin-todo` (week not published, crew to-dos, new mod application), `bug-new` (a new Bug Zapper report: inbox; a **Critical** report also goes by push and email; added Oct 9, 2026, `docs/specs/bug-zapper.md` §2.6, queued by `bugSubmit` through `notifyOutbox` with `audience: "admins"`).
 Inbox and email; texts only for "provider down" and "budget reached", max one an hour.
 
+### Hotline Boom (contact; added Oct 9, 2026, `docs/specs/hotline-boom.md` §8)
+| Topic | Who | When | Time-critical | Default |
+|---|---|---|---|---|
+| `contact-new` | Owner and admins (owner lane: the owner only; team lane: the owner + current inbox admins) | A message arrived on Hotline Boom | — | Inbox, push |
+| `contact-reply` | Members | Boomertanger replied to your message | — | Inbox, email |
+
+Payloads carry `{ ref, line }` (`contact-new`) or `{ ref }` (`contact-reply`) only, never the message text or the sender's name, so a push or a text can't leak a private message. `contact-new` dedupes on `hotline:<id>`.
+
 ### Account (can't be turned off; inbox + email, never text or push)
 Sign-in method added or removed, password changed, email changed (sent to the old address too),
 phone added or removed, texts stopped (confirmation), account deletion scheduled or done,

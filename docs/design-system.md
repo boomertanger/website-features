@@ -1698,3 +1698,9 @@ The crew's live panel at `/live/deck` (spec `docs/specs/mod-machina.md` §17a; m
 - **Recruit Rush counts on `signedUpAt`:** a finished signup (the first time `signedUpAt` appears on users/{uid}), not a bare users/{uid} create (Twitch sign-in creates the doc early); settings on `private/control`; the count through the counter shards.
 - **`private/duty` is the crew-readable duty state:** clock-ins, roles, prompts, rooms coverage, lockedOut, flagsSeen, the public YouTube ids and the night summary; `private/control` stays owner and A2+ because it holds the check-in word.
 - **Chat Games naming:** "live activities" are now Chat Games (one service, workstream 5b, for Questions and every game); the Deck only holds its slots (`window.btChatGames`).
+
+### 8u. Hotline Boom
+The contact service (spec `docs/specs/hotline-boom.md`, confirmed Oct 9, 2026). **Picks:** `/contact` Layout 3 (the "Pick a line" keypad menu with the LCD, the form beside it) with the redrawn desk-phone hero and its answer moment (`hotline-boom-hero.html`, replacing Layout 3's hero); wordmark **W5 Dial-up**; `/admin/inbox` **Split**; `/contact/how-it-works` hero **H1 the dial**. **Kit additions:** `.bt-reveal` (+ `shared/ui/reveal.js`, the page version of the footer's Show / Copy) and the `--bt-contact-privacy` token (blue) beside the contact tokens. **Feature CSS scope:** `hb-`. **Status tones:** New blue, Open teal, Waiting gold, Done lime, Spam gray. The hero's status dot is **teal**, because green is for admin-only controls and lime means done.
+
+### 8v. Mockup notes
+- A mockup whose `<body>` is `.bt-root` must undo the kit's `overflow: hidden` on body, or the page won't scroll on phones.

@@ -22,6 +22,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
+| 14 | Hotline Boom (contact) | Spec confirmed, building | Community services |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -175,6 +176,19 @@ Kickoff: "Start workstream 12 (Contests) from docs/ROADMAP.md."
 Goal: production Firebase setup, domains and redirects for all 12 domains, custom email sending domain, final privacy and terms, the TikTok app review, go-live on main.
 Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
 
+### 14. Hotline Boom (contact)
+Goal: the site's contact service: six lines on `/contact` (who reads each, which fields, which address replies), a private inbox at `/admin/inbox` for the owner and chosen admins (team lines only), and `/contact/how-it-works`.
+Spec: [docs/specs/hotline-boom.md](specs/hotline-boom.md) (confirmed Oct 9, 2026); mockups `docs/design/mockups/hotline-boom-contact.html` (Layout 3, W5), `hotline-boom-hero.html` (the /contact hero), `hotline-boom-inbox.html` (Split), `hotline-boom-how-it-works.html` (H1).
+Status: **Spec confirmed, building.** Parts, one commit each:
+0. Docs: spec and mockups in, Boom Alerts topics, ROADMAP, design-system decisions.
+1. Kit: `.bt-reveal` + `shared/ui/reveal.js`, the `--bt-contact-privacy` token, the UI kit page.
+2. Backend: `contactSend`, `contactAction`, `contactNote`, `contactReply`, `contactSettings` (`functions/lib/hotline/`, Turnstile helper in `functions/lib/security/`), rules, indexes, TTL policies.
+3. `/contact` (Layout 3 with the new hero), nav and footer link.
+4. `/admin/inbox` (Split: Inbox, Sources, Settings) and the /admin card.
+5. `/contact/how-it-works` (H1, the dial).
+6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
+Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
@@ -239,6 +253,13 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
+
+### Hotline Boom in production
+- [ ] Production Turnstile widget hostnames, and `TURNSTILE_SECRET_KEY` / `CONTACT_HASH_SALT` set on prod.
+- [ ] The Resend domain (Boom Alerts part 6) so replies send from the site.
+- [ ] Redirect rules on the other 11 domains add `?via=<domain>`.
+- [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
+- [ ] The Squarespace contact page switched off.
 
 ### Real tests pending (staging)
 Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:
