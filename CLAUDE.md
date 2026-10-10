@@ -100,6 +100,15 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 - Mod Deck files are `site/src/scripts/live/mod-deck*.ts` and `styles/mod-deck.css`; `scripts/live/deck.ts` is the Stream Deck key card on /live/control.
 - The activity rules switch only through `crewSetRules` (it sets the start and practice months); `crewSaveSettings` refuses `activityRules`.
 
+## Chat Games (learned in workstream 5b)
+- The running game's pointer lives in `streams/{id}/private/control.chatGame`; `buildPublicLive` copies it (and `chatGameWaiting`, `chatGameSettled`) to `public/live`. A shape change there means deploying every `lib/live` function together.
+- XP goes through `grantXp(uid, n, { feature: "chatGames", ref })` (ledger `chatGames:{ref}:{uid}`), with `capPayout` against `presence.xpEarned`; capped means no grant (the play is marked `capped`). A correction uses `reverseXp` (same ledger rules).
+- "Captain" means `captainNow.uid` on the stream's `private/duty`, at any grade; the owner is always allowed.
+- Formats switch on with `formats/{id}.enabled`, through `chatGameFormatSet` (owner only).
+- Live pages follow runs with listeners (`site/src/scripts/live/cg-watch.ts`), never polling.
+- `window.btChatGames = { openLaunch, end, mountPlay, mountScene, mountRun }` is the only entry point other pages call.
+- A new format registers a handler in `functions/lib/chatGames` (`L.HANDLERS`), its UI with `registerFormat`, and adds a chapter to `/live/chat-games`.
+
 ## After every push to dev
 1. `git rev-parse HEAD`, and confirm it matches
    `git ls-remote https://github.com/boomertanger/website-features.git dev`.

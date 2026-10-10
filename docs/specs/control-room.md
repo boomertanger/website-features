@@ -209,7 +209,7 @@ one column in this order: video, beats, check-in, Play panel, Now playing, crew,
 | Check in | Closed: when the next one opens. Open: the form. Your four stamps | `public/live` + your presence |
 | Now playing | Vault cover, Boomer's score, tonight's time, streams, all-time; Up next | Game Vault + segments |
 | Crew on duty | Hull look: the **deck plan** (Bridge with the Captain, one compartment per room, lit and pinging when crewed, gold "Lead needed" when open). Base look: a list | Stream crew + clock-ins |
-| Play panel | The running activity (Questions, Hot Seat, a Chat Game), otherwise the next questions | Chat Games |
+| Play panel | The running Chat Game (Questions or a game), the "Waiting on" strip for locked Predictions, a "How Chat Games work" link (chat-games.md §2, §14) | Chat Games |
 | Watch on | One button per platform live, with its viewers | Stream rooms |
 | Video | Public streams: the Twitch player. Backstage: the unlisted YouTube player for the audience | Section 11 |
 
@@ -262,10 +262,10 @@ pieces and look the same in every look.
 ## 9. Launch panel and Chat Games
 
 The Control Room owns the launch panel; the activities run in one **Chat Games** engine (Questions and every game),
-specified in `docs/specs/chat-games.md` (next spec) and built after the Control Room core.
+specified in `docs/specs/chat-games.md` and built on staging after the Control Room core (parts 1 to 7, Oct 2026). The launch panel tiles and run panels (§3 plug-in points, §14), the Play panel (§2, §14) and the stream view's `[data-cg-scene]` slot (§3, §14) are as built there.
 Contests stay ws 12 and plug in later.
 
-Note (Oct 9, 2026): the service is named Chat Games (the working name "Chat Games" is retired). One engine; members see "Questions" and "Chat Games" (Hot Seat and the rest are Chat Games). Crew-hosted games need the Mod Deck, so they come last. ROADMAP 5b has the order; `mod-machina.md` section 11 keeps the game designs.
+Note (Oct 9, 2026): the service is named Chat Games (the working name "live activities" is retired). One engine; members see "Questions" and "Chat Games" (Hot Seat and the rest are Chat Games). Crew-hosted games need the Mod Deck, so they come last. ROADMAP 5b has the order; `mod-machina.md` section 11 keeps the game designs.
 
 **Launch panel** (on /live/control, and for the Captain in the Mod Deck): Questions, Hot Seat, tonight's
 planned Chat Game, the quick Chat Games, Drop a badge, Recruit Rush. One activity is on stream at a time; the
@@ -363,7 +363,7 @@ Predictions cost nothing to enter (members can be 13; no wagering).
 | `question-answered` | The asker | 15 XP |
 | `hotseat-played` / `hotseat-won` | Players | 5 XP / 25 XP |
 | `first-in` | First three per beat | Toward a future badge, no XP |
-| Hosting Questions or Hot Seat | Captain | Gears, as Mod Machina pays for hosting Chat Games |
+| Hosting a crew-hosted Chat Game | The Room Lead or Captain who first posts its cue | +5 Gears once per game (chat-games.md §11, as built); running Questions, Hot Seat or the quick games pays no Gears |
 | Duty | Mods clocked in | Gears per hour (unchanged); present for streaks; no check-in XP |
 
 Cap: 100 XP per member per stream from the Control Room and Chat Games together. Badge hooks (Stream
@@ -385,10 +385,10 @@ All under `sites/boomertanger/`. No client writes anywhere; every write goes thr
 | `live/main` | Owner, A2+ | Settings: window defaults, grace, XP values, word list, `look`, `obsKeyHash`, `deckKeyHash`, `twitchPresence`, `makeBackstagePrivateAfterDays` |
 | `live/main/private/checklistTemplates` | Owner only | The four beat templates |
 | `private/youtubeChannel` | Server only | The YouTube OAuth tokens and the channel id |
-| `public/live` | Everyone | State, stream id and title, `actualStart`, current beat, window `{ open, closesAt }`, counts, viewers per platform and peak, current and next game, crew on duty, the running activity, `look`, `updatedAt` |
+| `public/live` | Everyone | State, stream id and title, `actualStart`, current beat, window `{ open, closesAt }`, counts, viewers per platform and peak, current and next game, crew on duty, the running Chat Game (`chatGame`), locked Predictions waiting (`chatGameWaiting`) and a settled one's 15 s result (`chatGameSettled`), `look`, `updatedAt` |
 
-Questions and Hot Seat data (`live/main/questions`, `hotSeatDecks`, `streams/{id}/hotseat/{round}`) are
-defined in the Chat Games spec.
+Questions and every game's data live under `chatGames/main` (questions, runs and their rounds, packs, formats);
+see the Chat Games spec §12.
 
 ## 14. Functions
 

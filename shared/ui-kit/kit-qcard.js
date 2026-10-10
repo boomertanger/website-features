@@ -1,5 +1,6 @@
 // shared/ui-kit/kit-qcard.js — the ".bt-qcard" section of the UI Kit page (/dev/ui-kit): the question card (docs/specs/chat-games.md §4, §14) in every
-// state: held, Tonight, Standing, on stream, answered, hidden, merged, asker is here, voted, pinned, with mod tools, and the big on-air size.
+// state: held, Tonight, Standing, on stream, answered, hidden, merged, cleared, archived, asker is here, voted, pinned, yours, with mod tools, and the
+// big on-air size.
 // ui-kit.js appends qcardKitHtml() to the page and calls initQcardKit(mount) (the vote buttons flip; nothing is saved).
 import { qcardHtml, initQcards } from "../ui/qcard.js";
 
@@ -16,6 +17,8 @@ export function qcardKitHtml() {
     ["Answered", { id: "k6", text: "What got you into horror games in the first place?", handle: "fogbank", ago: "last stream", votes: 31, canVote: false, state: "answered" }],
     ["Hidden by a mod", { id: "k7", text: "A question a mod hid", handle: "someone", ago: "1 h", votes: 2, canVote: false, state: "hidden" }],
     ["Merged", { id: "k8", text: "Which horror game has the best ending?", handle: "gbo", ago: "6 days", votes: 8, canVote: false, state: "merged", note: "Merged into a similar question" }],
+    ["Cleared (a Tonight question under 5 votes at the end of the stream)", { id: "k10", text: "Any tips for the water level?", handle: "fogbank", ago: "last stream", votes: 2, canVote: false, state: "cleared" }],
+    ["Archived (Standing, unanswered for 30 days)", { id: "k11", text: "Would you replay Siren on stream?", handle: "lanternjaw", ago: "31 days", votes: 4, canVote: false, state: "archived" }],
   ];
   return `
   <section class="kit-section" id="kit-qcard">

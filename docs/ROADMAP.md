@@ -12,7 +12,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
 | 4b | Notifications (email, text, push from the Planner's outbox) | Later | Community services |
 | 5 | Live Beacon and Control Room | Built on staging (parts 0-9); real-world tests pending | Games and streams |
-| 5b | Chat Games (Questions and every game; absorbs Mod Machina phase 4) | Next | Community services |
+| 5b | Chat Games (Questions and every game; absorbs Mod Machina phase 4) | Parts 1 to 7 built and tested on staging (Oct 2026); next: Caption This | Community services |
 | 6 | Stream Library | Later | Games and streams |
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
@@ -87,7 +87,7 @@ Kickoff: "Start workstream 4b (Notifications) from docs/ROADMAP.md."
 
 ### 5. Live Beacon and Control Room
 Goal: live and backstage states across the site (header beacon, mascot "aware" lenses, footer Twitch LIVE dot), and the owner's controls at /live for playing the scheduled streams: pick today's stream, Start (records the actual start, turns on live states), mark the game being played (records each game's start and end), Stop (records the end). An unscheduled stream can still be started ad hoc.
-Status: **Built on staging (parts 0-9); real-world tests pending.** Everything below runs on staging with sample data, the logic and wiring checks (`npm run check`) and Playwright; what still needs a real stream, Streamlabs, a Stream Deck and a real Twitch go-live is the walk-through list in [docs/testing/control-room-test-plan.md](testing/control-room-test-plan.md) (W1 to W6, then the after-show and backstage checks A to E). Not built: Questions, Hot Seat and the Chat Games scenes and panels (workstream 5b), the Mod Deck (Mod Machina phase 3), Connect Streamlabs, Stream Deck key titles with live state and member-chosen looks (spec section 18, "Later").
+Status: **Built on staging (parts 0-9); real-world tests pending.** Everything below runs on staging with sample data, the logic and wiring checks (`npm run check`) and Playwright; what still needs a real stream, Streamlabs, a Stream Deck and a real Twitch go-live is the walk-through list in [docs/testing/control-room-test-plan.md](testing/control-room-test-plan.md) (W1 to W6, then the after-show and backstage checks A to E). Built since in their own workstreams: Chat Games (5b: Questions, Hot Seat, Would You Rather, Predictions, their scenes and panels) and the Mod Deck (Mod Machina phase 3). Not built: Connect Streamlabs, Stream Deck key titles with live state and member-chosen looks (spec section 18, "Later").
 Spec: [docs/specs/control-room.md](specs/control-room.md); mockups `docs/design/mockups/control-room-review.html` and `control-room-batch-1.html` to `control-room-batch-4.html`.
 Parts (spec section 18; one or more commits each, staging first; all built):
 0. **Scream Planner part 8, YouTube events:** `004ceb9`, `3274042`, `e8272c7`, `e2ce5b0`, `9e54c3b`.
@@ -104,10 +104,27 @@ Depends on: Scream Planner, Game Vault, accounts (done), Twitch app (done).
 Kickoff: "Start workstream 5 (Live Beacon and Control Room) from docs/ROADMAP.md."
 
 ### 5b. Chat Games (Questions and every game; absorbs Mod Machina phase 4)
-Decided Oct 9, 2026: **Chat Games** is the one service and the one engine for Questions and every game (the earlier working name "Chat Games" is retired). Members see two names only, **Questions** (the queue) and **Chat Games** (every game, including Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo and Body Count). Some games are crew-hosted (they need Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. The game designs and crew-vote rules stay in `docs/specs/mod-machina.md` section 11 until the spec moves them.
+Decided Oct 9, 2026: **Chat Games** is the one service and the one engine for Questions and every game (the earlier working name "live activities" is retired). Members see two names only, **Questions** (the queue) and **Chat Games** (every game, including Hot Seat, Would You Rather, Predictions, Caption This, Dead Air, Scream Off, Scare Bingo and Body Count). Some games are crew-hosted (they need Room Leads posting in chats, so the Mod Deck); that is a property of the game, not a separate system. Build order: Questions and Hot Seat, then the quick formats (Would You Rather, Predictions, Caption This), then the crew-hosted games once the Mod Deck exists. The game designs and crew-vote rules stay in `docs/specs/mod-machina.md` section 11 until the spec moves them.
 Goal: live things members do during a stream: Questions (ask and promote) and every Chat Game, then the ranked extras. Its own service, after the Control Room core. The Control Room already has the places for it: the Play panel on /live, the launch panel on /live/control and in the Mod Deck, the question card and the Hot Seat pickers still to add to the kit (`.bt-qcard`, `.bt-seance`, `.bt-wheel`), and the stream view scenes.
-Spec: to come, `docs/specs/chat-games.md` (see control-room.md section 9 and decision 13).
-Status: **Next.**
+Spec: [docs/specs/chat-games.md](specs/chat-games.md) (confirmed Oct 9, 2026; the as-built notes are in each section). Design decisions: docs/design-system.md §8w.
+Status: **Parts 1 to 7 built and tested on staging (Oct 2026):**
+- [x] 1. The engine and registry (run states, deadline tasks and the liveTick sweep, `public/live.chatGame`, Stop clean-up, the cue contract, launch tiles).
+- [x] 2. Questions (`/live/questions`, `.bt-qcard`, the session, the run panel, the stream view card).
+- [x] 3. Packs and the pool (`/crew/games`, the card editor, the Suggested lane).
+- [x] 4. Hot Seat (`.bt-seance`, `.bt-wheel`, the rounds, the Play panel, the run panel, the stream view).
+- [x] 5. Would You Rather and Predictions (`.bt-choice`, launch dialogs, Save to pack, the settle flow with Correct once and `grant.reverseXp`, the waiting strip and chip, the 15 s result chip).
+- [x] 6. The How Chat Games work page (`/live/chat-games`).
+- [x] 7. The Mod Deck hookup (`btChatGames.mountRun`, the Deck's Chat Games mod tools, `functions/scripts/cue-sample.js`).
+- [x] 8. Docs.
+
+Next:
+1. **Caption This**, with a short addendum first (where the frame comes from, how captions are shortlisted, the moderation load).
+2. **The crew-hosted games:** Dead Air, Scream Off, Scare Bingo, Body Count. Each needs an addendum first, plus crew votes, host pledges and the Planner's Chat Games slot.
+3. **The later formats:** Spirit Board, Dare Deck, Haunted Trivia, Scream-o-meter, next-game vote, Polls, Last Words, Beat Goal, Clip it!.
+
+Open follow-ups:
+- [ ] A ban check in every Chat Games callable once the site has a ban flag (spec §4 as built: "not banned" can't be checked yet).
+- [ ] A dedicated Night Shift event type for Chat Games (today they post the Stream type with `action: "chat-game-played"` / `"question-answered"`).
 Depends on: Control Room (5); the crew-hosted games also need the Mod Deck (Mod Machina phase 3).
 
 ### 6. Stream Library
@@ -224,6 +241,12 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Production Twitch EventSub: set `TWITCH_EVENTSUB_SECRET` and create the stream.online and stream.offline subscriptions for the production callback (scripts/twitch-eventsub.js is staging only).
 - [ ] Re-seed the "Punch the clock" wording in production (`seed-factory-ideas.js`, `seed-factory-types.js`, `seed-badges.js` with `--wording "Punch the clock"`; so far only staging was done).
 - [ ] Walk through every item in docs/testing/control-room-test-plan.md on staging first, and note whether TikTok LIVE Studio accepts a browser source.
+
+### Chat Games in production
+- [ ] Run the Chat Games seed on production (`node functions/scripts/seed-chat-games.js --project production`, dry run first, then `--apply`): the registry and the General Hot Seat pack.
+- [ ] Create the `chatGameDeadline` Cloud Tasks queue in production (same default region as `liveFlush`; on staging the liveTick sweep is the backstop).
+- [ ] Deploy rules and indexes first, then the functions in batches per the CLAUDE.md deploy lesson (all `lib/live` functions together first, then batches of about 15 with 3-minute pauses), and confirm each function's served revision, not just ACTIVE.
+- [ ] Switch the four formats on in production (`sites/boomertanger/chatGames/main/formats/{questions|hot-seat|would-you-rather|predictions}.enabled`, from /crew/games as the owner).
 
 ### Mod Machina in production
 - [ ] Deploy rules and indexes first (the TTL fields for crew notes, flags, notices and rushJoins), then all functions together: anything that rebuilds public/live (every function in lib/live) or the crew boards (every Gears grant) must be on the new code at the same time. Watch the Cloud Run CPU quota per region (staging hit it on the full deploy, Oct 2026).

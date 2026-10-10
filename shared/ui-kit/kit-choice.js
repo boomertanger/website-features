@@ -20,6 +20,7 @@ export function choiceKitHtml() {
       ${cell("Locked with the split (gold fill and percentage)", choicesHtml({ options: PRED, state: "locked", pick: 1, pct: [48, 31, 21], counts: [46, 30, 20] }))}
       ${cell("Result: correct (lime) and out (dimmed)", choicesHtml({ options: PRED, state: "result", pick: 0, pct: [48, 31, 21], counts: [46, 30, 20], correct: 0 }))}
       ${cell("Void", choicesHtml({ options: PRED, state: "void", pick: 2 }))}
+      ${cell("Hot Seat vote at the reveal (unit \"vote\", mark \"the winner\", mineLabel \"✓ Your vote\")", choicesHtml({ options: ["Under the bed. That is literally their office.", "In plain sight, wearing a sign that says \"not here\".", "The monster's group chat."], state: "revealed", pick: 0, pct: [31, 52, 17], counts: [66, 111, 37], winners: [1], unit: "vote", mark: "the winner", mineLabel: "✓ Your vote" }))}
     </div>
   </section>`;
 }
