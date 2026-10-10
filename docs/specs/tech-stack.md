@@ -27,12 +27,12 @@ Locked parts use `.bt-lock-card` and open the Join free dialog (E1); after signu
 ## 3. Placement
 
 - Route `/tech-stack` (same URL as the old Squarespace page, which stays live until launch).
-- Header nav: **Community** group, blurb "The rig behind every stream" (`site/src/lib/nav.js`). A nav regroup is planned once the remaining pages exist (ROADMAP).
+- Header nav: **Community** group, blurb "The setup behind every stream" (`site/src/lib/nav.js`). A nav regroup is planned once the remaining pages exist (ROADMAP).
 - Story page, full frame: TocLayout rail, ghost-numbered chapters, hero with a scene, stage cards with scenes, journey line, placard, working example (the diagram), Ask BOOMBOT, real mascot and BOOMBOT art, closing call to action.
 
 ## 4. Page structure
 
-Hero: kicker "Community · The rig", page title, lede ("Two PCs, five cameras, one mixer and a 2 Gbps line…"), stat pills, Explore the rig / Follow a signal, hero scene built from the real photos (G7, Link, both PCs, HD60X, SM7dB) with a pulse along the cables, and the mascot.
+Hero: kicker "Community · The streaming setup", page title, lede ("Two PCs, five cameras, one mixer and a 2 Gbps line…"), stat pills, Explore the setup / Follow a signal, hero scene built from the real photos (G7, Link, both PCs, HD60X, SM7dB) with a pulse along the cables, and the mascot.
 
 1. **Why two PCs.** Six stage cards with detailed animated scenes built from the photos (more power for the game; cleaner streams; audio you can mix live; upgrade one side at a time; a backup built in; room to get creative). Power-on moment: when the chapter scrolls into view the scenes flicker on one by one, then each plays its animation once. Ambient idle loops after that (screen shine, needle sway, health-line dots, meter flicker, GPU float, current in the cord, LIVE blink) and a pulsing "▶ Play" badge. Hover, focus or tap plays a card. Then the One PC / Two PCs compare cards with PC photos and load bars, including the honest catch (TikTok stays on the Gaming PC).
 2. **Boomer's setup.** The diagram (§5), then **Inside the mixer** (§5.4).
@@ -58,6 +58,7 @@ All views run on one engine; every feature works in each. Coordinates are in a 1
 
 ### 5.2 Interactions
 - Tap / hover a device: its cables light, the rest dim; the detail card below the diagram shows photo, name, model, tags (PC, category, "On camera or mic"), role, connections ("Sends audio to Mixer", each tappable). Fan Club: ports per connection, specs, notes.
+- **Clearing a selection** (five ways, all the same: the selection, trace and tour clear, but not the zoom or a pulled plug; every device and cable comes back; focus returns to the zoom frame): a "✕ Show everything" chip at the top-left of the zoom frame (shown only while something is selected, traced or on tour); tapping the selected device again; the ✕ at the top-right of the detail card; tapping empty space (a drag or pinch never counts); Esc anywhere in the diagram or card. The empty card's tips say "Tap it again, tap empty space or press Esc to show everything."
 - **Trace from here:** lights everything downstream along compatible signals (audio follows audio, video follows video, game capture carries both, the internet follows network, control stops at a PC).
 - **Follow the signal tours** (narrated stop by stop, pulse down each cable; Back / Next stop / Finish): Gameplay to Twitch and YouTube; Gameplay to TikTok; Your voice; Face cams. Visitors see the route lit and a lock card.
 - **Pull the plug (Fan Club):** switch off a device; a readout shows Live / Down per platform and what else goes dark. A stream to a platform needs its PC to have a live network path.

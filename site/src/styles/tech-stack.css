@@ -161,9 +161,9 @@
 .bt-root:not(#_) .ts[data-look="flow"] .ts-dev .ring { display: none; }
 
 /* ---------- detail card ---------- */
-.bt-root:not(#_) .ts-card { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 22px; padding: 16px 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
+.bt-root:not(#_) .ts-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 14px 22px; padding: 16px 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
 .bt-root:not(#_) .ts-card-a, .bt-root:not(#_) .ts-card-b { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
-.bt-root:not(#_) .ts-card-a:only-child { grid-column: 1 / -1; }
+.bt-root:not(#_) .ts-card:not(:has(.ts-card-b)) .ts-card-a { grid-column: 1 / -1; }   /* the card's ✕ is absolutely placed, so it never takes a grid cell */
 .bt-root:not(#_) .ts-card.is-pop { animation: ts-pop .3s cubic-bezier(.3, 1.4, .5, 1); }
 @keyframes ts-pop { from { transform: translateY(6px); opacity: .4; } }
 .bt-root:not(#_) .ts-card-hd { display: flex; gap: 12px; align-items: flex-start; }
@@ -204,6 +204,13 @@
   .bt-root:not(#_) .ts-empty { flex-direction: column; text-align: center; }
   .bt-root:not(#_) .ts-empty ul { grid-template-columns: minmax(0, 1fr); }
 }
+
+/* clearing a selection: the "✕ Show everything" chip on the frame and the card's ✕ */
+.bt-root:not(#_) .ts-showall { position: absolute; top: 10px; left: 10px; z-index: 4; background: color-mix(in srgb, var(--bt-surface) 92%, transparent); backdrop-filter: blur(6px); animation: ts-pop .25s cubic-bezier(.3, 1.4, .5, 1); }
+.bt-root:not(#_) .ts-card-x { position: absolute; top: 10px; right: 10px; z-index: 2; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--bt-border-2); border-radius: 50%; background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-size: 13px; cursor: pointer; }
+.bt-root:not(#_) .ts-card-x:hover { color: var(--bt-text); border-color: var(--bt-primary); }
+.bt-root:not(#_) .ts-card-x:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .ts-card:has(.ts-card-x) .ts-card-hd, .bt-root:not(#_) .ts-card:has(.ts-card-x) .ts-card-a > .bt-label:first-child { padding-right: 34px; }
 
 /* ---------- List view ---------- */
 .bt-root:not(#_) .ts-list { display: none; flex-direction: column; gap: 18px; }
@@ -497,6 +504,7 @@
   .bt-root:not(#_) :is(.ts-card.is-pop, .ts-hwc.is-flash, .ts-tally, .ts-sc-play) { animation: none !important; }
   .bt-root:not(#_) :is(.ts-hwc, .ts-hwc-ph .ts-pic, .ts-arc.on, .ts-cable, .ts-dev, .ts-lab, .ts-mx-row) { transition: none !important; }
   .bt-root:not(#_) .ts-sc-card * { animation: none !important; transition: none !important; }
+  .bt-root:not(#_) .ts-showall { animation: none; }
   .bt-root:not(#_) .ts-mx .ts-mx-wire.is-lit { animation: none; stroke-dasharray: none; }
   .bt-root:not(#_) .ts-hwc:hover, .bt-root:not(#_) .ts-hwc:hover .ts-hwc-ph .ts-pic { transform: none; }
 }

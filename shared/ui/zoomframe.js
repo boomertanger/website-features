@@ -89,6 +89,7 @@ export function initZoomFrame(frame, { width = 1600, height = 1000, minWidth = w
   let start = null, pinch = null, lastTap = 0, lastXY = [0, 0];
   svg.addEventListener("pointerdown", (e) => {
     frame.classList.add("is-active");
+    if (e.isPrimary) { P.clear(); pinch = null; }   // a new first finger (or mouse): forget any pointer that never sent up or cancel
     svg.setPointerCapture(e.pointerId); P.set(e.pointerId, [e.clientX, e.clientY]);
     if (P.size === 1) start = { x: e.clientX, y: e.clientY, vb: { ...ctl.vb }, k: 1 / svg.getScreenCTM().a, moved: false, item: itemSelector ? e.target.closest(itemSelector) : null };
     if (P.size === 2) { const [a, b] = [...P.values()]; pinch = { d: Math.hypot(a[0] - b[0], a[1] - b[1]), mid: ctl.toSvg((a[0] + b[0]) / 2, (a[1] + b[1]) / 2), vb: { ...ctl.vb } }; if (start) start.moved = true; }
@@ -113,7 +114,7 @@ export function initZoomFrame(frame, { width = 1600, height = 1000, minWidth = w
       start = null;
     }
   };
-  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up); svg.addEventListener("lostpointercapture", up);
   mapEl && mapEl.addEventListener("pointerdown", (e) => { e.stopPropagation(); const r = mapEl.getBoundingClientRect(); ctl.flyTo(((e.clientX - r.left) / r.width) * width, ((e.clientY - r.top) / r.height) * height); });
 
   ctl.setView(ctl.vb);

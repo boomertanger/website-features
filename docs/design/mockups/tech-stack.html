@@ -5945,6 +5945,16 @@ html, body { margin: 0; background: var(--bt-bg, #0f0f0f); }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) :is(.ts-sx-dot, .ts-sx-zap, .ts-sx-shine) { display: none; } .bt-root:not(#_) .ts-sc-play { animation: none; } }
 .bt-root:not(#_) .ts-rm :is(.ts-sx-dot, .ts-sx-zap, .ts-sx-shine) { display: none; }
 .bt-root:not(#_) .ts-rm .ts-sc-play { animation: none; }
+
+/* clearing a selection */
+.bt-root:not(#_) .ts-showall { position: absolute; top: 10px; left: 10px; z-index: 4; background: color-mix(in srgb, var(--bt-surface) 92%, transparent); backdrop-filter: blur(6px); animation: ts-pop .25s cubic-bezier(.3, 1.4, .5, 1); }
+.bt-root:not(#_) .ts-showall[hidden] { display: none; }
+.bt-root:not(#_) .ts-card { position: relative; }
+.bt-root:not(#_) .ts-card-x { position: absolute; top: 10px; right: 10px; z-index: 2; width: 30px; height: 30px; display: grid; place-items: center; border: 1px solid var(--bt-border-2); border-radius: 50%; background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-size: 13px; cursor: pointer; }
+.bt-root:not(#_) .ts-card-x:hover { color: var(--bt-text); border-color: var(--bt-primary); }
+.bt-root:not(#_) .ts-card-x:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .ts-card-hd { padding-right: 34px; }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .ts-showall { animation: none; } }
 </style>
 </head><body>
 <div class="bt-root bt-site doc" id="doc" data-view="both" data-auth="visitor" data-onair="0" data-ref="0">
@@ -6436,6 +6446,7 @@ class Rig {
 
   // ---------- state ----------
   select(id, fly = true) {
+    if (id && id === this.s.sel && !this.s.tour) return this.clear();
     if (this.s.tour) this.s.tour = null;
     this.s.sel = id; if (this.s.trace && this.s.trace !== id) this.s.trace = null;
     this.apply(); this.renderCard(true);
@@ -6509,6 +6520,7 @@ class Rig {
       g.classList.toggle("is-match", !!s.q && this.matches(id));
     }
     this.svg.classList.toggle("has-focus", focus);
+    const sa = this.root.querySelector(".ts-showall"); if (sa) sa.hidden = !focus;
     this.setPulses(pulse && !RM() ? [...litC].filter((id) => !s.hidden.has(CAB[id].phys)) : []);
     this.renderReadout(dark);
   }
@@ -6545,7 +6557,7 @@ class Rig {
         h = `<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${t.title}</b><p>The route is lit on the diagram. Fan Club members follow it step by step, with a pulse down each cable and Boomer's notes at every stop.</p>${lockCard(t.steps.length + " stops with narration", "Free with Fan Club. You'll come straight back here.")}<div class="ts-acts"><button class="bt-btn bt-btn--ghost bt-btn--sm" data-clear>Close</button></div></div>`;
       } else {
         const st = t.steps[s.tour.i], n = t.steps.length;
-        h = `<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${t.title}</b>
+        h = `<button type="button" class="ts-card-x" data-clear aria-label="Exit the tour and show everything">✕</button><div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${t.title}</b>
           <div class="ts-step"><span class="ts-step-n">Stop ${s.tour.i + 1} of ${n}</span><span class="ts-step-dots">${t.steps.map((_, i) => `<i class="${i <= s.tour.i ? "on" : ""}"></i>`).join("")}</span></div>
           <p>${st.text}</p>
           <div class="ts-acts"><button class="bt-btn bt-btn--secondary bt-btn--sm" data-step="-1" ${s.tour.i ? "" : "disabled"}>Back</button><button class="bt-btn bt-btn--primary bt-btn--sm" data-step="1">${s.tour.i === n - 1 ? "Finish" : "Next stop"}</button><button class="bt-btn bt-btn--ghost bt-btn--sm" data-clear>Exit</button></div></div>
@@ -6559,7 +6571,7 @@ class Rig {
         ? `<div class="ts-fc"><span class="bt-badge bt-badge--gold ts-fc-tag">Fan Club</span><dl>${m.specs.map(([k, v]) => `<dt>${k}</dt><dd>${esc(v)}</dd>`).join("")}</dl><p><b>Why I picked it:</b> ${esc(m.why)}</p><p><b>What I'd change:</b> ${esc(m.change)}</p></div>`
         : lockCard("Ports, full specs and Boomer's notes", "Free with Fan Club.");
       const tracing = s.trace === d.id;
-      h = `<div class="ts-card-a"><div class="ts-card-hd"><span class="ts-card-ic">${devPic(d)}</span><div><b class="bt-card-title">${esc(d.name)}</b><div class="ts-card-model">${esc(d.model)}</div><div class="ts-card-tags">${tags}</div></div></div>
+      h = `<button type="button" class="ts-card-x" data-clear aria-label="Close and show everything">✕</button><div class="ts-card-a"><div class="ts-card-hd"><span class="ts-card-ic">${devPic(d)}</span><div><b class="bt-card-title">${esc(d.name)}</b><div class="ts-card-model">${esc(d.model)}</div><div class="ts-card-tags">${tags}</div></div></div>
         <p>${esc(d.role)}</p>
         ${tracing ? `<p><b style="color:var(--bt-text)">Tracing:</b> everything ${esc(d.name)} feeds is lit, all the way to the stream.</p>` : ""}
         <div class="ts-acts"><button class="bt-btn bt-btn--secondary bt-btn--sm" data-trace="${d.id}" aria-pressed="${tracing}">${tracing ? "Stop tracing" : "Trace from here"}</button>
@@ -6569,7 +6581,7 @@ class Rig {
         <div class="ts-card-b"><span class="bt-label">Connections</span><ul class="ts-conn">${outOf(d.id).map((c) => row(c, true)).join("")}${inTo(d.id).map((c) => row(c, false)).join("")}</ul>${fc}</div>`;
     } else {
       h = `<div class="ts-card-a"><div class="ts-empty">${MASCOT.replace('class="bt-mascot"', 'class="bt-mascot bt-mascot--aware"')}<div><b class="bt-card-title">Tap any device</b>
-        <ul><li>💡 Its cables light up and the rest step back.</li><li>🎚️ Use the chips to show one kind of signal.</li><li>🔍 Scroll (after a click) or pinch to zoom.</li><li>⌨️ Tab to a device, arrows follow its cables.</li></ul></div></div></div>`;
+        <ul><li>💡 Its cables light up and the rest step back.</li><li>🎚️ Use the chips to show one kind of signal.</li><li>🔍 Scroll (after a click) or pinch to zoom.</li><li>✕ Tap it again, tap empty space or press Esc to show everything.</li></ul></div></div></div>`;
     }
     this.card.innerHTML = h;
     if (pop && !RM()) { this.card.classList.remove("is-pop"); void this.card.offsetWidth; this.card.classList.add("is-pop"); }
@@ -6618,7 +6630,6 @@ class Rig {
   devKey(e, id) {
     const dirs = { ArrowRight: [1, 0], ArrowLeft: [-1, 0], ArrowDown: [0, 1], ArrowUp: [0, -1] };
     if (e.key === "Enter" || e.key === " ") { e.preventDefault(); this.select(id); return; }
-    if (e.key === "Escape") { this.clear(); return; }
     const v = dirs[e.key]; if (!v) return;
     e.preventDefault();
     const [x, y] = posOf(DEV[id], this.look);
@@ -6660,6 +6671,8 @@ class Rig {
     zi.addEventListener("click", () => this.zoomAt(0.7, this.vb.x + this.vb.w / 2, this.vb.y + this.vb.h / 2));
     zo.addEventListener("click", () => this.zoomAt(1 / 0.7, this.vb.x + this.vb.w / 2, this.vb.y + this.vb.h / 2));
     fit.addEventListener("click", () => this.flyTo(VB_W / 2, VB_H / 2, VB_W));
+    this.root.addEventListener("keydown", (e) => { if (e.key === "Escape" && (this.s.sel || this.s.trace || this.s.tour)) { e.preventDefault(); this.clear(); fr.focus(); } });
+    this.root.querySelector(".ts-showall").addEventListener("click", () => { this.clear(); fr.focus(); });
     fr.addEventListener("keydown", (e) => { if (e.target.closest(".ts-dev")) return; if (e.key === "+" || e.key === "=") zi.click(); if (e.key === "-") zo.click(); if (e.key === "0") fit.click(); });
     document.addEventListener("pointerdown", (e) => { if (!fr.contains(e.target)) fr.classList.remove("is-active"); });
     fr.addEventListener("wheel", (e) => {
@@ -6875,11 +6888,11 @@ function pageHtml(fid) {
       <section class="ai-hero">
         <div class="ts-hero">
           <div>
-            <span class="ai-kicker">Community · The rig</span>
+            <span class="ai-kicker">Community · The streaming setup</span>
             <h1 class="bt-title bt-title--hero">Tech stack</h1>
             <p>Two PCs, five cameras, one mixer and a 2 Gbps line. Here's everything that runs the stream, and exactly how it's wired.</p>
             <ul class="ts-hero-stats"><li><b>2</b> PCs</li><li><b>5</b> cameras</li><li><b>${DEVICES.filter((d) => d.cat !== "platforms").length}</b> devices</li><li><b>3</b> platforms at once</li></ul>
-            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#${A("rig")}">Explore the rig</a><button class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#${A("rig")}">Explore the setup</a><button class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
           </div>
           <div class="ts-hero-scene ts-vars">${heroScene()}</div>
         </div>
@@ -6909,6 +6922,7 @@ function pageHtml(fid) {
             <div class="bt-zoomframe" tabindex="-1">
               <svg class="bt-zoomframe-view ts-svg" viewBox="0 0 1600 1000" role="group" aria-label="Wiring diagram"></svg>
               <span class="bt-zoomframe-hint">Click, then scroll to zoom · drag to pan</span>
+              <button type="button" class="bt-chip bt-chip--small ts-showall" hidden>✕ Show everything</button>
               <div class="bt-zoomframe-ctl"><button type="button" aria-label="Zoom in">+</button><button type="button" aria-label="Zoom out">−</button><button type="button" class="fit" aria-label="Fit the whole diagram">FIT</button></div>
               <div class="bt-zoomframe-map" aria-hidden="true"><svg></svg></div>
             </div>

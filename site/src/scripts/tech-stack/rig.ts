@@ -5,9 +5,12 @@
 //                both, the internet follows network, control stops at a PC)
 //   tour         Follow the signal: members step through with narration and a pulse down each cable; visitors see the whole route lit + a lock card
 //   unplug       Pull the plug (Fan Club): what goes dark, and Live / Down per platform (a stream needs its PC to have a live network path)
+//   clear        five ways, all the same (clear()): the "✕ Show everything" chip on the frame, tapping the selected device again, the card's ✕,
+//                tapping empty space (never a drag or a pinch), and Esc anywhere in the diagram or card. Clears the selection, trace and tour (not the
+//                zoom or a pulled plug), restores every device and cable, and puts focus back on the zoom frame.
 //   layers, search, keyboard (devices are buttons; arrows follow cables; Escape clears; + − 0 zoom), reduced motion (no pulses; zoom jumps)
 import { initZoomFrame } from "../../../../shared/ui/zoomframe.js";
-import { DEVICES, CABLES, TOURS, DEV, CAB, CAT_NAME, PC_NAME, VERB, VB_W, VB_H, outOf, inTo, posOf, type Look, type View, type Cable } from "./data";
+import { DEVICES, CABLES, TOURS, DEV, CAB, CAT_NAME, PC_NAME, VERB, VB_W, VB_H, outOf, inTo, posOf, photoUrl, type Look, type View, type Cable } from "./data";
 import { svgMarkup, devPic, esc } from "./art";
 import { memberState, onMember } from "./member";
 import { lockCard, mascot, RM, LOCK_SVG } from "./ui";
@@ -23,6 +26,7 @@ export class Rig {
   view: View = "photo";
   frame: HTMLElement; svg: SVGSVGElement; card: HTMLElement; readout: HTMLElement; list: HTMLElement; stage: HTMLElement;
   zf: ReturnType<typeof initZoomFrame>;
+  chipAt = 0;   // when the Show everything chip last appeared
   devEls: Record<string, SVGGElement> = {}; cabEls: Record<string, SVGGElement> = {};
   pulses: { el: SVGCircleElement; path: SVGPathElement; len: number; dur: number; off: number }[] = []; raf = 0;
 
@@ -31,7 +35,14 @@ export class Rig {
     this.frame = root.querySelector(".bt-zoomframe")!; this.svg = root.querySelector(".ts-svg")!;
     this.card = root.querySelector(".ts-card")!; this.readout = root.querySelector(".ts-readout")!; this.list = root.querySelector(".ts-list")!; this.stage = root.querySelector(".ts-stage")!;
     this.zf = initZoomFrame(this.frame, { width: VB_W, height: VB_H, minWidth: 260, itemSelector: ".ts-dev", reduced: RM,
-      onTap: (_e: Event, item: Element | null) => { if (item) this.select((item as HTMLElement).dataset.id!); else if ((this.s.sel || this.s.trace) && !this.s.tour) this.clear(); } });
+      onTap: (e: PointerEvent, item: Element | null) => {
+        if (item && this.seeThrough(item as SVGGElement, e)) item = null;   // a tap on a cut-out's transparent part is empty space
+        if (item) this.select((item as HTMLElement).dataset.id!); else if (this.busy) this.clear();
+      } });
+    this.frame.insertAdjacentHTML("beforeend", `<button type="button" class="bt-chip bt-chip--small ts-showall" hidden>✕ Show everything</button>`);
+    // a touch tap that selects a device also sends a click at the same spot a moment later; if the chip has just appeared there, ignore it
+    this.frame.querySelector(".ts-showall")!.addEventListener("click", () => { if (performance.now() - this.chipAt > 450) this.clear(); });
+    root.addEventListener("keydown", (e) => { if (e.key === "Escape" && this.busy) { e.preventDefault(); this.clear(); } });
     this.bindChrome();
     this.renderList();
     onMember(() => { this.apply(); this.renderCard(); });
@@ -39,6 +50,8 @@ export class Rig {
   get look(): Look { return (this.root.dataset.look as Look) || "photo"; }
   get narrow() { return this.frame.getBoundingClientRect().width < 600; }
   get member() { return memberState().status === "member"; }
+  /** Something is selected, traced or on tour (what the clear paths undo). */
+  get busy() { return !!(this.s.sel || this.s.trace || this.s.tour); }
 
   // ---------- views ----------
   /** The view to open on: ?view=, then the remembered one, then List under 420 px, then Photo. */
@@ -61,6 +74,7 @@ export class Rig {
   render() {
     this.svg.innerHTML = svgMarkup(this.look, this.uid);
     this.zf.setMap(svgMarkup(this.look, `${this.uid}m`, false));
+    if (this.look === "photo") this.loadMasks();
     this.devEls = Object.fromEntries([...this.svg.querySelectorAll<SVGGElement>(".ts-dev")].map((g) => [g.dataset.id!, g]));
     this.cabEls = Object.fromEntries([...this.svg.querySelectorAll<SVGGElement>(".ts-cab")].map((g) => [g.dataset.id!, g]));
     Object.values(this.devEls).forEach((g) => {
@@ -73,11 +87,13 @@ export class Rig {
   // ---------- state ----------
   select(id: string, fly = true) {
     if (!DEV[id]) return;
+    if (id === this.s.sel && !this.s.tour) { this.clear(); return; }   // tapping the selected device again shows everything
     this.s.tour = null; this.s.sel = id; if (this.s.trace && this.s.trace !== id) this.s.trace = null;
     this.apply(); this.renderCard(true); this.markTours();
     if (fly && (this.narrow || this.zf.zoomed)) this.flyToDev(id, this.narrow ? Math.min(this.zf.vb.w, 760) : this.zf.vb.w);
   }
-  clear() { this.s.sel = null; this.s.trace = null; this.s.tour = null; this.apply(); this.renderCard(); this.markTours(); }
+  /** Show everything: no selection, trace or tour (the zoom and a pulled plug stay), focus back on the zoom frame. */
+  clear() { this.s.sel = null; this.s.trace = null; this.s.tour = null; this.apply(); this.renderCard(); this.markTours(); this.frame.focus({ preventScroll: true }); }
   startTour(id: string) {
     if (!TOURS.some((t) => t.id === id)) return;
     if (this.s.tour && this.s.tour.id === id) return this.clear();
@@ -142,6 +158,7 @@ export class Rig {
       g.classList.toggle("is-match", !!s.q && this.matches(id));
     }
     this.svg.classList.toggle("has-focus", focus);
+    const chip = this.frame.querySelector<HTMLElement>(".ts-showall"); if (chip) { if (chip.hidden && focus) this.chipAt = performance.now(); chip.hidden = !focus; }
     this.setPulses(pulse && !RM() ? [...litC].filter((id) => !s.hidden.has(CAB[id].signal)) : []);
     this.renderReadout(dark);
   }
@@ -181,14 +198,15 @@ export class Rig {
   renderCard(pop = false) {
     const s = this.s, m = memberState(), doc = m.doc;
     const lockIc = (txt: string) => `${this.member ? "" : LOCK_SVG}${txt}`;
+    const X = (label: string) => `<button type="button" class="ts-card-x" data-clear aria-label="${label}">✕</button>`;
     let h = "";
     if (s.tour) {
       const t = TOURS.find((x) => x.id === s.tour!.id)!;
       if (!this.member) {
-        h = `<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${esc(t.title)}</b><p>The route is lit on the diagram. Fan Club members follow it step by step, with a pulse down each cable and Boomer's notes at every stop.</p>${lockCard(m, `${t.steps.length} stops with narration`, "Free with Fan Club. You'll come straight back here.", `?tour=${t.id}`)}<div class="ts-acts"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-clear>Close</button></div></div>`;
+        h = `${X("Exit the tour and show everything")}<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${esc(t.title)}</b><p>The route is lit on the diagram. Fan Club members follow it step by step, with a pulse down each cable and Boomer's notes at every stop.</p>${lockCard(m, `${t.steps.length} stops with narration`, "Free with Fan Club. You'll come straight back here.", `?tour=${t.id}`)}<div class="ts-acts"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-clear>Close</button></div></div>`;
       } else {
         const st = t.steps[s.tour.i], n = t.steps.length, d = DEV[st.device], line = doc?.tours?.[t.id]?.[s.tour.i] || "";
-        h = `<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${esc(t.title)}</b>
+        h = `${X("Exit the tour and show everything")}<div class="ts-card-a"><span class="bt-label">Follow the signal</span><b class="bt-card-title">${esc(t.title)}</b>
           <div class="ts-step"><span class="ts-step-n">Stop ${s.tour.i + 1} of ${n}</span><span class="ts-step-dots" aria-hidden="true">${t.steps.map((_, i) => `<i class="${i <= s.tour!.i ? "on" : ""}"></i>`).join("")}</span></div>
           ${line ? `<p>${esc(line)}</p>` : ""}
           <div class="ts-acts"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-step="-1" ${s.tour.i ? "" : "disabled"}>Back</button><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-step="1">${s.tour.i === n - 1 ? "Finish" : "Next stop"}</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-clear>Exit</button></div></div>
@@ -202,7 +220,7 @@ export class Rig {
         ? (note ? `<div class="ts-fc"><span class="bt-badge bt-badge--gold ts-fc-tag">Fan Club</span>${note.specs && Object.keys(note.specs).length ? `<dl>${Object.entries(note.specs).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("")}</dl>` : ""}${note.whyPicked ? `<p><b>Why I picked it:</b> ${esc(note.whyPicked)}</p>` : ""}${note.wouldChange ? `<p><b>What I'd change:</b> ${esc(note.wouldChange)}</p>` : ""}</div>` : "")
         : lockCard(m, "Ports, full specs and Boomer's notes", "Free with Fan Club.", `?device=${d.id}`);
       const tracing = s.trace === d.id;
-      h = `<div class="ts-card-a"><div class="ts-card-hd"><span class="ts-card-ic">${devPic(d.id, 64)}</span><div><b class="bt-card-title">${esc(d.name)}</b><div class="ts-card-model">${esc(d.model)}</div><div class="ts-card-tags">${tags}</div></div></div>
+      h = `${X("Close and show everything")}<div class="ts-card-a"><div class="ts-card-hd"><span class="ts-card-ic">${devPic(d.id, 64)}</span><div><b class="bt-card-title">${esc(d.name)}</b><div class="ts-card-model">${esc(d.model)}</div><div class="ts-card-tags">${tags}</div></div></div>
         <p>${esc(d.role)}</p>
         ${tracing ? `<p><b class="ts-strong">Tracing:</b> everything ${esc(d.name)} feeds is lit, all the way to the stream.</p>` : ""}
         <div class="ts-acts"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-trace="${d.id}" aria-pressed="${tracing}">${tracing ? "Stop tracing" : "Trace from here"}</button>
@@ -212,7 +230,7 @@ export class Rig {
         <div class="ts-card-b"><span class="bt-label">Connections</span><ul class="ts-conn">${outOf(d.id).map((c) => row(c, true)).join("")}${inTo(d.id).map((c) => row(c, false)).join("")}</ul>${fc}</div>`;
     } else {
       h = `<div class="ts-card-a"><div class="ts-empty">${mascot()}<div><b class="bt-card-title">Tap any device</b>
-        <ul><li>💡 Its cables light up and the rest step back.</li><li>🎚️ Use the chips to show one kind of signal.</li><li>🔍 Click, then scroll or pinch to zoom.</li><li>⌨️ Tab to a device; the arrows follow its cables.</li></ul></div></div></div>`;
+        <ul><li>💡 Its cables light up and the rest step back.</li><li>🎚️ Use the chips to show one kind of signal.</li><li>🔍 Click, then scroll or pinch to zoom.</li><li>⌨️ Tab to a device; the arrows follow its cables.</li><li>✕ Tap it again, tap empty space or press Esc to show everything.</li></ul></div></div></div>`;
     }
     this.card.innerHTML = h;
     if (pop && !RM()) { this.card.classList.remove("is-pop"); void this.card.offsetWidth; this.card.classList.add("is-pop"); }
@@ -268,6 +286,37 @@ export class Rig {
     const pick = (pool: string[]) => { let best: string | null = null, bs = 1e9; pool.forEach((oid) => { const [ox, oy] = posOf(DEV[oid], this.look), dx = ox - x, dy = oy - y, dist = Math.hypot(dx, dy) || 1, cos = (dx * v[0] + dy * v[1]) / dist; if (cos > 0.35 && dist / cos < bs) { bs = dist / cos; best = oid; } }); return best; };
     const to = pick([...nb]) || pick(DEVICES.map((d) => d.id).filter((o) => o !== id));
     if (to) (this.devEls[to] as unknown as HTMLElement).focus();
+  }
+
+  // ---------- photo hit test: the cut-outs' boxes are big (a Key Light's box is mostly air), so a tap only counts where the photo isn't transparent ----------
+  static masks = new Map<string, { w: number; h: number; a: Uint8ClampedArray } | null>();
+  /** Loads small alpha maps of the Photo view's cut-outs once (Cloudinary sends CORS headers); until one loads, its whole box counts. */
+  loadMasks() {
+    DEVICES.forEach((d) => {
+      const url = photoUrl(d.photo.desk, 128); if (!url || Rig.masks.has(d.id)) return;
+      Rig.masks.set(d.id, null);
+      const img = new Image(); img.crossOrigin = "anonymous"; img.decoding = "async";
+      img.onload = () => { try {
+        const c = document.createElement("canvas"); c.width = img.naturalWidth; c.height = img.naturalHeight;
+        const x = c.getContext("2d", { willReadFrequently: true })!; x.drawImage(img, 0, 0);
+        Rig.masks.set(d.id, { w: c.width, h: c.height, a: x.getImageData(0, 0, c.width, c.height).data });
+      } catch { /* unreadable: the whole box counts */ } };
+      img.src = url;
+    });
+  }
+  /** True when a tap on a Photo-view device landed on a transparent part of its cut-out (with a few pixels of slack; more for a finger). */
+  seeThrough(g: SVGGElement, e: PointerEvent) {
+    if (this.look !== "photo") return false;
+    const m = Rig.masks.get(g.dataset.id!), img = g.querySelector("image.ts-photo");
+    if (!m || !img) return false;
+    const r = img.getBoundingClientRect(), s = Math.min(r.width / m.w, r.height / m.h);
+    const ox = r.left + (r.width - m.w * s) / 2, oy = r.top + (r.height - m.h * s) / 2;
+    const px = (e.clientX - ox) / s, py = (e.clientY - oy) / s, slack = Math.max(1, Math.round((e.pointerType === "touch" ? 14 : 6) / s));
+    for (let y = Math.floor(py) - slack; y <= py + slack; y++) for (let x = Math.floor(px) - slack; x <= px + slack; x++) {
+      if (x < 0 || y < 0 || x >= m.w || y >= m.h) continue;
+      if (m.a[(y * m.w + x) * 4 + 3] > 24) return false;
+    }
+    return true;
   }
 
   // ---------- zoom ----------
