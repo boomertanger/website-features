@@ -12,7 +12,7 @@ import { submit, newToken, prepareShot } from "./store";
 import { requireVerified, verifyPrompt } from "./gate";
 import { getAuthState } from "../../lib/auth";
 import { esc, sevBadge, stamp, longDate } from "./ui";
-import { isPreview } from "./gate";
+import { isPreview, isAdmin } from "./gate";
 import { loadServices, serviceForPage, serviceSelectHtml } from "../services-pick";
 
 export interface Device { browser: string; os: string; viewport: string }
@@ -120,7 +120,9 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
       m.setDismissible(true);
       const reason = reasonOf(ex);
       if (reason === "rateLimit") {
-        view("That's 5 reports today", `<div class="bt-notice">You can report again tomorrow. Found more? Add them to the thread on one of today's reports and the team will see them.</div>`, `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>`);
+        // the server decides the limit (5 a day for members and mods; a 200-a-day backstop for the owner and admins); this only words it
+        if (isAdmin()) view("That's 200 reports today", `<div class="bt-notice">${esc(messageFor(ex, "That's 200 reports today. Try again tomorrow."))}</div>`, `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>`);
+        else view("That's 5 reports today", `<div class="bt-notice">You can report again tomorrow. Found more? Add them to the thread on one of today's reports and the team will see them.</div>`, `<button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Close</button>`);
         return;
       }
       if (reason === "emailNotVerified" || reason === "needsSignup") { m.close(); verifyPrompt(getAuthState().user?.email || ""); return; }

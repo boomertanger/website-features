@@ -27,6 +27,8 @@ const SHOT_FORMATS = ["jpg", "jpeg", "png", "webp"];
 /** Per member (spec §2.7): reports per Central day, thread replies and "bit me too" changes per hour. */
 const LIMITS = {
   submit: { count: 5, period: "day", message: "Slow down: you can send 5 reports a day. Try again tomorrow." },
+  // the owner and admins (A1 Steward and up) skip the 5 a day; this backstop, on its own key, is theirs
+  submitAdmin: { count: 200, period: "day", message: "That's 200 reports today. Try again tomorrow." },
   reply: { count: 20, period: "hour", message: "Slow down: 20 replies an hour is the most. Try again later." },
   meToo: { count: 60, period: "hour", message: "Slow down: too many changes in an hour. Try again later." },
 };

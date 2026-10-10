@@ -41,7 +41,7 @@ Squarespace Bug Zapper (`bugReports`, its rules, `recordBugScreenshot`, `deleteB
 6. **Alerts** (all through `notifyOutbox`; Boom Alerts delivers when it ships). New admin topic **`bug-new`** (inbox;
    Critical also push and email). The reporter gets **`report-update`** on every status change and every staff reply.
    Everyone who added a "bit me too" gets `report-update` when it's **Fixed**.
-7. **Abuse protection.** Per member: 5 reports a day (Central day), 20 thread replies an hour, 60 "bit me too" changes
+7. **Abuse protection.** 5 reports a day for members and mods; the owner and admins are exempt (backstop 200 a day) (Central day). Per member: 20 thread replies an hour, 60 "bit me too" changes
    an hour; length limits in §3. Mods and admins hide or unhide a report or a reply (reason 1–200, logged). Delete:
    the owner, A2 Overseer or A3 Right Hand; an A1 Steward gets Hide and the note "Deleting needs the owner or a Right
    Hand. Hide it instead." No member Report button.

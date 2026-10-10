@@ -1,7 +1,8 @@
 // Bug Zapper callables (docs/specs/bug-zapper.md §3, §4). Every document under sites/boomertanger/bugs/main is written ONLY here (Admin SDK);
 // firestore.rules gives clients read access to what the spec says and no write access at all.
 //
-//   bugSubmit      verified members, staff   a new report (5 a day, one report per post token); signed screenshot params when wantsShot
+//   bugSubmit      verified members, staff   a new report (5 a day for members and mods; the owner and admins: a 200-a-day backstop instead; one report per post token);
+//                                            signed screenshot params when wantsShot
 //   bugShotParams  the reporter, staff       fresh signed upload params for bug-zapper/<id>/shot (authenticated)
 //   bugAttachShot  the reporter, staff       checks the uploaded file with the Admin API, records the asset, sets shotRef
 //   bugShotUrl     the reporter, staff       a 10-minute signed link to the screenshot
@@ -89,7 +90,7 @@ function build(deps = {}) {
     // a double click or a retry with the same token is the same report, and costs no part of the daily limit
     const already = await B.seenToken(tokenRef(token), c.uid, "reportId");
     if (already) return { ok: true, id: already, already: true, counted: false };
-    await bump("submit", c.uid);
+    await bump(c.isAdmin ? "submitAdmin" : "submit", c.uid);   // c.isAdmin: the owner or an admin role (A1 Steward and up), as the other bug callables check
     const at = now();
     const ref = db.collection(reportsPath).doc();
     const by = byOf(c);

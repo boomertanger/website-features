@@ -432,5 +432,25 @@ const outboxOf = async (type) => (await col(`${S}/notifyOutbox`)).filter((o) => 
   // the cleanup rule's setup lives in seed-cloud-stash.js (checked in check-stash.js); seed-bug-cleanup-rule.js is retired
   assert.ok(!fsx.existsSync(pathx.join(__dirname, "seed-bug-cleanup-rule.js")), "the old cleanup-rule seed script is gone");
 
+  // ================================================================ the daily report limit: members and mods 5, the owner and admins exempt (backstop 200)
+  {
+    clock += 3 * 24 * 3600000;   // a fresh Central day for everyone
+    const send = (uid, n) => as(uid, "bugSubmit", { ...rep({ title: `Limit check ${uid} number ${n}` }), token: token() });
+    const sendN = async (uid, n) => { for (let i = 1; i <= n; i++) await send(uid, i); };
+    await sendN("fan3", 5); await sendN("mod1", 5); await sendN("boss", 5); await sendN("adm1", 5);
+    const sixth = async (uid) => why(send(uid, 6));
+    assert.equal(await sixth("fan3"), "rateLimit", "a member is refused on the 6th");
+    assert.equal(await sixth("mod1"), "rateLimit", "a mod is refused on the 6th");
+    assert.equal(await sixth("boss"), "ok", "the owner can send a 6th");
+    assert.equal(await sixth("adm1"), "ok", "an admin (A1 Steward) can send a 6th");
+    await sendN("adm1", 194);   // 200 today
+    const over = await send("adm1", 201).catch((e) => e);
+    assert.equal(over.details.reason, "rateLimit", "an admin is refused on the 201st");
+    assert.equal(over.message, "That's 200 reports today. Try again tomorrow.");
+    const keys = (await col(`${S}/rateLimits`)).map((d) => d.id);
+    assert.ok(keys.some((k) => k.startsWith("bugs_submitAdmin_")) && keys.some((k) => k.startsWith("bugs_submit_")), "the backstop has its own key");
+    assert.equal(L.overLimit("submitAdmin", 199), false); assert.equal(L.overLimit("submitAdmin", 200), true);
+  }
+
   console.log("check-bugs: ok");
 })().catch((e) => { console.error(e); process.exit(1); });
