@@ -19,7 +19,7 @@ Decided Oct 9, 2026:
 2. **Who claims:** any signed-in member; no check-in needed. Visitors see the banner with Join free.
 3. **Recruit Rush:** when the goal is hit, the drop panel shows a one-tap "Rush goal hit: drop <badge>?" prompt. The reward badge is picked when Rush is turned on. Nothing opens automatically.
 4. **Self-claims:** the person who opened a drop can't claim it; everyone else signed in can, crew and admins included.
-5. **Which badges:** only badges with a drop preset. A Captain sees the ones whose awardableBy is mod; the owner sees all.
+5. **Which badges:** only badges with a drop preset. Each preset carries drop.by ("captain" or "owner"; missing means owner): a Captain sees the captain ones, the owner sees all. awardableBy stays untouched (it controls manual awards). Changed Oct 10, 2026, after the Part 1 check found awardableBy null on all five.
 6. **On stream:** the stream view (/live/obs, wide and tall) shows a drop callout while a window is open.
 7. **The Chosen One:** a new mode, draw. The window collects entries; after the grace, one winner is picked at random and granted.
 
@@ -43,9 +43,9 @@ The server checks every row; the client only hides what a person can't use.
 | Action | Owner | Live Captain (seated or acting, clocked in) | Other crew / admins | Signed-in member | Visitor |
 | --- | --- | --- | --- | --- | --- |
 | See the drop panel | /live/control | Mod Deck helm strip | No | No | No |
-| Open a drop | Any badge with a preset | Badges with awardableBy mod | No | No | No |
+| Open a drop | Any badge with a preset | Badges with drop.by captain | No | No | No |
 | +1 min, +5 min, Close now | Any open drop | Any open drop | No | No | No |
-| Open from the Rush prompt | Yes | Yes, if the badge is mod-level | No | No | No |
+| Open from the Rush prompt | Yes | Yes, if the badge's drop.by is captain | No | No | No |
 | See the banner, /live card, stream callout | Yes | Yes | Yes | Yes | Yes |
 | Claim or enter | Not their own drop | Not their own drop | Yes | Yes | Join free first |
 | Read drops/{id} | Yes | Yes (crew read) | Crew yes | No | No |
@@ -62,8 +62,8 @@ All paths sit under sites/boomertanger. Every write goes through Cloud Functions
 **Badge preset — badges/{badgeId}.drop** (seed: functions/data/trophy-room-badges.json; badgeDoc already copies it through)
 
 - mode: "timed" | "streamEnd" | "draw" ("until" a clock time stays reserved for the badge editor; the panel doesn't offer it)
-- minutes: number (timed and draw), cap: number | null, winners: number (draw only, default 1)
-- Seed values: jump-scare-witness { timed, 3 }, glitchwitness { timed, 5 }, chosen-one { draw, 2, winners 1 }, boss-fight-believer { timed, 10 }, anniversary-ember { streamEnd } plus source "drop".
+- minutes: number (timed and draw), cap: number | null, winners: number (draw only, default 1), by: "captain" | "owner" (who may drop it; missing means owner)
+- Seed values: jump-scare-witness { timed, 3 }, glitchwitness { timed, 5 }, chosen-one { draw, 2, winners 1 }, boss-fight-believer { timed, 10 }, anniversary-ember { streamEnd } plus source "drop". by: captain for jump-scare-witness, glitchwitness, boss-fight-believer; owner for chosen-one and anniversary-ember.
 
 **drops/{dropId}** — dropId = `<streamId>_<badgeId>`, so a second drop of the same badge in the same stream can't exist.
 
@@ -107,7 +107,7 @@ New file functions/lib/live/drops.js, because drops publish to public/live. Depl
 
 - Caller is the owner or the live Captain (captainNow.uid, clocked in).
 - Stream state is "live" (on staging, a test stream started with startStream counts).
-- The badge has a drop preset; a Captain needs awardableBy "mod".
+- The badge has a drop preset; a Captain needs drop.by "captain".
 - drops/{streamId}_{badgeId} doesn't exist yet, and no other drop is open on this stream.
 - minutes 1–120 (draw: from the preset, 1–15); cap 1–10 000 or none; streamEnd ignores minutes.
 - Writes the drop, public/live.drop, adminLog dropOpen. With source "rush", also private/control.recruitRush.rushDropId.

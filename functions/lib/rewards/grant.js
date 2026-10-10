@@ -3,7 +3,8 @@
 //
 //   grantXp(uid, amount, { feature, ref, reason, grantedBy })
 //   reverseXp(uid, { feature, ref, of, reason, grantedBy })   takes back what grantXp paid under (feature, of)
-//   grantBadge(uid, badgeId, { feature, ref, grantedBy, reason })
+//   grantBadge(uid, badgeId, { feature, ref, grantedBy, reason, quiet })   quiet: true skips the badge-earned activityLog entry only (live drops
+//                                                                       post one summary per drop instead); everything else is the same
 //   grantTrophy(uid, { kind, place, label, period, ref })
 //   hasBadge(uid, badgeId)
 //   revokeBadge(uid, badgeId, { grantedBy, reason })   (for the revokeBadge callable)
@@ -90,7 +91,7 @@ function makeGrant({ db = admin.firestore() } = {}) {
     });
   }
 
-  async function grantBadge(uid, badgeId, { feature, ref, grantedBy = null, reason = "" } = {}) {
+  async function grantBadge(uid, badgeId, { feature, ref, grantedBy = null, reason = "", quiet = false } = {}) {
     if (!uid || !badgeId || !feature) throw new Error("grantBadge: uid, badgeId and feature are required");
     const key = L.ledgerKey(feature, ref ?? `badge-${badgeId}`, uid);
     const now = Date.now();
@@ -115,7 +116,7 @@ function makeGrant({ db = admin.firestore() } = {}) {
       tx.set(R.ledger(key), { uid, kind: "badge", amount: xp, badgeId, feature, ref: String(ref ?? `badge-${badgeId}`), grantedBy, reason, createdAt: FieldValue.serverTimestamp() });
       return { granted: true, serial, xp, level: x.after.level, leveledUp: x.leveledUp, badge: b, handle: profile.get("handle") || null };
     });
-    if (out.granted && out.badge.rarity >= 2) {
+    if (out.granted && out.badge.rarity >= 2 && quiet !== true) {
       await postEvent(db, {
         feature: FEATURE, type: "badge-earned",
         summary: `${out.handle ? `@${out.handle}` : "A member"} earned ${out.badge.name} (${L.RARITY_NAMES[out.badge.rarity]})`,

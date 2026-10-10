@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Live drops part 2: drop functions (dropOpen, dropAdjust, claimDrop, dropSweep), Stop hook, public/live.drop, Rush reward badge (server).
 - Live drops part 1: badge drop presets and drops rules.
 - docs: live drops spec and mockup (workstream 7, part 0).
 - Tech Stack fix: Inside the mixer. Desktop wires now land on their sockets (redrawn when the box, the middle column, the socket panel or a row resizes, when the L-8 photo loads, and when the fonts arrive; checked 0 px off-centre at 1280 and 1024 with the photo arriving late). Phones: the socket panel sticks just below the chapter chip row (surface, blur, --bt-shadow-lift) while the rows scroll, and the photo and its caption are hidden there; spec §5.4 updated

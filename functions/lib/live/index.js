@@ -9,13 +9,15 @@
 //   rush.js       liveRecruitRush, onUserCreatedRush (Recruit Rush, Mod Machina phase 3 part 6)
 //   chatGames (lib/chatGames, docs/specs/chat-games.md part 1): chatGameStart, chatGameSwap, chatGameEnd, chatGameControl, chatGameCue, chatGameDeadline;
 //                 Stop's afterEnd calls its closeOut and liveTick its sweep, through ctx.chatGames
+//   drops.js      dropOpen, dropAdjust, claimDrop, dropSweep (live drops, docs/specs/live-drops.md); Stop's afterEnd calls its stopClose
+//                 through ctx.drops, publishLive copies private/control.drop to public/live.drop
 //   controls.js   startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow,
 //                 liveChecklist, liveObsKey, liveDeckKey, liveSettings
 // Pure rules are in logic.js (Part 2). `hooks` are for scripts/check-live-wiring.js (they are NOT exported as functions).
 const { makeCore } = require("./core");
 
 /** Builds everything. `deps` beyond adminLogEntry are for the checks (fake Google, clock, rng). */
-function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null, fetchFn = null, enqueue = null, sleep = undefined, twitchClientId = null, twitchClientSecret = null, twitchLogin = null, eventSubSecret = null, chatGamesEnqueue = null } = {}) {
+function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null, fetchFn = null, enqueue = null, sleep = undefined, twitchClientId = null, twitchClientSecret = null, twitchLogin = null, eventSubSecret = null, chatGamesEnqueue = null, dropRandomInt = undefined } = {}) {
   const ctx = makeCore({ adminLogEntry, now });
   const duty = require("../crew/duty")(ctx, { grant });
   ctx.duty = duty;                                                            // set before controls and feeds use it
@@ -27,8 +29,10 @@ function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.rando
   const rush = require("./rush")(ctx);
   const chatGames = require("../chatGames")(ctx, { enqueue: chatGamesEnqueue, grant, factory, hotSeatRng: rng });
   ctx.chatGames = chatGames;
-  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions, ...chatGames.functions };
-  const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush, chatGames };
+  const drops = require("./drops")(ctx, { grant, randomInt: dropRandomInt });
+  ctx.drops = drops;
+  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions, ...chatGames.functions, ...drops.functions };
+  const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush, chatGames, drops };
   return { functions, hooks };
 }
 

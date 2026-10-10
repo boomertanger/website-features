@@ -39,7 +39,7 @@ const FLUSH_QUEUE = { retryConfig: { maxAttempts: 3, minBackoffSeconds: 2, maxBa
 const YT_RETRY_MS = 15 * 1000;
 const TIKTOK_FRESH_MS = 15 * 60 * 1000;
 const DECK_ACTIONS = ["nextBeat", "openCheckin", "extend", "closeCheckin", "scene", "nextGame"];
-const DECK_LATER = ["startQuestions", "endQuestions", "answered", "skip", "startHotSeat", "spin", "nextStep", "dropBadge"];   // Chat Games (not built yet)
+const DECK_LATER = ["startQuestions", "endQuestions", "answered", "skip", "startHotSeat", "spin", "nextStep"];   // Chat Games (not built yet)
 const DECK_REFUSED = ["start", "stop", "afterShow", "startStream", "stopStream"];
 
 const sleepReal = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -100,6 +100,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     try { await doEnqueue({ atMs: d.atMs }, { scheduleDelaySeconds: Math.max(1, Math.ceil((d.atMs - now()) / 1000)), id: `flush-${Math.floor(d.atMs / gap)}` }); } catch (err) { if (!/ALREADY_EXISTS|already exists/i.test(String((err && (err.code || err.message)) || ""))) throw err; }
     return { flushed: false, again: d.atMs };
   }
+  ctx.requestFlush = requestFlush;   // claimDrop folds its claim counts into public/live through the same debounce
   const onCheckInWritten = onDocumentWritten("sites/{siteId}/streams/{streamId}/counters/{shard}", async (event) => {
     if (event.params.siteId !== "boomertanger") return;
     await requestFlush();
@@ -223,6 +224,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
       stream: stream.state === "scheduled" ? { ...stream, state: "scheduled" } : { ...stream, beats: Object.fromEntries(Object.entries(stream.beats || {}).map(([k, b]) => [k, { ...b, checkins: counts.byBeat[k] != null ? counts.byBeat[k] : b.checkins || 0 }])) },
       window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, chatGameWaiting: control.chatGameWaiting || [], chatGameSettled: control.chatGameSettled || null, look: main.look, nowMs,
       rush: stream.state === "scheduled" ? null : await ctx.rushFor(stream),
+      drop: stream.state === "scheduled" ? null : control.drop || null, dropClaims: stream.state === "scheduled" || !ctx.openDropClaims ? null : await ctx.openDropClaims(control.drop),
     });
     const scene = L.autoScene({ stream, window: control.window, pinned: control.pinned, nowMs });
     const win = control.window;

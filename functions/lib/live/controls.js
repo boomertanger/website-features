@@ -28,7 +28,7 @@ const { P, stamp } = require("./core");
 
 const YOUTUBE_CLIENT_SECRET = defineSecret("YOUTUBE_CLIENT_SECRET");
 const SECRETS = [YOUTUBE_CLIENT_SECRET];
-const SHORTCUTS = ["openCheckin", "startQuestions", "startHotSeat", "dropBadge", "copySocials"];
+const SHORTCUTS = ["openCheckin", "startQuestions", "startHotSeat", "copySocials"];
 const ITEM_TEXT_MAX = 120, NOTE_MAX = 300, ITEMS_MAX = 40;
 const HOUR = 60 * 60 * 1000;
 const BRB_MAX_MIN = 60;
@@ -260,6 +260,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     // Mod Machina phase 3 part 2: everyone is clocked out, seats nobody clocked into become no-shows, the Captain and owner get "Confirm tonight's crew"
     if (ctx.duty) { try { await ctx.duty.closeOut(s.id, patch.actualEnd != null ? ctx.ms(patch.actualEnd) : now()); } catch (err) { console.error("live: duty close-out failed", String((err && err.message) || err).slice(0, 140)); } }
     // Chat Games (docs/specs/chat-games.md §3): open runs are voided, both pointers cleared, the night's results written to streams/{id}.chatGames
+    // Live drops (docs/specs/live-drops.md §4): an open drop goes to closing (closedBy stop / autoEnd); dropSweep finishes it after the grace
+    if (ctx.drops) { try { await ctx.drops.stopClose(s.id, { auto, actor }); } catch (err) { console.error("live: drop close at Stop failed", String((err && err.message) || err).slice(0, 140)); } }
     if (ctx.chatGames) { try { await ctx.chatGames.closeOut(s.id); } catch (err) { console.error("live: chat games close-out failed", String((err && err.message) || err).slice(0, 140)); } }
     await ctx.activity("stream-ended", `${s.title || "The stream"} has ended`, { streamId: s.id });
     return { sum, peak };

@@ -18,6 +18,7 @@
 const crypto = require("crypto");
 const { ms } = require("../arcade/logic");
 const S = require("../streams/logic");
+const DL = require("./drops-logic");
 
 const SEC = 1000, MIN = 60 * SEC, DAY = 24 * 60 * MIN;
 
@@ -544,10 +545,12 @@ function rushSettings(data, current, stream) {
   if (cur.hitAt != null && cur.goal != null && goal !== cur.goal) return { ok: false, reason: "goalLocked", message: "The goal can't change after it's hit." };
   return { ok: true, value: { on: data.on, goal, reward } };
 }
-/** public/live's recruitRush: { goal, count, reward, hitAt } while on, else null (and nothing is written). */
+/** public/live's recruitRush: { goal, count, reward, hitAt } while on, else null (and nothing is written). With a reward badge, dropReady is that badge
+ *  from the moment the goal is hit until the Rush drop opens (docs/specs/live-drops.md §3). */
 function publicRush(rush, count) {
   if (!rush || rush.on !== true || !Number.isInteger(rush.goal)) return null;
-  return { goal: rush.goal, count: num(count), reward: typeof rush.reward === "string" ? rush.reward : "", hitAt: rush.hitAt == null ? null : ms(rush.hitAt) };
+  const ready = rush.hitAt != null && typeof rush.rewardBadgeId === "string" && rush.rewardBadgeId && !rush.rushDropId;
+  return { goal: rush.goal, count: num(count), reward: typeof rush.reward === "string" ? rush.reward : "", hitAt: rush.hitAt == null ? null : ms(rush.hitAt), ...(ready ? { dropReady: rush.rewardBadgeId } : {}) };
 }
 
 /**
@@ -559,7 +562,7 @@ function publicRush(rush, count) {
  * Output: state (off | live | backstage | ended), streamId, title, type, audience, actualStart, actualEnd,
  * beat (current), beats { <beat>: { status: done | now | next | skipped, checkins } }, window { open, closesAt, beat },
  * counts { total, byBeat, byRoom }, viewers { total, byPlatform }, peak, game, nextGame, crew { captain, chats, onDuty }
- * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, chatGame (the active Chat Games run, live only), chatGameWaiting (locked Predictions waiting for a result, live only, [] otherwise), look, updatedAt. "off" is the waiting room (no stream fields).
+ * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, chatGame (the active Chat Games run, live only), chatGameWaiting (locked Predictions waiting for a result, live only, [] otherwise), drop (input.drop = private/control.drop, input.dropClaims = the live count; see drops-logic.publicDropOf), look, updatedAt. "off" is the waiting room (no stream fields).
  */
 /**
  * The Deck's room coverage for public/live (Mod Machina phase 3 part 2): { rooms: { room: { lead: handle|null, deckhands: n, covered } } }. Handles only and counts; only the known rooms; anything else
@@ -608,7 +611,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null, chatGameWaiting: [], chatGameSettled: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null, chatGameWaiting: [], chatGameSettled: null, drop: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -661,6 +664,8 @@ function buildPublicLive(input) {
     chatGame: live ? chatGameOf(chatGame) : null,
     chatGameWaiting: live ? chatGameWaitingOf(chatGameWaiting) : [],
     chatGameSettled: live ? chatGameSettledOf(chatGameSettled, nowMs) : null,
+    // a drop stays through Stop's grace and 60 s after close, so it isn't gated on live (drops-logic.publicDropOf; no uids)
+    drop: DL.publicDropOf(input.drop, nowMs, input.dropClaims),
     ...(publicRush(input.rush, input.rush && input.rush.count) ? { recruitRush: publicRush(input.rush, input.rush.count) } : {}),
   };
 }

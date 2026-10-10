@@ -74,7 +74,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
   const { FieldValue, Timestamp } = admin.firestore;
   const crew = makeStore({ db, adminLogEntry });
   const planner = makePlannerCore({ db, adminLogEntry });
-  const ctx = { db, FieldValue, Timestamp, crew, planner, now, P, fail, ms, adminLogEntry, settle: async () => {}, duty: null, chatGames: null };
+  const ctx = { db, FieldValue, Timestamp, crew, planner, now, P, fail, ms, adminLogEntry, settle: async () => {}, duty: null, chatGames: null, drops: null, requestFlush: null, dropClaims: null };
 
   // ---------- who may call ----------
   /** Owner or A2+ (the owner always counts); { ownerOnly } narrows to the owner. A1 Steward is refused. */
@@ -209,6 +209,12 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
     const shards = (await db.collection(P.countersCol(mainId)).get()).docs.map((d) => d.data());
     return { ...rush, count: L.sumRush(shards) };
   };
+  /** The live claim count of an open (or closing) drop, from its counter shards; a finished drop's pointer already carries its final count. */
+  async function openDropClaims(ptr) {
+    if (!ptr || !ctx.dropClaims || !["open", "closing"].includes(ptr.state)) return null;
+    try { return await ctx.dropClaims(ptr.id); } catch (err) { console.error("live: drop count failed", String((err && err.message) || err).slice(0, 120)); return null; }
+  }
+  ctx.openDropClaims = openDropClaims;
   ctx.publishLive = async () => {
     const nowMs = now();
     const stream = await currentForPublic(nowMs);
@@ -233,6 +239,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
       deck: deckState ? { rooms: deckState.rooms || {} } : null,
       grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
       rush: await ctx.rushFor(stream),
+      drop: control.drop || null, dropClaims: await openDropClaims(control.drop),
     });
     const hits = L.findSecrets(out, secrets);
     if (hits.length) { console.error("live: public/live not written, it would expose:", hits.join(", ")); return { wrote: false, id: stream ? stream.id : null, blocked: hits }; }

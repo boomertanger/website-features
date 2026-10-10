@@ -1,6 +1,7 @@
 // Recruit Rush (docs/specs/mod-machina.md §17a "Recruit Rush", choice 8; Mod Machina phase 3 part 6). Built on the Control Room's ctx (core.js).
 //
-//   liveRecruitRush({ streamId, on, goal, reward })   owner only. goal 5 to 200, reward 1 to 80 characters. Before or during a stream, never
+//   liveRecruitRush({ streamId, on, goal, reward, rewardBadgeId? })   owner only. goal 5 to 200, reward 1 to 80 characters; rewardBadgeId (optional;
+//                                                     null clears it) must be a badge with a drop preset. Before or during a stream, never
 //                                                     after Stop. One Rush per main stream: an after-show's id resolves to its main stream.
 //                                                     The goal can't change after it's hit. adminLog "recruitRush".
 //   onUserCreatedRush                                 trigger on users/{uid}: counts the moment signedUpAt first appears (a finished signup,
@@ -8,7 +9,8 @@
 //                                                     the role mirror can merge-create it, so a bare create isn't a new member). Counts while
 //                                                     a Rush is on, from Start to 30 minutes after Stop, referral link or not.
 //
-// Stored on streams/{id}/private/control.recruitRush { on, goal, reward, count, hitAt } (owner and A2+). The count goes through the
+// Stored on streams/{id}/private/control.recruitRush { on, goal, reward, count, hitAt, rewardBadgeId?, rushDropId? } (owner and A2+). Live drops: once the goal
+// is hit with a reward badge set and no Rush drop opened, public/live.recruitRush.dropReady = that badge; dropOpen with source "rush" sets rushDropId. The count goes through the
 // counter shards ({ rush: n } next to beats), so onCheckInWritten queues the same debounced liveFlush and public/live gets
 // recruitRush { goal, count, reward, hitAt } (logic.publicRush; nothing when off). streams/{id}/rushJoins/{uid} is the server-only
 // marker (30 days, TTL) that makes a retry count once; no uid or handle of a new member ever reaches public/live. Referral credit (§9) is untouched.
@@ -28,6 +30,15 @@ module.exports = function rush(ctx) {
     const data = request.data || {};
     if (typeof data.streamId !== "string" || !data.streamId) throw fail("invalid-argument", "streamId is required.", "args");
     const s = await mainOf(await ctx.loadStream(data.streamId));
+    // Live drops: the optional reward badge must have a drop preset (docs/specs/live-drops.md §4)
+    let reward = undefined;
+    if (data.rewardBadgeId === null) reward = null;
+    else if (data.rewardBadgeId !== undefined) {
+      if (typeof data.rewardBadgeId !== "string" || !/^[A-Za-z0-9_-]{1,120}$/.test(data.rewardBadgeId)) throw fail("invalid-argument", "Pick a drop badge.", "rewardBadge");
+      const b = await db.doc(`${P.site}/badges/${data.rewardBadgeId}`).get();
+      if (!b.exists || !b.get("drop")) throw fail("invalid-argument", "That badge can't be dropped.", "rewardBadge");
+      reward = data.rewardBadgeId;
+    }
     let out;
     await db.runTransaction(async (tx) => {
       const cRef = ctx.controlRef(s.id);
@@ -38,12 +49,12 @@ module.exports = function rush(ctx) {
       const count = L.sumRush(shards.map((d) => d.data()));
       // a goal already met (lowered to the count, or turned on late) is hit now; hitAt is set once and never moves
       const hitAt = cur && cur.hitAt != null ? cur.hitAt : v.value.on && count >= v.value.goal ? Timestamp.fromMillis(now()) : null;
-      out = { ...v.value, count, hitAt };
-      tx.set(cRef, { recruitRush: out }, { merge: true });
+      out = { ...v.value, count, hitAt, ...(reward !== undefined ? { rewardBadgeId: reward } : {}) };
+      tx.set(cRef, { recruitRush: out }, { merge: true });   // merge keeps rushDropId (and rewardBadgeId when not sent)
     });
-    await ctx.logAdmin(w, { action: "recruitRush", streamId: s.id, title: s.title, details: { on: out.on, goal: out.goal, reward: out.reward } });
+    await ctx.logAdmin(w, { action: "recruitRush", streamId: s.id, title: s.title, details: { on: out.on, goal: out.goal, reward: out.reward, ...(reward !== undefined ? { rewardBadgeId: reward } : {}) } });
     try { await ctx.publishLive(); } catch (err) { console.error("rush: publish failed", String((err && err.message) || err).slice(0, 120)); }
-    return { ok: true, streamId: s.id, on: out.on, goal: out.goal, reward: out.reward, count: out.count, hitAt: out.hitAt == null ? null : ms(out.hitAt) };
+    return { ok: true, streamId: s.id, on: out.on, goal: out.goal, reward: out.reward, count: out.count, hitAt: out.hitAt == null ? null : ms(out.hitAt), ...(reward !== undefined ? { rewardBadgeId: reward } : {}) };
   });
 
   /** The main streams a sign-up could count for: the live one (or its main, during an after-show) and anything that ended in the last 30 minutes. */

@@ -397,7 +397,8 @@
       "awardableBy": null,
       "drop": {
         "mode": "timed",
-        "minutes": 3
+        "minutes": 3,
+        "by": "captain"
       }
     },
     {
@@ -417,7 +418,8 @@
       "awardableBy": null,
       "drop": {
         "mode": "timed",
-        "minutes": 5
+        "minutes": 5,
+        "by": "captain"
       }
     },
     {
@@ -437,7 +439,8 @@
       "awardableBy": null,
       "drop": {
         "mode": "timed",
-        "minutes": 10
+        "minutes": 10,
+        "by": "captain"
       }
     },
     {
@@ -506,7 +509,8 @@
       "drop": {
         "mode": "draw",
         "minutes": 2,
-        "winners": 1
+        "winners": 1,
+        "by": "owner"
       }
     },
     {
@@ -1101,7 +1105,8 @@
       "status": "active",
       "awardableBy": null,
       "drop": {
-        "mode": "streamEnd"
+        "mode": "streamEnd",
+        "by": "owner"
       }
     },
     {
