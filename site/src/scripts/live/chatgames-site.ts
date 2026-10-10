@@ -4,5 +4,6 @@ import { initChatGames } from "../../../../shared/ui/chatgames.js";
 import { call } from "../../lib/call";
 import { toast, mascotHtml } from "./ui";
 import "./cg-questions";   // the Questions format (part 2): launch dialog, Play panel, stream view scene
+import "./cg-hotseat";   // Hot Seat (part 4): launch dialog, Play panel, stream view scene
 
 export const chatGames = initChatGames({ call, toast, mascotHtml });

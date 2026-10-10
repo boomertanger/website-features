@@ -16,7 +16,7 @@ import { getAuthState } from "../../lib/auth";
 import { reasonOf, messageFor } from "../../lib/errors";
 import { call } from "../../lib/call";
 import { toast, mascotHtml, reduced } from "./ui";
-import { getRun, laneList, myVotes, setVote, askQuestion, controlRun, waitingCount, qPreview, ago, type QRun, type Question } from "./questions-data";
+import { getRun, watchRun, watchQuestion, laneList, myVotes, setVote, askQuestion, controlRun, waitingCount, qPreview, ago, type QRun, type Question } from "./questions-data";
 import "./cg-questions-scene";
 
 const signedIn = () => !!getAuthState().user;
@@ -104,15 +104,18 @@ function timerHtml(run: QRun) {
   if (run.ending || (run.closesAt && run.closesAt <= Date.now())) return `<span class="bt-live-tag"><i></i>Last question</span>`;
   return run.closesAt ? `<span class="bt-live-tag"><i></i>Questions · <span data-left>${fmt(Math.max(0, run.closesAt - Date.now()))}</span> left</span>` : `<span class="bt-live-tag"><i></i>Questions</span>`;
 }
-async function play(el: HTMLElement & { _lq?: number }, { chatGame }: { chatGame: { runId: string } }) {
+// The session is followed with live listeners (cg-watch.ts, chat-games.md §3): the run doc (the card, Next up, the timer) and the question on stream
+// (its vote count). My vote on it is read once per card. Nothing is polled; the countdown ticks locally.
+type PlayHost = HTMLElement & { _lq?: number; _lqStop?: () => void; _lqVoted?: (on: boolean) => void; _lqDraw?: () => void };
+async function play(el: PlayHost, { chatGame }: { chatGame: { runId: string } }) {
   if (el._lq) { clearInterval(el._lq); el._lq = 0; }
-  const draw = async () => {
-    let run: QRun | null = null;
-    try { run = await getRun(chatGame.runId, preview()); } catch { /* keep the last */ }
+  el._lqStop?.();
+  const pv = preview();
+  let run: QRun | null = null, q: Question | null = null, qFor = "", qStop: (() => void) | null = null, voted = false;
+  const uid = getAuthState().user?.uid || "";
+  const draw = () => {
     if (!run || !el.isConnected) return;
-    const d = run.display;
-    const uid = getAuthState().user?.uid || "";
-    const voted = d?.questionId && uid ? (await myVotes(uid, [d.questionId], preview())).has(d.questionId) : false;
+    const d = run.display ? { ...run.display, votes: q && q.id === run.display.questionId ? q.votes : run.display.votes } : null;
     const canVote = !!d?.questionId && (isMember() || previewMember());
     const card = d?.text
       ? qcardHtml({ id: d.questionId || "", text: d.text, handle: d.handle || "", votes: d.votes, voted, canVote, state: "onair", here: d.here, big: true })
@@ -125,27 +128,44 @@ async function play(el: HTMLElement & { _lq?: number }, { chatGame }: { chatGame
       + `${d?.next ? `<p class="lq-next"><span>Next up</span> ${esc(d.next.text)} <b>▲ ${d.next.votes}</b></p>` : ""}`
       + `<div class="lq-play-acts">${ask}<a class="bt-btn bt-btn--ghost bt-btn--sm" href="/live/questions">All questions</a></div></div>`;
   };
-  initQcards(el as unknown as Document, { onVote: (id, on, btn) => void vote(id, on, btn) });
-  el.addEventListener("click", (e) => { if ((e.target as Element).closest("[data-lq-ask]")) openAsk({ onDone: () => void draw() }); });
-  await draw();
-  // the countdown ticks every second; the card (votes, Next up) is re-read every 8 s while the tab is visible
-  let tick = 0;
+  el._lqVoted = (on) => { voted = on; };
+  el._lqDraw = draw;
+  if (!(el as any)._lqWired) {   // wired once per element; they reach the current mount through el._lqVoted / el._lqDraw
+    (el as any)._lqWired = true;
+    initQcards(el as unknown as Document, { onVote: (id, on, btn) => void vote(id, on, btn).then((ok) => { if (ok) el._lqVoted?.(on); }) });
+    el.addEventListener("click", (e) => { if ((e.target as Element).closest("[data-lq-ask]")) openAsk({ onDone: () => el._lqDraw?.() }); });
+  }
+  const runStop = watchRun(chatGame.runId, pv, (r) => {
+    run = r;
+    const cur = r?.display?.questionId || "";
+    if (cur !== qFor) {
+      qStop?.(); qStop = null; qFor = cur; q = null; voted = false;
+      if (cur) {
+        qStop = watchQuestion(cur, pv, (x) => { q = x; draw(); });
+        if (uid || pv) void myVotes(uid || "me", [cur], pv).then((s) => { if (qFor === cur) { voted = s.has(cur); draw(); } }, () => {});
+      }
+    }
+    draw();
+  });
+  el._lqStop = () => { runStop(); qStop?.(); };
+  // the countdown only (no reads)
   el._lq = window.setInterval(() => {
-    if (!el.isConnected) { clearInterval(el._lq); return; }
+    if (!el.isConnected) { clearInterval(el._lq); el._lqStop?.(); return; }
     const left = el.querySelector<HTMLElement>("[data-left]"), close = Number(el.dataset.lqClose || 0);
     if (left && close) left.textContent = fmt(Math.max(0, close - Date.now()));
-    if (++tick % 8 === 0 && !document.hidden) void draw();
   }, 1000);
 }
-/** A vote from any card (the button already flipped). */
-export async function vote(id: string, on: boolean, btn?: HTMLElement) {
+/** A vote from any card (the button already flipped). Resolves true when it counted. */
+export async function vote(id: string, on: boolean, btn?: HTMLElement): Promise<boolean> {
   const uid = getAuthState().user?.uid;
   try {
     if (!uid && !previewMember()) throw new Error("signedOut");
     await setVote(id, uid || "me", on, preview());
+    return true;
   } catch (ex) {
     if (btn) { btn.setAttribute("aria-pressed", String(!on)); const n = btn.querySelector("b"); if (n) n.textContent = String(Math.max(0, (Number(n.textContent) || 0) + (on ? -1 : 1))); }
     toast(String((ex as Error)?.message) === "signedOut" ? "Join free to vote on questions." : "That vote didn't count: you can't vote on your own question, or it just closed.", { kind: "info" });
+    return false;
   }
 }
 

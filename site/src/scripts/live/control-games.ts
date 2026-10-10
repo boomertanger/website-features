@@ -9,6 +9,8 @@ import { launchHtml, initLaunch } from "../../../../shared/ui/launch.js";
 import type { Ctx } from "./state";
 import { esc, mascotHtml } from "./ui";
 import { loadRunPanel, runPanelHtml, wireRunPanel, type RunPanelData } from "./cg-questions";
+import { watchRun } from "./questions-data";
+import { watchHsPanel, hsPanelHtml, wireHsPanel, type HsPanelData } from "./cg-hotseat";
 
 interface Fmt { id: string; title: string; icon: string; blurb: string; order: number }
 const CAPTAIN_MS = 15000;
@@ -54,15 +56,18 @@ export function initGames(ctx: Ctx) {
       : `<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Chat Games switch on here as each one ships: Questions and Hot Seat first.</p></div>`;
     const hint = live ? (g ? `${esc(g.title || "A game")} is on stream` : "One on stream at a time") : "Ready when you are live";
     // the running format's run controls (Questions: the card on stream, Answered / Skip / Pin next), patched in place by syncRun()
-    const runHost = g && g.formatId === "questions" ? `<div class="lq-runhost" data-qrun-host>${runHtml}</div>` : "";
+    const runHost = g && g.formatId === "questions" ? `<div class="lq-runhost" data-qrun-host>${runHtml}</div>`
+      : g && g.formatId === "hot-seat" ? `<div class="lhs-runhost" data-hsrun-host>${hsHtml}</div>` : "";
     return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + runHost });
   };
 
-  // ---- the Questions run panel: read when the run or its card changes, and every 5 s while it is on stream (patched in place, no page redraw)
-  let runHtml = "", runFor = "", runData: RunPanelData | null = null, runBusy = false, runTimer = 0;
+  // ---- the Questions run panel: the run doc is watched (cg-watch.ts), so a card change redraws at once; Up next (the lanes, which change as members
+  // ask and vote) is re-read with it and every 15 s while the tab is visible (crew only). Patched in place, no page redraw.
+  let runHtml = "", runFor = "", runData: RunPanelData | null = null, runBusy = false, runTimer = 0, runWatch = "", runStop: (() => void) | null = null;
   async function syncRun(force = false) {
     const g = ctx.snap.pub?.chatGame;
-    if (!g || g.formatId !== "questions" || !liveId()) { runHtml = ""; runData = null; runFor = ""; if (runTimer) { clearInterval(runTimer); runTimer = 0; } return; }
+    if (!g || g.formatId !== "questions" || !liveId()) { runHtml = ""; runData = null; runFor = ""; runStop?.(); runStop = null; runWatch = ""; if (runTimer) { clearInterval(runTimer); runTimer = 0; } return; }
+    if (runWatch !== g.runId) { runStop?.(); runWatch = g.runId; let first = true; runStop = watchRun(g.runId, preview, () => { if (first) { first = false; return; } void syncRun(true); }); }
     const key = `${g.runId}|${g.state}|${g.round}`;
     if (runBusy || (!force && key === runFor)) return;
     runBusy = true;
@@ -71,12 +76,38 @@ export function initGames(ctx: Ctx) {
     finally { runBusy = false; }
     const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
     if (host && host.innerHTML !== runHtml) host.innerHTML = runHtml;
-    if (!runTimer) runTimer = window.setInterval(() => { if (!document.hidden) void syncRun(true); }, 5000);
+    if (!runTimer) runTimer = window.setInterval(() => { if (!document.hidden) void syncRun(true); }, 15000);
   }
   ctx.after.push(() => {
     const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
     if (host) wireRunPanel(host, () => runData?.run || null, () => void syncRun(true), preview);
     void syncRun();
+  });
+
+  // ---- the Hot Seat run panel (part 4): the run doc and the current round doc are watched (cg-watch.ts), not polled; the clock ticks locally
+  let hsHtml = "", hsData: HsPanelData | null = null, hsFor = "", hsStop: (() => void) | null = null, hsTimer = 0;
+  const paintHs = () => {
+    hsHtml = hsData ? hsPanelHtml(hsData, canRun()) : "";
+    const host = ctx.root.querySelector<HTMLElement>("[data-hsrun-host]");
+    if (host && host.innerHTML !== hsHtml) host.innerHTML = hsHtml;
+  };
+  function syncHs() {
+    const g = ctx.snap.pub?.chatGame;
+    if (!g || g.formatId !== "hot-seat" || !liveId()) {
+      hsStop?.(); hsStop = null; hsFor = ""; hsHtml = ""; hsData = null; if (hsTimer) { clearInterval(hsTimer); hsTimer = 0; } return;
+    }
+    if (hsFor !== g.runId) { hsStop?.(); hsFor = g.runId; hsStop = watchHsPanel(g.runId, preview, (p) => { hsData = p; paintHs(); }); }
+    else paintHs();
+    if (!hsTimer) hsTimer = window.setInterval(() => {
+      if (document.hidden) return;
+      const t = ctx.root.querySelector<HTMLElement>("[data-hs-left]"), c = hsData?.run.closesAt;
+      if (t && c) t.textContent = `${Math.floor(Math.max(0, c - Date.now()) / 60000)}:${String(Math.floor((Math.max(0, c - Date.now()) % 60000) / 1000)).padStart(2, "0")}`;
+    }, 1000);
+  }
+  ctx.after.push(() => {
+    const host = ctx.root.querySelector<HTMLElement>("[data-hsrun-host]");
+    if (host) wireHsPanel(host, () => hsData?.run || null, () => {}, preview);   // the listeners bring every change
+    syncHs();
   });
 
   ctx.after.push(() => {

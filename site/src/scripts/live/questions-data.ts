@@ -6,6 +6,7 @@ import { db, doc, getDoc, getDocs, collection, query, where, orderBy, limit, get
 import { setDoc, deleteDoc, serverTimestamp } from "firebase/firestore/lite";
 import { call } from "../../lib/call";
 import { isProduction } from "../../lib/env.js";
+import { watchDoc } from "./cg-watch";
 
 export type QStatus = "held" | "tonight" | "standing" | "answered" | "hidden" | "merged" | "cleared" | "archived" | "withdrawn";
 export interface Question { id: string; text: string; uid: string; handle: string; status: QStatus; lane: "tonight" | "standing"; votes: number; createdAt: number; onAir: boolean; xp: number | null; capped: boolean; mergedInto: string | null }
@@ -20,7 +21,7 @@ export const OPEN: QStatus[] = ["held", "tonight", "standing"];
 /** The preview: staging only, signed out, asked for. */
 export const qPreview = (signedIn: boolean) => !isProduction && !signedIn && (q().get("game") === "questions" || q().has("as"));
 
-function fromDoc(id: string, d: any): Question {
+export function fromDoc(id: string, d: any): Question {
   return { id, text: String(d.text || ""), uid: String(d.uid || ""), handle: String(d.handle || ""), status: d.status as QStatus, lane: d.lane === "standing" ? "standing" : "tonight",
     votes: Number(d.votes) || 0, createdAt: ms(d.createdAt), onAir: !!d.onAir, xp: d.xp == null ? null : Number(d.xp), capped: d.capped === true, mergedInto: d.mergedInto || null };
 }
@@ -71,6 +72,16 @@ export async function myVotes(uid: string, ids: string[], preview = false): Prom
   const out = new Set<string>();
   await Promise.all(ids.map(async (id) => { try { if ((await getDoc(doc(db, ...base(), "questions", id, "votes", uid))).exists()) out.add(id); } catch { /* not readable: shown unvoted */ } }));
   return out;
+}
+/** Live listeners (cg-watch.ts, chat-games.md §3): the session's run doc, and the question on stream (its vote count; votes don't touch the run).
+ *  The preview hands back the sample once; nothing is read. Each returns a stop. */
+export function watchRun(runId: string, preview: boolean, fn: (r: QRun | null) => void): () => void {
+  if (preview || runId === "preview") { fn(SAMPLE_RUN); return () => {}; }
+  return watchDoc([...base(), "runs", runId], (d) => fn(d ? runFrom(runId, d) : null));
+}
+export function watchQuestion(qid: string, preview: boolean, fn: (q: Question | null) => void): () => void {
+  if (preview) { fn(SAMPLE.find((x) => x.id === qid) || null); return () => {}; }
+  return watchDoc([...base(), "questions", qid], (d) => fn(d ? fromDoc(qid, d) : null));
 }
 export async function getRun(runId: string, preview = false): Promise<QRun | null> {
   if (preview || runId === "preview") return SAMPLE_RUN;

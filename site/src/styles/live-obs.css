@@ -103,3 +103,35 @@ html[data-shape="tall"] .bt-root.bt-obs:not(#_) .bt-sv-beat { width: 168px; }
 .bt-root.bt-obs:not(#_) .obs-cg-here { color: var(--bt-green); font-weight: 800; }
 .bt-root.bt-obs:not(#_) .obs-cg-timer { height: 14px; border-radius: 8px; background: color-mix(in srgb, var(--bt-text) 8%, transparent); overflow: hidden; }
 .bt-root.bt-obs:not(#_) .obs-cg-timer i { display: block; height: 100%; width: 100%; background: var(--bt-cr-live, var(--bt-red)); box-shadow: 0 0 20px var(--bt-cr-live, var(--bt-red)); transition: width 1s linear; }
+
+/* ---------- Hot Seat (Chat Games part 4; cg-hotseat-scene.ts). The picker (.bt-seance / .bt-wheel, kit pieces) beside or above the panel while the
+   players are drawn; then the panel takes the whole canvas for answers, the vote and the reveal. Canvas pixels; text 28 px and up. ---------- */
+.bt-root.bt-obs:not(#_) .obs-hs .obs-hs-board { position: absolute; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-wide .obs-hs-board { left: 60px; top: 170px; width: 1080px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-wide .obs-hs-board.is-wheel { left: 210px; top: 140px; width: 780px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-tall .obs-hs-board { left: 50px; top: 150px; width: 980px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-tall .obs-hs-board.is-wheel { left: 150px; top: 120px; width: 780px; }
+.bt-root.bt-obs:not(#_) .obs-hs .obs-hs-panel { position: absolute; box-sizing: border-box; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-wide .obs-hs-panel { left: 1200px; top: 60px; width: 660px; height: 960px; padding: 50px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-wide .obs-hs-panel.is-full { left: 120px; top: 70px; width: 1680px; height: 940px; padding: 56px 64px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-tall .obs-hs-panel { left: 70px; top: 960px; width: 940px; height: 880px; padding: 48px 52px; }
+.bt-root.bt-obs:not(#_) .obs-hs.is-tall .obs-hs-panel.is-full { left: 60px; top: 200px; width: 960px; height: auto; max-height: 1500px; padding: 56px; }
+.bt-root.bt-obs:not(#_) .obs-hs-card { font-size: 50px; font-weight: 800; line-height: 1.22; color: var(--bt-text); overflow-wrap: anywhere; }
+.bt-root.bt-obs:not(#_) .obs-hs-paused { margin-left: 14px; padding: 4px 16px; border-radius: var(--bt-radius-full); background: rgba(var(--bt-gold-rgb), 0.2); color: var(--bt-title); font-size: 0.8em; }
+.bt-root.bt-obs:not(#_) .obs-hs-amber { color: var(--bt-title); font-variant-numeric: tabular-nums; }
+.bt-root.bt-obs:not(#_) .obs-hs-picks { display: flex; flex-wrap: wrap; gap: 18px; }
+.bt-root.bt-obs:not(#_) .obs-hs-pick { padding: 12px 26px; border-radius: var(--bt-radius-full); font-size: 38px; font-weight: 800; color: var(--bt-text); background: rgba(var(--bt-red-rgb), 0.15); border: 3px solid var(--bt-red); animation: obs-in 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.bt-root.bt-obs:not(#_) .obs-hs-pick[data-st="in"] { border-color: var(--bt-green); background: color-mix(in srgb, var(--bt-green) 15%, transparent); }
+.bt-root.bt-obs:not(#_) .obs-hs-answers { display: grid; gap: 20px; }
+.bt-root.bt-obs:not(#_) .obs-hs-a { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px 24px; align-items: center; padding: 22px 28px; border-radius: 18px; background: color-mix(in srgb, var(--bt-text) 4%, transparent); border: 2px solid color-mix(in srgb, var(--bt-text) 10%, transparent); font-size: 36px; font-weight: 700; line-height: 1.3; }
+.bt-root.bt-obs:not(#_) .obs-hs-a b { font-size: 32px; color: var(--bt-text-muted); }
+.bt-root.bt-obs:not(#_) .obs-hs-a b.is-in { color: var(--bt-green); }
+.bt-root.bt-obs:not(#_) .obs-hs-a--vote { grid-template-columns: 64px minmax(0, 1fr); }
+.bt-root.bt-obs:not(#_) .obs-hs-a--vote em { font-style: normal; font-size: 46px; font-weight: 900; color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .obs-hs-a--res small { grid-column: 1; font-size: 28px; color: var(--bt-text-muted); }
+.bt-root.bt-obs:not(#_) .obs-hs-a--res b { grid-row: 1 / span 2; grid-column: 2; font-size: 54px; color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .obs-hs-bar { grid-column: 1 / -1; height: 14px; border-radius: 8px; background: color-mix(in srgb, var(--bt-text) 8%, transparent); overflow: hidden; }
+.bt-root.bt-obs:not(#_) .obs-hs-bar i { display: block; height: 100%; width: calc(var(--f, 0) * 100%); background: var(--bt-title); box-shadow: 0 0 18px var(--bt-title); animation: obs-hs-grow 1.2s cubic-bezier(0.2, 0.8, 0.2, 1) both; transform-origin: left; }
+.bt-root.bt-obs:not(#_) .obs-hs-a.is-win { border-color: var(--bt-title); box-shadow: 0 0 40px rgba(var(--bt-gold-rgb), 0.35); animation: obs-in 0.6s cubic-bezier(0.2, 1.6, 0.4, 1) both; }
+.bt-root.bt-obs:not(#_) .obs-hs-foot { color: var(--bt-title); font-weight: 800; }
+@keyframes obs-hs-grow { from { transform: scaleX(0); } }

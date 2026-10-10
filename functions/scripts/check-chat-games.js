@@ -61,7 +61,7 @@ async function main() {
   assert.equal(CG.canCue({ uid: "boss", isOwner: true }, null, { room: "site" }), true);
   assert.equal(CG.cueMove({ status: "posted" }, "posted").reason, "already");
   assert.equal(CG.cueMove({ status: "pending" }, "done").ok, true);
-  assert.equal(CG.handlerFor("hot-seat"), null, "part 1 registers no format");
+  assert.equal(CG.handlerFor("would-you-rather"), null, "a format without its part has no handler");
   // public/live: only the five pointer fields, and only while live
   const pub = LL.buildPublicLive({ stream: { id: "s", state: "live", beats: {} }, chatGame: { runId: "r", formatId: "x", state: "open", round: 1, title: "X", uid: "leak" }, nowMs: 1 });
   assert.deepEqual(pub.chatGame, { runId: "r", formatId: "x", state: "open", round: 1, title: "X" });
@@ -85,10 +85,10 @@ async function main() {
   await wdb.doc(`${B}/formats/test`).set({ title: "Test game", enabled: true, order: 9, crewHosted: true });
 
   // ---------- who may start ----------
-  assert.equal(await why(as("fan", "chatGameStart", { formatId: "hot-seat" })), "notCaptain");
-  assert.equal(await why(as("adm2", "chatGameStart", { formatId: "hot-seat" })), "notCaptain", "an Overseer who isn't Captain can't start");
-  assert.equal(await why(as(null, "chatGameStart", { formatId: "hot-seat" })), "signedOut");
-  assert.equal(await msg(as("cap", "chatGameStart", { formatId: "hot-seat" })), "Not available yet.", "no handler yet");
+  assert.equal(await why(as("fan", "chatGameStart", { formatId: "would-you-rather" })), "notCaptain");
+  assert.equal(await why(as("adm2", "chatGameStart", { formatId: "would-you-rather" })), "notCaptain", "an Overseer who isn't Captain can't start");
+  assert.equal(await why(as(null, "chatGameStart", { formatId: "would-you-rather" })), "signedOut");
+  assert.equal(await msg(as("cap", "chatGameStart", { formatId: "would-you-rather" })), "Not available yet.", "no handler yet");
   assert.equal(await msg(as("boss", "chatGameStart", { formatId: "nope" })), "Not available yet.");
   CG.HANDLERS.test = TEST;
   await wdb.doc(`${B}/formats/test`).update({ enabled: false });
@@ -177,6 +177,8 @@ async function main() {
   await questionsPart();
   // ================= Packs and the pool (part 3) =================
   await packsPart();
+  // ================= Hot Seat (part 4) =================
+  await hotSeatPart();
 
   // ---------- rules text (the emulator needs Java 11+; same style as the other checks) ----------
   const rules = fs.readFileSync(path.join(__dirname, "../../firestore.rules"), "utf8");
@@ -201,9 +203,173 @@ async function main() {
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "../../firestore.indexes.json"), "utf8"));
   assert.ok(idx.fieldOverrides.some((f) => f.collectionGroup === "questions" && f.fieldPath === "expireAt" && f.ttl === true), "TTL on questions.expireAt");
   assert.ok(idx.indexes.some((i) => i.collectionGroup === "questions" && i.fields.map((f) => f.fieldPath).join() === "status,votes,createdAt"));
+  // Hot Seat rules: a member reads only their own volunteer doc; nobody writes; hotSeatPicked falls to the catch-all
+  assert.match(rules, /match \/chatGames\/main\/volunteers\/\{vid\} \{\s*allow read: if request\.auth != null && resource\.data\.uid == request\.auth\.uid;\s*allow write: if false;/);
+  assert.ok(!/hotSeatPicked/.test(rules.replace(/\/\/.*$/gm, "")), "hotSeatPicked has no rule of its own");
   // Packs rules: the crew reads packs and the Suggested lane; nobody writes
   assert.match(rules, /match \/chatGames\/main\/packs\/\{packId\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;\s*match \/suggested\/\{sid\} \{\s*allow read: if isSiteStaff\(siteId\);\s*allow write: if false;/);
   console.log("check-chat-games: ok");
+}
+
+async function hotSeatPart() {
+  const HL = require("../lib/chatGames/hlogic");
+  const R = (id) => `${B}/runs/${id}`;
+  // ---------- pure rules ----------
+  const seats = HL.pickSeats([{ uid: "a" }, { uid: "a" }, { uid: "b" }, { uid: "c" }, { uid: "d" }], 3, () => 0.4);
+  assert.equal(seats.length, 3); assert.equal(new Set(seats.map((s) => s.uid)).size, 3, "never the same uid twice");
+  const ans = [{ id: "a1", uid: "x", text: "X" }, { id: "a2", uid: "y", text: "Y" }, { id: "a3", uid: "z", text: "Z" }];
+  let t = HL.tally({ answers: ans, votes: { v1: "a1", v2: "a2", v3: "a1", v4: "a2" } });
+  assert.deepEqual(t.rows.map((r) => [r.uid, r.winner, r.xp]), [["x", true, 25], ["y", true, 25], ["z", false, 5]], "every tied player wins 25");
+  t = HL.tally({ answers: ans, votes: {} });
+  assert.ok(t.noVotes && t.rows.every((r) => r.xp === 5 && !r.winner), "no votes: everyone who answered gets 5, nobody wins");
+  t = HL.tally({ answers: ans, votes: { v1: "a3" }, hidden: new Set(["z"]) });
+  assert.equal(t.rows.find((r) => r.uid === "z").xp, 0, "a hidden answer is out");
+  assert.equal(HL.cleanAnswer("x".repeat(141)).reason, "tooLong");
+  assert.equal(HL.cleanAnswer("see www.x.com").reason, "link");
+
+  // ---------- the cast: six members checked in to the current beat, lead1 (a mod) on duty and checked in too ----------
+  const DAY = 24 * H;
+  await wdb.doc(`${S}/streams/s3`).set({ title: "Night 3", state: "live", published: true, type: "platform", beats: { start: { startedAt: TS(clock - H) } }, actualStart: TS(clock - H), crew: {} });
+  await wdb.doc(`${S}/streams/s3/private/control`).set({});
+  await wdb.doc(`${S}/streams/s3/private/duty`).set({ streamId: "s3", state: "live", captainNow: { uid: "cap", handle: "cap" }, onDuty: { cap: { roles: [{ role: "captain", room: null }] }, lead1: { roles: [{ role: "lead", room: "twitch" }] } } });
+  const players = ["p1", "p2", "p3", "p4", "p5"];
+  for (const u of [...players, "p6", "late"]) { await wdb.doc(`${S}/profiles/${u}`).set({ handle: u, xp: 0 }); await wdb.doc(`${S}/members/${u}`).set({ roles: [] }); await wdb.doc(`users/${u}`).set({ signedUpAt: TS(clock - 40 * DAY) }); }
+  const checkIn = (u) => wdb.doc(`${S}/streams/s3/presence/${u}`).set({ uid: u, beats: { start: { room: "twitch", at: TS(clock) } } });
+  for (const u of players) await checkIn(u);
+  const pk = await as("boss", "chatGamePackSave", { op: "create", formatId: "hot-seat", title: "Night pack" });
+  const cards = [];
+  for (const t2 of ["Worst place to hide?", "Worst roommate villain?", "Nightmare in five words?", "Rename the village.", "Haunted hotel name?", "Sound that makes you leave?"]) cards.push((await as("boss", "chatGamePackSave", { op: "addCard", packId: pk.packId, card: { text: t2 } })).cardId);
+  await as("boss", "chatGameFormatSet", { formatId: "hot-seat", enabled: true });
+  assert.equal(await why(as("p1", "chatGameVolunteer", {})), "notRunning", "Put me in only while Hot Seat runs");
+
+  // ---------- start: round 1 draws 3 from the pool, marks the card used ----------
+  const st = await as("cap", "chatGameStart", { formatId: "hot-seat", streamId: "s3", options: { packId: pk.packId, rounds: 2, picker: "seance", cardId: cards[0] } });
+  let run = await get(R(st.runId));
+  assert.equal(run.phase, "accept"); assert.equal(run.round, 1); assert.equal(run.rounds, 2); assert.equal(run.picker, "seance");
+  let r1 = await get(`${R(st.runId)}/rounds/1`);
+  assert.equal(r1.card, "Worst place to hide?"); assert.equal(r1.seats.length, 3);
+  assert.ok(r1.seats.every((s) => players.includes(s.uid)));
+  assert.ok((await get(`${B}/packs/${pk.packId}`)).cards.find((c) => c.id === cards[0]).usedOn.some((u) => u.streamId === "s3"), "the card is marked used with the stream id");
+  assert.equal((await get(`${S}/public/live`)).chatGame.formatId, "hot-seat");
+  assert.equal(tasks[tasks.length - 1].delay, 15, "15 s to accept");
+  await as("p5", "chatGameVolunteer", {}).catch(() => {});
+  // accept: two tap I'm in, the third doesn't
+  const [s1, s2, s3] = r1.seats.map((s) => s.uid);
+  assert.equal(await why(as(players.find((u) => ![s1, s2, s3].includes(u)), "chatGamePlay", { runId: st.runId, action: "accept" })), "notPicked");
+  await as(s1, "chatGamePlay", { runId: st.runId, action: "accept" });
+  await as(s2, "chatGamePlay", { runId: st.runId, action: "accept" });
+  assert.equal(await msg(as(s1, "chatGamePlay", { runId: st.runId, action: "accept" })), "Already done.");
+  clock += 16000;
+  await cg.sweep({ id: "s3" });
+  r1 = await get(`${R(st.runId)}/rounds/1`);
+  const replaced = r1.seats.find((s) => s.uid === s3);
+  assert.equal(replaced.status, "replaced", "no tap: replaced by a new draw");
+  const fresh = r1.seats.find((s) => s.status === "picked");
+  assert.ok(fresh && ![s1, s2, s3].includes(fresh.uid), "a new player from the pool");
+  let picked = (await get(`${B}/hotSeatPicked/s3`)).uids;
+  assert.ok(!picked.includes(s3) && picked.includes(fresh.uid), "anyone replaced can be drawn again; nobody twice");
+  await as(fresh.uid, "chatGamePlay", { runId: st.runId, action: "accept" });
+  run = await get(R(st.runId));
+  assert.equal(run.phase, "answer", "everyone in: answers open at once");
+  const P3 = [s1, s2, fresh.uid];
+
+  // ---------- answers: 140 characters, through the filter, kept secret ----------
+  assert.equal(await why(as(P3[0], "chatGamePlay", { runId: st.runId, action: "answer", text: "x".repeat(141) })), "tooLong");
+  assert.equal(await why(as(s3, "chatGamePlay", { runId: st.runId, action: "answer", text: "Me too!" })), "notPlaying");
+  await as(P3[0], "chatGamePlay", { runId: st.runId, action: "answer", text: "Under the bed." });
+  await as(P3[1], "chatGamePlay", { runId: st.runId, action: "answer", text: "In plain sight." });
+  assert.equal((await get(`${R(st.runId)}/secret/r1`)).answers[P3[0]], "Under the bed.");
+  assert.equal((await get(`${R(st.runId)}/rounds/1`)).answers, undefined, "no answers in the public round before the vote");
+  await as(P3[2], "chatGamePlay", { runId: st.runId, action: "answer", text: "The monster's group chat." });
+  run = await get(R(st.runId));
+  assert.equal(run.phase, "vote", "all answered: the vote opens");
+  r1 = await get(`${R(st.runId)}/rounds/1`);
+  assert.equal(r1.answers.length, 3); assert.ok(r1.answers.every((a) => Object.keys(a).sort().join() === "id,text"), "answers without names");
+  assert.ok(run.display.answers.every((a) => !a.handle), "the stream view gets no names before the reveal");
+  // a mod on duty hides one before the reveal: out, no XP, recorded in staff
+  assert.equal(await why(as("fan", "chatGameModerate", { runId: st.runId, uid: P3[2] })), "notModerator");
+  await as("lead1", "chatGameModerate", { runId: st.runId, uid: P3[2] });
+  assert.ok((await get(`${R(st.runId)}/staff/r1`)).hidden[P3[2]]);
+  r1 = await get(`${R(st.runId)}/rounds/1`);
+  assert.equal(r1.answers.length, 2, "a hidden answer leaves the vote");
+  assert.ok(!(await get(R(st.runId))).display.answers.some((a) => a.text === "The monster's group chat."), "and never reaches the stream view");
+  assert.ok((await docs("adminLog")).some((e) => e.feature === "chatGames" && e.action === "hotSeat:hide"));
+  // votes: once, never your own, checked in to the beat (players vote too)
+  const sec = await get(`${R(st.runId)}/secret/r1`);
+  const idOf = (uid) => Object.keys(sec.idMap).find((k) => sec.idMap[k] === uid);
+  assert.equal((await get(`${R(st.runId)}/plays/${P3[0]}`)).r[1].answerId, idOf(P3[0]), "each player's play doc names their own answer");
+  assert.equal(await why(as(P3[0], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[0]) })), "ownAnswer");
+  assert.equal(await why(as("late", "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[0]) })), "notCheckedIn");
+  const others = players.filter((u) => !P3.includes(u));
+  await as(P3[0], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[1]) });
+  await as(P3[1], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[0]) });
+  await as(others[0], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[0]) });
+  await as(others[1], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[1]) });
+  assert.equal(await msg(as(others[1], "chatGamePlay", { runId: st.runId, action: "vote", answerId: idOf(P3[0]) })), "Already done.");
+  clock += 31000;
+  await cg.sweep({ id: "s3" });
+  run = await get(R(st.runId));
+  assert.equal(run.state, "revealed"); assert.equal(run.phase, "reveal");
+  r1 = await get(`${R(st.runId)}/rounds/1`);
+  const res = Object.fromEntries(r1.results.map((x) => [x.uid, x]));
+  assert.equal(res[P3[0]].winner, true); assert.equal(res[P3[1]].winner, true, "a 2-2 tie: both win");
+  assert.equal(res[P3[0]].xpPaid, 25); assert.equal(res[P3[2]].xpPaid, 0); assert.equal(res[P3[2]].hidden, true);
+  assert.ok(await get(`${S}/rewardLedger/chatGames:${st.runId}:1:${P3[0]}`), "ledger chatGames:{runId}:{round}:{uid}");
+  assert.equal((await get(`${S}/streams/s3/presence/${P3[0]}`)).xpEarned, 25);
+  assert.ok((await docs("activityLog")).some((e) => e.type === "chat-game-won" && e.feature === "chatGames"));
+  assert.ok(run.display.answers.every((a) => a.handle), "names at the reveal");
+
+  // ---------- round 2: only lead1 (a mod on duty) and p6 can play: it runs with 2; nobody votes ----------
+  for (const u of players) await wdb.doc(`${S}/streams/s3/presence/${u}`).delete();
+  await wdb.doc(`${S}/streams/s3/presence/lead1`).set({ uid: "lead1", beats: { start: { room: "twitch", at: TS(clock) } } });
+  await wdb.doc(`${S}/streams/s3/presence/p6`).set({ uid: "p6", beats: { start: { room: "twitch", at: TS(clock) } }, xpEarned: 98 });
+  for (const d of (await docs(`${B}/volunteers`))) await wdb.doc(`${B}/volunteers/${d.id}`).delete();
+  await as("cap", "chatGameControl", { runId: st.runId, action: "picker", data: { picker: "wheel" } });
+  await as("cap", "chatGameControl", { runId: st.runId, action: "nextRound" });
+  run = await get(R(st.runId));
+  assert.equal(run.state, "open"); assert.equal(run.round, 2); assert.equal(run.picker, "wheel", "the picker switch applies to the next round");
+  const r2 = await get(`${R(st.runId)}/rounds/2`);
+  assert.deepEqual(r2.seats.map((s) => s.uid).sort(), ["lead1", "p6"], "the pool ran dry: the round runs with 2");
+  assert.notEqual(r2.cardId, cards[0]);
+  await as("lead1", "chatGamePlay", { runId: st.runId, action: "accept" });
+  await as("p6", "chatGamePlay", { runId: st.runId, action: "accept" });
+  assert.equal((await get(R(st.runId))).phase, "answer");
+  // Pause adds the paused time to the deadline
+  const before = (await get(R(st.runId))).closesAt.toMillis();
+  clock += 10000;
+  await as("cap", "chatGameControl", { runId: st.runId, action: "pause" });
+  assert.equal((await get(R(st.runId))).closesAt, null);
+  clock += 120000;
+  assert.equal((await cg.sweep({ id: "s3" })).closed, 0, "paused: no deadline");
+  assert.equal(await why(as("p6", "chatGamePlay", { runId: st.runId, action: "answer", text: "x" })), "paused");
+  await as("cap", "chatGameControl", { runId: st.runId, action: "resume" });
+  assert.equal((await get(R(st.runId))).closesAt.toMillis(), before + 120000, "the 2 paused minutes are added");
+  await as("lead1", "chatGamePlay", { runId: st.runId, action: "answer", text: "A crew answer." });
+  await as("p6", "chatGamePlay", { runId: st.runId, action: "answer", text: "A member answer." });
+  clock += 31000;
+  await cg.sweep({ id: "s3" });
+  const rr2 = Object.fromEntries((await get(`${R(st.runId)}/rounds/2`)).results.map((x) => [x.uid, x]));
+  assert.equal(rr2.lead1.crew, true); assert.equal(rr2.lead1.xpPaid, 0, "a mod clocked in earns no game XP");
+  assert.equal((await get(`${R(st.runId)}/plays/p6`)).r[1], undefined, "plays are kept per round");
+  assert.equal((await get(`${R(st.runId)}/plays/p6`)).r[2].result.xp, 2);
+  assert.equal(rr2.p6.winner, false); assert.equal(rr2.p6.xpPaid, 2); assert.equal(rr2.p6.capped, true, "no votes: 5 each, capped at 100");
+  await as("cap", "chatGameControl", { runId: st.runId, action: "nextRound" });
+  assert.equal((await get(R(st.runId))).state, "ended", "after the last round, Next round ends it");
+
+  // ---------- a void round: fewer than 2 even after the 30 s wait ----------
+  await wdb.doc(`${S}/streams/s3/presence/p6`).delete();
+  const v = await as("cap", "chatGameStart", { formatId: "hot-seat", streamId: "s3", options: { packId: pk.packId, rounds: 2 } });
+  run = await get(R(v.runId));
+  assert.equal(run.phase, "waiting", "fewer than 2: the first round waits 30 s for volunteers");
+  assert.equal(tasks[tasks.length - 1].delay, 30);
+  clock += 31000;
+  await cg.sweep({ id: "s3" });
+  run = await get(R(v.runId));
+  assert.equal((await get(`${R(v.runId)}/rounds/1`)).phase, "void");
+  assert.equal((await get(`${R(v.runId)}/rounds/2`)).phase, "void", "the next card is void too");
+  assert.equal(run.state, "ended", "no rounds left");
+  await as("boss", "chatGameFormatSet", { formatId: "hot-seat", enabled: false });
+  assert.ok(fns.chatGamePlay && fns.chatGameModerate && fns.chatGameVolunteer);
 }
 
 async function packsPart() {

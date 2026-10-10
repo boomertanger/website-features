@@ -5,6 +5,7 @@
 import type { ObsView } from "./obs";
 import { shape } from "./obs";
 import raw from "../../data/preview-live-control.json";
+import { hsDemoAt, hsSampleDisplay, HS_LOOP } from "./hotseat-sample";
 
 const MIN = 60_000;
 const SCENES = ["starting", "stats", "break", "side", "brb", "ending"] as const;
@@ -39,6 +40,12 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
       // ?game=questions: a Questions session on stream (Chat Games part 2)
       chatGame: params.get("game") === "questions" && !ended ? { runId: "preview", formatId: "questions", state: "open", round: 1, title: "Questions" } : null,
       chatGameDisplay: params.get("game") === "questions" && !ended ? { kind: "question", questionId: "p1", text: "If you could delete one horror trope forever, which one and why?", handle: "cryptkeeper", votes: 41, here: true, lane: "tonight", next: { text: "What game made you actually quit for the night?", votes: 27 }, ending: false, closesAt: t0 + 10 * MIN } : null,
+      // ?game=hot-seat: one Hot Seat round on a loop (part 4); &hs=accept|answer|vote|reveal pins a step, &picker=wheel switches the picker
+      ...(params.get("game") === "hot-seat" && !ended ? (() => {
+        const at = hsDemoAt(now, t0, params.get("hs"));
+        return { chatGame: { runId: `preview-hs-${Math.floor((now - t0) / HS_LOOP)}`, formatId: "hot-seat", state: at.phase === "reveal" ? "revealed" : "open", round: 1, title: "Hot Seat" },
+          chatGameDisplay: hsSampleDisplay(at.phase, { picker: params.get("picker") === "wheel" ? "wheel" : "seance", closesAt: at.closesAt, into: at.into }) };
+      })() : {}),
       brbUntil: scene === "brb" ? now + 2 * MIN + 41_000 - ((now - t0) % (2 * MIN + 41_000)) : null,
       word: open ? "mortuary" : null,
       firstIn: open ? FIRST.slice(0, Math.min(FIRST.length, Math.floor((now - t0) / 2500))) : [],

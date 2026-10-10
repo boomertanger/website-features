@@ -25,7 +25,7 @@ const SITE_ID = "boomertanger";
 const BASE = `sites/${SITE_ID}/chatGames/main`;
 const DEADLINE_QUEUE = { retryConfig: { maxAttempts: 3, minBackoffSeconds: 5, maxBackoffSeconds: 60 }, rateLimits: { maxDispatchesPerSecond: 5, maxConcurrentDispatches: 5 } };
 
-module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant = null, factory = null } = {}) {
+module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant = null, factory = null, hotSeatRng = Math.random } = {}) {
   const { db, FieldValue, Timestamp, fail, now, ms, P } = ctx;
   const G = () => gears || (gears = require("../crew/gears").makeGears({ db, now }));
   const runRef = (id) => db.doc(`${BASE}/runs/${id}`);
@@ -126,7 +126,13 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
       out = { runId: newRef.id, voided: busy ? cur.id : null, closesAtMs: typeof run.closesAt === "number" ? run.closesAt : null, title: run.title };
     });
     if (out.closesAtMs) await scheduleDeadline(out.runId, out.closesAtMs);
-    if (handler.afterStart) { try { await handler.afterStart({ id: out.runId, streamId: stream.id }, { w, stream }); } catch (err) { console.error("chatGames: afterStart failed", String((err && err.message) || err).slice(0, 140)); } }
+    if (handler.afterStart) {
+      try {
+        const as = await handler.afterStart({ id: out.runId, streamId: stream.id }, { w, stream });
+        if (as && typeof as.closesAt === "number") await scheduleDeadline(out.runId, as.closesAt);   // Hot Seat: round 1's first deadline
+        await syncPointer(out.runId);
+      } catch (err) { console.error("chatGames: afterStart failed", String((err && err.message) || err).slice(0, 140)); }
+    }
     if (out.voided) await log(w, "swap", { runId: out.voided, streamId: stream.id, title: stream.title, details: { to: format.id, newRunId: out.runId } });
     await log(w, "start", { runId: out.runId, streamId: stream.id, title: out.title, details: { formatId: format.id } });
     await ctx.publishLive();
@@ -200,12 +206,41 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     const stream = await ctx.loadStream(run.streamId);
     const r = await h.control(run, v.value.action, v.value.data, { at: now(), w, stream, move: (to, extra) => move(run.id, to, { w, extra: extra ? stampPatch(extra) : {} }) });
     if (!r || !r.ok) throw fail("failed-precondition", (r && r.message) || "That didn't work.", (r && r.reason) || "control");
-    if (r.to) await move(run.id, r.to, { w, extra: r.patch ? stampPatch(r.patch) : {} });
+    if (r.handled) await runRef(run.id).update({ lastBy: w.uid, lastByHandle: w.handle || null });   // the format wrote everything itself (Hot Seat)
+    else if (r.to) await move(run.id, r.to, { w, extra: r.patch ? stampPatch(r.patch) : {} });
     else if (r.patch) await runRef(run.id).update({ ...stampPatch(r.patch), lastBy: w.uid, lastByHandle: w.handle || null });
-    if (r.pointer) await syncPointer(run.id);
+    if (r.pointer || r.handled) await syncPointer(run.id);
     if (typeof r.closesAt === "number") await scheduleDeadline(run.id, r.closesAt);
     await log(w, `control:${v.value.action}`, { runId: run.id, streamId: run.streamId, title: run.title });
     await ctx.publishLive();
+    return { ok: true };
+  }
+
+  // ---------- a member's move and a mod's hide (§13: chatGamePlay, chatGameModerate), handled by the running format ----------
+  async function play(w, d) {
+    const runId = d && d.runId;
+    if (typeof runId !== "string" || !L.ID_SAFE.test(runId)) throw fail("invalid-argument", "Which game?", "bad-input", { field: "runId" });
+    const run = asRun(await runRef(runId).get());
+    if (!run || !L.ACTIVE.includes(run.state)) throw refuse("noRun");
+    if (!w.handle) throw fail("failed-precondition", "Finish signing up first.", "needsSignup");
+    const h = L.handlerFor(run.formatId);
+    if (!h || !h.play) throw refuse("notAvailable");
+    const r = (await h.play(run, d.action, d, w)) || {};
+    if (typeof r.closesAt === "number") await scheduleDeadline(runId, r.closesAt);
+    if (r.changed) { await syncPointer(runId); await ctx.publishLive(); }
+    return { ok: true };
+  }
+  async function moderateRun(w, d) {
+    const runId = d && d.runId;
+    if (typeof runId !== "string" || !L.ID_SAFE.test(runId)) throw fail("invalid-argument", "Which game?", "bad-input", { field: "runId" });
+    const run = asRun(await runRef(runId).get());
+    if (!run || !L.ACTIVE.includes(run.state)) throw refuse("noRun");
+    const duty = (await dutyRef(run.streamId).get()).data() || null;
+    if (!w.isOwner && !L.isCaptain(duty, w.uid) && !(duty && duty.onDuty && duty.onDuty[w.uid])) throw fail("permission-denied", "Mods on duty, the Captain and the owner moderate games.", "notModerator");
+    const h = L.handlerFor(run.formatId);
+    if (!h || !h.moderate) throw refuse("notAvailable");
+    const r = (await h.moderate(run, d, w)) || {};
+    if (r.changed) await ctx.publishLive();
     return { ok: true };
   }
 
@@ -251,6 +286,12 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     const h = L.handlerFor(run.formatId);
     // a handler may answer with a state, or { to, patch } (Questions: the card on screen may finish first, so the run only stops its clock)
     const res = h && h.onDeadline ? await h.onDeadline(run, { at: now() }) : null;
+    if (res && res.handled) {   // the format moved its own phase on (Hot Seat): schedule the next deadline, if any
+      if (typeof res.closesAt === "number") await scheduleDeadline(runId, res.closesAt);
+      await syncPointer(runId);
+      await ctx.publishLive();
+      return { closed: true, to: "handled" };
+    }
     const to = typeof res === "string" ? res : res && res.to ? res.to : res && res.patch ? null : run.state === "ready" ? "void" : "locked";
     try {
       if (to) await move(runId, to, { reason: to === "void" ? "deadline" : null, extra: res && res.patch ? stampPatch(res.patch) : {} });
@@ -295,6 +336,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
   const questions = require("./questions")(ctx, { grant, factory, log, caller, refuse, syncPointer });
   // Packs and the pool (part 3): the callables behind /crew/games, and draw / markUsed for the pack formats
   const packs = require("./packs")(ctx, { gears, log, caller, refuse });
+  // Hot Seat (part 4): the "hot-seat" handler and chatGameVolunteer; cards through packs.draw / markUsed
+  const hotSeat = require("./hotseat")(ctx, { grant, factory, log, caller, refuse, packs: packs.ops, move, rng: hotSeatRng });
   const functions = {
     chatGameStart: onCall(wrap((w, d) => startRun(w, d))),
     chatGameSwap: onCall(wrap((w, d) => startRun(w, d, { swap: true }))),
@@ -304,7 +347,10 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant =
     chatGameDeadline,
     ...questions.functions,
     ...packs.functions,
+    ...hotSeat.functions,
+    chatGamePlay: onCall(wrap(play)),
+    chatGameModerate: onCall(wrap(moderateRun)),
   };
-  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops, ...packs.ops }, closeOut, sweep, draw: packs.ops.draw, markUsed: packs.ops.markUsed };
+  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops, ...packs.ops, hotSeat: hotSeat.ops, play, moderateRun }, closeOut, sweep, draw: packs.ops.draw, markUsed: packs.ops.markUsed };
 };
 module.exports.BASE = BASE;

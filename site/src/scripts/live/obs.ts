@@ -64,7 +64,7 @@ async function showGame(view: ObsView) {
   if (!cgEl) return;
   const g = (view as any).chatGame || null, display = (view as any).chatGameDisplay || null;
   const { initChatGames } = await import("../../../../shared/ui/chatgames.js");
-  await import("./cg-questions-scene");
+  await Promise.all([import("./cg-questions-scene"), import("./cg-hotseat-scene")]);
   const api = initChatGames();
   if (g) {
     if (cgTimer) { clearTimeout(cgTimer); cgTimer = 0; }

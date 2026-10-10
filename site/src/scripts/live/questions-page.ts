@@ -38,6 +38,8 @@ const isStaff = () => (pv() ? q().get("as") === "mod" : document.body.dataset.st
 const live = () => S.pub?.state === "live" || S.pub?.state === "backstage";
 
 // ---------- loading ----------
+const checked = new Set<string>();
+let loadedAt = 0;
 async function load() {
   if (S.loading) return;
   S.loading = true;
@@ -47,7 +49,11 @@ async function load() {
     const [list, t, s] = await Promise.all([laneList(S.lane, S.sort, p), laneList("tonight", "top", p), laneList("standing", "top", p)]);
     S.list = list; S.counts = { tonight: t.length, standing: s.length };
     const u = uid();
-    S.voted = u ? await myVotes(u, list.map((x) => x.id), p) : new Set();
+    // my votes: read once per question (my own taps keep S.voted current), not again on every reload
+    const unchecked = u ? list.map((x) => x.id).filter((id) => !checked.has(id)) : [];
+    if (unchecked.length) { const got = await myVotes(u!, unchecked, p); unchecked.forEach((id) => { checked.add(id); if (got.has(id)) S.voted.add(id); }); }
+    if (!u) { S.voted = new Set(); checked.clear(); }
+    loadedAt = Date.now();
     S.mine = u ? await mine(u, p) : [];
     S.held = isStaff() ? await heldList(p).catch(() => []) : [];
     const g = S.pub?.chatGame || (p && q().get("game") === "questions" ? SAMPLE_POINTER : null);
@@ -182,4 +188,7 @@ onLive((p) => {
   if (`${p.state}|${p.chatGame?.runId}|${p.chatGame?.round}` !== was) void load();
 });
 onAuth((s) => { if (s.status === "loading") return; const first = !S.auth; S.auth = s; if (first || signedIn()) void load(); });
-setInterval(() => { if (!document.hidden && S.auth) void load(); }, 10000);
+// Reads (chat-games.md §3): the shared public/live listener reloads the page when the session's card changes; this is only the backstop for new
+// questions and their votes: every 30 s while the stream is on and the tab is visible; off air, once when the tab comes back after a minute away.
+setInterval(() => { if (!document.hidden && S.auth && live()) void load(); }, 30000);
+document.addEventListener("visibilitychange", () => { if (!document.hidden && S.auth && Date.now() - loadedAt > 60000) void load(); });

@@ -609,7 +609,7 @@ service cloud.firestore {
       // ---------- Chat Games (docs/specs/chat-games.md §12; part 1: the registry and runs) ----------
       // Everything is written by Cloud Functions (lib/chatGames); no client writes. Formats, runs and rounds are public (answers and running
       // tallies never sit in them before the reveal: they live in secret, which nobody reads). Crew (mods and admins, by claims) read the staff
-      // mirror and the cues; a member reads their own play. Every other path under chatGames is denied until its part ships (packs, questions,
+      // mirror and the cues; a member reads their own play. Every other path under chatGames is denied unless matched below (packs, questions,
       // volunteers).
       match /chatGames/main/formats/{formatId} {
         allow read: if true;
@@ -666,6 +666,12 @@ service cloud.firestore {
           allow read: if isSiteStaff(siteId);
           allow write: if false;
         }
+      }
+      // Hot Seat (part 4): a member reads their own Put me in (volunteers/{streamId}_{uid}); chatGameVolunteer writes it. hotSeatPicked stays
+      // server-only (the catch-all below).
+      match /chatGames/main/volunteers/{vid} {
+        allow read: if request.auth != null && resource.data.uid == request.auth.uid;
+        allow write: if false;
       }
       match /chatGames/{document=**} {
         allow read, write: if false;

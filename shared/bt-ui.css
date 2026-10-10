@@ -5173,3 +5173,58 @@
   .bt-root:not(#_) .bt-qcard.is-new { animation: none; }
 }
 /* ================= END .bt-qcard ================= */
+
+/* ================= .bt-seance and .bt-wheel — Hot Seat's pickers (docs/specs/chat-games.md §5, §14; mockup control-room-batch-4.html "Hot Seat on stream") =================
+   shared/ui/seance.js seanceHtml() / seanceDraw() and shared/ui/wheel.js wheelHtml() / wheelSpin(). Both only SHOW the server's draw.
+   Sized by their own width (container units), so the same piece fits a card, the Play panel and the 1920 px stream view.
+   .bt-seance  data-state idle · drawing · landed · replaced. Names on two arcs; the planchette glides to --x/--y and points down at the name; a hit name glows gold,
+               a replaced one is struck through.
+   .bt-wheel   data-state idle · spinning · landed. Segments alternate surface tones; a picked one fills gold; the pointer is the live red.
+   Reduced motion: no glide or spin (they land at once), unless data-motion="always" (the stream view is video, so motion stays). */
+.bt-root:not(#_) .bt-seance { container-type: inline-size; width: 100%; }
+.bt-root:not(#_) .bt-seance-board { position: relative; aspect-ratio: 16 / 10; border-radius: 9cqi; overflow: hidden;
+  background: radial-gradient(70% 60% at 50% 45%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), color-mix(in srgb, var(--bt-pumpkin-dk) 22%, var(--bt-bg));
+  border: max(2px, 0.4cqi) solid rgba(var(--bt-gold-rgb), 0.55); box-shadow: inset 0 0 0 1.6cqi color-mix(in srgb, var(--bt-pumpkin-dk) 22%, var(--bt-bg)), inset 0 0 0 calc(1.6cqi + 1px) rgba(var(--bt-gold-rgb), 0.22), 0 0 4cqi rgba(var(--bt-gold-rgb), 0.12); }
+.bt-root:not(#_) .bt-seance-word, .bt-root:not(#_) .bt-seance-title { position: absolute; font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(var(--bt-gold-rgb), 0.45); line-height: 1; }
+.bt-root:not(#_) .bt-seance-word { font-size: 4.2cqi; }
+.bt-root:not(#_) .bt-seance-yes { left: 8%; top: 9%; }
+.bt-root:not(#_) .bt-seance-no { right: 8%; top: 9%; }
+.bt-root:not(#_) .bt-seance-bye { left: 50%; bottom: 7%; transform: translateX(-50%); font-size: 3.4cqi; color: rgba(var(--bt-gold-rgb), 0.3); }
+.bt-root:not(#_) .bt-seance-title { left: 50%; top: 11%; transform: translateX(-50%); font-size: 3cqi; letter-spacing: 0.5em; color: rgba(var(--bt-gold-rgb), 0.32); }
+.bt-root:not(#_) .bt-seance-name { position: absolute; left: var(--x); top: var(--y); transform: translate(-50%, -50%); max-width: 19%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  font-size: 2.9cqi; font-weight: 800; color: var(--bt-text-muted); transition: color 0.4s, text-shadow 0.4s, opacity 0.4s; }
+.bt-root:not(#_) .bt-seance-name.is-hit { color: var(--bt-title); text-shadow: 0 0 1.2cqi rgba(var(--bt-gold-rgb), 0.85); }
+.bt-root:not(#_) .bt-seance-name.is-gone { color: var(--bt-text-faint); text-decoration: line-through; text-decoration-color: var(--bt-red); opacity: 0.7; }
+.bt-root:not(#_) .bt-seance-planch { position: absolute; left: var(--x); top: var(--y); width: 10%; aspect-ratio: 1; transform: translate(-50%, calc(-100% - 1.2cqi)); pointer-events: none;
+  transition: left 1.1s cubic-bezier(0.3, 0.7, 0.2, 1), top 1.1s cubic-bezier(0.3, 0.7, 0.2, 1); filter: drop-shadow(0 0.6cqi 1cqi rgba(var(--bt-ink-rgb), 0.7)); }
+.bt-root:not(#_) .bt-seance-planch svg { width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bt-seance-pl { fill: color-mix(in srgb, var(--bt-bg) 60%, transparent); stroke: var(--bt-title); stroke-width: 6; }
+.bt-root:not(#_) .bt-seance-lens { fill: rgba(var(--bt-gold-rgb), 0.08); stroke: var(--bt-title); stroke-width: 4; }
+.bt-root:not(#_) .bt-seance-tip { fill: var(--bt-title); }
+.bt-root:not(#_) .bt-seance[data-state="drawing"] .bt-seance-planch { animation: bt-seance-hover 1.6s ease-in-out infinite; }
+.bt-root:not(#_) .bt-seance[data-state="landed"] .bt-seance-lens, .bt-root:not(#_) .bt-seance[data-state="replaced"] .bt-seance-lens { fill: rgba(var(--bt-gold-rgb), 0.22); }
+@keyframes bt-seance-hover { 50% { filter: drop-shadow(0 1.6cqi 2cqi rgba(var(--bt-ink-rgb), 0.6)) drop-shadow(0 0 1.4cqi rgba(var(--bt-gold-rgb), 0.5)); } }
+
+.bt-root:not(#_) .bt-wheel { container-type: inline-size; width: 100%; max-width: 100%; aspect-ratio: 1; }
+.bt-root:not(#_) .bt-wheel svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bt-wheel-spin { transform-origin: 100px 100px; transform: rotate(var(--rot, 0deg)); transition: transform 4.2s cubic-bezier(0.12, 0.8, 0.1, 1); }
+.bt-root:not(#_) .bt-wheel-seg .s0 { fill: var(--bt-surface); }
+.bt-root:not(#_) .bt-wheel-seg .s1 { fill: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-wheel-seg path { stroke: rgba(var(--bt-gold-rgb), 0.4); stroke-width: 0.6; transition: fill 0.4s; }
+.bt-root:not(#_) .bt-wheel-seg text { font-size: 7.2px; font-weight: 800; fill: var(--bt-text); text-anchor: middle; dominant-baseline: middle; transition: fill 0.4s; }
+.bt-root:not(#_) .bt-wheel-seg.is-hit path { fill: color-mix(in srgb, var(--bt-title) 32%, var(--bt-surface)); }
+.bt-root:not(#_) .bt-wheel-seg.is-hit text { fill: var(--bt-title); }
+.bt-root:not(#_) .bt-wheel-rim { fill: none; stroke: var(--bt-title); stroke-width: 2; }
+.bt-root:not(#_) .bt-wheel-hub { fill: var(--bt-bg); stroke: var(--bt-title); stroke-width: 1.4; }
+.bt-root:not(#_) .bt-wheel-hub-t { font-size: 14px; text-anchor: middle; dominant-baseline: middle; }
+.bt-root:not(#_) .bt-wheel-ptr { fill: var(--bt-red); stroke: var(--bt-bg); stroke-width: 0.8; filter: drop-shadow(0 0 3px rgba(var(--bt-red-rgb), 0.8)); }
+.bt-root:not(#_) .bt-wheel[data-state="landed"] .bt-wheel-ptr { animation: bt-wheel-tick 0.5s ease-out 1; }
+@keyframes bt-wheel-tick { 40% { transform: translateY(-1.5px); } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-seance:not([data-motion="always"]) .bt-seance-planch,
+  .bt-root:not(#_) .bt-seance:not([data-motion="always"]) .bt-seance-name,
+  .bt-root:not(#_) .bt-wheel:not([data-motion="always"]) .bt-wheel-spin,
+  .bt-root:not(#_) .bt-wheel:not([data-motion="always"]) .bt-wheel-seg path { transition: none; animation: none; }
+  .bt-root:not(#_) .bt-wheel:not([data-motion="always"]) .bt-wheel-ptr { animation: none; }
+}
+/* ================= END .bt-seance and .bt-wheel ================= */
