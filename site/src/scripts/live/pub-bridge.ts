@@ -26,6 +26,7 @@ import { copyText, messageFor, toast } from "./ui";
 import { previewRush, rushBodyHtml, rushFrom, rushHit, type PubRush } from "./rush";
 import { defaultRoom, roomsOf as flowRoomsOf, submitCheckIn } from "./checkin-flow";
 import { reasonOf } from "../../lib/errors";
+import { mountDropCard, type DropCard } from "./drop-card";
 
 const PLATFORM_ROOMS = ["twitch", "ytLandscape", "ytVertical", "tiktok"] as const;
 const SOCIAL: Record<string, string> = { twitch: "twitch", ytLandscape: "youtube", ytVertical: "youtube", tiktok: "tiktok" };
@@ -38,6 +39,7 @@ let timer = 0;
 let presence: Presence | null = null;
 let presenceFor = "";
 let played = false;                 // the Twitch play button was pressed
+let dropCard: DropCard | null = null;   // the live drop card under the stream (drop-card.ts owns [data-p="drop"])
 let backstage: { state: "idle" | "loading" | "ok" | "denied" | "error"; videoId?: string; message?: string; for?: string } = { state: "idle" };
 
 const panel = (n: string) => box.querySelector<HTMLElement>(`[data-p="${n}"]`)!;
@@ -385,7 +387,7 @@ function redraw(c: PubCtx) {
 const part: ViewPart = {
   mount(ctx, el) {
     box = el; cur = ctx; keys = {}; rushWasHit = null; presence = null; presenceFor = ""; played = false; backstage = { state: "idle" }; firstNumbers = true; lastBs = null; fresh = false; retries = [];
-    el.innerHTML = `<div class="lp-grid"><div class="lp-main"><div data-p="video" class="lp-video"></div><div data-p="rail"></div><div data-p="now"></div><div data-p="play"></div></div>
+    el.innerHTML = `<div class="lp-grid"><div class="lp-main"><div data-p="video" class="lp-video"></div><div data-p="drop" hidden></div><div data-p="rail"></div><div data-p="now"></div><div data-p="play"></div></div>
       <div class="lp-side"><div data-p="readouts"></div><div data-p="checkin"></div><div data-p="rush"></div><div data-p="crew"></div><div data-p="watch"></div></div></div>`;
     window.addEventListener("message", onEmbedMessage);
     // when the backstage iframe has loaded, ask YouTube to send its events (errors) to this page
@@ -396,6 +398,7 @@ const part: ViewPart = {
       else if (t.closest("[data-lp-play]")) { played = true; keys.video = ""; drawVideo(cur); }
       else if (t.closest("[data-lp-retry]")) void loadBackstage(cur, true);
     });
+    dropCard?.stop(); dropCard = mountDropCard(panel("drop"), ctx.api);
     clearInterval(timer);
     timer = window.setInterval(() => { if (!document.hidden) { applyNumbers(cur); drawCheckin(cur); } }, 1000);
     part.update(ctx);
@@ -406,6 +409,6 @@ const part: ViewPart = {
     void loadPresence(ctx);
     void loadBackstage(ctx);
   },
-  unmount() { clearInterval(timer); timer = 0; window.removeEventListener("message", onEmbedMessage); box.innerHTML = ""; },
+  unmount() { dropCard?.stop(); dropCard = null; clearInterval(timer); timer = 0; window.removeEventListener("message", onEmbedMessage); box.innerHTML = ""; },
 };
 export default part;

@@ -1,8 +1,10 @@
 // The drop panel's preview data (non-production, signed out, ?as=): the five drop badges from the seed (functions/data/trophy-room-badges.json)
 // and a drop that runs here in the tab: dropOpen / dropAdjust act on it, claims tick up, the timer and the 30-second grace close it, a draw
 // picks @nightowl. Nothing reaches Firestore or a callable. ?rush=1 adds a hit Recruit Rush with Boss Fight Believer as the reward badge.
+// Below it, the viewer's side (sampleDrop, viewerPreview): the banner, the /live card and the stream view callout, for ?drop=<kind>.
 import type { DropBadge, DropDoc, DropIo, DropLive } from "./drop-panel";
 import type { PubDrop, PubLive } from "./model";
+import type { ClaimResult, WatchIo } from "./drop-watch";
 
 const BADGES: DropBadge[] = [
   { id: "jump-scare-witness", name: "Jump-Scare Witness", emoji: "😱", art: null, rarity: 1, drop: { mode: "timed", minutes: 3, cap: null, by: "captain" } },
@@ -78,5 +80,48 @@ export function makePreviewIo(liveOf: () => { state: PubLive["state"]; streamId:
     async catalog() { return BADGES; },
     async drops(streamId: string) { return docs.filter((x) => x.streamId === streamId).map((x) => ({ ...x })); },
     onLive(fn) { subs.add(fn); fn(snapshot()); return () => { subs.delete(fn); }; },
+  };
+}
+
+// ------------------------------------------------------------------------------------------------ the viewer's side (live drops part 5)
+// ?drop=<kind> on any non-production page: the site-wide banner, the /live card (with ?live=public) and the stream view demo (/live/obs?demo=1)
+// show a sample drop in that state, with the shell's ?as=visitor|member|admin deciding who is looking. Local data only: no Firestore, no callable.
+//   open | until | closing | claimed | already | draw | entered | drawing | won | lost | closed | dropper     (&signup=1: an unfinished signup)
+export const DROP_KINDS = ["open", "until", "closing", "claimed", "already", "draw", "entered", "drawing", "won", "lost", "closed", "dropper"];
+const byId = (id: string) => BADGES.find((b) => b.id === id)!;
+/** The sample public/live.drop for a kind. t0 is when the page started: the countdown and the claim count move from there, and loop. */
+export function sampleDrop(kind: string, t0: number, now = Date.now()): PubDrop {
+  const k = DROP_KINDS.includes(kind) ? kind : "open";
+  const b = byId(k === "already" ? "glitchwitness" : k === "until" ? "anniversary-ember" : ["draw", "entered", "drawing", "won", "lost"].includes(k) ? "chosen-one" : k === "dropper" ? "boss-fight-believer" : "jump-scare-witness");
+  const loop = 161_000, left = loop - ((now - t0) % loop);
+  const claims = (k === "closed" ? 64 : ["drawing", "won", "lost"].includes(k) ? 212 : 37) + (["closed", "drawing", "won", "lost"].includes(k) ? 0 : Math.floor((now - t0) / 1500));
+  const state: PubDrop["state"] = k === "closing" ? "closing" : k === "drawing" ? "drawing" : ["won", "lost", "closed"].includes(k) ? "closed" : "open";
+  const graceLeft = 30_000 - ((now - t0) % 30_000);
+  return {
+    id: `preview_${b.id}`, badgeId: b.id, name: b.name, art: b.emoji, rarity: b.rarity, mode: b.drop.mode === "streamEnd" ? "streamEnd" : b.drop.mode,
+    state, closesAt: state === "open" && b.drop.mode !== "streamEnd" ? now + left : null, graceUntil: k === "closing" ? now + graceLeft : null,
+    cap: null, claims, winners: ["won", "lost"].includes(k) ? ["nightowl"] : [], closedAt: state === "closed" ? t0 : k === "closing" ? now + graceLeft - 30_000 : null,
+  };
+}
+
+/** The viewer's io for drop-watch.ts in the preview. */
+export function viewerPreview(): WatchIo {
+  const q = new URLSearchParams(location.search), kind = q.get("drop") || "open", t0 = Date.now();
+  const RESULT: Record<string, ClaimResult> = { claimed: "granted", already: "already", entered: "entered", drawing: "entered", won: "won", lost: "lost" };
+  let result: ClaimResult | null = RESULT[kind] || null;
+  const subs = new Set<(r: ClaimResult | null) => void>();
+  return {
+    preview: true,
+    signup: q.get("signup") === "1",
+    staff: kind === "dropper" || document.body.dataset.auth === "admin",
+    decorate: (p: PubLive) => ({ ...p, state: p.state === "off" || p.state === "ended" ? "live" : p.state, drop: sampleDrop(kind, t0) }),
+    async claim(_dropId: string) {
+      await new Promise((r) => setTimeout(r, 400));
+      result = ["draw", "entered"].includes(kind) ? "entered" : "granted";
+      setTimeout(() => subs.forEach((fn) => fn(result)), 300);   // the claims listener catches up a moment later, as it does for real
+      return { result };
+    },
+    watchClaim(_dropId: string, _uid: string, fn: (r: ClaimResult | null) => void) { subs.add(fn); setTimeout(() => fn(result), 200); return () => { subs.delete(fn); }; },
+    async droppedBy() { return kind === "dropper" ? "preview" : "someone-else"; },
   };
 }

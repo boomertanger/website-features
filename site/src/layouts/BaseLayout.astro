@@ -89,6 +89,11 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       const startBanner = () => import("../scripts/live/site-banner").then((m) => m.startSiteBanner());
       if (livePreview()) { if (["break"].includes(livePreview()!.state || "")) void startBanner(); }
       else setTimeout(() => onLive((p) => { if (p.state !== "off" && p.window.open) void startBanner(); }), 1500);
+      // The live drop banner (live drops): its code loads only when public/live has a drop, from the same listener (preview: ?drop= on any page).
+      import { isProduction as prodSite } from "../lib/env.js";
+      const startDrop = () => import("../scripts/live/drop-banner").then((m) => m.startDropBanner());
+      if (!prodSite && new URLSearchParams(location.search).has("drop")) void startDrop();
+      else setTimeout(() => onLive((p) => { if (p.drop) void startDrop(); }), 1500);
       import { paintNextLabels } from "../lib/offline-next";
       if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
       import "../scripts/account/ui";

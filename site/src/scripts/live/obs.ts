@@ -12,6 +12,7 @@ import { streamViewHtml } from "../../../../shared/ui/streamview.js";
 import { setLook } from "../../../../shared/ui/control-room.js";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
 import type { PubLive } from "./model";
+import { createDropCallout } from "./drop-callout";
 
 /** What obsFeed returns as `view` (functions/lib/live/feeds.js viewData): public/live plus the scene, the word and the Starting soon data. */
 export type ObsView = Omit<PubLive, "state"> & {
@@ -40,13 +41,15 @@ const FEED = `https://us-central1-${projectId}.cloudfunctions.net/obsFeed`;
 
 let mounted = false;
 let scenes: { render(view: ObsView): void } | null = null;
+let dropCall: ReturnType<typeof createDropCallout> | null = null;   // the live drop callout (drop-callout.ts), from the same feed
 
 /** The canvas is only put on the page once there is something to draw (a good key, or the staging demo). */
 async function mount() {
   if (mounted) return;
   mounted = true;
   // [data-cg-scene]: Chat Games' scene (shared/ui/chatgames.js mountScene, from obsFeed's chatGame); empty until a format ships
-  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div><div class="obs-cg-waitchip" data-cg-wait hidden></div>` });
+  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div><div class="obs-cg-waitchip" data-cg-wait hidden></div><div class="obs-drop" data-obs-drop></div>` });
+  dropCall = createDropCallout(root.querySelector<HTMLElement>("[data-obs-drop]")!);
   scenes = (await import("./obs-scenes")).createScenes(root.querySelector<HTMLElement>("[data-obs-scene]")!, shape, params);
 }
 
@@ -54,6 +57,7 @@ async function show(view: ObsView) {
   await mount();
   setLook(document.body, view.look);
   scenes?.render(view);
+  dropCall?.render(view.state === "off" || view.state === "starting" ? null : view.drop);
   await showGame(view);
 }
 

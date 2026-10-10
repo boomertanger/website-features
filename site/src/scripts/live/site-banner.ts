@@ -1,7 +1,7 @@
 // The live banner on every page while a check-in window is open (docs/specs/control-room.md §4; kit .bt-live-banner; mockup control-room-batch-3.html
 // section 2): "Check-in is open · Break 1 · 4:31 left" with a Check in button (visitors: "Join free to check in", which opens the Join dialog titled
 // "Join to check in"). After checking in it turns green ("You're in for Break 1 · +10 XP") until the window closes. It can be dismissed for that window
-// (remembered for the session in sessionStorage). Never on /live (its own panel) or /live/control.
+// (remembered for the session in sessionStorage). Never on /live (its own panel) or /live/control. A live drop's strip (drop-banner.ts) stacks under it.
 // Loaded by BaseLayout only once public/live says a window is open, so pages pay nothing the rest of the time. Reads the same shared public/live
 // listener (lib/live.ts) through pub-data.ts; a member's own presence doc is read once per stream.
 import { onAuth, type AuthState } from "../../lib/auth";
@@ -11,6 +11,7 @@ import { beatOf, isOpenNow } from "./checkin-flow";
 import { initLiveBanner, isMember, liveBannerHtml } from "./pub-ui";
 import type { Beat, PubLive } from "./model";
 import { announceOverlay } from "./ui";
+import { putBanner } from "./banner-host";
 
 const DISMISS_KEY = "bt-lb-dismissed";
 const host = () => document.querySelector<HTMLElement>("[data-live-banner]");
@@ -42,18 +43,20 @@ function render(force = false) {
   if (!el || !pub || !auth || auth.status === "loading") return;
   const p = pub;
   const open = isOpenNow(p) && !dismissed(p);
-  if (!open) { if (shown) { el.innerHTML = ""; el.hidden = true; shown = ""; } return; }
+  if (!open) { if (shown) { putBanner("checkin", null); shown = ""; } return; }
   const beat = beatOf(p) as Beat;
   const isIn = member() && !!presence?.beats[beat];
   const key = `${isIn ? "in" : member() ? "open" : "visitor"}|${windowKey(p)}|${p.window.closesAt}`;
   if (!force && key === shown) return;
   shown = key;
-  el.hidden = false;
   const xp = doneXp[windowKey(p)];
-  el.innerHTML = isIn
+  // the slot is shared with the drop banner (banner-host.ts): this strip goes first, the drop strip stays as it is
+  const tpl = document.createElement("template");
+  tpl.innerHTML = isIn
     ? liveBannerHtml({ state: "in", beat, extra: xp ? `+${xp} XP` : "", dismissible: true })
     : liveBannerHtml({ state: "open", beat, closesAt: p.window.closesAt || 0, cta: member() ? "Check in" : "Join free to check in", dismissible: true });
-  const banner = el.querySelector<HTMLElement>(".bt-live-banner")!;
+  const banner = tpl.content.querySelector<HTMLElement>(".bt-live-banner")!;
+  putBanner("checkin", banner);
   if (!member()) {
     const btn = banner.querySelector<HTMLElement>("[data-checkin-open]");
     btn?.setAttribute("data-signin", "join"); btn?.setAttribute("data-signin-title", "Join to check in");   // the Join dialog (scripts/account/ui.ts)

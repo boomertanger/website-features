@@ -27,8 +27,8 @@ export const SOURCES: Record<string, { ic: string; t: string }> = {
   support: { ic: "💛", t: "Support" },
 };
 /** Sources that can award badges today. The rest show a Coming soon flag until their feature
- *  ships (stream presence, drops, contests, Night Shift, and paid support). Keep this the one list. */
-export const LIVE_SOURCES = new Set(["auto", "crew"]);
+ *  ships (stream presence, contests, Night Shift, and paid support). Keep this the one list. */
+export const LIVE_SOURCES = new Set(["auto", "crew", "drop"]);
 
 export const rarityBadge = (n: number) => `<span class="bt-badge bt-badge--${RARITY[n]?.tone ?? "gray"}">${levelBars(n, 5)}${RARITY[n]?.name ?? ""}</span>`;
 const fmtDay = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });

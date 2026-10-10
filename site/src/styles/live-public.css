@@ -178,6 +178,7 @@
   .bt-root:not(#_) .lp-grid { grid-template-columns: minmax(0, 1fr); gap: 14px; }
   .bt-root:not(#_) :is(.lp-main, .lp-side) { display: contents; }
   .bt-root:not(#_) .lp-grid [data-p="video"] { order: 1; }
+  .bt-root:not(#_) .lp-grid [data-p="drop"] { order: 1; }   /* the live drop card: right under the stream */
   .bt-root:not(#_) .lp-grid [data-p="rail"] { order: 2; }
   .bt-root:not(#_) .lp-grid [data-p="checkin"] { order: 3; }
   .bt-root:not(#_) .lp-grid [data-p="rush"] { order: 3; }

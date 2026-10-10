@@ -1,6 +1,7 @@
 /* site/src/styles/live-drops.css — the drop panel (scripts/live/drop-panel.ts; docs/specs/live-drops.md §5 part 1; mockup
-   docs/design/mockups/live-drops.html sections 1 and 2, the dp- rules). Loaded by /live/control (the owner's panel) and the Mod Deck (the
-   Captain's helm button, its popover and sheet). The kit gives .bt-cr-panel, .bt-dropfuse, .bt-drop-timer, .bt-medal, .bt-chip, .bt-switch,
+   docs/design/mockups/live-drops.html sections 1, 2 and 4, the dp- rules). Loaded by /live/control (the owner's panel), the Mod Deck (the
+   Captain's helm button, its popover and sheet), /live (the drop card, .dc-) and /live/obs (the stream view callout, .obs-drop). The site-wide
+   banner needs nothing here: it is the kit's .bt-live-banner[data-kind="drop"]. The kit gives .bt-cr-panel, .bt-dropfuse, .bt-drop-timer, .bt-medal, .bt-chip, .bt-switch,
    .bt-btn; this file is the panel's own layout only. var(--bt-*) only. The panel body is its own "bt" container, so it lays out by its own
    width (300 px in the Cockpit's launch column, 380 px in the popover, the phone in the sheet). Looks: control-room-looks.css. */
 
@@ -85,4 +86,52 @@
   .bt-root:not(#_) .dp-rush, .bt-root:not(#_) .dp-pop { animation: none; }
   .bt-root:not(#_) .dp-pick, .bt-root:not(#_) .dp-capbar i { transition: none; }
   .bt-root:not(#_) .dp-pick:hover:not(:disabled) { transform: none; }
+}
+
+/* ---- the /live drop card (scripts/live/drop-card.ts; docs/specs/live-drops.md §5 part 3): under the stream in the Bridge, a .bt-cr-panel, so it
+   follows the house look; the states are the banner's (drop-watch.ts) */
+.bt-root:not(#_) .dc { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; }
+.bt-root:not(#_) .dc .bt-dropfuse { --fz: 64px; }
+.bt-root:not(#_) .dc-main { min-width: 0; }
+.bt-root:not(#_) .dc-k { display: block; font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color: var(--bt-title); }
+.bt-root:not(#_) .dc-name { display: block; font-size: var(--bt-text-lg); font-weight: 800; color: var(--bt-text); }
+.bt-root:not(#_) .dc-timer { margin-top: 4px; font-size: 28px; }
+.bt-root:not(#_) .dc-timer--words { font-size: 22px; }
+.bt-root:not(#_) .dc-timer small b { color: var(--bt-text); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .dc { grid-template-columns: auto minmax(0, 1fr); gap: 12px; }
+  .bt-root:not(#_) .dc .bt-dropfuse { --fz: 52px; }
+  .bt-root:not(#_) .dc > .bt-btn { grid-column: 1 / -1; width: 100%; }
+}
+
+/* ---- the stream view callout (/live/obs; scripts/live/drop-callout.ts; §5 part 4). The canvas is 1920 x 1080 (wide) or 1080 x 1920 (tall), so sizes
+   are big. Stream view colours: gold, lime and gray only (purple means clickable). The medal's rarity ring goes gold here for the same reason.
+   Where it sits clears every scene's panels: wide, the strip along the top left (above the Break camera, beside the stats and side panels);
+   tall, the band above TikTok's captions and left of its buttons (below the Break and Be right back panels). */
+.bt-root.bt-obs:not(#_) .obs-drop { position: absolute; inset: 0; z-index: 6; pointer-events: none; }
+.bt-root.bt-obs:not(#_) .obs-drop-call { position: absolute; left: 90px; top: 6px; display: flex; align-items: center; gap: 18px; max-width: 1060px; padding: 12px 32px 12px 12px; border-radius: var(--bt-radius-full); border: 2px solid rgba(var(--bt-gold-rgb), 0.6); background: color-mix(in srgb, var(--bt-bg) 88%, transparent); box-shadow: 0 18px 40px rgba(var(--bt-ink-rgb), 0.5); }
+.bt-root.bt-obs:not(#_) .obs-drop-call .bt-dropfuse { --fz: 72px; }
+.bt-root.bt-obs:not(#_) .obs-drop .bt-medal[data-rarity] { --rc: var(--bt-title); filter: none; }
+.bt-root.bt-obs:not(#_) .obs-drop .bt-medal[data-rarity] .bt-medal-ring { background: var(--rc); animation: none; }
+.bt-root.bt-obs:not(#_) .obs-drop-txt { min-width: 0; }
+.bt-root.bt-obs:not(#_) .obs-drop-txt small { display: block; font-size: 22px; font-weight: 700; letter-spacing: 0.02em; color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .obs-drop-txt b { display: flex; align-items: baseline; gap: 0; font-size: 36px; line-height: 1.2; color: var(--bt-text); white-space: nowrap; }
+.bt-root.bt-obs:not(#_) .obs-drop-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bt-root.bt-obs:not(#_) .obs-drop-cd, .bt-root.bt-obs:not(#_) .obs-drop-n { flex: none; margin-left: 12px; }
+.bt-root.bt-obs:not(#_) .obs-drop-cd { font-weight: 900; font-variant-numeric: tabular-nums; color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .obs-drop-n { font-weight: 600; font-variant-numeric: tabular-nums; color: var(--bt-text-muted); }
+.bt-root.bt-obs:not(#_) .obs-drop-call[data-state="closed"] .obs-drop-cd { color: var(--bt-lime); }
+.bt-root.bt-obs:not(#_) .obs-drop-call[data-state="closed"] { border-color: color-mix(in srgb, var(--bt-gray) 50%, transparent); }
+[data-shape="tall"] .bt-root.bt-obs:not(#_) .obs-drop-call { left: 73px; right: 190px; top: auto; bottom: 316px; max-width: none; }
+[data-shape="tall"] .bt-root.bt-obs:not(#_) .obs-drop-txt small { font-size: 20px; }
+[data-shape="tall"] .bt-root.bt-obs:not(#_) .obs-drop-txt b { font-size: 32px; }
+.bt-root.bt-obs:not(#_) .obs-drop-call.is-in { animation: obs-drop-in 0.6s cubic-bezier(0.2, 1.2, 0.4, 1) both; }
+.bt-root.bt-obs:not(#_) .obs-drop-call.is-out { animation: obs-drop-out 0.5s ease-in both; }
+@keyframes obs-drop-in { from { transform: translateX(-60px); opacity: 0; } }
+@keyframes obs-drop-out { to { transform: translateX(-60px); opacity: 0; } }
+@keyframes obs-drop-fade { from { opacity: 0; } }
+@keyframes obs-drop-fade-out { to { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root.bt-obs:not(#_) .obs-drop-call.is-in { animation: obs-drop-fade 0.4s ease-out both; }
+  .bt-root.bt-obs:not(#_) .obs-drop-call.is-out { animation: obs-drop-fade-out 0.4s ease-in both; }
 }
