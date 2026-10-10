@@ -1,0 +1,301 @@
+# Chat Games spec (docs/specs/chat-games.md)
+
+Confirmed Oct 9, 2026 (owner: @boomertanger). Workstream 5b. Approved mockups: docs/design/mockups/chat-games-batch-1.html (Would You Rather, Predictions, launch panel, pool) and docs/design/mockups/chat-games-how-it-works.html (the How Chat Games work page); Questions and Hot Seat are in docs/design/mockups/control-room-batch-4.html.
+
+## 1. Summary and decisions
+
+Chat Games is one service and one engine for everything members do live with a stream: Questions (the queue) and every Chat Game. It is workstream 5b, absorbs Mod Machina phase 4, and fills the slots the Control Room already left for it.
+
+Sources: control-room.md §2, 7, 8, 9, 12, 13, 15 (the launch panel, Play panel and stream view slots), mod-machina.md §6, §11, §17a (Mod Deck), design-system.md 8p, mockup control-room-batch-4.html (Questions page, Hot Seat run and play panels, stream view, séance board and wheel).
+
+**Decided Oct 8-9, 2026:**
+
+1. One service, one engine. Members see two names: **Questions** and **Chat Games**. "Crew-hosted" is a property of a game. "Live activities" is retired as a name.
+2. Build order: Questions and Hot Seat; then Would You Rather and Predictions; then Caption This; then the crew-hosted games (Dead Air, Scream Off, Scare Bingo, Body Count); later Spirit Board, Dare Deck, Haunted Trivia, Scream-o-meter, next-game vote, Polls, Last Words, Beat Goal, Clip it!.
+3. Questions rules as in §4.
+4. Hot Seat rules as in §5; pickers W2 Séance board (default) and W1 Wheel per round.
+5. Rewards through the Trophy Room's `grant()` with keyed ledger ids; the 100 XP per member per stream cap is shared with the Control Room; nothing costs anything to enter (members can be 13: no wagering). Games run on the site because Twitch polls and predictions only reach Twitch viewers.
+6. One game or Questions session on stream at a time. The Captain runs them, mods on duty moderate, the owner can do everything.
+7. Quick formats first release: Would You Rather and Predictions. Caption This follows as its own part.
+8. Predictions are settled by a mod on duty proposing the result and the Captain or owner confirming. Unsettled at Stop = void. A result can be corrected once.
+9. The Hot Seat deck lives in the Chat Games pool at `/crew/games` as card packs; mods suggest cards into a Suggested lane, the owner approves.
+10. Would You Rather and Predictions prompts come from packs or are typed live, with "Save to pack".
+11. XP: Would You Rather 3 for voting; Predictions 3 for locking, +10 if correct.
+12. Crew-hosted games plug into the Mod Deck through the generic cue contract in §9, agreed with the Mod Deck build; each crew-hosted game gets an addendum to this spec.
+13. Stream view: Would You Rather is R2 Two cards; Predictions is P1 Odds board (§14).
+14. How Chat Games work is its own story page at `/live/chat-games` with hero H2 Live wall (§14a).
+
+## 2. Names, pages and who can do what
+
+| Page | Who | What Chat Games adds |
+| --- | --- | --- |
+| `/live` (Bridge) | Everyone; playing needs a free account | The Play panel: the running game or Questions session, Ask a question, Put me in (Hot Seat volunteers), the "Waiting on" strip for locked Predictions, a "How Chat Games work" link. Visitors see "Join free to play". |
+| `/live/questions` | Everyone reads; members ask and vote | The two lanes (Tonight, Standing), My questions, the mod queue for held questions. |
+| `/live/control` (Cockpit) | Owner, A2+; Captain | The launch panel tiles and the run controls for the active game. |
+| `/live/obs` | Streamlabs / TikTok LIVE Studio | Stream view scenes: question card, Hot Seat picker and reveal, Would You Rather cards, Predictions board, waiting chip. |
+| `/live/deck` (Mod Deck) | Crew on duty | Launch tiles from the format registry (Captain and owner act; Deckhands read), mod actions for Questions, Hot Seat answers and Prediction calls, and the cue slot (§9). |
+| `/crew/games` | Crew (Watcher+); pack drafts Wardens+ | The pool: formats, packs (Hot Seat decks, Would You Rather and Predictions packs), Suggested lane. Votes and pledges come later. |
+| `/live/chat-games` | Everyone | How Chat Games work (§14a). |
+| Site-wide live banner | Everyone | "Hot Seat is running · join in" while a game runs. |
+
+| Role | Can do |
+| --- | --- |
+| Visitor | Watch, read Questions, see results, try the examples on /live/chat-games. No asking, voting or playing. |
+| Member (13+) | Ask (3 open), vote on questions, volunteer and play Hot Seat, vote in Would You Rather, pick in Predictions. Earns XP. |
+| Mod on duty | Approve, Hide, To Standing, Merge questions; hide a Hot Seat answer before reveal; propose (call) a Prediction result; suggest cards. Can play, but earns no game XP that stream (Gears for hosting instead, §11). |
+| Captain (this stream) | Start, Swap, Skip, End any game or Questions session; run Questions (Answered, Skip, Pin next); pick Hot Seat cards and picker style; confirm Prediction results; type live prompts; Save to pack as a suggestion. |
+| Owner | Everything above on any stream; write and approve packs and cards; correct a settled result. |
+
+## 3. The engine
+
+Every game and every Questions session is a **run**: one document under `runs/{runId}` that moves through the same states, driven only by Cloud Functions. Formats differ in what happens inside a state, not in the state machine.
+
+**Run states:** `ready` (created by Start; a picker draw or pack choice happens here) → `open` (members act; `closesAt` when timed) → `locked` (input closed; waiting for a reveal or a result) → `revealed` (result on stream; XP granted now) → `ended`. `void` = ended without a result (Swap, End early, Stop, unsettled Prediction); no XP.
+
+A format may loop states in rounds (Hot Seat: pick → answer → vote → reveal, per card; Would You Rather: one prompt per round) by keeping `round` on the run; each round has its own sub-state in `runs/{runId}/rounds/{n}`.
+
+**One at a time.** `public/live.chatGame = { runId, formatId, state, round, title }` points at the active run; Start refuses when it is set ("Hot Seat is running. End it first or use Swap"). Swap = void the current run and start the new one, in one callable. The Mod Deck launch tiles read this pointer. A locked Prediction does not hold this slot (§7). Crew-hosted runs also appear in `streams/{streamId}/private/duty.chatGames.activeRunIds` (§9).
+
+**Timers.** Deadlines are server timestamps (`closesAt`). Clients count down from them; a scheduled task (one per deadline) closes the state on the server, so a closed laptop never leaves a run open. A client action after the deadline is refused by the callable.
+
+**Gating.** Every member action needs: signed in, not banned, the stream live (or in Break), and, where a format says so, checked in to the current beat (Hot Seat picking and voting). Checks run in the callable; the client only hides buttons.
+
+**Stop.** When the Control Room's Stop runs, Chat Games clean-up voids any open run, settles Questions (§4), voids unsettled Predictions, clears `public/live.chatGame` and `private/duty.chatGames`, and writes the night's results to `streams/{streamId}.chatGames` for the Stream Library.
+
+**Plug-in points** (as named in control-room.md; reconcile in part 1):
+
+- Launch panel on `/live/control`: one tile per enabled format from the registry; Start opens the format's launch dialog.
+- Play panel on `/live`: renders the active run by `formatId` through `shared/ui/chatgames.js`.
+- Stream view `/live/obs`: a Chat Games scene per format while a run is `open`, `locked` or `revealed`, returning to the previous scene 8 s after `ended`.
+- Mod Deck: launch tiles, mod actions, cue slot.
+
+`shared/ui/chatgames.js` exposes `window.btChatGames = { openLaunch({ formatId, streamId }), end({ runId }), mountPlay(el), mountScene(el, opts) }`, the only entry point the Control Room and the Mod Deck call.
+
+## 4. Questions
+
+The member queue for things to ask on stream, at `/live/questions`, with a session the Captain runs from the launch panel.
+
+**Lanes.** Standing (asked any time) and Tonight (asked while live). A question is in exactly one lane. At Stop, Tonight questions with 5+ votes move to Standing; the rest are cleared (status `cleared`, kept 30 days, then deleted by TTL). Standing questions unanswered for 30 days are archived.
+
+**Asking.** 200 characters, plain text, at most 3 open questions per member (open = held, Tonight or Standing). Accounts under 7 days old are held for a mod (`held`). One vote per member per question; a vote can be taken back. Members can't vote on their own question. The asker can withdraw an unanswered question.
+
+**Mod actions** (mods on duty, Captain, owner; all to adminLog): Approve (held → lane), Hide (asker sees "Hidden by a mod"), To Standing (Tonight → Standing), Merge (votes fold into the target with each voter counted once; the merged question shows "Merged into…" to its asker and frees their open slot).
+
+**Sessions.** Default 10 minutes (5, 10, 15 or open-ended). Order: Tonight by votes, then Standing by votes; ties by oldest. Controls: **Answered** (asker gets 15 XP), **Skip** (back to its lane, not shown again this session), **Pin next**. The card shows "asker is here" when the asker checked in to the current beat. When the timer ends, the current card can finish; then the run ends.
+
+**On stream.** `.bt-qcard` with the text, the asker's handle and avatar, votes and the "asker is here" mark.
+
+**Statuses** (site badge system): held = teal, Tonight = blue, Standing = gold, answered = lime, hidden / merged / cleared / archived = gray.
+
+## 5. Hot Seat
+
+Three members answer the same card; everyone checked in votes; the winner gets 25 XP. Run by the owner or the Captain.
+
+**Start.** Pick a pack (default: the pack tagged to tonight's Game Vault game, else General) and rounds (1 to 5, default 3). The launch dialog shows the first card; Skip card draws another.
+
+**Each round**
+
+1. **Pick** (`ready`). The server draws 3 from members checked in to the current beat plus volunteers ("Put me in" on the Play panel while Hot Seat is running). Nobody is picked twice in one stream; anyone replaced can be drawn again. The stream view shows the draw: W2 Séance board by default, W1 Wheel when the Captain switches for that round. The animation only shows the server's draw.
+2. **Accept** (15 s). Each picked member taps **I'm in**. No tap = replaced by a new draw; if the pool is empty, the round runs with 2. Fewer than 2 = the round is void and the next card comes up.
+3. **Answer** (60 s, 140 characters). Hidden from everyone but mods until the reveal. A mod can hide one before reveal (that player is out of the round, no XP, logged). No answer = out of the round.
+4. **Vote** (30 s). Everyone checked in to the beat votes once, not for themselves; players vote too. Answers show without names until the reveal.
+5. **Reveal.** Names and vote counts; winner 25 XP, other players 5. A tie: every tied player wins 25. No votes at all: everyone who answered gets 5, nobody wins.
+
+**Deck.** Cards come from Hot Seat packs (§10). A card used on stream is marked used with the stream id; the draw skips cards used in the last 30 days unless the pack runs out.
+
+**Moderation.** Answers pass the same text filter as Questions (blocked words, links refused). Hidden answers never reach the stream view. Answers from accounts under 7 days are not held.
+
+**Edge.** Fewer than 2 eligible at Start: a warning; the Captain can start anyway and the first round waits 30 s for volunteers.
+
+## 6. Would You Rather
+
+One prompt, two options, members vote, the split shows on stream. 3 XP for voting; no right answer.
+
+- **Prompt source.** A Would You Rather pack, or typed live by the Captain or owner: two options of 80 characters plus a lead line (default "Would you rather…"). A typed prompt offers **Save to pack** after the round (owner saves straight in; the Captain's save lands in the pack's Suggested lane).
+- **Open** 45 s (30, 45 or 60). Any member votes, checked in or not, and can change until it closes. The running split is hidden until the reveal.
+- **Reveal.** The split on the Play panel and stream view; 3 XP to every voter.
+- **Chaining.** "Next prompt" starts another round in the same run.
+
+## 7. Predictions
+
+A question about what happens next on screen, 2 to 4 answers; members pick; a mod calls the result and the Captain or owner confirms. 3 XP for a locked pick, +10 if right.
+
+- **Prompt source.** Usually typed live (question up to 120 characters, 2 to 4 answers of 40); packs hold reusable ones, taggable to a Game Vault game. Save to pack as in §6.
+- **Open** until the Captain taps **Lock**, 3 minutes at most. Members can change their pick until it locks. Picks per answer are hidden until the lock.
+- **Locked.** Waits for its result for as long as the stream runs. It does **not** hold the one-at-a-time slot; it shows as a "Waiting on: …" strip on the Play panel and a chip on the stream view. At most 3 locked Predictions at once.
+- **Settle.** A mod on duty taps what happened (**Propose**; shown to the Captain and owner, not to members). The Captain or owner taps **Confirm** or **Reject** (clears the proposal), or settles directly. Confirm = `revealed`: result on stream, XP goes out.
+- **Void.** The Captain or owner can void; at Stop every unsettled Prediction is voided. No XP; logged.
+- **Correct once.** In the same stream, the owner or Captain can change a confirmed result once: the first winners' +10 is reversed and the new winners are granted (§11). Then it's final.
+
+## 8. Caption This (next) and later formats
+
+Caption This ships as its own part after Would You Rather and Predictions, with a short addendum first: where the frame comes from (stream still, Captain upload or pack image, all via Cloudinary with `recordAssetCreated()`), how captions are shortlisted (likely mods, then a member vote) and the moderation load. The engine already supports it.
+
+Later formats (no spec yet): Spirit Board, Dare Deck, Haunted Trivia, Scream-o-meter, next-game vote, Polls, Last Words, Beat Goal, Clip it!.
+
+## 9. Crew-hosted games and the Mod Deck contract
+
+Agreed with the Mod Deck build (mod-machina.md §17a) on Oct 9.
+
+**Finding the run.** Chat Games writes `streams/{streamId}/private/duty.chatGames = { activeRunIds: [runId] }`, function-only, listing only runs that send cues (crew-hosted formats), at most one id. No id = the Deck's cue slot renders nothing; an id but no cues for the room = "No cues for your room yet".
+
+**Cue docs** at `chatGames/main/runs/{runId}/cues/{cueId}`:
+
+| Field | Type | Notes |
+| --- | --- | --- |
+| room | twitch \| ytLandscape \| ytVertical \| tiktok \| site | The room the cue is for |
+| order | number | Deck sorts by it |
+| text | string | Exactly what to paste in chat; never an answer |
+| dueAt | timestamp, optional | Shown in gold |
+| status | pending \| posted \| done | |
+| postedBy, postedAt, doneBy, doneAt | uid, timestamp | Set by the callable |
+
+Crew claims read; no client writes. Pack answers stay server-only until the reveal.
+
+**`chatGameCue({ runId, cueId, action: "posted" | "done" })`** — allowed for the member on duty in that cue's room (`private/duty.onDuty[uid].room`), the Captain or the owner. Pays the "Hosted a Chat Game in your room" +5 Gears via `grantGears` with key `chatGame:{runId}:{uid}`, once per game per mod (first Posted).
+
+**Deck behaviour.** Room Lead and Captain get Posted and Done; Deckhands see cards without buttons; the Captain can switch rooms; the owner sees all rooms. The Deck builds `.bt-cue-card`.
+
+**Launch tiles.** The Deck reads `chatGames/main/formats/{formatId}` (title, blurb, icon, crewHosted, needsPack, minLeads, enabled, order) and `public/live.chatGame`. Start, Swap and End are for the Captain and owner and call `window.btChatGames.openLaunch` / `.end`; without the module the slot renders nothing. The Deck hard-codes no games.
+
+## 10. Packs and the pool at /crew/games
+
+The pool from mod-machina.md §11c-11g, starting with what Hot Seat, Would You Rather and Predictions need. Crew votes, host pledges and the Planner slot arrive with the crew-hosted games.
+
+- **Formats** (`formats/{formatId}`): the registry. First rows `questions`, `hot-seat`, `would-you-rather`, `predictions`, each `enabled: false` until its part ships. The owner toggles `enabled` on `/crew/games` (green admin control).
+- **Packs** (`packs/{packId}`): formatId, title, vaultGameIds, status draft | approved | retired, cards `{ id, text, options?, usedOn[] }`. Hot Seat starts with one pack, "General".
+- **Who writes.** The owner creates and edits directly (approved on save). Wardens+ draft whole packs. Any mod (Watcher+) can suggest a card into an approved pack.
+- **Suggested lane.** Card text, who, Approve (green), Edit then approve, Reject (optional reason; the mod sees "Not used this time"). Approval pays the mod +2 Gears (key `cardSuggest:{cardId}`).
+- **Draw rules.** Skip cards used in the last 30 days unless none are left; the launch dialog always offers Skip card and, for Would You Rather and Predictions, Type my own.
+- **Page shape.** Tool page: hero header with a small scene (fanned cards and the mascot), format tabs (`.bt-seg-nav`), pack list, card rows, the Suggested lane; empty states with the mascot; a celebratory moment on approve.
+
+## 11. Rewards
+
+All XP goes through the Trophy Room's `grant()` with a keyed ledger id (a retry never pays twice) and counts toward the shared 100 XP per member per stream cap. Over the cap, the grant is recorded at 0 with reason `cap` and the member sees "Tonight's XP is maxed". Nothing costs anything to enter.
+
+| What | XP | Ledger id |
+| --- | --- | --- |
+| Your question answered on stream | 15 | `cg_q_{questionId}` |
+| Hot Seat round winner (ties all win) | 25 | `cg_{runId}_{round}_{uid}` |
+| Hot Seat player, not winning | 5 | `cg_{runId}_{round}_{uid}` |
+| Would You Rather vote | 3 | `cg_{runId}_{round}_{uid}` |
+| Predictions locked pick | 3 | `cg_{runId}_{uid}_lock` |
+| Predictions correct | +10 | `cg_{runId}_{uid}_win` |
+
+Correcting a Prediction: reverse with `cg_{runId}_{uid}_win_rev`; new winners get `cg_{runId}_{uid}_win2`. Lock XP stays.
+
+Mods clocked in for the stream earn no game XP; hosting pays Gears (+5 per crew-hosted game; +2 per approved card).
+
+Hooks: Night Shift events `chat-game-played` and `question-answered`. Stream Moments badges come with the crew-hosted games.
+
+## 12. Data model
+
+Everything under `sites/boomertanger/chatGames/main/`, function-written unless noted. Firestore stays deny-all by default.
+
+| Path | Holds | Read by | Client writes |
+| --- | --- | --- | --- |
+| `formats/{formatId}` | Registry plus rules (timers, XP) | Everyone | None |
+| `packs/{packId}` | Pack and cards (no answers) | Crew | None |
+| `packs/{packId}/suggested/{id}` | Suggested cards | Crew | None |
+| `questions/{questionId}` | text, uid, handle, lane, status, votes, createdAt, streamId, mergedInto, expireAt | Everyone (held and hidden: asker and crew) | None |
+| `questions/{questionId}/votes/{uid}` | One vote | That voter | Create or delete own vote only, nothing else; count kept by a trigger |
+| `runs/{runId}` | formatId, streamId, state, round, closesAt, packId, cardId, prompt, options, startedBy, env, result after reveal | Everyone | None |
+| `runs/{runId}/rounds/{n}` | Round state, players, deadlines, tallies after reveal | Everyone (answers and running tallies hidden until reveal) | None |
+| `runs/{runId}/secret/{doc}` | Answers before reveal, running tallies, picker pool, proposals | Functions only (proposals mirrored to crew via `runs/{runId}/staff`) | None |
+| `runs/{runId}/staff/{doc}` | Prediction proposal, hidden-answer list | Crew | None |
+| `runs/{runId}/plays/{uid}` | A member's vote, pick, answer status | That member; crew | None |
+| `runs/{runId}/cues/{cueId}` | §9 | Crew | None |
+| `volunteers/{streamId}_{uid}` | Hot Seat "Put me in" | That member | None |
+
+Also written: `public/live.chatGame`, `streams/{streamId}/private/duty.chatGames.activeRunIds`, `streams/{streamId}.chatGames`, adminLog (key `chatGames`), activityLog (`chat-game-won`, `question-answered`).
+
+## 13. Callables, triggers and logs
+
+Functions in `functions/lib/chatGames/*.js`. Every callable checks auth, role and stream state; every staff action writes adminLog under `chatGames`.
+
+| Callable | Who | Does |
+| --- | --- | --- |
+| `questionAsk` | Member | Post a question (limits, filter, 7-day hold) |
+| `questionWithdraw` | Asker | Withdraw own unanswered question |
+| `questionModerate` | Mod on duty, Captain, owner | Approve, Hide, To Standing, Merge |
+| `chatGameStart` | Captain, owner | Start a run (refuses if one is active) |
+| `chatGameSwap` | Captain, owner | Void the active run and start another |
+| `chatGameEnd` | Captain, owner | End or void the active run |
+| `chatGameControl` | Captain, owner | Answered, Skip, Pin next, Next round, Lock, Reveal now, Pause/Resume, Skip card, switch picker |
+| `chatGameVolunteer` | Member | Hot Seat Put me in / take back |
+| `chatGamePlay` | Member | Accept seat, answer, vote, pick |
+| `chatGameModerate` | Mod on duty, Captain, owner | Hide a Hot Seat answer before reveal |
+| `predictionPropose` | Mod on duty | Propose the result |
+| `predictionSettle` | Captain, owner | Confirm, reject, settle directly, void, correct once |
+| `chatGamePackSave` | Owner (Wardens+ drafts) | Create or edit packs and cards; Save to pack |
+| `chatGameCardSuggest` / `chatGameCardDecide` | Mods / owner | Suggested lane |
+| `chatGameCue` | §9 | Posted / Done |
+
+Triggers and tasks: `onQuestionVote` (counts), deadline tasks, Stop clean-up (§3), daily 05:15 America/Los_Angeles archive of Standing questions older than 30 days.
+
+"Mod on duty" = clocked in for the current stream (`private/duty.onDuty`), or the Captain, or the owner.
+
+## 14. UI states and bt-ui components
+
+All live pages use bt-ui and both Control Room looks (hull, crt) through `data-look`; looks never change colour meaning, the heading ladder or what's clickable. Container queries only (1024 / 640 / 420). Reduced motion keeps colour and glow and drops movement on the site; the stream view keeps its motion.
+
+**New kit pieces** (in `shared/bt-ui.css`, `shared/ui/*.js` and the UI kit page):
+
+| Piece | Use | States |
+| --- | --- | --- |
+| `.bt-qcard` | Question card in lanes, sessions and the stream view | held, tonight, standing, on stream, answered, hidden, merged; asker is here; voted |
+| `.bt-seance` | Hot Seat picker W2 | idle, drawing, landed, replaced |
+| `.bt-wheel` | Hot Seat picker W1 | idle, spinning, landed |
+| `.bt-choice` | One tappable option: Would You Rather A/B (with an OR badge), Predictions 2-4, later Polls | open, picked ("✓ Your pick"), locked, revealed (gold fill + percentage), correct (lime), out (dimmed), void |
+
+Reused: `.bt-cue-card` (Mod Deck), `.bt-launch`, `.bt-streamview`, `.bt-cr-panel`, `.bt-badge`, `.bt-seg-nav`, `.bt-chip` (option groups of 3+; `.bt-pills` is two options only), `.bt-card`, `.bt-toast`, `openModal()` / `confirmAction()`, the members-only gate, the check-in dialog, `bt:overlay-open`.
+
+**Stream view scenes (approved, chat-games-batch-1):**
+
+- **Would You Rather: R2 Two cards.** The Play panel's two `.bt-choice` cards at stream size with an OR badge: while open, a gold letter A / B on each card; at the reveal the share as a gold fill, the percentage on top, the winner outlined in lime. Side by side in wide, stacked in tall. No new colours.
+- **Predictions: P1 Odds board.** Hot Seat's answer rows reused: answer, picks, a gold bar; picks hidden until the lock; at the result the right row turns lime and the others dim.
+- **Waiting chip:** a dashed gold "⏳ Waiting on: …" chip in the footer while a Prediction is locked.
+
+**Run panels (Captain/owner):** step chips, the prompt card ("Typed live" badge), live counts with the split hidden, Reveal now / Pause / End; after reveal Next prompt and Save to pack. Predictions: Lock now (auto-lock countdown), the settle row ("Or settle it yourself"), the teal proposal card with Confirm / Reject, "Correct the result" once (a dialog), Void.
+
+**States every surface handles:** nothing running, visitor, member not checked in (Hot Seat), playing, waiting, revealed (confetti for winners; none under reduced motion), over the XP cap, error and offline ("Reconnecting…", actions disabled). Mods on duty see "You're clocked in, so you can play but earn no game XP tonight."
+
+**Page quality.** `/live/questions` and `/crew/games` are tool pages: hero header with a small scene, cards that react to hover and taps, a celebratory moment on key actions, empty states with the mascot.
+
+## 14a. How Chat Games work (/live/chat-games)
+
+The member-facing story page and the Chat Games home. Approved mockup: chat-games-how-it-works.html.
+
+**Who and where.** Public; every example works without signing in and keeps local state only. Joins the Play nav group in `site/src/lib/nav.js` with the blurb "Questions, Hot Seat and every live game". Linked from the Play panel ("How Chat Games work"), the `/live/questions` header, and one short Chat Games chapter in the Control Room's How it works.
+
+**Frame.** TocLayout rail (chips with a gold progress bar at ≤ 640px), `.bt-chapter--ghost` chapters, hero H2 **Live wall** (a stream screen and a phone: a tap on the phone's Play panel, the split appearing on stream, then +3 XP, looping; a still frame under reduced motion), the How it works journey, stage cards with hover scenes, flows, `.bt-flip` medals, `.bt-placard`, `.bt-chat` Ask BOOMBOT with `boombotIcon(uid)`, the real mascot, and a closing call to action by state (visitor: Join free to play / Sign in; member off air: the next stream's time + Ask a question now; live: Watch live and play).
+
+**Chapters:** 1 What Chat Games are (journey: the Captain calls a game → you play on /live → it shows on stream → XP lands; four stage cards); 2 Questions (lanes, limits; Try it: ask and vote); 3 Hot Seat (round flow; Try it: draw, I'm in, answer, vote, reveal); 4 Would You Rather (Try it: vote, reveal, next prompt); 5 Predictions (flow; Try it: pick, lock, a mod calls it, the Captain confirms); 6 XP and fair play (eight flip medals incl. the 100 XP cap and free entry; the mods-earn-Gears note; the House rules placard: Be kind, No links, Keep it private, Mods have the final say, One account each); 7 Who runs it (role cards); 8 Coming next (Soon cards); 9 Ask BOOMBOT (six questions).
+
+## 15. Edge cases
+
+- **Break during a run.** Timers keep running; the Break scene takes the stream view; the Play panel still works. The Captain can pause a timed state; paused time is added to `closesAt`.
+- **Stream drops and returns** (same stream): runs continue; passed deadlines close normally.
+- **Captain changes mid-stream.** Controls follow the current Captain.
+- **Picked player leaves or is banned mid-round.** No answer; a ban also removes their answer and votes.
+- **Question limit.** The 3-open limit counts both lanes; the asker sees which to withdraw.
+- **Merge loops.** A merged question can't be a target; merging into an answered question is refused.
+- **Two staff tap at once.** Every control is a transaction-checked transition; the second gets "Already done by @handle".
+- **XP cap mid-game.** Keep playing; grants recorded at 0.
+- **Deleted member.** Questions removed; votes subtracted; past results show "deleted member".
+- **Staging.** Runs carry `env`; the 8p preview flags plus `?game=hot-seat|wyr|predictions|questions` drive a sample run.
+
+## 16. Build parts
+
+Code starts after the Mod Deck push (done). One Claude Code prompt per part, staging first.
+
+1. **Engine and registry** (plus saving this spec and the mockups): formats, runs, state machine, deadline tasks, `public/live.chatGame`, Stop clean-up, `chatGameCue`, `shared/ui/chatgames.js`, launch tiles on `/live/control`, rules, seed script.
+2. **Questions:** data, callables, `/live/questions`, `.bt-qcard`, the session in the Play panel, run controls, the stream view card.
+3. **Packs and the pool:** `/crew/games`, card editor, Suggested lane.
+4. **Hot Seat:** rounds, draw, `.bt-seance`, `.bt-wheel`, Play panel, run controls, stream view.
+5. **Would You Rather and Predictions:** `.bt-choice`, launch dialogs, Save to pack, settle flow, waiting strip and chip.
+6. **How Chat Games work** page (§14a).
+7. **Mod Deck hookup:** mod actions in the Deck, launch tiles in the Deck.
+8. **Docs:** design-system "Chat Games" section, ROADMAP 5b renamed and pointed here, CLAUDE.md, UI kit page sections.
+
+Later: Caption This (after its addendum), then the crew-hosted games (each with an addendum, plus crew votes, host pledges and the Planner slot).
