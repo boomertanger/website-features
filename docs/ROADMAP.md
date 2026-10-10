@@ -141,6 +141,7 @@ Goal: the shared rewards service: badges (5 rarities, 9 collections), trophies, 
 Spec: [docs/specs/rewards.md](specs/rewards.md) (confirmed 2026-10-03); mockup `docs/design/mockups/trophy-room-how-it-works.html`; starter catalog `functions/data/trophy-room-badges.json` (90 badges). Part 1: docs, kit pieces (`.bt-medal`, `.bt-level--5`), the rewards backend and the Arcade's switch to Central time; part 2: the pages.
 Used by: Night Shift, Arcade Studio (pitching), Contests (entry pools), Mod Machina (Keeper eligibility).
 Status: done on staging, except the badge sources that wait for other workstreams (see Night Shift hooks).
+Live drops: spec confirmed Oct 9, 2026 (docs/specs/live-drops.md), mockup docs/design/mockups/live-drops.html (P1 One card, helm popover/sheet, B1 Strip). Parts 0-7 planned.
 Kickoff: "Start workstream 7 (Trophy Room) from docs/ROADMAP.md."
 
 ### 7b. Night Shift (was Fun Factory; internal name factory)
@@ -172,7 +173,7 @@ Status: **Phase 1 (crew core, spec section 15) is built and tested on staging (O
 Next, in order:
 1. **Header nav redesign (done, pushed Oct 7).** The header is now Watch, Play and Community menus plus Shop (spec `docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html`), each with a live feature tile, and Crew is back in Community. The phone More sheet is grouped the same way; Crew also stays in the account menu and the footer. Bug Zapper, Feature Lab and Horror Monthly join Community when their modules are enabled.
 2. **Phase 2: Scream Planner seats** (the Planner's backend provides `dutySignUp` / `dutyDrop` / `dutyConfirm`, availability and reminders) and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
-3. **Phase 3: the Mod Deck: built on staging (Oct 2026), real staging tests pending** (spec section 17a, eight parts: the swap board, the duty backend and records, the Captain and flags, crew notes, /live/deck, Recruit Rush, the activity rules with a practice month and HQ notices). YouTube moderator sync stays later. **Next:** live drops (Trophy Room, rewards.md §10a), so Drop a badge can join the Deck and the Recruit Rush reward can become a drop for everyone checked in.
+3. **Phase 3: the Mod Deck: built on staging (Oct 2026), real staging tests pending** (spec section 17a, eight parts: the swap board, the duty backend and records, the Captain and flags, crew notes, /live/deck, Recruit Rush, the activity rules with a practice month and HQ notices). YouTube moderator sync stays later. **Next:** live drops (Trophy Room, rewards.md §10a), so Drop a badge can join the Deck and the Recruit Rush reward gets a one-tap drop prompt (docs/specs/live-drops.md).
 4. **Phase 4: Chat Games, now part of workstream 5b (Chat Games).** The pool, crew votes, Planner slot and Play panel (Dead Air and Scream Off first among the crew-hosted games) are built there, after the Mod Deck; Academy module 8 and the Captain's course content go live with them.
 Depends on: Badges.
 Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."

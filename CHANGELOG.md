@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: live drops spec and mockup (workstream 7, part 0).
 - Tech Stack fix: Inside the mixer. Desktop wires now land on their sockets (redrawn when the box, the middle column, the socket panel or a row resizes, when the L-8 photo loads, and when the fonts arrive; checked 0 px off-centre at 1280 and 1024 with the photo arriving late). Phones: the socket panel sticks just below the chapter chip row (surface, blur, --bt-shadow-lift) while the rows scroll, and the photo and its caption are hidden there; spec §5.4 updated
 - Tech Stack fix: chapter 1's scenes were cut off at the bottom (a fixed-height scene box around an SVG that scales with the card); the scene box now keeps the scenes' shape (height auto, aspect-ratio 360 / 206, border-box) and the SVG fills it, checked at 1280, 1024, 640 and 390 px
 - Tech Stack wording: "rig" read as a single PC, so it's "setup" now (hero kicker "Community · The streaming setup", "Explore the setup", the nav blurb "The setup behind every stream", the Join free dialog title, the ROADMAP row); spec and mockup refreshed from the confirmed copies
