@@ -1012,6 +1012,9 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 ### Firefly (.bt-firefly)
 **`.bt-firefly`** (`shared/ui/firefly.js` `FIREFLY_SVG`; tokens `--bt-firefly` (the lamp), `--bt-firefly-shell`, `--bt-firefly-head`, `--bt-firefly-wing`): the firefly from the Tap the Splat footer game, now a kit piece shared with the 404 page's workshop (`docs/specs/not-found.md`). The drawing's parts (`.ff-wing`, `.ff-shell`, `.ff-head`, `.ff-lamp`) take the tokens anywhere; inside `.bt-firefly` (30 px, `position: absolute`, `pointer-events: none`, moved with `transform`) it gets the glow, the wing flap and the pulsing lamp. Reduced motion: no flap, no pulse. The footer game keeps its own wrapper (`.bt-tts-bug`, faster flap) around the same drawing. UI Kit section "Firefly".
 
+### Zoom frame (.bt-zoomframe)
+**`.bt-zoomframe`** (`shared/ui/zoomframe.js` `zoomFrameHtml`, `initZoomFrame`; spec `docs/specs/tech-stack.md` §8): a pan and zoom viewport for SVG drawn in a fixed viewBox (the Tech Stack wiring diagram). Markup: `.bt-zoomframe[tabindex=-1]` > `svg.bt-zoomframe-view`, `.bt-zoomframe-hint` ("Click, then scroll to zoom · drag to pan", gone after the first click or zoom), `.bt-zoomframe-ctl` (+ / − / FIT) and `.bt-zoomframe-map` (a minimap with `.bt-zoomframe-box`, shown only while zoomed; click it to jump). Behaviour: the wheel zooms only after a click inside the frame (a click anywhere else switches that off, so page scrolling is never hijacked), drag to pan, pinch, double-tap or double-click to zoom in (not on an item), keyboard + / − / 0 on the frame, `flyTo(cx, cy, w)` eases there (jumps under reduced motion), `onTap(event, item)` for clicks that didn't pan. States: `.is-active`, `.is-panning`, `.is-zoomed`. The minimap gets a copy of the drawing through `setMap(html)`, never a `<use>` (page-scoped styles don't reach inside a `<use>` copy). 16:10, 16:12 at 640 px. UI Kit section "Zoom frame".
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -1052,6 +1055,7 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 | `cue-card.js` | `cueCardHtml`, `cueEmptyHtml`, `initCueCards`: `.bt-cue-card` for Chat Games cues |
 | `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` · `choicesHtml`, `choiceHtml` (Chat Games pieces, §5) |
 | `firefly.js` | `FIREFLY_SVG`: the firefly drawing (§5 "Firefly") |
+| `zoomframe.js` | `zoomFrameHtml`, `initZoomFrame`: the pan and zoom viewport (§5 "Zoom frame") |
 | `chatgames.js` | `initChatGames({ call, toast, mascotHtml })` → `window.btChatGames = { openLaunch, end, mountPlay, mountScene, mountRun }`, `registerFormat(formatId, { launch, play, scene, run, waiting })`: Chat Games' one entry point (§8w) |
 | `swap.js` | `swapRowHtml({ id, dow, day, chat, role, roomName, note, state, actionLabel })`, `swapsHtml(rows)`: the `.bt-swap` row (state `open`, `taken` or `mine`) and its `.bt-swaps` wrapper (text escaped) |
 | `day-picker.js` | `dayPickerHtml({ days, selected, label, disabled })`, `initDayPicker(root, { onChange(selected, key) })`, `dayPickerValue(picker)`, `DAYS` |

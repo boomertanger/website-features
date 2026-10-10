@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- kit: .bt-zoomframe (shared/bt-ui.css) and shared/ui/zoomframe.js, a pan and zoom viewport for SVG (wheel zoom only after a click inside, drag, pinch, double-tap, + / − / FIT, minimap while zoomed, flyTo, keyboard + − 0, reduced motion jumps); the UI kit page shows it live and in every state; design-system §5 and §6
 - docs: Tech Stack spec (docs/specs/tech-stack.md) and the approved mockup; ROADMAP workstream 16 (Tech Stack) and 17 (Nav redesign once the remaining pages are built), launch checklist: make the repo private right after the Squarespace Code Blocks are off, turn on Tech Stack referral links; design-system §8y Tech Stack
 - docs: ROADMAP marks the 404 page done on staging (tested Oct 2026), adds its production check to the launch checklist, and notes under the Bug Zapper port that the report button will open Bug Zapper with the URL pre-filled
 - docs: 404 spec records the build decisions (marker lettering as Permanent Marker outlines, brokenLinkFix instead of adminEditItem, noindex,nofollow from the layout, the extra routes left out of Did you mean, referrer sent as an origin and stored as a host, the admin card's read)

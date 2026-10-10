@@ -161,3 +161,13 @@
 #bt-ui-kit .kit-ff-big { width: 104px; height: 104px; }
 #bt-ui-kit .kit-ff-big svg { width: 100%; height: 100%; }
 @container bt (max-width: 640px) { #bt-ui-kit .kit-ff-row { grid-template-columns: minmax(0, 1fr); } }
+/* Zoom frame (kit-zoomframe.js) */
+#bt-ui-kit .kit-zf-live { display: flex; flex-direction: column; gap: var(--bt-space-3); }
+#bt-ui-kit .kit-zf-acts { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bt-space-2); }
+#bt-ui-kit .kit-zf-grid4 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: var(--bt-space-4); margin-top: var(--bt-space-5); }
+#bt-ui-kit .kit-zf-grid { fill: none; stroke: var(--bt-border); stroke-width: 2; }
+#bt-ui-kit .kit-zf-link { fill: none; stroke: var(--bt-primary-soft); stroke-width: 6; stroke-linecap: round; }
+#bt-ui-kit .kit-zf-node circle { fill: var(--bt-surface-2); stroke: var(--bt-gold); stroke-width: 5; }
+#bt-ui-kit .kit-zf-node text { fill: var(--bt-text); font-size: 48px; font-weight: 800; }
+#bt-ui-kit .kit-zf-node { cursor: pointer; }
+@container bt (max-width: 640px) { #bt-ui-kit .kit-zf-grid4 { grid-template-columns: minmax(0, 1fr); } }

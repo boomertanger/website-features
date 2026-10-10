@@ -5293,3 +5293,32 @@
   .bt-root:not(#_) .bt-firefly .ff-wing, .bt-root:not(#_) .bt-firefly::after { animation: none; }
 }
 /* ================= END .bt-firefly ================= */
+
+/* ================= Zoom frame: .bt-zoomframe (shared/ui/zoomframe.js; docs/specs/tech-stack.md §8, design-system.md §5 "Zoom frame") =================
+   A pan and zoom viewport for SVG content. Markup (zoomFrameHtml): .bt-zoomframe[tabindex=-1] > svg.bt-zoomframe-view, .bt-zoomframe-hint, .bt-zoomframe-ctl
+   (+ / − / FIT buttons), .bt-zoomframe-map (minimap svg with .bt-zoomframe-box). States: .is-active (wheel zoom on, after a click inside), .is-panning, .is-zoomed
+   (the minimap shows). Reduced motion: flyTo jumps (zoomframe.js); the minimap and hint fades are switched off below. */
+.bt-root:not(#_) .bt-zoomframe { position: relative; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: var(--bt-bg); aspect-ratio: 16 / 10; touch-action: none; user-select: none; -webkit-user-select: none; outline: none; }
+.bt-root:not(#_) .bt-zoomframe.is-active { border-color: color-mix(in srgb, var(--bt-primary) 55%, var(--bt-border-2)); }
+.bt-root:not(#_) .bt-zoomframe:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-zoomframe-view { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; }
+.bt-root:not(#_) .bt-zoomframe.is-panning .bt-zoomframe-view { cursor: grabbing; }
+.bt-root:not(#_) .bt-zoomframe-ctl { position: absolute; left: 10px; bottom: 10px; z-index: 3; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-md); background: color-mix(in srgb, var(--bt-surface) 92%, transparent); backdrop-filter: blur(6px); }
+.bt-root:not(#_) .bt-zoomframe-ctl button { width: 36px; height: 34px; display: grid; place-items: center; border: 0; background: none; color: var(--bt-text-muted); font: inherit; font-size: 18px; font-weight: 700; cursor: pointer; }
+.bt-root:not(#_) .bt-zoomframe-ctl button + button { border-top: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .bt-zoomframe-ctl button:hover { color: var(--bt-text); background: var(--bt-surface-2); }
+.bt-root:not(#_) .bt-zoomframe-ctl button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: -2px; }
+.bt-root:not(#_) .bt-zoomframe-ctl button:disabled { opacity: .35; cursor: default; }
+.bt-root:not(#_) .bt-zoomframe-ctl .fit { font-size: var(--bt-text-2xs); font-weight: 800; }
+.bt-root:not(#_) .bt-zoomframe-map { position: absolute; right: 10px; bottom: 10px; z-index: 3; width: 150px; aspect-ratio: 16 / 10; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-sm); background: color-mix(in srgb, var(--bt-bg) 88%, transparent); overflow: hidden; opacity: 0; transform: translateY(6px); transition: opacity .25s, transform .25s; cursor: pointer; }
+.bt-root:not(#_) .bt-zoomframe.is-zoomed .bt-zoomframe-map { opacity: 1; transform: none; }
+.bt-root:not(#_) .bt-zoomframe-map svg { width: 100%; height: 100%; display: block; pointer-events: none; }
+.bt-root:not(#_) .bt-zoomframe-box { fill: rgba(var(--bt-primary-rgb), .12); stroke: var(--bt-primary-soft); stroke-width: 2; vector-effect: non-scaling-stroke; }
+.bt-root:not(#_) .bt-zoomframe-hint { position: absolute; left: 50%; top: 10px; z-index: 3; transform: translateX(-50%); padding: 5px 11px; border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bt-surface) 92%, transparent); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 600; white-space: nowrap; pointer-events: none; transition: opacity .3s; }
+.bt-root:not(#_) .bt-zoomframe.is-active .bt-zoomframe-hint, .bt-root:not(#_) .bt-zoomframe.is-zoomed .bt-zoomframe-hint { opacity: 0; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-zoomframe { aspect-ratio: 16 / 12; }
+  .bt-root:not(#_) .bt-zoomframe-map { width: 96px; }
+}
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) :is(.bt-zoomframe-map, .bt-zoomframe-hint) { transition: none; } }
+/* ================= END Zoom frame ================= */
