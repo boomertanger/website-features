@@ -156,7 +156,7 @@
   .bt-root:not(#_) .md[data-tab="crew"] :is(.md-wallbox, .md-tools-only, [data-slot="helm"]) { display: none; }
   .bt-root:not(#_) .md[data-tab="tools"] :is(.md-wallbox, .md-rooms, .md-crew-only) { display: none; }
   .bt-root:not(#_) .md[data-tab="crew"] .md-rail, .bt-root:not(#_) .md[data-tab="tools"] .md-rail { display: flex; }
-  .bt-root:not(#_) .md-rail [data-slot="cues"], .bt-root:not(#_) .md-rail [data-slot="lines"], .bt-root:not(#_) .md-rail [data-slot="notes"] { min-width: 0; }
+  .bt-root:not(#_) .md-rail [data-slot="cues"], .bt-root:not(#_) .md-rail [data-slot="lines"], .bt-root:not(#_) .md-rail [data-slot="rush"], .bt-root:not(#_) .md-rail [data-slot="notes"] { min-width: 0; }
   .bt-root:not(#_) .md-roomswitch { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin-bottom: 8px; }
   .bt-root:not(#_) .md-roomswitch button { display: inline-flex; align-items: center; gap: 6px; flex: none; padding: 6px 10px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-xs); font-weight: 800; cursor: pointer; }
   .bt-root:not(#_) .md-roomswitch button[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-text); }

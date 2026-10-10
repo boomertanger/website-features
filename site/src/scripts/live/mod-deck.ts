@@ -30,7 +30,7 @@ import { initLaunch } from "../../../../shared/ui/launch.js";
 import { ROOM_NAME, ROOM_ORDER } from "./mod-deck-data";
 import { FLAG_TYPES, flagFormHtml, flagSubtitle, flagStackHtml, helmHtml, moveOptions, moveListHtml, confirmNightHtml, makeChime, flagTitle, type Tool } from "./mod-deck-tools";
 import {
-  derive, takeFor, heroHtml, barHtml, awayText, promptBlockHtml, roomsStripHtml, wallHtml, wallKey, linesHtml, linesTexts, notesHtml, cuesHtml, liveBodyHtml, tabsHtml, offHtml, endedHtml,
+  derive, takeFor, heroHtml, barHtml, awayText, promptBlockHtml, roomsStripHtml, wallHtml, wallKey, linesHtml, linesTexts, rushPanelHtml, notesHtml, cuesHtml, liveBodyHtml, tabsHtml, offHtml, endedHtml,
   defaultDrop, fmtClock, type Model, type Derived, type Tab,
 } from "./mod-deck-view";
 
@@ -150,6 +150,7 @@ function mount(me: Me, src: Source) {
       renderHelm(d);
       slot("cues", cuesHtml(M, d));
       slot("lines", linesHtml(M, d));
+      slot("rush", rushPanelHtml(M));
     } else if (d.phase === "off") {
       slot("main", offHtml(M, d), `off|${M.next?.id}|${M.next?.seat.map((r) => r.role + r.room).join()}|${JSON.stringify(M.swaps.map((s) => [s.id, s.status]))}`);
       slot("lines", linesHtml(M, d));

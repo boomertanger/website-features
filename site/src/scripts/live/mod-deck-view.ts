@@ -18,6 +18,7 @@ import { boardCardHtml } from "../crew/swaps";
 import { BEATS, BEAT_LABEL, fmtDur, type Beat } from "./model";
 import { esc, mascotHtml } from "./ui";
 import type { Tool } from "./mod-deck-tools";
+import { previewRush, rushBodyHtml, rushFrom, rushHit } from "./rush";
 import { ROOM_NAME, ROOM_ORDER, myRoomOf, roleLine, type ChatFormat, type ActiveRun, type Flag, type Cue, type DutyRec, type DutyState, type Me, type Note, type Prompt, type PubDeck, type Room, type SeatRole, type StreamInfo } from "./mod-deck-data";
 
 export type Tab = "chats" | "crew" | "tools";
@@ -225,6 +226,13 @@ export function linesHtml(m: Model, d: Derived): string {
   const t = linesTexts(m, d);
   return panel("md-lines", "md-tools-only", "Quick lines", "checklist", Object.entries(t).map(([k, v]) => lineRow(k, v.label, v.show)).join("") + `<span class="md-hint">One link post per room per hour. Never in DMs to strangers.</span>`);
 }
+/** Recruit Rush (Mod Machina §17a): the R1 meter in the rail, between quick lines and crew notes (the Tools tab on phones). Nothing when no Rush is on. */
+export function rushPanelHtml(m: Model): string {
+  const pv = previewRush();
+  const r = pv !== undefined ? pv : rushFrom(m.pub?.recruitRush);
+  if (!r) return "";
+  return panel("md-rush", "md-tools-only", "Recruit Rush", "crew", `${rushBodyHtml(r)}<span class="lr-rush-hint">Your link is in Quick lines: one post per room per hour.</span>`, `<span class="bt-badge bt-badge--gold">${rushHit(r) ? "Goal hit" : "Tonight"}</span>`);
+}
 export function notesHtml(m: Model): string {
   const mine = (n: Note) => n.uid === m.me.uid || m.me.admin;
   const notes = m.notes.map((n) => ({ id: n.id, handle: `@${n.handle}`, avatarName: n.handle, grade: n.grade ? { track: n.track, grade: n.grade } : null, age: ago(n.createdAt, m.now), text: n.text, deletable: mine(n) }));
@@ -239,7 +247,7 @@ export function cuesHtml(m: Model, d: Derived): string {
 
 // ---------------------------------------------------------------------------------------------- the live page, off air, ended
 export function liveBodyHtml(): string {
-  return `<div data-slot="flags"></div><div data-slot="rooms"></div><div data-slot="helm"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="notes"></div></div></div>`;
+  return `<div data-slot="flags"></div><div data-slot="rooms"></div><div data-slot="helm"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="rush"></div><div data-slot="notes"></div></div></div>`;
 }
 export function tabsHtml(m: Model, d: Derived): string {
   if (d.phase !== "live" || d.after) return "";
