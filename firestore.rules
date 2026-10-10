@@ -531,6 +531,21 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Live drops (docs/specs/live-drops.md §3, §4): every write goes through Cloud Functions (functions/lib/live/drops.js).
+      // The drop itself: the owner and the crew (mods and admins). A member's own claim: that member, or the owner.
+      // The counter shards: server only. Members see a drop through public/live.drop, never here.
+      match /drops/{dropId} {
+        allow read: if isSiteOwner(siteId) || isSiteStaff(siteId);
+        allow write: if false;
+        match /claims/{uid} {
+          allow read: if (request.auth != null && request.auth.uid == uid) || isSiteOwner(siteId);
+          allow write: if false;
+        }
+        match /shards/{n} {
+          allow read, write: if false;
+        }
+      }
+
       // ---------- Growth collector (docs/specs/growth-collector.md) ----------
       // Written ONLY by Cloud Functions (functions/lib/growth). The daily history is
       // for site admins; the footer's summary (public/socials) is public. TikTok

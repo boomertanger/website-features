@@ -394,7 +394,11 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": null
+      "awardableBy": null,
+      "drop": {
+        "mode": "timed",
+        "minutes": 3
+      }
     },
     {
       "id": "glitchwitness",
@@ -410,7 +414,11 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": null
+      "awardableBy": null,
+      "drop": {
+        "mode": "timed",
+        "minutes": 5
+      }
     },
     {
       "id": "boss-fight-believer",
@@ -426,7 +434,11 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": null
+      "awardableBy": null,
+      "drop": {
+        "mode": "timed",
+        "minutes": 10
+      }
     },
     {
       "id": "vr-vertigo-veteran",
@@ -490,7 +502,12 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": null
+      "awardableBy": null,
+      "drop": {
+        "mode": "draw",
+        "minutes": 2,
+        "winners": 1
+      }
     },
     {
       "id": "oracle",
@@ -1069,7 +1086,7 @@
       "name": "Anniversary Ember",
       "collection": "limited",
       "rarity": 4,
-      "source": "stream",
+      "source": "drop",
       "how": "Be there for the Boomertanger anniversary stream.",
       "emoji": "🕯",
       "xp": 100,
@@ -1082,7 +1099,10 @@
       "crewOnly": false,
       "ladder": null,
       "status": "active",
-      "awardableBy": null
+      "awardableBy": null,
+      "drop": {
+        "mode": "streamEnd"
+      }
     },
     {
       "id": "season-01-finisher",
