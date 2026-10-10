@@ -4576,6 +4576,7 @@
    .bt-beats           the four-station beat tracker: .bt-beat is-done | is-now (double ripple) | is-next | is-skipped
    .bt-checkin         the check-in card: ring + count, word entry, room radiogroup, four stamps; data-state entry | wrong | locked | success | visitor | closed
    .bt-live-banner     the site-wide check-in banner: data-state open (red, countdown, Check in) | in (green)
+   .bt-live-banner[data-kind="drop"]  the live drop strip (11 states, stacks under check-in); .bt-dropfuse the medal in a draining fuse ring; .bt-drop-timer the m:ss drop countdown (Live drops block below; shared/ui/drop.js)
    .bt-launch          launch panel tiles: .bt-launch-tile idle | is-running | is-off
    .bt-checklist       the owner's beat checklist: groups of tick rows with a pop
    .bt-deckplan        the crew deck plan: Bridge + compartments, .is-lit (pinging) and .is-open (an open seat)
@@ -4722,6 +4723,59 @@
 }
 @keyframes bt-ci-sheet { from { transform: translateY(100%); } }
 @container bt (max-width: 640px) { .bt-root:not(#_) .bt-live-banner { position: relative; padding: 10px 40px 10px 12px; } .bt-root:not(#_) .bt-live-banner-x { position: absolute; top: 6px; right: 6px; } .bt-root:not(#_) .bt-live-banner-sp { display: none; } .bt-root:not(#_) .bt-live-banner .bt-btn { width: 100%; margin-top: 4px; } }
+/* ---- Live drops (docs/specs/live-drops.md §5, §7; mockup docs/design/mockups/live-drops.html; shared/ui/drop.js) ----
+   .bt-live-banner[data-kind="drop"]  the drop strip in the check-in banner's slot (stacks under it). data-state open | closing | drawing | claimed
+                                     | already | entered | won | lost | closed | visitor | dropper. Gold is the drop's tint (never red: red stays the
+                                     check-in's live exception); Claim is purple. .bt-live-banner-txt holds the words (one line on phones, ellipsis);
+                                     .bt-live-banner-wide hides at 640 px; .bt-live-banner-ok is the gold check. "Last call" (closing) always shows.
+   .bt-dropfuse                      the medal (.bt-medal) inside a fuse ring that drains with the countdown: --p 1..0; data-state open | closing
+                                     (dashed, spinning) | closed | lost (gray) | claimed | won (filled gold); .is-flip plays the medal flip once.
+                                     --fz is the medal size (40 px).
+   .bt-drop-timer                    a big countdown (m:ss) with an optional small line; data-state="closing" is "Last call" (gold, blinking).
+                                     .bt-countdown is the home hero's next-stream digits, not this.
+   Reduced motion: no spin, blink or flip (the colours and the states stay). */
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"] { background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.2), rgba(var(--bt-gold-rgb), 0.05)); border-bottom-color: rgba(var(--bt-gold-rgb), 0.5); gap: 6px 12px; padding-top: 8px; padding-bottom: 8px; }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"] b { color: var(--bt-text); }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"] .bt-live-banner-k { color: var(--bt-title); font-weight: 800; }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"] .bt-live-banner-n { color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"][data-state="closing"] { background: repeating-linear-gradient(115deg, rgba(var(--bt-gold-rgb), 0.16) 0 14px, rgba(var(--bt-gold-rgb), 0.07) 14px 28px); }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"][data-state="closing"] .bt-live-banner-k { animation: bt-drop-blink 1s steps(2, start) infinite; }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"]:is([data-state="claimed"], [data-state="won"]) { background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.32), rgba(var(--bt-gold-rgb), 0.08)); }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"]:is([data-state="closed"], [data-state="lost"], [data-state="already"]) { background: var(--bt-surface); border-bottom-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-live-banner[data-kind="drop"]:is([data-state="closed"], [data-state="lost"]) .bt-live-banner-k { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-live-banner-ok { display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--bt-title); color: var(--bt-bg); font-size: 12px; font-weight: 900; flex: none; }
+.bt-root:not(#_) .bt-live-banner + .bt-live-banner { animation-delay: 0.12s; }   /* the stacked pair: check-in first, the drop slides in just after */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"] { flex-wrap: nowrap; padding: 8px 40px 8px 10px; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"] .bt-btn { width: auto; margin-top: 0; flex: none; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"] .bt-live-banner-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"] .bt-live-banner-wide { display: none; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"]:is([data-state="open"], [data-state="visitor"], [data-state="dropper"]) .bt-live-banner-k { display: none; }
+}
+
+.bt-root:not(#_) .bt-dropfuse { --p: 1; --fz: 40px; position: relative; display: inline-grid; place-items: center; width: calc(var(--fz) + 8px); height: calc(var(--fz) + 8px); border-radius: 50%; flex: none;
+  background: conic-gradient(var(--bt-title) calc(var(--p) * 360deg), rgba(var(--bt-sheen-rgb), 0.08) 0); }
+.bt-root:not(#_) .bt-dropfuse::before { content: ""; position: absolute; inset: 3px; border-radius: 50%; background: var(--bt-bg); }
+.bt-root:not(#_) .bt-dropfuse > .bt-medal { --bt-medal-size: var(--fz); position: relative; }
+.bt-root:not(#_) .bt-dropfuse[data-state="closing"] { background: repeating-conic-gradient(var(--bt-title) 0 10deg, transparent 10deg 20deg); animation: bt-drop-spin 6s linear infinite; }
+.bt-root:not(#_) .bt-dropfuse[data-state="closing"] > .bt-medal { animation: bt-drop-spin 6s linear infinite reverse; }
+.bt-root:not(#_) .bt-dropfuse:is([data-state="closed"], [data-state="lost"]) { background: rgba(var(--bt-sheen-rgb), 0.08); filter: grayscale(0.7); }
+.bt-root:not(#_) .bt-dropfuse:is([data-state="claimed"], [data-state="won"]) { background: var(--bt-title); box-shadow: 0 0 18px rgba(var(--bt-gold-rgb), 0.55); }
+.bt-root:not(#_) .bt-dropfuse.is-flip > .bt-medal { animation: bt-drop-flip 0.9s cubic-bezier(.3, 1.4, .5, 1); }
+
+.bt-root:not(#_) .bt-drop-timer { font-variant-numeric: tabular-nums; font-weight: 900; font-size: 40px; line-height: 1; letter-spacing: -0.02em; color: var(--bt-text); }
+.bt-root:not(#_) .bt-drop-timer small { display: block; margin-top: 6px; font-size: var(--bt-text-sm); font-weight: 600; letter-spacing: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-drop-timer[data-state="closing"] { color: var(--bt-title); }
+.bt-root:not(#_) .bt-drop-timer[data-state="closing"] span { animation: bt-drop-blink 1s steps(2, start) infinite; }
+
+@keyframes bt-drop-flip { 0% { transform: perspective(300px) rotateY(0) scale(1); } 50% { transform: perspective(300px) rotateY(180deg) scale(1.25); } 100% { transform: perspective(300px) rotateY(360deg) scale(1); } }
+@keyframes bt-drop-spin { to { rotate: 360deg; } }
+@keyframes bt-drop-blink { 50% { opacity: 0.45; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-dropfuse[data-state="closing"], .bt-root:not(#_) .bt-dropfuse[data-state="closing"] > .bt-medal, .bt-root:not(#_) .bt-dropfuse.is-flip > .bt-medal,
+  .bt-root:not(#_) .bt-live-banner[data-kind="drop"][data-state="closing"] .bt-live-banner-k, .bt-root:not(#_) .bt-drop-timer[data-state="closing"] span { animation: none; }
+}
+/* ---- END Live drops ---- */
 
 /* ---------- launch panel ---------- */
 .bt-root:not(#_) .bt-launch { display: grid; gap: 10px; }

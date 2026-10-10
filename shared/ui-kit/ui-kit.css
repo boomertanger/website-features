@@ -171,3 +171,11 @@
 #bt-ui-kit .kit-zf-node text { fill: var(--bt-text); font-size: 48px; font-weight: 800; }
 #bt-ui-kit .kit-zf-node { cursor: pointer; }
 @container bt (max-width: 640px) { #bt-ui-kit .kit-zf-grid4 { grid-template-columns: minmax(0, 1fr); } }
+/* Live drops (kit-drops.js) */
+#bt-ui-kit .kit-dr-list { display: grid; gap: var(--bt-space-3); }
+#bt-ui-kit .kit-dr-row { display: grid; gap: var(--bt-space-1); }
+#bt-ui-kit .kit-dr-frame { container: bt / inline-size; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); overflow: hidden; background: var(--bt-bg); }
+#bt-ui-kit .kit-dr-phone { width: 390px; max-width: 100%; }
+#bt-ui-kit .kit-dr-fuses { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--bt-space-4); }
+#bt-ui-kit .kit-dr-fig { margin: 0; display: grid; justify-items: center; gap: var(--bt-space-2); }
+#bt-ui-kit .kit-dr-timers { display: flex; flex-wrap: wrap; gap: var(--bt-space-6); }
