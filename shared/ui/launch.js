@@ -1,5 +1,5 @@
 // shared/ui/launch.js — .bt-launch, the launch panel tiles (docs/design-system.md §5 "Control Room pieces", docs/specs/control-room.md §9).
-// One tile per live activity (Questions, Hot Seat, a Chat Game, Drop a badge, Recruit Rush). Only one activity is on stream at a time:
+// One tile per Chat Games format (plus the Control Room's own tiles: the after-show, Drop a badge, Recruit Rush). Only one game is on stream at a time:
 // the running tile carries the live tag and the live edge. A tile is a real button (purple "Start" text, the kit's clickable colour);
 // an unavailable tile is disabled and says why. Text is escaped; arguments ending in Html are trusted markup.
 //

@@ -37,6 +37,11 @@
 .bt-root:not(#_) .md-scene { position: absolute; right: -18px; bottom: -26px; width: 128px; opacity: 0.16; pointer-events: none; }
 .bt-root:not(#_) .md-scene .bt-mascot { width: 128px; transform: rotate(-10deg); transition: transform 0.4s var(--bt-ease-glide), opacity 0.4s; }
 .bt-root:not(#_) .md-hero:hover .md-scene { opacity: 0.26; }
+/* Phones: the mascot art sits inside the hero instead of hanging past its right edge (the desktop placement above is unchanged). */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .md-scene { right: 0; bottom: -14px; width: 96px; }
+  .bt-root:not(#_) .md-scene .bt-mascot { width: 96px; }
+}
 .bt-root:not(#_) .md-hero:hover .md-scene .bt-mascot { transform: rotate(-4deg) translateY(-4px); }
 .bt-root:not(#_) .md-host { display: flex; flex-direction: column; gap: 2px; max-width: 30ch; padding: 10px 14px; border-radius: var(--bt-radius-lg); border: 1px dashed var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-xs); line-height: 1.4; }
 .bt-root:not(#_) .md-host b { font-size: var(--bt-text-md); color: var(--bt-text); }
