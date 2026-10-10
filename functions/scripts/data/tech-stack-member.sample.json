@@ -1,0 +1,603 @@
+{
+  "_note": "SAMPLE. Copy to functions/scripts/data/tech-stack-member.json (gitignored), replace the sample notes and history with Boomer's own words, then run seed-tech-stack.js (dry run first).",
+  "devices": {
+    "gp": {
+      "specs": {
+        "CPU": "Intel i9-12900F",
+        "GPU": "RTX 3080",
+        "RAM": "32 GB",
+        "Storage": "2 TB NVMe"
+      },
+      "whyPicked": "Bought to play horror. It also carries TikTok's stream, so frame rates sit below what the G7 can show.",
+      "wouldChange": "A stronger GPU, so the game runs faster while TikTok streams."
+    },
+    "sp": {
+      "specs": {
+        "CPU": "Intel i7-9700KF",
+        "GPU": "RTX 2070 (NVENC)",
+        "RAM": "64 GB",
+        "Storage": "5 TB"
+      },
+      "whyPicked": "Boomer's previous gaming PC. The 2070 encodes Twitch and YouTube and records, which keeps that work off the Gaming PC.",
+      "wouldChange": "A newer GPU, so it could encode TikTok too and leave the Gaming PC to just play."
+    },
+    "aoc": {
+      "specs": {
+        "Model": "AOC CU32V3 32\" curved 4K"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "g7a": {
+      "specs": {
+        "Model": "Samsung Odyssey G7 32\" 1440p 240 Hz"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "g7b": {
+      "specs": {
+        "Model": "Samsung Odyssey G7 32\" 1440p 240 Hz"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "link": {
+      "specs": {
+        "Sensor": "1/2\" 4K",
+        "Gimbal": "3-axis, AI tracking"
+      },
+      "whyPicked": "It follows Boomer when he jumps out of the chair.",
+      "wouldChange": "Nothing yet."
+    },
+    "link2": {
+      "specs": {
+        "Model": "Insta360 Link 2"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "brio": {
+      "specs": {
+        "Model": "Logitech Brio 4K"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "link2c": {
+      "specs": {
+        "Model": "Insta360 Link 2C"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "c920": {
+      "specs": {
+        "Model": "Logitech C920x HD Pro"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "kl-l": {
+      "specs": {
+        "Model": "Elgato Key Light"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "kl-r": {
+      "specs": {
+        "Model": "Elgato Key Light"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "neo": {
+      "specs": {
+        "Model": "Elgato Key Light Neo"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "lt-l": {
+      "specs": {
+        "Model": "Logitech Litra Glow"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "lt-r": {
+      "specs": {
+        "Model": "Logitech Litra Glow"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "l8": {
+      "specs": {
+        "Inputs": "6 mic/line (XLR/TRS), 2 stereo",
+        "Pads": "6 sound pads",
+        "Outputs": "4 headphone, 2 main, USB"
+      },
+      "whyPicked": "Physical faders mid-stream beat clicking in software.",
+      "wouldChange": "Nothing yet."
+    },
+    "sm7": {
+      "specs": {
+        "Type": "Dynamic, cardioid",
+        "Preamp": "Built-in, +18 / +28 dB",
+        "Output": "XLR"
+      },
+      "whyPicked": "Rejects the room, so screams don't pick up the PCs' fans.",
+      "wouldChange": "Nothing yet."
+    },
+    "lav": {
+      "specs": {
+        "Model": "Sennheiser XSW-D wireless set"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "lavrx": {
+      "specs": {
+        "Model": "Sennheiser XSW-D wireless set"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "hp": {
+      "specs": {
+        "Model": "Neumann NDH 20"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "hd60x": {
+      "specs": {
+        "Input": "HDMI 2.0, up to 4K30 / 1080p60",
+        "Passthrough": "4K60 HDR",
+        "Output": "USB-C 3.2"
+      },
+      "whyPicked": "Low latency and reliable on a second PC.",
+      "wouldChange": "4K60 capture when the stream goes higher."
+    },
+    "kb": {
+      "specs": {
+        "Model": "Corsair K100 RGB"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "usbsw": {
+      "specs": {
+        "Model": "UGREEN USB 3.0 switch"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "g502": {
+      "specs": {
+        "Model": "Logitech G502 X Lightspeed"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "pp": {
+      "specs": {
+        "Model": "Logitech Powerplay"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "g503": {
+      "specs": {
+        "Model": "Logitech G503 Lightspeed"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "pedal": {
+      "specs": {
+        "Model": "Elgato Stream Deck Pedal"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "deck": {
+      "specs": {
+        "Model": "Apple iPad running Stream Deck"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "play": {
+      "specs": {
+        "Model": "Apple iPad"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "iphone": {
+      "specs": {
+        "Model": "Apple iPhone 16"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "echo": {
+      "specs": {
+        "Model": "Amazon Echo Spot"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "quest": {
+      "specs": {
+        "Model": "Meta Quest 3 512 GB"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "ctrl": {
+      "specs": {
+        "Model": "Meta Quest 3 Touch Plus"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "ont": {
+      "specs": {
+        "Model": "Nokia fiber ONT"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "router": {
+      "specs": {
+        "Model": "Nokia WiFi Beacon G6"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "twitch": {
+      "specs": {
+        "Model": "Twitch"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "youtube": {
+      "specs": {
+        "Model": "YouTube"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "tiktok": {
+      "specs": {
+        "Model": "TikTok"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "chair": {
+      "specs": {
+        "Model": "Secretlab TITAN 2020 Amber Edition"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "gs-s": {
+      "specs": {
+        "Model": "Green backdrop, 5 × 6.5 ft"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "gs-l": {
+      "specs": {
+        "Model": "Green screen, 10 × 12 ft"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "cover": {
+      "specs": {
+        "Model": "Quest 3 silicone cover set"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "strap": {
+      "specs": {
+        "Model": "KIWI design K4 head strap"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    },
+    "facepad": {
+      "specs": {
+        "Model": "KIWI design V3 face pad"
+      },
+      "whyPicked": "",
+      "wouldChange": ""
+    }
+  },
+  "cables": {
+    "gp-g7a": {
+      "port": "DisplayPort 1.4"
+    },
+    "gp-g7b": {
+      "port": "DisplayPort 1.4"
+    },
+    "gp-hd60x": {
+      "port": "HDMI 2.0 (OBS projector out)"
+    },
+    "hd60x-sp": {
+      "port": "USB-C 3.2"
+    },
+    "sp-aoc": {
+      "port": "DisplayPort 1.4"
+    },
+    "link-sp": {
+      "port": "USB-C 3.0"
+    },
+    "brio-sp": {
+      "port": "USB-C 3.0"
+    },
+    "c920-sp": {
+      "port": "USB-A 2.0"
+    },
+    "link2-gp": {
+      "port": "USB-C 3.0"
+    },
+    "link2c-gp": {
+      "port": "USB-C 3.0"
+    },
+    "sm7-l8": {
+      "port": "XLR, input 2"
+    },
+    "quest-lav": {
+      "port": "3.5 mm headphone out"
+    },
+    "lav-lavrx": {
+      "port": "2.4 GHz wireless"
+    },
+    "lavrx-l8": {
+      "port": "XLR, input 1"
+    },
+    "l8-hp": {
+      "port": "Headphone out 1 (TRS)"
+    },
+    "gp-l8": {
+      "port": "Inputs 3 + 4 (left + right)"
+    },
+    "l8-gp": {
+      "port": "Master out, split to both PCs"
+    },
+    "sp-l8": {
+      "port": "Inputs 5 + 6 (left + right)"
+    },
+    "l8-sp": {
+      "port": "Master out, split to both PCs"
+    },
+    "kb-usbsw": {
+      "port": "USB-A"
+    },
+    "usbsw-gp": {
+      "port": "USB 3.0, port A"
+    },
+    "usbsw-sp": {
+      "port": "USB 3.0, port B"
+    },
+    "g502-pp": {
+      "port": "Lightspeed 2.4 GHz"
+    },
+    "pp-usbsw": {
+      "port": "USB-A (receiver)"
+    },
+    "g503-sp": {
+      "port": "Lightspeed 2.4 GHz"
+    },
+    "pedal-usbsw": {
+      "port": "USB-C"
+    },
+    "quest-gp": {
+      "port": "USB-C Link cable"
+    },
+    "ctrl-quest": {
+      "port": "Bluetooth"
+    },
+    "sp-neo": {
+      "port": "USB-C (power + control)"
+    },
+    "sp-lt-l": {
+      "port": "USB-C"
+    },
+    "sp-lt-r": {
+      "port": "USB-C"
+    },
+    "ont-router": {
+      "port": "Cat 6, 2.5 GbE"
+    },
+    "router-gp": {
+      "port": "Cat 6, 2.5 GbE"
+    },
+    "router-sp": {
+      "port": "Cat 6, 2.5 GbE"
+    },
+    "router-kl-l": {
+      "port": "Wi-Fi 2.4 GHz"
+    },
+    "router-kl-r": {
+      "port": "Wi-Fi 2.4 GHz"
+    },
+    "router-deck": {
+      "port": "Wi-Fi 6"
+    },
+    "router-play": {
+      "port": "Wi-Fi 6"
+    },
+    "router-iphone": {
+      "port": "Wi-Fi 6"
+    },
+    "router-echo": {
+      "port": "Wi-Fi 5"
+    },
+    "sp-twitch": {
+      "port": "Streamlabs"
+    },
+    "sp-youtube": {
+      "port": "Streamlabs"
+    },
+    "gp-tiktok": {
+      "port": "TikTok LIVE Studio, vertical"
+    }
+  },
+  "tours": {
+    "gameplay": [
+      "The game runs on the Gaming PC and shows on the G7. Its sound goes to the L-8 over an audio cable.",
+      "OBS on the Gaming PC sends a clean copy of the game out over HDMI to the Elgato HD60X.",
+      "The HD60X hands the feed to the Streaming PC over USB. Streamlabs layers the cams, alerts and scenes on top.",
+      "The Streaming PC encodes once, sends the stream to Twitch and YouTube at the same time, and records a copy."
+    ],
+    "tiktok": [
+      "TikTok has its own cams: the Link 2 face cam and the Link 2C shoulder cam, both on the Gaming PC.",
+      "TikTok LIVE Studio runs on the Gaming PC's second G7, building the vertical layout.",
+      "The Gaming PC streams TikTok itself. The Streaming PC is Boomer's older gaming PC and can't encode all three streams, so TikTok's runs here."
+    ],
+    "voice": [
+      "The SM7dB lands on input 2 of the L-8 over XLR.",
+      "In VR, the Quest’s sound travels to the L-8 over the Sennheiser wireless set: transmitter in the headset, receiver in the mixer.",
+      "The L-8 mixes the mic, VR sound and sound pads. Boomer hears the same mix in the NDH 20s.",
+      "The L-8's master out splits in two. One side goes into the Streaming PC, ready for Streamlabs.",
+      "The other side goes into the Gaming PC, so the voice reaches TikTok too.",
+      "Streamlabs puts the voice on the stream, matched to the cams."
+    ],
+    "cams": [
+      "Three cams go to the Streaming PC: the Link face cam, the Brio shoulder cam and the C920x skipper cam.",
+      "When the cams switch on, the Litra Glows follow on their own, and the Neo lights the skipper shot.",
+      "Each cam is a source in Streamlabs, switched from the Stream Deck."
+    ]
+  },
+  "mixer": {
+    "inputs": [
+      {
+        "id": "vr",
+        "icon": "🥽",
+        "title": "VR sound",
+        "sub": "Quest 3, through the Sennheiser wireless set",
+        "port": "IN 1",
+        "cable": "XLR",
+        "sockets": [
+          "in1"
+        ]
+      },
+      {
+        "id": "mic",
+        "icon": "🎙️",
+        "title": "Your voice",
+        "sub": "Shure SM7dB",
+        "port": "IN 2",
+        "cable": "XLR",
+        "sockets": [
+          "in2"
+        ]
+      },
+      {
+        "id": "gp",
+        "icon": "🎮",
+        "title": "Gaming PC sound",
+        "sub": "The game",
+        "port": "IN 3 + 4",
+        "cable": "Line, left + right",
+        "sockets": [
+          "in3",
+          "in4"
+        ]
+      },
+      {
+        "id": "sp",
+        "icon": "🖥️",
+        "title": "Streaming PC sound",
+        "sub": "Alerts and sounds from the stream",
+        "port": "IN 5 + 6",
+        "cable": "Line, left + right",
+        "sockets": [
+          "in5",
+          "in6"
+        ]
+      },
+      {
+        "id": "pads",
+        "icon": "🔊",
+        "title": "Sound pads",
+        "sub": "Six buttons on the L-8 itself",
+        "port": "Built in",
+        "cable": "",
+        "sockets": [
+          "pads"
+        ]
+      }
+    ],
+    "outputs": [
+      {
+        "id": "tw",
+        "icon": "📡",
+        "title": "Twitch and YouTube",
+        "sub": "Into the Streaming PC",
+        "port": "MASTER OUT, split",
+        "cable": "Line",
+        "sockets": [
+          "mL",
+          "mR"
+        ]
+      },
+      {
+        "id": "tt",
+        "icon": "📱",
+        "title": "TikTok",
+        "sub": "Into the Gaming PC",
+        "port": "MASTER OUT, split",
+        "cable": "Line",
+        "sockets": [
+          "mL",
+          "mR"
+        ]
+      },
+      {
+        "id": "hp",
+        "icon": "🎧",
+        "title": "Boomer's headphones",
+        "sub": "Neumann NDH 20",
+        "port": "PHONES 1",
+        "cable": "Headphone",
+        "sockets": [
+          "ph1"
+        ]
+      }
+    ]
+  },
+  "history": [
+    {
+      "date": "Sep 2026",
+      "text": "Added the Insta360 Link 2C as TikTok's shoulder cam.",
+      "sample": true
+    },
+    {
+      "date": "Jun 2026",
+      "text": "Moved TikTok to the Gaming PC with its own cams, so the Streaming PC only builds Twitch and YouTube.",
+      "sample": true
+    },
+    {
+      "date": "Mar 2026",
+      "text": "Swapped a USB mic for the Shure SM7dB into the Zoom L-8.",
+      "sample": true
+    },
+    {
+      "date": "Jan 2026",
+      "text": "Upgraded to 2 Gbps symmetrical fiber.",
+      "sample": true
+    }
+  ]
+}

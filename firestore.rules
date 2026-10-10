@@ -522,6 +522,15 @@ service cloud.firestore {
         allow write: if false;
       }
 
+      // Fan Club text behind the public pages (docs/specs/tech-stack.md §6): the Tech Stack's ports, specs, notes, tour narration,
+      // mixer routing and setup history. Any signed-in member (a members/{uid} doc) may read; written only by
+      // functions/scripts/seed-tech-stack.js (Admin SDK). When billing exists this becomes the Fan Club plan check.
+      match /memberContent/{docId} {
+        allow read: if siteId == 'boomertanger' && docId == 'tech-stack' && request.auth != null
+          && exists(/databases/$(database)/documents/sites/boomertanger/members/$(request.auth.uid));
+        allow write: if false;
+      }
+
       // ---------- Growth collector (docs/specs/growth-collector.md) ----------
       // Written ONLY by Cloud Functions (functions/lib/growth). The daily history is
       // for site admins; the footer's summary (public/socials) is public. TikTok
