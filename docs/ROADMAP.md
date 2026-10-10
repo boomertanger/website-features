@@ -1,6 +1,6 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-10-08. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-10. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -141,7 +141,13 @@ Goal: the shared rewards service: badges (5 rarities, 9 collections), trophies, 
 Spec: [docs/specs/rewards.md](specs/rewards.md) (confirmed 2026-10-03); mockup `docs/design/mockups/trophy-room-how-it-works.html`; starter catalog `functions/data/trophy-room-badges.json` (90 badges). Part 1: docs, kit pieces (`.bt-medal`, `.bt-level--5`), the rewards backend and the Arcade's switch to Central time; part 2: the pages.
 Used by: Night Shift, Arcade Studio (pitching), Contests (entry pools), Mod Machina (Keeper eligibility).
 Status: done on staging, except the badge sources that wait for other workstreams (see Night Shift hooks).
-Live drops: spec confirmed Oct 9, 2026 (docs/specs/live-drops.md), mockup docs/design/mockups/live-drops.html (P1 One card, helm popover/sheet, B1 Strip). Parts 0-7 planned.
+Live drops: built on staging Oct 2026 (parts 0-7); real tests pending (docs/testing/live-drops-test-plan.md). Spec docs/specs/live-drops.md, mockup docs/design/mockups/live-drops.html (P1 One card, helm popover/sheet, B1 Strip).
+Live drops follow-ups:
+- serverNow in callable replies, for skew-proof countdowns (today they use the browser clock).
+- "Already yours" before the tap (one read of profiles/{uid}/badges/{badgeId} while a drop is open).
+- A rules test harness (the signed-in cases in the test plan are manual today).
+- The UI kit page scrolls sideways at phone width (older sections, not the live drops one).
+- Later: a Stream Deck drop key, the chat bot claim message, "until a set time" drops with the badge editor.
 Kickoff: "Start workstream 7 (Trophy Room) from docs/ROADMAP.md."
 
 ### 7b. Night Shift (was Fun Factory; internal name factory)
@@ -222,7 +228,8 @@ Goal: regroup the header and phone navigation once the remaining pages are built
 
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
-- [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
+- [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
+- [ ] Stream presence, stream check-ins and stream streaks: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
 - [ ] Schedule votes: Scream Planner (4).
 - [x] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10). Done: the bugs Night Shift type (report, confirmed) is on, and the first confirmed status (Confirmed, In progress or Fixed) grants Bug Finder.
 - [x] Feature Lab activities and The Architect badge (an idea that ships): porting (10). Done: the lab Night Shift type (post, vote, shipped) is on, and the first move to Shipped grants The Architect.
@@ -288,6 +295,13 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Set sites/boomertanger.flags.founderStart in production to the launch date (Founder badge window).
 - [ ] Remove the staging test season (seed-test-season.js --remove) once Season 01 is ready on staging.
 - [ ] Deploy firestore rules and functions to production (rules first, separately; retry once on an Eventarc/IAM error) and confirm rewardsNightly, factoryTick and factoryStreakSweep are scheduled in the production console.
+
+### Live drops in production
+- [ ] Deploy the drops rules to production (rules first, separately).
+- [ ] Run seed-badges.js on production (dry run, then --apply): the drop presets, and anniversary-ember's source "drop".
+- [ ] grant.js changed (the quiet flag), so the production deploy is the full batched one: all lib/live functions together first, then the rest in batches of about 15 with 3-minute pauses; confirm each function's served revision (Cloud Run latestReadyRevision = latestCreatedRevision, created by this deploy), not just ACTIVE.
+- [ ] Confirm the dropSweep Cloud Scheduler job exists and is ENABLED on production.
+- [ ] Walk through docs/testing/live-drops-test-plan.md on staging first.
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.

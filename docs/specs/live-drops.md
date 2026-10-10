@@ -1,5 +1,7 @@
 # Live drops — spec
 
+**Status:** Built on staging Oct 2026, parts 0-7; real tests pending: docs/testing/live-drops-test-plan.md.
+
 Confirmed Oct 9, 2026 (spec, defaults and mockup picks). Workstream 7 (Trophy Room), built right after Mod Machina phase 3. Extends docs/specs/rewards.md sections 9 and 10a. Mockup: docs/design/mockups/live-drops.html.
 
 ## 1. Summary and decisions
@@ -221,3 +223,13 @@ The celebratory moment is the flip medal on claim and on a draw win, plus a toas
 6. Part 5 — the site-wide banner, the /live card and the stream view callout.
 7. Part 6 — Recruit Rush reward badge and the one-tap prompt.
 8. Part 7 — docs/testing/live-drops-test-plan.md, design-system.md entry, CHANGELOG and instruction updates.
+
+## 9. Built differently from the spec
+
+- **Countdowns use the browser clock.** No server-time offset exists in lib/live.ts (or anywhere on the site), so the panel, the banner, the /live card and the stream view tick from closesAt against Date.now(), as the check-in countdown does. The server decides with its own clock and the 30-second grace, so a skewed clock only moves the numbers, never who gets the badge. (Follow-up: serverNow in callable replies.)
+- **"Already yours" shows after the tap.** It comes from claimDrop's result ("already") and is kept by the member's claims listener, so it survives a reload; the site doesn't load a member's badges on every page. (Follow-up: one read of profiles/{uid}/badges/{badgeId} to show it before the tap.)
+- **Recruit Rush is edited by the owner only.** liveRecruitRush is owner-only, so the "Reward badge (optional)" picker is on /live/control only (a Captain gets the one-tap prompt, not the picker). The server accepts a reward badge change after the goal is hit (dropReady follows it) until the Rush drop opens; then the picker locks.
+- **The claim count reaches public/live through the 3-second check-in flush** (the same debounced liveFlush), not a drop-only writer.
+- **The stream view callout sits top left (wide) and above TikTok's captions band (tall)**, not where the mockup put it: there it covered the beats rail and the stats panel. It clears every scene's panels in both shapes.
+- **drops.js has its own adminLog writer** with feature "liveDrops" (actions dropOpen, dropExtend, dropClose, dropDraw, dropStopClose).
+- **drop-sample.js runs the drop code against staging Firestore as a given uid** (the cue-sample.js pattern, Application Default Credentials), not the deployed callables.

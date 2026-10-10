@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Live drops part 7: test plan, spec status, design-system decision, ROADMAP.
 Live drops part 6: Recruit Rush reward badge picker and the one-tap drop prompt.
 Live drops part 5: site-wide drop banner, /live drop card, stream view callout, drop badges no longer 'Coming soon'.
 Live drops part 4: the drop panel on /live/control and the Mod Deck helm strip.
