@@ -49,7 +49,7 @@
     { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
   ],
   "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
-  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "streams", "shop", "club", "featurelab", "bugzapper"],
+  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "streams", "shop", "club", "featurelab", "bugzapper", { "techStack": { "enabled": true, "referrals": false } }],
   "signInReasons": [
     { "icon": "🗳", "text": "Vote on what I play next" },
     { "icon": "🏆", "text": "Earn points, badges and leaderboard spots" },

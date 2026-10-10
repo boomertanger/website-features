@@ -1,0 +1,204 @@
+---
+// /tech-stack: the rig behind every stream (docs/specs/tech-stack.md; mockup docs/design/mockups/tech-stack.html). A story page in the full frame:
+// TocLayout rail, the hero (the real photos with a pulse along the cables, the mascot), then seven ghost-numbered chapters: 01 Why two PCs (six stage
+// cards whose scenes power on and play; the One PC / Two PCs compare), 02 Boomer's setup (the wiring diagram in the kit's .bt-zoomframe with the
+// Photo / Drawn / Blueprint / Flow / List switch, tours, Trace from here, Pull the plug, search, deep links ?device= ?tour= ?view=, then Inside the
+// mixer), 03 Hardware (the PC compare table, filters, cards), 04 Software (the journey), 05 Internet backbone (the gauge and the Why fiber placard),
+// 06 Setup history (Fan Club), 07 Ask BOOMBOT, and the closing call to action. Public data: src/data/tech-stack.json (checked before every build by
+// scripts/check-tech-stack.js). Fan Club text loads in the browser from the member doc (scripts/tech-stack/member.ts); visitors get lock cards.
+// Photos: Cloudinary (PUBLIC_CLOUDINARY_CLOUD_NAME), f_auto,q_auto, sized per use; without it the drawings show. Referral links and the Amazon
+// disclosure only render when site.json's techStack module has referrals: true.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TocLayout from "../components/TocLayout.astro";
+import Mascot from "../components/Mascot.astro";
+import { boombotIcon } from "../../../shared/ui/arcade.js";
+import { zoomFrameHtml } from "../../../shared/ui/zoomframe.js";
+import { moduleConfig } from "../lib/nav.js";
+import { TS, DEVICES, TOURS, VIEWS, CAT_NAME, VB_W, VB_H, photoUrl, hardwareGroups, isDevice } from "../scripts/tech-stack/data";
+import { heroScene, stageScenes } from "../scripts/tech-stack/scenes";
+import { devPic, esc } from "../scripts/tech-stack/art";
+import { LOCK_SVG } from "../scripts/tech-stack/ui";
+import "../styles/how-it-works.css";
+import "../styles/tech-stack.css";
+
+const referrals = !!moduleConfig("techStack")?.referrals;
+const NAV: [string, string][] = [["ts-why", "Why two PCs"], ["ts-rig", "Boomer's setup"], ["ts-hardware", "Hardware"], ["ts-software", "Software"], ["ts-internet", "Internet"], ["ts-history", "Setup history"], ["ts-ask", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
+const SEARCH_IC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`;
+const deviceCount = DEVICES.filter((d) => d.category !== "platforms").length;
+const cams = DEVICES.filter((d) => d.category === "cameras").length;
+const groups = hardwareGroups();
+const hwCats = TS.categories.filter((c) => c.id !== "platforms" && groups.some((g) => g[0].category === c.id));
+const cmp = TS.pcCompare;
+const CMP_ROWS: [string, keyof typeof cmp.gaming, "gaming" | "streaming" | ""][] = [["Model", "model", ""], ["CPU", "cpu", "gaming"], ["GPU", "gpu", "gaming"], ["RAM", "ram", "streaming"], ["Storage", "storage", "streaming"], ["Job", "job", ""], ["History", "history", ""], ["Runs", "runs", ""]];
+const pic = (publicId: string, w: number, alt = "") => { const u = photoUrl(publicId, w * 2); return u ? `<img class="ts-pic" src="${u}" alt="${esc(alt)}" loading="lazy" decoding="async">` : ""; };
+const gpPhoto = DEVICES.find((d) => d.id === "gp")!, spPhoto = DEVICES.find((d) => d.id === "sp")!;
+const MIX_PANEL = (() => {
+  const combo = (id: string, x: number, n: number) => `<g class="ts-mx-jack" data-jack="${id}"><circle class="ts-mx-ring" cx="${x}" cy="56" r="17"/><circle class="ts-mx-hole" cx="${x}" cy="56" r="7"/><circle class="ts-mx-pin" cx="${x - 8}" cy="50" r="2"/><circle class="ts-mx-pin" cx="${x + 8}" cy="50" r="2"/><circle class="ts-mx-pin" cx="${x}" cy="66" r="2"/><text class="ts-mx-t" x="${x}" y="96" text-anchor="middle">IN ${n}</text></g>`;
+  const trs = (id: string, x: number, lab: string) => `<g class="ts-mx-jack" data-jack="${id}"><circle class="ts-mx-ring" cx="${x}" cy="56" r="12"/><circle class="ts-mx-hole" cx="${x}" cy="56" r="5"/><text class="ts-mx-t ts-mx-t--s" x="${x}" y="80" text-anchor="middle">${lab}</text></g>`;
+  let pads = ""; for (let i = 0; i < 6; i++) pads += `<rect class="ts-mx-pad" x="${492 + (i % 3) * 18}" y="${38 + Math.floor(i / 3) * 18}" width="14" height="14" rx="3"/>`;
+  return `<svg class="ts-mx-panel" viewBox="0 0 560 112" role="img" aria-label="The L-8's sockets: inputs 1 to 6, master out, headphone out 1 and the sound pads">
+    <rect class="ts-mx-body" x="2" y="2" width="556" height="108" rx="14"/><text class="ts-mx-cap" x="16" y="22">INPUTS</text><text class="ts-mx-cap" x="330" y="22">OUTPUTS</text>
+    ${[1, 2, 3, 4, 5, 6].map((n) => combo(`in${n}`, 34 + (n - 1) * 46, n)).join("")}<path class="ts-mx-div" d="M318 14 V100"/>
+    ${trs("mL", 346, "L")}${trs("mR", 378, "R")}<text class="ts-mx-t" x="362" y="96" text-anchor="middle">MASTER OUT</text>
+    ${trs("ph1", 440, "")}<text class="ts-mx-t" x="440" y="96" text-anchor="middle">PHONES 1</text>
+    <g class="ts-mx-jack" data-jack="pads">${pads}<text class="ts-mx-t" x="519" y="96" text-anchor="middle">PADS</text></g></svg>`;
+})();
+---
+<BaseLayout title="Tech stack" description="Two PCs, five cameras, one mixer and a 2 Gbps line: everything that runs the stream, and exactly how it's wired.">
+  <div class="ts-page bt-zone" data-ts-page>
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+        <section class="ai-hero" aria-labelledby="h-hero">
+          <div class="ts-hero">
+            <div>
+              <span class="ai-kicker">Community · The rig</span>
+              <h1 class="bt-title bt-title--hero" id="h-hero">Tech stack</h1>
+              <p>Two PCs, {cams} cameras, one mixer and a {TS.internet.speed} line. Here's everything that runs the stream, and exactly how it's wired.</p>
+              <ul class="ts-hero-stats"><li><b>2</b> PCs</li><li><b>{cams}</b> cameras</li><li><b>{deviceCount}</b> devices</li><li><b>3</b> platforms at once</li></ul>
+              <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#ts-rig">Explore the rig</a><button type="button" class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
+            </div>
+            <div class="ts-hero-scene"><Fragment set:html={heroScene()} /><Mascot aware decorative /></div>
+          </div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-why" aria-labelledby="h-ts-why">
+          <Fragment set:html={chapter(1, "ts-why", "Why two PCs", "One PC can stream. Two let the game keep most of the power while a second machine runs the show.")} />
+          <div class="ai-stage">
+            {stageScenes().map(([t, p, svg]) => (
+              <article class="bt-card ai-part bt-spotlight ts-sc-card" tabindex="0" aria-label={`${t}. Press to play the scene.`}>
+                <div class="ai-scene ts-scene"><Fragment set:html={svg} /><span class="ts-sc-play" aria-hidden="true">▶ Play</span></div>
+                <div class="ai-part-copy"><h3>{t}</h3><p>{p}</p></div>
+              </article>
+            ))}
+          </div>
+          <div class="ts-vs">
+            <div class="bt-card"><div class="ts-vs-pcs" set:html={pic(gpPhoto.photo.desk!, 60)} /><b class="bt-card-title">One PC does everything</b><div class="ts-load" role="img" aria-label="Game 40%, encoding 30%, scenes 15%, chat 10%"><i class="g" style="width:40%">Game</i><i class="e" style="width:30%">Encode</i><i class="o" style="width:15%">Scenes</i><i class="c" style="width:10%"></i></div><div class="ts-load-lab"><span>Game, encoding, scenes and chat share one machine</span></div><span class="ts-warn">They fight for the same power when the game spikes.</span></div>
+            <div class="bt-card"><div class="ts-vs-pcs" set:html={pic(gpPhoto.photo.desk!, 60) + pic(spPhoto.photo.desk!, 60)} /><b class="bt-card-title">Two PCs split the work</b><div class="ts-load-lab"><span>Gaming PC: the game + TikTok</span></div><div class="ts-load" role="img" aria-label="Game 55%, TikTok 22%"><i class="g" style="width:55%">Game</i><i class="e" style="width:22%">TikTok</i></div><div class="ts-load-lab"><span>Streaming PC: Twitch, YouTube + recording</span></div><div class="ts-load" role="img" aria-label="Encode and record 40%, scenes 15%, chat 10%"><i class="e" style="width:40%">Encode + record</i><i class="o" style="width:15%">Scenes</i><i class="c" style="width:10%"></i></div><span class="ts-ok">The big jobs are split. The honest catch: the Streaming PC is Boomer's older gaming PC, so TikTok stays on the Gaming PC.</span></div>
+          </div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-rig" aria-labelledby="h-ts-rig">
+          <Fragment set:html={chapter(2, "ts-rig", "Boomer's setup", "Tap any device to see what it does and where its cables go. Fan Club members can follow a signal from the desk to the stream.")} />
+          <div class="ts" data-look="photo">
+            <div class="ts-bar">
+              <div class="ts-layers" role="group" aria-label="Signals">{TS.signals.map((s) => <button type="button" class="bt-chip bt-chip--small ts-layer" data-layer={s.id} data-sig={s.id} aria-pressed="true"><span class="ts-dot"></span>{s.name}</button>)}</div>
+              <span class="ts-sp"></span>
+              <div class="bt-search"><Fragment set:html={SEARCH_IC} /><input class="bt-input ts-find" type="search" placeholder="Find a device" aria-label="Find a device" /></div><span class="ts-find-n" aria-live="polite"></span>
+              <div class="bt-view-switch ts-views" role="radiogroup" aria-label="View">{VIEWS.map(([k, l]) => <button type="button" role="radio" aria-checked={k === "photo" ? "true" : "false"} data-view={k}>{l}</button>)}</div>
+            </div>
+            <div class="ts-tours" role="group" aria-label="Follow the signal"><span class="bt-label">Follow the signal</span>{TOURS.map((t) => <button type="button" class="bt-chip bt-chip--small ts-tour" data-tour={t.id} aria-pressed="false"><Fragment set:html={LOCK_SVG} />{t.title}</button>)}</div>
+            <div class="ts-stage">
+              <div class="ts-readout" role="status"></div>
+              <Fragment set:html={zoomFrameHtml({ width: VB_W, height: VB_H, label: "Wiring diagram", svgClass: "ts-svg" })} />
+              <div class="ts-card" aria-live="polite"><noscript><p>The interactive diagram needs JavaScript. The List view below the hardware chapter names every device and what it's wired to.</p></noscript></div>
+            </div>
+            <div class="ts-list"></div>
+          </div>
+
+          <div class="ts-mx-sec" id="ts-mixer">
+            <div class="ts-mx-head"><h3 class="bt-heading">Inside the mixer</h3><span class="bt-badge bt-badge--gold">Fan Club</span></div>
+            <p class="ts-mx-lede">Every sound on the stream passes through the Zoom L-8. Tap a sound to see where it goes.</p>
+            <div class="ts-blur ts-mx-gate is-locked">
+              <div class="ts-blurred">
+                <div class="ts-mx">
+                  <svg class="ts-mx-wires" aria-hidden="true"></svg>
+                  <div class="ts-mx-col" data-mx-col="in"></div>
+                  <div class="ts-mx-mid"><Fragment set:html={MIX_PANEL} /><Fragment set:html={pic("tech-stack/card/l8", 280, "Zoom LiveTrak L-8 mixer").replace("ts-pic", "ts-pic ts-mx-photo")} /><span class="ts-mx-name">Zoom LiveTrak L-8</span></div>
+                  <div class="ts-mx-col" data-mx-col="out"></div>
+                </div>
+                <div class="ts-mx-foot"><div class="ts-mx-terms" role="group" aria-label="Mixer words">{Object.keys(TS.mixerPublic.terms).map((k) => <button type="button" class="bt-chip bt-chip--small" data-term={k}>{k}</button>)}</div>
+                  <p class="ts-mx-say" aria-live="polite"><span class="ts-mx-bb" set:html={boombotIcon("ts-bb-mx")} /><span class="ts-mx-say-t"></span></p></div>
+              </div>
+              <div class="ts-blur-lock" data-mx-lock></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-hardware" aria-labelledby="h-ts-hardware">
+          <Fragment set:html={chapter(3, "ts-hardware", "Hardware", "Everything on the desk, and what each piece does. The two PCs first.")} />
+          <div class="ts-cmp" role="table" aria-label="The two PCs side by side">
+            <div role="row" class="ts-cmp-r"><div class="h" role="columnheader"></div><div class="h ts-cmp-h" role="columnheader"><Fragment set:html={pic(cmp.gaming.photo, 220)} />Gaming PC</div><div class="h ts-cmp-h" role="columnheader"><Fragment set:html={pic(cmp.streaming.photo, 220)} />Streaming PC</div></div>
+            {CMP_ROWS.map(([label, key, win]) => <div role="row" class="ts-cmp-r"><div class="k" role="rowheader">{label}</div><div role="cell" class={win === "gaming" ? "win" : ""}>{cmp.gaming[key]}</div><div role="cell" class={win === "streaming" ? "win" : ""}>{cmp.streaming[key]}</div></div>)}
+          </div>
+          <div class="ts-hwbar" role="group" aria-label="Filter hardware"><button type="button" class="bt-chip bt-chip--small is-active" data-hwf="all" aria-pressed="true">All</button>{hwCats.map((c) => <button type="button" class="bt-chip bt-chip--small" data-hwf={c.id} aria-pressed="false">{c.name}</button>)}</div>
+          {referrals && <p class="ts-disclose">As an Amazon Associate I earn from qualifying purchases. Buying through these links supports the channel at no extra cost to you.</p>}
+          <div class="ts-hw">
+            {groups.map((ds) => {
+              const d = ds[0], same = ds.length > 1 && ds.every((x) => isDevice(x) && isDevice(d) && x.art === d.art);
+              const ref = d.referral;
+              return (
+                <article class="bt-card ts-hwc" id={`hw-${d.id}`} data-cat={d.category} data-hwid={ds.map((x) => x.id).join(" ")}>
+                  <div class="ts-hwc-ph"><Fragment set:html={devPic(d.id, 110)} /><span class="bt-tag">{CAT_NAME[d.category]}</span>{same && <span class="bt-badge bt-badge--gold ts-qty">×{ds.length}</span>}</div>
+                  <div class="ts-hwc-in"><b>{d.model}</b><p>{d.role}</p>
+                    <div class="ts-specs" id={`specs-${d.id}`}></div>
+                    <div class="ts-hwc-acts">
+                      {isDevice(d) && <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-hwshow={d.id}>Show in diagram</button>}
+                      <button type="button" class="bt-btn bt-btn--ghost bt-btn--sm ts-specs-btn" data-specs aria-expanded="false" aria-controls={`specs-${d.id}`}><Fragment set:html={LOCK_SVG} />Full specs</button>
+                      {referrals && ref && <a class="bt-btn bt-btn--secondary bt-btn--sm" href={ref} target="_blank" rel="sponsored noopener">Check price on Amazon</a>}
+                    </div>
+                  </div>
+                </article>
+              );
+            })}
+          </div>
+          <div class="ts-list-static"><noscript><ul>{DEVICES.map((d) => <li><b>{d.name}</b> · {d.model}: {d.role}</li>)}</ul></noscript></div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-software" aria-labelledby="h-ts-software">
+          <Fragment set:html={chapter(4, "ts-software", "Software", "The apps behind each part of a stream, in the order they're used.")} />
+          <ol class="ai-jr ts-jr5" data-journey>
+            {TS.software.map((s, i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{s.icon}</span><b>{s.stage}</b><span class="ai-jr-t">{s.text}</span><ul class="ts-apps">{s.apps.map((a) => <li>{a.name}<small>{a.role}</small></li>)}</ul></li>)}
+          </ol>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-internet" aria-labelledby="h-ts-internet">
+          <Fragment set:html={chapter(5, "ts-internet", "Internet backbone", "Everything above ends up on this line.")} />
+          <div class="ts-net">
+            <div class="ts-speed"><svg viewBox="0 0 150 90" aria-hidden="true" focusable="false"><path class="ts-arc" d="M15 80 A60 60 0 0 1 135 80"/><path class="ts-arc on" d="M15 80 A60 60 0 0 1 135 80"/></svg><b>{TS.internet.speed}</b><span>{TS.internet.symmetrical ? "up and down, the same speed" : "download"}</span></div>
+            <div class="bt-placard"><div class="bt-placard-head"><i></i><b>Why fiber</b><i></i></div><ol class="bt-placard-list">
+              <li class="bt-placard-rule"><span class="bt-placard-n">1</span><b>Upload is what streams</b><span>Most home internet is fast down and slow up. Fiber is fast both ways, so three platforms at once is easy.</span></li>
+              <li class="bt-placard-rule"><span class="bt-placard-n">2</span><b>Steady, not just fast</b><span>Low jitter means no dropped frames when the stream is busiest.</span></li>
+              <li class="bt-placard-rule"><span class="bt-placard-n">3</span><b>Wired where it counts</b><span>Both PCs plug into the Nokia Beacon G6 over Cat 6. Its Wi-Fi is only for the iPads, phone, lights and Echo.</span></li>
+              {TS.internet.unlimited && <li class="bt-placard-rule"><span class="bt-placard-n">4</span><b>No data caps</b><span>Unlimited data, so long streams and uploads never hit a limit.</span></li>}
+            </ol></div>
+          </div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-history" aria-labelledby="h-ts-history">
+          <Fragment set:html={chapter(6, "ts-history", "Setup history", "What changed on the desk, and when.")} />
+          <div class="ts-blur is-locked" data-ts-history>
+            <div class="ts-blurred"><ol class="ts-hist">{[0, 1, 2, 3].map(() => <li aria-hidden="true"><time>Month 2026</time><span>A change to the setup, and why it was made.</span></li>)}</ol></div>
+            <div class="ts-blur-lock" data-ts-history-lock></div>
+          </div>
+        </section>
+
+        <section class="ai-sec ts-sec" id="ts-ask" aria-labelledby="h-ts-ask">
+          <Fragment set:html={chapter(7, "ts-ask", "Ask BOOMBOT", "Quick answers about the setup. Tap a question.")} />
+          <div class="bt-chat">
+            {TS.askBoombot.map(({ q, a }, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ts-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`ts-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`ts-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta ts-cta" aria-labelledby="h-cta">
+          <Mascot aware decorative />
+          <h2 id="h-cta">See it all run live</h2>
+          <p>Every stream uses everything on this page.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/schedule">See the schedule</a><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title="Join free to see the whole rig">Join free</a></div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/tech-stack/page";
+</script>
