@@ -138,3 +138,23 @@
   .bt-root:not(#_) .hq-me-txt { min-width: 0; flex-basis: 100%; }
   .bt-root:not(#_) .hq-acts .bt-btn { flex: 1 1 100%; }
 }
+
+/* HQ notices (scripts/crew/notices.ts): the strip at the top, built from the kit's .bt-notice. Unread rows carry a purple dot; read rows dim. */
+.bt-root:not(#_) .hq-notices { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .hq-notices-h { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bt-root:not(#_) .hq-notices-h .bt-label { margin: 0; }
+.bt-root:not(#_) .hq-notices-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .hq-notice { display: grid; grid-template-columns: 10px minmax(0, 1fr) auto; align-items: center; gap: 10px; transition: border-color 0.15s, transform 0.15s, opacity 0.2s; }
+.bt-root:not(#_) .hq-notice:hover { border-color: var(--bt-primary); transform: translateY(-1px); }
+.bt-root:not(#_) .hq-notice:not(.is-unread) { opacity: 0.7; }
+.bt-root:not(#_) .hq-notice-dot { width: 8px; height: 8px; border-radius: 50%; }
+.bt-root:not(#_) .hq-notice.is-unread .hq-notice-dot { background: var(--bt-primary); box-shadow: 0 0 8px var(--bt-primary); }
+.bt-root:not(#_) .hq-notice-txt { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.bt-root:not(#_) .hq-notice-txt b { color: var(--bt-text); }
+.bt-root:not(#_) .hq-notice-txt span { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .hq-notice-acts { display: flex; gap: 6px; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .hq-notice { grid-template-columns: 10px minmax(0, 1fr); }
+  .bt-root:not(#_) .hq-notice-acts { grid-column: 2; }
+}
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .hq-notice { transition: none; } .bt-root:not(#_) .hq-notice:hover { transform: none; } }

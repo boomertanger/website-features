@@ -52,5 +52,6 @@ module.exports = function crew({ adminLogEntry } = {}) {
     ...require("./core")({ adminLogEntry, gears }),
     ...require("./tasks")({ adminLogEntry, gears }),
     ...require("./notes")({ adminLogEntry }),
+    ...require("./notices")({ adminLogEntry }),
   };
 };

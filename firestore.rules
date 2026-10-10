@@ -774,6 +774,13 @@ service cloud.firestore {
           allow write: if false;
         }
 
+        // HQ notices (Mod Machina phase 3 part 7): the member a notice is for reads it (the uid is a field), plus admins and the owner. Only functions write
+        // (writeNotice, crewNoticeRead marks your own read). TTL on expireAt (30 days).
+        match /notices/{noticeId} {
+          allow read: if request.auth != null && (resource.data.uid == request.auth.uid || hasSiteRole(siteId, 'admin') || isSiteOwner(siteId));
+          allow write: if false;
+        }
+
         // Applications: the applicant reads their own (it carries only their band, never the score);
         // Watcher and above and admins read all; vouches follow; concerns are admins and owner only.
         match /applications/{appId} {

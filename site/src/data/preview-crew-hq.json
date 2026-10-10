@@ -29,6 +29,14 @@
     "month": { "uid": "preview-me", "gears": 298, "recruits": 4, "place": 3 },
     "all": { "uid": "preview-me", "gears": 1240, "recruits": 11, "place": 4 }
   },
+  "notices": [
+    { "id": "pn1", "kind": "reminder", "title": "You're at 1 of 3 duties this month", "text": "4 streams left with open seats. Practice month: nothing changes status yet.", "link": "/schedule/plan", "agoMin": 20 },
+    { "id": "pn2", "kind": "swap", "title": "Monster Monday has a seat up for grabs", "text": "Room Lead, YouTube. First to take it gets it.", "link": "/crew/hq", "agoMin": 95 },
+    { "id": "pn3", "kind": "status", "title": "You're Active again", "text": "You met the minimum. Perks are back.", "link": null, "agoMin": 1500, "read": true },
+    { "id": "pn4", "kind": "rules", "title": "Activity rules start on November 1", "text": "November is a practice month: nobody moves down.", "link": "/crew/how-it-works", "agoMin": 3000, "read": true },
+    { "id": "pn5", "kind": "swap", "title": "Scream Saturday has a seat up for grabs", "text": "Deckhand, Twitch. First to take it gets it.", "link": "/crew/hq", "agoMin": 4400, "read": true },
+    { "id": "pn6", "kind": "reminder", "title": "You're at 0 of 2 duties this month", "text": "6 streams left with open seats.", "link": "/schedule/plan", "agoMin": 9000, "read": true }
+  ],
   "tasks": [
     { "taskId": "t1", "title": "Clip the best scare from Saturday", "detail": "Anything under 45 seconds, posted to the crew thread.", "gears": 15, "status": "open", "postedBy": "u-raven", "postedByHandle": "raven", "claimedBy": null, "claimedByHandle": null, "createdAt": 1791300000000 },
     { "taskId": "t2", "title": "Welcome 5 new Discord members", "detail": "Say hi and point them at the rules channel.", "gears": 10, "status": "claimed", "postedBy": "u-raven", "postedByHandle": "raven", "claimedBy": "preview-me", "claimedByHandle": "mothmanmike", "createdAt": 1791200000000 },

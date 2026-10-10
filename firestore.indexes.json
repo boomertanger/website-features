@@ -1,6 +1,14 @@
 {
   "indexes": [
     {
+      "collectionGroup": "notices",
+      "queryScope": "COLLECTION",
+      "fields": [
+        { "fieldPath": "uid", "order": "ASCENDING" },
+        { "fieldPath": "createdAt", "order": "DESCENDING" }
+      ]
+    },
+    {
       "collectionGroup": "externalAssets",
       "queryScope": "COLLECTION",
       "fields": [
@@ -216,6 +224,12 @@
     },
     {
       "collectionGroup": "notifyOutbox",
+      "fieldPath": "expireAt",
+      "ttl": true,
+      "indexes": []
+    },
+    {
+      "collectionGroup": "notices",
       "fieldPath": "expireAt",
       "ttl": true,
       "indexes": []

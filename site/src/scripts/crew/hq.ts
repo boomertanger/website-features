@@ -14,6 +14,7 @@ import { toast } from "../../../../shared/ui/toast.js";
 import { makeIo, type Io } from "../planner/plan-io";
 import type { Swap } from "../planner/plan-data";
 import { boardCardHtml, wireBoard } from "./swaps";
+import { mountNotices } from "./notices";
 
 const root = document.querySelector<HTMLElement>("[data-hq]")!;
 const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML || "";
@@ -93,6 +94,7 @@ async function render(ctx: Ctx) {
   const tail = (t: Task[]) => { tasks = t; root.querySelector<HTMLElement>("[data-hq-tasks]")!.innerHTML = taskStrip(ctx, tasks); };
 
   root.innerHTML = `${previewNote(ctx)}
+    <div data-hq-notices></div>
     <header class="hq-me"><span class="bt-avatar-xl" aria-hidden="true">${esc(initials(ctx.name || ctx.handle || "?"))}</span>
       <div class="hq-me-txt"><h1 class="bt-title">Crew HQ</h1><p class="hq-hey">Hey, ${esc(ctx.name || ctx.handle)}</p>
         <div class="hq-me-tags">${gradeChipHtml({ track: c.track, grade: c.grade } as any)}${statusChip(c.status)}${since ? `<span class="bt-meta">${esc(since)}</span>` : ""}${statusLine(ctx)}</div></div>
@@ -116,6 +118,7 @@ async function render(ctx: Ctx) {
     </div>`;
   root.setAttribute("aria-busy", "false");
 
+  void mountNotices(root.querySelector<HTMLElement>("[data-hq-notices]")!, ctx);
   wireTaskActions(root.querySelector<HTMLElement>("[data-hq-tasks]")!, ctx, async () => tail(await loadTasks(ctx)));
   // the swap board: Take it through confirmAction; the card redraws from the latest swaps afterwards
   const swapBox = root.querySelector<HTMLElement>("[data-hq-swaps]")!;

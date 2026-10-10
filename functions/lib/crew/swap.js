@@ -4,13 +4,16 @@
 // transaction, first write wins). At the stream's start every open swap closes; an untaken LATE drop is marked countsAsNoShow (part 2 counts it), an early one sets nothing. Delay and Cancel
 // close open swaps with noRecord: true (no effect on anyone's record). Only functions write these documents (rules: crew read, no client writes).
 //
-// deps: { db, FieldValue, Timestamp, outbox(doc), log({ action, streamId, title, actor, details }) }. The planner and the Control Room each pass their own writers, so nothing is copied.
+// deps: { db, FieldValue, Timestamp, outbox(doc), log({ action, streamId, title, actor, details }), notices }. The planner and the Control Room each pass their own writers, so nothing is copied.
+// An open seat also lands as an HQ notice (kind "swap", part 7) for the same people the outbox entry names; the notices are written without their own outbox entry, so nothing is sent twice.
 const { paths, ROOT } = require("./settings");
+const { makeNotices } = require("./notices");
 const SEAT_KEY = (s) => (s.role === "captain" ? "captain" : `${s.room}:${s.role}`);
 const HOUR = 3600000;
 const EARLY_MS = 24 * HOUR;
 const PLATFORM_ROOMS = ["twitch", "ytLandscape", "ytVertical", "tiktok"];
 const AUDIENCE_CAP = 200;
+const ROOM_NAME = { twitch: "Twitch", ytLandscape: "YouTube", ytVertical: "YouTube Vertical", tiktok: "TikTok", site: "the site" };
 
 const swapPath = (id) => `${ROOT}/swaps/${id}`;
 const swapId = (streamId, seat) => `${streamId}_${SEAT_KEY(seat)}`;
@@ -27,7 +30,8 @@ function audienceOf(rosterRows, seat, fromUid) {
     .slice(0, AUDIENCE_CAP);
 }
 
-function makeSwap({ db, FieldValue, Timestamp, outbox = null, log = null }) {
+function makeSwap({ db, FieldValue, Timestamp, outbox = null, log = null, notices = null }) {
+  const N = notices || makeNotices({ db });
   const col = () => db.collection(`${ROOT}/swaps`);
   const note = async (entry) => { if (log) { try { await log(entry); } catch (err) { console.error("swap: adminLog failed", err); } } };
 
@@ -40,11 +44,12 @@ function makeSwap({ db, FieldValue, Timestamp, outbox = null, log = null }) {
     };
     await db.doc(swapPath(id)).set(doc);
     await note({ action: "crewSwap", streamId, title, actor, details: { kind: "drop", swapId: id, seat: { room: seat.room, role: seat.role }, from: from.handle || null, notice: doc.notice } });
-    if (outbox) {
+    {
       try {
         const rows = (await db.collection(`${ROOT}/roster`).where("status", "in", ["active", "checkIn"]).get()).docs.map((d) => ({ uid: d.id, ...d.data() }));
         const uids = audienceOf(rows, seat, from.uid);
-        if (uids.length) await outbox({ type: "crewSwap", audience: "uids", uids, streamId, week, payload: { event: "open", title: `${title || "A stream"} has a seat up for grabs`, seat: { room: seat.room, role: seat.role }, start: startsAtMs, notice: doc.notice, swapId: id, link: "/crew/hq" } });
+        if (uids.length) await N.writeNotices(uids, { kind: "swap", title: `${title || "A stream"} has a seat up for grabs`, text: `${seat.role === "captain" ? "Stream Captain" : `${seat.role === "lead" ? "Room Lead" : "Deckhand"}, ${ROOM_NAME[seat.room] || seat.room}`}. First to take it gets it.`, link: "/crew/hq" });
+        if (outbox && uids.length) await outbox({ type: "crewSwap", audience: "uids", uids, streamId, week, payload: { event: "open", title: `${title || "A stream"} has a seat up for grabs`, seat: { room: seat.room, role: seat.role }, start: startsAtMs, notice: doc.notice, swapId: id, link: "/crew/hq" } });
       } catch (err) { console.error("swap: notice failed", err); }
     }
     return { id, ...doc };
