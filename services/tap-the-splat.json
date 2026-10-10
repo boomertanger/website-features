@@ -1,0 +1,21 @@
+{
+  "id": "tap-the-splat",
+  "name": "Tap the Splat",
+  "type": "arcadeGame",
+  "area": "Play",
+  "blurb": "Splat the bugs before they splat you: the Boom Arcade's first game.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/arcade/tap-the-splat",
+    "/arcade/tap-the-splat/leaderboards"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-tap-the-splat",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

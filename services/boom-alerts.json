@@ -1,0 +1,18 @@
+{
+  "id": "boom-alerts",
+  "name": "Boom Alerts",
+  "type": "feature",
+  "area": "Account",
+  "blurb": "Email, text and push alerts: stream reminders and replies.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "members",
+  "routes": [],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-boom-alerts",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

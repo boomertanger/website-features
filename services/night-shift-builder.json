@@ -1,0 +1,22 @@
+{
+  "id": "night-shift-builder",
+  "name": "Night Shift builder",
+  "type": "adminTool",
+  "area": "Play",
+  "blurb": "Where mods and admins build a season: missions, the idea library and the guide.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "staff",
+  "routes": [
+    "/shift/builder",
+    "/shift/builder/ideas",
+    "/shift/builder/guide"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-night-shift-builder",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

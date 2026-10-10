@@ -1,0 +1,20 @@
+{
+  "id": "account",
+  "name": "Account",
+  "type": "page",
+  "area": "Account",
+  "blurb": "Your profile, sign-in methods, streams you were at and your settings.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/account"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-account",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

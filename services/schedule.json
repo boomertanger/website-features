@@ -1,0 +1,26 @@
+{
+  "id": "schedule",
+  "name": "Schedule",
+  "type": "feature",
+  "area": "Watch",
+  "blurb": "When the next stream is, the usual week, and the vote on next week's games.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/schedule",
+    "/schedule/usual",
+    "/schedule/vote"
+  ],
+  "nav": "schedule",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-schedule",
+  "sections": {
+    "this-week": "This week at a glance",
+    "usual-week": "Boomer's usual week",
+    "ballot": "The ballot"
+  },
+  "talkBack": "pins",
+  "help": null
+}

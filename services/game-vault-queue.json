@@ -1,0 +1,20 @@
+{
+  "id": "game-vault-queue",
+  "name": "Game Vault queue",
+  "type": "adminTool",
+  "area": "Watch",
+  "blurb": "The mod queue for new games and edits to the Vault.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "staff",
+  "routes": [
+    "/games/queue"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-game-vault-queue",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

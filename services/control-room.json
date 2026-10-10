@@ -1,0 +1,21 @@
+{
+  "id": "control-room",
+  "name": "Control Room",
+  "type": "adminTool",
+  "area": "Watch",
+  "blurb": "The owner's controls: start and stop, beats, check-ins, scenes, drops and the checklist.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "owner",
+  "routes": [
+    "/live/control",
+    "/live/control/checklist"
+  ],
+  "nav": null,
+  "testPlan": "docs/testing/control-room-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-control-room",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

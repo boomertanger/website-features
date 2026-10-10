@@ -1,0 +1,21 @@
+{
+  "id": "trophy-room",
+  "name": "Trophy Room",
+  "type": "feature",
+  "area": "Play",
+  "blurb": "Every badge and trophy, how to earn them, and the ones you hold.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/trophies",
+    "/trophies/how-it-works"
+  ],
+  "nav": "trophies",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-trophy-room",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

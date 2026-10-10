@@ -1,0 +1,20 @@
+{
+  "id": "referral-links",
+  "name": "Referral links",
+  "type": "page",
+  "area": "Community",
+  "blurb": "A member's /join/@handle link: it remembers who sent you and opens Join free.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/join/view"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-referral-links",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

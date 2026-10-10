@@ -1,0 +1,24 @@
+{
+  "id": "goal-tracker",
+  "name": "Goal Tracker",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "What we're working toward together, and how you can help.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/goals"
+  ],
+  "nav": "goals",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-goal-tracker",
+  "sections": {
+    "readiness": "Relaunch readiness",
+    "goals-2027": "2027 goals",
+    "how-to-help": "How you can help"
+  },
+  "talkBack": "pins",
+  "help": null
+}

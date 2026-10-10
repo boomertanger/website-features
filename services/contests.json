@@ -1,0 +1,18 @@
+{
+  "id": "contests",
+  "name": "Contests",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Contests and hunts with prizes and entry pools.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "members",
+  "routes": [],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-contests",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

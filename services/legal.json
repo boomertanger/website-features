@@ -1,0 +1,21 @@
+{
+  "id": "legal",
+  "name": "Privacy and Terms",
+  "type": "page",
+  "area": "Site",
+  "blurb": "The Privacy Policy and the Terms of Service.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/privacy",
+    "/terms"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-legal",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

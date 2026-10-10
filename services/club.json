@@ -1,0 +1,20 @@
+{
+  "id": "club",
+  "name": "Club",
+  "type": "page",
+  "area": "Community",
+  "blurb": "Fan Club is free; Sub Club adds the extras.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "everyone",
+  "routes": [
+    "/club"
+  ],
+  "nav": "club",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-club",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

@@ -1,0 +1,21 @@
+{
+  "id": "crew-academy",
+  "name": "Crew Academy",
+  "type": "feature",
+  "area": "Crew",
+  "blurb": "The crew's guides, one module at a time.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "crew",
+  "routes": [
+    "/crew/academy",
+    "/crew/academy/[slug]"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-crew-academy",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

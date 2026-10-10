@@ -1,0 +1,18 @@
+{
+  "id": "live-drops",
+  "name": "Live drops",
+  "type": "feature",
+  "area": "Watch",
+  "blurb": "Limited badges dropped during the stream: claim them from the banner before the fuse runs out.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [],
+  "nav": null,
+  "testPlan": "docs/testing/live-drops-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-live-drops",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

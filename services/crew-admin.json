@@ -1,0 +1,20 @@
+{
+  "id": "crew-admin",
+  "name": "Crew admin",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "Mod Machina's admin page: grades, invites, settings and the monthly awards.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "admins",
+  "routes": [
+    "/admin/crew"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-crew-admin",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

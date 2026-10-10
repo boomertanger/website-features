@@ -1,0 +1,21 @@
+{
+  "id": "hotline-boom",
+  "name": "Hotline Boom",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Contact Boomer: six lines for questions, feedback, business and private notes.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/contact",
+    "/contact/how-it-works"
+  ],
+  "nav": "contact",
+  "testPlan": "docs/testing/hotline-boom-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-hotline-boom",
+  "sections": {},
+  "talkBack": "rate",
+  "help": null
+}

@@ -1,0 +1,24 @@
+{
+  "id": "live",
+  "name": "Live",
+  "type": "feature",
+  "area": "Watch",
+  "blurb": "Watch the stream, check in at the breaks, and see who's on duty.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/live"
+  ],
+  "nav": "live",
+  "testPlan": "docs/testing/control-room-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-live",
+  "sections": {
+    "check-in": "Check in",
+    "live-drop": "Live drop",
+    "play": "Play"
+  },
+  "talkBack": "pins",
+  "help": null
+}

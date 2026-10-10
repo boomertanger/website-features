@@ -1,0 +1,24 @@
+{
+  "id": "crew-hq",
+  "name": "Crew HQ",
+  "type": "feature",
+  "area": "Crew",
+  "blurb": "The crew's home: the time card, tasks, the board, the join queue and your crew profile.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "crew",
+  "routes": [
+    "/crew/hq",
+    "/crew/board",
+    "/crew/tasks",
+    "/crew/queue",
+    "/crew/profile"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-crew-hq",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

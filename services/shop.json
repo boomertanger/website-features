@@ -1,0 +1,20 @@
+{
+  "id": "shop",
+  "name": "Shop",
+  "type": "page",
+  "area": "Shop",
+  "blurb": "Merch and drops.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "everyone",
+  "routes": [
+    "/shop"
+  ],
+  "nav": "shop",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-shop",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

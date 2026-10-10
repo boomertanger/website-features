@@ -1,0 +1,22 @@
+{
+  "id": "cloud-stash",
+  "name": "Cloud Stash",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "Storage use, the cleanup rules, the weekly scan, and what happens to your uploads.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "admins",
+  "routes": [
+    "/admin/stash",
+    "/cloud-stash",
+    "/cloud-stash/how-it-works"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-cloud-stash",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

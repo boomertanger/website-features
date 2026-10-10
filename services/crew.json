@@ -1,0 +1,22 @@
+{
+  "id": "crew",
+  "name": "Meet the crew",
+  "type": "feature",
+  "area": "Crew",
+  "blurb": "The mods who keep the chats fun, how the crew works, and how to join.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/crew",
+    "/crew/how-it-works",
+    "/crew/join"
+  ],
+  "nav": "crew",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-crew",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

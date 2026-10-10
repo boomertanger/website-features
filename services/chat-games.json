@@ -1,0 +1,21 @@
+{
+  "id": "chat-games",
+  "name": "Chat Games",
+  "type": "feature",
+  "area": "Play",
+  "blurb": "Questions, Hot Seat, Would You Rather and Predictions, played live in chat.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/live/chat-games",
+    "/live/questions"
+  ],
+  "nav": "chatgames",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-chat-games",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

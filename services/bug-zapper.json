@@ -1,0 +1,21 @@
+{
+  "id": "bug-zapper",
+  "name": "Bug Zapper",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Report something broken and follow it until it's fixed.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/bug-zapper",
+    "/bug-zapper/how-it-works"
+  ],
+  "nav": "bugzapper",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-bug-zapper",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

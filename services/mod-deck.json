@@ -1,0 +1,20 @@
+{
+  "id": "mod-deck",
+  "name": "Mod Deck",
+  "type": "feature",
+  "area": "Crew",
+  "blurb": "The crew's live seat: the chats, the duty clock, Captain tools and crew notes.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "crew",
+  "routes": [
+    "/live/deck"
+  ],
+  "nav": "deck",
+  "testPlan": "docs/testing/control-room-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-mod-deck",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

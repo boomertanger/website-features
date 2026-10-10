@@ -1,0 +1,20 @@
+{
+  "id": "member-profiles",
+  "name": "Member profiles",
+  "type": "page",
+  "area": "Community",
+  "blurb": "A member's public profile: badges, trophies, level and showcase.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/u/view"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-member-profiles",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

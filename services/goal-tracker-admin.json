@@ -1,0 +1,20 @@
+{
+  "id": "goal-tracker-admin",
+  "name": "Goal Tracker admin",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "Editing the goals, the readiness list and the numbers.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "admins",
+  "routes": [
+    "/admin/goals"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-goal-tracker-admin",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

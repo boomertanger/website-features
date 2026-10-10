@@ -1,0 +1,18 @@
+{
+  "id": "horror-monthly",
+  "name": "Horror Monthly",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "The monthly horror roundup.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "everyone",
+  "routes": [],
+  "nav": "monthly",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-horror-monthly",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

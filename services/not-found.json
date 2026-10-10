@@ -1,0 +1,20 @@
+{
+  "id": "not-found",
+  "name": "404 page",
+  "type": "page",
+  "area": "Site",
+  "blurb": "The workshop: Did you mean, and Report this broken link.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/404"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-not-found",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

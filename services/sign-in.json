@@ -1,0 +1,24 @@
+{
+  "id": "sign-in",
+  "name": "Sign-in and accounts",
+  "type": "feature",
+  "area": "Account",
+  "blurb": "Join free, sign in with email, Google or Twitch, and the account links.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/auth/action",
+    "/auth/email-link",
+    "/auth/twitch/callback",
+    "/auth/youtube/callback",
+    "/auth/tiktok/callback"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-sign-in",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

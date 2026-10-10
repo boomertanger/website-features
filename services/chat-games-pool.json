@@ -1,0 +1,20 @@
+{
+  "id": "chat-games-pool",
+  "name": "Chat Games pool",
+  "type": "feature",
+  "area": "Crew",
+  "blurb": "The crew's pool of questions and Hot Seat packs for the live games.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "crew",
+  "routes": [
+    "/crew/games"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-chat-games-pool",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

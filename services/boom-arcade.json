@@ -1,0 +1,22 @@
+{
+  "id": "boom-arcade",
+  "name": "Boom Arcade",
+  "type": "feature",
+  "area": "Play",
+  "blurb": "Quick horror games with leaderboards.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/arcade",
+    "/arcade/how-it-works",
+    "/arcade/leaderboards"
+  ],
+  "nav": "arcade",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-boom-arcade",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "tech-stack",
+  "name": "Tech Stack",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "The setup behind every stream: the wiring diagram, the hardware and the software.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/tech-stack"
+  ],
+  "nav": "techStack",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-tech-stack",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

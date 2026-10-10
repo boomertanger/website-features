@@ -9,9 +9,11 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/check-tech-stack.js && astro build",
+    "build": "node scripts/check-tech-stack.js && node scripts/check-services.js && astro build",
     "preview": "astro preview",
-    "check:tech-stack": "node scripts/check-tech-stack.js"
+    "check": "node scripts/check-tech-stack.js && node scripts/check-services.js",
+    "check:tech-stack": "node scripts/check-tech-stack.js",
+    "check:services": "node scripts/check-services.js"
   },
   "dependencies": {
     "astro": "^7.3.5",

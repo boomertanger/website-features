@@ -1,0 +1,22 @@
+{
+  "id": "night-shift",
+  "name": "Night Shift",
+  "type": "feature",
+  "area": "Play",
+  "blurb": "Missions between streams, a season pass and your streak.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/shift",
+    "/shift/how-it-works",
+    "/shift/leaderboard"
+  ],
+  "nav": "factory",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-night-shift",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

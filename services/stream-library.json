@@ -1,0 +1,20 @@
+{
+  "id": "stream-library",
+  "name": "Stream Library",
+  "type": "feature",
+  "area": "Watch",
+  "blurb": "Past streams, recaps and clips.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "everyone",
+  "routes": [
+    "/streams"
+  ],
+  "nav": "streams",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-stream-library",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

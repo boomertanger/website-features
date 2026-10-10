@@ -1,0 +1,20 @@
+{
+  "id": "admin-tools",
+  "name": "Admin tools",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "The admin home: a card for every admin tool.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "admins",
+  "routes": [
+    "/admin"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-admin-tools",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

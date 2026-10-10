@@ -1,0 +1,20 @@
+{
+  "id": "hotline-inbox",
+  "name": "Hotline Boom inbox",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "The private inbox for the team lines: reply, assign and close.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "admins",
+  "routes": [
+    "/admin/inbox"
+  ],
+  "nav": null,
+  "testPlan": "docs/testing/hotline-boom-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-hotline-inbox",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

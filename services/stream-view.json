@@ -1,0 +1,20 @@
+{
+  "id": "stream-view",
+  "name": "Stream view",
+  "type": "streamSetup",
+  "area": "Watch",
+  "blurb": "The browser source for Streamlabs and TikTok LIVE Studio: scenes, the check-in word, the drop callout.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "owner",
+  "routes": [
+    "/live/obs"
+  ],
+  "nav": null,
+  "testPlan": "docs/testing/control-room-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-stream-view",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

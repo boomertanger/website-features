@@ -1,0 +1,21 @@
+{
+  "id": "feature-lab",
+  "name": "Feature Lab",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Suggest ideas and vote on them.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/feature-lab",
+    "/feature-lab/how-it-works"
+  ],
+  "nav": "featurelab",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-feature-lab",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

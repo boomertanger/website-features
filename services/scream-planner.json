@@ -1,0 +1,21 @@
+{
+  "id": "scream-planner",
+  "name": "Scream Planner",
+  "type": "adminTool",
+  "area": "Watch",
+  "blurb": "Planning the week: slots, games and crew, then Publish week.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "admins",
+  "routes": [
+    "/schedule/plan",
+    "/schedule/plan/usual"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-scream-planner",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

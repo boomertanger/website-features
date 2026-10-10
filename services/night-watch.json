@@ -1,0 +1,18 @@
+{
+  "id": "night-watch",
+  "name": "Night Watch",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "The admin hub for reports, ideas, uploads and the site's health.",
+  "version": "0.0",
+  "status": "planned",
+  "audience": "admins",
+  "routes": [],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-night-watch",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

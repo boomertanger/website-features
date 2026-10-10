@@ -1,0 +1,18 @@
+{
+  "id": "service-hub",
+  "name": "Service Hub",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Every service on the site and stream: rate them, test them, and see what's new.",
+  "version": "0.1",
+  "status": "building",
+  "audience": "members",
+  "routes": [],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-service-hub",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}
