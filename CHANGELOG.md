@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Tech Stack part 3: data and photos (site/src/data/tech-stack.json; site/scripts/check-tech-stack.js runs before every site build: cables and tour stops point at real devices and cables, every device has a position for each view, photo ids are present and well formed; functions/scripts/upload-tech-stack-photos.js, staging only: fixed public ids tech-stack/desk/<id> and tech-stack/card/<id>, never overwrites, records each upload with recordAssetCreated (feature techStack), dry run unless --apply)
 - kit: .bt-zoomframe (shared/bt-ui.css) and shared/ui/zoomframe.js, a pan and zoom viewport for SVG (wheel zoom only after a click inside, drag, pinch, double-tap, + / − / FIT, minimap while zoomed, flyTo, keyboard + − 0, reduced motion jumps); the UI kit page shows it live and in every state; design-system §5 and §6
 - docs: Tech Stack spec (docs/specs/tech-stack.md) and the approved mockup; ROADMAP workstream 16 (Tech Stack) and 17 (Nav redesign once the remaining pages are built), launch checklist: make the repo private right after the Squarespace Code Blocks are off, turn on Tech Stack referral links; design-system §8y Tech Stack
 - docs: ROADMAP marks the 404 page done on staging (tested Oct 2026), adds its production check to the launch checklist, and notes under the Bug Zapper port that the report button will open Bug Zapper with the URL pre-filled

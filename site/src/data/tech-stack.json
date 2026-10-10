@@ -1,0 +1,2015 @@
+{
+  "version": 1,
+  "updated": "2026-10-10",
+  "viewBox": [
+    1600,
+    1000
+  ],
+  "defaultView": "photo",
+  "views": [
+    "photo",
+    "drawn",
+    "blueprint",
+    "flow",
+    "list"
+  ],
+  "categories": [
+    {
+      "id": "pcs",
+      "name": "PCs"
+    },
+    {
+      "id": "displays",
+      "name": "Displays"
+    },
+    {
+      "id": "cameras",
+      "name": "Cameras"
+    },
+    {
+      "id": "lights",
+      "name": "Lights"
+    },
+    {
+      "id": "audio",
+      "name": "Audio"
+    },
+    {
+      "id": "input",
+      "name": "Input"
+    },
+    {
+      "id": "mobile",
+      "name": "Mobile and smart"
+    },
+    {
+      "id": "vr",
+      "name": "VR"
+    },
+    {
+      "id": "network",
+      "name": "Network"
+    },
+    {
+      "id": "platforms",
+      "name": "Platforms"
+    },
+    {
+      "id": "studio",
+      "name": "Studio"
+    }
+  ],
+  "signals": [
+    {
+      "id": "video",
+      "name": "Video"
+    },
+    {
+      "id": "audio",
+      "name": "Audio"
+    },
+    {
+      "id": "usb",
+      "name": "USB"
+    },
+    {
+      "id": "wifi",
+      "name": "Wireless"
+    },
+    {
+      "id": "net",
+      "name": "Network"
+    }
+  ],
+  "devices": [
+    {
+      "id": "gp",
+      "short": "Gaming PC",
+      "name": "Gaming PC",
+      "model": "Alienware Aurora R13",
+      "category": "pcs",
+      "art": "tower:aw",
+      "pc": null,
+      "role": "Runs the game and streams TikTok with TikTok LIVE Studio. Also sends a copy of the game to the capture card.",
+      "onAir": false,
+      "tags": "computer pc alienware",
+      "views": {
+        "drawn": {
+          "x": 1450,
+          "y": 710
+        },
+        "flowColumn": 2,
+        "photo": {
+          "x": 1137.2,
+          "y": 638.4,
+          "w": 149.4,
+          "h": 237.7,
+          "anchor": [
+            1211.9,
+            757.2
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/gp",
+        "card": "tech-stack/card/gp"
+      },
+      "referral": null
+    },
+    {
+      "id": "sp",
+      "short": "Streaming PC",
+      "name": "Streaming PC",
+      "model": "PowerSpec G434",
+      "category": "pcs",
+      "art": "tower",
+      "pc": null,
+      "role": "Boomer's previous gaming PC, now the show machine. Builds the Twitch and YouTube stream in Streamlabs and records every stream.",
+      "onAir": false,
+      "tags": "computer pc powerspec encoder",
+      "views": {
+        "drawn": {
+          "x": 150,
+          "y": 710
+        },
+        "flowColumn": 4,
+        "photo": {
+          "x": 331.7,
+          "y": 636.1,
+          "w": 126.8,
+          "h": 241.9,
+          "anchor": [
+            395.1,
+            757
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/sp",
+        "card": "tech-stack/card/sp"
+      },
+      "referral": null
+    },
+    {
+      "id": "aoc",
+      "short": "AOC 4K",
+      "name": "Streaming PC monitor",
+      "model": "AOC CU32V3 32\" curved 4K",
+      "category": "displays",
+      "art": "monitor:slobs",
+      "pc": "streaming",
+      "role": "Shows Streamlabs, where every scene and source is managed live.",
+      "onAir": false,
+      "tags": "screen display monitor",
+      "views": {
+        "drawn": {
+          "x": 430,
+          "y": 230
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 368.6,
+          "y": 177.5,
+          "w": 295.2,
+          "h": 171.5,
+          "anchor": [
+            516.3,
+            263.2
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/aoc",
+        "card": "tech-stack/card/aoc"
+      },
+      "referral": null
+    },
+    {
+      "id": "g7a",
+      "short": "Odyssey G7",
+      "name": "Gameplay monitor",
+      "model": "Samsung Odyssey G7 32\" 1440p 240 Hz",
+      "category": "displays",
+      "art": "monitor:game",
+      "pc": "gaming",
+      "role": "The game itself. A 240 Hz monitor, though the game runs below that while the Gaming PC is also streaming TikTok.",
+      "onAir": false,
+      "tags": "screen display monitor samsung",
+      "views": {
+        "drawn": {
+          "x": 800,
+          "y": 230
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 674.4,
+          "y": 177.1,
+          "w": 280.8,
+          "h": 182.8,
+          "anchor": [
+            814.8,
+            268.5
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/g7a",
+        "card": "tech-stack/card/g7a"
+      },
+      "referral": null
+    },
+    {
+      "id": "g7b",
+      "short": "Odyssey G7",
+      "name": "Gaming PC apps monitor",
+      "model": "Samsung Odyssey G7 32\" 1440p 240 Hz",
+      "category": "displays",
+      "art": "monitor:chat",
+      "pc": "gaming",
+      "role": "TikTok LIVE Studio and the cross-platform chat in OBS.",
+      "onAir": false,
+      "tags": "screen display monitor samsung chat",
+      "views": {
+        "drawn": {
+          "x": 1170,
+          "y": 230
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 970,
+          "y": 177.1,
+          "w": 280.8,
+          "h": 180.1,
+          "anchor": [
+            1110.4,
+            267.1
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/g7b",
+        "card": "tech-stack/card/g7b"
+      },
+      "referral": null
+    },
+    {
+      "id": "link",
+      "short": "Face cam",
+      "name": "Face cam (Twitch, YouTube)",
+      "model": "Insta360 Link",
+      "category": "cameras",
+      "art": "gimbal",
+      "pc": "streaming",
+      "role": "AI-tracking 4K gimbal cam, the main face cam on Twitch and YouTube.",
+      "onAir": true,
+      "tags": "camera cam webcam insta360",
+      "views": {
+        "drawn": {
+          "x": 800,
+          "y": 104
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 808.9,
+          "y": 94.2,
+          "w": 44,
+          "h": 54.1,
+          "anchor": [
+            830.9,
+            121.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/link",
+        "card": "tech-stack/card/link"
+      },
+      "referral": null
+    },
+    {
+      "id": "link2",
+      "short": "Face cam",
+      "name": "Face cam (TikTok)",
+      "model": "Insta360 Link 2",
+      "category": "cameras",
+      "art": "gimbal",
+      "pc": "gaming",
+      "role": "AI-tracking 4K gimbal cam, the face cam on TikTok.",
+      "onAir": true,
+      "tags": "camera cam webcam insta360",
+      "views": {
+        "drawn": {
+          "x": 1170,
+          "y": 104
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 784.8,
+          "y": 100.1,
+          "w": 20.2,
+          "h": 47.1,
+          "anchor": [
+            794.9,
+            123.6
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/link2",
+        "card": "tech-stack/card/link2"
+      },
+      "referral": null
+    },
+    {
+      "id": "brio",
+      "short": "Shoulder cam",
+      "name": "Shoulder cam (Twitch, YouTube)",
+      "model": "Logitech Brio 4K",
+      "category": "cameras",
+      "art": "tripod",
+      "pc": "streaming",
+      "role": "Over-the-shoulder angle for the jump-scare reactions.",
+      "onAir": true,
+      "tags": "camera cam webcam logitech",
+      "views": {
+        "drawn": {
+          "x": 150,
+          "y": 420
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 138.4,
+          "y": 282.5,
+          "w": 157.9,
+          "h": 579.6,
+          "anchor": [
+            217.3,
+            299.6
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/brio",
+        "card": "tech-stack/card/brio-head"
+      },
+      "referral": null
+    },
+    {
+      "id": "link2c",
+      "short": "Shoulder cam",
+      "name": "Shoulder cam (TikTok)",
+      "model": "Insta360 Link 2C",
+      "category": "cameras",
+      "art": "tripod",
+      "pc": "gaming",
+      "role": "The shoulder angle for TikTok.",
+      "onAir": true,
+      "tags": "camera cam webcam insta360",
+      "views": {
+        "drawn": {
+          "x": 1450,
+          "y": 420
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 1303.3,
+          "y": 295.7,
+          "w": 158.3,
+          "h": 569.4,
+          "anchor": [
+            1382.5,
+            319.6
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/link2c",
+        "card": "tech-stack/card/link2c-head"
+      },
+      "referral": null
+    },
+    {
+      "id": "c920",
+      "short": "Skipper cam",
+      "name": "Skipper cam",
+      "model": "Logitech C920x HD Pro",
+      "category": "cameras",
+      "art": "webcam",
+      "pc": "streaming",
+      "role": "A wide room shot for breaks and the skipper scene.",
+      "onAir": true,
+      "tags": "camera cam webcam logitech",
+      "views": {
+        "drawn": {
+          "x": 430,
+          "y": 104
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 250,
+          "y": 671.8,
+          "w": 55.2,
+          "h": 25.7,
+          "anchor": [
+            277.6,
+            684.7
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/c920",
+        "card": "tech-stack/card/c920"
+      },
+      "referral": null
+    },
+    {
+      "id": "kl-l",
+      "short": "Key Light",
+      "name": "Top left face light",
+      "model": "Elgato Key Light",
+      "category": "lights",
+      "art": "keylight",
+      "pc": null,
+      "role": "Main face light, controlled from the Stream Deck over Wi-Fi.",
+      "onAir": true,
+      "tags": "light lamp elgato",
+      "views": {
+        "drawn": {
+          "x": 140,
+          "y": 150
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 242.2,
+          "y": 18,
+          "w": 147.4,
+          "h": 478,
+          "anchor": [
+            315.9,
+            70.9
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/kl-l",
+        "card": "tech-stack/card/kl-head"
+      },
+      "referral": null
+    },
+    {
+      "id": "kl-r",
+      "short": "Key Light",
+      "name": "Top right face light",
+      "model": "Elgato Key Light",
+      "category": "lights",
+      "art": "keylight",
+      "pc": null,
+      "role": "Main face light, controlled from the Stream Deck over Wi-Fi.",
+      "onAir": true,
+      "tags": "light lamp elgato",
+      "views": {
+        "drawn": {
+          "x": 1460,
+          "y": 150
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 1215.4,
+          "y": 19.2,
+          "w": 147.4,
+          "h": 476.9,
+          "anchor": [
+            1289.1,
+            72.1
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/kl-r",
+        "card": "tech-stack/card/kl-head"
+      },
+      "referral": null
+    },
+    {
+      "id": "neo",
+      "short": "Key Light Neo",
+      "name": "Skipper light",
+      "model": "Elgato Key Light Neo",
+      "category": "lights",
+      "art": "lightsm",
+      "pc": "streaming",
+      "role": "Lights the skipper cam's shot.",
+      "onAir": true,
+      "tags": "light lamp elgato",
+      "views": {
+        "drawn": {
+          "x": 300,
+          "y": 560
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 239.5,
+          "y": 718.1,
+          "w": 76.6,
+          "h": 102.3,
+          "anchor": [
+            277.8,
+            769.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/neo",
+        "card": "tech-stack/card/neo"
+      },
+      "referral": null
+    },
+    {
+      "id": "lt-l",
+      "short": "Litra Glow",
+      "name": "Lower left face light",
+      "model": "Logitech Litra Glow",
+      "category": "lights",
+      "art": "lightsm",
+      "pc": "streaming",
+      "role": "Fill light. Turns on by itself when the cams do.",
+      "onAir": true,
+      "tags": "light lamp logitech",
+      "views": {
+        "drawn": {
+          "x": 300,
+          "y": 380
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 473.3,
+          "y": 637.2,
+          "w": 47.5,
+          "h": 96.1,
+          "anchor": [
+            497,
+            685.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/lt-l",
+        "card": "tech-stack/card/lt-l"
+      },
+      "referral": null
+    },
+    {
+      "id": "lt-r",
+      "short": "Litra Glow",
+      "name": "Lower right face light",
+      "model": "Logitech Litra Glow",
+      "category": "lights",
+      "art": "lightsm",
+      "pc": "streaming",
+      "role": "Fill light. Turns on by itself when the cams do.",
+      "onAir": true,
+      "tags": "light lamp logitech",
+      "views": {
+        "drawn": {
+          "x": 1300,
+          "y": 380
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 1080.4,
+          "y": 637.2,
+          "w": 47.5,
+          "h": 96.1,
+          "anchor": [
+            1104.2,
+            685.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/lt-r",
+        "card": "tech-stack/card/lt-r"
+      },
+      "referral": null
+    },
+    {
+      "id": "l8",
+      "short": "Zoom L-8",
+      "name": "Mixer",
+      "model": "Zoom LiveTrak L-8",
+      "category": "audio",
+      "art": "mixer",
+      "pc": "streaming",
+      "role": "Every mic and sound runs through here, with audio cables in and out of both PCs. Six sound pads for live effects.",
+      "onAir": false,
+      "tags": "audio mixer sound zoom interface",
+      "views": {
+        "drawn": {
+          "x": 450,
+          "y": 470
+        },
+        "flowColumn": 2,
+        "photo": {
+          "x": 484.9,
+          "y": 461.4,
+          "w": 128.7,
+          "h": 133.4,
+          "anchor": [
+            549.3,
+            528.1
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/l8",
+        "card": "tech-stack/card/l8"
+      },
+      "referral": null
+    },
+    {
+      "id": "sm7",
+      "short": "SM7dB",
+      "name": "Microphone",
+      "model": "Shure SM7dB",
+      "category": "audio",
+      "art": "mic",
+      "pc": null,
+      "role": "The main mic, a dynamic vocal mic with a built-in preamp.",
+      "onAir": true,
+      "tags": "mic microphone voice shure audio",
+      "views": {
+        "drawn": {
+          "x": 790,
+          "y": 440
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 825.7,
+          "y": 435,
+          "w": 104.2,
+          "h": 121.7,
+          "anchor": [
+            877.8,
+            495.8
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/sm7",
+        "card": "tech-stack/card/sm7"
+      },
+      "referral": null
+    },
+    {
+      "id": "lav",
+      "short": "Transmitter",
+      "name": "Wireless transmitter",
+      "model": "Sennheiser XSW-D wireless set",
+      "category": "audio",
+      "art": "lav",
+      "pc": "gaming",
+      "role": "Plugs into the Quest 3 and sends its sound to the mixer without a cable.",
+      "onAir": false,
+      "tags": "wireless transmitter sennheiser audio vr quest lavalier",
+      "views": {
+        "drawn": {
+          "x": 1125,
+          "y": 565
+        },
+        "flowColumn": 2,
+        "photo": {
+          "x": 1058.3,
+          "y": 568.4,
+          "w": 15.2,
+          "h": 40.8,
+          "anchor": [
+            1065.9,
+            588.8
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/lav",
+        "card": "tech-stack/card/lavset"
+      },
+      "referral": null
+    },
+    {
+      "id": "lavrx",
+      "short": "Receiver",
+      "name": "Wireless receiver",
+      "model": "Sennheiser XSW-D wireless set",
+      "category": "audio",
+      "art": "rx",
+      "pc": null,
+      "role": "Catches the Quest's sound and plugs straight into the L-8 over XLR.",
+      "onAir": false,
+      "tags": "wireless receiver sennheiser audio xlr lavalier",
+      "views": {
+        "drawn": {
+          "x": 620,
+          "y": 560
+        },
+        "flowColumn": 2,
+        "photo": {
+          "x": 466.7,
+          "y": 507.7,
+          "w": 14.8,
+          "h": 39.7,
+          "anchor": [
+            474,
+            527.5
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/lavrx",
+        "card": "tech-stack/card/lavset"
+      },
+      "referral": null
+    },
+    {
+      "id": "hp",
+      "short": "NDH 20",
+      "name": "Headphones",
+      "model": "Neumann NDH 20",
+      "category": "audio",
+      "art": "headphones",
+      "pc": null,
+      "role": "Closed-back headphones fed from the L-8's mix.",
+      "onAir": false,
+      "tags": "headphones headset audio neumann",
+      "views": {
+        "drawn": {
+          "x": 630,
+          "y": 460
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 709.8,
+          "y": 433.4,
+          "w": 113.6,
+          "h": 136.1,
+          "anchor": [
+            766.5,
+            501.5
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/hp",
+        "card": "tech-stack/card/hp"
+      },
+      "referral": null
+    },
+    {
+      "id": "hd60x",
+      "short": "HD60X",
+      "name": "Capture card",
+      "model": "Elgato HD60X",
+      "category": "input",
+      "art": "capture",
+      "pc": null,
+      "role": "The bridge: takes the Gaming PC's game feed and hands it to the Streaming PC.",
+      "onAir": false,
+      "tags": "capture card elgato hdmi",
+      "views": {
+        "drawn": {
+          "x": 360,
+          "y": 700
+        },
+        "flowColumn": 3,
+        "photo": {
+          "x": 714.8,
+          "y": 361.1,
+          "w": 88.3,
+          "h": 50.6,
+          "anchor": [
+            759,
+            386.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/hd60x",
+        "card": "tech-stack/card/hd60x"
+      },
+      "referral": null
+    },
+    {
+      "id": "kb",
+      "short": "K100",
+      "name": "Keyboard",
+      "model": "Corsair K100 RGB",
+      "category": "input",
+      "art": "keyboard",
+      "pc": "both",
+      "role": "Plugged into the USB switch, so it works on either PC. Six macro keys.",
+      "onAir": false,
+      "tags": "keyboard corsair",
+      "views": {
+        "drawn": {
+          "x": 780,
+          "y": 690
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 693.8,
+          "y": 703.4,
+          "w": 230.7,
+          "h": 118.6,
+          "anchor": [
+            809.1,
+            762.7
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/kb",
+        "card": "tech-stack/card/kb"
+      },
+      "referral": null
+    },
+    {
+      "id": "usbsw",
+      "short": "USB switch",
+      "name": "USB switch",
+      "model": "UGREEN USB 3.0 switch",
+      "category": "input",
+      "art": "usbswitch",
+      "pc": "both",
+      "role": "Wired to both PCs. Everything plugged into it moves between them at the press of a button.",
+      "onAir": false,
+      "tags": "usb switch ugreen",
+      "views": {
+        "drawn": {
+          "x": 800,
+          "y": 590
+        },
+        "flowColumn": 1,
+        "photo": {
+          "x": 784.8,
+          "y": 633,
+          "w": 77,
+          "h": 39.3,
+          "anchor": [
+            823.3,
+            652.6
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/usbsw",
+        "card": "tech-stack/card/usbsw"
+      },
+      "referral": null
+    },
+    {
+      "id": "g502",
+      "short": "G502 X",
+      "name": "Gaming mouse",
+      "model": "Logitech G502 X Lightspeed",
+      "category": "input",
+      "art": "mouse",
+      "pc": "both",
+      "role": "Wireless gaming mouse with 11 programmable buttons. Works on either PC through the USB switch.",
+      "onAir": false,
+      "tags": "mouse logitech",
+      "views": {
+        "drawn": {
+          "x": 1060,
+          "y": 688
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 956.8,
+          "y": 750,
+          "w": 31,
+          "h": 54.1,
+          "anchor": [
+            972.3,
+            777.1
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/g502",
+        "card": "tech-stack/card/g502"
+      },
+      "referral": null
+    },
+    {
+      "id": "pp",
+      "short": "Powerplay",
+      "name": "Charging mousepad",
+      "model": "Logitech Powerplay",
+      "category": "input",
+      "art": "mousepad",
+      "pc": "both",
+      "role": "Charges the G502 while it's in use. Its receiver is plugged into the USB switch.",
+      "onAir": false,
+      "tags": "mousepad charging logitech",
+      "views": {
+        "drawn": {
+          "x": 1035,
+          "y": 700
+        },
+        "flowColumn": 1,
+        "photo": {
+          "x": 933.8,
+          "y": 682.4,
+          "w": 142.7,
+          "h": 139.2,
+          "anchor": [
+            1005.2,
+            752
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/pp",
+        "card": "tech-stack/card/pp"
+      },
+      "referral": null
+    },
+    {
+      "id": "g503",
+      "short": "G503",
+      "name": "Streaming PC mouse",
+      "model": "Logitech G503 Lightspeed",
+      "category": "input",
+      "art": "mouse",
+      "pc": "streaming",
+      "role": "The Streaming PC's own mouse, so scenes never steal the game's cursor.",
+      "onAir": false,
+      "tags": "mouse logitech",
+      "views": {
+        "drawn": {
+          "x": 600,
+          "y": 745
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 1019.3,
+          "y": 735.6,
+          "w": 26,
+          "h": 46.7,
+          "anchor": [
+            1032.3,
+            759
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/g503",
+        "card": "tech-stack/card/g503"
+      },
+      "referral": null
+    },
+    {
+      "id": "pedal",
+      "short": "Pedal",
+      "name": "Stream Deck Pedal",
+      "model": "Elgato Stream Deck Pedal",
+      "category": "input",
+      "art": "pedal",
+      "pc": "both",
+      "role": "Three foot switches for actions mid-game. On the USB switch, so it works on either PC.",
+      "onAir": false,
+      "tags": "pedal stream deck foot elgato",
+      "views": {
+        "drawn": {
+          "x": 790,
+          "y": 805
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 509.4,
+          "y": 801,
+          "w": 149,
+          "h": 66.5,
+          "anchor": [
+            583.9,
+            834.2
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/pedal",
+        "card": "tech-stack/card/pedal"
+      },
+      "referral": null
+    },
+    {
+      "id": "deck",
+      "short": "iPad deck",
+      "name": "iPad (Stream Deck)",
+      "model": "Apple iPad running Stream Deck",
+      "category": "mobile",
+      "art": "tablet:deck",
+      "pc": null,
+      "role": "The Stream Deck: scenes, lights, sounds and alerts on one screen.",
+      "onAir": false,
+      "tags": "ipad tablet stream deck apple",
+      "views": {
+        "drawn": {
+          "x": 520,
+          "y": 640
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 564.7,
+          "y": 677.7,
+          "w": 114.4,
+          "h": 79.3,
+          "anchor": [
+            621.9,
+            717.4
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/deck",
+        "card": "tech-stack/card/deck"
+      },
+      "referral": null
+    },
+    {
+      "id": "play",
+      "short": "iPad",
+      "name": "iPad (playback)",
+      "model": "Apple iPad",
+      "category": "mobile",
+      "art": "tablet:play",
+      "pc": null,
+      "role": "Watches the live stream back, so Boomer sees what viewers see.",
+      "onAir": false,
+      "tags": "ipad tablet apple playback",
+      "views": {
+        "drawn": {
+          "x": 1250,
+          "y": 560
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 659.6,
+          "y": 42.1,
+          "w": 114.4,
+          "h": 79.3,
+          "anchor": [
+            716.8,
+            81.8
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/play",
+        "card": "tech-stack/card/play"
+      },
+      "referral": null
+    },
+    {
+      "id": "iphone",
+      "short": "iPhone",
+      "name": "iPhone",
+      "model": "Apple iPhone 16",
+      "category": "mobile",
+      "art": "phone",
+      "pc": null,
+      "role": "Runs Twitch Stream Manager for chat and mod tools.",
+      "onAir": false,
+      "tags": "phone iphone apple",
+      "views": {
+        "drawn": {
+          "x": 1270,
+          "y": 680
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 647.5,
+          "y": 478.9,
+          "w": 38.5,
+          "h": 76.6,
+          "anchor": [
+            666.8,
+            517.2
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/iphone",
+        "card": "tech-stack/card/iphone"
+      },
+      "referral": null
+    },
+    {
+      "id": "echo",
+      "short": "Echo Spot",
+      "name": "Smart display",
+      "model": "Amazon Echo Spot",
+      "category": "mobile",
+      "art": "echo",
+      "pc": null,
+      "role": "Clock, alarms and reminders, so streams start and end on time.",
+      "onAir": false,
+      "tags": "alexa echo clock amazon",
+      "views": {
+        "drawn": {
+          "x": 990,
+          "y": 470
+        },
+        "flowColumn": 5,
+        "photo": {
+          "x": 919.4,
+          "y": 543.5,
+          "w": 54.5,
+          "h": 54.8,
+          "anchor": [
+            946.6,
+            570.9
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/echo",
+        "card": "tech-stack/card/echo"
+      },
+      "referral": null
+    },
+    {
+      "id": "quest",
+      "short": "Quest 3",
+      "name": "VR headset",
+      "model": "Meta Quest 3 512 GB",
+      "category": "vr",
+      "art": "vr",
+      "pc": "gaming",
+      "role": "VR horror, linked to the Gaming PC with a powered cable that keeps the battery charged.",
+      "onAir": false,
+      "tags": "vr headset meta quest oculus",
+      "views": {
+        "drawn": {
+          "x": 1110,
+          "y": 450
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 1011.6,
+          "y": 428.7,
+          "w": 122.9,
+          "h": 94.1,
+          "anchor": [
+            1073.1,
+            475.8
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/quest",
+        "card": "tech-stack/card/quest"
+      },
+      "referral": null
+    },
+    {
+      "id": "ctrl",
+      "short": "Controllers",
+      "name": "VR controllers",
+      "model": "Meta Quest 3 Touch Plus",
+      "category": "vr",
+      "art": "controllers",
+      "pc": "gaming",
+      "role": "The Quest's hand controllers.",
+      "onAir": false,
+      "tags": "vr controllers meta quest",
+      "views": {
+        "drawn": {
+          "x": 1215,
+          "y": 495
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 986.3,
+          "y": 522.1,
+          "w": 174.6,
+          "h": 42.4,
+          "anchor": [
+            1073.6,
+            543.3
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/ctrl",
+        "card": "tech-stack/card/ctrl"
+      },
+      "referral": null
+    },
+    {
+      "id": "ont",
+      "short": "Fiber box",
+      "name": "Fiber box (ONT)",
+      "model": "Nokia fiber ONT",
+      "category": "network",
+      "art": "router",
+      "pc": null,
+      "role": "Where the 2 Gbps fiber line comes in. Hands the connection to the Wi-Fi router.",
+      "onAir": false,
+      "tags": "internet fiber ont modem nokia network",
+      "views": {
+        "drawn": {
+          "x": 380,
+          "y": 915
+        },
+        "flowColumn": 0,
+        "photo": {
+          "x": 285,
+          "y": 912.5,
+          "w": 110,
+          "h": 64.9,
+          "anchor": [
+            340,
+            945
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/ont",
+        "card": "tech-stack/card/ont"
+      },
+      "referral": null
+    },
+    {
+      "id": "router",
+      "short": "Wi-Fi router",
+      "name": "Wi-Fi router",
+      "model": "Nokia WiFi Beacon G6",
+      "category": "network",
+      "art": "router",
+      "pc": null,
+      "role": "Wired to both PCs over Cat 6, Wi-Fi for everything else.",
+      "onAir": false,
+      "tags": "internet router wifi network nokia beacon",
+      "views": {
+        "drawn": {
+          "x": 540,
+          "y": 915
+        },
+        "flowColumn": 1,
+        "photo": {
+          "x": 448.7,
+          "y": 905,
+          "w": 42.6,
+          "h": 80,
+          "anchor": [
+            470,
+            945
+          ]
+        }
+      },
+      "photo": {
+        "desk": "tech-stack/desk/router",
+        "card": "tech-stack/card/router"
+      },
+      "referral": null
+    },
+    {
+      "id": "twitch",
+      "short": "Twitch",
+      "name": "Twitch",
+      "model": "Twitch",
+      "category": "platforms",
+      "art": "platform:twitch",
+      "pc": null,
+      "role": "Streamed from the Streaming PC with Streamlabs.",
+      "onAir": false,
+      "tags": "twitch platform",
+      "views": {
+        "drawn": {
+          "x": 860,
+          "y": 915
+        },
+        "flowColumn": 5,
+        "photo": null
+      },
+      "photo": {
+        "desk": null,
+        "card": "tech-stack/card/twitch"
+      },
+      "referral": null
+    },
+    {
+      "id": "youtube",
+      "short": "YouTube",
+      "name": "YouTube",
+      "model": "YouTube",
+      "category": "platforms",
+      "art": "platform:youtube",
+      "pc": null,
+      "role": "Streamed at the same time as Twitch, from the Streaming PC.",
+      "onAir": false,
+      "tags": "youtube platform",
+      "views": {
+        "drawn": {
+          "x": 990,
+          "y": 915
+        },
+        "flowColumn": 5,
+        "photo": null
+      },
+      "photo": {
+        "desk": null,
+        "card": "tech-stack/card/youtube"
+      },
+      "referral": null
+    },
+    {
+      "id": "tiktok",
+      "short": "TikTok",
+      "name": "TikTok",
+      "model": "TikTok",
+      "category": "platforms",
+      "art": "platform:tiktok",
+      "pc": null,
+      "role": "Streamed from the Gaming PC with TikTok LIVE Studio.",
+      "onAir": false,
+      "tags": "tiktok platform",
+      "views": {
+        "drawn": {
+          "x": 1120,
+          "y": 915
+        },
+        "flowColumn": 5,
+        "photo": null
+      },
+      "photo": {
+        "desk": null,
+        "card": "tech-stack/card/tiktok"
+      },
+      "referral": null
+    }
+  ],
+  "gear": [
+    {
+      "id": "chair",
+      "model": "Secretlab TITAN 2020 Amber Edition",
+      "category": "studio",
+      "role": "The chair for long horror nights.",
+      "photo": "tech-stack/card/chair",
+      "referral": null
+    },
+    {
+      "id": "gs-s",
+      "model": "Green backdrop, 5 × 6.5 ft",
+      "category": "studio",
+      "role": "Sized to cover the area behind the chair.",
+      "photo": "tech-stack/card/gs-s",
+      "referral": null
+    },
+    {
+      "id": "gs-l",
+      "model": "Green screen, 10 × 12 ft",
+      "category": "studio",
+      "role": "For full-body and standing shots.",
+      "photo": "tech-stack/card/gs-l",
+      "referral": null
+    },
+    {
+      "id": "cover",
+      "model": "Quest 3 silicone cover set",
+      "category": "vr",
+      "role": "Turns the Quest 3 black and protects the headset and controllers.",
+      "photo": "tech-stack/card/cover",
+      "referral": null
+    },
+    {
+      "id": "strap",
+      "model": "KIWI design K4 head strap",
+      "category": "vr",
+      "role": "An absolute must for long VR sessions.",
+      "photo": "tech-stack/card/strap",
+      "referral": null
+    },
+    {
+      "id": "facepad",
+      "model": "KIWI design V3 face pad",
+      "category": "vr",
+      "role": "A cool, comfortable face cushion.",
+      "photo": "tech-stack/card/facepad",
+      "referral": null
+    }
+  ],
+  "cables": [
+    {
+      "id": "gp-g7a",
+      "from": "gp",
+      "to": "g7a",
+      "signal": "video",
+      "carries": "video"
+    },
+    {
+      "id": "gp-g7b",
+      "from": "gp",
+      "to": "g7b",
+      "signal": "video",
+      "carries": "video"
+    },
+    {
+      "id": "gp-hd60x",
+      "from": "gp",
+      "to": "hd60x",
+      "signal": "video",
+      "carries": "av"
+    },
+    {
+      "id": "hd60x-sp",
+      "from": "hd60x",
+      "to": "sp",
+      "signal": "usb",
+      "carries": "av"
+    },
+    {
+      "id": "sp-aoc",
+      "from": "sp",
+      "to": "aoc",
+      "signal": "video",
+      "carries": "video"
+    },
+    {
+      "id": "link-sp",
+      "from": "link",
+      "to": "sp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "brio-sp",
+      "from": "brio",
+      "to": "sp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "c920-sp",
+      "from": "c920",
+      "to": "sp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "link2-gp",
+      "from": "link2",
+      "to": "gp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "link2c-gp",
+      "from": "link2c",
+      "to": "gp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "sm7-l8",
+      "from": "sm7",
+      "to": "l8",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "quest-lav",
+      "from": "quest",
+      "to": "lav",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "lav-lavrx",
+      "from": "lav",
+      "to": "lavrx",
+      "signal": "wifi",
+      "carries": "audio"
+    },
+    {
+      "id": "lavrx-l8",
+      "from": "lavrx",
+      "to": "l8",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "l8-hp",
+      "from": "l8",
+      "to": "hp",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "gp-l8",
+      "from": "gp",
+      "to": "l8",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "l8-gp",
+      "from": "l8",
+      "to": "gp",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "sp-l8",
+      "from": "sp",
+      "to": "l8",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "l8-sp",
+      "from": "l8",
+      "to": "sp",
+      "signal": "audio",
+      "carries": "audio"
+    },
+    {
+      "id": "kb-usbsw",
+      "from": "kb",
+      "to": "usbsw",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "usbsw-gp",
+      "from": "usbsw",
+      "to": "gp",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "usbsw-sp",
+      "from": "usbsw",
+      "to": "sp",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "g502-pp",
+      "from": "g502",
+      "to": "pp",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "pp-usbsw",
+      "from": "pp",
+      "to": "usbsw",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "g503-sp",
+      "from": "g503",
+      "to": "sp",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "pedal-usbsw",
+      "from": "pedal",
+      "to": "usbsw",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "quest-gp",
+      "from": "quest",
+      "to": "gp",
+      "signal": "usb",
+      "carries": "video"
+    },
+    {
+      "id": "ctrl-quest",
+      "from": "ctrl",
+      "to": "quest",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "sp-neo",
+      "from": "sp",
+      "to": "neo",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "sp-lt-l",
+      "from": "sp",
+      "to": "lt-l",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "sp-lt-r",
+      "from": "sp",
+      "to": "lt-r",
+      "signal": "usb",
+      "carries": "control"
+    },
+    {
+      "id": "ont-router",
+      "from": "ont",
+      "to": "router",
+      "signal": "net",
+      "carries": "data"
+    },
+    {
+      "id": "router-gp",
+      "from": "router",
+      "to": "gp",
+      "signal": "net",
+      "carries": "data"
+    },
+    {
+      "id": "router-sp",
+      "from": "router",
+      "to": "sp",
+      "signal": "net",
+      "carries": "data"
+    },
+    {
+      "id": "router-kl-l",
+      "from": "router",
+      "to": "kl-l",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "router-kl-r",
+      "from": "router",
+      "to": "kl-r",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "router-deck",
+      "from": "router",
+      "to": "deck",
+      "signal": "wifi",
+      "carries": "control"
+    },
+    {
+      "id": "router-play",
+      "from": "router",
+      "to": "play",
+      "signal": "wifi",
+      "carries": "data"
+    },
+    {
+      "id": "router-iphone",
+      "from": "router",
+      "to": "iphone",
+      "signal": "wifi",
+      "carries": "data"
+    },
+    {
+      "id": "router-echo",
+      "from": "router",
+      "to": "echo",
+      "signal": "wifi",
+      "carries": "data"
+    },
+    {
+      "id": "sp-twitch",
+      "from": "sp",
+      "to": "twitch",
+      "signal": "net",
+      "carries": "stream"
+    },
+    {
+      "id": "sp-youtube",
+      "from": "sp",
+      "to": "youtube",
+      "signal": "net",
+      "carries": "stream"
+    },
+    {
+      "id": "gp-tiktok",
+      "from": "gp",
+      "to": "tiktok",
+      "signal": "net",
+      "carries": "stream"
+    }
+  ],
+  "tours": [
+    {
+      "id": "gameplay",
+      "title": "Gameplay to Twitch and YouTube",
+      "steps": [
+        {
+          "device": "gp",
+          "cables": [
+            "gp-g7a",
+            "gp-l8"
+          ]
+        },
+        {
+          "device": "hd60x",
+          "cables": [
+            "gp-hd60x"
+          ]
+        },
+        {
+          "device": "sp",
+          "cables": [
+            "hd60x-sp"
+          ]
+        },
+        {
+          "device": "twitch",
+          "cables": [
+            "sp-twitch",
+            "sp-youtube"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "tiktok",
+      "title": "Gameplay to TikTok",
+      "steps": [
+        {
+          "device": "link2",
+          "cables": [
+            "link2-gp",
+            "link2c-gp"
+          ]
+        },
+        {
+          "device": "gp",
+          "cables": [
+            "gp-g7b"
+          ]
+        },
+        {
+          "device": "tiktok",
+          "cables": [
+            "gp-tiktok"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "voice",
+      "title": "Your voice",
+      "steps": [
+        {
+          "device": "sm7",
+          "cables": [
+            "sm7-l8"
+          ]
+        },
+        {
+          "device": "lavrx",
+          "cables": [
+            "quest-lav",
+            "lav-lavrx",
+            "lavrx-l8"
+          ]
+        },
+        {
+          "device": "l8",
+          "cables": [
+            "l8-hp"
+          ]
+        },
+        {
+          "device": "sp",
+          "cables": [
+            "l8-sp"
+          ]
+        },
+        {
+          "device": "gp",
+          "cables": [
+            "l8-gp",
+            "gp-tiktok"
+          ]
+        },
+        {
+          "device": "twitch",
+          "cables": [
+            "sp-twitch",
+            "sp-youtube"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "cams",
+      "title": "Face cams",
+      "steps": [
+        {
+          "device": "link",
+          "cables": [
+            "link-sp",
+            "brio-sp",
+            "c920-sp"
+          ]
+        },
+        {
+          "device": "lt-l",
+          "cables": [
+            "sp-lt-l",
+            "sp-lt-r",
+            "sp-neo"
+          ]
+        },
+        {
+          "device": "twitch",
+          "cables": [
+            "sp-twitch",
+            "sp-youtube"
+          ]
+        }
+      ]
+    }
+  ],
+  "software": [
+    {
+      "stage": "Go live",
+      "icon": "🔴",
+      "text": "Sends the stream out",
+      "apps": [
+        {
+          "name": "Streamlabs (SLOBS)",
+          "role": "Twitch and YouTube, plus recording"
+        },
+        {
+          "name": "TikTok LIVE Studio",
+          "role": "TikTok"
+        },
+        {
+          "name": "OBS Studio",
+          "role": "Game feed to the capture card"
+        },
+        {
+          "name": "Social Stream Ninja",
+          "role": "One chat from every platform"
+        }
+      ]
+    },
+    {
+      "stage": "Run the show",
+      "icon": "🎛️",
+      "text": "Controls during a stream",
+      "apps": [
+        {
+          "name": "Stream Deck",
+          "role": "Scenes, lights, sounds"
+        },
+        {
+          "name": "Logitech G HUB",
+          "role": "Mice, cams, Litra lights"
+        },
+        {
+          "name": "NZXT CAM",
+          "role": "Temperatures and load"
+        },
+        {
+          "name": "TikFinity",
+          "role": "TikTok alerts and games"
+        },
+        {
+          "name": "Twitch Stream Manager",
+          "role": "Chat and mod tools"
+        }
+      ]
+    },
+    {
+      "stage": "Edit",
+      "icon": "✂️",
+      "text": "Clips and videos",
+      "apps": [
+        {
+          "name": "Adobe Creative Cloud",
+          "role": "Graphics and video"
+        },
+        {
+          "name": "Wondershare Filmora",
+          "role": "Quick edits"
+        },
+        {
+          "name": "Nexus Clips",
+          "role": "Clips from streams"
+        },
+        {
+          "name": "TikTok app",
+          "role": "Vertical edits"
+        }
+      ]
+    },
+    {
+      "stage": "Analyze",
+      "icon": "📈",
+      "text": "What worked",
+      "apps": [
+        {
+          "name": "YouTube Studio",
+          "role": "YouTube"
+        },
+        {
+          "name": "TikTok Analytics",
+          "role": "TikTok"
+        },
+        {
+          "name": "TwitchTracker",
+          "role": "Twitch history"
+        },
+        {
+          "name": "SullyGnome",
+          "role": "Twitch deep dives"
+        },
+        {
+          "name": "Social Blade",
+          "role": "Growth across platforms"
+        }
+      ]
+    },
+    {
+      "stage": "Community",
+      "icon": "💬",
+      "text": "Between streams",
+      "apps": [
+        {
+          "name": "Discord",
+          "role": "The community server"
+        },
+        {
+          "name": "boomertanger.com",
+          "role": "Everything in one place"
+        }
+      ]
+    }
+  ],
+  "pcCompare": {
+    "gaming": {
+      "photo": "tech-stack/card/gp2",
+      "model": "Alienware Aurora R13",
+      "cpu": "i9-12900F",
+      "gpu": "RTX 3080",
+      "ram": "32 GB",
+      "storage": "2 TB",
+      "job": "Plays the game and streams TikTok",
+      "history": "The current gaming PC",
+      "runs": "The game, OBS, TikTok LIVE Studio"
+    },
+    "streaming": {
+      "photo": "tech-stack/card/sp2",
+      "model": "PowerSpec G434",
+      "cpu": "i7-9700KF",
+      "gpu": "RTX 2070",
+      "ram": "64 GB",
+      "storage": "5 TB",
+      "job": "Streams Twitch and YouTube, records",
+      "history": "Boomer's previous gaming PC",
+      "runs": "Streamlabs, Social Stream Ninja"
+    }
+  },
+  "internet": {
+    "speed": "2 Gbps",
+    "symmetrical": true,
+    "unlimited": true
+  },
+  "askBoombot": [
+    {
+      "q": "Do I need two PCs to start streaming?",
+      "a": "No. One decent PC is plenty to start. Two PCs pay off when the game needs every frame and the stream needs to look polished at the same time."
+    },
+    {
+      "q": "Why is there a capture card between the PCs?",
+      "a": "It's how the game travels from one PC to the other. The Gaming PC sends HDMI out, the HD60X turns it into a USB feed, and the Streaming PC treats it like a camera."
+    },
+    {
+      "q": "Why does TikTok stream from the Gaming PC?",
+      "a": "Honest answer: the Streaming PC is Boomer's older gaming PC. It handles Twitch, YouTube and the recording, but it can't encode a third stream too, so TikTok LIVE Studio runs on the Gaming PC."
+    },
+    {
+      "q": "What happens if one PC crashes?",
+      "a": "Part of the show keeps going. If the Gaming PC dies, Twitch and YouTube stay up on the cams, but TikTok drops. Try it with Pull the plug in the diagram (Fan Club)."
+    },
+    {
+      "q": "Can I copy this setup?",
+      "a": "Yes. Every device is listed with what it does, and Fan Club members also see the ports, full specs and Boomer's notes on what he'd change."
+    }
+  ],
+  "mixerPublic": {
+    "device": "l8",
+    "terms": {
+      "Input": "An input is a socket where a sound comes in: a mic, a PC, the VR headset.",
+      "Fader": "Each input gets its own slider, called a fader. Up is louder. That's how Boomer balances voice against game.",
+      "Master out": "The master out is the finished mix: every input together, at the levels the faders set. Here it splits to both PCs.",
+      "Headphone out": "A separate socket for listening, so Boomer hears the same mix the stream gets."
+    }
+  }
+}
