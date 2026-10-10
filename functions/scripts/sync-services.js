@@ -40,7 +40,8 @@ async function main() {
   stagingOnly(projectId, args.project);
   const admin = require("firebase-admin");
   admin.initializeApp({ projectId });
-  const adminLogEntry = async (_db, f) => ({ ...f, actorUid: f.actorUid ?? null, actorName: f.actorName || "sync-services.js", reason: f.reason || "", createdAt: admin.firestore.FieldValue.serverTimestamp(),
+  // Firestore refuses undefined values (an adminLog entry without changes or a snapshot), so they are left out
+  const adminLogEntry = async (_db, f) => ({ ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined)), actorUid: f.actorUid ?? null, actorName: f.actorName || "sync-services.js", reason: f.reason || "", createdAt: admin.firestore.FieldValue.serverTimestamp(),
     expireAt: admin.firestore.Timestamp.fromMillis(Date.now() + 365 * 24 * 3600000) });
   const { list, hash } = readManifests();
   const S = require("../lib/services").build({ adminLogEntry });
