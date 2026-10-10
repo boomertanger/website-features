@@ -24,7 +24,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Spec confirmed, building | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
-| 16 | Tech Stack (/tech-stack: the rig, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Spec confirmed, building | Community services |
+| 16 | Tech Stack (/tech-stack: the rig, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
@@ -214,7 +214,7 @@ Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's bu
 ### 16. Tech Stack
 Goal: rebuild /tech-stack on the new site: the dual-PC setup, an interactive wiring diagram (Photo, Drawn, Blueprint, Flow and List views, tours, Trace from here, Pull the plug, Inside the mixer), hardware with the PC compare table, software, the internet backbone and setup history. Fan Club parts read `sites/boomertanger/memberContent/tech-stack`. Referral links come later (off until launch).
 Spec: [docs/specs/tech-stack.md](specs/tech-stack.md) (confirmed Oct 10, 2026); mockup `docs/design/mockups/tech-stack.html`.
-Status: **Spec confirmed, building.** Parts, one commit each: 1 docs; 2 kit `.bt-zoomframe`; 3 data check and photo upload script; 4 rules and member seed; 5 the page; 6 checks.
+Status: **Built (parts 1-6, Oct 10, 2026); staging set-up pending.** Parts: 1 docs; 2 kit `.bt-zoomframe`; 3 data check and photo upload script; 4 rules and member seed; 5 the page; 6 checks (raw-colour grep clean, check-tech-stack.js ok, site build ok). Still to do on staging: deploy the memberContent rule, upload the photos (upload-tech-stack-photos.js), seed the member doc (seed-tech-stack.js), and set PUBLIC_CLOUDINARY_CLOUD_NAME in Cloudflare Pages so the photos show.
 
 ### 17. Nav redesign
 Goal: regroup the header and phone navigation once the remaining pages are built (Tech Stack sits in Community for now).
