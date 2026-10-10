@@ -1,8 +1,10 @@
 // site/src/scripts/tech-stack/mixer.ts — Inside the mixer (docs/specs/tech-stack.md §5.4), ported from the approved mockup. The drawn back panel and the L-8
 // photo are on the page for everyone (tech-stack.astro); the rows (what comes in, what goes out, which socket) are Fan Club text from the member doc
 // (mixer.inputs / mixer.outputs). Visitors see blurred placeholder rows and the lock card. Tap a row: its socket glows, a pink cable flows from the row,
-// everything it reaches lights, and BOOMBOT explains the path in one sentence. Word chips explain Input, Fader, Master out and Headphone out. Phones:
-// panel and photo on top, rows below, no cables. Reduced motion: the lit cable doesn't flow.
+// everything it reaches lights, and BOOMBOT explains the path in one sentence. Word chips explain Input, Fader, Master out and Headphone out. Phones: the
+// socket panel sticks to the top while the rows scroll, the photo is hidden there, no cables. Reduced motion: the lit cable doesn't flow.
+// The wires are measured from the real layout, so they're redrawn whenever it can move: the box, the middle column, the socket panel or a row
+// resizes (one ResizeObserver), the L-8 photo loads (it pushes the panel), or the web fonts arrive (they change the rows' heights).
 import { TS } from "./data";
 import { esc } from "./art";
 import { onMember, type MixRow, type MemberState } from "./member";
@@ -62,7 +64,6 @@ export function mountMixer(sec: HTMLElement) {
     lockHost.innerHTML = open ? "" : m.status === "member"
       ? `<div class="bt-lock-card ts-lock"><span class="bt-lock-card-ic" aria-hidden="true">🎚️</span><div><b>The mixer notes are on the way</b><p>Boomer hasn't written them up yet.</p></div></div>`
       : lockCard(m, "Inside the mixer", "Socket-by-socket routing, in plain words. Free with Fan Club.", "#ts-mixer");
-    requestAnimationFrame(draw);
   };
 
   mx.addEventListener("click", (e) => { const b = (e.target as Element).closest<HTMLElement>(".ts-mx-row[data-mx]"); if (!b) return; sel = sel === b.dataset.mx ? null : b.dataset.mx!; apply(); });
@@ -70,6 +71,12 @@ export function mountMixer(sec: HTMLElement) {
     sec.querySelectorAll("[data-term]").forEach((x) => x.classList.toggle("is-active", x === c));
     say.textContent = TS.mixerPublic.terms[c.dataset.term!] || "";
   }));
-  new ResizeObserver(draw).observe(mx);
-  onMember(paint);
+  let frame = 0;
+  const redraw = () => { if (!frame) frame = requestAnimationFrame(() => { frame = 0; draw(); }); };
+  const ro = new ResizeObserver(redraw);
+  const watch = () => { ro.disconnect(); [mx, mx.querySelector(".ts-mx-mid"), mx.querySelector(".ts-mx-panel"), ...mx.querySelectorAll(".ts-mx-row")].forEach((el) => el && ro.observe(el)); };
+  const photo = mx.querySelector<HTMLImageElement>(".ts-mx-photo");
+  if (photo && !photo.complete) photo.addEventListener("load", redraw, { once: true });
+  document.fonts?.ready.then(redraw);
+  onMember((m) => { paint(m); watch(); redraw(); });
 }

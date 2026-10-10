@@ -373,7 +373,9 @@
 .bt-root:not(#_) .ts-mx-bb .bt-boombot { width: 30px; height: 30px; }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ts-mx { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 14px; }
-  .bt-root:not(#_) .ts-mx-mid { order: -1; }
+  /* phones: the socket panel sticks just below the chapter chip row while the rows scroll; the photo and its caption are hidden there */
+  .bt-root:not(#_) .ts-mx-mid { order: -1; position: sticky; top: calc(var(--bt-sticky-top, 0px) + 61px); z-index: 2; padding: 8px; border-radius: var(--bt-radius-lg); background: color-mix(in srgb, var(--bt-surface) 88%, transparent); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: var(--bt-shadow-lift); }
+  .bt-root:not(#_) :is(.ts-mx-photo, .ts-mx-name) { display: none; }
   .bt-root:not(#_) .ts-mx-wires { display: none; }
 }
 
