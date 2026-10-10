@@ -1996,6 +1996,7 @@
   --bt-contact-business: var(--bt-title);
   --bt-contact-fanmail: var(--bt-pink);
   --bt-contact-support: var(--bt-teal);
+  --bt-contact-privacy: var(--bt-blue);                  /* Hotline Boom's privacy@ row (docs/specs/hotline-boom.md §10) */
   --bt-follow-tiktok: #25f4ee;
   --bt-follow-youtube: #ff0000;
   --bt-follow-twitch: var(--bt-brand-twitch);
@@ -5087,3 +5088,38 @@
   .bt-root:not(#_) .bt-room-tile:hover { transform: none; }
 }
 /* ================= END Mod Deck pieces ================= */
+
+/* ================= .bt-reveal: the page version of the footer's Show / Copy (shared/ui/reveal.js; docs/specs/hotline-boom.md §10,
+   mockup docs/design/mockups/hotline-boom-contact.html "Rather use email?"). One row per address: a coloured dot and label, the
+   masked address (typed in on Show), and the button (Show → Copy → Copied). States on .bt-reveal-row[data-state]. ================= */
+.bt-root:not(#_) .bt-reveal { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px; align-items: start; padding: 20px 22px; border-radius: var(--bt-radius-xl); border: 1px solid var(--bt-border); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-reveal:not(:has(.bt-reveal-lead)) { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .bt-reveal-lead { margin: 0; font-size: var(--bt-text-md); color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .bt-reveal-rows { display: grid; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .bt-reveal-row { --c: var(--bt-text-faint); display: grid; grid-template-columns: 96px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 8px 8px 12px; border-radius: var(--bt-radius-md); background: var(--bt-bg); border: 1px solid var(--bt-border); transition: border-color 0.2s; }
+.bt-root:not(#_) .bt-reveal-row[data-k="business"] { --c: var(--bt-contact-business); }
+.bt-root:not(#_) .bt-reveal-row[data-k="fanmail"] { --c: var(--bt-contact-fanmail); }
+.bt-root:not(#_) .bt-reveal-row[data-k="support"] { --c: var(--bt-contact-support); }
+.bt-root:not(#_) .bt-reveal-row[data-k="privacy"] { --c: var(--bt-contact-privacy); }
+.bt-root:not(#_) .bt-reveal-row:not([data-state="hidden"]) { border-color: color-mix(in srgb, var(--c) 45%, var(--bt-border)); }
+.bt-root:not(#_) .bt-reveal-label { display: flex; align-items: center; gap: 8px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-reveal-label::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--c); box-shadow: 0 0 8px var(--c); flex: none; }
+.bt-root:not(#_) .bt-reveal-addr { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--bt-text-md); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-reveal-row:not([data-state="hidden"]) .bt-reveal-addr { color: var(--bt-text); }
+.bt-root:not(#_) .bt-reveal-row[data-state="typing"] .bt-reveal-addr::after { content: "▌"; color: var(--c); animation: bt-reveal-blink 0.7s steps(1) infinite; }
+@keyframes bt-reveal-blink { 50% { opacity: 0; } }
+.bt-root:not(#_) .bt-reveal-row .bt-btn { min-width: 74px; }
+.bt-root:not(#_) .bt-reveal-row[data-state="copied"] .bt-btn { border-color: var(--c); color: var(--bt-text); }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .bt-reveal { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-reveal { padding: 16px; }
+  .bt-root:not(#_) .bt-reveal-row { grid-template-columns: minmax(0, 1fr) auto; }
+  .bt-root:not(#_) .bt-reveal-label { grid-column: 1; }
+  .bt-root:not(#_) .bt-reveal-addr { grid-column: 1; grid-row: 2; }
+  .bt-root:not(#_) .bt-reveal-row .bt-btn { grid-column: 2; grid-row: 1 / span 2; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-reveal-row { transition: none; }
+  .bt-root:not(#_) .bt-reveal-row[data-state="typing"] .bt-reveal-addr::after { animation: none; }
+}
+/* ================= END .bt-reveal ================= */
