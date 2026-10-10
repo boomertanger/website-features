@@ -11,7 +11,6 @@
   --hb-lamp-lo: #4b1aa0;
   --hb-gold-lamp-hi: #ffe1a1;  /* a lit owner lamp */
   --hb-gold-lamp-lo: #8a4b00;
-  --hb-gold-ink: #2a1600;      /* the number on a gold lamp or key */
 }
 
 /* ---------- the bar: wordmark, Staff only, the tabs ---------- */
@@ -219,6 +218,6 @@
 }
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) :is(.hb-ib-lamp.is-lit .hb-ib-bulb, .hb-ib-bar-t i, .hb-ib-stampfx) { animation: none; }
-  .bt-root:not(#_) :is(.hb-ib-bulb, .hb-ib-toggle::after) { transition: none; }
+  .bt-root:not(#_) .hb-ib-bulb, .bt-root:not(#_) .hb-ib-toggle::after { transition: none; }
   .bt-root:not(#_) .hb-ib-stampfx { opacity: 0; }
 }

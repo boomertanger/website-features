@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- site: Hotline Boom part 5, /contact/how-it-works (H1: the working dial and LCD, eight TocLayout chapters with stage scenes, the lanes flow, the .ai-jr--4 journey, the line finder, flip medals, door cards, rules placard, Ask BOOMBOT, Ready to dial in?)
 - site: Hotline Boom part 4, /admin/inbox (Split: switchboard lamps, status chips, search, detail with status / assign / Owner only, reply and internal-note composer with the email-off "Open in my email" + "Mark as replied" flow, Sources, owner Settings; ?as=admin preview) and the /admin Hotline Boom card with the New count
 - site: Hotline Boom part 3, /contact (hero phone, keypad menu + LCD, six line forms with Turnstile, Sent / Too many, email reveal rows), the HOTLINE BOOM bar, Contact in the Community nav, the footer's "Send a message" link
 docs: ROADMAP gains the Hotline Boom email switch (HOTLINE_EMAIL=on once RESEND_API_KEY exists, then redeploy the contact functions) and a code-health follow-up (the UI kit page scrolls sideways at 390 px in its older sections). Hotline Boom part 2 is deployed on staging (rules, indexes with the four TTL policies, the five contact functions).

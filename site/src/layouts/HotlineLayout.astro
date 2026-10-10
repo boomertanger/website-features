@@ -1,5 +1,6 @@
 ---
 // One layout for Hotline Boom's pages (docs/specs/hotline-boom.md §2, §9): the site shell, the sticky HOTLINE BOOM bar in BaseLayout's "bar" slot, then the page.
+// section "how" (/contact/how-it-works) brings its own frame (the hero in an .hb-wrap, then TocLayout).
 // section "inbox" (/admin/inbox) is staff only and not indexed: a skeleton shows while auth loads, visitors get a sign-in gate, everyone without the inbox a short "not yours" gate.
 // Display only: the rules and the callables do the real checking. scripts/hotline/inbox.ts sets [data-hb-access] = loading | join | denied | page.
 import BaseLayout from "./BaseLayout.astro";
@@ -14,6 +15,7 @@ const inbox = section === "inbox";
 ---
 <BaseLayout title={title} description={description} noindex={inbox}>
   <HotlineBar slot="bar" section={section} />
+  {section === "how" ? <slot /> : (
   <div class="hb-wrap">
     {inbox ? (
       <div data-hb-access="loading">
@@ -28,6 +30,7 @@ const inbox = section === "inbox";
       </div>
     ) : <slot />}
   </div>
+  )}
 </BaseLayout>
 
 <script>

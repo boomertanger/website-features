@@ -1,0 +1,208 @@
+---
+// /contact/how-it-works, Hotline Boom's story page (docs/specs/hotline-boom.md §2, §9; mockup docs/design/mockups/hotline-boom-how-it-works.html, hero H1 The dial). The hero's working
+// dial (hover or focus a hole: its line on the LCD; click or Enter: the disc turns to the stop, "connects" and lights that line's card in chapter 1; the LCD links to /contact?line=N)
+// with the peeking mascot, then TocLayout's eight chapters: 01 The six lines (stage cards with hover scenes), 02 Who reads what (the flow and its Team / Gold / Safety switch chips),
+// 03 After you send (the site's .ai-jr.ai-jr--4 journey and three facts), 04 Find your line (a keyword finder; nothing is sent), 05 Rather use email? (four .bt-flip medals, no
+// addresses), 06 Better places (door cards), 07 Hotline rules (.bt-placard), 08 Ask BOOMBOT (.bt-chat), and the closing "Ready to dial in?". scripts/hotline/how.ts reads
+// hotline/main (reply time, lines switched off) and wires the rest. Reduced motion: every scene shows its end state.
+import HotlineLayout from "../../layouts/HotlineLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { dialSvg, SCENES, icon } from "../../scripts/hotline/art";
+
+type Lane = "team" | "owner";
+const LINES: { id: string; n: number; title: string; lane: Lane; text: string; tip: [string, string] }[] = [
+  { id: "hi", n: 1, title: "Say hi", lane: "team", text: "Fan mail, a favourite moment, or just hello.", tip: ["Good to include:", "the stream or clip you mean."] },
+  { id: "feedback", n: 2, title: "Feedback", lane: "team", text: "Streams, the website, games, anything. Pick a stream from the list so we know which night.", tip: ["Good to include:", "what worked and what you'd change."] },
+  { id: "help", n: 3, title: "Account help", lane: "team", text: "Signing in, your handle, your data. Quick answers show first, so you may not need to send at all.", tip: ["Good to include:", "your device and browser."] },
+  { id: "business", n: 4, title: "Business & collabs", lane: "owner", text: "Sponsorships, collabs, game keys, press. A few short fields help Boomertanger reply fast.", tip: ["Good to include:", "your website and timeline."] },
+  { id: "private", n: 5, title: "Private matter", lane: "owner", text: "Anything only Boomertanger should see. Not the crew, not the admins.", tip: ["In danger?", "Call or text 988 (US) or your local emergency number."] },
+  { id: "report", n: 6, title: "Report a person", lane: "owner", text: "A member, a mod or an admin. Reports about the crew never reach the crew.", tip: ["Good to include:", "when and where it happened."] },
+];
+const NAV: [string, string][] = [["s-lines", "The six lines"], ["s-who", "Who reads what"], ["s-after", "After you send"], ["s-try", "Find your line"], ["s-email", "Rather use email?"], ["s-elsewhere", "Better places"], ["s-rules", "Hotline rules"], ["s-faq", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const laneTag = (lane: Lane) => lane === "owner"
+  ? `<span class="bt-tag hb-lane hb-lane--owner">${icon("private")}Only Boomertanger</span>`
+  : `<span class="bt-tag hb-lane">${icon("team")}Boomertanger + inbox team</span>`;
+const JOURNEY = [
+  ["📮", "Sent", "You get a reference like BT-4821 and the reply time. Keep it if you follow up."],
+  ["👀", "Read", "The right people see it, and only them. Nobody else gets a copy."],
+  ["✉️", "Reply", "By email from the line's own address. Members also get it in their alerts."],
+  ["✅", "Done", "Write back to the email to keep talking. A new topic? Send a new message."],
+] as const;
+const MEDALS = [
+  ["gold", "Business", "Brands, collabs, press", "Sponsorships, game keys, interviews, anything with a deal in it.", "business"],
+  ["pink", "Fan mail", "Hellos and thank-yous", "Kind words, favourite moments, fan art links.", "hi"],
+  ["teal", "Support", "Account trouble", "Signing in, handles, anything that isn't working for you.", "help"],
+  ["blue", "Privacy", "Your data", "Getting a copy of your data, deleting it, or a privacy question.", "shield"],
+] as const;
+const DOORS = [
+  ["bug", "Found a bug?", "Bug Zapper tracks it from report to fix, and you can watch it get squashed.", "Open Bug Zapper", "/bug-zapper"],
+  ["bulb", "Got a feature idea?", "Feature Lab lets members vote, so the best ideas rise to the top.", "Open Feature Lab", "/feature-lab"],
+  ["crew", "Want to be a mod?", "Apply to join the crew. The Academy shows you what it takes.", "Apply to the crew", "/crew/join"],
+] as const;
+const RULES = [
+  ["One topic per message", "It lands on the right line and gets a faster answer."],
+  ["Be kind", "Abuse ends the conversation, and repeat abuse ends access to the line."],
+  ["No spam", "Visitors can send 3 messages an hour, members 5 a day."],
+  ["No passwords or card numbers", "Nobody here will ever ask for them."],
+  ["Emergencies go elsewhere", "This line isn't watched around the clock. Call or text 988 (US) or your local emergency number."],
+  ["Business: say who you are", "Your company, your website and your timeline get a quicker yes or no."],
+] as const;
+const FAQS = [
+  ["Can the admins read my private message?", "No. Business, Private matter and Report a person go to a part of the inbox only Boomertanger can open. The site's security rules block everyone else, admins included, not just the page."],
+  ["What if my message is about someone on the crew?", "Use Report a person, or tick “Only Boomertanger should read this”. And if a team-line message mentions anyone on the crew by name, it moves to Boomertanger only automatically, before the team can see it."],
+  ["Do I need an account?", "No. Visitors add a name and an email for the reply. Members skip both, and the reply also shows up in their alerts."],
+  ["How long until I hear back?", "Usually within 3 days, often sooner. Keep your BT reference number in case you want to follow up."],
+  ["Can I send a screenshot?", "Not yet. For a bug, Bug Zapper takes screenshots. For anything else, describe it, or reply to Boomertanger's email with the file."],
+  ["How do you know how I found the site?", "Only if you tell us. “How did you find Boomertanger?” is optional and asked once. The site also notes which of our links brought you here. Nothing tracks you across other sites."],
+] as const;
+const SAMPLES = ["Can't log in with Twitch", "A mod was rude to me", "Sponsor a stream?", "The audio was too quiet", "The schedule page is broken", "You made my week!"];
+---
+<HotlineLayout title="How Hotline Boom works" description="Six lines, one for each kind of message. Who reads what, what happens after you send, and the quickest way to the right person." section="how">
+  <div class="hb-hw" data-hw>
+    <div class="hb-wrap">
+      <section class="hb-hw-hero" aria-labelledby="h-hero">
+        <div>
+          <p class="hb-hw-kicker">How it works</p>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Your direct line to Boomertanger</h1>
+          <p class="hb-hw-lede">Six lines, one for each kind of message. Pick the right one and it reaches the right person: fan mail and feedback go to Boomertanger and a small inbox team, business and private matters go to Boomertanger alone.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/contact">Send a message</a><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join">Join free</a><a class="bt-btn bt-btn--secondary bt-when-signed-in" href="/account">Your account</a></div>
+          <p class="hb-hw-promise"><Fragment set:html={icon("private")} />Private lines are protected by the site's rules, not just hidden on the page.</p>
+        </div>
+        <div class="hb-hw-dialbox">
+          <Fragment set:html={dialSvg(LINES.map((l) => [l.n, l.title, l.lane === "owner"]))} />
+          <Mascot decorative class="hb-hw-peek" />
+          <div class="hb-hw-lcd" aria-live="polite" data-hw-lcd><span class="hb-hw-lcd-top"><span>Hotline Boom</span><span>Ready</span></span><span class="hb-hw-lcd-main">Dial a line</span><span class="hb-hw-lcd-sub">Gold numbers are read by Boomertanger only.</span></div>
+        </div>
+      </section>
+    </div>
+
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+        <section class="ai-sec" id="s-lines" aria-labelledby="h-s-lines">
+          <Fragment set:html={chapter(1, "s-lines", "The six lines", "Each line is a short form made for one kind of message. The number is the line; a gold one means only Boomertanger reads it.")} />
+          <div class="hb-hw-stages">
+            {LINES.map((l) => (
+              <article class:list={["hb-hw-stage", { "is-owner": l.lane === "owner" }]} data-s={l.id} tabindex="0">
+                <div class="hb-hw-scene"><Fragment set:html={SCENES[l.id]} /><span class="hb-hw-skey" aria-hidden="true">{l.n}</span></div>
+                <b>{l.title}</b>
+                <Fragment set:html={laneTag(l.lane)} />
+                <p>{l.text}</p>
+                <span class="hb-hw-tip"><b>{l.tip[0]}</b> {l.tip[1]}</span>
+                <a class="hb-hw-open" href={`/contact?line=${l.n}`}>Open line {l.n}</a>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-who" aria-labelledby="h-s-who">
+          <Fragment set:html={chapter(2, "s-who", "Who reads what", "Two lanes. The privacy is enforced by the site itself: even an admin's account can't open a gold-line message.")} />
+          <div class="hb-hw-flow" data-hw-flow>
+            <div class="hb-hw-node hb-hw-node--you"><Mascot decorative /><b>You</b><span>send a message</span></div>
+            <span class="hb-hw-wire" data-on="team divert" aria-hidden="true"><i></i></span>
+            <div class="hb-hw-node" data-on="team divert"><b>Team lines</b><span class="hb-hw-keys" aria-label="Lines 1, 2 and 3"><i>1</i><i>2</i><i>3</i></span></div>
+            <span class="hb-hw-wire" data-on="team" aria-hidden="true"><i></i></span>
+            <div class="hb-hw-node" data-on="team"><b><Fragment set:html={icon("team")} />Boomertanger + inbox team</b><span>A few trusted admins help sort fan mail, feedback and account help.</span></div>
+            <span class="hb-hw-wire hb-hw-wire--g1 is-gold" data-on="gold divert" aria-hidden="true"><i></i></span>
+            <div class="hb-hw-node hb-hw-node--owner" data-on="gold"><b>Gold lines</b><span class="hb-hw-keys" aria-label="Lines 4, 5 and 6"><i>4</i><i>5</i><i>6</i></span></div>
+            <span class="hb-hw-wire is-gold" data-on="gold divert" aria-hidden="true"><i></i></span>
+            <div class="hb-hw-node hb-hw-node--owner" data-on="gold divert"><b><Fragment set:html={icon("private")} />Boomertanger only</b><span>Business, private matters and reports. Nobody else, ever.</span></div>
+            <div class="hb-hw-divert" data-on="divert"><Fragment set:html={icon("flag")} /><span><b>The safety switch.</b> Tick “Only Boomertanger should read this” on any team line, or mention someone on the crew, and the message moves to Boomertanger only before anyone else can see it.</span></div>
+          </div>
+          <div class="hb-hw-lanebtns" role="group" aria-label="Light up a lane">
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-lit="team">Follow a team line</button>
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-lit="gold">Follow a gold line</button>
+            <button type="button" class="bt-chip bt-chip--small" aria-pressed="false" data-lit="divert">The safety switch</button>
+          </div>
+          <p class="hb-hw-note">Emailing an address directly also goes to Boomertanger alone (chapter 5).</p>
+        </section>
+
+        <section class="ai-sec" id="s-after" aria-labelledby="h-s-after">
+          <Fragment set:html={chapter(3, "s-after", "After you send", "Four steps, and you can always see where you are.")} />
+          <ol class="ai-jr ai-jr--4" data-journey>
+            {JOURNEY.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+          <div class="hb-hw-facts">
+            <div class="hb-hw-fact"><b data-hw-reply>~3 days</b><span>Usual reply time. Often sooner.</span></div>
+            <div class="hb-hw-fact"><b>5,000</b><span>Characters per message. Short is fine.</span></div>
+            <div class="hb-hw-fact"><b>2 years</b><span>Then messages are deleted for good. Spam goes after 30 days.</span></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-try" aria-labelledby="h-s-try">
+          <Fragment set:html={chapter(4, "s-try", "Find your line", "Not sure which line? Type what's on your mind and we'll point you to it. Nothing is sent from here.")} />
+          <div class="hb-hw-try">
+            <div>
+              <label class="bt-label" for="hw-finder">What's it about?</label>
+              <textarea class="bt-textarea" id="hw-finder" maxlength="500" placeholder="e.g. I'd love to send you our new game for a sponsored stream"></textarea>
+              <div class="hb-hw-samples" role="group" aria-label="Try an example">{SAMPLES.map((s) => <button type="button" class="bt-chip bt-chip--small" data-sample={s}>{s}</button>)}</div>
+            </div>
+            <div class="hb-hw-result" data-hw-result aria-live="polite"><div class="hb-hw-empty"><Mascot decorative /><span>Your line shows up here as you type.</span></div></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-email" aria-labelledby="h-s-email">
+          <Fragment set:html={chapter(5, "s-email", "Rather use email?", "Four addresses, all read by Boomertanger alone. Flip a medal to see what each one is for. The addresses themselves are on the contact page, behind a Show button that keeps them away from spam bots.")} />
+          <div class="bt-flip-grid hb-hw-flips">
+            {MEDALS.map(([tone, name, sub, use, ic]) => (
+              <button type="button" class={`bt-flip bt-flip--${tone}`} aria-label={`${name}: ${use} Read by Boomertanger only.`}>
+                <span class="bt-flip-in">
+                  <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal hb-hw-medal-ic" set:html={icon(ic)} /><b>{name}</b><span class="bt-flip-sub">{sub}</span><span class="bt-flip-hint">Hover or tap</span></span>
+                  <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">Use it for</span><span class="bt-flip-v">{use}</span><span class="bt-flip-k">Read by</span><span class="bt-flip-v">Boomertanger only</span><span class="bt-flip-tag">Replies come from here</span></span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p class="hb-hw-note">Emails skip the site's inbox, so they don't get a BT reference number. <a href="/contact#hb-mail-h">See the addresses</a>.</p>
+        </section>
+
+        <section class="ai-sec" id="s-elsewhere" aria-labelledby="h-s-elsewhere">
+          <Fragment set:html={chapter(6, "s-elsewhere", "Better places for some things", "Some messages get a faster answer somewhere else on the site.")} />
+          <div class="hb-hw-doors">
+            {DOORS.map(([ic, t, p, go, href]) => (
+              <a class="bt-card bt-card--door" href={href}><span class="bt-icon-tile bt-icon-tile--lg" set:html={icon(ic)} /><b class="bt-card-title">{t}</b><p>{p}</p><span class="bt-card-go">{go} <Fragment set:html={icon("arrow")} /></span></a>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-rules" aria-labelledby="h-s-rules">
+          <Fragment set:html={chapter(7, "s-rules", "Hotline rules", "Short and fair. They keep the line open for everyone.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>Hotline rules</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-faq" aria-labelledby="h-s-faq">
+          <Fragment set:html={chapter(8, "s-faq", "Ask BOOMBOT", "Quick answers from BOOMBOT, the site's helper robot.")} />
+          <div class="hb-hw-faqhead"><span set:html={boombotIcon("hb-bb-head")} /><p><b>BOOMBOT</b> answers from the site's help text. For anything else, send a message.</p></div>
+          <div class="bt-chat">
+            {FAQS.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`hb-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`hb-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`hb-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text" data-hw-reply-faq={i === 3 ? "" : undefined}>{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="hb-hw-cta" aria-labelledby="h-cta">
+          <Mascot decorative />
+          <div><h2 id="h-cta">Ready to dial in?</h2><p>Pick a line, say your piece. Boomertanger usually replies within <span data-hw-reply-text>3 days</span>.</p></div>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/contact">Send a message</a><a class="bt-btn bt-btn--secondary" href="/">Back home</a></div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</HotlineLayout>
+
+<script>
+  import "../../scripts/hotline/how";
+</script>

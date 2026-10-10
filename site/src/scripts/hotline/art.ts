@@ -4,6 +4,8 @@
 //   HB_ICON        one copy for Astro components (the bar); scripts call hbIcon() for more
 //   phoneScene()   the /contact hero: the desk phone (two-tone body, gold rim, glossy purple handset, the W5-style dial), ring marks and arcs
 //   I, icon(k)     line and UI icons (24x24 strokes)
+//   dialSvg(lines), HOLE_A, DIAL_STOP   /contact/how-it-works hero H1: the big rotary dial (six holes, the plate, the finger stop)
+//   SCENES         /contact/how-it-works chapter 1: a small scene per line
 let n = 0;
 const uid = (p: string) => `${p}${++n}${Math.random().toString(36).slice(2, 6)}`;
 
@@ -80,5 +82,41 @@ export const I: Record<string, string> = {
   help2: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01"/>',
   back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
+  flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>',
 };
 export const icon = (k: string, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${I[k] || ""}</svg>`;
+
+// ---------- /contact/how-it-works (hero H1 "The dial", chapter 1 stage scenes; mockup docs/design/mockups/hotline-boom-how-it-works.html) ----------
+/** The six holes' angles (degrees, clockwise from 3 o'clock) and the finger stop's. Dialing turns the disc by STOP - angle. */
+export const HOLE_A = [60, 20, -20, -60, -100, -140];
+export const DIAL_STOP = 100;
+/** The big rotary dial: six holes (data-hole 0-5; gold numbers for the owner lines), the HOTLINE BOOM plate and the finger stop. lines: [number, title, owner?][]. */
+export function dialSvg(lines: [number, string, boolean][]): string {
+  const u = uid("hbd");
+  const holes = lines.map(([n, t, own], i) => {
+    const a = (HOLE_A[i] * Math.PI) / 180, x = (170 + 112 * Math.cos(a)).toFixed(1), y = (170 + 112 * Math.sin(a)).toFixed(1);
+    return `<g class="hole${own ? " is-owner" : ""}" tabindex="0" role="button" data-hole="${i}" aria-label="Dial ${n}: ${t}${own ? ", only Boomertanger reads it" : ""}"><circle cx="${x}" cy="${y}" r="27"/><text x="${x}" y="${y}" aria-hidden="true">${n}</text></g>`;
+  }).join("");
+  const r = (DIAL_STOP * Math.PI) / 180;
+  const p = (d: number) => [(170 + d * Math.cos(r)).toFixed(1), (170 + d * Math.sin(r)).toFixed(1)];
+  const [sx, sy] = p(156), [sx2, sy2] = p(134);
+  return `<svg class="hb-hw-dial" viewBox="0 0 340 340" role="group" aria-label="A rotary dial with the six lines">
+  <defs>
+    <radialGradient id="${u}g" cx="50%" cy="50%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
+    <linearGradient id="${u}d" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-ring1"/></linearGradient>
+  </defs>
+  <circle class="glow" fill="url(#${u}g)" cx="170" cy="170" r="170"/><circle class="base" cx="170" cy="170" r="160"/>
+  <g class="disc" data-disc><circle class="ring" fill="url(#${u}d)" cx="170" cy="170" r="148"/><path class="shine" d="M58 120 A120 120 0 0 1 150 52"/>${holes}</g>
+  <circle class="plate" cx="170" cy="170" r="62"/><text class="plate-t" x="170" y="160">HOTLINE</text><text class="plate-t" x="170" y="178">BOOM</text><text class="plate-b" x="170" y="198">DIAL A LINE</text>
+  <line class="stop" x1="${sx2}" y1="${sy2}" x2="${sx}" y2="${sy}"/>
+</svg>`;
+}
+/** Chapter 1's small scenes (64x64), one per line; .mv / .fx / .lid / .shackle / .dot move on hover (styles/hotline.css). */
+export const SCENES: Record<string, string> = {
+  hi: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g class="mv"><path class="ink" d="M32 50s-16-10-20-20a10 10 0 0 1 20-7 10 10 0 0 1 20 7c-4 10-20 20-20 20z"/></g><g class="fx"><path class="ink" d="M8 14l3 3M56 14l-3 3M32 6v4"/></g></svg>',
+  feedback: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><path class="ink" d="M10 12h44v28H26l-12 10v-10h-4z"/><circle class="dot" cx="22" cy="26" r="2.6"/><circle class="dot" cx="32" cy="26" r="2.6"/><circle class="dot" cx="42" cy="26" r="2.6"/></svg>',
+  help: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g class="mv"><circle class="ink" cx="32" cy="32" r="22"/><circle class="ink" cx="32" cy="32" r="10"/><path class="ink" d="M16.5 16.5l8.4 8.4M39.1 39.1l8.4 8.4M47.5 16.5l-8.4 8.4M24.9 39.1l-8.4 8.4"/></g></svg>',
+  business: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect class="ink" x="8" y="22" width="48" height="30" rx="4"/><path class="ink" d="M8 34h48"/><g class="lid"><path class="ink" d="M24 22v-6h16v6"/></g><g class="fx"><path class="ink" d="M28 40h8"/><path class="ink" d="M44 10l2-4M50 14l4-2"/></g></svg>',
+  private: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><rect class="ink" x="16" y="28" width="32" height="24" rx="4"/><g class="shackle"><path class="ink" d="M22 28v-8a10 10 0 0 1 20 0v8"/></g><circle class="key-dot" cx="32" cy="40" r="3"/><g class="fx"><path class="ink" d="M10 22l4 2M54 22l-4 2"/></g></svg>',
+  report: '<svg viewBox="0 0 64 64" aria-hidden="true" focusable="false"><g class="mv"><path class="ink" d="M32 8l20 7v15c0 12-8.5 20-20 24-11.5-4-20-12-20-24V15z"/><path class="ink" d="M32 22v12M32 41v1"/></g></svg>',
+};
