@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- 404 page part 3: page content (pages/404.astro, noindex: the title and text, the path line (path only, escaped, shortened in the middle to 56 / 34 characters), Did you mean from the new lib/routes.js (known public paths listed from src/pages at build; Levenshtein on the whole path or one segment), the ways forward by module with the live swap (Watch Boomer live leads, Home steps down, Live hides), the report button's states (wired in part 5), the caption; the text and links work without JavaScript; styles/not-found.css page layout)
 - kit: the firefly (shared/ui/firefly.js FIREFLY_SVG, .bt-firefly and the --bt-firefly, --bt-firefly-shell, --bt-firefly-head, --bt-firefly-wing tokens), used by the Tap the Splat footer game (no copy; behaviour unchanged) and shown on the UI kit page; design-system §5 and §8x
 - docs: 404 page ("the workshop") spec (docs/specs/not-found.md) and the approved mockup (docs/design/mockups/not-found-workshop.html); ROADMAP line, building on staging
 - fix: Mod Deck hero at phone width (the mascot art sits inside the hero at 640 px and below; desktop unchanged); launch.js header comment says one tile per Chat Games format

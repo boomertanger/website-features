@@ -1,0 +1,54 @@
+/* site/src/styles/not-found.css — the 404 page, "the workshop" (docs/specs/not-found.md; mockup docs/design/mockups/not-found-workshop.html,
+   level 4, Bright core glow, light step 2 Dim). Loaded by pages/404.astro only. Prefix nf-.
+   The left column is the real content (always visible, never covered by the dark); the right side (above it on phones) is the scene.
+   Tokens only, except the scene's art palette, declared once below as --nf-* properties (one per colour; CLAUDE.md rule 3). The masks use
+   black alpha only (a mask's colour is ignored). Container queries only (bt 1024 / 640 / 420). Reduced motion: the still state (room.js). */
+
+/* ---------- page layout: text on the left, the scene fills the rest ---------- */
+.bt-root:not(#_) .nf { position: relative; flex: 1; display: grid; min-height: 580px; background: var(--bt-footer-bg); overflow: hidden; isolation: isolate; }
+.bt-root:not(#_) .nf-text { position: relative; z-index: 3; align-self: center; width: min(100%, 610px); padding: 48px 32px 48px max(var(--bt-gutter), calc((100% - var(--bt-content-max)) / 2)); box-sizing: content-box; }
+.bt-root:not(#_) .nf-text::before { content: ""; position: absolute; inset: 0 -40px 0 0; z-index: -1; background: linear-gradient(90deg, var(--bt-footer-bg) 70%, transparent); }
+.bt-root:not(#_) .nf-scene { position: absolute; inset: 0 0 0 clamp(380px, 40%, 600px); z-index: 1; background: var(--bt-footer-bg);
+  -webkit-mask-image: linear-gradient(90deg, transparent, #000 140px); mask-image: linear-gradient(90deg, transparent, #000 140px); }
+
+/* ---------- the text ---------- */
+.bt-root:not(#_) .nf-sub { font-size: var(--bt-text-lg); line-height: var(--bt-leading-body); margin-top: var(--bt-space-3); color: var(--bt-text-muted); }
+.bt-root:not(#_) .nf-miss { margin-top: var(--bt-space-6); color: var(--bt-text-muted); line-height: var(--bt-leading-body); }
+.bt-root:not(#_) .nf-miss .bt-code { white-space: normal; word-break: break-all; }
+.bt-root:not(#_) .nf-dym { margin-top: var(--bt-space-1); font-weight: 600; }
+.bt-root:not(#_) .nf-actions { display: flex; flex-wrap: wrap; gap: var(--bt-space-3); margin-top: var(--bt-space-8); }
+.bt-root:not(#_) .nf-actions svg { width: 18px; height: 18px; flex: none; }
+.bt-root:not(#_) .nf-actions .bt-btn { transition: background-color .15s, border-color .15s, color .15s, box-shadow .45s; }
+.bt-root:not(#_) .nf-actions .bt-btn:hover { text-decoration: none; }
+.bt-root:not(#_) .nf-actions .nf-watch { gap: var(--bt-space-2); }
+/* The firefly landed on Take me home: neon ring and a purple glow */
+.bt-root:not(#_) .nf-actions .nf-lit { box-shadow: 0 0 0 2px var(--bt-neon), 0 0 16px rgba(var(--bt-primary-rgb), .6), 0 0 44px rgba(var(--bt-primary-rgb), .35); }
+.bt-root:not(#_) .nf-report { margin-top: var(--bt-space-6); display: flex; flex-direction: column; align-items: flex-start; gap: var(--bt-space-1); }
+.bt-root:not(#_) .nf-report .bt-btn--ghost { display: inline-flex; gap: var(--bt-space-2); padding-left: 0; }
+.bt-root:not(#_) .nf-report .bt-btn--ghost svg { width: 16px; height: 16px; }
+.bt-root:not(#_) .nf-report .bt-btn--ghost.is-done { text-decoration: none; color: var(--bt-lime); opacity: 1; cursor: default; }
+.bt-root:not(#_) .nf-cap { margin-top: var(--bt-space-8); font-size: var(--bt-text-md); color: var(--bt-text-faint); display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .nf-cap i { width: 8px; height: 8px; border-radius: 50%; background: var(--bt-firefly); box-shadow: 0 0 8px var(--bt-firefly); flex: none; }
+
+/* The firefly flies over the whole block, so it can reach the button. Hidden until room.js starts (no JavaScript: a dark panel). */
+.bt-root:not(#_) .nf-layer { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 5; }
+.bt-root:not(#_) .nf:not(.is-ready) .nf-layer { display: none; }
+
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .nf-text { width: min(100%, 420px); }
+  .bt-root:not(#_) .nf-scene { inset: 0 0 0 clamp(260px, 38%, 440px); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .nf { display: flex; flex-direction: column; min-height: 0; }
+  .bt-root:not(#_) .nf-scene { position: relative; inset: auto; height: 380px; flex: none; order: -1; -webkit-mask-image: linear-gradient(180deg, #000 93%, transparent); mask-image: linear-gradient(180deg, #000 93%, transparent); }
+  .bt-root:not(#_) .nf-text { width: auto; padding: 4px var(--bt-gutter) 40px; box-sizing: border-box; }
+  .bt-root:not(#_) .nf-text::before { display: none; }
+  .bt-root:not(#_) .nf-sub { font-size: var(--bt-text-base); }
+  .bt-root:not(#_) .nf-miss { margin-top: var(--bt-space-4); }
+  .bt-root:not(#_) .nf-actions { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: var(--bt-space-2); margin-top: var(--bt-space-5); }
+  .bt-root:not(#_) .nf-actions > .bt-btn--primary { grid-column: 1 / -1; }
+  .bt-root:not(#_) .nf-actions > .bt-btn--secondary { padding: 12px 8px; }
+  .bt-root:not(#_) .nf-cap { margin-top: var(--bt-space-5); }
+  .bt-root:not(#_) .nf .bt-firefly { width: 26px; height: 26px; }
+}
+@container bt (max-width: 420px) { .bt-root:not(#_) .nf-actions > .bt-btn--secondary svg { display: none; } }

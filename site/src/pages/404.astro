@@ -1,22 +1,48 @@
 ---
+// The 404 page: "the workshop" (docs/specs/not-found.md; mockup docs/design/mockups/not-found-workshop.html, level 4).
+// Cloudflare Pages serves this as 404.html with a real 404 status for any address that doesn't exist (public/_redirects
+// has no catch-all). The left column is the real content and works without JavaScript; the right side (above it on
+// phones) is the dark basement the firefly lights (styles/not-found.css, scripts/not-found/*). It reads only the live
+// state the layout already has (data-live on <body>); the report button calls one function (reportBrokenLink).
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { hasModule } from "../lib/nav.js";
+import { knownRoutes } from "../lib/routes.js";
+import { FIREFLY_SVG } from "../../../shared/ui/firefly.js";
+import "../styles/not-found.css";
+
+const BUG = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="8" y="7" width="8" height="12" rx="4"/><path d="M12 7V4M9 4l1.5 2M15 4l-1.5 2M4 11h4M16 11h4M4 17l4-1M20 17l-4-1"/></svg>';
 ---
-<BaseLayout title="Page not found">
-  <div class="bt-zone">
-    <div class="bt-page-intro">
+<BaseLayout title="Page not found" noindex>
+  <div class="nf" data-nf>
+    <div class="nf-scene" aria-hidden="true">
+      <svg class="nf-art" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" focusable="false"></svg>
+      <div class="nf-grain"></div><div class="nf-dark"></div><div class="nf-tint"></div><div class="nf-bloom"></div><div class="nf-tvtint"></div><div class="nf-motes"></div>
+      <svg class="nf-eyes" viewBox="0 0 900 600" preserveAspectRatio="xMidYMid slice" focusable="false"></svg>
+    </div>
+    <div class="nf-text">
       <h1 class="bt-title">Page not found</h1>
-      <p class="bt-subtitle">That page doesn't exist, or it moved.</p>
+      <p class="nf-sub">Nothing lives at this address. It may have moved, or the link has a typo.</p>
+      <p class="nf-miss" data-nf-miss hidden><span class="bt-code" data-nf-path></span> isn't a page on this site.</p>
+      <p class="nf-dym" data-nf-dym hidden>Did you mean <a href="/" data-nf-dym-link></a>?</p>
+      <div class="nf-actions">
+        {hasModule("live") && <a class="bt-btn bt-btn--primary bt-when-live nf-watch" href="/live"><span class="bt-navgroup-dot" aria-hidden="true"></span>Watch Boomer live</a>}
+        <a class="bt-btn bt-btn--primary" href="/" data-home><svg aria-hidden="true"><use href="#i-home" /></svg>Take me home</a>
+        {hasModule("live") && <a class="bt-btn bt-btn--secondary bt-when-off" href="/live"><svg aria-hidden="true"><use href="#i-live" /></svg>Live</a>}
+        {hasModule("schedule") && <a class="bt-btn bt-btn--secondary" href="/schedule"><svg aria-hidden="true"><use href="#i-cal" /></svg>Schedule</a>}
+        {hasModule("arcade") && <a class="bt-btn bt-btn--secondary" href="/arcade"><svg aria-hidden="true"><use href="#i-joystick" /></svg>Arcade</a>}
+      </div>
+      <div class="nf-report" data-nf-report hidden>
+        <button type="button" class="bt-btn bt-btn--ghost" data-report><Fragment set:html={BUG} /><span>Report this broken link</span></button>
+        <span class="bt-hint" data-report-hint>Sends only the address, so it can be fixed or redirected.</span>
+      </div>
+      <p class="nf-cap" data-nf-cap hidden><i aria-hidden="true"></i><span data-cap></span></p>
     </div>
-    <div class="bt-card">
-      <div class="bt-card-head"><h2 class="bt-card-title">Lost in the dark?</h2></div>
-      <p class="bt-section-text">Head back <a href="/">home</a> to see what's on.</p>
-      <div class="bt-row-center"><a class="bt-btn bt-btn--secondary bt-btn--sm" href="/bug-zapper?new=1" data-report-link>Report this broken link</a></div>
-    </div>
+    <div class="nf-layer" aria-hidden="true"><span class="bt-firefly" set:html={FIREFLY_SVG}></span></div>
   </div>
+  <script type="application/json" data-nf-routes set:html={JSON.stringify(knownRoutes)}></script>
 </BaseLayout>
 
 <script>
-  // Report this broken link: Bug Zapper's form opens with this address filled in as the page (?new=1&page=<path>).
-  const a = document.querySelector<HTMLAnchorElement>("[data-report-link]");
-  if (a) a.href = `/bug-zapper?new=1&page=${encodeURIComponent(location.pathname + location.search)}`;
+  import { initNotFound } from "../scripts/not-found/page.js";
+  initNotFound();
 </script>
