@@ -905,3 +905,7 @@ Object.assign(exports, bugsModule.functions);
 // Control Room (docs/specs/control-room.md): the stream controls, check-ins and presence, the live feeds and ticks, Twitch
 // EventSub. Lives in lib/live/; it reuses the youtube module for ad hoc streams, after-shows and Start.
 Object.assign(exports, require("./lib/live")({ adminLogEntry, youtube: youtubeModule.hooks }));
+
+// Hotline Boom (docs/specs/hotline-boom.md): the contact service's callables (contactSend, contactAction, contactNote, contactReply,
+// contactSettings). Lives in lib/hotline/; the Turnstile check is lib/security/turnstile.js.
+Object.assign(exports, require("./lib/hotline")({ adminLogEntry }));

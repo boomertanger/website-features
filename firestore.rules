@@ -612,6 +612,47 @@ service cloud.firestore {
       // reporter and staff only (a reply is also gone for the reporter once hidden). Clients query public reports with private == false and hidden == false,
       // a member's own with by.uid == their uid and hidden == false. "Bit me too" records, the members' own lists and the post tokens are closed (a member
       // reads only their own myMeToos). Every write is false.
+      // ---------- Hotline Boom (docs/specs/hotline-boom.md §7) ----------
+      // The settings doc is public (reply time and which lines are open; nothing private). Team-lane messages and their notes: the owner, or a
+      // signed-in caller whose crewGrade claim is in hotline/main.inboxGrades (default A2, A3; mods never). Owner-lane messages and notes: the
+      // owner only. stats: the owner; statsTeam: the owner and inbox admins. limits: nobody. Only functions write any of it.
+      function isHotlineInbox(siteId) {
+        return isSiteOwner(siteId)
+          || (request.auth != null && request.auth.token.get('crewGrade', '') is string
+              && request.auth.token.get('crewGrade', '') in get(/databases/$(database)/documents/sites/$(siteId)/hotline/main).data.get('inboxGrades', ['A2', 'A3']));
+      }
+      match /hotline/main {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /hotline/main/teamMessages/{msgId} {
+        allow read: if isHotlineInbox(siteId);
+        allow write: if false;
+        match /hotlineNotes/{noteId} {
+          allow read: if isHotlineInbox(siteId);
+          allow write: if false;
+        }
+      }
+      match /hotline/main/ownerMessages/{msgId} {
+        allow read: if isSiteOwner(siteId);
+        allow write: if false;
+        match /hotlineNotes/{noteId} {
+          allow read: if isSiteOwner(siteId);
+          allow write: if false;
+        }
+      }
+      match /hotline/main/stats/{month} {
+        allow read: if isSiteOwner(siteId);
+        allow write: if false;
+      }
+      match /hotline/main/statsTeam/{month} {
+        allow read: if isHotlineInbox(siteId);
+        allow write: if false;
+      }
+      match /hotline/main/limits/{key} {
+        allow read, write: if false;
+      }
+
       match /bugs/main/reports/{reportId} {
         allow read: if (resource.data.hidden == false
             && (resource.data.private == false || (request.auth != null && request.auth.uid == resource.data.by.uid)))

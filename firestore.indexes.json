@@ -1,5 +1,11 @@
 {
   "indexes": [
+    { "collectionGroup": "teamMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "ownerMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "teamMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "sender.uid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "ownerMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "sender.uid", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "teamMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "sender.email", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
+    { "collectionGroup": "ownerMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "sender.email", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
     {
       "collectionGroup": "notices",
       "queryScope": "COLLECTION",
@@ -228,6 +234,10 @@
       "ttl": true,
       "indexes": []
     },
+    { "collectionGroup": "teamMessages", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "ownerMessages", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "hotlineNotes", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
+    { "collectionGroup": "limits", "fieldPath": "expireAt", "ttl": true, "indexes": [] },
     {
       "collectionGroup": "presence",
       "fieldPath": "uid",
