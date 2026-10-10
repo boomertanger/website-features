@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Tech Stack spec (docs/specs/tech-stack.md) and the approved mockup; ROADMAP workstream 16 (Tech Stack) and 17 (Nav redesign once the remaining pages are built), launch checklist: make the repo private right after the Squarespace Code Blocks are off, turn on Tech Stack referral links; design-system §8y Tech Stack
 - docs: ROADMAP marks the 404 page done on staging (tested Oct 2026), adds its production check to the launch checklist, and notes under the Bug Zapper port that the report button will open Bug Zapper with the URL pre-filled
 - docs: 404 spec records the build decisions (marker lettering as Permanent Marker outlines, brokenLinkFix instead of adminEditItem, noindex,nofollow from the layout, the extra routes left out of Did you mean, referrer sent as an origin and stored as a host, the admin card's read)
 - 404 page: the /admin Broken links card reads the 100 most reported rows by count and shows the top 20 open ones (fixedAt null); still a single-field query, no composite index

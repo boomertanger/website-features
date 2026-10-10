@@ -24,6 +24,8 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Spec confirmed, building | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
+| 16 | Tech Stack (/tech-stack: the rig, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Spec confirmed, building | Community services |
+| 17 | Nav redesign once the remaining pages are built | Later | Site shell |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -209,6 +211,14 @@ Status: **Spec confirmed, building.** Parts, one commit each:
 6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
 Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
 
+### 16. Tech Stack
+Goal: rebuild /tech-stack on the new site: the dual-PC setup, an interactive wiring diagram (Photo, Drawn, Blueprint, Flow and List views, tours, Trace from here, Pull the plug, Inside the mixer), hardware with the PC compare table, software, the internet backbone and setup history. Fan Club parts read `sites/boomertanger/memberContent/tech-stack`. Referral links come later (off until launch).
+Spec: [docs/specs/tech-stack.md](specs/tech-stack.md) (confirmed Oct 10, 2026); mockup `docs/design/mockups/tech-stack.html`.
+Status: **Spec confirmed, building.** Parts, one commit each: 1 docs; 2 kit `.bt-zoomframe`; 3 data check and photo upload script; 4 rules and member seed; 5 the page; 6 checks.
+
+### 17. Nav redesign
+Goal: regroup the header and phone navigation once the remaining pages are built (Tech Stack sits in Community for now).
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [ ] Stream presence, stream check-ins, stream streaks and live drops: Live Beacon and Control Room (5). Stream check-ins now come from the Control Room's **beat windows** (spoken word per beat; presence keeps Twitch chat and drops), not a rolling code (control-room.md section 4, fun-factory.md 13b).
@@ -235,6 +245,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
+- [ ] Turn on Tech Stack referral links (`site.json` modules `techStack.referrals: true`, with the Amazon Associates disclosure).
 
 ### Control Room and YouTube in production
 - [ ] Set the YouTube OAuth app to **In production** (not Testing: a Testing app loses its refresh token every 7 days) and set the production `YOUTUBE_CLIENT_ID` / `YOUTUBE_CLIENT_SECRET` secrets.
@@ -279,6 +290,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
+- [ ] Make the repo private (right after the Squarespace Code Blocks are switched off); then commit `functions/scripts/data/tech-stack-member.json` and drop it from .gitignore.
 
 ### Hotline Boom in production
 - [ ] Production Turnstile widget hostnames, and `TURNSTILE_SECRET_KEY` / `CONTACT_HASH_SALT` set on prod.
