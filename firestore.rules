@@ -890,6 +890,11 @@ service cloud.firestore {
           allow read: if isOwnerOrA2Plus(siteId);
           allow write: if false;
         }
+        // Recruit Rush (Mod Machina phase 3 part 6): one marker per member counted, so a retried trigger counts once. Server only
+        // (it is keyed by uid); the count reaches the page through the shards and public/live. 30 days, TTL on expireAt.
+        match /rushJoins/{uid} {
+          allow read, write: if false;
+        }
 
         // Scream Planner sign-ups (availability, seats, game request): crew (mods and admins) read; written by callables.
         // No reliability data lives here (it is not phase-2 data), so every mod can read every handle.

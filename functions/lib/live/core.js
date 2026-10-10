@@ -200,6 +200,15 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
     } catch (err) { console.error("live: couldn't read public/crew", String((err && err.message) || err).slice(0, 120)); gradeCache = { at: now(), map: gradeCache.map }; }
     return gradeCache.map;
   };
+  /** Recruit Rush for public/live and the stream view: the MAIN stream's (an after-show shows its main stream's Rush), counted from the shards. Null when off. */
+  ctx.rushFor = async (stream) => {
+    if (!stream) return null;
+    const mainId = typeof stream.afterShowOf === "string" && stream.afterShowOf ? stream.afterShowOf : stream.id;
+    const rush = (await ctx.control(mainId)).recruitRush;
+    if (!rush || rush.on !== true) return null;
+    const shards = (await db.collection(P.countersCol(mainId)).get()).docs.map((d) => d.data());
+    return { ...rush, count: L.sumRush(shards) };
+  };
   ctx.publishLive = async () => {
     const nowMs = now();
     const stream = await currentForPublic(nowMs);
@@ -223,6 +232,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
       peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), activity: control.activity || null, look: main.look, nowMs,
       deck: deckState ? { rooms: deckState.rooms || {} } : null,
       grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
+      rush: await ctx.rushFor(stream),
     });
     const hits = L.findSecrets(out, secrets);
     if (hits.length) { console.error("live: public/live not written, it would expose:", hits.join(", ")); return { wrote: false, id: stream ? stream.id : null, blocked: hits }; }

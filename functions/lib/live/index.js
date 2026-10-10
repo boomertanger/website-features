@@ -6,6 +6,7 @@
 //   feeds.js      onCheckInWritten, liveFlush, liveTick, obsFeed, liveDeck, liveViewerEntry, backstageWatch
 //   duty (lib/crew/duty.js, Mod Machina phase 3): dutyClockIn, dutyPing, dutyStepAway, dutyBack, dutyTakeLead, dutyDecline, dutyReassign, captainSet, dutyConfirmNight, dutyAutoConfirm, crewLockLift;
 //                 startStream, stopStream and the auto-end call its onStart / closeOut and liveTick calls its tick, through ctx.duty
+//   rush.js       liveRecruitRush, onUserCreatedRush (Recruit Rush, Mod Machina phase 3 part 6)
 //   controls.js   startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow,
 //                 liveChecklist, liveObsKey, liveDeckKey, liveSettings
 // Pure rules are in logic.js (Part 2). `hooks` are for scripts/check-live-wiring.js (they are NOT exported as functions).
@@ -21,8 +22,9 @@ function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.rando
   const feeds = require("./feeds")(ctx, { controls, fetchFn, enqueue, sleep, twitchClientId, twitchClientSecret, twitchLogin, youtube });
   const eventsub = require("./eventsub")(ctx, { eventSubSecret });
   const flags = require("../crew/flags")(ctx);
-  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions };
-  const hooks = { ctx, controls, checkin, feeds, eventsub, duty };
+  const rush = require("./rush")(ctx);
+  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions };
+  const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush };
   return { functions, hooks };
 }
 

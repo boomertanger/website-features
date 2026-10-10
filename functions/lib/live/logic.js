@@ -517,6 +517,40 @@ function sumShards(shards) {
 }
 
 /**
+ * Recruit Rush (docs/specs/mod-machina.md §17a, choice 8): one per main stream; it counts accounts that finish signing up between
+ * Start and 30 minutes after Stop. The count rides in the counter shards as a sibling of beats ({ rush: n }), so sumShards is untouched.
+ */
+const RUSH = { minGoal: 5, maxGoal: 200, maxReward: 80, afterStopMs: 30 * 60 * 1000 };
+function sumRush(shards) {
+  let n = 0;
+  for (const sh of shards || []) if (sh && Number.isFinite(sh.rush)) n += sh.rush;
+  return n;
+}
+/** True while a sign-up at atMs counts for this (main) stream: from Start, while live, and up to 30 minutes after Stop. */
+function rushCounts(stream, atMs) {
+  if (!stream || stream.actualStart == null || !Number.isFinite(atMs) || atMs < ms(stream.actualStart)) return false;
+  if (stream.actualEnd == null) return stream.state === "live";
+  return atMs <= ms(stream.actualEnd) + RUSH.afterStopMs;
+}
+/** Checks an owner's settings against the current Rush. Returns { ok, value } or { ok: false, reason, message }. */
+function rushSettings(data, current, stream) {
+  const cur = current || {};
+  if (!stream || !["scheduled", "live"].includes(stream.state)) return { ok: false, reason: "ended", message: "A Rush can't be set after Stop." };
+  if (typeof data.on !== "boolean") return { ok: false, reason: "on", message: "Say whether the Rush is on." };
+  const goal = data.goal == null ? cur.goal : data.goal;
+  const reward = typeof data.reward === "string" ? data.reward.trim() : cur.reward;
+  if (!Number.isInteger(goal) || goal < RUSH.minGoal || goal > RUSH.maxGoal) return { ok: false, reason: "goal", message: `The goal is ${RUSH.minGoal} to ${RUSH.maxGoal}.` };
+  if (typeof reward !== "string" || reward.length < 1 || reward.length > RUSH.maxReward) return { ok: false, reason: "reward", message: `The reward is 1 to ${RUSH.maxReward} characters.` };
+  if (cur.hitAt != null && cur.goal != null && goal !== cur.goal) return { ok: false, reason: "goalLocked", message: "The goal can't change after it's hit." };
+  return { ok: true, value: { on: data.on, goal, reward } };
+}
+/** public/live's recruitRush: { goal, count, reward, hitAt } while on, else null (and nothing is written). */
+function publicRush(rush, count) {
+  if (!rush || rush.on !== true || !Number.isInteger(rush.goal)) return null;
+  return { goal: rush.goal, count: num(count), reward: typeof rush.reward === "string" ? rush.reward : "", hitAt: rush.hitAt == null ? null : ms(rush.hitAt) };
+}
+
+/**
  * Builds the public/live summary (§13). Input:
  *   stream, window (only open + closesAt + beat are copied, never the word), counters (sumShards result or shards[]),
  *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], activity { kind, title, status } | null,
@@ -602,6 +636,7 @@ function buildPublicLive(input) {
     firstIn,
     firstInBeat: live && firstIn.length ? (open ? win.beat : currentBeat(sb)) : null,
     activity: activity ? { kind: String(activity.kind || ""), title: activity.title == null ? null : String(activity.title), status: activity.status == null ? null : String(activity.status) } : null,
+    ...(publicRush(input.rush, input.rush && input.rush.count) ? { recruitRush: publicRush(input.rush, input.rush.count) } : {}),
   };
 }
 
@@ -679,6 +714,7 @@ function verifyKey(key, storedHash) {
 
 module.exports = {
   DEFAULT_SETTINGS, resolveSettings,
+  RUSH, sumRush, rushCounts, rushSettings, publicRush,
   BEATS, BREAK_BEATS, nextBeat, currentBeat, beatsHeld, beginBeat, skipBeat, backToGame, startLive, stopLive, autoEndLive,
   windowOpenNow, windowAccepts, openWindow, reopenWindow, extendWindow, closeWindow,
   normalise, pickWord,

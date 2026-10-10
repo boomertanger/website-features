@@ -194,13 +194,15 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
       if (live.docs.length) throw fail("failed-precondition", live.docs[0].id === id ? "That stream is already live." : "Another stream is live. Stop it first.", live.docs[0].id === id ? "alreadyLive" : "otherLive");
       const snap = await tx.get(ref);
       if (!snap.exists) throw fail("not-found", "That stream isn't there.", "noStream");
+      const prior = (await tx.get(ctx.controlRef(id))).data() || {};
       const stream = snap.data();
       const game = firstGame || firstPlanned(stream);
       const r = L.startLive(stream, at, game);
       if (!r.ok) throw refuse(r.reason);
       const patch = { ...r.patch, liveRooms: L.startRooms(stream) };
       tx.update(ref, stamp(patch));
-      tx.set(ctx.controlRef(id), freshControl(at));
+      // a Recruit Rush the owner set before Start carries over (nothing counts before Start, so its count is 0)
+      tx.set(ctx.controlRef(id), { ...freshControl(at), ...(prior.recruitRush ? { recruitRush: { ...prior.recruitRush, count: 0, hitAt: null } } : {}) });
       tx.set(db.doc(paths.checklist(id)), copyChecklist(templates, stream.type));
       started = { ...stream, ...patch, id };
     });
