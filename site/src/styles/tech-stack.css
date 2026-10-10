@@ -378,10 +378,11 @@
 }
 
 /* ---------- chapter 1 scenes ---------- */
-.bt-root:not(#_) .ts-scene { position: relative; height: 210px; padding: 6px 8px 0; background: radial-gradient(70% 90% at 50% 100%, var(--bt-primary-bg), transparent 70%), var(--bt-bg); }
+.bt-root:not(#_) .ts-scene { position: relative; height: auto; aspect-ratio: 360 / 206; box-sizing: border-box; padding: 6px 8px 0;   /* the scenes are 360 × 200 plus the top padding: the box keeps their shape at any card width */
+  background: radial-gradient(70% 90% at 50% 100%, var(--bt-primary-bg), transparent 70%), var(--bt-bg); }
 .bt-root:not(#_) .ts-sc-card { cursor: pointer; }
 .bt-root:not(#_) .ts-sc-card:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-.bt-root:not(#_) .ts-sx { width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .ts-sx { display: block; width: 100%; height: 100%; overflow: visible; }
 .bt-root:not(#_) .ts-sx image { filter: drop-shadow(var(--bt-shadow-drop)); }
 .bt-root:not(#_) .ts-sx text { font-family: var(--bt-font); }
 .bt-root:not(#_) .ts-sx-k { fill: var(--bt-text-faint); font-size: 10px; font-weight: 800; letter-spacing: .08em; }
