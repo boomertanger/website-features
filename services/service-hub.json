@@ -7,7 +7,9 @@
   "version": "0.1",
   "status": "building",
   "audience": "members",
-  "routes": [],
+  "routes": [
+    "/admin/services"
+  ],
   "nav": null,
   "testPlan": null,
   "checks": [],

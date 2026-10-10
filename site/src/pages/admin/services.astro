@@ -1,0 +1,29 @@
+---
+// /admin/services: the Service Hub's admin tool page (docs/specs/service-hub.md §7; mockup docs/design/mockups/service-hub-round-1.html sections 4 to 8;
+// design-system.md §8aa). Owner and admins (the /admin gate pattern: a skeleton while auth loads, visitors get the sign-in dialog, members are sent home).
+// The data is the summary doc (one read; the rules let admins only) and the build's /services.json; every change goes through the services callables.
+// Views in ?view= (grid, board, map, attention), a service's detail in ?service=. Not in the header nav (the /admin card links here).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import "../../styles/admin-services.css";
+---
+<BaseLayout title="Service Hub" noindex>
+  <div class="as-page" data-as-page data-access="loading">
+    <div class="bt-zone as-skel" aria-hidden="true">
+      <span class="bt-skeleton as-sk-hero"></span>
+      <span class="bt-skeleton as-sk-tiles"></span>
+      <span class="bt-skeleton as-sk-body"></span>
+    </div>
+    <section class="bt-zone as-gate" aria-labelledby="as-gate-title">
+      <h1 class="bt-title" id="as-gate-title">Admins only</h1>
+      <p class="as-gate-lead">The Service Hub's admin page is for the owner and site admins. If you're one, sign in with your admin account.</p>
+      <div class="as-gate-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="signin">Sign in</a><a class="bt-btn bt-btn--ghost" href="/">Home</a></div>
+    </section>
+    <div class="bt-zone as-root" id="as-root" data-as-root></div>
+    <template id="as-mascot"><Mascot decorative /></template>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/services-admin/page";
+</script>
