@@ -7,7 +7,9 @@
 // recorded with recordAssetCreated() (feature "techStack"), so Cloud Stash counts it and only the approved delete path can remove it; the
 // linked doc is sites/boomertanger/memberContent/tech-stack, field photos.<desk|card>.<id> (nothing is written there; a purge clears it).
 //
-// Without --apply it's a dry run: every file and public id, its size, and which ids the data file uses that have no file (and the other way round).
+// Only the photos the page uses are uploaded: every id in site/src/data/tech-stack.json, plus the scene extras in SCENE_EXTRAS (the hero and chapter 1
+// scenes, site/src/scripts/tech-stack/scenes.ts). Other files in the folder (alternate shots) are listed as skipped.
+// Without --apply it's a dry run: every file and public id, its size, the skipped ones, and which ids the page uses that have no file.
 //
 // Credentials (only for --apply): the same three values the functions read from Secret Manager, CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY and
 // CLOUDINARY_API_SECRET, either set in your shell's environment, or read from the staging project's Secret Manager with --from-secret-manager
@@ -23,6 +25,7 @@ const path = require("path");
 const FEATURE = "techStack";
 const LINK = { collection: "sites/boomertanger/memberContent", docId: "tech-stack" };
 const FOLDERS = ["desk", "card"];
+const SCENE_EXTRAS = ["tech-stack/card/gpu3080"];   // photos only scenes.ts draws (keep in step with it)
 
 function parseArgs(argv) {
   const a = { project: "staging", apply: false, dir: null, secretManager: false };
@@ -72,6 +75,7 @@ function referencedIds() {
   for (const d of data.devices) { if (d.photo?.desk) ids.add(d.photo.desk); if (d.photo?.card) ids.add(d.photo.card); }
   for (const g of data.gear) ids.add(g.photo);
   for (const k of ["gaming", "streaming"]) ids.add(data.pcCompare[k].photo);
+  SCENE_EXTRAS.forEach((id) => ids.add(id));
   return ids;
 }
 
@@ -96,13 +100,15 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const projectId = resolveProjectId(args.project);
   stagingOnly(projectId, args.project);
-  const photos = listPhotos(path.resolve(args.dir));
-  const used = referencedIds(), have = new Set(photos.map((p) => p.publicId));
+  const all = listPhotos(path.resolve(args.dir));
+  const used = referencedIds(), have = new Set(all.map((p) => p.publicId));
+  const photos = all.filter((p) => used.has(p.publicId)), skipped = all.filter((p) => !used.has(p.publicId));
   const total = photos.reduce((s, p) => s + p.bytes, 0);
   console.log(`${projectId} · ${photos.length} photos (${(total / 1048576).toFixed(1)} MB) from ${path.resolve(args.dir)}${args.apply ? "" : " · dry run (add --apply to upload)"}`);
-  for (const p of photos) console.log(`  ${p.folder}/${p.id}.png`.padEnd(30) + ` -> ${p.publicId}`.padEnd(36) + ` ${(p.bytes / 1024).toFixed(0)} KB${used.has(p.publicId) ? "" : "  (not in tech-stack.json: a scene or extra)"}`);
+  for (const p of photos) console.log(`  ${p.folder}/${p.id}.png`.padEnd(30) + ` -> ${p.publicId}`.padEnd(36) + ` ${(p.bytes / 1024).toFixed(0)} KB`);
+  if (skipped.length) console.log(`  Skipped, not used by the page (${skipped.length}): ${skipped.map((p) => `${p.folder}/${p.id}`).join(", ")}`);
   const noFile = [...used].filter((id) => !have.has(id));
-  if (noFile.length) console.log(`  In tech-stack.json with no file here (the page draws these instead): ${noFile.join(", ")}`);
+  if (noFile.length) console.log(`  In tech-stack.json with no file here (the page shows the platforms' official marks instead): ${noFile.join(", ")}`);
   if (!args.apply) return;
 
   const creds = await credsFrom(args, projectId);
@@ -110,9 +116,9 @@ async function main() {
   const admin = require("firebase-admin");
   admin.initializeApp({ projectId });
   const { recordAssetCreated } = require("../lib/externalAssets");
-  let up = 0, skipped = 0;
+  let up = 0, already = 0;
   for (const p of photos) {
-    if (await C.resourceInfo(fetch, creds, p.publicId)) { console.log(`  skip ${p.publicId} (already on Cloudinary; never overwritten)`); skipped++; continue; }
+    if (await C.resourceInfo(fetch, creds, p.publicId)) { console.log(`  skip ${p.publicId} (already on Cloudinary; never overwritten)`); already++; continue; }
     const params = { timestamp: Math.floor(Date.now() / 1000), public_id: p.publicId, overwrite: "false", allowed_formats: C.ALLOWED_FORMATS.join(",") };
     const form = new FormData();
     for (const [k, v] of Object.entries({ ...params, api_key: creds.apiKey, signature: C.signParams(params, creds.apiSecret) })) form.append(k, String(v));
@@ -125,7 +131,7 @@ async function main() {
     console.log(`  uploaded ${p.publicId} (${(info.bytes / 1024).toFixed(0)} KB) and recorded it`);
     up++;
   }
-  console.log(`Done: ${up} uploaded, ${skipped} already there.`);
+  console.log(`Done: ${up} uploaded, ${already} already there.`);
 }
 
 if (require.main === module) main().catch((err) => { console.error(String((err && err.message) || err)); process.exit(1); });

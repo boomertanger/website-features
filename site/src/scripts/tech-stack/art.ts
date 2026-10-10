@@ -2,6 +2,7 @@
 // drawn around 0,0 (the classes b, m, e, s, l, a, g, k, scr1-3, pl are styled per view in styles/tech-stack.css), the cable paths for each view, and
 // the whole diagram's SVG for a view. Photo view uses the owner's cut-outs (Cloudinary) where the device has one, the drawing otherwise.
 import { DEVICES, CABLES, DEV, PAIR_K, FLOW_COLS, posOf, photoUrl, cardPhoto, type Device, type Cable, type Look } from "./data";
+import { PLATFORM_ICONS } from "../../data/footer-icons.js";   // the official marks (Simple Icons, CC0), the same the footer's Follow badges use
 
 export const esc = (s: unknown) => String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 const R = (x: number, y: number, w: number, h: number, c: string, rx = 0, extra = "") => `<rect class="${c}" x="${x}" y="${y}" width="${w}" height="${h}" rx="${rx}" ${extra}/>`;
@@ -52,8 +53,8 @@ export const KINDS: Record<string, Kind> = {
   lav: { w: 54, h: 60, d: () => R(-22, -22, 24, 40, "b", 6) + `<path class="e" d="M-10 -22 C-10 -36 16 -36 16 -16" stroke-width="2"/>` + `<circle class="m" cx="16" cy="-12" r="6"/>` + tally(-10, -10) },
   router: { w: 120, h: 70, d: () => `<path class="e" d="M-36 -14 L-44 -40 M36 -14 L44 -40" stroke-width="4"/>` + R(-54, -16, 108, 36, "b", 8) + [0, 1, 2, 3, 4].map((i) => `<circle class="a" cx="${-36 + i * 12}" cy="2" r="3"/>`).join("") },
   platform: { w: 84, h: 84, d: (v) => {
-    const glyph = ({ twitch: "T", youtube: "▶", tiktok: "♪" } as Record<string, string>)[v] || "•";
-    return R(-38, -38, 76, 76, `pl pl--${v}`, 18) + `<text class="plt plt--${v}" text-anchor="middle" y="11">${glyph}</text>`;
+    const mark = (PLATFORM_ICONS as Record<string, string>)[v];
+    return R(-38, -38, 76, 76, `pl pl--${v}`, 18) + (mark ? `<path class="plt plt--${v}" transform="translate(-22 -22) scale(1.833)" d="${mark}"/>` : "");
   } },
 };
 const kindOf = (d: { art: string }) => { const [k, v = ""] = d.art.split(":"); return { k: KINDS[k] || KINDS.capture, v }; };

@@ -49,7 +49,11 @@
     { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
   ],
   "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
-  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "streams", "shop", "club", "featurelab", "bugzapper", { "techStack": { "enabled": true, "referrals": false } }],
+  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "streams", "shop", "club", "featurelab", "bugzapper", "techStack"],
+  "techStack": { "referrals": false },
+  "_aboutTechStack": "Tech Stack (docs/specs/tech-stack.md): referrals true shows the Amazon links and the Associates disclosure on /tech-stack.",
+  "cloudinary": { "cloudName": "nz4usqtz" },
+  "_aboutCloudinary": "The Cloudinary cloud name, for public photo URLs (not a secret; it's in every delivered image URL). The API key and secret stay in Secret Manager.",
   "signInReasons": [
     { "icon": "🗳", "text": "Vote on what I play next" },
     { "icon": "🏆", "text": "Earn points, badges and leaderboard spots" },

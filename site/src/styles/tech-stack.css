@@ -122,7 +122,7 @@
 .bt-root:not(#_) .ts-dev .pl--twitch { fill: var(--bt-brand-twitch); }
 .bt-root:not(#_) .ts-dev .pl--youtube { fill: var(--bt-follow-youtube); }
 .bt-root:not(#_) .ts-dev .pl--tiktok { fill: var(--bt-follow-tiktok); }
-.bt-root:not(#_) .ts-dev .plt { fill: var(--bt-text); font-size: 30px; font-weight: 900; }
+.bt-root:not(#_) .ts-dev .plt { fill: var(--bt-text); }   /* the platform's official mark on its brand tile */
 .bt-root:not(#_) .ts-dev .plt--tiktok { fill: var(--bt-bg); }
 .bt-root:not(#_) .ts-echo-t { fill: var(--bt-text); font-family: var(--bt-font); }
 .bt-root:not(#_) .ts-sc-live { fill: var(--bt-red); }
@@ -425,7 +425,6 @@
 .bt-root:not(#_) .ts-sx-pc--twitch { fill: var(--bt-brand-twitch); }
 .bt-root:not(#_) .ts-sx-pc--youtube { fill: var(--bt-follow-youtube); }
 .bt-root:not(#_) .ts-sx-pc--tiktok { fill: var(--bt-follow-tiktok); }
-.bt-root:not(#_) .ts-sx-glyph { fill: var(--bt-bg); font-size: 9px; font-weight: 900; }
 .bt-root:not(#_) .ts-sx-pl { fill: var(--bt-text); font-size: 10px; font-weight: 800; }
 .bt-root:not(#_) .ts-sx-ok rect { stroke: color-mix(in srgb, var(--bt-lime) 55%, transparent); animation: ts-okglow 2.8s ease-in-out infinite; }
 .bt-root:not(#_) .ts-sx-tt { transition: opacity .4s .5s; }

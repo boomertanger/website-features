@@ -3,7 +3,8 @@
 // shown; the text itself is only ever sent to members. States:
 //   loading · visitor (signed out: lock cards) · signup (signed in, signup unfinished: "Finish signing up") · member (the doc, or null if it isn't seeded)
 //   · error ("Couldn't load the member details" + Try again; the public page still works)
-// Preview (non-production, signed out, ?as=member or ?as=admin) shows the committed sample (functions/scripts/data/tech-stack-member.sample.json).
+// Preview (signed out, ?as=member or ?as=admin) shows the committed sample (functions/scripts/data/tech-stack-member.sample.json), only in local dev
+// (localhost) and on staging.boomertanger.com; never in production.
 import { onAuth, type AuthState } from "../../lib/auth";
 import { isProduction } from "../../lib/env.js";
 
@@ -23,7 +24,11 @@ const set = (s: MemberState) => { state = s; fns.forEach((f) => { try { f(s); } 
 export const memberState = () => state;
 export function onMember(fn: (s: MemberState) => void) { fns.add(fn); fn(state); return () => fns.delete(fn); }
 
-const previewAs = () => { if (isProduction) return null; const a = new URLSearchParams(location.search).get("as"); return a === "member" || a === "admin" ? a : null; };
+const PREVIEW_HOSTS = ["localhost", "127.0.0.1", "staging.boomertanger.com"];
+const previewAs = () => {
+  if (isProduction || !PREVIEW_HOSTS.includes(location.hostname)) return null;
+  const a = new URLSearchParams(location.search).get("as"); return a === "member" || a === "admin" ? a : null;
+};
 let loadedFor: string | null = null;
 
 async function load(uid: string) {

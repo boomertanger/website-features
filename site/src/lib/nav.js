@@ -31,12 +31,7 @@ const MODULE_PAGES = {
 // Hotline Boom (docs/specs/hotline-boom.md), /live/chat-games is How Chat Games work (docs/specs/chat-games.md §14a).
 const ALWAYS_ON = ["crew", "contact", "chatgames"];
 const STAFF_ONLY = ["deck"];   // on for everyone in the data, shown to staff only
-// site.json modules: an id ("live") is on; an object entry ({ "techStack": { "enabled": true, "referrals": false } }) carries the module's settings.
-const MODULES = site.modules.flatMap((m) => (typeof m === "string" ? [[m, { enabled: true }]] : Object.entries(m)));
-const SITE_MODULES = MODULES.filter(([, c]) => c && c.enabled !== false).map(([id]) => id);
-/** A module's settings from site.json (null when it isn't listed): moduleConfig("techStack").referrals. */
-export const moduleConfig = (id) => { const hit = MODULES.find(([m]) => m === id); return hit ? hit[1] : null; };
-const enabled = new Set([...SITE_MODULES, ...ALWAYS_ON, ...STAFF_ONLY]);
+const enabled = new Set([...site.modules, ...ALWAYS_ON, ...STAFF_ONLY]);
 const isOn = (id) => enabled.has(id) && !!MODULE_PAGES[id];
 const page = (id) => ({ id, ...MODULE_PAGES[id] });
 
@@ -62,7 +57,7 @@ export const headerNav = [
 
 export const navItems = [
   { id: "home", label: "Home", href: "/", icon: "home", blurb: "" },
-  ...SITE_MODULES.filter((m) => MODULE_PAGES[m]).map(page),
+  ...site.modules.filter((m) => MODULE_PAGES[m]).map(page),
 ];
 
 export const hasModule = (id) => id === "home" || enabled.has(id);
@@ -70,7 +65,7 @@ export const hasModule = (id) => id === "home" || enabled.has(id);
 // Phone tab bar: Home, Schedule, raised Live, Games, More. "More" holds the rest.
 export const TAB_IDS = ["home", "schedule", "live", "games"];
 // Crew is on in the header (Community), the phone More sheet, the account menu and the footer.
-export const moreItems = [...navItems.filter((i) => !TAB_IDS.includes(i.id)), ...ALWAYS_ON.filter((id) => !SITE_MODULES.includes(id)).map(page)];
+export const moreItems = [...navItems.filter((i) => !TAB_IDS.includes(i.id)), ...ALWAYS_ON.filter((id) => !site.modules.includes(id)).map(page)];
 
 /**
  * The phone More sheet: the header's groups under Watch / Play / Community / Shop headings, leaving out the

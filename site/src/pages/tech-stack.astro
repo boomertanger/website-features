@@ -6,14 +6,14 @@
 // mixer), 03 Hardware (the PC compare table, filters, cards), 04 Software (the journey), 05 Internet backbone (the gauge and the Why fiber placard),
 // 06 Setup history (Fan Club), 07 Ask BOOMBOT, and the closing call to action. Public data: src/data/tech-stack.json (checked before every build by
 // scripts/check-tech-stack.js). Fan Club text loads in the browser from the member doc (scripts/tech-stack/member.ts); visitors get lock cards.
-// Photos: Cloudinary (PUBLIC_CLOUDINARY_CLOUD_NAME), f_auto,q_auto, sized per use; without it the drawings show. Referral links and the Amazon
-// disclosure only render when site.json's techStack module has referrals: true.
+// Photos: Cloudinary (site.json cloudinary.cloudName), f_auto,q_auto, sized per use; a photo that can't load becomes the drawing. Referral links and
+// the Amazon disclosure only render when site.json techStack.referrals is true.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import TocLayout from "../components/TocLayout.astro";
 import Mascot from "../components/Mascot.astro";
 import { boombotIcon } from "../../../shared/ui/arcade.js";
 import { zoomFrameHtml } from "../../../shared/ui/zoomframe.js";
-import { moduleConfig } from "../lib/nav.js";
+import site from "../data/site.json";
 import { TS, DEVICES, TOURS, VIEWS, CAT_NAME, VB_W, VB_H, photoUrl, hardwareGroups, isDevice } from "../scripts/tech-stack/data";
 import { heroScene, stageScenes } from "../scripts/tech-stack/scenes";
 import { devPic, esc } from "../scripts/tech-stack/art";
@@ -21,7 +21,7 @@ import { LOCK_SVG } from "../scripts/tech-stack/ui";
 import "../styles/how-it-works.css";
 import "../styles/tech-stack.css";
 
-const referrals = !!moduleConfig("techStack")?.referrals;
+const referrals = !!site.techStack?.referrals;
 const NAV: [string, string][] = [["ts-why", "Why two PCs"], ["ts-rig", "Boomer's setup"], ["ts-hardware", "Hardware"], ["ts-software", "Software"], ["ts-internet", "Internet"], ["ts-history", "Setup history"], ["ts-ask", "Ask BOOMBOT"]];
 const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
 const SEARCH_IC = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>`;

@@ -3,6 +3,7 @@
 // the power-on flicker when the chapter scrolls into view, the idle loops, and the play state on hover, focus or tap (.is-play, .is-demo).
 // Reduced motion: the final frame, no pulse, no loops. Photos come from Cloudinary; a scene photo that's missing just doesn't show.
 import { DEV, photoUrl } from "./data";
+import { PLATFORM_ICONS } from "../../data/footer-icons.js";
 
 /** A photo inside a scene svg at x, y, width w (height from the cut-out's shape, or 0.62 × w for a card photo). */
 function IMG(id: string, x: number, y: number, w: number, cls = "") {
@@ -12,8 +13,9 @@ function IMG(id: string, x: number, y: number, w: number, cls = "") {
   const h = P && d?.photo.desk ? (w * P.h) / P.w : w * 0.62;
   return `<image${cls ? ` class="${cls}"` : ""} href="${src}" x="${x}" y="${y}" width="${w}" height="${h.toFixed(1)}" preserveAspectRatio="xMidYMid meet"/>`;
 }
-const PLAT = (x: number, y: number, label: string, cls: string, glyph: string, k: string) =>
-  `<g class="ts-sx-plat ${cls}" transform="translate(${x} ${y})"><rect width="74" height="22" rx="11"/><circle class="ts-sx-pc ts-sx-pc--${k}" cx="12" cy="11" r="7"/><text x="10" y="14.5" class="ts-sx-glyph" text-anchor="middle">${glyph}</text><text x="23" y="15" class="ts-sx-pl">${label}</text></g>`;
+/** A platform pill with its official mark (the footer's icons). */
+const PLAT = (x: number, y: number, label: string, cls: string, k: "twitch" | "youtube" | "tiktok") =>
+  `<g class="ts-sx-plat ${cls}" transform="translate(${x} ${y})"><rect width="74" height="22" rx="11"/><path class="ts-sx-mark ts-sx-pc--${k}" transform="translate(5 4) scale(.583)" d="${PLATFORM_ICONS[k]}"/><text x="23" y="15" class="ts-sx-pl">${label}</text></g>`;
 
 export function heroScene() {
   const im = (id: string, cx: number, cy: number, w: number) => {
@@ -57,7 +59,7 @@ export function stageScenes(uid = "a"): [string, string, string][] {
     ["A backup built in", "If one PC crashes, the other keeps part of the show running. Try it in the diagram with Pull the plug.",
       `<svg viewBox="0 0 360 200" class="ts-sx" aria-hidden="true" focusable="false"><g class="ts-sx-dead">${IMG("gp", 34, 18, 78)}</g>${IMG("sp", 214, 22, 64)}
       <path class="ts-sx-cord" d="M74 146 C74 172 120 176 140 176"/><path class="ts-sx-zap" d="M140 176 C120 176 74 172 74 146"/><g class="ts-sx-plug"><rect x="138" y="168" width="20" height="16" rx="3"/><path d="M158 172 H166 M158 180 H166"/></g>
-      ${PLAT(14, 162, "TikTok", "ts-sx-tt", "♪", "tiktok")}${PLAT(196, 150, "Twitch", "ts-sx-ok", "T", "twitch")}${PLAT(276, 150, "YouTube", "ts-sx-ok", "▶", "youtube")}</svg>`],
+      ${PLAT(14, 162, "TikTok", "ts-sx-tt", "tiktok")}${PLAT(196, 150, "Twitch", "ts-sx-ok", "twitch")}${PLAT(276, 150, "YouTube", "ts-sx-ok", "youtube")}</svg>`],
     ["Room to get creative", "Scenes, overlays and transitions live on the Streaming PC, away from the game.",
       `<svg viewBox="0 0 360 200" class="ts-sx" aria-hidden="true" focusable="false"><rect class="ts-sx-panel" x="30" y="12" width="300" height="160" rx="10"/><rect class="ts-sx-scr" x="118" y="24" width="200" height="112" rx="6"/>
       <g class="ts-sx-prev"><rect class="p1" x="118" y="24" width="200" height="112" rx="6"/><rect class="p2" x="118" y="24" width="200" height="112" rx="6"/><rect class="p3" x="118" y="24" width="200" height="112" rx="6"/></g>

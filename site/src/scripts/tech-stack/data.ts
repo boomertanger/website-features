@@ -1,8 +1,9 @@
 // site/src/scripts/tech-stack/data.ts — the Tech Stack's public data (src/data/tech-stack.json, checked by scripts/check-tech-stack.js before every
 // build; docs/specs/tech-stack.md §6) and the small lookups every part of the page shares: devices and cables by id, what goes in and out of a device,
 // positions per view, and Cloudinary photo URLs (f_auto,q_auto, sized per use). Used at build time (tech-stack.astro) and in the browser.
-// Photos need the build's PUBLIC_CLOUDINARY_CLOUD_NAME; without it (or for a photo that isn't uploaded) the page draws the device instead.
+// The Cloudinary cloud name is site.json cloudinary.cloudName (public, like the Turnstile site key); a photo that isn't there falls back to the drawing.
 import data from "../../data/tech-stack.json";
+import site from "../../data/site.json";
 
 export type View = "photo" | "drawn" | "blueprint" | "flow" | "list";
 export type Look = Exclude<View, "list">;
@@ -40,7 +41,7 @@ export const PAIR_K: Record<string, number> = (() => { const seen: Record<string
 export const VIEWS: [View, string][] = [["photo", "Photo"], ["drawn", "Drawn"], ["blueprint", "Blueprint"], ["flow", "Flow"], ["list", "List"]];
 
 // ---- photos ----
-const CLOUD = (import.meta.env.PUBLIC_CLOUDINARY_CLOUD_NAME as string | undefined) || "";
+const CLOUD: string = site.cloudinary?.cloudName || "";
 /** A Cloudinary delivery URL for a fixed public id at width w (px; f_auto,q_auto, never upscaled), or "" when photos are off. */
 export const photoUrl = (publicId: string | null | undefined, w: number) =>
   CLOUD && publicId ? `https://res.cloudinary.com/${encodeURIComponent(CLOUD)}/image/upload/f_auto,q_auto,c_limit,w_${Math.round(w)}/${publicId}` : "";
