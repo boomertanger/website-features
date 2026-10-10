@@ -507,5 +507,25 @@ export function wireWaitingPanel(el: HTMLElement, pv: boolean) {
   });
 }
 
-registerFormat(WYR_ID, { launch: (o: any) => launch({ ...o, formatId: WYR_ID }), play });
-registerFormat(PRED_ID, { launch: (o: any) => launch({ ...o, formatId: PRED_ID }), play });
+/** The run panel for btChatGames.mountRun (part 7): the run and staff/{r<n> | p} are watched; the clock ticks locally. Returns a stop. */
+function run(el: HTMLElement, { chatGame, may, owner, preview: pv }: { chatGame: { runId: string; formatId: string }; may: boolean; owner: boolean; preview: boolean }) {
+  const box = document.createElement("div");
+  el.appendChild(box);
+  let data: ChoicePanelData | null = null;
+  wireChoicePanel(box, () => data?.run || null, pv, () => owner);
+  const stopW = watchChoicePanel(chatGame.runId, chatGame.formatId, pv, (p) => { data = p; const html = choicePanelHtml(p, may); if (box.innerHTML !== html) box.innerHTML = html; });
+  const t = window.setInterval(() => {
+    const c = data?.run.closesAt;
+    if (c && !data?.run.paused && !document.hidden) box.querySelectorAll<HTMLElement>("[data-cg-left]").forEach((x) => { x.textContent = fmt(Math.max(0, c - Date.now())); });
+  }, 1000);
+  return () => { stopW(); clearInterval(t); box.remove(); };
+}
+/** The Waiting panel for btChatGames.mountRun: the locked Predictions, each openable to settle. */
+function waiting(el: HTMLElement, { waiting: list, may, preview: pv }: { waiting: WaitingItem[]; may: boolean; preview: boolean }) {
+  const html = waitingPanelHtml(list, may);
+  if (el.innerHTML !== html) el.innerHTML = html;
+  wireWaitingPanel(el, pv);
+}
+
+registerFormat(WYR_ID, { launch: (o: any) => launch({ ...o, formatId: WYR_ID }), play, run });
+registerFormat(PRED_ID, { launch: (o: any) => launch({ ...o, formatId: PRED_ID }), play, run, waiting });

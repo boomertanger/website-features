@@ -249,3 +249,22 @@
 :is(.bt-root:not(#_)[data-look="hull"], .bt-root:not(#_) [data-look="hull"]) .md-helm { border-radius: 4px; }
 :is(.bt-root:not(#_)[data-look="crt"], .bt-root:not(#_) [data-look="crt"]) .md-helm { border-radius: 14px; }
 .bt-root:not(#_) .md-body > [data-slot="flags"]:empty, .bt-root:not(#_) .md-body [data-slot="helm"]:empty, .bt-root:not(#_) .md-body [data-slot="flags"]:empty { display: none; }
+
+/* ---- Chat Games (part 7): the run controls under the launch tiles (btChatGames.mountRun: the same panels as /live/control) and the mod tools in the rail
+   (cg-modtools.ts). On phones both live in the Tools tab. ---- */
+.bt-root:not(#_) .md-body [data-slot="cgrun"]:empty, .bt-root:not(#_) .md-rail [data-slot="cgmod"]:empty { display: none; }
+.bt-root:not(#_) .md-cgrun > div > :is(.lq-run, .lhs-run, .lcg-run):first-child, .bt-root:not(#_) .md-cgrun [data-cgrun-wait] > .lcg-waitpanel:first-child { margin-top: 0; padding-top: 0; border-top: 0; }
+.bt-root:not(#_) .md-cgmod { display: grid; gap: 14px; }
+.bt-root:not(#_) .md-cgmod > div:empty { display: none; }
+.bt-root:not(#_) .md-cg-group { display: grid; gap: 8px; }
+.bt-root:not(#_) .md-cg-h { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-sm); font-weight: 800; color: var(--bt-text); }
+.bt-root:not(#_) .md-cg-ans { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 10px; align-items: center; padding: 10px 12px; border-radius: var(--bt-radius-md); border: 1px solid var(--bt-border); background: var(--bt-bg); }
+.bt-root:not(#_) .md-cg-ans b { grid-column: 1; font-size: var(--bt-text-sm); color: var(--bt-text); }
+.bt-root:not(#_) .md-cg-ans p { grid-column: 1; margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-muted); line-height: 1.45; overflow-wrap: anywhere; }
+.bt-root:not(#_) .md-cg-ans > :is(.bt-btn, small) { grid-column: 2; grid-row: 1 / span 2; }
+.bt-root:not(#_) .md-cg-ans small { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .md-cg-ans.is-hidden p { text-decoration: line-through; color: var(--bt-text-faint); }
+.bt-root:not(#_) .md-empty--sm { padding: 8px 6px; }
+.bt-root:not(#_) .md-empty--sm .md-empty-m { width: 56px; }
+.bt-root:not(#_) .md-empty--sm p { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .md:is([data-tab="chats"], [data-tab="crew"]) [data-slot="cgrun"] { display: none; } }

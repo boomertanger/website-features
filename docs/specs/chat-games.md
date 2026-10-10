@@ -202,6 +202,20 @@ Crew claims read; no client writes. Pack answers stay server-only until the reve
 
 **Launch tiles.** The Deck reads `chatGames/main/formats/{formatId}` (title, blurb, icon, crewHosted, needsPack, minLeads, enabled, order) and `public/live.chatGame`. Start, Swap and End are for the Captain and owner and call `window.btChatGames.openLaunch` / `.end`; without the module the slot renders nothing. The Deck hard-codes no games. The running tile comes from `public/live.chatGame` (any format) or, for crew-hosted runs, `private/duty.chatGames.activeRunIds`.
 
+**As built (part 7), the Mod Deck hookup.**
+- **Run controls.** `btChatGames.mountRun(el, { chatGame, waiting, may, owner, preview })` draws the running game's run panel and the Waiting panel for locked Predictions. Each format registers `run(el, opts) → stop()` (and Predictions `waiting`).
+  - `/live/control` and the Mod Deck mount the same panels. The Deck shows them under the launch tiles to the Captain (`captainNow.uid`, any grade) and the owner only; on phones they're in the Tools tab.
+  - `/live/control` keeps its panel in one element that each redraw re-attaches, so its listeners never restart.
+- **Mod tools.** The Deck's "Chat Games" section (`site/src/scripts/live/cg-modtools.ts`; on phones in the Tools tab) is for anyone clocked in and the owner. All of it is live listeners (`cg-watch.ts` gained `watchQuery`), no polling:
+  - held questions with Approve, Hide and Merge, and Tonight's top questions with To Standing, Hide and Merge (the server moves only Tonight questions to Standing);
+  - Hot Seat answers with Hide during the answer and vote steps;
+  - Call it for each locked Prediction, including one that locked while keeping the slot;
+  - the mascot when there's nothing to do.
+- **Launch.** `openLaunch` and `end` announce `bt:overlay-open` (source `chat-games`), so the duty bar's chooser or a nav menu closes first. The Deck passes the format's title.
+- **Permissions.** Every Deck action is refused on the server for the wrong person: a Room Lead or Deckhand trying a Captain control, Swap, End or settle; a mod not clocked in for this stream trying Call it, Hide or question moderation. No server change was needed; `check-chat-games.js` covers them.
+- **The cue sample.** `functions/scripts/cue-sample.js` (staging only; it refuses any project that isn't staging) writes a crew-hosted sample run with one cue per room on the live stream, lists it in `private/duty.chatGames.activeRunIds`, `--status` reads back the cues and the `chatGame:{runId}:{uid}` Gears entries, and `--clean --apply` removes the run, the cues and the pointer.
+- **Deck previews.** `?game=questions|hot-seat|wyr|predictions`, `?waiting=1` and `?duty=1` run the real modules on sample data.
+
 ## 10. Packs and the pool at /crew/games
 
 The pool from mod-machina.md §11c-11g, starting with what Hot Seat, Would You Rather and Predictions need. Crew votes, host pledges and the Planner slot arrive with the crew-hosted games.

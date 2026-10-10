@@ -224,4 +224,23 @@ export function wireRunPanel(el: HTMLElement, getRunNow: () => QRun | null, afte
   });
 }
 
-registerFormat("questions", { launch, play });
+/** The run panel for btChatGames.mountRun (part 7: /live/control and the Mod Deck): the run doc is watched; the card and Up next are re-read when it
+ *  changes and every 15 s while the tab is visible (Up next moves as members ask and vote). Returns a stop. */
+function run(el: HTMLElement, { chatGame, may, preview: pv }: { chatGame: { runId: string }; may: boolean; preview: boolean }) {
+  const box = document.createElement("div");
+  el.appendChild(box);
+  let data: RunPanelData | null = null, busy = false, stopped = false;
+  const load = async () => {
+    if (busy || stopped) return;
+    busy = true;
+    try { data = await loadRunPanel(chatGame.runId, pv); if (!stopped) { const html = data ? runPanelHtml(data, may) : ""; if (box.innerHTML !== html) box.innerHTML = html; } }
+    catch { /* keep the last */ }
+    finally { busy = false; }
+  };
+  wireRunPanel(box, () => data?.run || null, () => void load(), pv);
+  const stopW = watchRun(chatGame.runId, pv, () => void load());
+  const t = window.setInterval(() => { if (!document.hidden) void load(); }, 15000);
+  return () => { stopped = true; stopW(); clearInterval(t); box.remove(); };
+}
+
+registerFormat("questions", { launch, play, run });

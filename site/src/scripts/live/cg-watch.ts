@@ -53,3 +53,28 @@ export function watchDoc(path: string[], onData: Fn, onErr?: () => void): () => 
     if (!mine.subs.size) { mine.unsub?.(); mine.unsub = null; watches.delete(key); }
   };
 }
+
+/**
+ * A query, same rules as watchDoc (one listener per query per tab, let go while the tab is hidden): docs under sites/{siteId}/{path...} matching every
+ * [field, op, value] in `where`. onData([{ id, ...data }]) now and on every change; returns a stop. The Mod Deck's held-questions queue uses it.
+ */
+export function watchQuery(path: string[], where: [string, string, unknown][], onData: (docs: any[]) => void, onErr?: () => void): () => void {
+  let unsub: (() => void) | null = null, stopped = false;
+  const open = async () => {
+    if (unsub || stopped || document.hidden) return;
+    try {
+      const { fs, db } = await load();
+      if (unsub || stopped) return;
+      const q = fs.query(fs.collection(db, ["sites", SITE_ID, ...path].join("/")), ...where.map(([f, op, v]) => fs.where(f, op, v)));
+      unsub = fs.onSnapshot(q, (s: any) => onData(s.docs.map((d: any) => ({ id: d.id, ...d.data() }))), (err: any) => { console.warn("chat games query listener", path.join("/"), err?.code || err); unsub = null; onErr?.(); });
+    } catch (err) { console.warn("chat games: couldn't open the query listener", err); onErr?.(); }
+  };
+  let hiddenAt = 0;
+  const vis = () => {
+    if (document.hidden) { clearTimeout(hiddenAt); hiddenAt = window.setTimeout(() => { unsub?.(); unsub = null; }, HIDDEN_MS); }
+    else { clearTimeout(hiddenAt); void open(); }
+  };
+  document.addEventListener("visibilitychange", vis);
+  void open();
+  return () => { stopped = true; clearTimeout(hiddenAt); document.removeEventListener("visibilitychange", vis); unsub?.(); unsub = null; };
+}

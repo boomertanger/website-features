@@ -340,4 +340,18 @@ export function wireHsPanel(el: HTMLElement, getRunNow: () => HsRun | null, afte
   });
 }
 
-registerFormat("hot-seat", { launch, play });
+/** The run panel for btChatGames.mountRun (part 7): the run and the current round are watched; the clock ticks locally. Returns a stop. */
+function run(el: HTMLElement, { chatGame, may, preview: pv }: { chatGame: { runId: string }; may: boolean; preview: boolean }) {
+  const box = document.createElement("div");
+  el.appendChild(box);
+  let data: HsPanelData | null = null;
+  wireHsPanel(box, () => data?.run || null, () => {}, pv);   // the listeners bring every change
+  const stopW = watchHsPanel(chatGame.runId, pv, (p) => { data = p; const html = hsPanelHtml(p, may); if (box.innerHTML !== html) box.innerHTML = html; });
+  const t = window.setInterval(() => {
+    const c = data?.run.closesAt, x = box.querySelector<HTMLElement>("[data-hs-left]");
+    if (x && c && !document.hidden) x.textContent = fmt(Math.max(0, c - Date.now()));
+  }, 1000);
+  return () => { stopW(); clearInterval(t); box.remove(); };
+}
+
+registerFormat("hot-seat", { launch, play, run });

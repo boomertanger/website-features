@@ -245,9 +245,18 @@ export function cuesHtml(m: Model, d: Derived): string {
   return panel("md-cues", "md-tools-only", "Chat Game cue", "game", `<div class="md-cues">${cards}</div>`);
 }
 
+// Chat Games (part 7): the running game's run controls for the Captain and the owner (btChatGames.mountRun fills [data-cgrun-host]), and the mod tools
+// for anyone on duty (cg-modtools.ts fills [data-cgmod-host]; on phones it's in the Tools tab). The hosts are filled by mod-deck.ts, not redrawn here.
+export function cgRunShellHtml(title: string): string {
+  return panel("md-cgrun", "", "Chat Games on stream", "game", `<div class="md-cgrun" data-cgrun-host></div>`, `<span class="bt-live-tag"><i></i>${esc(title)}</span>`);
+}
+export function cgModShellHtml(): string {
+  return panel("md-cgmod", "md-tools-only", "Chat Games", "game", `<div class="md-cgmod" data-cgmod-host></div>`, `<span class="bt-badge bt-badge--teal">Mods on duty</span>`);
+}
+
 // ---------------------------------------------------------------------------------------------- the live page, off air, ended
 export function liveBodyHtml(): string {
-  return `<div data-slot="flags"></div><div data-slot="rooms"></div><div data-slot="helm"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="rush"></div><div data-slot="notes"></div></div></div>`;
+  return `<div data-slot="flags"></div><div data-slot="rooms"></div><div data-slot="helm"></div><div data-slot="cgrun"></div><div class="md-main"><div class="md-wallbox"><div data-slot="wall"></div><div class="md-promptlayer" data-slot="layer"></div></div><div class="md-rail"><div data-slot="cgmod"></div><div data-slot="cues"></div><div data-slot="lines"></div><div data-slot="rush"></div><div data-slot="notes"></div></div></div>`;
 }
 export function tabsHtml(m: Model, d: Derived): string {
   if (d.phase !== "live" || d.after) return "";

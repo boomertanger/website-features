@@ -247,6 +247,17 @@ async function choicesPart() {
   const w1 = await as("hand1", "chatGameStart", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["Hide in a locker", "Crawl a vent"] }, seconds: 30 } });
   let run = await get(R(w1.runId));
   assert.equal(run.state, "open"); assert.equal(run.prompt.text, "Would you rather…"); assert.equal(run.source, "typed"); assert.equal(tasks[tasks.length - 1].delay, 30, "30 s to vote");
+  // ---- the Mod Deck (part 7): every action is refused on the server for the wrong person. lead1 is on duty but not the Captain; cap is a mod who
+  // isn't clocked in for this stream (hand1 is tonight's Captain).
+  for (const [who, fn, data, reason] of [
+    ["lead1", "chatGameControl", { runId: w1.runId, action: "reveal" }, "notCaptain"],
+    ["lead1", "chatGameControl", { runId: w1.runId, action: "pause" }, "notCaptain"],
+    ["lead1", "chatGameEnd", { runId: w1.runId }, "notCaptain"],
+    ["lead1", "chatGameSwap", { formatId: "would-you-rather", options: { source: "typed", prompt: { options: ["A", "B"] } } }, "notCaptain"],
+    ["cap", "chatGameControl", { runId: w1.runId, action: "saveToPack", data: { packId: classics.id } }, "notCaptain"],
+    ["cap", "chatGameModerate", { runId: w1.runId, uid: "m1" }, "notModerator"],
+    ["cap", "questionModerate", { questionId: "nope", action: "hide" }, "notModerator"],
+  ]) assert.equal(await why(as(who, fn, data)), reason, `${who} ${fn} ${data.action || ""} is refused`);
   // any member votes, checked in or not, and can change until it closes; the split stays secret
   await as("m1", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 0 });
   await as("m2", "chatGamePlay", { runId: w1.runId, action: "vote", choice: 1 });
@@ -317,6 +328,9 @@ async function choicesPart() {
   assert.ok(w2.runId, "another game runs while it waits");
   // propose, reject, propose again, confirm (the slot is busy: it ends with its result)
   assert.equal(await why(as("fan", "predictionPropose", { runId: p1.runId, answer: 0 })), "notOnDuty");
+  assert.equal(await why(as("cap", "predictionPropose", { runId: p1.runId, answer: 0 })), "notOnDuty", "a mod who isn't clocked in for this stream can't Call it");
+  assert.equal(await why(as("cap", "predictionSettle", { runId: p1.runId, action: "settle", answer: 0 })), "notCaptain");
+  assert.equal(await why(as("lead1", "predictionSettle", { runId: p1.runId, action: "void" })), "notCaptain", "a Room Lead can't void");
   await as("lead1", "predictionPropose", { runId: p1.runId, answer: 1 });
   assert.equal((await get(`${R(p1.runId)}/staff/p`)).proposal.answer, 1);
   assert.equal(await msg(as("lead1", "predictionPropose", { runId: p1.runId, answer: 0 })), "Already done by @lead1.");
@@ -391,6 +405,12 @@ async function choicesPart() {
   assert.deepEqual((await get(`${S}/streams/s5/private/control`)).chatGameWaiting, []);
   assert.equal((await get(`${S}/streams/s5/private/control`)).chatGameSettled, null, "Stop clears the result chip");
   assert.ok(fns.predictionPropose && fns.predictionSettle);
+  // the cue sample script (part 7) runs on staging only
+  const { stagingOnly } = require("./cue-sample");
+  assert.throws(() => stagingOnly("boomertanger-prod", "production"), /staging only/);
+  assert.throws(() => stagingOnly("boomertanger-prod", "boomertanger-prod"), /staging only/);
+  assert.throws(() => stagingOnly("some-other-project", "x"), /staging only/);
+  assert.doesNotThrow(() => stagingOnly("boomertanger-staging", "staging"));
   await as("boss", "chatGameFormatSet", { formatId: "would-you-rather", enabled: false });
   await as("boss", "chatGameFormatSet", { formatId: "predictions", enabled: false });
 }

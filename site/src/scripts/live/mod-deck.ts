@@ -31,6 +31,7 @@ import { ROOM_NAME, ROOM_ORDER } from "./mod-deck-data";
 import { FLAG_TYPES, flagFormHtml, flagSubtitle, flagStackHtml, helmHtml, moveOptions, moveListHtml, confirmNightHtml, makeChime, flagTitle, type Tool } from "./mod-deck-tools";
 import {
   derive, takeFor, heroHtml, barHtml, awayText, promptBlockHtml, roomsStripHtml, wallHtml, wallKey, linesHtml, linesTexts, rushPanelHtml, notesHtml, cuesHtml, liveBodyHtml, tabsHtml, offHtml, endedHtml,
+  cgRunShellHtml, cgModShellHtml,
   defaultDrop, fmtClock, type Model, type Derived, type Tab,
 } from "./mod-deck-view";
 
@@ -42,8 +43,12 @@ const stickyBar = dockBar ? initStickyBar(dockBar, {}) : null;
 const shell = document.querySelector<HTMLElement>("[data-deck]")!;
 const root = document.querySelector<HTMLElement>("[data-md]")!;
 const preview = previewRequest();
-// Chat Games' entry point (window.btChatGames): the launch tiles open its dialogs and End through it. The preview stands in its own (?formats=1).
-if (!preview) void import("./chatgames-site");
+// Chat Games' entry point (window.btChatGames): the launch tiles open its dialogs and End through it, mountRun draws the run controls, and the mod tools
+// come from cg-modtools.ts. The preview stands in its own launch (?formats=1) unless it asks for a sample game (?game=questions|hot-seat|wyr|predictions,
+// ?waiting=1): then the real modules run on their sample data (nothing is saved).
+const sampleGame = !!preview && (!!new URLSearchParams(location.search).get("game") || new URLSearchParams(location.search).get("waiting") === "1");
+const cgReady: Promise<unknown> = !preview || sampleGame ? import("./chatgames-site") : Promise.resolve(null);
+const modTools = import("./cg-modtools");
 
 // ---------------------------------------------------------------------------------------------- who may look
 type Access = "loading" | "join" | "signup" | "gate" | "page";
@@ -150,6 +155,7 @@ function mount(me: Me, src: Source) {
       slot("layer", "", "");
       renderFlags();
       renderHelm(d);
+      renderChatGames(d);
       slot("cues", cuesHtml(M, d));
       slot("lines", linesHtml(M, d));
       slot("rush", rushPanelHtml(M));
@@ -308,6 +314,20 @@ function mount(me: Me, src: Source) {
     catch (err) { if ((err as any)?.code === "functions/not-found") toast("Chat Games isn't switched on yet.", { kind: "info" }); else fail(err, "Couldn't mark that cue. Try again."); }
   }
 
+  // ---- Chat Games (part 7): the run controls under the launch tiles (the Captain and the owner) and the mod tools (anyone on duty, the owner too)
+  function renderChatGames(d: Derived) {
+    const g = M.pub?.chatGame || null, waiting = (M.pub as any)?.chatGameWaiting || [];
+    const may = d.isCaptain || M.me.owner;
+    const showRun = may && !d.after && (!!g || waiting.length > 0);
+    const runEl = slot("cgrun", showRun ? cgRunShellHtml(g?.title || "Waiting on a result") : "", showRun ? `run|${g?.title || ""}` : "");
+    const runHost = runEl?.querySelector<HTMLElement>("[data-cgrun-host]");
+    if (runHost) void cgReady.then(() => (window.btChatGames as any)?.mountRun?.(runHost, { chatGame: g, waiting, may, owner: M.me.owner, preview: !!M.me.preview }));
+    const showMod = !d.after && (d.clock === "in" || M.me.owner);
+    const modEl = slot("cgmod", showMod ? cgModShellHtml() : "", showMod ? "mod" : "");
+    const modHost = modEl?.querySelector<HTMLElement>("[data-cgmod-host]");
+    if (modHost) void Promise.all([cgReady, modTools]).then(([, m]) => m.mountModTools(modHost, { chatGame: g, waiting, preview: !!M.me.preview }));
+  }
+
   // ---- Part 5: flags, the helm strip (Captain tools), Reassign, Confirm tonight's crew
   const chime = makeChime();
   let stopTitle: (() => void) | null = null, knownFlags = new Set<string>(), flagsInit = false;
@@ -353,7 +373,7 @@ function mount(me: Me, src: Source) {
     if (!id.startsWith("cg:") || !cg) return;
     const run = curRun();
     if (state === "running" && run) void cg.end({ runId: run.runId });
-    else void cg.openLaunch({ formatId: id.slice(3), streamId: sid() });
+    else void cg.openLaunch({ formatId: id.slice(3), streamId: sid(), title: M.formats.find((f) => f.id === id.slice(3))?.title || "" });
   }
   /** The Chat Game on stream: public/live.chatGame (any format, so Captains who aren't A2+ can end it here), else a crew-hosted run from private/duty. */
   const curRun = () => { const p = M.pub?.chatGame; return p && p.runId && p.formatId ? { runId: p.runId, formatId: p.formatId } : M.run; };

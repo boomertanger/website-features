@@ -1,6 +1,7 @@
 // Sample data for the Mod Deck (non-production only, signed out): /live/deck?state=off|open|duty|away|prompt|acting|ended|after and ?as=deckhand|lead|captain|owner.
 // Also ?look=crt (the house look), ?paid=1 (the ended view after the Captain confirmed), ?confirm=1 (the Confirm tonight's crew panel, no ?state needed), ?cue=0 (no Chat Games cue). Same shapes as the real reads (mod-deck-data.ts); times are relative to
 // now. Practice only: Clock in, Step away, I'm back, Take the lead, notes and cues all run on this local copy and say so in the toast. Nothing here reaches Firestore or a callable.
+import type { PubLive } from "./model";
 import type { Swap } from "../planner/plan-data";
 import { isProduction } from "../../lib/env.js";
 import { BEATS, type Beat } from "./model";
@@ -12,6 +13,17 @@ export const KINDS: Kind[] = ["off", "open", "duty", "away", "prompt", "acting",
 export type As = "deckhand" | "lead" | "captain" | "owner";
 export const AS_LIST: As[] = ["deckhand", "lead", "captain", "owner"];
 const q = () => new URLSearchParams(location.search);
+/** ?game=: the sample Chat Game on stream (the ids the format modules' previews answer to). */
+function sampleChatGame(): PubLive["chatGame"] {
+  const g = q().get("game");
+  const S: Record<string, NonNullable<PubLive["chatGame"]>> = {
+    questions: { runId: "preview", formatId: "questions", state: "open", round: 1, title: "Questions" },
+    "hot-seat": { runId: "preview-hs", formatId: "hot-seat", state: "open", round: 1, title: "Hot Seat" },
+    wyr: { runId: "preview-wyr", formatId: "would-you-rather", state: "open", round: 2, title: "Would You Rather" },
+    predictions: { runId: "preview-pred", formatId: "predictions", state: "open", round: 1, title: "Predictions" },
+  };
+  return (g && S[g]) || null;
+}
 
 /** Null on production and whenever the address has neither switch. ?as= alone means the live "open" state; ?state= alone means a Captain. */
 export function previewRequest(): { kind: Kind; as: As } | null {
@@ -111,7 +123,10 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     title: kind === "off" ? null : after ? "Late-night backstage" : "Monster Monday", type: after ? "backstage" : "platform", beat: live ? beat : null, beats: live || kind === "ended" ? beats : {}, window: { open: false, closesAt: null, beat: null },
     liveRooms: live ? rooms : [], counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: live ? { total: after ? 96 : 469, byPlatform: after ? {} : { twitch: 212, ytLandscape: 88, ytVertical: 41, tiktok: 128 } } : { total: 0, byPlatform: {} },
     actualStart: kind === "ended" ? now - 201 * MIN : live ? now - 72 * MIN - 40_000 : null, actualEnd: kind === "ended" ? now - 9 * MIN : null, peak: kind === "ended" ? 486 : 0, game: live && !after ? { gameId: "soul-hunt", title: "Soul Hunt", startedAt: now - 47 * MIN } : null, nextGame: null,
-    crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, chatGame: null,
+    crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null,
+    // Chat Games (part 7): ?game=questions|hot-seat|wyr|predictions puts a sample game on stream, ?waiting=1 a locked Prediction waiting for its result
+    chatGame: live && !after ? sampleChatGame() : null,
+    chatGameWaiting: live && !after && q().get("waiting") === "1" ? [{ runId: "preview-wait", title: "Does the chainsaw guy come back before the boss?" }] : [],
     deck: { rooms: duty ? duty.rooms : {} },
   };
 

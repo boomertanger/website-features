@@ -8,10 +8,6 @@ import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
 import { launchHtml, initLaunch } from "../../../../shared/ui/launch.js";
 import type { Ctx } from "./state";
 import { esc, mascotHtml } from "./ui";
-import { loadRunPanel, runPanelHtml, wireRunPanel, type RunPanelData } from "./cg-questions";
-import { watchRun } from "./questions-data";
-import { watchHsPanel, hsPanelHtml, wireHsPanel, type HsPanelData } from "./cg-hotseat";
-import { watchChoicePanel, choicePanelHtml, wireChoicePanel, waitingPanelHtml, wireWaitingPanel, type ChoicePanelData } from "./cg-choices";
 
 interface Fmt { id: string; title: string; icon: string; blurb: string; order: number }
 const CAPTAIN_MS = 15000;
@@ -56,91 +52,25 @@ export function initGames(ctx: Ctx) {
       ? launchHtml({ tiles: tiles as any, label: "Chat Games" })
       : `<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Chat Games switch on here as each one ships: Questions and Hot Seat first.</p></div>`;
     const hint = live ? (g ? `${esc(g.title || "A game")} is on stream` : "One on stream at a time") : "Ready when you are live";
-    // the running format's run controls (Questions: the card on stream, Answered / Skip / Pin next), patched in place by syncRun()
-    const runHost = g && g.formatId === "questions" ? `<div class="lq-runhost" data-qrun-host>${runHtml}</div>`
-      : g && g.formatId === "hot-seat" ? `<div class="lhs-runhost" data-hsrun-host>${hsHtml}</div>`
-      : g && CHOICE_IDS.includes(g.formatId) ? `<div class="lcg-runhost" data-chrun-host>${chHtml}</div>` : "";
-    // locked Predictions waiting for a result (part 5), each openable to settle
-    const waiting = live ? ctx.snap.pub?.chatGameWaiting || [] : [];
-    const waitHost = waiting.length ? `<div class="lcg-waithost" data-cgwait-host>${waitingPanelHtml(waiting, may)}</div>` : "";
-    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + runHost + waitHost });
+    // the running game's run controls and the Waiting panel: btChatGames.mountRun (part 7), in one element that outlives this redraw (syncRunPanel)
+    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + `<div data-cgrun-host></div>` });
   };
 
-  // ---- the Questions run panel: the run doc is watched (cg-watch.ts), so a card change redraws at once; Up next (the lanes, which change as members
-  // ask and vote) is re-read with it and every 15 s while the tab is visible (crew only). Patched in place, no page redraw.
-  let runHtml = "", runFor = "", runData: RunPanelData | null = null, runBusy = false, runTimer = 0, runWatch = "", runStop: (() => void) | null = null;
-  async function syncRun(force = false) {
-    const g = ctx.snap.pub?.chatGame;
-    if (!g || g.formatId !== "questions" || !liveId()) { runHtml = ""; runData = null; runFor = ""; runStop?.(); runStop = null; runWatch = ""; if (runTimer) { clearInterval(runTimer); runTimer = 0; } return; }
-    if (runWatch !== g.runId) { runStop?.(); runWatch = g.runId; let first = true; runStop = watchRun(g.runId, preview, () => { if (first) { first = false; return; } void syncRun(true); }); }
-    const key = `${g.runId}|${g.state}|${g.round}`;
-    if (runBusy || (!force && key === runFor)) return;
-    runBusy = true;
-    try { runData = await loadRunPanel(g.runId, preview); runFor = key; runHtml = runData ? runPanelHtml(runData, canRun()) : ""; }
-    catch { /* keep the last */ }
-    finally { runBusy = false; }
-    const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
-    if (host && host.innerHTML !== runHtml) host.innerHTML = runHtml;
-    if (!runTimer) runTimer = window.setInterval(() => { if (!document.hidden) void syncRun(true); }, 15000);
+  // ---- the run controls (btChatGames.mountRun, part 7; the same panels the Mod Deck mounts): Questions, Hot Seat, Would You Rather and Predictions
+  // follow the run with their own listeners (cg-watch.ts). The panel lives in one element that's moved into each redraw of the launch panel, so a redraw
+  // never restarts them.
+  const runEl = document.createElement("div");
+  runEl.className = "lc-cgrun";
+  function syncRunPanel() {
+    const host = ctx.root.querySelector<HTMLElement>("[data-cgrun-host]");
+    if (host && runEl.parentElement !== host) host.appendChild(runEl);
+    const cg = window.btChatGames as any;
+    if (!cg?.mountRun) return;
+    const live = !!liveId();
+    const g = live && ctx.snap.pub?.streamId === liveId() ? ctx.snap.pub?.chatGame || null : null;
+    cg.mountRun(runEl, { chatGame: g, waiting: live ? ctx.snap.pub?.chatGameWaiting || [] : [], may: live && canRun(), owner: ctx.role === "owner", preview });
   }
-  ctx.after.push(() => {
-    const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
-    if (host) wireRunPanel(host, () => runData?.run || null, () => void syncRun(true), preview);
-    void syncRun();
-  });
-
-  // ---- the Would You Rather and Predictions run panels (part 5): the run doc and staff/{r<n> | p} are watched (cg-watch.ts), not polled
-  const CHOICE_IDS = ["would-you-rather", "predictions"];
-  let chHtml = "", chData: ChoicePanelData | null = null, chFor = "", chStop: (() => void) | null = null, chTimer = 0;
-  const paintCh = () => {
-    chHtml = chData ? choicePanelHtml(chData, canRun()) : "";
-    const host = ctx.root.querySelector<HTMLElement>("[data-chrun-host]");
-    if (host && host.innerHTML !== chHtml) host.innerHTML = chHtml;
-  };
-  function syncCh() {
-    const g = ctx.snap.pub?.chatGame;
-    if (!g || !CHOICE_IDS.includes(g.formatId) || !liveId()) { chStop?.(); chStop = null; chFor = ""; chHtml = ""; chData = null; if (chTimer) { clearInterval(chTimer); chTimer = 0; } return; }
-    if (chFor !== g.runId) { chStop?.(); chFor = g.runId; chStop = watchChoicePanel(g.runId, g.formatId, preview, (p) => { chData = p; paintCh(); }); }
-    else paintCh();
-    if (!chTimer) chTimer = window.setInterval(() => {
-      if (document.hidden) return;
-      const c = chData?.run.closesAt;
-      if (c && !chData?.run.paused) ctx.root.querySelectorAll<HTMLElement>("[data-cg-left]").forEach((t) => { const l = Math.max(0, c - Date.now()); t.textContent = `${Math.floor(l / 60000)}:${String(Math.floor((l % 60000) / 1000)).padStart(2, "0")}`; });
-    }, 1000);
-  }
-  ctx.after.push(() => {
-    const host = ctx.root.querySelector<HTMLElement>("[data-chrun-host]");
-    if (host) wireChoicePanel(host, () => chData?.run || null, preview, () => ctx.role === "owner");
-    const wait = ctx.root.querySelector<HTMLElement>("[data-cgwait-host]");
-    if (wait) wireWaitingPanel(wait, preview);
-    syncCh();
-  });
-
-  // ---- the Hot Seat run panel (part 4): the run doc and the current round doc are watched (cg-watch.ts), not polled; the clock ticks locally
-  let hsHtml = "", hsData: HsPanelData | null = null, hsFor = "", hsStop: (() => void) | null = null, hsTimer = 0;
-  const paintHs = () => {
-    hsHtml = hsData ? hsPanelHtml(hsData, canRun()) : "";
-    const host = ctx.root.querySelector<HTMLElement>("[data-hsrun-host]");
-    if (host && host.innerHTML !== hsHtml) host.innerHTML = hsHtml;
-  };
-  function syncHs() {
-    const g = ctx.snap.pub?.chatGame;
-    if (!g || g.formatId !== "hot-seat" || !liveId()) {
-      hsStop?.(); hsStop = null; hsFor = ""; hsHtml = ""; hsData = null; if (hsTimer) { clearInterval(hsTimer); hsTimer = 0; } return;
-    }
-    if (hsFor !== g.runId) { hsStop?.(); hsFor = g.runId; hsStop = watchHsPanel(g.runId, preview, (p) => { hsData = p; paintHs(); }); }
-    else paintHs();
-    if (!hsTimer) hsTimer = window.setInterval(() => {
-      if (document.hidden) return;
-      const t = ctx.root.querySelector<HTMLElement>("[data-hs-left]"), c = hsData?.run.closesAt;
-      if (t && c) t.textContent = `${Math.floor(Math.max(0, c - Date.now()) / 60000)}:${String(Math.floor((Math.max(0, c - Date.now()) % 60000) / 1000)).padStart(2, "0")}`;
-    }, 1000);
-  }
-  ctx.after.push(() => {
-    const host = ctx.root.querySelector<HTMLElement>("[data-hsrun-host]");
-    if (host) wireHsPanel(host, () => hsData?.run || null, () => {}, preview);   // the listeners bring every change
-    syncHs();
-  });
+  ctx.after.push(syncRunPanel);
 
   ctx.after.push(() => {
     const slot = ctx.root.querySelector<HTMLElement>('[data-slot="launch"]');
@@ -162,5 +92,5 @@ export function initGames(ctx: Ctx) {
   }
 
   void loadFormats().then(() => ctx.render());
-  void import("./chatgames-site");
+  void import("./chatgames-site").then(() => syncRunPanel());
 }
