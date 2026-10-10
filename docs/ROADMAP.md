@@ -26,6 +26,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
+| 18 | Service Hub | In progress (docs and manifests) | Service Hub |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -225,6 +226,23 @@ Status: **Built (parts 1-6, Oct 10, 2026); staging set-up pending.** Parts: 1 do
 
 ### 17. Nav redesign
 Goal: regroup the header and phone navigation once the remaining pages are built (Tech Stack sits in Community for now).
+
+### 18. Service Hub
+Goal: one list of every service on the site and stream, kept up to date automatically, so the owner can see at a glance which services have feedback, questions, videos, testing, bugs and ideas, and members can rate and test each one (and every feature page ends with one strip to rate it or talk back).
+Spec: [docs/specs/service-hub.md](specs/service-hub.md) (confirmed Oct 10, 2026, with the Talk Back merge); mockup `docs/design/mockups/service-hub-round-1.html` (picks in spec §14). Talk Back's page side moved here (`docs/specs/talk-back.md`, "Split decided Oct 10, 2026").
+Status: **In progress (docs and manifests).** Parts, one commit each (spec §13):
+1. Docs: the spec, the approved mockups, the Talk Back split note, this entry.
+2. Manifests for every existing service (`services/<id>.json`, with `sections`, `talkBack`, `help`), the build step (`/services.json` with a build hash), `check-services.js`, the CLAUDE.md rule and the new-feature checklist line.
+3. Backend: data, callables, triggers, rules, indexes, Night Shift and Trophy Room hooks, Mod Machina tasks; staging deploy (only the changed functions).
+4. Bug Zapper and Feature Lab: the `serviceId` link.
+5. Kit pieces (incl. `.bt-talkback` and `.bt-ask-pin`).
+6. `/admin/services` (Grid, Board, Map, Needs attention, detail) and the /admin card.
+7. `/services`, the page strip with its Rate half, and the nav entry (the Talk back half stays off until part 10).
+8. `/services/how-it-works` (after its round 2 mockup).
+9. Growth collector video matching.
+10. Talk Back's Hotline Boom side (Hotline Boom part 2), then the Talk back half, the Ask pins and the questions column.
+Depends on: nothing for parts 1-9; part 10 waits for Hotline Boom's staging tests (Talk Back).
+Kickoff: "Start workstream 18 (Service Hub) from docs/ROADMAP.md."
 
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.

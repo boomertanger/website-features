@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 1: the spec, the round 1 mockup, the Talk Back spec with its split note, and ROADMAP workstream 18.
 Live drops part 7: test plan, spec status, design-system decision, ROADMAP.
 Live drops part 6: Recruit Rush reward badge picker and the one-tap drop prompt.
 Live drops part 5: site-wide drop banner, /live drop card, stream view callout, drop badges no longer 'Coming soon'.
