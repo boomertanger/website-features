@@ -11,7 +11,7 @@ import { toast } from "../../../../shared/ui/toast.js";
 import previewRows from "../../data/preview-broken-links.json";
 
 type Row = { id: string; path: string; count: number; lastAt: number; referrerHosts: string[] };
-const TOP = 20, SCAN = 200;
+const TOP = 20, SCAN = 100;   // read the 100 most reported, show the 20 most reported open ones
 const esc = (v: unknown) => escapeHtml(String(v ?? ""));
 const card = document.querySelector<HTMLElement>("[data-bl-card]");
 
