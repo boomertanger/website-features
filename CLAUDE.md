@@ -87,6 +87,12 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
   staging first. A first-ever 2nd-gen Firestore-trigger deploy may fail once with an
   Eventarc/IAM error — retry after a couple of minutes. Confirm functions in the
   Firebase console; don't trust the terminal summary alone.
+- A change to a module loaded by every function (like `rewards/grant.js`) redeploys all
+  functions. Deploy all `lib/live` functions together first, then the rest in batches of
+  about 15 with 3-minute pauses. The CPU quota can block a batch even when the function
+  list shows ACTIVE: confirm the revision each function serves (Cloud Run
+  latestReadyRevision = latestCreatedRevision, created by this deploy). Plan the same
+  batching for the production launch deploy.
 
 ## Live and crew backend (learned in Mod Machina phase 3)
 - The duty state crew can read is `streams/{id}/private/duty`. `private/control` stays owner and A2+: it holds the check-in word.
