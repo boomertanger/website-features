@@ -85,7 +85,7 @@ function startingScene(v: ObsView, wide: boolean) {
 
 /** Recruit Rush (Mod Machina §17a): the feed's recruitRush, or the staging preview's ?rush=0|14|20. Null when off. */
 const rushOf = (v: ObsView): PubRush | null => { const pv = previewRush(); return pv !== undefined ? pv : rushFrom(v.recruitRush); };
-/** The slim gold bar in Live stats and Break (on the wide Break it takes the rooms list's place, which the fixed-height panel can't fit both of): "RECRUIT RUSH", the meter, "14 / 20". Numbers are set in place (numbers()). */
+/** The slim gold bar in Live stats and Break (on the wide Break only while no check-in window is open: the rooms list has that space while one is): "RECRUIT RUSH", the meter, "14 / 20". Numbers are set in place (numbers()). */
 const rushBar = (v: ObsView) => (rushOf(v) ? `<div class="obs-rush" data-rush><div class="obs-rush-top"><b>RECRUIT RUSH</b><span data-rush-n>0 / 0</span></div><div class="bt-meter bt-meter--gold"><div class="bt-meter-track"><div class="bt-meter-fill" data-rush-fill style="width:0%"></div></div></div></div>` : "");
 
 function statsScene(v: ObsView, wide: boolean) {
@@ -102,9 +102,9 @@ function breakScene(v: ObsView, wide: boolean) {
   const name = BEAT_NAME[v.window?.beat || v.beat || "break1"] || "Break";
   const title = open ? `${name} · check-in is open` : `${name} · check-in opens soon`;
   const middle = open
-    ? `<div class="obs-lab">Type this word at <b class="obs-w">boomertanger.com/live</b></div>${wordHtml(v, wide ? 112 : 96)}${ringCount()}${wide && !rushOf(v) ? roomsHtml(v) : ""}${firstHtml()}`
+    ? `<div class="obs-lab">Type this word at <b class="obs-w">boomertanger.com/live</b></div>${wordHtml(v, wide ? 112 : 96)}${ringCount()}${wide ? roomsHtml(v) : ""}${firstHtml()}`
     : `<div class="obs-sub">Back in a moment. Check in at <b class="obs-w">boomertanger.com/live</b> when the word goes up.</div><div class="bt-sv-count bt-sv-amber"><span data-ci>0</span><small>checked in tonight</small></div>`;
-  const panel = `<div class="obs-stack">${head(title)}${middle}${rushBar(v)}</div>`;
+  const panel = `<div class="obs-stack">${head(title)}${middle}${wide && open ? "" : rushBar(v)}</div>`;
   return wide
     ? `<div class="bt-sv-cam" style="left:90px;top:120px;width:880px;height:760px">Your camera</div><div class="bt-sv-panel obs-on" style="left:1040px;top:60px;width:800px;height:960px;padding:50px 60px">${panel}</div><div class="obs-rail" style="left:90px;bottom:40px">${beatsRail(v)}</div>`
     : `<div class="bt-sv-cam" style="left:70px;top:190px;width:780px;height:460px">Your camera</div><div class="bt-sv-panel obs-on" style="left:70px;top:700px;width:780px;padding:44px 48px">${panel}</div>`;

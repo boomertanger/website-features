@@ -1,4 +1,4 @@
-// The staging-only demo of the stream view (docs/specs/control-room.md §8): /live/obs?demo=1&layout=wide|tall&scene=starting|stats|break|side|brb|ending&look=hull|crt
+// The staging-only demo of the stream view (docs/specs/control-room.md §8): /live/obs?demo=1&layout=wide|tall&scene=starting|stats|break|side|brb|ending&look=hull|crt&window=0
 // with sample data, no key and no request. Refused on production (obs.ts never calls this there: the page stays blank). Optional &guides=1 draws the
 // platforms' phone UI guides on the tall layout, &bg=1 a stand-in for the game picture behind the transparent canvas. The numbers move on their own like a
 // real window: check-ins climb, first-ins arrive one by one, and the 5 minute window and the Be right back timer start over when they run out.
@@ -24,7 +24,7 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
   const view = (): ObsView => {
     const now = Date.now(), ended = scene === "ending";
     if (now > windowEnd) windowEnd = now + 5 * MIN;
-    const open = scene === "break" || scene === "side";
+    const open = (scene === "break" || scene === "side") && params.get("window") !== "0";   // &window=0: the Break before the window opens
     const started = now - (2 * 3600 + 14 * 60 + 37) * 1000;
     return {
       state: scene === "starting" ? "starting" : ended ? "ended" : "live", look, scene: (scene === "side" ? "break-side" : scene) as ObsView["scene"], streamId: "demo", title: "Monster Monday",
