@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: 404 page ("the workshop") spec (docs/specs/not-found.md) and the approved mockup (docs/design/mockups/not-found-workshop.html); ROADMAP line, building on staging
 - fix: Mod Deck hero at phone width (the mascot art sits inside the hero at 640 px and below; desktop unchanged); launch.js header comment says one tile per Chat Games format
 - Chat Games part 8: docs wrap-up (design-system §5 Chat Games pieces and the §6 modules, §8w Chat Games decisions; ROADMAP 5b marked built through part 7 with what's next, the follow-ups and a Chat Games production checklist; CLAUDE.md Chat Games section; mod-machina §11 and control-room §9 point at chat-games.md, the stray "working name" lines fixed; UI kit: .bt-qcard cleared and archived, the Hot Seat vote wording on .bt-choice)
 - Chat Games part 7: Mod Deck hookup (btChatGames.mountRun: the run panels and the Waiting panel shared by /live/control and the Deck, for the Captain and the owner; the Deck's Chat Games mod tools for anyone on duty: held and Tonight questions, Hot Seat answers with Hide, Call it, an empty state; launch dialogs close other overlays; permission tests; functions/scripts/cue-sample.js, staging only)
