@@ -17,7 +17,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 7 | Trophy Room (rewards) | Done on staging (waiting sources aside) | Community services |
 | 7b | Night Shift (was Fun Factory) | v1 done on staging; v2 later | Community services |
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
-| 9 | Mod Machina | Phase 1 built and tested on staging (Oct 7); phases 2 to 4 later | Community services |
+| 9 | Mod Machina | Phase 1 tested on staging (Oct 7); phase 3 (the Mod Deck) built on staging (Oct 2026), real tests pending; phase 4 lives in Chat Games (5b) | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
@@ -150,7 +150,7 @@ Status: **Phase 1 (crew core, spec section 15) is built and tested on staging (O
 Next, in order:
 1. **Header nav redesign (done, pushed Oct 7).** The header is now Watch, Play and Community menus plus Shop (spec `docs/specs/header-nav.md`, mockup `docs/design/mockups/header-nav.html`), each with a live feature tile, and Crew is back in Community. The phone More sheet is grouped the same way; Crew also stays in the account menu and the footer. Bug Zapper, Feature Lab and Horror Monthly join Community when their modules are enabled.
 2. **Phase 2: Scream Planner seats** (the Planner's backend provides `dutySignUp` / `dutyDrop` / `dutyConfirm`, availability and reminders) and the stream crew field (`crew: { captain, chats: { twitch, ytLandscape, ytVertical, tiktok: { lead, deckhands[] } }, caps }`, spec section 16a): sign-ups, the swap board, reliability, reminders.
-3. **Phase 3: Control Room / Mod Deck**: clock in, handoffs, duty Gears, per-room check-in codes, YouTube moderator sync, Recruit Rush, and the activity rules switched on (`crew.activityRules`; the HQ time card stops saying "Starts with stream duty").
+3. **Phase 3: the Mod Deck: built on staging (Oct 2026), real staging tests pending** (spec section 17a, eight parts: the swap board, the duty backend and records, the Captain and flags, crew notes, /live/deck, Recruit Rush, the activity rules with a practice month and HQ notices). YouTube moderator sync stays later. **Next:** live drops (Trophy Room, rewards.md §10a), so Drop a badge can join the Deck and the Recruit Rush reward can become a drop for everyone checked in.
 4. **Phase 4: Chat Games, now part of workstream 5b (Chat Games).** The pool, crew votes, Planner slot and Play panel (Dead Air and Scream Off first among the crew-hosted games) are built there, after the Mod Deck; Academy module 8 and the Captain's course content go live with them.
 Depends on: Badges.
 Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
@@ -212,6 +212,10 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Walk through every item in docs/testing/control-room-test-plan.md on staging first, and note whether TikTok LIVE Studio accepts a browser source.
 
 ### Mod Machina in production
+- [ ] Deploy rules and indexes first (the TTL fields for crew notes, flags, notices and rushJoins), then all functions together: anything that rebuilds public/live (every function in lib/live) or the crew boards (every Gears grant) must be on the new code at the same time. Watch the Cloud Run CPU quota per region (staging hit it on the full deploy, Oct 2026).
+- [ ] Check youtubeBoost in the crew settings (/admin/crew, 1.5 by default).
+- [ ] Turn on the activity rules on production from /admin/crew with the start month = the first month after launch (that month is the practice month).
+- [ ] Run `functions/scripts/crew-monthly-dry-run.js --project prod` before the first 1st of the month the rules count (and `--as-if-on` before turning them on).
 - [ ] Connect the Twitch broadcaster token for mod sync (twitchSync is off until then): store sites/boomertanger/private/twitchBroadcaster { accessToken, refreshToken, accessExpiresAt, scope incl. channel:manage:moderators }, then set crew/main.twitchSync = true in Crew settings. Until then every Twitch mod change is a to-do on /admin/crew.
 - [ ] Admin Academy text before the first Steward is invited (outline at the bottom of docs/specs/crew-academy.md; the hub shows it as a locked card).
 - [ ] Deploy the crew functions and rules to production (rules first, separately; staging done) and check crewNightly, crewReferralSweep and crewMonthlyAwards are scheduled in the production console.
@@ -235,6 +239,14 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
+
+### Real tests pending (staging)
+Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:
+- [ ] W7 Swap board
+- [ ] W8 Deck duty loop
+- [ ] W9 Captain and flags
+- [ ] W10 Recruit Rush
+- [ ] W11 Activity rules
 
 ### Code health
 - [ ] Clear the 78 older tsc errors across site features (factory, vault and others) so the type check is clean before launch.

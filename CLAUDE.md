@@ -88,6 +88,12 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
   Eventarc/IAM error — retry after a couple of minutes. Confirm functions in the
   Firebase console; don't trust the terminal summary alone.
 
+## Live and crew backend (learned in Mod Machina phase 3)
+- The duty state crew can read is `streams/{id}/private/duty`. `private/control` stays owner and A2+: it holds the check-in word.
+- Every function in `functions/lib/live` rebuilds `public/live`, and every Gears grant rebuilds the crew boards. When either shape changes, deploy all of them together (not just the functions you touched), or old copies write the old shape back.
+- Mod Deck files are `site/src/scripts/live/mod-deck*.ts` and `styles/mod-deck.css`; `scripts/live/deck.ts` is the Stream Deck key card on /live/control.
+- The activity rules switch only through `crewSetRules` (it sets the start and practice months); `crewSaveSettings` refuses `activityRules`.
+
 ## After every push to dev
 1. `git rev-parse HEAD`, and confirm it matches
    `git ls-remote https://github.com/boomertanger/website-features.git dev`.

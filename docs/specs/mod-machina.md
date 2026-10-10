@@ -34,7 +34,7 @@ Design rules: volunteers first (life comes first, no guilt for stepping away); r
 |---|---|---|---|
 | **M1 Initiate** | Just approved, in training | Deckhand duty; mod on their own rooms; Academy | Core Academy modules 1-6 · 2 ride-alongs signed off by a Room Lead · 30 days · showed up for 80% of duties |
 | **M2 Watcher** | Full mod | + Room Lead duty, task board, vouch in the queue, award badges up to Uncommon | 90 days as Watcher · 15 duties, 5 as Room Lead · Safety module · no active strikes |
-| **M3 Warden** | Senior mod | + Stream Captain, award up to Rare, live drops while Captain, mentor an Initiate, draft Night Shift | 6 months as Warden · 40 duties, 10 as Captain · mentored 2 Initiates to Watcher · owner invite |
+| **M3 Warden** | Senior mod | + Stream Captain, award up to Rare, live drops while Captain, mentor an Initiate, draft Night Shift | 6 months as Warden · 40 duties, 10 as Captain · mentored 2 Initiates to Watcher · no active strikes · owner invite |
 | **M4 Sentinel** | Top of the mod ladder | + confirm crew rosters, shortlist the queue, post tasks | Eligible to be invited to the admin ladder |
 
 ### 3b. Admin ladder (invitation only)
@@ -336,7 +336,7 @@ Triggers: referral activation (on the first qualifying event), presence → duty
 ## 15. Phasing
 1. **Crew core** (needs only accounts + Trophy Room core). Until stream duty exists (phase 3): the monthly activity rules stay off (site setting `crew.activityRules = false`, the time card says "Starts with stream duty"); the join requirement "3 stream check-ins" and the Fan Favourite voter rule "a stream check-in that month" use Night Shift daily check-ins instead (3 in the last 30 days / 1 that month), owner can waive. Includes: grades and status, crew profiles and platform preferences, the queue (/crew/join, vouch, owner decision), Academy with modules 1-7 and 9, task board + Gears + crew board, referral links, monthly awards, /crew and how-it-works pages, /admin/crew with coverage map (preferences only at first). Twitch moderator sync.
 2. **With the Schedule Planner**: seats, sign-ups, swap board, reliability, reminders.
-3. **With the Control Room: the Mod Deck (confirmed Oct 9, 2026, see section 17a)**: swap board, /live/deck, clock in, handoffs, duty Gears, activity rules on, Recruit Rush. YouTube moderator sync stays later (section 17a, out of scope).
+3. **With the Control Room: the Mod Deck (confirmed Oct 9, 2026, see section 17a)**: swap board, /live/deck, clock in, handoffs, duty Gears, activity rules on, Recruit Rush. YouTube moderator sync stays later (section 17a, out of scope). **Status: built on staging (Oct 2026); real staging tests pending** (docs/testing/control-room-test-plan.md, W7 to W11).
 4. **Chat Games: now workstream 5b (ROADMAP).** The pool and crew votes, Planner slot, Play panel; Dead Air + Scream Off, then Bingo + Body Count; module 8 and the Captain's course. Built in 5b in the order set in section 11 (Questions and Hot Seat, quick formats, then crew-hosted games after the Mod Deck from phase 3).
 5. **Later**: Houses, a chat bot for !join / !code on Twitch and YouTube, Stream Deck buttons.
 
@@ -357,6 +357,8 @@ The confirmed stream object (`docs/specs/stream-object.md`) keeps crew per platf
 - Night Shift: mods keep racing with members (Oct 3 decision); Gears never add to season XP.
 
 ## 17a. Phase 3: the Mod Deck (confirmed Oct 9, 2026)
+**Status: built on staging (Oct 2026); real staging tests pending** (all eight parts; walk-throughs W7 to W11 in docs/testing/control-room-test-plan.md). The activity rules are built but off until the owner turns them on.
+
 Source: the Mod Deck spec, confirmed Oct 9, 2026 (Glenn Bowering); approved mockups `docs/design/mockups/mod-deck.html` (H1 helm strip, P1 lantern prompt, R1 Recruit Rush goal meter). Eight build parts, listed at the end of this section. This is phase 3 of section 15.
 
 ### Summary
