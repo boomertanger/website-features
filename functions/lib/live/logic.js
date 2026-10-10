@@ -553,13 +553,13 @@ function publicRush(rush, count) {
 /**
  * Builds the public/live summary (§13). Input:
  *   stream, window (only open + closesAt + beat are copied, never the word), counters (sumShards result or shards[]),
- *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], activity { kind, title, status } | null,
+ *   viewers { twitch, ytLandscape, ytVertical, tiktok }, peak, onDuty [handles clocked in], chatGame (private/control.chatGame: { runId, formatId, state, round, title } | null),
  *   look ("hull" | "crt"), nowMs, firstIn [handles of the current beat's first check-ins, first three kept],
  *   grades { <handle>: { track, grade } } (the public crew mirror, public/crew; only crew shown on the page are copied)
  * Output: state (off | live | backstage | ended), streamId, title, type, audience, actualStart, actualEnd,
  * beat (current), beats { <beat>: { status: done | now | next | skipped, checkins } }, window { open, closesAt, beat },
  * counts { total, byBeat, byRoom }, viewers { total, byPlatform }, peak, game, nextGame, crew { captain, chats, onDuty }
- * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, activity, look, updatedAt. "off" is the waiting room (no stream fields).
+ * (handles only, plus grades [{ handle, track, grade }] for those people), firstIn (up to three public handles) and firstInBeat, chatGame (the active Chat Games run, live only), look, updatedAt. "off" is the waiting room (no stream fields).
  */
 /**
  * The Deck's room coverage for public/live (Mod Machina phase 3 part 2): { rooms: { room: { lead: handle|null, deckhands: n, covered } } }. Handles only and counts; only the known rooms; anything else
@@ -576,8 +576,16 @@ function deckOf(deck) {
   return { rooms };
 }
 
+/** The Chat Games pointer for public/live (docs/specs/chat-games.md §3): { runId, formatId, state, round, title } of the active run, copied from
+ *  private/control.chatGame. Only these five fields leave; anything else is dropped. */
+const CG_STATES = ["ready", "open", "locked", "revealed"];
+function chatGameOf(p) {
+  if (!p || typeof p !== "object" || typeof p.runId !== "string" || !p.runId || typeof p.formatId !== "string" || !CG_STATES.includes(p.state)) return null;
+  return { runId: p.runId, formatId: p.formatId, state: p.state, round: Number.isInteger(p.round) ? p.round : 0, title: typeof p.title === "string" ? p.title : null };
+}
+
 function buildPublicLive(input) {
-  const { stream, window: win, viewers, peak, onDuty, activity, look, nowMs } = input;
+  const { stream, window: win, viewers, peak, onDuty, chatGame, look, nowMs } = input;
   const counters = Array.isArray(input.counters) ? sumShards(input.counters) : input.counters || { total: 0, byBeat: {}, byRoom: {} };
   const live = !!stream && stream.state === "live";
   const state = !stream ? "off" : live ? (stream.type === "backstage" ? "backstage" : "live") : stream.state === "ended" ? "ended" : "off";
@@ -585,7 +593,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, activity: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -635,7 +643,7 @@ function buildPublicLive(input) {
     deck: live ? deckOf(input.deck) : { rooms: {} },
     firstIn,
     firstInBeat: live && firstIn.length ? (open ? win.beat : currentBeat(sb)) : null,
-    activity: activity ? { kind: String(activity.kind || ""), title: activity.title == null ? null : String(activity.title), status: activity.status == null ? null : String(activity.status) } : null,
+    chatGame: live ? chatGameOf(chatGame) : null,
     ...(publicRush(input.rush, input.rush && input.rush.count) ? { recruitRush: publicRush(input.rush, input.rush.count) } : {}),
   };
 }

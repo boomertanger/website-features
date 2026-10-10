@@ -67,14 +67,14 @@ function liveSnapshot(kind: Kind): PubLive {
     nextGame: e || backstage ? null : { gameId: "lethal-night", title: "Lethal Night" },
     crew: { captain: (backstage ? crew : mc).captain, chats, onDuty: [(backstage ? crew : mc).captain], grades: GRADES },
     firstIn: e ? [] : raw.firstIn.slice(0, 3), firstInBeat: e ? null : beat,
-    activity: null,
+    chatGame: null,
   };
 }
 
 function snapshot(kind: Kind): PubLive {
   if (kind === "off" || kind === "soon") {
     return { state: "off", look: q().get("look") === "crt" ? "crt" : "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} },
-      viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null };
+      viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, chatGame: null };
   }
   return liveSnapshot(kind);
 }

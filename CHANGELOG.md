@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Chat Games part 1: engine, registry, cue contract, launch tiles (functions/lib/chatGames: run state machine, chatGameStart/Swap/End/Control/Cue, chatGameDeadline Cloud Task + liveTick sweep, Stop clean-up; public/live.chatGame via private/control; rules; seed script; shared/ui/chatgames.js; launch tiles on /live/control, Play panel on /live, scene slot on /live/obs, Deck running tile)
 - docs: Chat Games confirmed spec (docs/specs/chat-games.md) and approved mockups (chat-games-batch-1.html, chat-games-how-it-works.html)
 - docs: Hotline Boom part 6, docs/testing/hotline-boom-test-plan.md (nine staging walk-throughs, phones and reduced motion, switching email on later)
 - site: Hotline Boom part 5, /contact/how-it-works (H1: the working dial and LCD, eight TocLayout chapters with stage scenes, the lanes flow, the .ai-jr--4 journey, the line finder, flip medals, door cards, rules placard, Ask BOOMBOT, Ready to dial in?)

@@ -606,12 +606,42 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
-      // ---------- Bug Zapper (docs/specs/bug-zapper.md §3, §5) ----------
-      // Written ONLY by Cloud Functions (functions/lib/bugs). A report is public unless it is private (a security or privacy problem) or hidden: its
-      // reporter reads their own if it isn't hidden, staff read everything. A report's staff/info (device, screenshot record) and its thread are for the
-      // reporter and staff only (a reply is also gone for the reporter once hidden). Clients query public reports with private == false and hidden == false,
-      // a member's own with by.uid == their uid and hidden == false. "Bit me too" records, the members' own lists and the post tokens are closed (a member
-      // reads only their own myMeToos). Every write is false.
+      // ---------- Chat Games (docs/specs/chat-games.md §12; part 1: the registry and runs) ----------
+      // Everything is written by Cloud Functions (lib/chatGames); no client writes. Formats, runs and rounds are public (answers and running
+      // tallies never sit in them before the reveal: they live in secret, which nobody reads). Crew (mods and admins, by claims) read the staff
+      // mirror and the cues; a member reads their own play. Every other path under chatGames is denied until its part ships (packs, questions,
+      // volunteers).
+      match /chatGames/main/formats/{formatId} {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /chatGames/main/runs/{runId} {
+        allow read: if true;
+        allow write: if false;
+        match /rounds/{n} {
+          allow read: if true;
+          allow write: if false;
+        }
+        match /secret/{docId} {
+          allow read, write: if false;
+        }
+        match /staff/{docId} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+        }
+        match /plays/{uid} {
+          allow read: if request.auth != null && (request.auth.uid == uid || isSiteStaff(siteId));
+          allow write: if false;
+        }
+        match /cues/{cueId} {
+          allow read: if isSiteStaff(siteId);
+          allow write: if false;
+        }
+      }
+      match /chatGames/{document=**} {
+        allow read, write: if false;
+      }
+
       // ---------- Hotline Boom (docs/specs/hotline-boom.md §7) ----------
       // The settings doc is public (reply time and which lines are open; nothing private). Team-lane messages and their notes: the owner, or a
       // signed-in caller whose crewGrade claim is in hotline/main.inboxGrades (default A2, A3; mods never). Owner-lane messages and notes: the
@@ -653,6 +683,12 @@ service cloud.firestore {
         allow read, write: if false;
       }
 
+      // ---------- Bug Zapper (docs/specs/bug-zapper.md §3, §5) ----------
+      // Written ONLY by Cloud Functions (functions/lib/bugs). A report is public unless it is private (a security or privacy problem) or hidden: its
+      // reporter reads their own if it isn't hidden, staff read everything. A report's staff/info (device, screenshot record) and its thread are for the
+      // reporter and staff only (a reply is also gone for the reporter once hidden). Clients query public reports with private == false and hidden == false,
+      // a member's own with by.uid == their uid and hidden == false. "Bit me too" records, the members' own lists and the post tokens are closed (a member
+      // reads only their own myMeToos). Every write is false.
       match /bugs/main/reports/{reportId} {
         allow read: if (resource.data.hidden == false
             && (resource.data.private == false || (request.auth != null && request.auth.uid == resource.data.by.uid)))

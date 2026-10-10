@@ -518,7 +518,7 @@ const sums = L.sumShards(shards);
 assert.deepEqual(sums, { total: 9, byBeat: { start: 7, break1: 2 }, byRoom: { twitch: 6, ytLandscape: 1, ytVertical: 2 } });
 assert.deepEqual(L.sumShards(null), { total: 0, byBeat: {}, byRoom: {} });
 const winEnd = { beat: "end", word: WORD, openedAt: at(31), closesAt: at(36), lengthMinutes: 5 };
-const pub = L.buildPublicLive({ stream: fullStream, window: winEnd, counters: shards, viewers: { twitch: 120, ytLandscape: 30, ytVertical: 5, tiktok: 0, youtube: 50, discord: 99 }, peak: 160, onDuty: ["Ana", { handle: "Bo", uid: "u" }], activity: { kind: "questions", title: "Questions", status: "running", secretNote: "x" }, look: "crt", nowMs: at(32) });
+const pub = L.buildPublicLive({ stream: fullStream, window: winEnd, counters: shards, viewers: { twitch: 120, ytLandscape: 30, ytVertical: 5, tiktok: 0, youtube: 50, discord: 99 }, peak: 160, onDuty: ["Ana", { handle: "Bo", uid: "u" }], chatGame: { runId: "r1", formatId: "hot-seat", state: "open", round: 1, title: "Hot Seat", secret: "x" }, look: "crt", nowMs: at(32) });
 assert.equal(pub.state, "live");
 assert.equal(pub.streamId, "s1");
 assert.equal(pub.title, "MONSTER MONDAY");
@@ -532,7 +532,7 @@ assert.equal(pub.peak, 160);
 assert.deepEqual(pub.crew, { captain: "Cap", chats: { twitch: { lead: "Ana", deckhands: ["Bo", "Cy"] }, tiktok: { lead: null, deckhands: [] } }, onDuty: ["Ana", "Bo"], grades: [] });
 assert.deepEqual(pub.firstIn, []);
 assert.equal(pub.firstInBeat, null);
-assert.deepEqual(pub.activity, { kind: "questions", title: "Questions", status: "running" });
+assert.deepEqual(pub.chatGame, { runId: "r1", formatId: "hot-seat", state: "open", round: 1, title: "Hot Seat" });   // only the five pointer fields leave
 assert.equal(pub.look, "crt");
 assert.equal(pub.updatedAt, at(32));
 assert.deepEqual(pub.game, null, "no open game segment at the End beat in this fixture");

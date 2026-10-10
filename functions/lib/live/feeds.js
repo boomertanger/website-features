@@ -176,6 +176,8 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     patch.viewers = viewers; patch.viewersAt = at; patch.peak = Math.max(control.peak || 0, total);
     await ctx.controlRef(stream.id).update(patch);
     // Mod Machina phase 3 part 2: prompts expire, breaks end, the Captain seat is kept filled, quiet leads are nudged (reads one document and does nothing when nobody is on duty)
+    // Chat Games: close any deadline a Cloud Task missed (the backstop for chatGameDeadline)
+    if (ctx.chatGames) { try { out.chatGames = await ctx.chatGames.sweep(stream); } catch (err) { out.errors.push("chatGames"); console.error("liveTick: chat games sweep failed", String((err && err.message) || err).slice(0, 160)); } }
     if (ctx.duty) { try { out.duty = await ctx.duty.tick(stream, at); } catch (err) { out.errors.push("duty"); console.error("liveTick: duty failed", String((err && err.message) || err).slice(0, 160)); } }
     // "Waiting for YouTube…": ask again every 15 seconds for the rest of this minute (control.yt.status stays "waiting" until found)
     if ((control.yt || {}).status === "waiting") {
@@ -213,7 +215,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     const counts = L.sumShards(shards);
     const pub = L.buildPublicLive({
       stream: stream.state === "scheduled" ? { ...stream, state: "scheduled" } : { ...stream, beats: Object.fromEntries(Object.entries(stream.beats || {}).map(([k, b]) => [k, { ...b, checkins: counts.byBeat[k] != null ? counts.byBeat[k] : b.checkins || 0 }])) },
-      window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), activity: control.activity || null, look: main.look, nowMs,
+      window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, look: main.look, nowMs,
       rush: stream.state === "scheduled" ? null : await ctx.rushFor(stream),
     });
     const scene = L.autoScene({ stream, window: control.window, pinned: control.pinned, nowMs });

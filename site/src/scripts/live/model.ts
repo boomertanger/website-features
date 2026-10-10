@@ -33,7 +33,8 @@ export interface PubLive {
   crew: { captain: string | null; chats: Record<string, { lead: string | null; deckhands: string[] }>; onDuty: string[]; /** Grade of each person shown, from the public crew mirror. */ grades?: { handle: string; track: "mod" | "admin"; grade: number }[] };
   /** The current beat's first three check-ins (public handles) and the beat they are for. */
   firstIn?: string[]; firstInBeat?: Beat | null;
-  activity: { kind: string; title: string | null; status: string | null } | null;
+  /** The active Chat Games run (docs/specs/chat-games.md §3): copied from private/control.chatGame while live. */
+  chatGame: { runId: string; formatId: string; state: "ready" | "open" | "locked" | "revealed"; round: number; title: string | null } | null;
   /** Recruit Rush (Mod Machina §17a): only while a Rush is on; the main stream's during an after-show. */
   recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null };
 }

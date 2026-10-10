@@ -259,6 +259,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     await ctx.settle(s.id);
     // Mod Machina phase 3 part 2: everyone is clocked out, seats nobody clocked into become no-shows, the Captain and owner get "Confirm tonight's crew"
     if (ctx.duty) { try { await ctx.duty.closeOut(s.id, patch.actualEnd != null ? ctx.ms(patch.actualEnd) : now()); } catch (err) { console.error("live: duty close-out failed", String((err && err.message) || err).slice(0, 140)); } }
+    // Chat Games (docs/specs/chat-games.md §3): open runs are voided, both pointers cleared, the night's results written to streams/{id}.chatGames
+    if (ctx.chatGames) { try { await ctx.chatGames.closeOut(s.id); } catch (err) { console.error("live: chat games close-out failed", String((err && err.message) || err).slice(0, 140)); } }
     await ctx.activity("stream-ended", `${s.title || "The stream"} has ended`, { streamId: s.id });
     return { sum, peak };
   }

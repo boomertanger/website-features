@@ -351,14 +351,11 @@ function drawWatch(c: PubCtx) {
     return crPanelHtml({ id: "lp-watch", title: "Watch on", icon: "watch", bodyHtml: links ? `<div class="lp-watch">${links}</div>` : `<p class="lp-note">Watch right here on the page.</p>` });
   });
 }
+/** The Play panel: Chat Games renders it (shared/ui/chatgames.js mountPlay, from public/live.chatGame). */
 function drawPlay(c: PubCtx) {
-  const a = c.pub.activity;
-  patch("play", `${a?.kind}|${a?.title}|${a?.status}`, () => crPanelHtml({
-    id: "lp-play", title: a ? "On now" : "Play", icon: "questions",
-    bodyHtml: a
-      ? `<div class="lp-activity"><span class="bt-live-tag"><i></i>${esc(a.kind || "Live")}</span><p>${esc(a.title || "A live activity is running.")}</p></div>`
-      : `<div class="lp-activity">${mascotHtml()}<div><b>Questions and Hot Seat are coming soon</b><p>Until then, say it in chat. The crew is listening.</p></div></div>`,
-  }));
+  const g = c.pub.chatGame;
+  patch("play", `${g?.runId}|${g?.state}|${g?.round}`, () => crPanelHtml({ id: "lp-play", title: g ? "On now" : "Play", icon: "questions", bodyHtml: `<div data-cg-play></div>` }),
+    (el) => { const host = el.querySelector<HTMLElement>("[data-cg-play]"); if (host) void import("./chatgames-site").then(({ chatGames }) => chatGames.mountPlay?.(host, { chatGame: g })); });
 }
 
 /* ------------------------------------------------------------------ the part */

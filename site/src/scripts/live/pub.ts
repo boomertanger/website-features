@@ -28,7 +28,7 @@ document.querySelectorAll<HTMLElement>("[data-lp-nav]").forEach((a) => {
   if (a.dataset.lpNav === (how ? "how" : "live")) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
 });
 
-const EMPTY: PubLive = { state: "off", look: "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, activity: null };
+const EMPTY: PubLive = { state: "off", look: "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, chatGame: null };
 const ctx = { root, pub: EMPTY, next: null, stream: null, vault: new Map(), how, soon: false, member: false } as unknown as PubCtx;
 
 const boxes = Object.fromEntries([...root.querySelectorAll<HTMLElement>("[data-lp-view]")].map((b) => [b.dataset.lpView!, b])) as Record<string, HTMLElement>;

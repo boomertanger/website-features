@@ -42,6 +42,8 @@ const stickyBar = dockBar ? initStickyBar(dockBar, {}) : null;
 const shell = document.querySelector<HTMLElement>("[data-deck]")!;
 const root = document.querySelector<HTMLElement>("[data-md]")!;
 const preview = previewRequest();
+// Chat Games' entry point (window.btChatGames): the launch tiles open its dialogs and End through it. The preview stands in its own (?formats=1).
+if (!preview) void import("./chatgames-site");
 
 // ---------------------------------------------------------------------------------------------- who may look
 type Access = "loading" | "join" | "signup" | "gate" | "page";
@@ -339,8 +341,8 @@ function mount(me: Me, src: Source) {
     const people = Object.entries(duty?.onDuty || {}).map(([uid, entry]) => ({ uid, entry, me: uid === M.me.uid }));
     const gaps = d.rooms.filter((r) => r.state === "needed").map((r) => ({ room: r.room, name: r.name }));
     const locked = (duty?.lockedOut || []).filter((x) => kind === "captain" || x.room === d.myRoom);
-    const input = { kind, open: M.tool, lockedOut: locked, done: M.unlocked, tiktok: M.pub?.viewers.byPlatform?.tiktok ?? null, people, gaps, owner: M.me.owner, afterShow: d.after, formats: M.formats, runningFormat: M.run?.formatId ?? null, haveChatGames: !!window.btChatGames, streamId: sid(), tiktokRoom } as Parameters<typeof helmHtml>[0];
-    const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.map((f) => f.id), M.run, !!window.btChatGames]);
+    const input = { kind, open: M.tool, lockedOut: locked, done: M.unlocked, tiktok: M.pub?.viewers.byPlatform?.tiktok ?? null, people, gaps, owner: M.me.owner, afterShow: d.after, formats: M.formats, runningFormat: curRun()?.formatId ?? null, haveChatGames: !!window.btChatGames, streamId: sid(), tiktokRoom } as Parameters<typeof helmHtml>[0];
+    const key = JSON.stringify([kind, M.tool, locked.map((x) => x.uid + x.beat), M.unlocked, input.tiktok, people.map((p) => [p.uid, p.entry.roles, !!p.entry.away]), gaps, M.formats.map((f) => f.id), curRun(), !!window.btChatGames]);
     const el = slot("helm", helmHtml(input), key);
     if (el && fresh(el)) initLaunch(el as any, { onLaunch: (id: string, state: string) => launch(id, state) });
   }
@@ -349,9 +351,12 @@ function mount(me: Me, src: Source) {
     if (id === "afterShow") { toast("Start the after-show from the Control Room.", { kind: "info" }); return; }
     const cg = window.btChatGames;
     if (!id.startsWith("cg:") || !cg) return;
-    if (state === "running" && M.run) void cg.end({ runId: M.run.runId });
+    const run = curRun();
+    if (state === "running" && run) void cg.end({ runId: run.runId });
     else void cg.openLaunch({ formatId: id.slice(3), streamId: sid() });
   }
+  /** The Chat Game on stream: public/live.chatGame (any format, so Captains who aren't A2+ can end it here), else a crew-hosted run from private/duty. */
+  const curRun = () => { const p = M.pub?.chatGame; return p && p.runId && p.formatId ? { runId: p.runId, formatId: p.formatId } : M.run; };
   /** Which active run is on this stream (re-read when private/duty's activeRunIds or the stream change). */
   let runKey = "";
   function syncRun() {

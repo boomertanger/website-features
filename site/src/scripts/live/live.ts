@@ -4,7 +4,6 @@
 // THE WORD: liveCheckInWindow returns it to the caller, and it is also in private/control, which the owner and A2+ may read. Here it lives only in
 // this page's memory (ctx.snap) and the screen: never stored, logged, or put in the URL.
 import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
-import { launchHtml } from "../../../../shared/ui/launch.js";
 import { stampHtml } from "../../../../shared/ui/stamp.js";
 import { readoutsHtml } from "../../../../shared/ui/readout.js";
 import { burst } from "../../../../shared/ui/burst.js";
@@ -116,14 +115,6 @@ function sceneHtml(ctx: Ctx): string {
   return crPanelHtml({ id: "lc-scene", cls: "lc-a-scene", title: "Scene", icon: "video", tagHtml: `<small class="lc-hint">${pinned === "auto" ? "Auto follows the beat" : "Pinned"}</small>`, bodyHtml: `<div class="lc-chips" role="group" aria-label="Stream view scene">${chips}</div>${brb}` });
 }
 
-function launchPanel(ctx: Ctx): string {
-  const tiles = [
-    { id: "questions", icon: "❓", title: "Questions", sub: "Coming with Chat Games", state: "off" },
-    { id: "hotseat", icon: "🔥", title: "Hot Seat", sub: "Coming with Chat Games", state: "off" },
-  ];
-  const live = ctx.mode === "live";
-  return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${live ? "One on stream at a time" : "Ready when you are live"}</small>`, bodyHtml: `${launchHtml({ tiles: tiles as any })}<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Questions and Hot Seat arrive with the Chat Games.</p></div>` });
-}
 
 /* ------------------------------------------------------------------ the after-show: switch Streamlabs (docs/specs/control-room.md §3, §11) */
 // After "Start after-show" the controls switch to the new backstage stream and this card says what to do in Streamlabs. The event's status fills in
@@ -208,7 +199,6 @@ export function initLive(ctx: Ctx) {
   ctx.hooks.liveStage = liveStageHtml;
   ctx.hooks.beatActs = beatActs;
   ctx.hooks.sceneHtml = sceneHtml;
-  ctx.hooks.launchHtml = launchPanel;
   ctx.hooks.bannersHtml = bannersHtml;
   ctx.hooks.ttForm = ttForm;
   ctx.hooks.wrapHtml = wrapHtml;

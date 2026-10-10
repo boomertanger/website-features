@@ -75,7 +75,7 @@ function build(): PState {
       state: "ended", look: st.main.look, streamId: s.id, title: s.title, type: "platform", audience: "public", actualStart: now - 167 * MIN, actualEnd: now - 4 * MIN, beat: null,
       beats: { start: { status: "done", checkins: 214 }, break1: { status: "done", checkins: 302 }, break2: { status: "skipped", checkins: 0 }, end: { status: "done", checkins: 287 } },
       window: { open: false, closesAt: null, beat: null }, counts: { total: 803, byBeat: { start: 214, break1: 302, end: 287 }, byRoom: { ...raw.checkins.byRoom } }, viewers: { total: 0, byPlatform: {} }, peak: 1412,
-      game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, activity: null,
+      game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, chatGame: null,
     };
   }
   return st;
@@ -84,7 +84,7 @@ const pv = () => (S ||= build());
 
 function mkPub(st: PState): PubLive {
   const s = st.live;
-  if (!s) return st.ended || { state: "off", look: st.main.look, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, activity: null };
+  if (!s) return st.ended || { state: "off", look: st.main.look, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, chatGame: null };
   const now = Date.now(), c = st.control!, w = c.window;
   const current = [...BEATS].reverse().find((k) => s.beats[k] && !s.beats[k]!.skipped && s.beats[k]!.startedAt != null && s.beats[k]!.endedAt == null) || null;
   const beats: PubLive["beats"] = {};
@@ -104,7 +104,7 @@ function mkPub(st: PState): PubLive {
     window: { open, closesAt: open ? w!.closesAt : null, beat: open ? w!.beat : null }, liveRooms: s.liveRooms,
     counts: { total: total2, byBeat: { ...st.counts.byBeat }, byRoom: { ...st.counts.byRoom } }, viewers: { total, byPlatform: by }, peak: Math.max(c.peak, total),
     game: seg ? { gameId: seg.gameId!, title: seg.title!, startedAt: seg.startedAt! } : null, nextGame: next ? { gameId: next.gameId, title: next.title } : null,
-    crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] }, activity: null,
+    crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] }, chatGame: null,
   };
 }
 

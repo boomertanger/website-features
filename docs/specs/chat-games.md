@@ -1,6 +1,6 @@
 # Chat Games spec (docs/specs/chat-games.md)
 
-Confirmed Oct 9, 2026 (owner: @boomertanger). Workstream 5b. Approved mockups: docs/design/mockups/chat-games-batch-1.html (Would You Rather, Predictions, launch panel, pool) and docs/design/mockups/chat-games-how-it-works.html (the How Chat Games work page); Questions and Hot Seat are in docs/design/mockups/control-room-batch-4.html.
+Confirmed Oct 9, 2026 (owner: @boomertanger). Workstream 5b. **Part 1 (engine and registry) built on staging, Oct 2026**; the spec was reconciled with the code in part 1 (§2, §3, §9, §11, §12, §13). Approved mockups: docs/design/mockups/chat-games-batch-1.html (Would You Rather, Predictions, launch panel, pool) and docs/design/mockups/chat-games-how-it-works.html (the How Chat Games work page); Questions and Hot Seat are in docs/design/mockups/control-room-batch-4.html.
 
 ## 1. Summary and decisions
 
@@ -31,9 +31,9 @@ Sources: control-room.md §2, 7, 8, 9, 12, 13, 15 (the launch panel, Play panel 
 | --- | --- | --- |
 | `/live` (Bridge) | Everyone; playing needs a free account | The Play panel: the running game or Questions session, Ask a question, Put me in (Hot Seat volunteers), the "Waiting on" strip for locked Predictions, a "How Chat Games work" link. Visitors see "Join free to play". |
 | `/live/questions` | Everyone reads; members ask and vote | The two lanes (Tonight, Standing), My questions, the mod queue for held questions. |
-| `/live/control` (Cockpit) | Owner, A2+; Captain | The launch panel tiles and the run controls for the active game. |
+| `/live/control` (Cockpit) | Owner and A2+ (actions when Captain) | The launch panel tiles and the run controls for the active game. The page is owner and A2+ only; an A2+ who isn't the Captain sees the tiles read-only. Captains who aren't A2+ start and end games from the Deck. |
 | `/live/obs` | Streamlabs / TikTok LIVE Studio | Stream view scenes: question card, Hot Seat picker and reveal, Would You Rather cards, Predictions board, waiting chip. |
-| `/live/deck` (Mod Deck) | Crew on duty | Launch tiles from the format registry (Captain and owner act; Deckhands read), mod actions for Questions, Hot Seat answers and Prediction calls, and the cue slot (§9). |
+| `/live/deck` (Mod Deck) | Crew on duty | Launch tiles from the format registry (Captain and owner act; Deckhands read; "running" comes from `public/live.chatGame` as well as `private/duty.chatGames.activeRunIds`, so a Captain of any grade can end any game here), mod actions for Questions, Hot Seat answers and Prediction calls, and the cue slot (§9). The Deck loads `shared/ui/chatgames.js`. |
 | `/crew/games` | Crew (Watcher+); pack drafts Wardens+ | The pool: formats, packs (Hot Seat decks, Would You Rather and Predictions packs), Suggested lane. Votes and pledges come later. |
 | `/live/chat-games` | Everyone | How Chat Games work (§14a). |
 | Site-wide live banner | Everyone | "Hot Seat is running · join in" while a game runs. |
@@ -43,7 +43,7 @@ Sources: control-room.md §2, 7, 8, 9, 12, 13, 15 (the launch panel, Play panel 
 | Visitor | Watch, read Questions, see results, try the examples on /live/chat-games. No asking, voting or playing. |
 | Member (13+) | Ask (3 open), vote on questions, volunteer and play Hot Seat, vote in Would You Rather, pick in Predictions. Earns XP. |
 | Mod on duty | Approve, Hide, To Standing, Merge questions; hide a Hot Seat answer before reveal; propose (call) a Prediction result; suggest cards. Can play, but earns no game XP that stream (Gears for hosting instead, §11). |
-| Captain (this stream) | Start, Swap, Skip, End any game or Questions session; run Questions (Answered, Skip, Pin next); pick Hot Seat cards and picker style; confirm Prediction results; type live prompts; Save to pack as a suggestion. |
+| Captain (this stream: `captainNow.uid` on the stream's duty doc, whatever their grade) | Start, Swap, Skip, End any game or Questions session; run Questions (Answered, Skip, Pin next); pick Hot Seat cards and picker style; confirm Prediction results; type live prompts; Save to pack as a suggestion. |
 | Owner | Everything above on any stream; write and approve packs and cards; correct a settled result. |
 
 ## 3. The engine
@@ -54,22 +54,22 @@ Every game and every Questions session is a **run**: one document under `runs/{r
 
 A format may loop states in rounds (Hot Seat: pick → answer → vote → reveal, per card; Would You Rather: one prompt per round) by keeping `round` on the run; each round has its own sub-state in `runs/{runId}/rounds/{n}`.
 
-**One at a time.** `public/live.chatGame = { runId, formatId, state, round, title }` points at the active run; Start refuses when it is set ("Hot Seat is running. End it first or use Swap"). Swap = void the current run and start the new one, in one callable. The Mod Deck launch tiles read this pointer. A locked Prediction does not hold this slot (§7). Crew-hosted runs also appear in `streams/{streamId}/private/duty.chatGames.activeRunIds` (§9).
+**One at a time.** `public/live.chatGame = { runId, formatId, state, round, title }` points at the active run. It is stored in `streams/{streamId}/private/control.chatGame` (function-written) and copied into `public/live` by the Control Room's `buildPublicLive`, because `publishLive` rebuilds and overwrites `public/live` in full: every writer keeps the field, and the stream view's `obsFeed` gets it too. It replaces the never-written `activity` field. It is only present while the stream is live; Start refuses when it is set ("Hot Seat is running. End it first or use Swap"). Swap = void the current run and start the new one, in one callable. The Mod Deck launch tiles read this pointer. A locked Prediction does not hold this slot (§7). Crew-hosted runs also appear in `streams/{streamId}/private/duty.chatGames.activeRunIds` (§9).
 
-**Timers.** Deadlines are server timestamps (`closesAt`). Clients count down from them; a scheduled task (one per deadline) closes the state on the server, so a closed laptop never leaves a run open. A client action after the deadline is refused by the callable.
+**Timers.** Deadlines are server timestamps (`closesAt`). Clients count down from them; a Cloud Task (`chatGameDeadline`, `onTaskDispatched`, the same default region as `liveFlush`; one task per deadline) closes the state on the server, so a closed laptop never leaves a run open. A task whose deadline was moved (pause, next round) does nothing. `liveTick` (every minute) sweeps any deadline a task missed, so a queue failure costs at most a minute. A client action after the deadline is refused by the callable.
 
-**Gating.** Every member action needs: signed in, not banned, the stream live (or in Break), and, where a format says so, checked in to the current beat (Hot Seat picking and voting). Checks run in the callable; the client only hides buttons.
+**Gating.** Every member action needs: signed in, not banned, the stream live (`streams/{id}.state == "live"`; Break is a beat inside live, and the after-show counts), and, where a format says so, checked in to the current beat (Hot Seat picking and voting): `streams/{id}/presence/{uid}.beats[<current beat>]` exists. Checks run in the callable; the client only hides buttons.
 
-**Stop.** When the Control Room's Stop runs, Chat Games clean-up voids any open run, settles Questions (§4), voids unsettled Predictions, clears `public/live.chatGame` and `private/duty.chatGames`, and writes the night's results to `streams/{streamId}.chatGames` for the Stream Library.
+**Stop.** When the Control Room's Stop runs (its `afterEnd`, shared by Stop, the 12-hour auto-end and the after-show handover), Chat Games clean-up (`closeOut`) voids any open run, settles Questions (§4), voids unsettled Predictions, clears `public/live.chatGame` and `private/duty.chatGames`, and writes the night's results to `streams/{streamId}.chatGames` for the Stream Library.
 
-**Plug-in points** (as named in control-room.md; reconcile in part 1):
+**Plug-in points** (as named in control-room.md; reconciled in part 1):
 
-- Launch panel on `/live/control`: one tile per enabled format from the registry; Start opens the format's launch dialog.
+- Launch panel on `/live/control` (`scripts/live/control-games.ts` fills the Control Room's `launchHtml` slot): one tile per enabled format from the registry plus the running one from `public/live.chatGame`; Start opens the format's launch dialog, End confirms then calls `chatGameEnd`.
 - Play panel on `/live`: renders the active run by `formatId` through `shared/ui/chatgames.js`.
-- Stream view `/live/obs`: a Chat Games scene per format while a run is `open`, `locked` or `revealed`, returning to the previous scene 8 s after `ended`.
+- Stream view `/live/obs`: a Chat Games scene per format while a run is `open`, `locked` or `revealed`, returning to the previous scene 8 s after `ended`. The page reads `obsFeed` (never Firestore), which carries `chatGame`; the scene mounts in `[data-cg-scene]`.
 - Mod Deck: launch tiles, mod actions, cue slot.
 
-`shared/ui/chatgames.js` exposes `window.btChatGames = { openLaunch({ formatId, streamId }), end({ runId }), mountPlay(el), mountScene(el, opts) }`, the only entry point the Control Room and the Mod Deck call.
+`shared/ui/chatgames.js` exposes `window.btChatGames = { openLaunch({ formatId, streamId, title }), end({ runId, title }), mountPlay(el, { chatGame }), mountScene(el, { chatGame }) }`, the only entry point the Control Room and the Mod Deck call. The site installs it with its callable, toast and mascot (`initChatGames`); each format plugs its launch dialog, Play panel and scene in with `registerFormat(formatId, { launch, play, scene })`.
 
 ## 4. Questions
 
@@ -145,6 +145,7 @@ Agreed with the Mod Deck build (mod-machina.md §17a) on Oct 9.
 | --- | --- | --- |
 | room | twitch \| ytLandscape \| ytVertical \| tiktok \| site | The room the cue is for |
 | order | number | Deck sorts by it |
+| kicker | string | The small line above the text on the Deck's card (the format's title) |
 | text | string | Exactly what to paste in chat; never an answer |
 | dueAt | timestamp, optional | Shown in gold |
 | status | pending \| posted \| done | |
@@ -152,11 +153,11 @@ Agreed with the Mod Deck build (mod-machina.md §17a) on Oct 9.
 
 Crew claims read; no client writes. Pack answers stay server-only until the reveal.
 
-**`chatGameCue({ runId, cueId, action: "posted" | "done" })`** — allowed for the member on duty in that cue's room (`private/duty.onDuty[uid].room`), the Captain or the owner. Pays the "Hosted a Chat Game in your room" +5 Gears via `grantGears` with key `chatGame:{runId}:{uid}`, once per game per mod (first Posted).
+**`chatGameCue({ runId, cueId, action: "posted" | "done" })`** — allowed for the member on duty in that cue's room (one of `private/duty.onDuty[uid].roles[].room`, and not away), the Captain (`captainNow.uid`) or the owner. Pays the "Hosted a Chat Game in your room" +5 Gears via `grantGears` with key `chatGame:{runId}:{uid}`, once per game per mod (first Posted).
 
-**Deck behaviour.** Room Lead and Captain get Posted and Done; Deckhands see cards without buttons; the Captain can switch rooms; the owner sees all rooms. The Deck builds `.bt-cue-card`.
+**Deck behaviour.** Room Lead and Captain get Posted and Done; Deckhands see cards without buttons; the Captain can switch rooms; the owner sees all rooms. The Deck builds `.bt-cue-card`. The Deck reads a cue's `status` (and the older `posted` / `done` booleans) and treats a run in `ended` or `void` as over. A second tap gets "Already done by @handle".
 
-**Launch tiles.** The Deck reads `chatGames/main/formats/{formatId}` (title, blurb, icon, crewHosted, needsPack, minLeads, enabled, order) and `public/live.chatGame`. Start, Swap and End are for the Captain and owner and call `window.btChatGames.openLaunch` / `.end`; without the module the slot renders nothing. The Deck hard-codes no games.
+**Launch tiles.** The Deck reads `chatGames/main/formats/{formatId}` (title, blurb, icon, crewHosted, needsPack, minLeads, enabled, order) and `public/live.chatGame`. Start, Swap and End are for the Captain and owner and call `window.btChatGames.openLaunch` / `.end`; without the module the slot renders nothing. The Deck hard-codes no games. The running tile comes from `public/live.chatGame` (any format) or, for crew-hosted runs, `private/duty.chatGames.activeRunIds`.
 
 ## 10. Packs and the pool at /crew/games
 
@@ -171,20 +172,20 @@ The pool from mod-machina.md §11c-11g, starting with what Hot Seat, Would You R
 
 ## 11. Rewards
 
-All XP goes through the Trophy Room's `grant()` with a keyed ledger id (a retry never pays twice) and counts toward the shared 100 XP per member per stream cap. Over the cap, the grant is recorded at 0 with reason `cap` and the member sees "Tonight's XP is maxed". Nothing costs anything to enter.
+All XP goes through the Trophy Room's `grantXp(uid, amount, { feature: "chatGames", ref, reason })`; the ledger id is `chatGames:{ref}:{uid}` (a retry never pays twice). It counts toward the shared 100 XP per member per stream cap: the Control Room's `capPayout` against `streams/{streamId}/presence/{uid}.xpEarned`, which Chat Games increments too (with a merge, so a member who never checked in still gets a counter). Over the cap nothing is granted (`grantXp` refuses 0); the play doc is marked `capped: true` and the member sees "Tonight's XP is maxed". Nothing costs anything to enter.
 
-| What | XP | Ledger id |
+| What | XP | Ledger id (`ref` in brackets) |
 | --- | --- | --- |
-| Your question answered on stream | 15 | `cg_q_{questionId}` |
-| Hot Seat round winner (ties all win) | 25 | `cg_{runId}_{round}_{uid}` |
-| Hot Seat player, not winning | 5 | `cg_{runId}_{round}_{uid}` |
-| Would You Rather vote | 3 | `cg_{runId}_{round}_{uid}` |
-| Predictions locked pick | 3 | `cg_{runId}_{uid}_lock` |
-| Predictions correct | +10 | `cg_{runId}_{uid}_win` |
+| Your question answered on stream | 15 | `chatGames:q:{questionId}:{uid}` |
+| Hot Seat round winner (ties all win) | 25 | `chatGames:{runId}:{round}:{uid}` |
+| Hot Seat player, not winning | 5 | `chatGames:{runId}:{round}:{uid}` |
+| Would You Rather vote | 3 | `chatGames:{runId}:{round}:{uid}` |
+| Predictions locked pick | 3 | `chatGames:{runId}:lock:{uid}` |
+| Predictions correct | +10 | `chatGames:{runId}:win:{uid}` |
 
-Correcting a Prediction: reverse with `cg_{runId}_{uid}_win_rev`; new winners get `cg_{runId}_{uid}_win2`. Lock XP stays.
+Correcting a Prediction: reverse with `chatGames:{runId}:win-rev:{uid}`; new winners get `chatGames:{runId}:win2:{uid}`. Lock XP stays. `grant.js` has no XP reversal yet (only `revokeBadge`); part 5 adds one.
 
-Mods clocked in for the stream earn no game XP; hosting pays Gears (+5 per crew-hosted game; +2 per approved card).
+Mods clocked in for the stream earn no game XP; hosting pays Gears through `grantGears(uid, source, ref, amount, { key })` (`lib/crew/gears.js`): +5 per crew-hosted game (source `chatGame`, key `chatGame:{runId}:{uid}`, a Chat Games constant); +2 per approved card (source `cardSuggest`, added in part 3).
 
 Hooks: Night Shift events `chat-game-played` and `question-answered`. Stream Moments badges come with the crew-hosted games.
 
@@ -207,7 +208,7 @@ Everything under `sites/boomertanger/chatGames/main/`, function-written unless n
 | `runs/{runId}/cues/{cueId}` | §9 | Crew | None |
 | `volunteers/{streamId}_{uid}` | Hot Seat "Put me in" | That member | None |
 
-Also written: `public/live.chatGame`, `streams/{streamId}/private/duty.chatGames.activeRunIds`, `streams/{streamId}.chatGames`, adminLog (key `chatGames`), activityLog (`chat-game-won`, `question-answered`).
+Also written: `streams/{streamId}/private/control.chatGame` (copied to `public/live.chatGame`), `streams/{streamId}/private/duty.chatGames.activeRunIds`, `streams/{streamId}.chatGames`, adminLog (key `chatGames`), activityLog (`chat-game-won`, `question-answered`).
 
 ## 13. Callables, triggers and logs
 
@@ -233,7 +234,7 @@ Functions in `functions/lib/chatGames/*.js`. Every callable checks auth, role an
 
 Triggers and tasks: `onQuestionVote` (counts), deadline tasks, Stop clean-up (§3), daily 05:15 America/Los_Angeles archive of Standing questions older than 30 days.
 
-"Mod on duty" = clocked in for the current stream (`private/duty.onDuty`), or the Captain, or the owner.
+"Mod on duty" = clocked in for the current stream (`private/duty.onDuty`), or the Captain, or the owner. "Captain" in every Chat Games callable = `captainNow.uid` on the stream's `private/duty`, whatever the person's grade; the owner is always allowed. adminLog uses feature `chatGames` (its own helper; the Control Room's `logAdmin` is `controlRoom`).
 
 ## 14. UI states and bt-ui components
 

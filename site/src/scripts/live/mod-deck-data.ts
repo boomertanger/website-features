@@ -53,7 +53,7 @@ export interface ChatFormat { id: string; title: string; icon: string; sub: stri
 /** The Chat Game on stream now: one of private/duty.chatGames.activeRunIds whose run doc (chatGames/main/runs/{runId}) is this stream's and not over. */
 export interface ActiveRun { runId: string; formatId: string }
 /** Chat Games' launch API (agreed contract): loaded by the Chat Games script when it exists. The Deck never shows Chat Games tiles without it. */
-export interface ChatGamesApi { openLaunch(a: { formatId: string; streamId: string }): unknown; end(a: { runId: string }): unknown }
+export interface ChatGamesApi { openLaunch(a: { formatId: string; streamId: string; title?: string }): unknown; end(a: { runId: string; title?: string | null }): unknown; mountPlay?(el: HTMLElement, o?: { chatGame: unknown }): void; mountScene?(el: HTMLElement, o?: { chatGame: unknown }): void }
 declare global { interface Window { btChatGames?: ChatGamesApi } }
 export interface DutyRec {
   streamId: string; minutes: number; lines: Record<string, number>; scheduled: SeatRole | null; showed: boolean; counted: boolean; led: boolean;
@@ -167,7 +167,7 @@ export function flagFrom(id: string, d: any): Flag | null {
 }
 export const freshNotes = (notes: Note[], at = Date.now()) => notes.filter((n) => at - n.createdAt < DAY).sort((a, b) => b.createdAt - a.createdAt);
 function cueFrom(runId: string, id: string, d: any): Cue {
-  return { id, runId, order: num(d?.order), kicker: String(d?.kicker || d?.title || d?.format || "Chat Game"), text: String(d?.text || ""), due: ms(d?.dueAt ?? d?.due), state: d?.done ? "done" : d?.posted ? "posted" : "pending" };
+  return { id, runId, order: num(d?.order), kicker: String(d?.kicker || d?.title || d?.format || "Chat Game"), text: String(d?.text || ""), due: ms(d?.dueAt ?? d?.due), state: d?.status === "done" || d?.done ? "done" : d?.status === "posted" || d?.posted ? "posted" : "pending" };
 }
 
 // ---------------------------------------------------------------------------------------------- real
@@ -259,7 +259,7 @@ export function realSource(me: Me): Source {
         try {
           const s = await getDoc(liteDoc(lite, `${base}/chatGames/main/runs/${id}`));
           const st = s.exists() ? String(s.get("state") || "") : "";
-          if (s.exists() && s.get("streamId") === sid && typeof s.get("formatId") === "string" && !["ended", "done", "cancelled"].includes(st)) return { runId: id, formatId: s.get("formatId") };
+          if (s.exists() && s.get("streamId") === sid && typeof s.get("formatId") === "string" && !["ended", "void", "done", "cancelled"].includes(st)) return { runId: id, formatId: s.get("formatId") };
         } catch { /* not readable yet: no running tile */ }
       }
       return null;

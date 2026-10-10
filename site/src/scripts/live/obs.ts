@@ -42,7 +42,8 @@ let scenes: { render(view: ObsView): void } | null = null;
 async function mount() {
   if (mounted) return;
   mounted = true;
-  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div>` });
+  // [data-cg-scene]: Chat Games' scene (shared/ui/chatgames.js mountScene, from obsFeed's chatGame); empty until a format ships
+  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div>` });
   scenes = (await import("./obs-scenes")).createScenes(root.querySelector<HTMLElement>("[data-obs-scene]")!, shape, params);
 }
 
@@ -50,6 +51,9 @@ async function show(view: ObsView) {
   await mount();
   setLook(document.body, view.look);
   scenes?.render(view);
+  const cgEl = root.querySelector<HTMLElement>("[data-cg-scene]");
+  const g = (view as any).chatGame || null, key = g ? `${g.runId}|${g.state}|${g.round}` : "";
+  if (cgEl && cgEl.dataset.cgKey !== key) { cgEl.dataset.cgKey = key; (await import("../../../../shared/ui/chatgames.js")).initChatGames().mountScene?.(cgEl, { chatGame: g }); }
 }
 
 /* ---------------------------------------------------------------- the feed */

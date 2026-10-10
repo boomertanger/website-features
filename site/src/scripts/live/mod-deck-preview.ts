@@ -111,7 +111,7 @@ export function previewSource(me: Me, kind: Kind, as: As): Source {
     title: kind === "off" ? null : after ? "Late-night backstage" : "Monster Monday", type: after ? "backstage" : "platform", beat: live ? beat : null, beats: live || kind === "ended" ? beats : {}, window: { open: false, closesAt: null, beat: null },
     liveRooms: live ? rooms : [], counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: live ? { total: after ? 96 : 469, byPlatform: after ? {} : { twitch: 212, ytLandscape: 88, ytVertical: 41, tiktok: 128 } } : { total: 0, byPlatform: {} },
     actualStart: kind === "ended" ? now - 201 * MIN : live ? now - 72 * MIN - 40_000 : null, actualEnd: kind === "ended" ? now - 9 * MIN : null, peak: kind === "ended" ? 486 : 0, game: live && !after ? { gameId: "soul-hunt", title: "Soul Hunt", startedAt: now - 47 * MIN } : null, nextGame: null,
-    crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null,
+    crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, chatGame: null,
     deck: { rooms: duty ? duty.rooms : {} },
   };
 

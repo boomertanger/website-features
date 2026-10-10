@@ -15,7 +15,7 @@ const HIDDEN_MS = 60_000;
 const blank = (): PubLive => ({
   state: "off", look: "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
   counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-  crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, activity: null,
+  crew: { captain: null, chats: {}, onDuty: [], grades: [] }, firstIn: [], firstInBeat: null, chatGame: null,
 });
 
 /** What public/live holds, with every field present (a missing document is the off-air state). */
@@ -33,7 +33,8 @@ export function normaliseLive(d: any): PubLive {
     crew: { captain: d.crew?.captain ?? null, chats: d.crew?.chats || {}, onDuty: d.crew?.onDuty || [], grades: Array.isArray(d.crew?.grades) ? d.crew.grades : [] },
     firstIn: Array.isArray(d.firstIn) ? d.firstIn.filter((h: unknown) => typeof h === "string").slice(0, 3) : [], firstInBeat: d.firstInBeat ?? null,
     peak: d.peak || 0,
-    game: d.game || null, nextGame: d.nextGame || null, activity: d.activity || null,
+    game: d.game || null, nextGame: d.nextGame || null,
+    chatGame: d.chatGame && typeof d.chatGame.runId === "string" && typeof d.chatGame.formatId === "string" ? d.chatGame : null,
   };
 }
 

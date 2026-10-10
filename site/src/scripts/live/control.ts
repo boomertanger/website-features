@@ -23,6 +23,7 @@ import { initDeck } from "./deck";
 import { gamePickerHtml } from "./gamepick";
 import { initCrew, sampleCrew } from "./control-crew";
 import { initRush } from "./control-rush";
+import { initGames } from "./control-games";
 
 const POLL_MS = 5000;
 const SITE_TILE = `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`;
@@ -292,6 +293,7 @@ onAccess(async (s, role) => {
   initDeck(ctx);
   initCrew(ctx, ctx.api.preview ? sampleCrew(ctx.role === "owner") : undefined);
   initRush(ctx);
+  initGames(ctx);   // the launch panel's Chat Games tiles (replaces the placeholder tiles)
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;
