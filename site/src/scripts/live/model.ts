@@ -34,6 +34,8 @@ export interface PubLive {
   /** The current beat's first three check-ins (public handles) and the beat they are for. */
   firstIn?: string[]; firstInBeat?: Beat | null;
   activity: { kind: string; title: string | null; status: string | null } | null;
+  /** Recruit Rush (Mod Machina §17a): only while a Rush is on; the main stream's during an after-show. */
+  recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null };
 }
 
 export interface Seg { kind: string; gameId?: string; title?: string; startedAt: number | null; endedAt: number | null }

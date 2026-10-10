@@ -1,0 +1,21 @@
+/* Recruit Rush, the R1 goal meter (scripts/live/rush.ts): /live, /live/control and the Deck. The kit's .bt-meter in gold; gold for the goal, never red. */
+.bt-root:not(#_) .lr-rush { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .lr-rush-top { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.bt-root:not(#_) .lr-rush-top b { font-size: 30px; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--bt-title); line-height: 1; white-space: nowrap; }
+.bt-root:not(#_) .lr-rush-top b small { font-size: var(--bt-text-md); color: var(--bt-text-faint); font-weight: 700; }
+.bt-root:not(#_) .lr-rush-top span { font-size: var(--bt-text-xs); color: var(--bt-text-muted); font-weight: 700; text-align: right; }
+.bt-root:not(#_) .lr-rush.is-hit .lr-rush-top span { color: var(--bt-title); }
+.bt-root:not(#_) .lr-rush .bt-meter-track { height: 14px; overflow: hidden; }
+.bt-root:not(#_) .lr-rush .bt-meter-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--bt-gold) 55%, var(--bt-bg)), var(--bt-gold)); box-shadow: 0 0 12px rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root:not(#_) .lr-rush .bt-meter-fill::after { content: ""; position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(110deg, transparent 30%, rgba(var(--bt-sheen-rgb), 0.35) 50%, transparent 70%) -100% 0 / 60% 100% no-repeat; animation: lr-sheen 2.8s ease-in-out infinite; }
+@keyframes lr-sheen { to { background-position: 200% 0; } }
+.bt-root:not(#_) .lr-rush-reward { display: flex; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; border: 1px dashed var(--bt-border-2); font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .lr-rush-reward b { color: var(--bt-text); }
+.bt-root:not(#_) .lr-rush.is-hit .lr-rush-reward { border-style: solid; border-color: var(--bt-title); background: var(--bt-gold-bg); color: var(--bt-title); }
+.bt-root:not(#_) .lr-rush.is-hit .lr-rush-reward b { color: var(--bt-title); }
+.bt-root:not(#_) .lr-rush-acts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.bt-root:not(#_) .lr-rush-hint { display: block; margin-top: 8px; font-size: var(--bt-text-xs); color: var(--bt-text-faint); line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .lr-rush .bt-meter-fill { transition: none; }
+  .bt-root:not(#_) .lr-rush .bt-meter-fill::after { animation: none; display: none; }
+}

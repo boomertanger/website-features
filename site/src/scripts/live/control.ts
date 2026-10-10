@@ -22,6 +22,7 @@ import { initRail } from "./rail";
 import { initDeck } from "./deck";
 import { gamePickerHtml } from "./gamepick";
 import { initCrew, sampleCrew } from "./control-crew";
+import { initRush } from "./control-rush";
 
 const POLL_MS = 5000;
 const SITE_TILE = `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`;
@@ -163,7 +164,7 @@ function grid() {
   return `<div class="lc-grid" data-owner="${owner ? 1 : 0}">`
     + (owner ? `<div class="lc-a-list" data-slot="rail"></div>` : "")
     + `<div class="lc-a-status" data-slot="status"></div><div class="lc-a-beats" data-slot="beats"></div><div class="lc-a-stage" data-slot="stage"></div><div class="lc-a-scene" data-slot="scene"></div>`
-    + `<div class="lc-a-launch" data-slot="launch"></div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
+    + `<div class="lc-a-launch"><div data-slot="launch"></div>${owner ? `<div data-slot="rush"></div>` : ""}</div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
     + (owner ? `<div class="lc-a-deck" data-slot="deck"></div>` : "")
     + `</div>`;
 }
@@ -290,6 +291,7 @@ onAccess(async (s, role) => {
   initRail(ctx);
   initDeck(ctx);
   initCrew(ctx, ctx.api.preview ? sampleCrew(ctx.role === "owner") : undefined);
+  initRush(ctx);
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;

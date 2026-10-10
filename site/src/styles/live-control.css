@@ -174,6 +174,17 @@
 .bt-root:not(#_) .lc-brb-t { color: var(--bt-title); font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .lc-empty--sm .bt-mascot { width: 40px; }
 .bt-root:not(#_) .lc-a-launch .bt-launch { margin-bottom: 4px; }
+/* the launch column also holds the owner's Recruit Rush card (control-rush.ts) */
+.bt-root:not(#_) .lc-a-launch { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
+.bt-root:not(#_) .lc-a-launch > :empty { display: none; }
+.bt-root:not(#_) .lc-rr { display: flex; flex-direction: column; gap: 10px; }
+.bt-root:not(#_) .lc-rr-row { display: grid; grid-template-columns: 72px minmax(0, 1fr); align-items: center; gap: 10px; }
+.bt-root:not(#_) .lc-rr-row:first-child { grid-template-columns: minmax(0, 1fr) auto; }
+.bt-root:not(#_) .lc-rr-row--wide { grid-template-columns: minmax(0, 1fr); gap: 6px; }
+.bt-root:not(#_) .lc-rr-row .bt-label { margin: 0; }
+.bt-root:not(#_) .lc-rr-row .bt-input { width: 100%; }
+.bt-root:not(#_) .lc-rr .lr-rush-hint { margin-top: 0; }
+.bt-root:not(#_) .lc-rr-acts { display: flex; justify-content: flex-end; }
 .bt-root:not(#_) .lc-tt-form { margin-top: 14px; }
 .bt-root:not(#_) .lc-tt-row { display: flex; gap: 8px; max-width: 320px; }
 .bt-root:not(#_) .lc-gp-res { display: grid; gap: 8px; margin-top: 8px; }
