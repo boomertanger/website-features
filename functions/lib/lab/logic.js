@@ -64,6 +64,8 @@ const periodKey = (kind, now, dayKey) => B.periodKey(LIMITS, kind, now, dayKey);
 /** How long a counter document may live (the TTL on expireAt): a bit past its window. */
 const limitTtlMs = (kind) => B.limitTtlMs(LIMITS, kind);
 const overLimit = (kind, count) => B.overLimit(LIMITS, kind, count);
+/** The owner and admins skip all three limits (the caller from lib/vault/common callerInfo: isOwner from ownerUid, isAdmin from members/{uid}.roles or the owner). */
+const skipsLimits = (c) => !!c && (c.isOwner === true || c.isAdmin === true);
 
 /** Can this idea take a vote right now? (not hidden, not shipped or declined) */
 function voteRefusal(idea) {
@@ -92,5 +94,5 @@ function snapshotOf(idea) {
 
 module.exports = {
   STATUSES, STATUS_LABEL, AREAS, PRIORITIES, CLOSED, TITLE, DESCRIPTION, COMMENT, REASON_MAX, NOTE_MAX, HISTORY_MAX, TOKEN_RE, LIMITS, GEARS_SOURCE, HOUR_MS, DAY_MS,
-  validateIdea, validateComment, validateEditField, validateHide, periodKey, limitTtlMs, overLimit, voteRefusal, planTriage, canDelete, snapshotOf, no,
+  validateIdea, validateComment, validateEditField, validateHide, periodKey, limitTtlMs, overLimit, skipsLimits, voteRefusal, planTriage, canDelete, snapshotOf, no,
 };

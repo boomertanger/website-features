@@ -26,7 +26,7 @@ kind of `adminEditItem`, `syncAdminStatus`) stays untouched until launch; all ch
    `lib/lab/edit.js`, dispatched like `vaultGame`), always with an adminLog entry. Delete through `labDelete`.
 5. **Votes and counts.** Callables, not member-writable rules (Night Shift needs the event recorded in the same
    function, and this fixes fake votes and the comment undercount).
-6. **Abuse protection.** Limits per member: 3 ideas a day, 20 comments an hour, 60 vote changes an hour, plus the
+6. **Abuse protection.** Limits per member: 3 ideas a day, 20 comments an hour, 60 vote changes an hour (the owner and admins skip the limits), plus the
    length limits. Mods and admins can hide or unhide an idea or a comment (reversible, logged, with a reason). Only
    admins triage. Delete: the owner, A2 Overseer or A3 Right Hand; an A1 Steward gets Hide and a note instead. No
    member Report button in v1 (waits for the site-wide reports system).
@@ -66,9 +66,9 @@ pattern); crew grade from the member's crew roster entry or the `crewGrade` clai
 
 | Callable | Who | Does |
 |---|---|---|
-| `labSubmit { title, description, area, token }` | verified members, staff | validates, rate limit (3/day, Central day), creates the idea (`status: submitted`, `voteCount: 1`, author's vote doc and `myVotes` entry, first history entry), activityLog `submitted`, Night Shift `recordFactoryEvent(uid, "lab", { action: "post" }, "post-<id>", { keep: true })`. Returns `{ id }` |
-| `labVote { id, on }` | verified members, staff | refuses hidden, shipped and declined ideas; rate limit (60/h); one transaction: vote doc, `voteCount`, `myVotes`. When turned on and not the author's own idea: Night Shift `{ action: "vote" }`, ref `vote-<id>`, `keep: true` |
-| `labComment { id, text }` | verified members, staff | refuses hidden ideas; rate limit (20/h); one transaction: the comment and `commentCount + 1`; `staffTag` from roles |
+| `labSubmit { title, description, area, token }` | verified members, staff | validates, rate limit (3/day, Central day; the owner and admins skip the limits), creates the idea (`status: submitted`, `voteCount: 1`, author's vote doc and `myVotes` entry, first history entry), activityLog `submitted`, Night Shift `recordFactoryEvent(uid, "lab", { action: "post" }, "post-<id>", { keep: true })`. Returns `{ id }` |
+| `labVote { id, on }` | verified members, staff | refuses hidden, shipped and declined ideas; rate limit (60/h; the owner and admins skip the limits); one transaction: vote doc, `voteCount`, `myVotes`. When turned on and not the author's own idea: Night Shift `{ action: "vote" }`, ref `vote-<id>`, `keep: true` |
+| `labComment { id, text }` | verified members, staff | refuses hidden ideas; rate limit (20/h; the owner and admins skip the limits); one transaction: the comment and `commentCount + 1`; `staffTag` from roles |
 | `labTriage { id, status?, priority?, note?, before }` | admins (A1+ and owner) | same rules as today: a real status change adds exactly one history entry (with the optional note); a note alone adds a `kind: "note"` entry; priority alone adds none; an empty save is refused. Sets `statusChangedAt`. Conflict check against `before.status`/`before.priority`. adminLog `triage`. On a status change: activityLog `status-changed`, `notifyOutbox` `report-update` to the author. First move out of Submitted: `firstTriagedAt` and +3 Gears (`labReview`, ref idea id) to the admin. First time Shipped: `shippedAt`, `grantBadge(authorUid, "architect", { feature: "lab", ref: id })`, Night Shift `{ action: "shipped" }` for the author, activityLog `shipped` |
 | `labHide { id, commentId?, hidden, reason }` | mods and admins | hides or unhides an idea or a comment; reason 1–200 required to hide; adminLog `hide`/`unhide` |
 | `labDelete { id }` | owner, A2, A3 | in order: activityLog events with `ideaId`, then the idea with comments and votes (`recursiveDelete`), removes the id from every `myVotes` that has it, adminLog `delete` with a text snapshot |

@@ -50,6 +50,8 @@ function build(deps = {}) {
     rate: { prefix: "lab", limits: L.LIMITS, periodKey: (kind, at) => L.periodKey(kind, at, dayKey), ttlMs: L.limitTtlMs, overLimit: L.overLimit },
   });
   const { caller, byOf, bump, adminLog, activity, outbox, nightShift } = B;
+  /** A rate-limited action: counted for members; the owner and admins skip the limits (L.skipsLimits). */
+  const limit = (kind, c) => (L.skipsLimits(c) ? null : bump(kind, c.uid));
 
   // ---------- labSubmit ----------
   async function submit(request) {
@@ -60,7 +62,7 @@ function build(deps = {}) {
     // a double click or a retry with the same token is the same idea, and costs no part of the daily limit
     const already = await B.seenToken(tokenRef(token), c.uid, "ideaId");
     if (already) return { ok: true, id: already, already: true, counted: false };
-    await bump("submit", c.uid);
+    await limit("submit", c);
     const at = now();
     const ref = db.collection(`${base}/ideas`).doc();
     const by = byOf(c);
@@ -85,7 +87,7 @@ function build(deps = {}) {
     const c = requireVerifiedMember(await caller(request));
     const { id, on } = request.data || {};
     if (!idStr(id) || typeof on !== "boolean") throw fail("invalid-argument", "Say which idea and whether to vote.", "args");
-    await bump("vote", c.uid);
+    await limit("vote", c);
     const out = await db.runTransaction(async (tx) => {
       const [snap, vs] = await Promise.all([tx.get(ideaRef(id)), tx.get(voteRef(id, c.uid))]);
       const refusal = L.voteRefusal(snap.exists ? snap.data() : null);
@@ -117,7 +119,7 @@ function build(deps = {}) {
     if (!idStr(id)) throw fail("invalid-argument", "Say which idea.", "args");
     const v = L.validateComment(text);
     if (!v.ok) throw raise(v);
-    await bump("comment", c.uid);
+    await limit("comment", c);
     const commentId = await B.addReply({ itemRef: ideaRef(id), repliesRef: commentsOf(id), value: v.value, c, countField: "commentCount", missing: ["noIdea", "This idea is no longer here."] });
     return { ok: true, commentId };
   }

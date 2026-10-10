@@ -87,6 +87,16 @@ const idea = (o = {}) => ({ title: "Show the queue on stream", description: "A p
   assert.equal(await why(as("gbo", "labSubmit", { ...idea({ title: "Same token again" }), token: t1 })), "ok", "a repeat of an old token still costs nothing at the limit");
   clock += 16 * 3600000;   // Central day turned (01:00 the next day in Chicago)
   assert.equal(await why(as("gbo", "labSubmit", { ...idea({ title: "Fourth idea next day" }), token: token() })), "ok");
+  // the owner and admins skip the limits: an admin and the owner post a 4th idea in a day; a member still gets Slow down
+  for (let n = 1; n <= 4; n++) assert.equal(await why(as("adm1", "labSubmit", { ...idea({ title: `Admin idea number ${n}` }), token: token() })), "ok", `admin idea ${n}`);
+  await person("own2", "owner2");                   // an owner with no admin role: ownerUid alone is enough
+  await wdb.doc(S).set({ ownerUid: "own2" });
+  for (let n = 1; n <= 4; n++) assert.equal(await why(as("own2", "labSubmit", { ...idea({ title: `Owner idea number ${n}` }), token: token() })), "ok", `owner idea ${n}`);
+  await wdb.doc(S).set({ ownerUid: "boss" });
+  await person("fan4", "fan4");
+  for (let n = 1; n <= 3; n++) await as("fan4", "labSubmit", { ...idea({ title: `Fan idea number ${n}` }), token: token() });
+  const slow2 = await as("fan4", "labSubmit", { ...idea({ title: "Fan idea number 4" }), token: token() }).catch((e) => e);
+  assert.equal(slow2.details && slow2.details.reason, "rateLimit", "a member still gets Slow down"); assert.match(slow2.message, /Slow down/);
   const ideas = await col(`${BASE}/ideas`);
   const second = ideas.find((i) => i.title === "Second idea here"), third = ideas.find((i) => i.title === "Third idea here");
 

@@ -60,6 +60,13 @@ assert.equal(L.periodKey("vote", Date.UTC(2026, 9, 12, 14, 5), dayKey), "2026101
 assert.notEqual(L.periodKey("vote", Date.UTC(2026, 9, 12, 14, 59), dayKey), L.periodKey("vote", Date.UTC(2026, 9, 12, 15, 0), dayKey), "the hourly window turns on the hour");
 assert.throws(() => L.periodKey("nope", 0, dayKey));
 assert.ok(L.limitTtlMs("submit") >= L.DAY_MS && L.limitTtlMs("comment") >= L.HOUR_MS);
+// the owner and admins skip the limits; members (and mods) don't
+assert.equal(L.skipsLimits({ isOwner: true, isAdmin: true }), true);
+assert.equal(L.skipsLimits({ isOwner: false, isAdmin: true }), true);
+assert.equal(L.skipsLimits({ isOwner: true, isAdmin: false }), true);
+assert.equal(L.skipsLimits({ isOwner: false, isAdmin: false, isMod: true }), false);
+assert.equal(L.skipsLimits({ isOwner: false, isAdmin: false }), false);
+assert.equal(L.skipsLimits(null), false);
 
 // ---------- votes: closed on hidden, shipped and declined ideas ----------
 assert.equal(L.voteRefusal({ status: "submitted", hidden: false }), null);
