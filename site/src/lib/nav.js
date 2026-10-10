@@ -8,6 +8,7 @@ const MODULE_PAGES = {
   schedule: { label: "Schedule", href: "/schedule", icon: "cal", blurb: "When I'm on next, in your own time zone." },
   games: { label: "Games", href: "/games", icon: "game", blurb: "What I'm playing, and what's up next." },
   arcade: { label: "Arcade", href: "/arcade", icon: "joystick", blurb: "Quick horror games with leaderboards." },
+  chatgames: { label: "Chat Games", href: "/live/chat-games", icon: "game", blurb: "Questions, Hot Seat and every live game" },
   factory: { label: "Night Shift", href: "/shift", icon: "shift", blurb: "Missions between streams. Keep your streak alive." },
   trophies: { label: "Trophy Room", href: "/trophies", icon: "trophy", blurb: "Every badge and trophy you've earned." },
   crew: { label: "Crew", href: "/crew", icon: "eye", blurb: "Meet the mods who keep the chats fun, or join them." },
@@ -26,8 +27,8 @@ const MODULE_PAGES = {
 };
 
 // Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md), /contact is
-// Hotline Boom (docs/specs/hotline-boom.md).
-const ALWAYS_ON = ["crew", "contact"];
+// Hotline Boom (docs/specs/hotline-boom.md), /live/chat-games is How Chat Games work (docs/specs/chat-games.md §14a).
+const ALWAYS_ON = ["crew", "contact", "chatgames"];
 const STAFF_ONLY = ["deck"];   // on for everyone in the data, shown to staff only
 const enabled = new Set([...site.modules, ...ALWAYS_ON, ...STAFF_ONLY]);
 const isOn = (id) => enabled.has(id) && !!MODULE_PAGES[id];
@@ -36,7 +37,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 // Header groups (docs/specs/header-nav.md): three menus and Shop as a plain link.
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
-  { id: "play", label: "Play", pages: ["arcade", "factory", "trophies"] },
+  { id: "play", label: "Play", pages: ["arcade", "chatgames", "factory", "trophies"] },
   { id: "community", label: "Community", pages: ["club", "crew", "goals", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];

@@ -22,12 +22,12 @@ import "../styles/live-hotseat.css";   // Hot Seat in the Play panel (Chat Games
 import "../styles/live-choices.css";   // Would You Rather, Predictions and the waiting strip (Chat Games part 5)
 
 const JOIN_ALERTS = "Join to get go-live alerts";
-const NAV: [string, string][] = [["wr-next", "Next stream"], ["wr-beats", "How a stream runs"], ["wr-try", "Check in"], ["wr-q", "Ask a question"], ["wr-faq", "Ask BOOMBOT"]];
+const NAV: [string, string][] = [["wr-next", "Next stream"], ["wr-beats", "How a stream runs"], ["wr-try", "Check in"], ["wr-q", "Ask a question"], ["wr-games", "Chat Games"], ["wr-faq", "Ask BOOMBOT"]];
 const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
 // The four beats of every stream (docs/specs/control-room.md §4): each is a stage card with a small scene that moves while the card is lit.
 const BEATS = [
   ["🚪", "Start", "Doors open. Say hi, check in, see tonight's games."],
-  ["☕", "Break 1", "Check in again while Boomer takes a breather. Questions and Hot Seat join here soon."],
+  ["☕", "Break 1", "Check in again while Boomer takes a breather. Questions and Chat Games often run here."],
   ["🎭", "Break 2", "Check in, take a look at the schedule, and spend more time with chat."],
   ["🏁", "End", "Last check-in, thanks to the crew, and sometimes an after-show for members."],
 ];
@@ -99,14 +99,27 @@ const FAQS = [
             <div class="bt-card lp-soon">
               <Mascot decorative />
               <div>
-                <h3>Questions <span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Coming soon</span></h3>
-                <p>Soon you will be able to ask Boomer a question here, vote up the ones you want answered, and hear them read out at the next break. Until then, say it in chat. The crew is listening.</p>
+                <h3>Questions</h3>
+                <p>Ask Boomer anything, any time, and vote up the ones you want answered. The top ones get answered on stream at the breaks, and the asker gets 15 XP.</p>
+                <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/live/questions">Ask a question</a>
+              </div>
+            </div>
+          </section>
+
+          <section class="ai-sec" id="wr-games" aria-labelledby="h-games">
+            <Fragment set:html={chapter(4, "h-games", "Chat Games", "Games you play with the whole stream, from whichever platform you watch on.")} />
+            <div class="bt-card lp-soon">
+              <Mascot aware decorative />
+              <div>
+                <h3>Questions, Hot Seat, Would You Rather and Predictions</h3>
+                <p>The Captain calls a game, you play it in the Play panel on this page, and the result shows on stream. Every game is free, and every game pays XP.</p>
+                <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/live/chat-games">How Chat Games work</a>
               </div>
             </div>
           </section>
 
           <section class="ai-sec" id="wr-faq" aria-labelledby="h-faq">
-            <Fragment set:html={chapter(4, "h-faq", "Ask BOOMBOT", "Quick answers about streams, check-ins and backstage.")} />
+            <Fragment set:html={chapter(5, "h-faq", "Ask BOOMBOT", "Quick answers about streams, check-ins and backstage.")} />
             <div class="bt-chat">
               {FAQS.map(([q, a], i) => (
                 <>

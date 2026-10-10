@@ -6,7 +6,8 @@
 //   window.btChatGames = {
 //     openLaunch({ formatId, streamId, title })   the format's launch dialog (openModal). A format without a launch form yet shows "Coming soon".
 //     end({ runId, title })                       confirmAction, then chatGameEnd: a revealed run ends, anything earlier is voided (no XP).
-//     mountPlay(el, { chatGame, ... })            the Play panel body on /live: the running game, or "Chat Games start when the Captain calls them".
+//     mountPlay(el, { chatGame, ... })            the Play panel body on /live: the running game, or "Chat Games start when the Captain calls them";
+//                                                 adds a "How Chat Games work" link (/live/chat-games) after el, once.
 //     mountScene(el, { chatGame, display })       the stream view's Chat Games scene (display: obsFeed's chatGameDisplay); nothing when no game runs.
 //   }
 //   registerFormat(formatId, { launch, play, scene })   each format's part plugs its UI in here (Questions part 2, Hot Seat part 4, ...).
@@ -49,6 +50,8 @@ async function end({ runId = "", title = "" } = {}) {
 function mountPlay(el, opts = {}) {
   const { chatGame = null } = opts;
   if (!el) return;
+  // the "How Chat Games work" link (docs/specs/chat-games.md §2, §14a), once, right after the Play panel's body (formats redraw el, not its sibling)
+  if (!(el.nextElementSibling && el.nextElementSibling.hasAttribute("data-cg-how"))) el.insertAdjacentHTML("afterend", `<p class="bt-hint" data-cg-how><a href="/live/chat-games">How Chat Games work</a></p>`);
   const ui = chatGame && formats.get(chatGame.formatId);
   if (ui && typeof ui.play === "function") { ui.play(el, { ...opts, chatGame, call: deps.call, toast: deps.toast }); return; }
   el.innerHTML = chatGame

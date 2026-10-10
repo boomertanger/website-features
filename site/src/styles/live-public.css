@@ -84,6 +84,7 @@
 .bt-root:not(#_) .lp-soon .bt-mascot { width: 76px; height: auto; }
 .bt-root:not(#_) .lp-soon h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 0 0 6px; }
 .bt-root:not(#_) .lp-soon p { margin: 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .lp-soon p + .bt-btn { margin-top: 12px; }
 
 /* The closing call to action */
 .bt-root:not(#_) .lp-cta .bt-mascot { display: block; width: 84px; height: auto; margin: 0 auto 8px; }

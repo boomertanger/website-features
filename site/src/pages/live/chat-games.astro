@@ -1,0 +1,268 @@
+---
+// /live/chat-games: How Chat Games work (docs/specs/chat-games.md §14a; Chat Games part 6; mockup docs/design/mockups/chat-games-how-it-works.html, hero H2
+// Live wall). A story page in the Arcade How it works frame: the hero's Live wall (a tap on the phone's Play panel, the split on stream, +3 XP, looping; one
+// still frame under reduced motion), then TocLayout's nine chapters: 01 What Chat Games are (the .ai-jr--4 journey and four stage cards with hover
+// scenes), 02 Questions (the lanes; Try it with .bt-qcard), 03 Hot Seat (the round's flow; Try it with a mini .bt-seance draw), 04 Would You Rather
+// (Try it with .bt-choice), 05 Predictions (the flow; Try it: pick, lock, a mod calls it, the Captain confirms), 06 XP and fair play (eight .bt-flip
+// medals, the crew note, the House rules .bt-placard), 07 Who runs it (role cards), 08 Coming next (Soon cards), 09 Ask BOOMBOT (.bt-chat), and the
+// closing call to action by state. Every Try it works signed out and keeps local state only (scripts/live/chat-games-how.ts): no Firestore, no callables.
+// The only reads are public: public/live (the shared listener: live or not) and the Scream Planner's published schedule (the next stream, for members).
+// Every rule stated here matches the as-built spec (§4 to §7, §11).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LiveBar from "../../components/live/LiveBar.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import "../../styles/how-it-works.css";
+import "../../styles/live-layout.css";
+import "../../styles/chat-games-how.css";
+
+const JOIN = "Join free to play Chat Games";
+const NAV: [string, string][] = [["s-what", "What they are"], ["s-questions", "Questions"], ["s-hot-seat", "Hot Seat"], ["s-wyr", "Would You Rather"], ["s-predictions", "Predictions"], ["s-xp", "XP and fair play"], ["s-who", "Who runs it"], ["s-next", "Coming next"], ["s-ask", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
+const tryHead = (hint: string, extra = "") => `<div class="cgh-try-h"><span class="cgh-tag">Try it</span><span class="cgh-hint">${hint}</span><span class="cgh-sp"></span>${extra}</div>`;
+const ic = (p: string) => `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">${p}</svg>`;
+const ICON: Record<string, string> = {
+  you: '<circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/>',
+  mod: '<path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M9 12l2 2 4-4"/>',
+  cap: '<path d="M12 3v18M12 4c3 0 5 1.5 7 1.5V13c-2 0-4-1.5-7-1.5"/><circle cx="12" cy="21" r="1"/>',
+  cam: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3"/>',
+  ghost: '<path d="M6 20V10a6 6 0 0 1 12 0v10l-2-1.5-2 1.5-2-1.5-2 1.5-2-1.5z"/><circle cx="10" cy="11" r="1"/><circle cx="14" cy="11" r="1"/>',
+  mic: '<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/>',
+  grid: '<rect x="4" y="4" width="16" height="16" rx="2"/><path d="M4 9.3h16M4 14.6h16M9.3 4v16M14.6 4v16"/>',
+  skull: '<path d="M12 3a7 7 0 0 0-7 7c0 2.5 1.3 4 3 5v3h8v-3c1.7-1 3-2.5 3-5a7 7 0 0 0-7-7z"/><circle cx="9.5" cy="10.5" r="1.4"/><circle cx="14.5" cy="10.5" r="1.4"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+};
+const JOURNEY = [
+  ["🎬", "The Captain calls a game", "One game at a time, started from the Control Room."],
+  ["📱", "You play on /live", "Tap your answer in the Play panel, on any device."],
+  ["📺", "It shows on stream", "Everyone watching sees the result together."],
+  ["⭐", "XP lands", "Paid when the result is revealed. A Prediction pick pays at the lock."],
+] as const;
+const STAGES = [
+  ["s-questions", "Questions", "Ask Boomer anything. The top-voted questions get answered on stream.", "q", "<i></i><i></i><i></i>"],
+  ["s-hot-seat", "Hot Seat", "Three members answer one card. Chat votes for the best answer.", "hs", "<i></i><i></i><i></i>"],
+  ["s-wyr", "Would You Rather", "Two options, one vote. See how everyone split.", "wyr", "<i></i><em>OR</em><i></i>"],
+  ["s-predictions", "Predictions", "Call what happens next in the game. Right calls pay extra.", "pr", "<i></i><i></i><i></i>"],
+] as const;
+const HS_FLOW = [
+  ["Pick", "The séance board (or the wheel) draws 3 from members checked in this beat, plus anyone who tapped Put me in.", ""],
+  ["I'm in", "Tap within 15 seconds or your seat goes to someone else.", "15 s"],
+  ["Answer", "Type your answer to the card. 140 characters.", "60 s"],
+  ["Vote", "Everyone checked in this beat votes for the best one, the players too. Never for yourself.", "30 s"],
+  ["Reveal", "Winner gets 25 XP, other players 5. A tie: every tied player wins. No votes at all: everyone who answered gets 5.", ""],
+] as const;
+const PRED_FLOW = [
+  ["Pick", "Choose an answer. You can change it until it locks.", "up to 3 min"],
+  ["Locked", "The Captain locks it, or it locks itself after 3 minutes. Now everyone sees how the picks split, and every pick earns 3 XP.", "+3 XP"],
+  ["Called", "A mod on duty calls what happened. The Captain confirms.", ""],
+  ["Result", "Everyone who called it right gets 10 more XP.", "+10 XP"],
+] as const;
+const FLIPS = [
+  ["+15", "Question answered", "Yours, live on stream", "gold", "When", "Boomer answers your question on stream."],
+  ["+25", "Hot Seat win", "Best answer of the round", "gold", "When", "Chat votes your answer the best. Ties all win."],
+  ["+5", "Hot Seat player", "You took the seat", "teal", "When", "You answered but didn't win the round (or nobody voted)."],
+  ["+3", "Would You Rather", "For voting", "teal", "When", "The split is revealed. Every voter gets it."],
+  ["+3", "Prediction pick", "Paid at the lock", "primary", "When", "The Prediction locks. You keep it even if it's voided later."],
+  ["+10", "Called it", "Right Prediction", "primary", "When", "The result is confirmed and you picked it."],
+  ["100", "Nightly cap", "XP per stream", "red", "Shared", "With Control Room check-ins and every game. Keep playing after that."],
+  ["0", "Cost to enter", "Always free", "red", "Why", "Members can be 13. Nobody wagers anything."],
+] as const;
+const RULES = [
+  ["Be kind", "Roast the game, not each other."],
+  ["No links", "Answers and questions with links are refused."],
+  ["Keep it private", "No real names, addresses or personal info."],
+  ["Mods have the final say", "They can hide an answer or a question."],
+  ["One account each", "Play with one account."],
+] as const;
+const ROLES = [
+  ["you", "You", ["Ask and vote on questions", "Tap Put me in for the Hot Seat", "Vote and make picks"]],
+  ["mod", "Mods on duty", ["Approve or hide questions", "Hide a Hot Seat answer", "Call Prediction results", "Suggest new cards"]],
+  ["cap", "The Captain", ["Starts and ends every game", "Runs Questions sessions", "Confirms Prediction results"]],
+  ["boss", "Boomer", ["Can do all of the above", "Writes and approves every card", "Answers your questions live"]],
+] as const;
+const SOON = [
+  ["cam", "Caption This", "A frame from the stream. Write the best caption; chat picks the winner."],
+  ["ghost", "Dead Air", "A crew-hosted mystery solved across every chat room at once."],
+  ["mic", "Scream Off", "Chat rooms compete to be loudest. Hosted by the crew."],
+  ["grid", "Scare Bingo", "Fill your card as the scares happen on screen."],
+  ["skull", "Body Count", "Guess how many times Boomer dies tonight."],
+  ["plus", "And more", "Spirit Board, Dare Deck, Haunted Trivia, Scream-o-meter, Polls and others."],
+] as const;
+const FAQS = [
+  ["Do Chat Games cost anything?", "Never. Every game is free to play, and nobody can bet XP or anything else."],
+  ["Why not just use Twitch polls?", "Twitch polls only reach people watching on Twitch. Chat Games run on the site, so YouTube, TikTok and Twitch viewers all play together."],
+  ["Do I have to check in?", "Only to vote in the Hot Seat: voting needs a check-in this beat, and the players vote too. Anyone can tap Put me in and be picked, checked in or not. Questions, Would You Rather and Predictions work for any member."],
+  ["How do I get into the Hot Seat?", "Check in this beat, or tap Put me in on the Play panel while Hot Seat is running. Nobody plays twice in one stream, so everyone gets a turn."],
+  ["What if a Prediction is called wrong, or never happens?", "The Captain confirms every call and can correct a result once: the +10 moves to the people who were right. If it never happens before the stream ends, it's void: nobody gets the +10, but you keep the 3 XP for your pick."],
+  ["Is there a limit on XP?", "Yes: 100 XP per stream, shared with Control Room check-ins. You can keep playing after that; tonight's XP is just maxed. Mods on duty play for fun: they earn Gears for hosting instead."],
+] as const;
+---
+<BaseLayout title="How Chat Games work" description="Ask questions, take the Hot Seat, vote, and call what happens next. How every Chat Game works, what each one pays, and the house rules.">
+  <LiveBar slot="bar" />
+  <div class="cgh bt-zone" data-cgh>
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+        <section class="cgh-hero" aria-labelledby="h-hero">
+          <div>
+            <p class="cgh-kicker">How it works</p>
+            <h1 class="bt-title bt-title--hero" id="h-hero">Chat Games</h1>
+            <p class="cgh-lede">Play along with the stream from wherever you watch. Ask questions, take the Hot Seat, vote, and call what happens next. Every game is free, and every game pays XP.</p>
+            <div class="ai-acts">
+              <a class="bt-btn bt-btn--primary" href="#s-wyr">Try a game now</a>
+              <a class="bt-btn bt-btn--secondary bt-when-live" href="/live">Watch live</a>
+              <span class="bt-when-off"><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN}>Join free to play</a></span>
+            </div>
+          </div>
+          <div class="cgh-wall" data-cgh-wall role="img" aria-label="A phone's Play panel: a tap on Hide in a locker. On stream, the split shows 58% to 42%, and the voter gets +3 XP.">
+            <div class="cgh-tv" aria-hidden="true"><span class="cgh-tv-live">● LIVE</span>
+              <div class="cgh-tv-in"><b>Would you rather…</b>
+                <div class="cgh-tv-cards"><div class="cgh-tv-card" data-tv="a"><i></i><span><em data-tvp="a"></em>Hide in a locker</span></div><span class="cgh-tv-or">OR</span><div class="cgh-tv-card" data-tv="b"><i></i><span><em data-tvp="b"></em>Crawl the vent</span></div></div>
+              </div>
+            </div>
+            <div class="cgh-phone" aria-hidden="true"><small>Play panel</small><div class="cgh-phone-btn" data-ph="a">Hide in a locker</div><span class="cgh-phone-or">OR</span><div class="cgh-phone-btn" data-ph="b">Crawl the vent</div></div>
+            <span class="cgh-tap" aria-hidden="true"></span><span class="cgh-xp" aria-hidden="true">+3 XP</span>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-what" aria-labelledby="h-s-what">
+          <Fragment set:html={chapter(1, "s-what", "What Chat Games are", "Games you play with the whole stream, from Twitch, YouTube, TikTok or the site. They run here because Twitch polls only reach Twitch.")} />
+          <ol class="ai-jr ai-jr--4" data-journey>
+            {JOURNEY.map(([e, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{e}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+          <div class="cgh-stages">
+            {STAGES.map(([id, t, p, k, sc]) => (
+              <a class="bt-card bt-card--door cgh-stage" href={`#${id}`}>
+                <div class={`cgh-sc cgh-sc--${k}`} aria-hidden="true" set:html={sc} />
+                <b>{t}</b><p>{p}</p>
+                <span class="bt-card-go">How it works <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8h10M9 4l4 4-4 4" /></svg></span>
+              </a>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-questions" aria-labelledby="h-s-questions">
+          <Fragment set:html={chapter(2, "s-questions", "Questions", "Your questions for Boomer, voted up by everyone. The top ones get answered live.")} />
+          <div class="cgh-lanes">
+            <div class="cgh-lane"><header><span class="bt-badge bt-badge--blue">Tonight</span><b>Asked while live</b></header><p>Answered tonight if they rise to the top. When the stream ends, questions with 5 or more votes move to Standing; the rest are cleared.</p></div>
+            <div class="cgh-lane"><header><span class="bt-badge bt-badge--gold">Standing</span><b>Asked any time</b></header><p>They wait for the next Questions session. If nobody answers one in 30 days, it's archived.</p></div>
+          </div>
+          <p class="cgh-p">Up to <b>200 characters</b>, and up to <b>3 open questions</b> at a time. One vote per question, never on your own, and you can take it back. New accounts (under 7 days) wait for a mod before their question shows. When yours is answered on stream you get <b>15 XP</b>, and if you checked in this beat, the card on stream says you're here. <a href="/live/questions">See the questions</a>.</p>
+          <div class="cgh-try" data-try="questions">
+            <Fragment set:html={tryHead("Ask one and vote. Nothing is saved.", `<span class="bt-badge bt-badge--gray" data-q-open>0 of 3 open</span>`)} />
+            <div class="cgh-play">
+              <div class="cgh-ask">
+                <div class="bt-field"><label class="bt-label" for="cgh-qa">Your question</label><textarea class="bt-textarea" id="cgh-qa" maxlength="200" rows="2" placeholder="Ask Boomer anything"></textarea><span class="bt-hint"><span class="cgh-count" data-q-count>0</span> / 200</span></div>
+                <button type="button" class="bt-btn bt-btn--primary" data-q-ask>Ask</button>
+              </div>
+              <p class="cgh-note" data-q-full hidden>That's 3 open questions. In the real queue you'd withdraw one, or wait for one to be answered.</p>
+              <div class="cgh-qlist" data-q-list></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-hot-seat" aria-labelledby="h-s-hot-seat">
+          <Fragment set:html={chapter(3, "s-hot-seat", "Hot Seat", "Three players, one card, and chat picks the best answer.")} />
+          <ol class="cgh-flow">
+            {HS_FLOW.map(([b, t, s], i) => <li>{i > 0 && <span class="cgh-flow-arr" aria-hidden="true">→</span>}<div class="cgh-flow-step" tabindex="0">{s && <small>{s}</small>}<b>{b}</b><span>{t}</span></div></li>)}
+          </ol>
+          <p class="cgh-p">Want in? Tap <b>Put me in</b> on the Play panel while Hot Seat is running: anyone can be picked, checked in or not. Nobody plays twice in one stream, so everyone gets a turn. Voting needs a check-in this beat. Mods can hide an answer before the reveal if it breaks the house rules; that player is out of the round.</p>
+          <div class="cgh-try" data-try="hot-seat"></div>
+        </section>
+
+        <section class="ai-sec" id="s-wyr" aria-labelledby="h-s-wyr">
+          <Fragment set:html={chapter(4, "s-wyr", "Would You Rather", "Two terrible choices. Pick one before the timer runs out.")} />
+          <p class="cgh-p">Voting is open for <b>45 seconds</b> (the Captain can make it 30 or 60) and you can change your mind until it closes. The split stays hidden until the reveal, so early votes don't sway anyone. Any member can vote, checked in or not, and every voter gets <b>3 XP</b>. On stream it looks just like your Play panel.</p>
+          <div class="cgh-try" data-try="wyr"></div>
+        </section>
+
+        <section class="ai-sec" id="s-predictions" aria-labelledby="h-s-predictions">
+          <Fragment set:html={chapter(5, "s-predictions", "Predictions", "Call what happens next. Then watch it play out.")} />
+          <ol class="cgh-flow">
+            {PRED_FLOW.map(([b, t, s], i) => <li>{i > 0 && <span class="cgh-flow-arr" aria-hidden="true">→</span>}<div class="cgh-flow-step" tabindex="0">{s && <small>{s}</small>}<b>{b}</b><span>{t}</span></div></li>)}
+          </ol>
+          <p class="cgh-p">The <b>3 XP for your pick</b> is paid the moment it locks, and it's yours to keep. A locked Prediction can wait in the background while other games run (up to three at once). If it never happens before the stream ends, it's <b>void</b>: nobody gets the +10, and you still keep the 3 XP. If a result was called wrong, the Captain can correct it once, and the +10 moves to the right people.</p>
+          <div class="cgh-try" data-try="predictions"></div>
+        </section>
+
+        <section class="ai-sec" id="s-xp" aria-labelledby="h-s-xp">
+          <Fragment set:html={chapter(6, "s-xp", "XP and fair play", "What each game pays, and the house rules that keep it fun.")} />
+          <div class="bt-flip-grid">
+            {FLIPS.map(([v, b, s, tone, k, back]) => (
+              <button type="button" class={`bt-flip bt-flip--${tone}`} aria-label={`${v} XP, ${b}: ${back}`}>
+                <span class="bt-flip-in">
+                  <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{v}</span><b>{b}</b><span class="bt-flip-sub">{s}</span><span class="bt-flip-hint">Hover or tap</span></span>
+                  <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">{k}</span><span class="bt-flip-v">{back}</span><span class="bt-flip-tag">{b}</span></span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <div class="cgh-xpnote"><span set:html={boombotIcon("cgh-bb-note")} /><span><b>Mods on duty</b> can play every game, but they don't earn game XP that stream. They earn Gears for hosting instead. Over the cap? Keep playing; tonight's XP is just maxed.</span></div>
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-who" aria-labelledby="h-s-who">
+          <Fragment set:html={chapter(7, "s-who", "Who runs it", "Everyone has a part. Hover or tap a card.")} />
+          <div class="cgh-roles">
+            {ROLES.map(([k, b, list]) => (
+              <div class:list={["cgh-role", { "is-boss": k === "boss" }]} tabindex="0">
+                <span class="cgh-role-ic">{k === "boss" ? <Mascot decorative /> : <Fragment set:html={ic(ICON[k])} />}</span>
+                <b>{b}</b>
+                <ul>{list.map((x) => <li>{x}</li>)}</ul>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-next" aria-labelledby="h-s-next">
+          <Fragment set:html={chapter(8, "s-next", "Coming next", "New games join this page as they arrive.")} />
+          <div class="cgh-soon">
+            {SOON.map(([k, b, p]) => <div class="bt-card"><header><span class="cgh-soon-ic" set:html={ic(ICON[k])} /><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></header><b>{b}</b><p>{p}</p></div>)}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-ask" aria-labelledby="h-s-ask">
+          <Fragment set:html={chapter(9, "s-ask", "Ask BOOMBOT", "Quick answers from BOOMBOT, the site's helper robot. Tap a question.")} />
+          <div class="bt-chat">
+            {FAQS.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cgh-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`cgh-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`cgh-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="cgh-close" aria-labelledby="h-close">
+          <Mascot aware decorative />
+          <div class="bt-when-live"><h2 id="h-close">Boomer is live right now</h2><p data-cgh-livegame>Jump in from the Play panel on /live.</p></div>
+          <div class="bt-when-off">
+            <div class="bt-when-visitor"><h2>Ready to play?</h2><p>Make a free account and you can play in the next stream. Members 13 and up.</p></div>
+            <div class="bt-when-signed-in"><h2 data-cgh-next-h>The next games start at the next stream</h2><p data-cgh-next-p>The Captain calls the first game soon after Start. Ask a question now and it waits for the next session.</p></div>
+          </div>
+          <div class="ai-acts">
+            <a class="bt-btn bt-btn--primary bt-when-live" href="/live">Watch live and play</a>
+            <span class="bt-when-off ai-acts">
+              <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN}>Join free to play</a>
+              <a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="signin">Sign in</a>
+              <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/live/questions">Ask a question now</a>
+              <a class="bt-btn bt-btn--secondary bt-when-signed-in" href="/schedule">See the schedule</a>
+            </span>
+          </div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/live/chat-games-how";
+</script>

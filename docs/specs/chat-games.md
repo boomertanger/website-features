@@ -318,6 +318,22 @@ The member-facing story page and the Chat Games home. Approved mockup: chat-game
 
 **Frame.** TocLayout rail (chips with a gold progress bar at ≤ 640px), `.bt-chapter--ghost` chapters, hero H2 **Live wall** (a stream screen and a phone: a tap on the phone's Play panel, the split appearing on stream, then +3 XP, looping; a still frame under reduced motion), the How it works journey, stage cards with hover scenes, flows, `.bt-flip` medals, `.bt-placard`, `.bt-chat` Ask BOOMBOT with `boombotIcon(uid)`, the real mascot, and a closing call to action by state (visitor: Join free to play / Sign in; member off air: the next stream's time + Ask a question now; live: Watch live and play).
 
+**As built (part 6).**
+- **Where:** `site/src/pages/live/chat-games.astro` with `scripts/live/chat-games-how.ts` and `styles/chat-games-how.css` (prefix `cgh-`), under the Live bar. The Play nav group lists it always on (it's public, like /crew and /contact).
+- **Links:** `mountPlay` adds the "How Chat Games work" link after the Play panel's body, so every page hosting the panel gets it. /live's story section gains chapter 4 "Chat Games"; its chapter 3 and the Break 1 card no longer say Questions is coming soon.
+- **Try it:** the examples use the kit (`.bt-qcard`, `.bt-seance` for the mini draw, `.bt-choice`) with local state only. `choicesHtml` gained `unit`, `mark` and `mineLabel`, so Hot Seat's vote reads "16 votes · the winner" and "✓ Your vote".
+- **Closing:** switched with the kit's state helpers (`.bt-when-live` / `.bt-when-off` × `.bt-when-visitor` / `.bt-when-signed-in`). Live: the running game's title from `public/live` (the shared listener). A member off air: the next stream's day and time from `loadNextStream()` (`public/schedule` and the published streams).
+- **Text vs the mockup:**
+  - A Prediction pick's 3 XP is paid at the lock and kept on void; void only means no +10.
+  - Anyone can tap Put me in and be picked; voting needs a check-in this beat, and players vote too.
+  - House rule 5 is "One account each. Play with one account."
+  - Would You Rather is 45 s by default (30 or 60 if the Captain picks).
+  - Predictions lock themselves after 3 minutes; up to three wait at once.
+  - Hot Seat with no votes pays 5 to everyone who answered.
+  - Questions can't be voted on by their asker.
+  - XP for a Prediction pick lands at the lock, not the reveal.
+  - Boomer writes and approves the cards; mods suggest cards; the Captain or Boomer corrects a result.
+
 **Chapters:** 1 What Chat Games are (journey: the Captain calls a game → you play on /live → it shows on stream → XP lands; four stage cards); 2 Questions (lanes, limits; Try it: ask and vote); 3 Hot Seat (round flow; Try it: draw, I'm in, answer, vote, reveal); 4 Would You Rather (Try it: vote, reveal, next prompt); 5 Predictions (flow; Try it: pick, lock, a mod calls it, the Captain confirms); 6 XP and fair play (eight flip medals incl. the 100 XP cap and free entry; the mods-earn-Gears note; the House rules placard: Be kind, No links, Keep it private, Mods have the final say, One account each); 7 Who runs it (role cards); 8 Coming next (Soon cards); 9 Ask BOOMBOT (six questions).
 
 ## 15. Edge cases
