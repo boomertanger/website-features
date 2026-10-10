@@ -155,6 +155,28 @@ assert.deepEqual(L.vaultBadges(4), []);
 assert.deepEqual(L.vaultBadges(30), ["vault-critic-5", "vault-critic-15", "vault-critic-30"]);
 assert.equal(L.BADGE_IDS.length, 12, "first rating, Critic I-IV, Full Coverage, Tester I-III, Vault Critic I-III");
 
+// ---------- links: paths and open counts (§3a) ----------
+assert.equal(L.pathOf("/Arcade/Tap-The-Splat/?x=1#top"), "/arcade/tap-the-splat", "query, hash and the trailing slash go; case is ignored");
+assert.equal(L.pathOf("https://boomertanger.com/games/silent-hill"), "/games/silent-hill");
+assert.equal(L.pathOf("staging.boomertanger.com/crew"), "/crew");
+assert.equal(L.pathOf("https://boomertanger.com"), "/");
+assert.equal(L.pathOf("the leaderboard on the tap game"), null, "plain words have no path");
+assert.equal(L.pathOf(""), null);
+const linkItems = [
+  { id: "home", status: "live", routes: ["/"] }, { id: "game-vault", status: "live", routes: ["/games", "/games/how-it-works", "/games/view"] }, { id: "game-vault-queue", status: "live", routes: ["/games/queue"] },
+  { id: "crew-academy", status: "live", routes: ["/crew/academy", "/crew/academy/[slug]"] }, { id: "old", status: "retired", routes: ["/old"] }, { id: "drops", status: "live", routes: [] },
+];
+assert.equal(L.serviceForPath("/games/queue", linkItems), "game-vault-queue", "an exact route wins over a pattern");
+assert.equal(L.serviceForPath("/games/silent-hill-2", linkItems), "game-vault", "/games/view serves every /games/<slug>");
+assert.equal(L.serviceForPath("/games/a/b", linkItems), null, "a pattern is one segment");
+assert.equal(L.serviceForPath("/crew/academy/chat-basics", linkItems), "crew-academy", "[slug]");
+assert.equal(L.serviceForPath("/", linkItems), "home");
+assert.equal(L.serviceForPath("/old", linkItems), null, "retired services are left out");
+assert.equal(L.serviceForPath("/nowhere", linkItems), null);
+assert.ok(L.routeMatches("/crew/academy/[slug]", "/crew/academy/x") && !L.routeMatches("/view", "/x"), "a bare /view isn't a pattern");
+assert.equal(L.openBugs([{ status: "open" }, { status: "confirmed" }, { status: "in_progress" }, { status: "fixed" }, { status: "wont_fix" }, { status: "cant_reproduce" }, { status: "duplicate" }, { status: "open", hidden: true }]), 4, "open, confirmed, in progress (hidden ones too)");
+assert.equal(L.openIdeas([{ status: "submitted" }, { status: "under_review" }, { status: "planned" }, { status: "in_progress" }, { status: "shipped" }, { status: "declined" }]), 4);
+
 // ---------- rate limits ----------
 assert.ok(!L.overLimit("rate", 59) && L.overLimit("rate", 60), "60 ratings an hour");
 assert.ok(!L.overLimit("test", 9) && L.overLimit("test", 10), "10 tests an hour");
@@ -341,6 +363,62 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   for (const a of ["markTested", "linkVideo", "setCoversVersion", "hideComment", "hide", "retire"]) assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === a), `adminLog ${a}`);
 
 
+
+  // ---------- links: Bug Zapper and Feature Lab (§3a) ----------
+  {
+    const links = require("../lib/services/links").makeLinks(wdb, { now: () => clock });
+    assert.equal(await links.validServiceId("bug-zapper"), "bug-zapper");
+    assert.equal(await links.validServiceId("shop"), null, "a retired service isn't valid");
+    assert.equal(await links.validServiceId("nope"), null);
+    assert.equal(await links.validServiceId("../x"), null);
+    assert.equal(await links.resolve({ serviceId: "nope", page: "https://boomertanger.com/arcade/tap-the-splat" }), "tap-the-splat", "an invalid id is dropped, the page decides");
+    assert.equal(await links.resolve({ serviceId: "bug-zapper", page: "/arcade" }), "bug-zapper", "a valid id wins");
+    assert.equal(await links.resolve({ page: "the tap game" }), null);
+    const lab = require("../lib/lab").build({ adminLogEntry, now: () => clock, factory: fakeFactory, grant: fakeGrant, crewHooks: { noteLabReview: async () => ({}) } });
+    const bugs = require("../lib/bugs").build({ adminLogEntry, now: () => clock, factory: fakeFactory, grant: fakeGrant, crewHooks: { noteBugTriage: async () => ({}) }, cloud: {}, cloudCreds: () => ({}), cloudSecrets: [], performAssetDeletion: async () => ({}), cloudinaryDelete: async () => ({}), recordAssetCreated: async () => null, fetch: async () => ({}) });
+    const as = (uid, fns2, fn, data) => fns2[fn].run({ auth: { uid, token: { email_verified: true } }, data });
+    let tok = 0; const token = () => `svc_tok_${String(++tok).padStart(6, "0")}`;
+    const report = (o) => ({ title: "The board never loads", whatHappened: "It spins forever on my phone after a run.", severity: "minor", page: "/arcade/tap-the-splat/leaderboards", token: token(), ...o });
+    const r1 = await as("fan", bugs.functions, "bugSubmit", report({}));
+    assert.equal((await get(`sites/boomertanger/bugs/main/reports/${r1.id}`)).serviceId, "tap-the-splat", "no serviceId: set from the page's path");
+    const r2 = await as("fan", bugs.functions, "bugSubmit", report({ serviceId: "bug-zapper" }));
+    assert.equal((await get(`sites/boomertanger/bugs/main/reports/${r2.id}`)).serviceId, "bug-zapper", "a valid serviceId is kept");
+    const r3 = await as("fan", bugs.functions, "bugSubmit", report({ serviceId: "made-up", page: "Somewhere on the site" }));
+    assert.equal((await get(`sites/boomertanger/bugs/main/reports/${r3.id}`)).serviceId, null, "an invalid id is dropped, never refusing the report");
+    const i1 = await as("fan", lab.functions, "labSubmit", { title: "Show the queue on stream", description: "A panel with the next three games, please.", area: "stream", serviceId: "game-vault", token: token() });
+    const i2 = await as("fan", lab.functions, "labSubmit", { title: "A darker theme option", description: "Even darker for late night streams.", area: "site", serviceId: "shop", token: token() });
+    assert.equal((await get(`sites/boomertanger/lab/main/ideas/${i1.id}`)).serviceId, "game-vault");
+    assert.equal((await get(`sites/boomertanger/lab/main/ideas/${i2.id}`)).serviceId, null, "a retired service is dropped; the area stays");
+    assert.equal((await get(`sites/boomertanger/lab/main/ideas/${i2.id}`)).area, "site");
+    // the counts: recount the service a change touches (the fake has no triggers, so the bodies run here)
+    const rep1 = await get(`sites/boomertanger/bugs/main/reports/${r1.id}`);
+    assert.deepEqual(await hub.recountLinks("bugs", null, rep1), { "tap-the-splat": 1 });
+    assert.equal((await get(`${BASE}/items/tap-the-splat`)).bugs.open, 1);
+    assert.equal((await get(`${BASE}/summary/main`)).rows["tap-the-splat"].bugs.open, 1, "the summary row follows");
+    assert.deepEqual(await hub.recountLinks("bugs", rep1, { ...rep1, editCount: 1 }), { skipped: true }, "an edit that moves neither the service nor the status recounts nothing");
+    // an admin moves the report to another service: both are recounted
+    assert.equal(await why(bugs.editBugReport({ auth: { uid: "fan", token: { email_verified: true } }, data: { id: r1.id, changes: { serviceId: "game-vault" }, before: { serviceId: "tap-the-splat" } } })), "notAdmin");
+    assert.equal(await why(bugs.editBugReport({ auth: { uid: "adm", token: { email_verified: true } }, data: { id: r1.id, changes: { serviceId: "made-up" }, before: { serviceId: "tap-the-splat" } } })), "invalid", "an admin's pick must be a real service");
+    await bugs.editBugReport({ auth: { uid: "adm", token: { email_verified: true } }, data: { id: r1.id, changes: { serviceId: "game-vault" }, before: { serviceId: "tap-the-splat" } } });
+    const rep1b = await get(`sites/boomertanger/bugs/main/reports/${r1.id}`);
+    assert.equal(rep1b.serviceId, "game-vault");
+    assert.deepEqual(await hub.recountLinks("bugs", rep1, rep1b), { "tap-the-splat": 0, "game-vault": 1 }, "the old and the new service");
+    assert.ok(logs.some((l) => l.feature === "bugZapper" && l.action === "edit" && l.changes && l.changes.serviceId), "logged as today");
+    // fixed: no longer open; cleared: the service drops it
+    await wdb.doc(`sites/boomertanger/bugs/main/reports/${r1.id}`).update({ status: "fixed" });
+    assert.deepEqual(await hub.recountLinks("bugs", rep1b, { ...rep1b, status: "fixed" }), { "game-vault": 0 });
+    await bugs.editBugReport({ auth: { uid: "adm", token: { email_verified: true } }, data: { id: r2.id, changes: { serviceId: "" }, before: { serviceId: "bug-zapper" } } });
+    assert.equal((await get(`sites/boomertanger/bugs/main/reports/${r2.id}`)).serviceId, null, "an empty serviceId clears it");
+    // ideas
+    const idea1 = await get(`sites/boomertanger/lab/main/ideas/${i1.id}`);
+    assert.deepEqual(await hub.recountLinks("ideas", null, idea1), { "game-vault": 1 });
+    await lab.editLabIdea({ auth: { uid: "adm", token: { email_verified: true } }, data: { id: i1.id, changes: { serviceId: "live" }, before: { serviceId: "game-vault" } } });
+    const idea1b = await get(`sites/boomertanger/lab/main/ideas/${i1.id}`);
+    assert.deepEqual(await hub.recountLinks("ideas", idea1, idea1b), { "game-vault": 0, live: 1 });
+    assert.deepEqual(await hub.recountLinks("ideas", idea1b, { ...idea1b, status: "shipped" }), { live: 1 }, "the fake still holds the old status: recounted from the documents");
+    await wdb.doc(`sites/boomertanger/lab/main/ideas/${i1.id}`).update({ status: "shipped" });
+    assert.deepEqual(await hub.recountLinks("ideas", idea1b, { ...idea1b, status: "shipped" }), { live: 0 }, "shipped is no longer open");
+  }
 
   // ---------- hooks: badges, Night Shift, crew tasks ----------
   const paidTo = (uid) => badgeCalls.filter((b) => b.uid === uid && ledger.has(`${uid}:${b.id}`)).map((b) => b.id);

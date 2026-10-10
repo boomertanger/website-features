@@ -17,6 +17,8 @@
 // existing rateLimits collection as bugs_<kind>_<hash(uid|period)>. Logs: adminLog (feature "bugZapper"), activityLog (feature "bug-zapper", type fixed, never for
 // a private or hidden report), notifyOutbox bug-new (admins) and report-update (the reporter on every status change and staff reply; everyone who bit on Fixed).
 // Night Shift: type "bugs" (report, confirmed). Callable errors carry details.reason so the site can show the right message.
+// Service Hub (§3a): bugSubmit takes an optional serviceId; without a valid one it is set from the reported page's path (lib/services/links.js), and an
+// invalid one is dropped (a report is never refused for it). The service's open-bug count is a trigger in lib/services.
 //
 // build(deps) is what scripts/check-bugs.js runs against the in-memory Firestore. deps: adminLogEntry, now(), factory { recordFactoryEvent }, grant { grantBadge },
 // crewHooks { noteBugTriage }, crewStore (the grade check on delete), cloud (lib/cloudinary.js), cloudCreds(), cloudSecrets, performAssetDeletion, cloudinaryDelete,
@@ -54,6 +56,8 @@ function build(deps = {}) {
   let grantMod = deps.grant, hooksMod = deps.crewHooks, crewStoreMod = deps.crewStore, cloudMod = deps.cloud;
   const grant = () => (grantMod ||= require("../rewards/grant"));
   const hooks = () => (hooksMod ||= require("../crew/hooks"));
+  let linksMod = deps.links;
+  const links = () => (linksMod ||= require("../services/links").makeLinks(db));   // Service Hub: which service a report is about
   const crewStore = () => (crewStoreMod ||= require("../crew/store").makeStore({ db, adminLogEntry: deps.adminLogEntry }));
   const cloud = () => (cloudMod ||= require("../cloudinary"));
   const fetchFn = deps.fetch || ((...a) => fetch(...a));
@@ -81,6 +85,7 @@ function build(deps = {}) {
     const v = L.validateReport(request.data);
     if (!v.ok) throw raise(v);
     const { title, page, whatHappened, expected, steps, severity, device, wantsShot, token } = v.value;
+    const serviceId = await links().resolve({ serviceId: request.data && request.data.serviceId, page });
     // a double click or a retry with the same token is the same report, and costs no part of the daily limit
     const already = await B.seenToken(tokenRef(token), c.uid, "reportId");
     if (already) return { ok: true, id: already, already: true, counted: false };
@@ -89,7 +94,7 @@ function build(deps = {}) {
     const ref = db.collection(reportsPath).doc();
     const by = byOf(c);
     const report = {
-      title, page, whatHappened, expected, steps, severity, status: "open", priority: null, private: v.value.private, hidden: false, closed: false, by,
+      title, page, whatHappened, expected, steps, severity, serviceId, status: "open", priority: null, private: v.value.private, hidden: false, closed: false, by,
       meTooCount: 0, threadCount: 0, statusChangedAt: Timestamp.fromMillis(at), statusHistory: [{ status: "open", changedBy: { uid: c.uid, handle: c.handle }, changedAt: Timestamp.fromMillis(at) }],
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     };
@@ -331,7 +336,7 @@ function build(deps = {}) {
     bugMeToo: onCall(meToo), bugReply: onCall(reply), bugTriage: onCall(triage), bugHide: onCall(hide), bugDelete: onCall({ secrets }, remove),
     bugTidy: onSchedule({ schedule: "every day 04:30", timeZone: "America/Los_Angeles", secrets }, async () => { await tidy(); }),
   };
-  const editor = require("./edit")({ db, adminLogEntry: deps.adminLogEntry, performAssetDeletion: deps.performAssetDeletion, cloudCreds: deps.cloudCreds });
+  const editor = require("./edit")({ db, adminLogEntry: deps.adminLogEntry, performAssetDeletion: deps.performAssetDeletion, cloudCreds: deps.cloudCreds, links: links() });
   return { functions, ops: { submit, shotParams, attachShot, shotUrl, meToo, reply, triage, hide, remove, tidy }, editBugReport: editor.editBugReport, base };
 }
 

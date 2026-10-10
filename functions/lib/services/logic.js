@@ -231,10 +231,57 @@ const overLimit = (kind, count) => count >= LIMITS[kind].perHour;
 const limitTtlMs = () => 2 * 60 * 60 * 1000;
 const skipsLimits = (c) => !!(c && (c.isOwner || c.isAdmin));
 
+// ---------------------------------------------------------------------------------------------- links (§3a "Bugs and ideas")
+/** The path in what someone typed or the page sent: "/arcade/x?y#z", "https://boomertanger.com/arcade/x", "boomertanger.com/arcade/x". Null for plain words. */
+function pathOf(textIn) {
+  const t = String(textIn || "").trim();
+  if (!t) return null;
+  let p = null;
+  if (t.startsWith("/")) p = t;
+  else {
+    const m = /^(?:https?:\/\/)?[a-z0-9.-]+\.[a-z]{2,}(?::\d+)?(\/[^\s]*)?$/i.exec(t);
+    if (m) p = m[1] || "/";
+  }
+  if (!p) return null;
+  p = p.split(/[?#]/)[0].replace(/\/{2,}/g, "/");
+  if (p.length > 1) p = p.replace(/\/+$/, "");
+  return /\s/.test(p) ? null : p.toLowerCase();
+}
+const segs = (p) => p.split("/").filter(Boolean);
+/** A manifest route against a path: exact, or a [slug] segment (and a route served for every /x/<slug> through _redirects, written /x/view) matching one segment. */
+function routeMatches(route, path) {
+  const r = segs(String(route).toLowerCase()), p = segs(path);
+  if (r.length !== p.length) return false;
+  return r.every((s, i) => s === p[i] || /^\[[^\]]+\]$/.test(s) || (s === "view" && i === r.length - 1 && i > 0));
+}
+/**
+ * The service a path belongs to, from the items (retired ones left out): an exact route first; else the pattern with the most literal segments.
+ * Null when nothing matches.
+ */
+function serviceForPath(pathIn, items) {
+  const path = pathOf(pathIn);
+  if (!path) return null;
+  const live = (items || []).filter((it) => it && it.status !== "retired" && Array.isArray(it.routes));
+  for (const it of live) if (it.routes.some((r) => String(r).toLowerCase() === path)) return it.id;
+  let best = null, score = -1;
+  for (const it of live) for (const r of it.routes) {
+    if (!routeMatches(r, path)) continue;
+    const s = segs(String(r)).filter((x) => !/^\[[^\]]+\]$/.test(x) && x !== "view").length;
+    if (s > score) { best = it.id; score = s; }
+  }
+  return best;
+}
+const BUG_CLOSED = ["fixed", "wont_fix", "cant_reproduce", "duplicate"];
+const IDEA_CLOSED = ["shipped", "declined"];
+/** Open reports for a service (hidden ones still count: only staff see the number). */
+const openBugs = (reports) => reports.filter((r) => !BUG_CLOSED.includes(r.status)).length;
+const openIdeas = (ideas) => ideas.filter((i) => !IDEA_CLOSED.includes(i.status)).length;
+
 module.exports = {
   VALUES, TYPES, MANIFEST_TYPES, CORE_TYPES, STATUS, AUDIENCE, TALKBACK, DEVICES, ENVS, DAY, STREAM_RATE_DAYS, HISTORY_MAX, COMMENT_MAX, DISLIKE_MIN, LIMITS, SUMMARY_WARN_BYTES,
   popularity, audienceOpen, isCore, canRate, compareVersions, normalizeVersion, videoState, testState, ratedEveryCore, coverageCells, coverage,
   validateRating, validateTest, pushHistory, totalsOf, normalizeManifest, needsSetup, planSync, MANIFEST_FIELDS, summaryRow, publicRow,
   RATING_LADDER, TESTER_LADDER, VAULT_LADDER, FULL_COVERAGE, BADGE_IDS, ratingBadges, testerBadges, vaultBadges,
   periodKey, overLimit, limitTtlMs, skipsLimits,
+  pathOf, routeMatches, serviceForPath, BUG_CLOSED, IDEA_CLOSED, openBugs, openIdeas,
 };

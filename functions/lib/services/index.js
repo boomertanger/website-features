@@ -9,6 +9,8 @@
 //   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment, retire, hide (adminLog "serviceHub")
 //   Triggers: an Arcade game (games/{id}) → an arcadeGame item; a Vault game (vaultGames/{slug}) → a vaultGame item (retired while hidden); a stream
 //   reaching Ended → a stream item rateable for 14 days; a rating or a test → the item's totals, my/{uid} and the summary row.
+//   §3a: a Bug Zapper report or a Feature Lab idea with a serviceId → the service's bugs.open / ideas.open (old and new service recounted when the serviceId
+//   or the status changes; hidden reports still count, only staff see the number).
 //
 // Data (sites/boomertanger/services/main/…): the main doc { buildHash, syncedAt, count }; items/{serviceId}; ratings/{serviceId}__{uid};
 // tests/{serviceId}__{uid}__{version}; my/{uid}; summary/main { rows: { id: row } } (admin views); and public/services { services: [member-safe rows] }.
@@ -314,6 +316,26 @@ function build(deps = {}) {
     return { id };
   }
 
+  // ---------------------------------------------------------------------------------------------- open bugs and ideas per service (§3a)
+  const bugsCol = db.collection(`sites/${SITE_ID}/bugs/main/reports`), ideasCol = db.collection(`sites/${SITE_ID}/lab/main/ideas`);
+  /** Recounts the services a change touched (the old and the new serviceId). kind: "bugs" | "ideas". */
+  async function recountLinks(kind, before, after) {
+    const sids = [...new Set([before && before.serviceId, after && after.serviceId].filter((s) => typeof s === "string" && s))];
+    const moved = !before || !after || before.serviceId !== after.serviceId || before.status !== after.status;
+    if (!sids.length || !moved) return { skipped: true };
+    const out = {};
+    for (const sid of sids) {
+      const ref = R.item(sid);
+      if (!(await ref.get()).exists) continue;
+      const docs = (await (kind === "bugs" ? bugsCol : ideasCol).where("serviceId", "==", sid).get()).docs.map((d) => d.data());
+      const open = kind === "bugs" ? L.openBugs(docs) : L.openIdeas(docs);
+      await ref.update({ [`${kind}.open`]: open, updatedAt: ts(now()) });
+      await refreshRow(sid);
+      out[sid] = open;
+    }
+    return out;
+  }
+
   // ---------------------------------------------------------------------------------------------- the trigger bodies (exported for the check)
   async function ratingWritten(before, after) {
     const r = after || before;
@@ -354,12 +376,20 @@ function build(deps = {}) {
       if (event.params.siteId !== SITE_ID) return;
       await onVaultGame(event.params.slug, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
+    onBugReportService: onDocumentWritten(`sites/{siteId}/bugs/main/reports/{reportId}`, async (event) => {
+      if (event.params.siteId !== SITE_ID) return;
+      await recountLinks("bugs", data(event.data && event.data.before), data(event.data && event.data.after));
+    }),
+    onLabIdeaService: onDocumentWritten(`sites/{siteId}/lab/main/ideas/{ideaId}`, async (event) => {
+      if (event.params.siteId !== SITE_ID) return;
+      await recountLinks("ideas", data(event.data && event.data.before), data(event.data && event.data.after));
+    }),
     onStreamEndedService: onDocumentWritten(`sites/{siteId}/streams/{streamId}`, async (event) => {
       if (event.params.siteId !== SITE_ID) return;
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, syncManifests, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, refs: R };
+  return { functions, syncManifests, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
 }
 
 module.exports = { build };

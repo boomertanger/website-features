@@ -13,11 +13,11 @@ const L = require("./logic");
 const { SITE_ID, fail, callerInfo, requireAdmin } = require("../vault/common");
 
 const CONFLICT = "This was changed while you were editing.";
-const FIELDS = ["title", "description", "area"];
+const FIELDS = ["title", "description", "area", "serviceId"];   // serviceId: the Service Hub service it is about ("" clears it)
 const LOG_CAP = 2000;
 const cap = (v) => (typeof v === "string" && v.length > LOG_CAP ? v.slice(0, LOG_CAP) : v);
 
-module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry }) {
+module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, links = require("../services/links").makeLinks(db) }) {
   const { FieldValue } = admin.firestore;
 
   async function editLabIdea(request) {
@@ -28,10 +28,18 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry }) 
     if (!before || typeof before !== "object") throw fail("invalid-argument", "before is required.", "args");
     if (typeof reason !== "string" || reason.trim().length > 300) throw new HttpsError("invalid-argument", "Reason can be at most 300 characters.", { reason: "invalid", field: "reason" });
 
+
+    // serviceId (Service Hub §3a): "" or null clears it; an id must be a real, non-retired service (an admin's explicit pick is refused if it isn't)
+    if ("serviceId" in changes) {
+      const raw = changes.serviceId;
+      if (raw == null || raw === "") changes.serviceId = "";
+      else if (!(await links.validServiceId(raw))) throw new HttpsError("invalid-argument", "That isn't a service in the Service Hub.", { reason: "invalid", field: "serviceId" });
+    }
     const values = {};
     for (const [field, raw] of Object.entries(changes)) {
       if (!FIELDS.includes(field)) throw new HttpsError("invalid-argument", `${field} can't be edited.`, { reason: "invalid", field });
       if (!(field in before)) throw fail("invalid-argument", `before.${field} is required.`, "args");
+      if (field === "serviceId") { values[field] = raw; continue; }
       const v = L.validateEditField(field, raw);
       if (!v.ok) throw new HttpsError(v.code, v.message, { reason: v.reason, field: v.field });
       values[field] = v.value;
@@ -45,7 +53,7 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry }) 
       for (const f of Object.keys(values)) {
         if ((idea[f] ?? "") !== (before[f] ?? "")) throw new HttpsError("aborted", CONFLICT, { reason: "conflict", field: f });
         if (values[f] === (idea[f] ?? "")) continue;
-        update[f] = values[f];
+        update[f] = f === "serviceId" && !values[f] ? null : values[f];
         logChanges[f] = { before: cap(String(idea[f] ?? "")), after: cap(values[f]) };
       }
       if (!Object.keys(update).length) return { changed: false };

@@ -12,6 +12,7 @@
 // Data: lab/main/ideas/{id} (+ comments/{cid}, votes/{uid}), lab/main/myVotes/{uid}, lab/main/submitTokens/{token}; rate-limit counters in the existing
 // rateLimits collection as lab_<kind>_<hash(uid|period)>. Logs: adminLog (feature "featureLab"), activityLog (feature "feature-lab", types submitted,
 // status-changed, shipped, never for a hidden idea), notifyOutbox report-update on a status change. Night Shift: type "lab" (post, vote, shipped).
+// Service Hub (§3a): labSubmit takes an optional serviceId (kept only when it's a real, non-retired service; the area stays); the open-idea count is a trigger in lib/services.
 // Callable errors carry details.reason so the site can show the right message.
 //
 // build(deps) is what scripts/check-lab-wiring.js runs against the in-memory Firestore. deps: adminLogEntry, now(), factory { recordFactoryEvent },
@@ -43,6 +44,8 @@ function build(deps = {}) {
   const grant = () => (grantMod ||= require("../rewards/grant"));
   const hooks = () => (hooksMod ||= require("../crew/hooks"));
   const crewStore = () => (crewStoreMod ||= require("../crew/store").makeStore({ db, adminLogEntry: deps.adminLogEntry }));
+  let linksMod = deps.links;
+  const links = () => (linksMod ||= require("../services/links").makeLinks(db));   // Service Hub: which service an idea is about
 
   const B = makeBoards({
     db, now, adminLogEntry: deps.adminLogEntry, label: "lab", logKey: "featureLab", itemPath, factory: deps.factory,
@@ -59,6 +62,7 @@ function build(deps = {}) {
     const v = L.validateIdea(request.data);
     if (!v.ok) throw raise(v);
     const { title, description, area, token } = v.value;
+    const serviceId = await links().validServiceId(request.data && request.data.serviceId);
     // a double click or a retry with the same token is the same idea, and costs no part of the daily limit
     const already = await B.seenToken(tokenRef(token), c.uid, "ideaId");
     if (already) return { ok: true, id: already, already: true, counted: false };
@@ -67,7 +71,7 @@ function build(deps = {}) {
     const ref = db.collection(`${base}/ideas`).doc();
     const by = byOf(c);
     const idea = {
-      title, description, area, status: "submitted", priority: null, by, voteCount: 1, commentCount: 0, hidden: false,
+      title, description, area, serviceId, status: "submitted", priority: null, by, voteCount: 1, commentCount: 0, hidden: false,
       statusChangedAt: Timestamp.fromMillis(at), statusHistory: [{ status: "submitted", changedBy: { uid: c.uid, handle: c.handle }, changedAt: Timestamp.fromMillis(at) }],
       createdAt: FieldValue.serverTimestamp(), updatedAt: FieldValue.serverTimestamp(),
     };
@@ -209,7 +213,7 @@ function build(deps = {}) {
     labSubmit: onCall(submit), labVote: onCall(vote), labComment: onCall(comment),
     labTriage: onCall(triage), labHide: onCall(hide), labDelete: onCall(remove),
   };
-  const editor = require("./edit")({ db, adminLogEntry: deps.adminLogEntry, now });
+  const editor = require("./edit")({ db, adminLogEntry: deps.adminLogEntry, now, links: links() });
   return { functions, ops: { submit, vote, comment, triage, hide, remove }, editLabIdea: editor.editLabIdea, base };
 }
 

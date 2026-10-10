@@ -2,7 +2,8 @@
 // like the Game Vault's and Feature Lab's kinds, because this kind is gated on the site's roles (admin or owner), not on the legacy admins/{uid} allowlist.
 //
 //   adminEditItem({ feature: "bugReport", id, changes?, before?, removeShot?, reason })
-//   changes (any of): title, whatHappened, expected, steps, page, severity (the reporter's own words and severity; admins correct them here)
+//   changes (any of): title, whatHappened, expected, steps, page, severity (the reporter's own words and severity; admins correct them here), serviceId (the
+//   Service Hub service it is about; "" clears it)
 //   before: the current value of every changed field, as the editor loaded it (the same conflict check as the other kinds)
 //   removeShot: true removes the screenshot (through performAssetDeletion, the one delete path), which clears shotRef
 //
@@ -14,11 +15,11 @@ const L = require("./logic");
 const { SITE_ID, fail, callerInfo, requireAdmin } = require("../vault/common");
 
 const CONFLICT = "This was changed while you were editing.";
-const FIELDS = ["title", "whatHappened", "expected", "steps", "page", "severity"];
+const FIELDS = ["title", "whatHappened", "expected", "steps", "page", "severity", "serviceId"];
 const LOG_CAP = 2000;
 const cap = (v) => (typeof v === "string" && v.length > LOG_CAP ? v.slice(0, LOG_CAP) : v);
 
-module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, performAssetDeletion, cloudCreds }) {
+module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, performAssetDeletion, cloudCreds, links = require("../services/links").makeLinks(db) }) {
   const { FieldValue } = admin.firestore;
   const reportsPath = `sites/${SITE_ID}/bugs/main/reports`;
 
@@ -31,10 +32,18 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, pe
     if (!before || typeof before !== "object") throw fail("invalid-argument", "before is required.", "args");
     if (typeof reason !== "string" || reason.trim().length > 300) throw new HttpsError("invalid-argument", "Reason can be at most 300 characters.", { reason: "invalid", field: "reason" });
 
+
+    // serviceId (Service Hub §3a): "" or null clears it; an id must be a real, non-retired service (an admin's explicit pick is refused if it isn't)
+    if ("serviceId" in changes) {
+      const raw = changes.serviceId;
+      if (raw == null || raw === "") changes.serviceId = "";
+      else if (!(await links.validServiceId(raw))) throw new HttpsError("invalid-argument", "That isn't a service in the Service Hub.", { reason: "invalid", field: "serviceId" });
+    }
     const values = {};
     for (const [field, raw] of Object.entries(changes)) {
       if (!FIELDS.includes(field)) throw new HttpsError("invalid-argument", `${field} can't be edited.`, { reason: "invalid", field });
       if (!(field in before)) throw fail("invalid-argument", `before.${field} is required.`, "args");
+      if (field === "serviceId") { values[field] = raw; continue; }
       const v = L.validateEditField(field, raw);
       if (!v.ok) throw new HttpsError(v.code, v.message, { reason: v.reason, field: v.field });
       values[field] = v.value;
@@ -48,7 +57,7 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, pe
       for (const f of Object.keys(values)) {
         if ((report[f] ?? "") !== (before[f] ?? "")) throw new HttpsError("aborted", CONFLICT, { reason: "conflict", field: f });
         if (values[f] === (report[f] ?? "")) continue;
-        update[f] = values[f];
+        update[f] = f === "serviceId" && !values[f] ? null : values[f];
         logChanges[f] = { before: cap(String(report[f] ?? "")), after: cap(values[f]) };
       }
       if (!Object.keys(update).length) return { changed: false, report };

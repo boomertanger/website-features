@@ -85,7 +85,7 @@ function makeDb() {
       for (const [f, op, v] of this.filters) {
         out = out.filter((s) => {
           const x = s.get(f);
-          if (op === "==") return cmp(x, v) === 0 && x !== undefined;
+          if (op === "==") return x !== undefined && (x === null || v === null ? x === v : cmp(x, v) === 0);   // null equals only null, as in Firestore
           if (op === "<") return x != null && cmp(x, v) < 0;
           if (op === "<=") return x != null && cmp(x, v) <= 0;
           if (op === ">") return x != null && cmp(x, v) > 0;
