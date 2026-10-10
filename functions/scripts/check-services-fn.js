@@ -162,3 +162,171 @@ assert.equal(L.periodKey("rate", Date.UTC(2026, 9, 20, 14, 59)), "2026-10-20T14"
 assert.ok(L.skipsLimits({ isAdmin: true }) && !L.skipsLimits({ isMod: true }));
 
 console.log("check-services-fn: logic ok");
+// ================================================================================================ wiring (lib/services against the in-memory Firestore)
+const { makeDb } = require("./fixtures/fake-firestore");
+const admin = require("firebase-admin");
+process.env.GCLOUD_PROJECT ||= "boomertanger-staging";
+process.env.FIREBASE_CONFIG ||= JSON.stringify({ projectId: process.env.GCLOUD_PROJECT });
+if (!admin.apps.length) admin.initializeApp({ projectId: process.env.GCLOUD_PROJECT });
+const wdb = makeDb(); const realFs = admin.firestore;
+const fakeFs = () => wdb; fakeFs.Timestamp = realFs.Timestamp; fakeFs.FieldValue = realFs.FieldValue;
+Object.defineProperty(admin, "firestore", { value: fakeFs, configurable: true, writable: true });
+
+const SITE = "sites/boomertanger", BASE = `${SITE}/services/main`;
+let clock = Date.UTC(2026, 9, 20, 15, 0);
+const logs = [];
+const adminLogEntry = async (_d, f) => { logs.push(f); return { ...f, createdAt: realFs.Timestamp.now() }; };
+const hub = require("../lib/services").build({ adminLogEntry, now: () => clock });
+const fns = hub.functions;
+const call = (uid, fn, data = {}) => fns[fn].run({ auth: uid ? { uid, token: { email_verified: true } } : undefined, data });
+const why = async (p) => { try { await p; return "ok"; } catch (e) { return (e.details && e.details.reason) || e.code || e.message; } };
+const get = async (p) => { const s = await wdb.doc(p).get(); return s.exists ? s.data() : null; };
+const { readManifests } = require("./sync-services");
+/** A rating as the callable writes it, then the trigger body (the fake has no triggers). */
+const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/${data.serviceId}__${uid}`); const r = await call(uid, "serviceRate", data); await hub.ratingWritten(before, await get(`${BASE}/ratings/${data.serviceId}__${uid}`)); return r; };
+
+(async () => {
+  await wdb.doc(SITE).set({ ownerUid: "boss" });
+  for (const [uid, roles, handle] of [["boss", ["admin"], "boomertanger"], ["adm", ["admin"], "adm"], ["mod", ["mod"], "modd"], ["fan", [], "fan"], ["fan2", [], "fan2"], ["nohandle", [], null]]) {
+    await wdb.doc(`${SITE}/members/${uid}`).set({ roles });
+    if (handle) await wdb.doc(`${SITE}/profiles/${uid}`).set({ handle, displayName: handle });
+  }
+
+  // ---------- serviceSync: the repo's manifests ----------
+  const { list, hash } = readManifests();
+  assert.equal(await why(call("fan", "serviceSync", { manifests: list, buildHash: hash })), "notAdmin", "admins only");
+  assert.equal(await why(call("adm", "serviceSync", { manifests: list })), "buildHash", "the build hash is required");
+  const dry = await hub.syncManifests(list, { buildHash: hash, apply: false });
+  assert.equal(dry.applied, false);
+  assert.equal(dry.create.length, list.length, "a dry run plans every manifest and writes nothing");
+  assert.equal((await wdb.collection(`${BASE}/items`).get()).size, 0);
+  const s1 = await call("adm", "serviceSync", { manifests: list, buildHash: hash });
+  assert.equal(s1.create.length, list.length);
+  assert.equal((await get(BASE)).buildHash, hash, "the build hash is kept for /admin/services to compare");
+  const bz = await get(`${BASE}/items/bug-zapper`);
+  assert.equal(bz.status, "live"); assert.equal(bz.source.manifest, true); assert.equal(bz.versionHistory.length, 1); assert.equal(bz.ratings.n, 0);
+  const pub = (await get(`${SITE}/public/services`)).services;
+  assert.ok(pub.some((p) => p.id === "bug-zapper") && !pub.some((p) => p.type === "adminTool"), "public/services: member-safe rows, no admin tools");
+  assert.ok(!pub.some((p) => "ratings" in p), "no counts in public");
+  const sum = await get(`${BASE}/summary/main`);
+  assert.equal(Object.keys(sum.rows).length, list.length, "one summary row per service");
+  assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === "sync"), "adminLog serviceHub sync");
+  // a version bump, a renamed blurb, a manifest gone
+  const edited = list.filter((m) => m.id !== "shop").map((m) => (m.id === "bug-zapper" ? { ...m, version: "1.1" } : m.id === "feature-lab" ? { ...m, blurb: "Ideas, votes, ships." } : m));
+  const s2 = await hub.syncManifests(edited, { buildHash: "a".repeat(64), apply: true, actor: { uid: "adm", name: "@adm" } });
+  assert.deepEqual(s2.bump, ["bug-zapper 1.0 → 1.1"]);
+  assert.deepEqual(s2.update.sort(), ["bug-zapper", "feature-lab"]);
+  assert.deepEqual(s2.retire, ["shop"]);
+  assert.equal((await get(`${BASE}/items/bug-zapper`)).versionHistory.length, 2, "a version change appends versionHistory");
+  assert.equal((await get(`${BASE}/items/shop`)).status, "retired", "a missing manifest retires its item, never deleting it");
+  assert.equal((await hub.syncManifests(edited, { buildHash: "a".repeat(64), apply: true })).retire.length, 0, "a retired item isn't retired again");
+  assert.equal(await why(hub.syncManifests([{ id: "Bad Id" }], { apply: false })), "manifest", "a bad manifest is refused");
+
+  // ---------- the item triggers ----------
+  // the Arcade game meets its manifest (tap-the-splat): the game's version wins, a stats roll-up does nothing
+  await hub.onArcadeGame("tapTheSplat", null, { title: "Tap the Splat", slug: "tap-the-splat", tagline: "Splat them", status: "live", currentVersion: "v1" });
+  let tts = await get(`${BASE}/items/tap-the-splat`);
+  assert.equal(tts.source.arcade, "tapTheSplat"); assert.equal(tts.source.manifest, true); assert.equal(tts.version, "1.0"); assert.equal(tts.name, "Tap the Splat");
+  assert.deepEqual(await hub.onArcadeGame("tapTheSplat", { title: "Tap the Splat", slug: "tap-the-splat", status: "live", currentVersion: "v1", runs: 1 }, { title: "Tap the Splat", slug: "tap-the-splat", status: "live", currentVersion: "v1", runs: 2 }), { skipped: true }, "a roll-up of the stats is skipped");
+  await hub.onArcadeGame("tapTheSplat", { title: "Tap the Splat", slug: "tap-the-splat", status: "live", currentVersion: "v1" }, { title: "Tap the Splat", slug: "tap-the-splat", status: "live", currentVersion: "v2" });
+  tts = await get(`${BASE}/items/tap-the-splat`);
+  assert.equal(tts.version, "2.0", "a new Arcade version bumps the service");
+  assert.ok(tts.versionHistory.some((h) => h.version === "2.0"));
+  assert.equal((await hub.syncManifests(edited, { buildHash: "a".repeat(64), apply: false })).bump.length, 0, "the manifest's 1.0 doesn't undo the game's 2.0");
+  await hub.onArcadeGame("splatRush", null, { title: "Splat Rush", slug: "splat-rush", status: "draft", currentVersion: "v1" });
+  assert.equal((await get(`${BASE}/items/splat-rush`)).status, "building", "a game that isn't live is building");
+  // a Vault game: one item per non-hidden game; hidden retires it
+  await hub.onVaultGame("silent-hill-2", null, { title: "Silent Hill 2", hidden: false });
+  assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).type, "vaultGame");
+  assert.deepEqual(await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: false, editCount: 1 }, { title: "Silent Hill 2", hidden: false, editCount: 2 }), { skipped: true });
+  await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: false }, { title: "Silent Hill 2", hidden: true });
+  assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "retired", "a hidden Vault game is retired");
+  await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: true }, { title: "Silent Hill 2", hidden: false });
+  assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "live", "and back when it shows again");
+  // a stream reaching Ended: rateable for 14 days
+  const ended = clock - 1000;
+  await hub.onStreamEnded("dry-run", { state: "live" }, { state: "ended", title: "Dry run", actualEnd: realFs.Timestamp.fromMillis(ended) });
+  const st = await get(`${BASE}/items/stream-dry-run`);
+  assert.equal(st.type, "stream"); assert.equal(st.rateableUntil, ended + 14 * L.DAY);
+  assert.deepEqual(await hub.onStreamEnded("dry-run", { state: "ended" }, { state: "ended", title: "Dry run" }), { skipped: true }, "only the move to Ended");
+
+  // ---------- serviceRate ----------
+  assert.equal(await why(call(null, "serviceRate", { serviceId: "bug-zapper", value: "love" })), "signedOut");
+  assert.equal(await why(call("nohandle", "serviceRate", { serviceId: "bug-zapper", value: "love" })), "needsSignup", "signed-up members only");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "nope", value: "love" })), "noService");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "bug-zapper", value: "dislike" })), "commentNeeded");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "crew-admin", value: "like" })), "adminTool", "admin tools aren't rated");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "mod-deck", value: "like" })), "notOpen", "a crew service isn't open to a member");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "contests", value: "like" })), "notOpen", "a planned service can't be rated");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "shop", value: "like" })), "notOpen", "a retired service can't be rated");
+  const r1 = await rateAs("fan", { serviceId: "bug-zapper", value: "love" });
+  assert.equal(r1.version, "1.1"); assert.equal(r1.changed, true);
+  await rateAs("fan2", { serviceId: "bug-zapper", value: "dislike", comment: "The form loses my text on phones." });
+  await rateAs("adm", { serviceId: "bug-zapper", value: "dislike", comment: "Admins rate too, quietly." });
+  let item = await get(`${BASE}/items/bug-zapper`);
+  assert.deepEqual([item.ratings.love, item.ratings.dislike, item.ratings.n, item.ratings.comments], [1, 1, 2, 1], "the admin's rating is stored but not counted");
+  assert.equal(item.ratings.score, 0, "(2 − 2) ÷ 2");
+  assert.equal((await get(`${BASE}/ratings/bug-zapper__adm`)).countable, false);
+  assert.equal((await get(`${SITE}/services/main/summary/main`)).rows["bug-zapper"].ratings.n, 2, "the summary row follows");
+  await rateAs("fan", { serviceId: "bug-zapper", value: "like" });
+  const fanR = await get(`${BASE}/ratings/bug-zapper__fan`);
+  assert.equal(fanR.value, "like"); assert.equal(fanR.history.length, 2, "each change is kept in history");
+  assert.equal(fanR.history[0].value, "love");
+  let my = await get(`${BASE}/my/fan`);
+  assert.equal(my.rated["bug-zapper"].value, "like");
+  assert.ok(my.coreTotal > 10 && my.coreRated === 1, "core services open to a member");
+  assert.ok((await get(`${BASE}/my/mod`)) === null);
+  // a stream: within 14 days yes, after no
+  await rateAs("fan", { serviceId: "stream-dry-run", value: "love" });
+  clock += 15 * L.DAY;
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "stream-dry-run", value: "like" })), "streamClosed");
+  // 60 ratings an hour, then refused; admins skip it
+  await wdb.doc(`${BASE}/items/home`).get();
+  let n = 0; while ((await why(call("fan2", "serviceRate", { serviceId: "home", value: n % 2 ? "like" : "love" }))) === "ok") n++;
+  assert.equal(n, 60, "60 an hour (a new hour after the clock moved 15 days)");
+  assert.equal(await why(call("fan2", "serviceRate", { serviceId: "home", value: "love" })), "rateLimit");
+  assert.equal(await why(call("adm", "serviceRate", { serviceId: "home", value: "love" })), "ok");
+  // an admin hid a comment: it stays hidden while the comment doesn't change
+  await call("adm", "serviceAdmin", { action: "hideComment", serviceId: "bug-zapper", uid: "fan2", hidden: true });
+  await hub.ratingWritten(null, await get(`${BASE}/ratings/bug-zapper__fan2`));
+  assert.equal((await get(`${BASE}/items/bug-zapper`)).ratings.comments, 0, "a hidden comment isn't counted");
+
+  // ---------- serviceTest ----------
+  assert.equal(await why(call("fan", "serviceTest", { serviceId: "bug-zapper", device: "phone", results: [] })), "noChecks", "no checks yet");
+  await wdb.doc(`${BASE}/items/bug-zapper`).update({ checks: ["Open the report form", "Attach a screenshot", "Send it"] });
+  assert.equal(await why(call("fan", "serviceTest", { serviceId: "bug-zapper", device: "tablet", results: [] })), "device");
+  const res = [{ ok: true }, { ok: false, note: "The spinner never stops." }, { ok: true }];
+  const t1 = await call("fan", "serviceTest", { serviceId: "bug-zapper", device: "phone", results: res });
+  assert.deepEqual([t1.counted, t1.problems], [true, 1]);
+  const t2 = await call("fan", "serviceTest", { serviceId: "bug-zapper", device: "desktop", results: [{ ok: true }, { ok: true }, { ok: true }] });
+  assert.deepEqual([t2.counted, t2.already], [false, true], "one counted test per member per version");
+  await hub.testCreated(await get(`${BASE}/tests/bug-zapper__fan__1.1`));
+  await call("fan2", "serviceTest", { serviceId: "bug-zapper", device: "desktop", results: [{ ok: true }, { ok: true }, { ok: true }] });
+  await hub.testCreated(await get(`${BASE}/tests/bug-zapper__fan2__1.1`));
+  item = await get(`${BASE}/items/bug-zapper`);
+  assert.deepEqual(item.communityTests, { version: "1.1", pass: 1, problems: 1, devices: { phone: 1, desktop: 1 } });
+  assert.equal((await get(`${BASE}/my/fan`)).tested["bug-zapper"], "1.1");
+  let tn = 0; for (const id of ["a", "b", "c", "d", "e", "f", "g", "h", "i", "j"]) { await wdb.doc(`${BASE}/items/t-${id}`).set({ id: `t-${id}`, type: "feature", status: "live", audience: "everyone", version: "1.0", checks: ["x", "y", "z"] }); if ((await why(call("fan2", "serviceTest", { serviceId: `t-${id}`, device: "phone", results: [{ ok: true }, { ok: true }, { ok: true }] }))) === "ok") tn++; }
+  assert.equal(tn, 9, "10 tests an hour (one was used above)");
+
+  // ---------- serviceAdmin ----------
+  assert.equal(await why(call("mod", "serviceAdmin", { action: "retire", serviceId: "home" })), "notAdmin");
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "explode", serviceId: "home" })), "action");
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "markTested", serviceId: "bug-zapper", env: "staging", result: "issues" })), "note", "issues need a note");
+  await call("adm", "serviceAdmin", { action: "markTested", serviceId: "bug-zapper", env: "staging", result: "pass" });
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "setCoversVersion", serviceId: "bug-zapper", version: "1.0" })), "noVideo");
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "linkVideo", serviceId: "bug-zapper", videoId: "not a video id!" })), "videoId");
+  await call("adm", "serviceAdmin", { action: "linkVideo", serviceId: "bug-zapper", videoId: "dQw4w9WgXcQ", title: "Bug Zapper in 60 seconds" });
+  item = await get(`${BASE}/items/bug-zapper`);
+  assert.equal(item.tests.staging.version, "1.1"); assert.equal(item.video.coversVersion, "1.1", "a video covers the version it was linked at");
+  await call("adm", "serviceAdmin", { action: "setCoversVersion", serviceId: "bug-zapper", version: "1.0" });
+  assert.equal((await get(`${BASE}/summary/main`)).rows["bug-zapper"].videoState, "stale", "a video of 1.0 on 1.1 is stale");
+  await call("adm", "serviceAdmin", { action: "hide", serviceId: "feature-lab", hidden: true });
+  assert.ok(!(await get(`${SITE}/public/services`)).services.some((p) => p.id === "feature-lab"), "a hidden service leaves the public list");
+  await call("adm", "serviceAdmin", { action: "retire", serviceId: "goal-tracker" });
+  assert.equal((await get(`${BASE}/items/goal-tracker`)).status, "retired");
+  for (const a of ["markTested", "linkVideo", "setCoversVersion", "hideComment", "hide", "retire"]) assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === a), `adminLog ${a}`);
+
+  console.log("check-services-fn: wiring ok");
+})().catch((err) => { console.error(err); process.exit(1); });
+

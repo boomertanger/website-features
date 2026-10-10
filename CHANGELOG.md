@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 3b: serviceRate, serviceTest, serviceSync, serviceAdmin, the rating, test, Arcade game, Vault game and ended-stream triggers (lib/services), and scripts/sync-services.js.
 Service Hub part 3a: lib/services/logic.js (popularity, core services, versions, video and test states, coverage, ratings, tests, manifest sync plan, badge ladders) and check-services-fn.js in npm run check.
 CLAUDE.md: the Service Hub manifest rule (New feature checklist), and the same line in the ROADMAP's new-feature rule.
 Service Hub part 2: a manifest per service in services/ (45), check-services.js in the site build and npm run check, and /services.json with a build hash; talkBack gains "rate" (spec §8a).

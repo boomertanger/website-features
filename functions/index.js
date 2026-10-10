@@ -915,3 +915,8 @@ Object.assign(exports, require("./lib/hotline")({ adminLogEntry }));
 const brokenLinksModule = require("./lib/brokenLinks/report")({ adminLogEntry });
 exports.reportBrokenLink = brokenLinksModule.reportBrokenLink;
 exports.brokenLinkFix = brokenLinksModule.brokenLinkFix;
+
+// Service Hub (docs/specs/service-hub.md): ratings, member tests, the manifest sync and the admin actions, plus the triggers that keep an item per
+// Arcade game, Vault game and ended stream. Lives in lib/services/; scripts/sync-services.js runs the same sync from the command line.
+const servicesModule = require("./lib/services").build({ adminLogEntry });
+Object.assign(exports, servicesModule.functions);
