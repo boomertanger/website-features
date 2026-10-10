@@ -62,6 +62,14 @@ import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/bug-zapper">Open the board</a></div>
     </div>
   </div>
+  <div class="bt-zone" data-hotline-card hidden>
+    <div class="bt-card bz-admin-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Hotline Boom</h2><span class="bt-badge bt-badge--admin">Inbox team</span></div>
+      <div class="bz-big-n"><b data-hb-n>…</b><span class="bt-meta" data-hb-what>new messages waiting</span></div>
+      <p class="bt-fine bt-fine--left" data-hb-lead></p>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/inbox">Open the inbox</a></div>
+    </div>
+  </div>
   <div class="bt-zone" data-stash-card hidden>
     <div class="bt-card cs-admin-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Cloud Stash</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
@@ -157,6 +165,7 @@ import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
   import "../scripts/admin/live-card";
   import "../scripts/admin/lab-card";
   import "../scripts/admin/bugs-card";
+  import "../scripts/admin/hotline-card";
   import "../scripts/admin/stash-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";

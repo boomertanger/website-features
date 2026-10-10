@@ -1,16 +1,33 @@
 ---
-// One layout for Hotline Boom's public pages (docs/specs/hotline-boom.md §2, §9): the site shell, the sticky HOTLINE BOOM bar in BaseLayout's "bar" slot, then the page.
+// One layout for Hotline Boom's pages (docs/specs/hotline-boom.md §2, §9): the site shell, the sticky HOTLINE BOOM bar in BaseLayout's "bar" slot, then the page.
+// section "inbox" (/admin/inbox) is staff only and not indexed: a skeleton shows while auth loads, visitors get a sign-in gate, everyone without the inbox a short "not yours" gate.
+// Display only: the rules and the callables do the real checking. scripts/hotline/inbox.ts sets [data-hb-access] = loading | join | denied | page.
 import BaseLayout from "./BaseLayout.astro";
 import HotlineBar from "../components/hotline/HotlineBar.astro";
 import "../styles/how-it-works.css";   // the How it works blocks (shared); before hotline.css so the scenes win ties
 import "../styles/hotline.css";
+import "../styles/hotline-inbox.css";
 
 interface Props { title: string; description?: string; section?: string | null }
 const { title, description, section = null } = Astro.props;
+const inbox = section === "inbox";
 ---
-<BaseLayout title={title} description={description}>
+<BaseLayout title={title} description={description} noindex={inbox}>
   <HotlineBar slot="bar" section={section} />
-  <div class="hb-wrap"><slot /></div>
+  <div class="hb-wrap">
+    {inbox ? (
+      <div data-hb-access="loading">
+        <div class="hb-ib-skel" aria-hidden="true"><span class="bt-skeleton hb-ib-sk-hero"></span><span class="bt-skeleton hb-ib-sk-list"></span></div>
+        <section class="hb-ib-gate" aria-labelledby="hb-gate-h">
+          <h1 class="bt-title" id="hb-gate-h">Staff only</h1>
+          <p data-gate-join>The Hotline Boom inbox is for Boomertanger and the admins who help with it. Sign in with your account.</p>
+          <p data-gate-denied>This inbox is for Boomertanger and the admins who help with it. Want to reach them? Send a message instead.</p>
+          <div class="hb-ib-gate-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="signin" data-gate-join>Sign in</a><a class="bt-btn bt-btn--secondary" href="/contact">Send a message</a></div>
+        </section>
+        <div class="hb-ib-slot"><slot /></div>
+      </div>
+    ) : <slot />}
+  </div>
 </BaseLayout>
 
 <script>

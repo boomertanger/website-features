@@ -77,7 +77,7 @@ const asked = () => (member() ? (M.auth?.account as { hotlineAskedSource?: boole
 
 /* ---------- pieces ---------- */
 const sh = (k: string, title: string, sub: string, count: number | null = null) =>
-  sectionHeadHtml({ icon: icon(k).replace("<svg ", '<svg width="18" height="18" style="color: var(--bt-title)" '), title, sub, count, small: true });
+  sectionHeadHtml({ icon: icon(k).replace("<svg ", '<svg width="18" height="18" style="color: var(--bt-title)" '), title, sub, count, small: true } as any);
 const laneTag = (lane: Lane) => lane === "owner"
   ? `<span class="bt-tag hb-lane hb-lane--owner">${icon("private")}Only Boomertanger reads</span>`
   : `<span class="bt-tag hb-lane">${icon("team")}Boomertanger + inbox team</span>`;
@@ -381,7 +381,7 @@ if (page && main) {
     press(row);
     (row as HTMLElement | null)?.focus({ preventScroll: true });
   });
-  initReveals(page);
+  initReveals(page as unknown as Document);
 
   // the settings (reply time, which lines are on) and the viewer, then ?line=N
   const settings = getDoc(doc(db, "sites", SITE_ID, "hotline", "main")).then((s) => {

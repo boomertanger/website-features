@@ -1,0 +1,14 @@
+---
+// /admin/inbox, the Hotline Boom inbox (docs/specs/hotline-boom.md §4, §9; mockup docs/design/mockups/hotline-boom-inbox.html Layout 1 Split). The owner and the admins whose grade is
+// in hotline/main.inboxGrades (HotlineLayout gates everyone else). Tabs in ?tab= (inbox, sources, settings; Settings is the owner's). Everything is drawn by scripts/hotline/inbox.ts:
+// it reads the lanes the viewer may read (rules: team lane for the inbox team, owner lane for the owner only) and every change goes through contactAction / contactNote /
+// contactReply / contactSettings. Not in the header nav.
+import HotlineLayout from "../../layouts/HotlineLayout.astro";
+---
+<HotlineLayout title="Inbox" section="inbox">
+  <div class="hb-ib" data-hb-ib aria-live="polite"></div>
+</HotlineLayout>
+
+<script>
+  import "../../scripts/hotline/inbox";
+</script>
