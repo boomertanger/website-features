@@ -104,7 +104,8 @@ function mkPub(st: PState): PubLive {
     window: { open, closesAt: open ? w!.closesAt : null, beat: open ? w!.beat : null }, liveRooms: s.liveRooms,
     counts: { total: total2, byBeat: { ...st.counts.byBeat }, byRoom: { ...st.counts.byRoom } }, viewers: { total, byPlatform: by }, peak: Math.max(c.peak, total),
     game: seg ? { gameId: seg.gameId!, title: seg.title!, startedAt: seg.startedAt! } : null, nextGame: next ? { gameId: next.gameId, title: next.title } : null,
-    crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] }, chatGame: null,
+    crew: { captain: s.crew.captain, chats, onDuty: [s.crew.captain, ...Object.values(s.crew.chats).flatMap((v) => [v!.lead, ...v!.deckhands])].filter(Boolean) as string[] },
+    chatGame: new URLSearchParams(location.search).get("game") === "questions" ? { runId: "preview", formatId: "questions", state: "open", round: 1, title: "Questions" } : null,   // ?game=questions (Chat Games part 2)
   };
 }
 

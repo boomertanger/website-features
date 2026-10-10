@@ -8,6 +8,7 @@ import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
 import { launchHtml, initLaunch } from "../../../../shared/ui/launch.js";
 import type { Ctx } from "./state";
 import { esc, mascotHtml } from "./ui";
+import { loadRunPanel, runPanelHtml, wireRunPanel, type RunPanelData } from "./cg-questions";
 
 interface Fmt { id: string; title: string; icon: string; blurb: string; order: number }
 const CAPTAIN_MS = 15000;
@@ -52,8 +53,31 @@ export function initGames(ctx: Ctx) {
       ? launchHtml({ tiles: tiles as any, label: "Chat Games" })
       : `<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Chat Games switch on here as each one ships: Questions and Hot Seat first.</p></div>`;
     const hint = live ? (g ? `${esc(g.title || "A game")} is on stream` : "One on stream at a time") : "Ready when you are live";
-    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body });
+    // the running format's run controls (Questions: the card on stream, Answered / Skip / Pin next), patched in place by syncRun()
+    const runHost = g && g.formatId === "questions" ? `<div class="lq-runhost" data-qrun-host>${runHtml}</div>` : "";
+    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + runHost });
   };
+
+  // ---- the Questions run panel: read when the run or its card changes, and every 5 s while it is on stream (patched in place, no page redraw)
+  let runHtml = "", runFor = "", runData: RunPanelData | null = null, runBusy = false, runTimer = 0;
+  async function syncRun(force = false) {
+    const g = ctx.snap.pub?.chatGame;
+    if (!g || g.formatId !== "questions" || !liveId()) { runHtml = ""; runData = null; runFor = ""; if (runTimer) { clearInterval(runTimer); runTimer = 0; } return; }
+    const key = `${g.runId}|${g.state}|${g.round}`;
+    if (runBusy || (!force && key === runFor)) return;
+    runBusy = true;
+    try { runData = await loadRunPanel(g.runId, preview); runFor = key; runHtml = runData ? runPanelHtml(runData, canRun()) : ""; }
+    catch { /* keep the last */ }
+    finally { runBusy = false; }
+    const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
+    if (host && host.innerHTML !== runHtml) host.innerHTML = runHtml;
+    if (!runTimer) runTimer = window.setInterval(() => { if (!document.hidden) void syncRun(true); }, 5000);
+  }
+  ctx.after.push(() => {
+    const host = ctx.root.querySelector<HTMLElement>("[data-qrun-host]");
+    if (host) wireRunPanel(host, () => runData?.run || null, () => void syncRun(true), preview);
+    void syncRun();
+  });
 
   ctx.after.push(() => {
     const slot = ctx.root.querySelector<HTMLElement>('[data-slot="launch"]');

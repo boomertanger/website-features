@@ -25,7 +25,7 @@ const SITE_ID = "boomertanger";
 const BASE = `sites/${SITE_ID}/chatGames/main`;
 const DEADLINE_QUEUE = { retryConfig: { maxAttempts: 3, minBackoffSeconds: 5, maxBackoffSeconds: 60 }, rateLimits: { maxDispatchesPerSecond: 5, maxConcurrentDispatches: 5 } };
 
-module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) {
+module.exports = function chatGames(ctx, { gears = null, enqueue = null, grant = null, factory = null } = {}) {
   const { db, FieldValue, Timestamp, fail, now, ms, P } = ctx;
   const G = () => gears || (gears = require("../crew/gears").makeGears({ db, now }));
   const runRef = (id) => db.doc(`${BASE}/runs/${id}`);
@@ -90,6 +90,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
     if (!fsnap.exists || fsnap.get("enabled") !== true) throw refuse("disabled");
     const format = { id: fsnap.id, ...fsnap.data() };
     const at = now();
+    // a format may look things up first (Questions: the first card from the queue); start() itself runs inside the transaction
+    const prep = handler.prepare ? await handler.prepare({ stream, options: v.value.options, at, w }) : null;
     const newRef = runsCol().doc();
     let out = null;
     await db.runTransaction(async (tx) => {
@@ -111,7 +113,7 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
       // the new run: the handler decides what happens in "ready"
       const base = { formatId: format.id, streamId: stream.id, state: "ready", round: 0, title: format.title || format.id, crewHosted: format.crewHosted === true,
         packId: null, cardId: null, prompt: null, options: null, closesAt: null, startedBy: w.uid, startedByHandle: w.handle || null, env: env(), startedAt: at, updatedAt: at, result: null };
-      const h = handler.start ? handler.start({ id: newRef.id, ...base }, v.value.options, { at }) : { ok: true, patch: {} };
+      const h = handler.start ? handler.start({ id: newRef.id, ...base }, v.value.options, { at, prep, stream }) : { ok: true, patch: {} };
       if (!h || !h.ok) throw fail("failed-precondition", (h && h.message) || "That game couldn't start.", (h && h.reason) || "startFailed");
       const run = { ...base, ...(h.patch || {}) };
       tx.set(newRef, stampPatch(run));
@@ -124,6 +126,7 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
       out = { runId: newRef.id, voided: busy ? cur.id : null, closesAtMs: typeof run.closesAt === "number" ? run.closesAt : null, title: run.title };
     });
     if (out.closesAtMs) await scheduleDeadline(out.runId, out.closesAtMs);
+    if (handler.afterStart) { try { await handler.afterStart({ id: out.runId, streamId: stream.id }, { w, stream }); } catch (err) { console.error("chatGames: afterStart failed", String((err && err.message) || err).slice(0, 140)); } }
     if (out.voided) await log(w, "swap", { runId: out.voided, streamId: stream.id, title: stream.title, details: { to: format.id, newRunId: out.runId } });
     await log(w, "start", { runId: out.runId, streamId: stream.id, title: out.title, details: { formatId: format.id } });
     await ctx.publishLive();
@@ -134,6 +137,15 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
     const o = { ...p };
     for (const k of ["closesAt", "openedAt", "lockedAt", "revealedAt", "endedAt", "startedAt", "updatedAt"]) if (typeof o[k] === "number") o[k] = Timestamp.fromMillis(o[k]);
     return o;
+  }
+
+  /** Copies the run's state and round to private/control.chatGame when this run is the active one. */
+  async function syncPointer(runId) {
+    const run = asRun(await runRef(runId).get());
+    if (!run) return;
+    const cRef = ctx.controlRef(run.streamId);
+    const ptr = ((await cRef.get()).data() || {}).chatGame;
+    if (ptr && ptr.runId === runId) await cRef.set({ chatGame: L.pointerOf(run) }, { merge: true });
   }
 
   // ---------- end ----------
@@ -185,10 +197,12 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
     await requireCaptain(w, run.streamId);
     const h = L.handlerFor(run.formatId);
     if (!h || !h.control) throw refuse("notAvailable");
-    const r = h.control(run, v.value.action, v.value.data, { at: now() });
+    const stream = await ctx.loadStream(run.streamId);
+    const r = await h.control(run, v.value.action, v.value.data, { at: now(), w, stream, move: (to, extra) => move(run.id, to, { w, extra: extra ? stampPatch(extra) : {} }) });
     if (!r || !r.ok) throw fail("failed-precondition", (r && r.message) || "That didn't work.", (r && r.reason) || "control");
     if (r.to) await move(run.id, r.to, { w, extra: r.patch ? stampPatch(r.patch) : {} });
     else if (r.patch) await runRef(run.id).update({ ...stampPatch(r.patch), lastBy: w.uid, lastByHandle: w.handle || null });
+    if (r.pointer) await syncPointer(run.id);
     if (typeof r.closesAt === "number") await scheduleDeadline(run.id, r.closesAt);
     await log(w, `control:${v.value.action}`, { runId: run.id, streamId: run.streamId, title: run.title });
     await ctx.publishLive();
@@ -235,11 +249,15 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
     if (closesAtMs != null && run.closesAtMs !== closesAtMs) return { closed: false, reason: "moved" };   // paused or extended: a newer task owns it
     if (run.closesAtMs > now() + 500) return { closed: false, reason: "early" };
     const h = L.handlerFor(run.formatId);
-    const to = (h && h.onDeadline && h.onDeadline(run)) || (run.state === "ready" ? "void" : "locked");
-    try { await move(runId, to, { reason: to === "void" ? "deadline" : null }); }
-    catch (err) { return { closed: false, reason: (err && err.details && err.details.reason) || "error" }; }
+    // a handler may answer with a state, or { to, patch } (Questions: the card on screen may finish first, so the run only stops its clock)
+    const res = h && h.onDeadline ? await h.onDeadline(run, { at: now() }) : null;
+    const to = typeof res === "string" ? res : res && res.to ? res.to : res && res.patch ? null : run.state === "ready" ? "void" : "locked";
+    try {
+      if (to) await move(runId, to, { reason: to === "void" ? "deadline" : null, extra: res && res.patch ? stampPatch(res.patch) : {} });
+      else await runRef(runId).update(stampPatch({ ...res.patch, updatedAt: now() }));
+    } catch (err) { return { closed: false, reason: (err && err.details && err.details.reason) || "error" }; }
     await ctx.publishLive();
-    return { closed: true, to };
+    return { closed: true, to: to || run.state };
   }
   const chatGameDeadline = onTaskDispatched(DEADLINE_QUEUE, async (req) => {
     const d = (req && req.data) || {};
@@ -262,6 +280,7 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
       if (!L.ACTIVE.includes(r.state)) continue;
       try { await move(r.id, "void", { reason: "stop" }); voided++; } catch (err) { if (!["already", "over"].includes(err && err.details && err.details.reason)) throw err; }
     }
+    for (const h of Object.values(L.HANDLERS)) if (h && h.atStop) { try { await h.atStop(streamId); } catch (err) { console.error("chatGames: format stop clean-up failed", String((err && err.message) || err).slice(0, 140)); } }
     const fresh = (await runsCol().where("streamId", "==", streamId).get()).docs.map(asRun);
     await ctx.controlRef(streamId).set({ chatGame: null }, { merge: true });
     const d = dutyRef(streamId);
@@ -272,6 +291,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
   }
 
   const wrap = (fn) => async (request) => fn(await caller(request), request.data || {});
+  // Questions (part 2): its callables, the vote trigger, the daily archive; it registers the "questions" format handler
+  const questions = require("./questions")(ctx, { grant, factory, log, caller, refuse, syncPointer });
   const functions = {
     chatGameStart: onCall(wrap((w, d) => startRun(w, d))),
     chatGameSwap: onCall(wrap((w, d) => startRun(w, d, { swap: true }))),
@@ -279,7 +300,8 @@ module.exports = function chatGames(ctx, { gears = null, enqueue = null } = {}) 
     chatGameControl: onCall(wrap(control)),
     chatGameCue: onCall(wrap(cue)),
     chatGameDeadline,
+    ...questions.functions,
   };
-  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move }, closeOut, sweep };
+  return { functions, ops: { startRun, endRun, control, cue, onDeadline, sweep, closeOut, move, ...questions.ops }, closeOut, sweep };
 };
 module.exports.BASE = BASE;

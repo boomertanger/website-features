@@ -5126,3 +5126,50 @@
   .bt-root:not(#_) .bt-reveal-row[data-state="typing"] .bt-reveal-addr::after { animation: none; }
 }
 /* ================= END .bt-reveal ================= */
+
+/* ================= .bt-qcard — a question card (docs/specs/chat-games.md §4, §14; mockup control-room-batch-4.html "Questions page") =================
+   One question in a lane, in a session, in "Your questions" and in the mod queue (shared/ui/qcard.js: qcardHtml, initQcards). The vote button sits on the
+   left with the count; the text, the asker, the age and the chips in the middle; optional tools (mod actions) under the text.
+   data-state  tonight | standing (open, votable) · held (dashed, "Held for a mod") · onair (the live edge, "On stream") · answered (muted, lime chip)
+               hidden | merged | cleared | archived (dimmed, gray chip, no vote)
+   .is-pinned  the gold edge ("Pinned next") · .is-here  "● asker is here" (green: checked in to this beat) · .is-new  slides in (not under reduced motion)
+   .bt-qcard--big   the on-air size (the Play panel's current card and /live/control's run panel)
+   The vote button is aria-pressed (voted = purple); a held, answered or closed card's button is disabled. Badge colours are the site's status colours:
+   held teal, Tonight blue, Standing gold, answered lime, hidden / merged / cleared / archived gray. */
+.bt-root:not(#_) .bt-qcard { display: grid; grid-template-columns: 52px minmax(0, 1fr) auto; gap: 12px; padding: 12px; border-radius: var(--bt-radius-md); background: var(--bt-bg); border: 1px solid var(--bt-border); align-items: center; transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .bt-qcard:hover { border-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-qcard-vote { display: grid; justify-items: center; gap: 2px; padding: 6px 0; border-radius: var(--bt-radius-sm); border: 1px solid var(--bt-border-2); background: transparent; color: var(--bt-text-muted); font: inherit; cursor: pointer; transition: border-color 0.2s, background 0.2s, color 0.2s, transform 0.15s; }
+.bt-root:not(#_) .bt-qcard-vote svg { width: 14px; height: 14px; }
+.bt-root:not(#_) .bt-qcard-vote b { font-size: var(--bt-text-base); color: var(--bt-text); font-variant-numeric: tabular-nums; }
+@media (hover: hover) and (pointer: fine) { .bt-root:not(#_) .bt-qcard-vote:not(:disabled):hover { border-color: var(--bt-primary); color: var(--bt-primary-soft); } }
+.bt-root:not(#_) .bt-qcard-vote:not(:disabled):active { transform: scale(0.94); }
+.bt-root:not(#_) .bt-qcard-vote[aria-pressed="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); color: var(--bt-primary-soft); }
+.bt-root:not(#_) .bt-qcard-vote:disabled { cursor: default; opacity: 0.55; }
+.bt-root:not(#_) .bt-qcard-vote:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .bt-qcard-body { min-width: 0; }
+.bt-root:not(#_) .bt-qcard-text { margin: 0; font-size: var(--bt-text-base); line-height: 1.45; color: var(--bt-text); overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-qcard-meta { display: flex; gap: 6px 8px; align-items: center; flex-wrap: wrap; margin-top: 6px; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-qcard-here { color: var(--bt-green); font-weight: 700; }
+.bt-root:not(#_) .bt-qcard-tools { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 8px; }
+.bt-root:not(#_) .bt-qcard-side { display: grid; justify-items: end; gap: 6px; }
+.bt-root:not(#_) .bt-qcard[data-state="onair"] { border-color: var(--bt-cr-live, var(--bt-red)); background: linear-gradient(90deg, rgba(var(--bt-cr-live-rgb, var(--bt-red-rgb)), 0.12), transparent 60%), var(--bt-bg); }
+.bt-root:not(#_) .bt-qcard.is-pinned { border-color: rgba(var(--bt-gold-rgb), 0.6); }
+.bt-root:not(#_) .bt-qcard[data-state="held"] { border-style: dashed; }
+.bt-root:not(#_) .bt-qcard[data-state="answered"] .bt-qcard-text { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-qcard:is([data-state="hidden"], [data-state="merged"], [data-state="cleared"], [data-state="archived"]) { opacity: 0.6; }
+.bt-root:not(#_) .bt-qcard:is([data-state="hidden"], [data-state="merged"]) .bt-qcard-text { text-decoration: line-through; text-decoration-color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-qcard.is-new { animation: bt-qcard-in 0.5s cubic-bezier(0.2, 1.2, 0.4, 1); }
+@keyframes bt-qcard-in { from { transform: translateY(-10px); opacity: 0; } }
+.bt-root:not(#_) .bt-qcard--big { grid-template-columns: 60px minmax(0, 1fr); padding: 16px; }
+.bt-root:not(#_) .bt-qcard--big .bt-qcard-text { font-size: var(--bt-text-lg); font-weight: 700; line-height: 1.4; }
+.bt-root:not(#_) .bt-qcard--big .bt-qcard-side { grid-column: 1 / -1; justify-items: start; }
+.bt-root:not(#_) .bt-qcard-list { display: grid; gap: 8px; }
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .bt-qcard { grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 10px; }
+  .bt-root:not(#_) .bt-qcard-side { grid-column: 1 / -1; justify-items: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-qcard, .bt-root:not(#_) .bt-qcard-vote { transition: none; }
+  .bt-root:not(#_) .bt-qcard.is-new { animation: none; }
+}
+/* ================= END .bt-qcard ================= */

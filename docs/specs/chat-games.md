@@ -85,7 +85,9 @@ The member queue for things to ask on stream, at `/live/questions`, with a sessi
 
 **On stream.** `.bt-qcard` with the text, the asker's handle and avatar, votes and the "asker is here" mark.
 
-**Statuses** (site badge system): held = teal, Tonight = blue, Standing = gold, answered = lime, hidden / merged / cleared / archived = gray.
+**Statuses** (site badge system): held = teal, Tonight = blue, Standing = gold, answered = lime, hidden / merged / cleared / archived = gray. A withdrawn question is `withdrawn` (asker and crew only; deleted after 30 days like `cleared`).
+
+**As built (part 2).** `questions/{id}` keeps `status` (one of the above) and `lane` (where a held question goes when approved). Moderating: the owner, the Captain and crew clocked in while live; **off air, admins and mods** (so held questions never wait for a stream). "Not banned" can't be checked yet: the site has no ban flag; add the check when one exists. The session's card on stream is the run's public `display` ({ questionId, text, handle, votes, here, lane, next, ending }); the pointer's `round` counts cards, so a new card redraws every page. The stream view gets the card through `obsFeed` (`chatGameDisplay`). Night Shift event: type `stream` with `action: "question-answered"` (the existing Stream presence type; there is no Chat Games type yet).
 
 ## 5. Hot Seat
 
@@ -199,7 +201,7 @@ Everything under `sites/boomertanger/chatGames/main/`, function-written unless n
 | `packs/{packId}` | Pack and cards (no answers) | Crew | None |
 | `packs/{packId}/suggested/{id}` | Suggested cards | Crew | None |
 | `questions/{questionId}` | text, uid, handle, lane, status, votes, createdAt, streamId, mergedInto, expireAt | Everyone (held and hidden: asker and crew) | None |
-| `questions/{questionId}/votes/{uid}` | One vote | That voter | Create or delete own vote only, nothing else; count kept by a trigger |
+| `questions/{questionId}/votes/{uid}` | One vote: `{ at }` (`{ at, fromMerge }` when Merge copies it) | That voter | Create or delete own vote only: `{ at: request.time }` and nothing else, a signed-up member, on a Tonight or Standing question that isn't their own; count kept by `onQuestionVote` (a copied merge vote is already counted) |
 | `runs/{runId}` | formatId, streamId, state, round, closesAt, packId, cardId, prompt, options, startedBy, env, result after reveal | Everyone | None |
 | `runs/{runId}/rounds/{n}` | Round state, players, deadlines, tallies after reveal | Everyone (answers and running tallies hidden until reveal) | None |
 | `runs/{runId}/secret/{doc}` | Answers before reveal, running tallies, picker pool, proposals | Functions only (proposals mirrored to crew via `runs/{runId}/staff`) | None |
@@ -232,7 +234,7 @@ Functions in `functions/lib/chatGames/*.js`. Every callable checks auth, role an
 | `chatGameCardSuggest` / `chatGameCardDecide` | Mods / owner | Suggested lane |
 | `chatGameCue` | §9 | Posted / Done |
 
-Triggers and tasks: `onQuestionVote` (counts), deadline tasks, Stop clean-up (§3), daily 05:15 America/Los_Angeles archive of Standing questions older than 30 days.
+Triggers and tasks: `onQuestionVote` (counts), deadline tasks, Stop clean-up (§3), daily 05:15 America/Los_Angeles archive of Standing questions older than 30 days (`questionArchive`, from `standingSince`). Questions session controls go through `chatGameControl`: `answered`, `skip`, `pinNext` (data `questionId`) and `nextRound` (bring up the next card when none is on screen); `answered` and `skip` carry the `questionId` the staff member saw, so a second tap gets "Already done by @handle".
 
 "Mod on duty" = clocked in for the current stream (`private/duty.onDuty`), or the Captain, or the owner. "Captain" in every Chat Games callable = `captainNow.uid` on the stream's `private/duty`, whatever the person's grade; the owner is always allowed. adminLog uses feature `chatGames` (its own helper; the Control Room's `logAdmin` is `controlRoom`).
 

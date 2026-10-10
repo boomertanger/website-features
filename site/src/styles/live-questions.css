@@ -1,0 +1,79 @@
+/* site/src/styles/live-questions.css — Questions (docs/specs/chat-games.md §4, §14; Chat Games part 2; mockup control-room-batch-4.html "Questions page").
+   Prefix lq-. The page /live/questions (a tool page: hero with a small scene, the lanes, Your questions, the mod queue), the Questions session in /live's
+   Play panel, the run panel on /live/control, and the Ask and launch dialogs (in the modal portal: .bt-portal[data-feature="chat-games"]).
+   The cards are the kit's .bt-qcard; panels are .bt-cr-panel. Tokens only; container queries only; reduced motion respected. */
+
+/* ---------- the page ---------- */
+.bt-root:not(#_) .lq { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding: 18px var(--bt-gutter) 48px; box-sizing: border-box; }
+.bt-root:not(#_) .lq-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 24px; align-items: center; padding: 26px 28px; margin-bottom: 18px; border-radius: 22px; border: 1px solid var(--bt-border); background: radial-gradient(70% 120% at 90% 0%, rgba(var(--bt-primary-rgb), 0.18), transparent 60%), var(--bt-surface); overflow: hidden; }
+.bt-root:not(#_) .lq-hero .bt-title { margin: 0 0 8px; }
+.bt-root:not(#_) .lq-hero p { margin: 0 0 16px; max-width: 54ch; color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.5; }
+.bt-root:not(#_) .lq-hero-acts { display: flex; gap: 10px; flex-wrap: wrap; }
+/* the small scene: the mascot with question bubbles that drift up */
+.bt-root:not(#_) .lq-scene { position: relative; height: 150px; }
+.bt-root:not(#_) .lq-scene .bt-mascot { position: absolute; right: 30px; bottom: 0; width: 96px; height: auto; }
+.bt-root:not(#_) .lq-bub { position: absolute; display: grid; place-items: center; width: 38px; height: 38px; border-radius: 12px 12px 12px 4px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-primary-soft); font-weight: 900; font-size: 18px; animation: lq-drift 4.5s ease-in-out infinite; }
+.bt-root:not(#_) .lq-bub:nth-child(1) { left: 10px; top: 60px; }
+.bt-root:not(#_) .lq-bub:nth-child(2) { left: 70px; top: 14px; color: var(--bt-title); animation-delay: 1.2s; }
+.bt-root:not(#_) .lq-bub:nth-child(3) { left: 128px; top: 70px; animation-delay: 2.4s; }
+@keyframes lq-drift { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
+.bt-root:not(#_) .lq-grid { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 16px; align-items: start; }
+.bt-root:not(#_) .lq-side { display: grid; gap: 16px; }
+.bt-root:not(#_) .lq-bar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-bottom: 12px; }
+.bt-root:not(#_) .lq-sp { flex: 1; }
+.bt-root:not(#_) .lq-note { margin: 12px 0 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
+.bt-root:not(#_) .lq-mine { display: grid; gap: 8px; }
+.bt-root:not(#_) .lq-mine-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px 10px; align-items: center; padding: 10px 12px; border-radius: var(--bt-radius-sm); background: var(--bt-bg); border: 1px solid var(--bt-border); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lq-mine-row p { margin: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .lq-mine-row .lq-mine-meta { grid-column: 1 / -1; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .lq-mine-row.is-answered { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); }
+.bt-root:not(#_) .lq-celebrate { position: relative; }
+.bt-root:not(#_) .lq-empty { display: grid; justify-items: center; gap: 8px; padding: 22px 10px; text-align: center; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lq-empty .bt-mascot { width: 64px; height: auto; }
+.bt-root:not(#_) .lq-empty b { color: var(--bt-text); font-size: var(--bt-text-base); }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .lq-grid { grid-template-columns: minmax(0, 1fr) 290px; } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .lq-hero { grid-template-columns: minmax(0, 1fr); padding: 20px 18px; }
+  .bt-root:not(#_) .lq-scene { display: none; }
+  .bt-root:not(#_) .lq-grid { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- the Play panel on /live ---------- */
+.bt-root:not(#_) .lq-play { display: grid; gap: 10px; }
+.bt-root:not(#_) .lq-play-top { display: flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .lq-next { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-muted); line-height: 1.45; }
+.bt-root:not(#_) .lq-next span { font-weight: 700; color: var(--bt-text-faint); text-transform: uppercase; letter-spacing: 0.08em; font-size: var(--bt-text-xs); margin-right: 6px; }
+.bt-root:not(#_) .lq-next b { color: var(--bt-text); white-space: nowrap; }
+.bt-root:not(#_) .lq-play-acts { display: flex; gap: 8px; flex-wrap: wrap; }
+
+/* ---------- the run panel on /live/control ---------- */
+.bt-root:not(#_) .lq-runhost:not(:empty) { margin-top: 14px; padding-top: 14px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .lq-run { display: grid; gap: 10px; position: relative; }
+.bt-root:not(#_) .lq-run-head { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+.bt-root:not(#_) .lq-run-timer { margin-left: auto; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--bt-text); }
+.bt-root:not(#_) .lq-run-last { margin-left: auto; font-size: var(--bt-text-sm); color: var(--bt-title); }
+.bt-root:not(#_) .lq-run-acts { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.bt-root:not(#_) .lq-stamp { position: absolute; right: 8px; top: 34px; z-index: 2; pointer-events: none; }
+.bt-root:not(#_) .lq-up-h { margin: 6px 0 0; }
+.bt-root:not(#_) .lq-upnext { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.bt-root:not(#_) .lq-upnext li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 8px 10px; border-radius: var(--bt-radius-sm); background: var(--bt-bg); border: 1px solid var(--bt-border); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .lq-up-v { font-weight: 800; color: var(--bt-primary-soft); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .lq-up-t { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--bt-text); }
+
+/* ---------- the dialogs (modal portal) ---------- */
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-ask { display: grid; gap: 12px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-ask-row { display: flex; gap: 10px; align-items: flex-start; justify-content: space-between; margin-top: 6px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-count { flex: none; font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-launch { display: grid; gap: 14px; margin: 4px 0 8px; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-waiting { margin: 0; color: var(--bt-text-muted); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-waiting b { color: var(--bt-text); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-chips { display: flex; gap: 8px; flex-wrap: wrap; margin: 6px 0; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-chips .bt-chip[aria-pressed="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-merge-list { display: grid; gap: 6px; max-height: 50vh; overflow: auto; margin: 8px 0; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-merge-pick { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 10px; align-items: center; width: 100%; padding: 10px 12px; border-radius: var(--bt-radius-sm); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text); font: inherit; font-size: var(--bt-text-md); text-align: left; cursor: pointer; }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-merge-pick:hover, .bt-portal[data-feature="chat-games"]:not(#_) .lq-merge-pick:focus-visible { border-color: var(--bt-primary); }
+.bt-portal[data-feature="chat-games"]:not(#_) .lq-merge-pick b { color: var(--bt-primary-soft); font-variant-numeric: tabular-nums; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .lq-bub { animation: none; }
+}

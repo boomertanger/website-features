@@ -1,12 +1,13 @@
 ---
 // The public Control Room feature bar for /live (docs/specs/control-room.md §7c): the kit's .bt-topbar in a .bt-sticky-bar with the CONTROLROOM
-// .bt-wordmark--power (the radar scope) and a seg nav: Live, Questions (not built yet: shown as "Soon", not a link) and How it works
+// .bt-wordmark--power (the radar scope) and a seg nav: Live, Questions (/live/questions, Chat Games part 2) and How it works
 // (/live?how=1: the waiting-room story, which explains the beats and lets you try a check-in, even while the stream is on). Icon-only on phones.
 // The staff pages have their own bar (CrBar.astro); the styles are shared (live-layout.css). scripts/live/pub.ts sets aria-current.
 import { crWordmarkHtml } from "../../../../shared/ui/control-room.js";
 
 const links = [
   { id: "live", label: "Live", href: "/live", icon: "live" },
+  { id: "questions", label: "Questions", href: "/live/questions", icon: "help" },
   { id: "how", label: "How it works", href: "/live?how=1", icon: "bulb" },
 ];
 ---
@@ -15,13 +16,11 @@ const links = [
     <div class="lv-brand" set:html={crWordmarkHtml({ href: "/live" })} />
     <nav class="bt-seg-nav lv-barlinks" aria-label="Control Room">
       <a href="/live" data-lp-nav="live" aria-current="page">Live</a>
-      <a class="lv-soon" href="/live/questions" aria-disabled="true" tabindex="-1">Questions <small>Soon</small></a>
+      <a href="/live/questions" data-lp-nav="questions">Questions</a>
       <a href="/live?how=1" data-lp-nav="how">How it works</a>
     </nav>
     <nav class="bt-seg-nav bt-seg-nav--icons lv-barico" aria-label="Control Room">
-      {links.slice(0, 1).map((l) => <a href={l.href} data-lp-nav={l.id} aria-label={l.label} title={l.label} aria-current="page"><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
-      <a class="lv-soon" href="/live/questions" aria-disabled="true" tabindex="-1" aria-label="Questions (soon)" title="Questions (soon)"><svg aria-hidden="true"><use href="#i-club" /></svg></a>
-      {links.slice(1).map((l) => <a href={l.href} data-lp-nav={l.id} aria-label={l.label} title={l.label}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
+      {links.map((l, i) => <a href={l.href} data-lp-nav={l.id} aria-label={l.label} title={l.label} aria-current={i === 0 ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
     </nav>
   </div>
 </div>

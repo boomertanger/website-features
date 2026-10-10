@@ -638,6 +638,25 @@ service cloud.firestore {
           allow write: if false;
         }
       }
+      // Questions (part 2): everyone reads the open and settled ones; held, hidden and withdrawn ones only the asker and crew. Clients query a lane
+      // with status == "tonight" (or "standing"), and their own with uid == their uid. The ONE member-writable path in Chat Games is a vote:
+      // a signed-up member creates or deletes only their own votes/{uid}, holding nothing but { at: request.time }, on a question in Tonight or
+      // Standing that isn't their own. The count is kept by the onQuestionVote trigger.
+      match /chatGames/main/questions/{qid} {
+        allow read: if resource.data.status in ['tonight', 'standing', 'answered', 'merged', 'cleared', 'archived']
+          || (request.auth != null && resource.data.uid == request.auth.uid)
+          || isSiteStaff(siteId);
+        allow write: if false;
+        match /votes/{uid} {
+          allow read: if request.auth != null && request.auth.uid == uid;
+          allow create: if isSignedUpMember(siteId) && request.auth.uid == uid
+            && request.resource.data.keys().hasOnly(['at']) && request.resource.data.at == request.time
+            && get(/databases/$(database)/documents/sites/$(siteId)/chatGames/main/questions/$(qid)).data.status in ['tonight', 'standing']
+            && get(/databases/$(database)/documents/sites/$(siteId)/chatGames/main/questions/$(qid)).data.uid != request.auth.uid;
+          allow delete: if request.auth != null && request.auth.uid == uid;
+          allow update: if false;
+        }
+      }
       match /chatGames/{document=**} {
         allow read, write: if false;
       }

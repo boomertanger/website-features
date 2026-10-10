@@ -6,8 +6,8 @@
 //   window.btChatGames = {
 //     openLaunch({ formatId, streamId, title })   the format's launch dialog (openModal). A format without a launch form yet shows "Coming soon".
 //     end({ runId, title })                       confirmAction, then chatGameEnd: a revealed run ends, anything earlier is voided (no XP).
-//     mountPlay(el, { chatGame })                 the Play panel body on /live: the running game, or "Chat Games start when the Captain calls them".
-//     mountScene(el, { chatGame })                the stream view's Chat Games scene: nothing until a format ships.
+//     mountPlay(el, { chatGame, ... })            the Play panel body on /live: the running game, or "Chat Games start when the Captain calls them".
+//     mountScene(el, { chatGame, display })       the stream view's Chat Games scene (display: obsFeed's chatGameDisplay); nothing when no game runs.
 //   }
 //   registerFormat(formatId, { launch, play, scene })   each format's part plugs its UI in here (Questions part 2, Hot Seat part 4, ...).
 // Text is escaped. Reduced motion is handled by the kit pieces each format uses.
@@ -19,7 +19,7 @@ const formats = new Map();
 let deps = { call: null, toast: null, mascotHtml: () => "" };
 
 export function registerFormat(formatId, ui = {}) {
-  if (typeof formatId === "string" && formatId) formats.set(formatId, ui);
+  if (typeof formatId === "string" && formatId) formats.set(formatId, { ...(formats.get(formatId) || {}), ...ui });   // parts merge (the scene module and the site module)
 }
 
 function openLaunch({ formatId = "", streamId = "", title = "" } = {}) {
@@ -46,19 +46,22 @@ async function end({ runId = "", title = "" } = {}) {
   return done;
 }
 
-function mountPlay(el, { chatGame = null } = {}) {
+function mountPlay(el, opts = {}) {
+  const { chatGame = null } = opts;
   if (!el) return;
   const ui = chatGame && formats.get(chatGame.formatId);
-  if (ui && typeof ui.play === "function") { ui.play(el, { chatGame, call: deps.call, toast: deps.toast }); return; }
+  if (ui && typeof ui.play === "function") { ui.play(el, { ...opts, chatGame, call: deps.call, toast: deps.toast }); return; }
   el.innerHTML = chatGame
     ? `<div class="bt-empty bt-empty--compact"><span class="bt-live-tag"><i></i>On now</span><span class="bt-empty-title">${esc(chatGame.title || "A Chat Game")} is running</span><span>Play it here once this page has it.</span></div>`
     : `<div class="bt-empty bt-empty--compact">${deps.mascotHtml ? deps.mascotHtml() : ""}<span class="bt-empty-title">Chat Games start when the Captain calls them</span><span>Until then, say it in chat. The crew is listening.</span></div>`;
 }
 
-function mountScene(el, { chatGame = null } = {}) {
+function mountScene(el, opts = {}) {
+  const { chatGame = null } = opts;
   if (!el) return;
   const ui = chatGame && formats.get(chatGame.formatId);
-  if (ui && typeof ui.scene === "function") { ui.scene(el, { chatGame }); return; }
+  if (ui && typeof ui.scene === "function") { ui.scene(el, { ...opts, chatGame }); return; }
+  for (const f of formats.values()) if (f && typeof f.scene === "function") f.scene(el, { chatGame: null, display: null });   // a format clears its own timers
   el.innerHTML = "";
 }
 

@@ -48,6 +48,7 @@ import { screamPlannerKitHtml, initScreamPlannerKit } from "./kit-scream-planner
 import { controlRoomKitHtml, initControlRoomKit } from "./kit-control-room.js";
 import { modDeckKitHtml, initModDeckKit } from "./kit-mod-deck.js";
 import { revealKitHtml, initRevealKit } from "./kit-reveal.js";
+import { qcardKitHtml, initQcardKit } from "./kit-qcard.js";
 import { initNavGroups, featureLoadingHtml, watchFeatureHtml, playFeatureHtml, communityFeatureHtml, initWatchTile } from "../ui/navgroup.js";
 
 const KIT_VERSION = "dev";
@@ -845,7 +846,7 @@ ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
 ${roadKitHtml()}
-${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}${controlRoomKitHtml()}${modDeckKitHtml({ mascotHtml: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="" width="54" height="54">` })}${revealKitHtml()}`;
+${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}${controlRoomKitHtml()}${modDeckKitHtml({ mascotHtml: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="" width="54" height="54">` })}${revealKitHtml()}${qcardKitHtml()}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -1037,6 +1038,7 @@ function init() {
   initControlRoomKit(mount);
   initModDeckKit(mount);
   initRevealKit(mount);
+  initQcardKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 

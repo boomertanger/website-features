@@ -25,7 +25,7 @@ function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.rando
   const eventsub = require("./eventsub")(ctx, { eventSubSecret });
   const flags = require("../crew/flags")(ctx);
   const rush = require("./rush")(ctx);
-  const chatGames = require("../chatGames")(ctx, { enqueue: chatGamesEnqueue });
+  const chatGames = require("../chatGames")(ctx, { enqueue: chatGamesEnqueue, grant, factory });
   ctx.chatGames = chatGames;
   const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions, ...chatGames.functions };
   const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush, chatGames };

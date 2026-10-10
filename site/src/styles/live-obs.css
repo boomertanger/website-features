@@ -93,3 +93,13 @@ html[data-shape="tall"] .bt-root.bt-obs:not(#_) .bt-sv-beat { width: 168px; }
   .bt-root.bt-obs:not(#_) .obs-rush-hit { animation-name: obs-rush-fade; animation-timing-function: ease-out; }
   .bt-root.bt-obs:not(#_) .obs-rush .bt-meter-fill { transition: none; }
 }
+
+/* Chat Games (docs/specs/chat-games.md §14; scripts/live/cg-questions-scene.ts): while a run's scene shows, the regular scene steps aside. */
+.bt-root.bt-obs:not(#_) [data-obs][data-cg="on"] .obs-scene { visibility: hidden; }
+.bt-root.bt-obs:not(#_) [data-cg-scene] { position: absolute; inset: 0; pointer-events: none; }
+.bt-root.bt-obs:not(#_) .obs-cg-q { font-size: 54px; font-weight: 800; line-height: 1.2; color: var(--bt-text); overflow-wrap: anywhere; }
+.bt-root.bt-obs:not(#_) .obs-cg-by { display: flex; flex-wrap: wrap; align-items: center; gap: 18px; font-size: 34px; color: var(--bt-text-muted); }
+.bt-root.bt-obs:not(#_) .obs-cg-votes { display: inline-flex; align-items: center; gap: 10px; padding: 8px 20px; border-radius: var(--bt-radius-full); background: rgba(var(--bt-primary-rgb), 0.2); color: var(--bt-primary-soft); font-weight: 800; }
+.bt-root.bt-obs:not(#_) .obs-cg-here { color: var(--bt-green); font-weight: 800; }
+.bt-root.bt-obs:not(#_) .obs-cg-timer { height: 14px; border-radius: 8px; background: color-mix(in srgb, var(--bt-text) 8%, transparent); overflow: hidden; }
+.bt-root.bt-obs:not(#_) .obs-cg-timer i { display: block; height: 100%; width: 100%; background: var(--bt-cr-live, var(--bt-red)); box-shadow: 0 0 20px var(--bt-cr-live, var(--bt-red)); transition: width 1s linear; }

@@ -205,6 +205,12 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
   };
   const send = (res, status, body) => { res.status(status).json(body); };
 
+  async function chatGameDisplay(runId) {
+    try {
+      const r = (await db.doc(`${P.site}/chatGames/main/runs/${runId}`).get()).data() || {};
+      return r.display ? { ...r.display, closesAt: r.closesAt && typeof r.closesAt.toMillis === "function" ? r.closesAt.toMillis() : null } : null;
+    } catch (err) { return null; }
+  }
   async function viewData() {
     const nowMs = now();
     const stream = (await ctx.currentStream()) || (await ctx.nextScheduled());
@@ -237,6 +243,8 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
       word: open ? win.word : null,                 // the check-in word, only while the window is open and only with a valid key
       firstIn: first,
       twitchStatus: (control.twitch || {}).status || null,
+      // Chat Games (docs/specs/chat-games.md §3, §14): the active run's public card for the stream view scene (the run doc is public; nothing secret is in display)
+      chatGameDisplay: pub.chatGame ? await chatGameDisplay(pub.chatGame.runId) : null,
     };
   }
   const L_ms = (t) => ctx.ms(t);

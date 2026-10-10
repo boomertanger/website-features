@@ -14,6 +14,8 @@ import type { PubLive } from "./model";
 
 /** What obsFeed returns as `view` (functions/lib/live/feeds.js viewData): public/live plus the scene, the word and the Starting soon data. */
 export type ObsView = Omit<PubLive, "state"> & {
+  /** Chat Games: the active run's public card (obsFeed; docs/specs/chat-games.md §14). */
+  chatGameDisplay?: Record<string, unknown> | null;
   state: PubLive["state"] | "starting";
   scene: "starting" | "stats" | "break" | "break-side" | "brb" | "ending";
   brbUntil: number | null;
@@ -51,9 +53,30 @@ async function show(view: ObsView) {
   await mount();
   setLook(document.body, view.look);
   scenes?.render(view);
+  await showGame(view);
+}
+
+/* ---------------------------------------------------------------- Chat Games' scene (docs/specs/chat-games.md §3, §14) */
+// While a run is on, its scene covers the regular one (data-cg="on" hides .obs-scene); when it ends, the last card stays 8 s, then the regular scene returns.
+let cgLast: { g: any; display: any } | null = null, cgTimer = 0;
+async function showGame(view: ObsView) {
   const cgEl = root.querySelector<HTMLElement>("[data-cg-scene]");
-  const g = (view as any).chatGame || null, key = g ? `${g.runId}|${g.state}|${g.round}` : "";
-  if (cgEl && cgEl.dataset.cgKey !== key) { cgEl.dataset.cgKey = key; (await import("../../../../shared/ui/chatgames.js")).initChatGames().mountScene?.(cgEl, { chatGame: g }); }
+  if (!cgEl) return;
+  const g = (view as any).chatGame || null, display = (view as any).chatGameDisplay || null;
+  const { initChatGames } = await import("../../../../shared/ui/chatgames.js");
+  await import("./cg-questions-scene");
+  const api = initChatGames();
+  if (g) {
+    if (cgTimer) { clearTimeout(cgTimer); cgTimer = 0; }
+    const key = JSON.stringify([g.runId, g.state, g.round, display]);
+    if (cgEl.dataset.cgKey !== key) { cgEl.dataset.cgKey = key; api.mountScene?.(cgEl, { chatGame: g, display }); }
+    cgLast = { g, display };
+    root.dataset.cg = "on";
+    return;
+  }
+  if (cgLast && !cgTimer) {
+    cgTimer = window.setTimeout(() => { cgTimer = 0; cgLast = null; cgEl.dataset.cgKey = ""; api.mountScene?.(cgEl, { chatGame: null }); delete root.dataset.cg; }, 8000);
+  }
 }
 
 /* ---------------------------------------------------------------- the feed */

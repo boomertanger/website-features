@@ -67,7 +67,7 @@ function liveSnapshot(kind: Kind): PubLive {
     nextGame: e || backstage ? null : { gameId: "lethal-night", title: "Lethal Night" },
     crew: { captain: (backstage ? crew : mc).captain, chats, onDuty: [(backstage ? crew : mc).captain], grades: GRADES },
     firstIn: e ? [] : raw.firstIn.slice(0, 3), firstInBeat: e ? null : beat,
-    chatGame: null,
+    chatGame: new URLSearchParams(location.search).get("game") === "questions" && !e ? { runId: "preview", formatId: "questions", state: "open", round: 1, title: "Questions" } : null,   // ?game=questions (Chat Games part 2)
   };
 }
 

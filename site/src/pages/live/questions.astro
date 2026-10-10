@@ -1,0 +1,33 @@
+---
+// /live/questions: Questions (docs/specs/chat-games.md §4, §14; Chat Games part 2; mockup docs/design/mockups/control-room-batch-4.html "Questions page"). A tool page:
+// the hero with a small scene, the queue (Tonight and Standing lanes, Top or New), On air now while a session runs, Your questions (3 open at most) and,
+// for the crew, the mod queue of held questions. Everyone reads; members ask and vote; the crew moderates (the callables and rules check again).
+// Everything below the hero is drawn by scripts/live/questions-page.ts. Preview (staging, signed out): ?as=member or ?as=mod.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import LiveBar from "../../components/live/LiveBar.astro";
+import Mascot from "../../components/Mascot.astro";
+import "../../styles/live-layout.css";
+import "../../styles/control-room-looks.css";
+import "../../styles/live-questions.css";
+---
+<BaseLayout title="Questions" description="Ask Boomertanger anything. Vote for the questions you want answered; the top ones get answered on stream.">
+  <LiveBar slot="bar" />
+  <div class="lq bt-zone" data-lq data-look="hull">
+    <section class="lq-hero" aria-labelledby="lq-h">
+      <div>
+        <h1 class="bt-title" id="lq-h">Questions</h1>
+        <p>Ask Boomertanger anything. Vote for the ones you want answered: the top ones get answered on stream, at the breaks.</p>
+        <div class="lq-hero-acts"><button type="button" class="bt-btn bt-btn--primary" data-lq-ask>Ask a question</button><a class="bt-btn bt-btn--ghost" href="/live">Watch live</a></div>
+      </div>
+      <div class="lq-scene" aria-hidden="true"><span class="lq-bub">?</span><span class="lq-bub">?</span><span class="lq-bub">?</span><Mascot aware decorative /></div>
+    </section>
+    <div class="lq-grid">
+      <div data-lq-main><div class="bt-skeleton" style="height:320px;border-radius:16px" aria-hidden="true"></div></div>
+      <aside class="lq-side" data-lq-side></aside>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/live/questions-page";
+</script>
