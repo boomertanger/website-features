@@ -1,9 +1,12 @@
 // The drop panel's preview data (non-production, signed out, ?as=): the five drop badges from the seed (functions/data/trophy-room-badges.json)
 // and a drop that runs here in the tab: dropOpen / dropAdjust act on it, claims tick up, the timer and the 30-second grace close it, a draw
-// picks @nightowl. Nothing reaches Firestore or a callable. ?rush=1 adds a hit Recruit Rush with Boss Fight Believer as the reward badge.
+// picks @nightowl. Nothing reaches Firestore or a callable. A hit Recruit Rush (the shared switch, ?rush=20; rush.ts previewRush) has Boss Fight
+// Believer as its reward badge, so the one-tap prompt shows. &predrop=<badgeId> starts with that drop open (the prompt waits behind it);
+// &dropped=<badgeId> marks a badge as dropped earlier this stream (the prompt never shows for it, the Rush picker disables it).
 // Below it, the viewer's side (sampleDrop, viewerPreview): the banner, the /live card and the stream view callout, for ?drop=<kind>.
 import type { DropBadge, DropDoc, DropIo, DropLive } from "./drop-panel";
 import type { PubDrop, PubLive } from "./model";
+import { previewRush } from "./rush";
 import type { ClaimResult, WatchIo } from "./drop-watch";
 
 const BADGES: DropBadge[] = [
@@ -21,10 +24,22 @@ export function makePreviewIo(liveOf: () => { state: PubLive["state"]; streamId:
   const subs = new Set<(l: DropLive) => void>();
   const docs: (DropDoc & { streamId: string; graceUntil: number | null })[] = [];
   let ptr: PubDrop | null = null, rushOpened = false, last = "";
-  const rush = q.get("rush") === "1";
+  const pr = previewRush(), rush = !!pr && pr.hitAt != null;
+  // &dropped=: a closed drop from earlier tonight; &predrop=: a drop open now (5 minutes left)
+  const t0 = Date.now();   // seeded docs belong to whatever stream the page shows (streamId "")
+  for (const id of (q.get("dropped") || "").split(",").filter(Boolean)) {
+    const b = BADGES.find((x) => x.id === id); if (!b) continue;
+    docs.push({ id: `preview_${b.id}`, streamId: "", badgeId: b.id, name: b.name, art: b.emoji, rarity: b.rarity, mode: b.drop.mode, status: "closed", openedAt: t0 - 40 * MIN, closesAt: t0 - 35 * MIN, closedAt: t0 - 35 * MIN, claims: 41, cap: null, winners: [], closedBy: "timer", graceUntil: null });
+  }
+  const pre = BADGES.find((x) => x.id === q.get("predrop"));
+  if (pre) {
+    const id = `preview_${pre.id}`, closesAt = pre.drop.mode === "streamEnd" ? null : t0 + 5 * MIN;
+    ptr = { id, badgeId: pre.id, name: pre.name, art: pre.emoji, rarity: pre.rarity, mode: pre.drop.mode, state: "open", closesAt, graceUntil: null, cap: null, claims: 12, winners: [], closedAt: null };
+    docs.push({ id, streamId: "", badgeId: pre.id, name: pre.name, art: pre.emoji, rarity: pre.rarity, mode: pre.drop.mode, status: "open", openedAt: t0 - MIN, closesAt, closedAt: null, claims: 12, cap: null, winners: [], closedBy: null, graceUntil: null });
+  }
   const snapshot = (): DropLive => {
     const l = liveOf();
-    return { state: l.state, streamId: l.streamId, drop: ptr ? { ...ptr } : null, dropReady: rush && !rushOpened ? "boss-fight-believer" : null, rushGoal: rush ? 25 : null };
+    return { state: l.state, streamId: l.streamId, drop: ptr ? { ...ptr } : null, dropReady: rush && !rushOpened ? "boss-fight-believer" : null, rushGoal: rush ? pr!.goal : null };
   };
   const emit = () => { const s = snapshot(); last = JSON.stringify(s); subs.forEach((fn) => fn(s)); };
   // the sweep and the claims: once a second, like the server's sweep and liveFlush (sped up)
@@ -49,7 +64,7 @@ export function makePreviewIo(liveOf: () => { state: PubLive["state"]; streamId:
     if (name === "dropOpen") {
       if (l.state !== "live" && l.state !== "backstage") throw fail("notLive", "Drops open while you're live.");
       const b = BADGES.find((x) => x.id === data.badgeId); if (!b) throw fail("noPreset", "That badge can't be dropped.");
-      if (docs.some((x) => x.badgeId === b.id && x.streamId === l.streamId)) throw fail("dropped", "That badge was already dropped this stream.");
+      if (docs.some((x) => x.badgeId === b.id && (x.streamId === l.streamId || !x.streamId))) throw fail("dropped", "That badge was already dropped this stream.");
       if (ptr && ptr.state !== "closed") throw fail("busy", "One drop at a time.");
       const untilEnd = data.untilEnd === true || (b.drop.mode === "streamEnd" && data.minutes == null);
       const minutes = untilEnd ? null : data.minutes ?? b.drop.minutes;
@@ -78,7 +93,7 @@ export function makePreviewIo(liveOf: () => { state: PubLive["state"]; streamId:
     preview: true,
     call: (name, data) => call(name, data),
     async catalog() { return BADGES; },
-    async drops(streamId: string) { return docs.filter((x) => x.streamId === streamId).map((x) => ({ ...x })); },
+    async drops(streamId: string) { return docs.filter((x) => x.streamId === streamId || !x.streamId).map((x) => ({ ...x })); },
     onLive(fn) { subs.add(fn); fn(snapshot()); return () => { subs.delete(fn); }; },
   };
 }

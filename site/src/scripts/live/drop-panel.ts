@@ -187,7 +187,7 @@ export function mountDropPanel(el: HTMLElement, { role, streamId = null, io: ioI
   function rushCard() {
     const id = live.dropReady, b = id ? allowed().find((x) => x.id === id) : null;
     if (!b || !isLive() || rushHidden === id || dropped().has(b.id) || (drop() && ACTIVE.includes(drop()!.state))) return "";
-    return `<div class="dp-rush" role="group" aria-label="Recruit Rush reward">${medalHtml(face(b))}<div><b>Rush goal hit${live.rushGoal ? `: ${live.rushGoal} recruits` : ""}</b><span>Drop ${esc(b.name)} for everyone? Preset ${esc(presetText(b.drop).replace("Draw · ", "draw, "))}.</span></div>`
+    return `<div class="dp-rush" role="group" aria-label="Recruit Rush reward">${medalHtml(face(b))}<div><b>Rush goal hit${live.rushGoal ? `: ${live.rushGoal} recruits` : ""}</b><span>Drop ${esc(b.name)} for everyone? Preset ${esc(b.drop.mode === "streamEnd" ? "until the stream ends" : b.drop.mode === "draw" ? `${minutesText(b.drop.minutes || 0)} draw` : minutesText(b.drop.minutes || 0))}.</span></div>`
       + `<div class="dp-actions"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-dp="rush-open"${busy ? " disabled" : ""}>${busy === "rush" ? "Opening…" : "Open drop"}</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-dp="rush-later">Not now</button></div></div>`;
   }
   function liveCard(p: PubDrop) {

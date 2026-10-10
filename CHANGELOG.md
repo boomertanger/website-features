@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Live drops part 6: Recruit Rush reward badge picker and the one-tap drop prompt.
 Live drops part 5: site-wide drop banner, /live drop card, stream view callout, drop badges no longer 'Coming soon'.
 Live drops part 4: the drop panel on /live/control and the Mod Deck helm strip.
 Live drops part 3: kit additions (.bt-live-banner drop variants, .bt-dropfuse, .bt-drop-timer, shared/ui/drop.js) and the UI kit page section.
