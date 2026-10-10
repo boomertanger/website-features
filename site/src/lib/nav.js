@@ -22,7 +22,7 @@ const MODULE_PAGES = {
   bugzapper: { label: "Bug Zapper", href: "/bug-zapper", icon: "wrench", blurb: "Report something broken." },
   featurelab: { label: "Feature Lab", href: "/feature-lab", icon: "bulb", blurb: "Suggest ideas and vote on them." },
   contact: { label: "Contact", href: "/contact", icon: "mail", blurb: "Questions, feedback, business, private notes" },
-  techStack: { label: "Tech Stack", href: "/tech-stack", icon: "rig", blurb: "The rig behind every stream" },
+  techStack: { label: "Tech Stack", href: "/tech-stack", icon: "rig", blurb: "The setup behind every stream" },
   // TODO: Horror Monthly (boomertang.com) has no page yet; site.json domains has the same "#" placeholder.
   monthly: { label: "Horror Monthly", href: "#", icon: "news", blurb: "The monthly horror roundup." },
 };

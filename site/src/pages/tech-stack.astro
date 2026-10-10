@@ -1,5 +1,5 @@
 ---
-// /tech-stack: the rig behind every stream (docs/specs/tech-stack.md; mockup docs/design/mockups/tech-stack.html). A story page in the full frame:
+// /tech-stack: the setup behind every stream (docs/specs/tech-stack.md; mockup docs/design/mockups/tech-stack.html). A story page in the full frame:
 // TocLayout rail, the hero (the real photos with a pulse along the cables, the mascot), then seven ghost-numbered chapters: 01 Why two PCs (six stage
 // cards whose scenes power on and play; the One PC / Two PCs compare), 02 Boomer's setup (the wiring diagram in the kit's .bt-zoomframe with the
 // Photo / Drawn / Blueprint / Flow / List switch, tours, Trace from here, Pull the plug, search, deep links ?device= ?tour= ?view=, then Inside the
@@ -52,11 +52,11 @@ const MIX_PANEL = (() => {
         <section class="ai-hero" aria-labelledby="h-hero">
           <div class="ts-hero">
             <div>
-              <span class="ai-kicker">Community · The rig</span>
+              <span class="ai-kicker">Community · The streaming setup</span>
               <h1 class="bt-title bt-title--hero" id="h-hero">Tech stack</h1>
               <p>Two PCs, {cams} cameras, one mixer and a {TS.internet.speed} line. Here's everything that runs the stream, and exactly how it's wired.</p>
               <ul class="ts-hero-stats"><li><b>2</b> PCs</li><li><b>{cams}</b> cameras</li><li><b>{deviceCount}</b> devices</li><li><b>3</b> platforms at once</li></ul>
-              <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#ts-rig">Explore the rig</a><button type="button" class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
+              <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#ts-rig">Explore the setup</a><button type="button" class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
             </div>
             <div class="ts-hero-scene"><Fragment set:html={heroScene()} /><Mascot aware decorative /></div>
           </div>
@@ -192,7 +192,7 @@ const MIX_PANEL = (() => {
           <Mascot aware decorative />
           <h2 id="h-cta">See it all run live</h2>
           <p>Every stream uses everything on this page.</p>
-          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/schedule">See the schedule</a><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title="Join free to see the whole rig">Join free</a></div>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/schedule">See the schedule</a><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title="Join free to see the whole setup">Join free</a></div>
         </section>
       </div>
     </TocLayout>
