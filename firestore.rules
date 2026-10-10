@@ -546,6 +546,35 @@ service cloud.firestore {
         }
       }
 
+      // ---------- Service Hub (docs/specs/service-hub.md §4, §10) ----------
+      // Every write goes through Cloud Functions (functions/lib/services). Admins read everything (the main doc's build hash, items, every rating
+      // and test, the summary); a member reads their own ratings, their own tests and their own my/{uid}. public/services is the member-safe list
+      // (public/{docId} above).
+      match /services/main {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+        match /items/{serviceId} {
+          allow read: if hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
+        match /ratings/{ratingId} {
+          allow read: if hasSiteRole(siteId, 'admin') || (request.auth != null && resource.data.uid == request.auth.uid);
+          allow write: if false;
+        }
+        match /tests/{testId} {
+          allow read: if hasSiteRole(siteId, 'admin') || (request.auth != null && resource.data.uid == request.auth.uid);
+          allow write: if false;
+        }
+        match /my/{uid} {
+          allow read: if request.auth != null && request.auth.uid == uid;
+          allow write: if false;
+        }
+        match /summary/{docId} {
+          allow read: if hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
+      }
+
       // ---------- Growth collector (docs/specs/growth-collector.md) ----------
       // Written ONLY by Cloud Functions (functions/lib/growth). The daily history is
       // for site admins; the footer's summary (public/socials) is public. TikTok

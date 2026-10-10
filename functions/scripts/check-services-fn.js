@@ -327,6 +327,24 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal((await get(`${BASE}/items/goal-tracker`)).status, "retired");
   for (const a of ["markTested", "linkVideo", "setCoversVersion", "hideComment", "hide", "retire"]) assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === a), `adminLog ${a}`);
 
-  console.log("check-services-fn: wiring ok");
+
+  // ---------- rules (the text of firestore.rules) ----------
+  {
+    const path = require("path");
+    const rules = require("fs").readFileSync(path.join(__dirname, "..", "..", "firestore.rules"), "utf8").replace(/\r\n/g, "\n");
+    const start = rules.indexOf("// ---------- Service Hub (docs/specs/service-hub.md");
+    assert.ok(start > 0, "the Service Hub rules are there");
+    const block = rules.slice(start, rules.indexOf("// ---------- Growth collector", start));
+    for (const m of ["match /services/main {", "match /items/{serviceId}", "match /ratings/{ratingId}", "match /tests/{testId}", "match /my/{uid}", "match /summary/{docId}"]) assert.ok(block.includes(m), m);
+    const writes = [...block.matchAll(/allow write: if ([^;]+);/g)].map((x) => x[1].trim());
+    assert.equal(writes.length, 6, "every Service Hub match closes writes");
+    assert.ok(writes.every((w) => w === "false"), "every write is false");
+    assert.ok(!/allow (create|update|delete)/.test(block), "no create, update or delete anywhere");
+    const reads = [...block.matchAll(/allow read: if ([^;]+);/g)].map((x) => x[1].trim());
+    assert.equal(reads.filter((r) => r === "hasSiteRole(siteId, 'admin')").length, 3, "the main doc, items and the summary: admins only");
+    assert.equal(reads.filter((r) => r === "hasSiteRole(siteId, 'admin') || (request.auth != null && resource.data.uid == request.auth.uid)").length, 2, "ratings and tests: admins, or that member's own");
+    assert.ok(reads.includes("request.auth != null && request.auth.uid == uid"), "my/{uid}: that member only");
+  }
+  console.log("check-services-fn: wiring and rules ok");
 })().catch((err) => { console.error(err); process.exit(1); });
 

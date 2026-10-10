@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 3c: firestore.rules for services/main (admins read items, ratings, tests and the summary; a member reads their own ratings, tests and my/{uid}; no client writes), checked in check-services-fn.js.
 Service Hub part 3b: serviceRate, serviceTest, serviceSync, serviceAdmin, the rating, test, Arcade game, Vault game and ended-stream triggers (lib/services), and scripts/sync-services.js.
 Service Hub part 3a: lib/services/logic.js (popularity, core services, versions, video and test states, coverage, ratings, tests, manifest sync plan, badge ladders) and check-services-fn.js in npm run check.
 CLAUDE.md: the Service Hub manifest rule (New feature checklist), and the same line in the ROADMAP's new-feature rule.
