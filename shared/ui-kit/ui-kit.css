@@ -179,3 +179,11 @@
 #bt-ui-kit .kit-dr-fuses { display: flex; flex-wrap: wrap; align-items: flex-end; gap: var(--bt-space-4); }
 #bt-ui-kit .kit-dr-fig { margin: 0; display: grid; justify-items: center; gap: var(--bt-space-2); }
 #bt-ui-kit .kit-dr-timers { display: flex; flex-wrap: wrap; gap: var(--bt-space-6); }
+/* Service Hub (kit-services.js): the frame is the "bt" container, so Desktop / Tablet / Phone resize what the pieces see */
+#bt-ui-kit .kit-sh-frame { container: bt / inline-size; max-width: 100%; padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); transition: width 0.2s; }
+#bt-ui-kit .kit-sh-stack { display: flex; flex-direction: column; gap: 14px; }
+#bt-ui-kit .kit-sh-grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+#bt-ui-kit .kit-sh-gap { gap: 14px; align-items: center; flex-wrap: wrap; }
+#bt-ui-kit .kit-sh-card { padding: 10px 12px; }
+@container bt (max-width: 640px) { #bt-ui-kit .kit-sh-grid2 { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { #bt-ui-kit .kit-sh-frame { transition: none; } }

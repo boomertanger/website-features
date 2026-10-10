@@ -54,6 +54,7 @@ import { choiceKitHtml, initChoiceKit } from "./kit-choice.js";
 import { fireflyKitHtml, initFireflyKit } from "./kit-firefly.js";
 import { zoomFrameKitHtml, initZoomFrameKit } from "./kit-zoomframe.js";
 import { dropsKitHtml, initDropsKit } from "./kit-drops.js";
+import { servicesKitHtml, initServicesKit } from "./kit-services.js";
 import { initNavGroups, featureLoadingHtml, watchFeatureHtml, playFeatureHtml, communityFeatureHtml, initWatchTile } from "../ui/navgroup.js";
 
 const KIT_VERSION = "dev";
@@ -851,7 +852,7 @@ ${toastKitHtml()}
 ${factoryKitHtml()}
 ${seasonKitHtml()}
 ${roadKitHtml()}
-${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}${controlRoomKitHtml()}${modDeckKitHtml({ mascotHtml: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="" width="54" height="54">` })}${revealKitHtml()}${qcardKitHtml()}${hotSeatKitHtml()}${choiceKitHtml()}${fireflyKitHtml()}${zoomFrameKitHtml()}${dropsKitHtml()}`;
+${modMachinaKitHtml()}${storyPiecesKitHtml()}${navgroupKitHtml()}${screamPlannerKitHtml({ mascotHtml: `<img src="${KIT_MASCOT}" alt="" width="92" height="92">` })}${controlRoomKitHtml()}${modDeckKitHtml({ mascotHtml: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="" width="54" height="54">` })}${revealKitHtml()}${qcardKitHtml()}${hotSeatKitHtml()}${choiceKitHtml()}${fireflyKitHtml()}${zoomFrameKitHtml()}${dropsKitHtml()}${servicesKitHtml({ mascotHtml: `<img class="bt-mascot" src="${KIT_MASCOT}" alt="" width="40" height="40">` })}`;
 }
 
 // ---------- Boom Arcade (docs/specs/arcade-step1.md §8, design-system.md §5 "Boom Arcade") ----------
@@ -1049,6 +1050,7 @@ function init() {
   initFireflyKit(mount);
   initZoomFrameKit(mount);
   initDropsKit(mount);
+  initServicesKit(mount);
   mount.querySelector("#kit-toast")?.addEventListener("click", (e) => { const k = e.target.closest("[data-kit-toast-kind]")?.dataset.kitToastKind; if (k) toast(k === "error" ? "That badge is for crew only." : k === "info" ? "Your trophy case has a free slot." : "Hype Engine awarded to @nightjar.", { kind: k }); });
   applyAdmin();
 
