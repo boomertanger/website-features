@@ -257,6 +257,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 ### Hotline Boom in production
 - [ ] Production Turnstile widget hostnames, and `TURNSTILE_SECRET_KEY` / `CONTACT_HASH_SALT` set on prod.
 - [ ] The Resend domain (Boom Alerts part 6) so replies send from the site.
+- [ ] Set HOTLINE_EMAIL=on in functions/.env once Boom Alerts sets RESEND_API_KEY, then redeploy the contact functions.
 - [ ] Redirect rules on the other 11 domains add `?via=<domain>`.
 - [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
 - [ ] The Squarespace contact page switched off.
@@ -270,4 +271,5 @@ Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:
 - [ ] W11 Activity rules
 
 ### Code health
+- [ ] UI kit page scrolls sideways at 390 px (older sections: Control Room, Scream Planner, Night Shift).
 - [ ] Clear the 78 older tsc errors across site features (factory, vault and others) so the type check is clean before launch.
