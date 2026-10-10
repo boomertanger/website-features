@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 5c: design-system.md §5 entries for the Service Hub pieces and §8aa (picks R1, P3 with Wall / List, S1, G2 with G1, hero H2; tones), and spec §14 with the round 2 How it works mockup.
 Service Hub part 5b: the Service Hub section on /dev/ui-kit (every piece in every state, with the Desktop / Tablet / Phone switcher).
 Service Hub part 5a: kit pieces in shared/bt-ui.css (rating tokens, .bt-rate, .bt-talkback, .bt-ask-pin, .bt-ind, .bt-filter-tile, .bt-rating-bar, .bt-cov-cell, .bt-wall, .bt-kanban, .bt-map-zone / .bt-map-node), shared/ui/rate.js and shared/ui/talkback.js, and the round 2 How it works mockup.
 Bug Zapper: the owner and admins skip the 5-a-day report limit (a 200-a-day backstop on its own key instead); members and mods keep 5 a day.

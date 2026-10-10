@@ -144,4 +144,5 @@ A Service Hub card on `/admin`: counts of new Not for me comments and untested v
 
 ## 14. Mockup picks (approved Oct 10, 2026)
 R1 three buttons · P3 collection wall with a Wall / List switch (P2 as the List) · S1 page strip, one strip with two halves · G2 coverage matrix as the Grid default with G1 as its Ratings switch · Board, Map, Needs attention, detail and member test as shown · tones Love pink, Like blue, Not for me gold.
-Still open: member page name (the mockup used "Rate the site" as the page heading under the SERVICE HUB wordmark), badge names and art, whether mods get a read-only admin view later. How it works: round 2 mockup.
+How it works (round 2, approved Oct 10, 2026): hero **H2 "The strip, up close"**, the rest of the page as shown; mockup `docs/design/mockups/service-hub-how-it-works.html`.
+Still open: member page name (the mockup used "Rate the site" as the page heading under the SERVICE HUB wordmark), badge names and art, whether mods get a read-only admin view later.
