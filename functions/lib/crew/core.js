@@ -422,8 +422,13 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     }
     // Next-grade progress for HQ: the same criteria the nightly "Ready to promote" flag uses (duty criteria are pending until stream duty).
     const crit = r ? L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: statsOf(r, rec), passed: progressOf(progress), strikes: L.activeStrikes(rec.strikes, now).length, now, settings }) : null;
+    // the time card (phase 3 part 7): this month's duties against the minimum, or where the rules stand
+    let month = null;
+    try { month = r ? await require("./activity").makeActivity({ db, Timestamp, adminLogEntry }).myMonth(uid, { ...r }, now, settings) : null; }
+    catch (err) { console.error("crewMe: month failed", String((err && err.message) || err).slice(0, 160)); }
     return {
       activityRules: settings.activityRules === true,
+      month,
       apply,
       next: crit && crit.to ? { to: crit.to, name: L.gradeName("mod", crit.to), ready: crit.ready, met: crit.met, missing: crit.missing, pending: crit.pending } : null,
       crew: r ? { track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), gradeSince: ms(r.gradeSince), platforms: r.platforms, availability: r.availability, device: r.device, quote: r.quote || "", breakUntil: ms(r.breakUntil), breakMonthsUsed: (r.breakMonthsUsed || {})[String(new Date(now).getUTCFullYear())] || 0, stats: r.stats || {} } : null,
@@ -443,13 +448,18 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     const rows = [];
     for (const d of roster.docs) {
       const r = d.data(), rec = await record(d.id);
-      rows.push({ uid: d.id, handle: r.handle || null, track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), platforms: r.platforms || {}, device: r.device || null, ready: rec.ready ? { to: rec.ready.to, since: rec.ready.since } : null, activeStrikes: L.activeStrikes(rec.strikes, Date.now()).length, ownerReview: !!rec.ownerReview });
+      rows.push({ uid: d.id, handle: r.handle || null, track: r.track, grade: r.grade, name: L.gradeName(r.track, r.grade), status: r.status, since: ms(r.since), platforms: r.platforms || {}, device: r.device || null, ready: rec.ready ? { to: rec.ready.to, since: rec.ready.since } : null, activeStrikes: L.activeStrikes(rec.strikes, Date.now()).length, ownerReview: !!rec.ownerReview, lockUntil: ms(rec.lockUntil) || null, missedMonths: r.missedMonths || 0 });
     }
-    return { roster: rows, openApplications: open.size, settings: await loadSettings(db) };
+    // the activity rules' lists and the no-show lockouts (phase 3 part 7)
+    let activity = null;
+    try { activity = await require("./activity").makeActivity({ db, Timestamp, adminLogEntry }).adminLists(Date.now()); }
+    catch (err) { console.error("crewAdminOverview: lists failed", String((err && err.message) || err).slice(0, 160)); }
+    const lockouts = rows.filter((x) => x.lockUntil && x.lockUntil > Date.now()).map((x) => ({ uid: x.uid, handle: x.handle, lockUntil: x.lockUntil }));
+    return { roster: rows, openApplications: open.size, settings: await loadSettings(db), activity, lockouts };
   });
 
   // ---------- crewSaveSettings (owner only): the settings card on /admin/crew ----------
-  // Validates every field; anything not sent is left alone. Gears values, the YouTube boost, the activity rules switch,
+  // Validates every field; anything not sent is left alone. Gears values, the YouTube boost (the activity rules are crewSetRules only),
   // the check-in fallback, the recruit and vouch caps, application timings and the Twitch sync switch.
   const crewSaveSettings = onCall(async (request) => {
     const uid = S.requireAuth(request);

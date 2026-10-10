@@ -104,6 +104,11 @@ const STATUS_NOTICE = {
   alumni: { title: "You're an alumnus now", text: "Six months on Reserve. Thank you for everything. You can come back through the short fast-track." },
 };
 
+/** The role line a duty spent most minutes on: { role, room } (for the time card's stamp). */
+function topLine(lines) {
+  const top = Object.entries(lines || {}).sort((a, b) => (b[1] || 0) - (a[1] || 0))[0];
+  return top ? D.parseLine(top[0]) : null;
+}
 /** Open seats on a published stream doc (handles on the public crew): no Captain, a room without a lead, or room for a Deckhand. */
 function hasOpenSeat(s) {
   const c = s.crew || {}, chats = c.chats || {}, cap = (c.caps && Number.isInteger(c.caps.deckhands)) ? c.caps.deckhands : 2;
@@ -265,7 +270,53 @@ function makeActivity({ db, Timestamp, adminLogEntry, notices = null, grant = nu
     return { moved };
   }
 
-  return { tallyMonth, planMonth, runMonthly, runReminders, behindNow, nightlyUp, onTheClockBadge };
+  /** Where the rules stand for a month: off | before (rulesSince is later) | grace | on. */
+  const rulesState = (s, ym) => (s.activityRules !== true || typeof s.rulesSince !== "string" ? "off" : ym < s.rulesSince ? "before" : s.graceMonth === ym ? "grace" : "on");
+
+  /** HQ's time card for one person (crewMe): this month's duties so far (each with its date and role), the minimum, streams left with open seats. Reads only their own records. */
+  async function myMonth(uid, r, at = now(), settings = null) {
+    const s = settings || (await loadSettings(db));
+    const ym = monthOf(at), state = rulesState(s, ym);
+    const out = { ym, rules: state, rulesSince: s.rulesSince || null, graceMonth: s.graceMonth || null };
+    if (state === "off" || state === "before" || !r) return out;
+    const [start, end] = monthRange(ym);
+    const planned = (await streamsCol().where("plannedStart", ">=", Timestamp.fromMillis(start)).where("plannedStart", "<", Timestamp.fromMillis(end)).get()).docs
+      .filter((d) => ["scheduled", "live", "ended"].includes(d.get("state")) && !d.get("afterShowOf"));
+    const light = planned.length < LIGHT_MONTH_STREAMS;
+    const ran = new Map(planned.filter((d) => d.get("actualStart") && ms(d.get("actualStart")) >= start).map((d) => [d.id, d.data()]));
+    const mine = (await db.collection(paths.dutiesCol()).where("uid", "==", uid).get()).docs.map((d) => d.data()).filter((x) => ran.has(x.streamId));
+    const duties = [];
+    let counted = 0, led = 0;
+    for (const x of mine) {
+      const st = ran.get(x.streamId), smin = Math.max(1, Math.round(((ms(st.actualEnd) || at) - ms(st.actualStart)) / D.MIN));
+      const o = x.confirmedAt ? { counted: x.counted === true, led: x.led === true, total: x.minutes || 0 } : D.dutyOutcome(x.lines || {}, smin);
+      if (!o.counted) continue;
+      counted++; if (o.led) led++;
+      duties.push({ at: ms(st.actualStart), minutes: o.total || 0, led: !!o.led, role: topLine(x.lines) });
+    }
+    let adminWork = 0;
+    if (r.track === "admin") adminWork = (await db.collection("adminLog").where("actorUid", "==", uid).get()).docs.filter((d) => ADMIN_WORK.has(d.get("action")) && (ms(d.get("createdAt")) || 0) >= start).length;
+    const min = minimumFor(r, light);
+    return { ...out, light, need: min.need, ledRequired: min.led, counted, led, adminWork, met: meets(min, { counted, led, adminWork }), line: progressLine(min, { counted, led }),
+      duties: duties.sort((a, b) => a.at - b.at), streamsLeftOpen: planned.filter((d) => ms(d.get("plannedStart")) > at && d.get("state") === "scheduled" && hasOpenSeat(d.data())).length,
+      excused: (r.excusedMonths || []).includes(ym), joinedThisMonth: (ms(r.since) || 0) > start };
+  }
+
+  /** /admin/crew's lists: Behind this month, On Check-in, Due for Reserve (on Check-in and behind again), and the rules' state. */
+  async function adminLists(at = now()) {
+    const s = await loadSettings(db), ym = monthOf(at), state = rulesState(s, ym);
+    const base = { ym, rules: state, activityRules: s.activityRules === true, rulesSince: s.rulesSince || null, graceMonth: s.graceMonth || null };
+    if (state === "off" || state === "before") return { ...base, behind: [], checkIn: [], dueReserve: [] };
+    const b = await behindNow(at, s);
+    const all = await rosterRows();
+    const pick = (x) => ({ uid: x.uid, handle: x.handle || null, status: x.status, track: x.track, grade: x.grade, missedMonths: x.missedMonths || 0, line: x.line || null });
+    return { ...base, light: b.light, streamsLeftOpen: b.streamsLeftOpen,
+      behind: b.rows.map(pick),
+      checkIn: all.filter((x) => x.status === "checkIn").map((x) => pick({ ...x, line: (b.rows.find((y) => y.uid === x.uid) || {}).line || "on track this month" })),
+      dueReserve: b.rows.filter((x) => x.status === "checkIn").map(pick) };
+  }
+
+  return { tallyMonth, planMonth, runMonthly, runReminders, behindNow, nightlyUp, onTheClockBadge, myMonth, adminLists, rulesState };
 }
 
 module.exports = function activity({ adminLogEntry }) {

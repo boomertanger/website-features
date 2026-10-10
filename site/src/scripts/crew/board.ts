@@ -1,7 +1,7 @@
 // /crew/board: the crew leaderboard (docs/specs/mod-machina.md §4b). Reads crew/main/boards/{month|season|all}
 // (public, written by the crew functions). Podium for the top three, then the table; your row is highlighted and,
 // when it is past the first rows, pinned under a gap. Admins carry a Staff tag and their real place. Duties and
-// hours show 0 and a dash until stream duty opens. Sample data under ?as= (non-production).
+// hours come from confirmed duty records (a dash when none). Sample data under ?as= (non-production).
 import { onAccess } from "./layout";
 import { esc, num, loadBoard, who, monthName } from "./public";
 import type { Board, BoardRow } from "./api";

@@ -13,8 +13,15 @@ export type Pref = "favourite" | "happy" | "ifNeeded" | "no";
 export type Prefs = Record<Chat, Pref>;
 
 export interface ApplyItem { id: string; label: string; ok: boolean; detail: string }
+/** crewMe.month: the time card (activity rules, phase 3 part 7). Only rules and the months when the rules are off or not started yet. */
+export interface MonthCard {
+  ym: string; rules: "off" | "before" | "grace" | "on"; rulesSince: string | null; graceMonth: string | null;
+  light?: boolean; need?: number; ledRequired?: boolean; counted?: number; led?: number; adminWork?: number; met?: boolean; line?: string;
+  duties?: { at: number; minutes: number; led: boolean; role: { role: string; room: string | null } | null }[]; streamsLeftOpen?: number; excused?: boolean; joinedThisMonth?: boolean;
+}
 export interface Me {
   activityRules: boolean;
+  month?: MonthCard | null;
   apply: { ok: boolean; reason: string | null; reapplyAt: number | null; items: ApplyItem[]; signedUp: boolean } | null;
   next: { to: number; name: string; ready: boolean; met: string[]; missing: string[]; pending: string[] } | null;
   crew: { track: "mod" | "admin"; grade: number; name: string; status: string; since: number | null; gradeSince: number | null; platforms: Partial<Prefs>; availability: { days: string[]; note: string }; device: string; breakUntil: number | null; breakMonthsUsed: number; quote?: string; stats: Record<string, number> } | null;

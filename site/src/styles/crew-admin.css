@@ -146,3 +146,24 @@
   .bt-root:not(#_) .ca-acts .bt-btn, .bt-root:not(#_) .ca-app-acts .bt-btn { flex: 1 1 auto; justify-content: center; }
   .bt-root:not(#_) .ca-todo { flex-wrap: wrap; }
 }
+
+/* Activity rules (scripts/crew/admin-rules.ts): the rules card, the three lists and the lockouts. Tool-page polish: rows react to hover and taps. */
+.bt-root:not(#_) .ca-rules-sec { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .ca-rules-top { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.bt-root:not(#_) .ca-rules-top .bt-label { margin: 0; }
+.bt-root:not(#_) .ca-rules-acts { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.bt-root:not(#_) .ca-rules-start { margin: 0; min-width: 180px; }
+.bt-root:not(#_) .ca-rl-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.bt-root:not(#_) .ca-rl { display: flex; flex-direction: column; gap: 10px; }
+.bt-root:not(#_) .ca-rl-h { display: flex; align-items: center; gap: 8px; margin: 0; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .ca-rl-list { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .ca-rl-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 4px 10px; padding: 8px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface-2); transition: border-color 0.15s, transform 0.15s; }
+.bt-root:not(#_) .ca-rl-row:hover, .bt-root:not(#_) .ca-rl-row:focus-within { border-color: var(--bt-admin-accent); transform: translateY(-1px); }
+.bt-root:not(#_) .ca-rl-who { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; min-width: 0; }
+.bt-root:not(#_) .ca-rl-line { grid-column: 1; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .ca-rl-row > .bt-btn { grid-column: 2; grid-row: 1 / span 2; }
+.bt-root:not(#_) .ca-rl-empty { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px; text-align: center; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .ca-rl-empty .bt-mascot { width: 64px; height: auto; }
+.bt-root:not(#_) .ca-rl-empty p { margin: 0; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .ca-rl-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .ca-rl-row { transition: none; } .bt-root:not(#_) .ca-rl-row:hover { transform: none; } }

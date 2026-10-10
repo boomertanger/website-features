@@ -1,5 +1,5 @@
 // /crew/hq (docs/specs/mod-machina.md §12, mockup mod-machina-guides.html "Crew HQ" with the time card M2).
-// Crew only. Your grade and status, the month's time card (Phase 1: "Starts with stream duty"), progress to the
+// Crew only. Your grade and status, the month's time card (the activity rules, timecard.ts), progress to the
 // next grade (promotions are never automatic: the owner confirms), the task strip, your recruit link, Gears and
 // board rank, Academy progress and any strikes (private, yours only). The duties and open-seats cards wait for
 // stream duty.
@@ -8,13 +8,14 @@ import { loadCtx, loadStanding, loadTasks, statusChip, STATUS, esc, num, fmtDate
 import { taskRowHtml, wireTaskActions } from "./task-ui";
 import { messageFor } from "../../lib/errors";
 import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
-import { timecardHtml, ringHtml } from "../../../../shared/ui/crew.js";
+import { ringHtml } from "../../../../shared/ui/crew.js";
 import { initials } from "../../../../shared/ui/dom.js";
 import { toast } from "../../../../shared/ui/toast.js";
 import { makeIo, type Io } from "../planner/plan-io";
 import type { Swap } from "../planner/plan-data";
 import { boardCardHtml, wireBoard } from "./swaps";
 import { mountNotices } from "./notices";
+import { monthCardHtml, previewMonth } from "./timecard";
 
 const root = document.querySelector<HTMLElement>("[data-hq]")!;
 const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML || "";
@@ -86,7 +87,6 @@ async function render(ctx: Ctx) {
   let swaps = swaps0;
   const meUid = io.preview ? "me" : ctx.uid;   // the planner preview names its pretend crew member "me"
   let tasks = tasks0;
-  const month = new Date().toLocaleDateString("en-US", { month: "long", timeZone: "America/Chicago" });
   const monthShort = new Date().toLocaleDateString("en-US", { month: "short", timeZone: "America/Chicago" });
   const g = standing.month?.gears ?? 0, ga = standing.all?.gears ?? 0, place = standing.month?.place ?? null;
   const rec = standing.month?.recruits ?? 0, recAll = standing.all?.recruits ?? 0;
@@ -103,7 +103,7 @@ async function render(ctx: Ctx) {
     ${c.status === "goingDark" ? `<div class="bt-notice">You're on a planned break. No warnings and nothing to do. <a href="/crew/profile#going-dark">Come back early</a> whenever you like.</div>` : ""}
     <div class="hq-grid">
       <div class="hq-col">
-        ${timecardHtml({ month, need: 2, total: 4, state: "idle" } as any)}
+        ${monthCardHtml(ctx.preview ? previewMonth(new URLSearchParams(location.search).get("rules"), c.grade) ?? ctx.me.month ?? null : ctx.me.month ?? null)}
         <div data-hq-swaps>${boardCardHtml(swaps, meUid, mascot())}</div>
         <div data-hq-tasks>${taskStrip(ctx, tasks)}</div>
         ${strikesCard(ctx)}

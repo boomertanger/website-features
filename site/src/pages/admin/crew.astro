@@ -1,6 +1,6 @@
 ---
 // /admin/crew: Mod Machina's admin page (docs/specs/mod-machina.md §3, §7, §12). Admins only (CrewLayout adminOnly:
-// everyone else gets a short gate). Sections: Roster, Coverage map, Ready to promote, Queue decisions, Strikes,
+// everyone else gets a short gate). Sections: Activity rules (part 7: the rules card, Behind / Check-in / Due for Reserve, lockouts; ?rules=off|before|grace|on), Roster, Coverage map, Ready to promote, Queue decisions, Strikes,
 // To-do list, Crew settings. Display only: the owner-only controls are hidden for everyone else, but the callables
 // check on the server. All reads and writes are in scripts/crew/admin.ts. Non-production, signed out, ?as=admin
 // shows sample data from src/data/preview-crew-admin.json (and ?owner=0 the read-only view).
@@ -30,6 +30,7 @@ import "../../styles/crew-admin.css";
       <p class="bt-notice ca-role" data-ca-role hidden></p>
 
       <nav class="bt-page-tabs ca-nav" aria-label="Crew admin sections" data-ca-nav>
+        <a href="#rules" data-nav="rules">Activity <span class="bt-badge bt-badge--admin" data-count="rules" hidden></span></a>
         <a href="#roster" data-nav="roster">Roster</a>
         <a href="#coverage" data-nav="coverage">Coverage</a>
         <a href="#ready" data-nav="ready">Ready to promote <span class="bt-badge bt-badge--admin" data-count="ready" hidden></span></a>
@@ -39,6 +40,12 @@ import "../../styles/crew-admin.css";
         <a href="#todos" data-nav="todos">To-do <span class="bt-badge bt-badge--admin" data-count="todos" hidden></span></a>
         <a href="#settings" data-nav="settings">Settings</a>
       </nav>
+
+      <section class="ca-sec" id="rules" aria-labelledby="ca-h-rules">
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-rules">Activity rules</h2></div>
+        <p class="bt-section-text">The monthly minimums from the crew rules: who's behind this month, who's on Check-in, who's due for Reserve, and the no-show lockouts.</p>
+        <div class="ca-rules-sec" data-ca-rules></div>
+      </section>
 
       <section class="ca-sec" id="roster" aria-labelledby="ca-h-roster">
         <div class="ca-sec-head">
@@ -117,10 +124,6 @@ import "../../styles/crew-admin.css";
 
             <fieldset class="ca-fs">
               <legend class="bt-label">Switches</legend>
-              <div class="ca-sw">
-                <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="ca-sw-ar-l" aria-describedby="ca-sw-ar-d" name="activityRules" data-sw="activityRules"></button>
-                <div><span class="ca-sw-l" id="ca-sw-ar-l">Activity rules</span><p class="bt-hint" id="ca-sw-ar-d">Turns on the monthly minimums, so people can fall to Check-in and Reserve. Keep it off until stream duty exists.</p></div>
-              </div>
               <div class="ca-sw">
                 <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="ca-sw-cf-l" aria-describedby="ca-sw-cf-d" name="checkinFallback" data-sw="checkinFallback"></button>
                 <div><span class="ca-sw-l" id="ca-sw-cf-l">Check-in fallback</span><p class="bt-hint" id="ca-sw-cf-d">Night Shift daily check-ins count in place of stream check-ins when someone applies.</p></div>

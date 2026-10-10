@@ -158,3 +158,12 @@
   .bt-root:not(#_) .hq-notice-acts { grid-column: 2; }
 }
 @media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .hq-notice { transition: none; } .bt-root:not(#_) .hq-notice:hover { transform: none; } }
+
+/* The time card's foot with the activity rules (scripts/crew/timecard.ts): the led requirement, streams left, and the grace month's teal line. */
+.bt-root:not(#_) .bt-timecard-foot:has(.hq-tc-left) { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 14px; }
+.bt-root:not(#_) .hq-tc-led { font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .hq-tc-led.is-ok { color: var(--bt-lime); }
+.bt-root:not(#_) .hq-tc-left { font-size: var(--bt-text-sm); color: var(--bt-primary-soft); text-decoration: underline; text-underline-offset: 3px; }
+.bt-root:not(#_) .hq-tc-left:hover { color: var(--bt-text); }
+.bt-root:not(#_) .hq-tc-note { flex-basis: 100%; font-size: var(--bt-text-xs); color: var(--bt-text-muted); }
+.bt-root:not(#_) .hq-tc-grace { flex-basis: 100%; font-size: var(--bt-text-xs); font-weight: 700; color: var(--bt-teal); }

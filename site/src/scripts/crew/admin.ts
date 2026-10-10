@@ -13,6 +13,7 @@ import { toast } from "../../../../shared/ui/toast.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { gradeChipHtml } from "../../../../shared/ui/grade-chip.js";
 import { platformIconHtml, roomHtml } from "../../../../shared/ui/crew.js";
+import { rulesHtml, rulesOn, rulesOff, previewActivity, type Activity, type Lockout } from "./admin-rules";
 
 type Track = "mod" | "admin";
 type Pref = "favourite" | "happy" | "ifNeeded" | "no";
@@ -66,6 +67,8 @@ let queueError = "";
 let todos: Todo[] = [];
 let todosError = "";
 let filter = "all";
+let activity: Activity | null = null;
+let lockouts: Lockout[] = [];
 
 // ---- what the viewer may do (display only; the server decides) ----
 const isRightHand = () => me.track === "admin" && me.grade === 3;
@@ -97,17 +100,21 @@ async function loadAll() {
     rows = d.overview.roster; settings = d.overview.settings; openApps = d.overview.openApplications;
     queue = d.queue; todos = d.todos;
     me = { isOwner: new URLSearchParams(location.search).get("owner") !== "0", track: "admin", grade: 2 };
+    const pr = new URLSearchParams(location.search).get("rules");
+    activity = previewActivity(pr || "grace", rows as any);
+    settings = { ...settings, activityRules: !!activity?.activityRules };
+    lockouts = pr === "off" ? [] : [{ uid: rows[0]?.uid || "u", handle: rows[0]?.handle || "nightowl", lockUntil: Date.now() + 12 * 86400000 }];
     return;
   }
   const { db, doc, getDoc, getDocs, collection } = await import("../../lib/db");
   const { auth } = await import("../../lib/firebase");
   const uid = auth.currentUser?.uid;
   const [ov, site, mine] = await Promise.all([
-    crewCall<{ roster: Row[]; openApplications: number; settings: Settings }>("crewAdminOverview"),
+    crewCall<{ roster: Row[]; openApplications: number; settings: Settings; activity: Activity | null; lockouts: Lockout[] }>("crewAdminOverview"),
     getDoc(doc(db, "sites", SITE)),
     crewMe().catch(() => null),
   ]);
-  rows = ov.roster; settings = ov.settings; openApps = ov.openApplications;
+  rows = ov.roster; settings = ov.settings; openApps = ov.openApplications; activity = ov.activity || null; lockouts = ov.lockouts || [];
   me = { isOwner: !!uid && site.get("ownerUid") === uid, track: mine?.crew?.track ?? null, grade: mine?.crew?.grade ?? 0 };
   // The queue and the to-do list load on their own: a failure in one shouldn't hide the rest.
   const [q, t] = await Promise.allSettled([
@@ -184,13 +191,15 @@ const CRITERIA: Record<number, string[]> = {
   2: ["90 days as Watcher", "Safety module", "No active strikes", "15 duties, 5 as Room Lead"],
   3: ["6 months as Warden", "No active strikes", "40 duties, 10 as Captain", "Mentored 2 Initiates to Watcher"],
 };
+/** Ride-alongs and mentoring have no record yet: they stay "pending" and the owner judges them (decided Oct 9, 2026). */
+const OWNER_JUDGES = new Set(["2 ride-alongs signed off", "Mentored 2 Initiates to Watcher"]);
 const DUTY_CRITERIA = new Set(["2 ride-alongs signed off", "Showed up for 80% of duties", "15 duties, 5 as Room Lead", "40 duties, 10 as Captain", "Mentored 2 Initiates to Watcher"]);
 
 function renderReady() {
   const list = rows.filter((r) => r.ready && r.track === "mod");
   $("[data-ca-ready]").innerHTML = list.length ? `<div class="ca-ready-grid">${list.map((r) => {
     const to = r.ready!.to, step = nextStep(r);
-    const crit = (CRITERIA[r.grade] || []).map((c) => `<li>${esc(c)}${DUTY_CRITERIA.has(c) ? ` <small>${settings.activityRules ? "met" : "counts once stream duty starts"}</small>` : ""}</li>`).join("");
+    const crit = (CRITERIA[r.grade] || []).map((c) => `<li>${esc(c)}${OWNER_JUDGES.has(c) ? " <small>no record yet: your call</small>" : DUTY_CRITERIA.has(c) ? ` <small>${settings.activityRules ? "met" : "counts once the activity rules are on"}</small>` : ""}</li>`).join("");
     const note = to >= 4 ? "Only the owner makes Sentinels." : "The owner confirms every promotion. A Right Hand can confirm up to Warden, and the owner is told.";
     return `<article class="bt-card ca-ready-card" data-uid="${esc(r.uid)}">
       <div class="ca-ready-top"><b>${esc(who(r))}</b><span class="ca-ready-move">${gradeChipHtml({ track: "mod", grade: r.grade } as any)}<span aria-hidden="true">&rarr;</span>${gradeChipHtml({ track: "mod", grade: to } as any)}</span></div>
@@ -289,7 +298,12 @@ function renderCounts() {
     : "You can look around. Setting status and strikes need an Overseer or above, and promotions, applications and settings are the owner's.";
 }
 
-function renderAll() { renderCounts(); renderRoster(); renderCoverage(); renderReady(); renderQueue(); renderStrikes(); renderTodos(); renderSettings(); }
+function renderRules() {
+  $("[data-ca-rules]").innerHTML = rulesHtml(activity, lockouts, me.isOwner);
+  const behind = activity && (activity.rules === "grace" || activity.rules === "on") ? activity.behind.length : 0;
+  const e = $(`[data-count="rules"]`); e.textContent = String(behind); e.hidden = behind === 0;
+}
+function renderAll() { renderCounts(); renderRules(); renderRoster(); renderCoverage(); renderReady(); renderQueue(); renderStrikes(); renderTodos(); renderSettings(); }
 
 async function refresh() {
   try { await loadAll(); renderAll(); } catch (err) { toast(messageFor(err, "Couldn't refresh the page."), { kind: "error" }); }
@@ -491,7 +505,7 @@ function wireSettings() {
     for (const k of Object.keys(settings.gearsValues)) gearsValues[k] = num(`g:${k}`);
     const sw = (k: string) => form.querySelector<HTMLElement>(`[data-sw="${k}"]`)!.getAttribute("aria-checked") === "true";
     const payload = {
-      gearsValues, youtubeBoost: num("youtubeBoost"), activityRules: sw("activityRules"), checkinFallback: sw("checkinFallback"),
+      gearsValues, youtubeBoost: num("youtubeBoost"), checkinFallback: sw("checkinFallback"),
       recruitCapPerMonth: num("recruitCapPerMonth"), vouchCap: num("vouchCap"), appExpiryDays: num("appExpiryDays"), reapplyDays: num("reapplyDays"), twitchSync: sw("twitchSync"),
     };
     const save = async () => {
@@ -508,13 +522,7 @@ function wireSettings() {
         else { errBox.textContent = messageFor(ex, "Couldn't save the settings. Try again."); errBox.hidden = false; }
       } finally { btn.disabled = false; }
     };
-    if (payload.activityRules && !settings.activityRules) {
-      void confirmAction({
-        title: "Turn on the activity rules?", confirmLabel: "Turn on and save", busyLabel: "Saving…", danger: false, feature: "crew",
-        message: "This switches on the monthly minimums. People can drop to Check-in and then Reserve if they miss months, and the duty steps for promotion start to count. Stream duty doesn't exist yet, so nobody can meet them. Keep it off until it does.",
-        onConfirm: async () => { await save(); },
-      });
-    } else await save();
+    await save();
   });
 }
 
@@ -542,6 +550,20 @@ function wire() {
     else if (a === "notnow") notNow(app!);
     else if (a === "waive") waive(app!);
     else if (a === "todo-done") void todoDone(id!, b);
+    else if (a === "rules-on") rulesOn(root.querySelector<HTMLInputElement>("[data-rules-start]")?.value || "", async (startMonth) => {
+      if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(startMonth)) throw new Error("Pick a start month.");
+      if (await act("crewSetRules", { on: true, startMonth })) { toast("Activity rules are on."); await refresh(); }
+      else if (preview) { activity = previewActivity("before", rows as any); activity!.rulesSince = activity!.graceMonth = startMonth; renderRules(); }
+    });
+    else if (a === "rules-off") rulesOff(async () => {
+      if (await act("crewSetRules", { on: false })) { toast("Activity rules are off."); await refresh(); }
+      else if (preview) { activity = previewActivity("off", rows as any); renderRules(); }
+    });
+    else if (a === "lift") void (async () => {
+      b.disabled = true;
+      try { if (await act("crewLockLift", { uid })) { toast("Lockout lifted."); await refresh(); } else if (preview) { lockouts = lockouts.filter((l) => l.uid !== uid); renderRules(); } }
+      catch (err) { toast(messageFor(err, "Couldn't lift the lockout. Try again."), { kind: "error" }); b.disabled = false; }
+    })();
   });
   // The tab row marks the section in view.
   const links = [...document.querySelectorAll<HTMLAnchorElement>("[data-ca-nav] a")];

@@ -175,6 +175,21 @@ async function main() {
   assert.ok(names.includes("c") && names.includes("w") && names.includes("k") && names.includes("e"), "2+ duties in December");
   assert.ok(!names.includes("j") && !names.includes("x") && !names.includes("adm"), "fewer than 2 (or an admin) isn't on it");
 
+
+  // ---------- HQ and /admin/crew reads (crewMe.month, crewAdminOverview.activity) ----------
+  clock = at("2026-12", 12);
+  await settings({ rulesRunMonth: null });
+  const mm = await A.myMonth("k", await roster("k"), clock);
+  assert.equal(mm.rules, "on"); assert.equal(mm.counted, 2); assert.equal(mm.need, 2); assert.equal(mm.met, true); assert.equal(mm.duties.length, 2); assert.ok(mm.duties[0].at < mm.duties[1].at);
+  const mw = await A.myMonth("w", await roster("w"), clock);
+  assert.equal(mw.ledRequired, true); assert.equal(mw.line.startsWith("3 of 3"), true);
+  const novState = await A.myMonth("k", await roster("k"), at("2026-11", 12));
+  assert.equal(novState.rules, "grace");
+  const octState = await A.myMonth("k", await roster("k"), at("2026-10", 12));
+  assert.equal(octState.rules, "before"); assert.equal(octState.counted, undefined);
+  const lists = await A.adminLists(clock);
+  assert.equal(lists.rules, "on"); assert.ok(lists.behind.some((x) => x.uid === "a")); assert.ok(!lists.behind.some((x) => x.uid === "k"));
+  assert.ok(lists.checkIn.every((x) => x.status === "checkIn")); assert.ok(lists.dueReserve.every((x) => x.status === "checkIn" && lists.behind.some((y) => y.uid === x.uid)));
   clock = at("2027-01", 1, 0) + 10 * MIN;
   r = await A.runMonthly(clock);
   assert.equal(r.grace, false);
