@@ -2426,6 +2426,9 @@
 .bt-root:not(#_) .bt-tts-pw-show.is-copy { border-color: color-mix(in srgb, var(--pw-c) 60%, transparent); color: var(--bt-text); }
 .bt-root:not(#_) .bt-tts-pw-show.is-done { border-color: var(--pw-c); background: var(--pw-c); color: var(--bt-bg); }
 .bt-root:not(#_) .bt-tts-pw-readout { display: flex; flex-direction: column; align-items: center; gap: 8px; margin-top: 14px; }
+/* Hotline Boom: the small "Send a message" link under the Contact column (/contact) */
+.bt-root:not(#_) .bt-tts-pw-msg { display: block; width: fit-content; margin: 10px auto 0; font-size: var(--bt-text-sm); font-weight: 700; color: var(--bt-primary-soft); text-decoration: underline; text-underline-offset: 3px; }
+.bt-root:not(#_) .bt-tts-pw-msg:hover { color: var(--bt-text); }
 /* Readout lines (one per contact shown, stacked): a rounded panel tinted in the contact's
    colour, monospace, with a blinking cursor while it types and a tag beside it on Copy. */
 .bt-root:not(#_) .bt-tts-pw-mail { --pw-c: var(--bt-text-muted); position: relative; max-width: 100%; padding: 6px 12px; border: 1px solid color-mix(in srgb, var(--pw-c) 45%, transparent); border-radius: var(--bt-radius-md); background: color-mix(in srgb, var(--pw-c) 8%, var(--bt-pw-ring-bg)); color: var(--bt-text); font-family: ui-monospace, "SF Mono", Menlo, Consolas, monospace; font-size: var(--bt-text-base); overflow-wrap: anywhere; user-select: text; }

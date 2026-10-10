@@ -1,0 +1,21 @@
+---
+// Hotline Boom's feature bar (docs/specs/hotline-boom.md §9): the kit's .bt-topbar in a .bt-sticky-bar like Bug Zapper's, with the HOTLINE BOOM .bt-wordmark--power (W5 Dial-up: the
+// wheel dials to the finger stop and springs back on hover or focus; touch screens play it once as it scrolls into view). Right: a ghost How it works link (on that page, a link
+// back to /contact). Under 640px the words become icons, each a 40px target with an aria-label. Wired in scripts/hotline/layout.ts.
+import { HB_ICON, icon } from "../../scripts/hotline/art";
+interface Props { section?: string | null }
+const { section = null } = Astro.props;
+---
+<div class="bt-sticky-bar hb-bar" data-hb-dock>
+  <div class="bt-topbar">
+    <a class="bt-wordmark bt-wordmark--power" href="/contact" aria-label="Hotline Boom">
+      <span class="bt-wordmark-icon" set:html={HB_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">HOTLINE <span class="bt-wordmark-accent">BOOM</span></span>
+    </a>
+    <div class="bt-topnav">
+      {section === "how"
+        ? <a class="bt-btn bt-btn--ghost bt-btn--sm hb-act" href="/contact" aria-label="Send a message"><Fragment set:html={icon("pen")} /><span class="bt-btn-label">Send a message</span></a>
+        : <a class="bt-btn bt-btn--ghost bt-btn--sm hb-act" href="/contact/how-it-works" aria-label="How it works"><Fragment set:html={icon("help2")} /><span class="bt-btn-label">How it works</span></a>}
+    </div>
+  </div>
+</div>

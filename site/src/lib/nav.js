@@ -20,12 +20,14 @@ const MODULE_PAGES = {
   // Later: not in site.json modules yet, so they stay out of the navigation until enabled.
   bugzapper: { label: "Bug Zapper", href: "/bug-zapper", icon: "wrench", blurb: "Report something broken." },
   featurelab: { label: "Feature Lab", href: "/feature-lab", icon: "bulb", blurb: "Suggest ideas and vote on them." },
+  contact: { label: "Contact", href: "/contact", icon: "mail", blurb: "Questions, feedback, business, private notes" },
   // TODO: Horror Monthly (boomertang.com) has no page yet; site.json domains has the same "#" placeholder.
   monthly: { label: "Horror Monthly", href: "#", icon: "news", blurb: "The monthly horror roundup." },
 };
 
-// Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md).
-const ALWAYS_ON = ["crew"];
+// Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md), /contact is
+// Hotline Boom (docs/specs/hotline-boom.md).
+const ALWAYS_ON = ["crew", "contact"];
 const STAFF_ONLY = ["deck"];   // on for everyone in the data, shown to staff only
 const enabled = new Set([...site.modules, ...ALWAYS_ON, ...STAFF_ONLY]);
 const isOn = (id) => enabled.has(id) && !!MODULE_PAGES[id];
@@ -35,7 +37,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "factory", "trophies"] },
-  { id: "community", label: "Community", pages: ["club", "crew", "goals", "bugzapper", "featurelab", "monthly"] },
+  { id: "community", label: "Community", pages: ["club", "crew", "goals", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];
 

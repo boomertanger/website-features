@@ -28,6 +28,16 @@
     { "id": "support", "label": "Support", "user": "support" }
   ],
   "_aboutContacts": "The footer never prints these addresses in the HTML: each Show button joins user + @ + emailDomain in the browser.",
+  "hotline": {
+    "turnstileSiteKey": "0x4AAAAAAFSyVCo3xA4susd6",
+    "emails": [
+      { "key": "business", "label": "Business", "user": "business" },
+      { "key": "fanmail", "label": "Fan mail", "user": "fanmail" },
+      { "key": "support", "label": "Support", "user": "support" },
+      { "key": "privacy", "label": "Privacy", "user": "privacy" }
+    ]
+  },
+  "_aboutHotline": "Hotline Boom (/contact, docs/specs/hotline-boom.md). turnstileSiteKey is Cloudflare Turnstile's PUBLIC site key (the secret is TURNSTILE_SECRET_KEY in Secret Manager, never here). emails are the \"Rather use email?\" rows: joined with emailDomain in the browser on Show, never in the HTML.",
   "domains": [
     { "domain": "boomertanger.live", "label": "Watch me live", "icon": "live", "href": "/live" },
     { "domain": "boomertanger.events", "label": "My schedule", "icon": "cal", "href": "/schedule" },

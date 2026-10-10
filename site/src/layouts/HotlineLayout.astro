@@ -1,0 +1,18 @@
+---
+// One layout for Hotline Boom's public pages (docs/specs/hotline-boom.md §2, §9): the site shell, the sticky HOTLINE BOOM bar in BaseLayout's "bar" slot, then the page.
+import BaseLayout from "./BaseLayout.astro";
+import HotlineBar from "../components/hotline/HotlineBar.astro";
+import "../styles/how-it-works.css";   // the How it works blocks (shared); before hotline.css so the scenes win ties
+import "../styles/hotline.css";
+
+interface Props { title: string; description?: string; section?: string | null }
+const { title, description, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <HotlineBar slot="bar" section={section} />
+  <div class="hb-wrap"><slot /></div>
+</BaseLayout>
+
+<script>
+  import "../scripts/hotline/layout";
+</script>

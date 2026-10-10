@@ -1,0 +1,76 @@
+---
+// /contact, Hotline Boom (docs/specs/hotline-boom.md §2, §3, §9; mockups docs/design/mockups/hotline-boom-contact.html Layout 3 and hotline-boom-hero.html). A tool page: the
+// hero (status pill, the ringing desk phone that answers on hover or tap), then "Pick a line" (the keypad menu with its LCD) beside "Write your message" (the form for the picked
+// line), "Better places" and "Rather use email?". The menu and the form are drawn by scripts/hotline/contact.ts, which knows the viewer (visitor, member, 13 to 17) and which lines
+// are on (hotline/main); until it runs the menu shows a skeleton, and without JavaScript the email rows' note says how to reach us.
+import HotlineLayout from "../../layouts/HotlineLayout.astro";
+import site from "../../data/site.json";
+import { phoneScene, icon } from "../../scripts/hotline/art";
+import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
+import { revealHtml } from "../../../../shared/ui/reveal.js";
+
+const ic = (k: string) => icon(k).replace("<svg ", '<svg width="18" height="18" style="color: var(--bt-title)" ');
+const arrow = icon("arrow");
+const doors = [
+  { href: "/bug-zapper", ic: "bug", title: "Found a bug?", text: "Bug Zapper tracks it until it's fixed." },
+  { href: "/feature-lab", ic: "bulb", title: "Got a feature idea?", text: "Feature Lab lets members vote on it." },
+  { href: "/crew/join", ic: "crew", title: "Want to be a mod?", text: "Apply to join the crew." },
+];
+const mail = revealHtml({ rows: site.hotline.emails.map((e) => ({ key: e.key, label: e.label, user: e.user, domain: site.emailDomain })) });
+---
+<HotlineLayout title="Contact" description="Your direct line to Boomertanger. Pick what it's about and it reaches the right person, from fan mail to business deals.">
+  <div class="hb-page" data-hb data-ts-key={site.hotline.turnstileSiteKey}>
+    <section class="hb-hero" aria-labelledby="hb-h">
+      <div class="hb-txt">
+        <p class="hb-kicker"><i aria-hidden="true"></i><span data-hb-status>Lines open. Replies in about 3 days.</span></p>
+        <h1 class="bt-title bt-title--hero" id="hb-h">Questions. Feedback. Ideas.</h1>
+        <p class="hb-lede">Your direct line to Boomertanger. Pick what it's about and it reaches the right person, from fan mail to business deals.</p>
+        <div class="hb-links">
+          <a class="bt-btn bt-btn--primary" href="#hb-lines" data-hb-jump>Pick a line</a>
+          <a class="bt-btn bt-btn--ghost" href="/contact/how-it-works">How Hotline Boom works</a>
+          <span class="hb-trust"><Fragment set:html={icon("private")} />Private lines are read by Boomertanger only</span>
+        </div>
+      </div>
+      <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Answer it">
+        <Fragment set:html={phoneScene()} />
+        <span class="hb-bubble" aria-hidden="true">Hotline <b>Boom</b>, what's it about?</span>
+        <span class="hb-stage-hint" aria-hidden="true">Pick it up</span>
+      </button>
+    </section>
+
+    <div id="hb-lines" class="hb-main" data-hb-main aria-live="polite">
+      <div class="hb-menu-grid">
+        <section class="hb-col hb-menu-col">
+          <Fragment set:html={sectionHeadHtml({ icon: ic("line"), title: "Pick a line", sub: "Press a number.", small: true })} />
+          <div class="hb-menu" aria-busy="true">
+            <div class="hb-lcd"><span class="hb-lcd-top">Hotline Boom<i class="hb-lcd-dot"></i></span><span class="hb-lcd-main">Connecting<i class="hb-lcd-cur"></i></span></div>
+            {[0, 1, 2, 3, 4, 5].map(() => <div class="bt-skeleton-row" aria-hidden="true"><span class="bt-skeleton hb-sk-key"></span><div class="bt-skeleton-lines"><span class="bt-skeleton hb-sk-a"></span><span class="bt-skeleton hb-sk-b"></span></div></div>)}
+          </div>
+        </section>
+        <section class="hb-col hb-pane">
+          <Fragment set:html={sectionHeadHtml({ icon: ic("pen"), title: "Write your message", sub: "Short is fine. Most take about a minute.", small: true })} />
+          <div class="hb-idle"><b>Pick a number to start</b><span>Each one opens a short form made for it.</span></div>
+        </section>
+      </div>
+      <noscript><p class="bt-notice">The contact form needs JavaScript. The email addresses below work too: Show types each one in.</p></noscript>
+    </div>
+
+    <section class="hb-sec hb-else" data-hb-else aria-labelledby="hb-else-h">
+      <Fragment set:html={sectionHeadHtml({ icon: ic("sign"), title: "Better places for some things", count: doors.length, sub: "Faster answers for bugs, ideas and joining the crew." }).replace("<h2 ", '<h2 id="hb-else-h" ')} />
+      <div class="hb-else-grid">
+        {doors.map((d) => (
+          <a class="bt-card bt-card--door" href={d.href}><Fragment set:html={icon(d.ic)} /><span><b>{d.title}</b>{d.text}</span><span class="bt-card-go"><Fragment set:html={arrow} /></span></a>
+        ))}
+      </div>
+    </section>
+
+    <section class="hb-sec hb-mail" aria-labelledby="hb-mail-h">
+      <Fragment set:html={sectionHeadHtml({ icon: ic("mail"), title: "Rather use email?", count: site.hotline.emails.length, sub: "Prefer your own email app? These work too." }).replace("<h2 ", '<h2 id="hb-mail-h" ')} />
+      <Fragment set:html={mail} />
+    </section>
+  </div>
+</HotlineLayout>
+
+<script>
+  import "../../scripts/hotline/contact";
+</script>
