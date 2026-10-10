@@ -29,6 +29,9 @@ const FORMATS = [
 ];
 const PACKS = [{ id: "hot-seat-general", formatId: "hot-seat", title: "General", vaultGameIds: [], status: "approved", cards: [] }];
 
+/** JSON with sorted keys at every depth (Firestore returns map keys in its own order). */
+const canon = (v) => JSON.stringify(v, (k, x) => (x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.keys(x).sort().map((key) => [key, x[key]])) : x));
+
 function parseArgs(argv) {
   const args = { project: "staging", apply: false };
   for (let i = 0; i < argv.length; i++) {
@@ -61,7 +64,7 @@ async function main() {
     const snap = await ref.get();
     const { id, enabled, ...fields } = f;
     const doc = snap.exists ? fields : { ...fields, enabled };
-    const changed = !snap.exists || Object.entries(fields).some(([k, v]) => JSON.stringify(snap.get(k)) !== JSON.stringify(v));
+    const changed = !snap.exists || Object.entries(fields).some(([k, v]) => canon(snap.get(k)) !== canon(v));
     console.log(`  formats/${id}: ${!snap.exists ? "create (enabled: false)" : changed ? "update registry fields (enabled stays " + snap.get("enabled") + ")" : "unchanged"}`);
     if (args.apply && changed) await ref.set({ ...doc, updatedAt: FieldValue.serverTimestamp() }, { merge: true });
   }
