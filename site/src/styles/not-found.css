@@ -52,3 +52,151 @@
   .bt-root:not(#_) .nf .bt-firefly { width: 26px; height: 26px; }
 }
 @container bt (max-width: 420px) { .bt-root:not(#_) .nf-actions > .bt-btn--secondary svg { display: none; } }
+
+/* ---------- the scene's art palette: one property per colour (CLAUDE.md rule 3). The art is drawn with these. ---------- */
+.bt-root:not(#_) .nf {
+  --nf-cc-1: #3b3936; --nf-cc-2: #262422; --nf-cc-3: #57534d;
+  --nf-wd-hi: #8a6440; --nf-wd-1: #694829; --nf-wd-2: #47301d; --nf-wd-3: #2a1c11;
+  --nf-st-1: #d3d9de; --nf-st-2: #7d868f; --nf-st-3: #3c4249;
+  --nf-rs-1: #a65a2c; --nf-rs-2: #6d3417; --nf-rs-3: #3a1a0b;
+  --nf-bn-1: #e2d6b8; --nf-bn-2: #a99a7b; --nf-bn-3: #5f5544;
+  --nf-tl-1: #b7bab2;
+  --nf-peg: #7b5b39; --nf-peg-hole: #1d140b; --nf-paint: #e7e0cc;
+  --nf-glass: rgba(150, 175, 165, .16); --nf-glass-hi: rgba(225, 240, 230, .34); --nf-murk: #3f3a1c;
+  --nf-saw: #8f3f12; --nf-saw-hi: #c4621e; --nf-handle-r: #8c1f1a; --nf-handle-y: #b88a1b;
+  --nf-grime: #1a1208; --nf-puddle: rgba(70, 80, 78, .55); --nf-frost: #cfe2ea;
+  --nf-web: rgba(225, 225, 225, .36);
+  --nf-bug-1: #4a2410; --nf-bug-hi: #8a4a1e; --nf-bug-2: #2b160a; --nf-beetle: #1f2a22;
+  --nf-spider: #141010; --nf-hourglass: #8c1f1a; --nf-cent: #6b3c16; --nf-cent-2: #3d200b;
+  --nf-rat: #4b433c; --nf-rat-ear: #8b6a62; --nf-scorp: #8a6a2a; --nf-scorp-2: #4f3a12; --nf-maggot: #e8e1c8;
+  --nf-iris: #3d6b8f; --nf-vein: #b3423a; --nf-void: #050404;
+  --nf-tv-case: #4a3322; --nf-tv-case-hi: #6e4f34; --nf-tv-bezel: #1c1b1a; --nf-tv-glass: #1d2421; --nf-tv-glass-hi: #4a5650;
+  --nf-tv-bg: #1a2129; --nf-phosphor: #e6f0ff; --nf-tv-glow: #9fc2ff; --nf-water: rgba(190, 215, 225, .75);
+  --nf-flypaper: #9d8636; --nf-box: #6c5234; --nf-box-2: #4a381f; --nf-tape: #a89770; --nf-cheese: #c9a63a;
+  --nf-rubber: #262625; --nf-rubber-hi: #4a4a47; --nf-olive: #4a4d2c; --nf-dress: #6f4a54; --nf-hair: #3a2416;
+  --nf-cork: #8d6c46; --nf-paper: #dcd4c0; --nf-photo: #2c2a27; --nf-photo-2: #8a8378; --nf-pin: #8c1f1a; --nf-string: #9a2a22;
+  --nf-foot: rgba(26, 18, 8, .75); --nf-sheet: #d6dfda; --nf-mote: #fff6dc;
+  --nf-hi: #fff; --nf-shade: #000;   /* highlights and shadows in the art (opacity sets how much) */
+}
+
+/* ---------- the scene: art, then the dark with a hole where the firefly is (and one for the TV), tint and bloom, then the eyes (they live in the dark) ---------- */
+.bt-root:not(#_) .nf-scene { cursor: crosshair; }
+.bt-root:not(#_) .nf-scene > svg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bt-root:not(#_) .nf-dark { position: absolute; inset: 0; pointer-events: none; transition: opacity 600ms; background: var(--bt-footer-bg);
+  /* mask alpha only: one hole for the firefly, one for the TV when it's on */
+  --nf-hole: radial-gradient(circle calc(var(--r, 150px) * var(--gk)) at var(--lx, -999px) var(--ly, -999px), rgba(0,0,0,var(--dim, 0)) 0%, rgba(0,0,0,calc(var(--dim, 0) + (1 - var(--dim, 0)) * var(--a1))) var(--p1), rgba(0,0,0,calc(var(--dim, 0) + (1 - var(--dim, 0)) * var(--a2))) var(--p2), rgba(0,0,0,calc(var(--dim, 0) + (1 - var(--dim, 0)) * var(--a3))) var(--p3), rgba(0,0,0,calc(var(--dim, 0) + (1 - var(--dim, 0)) * var(--a4))) var(--p4), rgba(0,0,0,calc(var(--dim, 0) + (1 - var(--dim, 0)) * var(--a5))) var(--p5), #000 100%);
+  --nf-tvhole: radial-gradient(circle calc(var(--tr, 1px) * var(--gk)) at var(--tx, -999px) var(--ty, -999px), transparent 0%, rgba(0,0,0,var(--a1)) var(--p1), rgba(0,0,0,var(--a2)) var(--p2), rgba(0,0,0,var(--a3)) var(--p3), rgba(0,0,0,var(--a4)) var(--p4), rgba(0,0,0,var(--a5)) var(--p5), #000 100%);
+  -webkit-mask-image: var(--nf-hole), var(--nf-tvhole); -webkit-mask-composite: source-in;
+  mask-image: var(--nf-hole), var(--nf-tvhole); mask-composite: intersect; }
+.bt-root:not(#_) .nf { --gk: 2.3; --a1: .02; --p1: 7%; --a2: .28; --p2: 16%; --a3: .7; --p3: 26%; --a4: .9; --p4: 40%; --a5: .965; --p5: 68%; --bloom: .55; }
+.bt-root:not(#_) .nf-bloom { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: screen; opacity: calc(var(--bloom, .3) * (1 - var(--dim, 0) * 1.4));
+  background: radial-gradient(circle calc(var(--r, 150px) * .62) at var(--lx, -999px) var(--ly, -999px), color-mix(in srgb, var(--nf-mote) 50%, transparent), color-mix(in srgb, var(--bt-firefly) 16%, transparent) 42%, transparent 100%); }
+.bt-root:not(#_) .nf-tint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; transition: opacity 600ms;
+  background: radial-gradient(circle calc(var(--r, 150px) * var(--gk, 1) * 1.1) at var(--lx, -999px) var(--ly, -999px), color-mix(in srgb, var(--bt-firefly) 70%, transparent), color-mix(in srgb, var(--bt-firefly) 22%, transparent) 40%, transparent 80%); }
+.bt-root:not(#_) .nf-eyes .ey { transition: opacity 260ms; }
+.bt-root:not(#_) .nf-eyes .ey ellipse { filter: drop-shadow(0 0 3px currentColor) drop-shadow(0 0 8px currentColor); fill: currentColor; transform-box: fill-box; transform-origin: center; animation: nf-blink 6s infinite; animation-delay: var(--d, 0s); }
+.bt-root:not(#_) .nf-eyes .ey--red { color: var(--bt-blood); }
+.bt-root:not(#_) .nf-eyes .ey--gold { color: var(--bt-lamp); }
+@keyframes nf-blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.08); } }
+.bt-root:not(#_) .nf {  /* Bright core glow, light step 2 Dim (fixed) */  --gk: 2.3; --a1: .02; --p1: 7%; --a2: .28; --p2: 16%; --a3: .7; --p3: 26%; --a4: .9; --p4: 40%; --a5: .965; --p5: 68%; --bloom: .55; --dim: .2; }
+/* Art materials */
+.bt-root:not(#_) .nf-art .c-cc1 { fill: var(--nf-cc-1); } .bt-root:not(#_) .nf-art .c-cc2 { fill: var(--nf-cc-2); } .bt-root:not(#_) .nf-art .c-cc3 { fill: var(--nf-cc-3); }
+.bt-root:not(#_) .nf-art .s-cc2 { stroke: var(--nf-cc-2); }
+.bt-root:not(#_) .nf-art .c-wd2 { fill: var(--nf-wd-2); } .bt-root:not(#_) .nf-art .c-wd3 { fill: var(--nf-wd-3); }
+.bt-root:not(#_) .nf-art .s-wd2 { stroke: var(--nf-wd-2); } .bt-root:not(#_) .nf-art .s-wd3 { stroke: var(--nf-wd-3); } .bt-root:not(#_) .nf-art .s-wdhi { stroke: var(--nf-wd-hi); }
+.bt-root:not(#_) .nf-art .c-st1 { fill: var(--nf-st-1); } .bt-root:not(#_) .nf-art .c-st2 { fill: var(--nf-st-2); } .bt-root:not(#_) .nf-art .c-st3 { fill: var(--nf-st-3); }
+.bt-root:not(#_) .nf-art .s-st1 { stroke: var(--nf-st-1); } .bt-root:not(#_) .nf-art .s-st2 { stroke: var(--nf-st-2); } .bt-root:not(#_) .nf-art .s-st3 { stroke: var(--nf-st-3); }
+.bt-root:not(#_) .nf-art .c-rs2 { fill: var(--nf-rs-2); } .bt-root:not(#_) .nf-art .c-rs3 { fill: var(--nf-rs-3); }
+.bt-root:not(#_) .nf-art .s-rs2 { stroke: var(--nf-rs-2); } .bt-root:not(#_) .nf-art .s-rs3 { stroke: var(--nf-rs-3); }
+.bt-root:not(#_) .nf-art .c-bn1 { fill: var(--nf-bn-1); } .bt-root:not(#_) .nf-art .c-bn2 { fill: var(--nf-bn-2); }
+.bt-root:not(#_) .nf-art .s-bn2 { stroke: var(--nf-bn-2); } .bt-root:not(#_) .nf-art .s-bn3 { stroke: var(--nf-bn-3); }
+.bt-root:not(#_) .nf-art .c-peg { fill: var(--nf-peg); } .bt-root:not(#_) .nf-art .c-peg-hole { fill: var(--nf-peg-hole); } .bt-root:not(#_) .nf-art .s-paint { stroke: var(--nf-paint); opacity: .5; }
+.bt-root:not(#_) .nf-art .s-glass { stroke: var(--nf-glass-hi); } .bt-root:not(#_) .nf-art .c-murk { fill: var(--nf-murk); opacity: .8; }
+.bt-root:not(#_) .nf-art .s-saw { stroke: var(--nf-saw-hi); } .bt-root:not(#_) .nf-art .s-saw-hi { stroke: var(--nf-saw); }
+.bt-root:not(#_) .nf-art .c-handle-r { fill: var(--nf-handle-r); } .bt-root:not(#_) .nf-art .s-handle-r { stroke: var(--nf-handle-r); } .bt-root:not(#_) .nf-art .c-handle-y { fill: var(--nf-handle-y); }
+.bt-root:not(#_) .nf-art .s-grime { stroke: var(--nf-grime); } .bt-root:not(#_) .nf-art .c-puddle { fill: var(--nf-puddle); } 
+.bt-root:not(#_) .nf-art .c-hi { fill: var(--nf-hi); } .bt-root:not(#_) .nf-art .s-hi { stroke: var(--nf-hi); } .bt-root:not(#_) .nf-art .c-shade { fill: var(--nf-shade); }
+.bt-root:not(#_) .nf-art .s-web { stroke: var(--nf-web); } .bt-root:not(#_) .nf-art .s-cord { stroke: var(--nf-void); fill: none; }
+.bt-root:not(#_) .nf-art .c-void { fill: var(--nf-void); } .bt-root:not(#_) .nf-art .s-void { stroke: var(--nf-void); }
+.bt-root:not(#_) .nf-art .c-iris { fill: var(--nf-iris); } .bt-root:not(#_) .nf-art .s-vein { stroke: var(--nf-vein); }
+.bt-root:not(#_) .nf-art .nf-scrawl { fill: var(--nf-paint); opacity: .55; }
+/* Crawlers */
+.bt-root:not(#_) .nf-art .s-bug { stroke: var(--nf-bug-2); } .bt-root:not(#_) .nf-art .c-bug2 { fill: var(--nf-bug-2); } .bt-root:not(#_) .nf-art .c-beetle { fill: var(--nf-beetle); }
+.bt-root:not(#_) .nf-art .s-spider { stroke: var(--nf-spider); } .bt-root:not(#_) .nf-art .c-spider { fill: var(--nf-spider); } .bt-root:not(#_) .nf-art .s-hourglass { stroke: var(--nf-hourglass); }
+.bt-root:not(#_) .nf-art .c-eye-r { fill: var(--bt-blood); }
+.bt-root:not(#_) .nf-art .s-cent { stroke: var(--nf-cent-2); } .bt-root:not(#_) .nf-art .c-cent { fill: var(--nf-cent); } .bt-root:not(#_) .nf-art .c-cent2 { fill: var(--nf-cent-2); }
+.bt-root:not(#_) .nf-art .c-rat { fill: var(--nf-rat); } .bt-root:not(#_) .nf-art .s-rat { stroke: var(--nf-rat); } .bt-root:not(#_) .nf-art .c-rat-ear, .bt-root:not(#_) .nf-art .c-rat-nose { fill: var(--nf-rat-ear); } .bt-root:not(#_) .nf-art .s-tail { stroke: var(--nf-rat-ear); } .bt-root:not(#_) .nf-art .s-whisk { stroke: var(--nf-tl-1); }
+.bt-root:not(#_) .nf-art .c-scorp { fill: var(--nf-scorp); } .bt-root:not(#_) .nf-art .s-scorp { stroke: var(--nf-scorp); } .bt-root:not(#_) .nf-art .c-scorp2 { fill: var(--nf-scorp-2); } .bt-root:not(#_) .nf-art .s-scorp2 { stroke: var(--nf-scorp-2); }
+.bt-root:not(#_) .nf-art .c-maggot { fill: var(--nf-maggot); } .bt-root:not(#_) .nf-art .s-maggot { stroke: var(--nf-bn-2); }
+.bt-root:not(#_) .nf-art .s-thread { stroke: var(--nf-web); stroke-width: .8; }
+.bt-root:not(#_) .nf-art :is(.lg-a, .lg-b, .cs, .cl) { transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) .nf-art .lg-a { animation: nf-leg 120ms linear infinite alternate paused; }
+.bt-root:not(#_) .nf-art .lg-b { animation: nf-leg 120ms linear infinite alternate-reverse paused; }
+.bt-root:not(#_) .nf-art :is(.cs, .cl) { animation: nf-wave 520ms ease-in-out infinite paused; animation-delay: calc(var(--i) * -60ms); }
+.bt-root:not(#_) .nf-art .is-run :is(.lg-a, .lg-b, .cs, .cl) { animation-play-state: running; }
+.bt-root:not(#_) .nf-art .mg { transform-box: fill-box; transform-origin: center; animation: nf-wriggle 900ms ease-in-out infinite alternate; }
+@keyframes nf-leg { from { transform: rotate(-12deg); } to { transform: rotate(12deg); } }
+@keyframes nf-wave { 0%, 100% { transform: translateY(-1.6px); } 50% { transform: translateY(1.6px); } }
+@keyframes nf-wriggle { from { transform: scale(1, 1) rotate(-6deg); } to { transform: scale(.8, 1.2) rotate(8deg); } }
+/* Things that swing when the light passes */
+.bt-root:not(#_) .nf-sway { transform-box: view-box; }
+.bt-root:not(#_) .nf-sway.is-swing { animation: nf-swing 2.6s ease-out; }
+@keyframes nf-swing { 0% { transform: rotate(0); } 15% { transform: rotate(4deg); } 35% { transform: rotate(-3deg); } 55% { transform: rotate(1.8deg); } 75% { transform: rotate(-.8deg); } 100% { transform: rotate(0); } }
+.bt-root:not(#_) .nf-art .c-tv-bezel { fill: var(--nf-tv-bezel); } .bt-root:not(#_) .nf-art .c-tv-bg { fill: var(--nf-tv-bg); }
+.bt-root:not(#_) .nf-art .c-water { fill: var(--nf-water); } .bt-root:not(#_) .nf-art .c-flypaper { fill: var(--nf-flypaper); }
+.bt-root:not(#_) .nf-art .c-box { fill: var(--nf-box); } .bt-root:not(#_) .nf-art .c-box2 { fill: var(--nf-box-2); } .bt-root:not(#_) .nf-art .s-box2 { stroke: var(--nf-box-2); } .bt-root:not(#_) .nf-art .c-tape { fill: var(--nf-tape); opacity: .8; }
+.bt-root:not(#_) .nf-art .c-cheese { fill: var(--nf-cheese); } .bt-root:not(#_) .nf-art .c-rubber { fill: var(--nf-rubber); } .bt-root:not(#_) .nf-art .s-rubber { stroke: var(--nf-rubber); } .bt-root:not(#_) .nf-art .s-rubber-hi { stroke: var(--nf-rubber-hi); } .bt-root:not(#_) .nf-art .c-olive { fill: var(--nf-olive); }
+.bt-root:not(#_) .nf-art .c-dress { fill: var(--nf-dress); } .bt-root:not(#_) .nf-art .c-hair { fill: var(--nf-hair); } .bt-root:not(#_) .nf-art .s-hair { stroke: var(--nf-hair); }
+.bt-root:not(#_) .nf-art .c-cork { fill: var(--nf-cork); } .bt-root:not(#_) .nf-art .c-paper { fill: var(--nf-paper); } .bt-root:not(#_) .nf-art .c-photo { fill: var(--nf-photo); } .bt-root:not(#_) .nf-art .c-photo2 { fill: var(--nf-photo-2); }
+.bt-root:not(#_) .nf-art .c-pin { fill: var(--nf-pin); } .bt-root:not(#_) .nf-art .s-string { stroke: var(--nf-string); } .bt-root:not(#_) .nf-art .c-foot { fill: var(--nf-foot); }
+.bt-root:not(#_) .nf-art .s-sheet { stroke: var(--nf-sheet); opacity: .25; } .bt-root:not(#_) .nf-art .c-grime-hand { fill: var(--nf-grime); opacity: .55; } .bt-root:not(#_) .nf-art .s-grime-hand { stroke: var(--nf-grime); opacity: .55; }
+.bt-root:not(#_) .nf-art .nf-marker { fill: var(--nf-photo); opacity: .85; }
+.bt-root:not(#_) .nf-art .nf-scratched { fill: none; stroke: var(--nf-paint); stroke-width: 9; opacity: .6; }   /* 9 = 0.9 at the paths' scale(.1) */
+.bt-root:not(#_) .nf-art .nf-figure { filter: blur(2.5px); }
+/* The TV */
+.bt-root:not(#_) .nf-tv { cursor: pointer; }
+.bt-root:not(#_) .nf-tv .tv-hit { pointer-events: all; }
+.bt-root:not(#_) .nf-tv .tv-brand { font: 700 4.6px ui-sans-serif, system-ui, sans-serif; letter-spacing: .2em; fill: var(--nf-bn-2); opacity: .7; }
+.bt-root:not(#_) .nf-tv .tv-on { opacity: 0; transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) .nf-tv .tv-static, .bt-root:not(#_) .nf-tv .tv-404, .bt-root:not(#_) .nf-tv .tv-sub, .bt-root:not(#_) .nf-tv .tv-alt { opacity: 0; }
+.bt-root:not(#_) .nf-tv .tv-404 { font: 800 21px ui-monospace, "Courier New", monospace; fill: var(--nf-phosphor); filter: drop-shadow(0 0 1.5px var(--nf-phosphor)) drop-shadow(0 0 5px var(--nf-tv-glow)); }
+.bt-root:not(#_) .nf-tv .tv-sub { font: 700 5px ui-monospace, "Courier New", monospace; letter-spacing: .05em; fill: var(--nf-phosphor); }
+.bt-root:not(#_) .nf-tv .tv-alt { font: 800 10.5px ui-monospace, "Courier New", monospace; fill: var(--nf-phosphor); filter: drop-shadow(0 0 4px var(--nf-tv-glow)); }
+.bt-root:not(#_) .nf-tv .tv-roll { fill: var(--nf-hi); opacity: .07; animation: nf-roll 3.4s linear infinite; }
+.bt-root:not(#_) .nf-tv.is-on .tv-on { opacity: 1; animation: nf-tv-on 560ms ease-out both; }
+.bt-root:not(#_) .nf-tv.is-on .tv-static { animation: nf-static-fade 1.5s ease-out forwards, nf-jitter .36s steps(1) infinite; }
+.bt-root:not(#_) .nf-tv.is-on .tv-404, .bt-root:not(#_) .nf-tv.is-on .tv-sub { animation: nf-tv-text .5s .8s ease-out forwards, nf-hum 2.8s 1.35s ease-in-out infinite; }
+.bt-root:not(#_) .nf-tv.is-alt .tv-404, .bt-root:not(#_) .nf-tv.is-alt .tv-sub { animation: none; opacity: 0; }
+.bt-root:not(#_) .nf-tv.is-alt .tv-alt { opacity: 1; }
+.bt-root:not(#_) .nf-tv.is-off .tv-on { opacity: 1; animation: nf-tv-off 400ms ease-in forwards; }
+@keyframes nf-tv-on { 0% { transform: scale(.7, .02); } 40% { transform: scale(1, .03); } 100% { transform: scale(1, 1); } }
+@keyframes nf-tv-off { 0% { transform: scale(1, 1); } 55% { transform: scale(1, .03); } 100% { transform: scale(0, .03); } }
+@keyframes nf-static-fade { 0% { opacity: .85; } 55% { opacity: .55; } 100% { opacity: .14; } }
+@keyframes nf-jitter { 0% { transform: translate(0, 0); } 25% { transform: translate(-7px, 3px); } 50% { transform: translate(5px, -6px); } 75% { transform: translate(-3px, -2px); } }
+@keyframes nf-tv-text { from { opacity: 0; } to { opacity: 1; } }
+@keyframes nf-hum { 0%, 100% { opacity: 1; } 50% { opacity: .86; } }
+@keyframes nf-roll { from { transform: translateY(0); } to { transform: translateY(84px); } }
+.bt-root:not(#_) .nf[data-rm] .nf-tv.is-on .tv-404, .bt-root:not(#_) .nf[data-rm] .nf-tv.is-on .tv-sub { opacity: 1; }
+.bt-root:not(#_) .nf[data-rm] .nf-tv.is-on .tv-static { opacity: .14; }
+.bt-root:not(#_) .nf[data-rm] .nf-tv.is-off .tv-on { opacity: 0; }
+.bt-root:not(#_) .nf-eyes .nf-led { fill: var(--bt-blood); filter: drop-shadow(0 0 2px var(--bt-blood)) drop-shadow(0 0 5px var(--bt-blood)); animation: nf-led 2.4s ease-in-out infinite; }
+.bt-root:not(#_) .nf-eyes .nf-led.is-on { fill: var(--bt-lamp); filter: drop-shadow(0 0 2px var(--bt-lamp)); animation: none; }
+@keyframes nf-led { 0%, 100% { opacity: .55; } 50% { opacity: 1; } }
+.bt-root:not(#_) .nf-tvtint { position: absolute; inset: 0; pointer-events: none; mix-blend-mode: soft-light; opacity: var(--tvon, 0);
+  background: radial-gradient(circle calc(var(--tr, 1px) * 1.1) at var(--tx, -999px) var(--ty, -999px), color-mix(in srgb, var(--nf-tv-glow) 75%, transparent), transparent 75%); }
+.bt-root:not(#_) .nf-eyes, .bt-root:not(#_) .nf-motes, .bt-root:not(#_) .nf-grain { pointer-events: none; }
+/* Drip, dust and grain */
+.bt-root:not(#_) .nf-drip { transform-box: fill-box; transform-origin: 50% 0; animation: nf-drip 3.8s ease-in infinite; }
+.bt-root:not(#_) .nf-splash { opacity: 0; transform-box: fill-box; transform-origin: center; animation: nf-splash 3.8s linear infinite; }
+@keyframes nf-drip { 0% { transform: translateY(0) scale(.3); opacity: 1; } 62% { transform: translateY(0) scale(1); opacity: 1; } 74% { transform: translateY(var(--fall)) scale(.9, 1.3); opacity: 1; } 75%, 100% { transform: translateY(var(--fall)); opacity: 0; } }
+@keyframes nf-splash { 0%, 73% { opacity: 0; transform: scale(.2); } 76% { opacity: .8; transform: scale(.5); } 92%, 100% { opacity: 0; transform: scale(1.8); } }
+.bt-root:not(#_) .nf-motes { position: absolute; inset: 0; overflow: hidden; }
+.bt-root:not(#_) .nf-motes i { position: absolute; left: 0; top: 0; width: 2px; height: 2px; border-radius: 50%; background: var(--nf-mote); opacity: 0; filter: blur(.4px); }
+.bt-root:not(#_) .nf-grain { position: absolute; inset: 0; mix-blend-mode: overlay; opacity: 0;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix type='saturate' values='0'/></filter><rect width='100%25' height='100%25' filter='url(%23n)'/></svg>"); }
+
+/* ---------- reduced motion: the still state (room.js keeps the firefly at the TV; the TV switches instantly) ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .nf *, .bt-root:not(#_) .nf *::after { animation: none !important; transition: none !important; }
+}
+.bt-root:not(#_) .nf[data-rm] *, .bt-root:not(#_) .nf[data-rm] *::after { animation: none !important; transition: none !important; }

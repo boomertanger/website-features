@@ -1,7 +1,7 @@
 // site/src/scripts/not-found/page.js — the 404 page's left column (docs/specs/not-found.md "Page content"): the path line,
 // Did you mean, the live-state swap on the ways forward, the report button and the caption. Everything here is extra: the
 // page's text and links work without it. The path shown is location.pathname only (never the query or hash: they can hold
-// sign-in codes), set with textContent, never as markup.
+// sign-in codes), set with textContent, never as markup. It then starts the scene (room.js).
 
 const TRIM_WIDE = 56, TRIM_PHONE = 34;   // characters; phone = the bt container at 640 px or less
 
@@ -94,6 +94,9 @@ export function initNotFound() {
   cap.querySelector("[data-cap]").textContent = reducedMotion() ? "The firefly's resting. Nothing moves."
     : inputKind() === "touch" ? "Tap the dark to send the firefly." : "The firefly follows your mouse. Leave it and it wanders.";
   cap.hidden = false;
+
+  // The scene (its own chunk: the art and the engine load after the text is up).
+  import("./room.js").then((m) => m.startRoom(root, { input: inputKind(), reduced: reducedMotion() })).catch(() => { /* the dark panel stays */ });
 }
 
 /** "touch" when the main pointer is coarse (phones, tablets), else "mouse". */
