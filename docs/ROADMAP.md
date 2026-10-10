@@ -6,7 +6,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | # | Workstream | Status | Chat |
 |---|---|---|---|
 | 1 | Boom Arcade (step 1: foundations + Tap the Splat v1 for real) | Done (step 1) | Arcade |
-| 2 | 404 page | In progress | 404 page |
+| 2 | 404 page | Done on staging (tested Oct 2026) | 404 page |
 | 2b | Goal Tracker (needed for relaunch) | In progress | Goal Tracker |
 | 3 | Game Vault | In progress | Games and streams |
 | 4 | Scream Planner (was Schedule Planner) | In progress (backend Oct 7; site pages next) | Games and streams |
@@ -23,7 +23,7 @@ Last updated: 2026-10-08. Every planning chat reads this file first and proposes
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Spec confirmed, building | Community services |
-| 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Building on staging | Site shell |
+| 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -57,6 +57,7 @@ Kickoff: "Start workstream 1 (Boom Arcade) from docs/ROADMAP.md."
 ### 2. 404 page
 Goal: an enjoyable, on-brand "page not found" page (lost firefly, dead bug zapper, a way home, "Report this broken link" into Bug Zapper).
 Kickoff: see the 404 kickoff message, or "Start workstream 2 (404 page) from docs/ROADMAP.md."
+Status: done on staging (tested Oct 2026), built as "the workshop" (spec docs/specs/not-found.md; workstream 15). Production check is in "404 page in production" below.
 
 ### 2b. Goal Tracker
 Goal: the plan to become Content Creator of the Year (The Game Awards 2027) laid out for members at /goals: the North Star, the road of levels, relaunch readiness, 2027 goals, live numbers and how to help. The owner edits a draft at /admin/goals and members see it when he presses Publish. Needed for the relaunch (the readiness meter and countdown are on the gate).
@@ -178,6 +179,7 @@ Kickoff: "Start workstream 9 (Mod Machina) from docs/ROADMAP.md."
 Goal: move Bug Zapper, Feature Lab and Cloud Stash from Squarespace Code Blocks to the new site, and build the Night Watch admin hub.
 Must be done before launch.
 Status: Feature Lab is built on staging (spec `docs/specs/feature-lab.md`: /feature-lab, /feature-lab/how-it-works, the /admin card, the lab callables, rules and indexes). Bug Zapper is built on staging too (spec `docs/specs/bug-zapper.md`: /bug-zapper, /bug-zapper/how-it-works, the /admin card, the 404 report link, the bug callables, rules, indexes and the 60-day screenshot cleanup rule). Cloud Stash is built on staging too (spec `docs/specs/cloud-stash.md`: /admin/stash with the Overview, Files, Rules and Activity tabs, /cloud-stash/how-it-works, the /cloud-stash redirect, the /admin card, the stash callables and schedules, the upload gate in every upload-signature callable, the six admin-health alerts, rules, indexes and `functions/scripts/seed-cloud-stash.js`). Night Watch is still to do.
+When ported, the 404 page's Report this broken link button opens Bug Zapper with the URL pre-filled (spec: docs/specs/not-found.md, Out of scope).
 Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 
 ### 11. Plans and billing
@@ -285,6 +287,9 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Redirect rules on the other 11 domains add `?via=<domain>`.
 - [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
 - [ ] The Squarespace contact page switched off.
+
+### 404 page in production
+- [ ] 404 page: confirm it works on production after the first production deploy (rules + reportBrokenLink + brokenLinkFix deployed to prod).
 
 ### Real tests pending (staging)
 Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:

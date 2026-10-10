@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: ROADMAP marks the 404 page done on staging (tested Oct 2026), adds its production check to the launch checklist, and notes under the Bug Zapper port that the report button will open Bug Zapper with the URL pre-filled
 - docs: 404 spec records the build decisions (marker lettering as Permanent Marker outlines, brokenLinkFix instead of adminEditItem, noindex,nofollow from the layout, the extra routes left out of Did you mean, referrer sent as an origin and stored as a host, the admin card's read)
 - 404 page: the /admin Broken links card reads the 100 most reported rows by count and shows the top 20 open ones (fixedAt null); still a single-field query, no composite index
 - 404 page part 5: report and admin (functions/lib/brokenLinks/report.js: reportBrokenLink for visitors and members, path cleaned again on the server, referrer kept as its host, the Arcade's salted visitor key with 10 reports per hour and one per path per day, a report reopens a fixed row; brokenLinkFix for admins, sets fixedAt and fixedBy, never deletes, adminLog brokenLinks / fix; both exported; firestore.rules sites/{site}/brokenLinks admin read, no client writes; scripts/check-broken-links.js in npm run check; the 404's report button calls it with the referrer's origin only; the /admin Broken links card: green admin panel, top 20 open rows, Mark fixed, mascot empty state, preview data; design-system §8x as built)
