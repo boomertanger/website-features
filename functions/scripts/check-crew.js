@@ -121,7 +121,14 @@ async function main() {
   assert.deepEqual(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods }).pending, ["2 ride-alongs signed off", "Showed up for 80% of duties"]);
   const onRules = { ...L.DEFAULT_SETTINGS, activityRules: true };
   assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules }).ready, false);
-  assert.equal(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules, stats: { rideAlongs: 2, showedPct: 80 } }).ready, true);
+  // rules on: real duties count; ride-alongs and Mentored stay pending (no record of them yet, decided Oct 9, 2026)
+  const onI = ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules, stats: { rideAlongs: 2, showedPct: 80 } });
+  assert.equal(onI.ready, true); assert.deepEqual(onI.pending, ["2 ride-alongs signed off"]); assert.ok(onI.met.includes("Showed up for 80% of duties"));
+  assert.ok(ready({ roster: { track: "mod", grade: 1, status: "active", gradeSince: NOW - 31 * DAY }, passed: mods, settings: onRules, stats: { showedPct: 79 } }).missing.includes("Showed up for 80% of duties"));
+  assert.ok(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"], settings: onRules, stats: { duties: 15, asRoomLead: 4 } }).missing.includes("15 duties, 5 as Room Lead"));
+  assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"], settings: onRules, stats: { duties: 15, asRoomLead: 5 } }).ready, true);
+  const onW = ready({ roster: { track: "mod", grade: 3, status: "active", gradeSince: NOW - 183 * DAY }, passed: mods, settings: onRules, stats: { duties: 40, asCaptain: 10 } });
+  assert.equal(onW.ready, true); assert.deepEqual(onW.pending, ["Mentored 2 Initiates to Watcher"]);
   assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"] }).ready, true);
   assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: [...mods, "m9"], strikes: 1 }).ready, false);
   assert.equal(ready({ roster: { track: "mod", grade: 2, status: "active", gradeSince: NOW - 91 * DAY }, passed: mods }).ready, false);   // no Safety module
@@ -851,15 +858,15 @@ async function main() {
   assert.equal(await reason(as("w1")("crewSaveSettings", { vouchCap: 4 })), "notOwner");
   assert.equal(await reason(boss("crewSaveSettings", { vouchCap: 0 })), "field");
   assert.equal(await reason(boss("crewSaveSettings", { youtubeBoost: 9 })), "field");
-  assert.equal(await reason(boss("crewSaveSettings", { activityRules: "yes" })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", { activityRules: true })), "useRulesCard", "only crewSetRules turns the rules on");
   assert.equal(await reason(boss("crewSaveSettings", { gearsValues: { bogus: 1 } })), "field");
   assert.equal(await reason(boss("crewSaveSettings", {})), "args");
-  const saved = await boss("crewSaveSettings", { vouchCap: 4, youtubeBoost: 2, gearsValues: { dutyCaptainPerHour: 14 }, activityRules: true });
+  const saved = await boss("crewSaveSettings", { vouchCap: 4, youtubeBoost: 2, gearsValues: { dutyCaptainPerHour: 14 } });
   assert.equal(saved.settings.vouchCap, 4); assert.equal(saved.settings.youtubeBoost, 2); assert.equal(saved.settings.gearsValues.dutyCaptainPerHour, 14); assert.equal(saved.settings.gearsValues.recruitActivated, 10);
-  assert.equal((await loadSettings(db)).activityRules, true);
+  assert.equal((await loadSettings(db)).activityRules, false);
   const settingsLog = logs.filter((e) => e.action === "crewSettings").pop();
   assert.equal(settingsLog.changes.vouchCap.after, 4); assert.equal(settingsLog.changes["gearsValues.dutyCaptainPerHour"].before, 12);
-  await boss("crewSaveSettings", { vouchCap: 3, youtubeBoost: 1.5, gearsValues: { dutyCaptainPerHour: 12 }, activityRules: false });   // put them back
+  await boss("crewSaveSettings", { vouchCap: 3, youtubeBoost: 1.5, gearsValues: { dutyCaptainPerHour: 12 } });   // put them back
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });

@@ -229,6 +229,14 @@
       "indexes": []
     },
     {
+      "collectionGroup": "presence",
+      "fieldPath": "uid",
+      "indexes": [
+        { "order": "ASCENDING", "queryScope": "COLLECTION" },
+        { "order": "ASCENDING", "queryScope": "COLLECTION_GROUP" }
+      ]
+    },
+    {
       "collectionGroup": "notices",
       "fieldPath": "expireAt",
       "ttl": true,

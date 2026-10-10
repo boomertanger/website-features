@@ -26,6 +26,14 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
   const rosterRef = (uid) => db.doc(paths.roster(uid));
   const recordRef = (uid) => db.doc(paths.record(uid));
   const record = async (uid) => { const s = await recordRef(uid).get(); return s.exists ? s.data() : {}; };
+  /** Streams this member checked in to (any beat) in the last 30 days: the join rule once the activity rules are on (presence, a collection-group read by uid). */
+  const streamCheckins = async (uid, now) => {
+    const since = now - 30 * L.DAY_MS;
+    const snap = await db.collectionGroup("presence").where("uid", "==", uid).get();
+    return snap.docs.filter((d) => d.ref.path.startsWith(`sites/${SITE_ID}/streams/`) && Object.values(d.get("beats") || {}).some((b) => (ms(b && b.at) || 0) >= since)).length;
+  };
+  /** The promotion criteria's stats: the roster's duty counts plus "showed up" from the nightly reliability record. */
+  const statsOf = (r, rec) => ({ ...(r.stats || {}), showedPct: rec && rec.reliability != null ? Math.round(rec.reliability * 100) : 0 });
   const appsCol = () => db.collection(`${paths.settings()}/applications`);
   const rosterCol = () => db.collection(`${paths.settings()}/roster`);
   const progressOf = (snap) => Object.keys(snap.exists ? snap.get("modules") || {} : {});
@@ -98,7 +106,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     const lastNotNow = Math.max(0, ...mine.docs.filter((a) => a.get("status") === "notNow").map((a) => ms(a.get("decidedAt")) || 0));
     const check = L.applyEligibility({
       ageBand: user.get("ageBand"), signedUpAtMs: ms(user.get("signedUpAt")), linkedCount: linked,
-      checkins: L.checkinsWithin(streak.get("recentDays"), dayKey(now)), waived: waiver.exists,
+      checkins: L.checkinsWithin(streak.get("recentDays"), dayKey(now)), waived: waiver.exists, streamCheckins: settings.activityRules ? await streamCheckins(uid, now) : 0,
       now, settings, crewStatus: roster.exists ? roster.get("status") : null,
       openApp: mine.docs.some((a) => a.get("status") === "open"), lastNotNowAtMs: lastNotNow || null,
     });
@@ -407,13 +415,13 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       const lastNotNow = Math.max(0, ...mine.docs.filter((a) => a.get("status") === "notNow").map((a) => ms(a.get("decidedAt")) || 0));
       apply = L.applyChecklist({
         ageBand: user.get("ageBand"), signedUpAtMs: ms(user.get("signedUpAt")), linkedCount: linked,
-        checkins: L.checkinsWithin(streak.get("recentDays"), dayKey(now)), waived: waiver.exists, now, settings,
+        checkins: L.checkinsWithin(streak.get("recentDays"), dayKey(now)), waived: waiver.exists, now, settings, streamCheckins: settings.activityRules ? await streamCheckins(uid, now) : 0,
         crewStatus: r ? r.status : null, openApp: mine.docs.some((a) => a.get("status") === "open"), lastNotNowAtMs: lastNotNow || null,
       });
       apply.signedUp = !!user.get("signedUpAt");
     }
     // Next-grade progress for HQ: the same criteria the nightly "Ready to promote" flag uses (duty criteria are pending until stream duty).
-    const crit = r ? L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: r.stats, passed: progressOf(progress), strikes: L.activeStrikes(rec.strikes, now).length, now, settings }) : null;
+    const crit = r ? L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: statsOf(r, rec), passed: progressOf(progress), strikes: L.activeStrikes(rec.strikes, now).length, now, settings }) : null;
     return {
       activityRules: settings.activityRules === true,
       apply,
@@ -462,7 +470,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
       if (typeof d.youtubeBoost !== "number" || !(d.youtubeBoost >= 1 && d.youtubeBoost <= 5)) throw fail("invalid-argument", "youtubeBoost must be from 1 to 5.", "field", { field: "youtubeBoost" });
       patch.youtubeBoost = Math.round(d.youtubeBoost * 100) / 100;
     }
-    if (d.activityRules !== undefined) patch.activityRules = bool(d.activityRules, "activityRules");
+    if (d.activityRules !== undefined) throw fail("invalid-argument", "Turn the activity rules on or off from the rules card (crewSetRules), so the start and practice months are set.", "useRulesCard");
     if (d.checkinFallback !== undefined) patch.checkinFallback = bool(d.checkinFallback, "checkinFallback");
     if (d.twitchSync !== undefined) patch.twitchSync = bool(d.twitchSync, "twitchSync");
     if (d.recruitCapPerMonth !== undefined) patch.recruitCapPerMonth = int(d.recruitCapPerMonth, 1, 100, "recruitCapPerMonth");
@@ -508,7 +516,7 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
         }
       }
       const [rec, prog] = await Promise.all([record(d.id), db.doc(paths.academy(d.id)).get()]);
-      const c = L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: r.stats, passed: progressOf(prog), strikes: L.activeStrikes(rec.strikes, now).length, now, settings });
+      const c = L.promotionCriteria({ roster: { ...r, gradeSince: ms(r.gradeSince) }, stats: statsOf(r, rec), passed: progressOf(prog), strikes: L.activeStrikes(rec.strikes, now).length, now, settings });
       if (c.ready && ["active", "checkIn"].includes(r.status)) {
         if (!rec.ready || rec.ready.to !== c.to) { await recordRef(d.id).set({ ready: { to: c.to, since: now } }, { merge: true }); flagged++; }
       } else if (rec.ready) await recordRef(d.id).set({ ready: FieldValue.delete() }, { merge: true });
@@ -516,11 +524,14 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     await require("./publicRoster").rebuildPublicCrew(db);     // handles can change; the roster page stays fresh
     // reliability = showed / kept seats over 90 days, no-shows, and the 30-day lockout at 3 no-shows (docs/specs/mod-machina.md section 17a)
     const rel = await require("./reliability").makeReliability({ db, now: () => now }).run(now);
-    return { expired, flagged, served, reliability: rel };
+    // the activity rules (phase 3 part 7): Check-in and Reserve crew who met this month's minimum are Active again the next day
+    let up = { moved: 0 };
+    try { up = await require("./activity").makeActivity({ db, Timestamp, adminLogEntry }).nightlyUp(now); } catch (err) { console.error("crewNightly: back to Active failed", String((err && err.message) || err).slice(0, 160)); }
+    return { expired, flagged, served, reliability: rel, backToActive: up.moved };
   }
   const crewNightly = onSchedule({ schedule: "every day 03:30", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
     const r = await runNightly();
-    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges, ${r.reliability.people} reliability records, ${r.reliability.locked} newly locked`);
+    console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges, ${r.reliability.people} reliability records, ${r.reliability.locked} newly locked, ${r.backToActive} back to Active`);
   });
 
   return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewSaveSettings, crewNightly };

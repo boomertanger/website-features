@@ -1,7 +1,7 @@
 // A tiny in-memory stand-in for the Admin SDK's Firestore, for engine checks that can't use the
 // emulator (scripts/check-factory-engine.js). Supports what lib/factory uses: doc / collection
 // paths, get, create (fails if it exists), set (with merge), update (dotted keys), delete,
-// where "==" / "<" / ">" / "in", orderBy, limit, count(), getAll, runTransaction (run straight
+// collectionGroup, where "==" / "<" / ">" / "in", orderBy, limit, count(), getAll, runTransaction (run straight
 // through), recursiveDelete, and the FieldValue sentinels increment, serverTimestamp, delete, arrayUnion and arrayRemove.
 const admin = require("firebase-admin");
 
@@ -80,7 +80,8 @@ function makeDb() {
     async add(d) { const r = this.doc(); await r.set(d); return r; }
     _docs() {
       const depth = this.path.split("/").length + 1;
-      let out = [...store.entries()].filter(([p]) => p.startsWith(`${this.path}/`) && p.split("/").length === depth).map(([p, d]) => new Snap(new DocRef(p), d));
+      const group = this.path.startsWith("__group__:") ? this.path.slice(10) : null;   // collectionGroup(name): every collection with that id, any depth
+      let out = [...store.entries()].filter(([p]) => (group ? ((s) => s.length % 2 === 0 && s[s.length - 2] === group)(p.split("/")) : p.startsWith(`${this.path}/`) && p.split("/").length === depth)).map(([p, d]) => new Snap(new DocRef(p), d));
       for (const [f, op, v] of this.filters) {
         out = out.filter((s) => {
           const x = s.get(f);
@@ -104,6 +105,7 @@ function makeDb() {
   const db = {
     doc: (p) => new DocRef(p),
     collection: (p) => new Query(p),
+    collectionGroup: (name) => new Query(`__group__:${name}`),
     getAll: async (...refs) => Promise.all(refs.map((r) => r.get())),
     recursiveDelete: async (ref) => { for (const p of [...store.keys()]) if (p === ref.path || p.startsWith(`${ref.path}/`)) store.delete(p); },
     batch() { const ops = []; return { set: (r, d, o) => ops.push(() => r.set(d, o)), update: (r, d) => ops.push(() => r.update(d)), delete: (r) => ops.push(() => r.delete()), commit: async () => { for (const op of ops) await op(); } }; },

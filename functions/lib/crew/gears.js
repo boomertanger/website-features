@@ -76,7 +76,10 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
 
   /** Boards (spec 4b): month, season (Night Shift's live season, else the latest one) and all time. Admins are on them with a staff flag. */
   async function rebuildBoards(at = now()) {
-    const [ledger, roster, seasons] = await Promise.all([gearsCol().get(), db.collection(`${paths.settings()}/roster`).get(), db.collection(`sites/${SITE_ID}/factory/main/seasons`).get()]);
+    const [ledger, roster, seasons, duties] = await Promise.all([gearsCol().get(), db.collection(`${paths.settings()}/roster`).get(), db.collection(`sites/${SITE_ID}/factory/main/seasons`).get(),
+      db.collection(paths.dutiesCol()).get()]);
+    // duties and hours (phase 3 part 7): confirmed duty records, by the month they were confirmed in; a duty counts when counted, hours are all confirmed minutes
+    const dutyRows = duties.docs.map((d) => d.data()).filter((x) => x.confirmedAt).map((x) => ({ uid: x.uid, counted: x.counted === true, minutes: x.minutes || 0, atMs: ms(x.confirmedAt) || 0 }));
     const live = seasons.docs.map((d) => d.data()).filter((s) => ["live", "ended"].includes(s.status) && s.startsAt)
       .sort((a, b) => (b.status === "live") - (a.status === "live") || ms(b.startsAt) - ms(a.startsAt))[0] || null;
     const onBoard = new Map(roster.docs.filter((d) => ["active", "checkIn", "goingDark"].includes(d.get("status"))).map((d) => [d.id, d.data()]));
@@ -85,6 +88,14 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     const handleOf = new Map(profiles.map((p, i) => [ids[i], p.exists ? p.get("handle") || null : null]));   // the profile's handle is current; the roster copy can go stale
     const rowsFor = (inRange) => {
       const by = new Map();
+      const work = new Map();
+      for (const x of dutyRows) {
+        if (!onBoard.has(x.uid) || !inRange({ month: monthOf(x.atMs), atMs: x.atMs })) continue;
+        const w = work.get(x.uid) || { duties: 0, minutes: 0 };
+        if (x.counted) w.duties++;
+        w.minutes += x.minutes;
+        work.set(x.uid, w);
+      }
       for (const d of ledger.docs) {
         const g = d.data();
         if (!onBoard.has(g.uid) || !inRange(g)) continue;
@@ -95,7 +106,7 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
       }
       return [...onBoard.entries()].map(([uid, r]) => {
         const row = by.get(uid) || { gears: 0, recruits: 0 };
-        return { uid, handle: handleOf.get(uid) || r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: 0, hours: 0, rooms: [], recruits: row.recruits, staff: r.track === "admin" };
+        return { uid, handle: handleOf.get(uid) || r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: (work.get(uid) || {}).duties || 0, hours: Math.round(((work.get(uid) || {}).minutes || 0) / 6) / 10, rooms: [], recruits: row.recruits, staff: r.track === "admin" };
       }).filter((r) => r.gears > 0 || r.recruits > 0)
         .sort((a, b) => b.gears - a.gears || b.recruits - a.recruits || String(a.handle).localeCompare(String(b.handle)))
         .map((r, i) => ({ ...r, place: i + 1 }));

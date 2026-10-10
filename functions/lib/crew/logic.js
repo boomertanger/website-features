@@ -14,7 +14,10 @@ const DEFAULT_SETTINGS = {
     academyModule: 5, triage: 3, dutyHoursCapPerStream: 6,
   },
   youtubeBoost: 1.5,
-  activityRules: false,        // the monthly minimums stay off until stream duty exists (phase 3)
+  activityRules: false,        // the monthly minimums: only crewSetRules turns them on (phase 3 part 7)
+  rulesSince: null,            // "YYYY-MM": the first month the rules count (its 1st)
+  graceMonth: null,            // "YYYY-MM": the practice month (nobody moves down)
+  rulesRunMonth: null,         // the last month crewActivityMonthly applied (idempotency)
   checkinFallback: true,       // Night Shift daily check-ins stand in for stream check-ins
   recruitCapPerMonth: 10,
   vouchCap: 3,
@@ -70,7 +73,7 @@ const monthCheckins = (recentDays, todayKey) => (recentDays || []).filter((d) =>
 
 /**
  * Can this member apply (spec 10, with the section 15 fallbacks)? Returns { ok, reason, ... }.
- * input: ageBand, signedUpAtMs, linkedCount, checkins (in the last 30 days), waived, now, settings,
+ * input: ageBand, signedUpAtMs, linkedCount, checkins (daily, in the last 30 days), streamCheckins (streams checked in to, last 30 days), waived, now, settings,
  *        crewStatus (an existing roster status or null), openApp (bool), lastNotNowAtMs
  */
 function applyEligibility(i) {
@@ -82,8 +85,12 @@ function applyEligibility(i) {
   if (!i.waived && !(i.signedUpAtMs && i.now - i.signedUpAtMs >= 14 * DAY_MS)) return { ok: false, reason: "tooNew" };   // the owner's waiver covers the account age too
   if (!(i.linkedCount >= 1)) return { ok: false, reason: "noPlatform" };
   if (!i.waived) {
-    if (!s.checkinFallback) return { ok: false, reason: "needsStreamCheckins" };   // real stream check-ins arrive with the Control Room
-    if ((i.checkins || 0) < 3) return { ok: false, reason: "needsCheckins" };
+    // with the activity rules on, the rule is 3 real stream check-ins again (section 17a "Activity rules on"); before that the Night Shift fallback stands in
+    if (s.activityRules) { if ((i.streamCheckins || 0) < 3) return { ok: false, reason: "needsStreamCheckins" }; }
+    else {
+      if (!s.checkinFallback) return { ok: false, reason: "needsStreamCheckins" };   // real stream check-ins arrive with the Control Room
+      if ((i.checkins || 0) < 3) return { ok: false, reason: "needsCheckins" };
+    }
   }
   return { ok: true };
 }
@@ -102,7 +109,9 @@ function applyChecklist(i) {
     { id: "age", label: "18 or older", ok: i.ageBand === "18+", detail: i.ageBand === "18+" ? "" : "The crew is 18+ because crew spaces put adults and teens together." },
     { id: "account", label: "Account at least 14 days old", ok: aged || !!i.waived, detail: i.waived && !aged ? "Waived by Boomer" : aged ? "" : `${daysLeft} more day${daysLeft === 1 ? "" : "s"}` },
     { id: "platform", label: "A linked platform account", ok: i.linkedCount >= 1, detail: i.linkedCount >= 1 ? "" : "Link Twitch, YouTube or TikTok in your account" },
-    i.waived
+    s.activityRules
+      ? { id: "checkins", label: "3 stream check-ins in the last 30 days", ok: !!i.waived || (i.streamCheckins || 0) >= 3, detail: i.waived ? "Waived by Boomer" : `${Math.min(i.streamCheckins || 0, 3)} of 3` }
+      : i.waived
       ? { id: "checkins", label: "3 daily check-ins in the last 30 days", ok: true, detail: "Waived by Boomer" }
       : { id: "checkins", label: "3 daily check-ins in the last 30 days", ok: s.checkinFallback ? checks >= 3 : false, detail: s.checkinFallback ? `${Math.min(checks, 3)} of 3` : "Stream check-ins are needed" },
     { id: "standing", label: "Not already crew, no open application", ok: !(i.crewStatus && i.crewStatus !== "alumni") && !i.openApp, detail: i.openApp ? "You have an application in the queue" : i.crewStatus && i.crewStatus !== "alumni" ? "You're already on the crew" : "" },
@@ -126,7 +135,9 @@ function rankQueue(apps) {
 
 /**
  * Spec 3a "to move up" criteria for the nightly flag. Returns { ready, to, met: [], missing: [], pending: [] }.
- * pending = criteria that need stream duty (phase 3), skipped while settings.activityRules is false.
+ * pending = criteria that need stream duty, skipped while settings.activityRules is false; with the rules on they use real duties (stats.duties, asRoomLead,
+ * asCaptain from the duty records; showedPct from the nightly reliability record). Ride-alongs and Mentored have no record yet, so they stay pending (the owner
+ * judges them) until those features exist (decided Oct 9, 2026).
  * input: roster { track, grade, gradeSince(ms) }, stats { duties, asRoomLead, asCaptain, rideAlongs, showedPct, mentored },
  *        passed (module ids), strikes (active count), now, settings
  */
@@ -135,11 +146,12 @@ function promotionCriteria({ roster, stats = {}, passed = [], strikes = 0, now, 
   const met = [], missing = [], pending = [];
   const check = (label, ok) => (ok ? met : missing).push(label);
   const duty = (label, ok) => (settings.activityRules ? check(label, ok) : pending.push(label));
+  const notYet = (label) => pending.push(label);
   const has = (n) => passed.includes(moduleId(n));
   const days = (now - (roster.gradeSince || 0)) / DAY_MS;
   if (roster.grade === 1) {
     check("Core Academy modules 1 to 6", [1, 2, 3, 4, 5, 6].every(has));
-    duty("2 ride-alongs signed off", (stats.rideAlongs || 0) >= 2);
+    notYet("2 ride-alongs signed off");
     check("30 days as Initiate", days >= 30);
     duty("Showed up for 80% of duties", (stats.showedPct ?? 0) >= 80);
   } else if (roster.grade === 2) {
@@ -150,7 +162,7 @@ function promotionCriteria({ roster, stats = {}, passed = [], strikes = 0, now, 
   } else {
     check("6 months as Warden", days >= 182);
     duty("40 duties, 10 as Captain", (stats.duties || 0) >= 40 && (stats.asCaptain || 0) >= 10);
-    duty("Mentored 2 Initiates to Watcher", (stats.mentored || 0) >= 2);
+    notYet("Mentored 2 Initiates to Watcher");
     check("No active strikes", strikes === 0);
   }
   return { ready: missing.length === 0, to: roster.grade + 1, met, missing, pending };

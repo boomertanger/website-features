@@ -4,8 +4,8 @@
 //   fanFavouriteBallot()             -> { open, month, closesAt, candidates, canVote, reason, myVote }
 //   fanFavouriteVote({ uid })        one vote per member; results stay hidden until the month closes
 //   crewMonthlyAwards (1st 00:05 Central) -> awards/{yyyy-mm} for the month just ended, two 150 XP trophies
-// Ballot = crew in good standing who are not admins (admins race but never win crew awards). Until duties exist
-// (phase 3) "at least 2 duties that month" is "Active that month". Voters = members at least 14 days old with a
+// Ballot = crew in good standing who are not admins (admins race but never win crew awards), with at least 2 counted duties
+// that month once the activity rules are on (phase 3 part 7); before that "at least 2 duties that month" is "Active that month". Voters = members at least 14 days old with a
 // Night Shift check-in that month (the stream check-in fallback); crew can't vote.
 const { onCall } = require("firebase-functions/v2/https");
 const { onSchedule } = require("firebase-functions/v2/scheduler");
@@ -48,10 +48,14 @@ module.exports = function crewAwards({ adminLogEntry, now = () => Date.now() } =
   const grant = require("../rewards/grant").makeGrant({ db });
   const rosterCol = () => db.collection(`${paths.settings()}/roster`);
 
-  /** Crew who can win this month's awards: in good standing and not admins. */
-  async function ballot() {
-    const snap = await rosterCol().get();
-    const docs = snap.docs.filter((d) => d.get("track") !== "admin" && ["active", "checkIn"].includes(d.get("status")));
+  /** Crew who can win the awards for month `ym`: in good standing, not admins, and (rules on) at least 2 counted duties that month. */
+  async function ballot(ym) {
+    const [snap, settings] = await Promise.all([rosterCol().get(), loadSettings(db)]);
+    let docs = snap.docs.filter((d) => d.get("track") !== "admin" && ["active", "checkIn"].includes(d.get("status")));
+    if (settings.activityRules === true && ym) {
+      const t = await require("./activity").makeActivity({ db, Timestamp, adminLogEntry }).tallyMonth(ym, { upTo: now() });
+      docs = docs.filter((d) => ((t.by.get(d.id) || {}).counted || 0) >= 2);
+    }
     const handles = await S.handlesOf(docs.map((d) => d.id));
     return docs.map((d) => ({ uid: d.id, handle: handles.get(d.id) || d.get("handle") || null, grade: d.get("grade"), sinceMs: ms(d.get("since")) }));
   }
@@ -75,7 +79,7 @@ module.exports = function crewAwards({ adminLogEntry, now = () => Date.now() } =
     const [vote, blocked] = await Promise.all([db.doc(paths.awardVote(w.month, uid)).get(), voterCheck(uid, at)]);
     return {
       open: w.open, month: w.month, opensOn: w.opensOn, closesOn: w.closesOn,
-      candidates: w.open ? await ballot() : [],
+      candidates: w.open ? await ballot(w.month) : [],
       canVote: w.open && !blocked && !vote.exists, reason: !w.open ? "closed" : vote.exists ? "voted" : blocked,
       myVote: vote.exists ? vote.get("candidate") : null,      // your own vote only; nobody sees a tally before the close
     };
@@ -89,7 +93,7 @@ module.exports = function crewAwards({ adminLogEntry, now = () => Date.now() } =
     if (typeof candidate !== "string" || !candidate) throw fail("invalid-argument", "uid is required.", "args");
     const blocked = await voterCheck(uid, at);
     if (blocked) throw fail("permission-denied", "You can't vote this month.", blocked);
-    if (!(await ballot()).some((c) => c.uid === candidate)) throw fail("failed-precondition", "That person isn't on the ballot.", "notOnBallot");
+    if (!(await ballot(w.month)).some((c) => c.uid === candidate)) throw fail("failed-precondition", "That person isn't on the ballot.", "notOnBallot");
     try {
       await db.doc(paths.awardVote(w.month, uid)).create({ candidate, atMs: at });
     } catch (err) {
@@ -105,7 +109,7 @@ module.exports = function crewAwards({ adminLogEntry, now = () => Date.now() } =
     const ref = db.doc(paths.award(ym));
     const existing = await ref.get();
     if (existing.exists && existing.get("ranAt")) return { month: ym, skipped: true };
-    const eligible = await ballot();
+    const eligible = await ballot(ym);
     const byUid = new Map(eligible.map((c) => [c.uid, c]));
     const gearsSnap = await db.collection(`${paths.settings()}/gears`).get();
     const earned = new Map();
