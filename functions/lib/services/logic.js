@@ -135,17 +135,35 @@ function pushHistory(history, entry) {
   h.push(entry);
   return h.slice(-HISTORY_MAX);
 }
-/** Totals from the countable ratings of one service: { love, like, dislike, n, comments, score, lovePct, dislikePct, byVersion }. */
-function totalsOf(ratings) {
-  const t = { love: 0, like: 0, dislike: 0, comments: 0, byVersion: {} };
+const msOf = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
+/**
+ * Totals from the countable ratings of one service: { love, like, dislike, n, comments, score, lovePct, dislikePct, byVersion, dislike7d, lastDislikeAt }.
+ * dislike7d: the Not for me ratings set in the 7 days before now (the "New Not for me" tile and Needs attention); lastDislikeAt: the newest one (ms), or null.
+ * dislike7d is as of the last rating: the admin page also checks lastDislikeAt, so an old count fades without a write.
+ */
+function totalsOf(ratings, now = Date.now()) {
+  const t = { love: 0, like: 0, dislike: 0, comments: 0, byVersion: {}, dislike7d: 0, lastDislikeAt: null };
   for (const r of ratings) {
     if (r.countable === false || !VALUES.includes(r.value)) continue;
     t[r.value]++;
     if (r.comment && r.hidden !== true) t.comments++;
     const v = String(r.version || "?").replace(/\./g, "_");
     (t.byVersion[v] ||= { love: 0, like: 0, dislike: 0 })[r.value]++;
+    if (r.value === "dislike") {
+      const at = msOf(r.updatedAt);
+      if (at != null && at >= now - 7 * DAY) t.dislike7d++;
+      if (at != null && (t.lastDislikeAt == null || at > t.lastDislikeAt)) t.lastDislikeAt = at;
+    }
   }
   return { ...t, ...popularity(t) };
+}
+/** A comment's id for the admin page: a hash of the member's uid, so no uid leaves the server (serviceDetail, hideComment). */
+const commentIdOf = (uid) => require("crypto").createHash("sha256").update(`svc-comment|${uid}`).digest("hex").slice(0, 20);
+/** Crew task Gears (setTaskGears): whole numbers from 5 to 50, like taskPost. */
+function validateTaskGears(d = {}) {
+  const ok = (n) => Number.isInteger(n) && n >= 5 && n <= 50;
+  if (!ok(d.test) || !ok(d.problems)) return refuse("invalid-argument", "gears", "Gears are whole numbers from 5 to 50.", "gears");
+  return { ok: true, value: { test: d.test, problems: d.problems } };
 }
 
 // ---------------------------------------------------------------------------------------------- manifests and sync
@@ -283,5 +301,5 @@ module.exports = {
   validateRating, validateTest, pushHistory, totalsOf, normalizeManifest, needsSetup, planSync, MANIFEST_FIELDS, summaryRow, publicRow,
   RATING_LADDER, TESTER_LADDER, VAULT_LADDER, FULL_COVERAGE, BADGE_IDS, ratingBadges, testerBadges, vaultBadges,
   periodKey, overLimit, limitTtlMs, skipsLimits,
-  pathOf, routeMatches, serviceForPath, BUG_CLOSED, IDEA_CLOSED, openBugs, openIdeas,
+  pathOf, routeMatches, serviceForPath, BUG_CLOSED, IDEA_CLOSED, openBugs, openIdeas, commentIdOf, validateTaskGears,
 };

@@ -6,7 +6,10 @@
 //   serviceTest    verified members    { serviceId, device, results[] }: one counted test per member per version; 10 an hour
 //   serviceSync    admins              { manifests, buildHash }: upserts items from services/*.json; a version change appends versionHistory;
 //                                      a manifest that disappeared retires its item (never deleted). scripts/sync-services.js runs the same code.
-//   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment, retire, hide (adminLog "serviceHub")
+//   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment (commentId or uid), retire, restore, hide
+//                                      (adminLog "serviceHub"); and setTaskGears { test, problems } (owner and A2+ only) for crew/main.serviceTaskGears
+//   serviceDetail  admins              { serviceId }: the item, its version history, ratings by version and up to 100 comments, newest first (value, comment,
+//                                      version, date, hidden, the member's @handle from their profile, and a commentId: never an email or a uid)
 //   Triggers: an Arcade game (games/{id}) → an arcadeGame item; a Vault game (vaultGames/{slug}) → a vaultGame item (retired while hidden); a stream
 //   reaching Ended → a stream item rateable for 14 days; a rating or a test → the item's totals, my/{uid} and the summary row.
 //   §3a: a Bug Zapper report or a Feature Lab idea with a serviceId → the service's bugs.open / ideas.open (old and new service recounted when the serviceId
@@ -23,7 +26,7 @@ const L = require("./logic");
 const { SITE_ID, fail, requireAdmin, requireVerifiedMember } = require("../vault/common");
 const { makeBoards, raise, idStr } = require("../boards");
 
-const ACTIONS = ["markTested", "linkVideo", "setCoversVersion", "hideComment", "retire", "hide"];
+const ACTIONS = ["markTested", "linkVideo", "setCoversVersion", "hideComment", "retire", "restore", "hide", "setTaskGears"];
 const text = (err) => String((err && err.message) || err).slice(0, 160);
 const msOf = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
 const kebab = (s) => String(s || "").replace(/([a-z0-9])([A-Z])/g, "$1-$2").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 80);
@@ -185,6 +188,7 @@ function build(deps = {}) {
     const c = requireAdmin(await B.caller(request));
     const d = request.data || {};
     if (!ACTIONS.includes(d.action)) throw fail("invalid-argument", `Say ${ACTIONS.join(", ")}.`, "action");
+    if (d.action === "setTaskGears") return setTaskGears(c, d);
     const sid = idStr(d.serviceId);
     if (!sid) throw fail("invalid-argument", "Say which service.", "args");
     const snap = await R.item(sid).get();
@@ -212,15 +216,26 @@ function build(deps = {}) {
       patch = { "video.coversVersion": v };
       details = { from: item.video.coversVersion || null, to: v };
     } else if (d.action === "hideComment") {
-      const uid = idStr(d.uid);
+      // the admin page sends the commentId serviceDetail gave it (a hash of the uid); a script may still send the uid
+      let uid = idStr(d.uid);
+      if (!uid && typeof d.commentId === "string") {
+        const all = await R.ratings.where("serviceId", "==", sid).get();
+        const hit = all.docs.find((x) => L.commentIdOf(x.get("uid")) === d.commentId);
+        uid = hit ? hit.get("uid") : null;
+      }
       if (!uid || typeof d.hidden !== "boolean") throw fail("invalid-argument", "Say whose comment, and hidden true or false.", "args");
       const rs = await R.rating(sid, uid).get();
       if (!rs.exists) throw fail("not-found", "That rating isn't there.", "noRating");
       await R.rating(sid, uid).update(d.hidden ? { hidden: true, hiddenBy: { ...by, at: ts(at) } } : { hidden: false, hiddenBy: FieldValue.delete() });
-      details = { uid, hidden: d.hidden };
+      details = { commentId: L.commentIdOf(uid), hidden: d.hidden };
     } else if (d.action === "retire") {
-      patch = { status: "retired" };
+      patch = { status: "retired", retiredFrom: item.status };
       details = { from: item.status };
+    } else if (d.action === "restore") {
+      if (item.status !== "retired") throw fail("failed-precondition", "That service isn't retired.", "notRetired");
+      const to = L.STATUS.includes(item.retiredFrom) && item.retiredFrom !== "retired" ? item.retiredFrom : "live";
+      patch = { status: to, retiredFrom: FieldValue.delete() };
+      details = { to };
     } else if (d.action === "hide") {
       if (typeof d.hidden !== "boolean") throw fail("invalid-argument", "Say hidden true or false.", "args");
       patch = { hidden: d.hidden };
@@ -230,6 +245,50 @@ function build(deps = {}) {
     await B.adminLog(c, { action: d.action, id: sid, title: item.name || sid, details });
     if (patch) await rebuildViews();
     return { ok: true, serviceId: sid, action: d.action };
+  }
+
+  /** setTaskGears: the owner and A2 Overseers and up (crew roster, admin track, grade 2+). crew/main.serviceTaskGears, read by createSystemTask. */
+  async function setTaskGears(c, d) {
+    let ok = c.isOwner;
+    if (!ok && c.isAdmin) { const r = (await db.doc(`sites/${SITE_ID}/crew/main/roster/${c.uid}`).get()).data() || {}; ok = r.track === "admin" && Number(r.grade) >= 2; }
+    if (!ok) throw fail("permission-denied", "The owner and Overseers set the Gears.", "notA2");
+    const v = L.validateTaskGears(d);
+    if (!v.ok) throw raise(v);
+    const ref = db.doc(`sites/${SITE_ID}/crew/main`);
+    const before = ((await ref.get()).data() || {}).serviceTaskGears || null;
+    await ref.set({ serviceTaskGears: v.value }, { merge: true });
+    await B.adminLog(c, { action: "setTaskGears", id: "main", title: "Crew task Gears", details: { before, after: v.value } });
+    return { ok: true, action: "setTaskGears", gears: v.value };
+  }
+
+  // ---------------------------------------------------------------------------------------------- serviceDetail
+  async function detail(request) {
+    requireAdmin(await B.caller(request));
+    const sid = idStr((request.data || {}).serviceId);
+    if (!sid) throw fail("invalid-argument", "Say which service.", "args");
+    const snap = await R.item(sid).get();
+    if (!snap.exists) throw fail("not-found", "That service isn't there.", "noService");
+    const item = snap.data();
+    const ratings = (await R.ratings.where("serviceId", "==", sid).get()).docs.map((x) => x.data());
+    const withComment = ratings.filter((r) => r.comment).sort((a, b) => (msOf(b.updatedAt) || 0) - (msOf(a.updatedAt) || 0)).slice(0, 100);
+    const uids = [...new Set(withComment.map((r) => r.uid))];
+    const profiles = uids.length ? await db.getAll(...uids.map((u) => db.doc(`sites/${SITE_ID}/profiles/${u}`))) : [];
+    const handle = Object.fromEntries(profiles.map((p, i) => [uids[i], p.exists ? p.get("handle") || null : null]));
+    const byVersion = {};
+    for (const r of ratings) {
+      if (r.countable === false || !L.VALUES.includes(r.value)) continue;
+      (byVersion[r.version || "?"] ||= { love: 0, like: 0, dislike: 0 })[r.value]++;
+    }
+    const { versionHistory = [], ...rest } = item;
+    return {
+      ok: true,
+      item: { ...rest, id: sid, createdAt: msOf(item.createdAt), updatedAt: msOf(item.updatedAt), lastRatedAt: msOf(item.lastRatedAt), endedAt: msOf(item.endedAt),
+        tests: Object.fromEntries(Object.entries(item.tests || {}).map(([k, t]) => [k, t ? { ...t, at: msOf(t.at) } : t])),
+        video: item.video ? { ...item.video, publishedAt: msOf(item.video.publishedAt), linkedAt: msOf(item.video.linkedAt) } : null },
+      versionHistory: versionHistory.map((h) => ({ version: h.version, at: msOf(h.at) })).sort((a, b) => (b.at || 0) - (a.at || 0)),
+      byVersion: Object.entries(byVersion).map(([version, n]) => ({ version, ...n })).sort((a, b) => L.compareVersions(b.version, a.version)),
+      comments: withComment.map((r) => ({ commentId: L.commentIdOf(r.uid), handle: handle[r.uid] ? `@${handle[r.uid]}` : null, value: r.value, comment: r.comment, version: r.version || null, at: msOf(r.updatedAt), hidden: r.hidden === true, counted: r.countable !== false })),
+    };
   }
 
   // ---------------------------------------------------------------------------------------------- after a rating or a test
@@ -243,7 +302,7 @@ function build(deps = {}) {
   async function afterRating(sid, uid) {
     const at = now();
     const [forService, forMember, items] = await Promise.all([R.ratings.where("serviceId", "==", sid).get(), R.ratings.where("uid", "==", uid).get(), allItems()]);
-    const totals = L.totalsOf(forService.docs.map((d) => d.data()));
+    const totals = L.totalsOf(forService.docs.map((d) => d.data()), at);
     const itemsById = Object.fromEntries(items.map((it) => [it.id, it]));
     if (itemsById[sid]) await R.item(sid).update({ ratings: totals, lastRatedAt: ts(at) });
     const rated = Object.fromEntries(forMember.docs.map((d) => d.data()).map((r) => [r.serviceId, { value: r.value, version: r.version, type: r.type || null }]));
@@ -360,6 +419,7 @@ function build(deps = {}) {
     serviceTest: onCall(test),
     serviceSync: onCall({ timeoutSeconds: 120 }, sync),
     serviceAdmin: onCall(adminAction),
+    serviceDetail: onCall(detail),
     onServiceRatingWritten: onDocumentWritten(`sites/{siteId}/services/main/ratings/{ratingId}`, async (event) => {
       if (event.params.siteId !== SITE_ID) return;
       await ratingWritten(data(event.data && event.data.before), data(event.data && event.data.after));
@@ -389,7 +449,7 @@ function build(deps = {}) {
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, syncManifests, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
+  return { functions, detail, syncManifests, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
 }
 
 module.exports = { build };

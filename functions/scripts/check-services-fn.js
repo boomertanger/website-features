@@ -94,6 +94,19 @@ const T = L.totalsOf([
 assert.deepEqual([T.love, T.like, T.dislike, T.n, T.comments], [1, 1, 1, 3, 1], "owner and admin ratings and hidden comments are left out of the counts");
 assert.deepEqual(T.byVersion, { "1_0": { love: 1, like: 0, dislike: 0 }, "1_1": { love: 0, like: 1, dislike: 1 } });
 
+// ---------- Not for me in the last 7 days; comment ids; task Gears (part 6a) ----------
+{
+  const now7 = Date.UTC(2026, 9, 20), D = L.DAY;
+  const t7 = L.totalsOf([{ value: "dislike", updatedAt: now7 - 2 * D, comment: "slow" }, { value: "dislike", updatedAt: now7 - 9 * D, comment: "old one" }, { value: "dislike", updatedAt: now7 - D, countable: false }, { value: "love", updatedAt: now7 }], now7);
+  assert.deepEqual([t7.dislike, t7.dislike7d, t7.lastDislikeAt], [2, 1, now7 - 2 * D], "the last 7 days, countable only; the newest Not for me");
+  assert.deepEqual([L.totalsOf([], now7).dislike7d, L.totalsOf([], now7).lastDislikeAt], [0, null]);
+  assert.equal(L.commentIdOf("fan"), L.commentIdOf("fan"), "stable");
+  assert.notEqual(L.commentIdOf("fan"), L.commentIdOf("fan2"));
+  assert.ok(!L.commentIdOf("fan").includes("fan") && L.commentIdOf("fan").length === 20, "a hash, not the uid");
+  assert.ok(L.validateTaskGears({ test: 15, problems: 10 }).ok);
+  for (const bad of [{ test: 4, problems: 10 }, { test: 15, problems: 51 }, { test: 15.5, problems: 10 }, { test: "15", problems: 10 }, {}]) assert.equal(L.validateTaskGears(bad).reason, "gears");
+}
+
 // ---------- tests ----------
 const checks = ["Open the report form", "Attach a screenshot", "Send it"];
 assert.equal(L.validateTest({ device: "phone", results: [] }, []).reason, "noChecks");
@@ -361,6 +374,42 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   await call("adm", "serviceAdmin", { action: "retire", serviceId: "goal-tracker" });
   assert.equal((await get(`${BASE}/items/goal-tracker`)).status, "retired");
   for (const a of ["markTested", "linkVideo", "setCoversVersion", "hideComment", "hide", "retire"]) assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === a), `adminLog ${a}`);
+  // restore puts back the status it had
+  await call("adm", "serviceAdmin", { action: "restore", serviceId: "goal-tracker" });
+  assert.equal((await get(`${BASE}/items/goal-tracker`)).status, "building", "restored to what it was (building)");
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "restore", serviceId: "goal-tracker" })), "notRetired");
+
+  // ---------- serviceDetail (part 6a) ----------
+  assert.equal(await why(call("fan", "serviceDetail", { serviceId: "bug-zapper" })), "notAdmin");
+  assert.equal(await why(call("adm", "serviceDetail", { serviceId: "nope" })), "noService");
+  const det = await call("adm", "serviceDetail", { serviceId: "bug-zapper" });
+  assert.equal(det.item.id, "bug-zapper"); assert.ok(det.versionHistory.length >= 2, "the version history, newest first");
+  assert.ok(det.byVersion.length >= 1);
+  const fan2c = det.comments.find((x) => x.handle === "@fan2");
+  assert.ok(fan2c && fan2c.value === "dislike" && fan2c.hidden === true && fan2c.commentId, "comments carry the @handle, the hidden flag and a commentId");
+  const flat = JSON.stringify(det.comments);
+  assert.ok(!/"uid"|"email"/.test(flat) && !flat.includes('"fan2"'), "never a uid or an email in the comments");
+  assert.ok(det.comments.find((x) => x.handle === "@adm").counted === false, "an admin's comment shows, marked not counted");
+  // hide and unhide by commentId
+  await call("adm", "serviceAdmin", { action: "hideComment", serviceId: "bug-zapper", commentId: fan2c.commentId, hidden: false });
+  assert.equal((await get(`${BASE}/ratings/bug-zapper__fan2`)).hidden, false, "unhidden through its commentId");
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "hideComment", serviceId: "bug-zapper", commentId: "0000", hidden: true })), "args");
+  // the 7-day count reaches the item and its summary row through the rating trigger
+  await hub.ratingWritten(null, await get(`${BASE}/ratings/bug-zapper__fan2`));
+  const bzItem = await get(`${BASE}/items/bug-zapper`);
+  assert.equal(typeof bzItem.ratings.dislike7d, "number"); assert.ok("lastDislikeAt" in bzItem.ratings);
+  assert.equal((await get(`${BASE}/summary/main`)).rows["bug-zapper"].ratings.dislike7d, bzItem.ratings.dislike7d);
+
+  // ---------- setTaskGears: the owner and A2+ (part 6a) ----------
+  assert.equal(await why(call("adm", "serviceAdmin", { action: "setTaskGears", test: 20, problems: 10 })), "notA2", "an admin without A2 is refused");
+  assert.equal(await why(call("mod", "serviceAdmin", { action: "setTaskGears", test: 20, problems: 10 })), "notAdmin");
+  assert.equal(await why(call("boss", "serviceAdmin", { action: "setTaskGears", test: 60, problems: 10 })), "gears");
+  await call("boss", "serviceAdmin", { action: "setTaskGears", test: 20, problems: 12 });
+  assert.deepEqual((await get("sites/boomertanger/crew/main")).serviceTaskGears, { test: 20, problems: 12 });
+  await wdb.doc("sites/boomertanger/crew/main/roster/adm").set({ track: "admin", grade: 2, status: "active" });
+  await call("adm", "serviceAdmin", { action: "setTaskGears", test: 15, problems: 10 });
+  assert.deepEqual((await get("sites/boomertanger/crew/main")).serviceTaskGears, { test: 15, problems: 10 }, "an A2 Overseer can");
+  assert.ok(logs.some((l) => l.feature === "serviceHub" && l.action === "setTaskGears" && l.details.after.test === 15), "logged");
 
 
 
