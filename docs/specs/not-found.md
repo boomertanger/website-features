@@ -107,3 +107,11 @@ Final, still state: the firefly rests at the TV (scene point 500, 296) with its 
 - The Bug Zapper port (then the report button opens it).
 - A "Show fixed" toggle on the admin card.
 - Sound (a CRT hum or click when the TV turns on, respecting the footer's sound setting).
+
+## Decisions made in the build (Oct 10, 2026)
+- **Lettering:** the scratched and marker words ("gone?", "this one too", "WHO'S NEXT?", "TAPES", "IT'S STILL HERE", "DON'T STAY") are drawn as SVG outlines of Permanent Marker (Apache 2.0), generated once into `workshop-art.js`, so no font loads.
+- **Mark fixed** uses a small admin callable, `brokenLinkFix`. `adminEditItem` wasn't used because it only edits text fields on top-level collections, and Mark fixed sets `fixedAt` and `fixedBy` on a `sites/{site}` subcollection.
+- **Robots:** the page passes `noindex` to the layout, so the tag is `noindex,nofollow` (the layout's standard tag).
+- **Did you mean** also leaves out, besides dynamic, admin, dev and API routes: the 404 itself, the `view.astro` rewrite targets behind `/games/:slug`, `/u/:handle` and `/join/:handle`, and the sign-in callbacks under `/auth`.
+- **Referrer:** the page sends only the referrer's origin; the server stores only its host (or "direct").
+- **Admin card:** reads the 100 most reported rows by `count` and shows the top 20 open ones (`fixedAt` null), so no composite index is needed.
