@@ -22,7 +22,8 @@ import { BEATS, BEAT_LABEL, plural, type Beat } from "./model";
 import type { Presence, Room } from "./pub-data";
 import { checkinHtml, clock, esc, fmtDuration, fmtHms, initCheckin, mascotHtml, reduced, setCheckinCount, type CheckinOutcome, type PubCtx, type ViewPart } from "./pub-ui";
 import { corridorSvg } from "./pub-ui";
-import { messageFor } from "./ui";
+import { copyText, messageFor, toast } from "./ui";
+import { previewRush, rushBodyHtml, rushFrom, rushHit, type PubRush } from "./rush";
 import { defaultRoom, roomsOf as flowRoomsOf, submitCheckIn } from "./checkin-flow";
 import { reasonOf } from "../../lib/errors";
 
@@ -245,6 +246,38 @@ async function submit(c: PubCtx, word: string, room: string | null, card: HTMLEl
   return r.outcome;
 }
 
+/* ------------------------------------------------------------------ Recruit Rush (Mod Machina §17a): the R1 meter under the check-in */
+let rushWasHit: boolean | null = null;      // null until the first draw: a Rush already hit when the page opens doesn't burst
+let copiedUntil = 0;
+const SITE_URL = "https://boomertanger.com";
+function drawRush(c: PubCtx) {
+  const pv = previewRush();
+  const r: PubRush | null = pv !== undefined ? pv : rushFrom(c.pub.recruitRush);
+  const handle = c.auth?.profile?.handle || (c.member ? "you" : "");
+  const copied = Date.now() < copiedUntil;
+  const hit = !!r && rushHit(r);
+  patch("rush", r ? `${JSON.stringify(r)}|${c.member}|${handle}|${copied}` : "", () => {
+    if (!r) return "";
+    const act = c.member
+      ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-rush-copy>${copied ? "Copied" : "Bring someone: copy your link"}</button>`
+      : `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="join" data-signin-title="Join free and count">Join free and count</button>`;
+    const hint = c.member ? `Everyone who joins tonight counts, link or not. Your link (${esc(SITE_URL.replace("https://", ""))}/join/@${esc(handle)}) also credits you once they've been around a week.` : "Join free during the stream and you count toward tonight's goal.";
+    return crPanelHtml({ id: "lp-rush", title: "Recruit Rush", icon: "crew", tagHtml: `<span class="bt-badge bt-badge--gold">${hit ? "Goal hit" : "Tonight"}</span>`,
+      bodyHtml: `${rushBodyHtml(r)}<div class="lr-rush-acts">${act}</div><span class="lr-rush-hint">${hint}</span>` });
+  }, (el) => {
+    if (!r) { rushWasHit = null; return; }
+    if (rushWasHit === false && hit && !reduced()) { const b = el.querySelector<HTMLElement>(".lr-rush-reward"); if (b) burst(b, { n: 18 }); }
+    rushWasHit = hit;
+    const btn = el.querySelector<HTMLButtonElement>("[data-rush-copy]");
+    btn?.addEventListener("click", async () => {
+      const link = `${SITE_URL}/join/@${handle}`;
+      if (!(await copyText(link))) { toast(`Couldn't copy. Your link: ${link}`, { kind: "info" }); return; }
+      copiedUntil = Date.now() + 2000; keys.rush = ""; drawRush(cur);
+      setTimeout(() => { keys.rush = ""; drawRush(cur); }, 2100);
+    });
+  });
+}
+
 /* ------------------------------------------------------------------ now playing */
 function drawNow(c: PubCtx) {
   const p = c.pub, bs = isBackstage(c);
@@ -340,15 +373,15 @@ async function loadPresence(c: PubCtx) {
 }
 
 function redraw(c: PubCtx) {
-  drawVideo(c); drawReadouts(c); drawRail(c); drawCheckin(c); drawNow(c); drawCrew(c); drawWatch(c); drawPlay(c);
+  drawVideo(c); drawReadouts(c); drawRail(c); drawCheckin(c); drawRush(c); drawNow(c); drawCrew(c); drawWatch(c); drawPlay(c);
   applyNumbers(c);
 }
 
 const part: ViewPart = {
   mount(ctx, el) {
-    box = el; cur = ctx; keys = {}; presence = null; presenceFor = ""; played = false; backstage = { state: "idle" }; firstNumbers = true; lastBs = null; fresh = false; retries = [];
+    box = el; cur = ctx; keys = {}; rushWasHit = null; presence = null; presenceFor = ""; played = false; backstage = { state: "idle" }; firstNumbers = true; lastBs = null; fresh = false; retries = [];
     el.innerHTML = `<div class="lp-grid"><div class="lp-main"><div data-p="video" class="lp-video"></div><div data-p="rail"></div><div data-p="now"></div><div data-p="play"></div></div>
-      <div class="lp-side"><div data-p="readouts"></div><div data-p="checkin"></div><div data-p="crew"></div><div data-p="watch"></div></div></div>`;
+      <div class="lp-side"><div data-p="readouts"></div><div data-p="checkin"></div><div data-p="rush"></div><div data-p="crew"></div><div data-p="watch"></div></div></div>`;
     window.addEventListener("message", onEmbedMessage);
     // when the backstage iframe has loaded, ask YouTube to send its events (errors) to this page
     el.addEventListener("load", (e) => { const f = e.target as HTMLIFrameElement; if (f?.classList?.contains("lp-embed") && f.src.includes("youtube-nocookie")) f.contentWindow?.postMessage(JSON.stringify({ event: "listening", id: 1, channel: "widget" }), "https://www.youtube-nocookie.com"); }, true);

@@ -8,6 +8,7 @@
 import { platformIconHtml } from "../../../../shared/ui/crew.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import type { ObsView } from "./obs";
+import { previewRush, rushFrom, rushHit, type PubRush } from "./rush";
 
 type Shape = "wide" | "tall";
 type Scene = "starting" | "stats" | "break" | "side" | "brb" | "ending";
@@ -82,10 +83,15 @@ function startingScene(v: ObsView, wide: boolean) {
     : `<div class="bt-sv-panel obs-on" style="left:70px;top:200px;width:780px;height:1300px;padding:60px 50px;display:grid;justify-items:center;align-content:start;gap:34px;text-align:center">${head("Starting soon")}${mascot("bt-mascot--aware obs-float obs-mascot-tall")}<div class="obs-title" style="font-size:${tsz}px">${esc(title)}</div>${when}${games.length ? gamesBlock(v, 3, true) : ""}<div class="bt-sv-url">boomertanger.com/<b>live</b></div></div>${tickerHtml(v, "top:160px;bottom:auto")}`;
 }
 
+/** Recruit Rush (Mod Machina §17a): the feed's recruitRush, or the staging preview's ?rush=0|14|20. Null when off. */
+const rushOf = (v: ObsView): PubRush | null => { const pv = previewRush(); return pv !== undefined ? pv : rushFrom(v.recruitRush); };
+/** The slim gold bar in Live stats and Break (on the wide Break it takes the rooms list's place, which the fixed-height panel can't fit both of): "RECRUIT RUSH", the meter, "14 / 20". Numbers are set in place (numbers()). */
+const rushBar = (v: ObsView) => (rushOf(v) ? `<div class="obs-rush" data-rush><div class="obs-rush-top"><b>RECRUIT RUSH</b><span data-rush-n>0 / 0</span></div><div class="bt-meter bt-meter--gold"><div class="bt-meter-track"><div class="bt-meter-fill" data-rush-fill style="width:0%"></div></div></div></div>` : "");
+
 function statsScene(v: ObsView, wide: boolean) {
   const rooms = liveRooms(v);
   const plat = rooms.map((r) => `<span class="obs-plat">${platformIconHtml(r)}<b data-v="${r}">0</b></span>`).join("");
-  const panel = `<div class="obs-stack">${head("Live")}<div class="obs-two"><div><div class="bt-sv-amber obs-num" data-up>0:00:00</div><div class="obs-lab">Uptime</div></div><div><div class="bt-sv-amber obs-num" data-watch>0</div><div class="obs-lab">Watching</div></div></div>${plat ? `<div class="obs-plats">${plat}</div>` : ""}<div class="obs-lab"><span data-game>${esc(v.game?.title || "")}</span>${v.game ? " · " : ""}<b class="obs-w" data-ci>0</b> check-ins tonight</div></div>`;
+  const panel = `<div class="obs-stack">${head("Live")}<div class="obs-two"><div><div class="bt-sv-amber obs-num" data-up>0:00:00</div><div class="obs-lab">Uptime</div></div><div><div class="bt-sv-amber obs-num" data-watch>0</div><div class="obs-lab">Watching</div></div></div>${plat ? `<div class="obs-plats">${plat}</div>` : ""}<div class="obs-lab"><span data-game>${esc(v.game?.title || "")}</span>${v.game ? " · " : ""}<b class="obs-w" data-ci>0</b> check-ins tonight</div>${rushBar(v)}</div>`;
   return wide
     ? `<div class="bt-sv-panel obs-on" style="right:40px;top:40px;width:680px;padding:36px 40px">${panel}</div><div class="bt-sv-panel obs-on" style="left:40px;bottom:40px;padding:26px 34px">${beatsRail(v)}</div>`
     : `<div class="bt-sv-panel obs-on" style="left:70px;top:190px;width:780px;padding:40px 44px">${panel}</div><div class="bt-sv-panel obs-on" style="left:70px;top:720px;width:780px;padding:26px 34px">${beatsRail(v)}</div>`;
@@ -96,9 +102,9 @@ function breakScene(v: ObsView, wide: boolean) {
   const name = BEAT_NAME[v.window?.beat || v.beat || "break1"] || "Break";
   const title = open ? `${name} · check-in is open` : `${name} · check-in opens soon`;
   const middle = open
-    ? `<div class="obs-lab">Type this word at <b class="obs-w">boomertanger.com/live</b></div>${wordHtml(v, wide ? 112 : 96)}${ringCount()}${wide ? roomsHtml(v) : ""}${firstHtml()}`
+    ? `<div class="obs-lab">Type this word at <b class="obs-w">boomertanger.com/live</b></div>${wordHtml(v, wide ? 112 : 96)}${ringCount()}${wide && !rushOf(v) ? roomsHtml(v) : ""}${firstHtml()}`
     : `<div class="obs-sub">Back in a moment. Check in at <b class="obs-w">boomertanger.com/live</b> when the word goes up.</div><div class="bt-sv-count bt-sv-amber"><span data-ci>0</span><small>checked in tonight</small></div>`;
-  const panel = `<div class="obs-stack">${head(title)}${middle}</div>`;
+  const panel = `<div class="obs-stack">${head(title)}${middle}${rushBar(v)}</div>`;
   return wide
     ? `<div class="bt-sv-cam" style="left:90px;top:120px;width:880px;height:760px">Your camera</div><div class="bt-sv-panel obs-on" style="left:1040px;top:60px;width:800px;height:960px;padding:50px 60px">${panel}</div><div class="obs-rail" style="left:90px;bottom:40px">${beatsRail(v)}</div>`
     : `<div class="bt-sv-cam" style="left:70px;top:190px;width:780px;height:460px">Your camera</div><div class="bt-sv-panel obs-on" style="left:70px;top:700px;width:780px;padding:44px 48px">${panel}</div>`;
@@ -170,6 +176,11 @@ export function createScenes(host: HTMLElement, shape: Shape, params: URLSearchP
     $$("[data-v]").forEach((e) => set(e, num((by as Record<string, number>)[e.dataset.v || ""] || 0)));
     const rooms = v.counts?.byRoom || {}, max = Math.max(1, ...ROOMS.map((r) => rooms[r] || 0));
     $$("[data-rc]").forEach((e) => set(e, num(rooms[e.dataset.rc || ""] || 0)));
+    const rr = rushOf(v);
+    if (rr) {
+      $$("[data-rush-n]").forEach((e) => set(e, `${num(rr.count)} / ${num(rr.goal)}`));
+      $$("[data-rush-fill]").forEach((e) => { const w = `${Math.min(100, (rr.count / rr.goal) * 100).toFixed(1)}%`; if (e.style.width !== w) e.style.width = w; });
+    }
     $$("[data-rb]").forEach((e) => e.style.setProperty("--f", String(Math.min(1, (rooms[e.dataset.rb || ""] || 0) / max).toFixed(3))));
   }
 
@@ -188,6 +199,30 @@ export function createScenes(host: HTMLElement, shape: Shape, params: URLSearchP
     for (const h of v.firstIn || []) if (!have.has(`@${h}`)) { const s = document.createElement("span"); s.textContent = `@${h}`; el.append(s); }   // a new one pops in on its own
   }
 
+  /** At the goal: one 8-second banner, once per stream. Remembered in this browser (so a reload or a scene change doesn't replay it), and only
+   *  shown within 5 minutes of the hit (a source opened later doesn't celebrate an old goal). It sits on the frame, above the scenes. */
+  const SEEN = "bt-obs-rush-hit";
+  function banner(v: ObsView) {
+    const r = rushOf(v);
+    if (!r || !rushHit(r)) return;
+    const id = `${v.streamId || "pv"}`;
+    let seen = "";
+    try { seen = localStorage.getItem(SEEN) || ""; } catch { /* no storage: the in-page flag below still stops a replay */ }
+    if (seen === id || shownFor === id) return;
+    if (r.hitAt != null && Date.now() - r.hitAt > 5 * 60_000) return;
+    shownFor = id;
+    try { localStorage.setItem(SEEN, id); } catch { /* fine */ }
+    const frame = host.parentElement || host;
+    const el = document.createElement("div");
+    el.className = "obs-rush-hit";
+    el.setAttribute("role", "status");
+    el.innerHTML = `<small>RECRUIT RUSH · GOAL HIT</small><b>${esc(r.reward || "Goal hit!")}</b>`;
+    frame.append(el);
+    setTimeout(() => el.classList.add("is-out"), 7400);
+    setTimeout(() => el.remove(), 8000);
+  }
+  let shownFor = "";
+
   function build(id: Scene, v: ObsView) {
     return id === "starting" ? startingScene(v, wide) : id === "stats" ? statsScene(v, wide) : id === "break" ? breakScene(v, wide) : id === "side" ? sideScene(v, wide)
       : id === "brb" ? brbScene(v, wide) : endingScene(v, wide);
@@ -199,13 +234,13 @@ export function createScenes(host: HTMLElement, shape: Shape, params: URLSearchP
     render(v: ObsView) {
       view = v;
       scene = sceneOf(v, params);
-      const k = [scene, v.state, v.beat, !!v.word, (v.liveRooms || []).join(), crewOf(v).join(), (v.plannedGames || []).join("|"), (v.gameCovers || []).join("|"), v.nextStream ? `${v.nextStream.title}${v.nextStream.start}` : "", v.title, !!v.brbUntil, !!v.nextGame, v.game?.title].join("~");
+      const k = [scene, v.state, v.beat, !!v.word, !!rushOf(v), (v.liveRooms || []).join(), crewOf(v).join(), (v.plannedGames || []).join("|"), (v.gameCovers || []).join("|"), v.nextStream ? `${v.nextStream.title}${v.nextStream.start}` : "", v.title, !!v.brbUntil, !!v.nextGame, v.game?.title].join("~");
       if (k !== key) {
         key = k; wordShown = ""; beatOfFirst = "";
         host.dataset.scene = scene;
         host.innerHTML = (params.get("bg") === "1" && params.get("demo") === "1" ? `<div class="obs-game"></div>` : "") + `<div class="obs-view" data-scene="${scene}">${build(scene, v)}</div>`;
       }
-      words(); first(); numbers();
+      words(); first(); numbers(); banner(v);
     },
   };
 }

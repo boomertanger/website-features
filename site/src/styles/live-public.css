@@ -115,6 +115,7 @@
 .bt-root:not(#_) .lp-grid { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
 .bt-root:not(#_) .lp-main, .bt-root:not(#_) .lp-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; }
 .bt-root:not(#_) .lp-main > *, .bt-root:not(#_) .lp-side > * { min-width: 0; }
+.bt-root:not(#_) .lp-grid [data-p="rush"]:empty { display: none; }
 .bt-root:not(#_) .lp-grid [data-p]:empty { display: none; }
 
 /* Video: the ship's viewport, a foot with uptime and viewers, the YouTube chat beside it for backstage */
@@ -178,6 +179,7 @@
   .bt-root:not(#_) .lp-grid [data-p="video"] { order: 1; }
   .bt-root:not(#_) .lp-grid [data-p="rail"] { order: 2; }
   .bt-root:not(#_) .lp-grid [data-p="checkin"] { order: 3; }
+  .bt-root:not(#_) .lp-grid [data-p="rush"] { order: 3; }
   .bt-root:not(#_) .lp-grid [data-p="play"] { order: 4; }
   .bt-root:not(#_) .lp-grid [data-p="now"] { order: 5; }
   .bt-root:not(#_) .lp-grid [data-p="crew"] { order: 6; }

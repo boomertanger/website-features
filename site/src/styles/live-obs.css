@@ -75,3 +75,21 @@ html[data-shape="tall"] .bt-root.bt-obs:not(#_) .bt-sv-beat { width: 168px; }
 .bt-root.bt-obs:not(#_) .obs-covers.is-small figure { width: 190px; }
 .bt-root.bt-obs:not(#_) .obs-covers img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; border-radius: 14px; border: 2px solid var(--bt-sv-line); box-shadow: 0 10px 30px rgba(var(--bt-ink-rgb), 0.6); }
 .bt-root.bt-obs:not(#_) .obs-covers figcaption { font-size: 32px; font-weight: 800; line-height: 1.15; overflow-wrap: anywhere; }
+
+/* Recruit Rush (Mod Machina §17a; obs-scenes.ts): a slim gold bar at the end of the Live stats and Break panels, and the one-time goal banner on the frame. */
+.bt-root.bt-obs:not(#_) .obs-rush { display: grid; gap: 12px; padding: 18px 22px; border-radius: 18px; background: rgba(var(--bt-ink-rgb), 0.55); border: 2px solid rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root.bt-obs:not(#_) .obs-rush-top { display: flex; align-items: baseline; justify-content: space-between; gap: 20px; }
+.bt-root.bt-obs:not(#_) .obs-rush-top b { font-size: 32px; font-weight: 900; letter-spacing: 0.06em; color: var(--bt-title); white-space: nowrap; }
+.bt-root.bt-obs:not(#_) .obs-rush-top span { font-size: 40px; font-weight: 900; font-variant-numeric: tabular-nums; color: var(--bt-text); white-space: nowrap; }
+.bt-root.bt-obs:not(#_) .obs-rush .bt-meter-track { height: 18px; overflow: hidden; }
+.bt-root.bt-obs:not(#_) .obs-rush .bt-meter-fill { background: linear-gradient(90deg, color-mix(in srgb, var(--bt-gold) 55%, var(--bt-bg)), var(--bt-gold)); box-shadow: 0 0 16px rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root.bt-obs:not(#_) .obs-rush-hit { position: absolute; left: 50%; top: 18%; z-index: 20; display: grid; gap: 6px; max-width: 80%; padding: 26px 48px; border-radius: 28px; background: var(--bt-title); color: var(--bt-bg); text-align: center; box-shadow: 0 0 80px rgba(var(--bt-gold-rgb), 0.6); transform: translateX(-50%); animation: obs-rush-in 0.6s cubic-bezier(0.3, 1.6, 0.5, 1) both; transition: opacity 0.6s; }
+.bt-root.bt-obs:not(#_) .obs-rush-hit small { font-size: 32px; font-weight: 800; letter-spacing: 0.08em; }
+.bt-root.bt-obs:not(#_) .obs-rush-hit b { font-size: 64px; font-weight: 900; line-height: 1.1; }
+.bt-root.bt-obs:not(#_) .obs-rush-hit.is-out { opacity: 0; }
+@keyframes obs-rush-in { from { opacity: 0; transform: translate(-50%, -40px) scale(0.8); } to { opacity: 1; transform: translate(-50%, 0) scale(1); } }
+@keyframes obs-rush-fade { from { opacity: 0; } to { opacity: 1; } }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root.bt-obs:not(#_) .obs-rush-hit { animation-name: obs-rush-fade; animation-timing-function: ease-out; }
+  .bt-root.bt-obs:not(#_) .obs-rush .bt-meter-fill { transition: none; }
+}
