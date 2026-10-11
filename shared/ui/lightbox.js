@@ -87,3 +87,77 @@ export function openLightbox({ src, alt = "" }) {
   requestAnimationFrame(() => closeBtn.focus());
   return { close };
 }
+
+const ICON_PREV = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>';
+const ICON_NEXT = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>';
+const attr = (v) => String(v ?? "").replace(/&/g, "&amp;").replace(/"/g, "&quot;").replace(/</g, "&lt;");
+
+/**
+ * openGallery({ items, index = 0, label = "Gallery" })
+ * Full screen like openLightbox, for a set: Previous / Next buttons and the arrow keys move through the items (wrapping), the caption
+ * and "3 of 10" sit under the media, Tab stays inside, Escape / the close button / a click on the dark area closes it, and focus goes
+ * back to what opened it. Returns { close, show(i) }.
+ */
+export function openGallery({ items = [], index = 0, label = "Gallery" } = {}) {
+  if (!items.length) return { close() {}, show() {} };
+  announceOverlay("lightbox");
+  const opener = document.activeElement;
+  const reduce = typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
+  const many = items.length > 1;
+  const portal = document.createElement("div");
+  portal.className = "bt-root bt-portal";
+  portal.innerHTML = `
+    <div class="bt-lightbox bt-gallery" role="dialog" aria-modal="true" aria-label="${attr(label)}">
+      <div class="bt-lightbox-bar"><span class="bt-gallery-count" aria-live="polite"></span><button type="button" class="bt-lightbox-close" aria-label="Close">${ICON_X}</button></div>
+      <div class="bt-lightbox-stage bt-gallery-stage"></div>
+      <div class="bt-gallery-foot">
+        ${many ? `<button type="button" class="bt-gallery-nav" data-dir="-1" aria-label="Previous">${ICON_PREV}</button>` : ""}
+        <p class="bt-gallery-cap"></p>
+        ${many ? `<button type="button" class="bt-gallery-nav" data-dir="1" aria-label="Next">${ICON_NEXT}</button>` : ""}
+      </div>
+    </div>`;
+  document.body.appendChild(portal);
+  const stage = portal.querySelector(".bt-gallery-stage");
+  const cap = portal.querySelector(".bt-gallery-cap");
+  const count = portal.querySelector(".bt-gallery-count");
+  const prevOverflow = document.documentElement.style.overflow;
+  document.documentElement.style.overflow = "hidden";
+  let at = 0;
+
+  function show(i) {
+    at = ((i % items.length) + items.length) % items.length;
+    const it = items[at];
+    stage.innerHTML = it.type === "video"
+      ? `<video class="bt-gallery-media" src="${attr(it.src)}"${it.poster ? ` poster="${attr(it.poster)}"` : ""} muted loop playsinline controls${reduce ? "" : " autoplay"} aria-label="${attr(it.alt || it.caption)}"></video>`
+      : `<img class="bt-gallery-media" src="${attr(it.src)}" alt="${attr(it.alt || it.caption)}">`;
+    cap.textContent = it.caption || "";
+    count.textContent = many ? `${at + 1} of ${items.length}` : "";
+  }
+  function focusables() { return [...portal.querySelectorAll("button, video[controls]")].filter((el) => !el.disabled); }
+  function close() {
+    document.removeEventListener("keydown", onKey, true);
+    document.removeEventListener(OVERLAY_EVENT, onOverlay);
+    portal.remove();
+    document.documentElement.style.overflow = prevOverflow;
+    if (opener && document.contains(opener)) opener.focus();
+  }
+  function onOverlay(e) { if (e.detail?.source !== "lightbox") close(); }
+  function onKey(e) {
+    if (e.key === "Escape") { e.stopPropagation(); e.preventDefault(); close(); }
+    else if (many && e.key === "ArrowLeft") { e.preventDefault(); show(at - 1); }
+    else if (many && e.key === "ArrowRight") { e.preventDefault(); show(at + 1); }
+    else if (e.key === "Tab") {
+      const f = focusables(), i = f.indexOf(document.activeElement);
+      e.preventDefault();
+      f[(i + (e.shiftKey ? -1 : 1) + f.length) % f.length]?.focus();
+    }
+  }
+  document.addEventListener("keydown", onKey, true);
+  document.addEventListener(OVERLAY_EVENT, onOverlay);
+  portal.querySelector(".bt-lightbox-close").addEventListener("click", close);
+  portal.querySelectorAll(".bt-gallery-nav").forEach((b) => b.addEventListener("click", () => show(at + Number(b.dataset.dir))));
+  stage.addEventListener("click", (e) => { if (e.target === stage) close(); });
+  show(index);
+  requestAnimationFrame(() => portal.querySelector(".bt-lightbox-close").focus());
+  return { close, show };
+}

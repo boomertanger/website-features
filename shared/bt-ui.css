@@ -1236,6 +1236,15 @@
 .bt-root:not(#_) .bt-lightbox.is-zoomed .bt-lightbox-stage { align-items: flex-start; justify-content: flex-start; }
 .bt-root:not(#_) .bt-lightbox.is-zoomed .bt-lightbox-img { max-width: none; max-height: none; cursor: zoom-out; margin: auto; }
 .bt-root:not(#_) .bt-lightbox-tip { flex: none; text-align: center; font-size: var(--bt-text-sm); color: var(--bt-text-faint); padding: var(--bt-space-3) var(--bt-space-4) calc(var(--bt-space-4) + env(safe-area-inset-bottom, 0px)); }
+/* Gallery (shared/ui/lightbox.js openGallery): photos and clips with Previous / Next under the media, a caption and "3 of 10".
+   The media fits the stage; clips get the browser controls (muted, looping). Reduced motion: no fade (the kit's bt-fade rule), no autoplay. */
+.bt-root:not(#_) .bt-gallery .bt-lightbox-bar { justify-content: space-between; }
+.bt-root:not(#_) .bt-gallery-count { font-size: var(--bt-text-sm); font-weight: 700; color: var(--bt-text-muted); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-gallery-media { display: block; max-width: 100%; max-height: 100%; object-fit: contain; border-radius: var(--bt-radius-md); background: var(--bt-bg); box-shadow: 0 20px 60px var(--bt-lift-shadow); }
+.bt-root:not(#_) .bt-gallery-foot { flex: none; display: flex; align-items: center; justify-content: center; gap: var(--bt-space-4); padding: var(--bt-space-3) var(--bt-space-4) calc(var(--bt-space-4) + env(safe-area-inset-bottom, 0px)); }
+.bt-root:not(#_) .bt-gallery-cap { margin: 0; min-width: 0; flex: 0 1 46ch; text-align: center; font-size: var(--bt-text-base); font-weight: 800; color: var(--bt-text); }
+.bt-root:not(#_) .bt-gallery-nav { flex: none; width: 44px; height: 44px; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text); cursor: pointer; transition: background-color 0.15s, border-color 0.15s; }
+.bt-root:not(#_) .bt-gallery-nav:is(:hover, :focus-visible) { background: var(--bt-primary-bg); border-color: var(--bt-primary); }
 
 /* ================= Toast (portal) =================
    shared/ui/toast.js toast(message, { kind: ok | error | info, ms }). The host is its own .bt-root
