@@ -1,0 +1,109 @@
+/* site/src/styles/services.css — /services, the Service Hub's member page (docs/specs/service-hub.md §8; mockup docs/design/mockups/
+   service-hub-round-1.html section 2, the sh- rules, here as sv-). The kit gives the components (.bt-wall, .bt-tease, .bt-view-switch, .bt-chip,
+   .bt-topbar, .bt-wordmark--power); this file is the page's own layout, the progress ring and the SERVICE HUB icon. The dialogs' CSS is in
+   services-dialogs.css (loaded here too). var(--bt-*) only; container queries on "bt"; reduced motion respected. */
+@import "./services-dialogs.css";
+
+/* the feature bar: the content width, like .bt-zone; the hub icon lights on hover, focus or .is-lit (touch screens, wordmark.js) */
+.bt-root:not(#_) .sv-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
+.bt-root:not(#_) .bt-topbar.sv-bar .bt-topnav { display: flex; align-items: center; gap: 10px; }
+.bt-root:not(#_) .sv-bar .bt-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .sv-wm-ic { width: 34px; height: 34px; overflow: visible; }
+.bt-root:not(#_) .sv-wm-ic .hub { fill: var(--bt-primary-bg); stroke: var(--bt-primary); stroke-width: 2.2; transition: fill 0.3s; }
+.bt-root:not(#_) .sv-wm-ic .spoke { fill: none; stroke: var(--bt-text-muted); stroke-width: 2; stroke-linecap: round; transition: stroke 0.3s; }
+.bt-root:not(#_) .sv-wm-ic .n { transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) .sv-wm-ic .n1 { fill: var(--bt-title); }
+.bt-root:not(#_) .sv-wm-ic .n2 { fill: var(--bt-rate-love); }
+.bt-root:not(#_) .sv-wm-ic .n3 { fill: var(--bt-rate-like); }
+.bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .spoke { stroke: var(--bt-title); }
+.bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .hub { fill: var(--bt-primary); }
+.bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .n { animation: sv-node 0.6s ease-out both; }
+.bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .n2 { animation-delay: 0.12s; }
+.bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .n3 { animation-delay: 0.24s; }
+@keyframes sv-node { 40% { transform: scale(1.45); } }
+
+/* the gate (the Arcade pattern): loading → skeleton, join / signup → the gate, page → the page */
+.bt-root:not(#_) .sv-page > :is(.sv-skel, .sv-gate, .sv-root) { display: none; }
+.bt-root:not(#_) .sv-page[data-access="loading"] > .sv-skel { display: flex; }
+.bt-root:not(#_) .sv-page:is([data-access="join"], [data-access="signup"]) > .sv-gate { display: flex; }
+.bt-root:not(#_) .sv-page[data-access="page"] > .sv-root { display: flex; }
+.bt-root:not(#_) .sv-page[data-access="join"] .sv-gate-signup,
+.bt-root:not(#_) .sv-page[data-access="signup"] .sv-gate-visitor { display: none; }
+.bt-root:not(#_) .sv-skel { gap: 14px; }
+.bt-root:not(#_) .sv-sk-hero { height: 120px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .sv-sk-bar { height: 40px; width: 70%; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .sv-sk-wall { height: 300px; border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .sv-gate { flex-direction: column; align-items: center; gap: 14px; max-width: 560px; padding-top: 40px; padding-bottom: 56px; text-align: center; }
+.bt-root:not(#_) .sv-gate .bt-title { margin: 0 auto; }
+.bt-root:not(#_) .sv-gate-art .bt-mascot { width: 84px; height: auto; }
+.bt-root:not(#_) .sv-gate-lead { color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
+.bt-root:not(#_) .sv-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
+
+/* the page */
+.bt-root:not(#_) .sv-root { flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .sv-hero { display: flex; align-items: center; gap: 18px; padding: 16px 18px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: radial-gradient(90% 130% at 100% 0%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .sv-hero-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 4px; }
+.bt-root:not(#_) .sv-hero .bt-title { margin: 0; }
+.bt-root:not(#_) .sv-hero p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .sv-scene { width: 96px; flex: none; }
+.bt-root:not(#_) .sv-scene .t { fill: var(--bt-surface-2); stroke: var(--bt-border-2); stroke-width: 1.5; }
+.bt-root:not(#_) .sv-scene .dash { fill: none; stroke-dasharray: 4 3; }
+.bt-root:not(#_) .sv-scene .on-love { fill: color-mix(in srgb, var(--bt-rate-love) 28%, var(--bt-surface)); stroke: var(--bt-rate-love); }
+.bt-root:not(#_) .sv-scene .on-like { fill: color-mix(in srgb, var(--bt-rate-like) 28%, var(--bt-surface)); stroke: var(--bt-rate-like); }
+.bt-root:not(#_) .sv-scene .on-nope { fill: color-mix(in srgb, var(--bt-rate-nope) 28%, var(--bt-surface)); stroke: var(--bt-rate-nope); }
+.bt-root:not(#_) .sv-scene .pop { transform-box: fill-box; transform-origin: center; animation: sv-pop 3.2s ease-in-out infinite; }
+@keyframes sv-pop { 0%, 70%, 100% { transform: scale(1); } 80% { transform: scale(1.12); } }
+.bt-root:not(#_) .sv-ring { --p: 0%; position: relative; flex: none; width: 76px; height: 76px; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--bt-primary) var(--p), var(--bt-surface-2) 0); }
+.bt-root:not(#_) .sv-ring::before { content: ""; position: absolute; inset: 7px; border-radius: 50%; background: var(--bt-surface); }
+.bt-root:not(#_) .sv-ring b { position: relative; display: flex; align-items: baseline; gap: 2px; font-size: var(--bt-text-lg); font-weight: 800; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .sv-ring small { font-size: var(--bt-text-xs); color: var(--bt-text-faint); font-weight: 700; }
+
+.bt-root:not(#_) .sv-tools { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+.bt-root:not(#_) .sv-chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.bt-root:not(#_) .sv-sp { flex: 1; }
+.bt-root:not(#_) .sv-root .bt-view-switch svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .sv-search { position: relative; flex: 1 1 200px; max-width: 280px; }
+.bt-root:not(#_) .sv-search .bt-input { padding: 8px 12px 8px 34px; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .sv-search svg { position: absolute; left: 11px; top: 50%; width: 16px; height: 16px; transform: translateY(-50%); color: var(--bt-text-faint); fill: none; stroke: currentColor; stroke-width: 2; }
+
+/* the wall's tile icons follow the kit's stroke style; the checklist (P2) */
+.bt-root:not(#_) .sv-root .bt-wall-tile > svg { fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .sv-root .bt-wall-badge svg { width: 12px; height: 12px; }
+.bt-root:not(#_) .sv-area { display: flex; flex-direction: column; gap: 6px; margin-bottom: 8px; }
+.bt-root:not(#_) .sv-area-h { display: flex; align-items: center; justify-content: space-between; gap: 8px; padding: 4px 2px; }
+.bt-root:not(#_) .sv-area-h .bt-label { color: var(--bt-text); margin: 0; }
+.bt-root:not(#_) .sv-check { --rt: var(--bt-text-faint); display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); color: inherit; font: inherit; text-align: left; cursor: pointer; transition: border-color 0.15s, transform 0.15s; }
+.bt-root:not(#_) .sv-check:hover { border-color: var(--bt-primary); transform: translateY(-1px); }
+.bt-root:not(#_) .sv-check:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-root:not(#_) .sv-check[data-v="love"] { --rt: var(--bt-rate-love); }
+.bt-root:not(#_) .sv-check[data-v="like"] { --rt: var(--bt-rate-like); }
+.bt-root:not(#_) .sv-check[data-v="nope"] { --rt: var(--bt-rate-nope); }
+.bt-root:not(#_) .sv-tick { width: 28px; height: 28px; border-radius: 50%; border: 1.5px dashed var(--bt-border-2); display: grid; place-items: center; flex: none; color: var(--rt); }
+.bt-root:not(#_) .sv-tick.is-done { border-style: solid; border-color: var(--rt); background: color-mix(in srgb, var(--rt) 15%, var(--bt-bg)); }
+.bt-root:not(#_) .sv-tick svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .sv-check:not([data-v]) .sv-tick.is-done { --rt: var(--bt-lime); }
+.bt-root:not(#_) .sv-check-txt { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.bt-root:not(#_) .sv-name { font-weight: 700; color: var(--bt-text); }
+.bt-root:not(#_) .sv-type { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .sv-check .bt-btn { pointer-events: none; }
+
+.bt-root:not(#_) .sv-empty { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 32px 12px; text-align: center; color: var(--bt-text-muted); }
+.bt-root:not(#_) .sv-empty .bt-mascot { width: 72px; height: auto; }
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .sv-scene { display: none; }
+  .bt-root:not(#_) .sv-hero { padding: 14px; }
+  .bt-root:not(#_) .sv-ring { width: 64px; height: 64px; }
+  .bt-root:not(#_) .sv-search { max-width: none; }
+  .bt-root:not(#_) .sv-bar .bt-wordmark-text { font-size: 18px; }
+  .bt-root:not(#_) .sv-wm-ic { width: 30px; height: 30px; }
+  .bt-root:not(#_) .bt-topbar.sv-bar .sv-how { position: relative; width: 40px; height: 40px; padding: 0; justify-content: center; border: 1px solid var(--bt-border-2); border-radius: 50%; }
+  .bt-root:not(#_) .sv-bar .sv-how > .bt-btn-label { display: none; }
+  .bt-root:not(#_) .sv-root .bt-wall { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .sv-scene .pop, .bt-root:not(#_) .sv-wm:is(:hover, :focus-visible, .is-lit) .sv-wm-ic .n { animation: none; }
+  .bt-root:not(#_) .sv-check { transition: none; }
+  .bt-root:not(#_) .sv-check:hover { transform: none; }
+}
+.bt-root:not(#_) .sv-root [data-sv-body] { display: flex; flex-direction: column; gap: 10px; }

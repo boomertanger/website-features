@@ -8,9 +8,10 @@
   "status": "building",
   "audience": "members",
   "routes": [
-    "/admin/services"
+    "/admin/services",
+    "/services"
   ],
-  "nav": null,
+  "nav": "services",
   "testPlan": null,
   "checks": [],
   "videoTag": "#bt-service-hub",

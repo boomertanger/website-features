@@ -1,0 +1,39 @@
+---
+// /services, the Service Hub's member page (docs/specs/service-hub.md §8; mockup docs/design/mockups/service-hub-round-1.html section 2, P3 with
+// P2 as the List; design-system.md §8aa). A tool page: the SERVICE HUB bar, the hero with your progress ring and the next badge, the chips and
+// filters, and the collection wall (or the checklist by area). Members only (the Arcade's gate: a skeleton while auth loads, visitors get the
+// gate with Join free, mid-signup members Finish signup); filled by scripts/services/page.ts from public/services and my/{uid} (one read each).
+// Rating and testing open the shared dialogs (scripts/services/dialogs.ts). Preview: ?as=member on localhost and staging.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import ServicesBar from "../../components/services/ServicesBar.astro";
+import Mascot from "../../components/Mascot.astro";
+import "../../styles/services.css";
+---
+<BaseLayout title="Service Hub" description="Rate every part of the site and the stream, and help shape what gets fixed next.">
+  <ServicesBar slot="bar" />
+  <div class="sv-page" data-sv-page data-access="loading">
+    <div class="bt-zone sv-skel" aria-hidden="true">
+      <span class="bt-skeleton sv-sk-hero"></span>
+      <span class="bt-skeleton sv-sk-bar"></span>
+      <span class="bt-skeleton sv-sk-wall"></span>
+    </div>
+    <section class="bt-zone sv-gate" aria-labelledby="sv-gate-title">
+      <div class="sv-gate-art" aria-hidden="true"><Mascot decorative /></div>
+      <h1 class="bt-title" id="sv-gate-title">Members only</h1>
+      <p class="sv-gate-lead">The Service Hub is where members rate every part of the site and the stream, test new versions, and earn badges for it. Your ratings go straight to Boomer. Joining is free.</p>
+      <div class="sv-gate-acts sv-gate-visitor">
+        <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join free to rate">Join free</a>
+        <a class="bt-btn bt-btn--secondary" href="/account" data-signin="signin">Log in</a>
+      </div>
+      <div class="sv-gate-acts sv-gate-signup">
+        <button type="button" class="bt-btn bt-btn--primary" data-signin="signup">Finish signup</button>
+      </div>
+    </section>
+    <div class="bt-zone sv-root" data-sv-root aria-live="polite"></div>
+    <template id="sv-mascot"><Mascot decorative /></template>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/services/page";
+</script>
