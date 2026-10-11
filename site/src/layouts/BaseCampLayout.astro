@@ -8,7 +8,7 @@ import "../styles/how-it-works.css";
 import "../styles/base-camp.css";
 import "../styles/kind-words.css";   // the Kind Words wall (Newfoundland and Skipper; scripts/base-camp/kind-words.ts)
 
-interface Props { title: string; description?: string; section?: "story" | "newfoundland" | "skipper" | null }
+interface Props { title: string; description?: string; section?: "story" | "newfoundland" | "skipper" | "mailcall" | null }
 const { title, description, section = null } = Astro.props;
 ---
 <BaseLayout title={title} description={description}>

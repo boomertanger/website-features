@@ -1,0 +1,104 @@
+---
+// /base-camp/mail-call: fan mail for Boomer and Skipper (docs/specs/base-camp.md "Addendum 2: Mail Call"; mockup
+// docs/design/mockups/base-camp-mail-call.html). The fourth stop in the BASECAMP bar; not in the header nav. A public page: the hero (MAIL CALL
+// over the desk scene), 01 Send real mail (the Pup Post card: the only place the address appears, members only, filled in the browser), 02 How
+// Mail Call works (the four steps and four promises), 03 Notes for Boomer (the Kind Words board "boomer"; writing needs sign-in) with doors to
+// Skipper's notes and Hotline Boom, 04 Mail Call on stream with Ask BOOMBOT, and Back to camp.
+import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import PupPost from "../../components/base-camp/PupPost.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { mailHero, privateArt, chapterHtml } from "../../scripts/base-camp/mail-call-art";
+import { sittingCorgi } from "../../scripts/base-camp/corgi";
+import "../../styles/base-camp-mail-call.css";
+
+const NAV: [string, string][] = [["mc-1", "Send real mail"], ["mc-2", "How it works"], ["mc-3", "Notes for Boomer"], ["mc-4", "On stream"]];
+const chapter = chapterHtml;
+const STEPS = [
+  ["✉️", "Write it", "A letter, a card or a drawing, for Boomer, Skipper or both."],
+  ["📮", "It reaches the PO box", "Boomer picks up the mail and saves it for the next Mail Call."],
+  ["🎥", "Opened live", "Envelopes get opened on stream, with chat along for the ride."],
+  ["📣", "Read on stream", "Yours might get read out. Want it kept private? Say so on the envelope."],
+];
+const PROMISES = [
+  ["🏠", "Return addresses stay off camera", "Envelopes are opened off camera and set aside before a letter is shown."],
+  ["🙂", "First names or handles only", "Last names, streets, schools and phone numbers are skipped when reading."],
+  ["🤫", "“Just for Boomer”", "Write it on the envelope and your letter is read off stream."],
+  ["🚫", "No food or treats, please", "Letters, cards and drawings are perfect."],
+];
+const ASK = [
+  ["What is Mail Call?", "It's where fan mail lives. Send real mail to the PO box, and Boomer opens it live on stream. You can also leave a quick note right on this page."],
+  ["Can anyone see the address?", "Only Fan Club members. It's free to join, and the address stays in the club."],
+  ["Will my letter be read on stream?", "It might be. Return addresses always stay off camera and only first names or handles are read. Write “just for Boomer” on the envelope to keep yours off stream."],
+  ["What shouldn't I send?", "Please don't send food or treats. Letters, cards and drawings are perfect."],
+];
+---
+<BaseCampLayout title="Mail Call" section="mailcall" description="Send real mail to Boomer and Skipper, and Boomer opens it live on stream. Not a letter writer? Leave a note right here.">
+  <TocLayout items={NAV}>
+    <div class="ai-main bc-main">
+      <section class="mc-hero" aria-labelledby="h-hero">
+        <Fragment set:html={mailHero()} />
+        <div class="mc-hero-copy">
+          <div class="mc-wm" aria-hidden="true"><span>MAIL</span><span>CALL</span></div>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Fan mail, opened live</h1>
+          <p>Send real mail to Boomer and Skipper, and Boomer opens it live on stream. Not a letter writer? Leave a note right here.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#mc-1">Send real mail</a><a class="bt-btn bt-btn--secondary" href="#mc-3">Leave a note</a></div>
+        </div>
+      </section>
+
+      <section class="bc-ch" id="mc-1" aria-labelledby="h-mc-1">
+        <Fragment set:html={chapter(1, "mc-1", "Send real mail", "One PO box for both of them. Fan Club members can see the address.")} />
+        <PupPost ret="#mc-1" />
+      </section>
+
+      <section class="bc-ch" id="mc-2" aria-labelledby="h-mc-2">
+        <Fragment set:html={chapter(2, "mc-2", "How Mail Call works")} />
+        <ol class="ai-jr ai-jr--4" data-journey>
+          {STEPS.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+        </ol>
+        <div class="mc-promises">
+          {PROMISES.map(([ic, t, d]) => <div class="mc-promise"><i aria-hidden="true">{ic}</i><span><b>{t}</b>{d}</span></div>)}
+        </div>
+      </section>
+
+      <section class="bc-ch" id="mc-3" aria-labelledby="h-mc-3">
+        <Fragment set:html={chapter(3, "mc-3", "Notes for Boomer", "Not a letter writer? Leave a note right here. Every note is read before it goes up.")} />
+        <div data-kind-words="boomer"></div>
+        <div class="mc-links">
+          <a class="bt-card bt-card--door mc-link" href="/base-camp/skipper#sk-ch5"><svg viewBox="0 -20 200 150" aria-hidden="true" focusable="false"><g transform="translate(20 0) scale(.82)" set:html={sittingCorgi()} /></svg><div><h3>Notes for Skipper</h3><p>She has her own wall. Leave her a Paw Note on her page.</p></div></a>
+          <a class="bt-card bt-card--door mc-link" href="/contact"><Fragment set:html={privateArt()} /><div><h3>Something private?</h3><p>Messages, business and account help go through Hotline Boom.</p></div></a>
+        </div>
+      </section>
+
+      <section class="bc-ch" id="mc-4" aria-labelledby="h-mc-4">
+        <Fragment set:html={chapter(4, "mc-4", "Mail Call on stream", "Mail Call happens live. Check the schedule to catch the next one.")} />
+        <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/schedule">See the schedule</a><a class="bt-btn bt-btn--secondary" href="/live">Watch live</a></div>
+        <h3 class="bt-heading bc-sub">Ask BOOMBOT</h3>
+        <div class="bt-chat">
+          {ASK.map(([q, a], i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`mc-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+              <div class="bt-chat-a" id={`mc-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`mc-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta bc-cta" aria-labelledby="h-cta">
+        <Mascot aware decorative />
+        <h2 id="h-cta">Back to camp</h2>
+        <p>There's more of Boomer's story at Base Camp.</p>
+        <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/base-camp">Back to Base Camp</a><a class="bt-btn bt-btn--secondary" href="/base-camp/skipper">Meet Skipper</a></div>
+      </section>
+    </div>
+  </TocLayout>
+</BaseCampLayout>
+
+<script>
+  import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
+  initHowItWorks(document);
+</script>

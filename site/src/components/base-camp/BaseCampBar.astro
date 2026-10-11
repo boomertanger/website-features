@@ -1,15 +1,16 @@
 ---
 // The BASECAMP bar (docs/specs/base-camp.md "Brand"; design-system.md §8h pattern, like the Trophy Room's): the kit's .bt-topbar in a
 // .bt-sticky-bar with the BASECAMP .bt-wordmark--power (W1 peak and tent: CAMP rests purple and lights gold, the tent door lights on hover or
-// focus) and The story / Newfoundland / Skipper as a .bt-seg-nav (hidden on phones). Wired in scripts/base-camp/layout.ts.
+// focus) and The story / Newfoundland / Skipper / Mail Call as a .bt-seg-nav (hidden on phones). Wired in scripts/base-camp/layout.ts.
 import { BC_ICON } from "../../scripts/base-camp/ui";
 
-interface Props { section?: "story" | "newfoundland" | "skipper" | null }
+interface Props { section?: "story" | "newfoundland" | "skipper" | "mailcall" | null }
 const { section = null } = Astro.props;
 const links = [
   { id: "story", label: "The story", href: "/base-camp" },
   { id: "newfoundland", label: "Newfoundland", href: "/base-camp/newfoundland" },
   { id: "skipper", label: "Skipper", href: "/base-camp/skipper" },
+  { id: "mailcall", label: "Mail Call", href: "/base-camp/mail-call" },
 ];
 ---
 <div class="bt-sticky-bar bc-dock" data-bc-dock>

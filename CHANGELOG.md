@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Base Camp Mail Call part 2: /base-camp/mail-call (the MAIL CALL hero with the desk lamp lighting the letter, the mascot, the MAIL sack and envelopes, still under reduced motion; Send real mail with the Pup Post card; How Mail Call works, four steps and four promises; Notes for Boomer with doors to Skipper and Hotline Boom; Mail Call on stream with Ask BOOMBOT; Back to camp), and Mail Call as the fourth link in the BASECAMP bar.
 Base Camp Mail Call part 1: the spec gains Addendum 2 (Mail Call at /base-camp/mail-call, the boomer Kind Words board, the teasers and the /contact line) and the approved mockup docs/design/mockups/base-camp-mail-call.html.
 Base Camp: the memberContent rule lets signed-in members read base-camp and mail as well as tech-stack (a list, not a wildcard).
 Base Camp part 7: Service Hub manifests (base-camp, base-camp-newfoundland, base-camp-skipper, and kind-words-admin for /admin/kind-words), and ROADMAP workstream 19 with the launch checklist and the on-stream mail rules under Base Camp notes.

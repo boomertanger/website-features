@@ -1,0 +1,86 @@
+/* site/src/styles/base-camp-mail-call.css — /base-camp/mail-call (docs/specs/base-camp.md "Addendum 2: Mail Call"; mockup
+   docs/design/mockups/base-camp-mail-call.html): the hero (MAIL CALL in large white letters with a soft glow over the desk scene), the four
+   promise cards, the link cards under Notes for Boomer, and the scene parts. The four-step journey is the kit's .ai-jr--4; the mail card is
+   PupPost (base-camp.css); the notes are the Kind Words board "boomer" (kind-words.css). Prefix mc- (scene parts ms-, ml-). Tokens only;
+   container queries; reduced motion at the end. */
+
+/* ---------- Hero: words on the left, the desk scene behind them on the right ---------- */
+.bt-root:not(#_) .mc-hero { position: relative; overflow: hidden; border: 1px solid var(--bt-border); border-radius: 24px; background: var(--bt-bg); }
+.bt-root:not(#_) .mc-hero-scene { display: block; width: 100%; height: auto; aspect-ratio: 20 / 9; overflow: hidden; }
+.bt-root:not(#_) .mc-hero-copy { position: absolute; inset: 0 auto 0 0; display: flex; flex-direction: column; justify-content: center; gap: 12px; padding: 32px; width: 52%; background: linear-gradient(90deg, color-mix(in srgb, var(--bt-bg) 88%, transparent) 70%, transparent); }
+.bt-root:not(#_) .mc-hero-copy h1 { margin: 0; }
+.bt-root:not(#_) .mc-hero-copy p { margin: 0; font-size: var(--bt-text-lg); line-height: 1.5; max-width: 40ch; }
+.bt-root:not(#_) .mc-wm { display: inline-flex; gap: 0.32em; font-size: 46px; font-weight: 900; line-height: 1; letter-spacing: 0.1em; color: var(--bt-text); text-shadow: 0 0 18px color-mix(in srgb, var(--bt-text) 35%, transparent), 0 2px 0 var(--bt-bg); }
+/* 1024 and narrower: the words sit under the scene (stacked), so they never crowd it */
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .mc-hero-scene { aspect-ratio: 16 / 8; }
+  .bt-root:not(#_) .mc-hero-copy { position: static; width: auto; padding: 22px 24px 26px; background: none; }
+  .bt-root:not(#_) .mc-wm { font-size: 38px; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .mc-hero-scene { aspect-ratio: 4 / 3; }
+  .bt-root:not(#_) .mc-hero-copy { padding: 18px; }
+  .bt-root:not(#_) .mc-wm { font-size: 34px; }
+}
+
+/* the scene */
+.bt-root:not(#_) .ms-wall { fill: color-mix(in srgb, var(--bt-primary) 9%, var(--bt-bg)); }
+.bt-root:not(#_) .ms-desk { fill: color-mix(in srgb, var(--bt-rank-3) 30%, var(--bt-surface-2)); }
+.bt-root:not(#_) .ms-desk2 { fill: color-mix(in srgb, var(--bt-rank-3) 18%, var(--bt-bg)); }
+.bt-root:not(#_) .mc-mask0 { stop-color: var(--bt-text); stop-opacity: 0; }
+.bt-root:not(#_) .mc-mask1 { stop-color: var(--bt-text); stop-opacity: 1; }
+.bt-root:not(#_) .ms-glow0 { stop-color: rgba(var(--bt-lamp-rgb), 0.5); } .bt-root:not(#_) .ms-glow1 { stop-color: rgba(var(--bt-lamp-rgb), 0); }
+.bt-root:not(#_) .ms-sack { fill: color-mix(in srgb, var(--bt-title) 30%, var(--bt-surface-2)); stroke: color-mix(in srgb, var(--bt-title) 45%, var(--bt-bg)); stroke-width: 2; }
+.bt-root:not(#_) .ms-sackline { fill: none; stroke: color-mix(in srgb, var(--bt-title) 40%, var(--bt-bg)); stroke-width: 1.5; stroke-dasharray: 4 4; }
+.bt-root:not(#_) .ms-rope { fill: none; stroke: color-mix(in srgb, var(--bt-rank-3) 50%, var(--bt-surface-2)); stroke-width: 4; stroke-linecap: round; }
+.bt-root:not(#_) .ms-sacktext { fill: color-mix(in srgb, var(--bt-bg) 70%, var(--bt-title)); font-size: 16px; font-weight: 900; letter-spacing: 0.15em; }
+.bt-root:not(#_) .ms-env rect { fill: color-mix(in srgb, var(--bt-text) 92%, var(--bt-title)); stroke: color-mix(in srgb, var(--bt-bg) 40%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .ms-env path { fill: none; stroke: color-mix(in srgb, var(--bt-text-faint) 80%, transparent); stroke-width: 1.2; }
+.bt-root:not(#_) .ms-env .ms-heart { fill: var(--bt-pink); stroke: none; }
+.bt-root:not(#_) .ms-env .ms-stampr { fill: color-mix(in srgb, var(--bt-red) 60%, var(--bt-surface)); stroke: none; }
+.bt-root:not(#_) .ms-fly { animation: ms-float 5s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) g:nth-of-type(2) > .ms-fly { animation-delay: -1.6s; }
+.bt-root:not(#_) .ms-letter { fill: color-mix(in srgb, var(--bt-text) 94%, var(--bt-title)); }
+.bt-root:not(#_) .ms-lines { fill: none; stroke: color-mix(in srgb, var(--bt-blue) 35%, transparent); stroke-width: 1.4; }
+.bt-root:not(#_) .ms-onair rect { fill: color-mix(in srgb, var(--bt-red) 75%, var(--bt-bg)); }
+.bt-root:not(#_) .ms-onair text { fill: var(--bt-text); font-size: 12px; font-weight: 900; letter-spacing: 0.12em; }
+.bt-root:not(#_) .ms-onair { animation: bc-blink 2.4s ease-in-out infinite; }
+/* the desk lamp shining on the letter */
+.bt-root:not(#_) .ml-base { fill: color-mix(in srgb, var(--bt-text) 22%, var(--bt-surface-2)); }
+.bt-root:not(#_) .ml-arm { fill: none; stroke: color-mix(in srgb, var(--bt-text) 30%, var(--bt-surface-2)); stroke-width: 6; stroke-linecap: round; }
+.bt-root:not(#_) .ml-joint { fill: color-mix(in srgb, var(--bt-text) 40%, var(--bt-surface-2)); }
+.bt-root:not(#_) .ml-spring { fill: none; stroke: color-mix(in srgb, var(--bt-text) 45%, transparent); stroke-width: 1.4; stroke-dasharray: 2 2; }
+.bt-root:not(#_) .ml-shade { fill: color-mix(in srgb, var(--bt-red) 55%, var(--bt-surface-2)); stroke: color-mix(in srgb, var(--bt-red) 40%, var(--bt-bg)); stroke-width: 1.4; }
+.bt-root:not(#_) .ml-rim { fill: none; stroke: color-mix(in srgb, var(--bt-text) 40%, transparent); stroke-width: 2; }
+.bt-root:not(#_) .ml-bulb { fill: var(--bt-lamp); filter: drop-shadow(0 0 10px rgba(var(--bt-lamp-rgb), 1)); }
+.bt-root:not(#_) .ml-b0 { stop-color: rgba(var(--bt-lamp-rgb), 0.55); } .bt-root:not(#_) .ml-b1 { stop-color: rgba(var(--bt-lamp-rgb), 0.06); }
+.bt-root:not(#_) .ml-beam { mix-blend-mode: screen; animation: ml-hum 4s ease-in-out infinite; }
+.bt-root:not(#_) .ml-pool { fill: rgba(var(--bt-lamp-rgb), 0.28); filter: blur(6px); }
+
+/* ---------- How Mail Call works: the promise cards ---------- */
+.bt-root:not(#_) .mc-promises { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+.bt-root:not(#_) .mc-promise { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 10px; align-items: start; padding: 14px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-surface); color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; transition: border-color 0.3s, transform 0.3s; }
+.bt-root:not(#_) .mc-promise:hover { border-color: color-mix(in srgb, var(--bt-title) 45%, transparent); transform: translateY(-2px); }
+.bt-root:not(#_) .mc-promise i { display: grid; place-items: center; width: 34px; height: 34px; border-radius: 10px; background: var(--bt-surface-2); font-style: normal; font-size: 17px; }
+.bt-root:not(#_) .mc-promise b { display: block; color: var(--bt-text); font-size: var(--bt-text-md); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .mc-promises { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- The link cards under Notes for Boomer ---------- */
+.bt-root:not(#_) .mc-links { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .bt-card.mc-link { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 14px; align-items: center; text-align: left; text-decoration: none; color: inherit; }
+.bt-root:not(#_) .mc-link svg { width: 120px; height: auto; aspect-ratio: 6 / 5; border-radius: 12px; background: color-mix(in srgb, var(--bt-primary) 10%, var(--bt-bg)); }
+.bt-root:not(#_) .mc-link h3 { margin: 0 0 4px; font-size: var(--bt-text-lg); font-weight: 900; }
+.bt-root:not(#_) .mc-link p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .mc-pv-box { fill: color-mix(in srgb, var(--bt-surface-2) 80%, var(--bt-bg)); stroke: var(--bt-border-2); stroke-width: 2; }
+.bt-root:not(#_) .mc-pv-dot { fill: var(--bt-title); }
+.bt-root:not(#_) .mc-pv-line { stroke: var(--bt-text-muted); stroke-width: 4; stroke-linecap: round; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .mc-links { grid-template-columns: minmax(0, 1fr); } }
+
+@keyframes ms-float { 0%, 100% { transform: translateY(0) rotate(0deg); } 50% { transform: translateY(-8px) rotate(6deg); } }
+@keyframes ml-hum { 50% { opacity: 0.85; } }
+
+/* Reduced motion: the scene stands still (the lamp stays lit). */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.ms-fly, .ms-onair, .ml-beam) { animation: none !important; }
+  .bt-root:not(#_) .mc-promise { transition: none; }
+}
