@@ -7,6 +7,7 @@
 const BOARDS = {
   newfoundland: { title: "Puffin Post", place: true, connections: ["I'm from here", "I live here now", "I've visited", "Never been, but…"] },
   skipper: { title: "Paw Notes", place: false, connections: ["Watches her on stream", "Met her in person", "Corgi owner", "Just a fan"] },
+  boomer: { title: "Notes for Boomer", place: false, connections: ["Watches on Twitch", "Watches on TikTok", "Watches on YouTube", "Fan Club member"] },
 };
 const STATUSES = ["pending", "approved", "rejected", "withdrawn", "hidden"];
 const TEXT_MIN = 20, TEXT_MAX = 600, PLACE_MAX = 40, NOTE_MAX = 300;

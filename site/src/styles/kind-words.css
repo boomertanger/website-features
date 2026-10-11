@@ -129,6 +129,18 @@
 .bt-root:not(#_) .pn-pin svg * { fill: color-mix(in srgb, var(--bt-text) 90%, var(--bt-teal)); }
 .bt-root:not(#_) .pn-note .kw-feat { left: 12px; }
 
+/* Notes for Boomer (Mail Call): torn notebook pages with a gold margin and a small mascot seal (distinct from postcards and pinned notes) */
+.bt-root:not(#_) .kw-wall--boomer { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px 20px; }
+.bt-root:not(#_) .mc-note { display: flex; flex-direction: column; gap: 12px; padding: 30px 48px 16px 40px; background: repeating-linear-gradient(180deg, transparent 0 25px, color-mix(in srgb, var(--bt-blue) 26%, transparent) 25px 26px), color-mix(in srgb, var(--bt-text) 6%, var(--bt-surface-2)); background-position: 0 18px; clip-path: polygon(0 8px, 4% 0, 8% 7px, 12% 1px, 16% 8px, 20% 2px, 24% 7px, 28% 0, 32% 8px, 36% 2px, 40% 7px, 44% 0, 48% 8px, 52% 1px, 56% 7px, 60% 0, 64% 8px, 68% 2px, 72% 7px, 76% 0, 80% 8px, 84% 1px, 88% 7px, 92% 0, 96% 8px, 100% 2px, 100% 100%, 0 100%); transform: rotate(var(--tilt, 0deg)); transition: transform 0.4s cubic-bezier(.3, 1.4, .4, 1); filter: drop-shadow(0 12px 14px color-mix(in srgb, var(--bt-bg) 70%, transparent)); }
+.bt-root:not(#_) .mc-note:hover { transform: rotate(0) translateY(-4px); }
+.bt-root:not(#_) .mc-note::before { content: ""; position: absolute; left: 28px; top: 0; bottom: 0; width: 1.5px; background: color-mix(in srgb, var(--bt-title) 60%, transparent); }
+.bt-root:not(#_) .mc-note .kw-text { line-height: 26px; }
+.bt-root:not(#_) .mc-note .mc-seal { position: absolute; right: 12px; bottom: 10px; width: 30px; height: auto; opacity: 0.85; }
+.bt-root:not(#_) .mc-note .kw-feat { top: 12px; }
+.bt-root:not(#_) .mc-note.is-feat { padding-top: 44px; }
+.bt-root:not(#_) .mc-note.is-mine { outline: 0; box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--bt-teal) 60%, transparent); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .kw-wall--boomer { grid-template-columns: minmax(0, 1fr); } }
+
 /* ---------- Composer and sent moment (in the modal portal) ---------- */
 .bt-portal[data-feature="kind-words"] .kw-modal { display: flex; flex-direction: column; }
 .bt-portal[data-feature="kind-words"] .kw-chips { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -151,6 +163,15 @@
 .bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-pinstage .pn-note { animation: pn-drop 0.6s cubic-bezier(.3, 1.4, .4, 1) both; }
 .bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-pinstage .pn-pin { animation: pn-pop 0.45s cubic-bezier(.3, 1.8, .4, 1) 0.5s both; }
 
+/* Notes for Boomer: the note drops onto the pile of mail on his desk */
+.bt-portal[data-feature="kind-words"] .kw-preview .mc-note { transform: none; }
+.bt-portal[data-feature="kind-words"] .kw-pile { position: relative; padding: 26px 16px 14px; border-radius: var(--bt-radius-xl); background: linear-gradient(180deg, color-mix(in srgb, var(--bt-primary) 10%, var(--bt-bg)), color-mix(in srgb, var(--bt-rank-3) 22%, var(--bt-surface-2))); text-align: left; }
+.bt-portal[data-feature="kind-words"] .kw-pile-under { position: absolute; left: 22px; right: 22px; bottom: 10px; height: 70%; border-radius: 3px; background: color-mix(in srgb, var(--bt-text) 6%, var(--bt-surface-2)); transform: rotate(3deg); opacity: 0.7; }
+.bt-portal[data-feature="kind-words"] .kw-pile-under--2 { transform: rotate(-2.5deg); opacity: 0.85; }
+.bt-portal[data-feature="kind-words"] .kw-pile .mc-note { transform: rotate(-1deg); }
+.bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-pile .mc-note { animation: kw-pile-drop 0.7s cubic-bezier(.3, 1.3, .4, 1) both; }
+@keyframes kw-pile-drop { from { transform: translateY(-70px) rotate(10deg); opacity: 0; } 70% { transform: translateY(4px) rotate(-2deg); opacity: 1; } to { transform: rotate(-1deg); } }
+
 /* ---------- Admin queue: /admin/kind-words ---------- */
 .bt-root:not(#_) .kwa { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
 .bt-root:not(#_) .kwa-hero { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 16px; align-items: center; padding: 22px 24px; border: 1px solid var(--bt-border-2); border-radius: 22px; background: radial-gradient(70% 90% at 100% 100%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
@@ -164,7 +185,7 @@
 .bt-root:not(#_) .kwa-item { position: relative; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: 18px; background: var(--bt-surface); overflow: hidden; transition: border-color 0.3s, opacity 0.4s, transform 0.4s; }
 .bt-root:not(#_) .kwa-item:hover { border-color: color-mix(in srgb, var(--bt-green) 45%, transparent); }
 .bt-root:not(#_) .kwa-item.is-leaving { opacity: 0; transform: translateX(16px); }
-.bt-root:not(#_) .kwa-card :is(.kw-postcard, .pn-note) { transform: none; outline: 0; }
+.bt-root:not(#_) .kwa-card :is(.kw-postcard, .pn-note, .mc-note) { transform: none; outline: 0; }
 .bt-root:not(#_) .kwa-card .pn-note { margin-top: 12px; }
 .bt-root:not(#_) .kwa-side { display: flex; flex-direction: column; gap: 12px; }
 .bt-root:not(#_) .kwa-meta { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
@@ -193,7 +214,7 @@
 @keyframes kwa-stamp { to { opacity: 0.9; transform: rotate(-12deg) scale(1); } }
 
 @media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) :is(.pf-fish, .pf-bird, .pf-eyeg, .pff-wing, .pf-fly, .pn-note, .pn-pin) { animation: none !important; }
-  .bt-root:not(#_) :is(.kw-postcard, .pn-note, .kwa-item) { transition: none !important; }
+  .bt-root:not(#_) :is(.pf-fish, .pf-bird, .pf-eyeg, .pff-wing, .pf-fly, .pn-note, .pn-pin, .mc-note) { animation: none !important; }
+  .bt-root:not(#_) :is(.kw-postcard, .pn-note, .mc-note, .kwa-item) { transition: none !important; }
   .bt-root:not(#_) .kwa-item.is-approved .kwa-stamped { animation: none !important; opacity: 0.9; transform: rotate(-12deg); }
 }

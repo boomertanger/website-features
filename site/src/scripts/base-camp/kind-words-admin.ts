@@ -1,6 +1,6 @@
 // site/src/scripts/base-camp/kind-words-admin.ts — /admin/kind-words (docs/specs/base-camp.md "Kind Words engine", Admin). Admins read every card
 // (the rules allow it) and the private review note (private/review: the reject note and the crew name-check hit). Tabs in ?tab= (pending | approved
-// | hidden | rejected), board in ?board= (all | newfoundland | skipper). Approve stamps POSTED and the card leaves the queue; Reject asks for an
+// | hidden | rejected), board in ?board= (all | newfoundland | skipper | boomer). Approve stamps POSTED and the card leaves the queue; Reject asks for an
 // optional private note (the author never sees it); Feature / Unfeature on approved cards; Hide on pending or approved ones. Every change goes
 // through kindReview; nothing is ever deleted. Display gating only: the callable checks admin on the server.
 import { whenReady } from "../../lib/auth";
@@ -16,7 +16,7 @@ import { esc, RM } from "./ui";
 const root = document.querySelector<HTMLElement>("[data-kwa]");
 type Tab = "pending" | "approved" | "hidden" | "rejected";
 const TABS: [Tab, string][] = [["pending", "Pending"], ["approved", "Approved"], ["hidden", "Hidden"], ["rejected", "Rejected"]];
-const BOARD_NAMES: Record<Board, string> = { newfoundland: "Newfoundland", skipper: "Skipper" };
+const BOARD_NAMES: Record<Board, string> = { newfoundland: "Newfoundland", skipper: "Skipper", boomer: "Boomer" };
 const ms = (t: Card["createdAt"]) => (t == null ? 0 : typeof t === "number" ? t : t.toMillis?.() ?? 0);
 const ago = (t: number) => {
   if (!t) return "just now";
@@ -28,7 +28,7 @@ const ago = (t: number) => {
 
 const params = new URLSearchParams(location.search);
 let tab: Tab = (TABS.some(([t]) => t === params.get("tab")) ? params.get("tab") : "pending") as Tab;
-let board: Board | "all" = (["newfoundland", "skipper"].includes(params.get("board") || "") ? params.get("board") : "all") as Board | "all";
+let board: Board | "all" = (["newfoundland", "skipper", "boomer"].includes(params.get("board") || "") ? params.get("board") : "all") as Board | "all";
 let cards: (Card & { review?: { rejectNote?: string | null; nameFlag?: { handle?: string | null } | null } })[] = [];
 let counts: Record<Tab, number> = { pending: 0, approved: 0, hidden: 0, rejected: 0 };
 
@@ -47,7 +47,7 @@ function shell() {
     <header class="kwa-hero"><div><span class="bt-admin-tag">${SHIELD_ICON}Admin only</span><h1 class="bt-title">Kind words</h1><p>Read every postcard and note before it goes up. Approved ones appear on Base Camp right away.</p></div>${puffinArt({ cls: "kwa-puffin" })}</header>
     <div class="kwa-bar">
       <div class="bt-pills" role="tablist" aria-label="Queue" style="grid-template-columns:repeat(4,auto);width:fit-content">${TABS.map(([t, l]) => `<button type="button" role="tab" data-tab="${t}" aria-selected="${t === tab}" class="${t === tab ? "is-on" : ""}">${l} <span class="bt-pills-n" data-n="${t}">…</span></button>`).join("")}</div>
-      <div class="kwa-chips" role="group" aria-label="Board">${[["all", "All boards"], ["newfoundland", "Newfoundland"], ["skipper", "Skipper"]].map(([b, l]) => `<button type="button" class="bt-chip${b === board ? " is-on" : ""}" aria-pressed="${b === board}" data-board="${b}">${l}</button>`).join("")}</div>
+      <div class="kwa-chips" role="group" aria-label="Board">${[["all", "All boards"], ["newfoundland", "Newfoundland"], ["skipper", "Skipper"], ["boomer", "Boomer"]].map(([b, l]) => `<button type="button" class="bt-chip${b === board ? " is-on" : ""}" aria-pressed="${b === board}" data-board="${b}">${l}</button>`).join("")}</div>
     </div>
     <div data-kwa-list></div>
   </div>`;

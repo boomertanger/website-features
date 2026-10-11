@@ -1,4 +1,4 @@
-// Kind Words (docs/specs/base-camp.md "Kind Words engine"): short notes members leave on a board (newfoundland = Puffin Post, skipper = Paw Notes),
+// Kind Words (docs/specs/base-camp.md "Kind Words engine"): short notes members leave on a board (newfoundland = Puffin Post, skipper = Paw Notes, boomer = Notes for Boomer on Mail Call),
 // read before they go up. Every document under sites/boomertanger/kindWords is written ONLY here (Admin SDK); firestore.rules lets anyone read an
 // approved card and an author read their own, and nobody writes.
 //

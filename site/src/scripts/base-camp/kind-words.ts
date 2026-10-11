@@ -1,10 +1,12 @@
 // site/src/scripts/base-camp/kind-words.ts — the Kind Words wall and composer (docs/specs/base-camp.md "Kind Words engine"), one engine for every
-// board: mountKindWords(el) reads el.dataset.kindWords ("newfoundland" = Puffin Post postcards, "skipper" = Paw Notes pinned notes).
+// board: mountKindWords(el) reads el.dataset.kindWords ("newfoundland" = Puffin Post postcards, "skipper" = Paw Notes pinned notes,
+// "boomer" = Notes for Boomer on Mail Call: torn notebook pages with a gold margin and a mascot seal).
 //   Wall      approved cards from sites/boomertanger/kindWords (featured first, then newest), 12 at a time with Load more. A signed-in author also
 //             sees their own: pending shows "Under review" (teal) with Withdraw, rejected a quiet "Not posted" (never the reason). Empty state: the
 //             puffin (Newfoundland) or the mascot (Skipper).
 //   Composer  openModal() with the connection chips, an optional town (Newfoundland), the story with a live counter and a live preview; Send
-//             calls kindSubmit. Sent moment: the puffin flies off with the postcard / the note gets pinned to the wall with the paw pin.
+//             calls kindSubmit. Sent moment: the puffin flies off with the postcard / the note gets pinned to the wall with the paw pin /
+//             Boomer's note drops onto the pile.
 //   Visitors  read the wall; the write button is a lock card that opens the Join free dialog (E1).
 // Every piece of user text is escaped; nothing is ever rendered as HTML. Writes only through the callables.
 import { onAuth, type AuthState } from "../../lib/auth";
@@ -16,7 +18,7 @@ import { toast } from "../../../../shared/ui/toast.js";
 import { esc, lockCard, RM } from "./ui";
 import { puffinArt, puffinHero, sentSky, stampMini, postmark, pawPin } from "./kind-words-art";
 
-export type Board = "newfoundland" | "skipper";
+export type Board = "newfoundland" | "skipper" | "boomer";
 export interface Card { id: string; board: Board; uid: string; handle: string | null; connection: string; place: string | null; text: string; status: string; featured?: boolean; createdAt?: { toMillis(): number } | number | null }
 
 export const BOARDS: Record<Board, {
@@ -40,6 +42,14 @@ export const BOARDS: Record<Board, {
     sentTitle: "Pinned for Skipper", sentText: "Your note is up on the board for Boomer to read first. Once he has, everyone can see it. Until then it's marked <b>Under review</b> for you.",
     lock: ["Sign in to leave one", "Anyone can read these. Joining the Fan Club is free and lets you add yours."],
   },
+  boomer: {
+    title: ["NOTES", "FOR BOOMER"], heading: "Leave a note for Boomer", intro: "",
+    write: "Leave a note", send: "Drop it in", connAsk: "How do you watch?", place: false, empty: "No notes yet",
+    subtitle: "A thank-you, a favorite moment, or just hi. Boomer reads every note before it goes up.",
+    connections: ["Watches on Twitch", "Watches on TikTok", "Watches on YouTube", "Fan Club member"],
+    sentTitle: "On the pile", sentText: "Your note is on Boomer's desk with the rest of the mail. It goes up once he has read it. Until then it's marked <b>Under review</b> for you.",
+    lock: ["Sign in to leave one", "Anyone can read these. Joining the Fan Club is free and lets you add yours."],
+  },
 };
 const PAGE = 12, TEXT_MIN = 20, TEXT_MAX = 600, PLACE_MAX = 40;
 const TILTS = [-1.2, 0.9, -0.5, 1.3, -1, 0.6];
@@ -56,6 +66,10 @@ export function cardHtml(c: Pick<Card, "board" | "handle" | "connection" | "plac
     : c.status === "rejected" ? `<div class="kw-pend"><span class="bt-meta">Not posted</span></div>` : "";
   const cls = `${mine && !admin ? " is-mine" : ""}${c.featured ? " is-feat" : ""}`;
   const text = `<p class="kw-text">${esc(c.text)}</p>`;
+  if (c.board === "boomer") {
+    const seal = mascot().replace('class="bt-mascot', 'class="bt-mascot mc-seal');
+    return `<article class="kw-card mc-note${cls}" style="--tilt:${[-1, 0.9, -0.6, 1.2, -0.8][i % 5]}deg">${feat}${text}<div class="kw-meta">${meta}</div>${pend}${seal}</article>`;
+  }
   if (c.board === "skipper") {
     return `<article class="kw-card pn-note pn-note--${(i % 4) + 1}${cls}" style="--tilt:${[-1.4, 1.1, -0.7, 1.5, -1][i % 5]}deg">${feat}${pawPin()}${text}<div class="kw-meta">${meta}</div>${pend}</article>`;
   }
@@ -196,7 +210,9 @@ function openComposer(board: Board, auth: AuthState | null, done: () => void) {
 /** The celebratory moment, in the same dialog: the puffin flies off with the postcard, or the note gets pinned with the paw pin. */
 function showSent(box: HTMLElement, board: Board, c: { handle: string; connection: string; place: string | null; text: string }, linksRemoved: number, close: () => void) {
   const B = BOARDS[board];
-  const art = board === "newfoundland" ? sentSky() : `<div class="kw-pinstage">${cardHtml({ board, ...c, status: "approved" }, 0)}</div>`;
+  const art = board === "newfoundland" ? sentSky()
+    : board === "boomer" ? `<div class="kw-pile"><span class="kw-pile-under" aria-hidden="true"></span><span class="kw-pile-under kw-pile-under--2" aria-hidden="true"></span>${cardHtml({ board, ...c, status: "approved" }, 0)}</div>`
+    : `<div class="kw-pinstage">${cardHtml({ board, ...c, status: "approved" }, 0)}</div>`;
   box.innerHTML = `<div class="kw-modal kw-sent kw-sent--${board}">${art}<h2 class="bt-modal-title kw-sent-title">${B.sentTitle}</h2><p class="kw-sent-p">${B.sentText}</p>${linksRemoved ? `<p class="kw-sent-p bt-meta">${linksRemoved === 1 ? "A link was" : "Links were"} removed.</p>` : ""}<div class="bt-modal-actions kw-sent-acts"><button type="button" class="bt-btn bt-btn--primary" data-kw-back>Back to the wall</button></div></div>`;
   if (!RM()) requestAnimationFrame(() => box.querySelector(".kw-sent")?.classList.add("is-go"));
   box.querySelector<HTMLButtonElement>("[data-kw-back]")!.addEventListener("click", close);

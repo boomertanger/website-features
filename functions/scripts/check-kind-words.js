@@ -35,6 +35,9 @@ async function main() {
   assert.equal(L.validateSubmit(nl(LONG, { place: "x".repeat(41) })).field, "place");
   assert.equal(L.validateSubmit(nl("short http://spam.example.com/a/b/c/d/e/f/g")).field, "text", "links don't count toward the 20");
   assert.ok(L.validateSubmit(nl(LONG, { place: "Gander" })).ok);
+  assert.ok(L.validateSubmit({ board: "boomer", connection: "Watches on TikTok", text: LONG }).ok, "the boomer board (Mail Call)");
+  assert.equal(L.validateSubmit({ board: "boomer", connection: "Corgi owner", text: LONG }).field, "connection", "boomer has its own connections");
+  assert.equal(L.validateSubmit({ board: "boomer", connection: "Fan Club member", text: LONG, place: "Gander" }).field, "place", "boomer takes no town");
   assert.equal(L.planReview({ status: "withdrawn" }, { action: "approve" }).reason, "wrongStatus");
   assert.equal(L.planReview({ status: "pending" }, { action: "feature" }).reason, "wrongStatus");
   assert.deepEqual(L.planReview({ status: "pending" }, { action: "reject", note: "  off topic " }).note, "off topic");

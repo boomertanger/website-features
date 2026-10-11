@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Base Camp Mail Call part 3: the Kind Words board boomer (Watches on Twitch / on TikTok / on YouTube / Fan Club member) in kindSubmit validation, the shared wall and composer, and the /admin/kind-words board chips; its notes are torn notebook pages with a gold margin and a small mascot seal, and the sent moment drops the note onto the pile. kindSubmit and kindReview redeployed to staging.
 Base Camp Mail Call part 2: /base-camp/mail-call (the MAIL CALL hero with the desk lamp lighting the letter, the mascot, the MAIL sack and envelopes, still under reduced motion; Send real mail with the Pup Post card; How Mail Call works, four steps and four promises; Notes for Boomer with doors to Skipper and Hotline Boom; Mail Call on stream with Ask BOOMBOT; Back to camp), and Mail Call as the fourth link in the BASECAMP bar.
 Base Camp Mail Call part 1: the spec gains Addendum 2 (Mail Call at /base-camp/mail-call, the boomer Kind Words board, the teasers and the /contact line) and the approved mockup docs/design/mockups/base-camp-mail-call.html.
 Base Camp: the memberContent rule lets signed-in members read base-camp and mail as well as tech-stack (a list, not a wildcard).
