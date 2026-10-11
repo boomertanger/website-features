@@ -545,10 +545,11 @@ service cloud.firestore {
       }
 
       // Fan Club text behind the public pages (docs/specs/tech-stack.md §6): the Tech Stack's ports, specs, notes, tour narration,
-      // mixer routing and setup history. Any signed-in member (a members/{uid} doc) may read; written only by
-      // functions/scripts/seed-tech-stack.js (Admin SDK). When billing exists this becomes the Fan Club plan check.
+      // mixer routing and setup history; and Base Camp's (docs/specs/base-camp.md): base-camp (card backs, stop stories, chapter 5) and mail
+      // (the Pup Post address). Any signed-in member (a members/{uid} doc) may read the listed docs, nothing else under memberContent; written
+      // only by functions/scripts/seed-tech-stack.js and seed-base-camp.js (Admin SDK). When billing exists this becomes the Fan Club plan check.
       match /memberContent/{docId} {
-        allow read: if siteId == 'boomertanger' && docId == 'tech-stack' && request.auth != null
+        allow read: if siteId == 'boomertanger' && docId in ['tech-stack', 'base-camp', 'mail'] && request.auth != null
           && exists(/databases/$(database)/documents/sites/boomertanger/members/$(request.auth.uid));
         allow write: if false;
       }
