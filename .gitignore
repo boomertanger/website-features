@@ -19,3 +19,8 @@ docs/ui-audit.md
 
 # Tech Stack Fan Club text (docs/specs/tech-stack.md §6): the real file stays local while the repo is public; the .sample.json is committed
 functions/scripts/data/tech-stack-member.json
+
+# Base Camp (docs/specs/base-camp.md): the Fan Club text, the mailing address and Skipper's
+# raw media stay local while the repo is public
+functions/scripts/data/base-camp-member.json
+functions/scripts/data/skipper-media/
