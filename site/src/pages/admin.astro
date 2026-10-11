@@ -81,6 +81,24 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/kind-words">Read them</a></div>
     </div>
   </div>
+  <div class="bt-zone" data-skipcam-card hidden>
+    <div class="bt-admin-panel">
+      <div class="bt-card-head"><div><span class="bt-admin-tag"><Fragment set:html={SHIELD_ICON} />Owner only</span><h2 class="bt-card-title">Skipper Cam</h2></div><span class="bt-badge bt-badge--gray" data-sc-chip>Off duty</span></div>
+      <div class="bt-field">
+        <label class="bt-label" for="sc-id">YouTube video id (unlisted live stream)</label>
+        <input class="bt-input" id="sc-id" data-sc-id autocomplete="off" spellcheck="false" placeholder="e.g. dQw4w9WgXcQ, or paste the link" aria-describedby="sc-id-hint" />
+        <p class="bt-fine bt-fine--left" id="sc-id-hint">Only signed-in Fan Club members are handed this id, and only while it's live. It never appears on the public page.</p>
+      </div>
+      <fieldset class="bt-field bt-stack">
+        <legend class="bt-label">Before going live</legend>
+        <label class="bt-check"><input type="checkbox" data-sc-check /> The sound is off on the camera and the stream</label>
+        <label class="bt-check"><input type="checkbox" data-sc-check /> No screens, mail or papers with private details are in frame</label>
+        <label class="bt-check"><input type="checkbox" data-sc-check /> Nothing out the window shows where we live, and nobody's in frame who hasn't agreed</label>
+      </fieldset>
+      <div class="bt-row-center"><button type="button" class="bt-btn bt-btn--admin" data-sc-go disabled>Go live</button><button type="button" class="bt-btn bt-btn--secondary" data-sc-off hidden>Turn it off</button></div>
+      <p class="bt-fine" data-sc-last role="status"></p>
+    </div>
+  </div>
   <div class="bt-zone" data-stash-card hidden>
     <div class="bt-card cs-admin-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Cloud Stash</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
@@ -193,6 +211,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
   import "../scripts/admin/bugs-card";
   import "../scripts/admin/hotline-card";
   import "../scripts/admin/kind-words-card";
+  import "../scripts/admin/skipper-cam-card";
   import "../scripts/admin/stash-card";
   import "../scripts/admin/services-card";
   import "../scripts/admin/broken-links-card";

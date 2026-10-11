@@ -1,0 +1,211 @@
+/* site/src/styles/base-camp-skipper.css — /base-camp/skipper's own look (docs/specs/base-camp.md "Page 3"; mockup docs/design/mockups/base-camp-skipper.html):
+   the polaroid hero, the photo stack, the favorite things' media inside the E1 chrome (base-camp.css), the Skipper Cam screen and its cam-off
+   room, All about corgis (Wales, cor + ci, the fairy saddle, Pembroke vs Cardigan, numbers, the Queen's corgis, the royal shield crests), the
+   reel, and chapter 5's Pup Post scene and the PUP POST / PAW NOTES headers. The corgi itself and the mail card are in base-camp.css; the Paw
+   Notes wall and its notes are in kind-words.css. Loads after base-camp.css. Tokens only; container queries; reduced motion at the end. */
+
+.bt-root:not(#_) .sk-thing-title { margin: 0; font-size: 28px; font-weight: 900; line-height: 1.12; letter-spacing: -0.02em; text-wrap: balance; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-thing-title { font-size: 22px; } }
+
+/* ---------- Hero: the taped polaroid with the hero loop, and the words ---------- */
+.bt-root:not(#_) .sk-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 0.8fr); gap: 28px; align-items: center; padding: 30px 32px; border: 1px solid var(--bt-border); border-radius: 24px; overflow: hidden; background: radial-gradient(70% 90% at 85% 50%, rgba(var(--bt-gold-rgb), 0.16), transparent 70%), radial-gradient(60% 80% at 0% 100%, color-mix(in srgb, var(--bt-primary) 14%, transparent), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .sk-paws { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; opacity: 0.5; }
+.bt-root:not(#_) .sk-paws :is(path, circle) { fill: color-mix(in srgb, var(--bt-title) 14%, transparent); }
+.bt-root:not(#_) .sk-hero-copy { position: relative; display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .sk-eyebrow { color: var(--bt-title); font-size: var(--bt-text-sm); font-weight: 800; letter-spacing: 0.04em; }
+.bt-root:not(#_) .sk-hero-copy h1 { margin: 0; }
+.bt-root:not(#_) .sk-hero-copy p { margin: 0; max-width: 48ch; font-size: var(--bt-text-lg); line-height: 1.55; color: var(--bt-text); }
+.bt-root:not(#_) .sk-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_) .sk-tags span { padding: 4px 10px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .sk-polaroid { position: relative; justify-self: center; width: min(100%, 300px); margin: 0; padding: 12px 12px 46px; border-radius: 6px; background: color-mix(in srgb, var(--bt-text) 92%, var(--bt-title)); box-shadow: 0 30px 60px -24px var(--bt-bg), 0 0 0 1px color-mix(in srgb, var(--bt-text) 20%, transparent); transform: rotate(3deg); transition: transform 0.5s cubic-bezier(.3, 1.4, .4, 1); }
+.bt-root:not(#_) .sk-polaroid:hover { transform: rotate(0) scale(1.02); }
+.bt-root:not(#_) .sk-polaroid :is(video, img) { display: block; width: 100%; aspect-ratio: 540 / 710; object-fit: cover; border-radius: 2px; background: var(--bt-bg); }
+.bt-root:not(#_) .sk-polaroid figcaption { position: absolute; left: 0; right: 0; bottom: 12px; text-align: center; color: var(--bt-bg); font-size: var(--bt-text-lg); font-weight: 800; font-style: italic; }
+.bt-root:not(#_) .sk-tape { position: absolute; z-index: 1; top: -12px; left: 50%; width: 90px; height: 24px; transform: translateX(-50%) rotate(-4deg); background: color-mix(in srgb, var(--bt-title) 35%, transparent); border: 1px solid color-mix(in srgb, var(--bt-title) 30%, transparent); }
+.bt-root:not(#_) .sk-camchip { display: inline-flex; align-items: center; gap: 8px; width: fit-content; padding: 6px 12px 6px 10px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-bg); font-size: var(--bt-text-sm); font-weight: 800; color: var(--bt-text-muted); }
+.bt-root:not(#_) .sk-camchip i { width: 8px; height: 8px; border-radius: 50%; background: var(--bt-text-faint); }
+.bt-root:not(#_) .sk-camchip.is-live { color: var(--bt-text); border-color: color-mix(in srgb, var(--bt-red) 60%, transparent); }
+.bt-root:not(#_) .sk-camchip.is-live i { background: var(--bt-red); box-shadow: 0 0 10px var(--bt-red); animation: bc-blink 1.2s ease-in-out infinite; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .sk-hero { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .sk-polaroid { width: min(100%, 260px); } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-hero { padding: 20px 18px 26px; } }
+
+/* ---------- Meet Skipper: words + a stack of two snapshots ---------- */
+.bt-root:not(#_) .sk-meet { display: grid; grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr); gap: 26px; align-items: center; }
+.bt-root:not(#_) .sk-meet p { margin: 0 0 12px; color: var(--bt-text-muted); line-height: 1.65; max-width: 60ch; }
+.bt-root:not(#_) .sk-meet p:first-child { color: var(--bt-text); font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .sk-stack { position: relative; height: 320px; }
+.bt-root:not(#_) .sk-snap { position: absolute; width: 50%; margin: 0; padding: 8px 8px 30px; border-radius: 4px; background: color-mix(in srgb, var(--bt-text) 92%, var(--bt-title)); box-shadow: 0 20px 40px -20px var(--bt-bg); transition: transform 0.5s cubic-bezier(.3, 1.4, .4, 1); }
+.bt-root:not(#_) .sk-snap img { display: block; width: 100%; aspect-ratio: 3 / 4; object-fit: cover; background: var(--bt-bg); }
+.bt-root:not(#_) .sk-snap span { position: absolute; left: 0; right: 0; bottom: 7px; text-align: center; color: var(--bt-bg); font-size: var(--bt-text-sm); font-weight: 800; font-style: italic; }
+.bt-root:not(#_) .sk-snap:nth-child(1) { left: 0; top: 30px; transform: rotate(-7deg); }
+.bt-root:not(#_) .sk-snap:nth-child(2) { right: 2%; top: 0; transform: rotate(5deg); }
+.bt-root:not(#_) .sk-snap:hover { transform: rotate(0) scale(1.06); z-index: 2; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-meet { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .sk-stack { height: 280px; } }
+
+/* ---------- Favorite things: real media inside the E1 stage cards, 3-up ---------- */
+.bt-root:not(#_) .sk-favs { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bt-root:not(#_) .sk-favs .bc-e .bc-e-scene { aspect-ratio: 2 / 1.3; }
+.bt-root:not(#_) .sk-favs .bc-e .ai-part-copy h3 { font-size: 19px; padding-right: 40px; }
+.bt-root:not(#_) .sk-favs .bc-e-n { font-size: 40px; top: -22px; }
+.bt-root:not(#_) .sk-media { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; transition: transform 0.6s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .sk-media { transform: scale(1.05); }
+.bt-root:not(#_) .sk-media-tag { position: absolute; right: 10px; top: 10px; z-index: 2; padding: 3px 8px; border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bt-bg) 75%, transparent); color: var(--bt-text); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.08em; text-transform: uppercase; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .sk-favs { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-favs { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Skipper Cam: the screen (live embed, cam-off room, or blurred + lock card) and its side card ---------- */
+.bt-root:not(#_) .sk-cam { position: relative; display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 20px; align-items: stretch; }
+.bt-root:not(#_) .sk-cam-screen { position: relative; overflow: hidden; aspect-ratio: 16 / 10; border-radius: 20px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); box-shadow: 0 0 0 6px var(--bt-surface), 0 0 0 7px var(--bt-border); }
+.bt-root:not(#_) .sk-cam-screen :is(svg, iframe, img) { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+.bt-root:not(#_) .sk-cam-screen img { object-fit: cover; }
+.bt-root:not(#_) .sk-cam-hud { position: absolute; left: 12px; right: 12px; top: 12px; display: flex; justify-content: space-between; align-items: center; gap: 8px; z-index: 2; pointer-events: none; }
+.bt-root:not(#_) .sk-cam-hud span { padding: 4px 10px; border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bt-bg) 75%, transparent); color: var(--bt-text); font-size: var(--bt-text-xs); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.bt-root:not(#_) .sk-cam-hud .is-live { background: var(--bt-red); }
+.bt-root:not(#_) .sk-cam-locked { position: absolute; inset: 0; display: grid; place-items: center; padding: 20px; background: color-mix(in srgb, var(--bt-bg) 55%, transparent); backdrop-filter: blur(10px); z-index: 3; }
+.bt-root:not(#_) .sk-cam-locked:empty { display: none; }
+.bt-root:not(#_) .sk-cam-locked .bt-lock-card { max-width: 420px; }
+.bt-root:not(#_) .sk-cam-side { display: flex; flex-direction: column; gap: 12px; padding: 18px; border: 1px solid var(--bt-border); border-radius: 20px; background: var(--bt-surface); }
+.bt-root:not(#_) .sk-cam-side p { margin: 0; color: var(--bt-text-muted); line-height: 1.6; }
+.bt-root:not(#_) .sk-rule { display: flex; gap: 10px; align-items: flex-start; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .sk-rule i { font-style: normal; }
+/* the cam-off room */
+.bt-root:not(#_) .sk-room { fill: color-mix(in srgb, var(--bt-primary) 8%, var(--bt-bg)); }
+.bt-root:not(#_) .sk-floor { fill: color-mix(in srgb, var(--bt-rank-3) 14%, var(--bt-surface)); }
+.bt-root:not(#_) .sk-window { fill: color-mix(in srgb, var(--bt-blue) 18%, var(--bt-bg)); stroke: var(--bt-border-2); stroke-width: 4; }
+.bt-root:not(#_) .sk-window-bar { fill: none; stroke: var(--bt-border-2); stroke-width: 4; }
+.bt-root:not(#_) .sk-bed { fill: color-mix(in srgb, var(--bt-primary) 40%, var(--bt-surface-2)); }
+.bt-root:not(#_) .sk-bed2 { fill: color-mix(in srgb, var(--bt-primary) 25%, var(--bt-bg)); }
+.bt-root:not(#_) .sk-bedrim { fill: none; stroke: color-mix(in srgb, var(--bt-primary) 50%, var(--bt-surface-2)); stroke-width: 10; stroke-linecap: round; opacity: 0.6; }
+.bt-root:not(#_) .sk-zz text { fill: color-mix(in srgb, var(--bt-text) 70%, transparent); font-weight: 900; animation: sk-zz 3s ease-in-out infinite; }
+.bt-root:not(#_) .sk-zz text:nth-child(2) { animation-delay: 1s; } .bt-root:not(#_) .sk-zz text:nth-child(3) { animation-delay: 2s; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .sk-cam { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- All about corgis ---------- */
+.bt-root:not(#_) .sk-origin { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+.bt-root:not(#_) .sk-ocard { display: flex; flex-direction: column; gap: 10px; padding: 20px; border: 1px solid var(--bt-border-2); border-radius: 20px; background: var(--bt-surface); transition: transform 0.35s cubic-bezier(.3, .7, .2, 1), border-color 0.35s; }
+.bt-root:not(#_) .sk-ocard:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--bt-title) 50%, transparent); }
+.bt-root:not(#_) .sk-ocard svg { width: 100%; height: auto; aspect-ratio: 2 / 1; border-radius: 12px; background: color-mix(in srgb, var(--bt-primary) 8%, var(--bt-bg)); }
+.bt-root:not(#_) .sk-ocard h3 { margin: 0; font-size: var(--bt-text-xl); font-weight: 900; }
+.bt-root:not(#_) .sk-ocard p { margin: 0; color: var(--bt-text-muted); line-height: 1.6; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .sk-ocard p b { color: var(--bt-text); }
+.bt-root:not(#_) .sk-big { font-size: 34px; font-weight: 900; line-height: 1.1; padding-bottom: 0.08em; background: var(--bt-title-gradient); -webkit-background-clip: text; background-clip: text; color: transparent; width: fit-content; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .sk-origin { grid-template-columns: minmax(0, 1fr); } }
+.bt-root:not(#_) .ow-land { fill: color-mix(in srgb, var(--bt-lime) 22%, var(--bt-surface-2)); stroke: color-mix(in srgb, var(--bt-title) 50%, transparent); stroke-width: 1.2; }
+.bt-root:not(#_) .ow-sea { fill: color-mix(in srgb, var(--bt-blue) 22%, var(--bt-bg)); }
+.bt-root:not(#_) .ow-pin { fill: var(--bt-title); }
+.bt-root:not(#_) .ow-lab { fill: var(--bt-text); font-size: 11px; font-weight: 800; }
+.bt-root:not(#_) .ow-lab--muted { fill: var(--bt-text-muted); }
+.bt-root:not(#_) .sk-word-bg { fill: color-mix(in srgb, var(--bt-primary) 10%, var(--bt-bg)); }
+.bt-root:not(#_) .sk-saddle-bg { fill: color-mix(in srgb, var(--bt-primary) 14%, var(--bt-bg)); }
+.bt-root:not(#_) .sk-w1 { fill: var(--bt-text); font-size: 38px; font-weight: 900; }
+.bt-root:not(#_) .sk-w2 { fill: var(--bt-title); font-size: 38px; font-weight: 900; }
+.bt-root:not(#_) .sk-wplus { fill: var(--bt-text-faint); font-size: 30px; font-weight: 900; }
+.bt-root:not(#_) .sk-wsub { fill: var(--bt-text-muted); font-size: 12px; font-weight: 700; }
+.bt-root:not(#_) .fs-saddle { fill: none; stroke: var(--bt-title); stroke-width: 2; stroke-dasharray: 4 3; }
+.bt-root:not(#_) .fs-fairy { fill: color-mix(in srgb, var(--bt-lamp) 80%, var(--bt-text)); filter: drop-shadow(0 0 6px rgba(var(--bt-lamp-rgb), 0.9)); animation: fs-float 2.4s ease-in-out infinite; }
+.bt-root:not(#_) .fs-wing { fill: color-mix(in srgb, var(--bt-text) 60%, transparent); transform-box: fill-box; transform-origin: 0% 100%; animation: fs-flap 0.18s ease-in-out infinite alternate; }
+/* Pembroke vs Cardigan */
+.bt-root:not(#_) .sk-vs { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); gap: 0; border: 1px solid var(--bt-border-2); border-radius: 20px; overflow: hidden; background: var(--bt-surface); }
+.bt-root:not(#_) .sk-vs-col { padding: 18px 20px; display: flex; flex-direction: column; gap: 10px; }
+.bt-root:not(#_) .sk-vs-col.is-skip { background: radial-gradient(90% 60% at 50% 0%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%); }
+.bt-root:not(#_) .sk-vs-col h3 { margin: 0; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: var(--bt-text-xl); font-weight: 900; }
+.bt-root:not(#_) .sk-vs-col svg { width: 100%; height: auto; aspect-ratio: 2 / 1; overflow: visible; }
+.bt-root:not(#_) .sk-vs-mid { display: grid; place-items: center; padding: 0 6px; color: var(--bt-text-faint); font-weight: 900; border-left: 1px solid var(--bt-border); border-right: 1px solid var(--bt-border); }
+.bt-root:not(#_) .sk-vs dl { margin: 0; display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 6px 12px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .sk-vs dt { color: var(--bt-text-faint); font-weight: 800; }
+.bt-root:not(#_) .sk-vs dd { margin: 0; color: var(--bt-text); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-vs { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .sk-vs-mid { padding: 6px; border: 0; border-top: 1px solid var(--bt-border); border-bottom: 1px solid var(--bt-border); } }
+.bt-root:not(#_) .sk-nums { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; }
+.bt-root:not(#_) .sk-num { padding: 14px; border: 1px solid var(--bt-border); border-radius: 16px; background: var(--bt-surface); }
+.bt-root:not(#_) .sk-num b { display: block; color: var(--bt-title); font-size: 26px; font-weight: 900; letter-spacing: -0.02em; }
+.bt-root:not(#_) .sk-num span { color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-nums { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* the Queen's corgis: a crown and a sideways timeline */
+.bt-root:not(#_) .sk-royal { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 22px; border: 1px solid color-mix(in srgb, var(--bt-title) 35%, var(--bt-border)); border-radius: 22px; background: radial-gradient(60% 70% at 100% 0%, rgba(var(--bt-gold-rgb), 0.12), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .sk-royal-top { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center; }
+.bt-root:not(#_) .sk-royal-top p { margin: 6px 0 0; color: var(--bt-text-muted); line-height: 1.6; }
+.bt-root:not(#_) .sk-crown { width: 74px; height: auto; filter: drop-shadow(0 0 12px rgba(var(--bt-gold-rgb), 0.5)); }
+.bt-root:not(#_) .sk-crown .cr-g { fill: var(--bt-title); } .bt-root:not(#_) .sk-crown .cr-j { fill: color-mix(in srgb, var(--bt-red) 80%, var(--bt-text)); } .bt-root:not(#_) .sk-crown .cr-b { fill: color-mix(in srgb, var(--bt-blue) 70%, var(--bt-text)); }
+.bt-root:not(#_) .sk-time { position: relative; display: grid; grid-auto-flow: column; grid-auto-columns: minmax(150px, 1fr); gap: 12px; margin: 0; padding: 44px 0 6px; list-style: none; overflow-x: auto; scroll-snap-type: x mandatory; }
+.bt-root:not(#_) .sk-time::before { content: ""; position: absolute; left: 0; right: 0; top: 20px; height: 2px; background: linear-gradient(90deg, var(--bt-title), var(--bt-rank-3)); opacity: 0.6; }
+.bt-root:not(#_) .sk-time li { position: relative; scroll-snap-align: start; display: flex; flex-direction: column; gap: 4px; padding: 14px; border: 1px solid var(--bt-border); border-radius: 14px; background: var(--bt-surface); transition: transform 0.3s, border-color 0.3s; outline: none; }
+.bt-root:not(#_) .sk-time li::before { content: ""; position: absolute; left: 16px; top: -30px; width: 14px; height: 14px; border-radius: 50%; background: var(--bt-bg); border: 3px solid var(--bt-title); box-shadow: 0 0 0 4px var(--bt-bg); }
+.bt-root:not(#_) .sk-time li:is(:hover, :focus-visible) { transform: translateY(-4px); border-color: color-mix(in srgb, var(--bt-title) 55%, transparent); }
+.bt-root:not(#_) .sk-time li:is(:hover, :focus-visible)::before { background: var(--bt-lamp); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 14px rgba(var(--bt-lamp-rgb), 0.9); }
+.bt-root:not(#_) .sk-time b { color: var(--bt-title); font-size: var(--bt-text-lg); font-weight: 900; }
+.bt-root:not(#_) .sk-time span { color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
+/* corgi quirks: flip cards with a royal shield crest instead of a round medal */
+.bt-root:not(#_) .sk-quirks { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.bt-root:not(#_) .sk-quirks .bt-flip { height: 220px; }
+.bt-root:not(#_) .sk-quirks .bt-flip-v { font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .sk-quirks .bt-flip-medal { width: 96px; height: 108px; border-radius: 0; background: none; box-shadow: none; border: 0; transition: transform 0.45s cubic-bezier(.3, 1.6, .4, 1); }
+.bt-root:not(#_) .sk-quirks .bt-flip-medal::before, .bt-root:not(#_) .sk-quirks .bt-flip-medal::after { display: none; }
+.bt-root:not(#_) .sk-quirks .bt-flip:hover .bt-flip-medal { transform: translateY(-3px) scale(1.05); }
+.bt-root:not(#_) .sk-shield { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 8px 10px color-mix(in srgb, var(--bt-bg) 85%, transparent)); }
+.bt-root:not(#_) .sh-r { fill: color-mix(in srgb, var(--bt-red) 78%, var(--bt-bg)); }
+.bt-root:not(#_) .sh-b { fill: color-mix(in srgb, var(--bt-blue) 62%, var(--bt-bg)); }
+.bt-root:not(#_) .sh-g { fill: var(--bt-title); }
+.bt-root:not(#_) .sh-rim { fill: none; stroke: var(--bt-title); stroke-width: 3.4; stroke-linejoin: round; }
+.bt-root:not(#_) .sh-rim2 { fill: none; stroke: color-mix(in srgb, var(--bt-title) 55%, transparent); stroke-width: 1; stroke-dasharray: 2 2.5; }
+.bt-root:not(#_) .sh-boss { fill: color-mix(in srgb, var(--bt-bg) 75%, var(--bt-title)); stroke: var(--bt-title); stroke-width: 2; }
+.bt-root:not(#_) .sh-ic { font-size: 16px; }
+.bt-root:not(#_) .sh-crown :is(path, rect) { fill: var(--bt-title); stroke: color-mix(in srgb, var(--bt-title) 50%, var(--bt-bg)); stroke-width: 0.8; }
+.bt-root:not(#_) .sh-jewel { fill: color-mix(in srgb, var(--bt-red) 80%, var(--bt-text)); } .bt-root:not(#_) .sh-jewel2 { fill: color-mix(in srgb, var(--bt-blue) 70%, var(--bt-text)); }
+.bt-root:not(#_) .sh-laurel path { fill: none; stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.4; }
+.bt-root:not(#_) .sh-laurel ellipse { fill: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); }
+.bt-root:not(#_) .sh-gl0 { stop-color: color-mix(in srgb, var(--bt-logo-shine) 0%, transparent); } .bt-root:not(#_) .sh-gl1 { stop-color: color-mix(in srgb, var(--bt-logo-shine) 55%, transparent); }
+.bt-root:not(#_) .sh-sheen { transition: transform 0.8s ease; }
+.bt-root:not(#_) .sk-quirks .bt-flip:hover .sh-sheen { transform: skewX(-20deg) translateX(160px); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .sk-quirks { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+
+/* ---------- The reel: a masonry of photos and clips; tap one for the gallery ---------- */
+.bt-root:not(#_) .sk-reel { columns: 3 220px; column-gap: 14px; }
+.bt-root:not(#_) .sk-tile { position: relative; display: block; width: 100%; margin: 0 0 14px; padding: 0; border: 0; border-radius: 16px; overflow: hidden; break-inside: avoid; cursor: zoom-in; background: var(--bt-bg); box-shadow: 0 0 0 1px var(--bt-border-2); transition: transform 0.35s cubic-bezier(.3, .7, .2, 1), box-shadow 0.35s; }
+.bt-root:not(#_) .sk-tile:is(:hover, :focus-visible) { transform: translateY(-3px); box-shadow: 0 0 0 2px var(--bt-primary), 0 18px 34px -18px var(--bt-bg); outline: none; }
+.bt-root:not(#_) .sk-tile :is(img, video) { display: block; width: 100%; height: auto; min-height: 140px; object-fit: cover; background: var(--bt-surface-2); }
+.bt-root:not(#_) .sk-tile-cap { position: absolute; left: 0; right: 0; bottom: 0; padding: 26px 12px 10px; background: linear-gradient(transparent, color-mix(in srgb, var(--bt-bg) 85%, transparent)); color: var(--bt-text); font-weight: 800; font-size: var(--bt-text-sm); text-align: left; }
+.bt-root:not(#_) .sk-play { position: absolute; right: 10px; top: 10px; display: grid; place-items: center; width: 30px; height: 30px; border-radius: 50%; background: color-mix(in srgb, var(--bt-bg) 70%, transparent); color: var(--bt-text); font-size: 12px; }
+
+/* ---------- Skipper love: the Pup Post scene and the PUP POST / PAW NOTES headers ---------- */
+.bt-root:not(#_) .kw-top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 22px; align-items: center; }
+.bt-root:not(#_) .kw-hero { position: relative; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: 22px; aspect-ratio: 600 / 330; background: var(--bt-bg); }
+.bt-root:not(#_) .kw-hero > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bt-root:not(#_) .kw-intro { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .kw-intro p { margin: 0; color: var(--bt-text-muted); line-height: 1.6; max-width: 52ch; }
+.bt-root:not(#_) .kw-mark { display: inline-flex; gap: 0; font-size: 30px; font-weight: 900; letter-spacing: 0.06em; line-height: 1; }
+.bt-root:not(#_) .kw-mark-2 { color: var(--bt-pink); }
+.bt-root:not(#_) .kw-mark .pn-mark2 { color: var(--bt-teal); }
+.bt-root:not(#_) .pn-head { display: flex; flex-direction: column; gap: 10px; margin-top: 18px; padding-top: 22px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .pn-head p { margin: 0; color: var(--bt-text-muted); line-height: 1.6; max-width: 62ch; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .kw-top { grid-template-columns: minmax(0, 1fr); } }
+/* the yard and the mailbox */
+.bt-root:not(#_) .y-sky0 { stop-color: color-mix(in srgb, var(--bt-blue) 26%, var(--bt-bg)); }
+.bt-root:not(#_) .y-sky1 { stop-color: color-mix(in srgb, var(--bt-title) 18%, var(--bt-bg)); }
+.bt-root:not(#_) .y-grass { fill: color-mix(in srgb, var(--bt-lime) 24%, var(--bt-surface)); }
+.bt-root:not(#_) .y-grass2 { fill: color-mix(in srgb, var(--bt-lime) 16%, var(--bt-surface)); }
+.bt-root:not(#_) .y-fence { fill: none; stroke: color-mix(in srgb, var(--bt-text) 22%, var(--bt-surface-2)); stroke-width: 5; stroke-linecap: round; }
+.bt-root:not(#_) .y-tree { fill: color-mix(in srgb, var(--bt-lime) 20%, var(--bt-bg)); }
+.bt-root:not(#_) .mb-post { fill: color-mix(in srgb, var(--bt-rank-3) 35%, var(--bt-surface-2)); }
+.bt-root:not(#_) .mb-box { fill: color-mix(in srgb, var(--bt-blue) 55%, var(--bt-surface-2)); }
+.bt-root:not(#_) .mb-base { fill: color-mix(in srgb, var(--bt-blue) 35%, var(--bt-bg)); }
+.bt-root:not(#_) .mb-flagpole { fill: color-mix(in srgb, var(--bt-text) 70%, var(--bt-bg)); }
+.bt-root:not(#_) .mb-flag { fill: var(--bt-red); }
+.bt-root:not(#_) .mb-env { fill: var(--bt-text); }
+.bt-root:not(#_) .mb-env-v { fill: none; stroke: var(--bt-text-faint); stroke-width: 2; }
+.bt-root:not(#_) .mb-heart { fill: var(--bt-pink); }
+.bt-root:not(#_) .pm-flag { transform-box: fill-box; transform-origin: 0% 100%; animation: sk-flag 3s ease-in-out infinite; }
+.bt-root:not(#_) .pm-env { animation: sk-peek 3.6s ease-in-out infinite; }
+
+/* a photo or poster that could not load (skipper.ts) fades out; its frame keeps its shape */
+.bt-root:not(#_) .sk-missing { opacity: 0; }
+
+@keyframes sk-zz { 0% { opacity: 0; transform: translate(0, 0); } 30% { opacity: 1; } 100% { opacity: 0; transform: translate(14px, -30px); } }
+@keyframes fs-float { 50% { transform: translateY(-4px); } }
+@keyframes fs-flap { from { transform: rotate(0); } to { transform: rotate(40deg) scaleY(0.7); } }
+@keyframes sk-flag { 0%, 70%, 100% { transform: rotate(0); } 80% { transform: rotate(-8deg); } 90% { transform: rotate(4deg); } }
+@keyframes sk-peek { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-3px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.sk-camchip.is-live i, .sk-zz text, .fs-fairy, .fs-wing, .pm-flag, .pm-env) { animation: none !important; }
+  .bt-root:not(#_) :is(.sk-polaroid, .sk-snap, .sk-ocard, .sk-tile, .sk-time li, .sk-media, .sh-sheen, .sk-quirks .bt-flip-medal) { transition: none !important; }
+}

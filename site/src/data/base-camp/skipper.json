@@ -1,0 +1,87 @@
+{
+  "_about": "Public text and media for /base-camp/skipper (docs/specs/base-camp.md 'Page 3'; mockup docs/design/mockups/base-camp-skipper.html). Media: Cloudinary public ids under skipper/ (fixed ids from functions/scripts/data/skipper-media/media-manifest.json, uploaded by functions/scripts/upload-skipper-media.js); clips have a matching -poster image. US English.",
+  "media": {
+    "hero": { "type": "video", "id": "skipper/hero", "alt": "Skipper sitting on an orange pool float, tongue out" },
+    "favHerding": { "type": "video", "id": "skipper/fav-herding", "alt": "Skipper pushing a big ball across the lawn" },
+    "favFrisbee": { "type": "video", "id": "skipper/fav-frisbee", "alt": "Skipper catching a frisbee from her pool float" },
+    "favWalks": { "type": "video", "id": "skipper/fav-walks", "alt": "Skipper on her leash sniffing along the sidewalk" },
+    "favBall": { "type": "video", "id": "skipper/fav-ball", "alt": "Skipper leaping for a pink ball by the pool" },
+    "noodle": { "type": "video", "id": "skipper/noodle", "alt": "Skipper floating on a yellow pool noodle" },
+    "napTime": { "type": "image", "id": "skipper/photo-nap-time", "alt": "Skipper asleep under a yellow blanket" },
+    "treat": { "type": "image", "id": "skipper/photo-treat", "alt": "Skipper looking up, ears high" },
+    "daytimeNaps": { "type": "image", "id": "skipper/photo-daytime-naps", "alt": "Skipper asleep on her back on a wood floor" },
+    "allEars": { "type": "image", "id": "skipper/photo-all-ears", "alt": "Skipper in profile, ears up" },
+    "couchLoaf": { "type": "image", "id": "skipper/photo-couch-loaf", "alt": "Skipper asleep on the couch, chin down" },
+    "frisbeeRun": { "type": "video", "id": "skipper/reel-frisbee-run", "alt": "Skipper chasing a frisbee and bringing it back" },
+    "tooCool": { "type": "video", "id": "skipper/reel-too-cool", "alt": "Skipper in a cap and sunglasses on a lit pool float" },
+    "popcornBandit": { "type": "video", "id": "skipper/reel-popcorn-bandit", "alt": "Skipper with her head in a popcorn bag" },
+    "ballPatrol": { "type": "video", "id": "skipper/reel-ball-patrol", "alt": "Skipper chasing a red ball across the lawn" }
+  },
+  "chapters": [
+    { "id": "sk-ch1", "nav": "Meet Skipper" },
+    { "id": "sk-ch2", "nav": "Skipper Cam" },
+    { "id": "sk-ch3", "nav": "All about corgis" },
+    { "id": "sk-ch4", "nav": "The reel" },
+    { "id": "sk-ch5", "nav": "Skipper love" }
+  ],
+  "hero": {
+    "eyebrow": "The co-host",
+    "title": "Meet Skipper",
+    "lede": "Boomertanger's furry co-host and the most requested face on stream. She keeps chat company between the screams, and she's already waiting to say hi.",
+    "tags": ["Pembroke Welsh Corgi", "Co-host", "Fan favorite"],
+    "caption": "Captain of the float"
+  },
+  "meet": [
+    "Skipper is a fan favorite, and she knows it. When the game gets scary, she's the comfort break chat didn't know it needed.",
+    "She snoozes through jump scares, pops in for treat breaks and brings heart, humor and a lot of wholesome chaos to every broadcast.",
+    "Off stream she keeps busy. She herds balls around the backyard, catches frisbees, goes on neighborhood walks, cools off in the pool on warm days and keeps the rabbits on their toes. She loves people, and she never says no to a tummy rub."
+  ],
+  "snaps": [{ "media": "napTime", "caption": "Nap time" }, { "media": "treat", "caption": "Treat?" }],
+  "favorites": [
+    { "title": "Herding balls", "text": "A herding dog with no cattle, so the backyard balls get rounded up instead. Even the big one.", "media": "favHerding", "tone": "title" },
+    { "title": "Frisbee catches", "text": "She'll catch a frisbee anywhere. Even from her pool float.", "media": "favFrisbee", "tone": "gold" },
+    { "title": "Neighborhood walks", "text": "Every patch of grass gets a full inspection. Nobody rushes Skipper on a walk.", "media": "favWalks", "tone": "teal" },
+    { "title": "Daytime naps", "text": "Belly up, eyes shut, completely off duty. Afternoons are for napping.", "media": "daytimeNaps", "tone": "blood" },
+    { "title": "Pool days", "text": "On a warm day you'll find her floating, cool as can be.", "media": "noodle", "tone": "teal" },
+    { "title": "Playing ball", "text": "Toss it up and she goes straight up after it. Poolside is her favorite court.", "media": "favBall", "tone": "ember" }
+  ],
+  "cam": {
+    "lede": "A live look at Skipper whenever Boomer's in the office. Fan Club only.",
+    "liveText": "She's on right now. You might catch a nap, a toy, or a very serious stare at the door.",
+    "offText": "She's live whenever Boomer's working in the office. Check back soon, or come say hi on stream.",
+    "rules": [["🔇", "The sound is always off."], ["🔒", "Fan Club members only."], ["⏱", "It switches itself off if Boomer forgets."]],
+    "lock": { "title": "The Skipper Cam is for the Fan Club", "text": "Joining is free. Sign in to watch her live whenever Boomer's in the office." }
+  },
+  "corgis": {
+    "lede": "Short legs, big ears and a royal fan club. Everything you wanted to know about Skipper's breed.",
+    "split": "They were shown as one breed until The Kennel Club in the UK split them in 1934.",
+    "pembroke": [["Tail", "Often short or naturally bobbed"], ["Ears", "Pointed and upright"], ["Build", "Smaller and lighter"], ["Coats", "Red, sable, fawn, black and tan, usually with white"]],
+    "cardigan": [["Tail", "Long and bushy"], ["Ears", "Bigger, with rounder tips"], ["Build", "Heavier and bigger-boned"], ["Coats", "A wider range, including blue merle (shown) and brindle"]],
+    "numbers": [["10–12 in", "Tall at the shoulder"], ["Up to 30 lb", "Small dog, big presence"], ["12–13 yrs", "Typical lifespan"], ["#11", "In Stanley Coren's dog intelligence ranking"]],
+    "royal": "Queen Elizabeth II loved corgis her whole life and owned more than 30 of them during her reign. They became part of the royal image around the world.",
+    "timeline": [["1933", "Her father brings home Dookie, the family's first corgi"], ["1944", "Susan arrives for her 18th birthday and starts a line of about 14 generations"], ["Dorgis", "Corgi and dachshund crosses, after a royal dachshund named Pipkin"], ["2012", "Her corgis appear with “James Bond” in the London Olympics opening film"], ["2018", "Willow, the last of Susan's line, dies"], ["2022", "Her last two corgis, Muick and Sandy, find a new home with family"]],
+    "quirks": [["🛌", "The sploot", "Flat out with both back legs stretched behind. Corgis are famous for it."], ["📢", "Big-dog bark", "Short legs, loud voice. Herding dogs were bred to be heard."], ["🐄", "Born to herd", "Some corgis herd kids, cats and other dogs. Skipper herds balls."], ["🧹", "The shedding", "That thick double coat sheds a lot, especially twice a year."], ["🍗", "Food first", "Corgis are famously food-motivated. Treat breaks are serious business."], ["🦵", "Low rider", "Those short legs come from a form of dwarfism built into the breed."]]
+  },
+  "reel": {
+    "lede": "Pool days, naps and one popcorn heist. Tap any one to see it big.",
+    "items": [
+      { "media": "napTime", "caption": "Nap time" }, { "media": "frisbeeRun", "caption": "Frisbee run" }, { "media": "noodle", "caption": "Noodle cruise" },
+      { "media": "tooCool", "caption": "Too cool" }, { "media": "treat", "caption": "Did someone say treat?" }, { "media": "popcornBandit", "caption": "Popcorn bandit" },
+      { "media": "ballPatrol", "caption": "Ball patrol" }, { "media": "allEars", "caption": "All ears" }, { "media": "couchLoaf", "caption": "Couch loaf" },
+      { "media": "daytimeNaps", "caption": "Sleepy sleeps" }
+    ]
+  },
+  "love": {
+    "lede": "Two ways to reach her: real mail to the PO box, or a quick note right here.",
+    "mailTitle": "Send real mail",
+    "mailText": "Boomertanger has a PO box, and Skipper gets her mail there too. Fan Club members can send letters, cards and drawings to either of them, and Boomer reads the mail live on stream.",
+    "notesTitle": "Leave a note for Skipper",
+    "notesText": "Tell her she's a good girl, share a story about your own dog, or just say hi. Every note is read before it goes up. Be one of the first to write to her."
+  },
+  "askBoombot": [
+    { "q": "Is Skipper a Pembroke or a Cardigan?", "a": "A Pembroke Welsh Corgi. The pointy ears give it away." },
+    { "q": "When is the Skipper Cam on?", "a": "Whenever Boomer's working in the office. It's for Fan Club members, and the sound is always off." },
+    { "q": "Does Skipper come on stream?", "a": "She pops in, usually for a treat break, and sleeps through a surprising number of jump scares." },
+    { "q": "Can I send her a note?", "a": "Yes. Write one in Skipper love at the bottom of the page. Every note is read before it goes up." }
+  ]
+}

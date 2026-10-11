@@ -1,0 +1,182 @@
+---
+// /base-camp/skipper: Skipper, Boomertanger's corgi co-host (docs/specs/base-camp.md "Page 3"; mockup docs/design/mockups/base-camp-skipper.html).
+// A public story page in the full frame: the BASECAMP bar, TocLayout rail, the hero (a taped polaroid with the hero loop, tags, the Skipper Cam
+// chip, Watch the Skipper Cam and Send her some love), then five ghost-numbered chapters: 01 Meet Skipper (the intro, two snapshots, six favorite
+// things as E1 stage cards with real media), 02 Skipper Cam (Fan Club: the live muted embed, the cam-off scene, a blurred screen and a lock card for
+// visitors; scripts/base-camp/skipper-cam.ts), 03 All about corgis (Wales, cor + ci, the fairy saddle, Pembroke vs Cardigan, numbers, the Queen's
+// corgis, six quirks on royal shield crests), 04 The reel (photos and clips, openGallery from shared/ui/lightbox.js), 05 Skipper love (Pup Post:
+// the mailbox scene and the mail card; Paw Notes: the Kind Words board "skipper" mounts into [data-kind-words]), then Ask BOOMBOT and Back to camp.
+// Copy and media: src/data/base-camp/skipper.json. Media: Cloudinary skipper/ (skipper-art.ts); clips play only while on screen (skipper.ts).
+import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import PupPost from "../../components/base-camp/PupPost.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { mediaHtml, posterUrl, imageUrl, videoUrl, MEDIA, PAWS, camOffScene, mailboxScene, walesCard, wordCard, saddleCard, breedSvg, CROWN, shield, chapterHtml } from "../../scripts/base-camp/skipper-art";
+import d from "../../data/base-camp/skipper.json";
+import "../../styles/base-camp-skipper.css";
+
+const CH = d.chapters;
+const NAV: [string, string][] = CH.map((c) => [c.id, c.nav]);
+const chapter = (i: number, title: string, lede = "") => chapterHtml(i, CH[i].id, title, lede);
+// the reel's gallery items (openGallery): full-size photos and clips
+const reelItems = d.reel.items.map((r) => {
+  const m = MEDIA[r.media];
+  return m.type === "video"
+    ? { type: "video", src: videoUrl(m.id, 900), poster: posterUrl(r.media, 900), alt: m.alt, caption: r.caption }
+    : { type: "image", src: imageUrl(m.id, 1400), alt: m.alt, caption: r.caption };
+});
+---
+<BaseCampLayout title="Skipper" section="skipper" description="Meet Skipper, Boomertanger's corgi co-host: her favorite things, the Skipper Cam, all about corgis, the reel, and two ways to send her some love.">
+  <div data-sk-page>
+    <TocLayout items={NAV}>
+      <div class="bc-main sk-main">
+        <section class="sk-hero" aria-labelledby="h-hero">
+          <Fragment set:html={PAWS} />
+          <div class="sk-hero-copy">
+            <span class="sk-eyebrow">{d.hero.eyebrow}</span>
+            <h1 class="bt-title bt-title--hero" id="h-hero">{d.hero.title}</h1>
+            <p>{d.hero.lede}</p>
+            <div class="sk-tags">{d.hero.tags.map((t) => <span>{t}</span>)}</div>
+            <span class="sk-camchip" data-sk-camchip><i></i><span>Skipper Cam: off duty</span></span>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href={`#${CH[1].id}`}>Watch the Skipper Cam</a><a class="bt-btn bt-btn--secondary" href={`#${CH[4].id}`}>Send her some love</a></div>
+          </div>
+          <figure class="sk-polaroid"><span class="sk-tape" aria-hidden="true"></span><Fragment set:html={mediaHtml("hero", 600)} /><figcaption>{d.hero.caption}</figcaption></figure>
+        </section>
+
+        <section class="bc-ch" id={CH[0].id} aria-labelledby={`h-${CH[0].id}`}>
+          <Fragment set:html={chapter(0, "Meet Skipper", "")} />
+          <div class="sk-meet">
+            <div>{d.meet.map((p) => <p>{p}</p>)}</div>
+            <div class="sk-stack">{d.snaps.map((s) => <figure class="sk-snap"><Fragment set:html={mediaHtml(s.media, 360)} /><span>{s.caption}</span></figure>)}</div>
+          </div>
+          <h3 class="bt-heading bc-sub">Skipper's favorite things</h3>
+          <div class="ai-stage bc-stage sk-favs">
+            {d.favorites.map((f, i) => {
+              const m = MEDIA[f.media];
+              return (
+                <article class="bt-card ai-part bt-spotlight bc-e" tabindex="0" data-tone={f.tone} aria-label={`${f.title}. ${f.text}`}>
+                  <span class="bc-e-ring" aria-hidden="true"></span>
+                  <div class="ai-scene bc-e-scene sk-fav-scene">
+                    <Fragment set:html={mediaHtml(f.media, 520, "sk-media")} />
+                    <span class="sk-media-tag" aria-hidden="true">{m.type === "video" ? "Clip" : "Photo"}</span>
+                  </div>
+                  <div class="ai-part-copy"><span class="bc-e-n" aria-hidden="true">{`0${i + 1}`}</span><h3>{f.title}</h3><p>{f.text}</p></div>
+                </article>
+              );
+            })}
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[1].id} aria-labelledby={`h-${CH[1].id}`}>
+          <Fragment set:html={chapter(1, "Skipper Cam", d.cam.lede)} />
+          <div class="sk-cam" data-sk-cam>
+            <div class="sk-cam-screen" data-sk-cam-screen>
+              <Fragment set:html={camOffScene()} />
+              <div class="sk-cam-hud" data-sk-cam-hud><span>Off duty</span></div>
+              <div class="sk-cam-locked" data-sk-cam-lock></div>
+            </div>
+            <div class="sk-cam-side">
+              <span class="sk-camchip" data-sk-camchip><i></i><span>Off duty</span></span>
+              <p data-sk-cam-text>{d.cam.offText}</p>
+              {d.cam.rules.map(([ic, t]) => <div class="sk-rule"><i aria-hidden="true">{ic}</i><span>{t}</span></div>)}
+            </div>
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[2].id} aria-labelledby={`h-${CH[2].id}`}>
+          <Fragment set:html={chapter(2, "All about corgis", d.corgis.lede)} />
+          <div class="sk-origin">
+            <article class="sk-ocard"><Fragment set:html={walesCard()} /><div class="sk-big">Wales</div><h3>Built for cattle</h3><p>Pembroke Welsh Corgis come from <b>Pembrokeshire in southwest Wales</b>, where farmers used them to herd cattle. They nipped at the cows' heels, and being so low to the ground helped them duck the kicks.</p></article>
+            <article class="sk-ocard"><Fragment set:html={wordCard()} /><div class="sk-big">cor + ci</div><h3>The name</h3><p>In Welsh, <b>cor</b> means dwarf and <b>ci</b> means dog. Put them together and you get corgi: the dwarf dog.</p></article>
+            <article class="sk-ocard"><Fragment set:html={saddleCard()} /><div class="sk-big">Legend</div><h3>The fairy saddle</h3><p>Welsh folklore says fairies rode corgis into battle and used them to pull their coaches. The patch of fur over a corgi's shoulders is said to be the <b>fairy saddle</b>.</p></article>
+          </div>
+
+          <h3 class="bt-heading bc-sub">Pembroke or Cardigan?</h3>
+          <div class="sk-vs">
+            <div class="sk-vs-col is-skip"><h3>Pembroke <span class="bt-badge bt-badge--gold">Skipper's breed</span></h3><Fragment set:html={breedSvg("red", "A red Pembroke Welsh Corgi with a short tail and pointed ears")} /><dl>{d.corgis.pembroke.map(([k, v]) => <><dt>{k}</dt><dd>{v}</dd></>)}</dl></div>
+            <div class="sk-vs-mid" aria-hidden="true">vs</div>
+            <div class="sk-vs-col"><h3>Cardigan</h3><Fragment set:html={breedSvg("merle", "A blue merle Cardigan Welsh Corgi with a long, bushy tail")} /><dl>{d.corgis.cardigan.map(([k, v]) => <><dt>{k}</dt><dd>{v}</dd></>)}</dl></div>
+          </div>
+          <p>{d.corgis.split}</p>
+          <div class="sk-nums">{d.corgis.numbers.map(([b, s]) => <div class="sk-num"><b>{b}</b><span>{s}</span></div>)}</div>
+
+          <div class="sk-royal">
+            <div class="sk-royal-top"><Fragment set:html={CROWN} /><div><h3 class="sk-thing-title">The Queen's corgis</h3><p>{d.corgis.royal}</p></div></div>
+            <ol class="sk-time">{d.corgis.timeline.map(([y, t]) => <li tabindex="0"><b>{y}</b><span>{t}</span></li>)}</ol>
+          </div>
+
+          <h3 class="bt-heading bc-sub">Corgi quirks</h3>
+          <div class="bt-flip-grid sk-quirks">
+            {d.corgis.quirks.map(([ic, name, back], i) => (
+              <button type="button" class="bt-flip bt-flip--gold" aria-label={`${name}. ${back}`}>
+                <span class="bt-flip-in">
+                  <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal" set:html={shield(ic, i)} /><b>{name}</b><span class="bt-flip-hint">Turn over</span></span>
+                  <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">{name}</span><span class="bt-flip-v">{back}</span></span>
+                </span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[3].id} aria-labelledby={`h-${CH[3].id}`}>
+          <Fragment set:html={chapter(3, "The reel", d.reel.lede)} />
+          <div class="sk-reel" data-sk-reel data-items={JSON.stringify(reelItems)}>
+            {d.reel.items.map((r, i) => (
+              <button type="button" class="sk-tile" data-reel={i} aria-label={`See it big: ${r.caption}`}>
+                <Fragment set:html={mediaHtml(r.media, 480, "", "")} />
+                {MEDIA[r.media].type === "video" && <span class="sk-play" aria-hidden="true">▶</span>}
+                <span class="sk-tile-cap">{r.caption}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+
+        <section class="bc-ch sk-love" id={CH[4].id} aria-labelledby={`h-${CH[4].id}`}>
+          <Fragment set:html={chapter(4, "Skipper love", d.love.lede)} />
+          <div class="kw-top">
+            <div class="kw-hero kw-hero--paw" set:html={mailboxScene()} />
+            <div class="kw-intro">
+              <div class="kw-mark" aria-hidden="true"><span>PUP</span><span class="kw-mark-2">POST</span></div>
+              <h3 class="sk-thing-title">{d.love.mailTitle}</h3>
+              <p>{d.love.mailText}</p>
+            </div>
+          </div>
+          <PupPost ret={`#${CH[4].id}`} />
+          <div class="pn-head">
+            <div class="kw-mark" aria-hidden="true"><span>PAW</span><span class="kw-mark-2 pn-mark2">NOTES</span></div>
+            <h3 class="sk-thing-title">{d.love.notesTitle}</h3>
+            <p>{d.love.notesText}</p>
+          </div>
+          <div data-kind-words="skipper"></div>
+        </section>
+
+        <section class="bc-ch" aria-labelledby="h-sk-ask">
+          <h3 class="bt-heading" id="h-sk-ask">Ask BOOMBOT</h3>
+          <div class="bt-chat">
+            {d.askBoombot.map(({ q, a }, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`sk-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`sk-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`sk-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta bc-cta" aria-labelledby="h-cta">
+          <Mascot aware decorative />
+          <h2 id="h-cta">Back to camp</h2>
+          <p>There's more of Boomer's story at Base Camp.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/base-camp">Back to Base Camp</a><a class="bt-btn bt-btn--secondary" href="/base-camp/newfoundland">Visit Newfoundland</a></div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseCampLayout>
+
+<script>
+  import "../../scripts/base-camp/skipper";
+</script>
