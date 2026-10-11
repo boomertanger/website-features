@@ -16,6 +16,9 @@ export interface Row {
   bugs: { open: number }; ideas: { open: number }; coverage: number; createdAt: number | null; source: Record<string, unknown>;
 }
 export interface Build { hash: string; services: any[]; unclaimed: string[] }
+/** services/main's sync record (docs/specs/service-hub.md §3b): when and how the last sync ran, the automatic sync's failures, and services the build no
+ *  longer lists (the automatic sync never retires them). */
+export interface SyncMeta { syncedAt: number | null; syncedBy: "auto" | "manual" | null; autoSync: { failures: number; since: number | null; lastError: string | null } | null; missing: { id: string; name: string }[] }
 export interface Detail {
   item: Row & Record<string, any>; versionHistory: { version: string; at: number | null }[];
   byVersion: { version: string; love: number; like: number; dislike: number }[];
@@ -49,7 +52,7 @@ export function loadBuild(): Promise<Build> {
 export interface Api {
   preview: boolean;
   /** Every row and the stored build hash. */
-  load(): Promise<{ rows: Row[]; storedHash: string | null; syncedAt: number | null }>;
+  load(): Promise<{ rows: Row[]; storedHash: string | null; meta: SyncMeta }>;
   sync(build: Build): Promise<{ create: string[]; update: string[]; bump: string[]; retire: string[] }>;
   detail(id: string): Promise<Detail>;
   admin(action: string, data: Record<string, unknown>): Promise<any>;
@@ -63,7 +66,10 @@ export async function realApi(): Promise<Api> {
     async load() {
       const [sum, main] = await Promise.all([getDoc(doc(db, "sites", SITE_ID, "services", "main", "summary", "main")), getDoc(doc(db, "sites", SITE_ID, "services", "main"))]);
       const rows = Object.entries((sum.exists() ? sum.data().rows : null) || {}).map(([id, d]) => rowFrom(id, d));
-      return { rows, storedHash: main.exists() ? main.get("buildHash") || null : null, syncedAt: main.exists() ? ms(main.get("syncedAt")) : null };
+      const m: any = main.exists() ? main.data() : {};
+      const a = m.autoSync || null;
+      const meta: SyncMeta = { syncedAt: ms(m.syncedAt), syncedBy: m.syncedBy === "auto" || m.syncedBy === "manual" ? m.syncedBy : null, autoSync: a ? { failures: Number(a.failures) || 0, since: ms(a.since), lastError: a.lastError || null } : null, missing: Array.isArray(m.missingFromBuild) ? m.missingFromBuild : [] };
+      return { rows, storedHash: m.buildHash || null, meta };
     },
     sync: (b) => call("serviceSync", { manifests: b.services, buildHash: b.hash }),
     detail: (id) => call<Detail>("serviceDetail", { serviceId: id }),
@@ -95,7 +101,12 @@ export async function previewApi(): Promise<Api> {
   const wait = () => new Promise((r) => setTimeout(r, 300));
   return {
     preview: true,
-    async load() { return { rows: [...byId.values()], storedHash: b.hash, syncedAt: Date.now() - 3600000 }; },
+    async load() {
+      // ?syncfail=1 previews the failing banner and a service missing from the build
+      const fail = new URLSearchParams(location.search).has("syncfail");
+      const meta: SyncMeta = { syncedAt: Date.now() - 12 * 60000, syncedBy: "auto", autoSync: fail ? { failures: 3, since: Date.now() - 50 * 60000, lastError: "https://staging.boomertanger.com/services.json redirected (302): Cloudflare Access may be asking for a login. Check the CF Access secrets." } : null, missing: fail ? [{ id: "home", name: "Home" }] : [] };
+      return { rows: [...byId.values()], storedHash: b.hash, meta };
+    },
     async sync() { await wait(); return { create: [], update: [], bump: [], retire: [] }; },
     async detail(id) {
       await wait();

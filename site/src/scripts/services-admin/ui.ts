@@ -77,7 +77,7 @@ export const quiet = (r: Row) => r.status === "live" && r.type !== "adminTool" &
 
 // ---------------------------------------------------------------------------------------------- Needs attention
 export interface Attn { id: string | null; title: string; desc: string; tone: string; icon: string; action: { kind: "open" | "test" | "video" | "bugs" | "copy"; label: string; text?: string } | null }
-export function attentionRows(rows: Row[], unclaimed: string[]): Attn[] {
+export function attentionRows(rows: Row[], unclaimed: string[], missing: { id: string; name: string }[] = []): Attn[] {
   const out: Attn[] = [];
   const by = (p: (r: Row) => unknown) => rows.filter((r) => !!p(r)).sort((a, b) => a.name.localeCompare(b.name));
   for (const r of by(nope7)) out.push({ id: r.id, title: `${nope7(r)} new Not for me on ${r.name}`, desc: "Read why in the comments, and hide any that break the house rules.", tone: "var(--bt-rate-nope)", icon: "nope", action: { kind: "open", label: "Read them" } });
@@ -85,6 +85,7 @@ export function attentionRows(rows: Row[], unclaimed: string[]): Attn[] {
   for (const r of by(staleVideo)) out.push({ id: r.id, title: `${r.name}'s video is stale`, desc: `It covers v${r.video?.coversVersion || "?"}; the service is on v${r.version}.`, tone: "var(--bt-gold)", icon: "play", action: { kind: "video", label: "Link video" } });
   for (const r of by(noVideo)) out.push({ id: r.id, title: `${r.name} has no video`, desc: "Link a YouTube walkthrough so members can see it in action.", tone: "var(--bt-gray)", icon: "novid", action: { kind: "video", label: "Link video" } });
   for (const r of by(quiet)) out.push({ id: r.id, title: `No ratings on ${r.name}`, desc: "Live for more than 14 days and nobody has rated it. Check its Talk Back strip is on the page.", tone: "var(--bt-blue)", icon: "quiet", action: { kind: "open", label: "Open" } });
+  for (const m of missing) out.push({ id: rows.some((r) => r.id === m.id) ? m.id : null, title: `${m.name} isn't in the build any more`, desc: "The automatic sync never retires a service. If it's gone for good, press Sync now to retire it; if not, put its manifest back in services/.", tone: "var(--bt-gold)", icon: "route", action: rows.some((r) => r.id === m.id) ? { kind: "open", label: "Open" } : null });
   for (const route of unclaimed) out.push({ id: null, title: `Unclaimed route ${route}`, desc: "No manifest lists this page. Add it to a service's routes in services/<id>.json.", tone: "var(--bt-primary-soft)", icon: "route", action: { kind: "copy", label: "Copy route", text: route } });
   for (const r of by((x) => x.needsSetup && x.status !== "retired")) out.push({ id: r.id, title: `${r.name} needs setup`, desc: "Its manifest is missing something (a route, a test plan or checks).", tone: "var(--bt-blue)", icon: "tools", action: { kind: "open", label: "Open" } });
   for (const r of by((x) => x.bugs.open > 0)) out.push({ id: r.id, title: `${r.bugs.open} open bug${r.bugs.open === 1 ? "" : "s"} on ${r.name}`, desc: "Reported in Bug Zapper and linked to this service.", tone: "var(--bt-pink)", icon: "bug", action: { kind: "bugs", label: "Open Bug Zapper" } });

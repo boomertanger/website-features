@@ -6,7 +6,7 @@ import { onAuth, type AuthState } from "../../lib/auth";
 import { messageFor } from "../../lib/errors";
 import { toast } from "../../../../shared/ui/toast.js";
 import { zoomFrameHtml, initZoomFrame } from "../../../../shared/ui/zoomframe.js";
-import { loadBuild, realApi, previewApi, isPreview, type Api, type Row, type Build } from "./data";
+import { loadBuild, realApi, previewApi, isPreview, type Api, type Row, type Build, type SyncMeta } from "./data";
 import { esc, IC, TYPES, thumb, statusBadge, ratingBar, inds, scoreText, cell, nope7, untested, noVideo, staleVideo, isManifest, attentionRows, mascot } from "./ui";
 import { openDetail, openMarkTested, openLinkVideo, settingsHtml, wireSettings } from "./detail";
 
@@ -18,7 +18,7 @@ const VIEW_KEY = "bt.services.view";
 const page = document.querySelector<HTMLElement>("[data-as-page]")!;
 const root = document.querySelector<HTMLElement>("[data-as-root]")!;
 const S = {
-  api: null as Api | null, rows: [] as Row[], build: null as Build | null, storedHash: null as string | null, synced: "",
+  api: null as Api | null, rows: [] as Row[], build: null as Build | null, storedHash: null as string | null, synced: "", meta: null as SyncMeta | null,
   view: "grid" as View, tile: "all" as Tile, q: "", all: false, grid: "coverage" as "coverage" | "ratings", group: "area" as "area" | "type" | "audience" | "status",
   sort: "loved" as "loved" | "disliked" | "most" | "least" | "newest" | "oldestTest", zones: "area" as "area" | "type", color: "popularity" as "popularity" | "attention" | "video" | "testing",
   sel: "" as string, canGears: false, settings: "" as string,
@@ -60,7 +60,7 @@ async function start() {
   root.innerHTML = `<div class="as-empty" aria-busy="true">${mascot()}<p>Loading the services…</p></div>`;
   try {
     const [data, build] = await Promise.all([S.api!.load(), loadBuild()]);
-    S.rows = data.rows; S.storedHash = data.storedHash; S.build = build;
+    S.rows = data.rows; S.storedHash = data.storedHash; S.meta = data.meta; S.build = build;
     if (build.hash && build.hash !== data.storedHash && build.services.length) await sync(true);
   } catch (err) {
     root.innerHTML = `<div class="as-empty">${mascot()}<p>Couldn't read the services: ${esc(messageFor(err))}</p><button type="button" class="bt-btn bt-btn--secondary" data-as-retry>Try again</button></div>`;
@@ -76,14 +76,14 @@ async function sync(auto: boolean) {
   try {
     const r = await S.api.sync(S.build);
     const data = await S.api.load();
-    S.rows = data.rows; S.storedHash = data.storedHash;
+    S.rows = data.rows; S.storedHash = data.storedHash; S.meta = data.meta;
     S.synced = `Synced from build ${S.build.hash.slice(0, 7)}${r.create.length || r.bump.length || r.retire.length ? ` · ${[r.create.length && `${r.create.length} new`, r.bump.length && `${r.bump.length} new version${r.bump.length > 1 ? "s" : ""}`, r.retire.length && `${r.retire.length} retired`].filter(Boolean).join(", ")}` : ""}`;
     if (!auto) toast(S.synced);
   } catch (err) { toast(messageFor(err, "Couldn't sync. Try again."), { kind: "error" }); }
 }
 export async function refresh(): Promise<Row[]> {
   if (!S.api) return [];
-  try { const d = await S.api.load(); S.rows = d.rows; S.storedHash = d.storedHash; } catch { /* keep what we have */ }
+  try { const d = await S.api.load(); S.rows = d.rows; S.storedHash = d.storedHash; S.meta = d.meta; } catch { /* keep what we have */ }
   render();
   return S.rows;
 }
@@ -106,13 +106,28 @@ function shown(): Row[] {
 
 // ---------------------------------------------------------------------------------------------- the frame
 const SCENE = `<svg class="as-scene" viewBox="0 0 118 72" aria-hidden="true"><path class="w" d="M20 36 59 18 98 36 59 56z M20 36h78 M59 18v38"/><circle class="nd" cx="20" cy="36" r="8"/><circle class="nd" cx="98" cy="36" r="8"/><circle class="nd" cx="59" cy="18" r="8"/><circle class="nd" cx="59" cy="56" r="8"/><circle class="pk pulse" cx="20" cy="36" r="4"/><circle class="lt" cx="59" cy="18" r="4"/><circle class="gd pulse" cx="98" cy="36" r="4" style="animation-delay:1.2s"/><circle class="lt" cx="59" cy="56" r="4"/></svg>`;
+/** "Last synced 12 min ago · auto" beside Sync now (services/main.syncedAt, syncedBy). */
+const ago = (t: number) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? `${m} min ago` : m < 48 * 60 ? `${Math.round(m / 60)} h ago` : new Date(t).toLocaleDateString(undefined, { month: "short", day: "numeric" }); };
+const when = (t: number) => new Date(t).toLocaleString(undefined, { month: "short", day: "numeric", hour: "numeric", minute: "2-digit" });
+function lastSynced() {
+  const m = S.meta;
+  if (!m?.syncedAt) return "";
+  return `<span class="as-lastsync" title="${esc(when(m.syncedAt))}">Last synced ${esc(ago(m.syncedAt))}${m.syncedBy ? ` · ${m.syncedBy}` : ""}</span>`;
+}
+/** After 3 automatic runs in a row fail: "Auto sync failing since <time>" with the last error. Any success clears it. */
+function failing() {
+  const a = S.meta?.autoSync;
+  if (!a || a.failures < 3) return "";
+  return `<div class="bt-notice bt-notice--error as-syncfail" role="alert"><b>Auto sync failing since ${esc(a.since ? when(a.since) : "a while ago")}</b> (${a.failures} runs in a row). ${esc(a.lastError || "")} Sync now still works from here.</div>`;
+}
 function render() {
-  const rows = base(), list = shown(), attn = attentionRows(rows, S.build?.unclaimed || []);
+  const rows = base(), list = shown(), attn = attentionRows(rows, S.build?.unclaimed || [], S.meta?.missing);
   const hash = S.storedHash ? S.storedHash.slice(0, 7) : "none yet";
   root.innerHTML = `
     <div class="as-hero">${SCENE}<div class="as-hero-txt"><h1>Every service, one place</h1><p>${rows.length} services · build <code class="bt-code">${esc(hash)}</code>${S.synced ? ` · <span class="as-synced">${IC.check}${esc(S.synced)}</span>` : ""}</p></div>
-      <div class="as-hero-acts">${S.canGears ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-as-settings>${IC.gear}Settings</button>` : ""}<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-as-sync>${IC.sync}Sync now</button></div></div>
+      <div class="as-hero-acts">${lastSynced()}${S.canGears ? `<button type="button" class="bt-btn bt-btn--sm bt-btn--secondary" data-as-settings>${IC.gear}Settings</button>` : ""}<button type="button" class="bt-btn bt-btn--sm bt-btn--admin" data-as-sync>${IC.sync}Sync now</button></div></div>
     ${S.settings}
+    ${failing()}
     <div class="bt-filter-tiles">${TILES.map(([k, c, l, f]) => `<button type="button" class="bt-filter-tile" style="--tone:${c}" data-as-tile="${k}" aria-pressed="${S.tile === k}"><b>${k === "all" ? rows.length : rows.reduce((a, r) => a + f(r), 0)}</b><span><i></i>${l}</span></button>`).join("")}</div>
     <div class="as-bar"><div class="bt-view-switch" role="radiogroup" aria-label="View">${VIEWS.map(([k, i, l]) => `<button type="button" role="radio" aria-checked="${S.view === k}" data-as-view="${k}">${IC[i]}<span class="${k === "attention" ? "as-hide-n" : ""}">${l}</span>${k === "attention" ? `<span class="as-vn">${attn.length}</span>` : ""}</button>`).join("")}</div>
       <span class="as-sp"></span><button type="button" class="bt-chip bt-chip--small${S.all ? " is-active" : ""}" data-as-all aria-pressed="${S.all}">Include Vault games and streams</button>
@@ -260,7 +275,7 @@ root.addEventListener("click", (e) => {
   if (q("[data-as-settings]")) { if (S.settings) { S.settings = ""; render(); } else void settingsHtml(S.api!).then((h) => { S.settings = h; render(); root.querySelector<HTMLInputElement>("#as-g-test")?.focus(); }); return; }
   const at = q("[data-as-attn]");
   if (at) {
-    const a = attentionRows(base(), S.build?.unclaimed || []).filter((x) => !S.q.trim() || x.title.toLowerCase().includes(S.q.trim().toLowerCase()))[Number(at.dataset.asAttn)];
+    const a = attentionRows(base(), S.build?.unclaimed || [], S.meta?.missing).filter((x) => !S.q.trim() || x.title.toLowerCase().includes(S.q.trim().toLowerCase()))[Number(at.dataset.asAttn)];
     if (!a || !a.action) return;
     const row = a.id ? S.rows.find((r) => r.id === a.id) : null;
     if (a.action.kind === "open" && row) void showDetail(row.id);
@@ -276,6 +291,6 @@ root.addEventListener("input", (e) => {
   S.q = t.value;
   const at = t.selectionStart;
   const body = root.querySelector<HTMLElement>("[data-as-body]");
-  if (body) { body.innerHTML = (() => { const list = shown(); return (S.view === "attention" ? attentionHtml(attentionRows(base(), S.build?.unclaimed || [])) : !list.length ? `<div class="as-empty">${mascot()}<p>No service matches that search.</p></div>` : S.view === "board" ? boardHtml(list) : S.view === "map" ? mapShellHtml() : S.grid === "ratings" ? ratingsHtml(list) : coverageHtml(list)); })(); if (S.view === "map") mountMap(shown()); }
+  if (body) { body.innerHTML = (() => { const list = shown(); return (S.view === "attention" ? attentionHtml(attentionRows(base(), S.build?.unclaimed || [], S.meta?.missing)) : !list.length ? `<div class="as-empty">${mascot()}<p>No service matches that search.</p></div>` : S.view === "board" ? boardHtml(list) : S.view === "map" ? mapShellHtml() : S.grid === "ratings" ? ratingsHtml(list) : coverageHtml(list)); })(); if (S.view === "map") mountMap(shown()); }
   t.focus(); try { t.setSelectionRange(at, at); } catch { /* not a text field */ }
 });

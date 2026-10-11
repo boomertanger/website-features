@@ -32,6 +32,8 @@
 .bt-root:not(#_) .as-scene .gd { fill: var(--bt-title); }
 .bt-root:not(#_) .as-scene .pulse { animation: as-pulse 2.4s ease-in-out infinite; transform-box: fill-box; transform-origin: center; }
 @keyframes as-pulse { 50% { transform: scale(1.5); opacity: 0.55; } }
+.bt-root:not(#_) .as-hero-acts { align-items: center; }
+.bt-root:not(#_) .as-lastsync { font-size: var(--bt-text-sm); color: var(--bt-text-faint); white-space: nowrap; }
 .bt-root:not(#_) .as-synced { display: inline-flex; align-items: center; gap: 6px; font-size: var(--bt-text-sm); color: var(--bt-lime); }
 
 /* the stroke icons in buttons and the view switch (page and dialog) */
