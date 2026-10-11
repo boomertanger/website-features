@@ -13,7 +13,13 @@
   ],
   "nav": "featurelab",
   "testPlan": null,
-  "checks": [],
+  "checks": [
+    "Open Feature Lab from the Community menu and sort the ideas by Most voted.",
+    "Tap Post an idea, type a short title and a description, then close the form without posting.",
+    "Vote for someone else's idea, then tap again to remove your vote.",
+    "Open an idea and check its history and comments load.",
+    "Switch the view to Roadmap and find an idea that's Planned or In progress."
+  ],
   "videoTag": "#bt-feature-lab",
   "sections": {},
   "talkBack": "note",

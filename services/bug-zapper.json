@@ -13,7 +13,13 @@
   ],
   "nav": "bugzapper",
   "testPlan": null,
-  "checks": [],
+  "checks": [
+    "Open Bug Zapper from the Community menu and tap Report a bug.",
+    "Fill in the short name, what happened and what you expected, and pick How bad.",
+    "Attach a screenshot, check its preview shows, then close the form without sending.",
+    "Turn on My reports and open one of your earlier reports, if you have one.",
+    "Open someone else's report and tap Bit me too, then tap it again to undo it."
+  ],
   "videoTag": "#bt-bug-zapper",
   "sections": {},
   "talkBack": "note",

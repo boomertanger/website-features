@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Service Hub part 7a: the shared rate and test dialogs (site/src/scripts/services: openRate with Keep or change for an older version, quickRate for one tap, openTest with OK / Problem per check and the Report it in Bug Zapper link), the badge moment from a short my/{uid} watch after a save, toast() gains an optional action link, and sample walkthrough checks for Feature Lab and Bug Zapper (checks never post, send or delete anything).
 Service Hub part 6b: /admin/services (owner and admins), the hero with Sync now and the auto-sync on a new build, six filter tiles, search, and the Grid (coverage and ratings), Board, Map and Needs attention views with deep links; the detail dialog (ratings by version, comments with Hide, tests, video, history, Mark tested with the TESTED stamp, Link video, Retire / Restore, Hide / Show); the Crew task Gears setting; the Service Hub card on /admin; /admin/services added to the service-hub manifest.
 Service Hub part 6a: serviceDetail (comments with @handles and comment ids, never uids), ratings.dislike7d and lastDislikeAt, serviceAdmin restore and setTaskGears (owner and A2+), hideComment by commentId, and /services.json lists unclaimed routes.
 Service Hub part 5c: design-system.md §5 entries for the Service Hub pieces and §8aa (picks R1, P3 with Wall / List, S1, G2 with G1, hero H2; tones), and spec §14 with the round 2 How it works mockup.

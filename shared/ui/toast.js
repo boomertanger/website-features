@@ -2,7 +2,8 @@
 // "Toast"). Like modals, toasts live in their own .bt-root on <body> (.bt-toast-host), so a
 // feature root's container can't trap them. The host doesn't take clicks; each toast does.
 //
-//   toast(message, { kind = "ok" | "error" | "info", ms = 4500 })   -> dismiss()
+//   toast(message, { kind = "ok" | "error" | "info", ms = 4500, action })   -> dismiss()
+//     action (optional): { label, onClick } adds a .bt-link-btn after the text ("Add a comment"); a click runs onClick and dismisses.
 //
 // ok and info use role="status", error uses role="alert". A toast stays while it's hovered or
 // focused, and has a close button. Reduced motion: it appears without sliding.
@@ -18,13 +19,13 @@ function getHost() {
   return host;
 }
 
-export function toast(message, { kind = "ok", ms = 4500 } = {}) {
+export function toast(message, { kind = "ok", ms = 4500, action = null } = {}) {
   const stack = getHost().firstElementChild;
   const el = document.createElement("div");
   el.className = `bt-toast bt-toast--${kind}`;
   el.setAttribute("role", kind === "error" ? "alert" : "status");
   const icon = kind === "error" ? "!" : kind === "info" ? "i" : "✓";
-  el.innerHTML = `<span class="bt-toast-ic" aria-hidden="true">${icon}</span><span class="bt-toast-text">${escapeHtml(message)}</span><button type="button" class="bt-toast-x" aria-label="Dismiss">×</button>`;
+  el.innerHTML = `<span class="bt-toast-ic" aria-hidden="true">${icon}</span><span class="bt-toast-text">${escapeHtml(message)}${action && action.label ? ` <button type="button" class="bt-link-btn" data-toast-action>${escapeHtml(action.label)}</button>` : ""}</span><button type="button" class="bt-toast-x" aria-label="Dismiss">×</button>`;
   stack.appendChild(el);
   let timer = 0, gone = false;
   const dismiss = () => {
@@ -38,6 +39,7 @@ export function toast(message, { kind = "ok", ms = 4500 } = {}) {
   };
   const arm = () => { clearTimeout(timer); if (ms > 0) timer = window.setTimeout(dismiss, ms); };
   el.querySelector(".bt-toast-x").addEventListener("click", dismiss);
+  el.querySelector("[data-toast-action]")?.addEventListener("click", () => { dismiss(); action.onClick?.(); });
   el.addEventListener("pointerenter", () => clearTimeout(timer));
   el.addEventListener("pointerleave", arm);
   el.addEventListener("focusin", () => clearTimeout(timer));

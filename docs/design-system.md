@@ -716,8 +716,8 @@ any multi-stage editor).
 - **Account menu meta: `.bt-account-menu-meta`**: a right-aligned value in an account menu item (the
   Punch the clock item's 🔥 streak). A menu item with `aria-disabled="true"` doesn't highlight on hover.
 
-**Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500 })`,
-returns dismiss). A short confirmation at the bottom of the screen, above the tab bar on phones
+**Toast: `.bt-toast`** (`shared/ui/toast.js` `toast(message, { kind: "ok" | "error" | "info", ms = 4500, action })`,
+returns dismiss; `action: { label, onClick }` adds one `.bt-link-btn` after the text, e.g. Service Hub's "Add a comment"). A short confirmation at the bottom of the screen, above the tab bar on phones
 (full width at ≤ 640px). It renders in its own `.bt-root.bt-toast-host` on `<body>`, like a modal
 portal; the host ignores clicks and each toast takes them. `.bt-toast-ic` (✓, !, i), `.bt-toast-text`,
 `.bt-toast-x`. Errors are `role="alert"`, the rest `role="status"`; a toast stays while it's hovered

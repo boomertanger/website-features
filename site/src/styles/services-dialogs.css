@@ -1,0 +1,52 @@
+/* site/src/styles/services-dialogs.css — the Service Hub's dialogs (rate, test, the badge moment, the verify prompt; they render in the modal
+   portal, data-feature="services") and the page strip's zone. Loaded by /services and by every page that carries the strip (TalkBackNote.astro).
+   The strip itself is the kit's .bt-talkback; the rating control is .bt-rate. var(--bt-*) only. */
+
+/* the strip sits after the page, above the footer, at the content width */
+.bt-root:not(#_) .sv-strip-zone { padding-top: 8px; }
+
+/* Keep or change (a rating on an older version) */
+.bt-portal:not(#_)[data-feature="services"] .sv-keep { display: flex; flex-direction: column; gap: 10px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-keep p { margin: 0; color: var(--bt-text-muted); line-height: 1.5; }
+.bt-portal:not(#_)[data-feature="services"] .sv-keep p b { color: var(--bt-text); }
+.bt-portal:not(#_)[data-feature="services"] .sv-keep blockquote { margin: 0; padding: 8px 12px; border-left: 3px solid var(--bt-border-2); color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-portal:not(#_)[data-feature="services"] .sv-myrate { display: inline-flex; align-items: center; gap: 6px; align-self: flex-start; padding: 5px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--rt); color: var(--rt); font-weight: 700; font-size: var(--bt-text-md); background: color-mix(in srgb, var(--rt) 12%, var(--bt-bg)); }
+.bt-portal:not(#_)[data-feature="services"] .sv-myrate[data-v="love"] { --rt: var(--bt-rate-love); }
+.bt-portal:not(#_)[data-feature="services"] .sv-myrate[data-v="like"] { --rt: var(--bt-rate-like); }
+.bt-portal:not(#_)[data-feature="services"] .sv-myrate[data-v="nope"] { --rt: var(--bt-rate-nope); }
+.bt-portal:not(#_)[data-feature="services"] .sv-myrate svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+
+/* the walkthrough test: steps with OK / Problem */
+.bt-portal:not(#_)[data-feature="services"] [data-sv-body] { display: flex; flex-direction: column; gap: 12px; }
+.bt-portal:not(#_)[data-feature="services"] .bt-view-switch svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.bt-portal:not(#_)[data-feature="services"] .bt-view-switch { align-self: flex-start; }
+.bt-portal:not(#_)[data-feature="services"] .sv-steps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-step { display: flex; flex-direction: column; gap: 8px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
+.bt-portal:not(#_)[data-feature="services"] .sv-step.is-bad { border-color: color-mix(in srgb, var(--bt-pink) 50%, var(--bt-border)); }
+.bt-portal:not(#_)[data-feature="services"] .sv-step-row { display: flex; align-items: center; gap: 12px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-step .n { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: var(--bt-text-xs); font-weight: 800; background: var(--bt-surface-2); color: var(--bt-text-muted); }
+.bt-portal:not(#_)[data-feature="services"] .sv-step .n svg { width: 13px; height: 13px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.bt-portal:not(#_)[data-feature="services"] .sv-step.is-ok .n { background: var(--bt-lime-bg); color: var(--bt-lime); }
+.bt-portal:not(#_)[data-feature="services"] .sv-step.is-bad .n { background: var(--bt-pink-bg); color: var(--bt-pink); }
+.bt-portal:not(#_)[data-feature="services"] .sv-step-t { flex: 1; min-width: 0; font-size: var(--bt-text-md); line-height: 1.4; }
+.bt-portal:not(#_)[data-feature="services"] .sv-okbad { display: flex; gap: 6px; flex: none; }
+.bt-portal:not(#_)[data-feature="services"] .sv-okbad button { padding: 6px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-surface); color: var(--bt-text-muted); font: inherit; font-weight: 700; font-size: var(--bt-text-sm); cursor: pointer; }
+.bt-portal:not(#_)[data-feature="services"] .sv-okbad button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-okbad button[data-ok="1"][aria-pressed="true"] { border-color: var(--bt-lime); color: var(--bt-lime); background: var(--bt-lime-bg); }
+.bt-portal:not(#_)[data-feature="services"] .sv-okbad button[data-ok="0"][aria-pressed="true"] { border-color: var(--bt-pink); color: var(--bt-pink); background: var(--bt-pink-bg); }
+.bt-portal:not(#_)[data-feature="services"] .bt-notice .bt-link-btn { display: inline; font-size: inherit; }
+
+/* the moment: the TESTED stamp, a badge */
+.bt-portal:not(#_)[data-feature="services"] .sv-celebrate { display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; padding: 4px 0 8px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-celebrate p { margin: 0; color: var(--bt-text-muted); line-height: 1.5; max-width: 44ch; }
+.bt-portal:not(#_)[data-feature="services"] .sv-stampbox { display: flex; justify-content: center; padding: 6px 0; }
+
+/* the verify prompt (scripts/boards/gate.ts, resultClass "sv-result") */
+.bt-portal:not(#_)[data-feature="services"] .sv-result { display: flex; flex-direction: column; align-items: center; gap: 8px; text-align: center; padding: 6px 0 4px; }
+.bt-portal:not(#_)[data-feature="services"] .sv-result p { margin: 0; color: var(--bt-text-muted); }
+
+@container bt (max-width: 640px) {
+  .bt-portal:not(#_)[data-feature="services"] .sv-step-row { flex-wrap: wrap; }
+  .bt-portal:not(#_)[data-feature="services"] .sv-okbad { width: 100%; padding-left: 36px; }
+  .bt-portal:not(#_)[data-feature="services"] .sv-okbad button { flex: 1; }
+}

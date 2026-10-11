@@ -1,0 +1,13 @@
+{
+  "_about": "Service Hub member preview (?as=member, signed out, non-production only): the member, their ratings and badges. Services come from the build's /services.json. Actions change a local copy only.",
+  "me": { "uid": "preview-gbo", "handle": "gbo", "name": "GBo", "owner": false },
+  "rated": {
+    "tap-the-splat": { "value": "love", "version": "1.0", "at": "2026-10-03", "comment": "" },
+    "home": { "value": "like", "version": "1.0", "at": "2026-10-04", "comment": "" },
+    "bug-zapper": { "value": "dislike", "version": "1.0", "at": "2026-10-05", "comment": "The photo upload spinner never finished on my phone." },
+    "feature-lab": { "value": "love", "version": "0.9", "at": "2026-09-20", "comment": "Shipping my idea in a week was wild." },
+    "trophy-room": { "value": "like", "version": "1.0", "at": "2026-10-06", "comment": "" }
+  },
+  "tested": { "bug-zapper": "0.9" },
+  "badges": ["services-first-rating"]
+}

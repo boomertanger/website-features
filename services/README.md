@@ -14,7 +14,7 @@ One JSON file per service on the site and stream (`<id>.json`), the single regis
 | `routes` | the pages it owns, as `site/src/pages` routes (`/games/view` serves every `/games/<slug>`; `[slug]` for dynamic routes); `[]` when it has no page of its own |
 | `nav` | its `site/src/lib/nav.js` entry id, or `null` |
 | `testPlan` | its hand-run test plan under `docs/testing/`, or `null` |
-| `checks` | 3 to 8 member walkthrough checks (Service Hub §6); empty until written |
+| `checks` | 3 to 8 member walkthrough checks (Service Hub §6), up to 120 characters each; empty until written. Checks never ask a tester to post, send or delete anything; stop just short of sending. |
 | `videoTag` | `#bt-<id>`: put it in a YouTube description to link the video |
 | `sections` | `{ "slug": "Label" }`: the sections that get an Ask pin (at most 3 per page to start; `{}` unless talkBack is `pins`) |
 | `talkBack` | the page strip: `note` (the strip: Rate it and Talk back), `pins` (the strip plus Ask pins on `sections`), `rate` (the strip with only the Rate half: no Ask / Feedback, no pins), `skip` (no strip) |
