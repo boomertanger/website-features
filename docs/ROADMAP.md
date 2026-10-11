@@ -220,7 +220,7 @@ Status: **Spec confirmed, building.** Parts, one commit each:
 4. `/admin/inbox` (Split: Inbox, Sources, Settings) and the /admin card.
 5. `/contact/how-it-works` (H1, the dial).
 6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
-Part 2 (Talk Back, [docs/specs/talk-back.md](specs/talk-back.md)): Hotline Boom part 2. Spec and mockups approved Oct 11, 2026; build after Hotline Boom's staging tests and Service Hub's manifests. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
+Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups approved Oct 11, 2026: [docs/specs/talk-back.md](specs/talk-back.md), `docs/design/mockups/talk-back-*.html`; build after Hotline Boom's staging tests and Service Hub's manifests. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
 Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
 
 ### 16. Tech Stack

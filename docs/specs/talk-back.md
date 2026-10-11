@@ -1,6 +1,6 @@
 # Talk Back (Hotline Boom part 2)
 
-Status: **confirmed Oct 10, 2026**; re-homed the same day (split with Service Hub, below). Build after (1) Hotline Boom passes its first staging tests (docs/testing/hotline-boom-test-plan.md) and (2) Service Hub's manifests and `/services.json` exist.
+Status: **confirmed Oct 10, 2026**; re-homed the same day (split with Service Hub, below). Mockups approved Oct 11, 2026: talk-back-dialog-inbox, talk-back-recognition, talk-back-inbox-how-it-works. Build after (1) Hotline Boom passes its first staging tests (docs/testing/hotline-boom-test-plan.md) and (2) Service Hub's manifests and `/services.json` exist.
 Name: **Talk Back** (working name was "Ask from anywhere"). Members see "Talk back" as the right half of the Service Hub page strip.
 Concept: `docs/design/mockups/talk-back-concept.html` (trigger option 4 "Note + pins"; the strip itself is now Service Hub mockup S1).
 Depends on: Hotline Boom (`docs/specs/hotline-boom.md`, whose §14 points here), Service Hub (`docs/specs/service-hub.md` §3a and §8a), Bug Zapper (`/bug-zapper?new=1&page=<path>`), Accounts (E1), Boom Alerts (`contact-reply`), Mod Machina Gears (`docs/specs/mod-machina.md` §4-5).

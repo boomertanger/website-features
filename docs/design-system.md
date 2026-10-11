@@ -1794,3 +1794,10 @@ Spec `docs/specs/service-hub.md` (confirmed Oct 10, 2026, with the Talk Back mer
 - **Hero H2 "The strip, up close"** for `/services/how-it-works` (round 2); the rest of that page as shown.
 - **Tones:** Love it pink, Like it blue, Not for me gold (`--bt-rate-*`). Red stays for deleting, so a bad rating is never red.
 
+### 8ab. Talk Back
+Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 10, 2026); mockups `docs/design/mockups/talk-back-*.html` (approved Oct 11, 2026). **Recorded decisions:**
+- **Planned kit addition: `.bt-pills[data-n="3"]`**, a three-way pill (Question / Feedback / Something's broken); add it to `bt-ui.css` and the UI kit page when Talk Back is built.
+- **BOOMBOT answers in the dialog use the kit chat** (`.bt-chat-a` bubbles), never a new answer-card style.
+- **Colors:** By service bars are blue (questions) and teal (feedback), never purple; Gears credit is gold; Pick up is admin green (`.bt-btn--admin`, staff-only page); Desk clear uses the lime stamp; spam marks use a gray stamp; the Top Gear flip medal is blue, never red (red stays for destroying data).
+- **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero (`hotline-boom-hero.html`) with a thicker ear and mouth piece; the mascot stays in the Desk clear moment and the closing call.
+
