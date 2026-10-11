@@ -6,6 +6,7 @@ import BaseLayout from "./BaseLayout.astro";
 import BaseCampBar from "../components/base-camp/BaseCampBar.astro";
 import "../styles/how-it-works.css";
 import "../styles/base-camp.css";
+import "../styles/kind-words.css";   // the Kind Words wall (Newfoundland and Skipper; scripts/base-camp/kind-words.ts)
 
 interface Props { title: string; description?: string; section?: "story" | "newfoundland" | "skipper" | null }
 const { title, description, section = null } = Astro.props;

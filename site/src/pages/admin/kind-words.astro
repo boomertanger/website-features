@@ -1,0 +1,16 @@
+---
+// /admin/kind-words, the Kind Words queue (docs/specs/base-camp.md "Kind Words engine", Admin; mockup docs/design/mockups/base-camp-newfoundland.html
+// admin screen). A tool page for admins: a hero header with the puffin, Pending / Approved / Hidden / Rejected tabs, board chips (Newfoundland,
+// Skipper), and a card per postcard or note with Approve (admin green, the POSTED stamp lands), Reject (an optional private note), Feature and Hide.
+// Nothing is deleted. "All caught up" when the tab is empty. Drawn by scripts/base-camp/kind-words-admin.ts; every change goes through kindReview.
+// Not in the header nav; the /admin card links here.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/kind-words.css";
+---
+<BaseLayout title="Kind words" noindex>
+  <div class="bt-zone" data-kwa aria-live="polite"><div class="bt-skeleton" style="height:120px"></div></div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/base-camp/kind-words-admin";
+</script>

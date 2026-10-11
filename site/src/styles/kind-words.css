@@ -1,0 +1,199 @@
+/* site/src/styles/kind-words.css — the Kind Words wall, composer and admin queue (docs/specs/base-camp.md "Kind Words engine"; mockups
+   docs/design/mockups/base-camp-newfoundland.html Puffin Post and base-camp-skipper.html Paw Notes). One engine, two board themes: newfoundland
+   = postcards (.kw-postcard) under the puffins' cliff, skipper = coloured pinned notes with a teal paw pin (.pn-note; deliberately not mail-like).
+   The composer and sent moment live in the modal portal (.bt-portal[data-feature="kind-words"]); the admin queue is /admin/kind-words (.kwa-*).
+   Tokens only (a mask only needs an opaque colour: --bt-bg). Container queries; reduced motion at the end. */
+
+/* ---------- Puffin Post header: the cliff and the puffin, the PUFFIN POST mark, the intro ---------- */
+.bt-root:not(#_) .kw { display: flex; flex-direction: column; gap: 20px; }
+.bt-root:not(#_) .kw-top { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 22px; align-items: center; }
+.bt-root:not(#_) .kw-hero { position: relative; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: 22px; aspect-ratio: 600 / 330; background: var(--bt-bg); }
+.bt-root:not(#_) .kw-hero > svg { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.bt-root:not(#_) .kw-hero .kw-puffin { position: absolute; inset: auto auto 8% 6%; width: 46%; height: auto; }
+.bt-root:not(#_) .kw-sky-fill { fill: color-mix(in srgb, var(--bt-primary) 12%, var(--bt-bg)); }
+.bt-root:not(#_) .kw-sea { fill: color-mix(in srgb, var(--bt-blue) 38%, var(--bt-bg)); }
+.bt-root:not(#_) .kw-wave { fill: none; stroke: color-mix(in srgb, var(--bt-blue) 45%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .kw-cliff { fill: color-mix(in srgb, var(--bt-surface-2) 85%, var(--bt-bg)); }
+.bt-root:not(#_) .kw-turf { fill: color-mix(in srgb, var(--bt-lime) 22%, var(--bt-surface)); }
+.bt-root:not(#_) .kw-burrow { fill: var(--bt-bg); }
+.bt-root:not(#_) .kw-stack { fill: color-mix(in srgb, var(--bt-surface-2) 60%, var(--bt-bg)); }
+.bt-root:not(#_) .kw-far path { fill: none; stroke: color-mix(in srgb, var(--bt-text) 55%, transparent); stroke-width: 2.2; stroke-linecap: round; }
+.bt-root:not(#_) .kw-intro { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .kw-intro p { margin: 0; color: var(--bt-text-muted); line-height: 1.6; max-width: 52ch; }
+.bt-root:not(#_) .kw-title { margin: 0; font-size: 28px; font-weight: 900; line-height: 1.12; letter-spacing: -0.02em; text-wrap: balance; }
+.bt-root:not(#_) .kw-mark { display: inline-flex; gap: 0; font-size: 30px; font-weight: 900; letter-spacing: 0.06em; line-height: 1; }
+.bt-root:not(#_) .kw-mark-2 { color: var(--bt-rank-3); }
+.bt-root:not(#_) .kw-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .kw-top { grid-template-columns: minmax(0, 1fr); } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .kw-title { font-size: 22px; } }
+
+/* ---------- The puffin ---------- */
+.bt-root:not(#_) .pf { overflow: visible; }
+.bt-root:not(#_) .pf-face0 { stop-color: color-mix(in srgb, var(--bt-text) 96%, var(--bt-title)); }
+.bt-root:not(#_) .pf-face1 { stop-color: color-mix(in srgb, var(--bt-text) 82%, var(--bt-blue)); }
+.bt-root:not(#_) .pf-face2 { stop-color: color-mix(in srgb, var(--bt-text) 60%, var(--bt-blue)); }
+.bt-root:not(#_) .pf-blk0 { stop-color: color-mix(in srgb, var(--bt-text) 16%, var(--bt-bg)); }
+.bt-root:not(#_) .pf-blk1 { stop-color: color-mix(in srgb, var(--bt-text) 3%, var(--bt-bg)); }
+.bt-root:not(#_) .pf-bk0 { stop-color: color-mix(in srgb, var(--bt-blue) 45%, var(--bt-text-muted)); }
+.bt-root:not(#_) .pf-bk1 { stop-color: var(--bt-rank-3); }
+.bt-root:not(#_) .pf-bk2 { stop-color: color-mix(in srgb, var(--bt-red) 85%, var(--bt-rank-3)); }
+.bt-root:not(#_) .pf-black { stroke: color-mix(in srgb, var(--bt-text) 18%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .pf-wing { fill: color-mix(in srgb, var(--bt-text) 9%, var(--bt-bg)); stroke: color-mix(in srgb, var(--bt-text) 20%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .pf-feather { fill: none; stroke: color-mix(in srgb, var(--bt-text) 20%, transparent); stroke-width: 1.2; stroke-linecap: round; }
+.bt-root:not(#_) .pf-tail { fill: color-mix(in srgb, var(--bt-text) 5%, var(--bt-bg)); }
+.bt-root:not(#_) .pf-collar { fill: color-mix(in srgb, var(--bt-text) 6%, var(--bt-bg)); }
+.bt-root:not(#_) .pf-cheek { fill: none; stroke: color-mix(in srgb, var(--bt-blue) 35%, transparent); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) .pf-eyemark { fill: color-mix(in srgb, var(--bt-text-muted) 70%, var(--bt-blue)); }
+.bt-root:not(#_) .pf-eyering { fill: color-mix(in srgb, var(--bt-red) 80%, var(--bt-rank-3)); }
+.bt-root:not(#_) .pf-eye { fill: var(--bt-bg); }
+.bt-root:not(#_) .pf-eyehi { fill: var(--bt-text); }
+.bt-root:not(#_) .pf-beak { stroke: color-mix(in srgb, var(--bt-bg) 40%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .pf-plate { fill: color-mix(in srgb, var(--bt-blue) 40%, var(--bt-text-muted)); }
+.bt-root:not(#_) .pf-ridge { fill: none; stroke: var(--bt-lamp); stroke-width: 3; stroke-linecap: round; }
+.bt-root:not(#_) .pf-groove { fill: none; stroke: color-mix(in srgb, var(--bt-title) 70%, transparent); stroke-width: 1.6; stroke-linecap: round; }
+.bt-root:not(#_) .pf-gape { fill: none; stroke: color-mix(in srgb, var(--bt-bg) 60%, transparent); stroke-width: 1.4; }
+.bt-root:not(#_) .pf-rosette { fill: var(--bt-rank-3); }
+.bt-root:not(#_) .pf-foot { fill: var(--bt-rank-3); stroke: color-mix(in srgb, var(--bt-bg) 40%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .pf-capelin { fill: color-mix(in srgb, var(--bt-text) 80%, var(--bt-teal)); stroke: color-mix(in srgb, var(--bt-bg) 40%, transparent); stroke-width: 0.6; }
+.bt-root:not(#_) .pf-capback { fill: none; stroke: color-mix(in srgb, var(--bt-teal) 55%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .pf-capeye { fill: var(--bt-bg); }
+.bt-root:not(#_) .pf-fish { transform-box: fill-box; transform-origin: 0% 50%; animation: pf-wiggle 1.6s ease-in-out infinite; }
+.bt-root:not(#_) .pf-fish:nth-of-type(2n) { animation-delay: -0.5s; } .bt-root:not(#_) .pf-fish:nth-of-type(3n) { animation-delay: -1s; }
+.bt-root:not(#_) .pf-bird { transform-box: fill-box; transform-origin: 50% 100%; animation: pf-bob 3.6s ease-in-out infinite; }
+.bt-root:not(#_) .pf-eyeg { transform-box: fill-box; transform-origin: center; animation: pf-blink 5s infinite; }
+/* in flight, with the postcard */
+.bt-root:not(#_) .pf-fly :is(.pff-body, .pff-head, .pff-wing path) { fill: color-mix(in srgb, var(--bt-text) 8%, var(--bt-bg)); stroke: color-mix(in srgb, var(--bt-text) 25%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .pf-fly :is(.pff-belly, .pff-face) { fill: color-mix(in srgb, var(--bt-text) 90%, var(--bt-blue)); }
+.bt-root:not(#_) .pf-fly :is(.pff-beak, .pff-feet) { fill: var(--bt-rank-3); }
+.bt-root:not(#_) .pf-fly .pff-card rect { fill: var(--bt-text); stroke: var(--bt-title); stroke-width: 1; }
+.bt-root:not(#_) .pf-fly .pff-card path { stroke: var(--bt-text-faint); stroke-width: 1; }
+.bt-root:not(#_) .pf-fly .pff-wing { transform-box: fill-box; transform-origin: 100% 100%; animation: pff-flap 0.32s ease-in-out infinite alternate; }
+.bt-root:not(#_) .pf-fly .pff-wing--b { animation-delay: -0.16s; opacity: 0.8; }
+
+/* ---------- The wall ---------- */
+.bt-root:not(#_) .kw-wall { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px; padding: 8px 4px; }
+.bt-root:not(#_) .kw-wall--skipper { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 20px; padding-top: 18px; }
+.bt-root:not(#_) .kw-wall.is-empty { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .kw-more { display: flex; align-items: center; justify-content: center; gap: 12px; }
+.bt-root:not(#_) .kw-more[hidden] { display: none; }
+.bt-root:not(#_) .kw-card { position: relative; }
+.bt-root:not(#_) .kw-text { margin: 0; color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.6; white-space: pre-line; overflow-wrap: anywhere; }
+.bt-root:not(#_) .kw-from { display: block; font-weight: 900; color: var(--bt-text); overflow-wrap: anywhere; }
+.bt-root:not(#_) .kw-conn { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .kw-feat { position: absolute; top: -10px; left: 16px; z-index: 2; padding: 3px 10px; border-radius: var(--bt-radius-full); background: var(--bt-title); color: var(--bt-bg); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.06em; text-transform: uppercase; }
+.bt-root:not(#_) .kw-pend { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: 8px 10px; margin-top: 4px; padding-top: 10px; border-top: 1px dashed var(--bt-border-2); }
+.bt-root:not(#_) .kw-card.is-mine { outline: 2px dashed color-mix(in srgb, var(--bt-teal) 60%, transparent); outline-offset: 4px; }
+.bt-root:not(#_) .kw-empty { text-align: center; }
+.bt-root:not(#_) .kw-empty .kw-empty-puffin { width: 120px; height: auto; margin: 0 auto; }
+.bt-root:not(#_) .kw-empty .bt-mascot { width: 70px; margin: 0 auto; }
+@container bt (max-width: 900px) { .bt-root:not(#_) .kw-wall--skipper { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .kw-wall:is(.kw-wall--newfoundland, .kw-wall--skipper) { grid-template-columns: minmax(0, 1fr); } }
+
+/* Puffin Post: postcards */
+.bt-root:not(#_) .kw-postcard { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 0; min-height: 200px; padding: 18px; border-radius: 6px; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 4%, var(--bt-surface-2)), var(--bt-surface)); border: 1px solid var(--bt-border-2); box-shadow: 0 18px 30px -18px var(--bt-bg), 0 2px 0 color-mix(in srgb, var(--bt-text) 5%, transparent) inset; transform: rotate(var(--tilt, 0deg)); transition: transform 0.4s cubic-bezier(.3, 1.4, .4, 1), box-shadow 0.4s; }
+.bt-root:not(#_) .kw-postcard:hover { transform: rotate(0) translateY(-4px) scale(1.01); box-shadow: 0 30px 50px -24px rgba(var(--bt-gold-rgb), 0.35); }
+.bt-root:not(#_) .kw-postcard.is-feat { border-color: color-mix(in srgb, var(--bt-title) 55%, transparent); }
+.bt-root:not(#_) .kw-pc-l { padding-right: 16px; border-right: 1px solid color-mix(in srgb, var(--bt-text) 14%, transparent); }
+.bt-root:not(#_) .kw-pc-l .kw-text { font-style: italic; }
+.bt-root:not(#_) .kw-pc-r { position: relative; display: flex; flex-direction: column; justify-content: flex-end; gap: 8px; padding-left: 16px; min-height: 150px; }
+.bt-root:not(#_) .kw-addr { display: flex; flex-direction: column; gap: 4px; padding-top: 6px; }
+.bt-root:not(#_) .kw-addr-k { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+.bt-root:not(#_) .kw-addr :is(.kw-from, .kw-conn) { border-bottom: 1px solid color-mix(in srgb, var(--bt-text) 14%, transparent); padding-bottom: 4px; }
+.bt-root:not(#_) .kw-stamp { position: absolute; top: 0; right: 0; width: 52px; height: 62px; padding: 5px; background: color-mix(in srgb, var(--bt-text) 88%, var(--bt-title)); transform: rotate(4deg); -webkit-mask: radial-gradient(circle 2.6px, transparent 95%, var(--bt-bg)) -4px -4px / 8px 8px round, linear-gradient(var(--bt-bg) 0 0) content-box; -webkit-mask-composite: source-over; mask: radial-gradient(circle 2.6px, transparent 95%, var(--bt-bg)) -4px -4px / 8px 8px round, linear-gradient(var(--bt-bg) 0 0) content-box; mask-composite: add; }
+.bt-root:not(#_) .kw-stamp-in { position: relative; display: grid; place-items: center; width: 100%; height: 100%; border: 1px solid color-mix(in srgb, var(--bt-red) 60%, var(--bt-bg)); background: radial-gradient(80% 70% at 50% 40%, color-mix(in srgb, var(--bt-blue) 30%, var(--bt-surface)), var(--bt-surface)); }
+.bt-root:not(#_) .kw-stamp-in svg { width: 70%; }
+.bt-root:not(#_) .kw-stamp-in s { position: absolute; bottom: 1px; color: var(--bt-title); font-size: 6px; font-weight: 900; text-decoration: none; letter-spacing: 0.08em; }
+.bt-root:not(#_) .ks-blk { fill: color-mix(in srgb, var(--bt-text) 8%, var(--bt-bg)); } .bt-root:not(#_) .ks-face { fill: var(--bt-text); } .bt-root:not(#_) .ks-beak { fill: var(--bt-rank-3); }
+.bt-root:not(#_) .kw-pm { position: absolute; top: 4px; right: 34px; width: 74px; overflow: visible; transform: rotate(-12deg); opacity: 0.75; }
+.bt-root:not(#_) .kw-pm circle { fill: none; stroke: color-mix(in srgb, var(--bt-text-muted) 70%, transparent); stroke-width: 1.6; }
+.bt-root:not(#_) .kw-pm text { fill: color-mix(in srgb, var(--bt-text-muted) 80%, transparent); font-size: 8px; font-weight: 900; letter-spacing: 0.1em; }
+.bt-root:not(#_) .kw-pm .kw-pm-d { font-size: 9px; }
+.bt-root:not(#_) .kw-pm .kw-pm-w { fill: none; stroke: color-mix(in srgb, var(--bt-text-muted) 60%, transparent); stroke-width: 1.4; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .kw-postcard { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .kw-pc-l { padding: 0 70px 12px 0; border-right: 0; border-bottom: 1px solid color-mix(in srgb, var(--bt-text) 14%, transparent); }
+  .bt-root:not(#_) .kw-pc-r { padding: 10px 0 0; min-height: 0; position: static; }
+  .bt-root:not(#_) .kw-stamp { top: 14px; right: 14px; }
+  .bt-root:not(#_) .kw-pm { top: 40px; right: 40px; width: 60px; }
+}
+
+/* Paw Notes: coloured pinned notes with a teal paw pin */
+.bt-root:not(#_) .pn-note { display: flex; flex-direction: column; gap: 12px; padding: 26px 18px 16px; border-radius: 4px 4px 14px 4px; border: 1px solid var(--bt-border-2); box-shadow: 0 16px 26px -18px var(--bt-bg); transform: rotate(var(--tilt, 0deg)); transition: transform 0.4s cubic-bezier(.3, 1.4, .4, 1); }
+.bt-root:not(#_) .pn-note:hover { transform: rotate(0) translateY(-4px); }
+.bt-root:not(#_) .pn-note--1 { background: color-mix(in srgb, var(--bt-title) 14%, var(--bt-surface)); }
+.bt-root:not(#_) .pn-note--2 { background: color-mix(in srgb, var(--bt-teal) 14%, var(--bt-surface)); }
+.bt-root:not(#_) .pn-note--3 { background: color-mix(in srgb, var(--bt-pink) 12%, var(--bt-surface)); }
+.bt-root:not(#_) .pn-note--4 { background: color-mix(in srgb, var(--bt-blue) 14%, var(--bt-surface)); }
+.bt-root:not(#_) .pn-pin { position: absolute; top: -12px; left: 50%; display: grid; place-items: center; width: 30px; height: 30px; margin-left: -15px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--bt-teal) 55%, var(--bt-text)), color-mix(in srgb, var(--bt-teal) 70%, var(--bt-bg))); box-shadow: 0 4px 8px -2px var(--bt-bg); }
+.bt-root:not(#_) .pn-pin svg { width: 17px; }
+.bt-root:not(#_) .pn-pin svg * { fill: color-mix(in srgb, var(--bt-text) 90%, var(--bt-teal)); }
+.bt-root:not(#_) .pn-note .kw-feat { left: 12px; }
+
+/* ---------- Composer and sent moment (in the modal portal) ---------- */
+.bt-portal[data-feature="kind-words"] .kw-modal { display: flex; flex-direction: column; }
+.bt-portal[data-feature="kind-words"] .kw-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-portal[data-feature="kind-words"] .kw-chips .bt-chip.is-on { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-portal[data-feature="kind-words"] .kw-countrow { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.bt-portal[data-feature="kind-words"] .kw-preview :is(.kw-postcard, .pn-note) { transform: none; min-height: 0; }
+.bt-portal[data-feature="kind-words"] .kw-preview .pn-note { margin-top: 12px; }
+.bt-portal[data-feature="kind-words"] .kw-sent { overflow: hidden; text-align: center; }
+.bt-portal[data-feature="kind-words"] .kw-sent-title { text-align: center; margin-top: 4px; }
+.bt-portal[data-feature="kind-words"] .kw-sent-p { margin: 8px 0 0; color: var(--bt-text-muted); line-height: 1.6; }
+.bt-portal[data-feature="kind-words"] .kw-sent-acts { justify-content: center; }
+/* Puffin Post: the puffin flies off with the postcard */
+.bt-portal[data-feature="kind-words"] .kw-sky { position: relative; height: 160px; margin: -4px 0 12px; overflow: hidden; border-radius: var(--bt-radius-xl); background: linear-gradient(180deg, color-mix(in srgb, var(--bt-primary) 16%, var(--bt-bg)), color-mix(in srgb, var(--bt-rank-3) 30%, var(--bt-bg))); }
+.bt-portal[data-feature="kind-words"] .kw-sky-bg { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bt-portal[data-feature="kind-words"] .kw-sky .pf-fly { position: absolute; z-index: 1; width: 170px; left: 40%; top: 18%; }
+.bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-sky .pf-fly { left: 10%; top: 30%; animation: pff-go 4s cubic-bezier(.4, 0, .6, 1) infinite; }
+/* Paw Notes: the note drops onto the board and the paw pin pops in */
+.bt-portal[data-feature="kind-words"] .kw-pinstage { padding: 22px 14px 10px; border-radius: var(--bt-radius-xl); background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--bt-rank-3) 10%, var(--bt-surface)) 0 6px, color-mix(in srgb, var(--bt-rank-3) 6%, var(--bt-surface)) 6px 12px); text-align: left; }
+.bt-portal[data-feature="kind-words"] .kw-pinstage .pn-note { transform: rotate(-1.5deg); }
+.bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-pinstage .pn-note { animation: pn-drop 0.6s cubic-bezier(.3, 1.4, .4, 1) both; }
+.bt-portal[data-feature="kind-words"] .kw-sent.is-go .kw-pinstage .pn-pin { animation: pn-pop 0.45s cubic-bezier(.3, 1.8, .4, 1) 0.5s both; }
+
+/* ---------- Admin queue: /admin/kind-words ---------- */
+.bt-root:not(#_) .kwa { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+.bt-root:not(#_) .kwa-hero { display: grid; grid-template-columns: minmax(0, 1fr) 120px; gap: 16px; align-items: center; padding: 22px 24px; border: 1px solid var(--bt-border-2); border-radius: 22px; background: radial-gradient(70% 90% at 100% 100%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .kwa-hero p { margin: 6px 0 0; color: var(--bt-text-muted); }
+.bt-root:not(#_) .kwa-hero h1 { margin: 6px 0 0; }
+.bt-root:not(#_) .kwa-puffin { width: 120px; height: auto; }
+.bt-root:not(#_) .kwa-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.bt-root:not(#_) .kwa-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .kwa-chips .bt-chip.is-on { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+.bt-root:not(#_) .kwa-list { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .kwa-item { position: relative; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: center; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: 18px; background: var(--bt-surface); overflow: hidden; transition: border-color 0.3s, opacity 0.4s, transform 0.4s; }
+.bt-root:not(#_) .kwa-item:hover { border-color: color-mix(in srgb, var(--bt-green) 45%, transparent); }
+.bt-root:not(#_) .kwa-item.is-leaving { opacity: 0; transform: translateX(16px); }
+.bt-root:not(#_) .kwa-card :is(.kw-postcard, .pn-note) { transform: none; outline: 0; }
+.bt-root:not(#_) .kwa-card .pn-note { margin-top: 12px; }
+.bt-root:not(#_) .kwa-side { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .kwa-meta { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.bt-root:not(#_) .kwa-meta span { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .kwa-note { color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-style: italic; }
+.bt-root:not(#_) .kwa-acts { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .kwa-stamped { position: absolute; left: 30%; top: 40%; padding: 6px 16px; border: 3px solid var(--bt-green); border-radius: 8px; color: var(--bt-green); font-size: 26px; font-weight: 900; letter-spacing: 0.2em; transform: rotate(-12deg) scale(2.4); opacity: 0; pointer-events: none; }
+.bt-root:not(#_) .kwa-item.is-approved { border-color: var(--bt-green); }
+.bt-root:not(#_) .kwa-item.is-approved .kwa-stamped { animation: kwa-stamp 0.45s cubic-bezier(.3, 1.6, .4, 1) forwards; }
+.bt-root:not(#_) .kwa-empty .kwa-puffin { width: 110px; margin: 0 auto; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .kwa-item { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .kwa-hero { grid-template-columns: minmax(0, 1fr) 80px; }
+  .bt-root:not(#_) .kwa-puffin { width: 80px; }
+}
+/* the reject note dialog */
+.bt-portal[data-feature="kind-words"] .kwa-reject textarea { width: 100%; }
+
+@keyframes pf-wiggle { 0%, 100% { transform: rotate(0); } 50% { transform: rotate(4deg); } }
+@keyframes pf-bob { 0%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-2px) rotate(-1.5deg); } }
+@keyframes pf-blink { 0%, 94%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+@keyframes pff-flap { from { transform: rotate(0); } to { transform: rotate(70deg) scaleY(0.6); } }
+@keyframes pff-go { 0% { transform: translate(-60px, 30px) rotate(6deg); opacity: 0; } 15% { opacity: 1; } 100% { transform: translate(320px, -90px) rotate(-10deg); opacity: 0; } }
+@keyframes pn-drop { from { transform: translateY(-40px) rotate(-8deg); opacity: 0; } to { transform: rotate(-1.5deg); opacity: 1; } }
+@keyframes pn-pop { from { transform: scale(0); } to { transform: scale(1); } }
+@keyframes kwa-stamp { to { opacity: 0.9; transform: rotate(-12deg) scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.pf-fish, .pf-bird, .pf-eyeg, .pff-wing, .pf-fly, .pn-note, .pn-pin) { animation: none !important; }
+  .bt-root:not(#_) :is(.kw-postcard, .pn-note, .kwa-item) { transition: none !important; }
+  .bt-root:not(#_) .kwa-item.is-approved .kwa-stamped { animation: none !important; opacity: 0.9; transform: rotate(-12deg); }
+}

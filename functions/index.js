@@ -920,3 +920,8 @@ exports.brokenLinkFix = brokenLinksModule.brokenLinkFix;
 // Arcade game, Vault game and ended stream. Lives in lib/services/; scripts/sync-services.js runs the same sync from the command line.
 const servicesModule = require("./lib/services").build({ adminLogEntry });
 Object.assign(exports, servicesModule.functions);
+
+// Kind Words (docs/specs/base-camp.md "Kind Words engine"): the Base Camp boards (newfoundland = Puffin Post, skipper = Paw Notes). kindSubmit (members,
+// 3 a day, one pending per board), kindWithdraw (the author, while pending) and kindReview (admins; never deletes; adminLog feature kindWords).
+// Lives in lib/kindWords/; not in lib/live.
+Object.assign(exports, require("./lib/kindWords").build({ adminLogEntry }).functions);

@@ -12,6 +12,8 @@ initPowerWordmarks();
 const dock = document.querySelector<HTMLElement>("[data-bc-dock]");
 if (dock) initStickyBar(dock, { progress: !!document.querySelector(".tl-wrap") });
 mountPupPosts();
+// Kind Words boards ([data-kind-words]): the engine loads only on a page that has one.
+if (document.querySelector("[data-kind-words]")) void import("./kind-words").then((m) => m.mountAllKindWords());
 
 document.addEventListener("click", (e) => {
   const t = (e.target as Element).closest<HTMLElement>("[data-return], [data-bc-retry]");
