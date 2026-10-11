@@ -6,8 +6,6 @@ import { onAuth, type AuthState } from "../../lib/auth";
 import { messageFor } from "../../lib/errors";
 import { RATE_ICON, RATE_LABEL } from "../../../../shared/ui/rate.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
-import { initStickyBar } from "../../../../shared/ui/sticky-bar.js";
-import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
 import { IC, TYPES } from "../services-admin/ui";
 import { gate, services, my, whoOf, rateable, isCore, toPick, BADGES, LADDER, type Service, type My } from "./data";
 import { openRate, openTest } from "./dialogs";
@@ -19,9 +17,6 @@ const LAYOUT_KEY = "bt.services.layout";
 
 const page = document.querySelector<HTMLElement>("[data-sv-page]")!;
 const root = document.querySelector<HTMLElement>("[data-sv-root]")!;
-const dock = document.querySelector<HTMLElement>("[data-sv-dock]");
-if (dock) initStickyBar(dock, { progress: false });
-initPowerWordmarks();
 
 let layout: Layout = "wall";
 try { if (localStorage.getItem(LAYOUT_KEY) === "list") layout = "list"; } catch { /* storage off */ }

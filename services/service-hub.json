@@ -5,11 +5,12 @@
   "area": "Community",
   "blurb": "Every service on the site and stream: rate them, test them, and see what's new.",
   "version": "0.1",
-  "status": "building",
+  "status": "live",
   "audience": "members",
   "routes": [
     "/admin/services",
-    "/services"
+    "/services",
+    "/services/how-it-works"
   ],
   "nav": "services",
   "testPlan": null,
@@ -17,5 +18,5 @@
   "videoTag": "#bt-service-hub",
   "sections": {},
   "talkBack": "note",
-  "help": null
+  "help": "site/src/data/help/service-hub.json"
 }

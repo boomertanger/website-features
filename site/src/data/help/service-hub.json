@@ -1,0 +1,26 @@
+[
+  {
+    "id": "who-sees-ratings",
+    "q": "Can other members see my rating?",
+    "a": "No. Only Boomer and the admins see ratings and comments. Your own page shows yours.",
+    "keys": ["see", "seen", "private", "public", "other members", "who reads", "visible"]
+  },
+  {
+    "id": "why-comment",
+    "q": "Why does Not for me need a comment?",
+    "a": "A thumbs down with no reason can't be fixed. One sentence is plenty.",
+    "keys": ["not for me", "comment", "thumbs down", "why", "required", "dislike"]
+  },
+  {
+    "id": "core-service",
+    "q": "What's a core service?",
+    "a": "Features, pages, Arcade games and stream setup that are live and open to you. Vault games and streams don't count toward Full Coverage; Vault games have their own Vault Critic badges.",
+    "keys": ["core", "full coverage", "count", "vault", "stream", "which services"]
+  },
+  {
+    "id": "xp-for-rating",
+    "q": "Do I get XP for rating?",
+    "a": "Not per rating. The badges pay XP, and Night Shift runs rating activities some weeks.",
+    "keys": ["xp", "points", "reward", "level", "night shift", "badge"]
+  }
+]

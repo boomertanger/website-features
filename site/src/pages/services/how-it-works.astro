@@ -1,0 +1,227 @@
+---
+// /services/how-it-works: the Service Hub's story page (docs/specs/service-hub.md §8, build part 8; mockup docs/design/mockups/
+// service-hub-how-it-works.html, hero H2 "The strip, up close"; design-system.md §8aa). Public: visitors read all of it.
+// TocLayout and the shared How it works blocks (styles/how-it-works.css, shared/ui/how-it-works.js): the hero with the real page strip tilted
+// (decorative), stage cards with hover scenes, Try it (a sample service; nothing is saved or sent), Rating or Talk back, the test rows, the
+// journey, flip medals (names, rarities and rules from functions/data/trophy-room-badges.json and lib/services), the House rules placard, Ask
+// BOOMBOT (from data/help/service-hub.json, which Talk Back's BOOMBOT reuses) and the closing call to action. The only reads are for a signed-in
+// member's progress line at the end (scripts/services/how.ts).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import ServicesBar from "../../components/services/ServicesBar.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { talkbackHtml } from "../../../../shared/ui/talkback.js";
+import { RATE_ICON } from "../../../../shared/ui/rate.js";
+import { IC } from "../../scripts/services-admin/ui";
+import site from "../../data/site.json";
+import HELP from "../../data/help/service-hub.json";
+import "../../styles/how-it-works.css";
+import "../../styles/services.css";
+import "../../styles/services-how.css";
+
+const talkOn = (site.modules as string[]).includes("talkBack");
+const SOON = talkOn ? "" : `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Coming soon</span>`;
+const NAV: [string, string][] = [["s-what", "What it is"], ["s-try", "Try it"], ["s-which", "Rating or Talk back"], ["s-test", "Test new versions"], ["s-next", "What happens next"], ["s-badges", "Badges"], ["s-rules", "House rules"], ["s-faq", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const MARK = "<!--mascot-->";
+const halves = (html: string) => html.split(MARK);
+
+// Hero H2: the real strip for Tap the Splat (as members see it today), Love it pulsing, and its toast. Decorative.
+const [heroA, heroB] = halves(talkbackHtml({ service: "tap-the-splat", name: "Tap the Splat", state: "new", rate: true, talk: talkOn, mascotHtml: MARK })
+  .replace('data-rate-v="love" aria-pressed="false"', 'data-rate-v="love" aria-pressed="true"').replace(/<button /g, '<button tabindex="-1" '));
+
+// 01 What it is: stage cards with hover scenes
+const PARTS = [
+  { k: "rate", ic: "👍", t: "Rate it", d: "One tap at the bottom of any page: Love it, Like it, or Not for me.", who: "Members", scene: `<div class="sv-sc-rate">${(["nope", "like", "love"] as const).map((v) => `<span data-v="${v}">${RATE_ICON[v]}</span>`).join("")}</div>`, soon: "" },
+  { k: "talk", ic: "💬", t: "Talk back", d: "Ask a question or give feedback. It goes to Hotline Boom and you get a reply.", who: "Everyone", scene: `<div class="sv-sc-talk"><span class="q">Does my rating show on my profile?</span><span class="a">Nope, it stays private.</span></div>`, soon: SOON },
+  { k: "test", ic: "🧪", t: "Test it", d: "Run a short checklist on a new version, on your phone or computer.", who: "Members", scene: `<div class="sv-sc-test">${[1, 2, 3].map((i) => `<span style="--i:${i}"><i>${IC.check}</i><b></b></span>`).join("")}</div>`, soon: "" },
+  { k: "change", ic: "🔁", t: "See it change", d: "Boomer fixes and improves things, and tells you when there's a new version.", who: "Everyone", scene: `<div class="sv-sc-change"><span class="v old">v1.0</span><span class="ar">→</span><span class="v new">v1.1</span><span class="tag">New version</span></div>`, soon: "" },
+];
+
+// 02 Try it: the sample strip (the kit's markup) and the mini wall
+const [tryA, tryB] = halves(talkbackHtml({ service: "sample-bone-library", name: "the sample Bone Library", state: "new", rate: true, talk: false, mascotHtml: MARK }));
+
+// 04 Test new versions: three sample rows
+const CHECKS = [["Open the Arcade from the Play menu", true], ["Start Tap the Splat from its page", true], ["Finish a run on your phone", false]] as const;
+
+// 05 What happens next
+const JOURNEY = [
+  ["👍", "You rate", "Love it, Like it or Not for me."],
+  ["📋", "Boomer sees it", "It lands on his Service Hub board with everyone's."],
+  ["🛠", "Fixes get made", "Bugs and ideas move through Bug Zapper and Feature Lab."],
+  ["🔁", "New version", "The service gets a new version number."],
+  ["🤔", "Still feel the same?", "You can keep your rating or change it."],
+] as const;
+
+// 06 Badges (functions/data/trophy-room-badges.json; lib/services/logic.js RATING_LADDER, TESTER_LADDER, FULL_COVERAGE)
+const FLIPS = [
+  { ic: "👍", t: "First Verdict", sub: "Your first rating", how: "Rate any service once.", un: "Common · +10 XP", c: "primary" },
+  { ic: "📝", t: "Critic I–IV", sub: "10, 25, 50, 100", how: "Rate 10, then 25, 50 and 100 services. Vault games and streams count too.", un: "Common to Epic · +10 to +100 XP", c: "teal" },
+  { ic: "🗺️", t: "Full Coverage", sub: "Every core service", how: "Rate every core service open to you. New services never take it away.", un: "Rare · +50 XP", c: "gold" },
+  { ic: "🧪", t: "Tester I–III", sub: "1, 5, 15 tests", how: "Finish 1, then 5 and 15 walkthrough tests. Each new version of a service counts as a new test.", un: "Common to Rare · +10 to +50 XP", c: "red" },
+] as const;
+
+// 07 House rules
+const RULES = [
+  ["🎯", "Be honest", "A Like means something only if a Not for me is possible."],
+  ["✍️", "Say why", "Not for me needs a sentence. Help Boomer fix it."],
+  ["🤝", "Be kind", "Rate the thing, not the people who made it."],
+  ["🐛", "Bugs go to Bug Zapper", "It tracks them until they're squashed."],
+  ["☝️", "One rating each", "Change it whenever you like."],
+  ["🔒", "Private stays private", "Only Boomer and the admins read ratings."],
+] as const;
+const FAQS = HELP as { id: string; q: string; a: string; keys: string[] }[];
+---
+<BaseLayout title="How Service Hub works" description="Rate every part of the site and the stream, talk back to Boomer, test new versions first, and earn badges for it.">
+  <ServicesBar slot="bar" section="how" />
+  <TocLayout items={NAV}>
+    <div class="ai-main sv-how" data-svh>
+      <section class="ai-hero sv-how-hero" aria-labelledby="h-hero">
+        <div class="sv-how-hero-txt">
+          <span class="ai-kicker">Service Hub</span>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Every service. <em>Your verdict.</em></h1>
+          <p>Rate what you love, tell Boomer what's not working, and test new versions before everyone else. Every rating is private and every one gets read.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/services">Start rating</a><a class="bt-btn bt-btn--secondary" href="#s-try">Try it here</a></div>
+        </div>
+        <div class="sv-how-scene" aria-hidden="true" inert>
+          <Fragment set:html={heroA} /><Mascot decorative /><Fragment set:html={heroB} />
+          <div class="bt-toast sv-how-toast"><span class="bt-toast-ic">✓</span><span class="bt-toast-text">Saved: you love Tap the Splat.</span></div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-what" aria-labelledby="h-s-what">
+        <Fragment set:html={chapter(1, "s-what", "What it is", "Service Hub is every part of the site and stream in one place: the Arcade, the Vault, Chat Games, Bug Zapper, all of it. You tell Boomer how each one is working for you.")} />
+        <div class="ai-stage">
+          {PARTS.map((p) => (
+            <div class="bt-card ai-part bt-spotlight" tabindex="0">
+              <div class={`ai-scene sv-sc sv-sc--${p.k}`} aria-hidden="true" set:html={p.scene} />
+              <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{p.ic}</span>
+              <div class="ai-part-copy"><h3>{p.t}<Fragment set:html={p.soon} /></h3><p>{p.d}</p><div class="ai-part-foot"><span class="ai-who-chip">{p.who}</span></div></div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-try" aria-labelledby="h-s-try">
+        <Fragment set:html={chapter(2, "s-try", "Try it", "Rate this sample service. It's the same strip you'll find at the bottom of every feature page. Nothing here is saved.")} />
+        <div class="sv-try" data-try>
+          <div class="sv-try-l">
+            <span class="sv-try-tag">Try it · sample</span>
+            <Fragment set:html={tryA} /><Mascot decorative /><Fragment set:html={tryB} />
+            <div class="bt-field sv-try-why" data-try-why hidden>
+              <label class="bt-label" for="sv-try-text">Why not? <span class="sv-req">Required</span></label>
+              <textarea class="bt-textarea" id="sv-try-text" rows="3" maxlength="500" placeholder="What would make it better?" data-try-text></textarea>
+              <div><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-try-save>Save rating</button></div>
+            </div>
+            <div class="sv-try-res" data-try-res aria-live="polite"><span class="bt-meta">Pick a rating to see what happens.</span></div>
+          </div>
+          <div class="sv-try-r">
+            <span class="bt-label">Your wall</span>
+            <div class="bt-wall sv-try-wall">
+              <span class="bt-wall-tile is-rated" data-v="love"><span class="bt-wall-badge" set:html={RATE_ICON.love} /><Fragment set:html={IC.arcadeGame} /><b>Tap the Splat</b></span>
+              <span class="bt-wall-tile is-rated" data-v="like"><span class="bt-wall-badge" set:html={RATE_ICON.like} /><Fragment set:html={IC.feature} /><b>Feature Lab</b></span>
+              <span class="bt-wall-tile" data-try-tile><span class="bt-wall-badge" data-try-badge hidden></span><Fragment set:html={IC.vaultGame} /><b>Bone Library</b><span class="bt-wall-q" data-try-q>Sample</span></span>
+            </div>
+            <p class="bt-fineprint">Tiles light up in the color of your rating. Rate every core service to earn Full Coverage.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-which" aria-labelledby="h-s-which">
+        <Fragment set:html={chapter(3, "s-which", "Rating or Talk back?", "Both live in the same strip, and they do different jobs.")} />
+        <div class="sv-cmp">
+          <div class="bt-card sv-cmp-card sv-cmp-card--rate">
+            <h3><span class="sv-cmp-ic" set:html={RATE_ICON.like} />Rate it</h3>
+            <div class="sv-flow" aria-label="You rate, then Boomer's board, then a better service"><span>You rate</span><i aria-hidden="true">→</i><span>Boomer's board</span><i aria-hidden="true">→</i><span>Better service</span></div>
+            <ul><li>A quick verdict: no reply, no conversation.</li><li>Private: only Boomer and the admins see it.</li><li>Not for me needs a sentence on why.</li><li>Change it any time.</li></ul>
+          </div>
+          <div class="bt-card sv-cmp-card sv-cmp-card--talk">
+            <h3><span class="sv-cmp-ic">💬</span>Talk back<Fragment set:html={SOON} /></h3>
+            <div class="sv-flow" aria-label="You ask, then Hotline Boom, then a reply"><span>You ask</span><i aria-hidden="true">→</i><span>Hotline Boom</span><i aria-hidden="true">→</i><span>A reply</span></div>
+            <ul><li>A question or feedback, with the page attached.</li><li>You get a reply in your alerts (or by email).</li><li>BOOMBOT may answer first if it already knows.</li><li>Something broken? It points you to Bug Zapper.</li></ul>
+            {!talkOn && <p class="bt-fineprint">Talk back switches on soon. Until then, <a href="/contact">Hotline Boom</a> takes questions and feedback.</p>}
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-test" aria-labelledby="h-s-test">
+        <Fragment set:html={chapter(4, "s-test", "Test new versions", "Some services list a few checks. Run them on your phone or computer, mark each one OK or Problem, and a Problem goes straight to Bug Zapper with the page filled in.")} />
+        <ol class="sv-how-steps" aria-label="Three sample checks">
+          {CHECKS.map(([t, ok], i) => (
+            <li class={ok ? "is-ok" : "is-bad"}>
+              <span class="n" aria-hidden="true" set:html={ok ? IC.check : String(i + 1)} />
+              <span class="t">{t}</span>
+              <span class="sv-how-okbad"><span class={ok ? "on-ok" : ""}>OK</span><span class={ok ? "" : "on-bad"}>Problem</span><span class="bt-sr-only">{ok ? "Marked OK" : "Marked Problem"}</span></span>
+            </li>
+          ))}
+        </ol>
+        <p class="bt-fineprint">One counted test per version. Testers earn the Tester badges.</p>
+      </section>
+
+      <section class="ai-sec" id="s-next" aria-labelledby="h-s-next">
+        <Fragment set:html={chapter(5, "s-next", "What happens next", "Your rating doesn't disappear into a void. Here's its trip. Hover or tap a step.")} />
+        <ol class="ai-jr sv-jr" data-journey>
+          {JOURNEY.map(([ic, t, d], n) => (
+            <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{n + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>
+          ))}
+        </ol>
+      </section>
+
+      <section class="ai-sec" id="s-badges" aria-labelledby="h-s-badges">
+        <Fragment set:html={chapter(6, "s-badges", "Badges", "Every rating and test counts. Working names; the art comes later.")} />
+        <div class="bt-flip-grid sv-flips">
+          {FLIPS.map((b) => (
+            <button type="button" class={`bt-flip bt-flip--${b.c}`} aria-label={`${b.t}: ${b.sub}. How to earn: ${b.how} You get: ${b.un}.`}>
+              <span class="bt-flip-in">
+                <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{b.ic}</span><b>{b.t}</b><span class="bt-flip-sub">{b.sub}</span><span class="bt-flip-hint">Hover or tap to flip</span></span>
+                <span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-k">How to earn</span><span class="bt-flip-v">{b.how}</span><span class="bt-flip-k">You get</span><span class="bt-flip-tag">{b.un}</span></span>
+              </span>
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-rules" aria-labelledby="h-s-rules">
+        <Fragment set:html={chapter(7, "s-rules", "House rules", "Short and fair.")} />
+        <div class="bt-placard">
+          <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+          <ol class="bt-placard-list">
+            {RULES.map(([ic, t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t} <span aria-hidden="true">{ic}</span></b><span>{d}</span></li>)}
+          </ol>
+        </div>
+      </section>
+
+      <section class="ai-sec" id="s-faq" aria-labelledby="h-s-faq">
+        <Fragment set:html={chapter(8, "s-faq", "Ask BOOMBOT", "Quick answers. Questions it can't answer go to Hotline Boom.")} />
+        <div class="bt-chat">
+          {FAQS.map((f, i) => (
+            <>
+              <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`sv-ans-${f.id}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{f.q}</button>
+              <div class="bt-chat-a" id={`sv-ans-${f.id}`} role="region" aria-label={`BOOMBOT's answer: ${f.q}`} hidden={i !== 0}>
+                <span class="bt-chat-av" set:html={boombotIcon(`sv-bb-${i}`)} />
+                <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{f.a}</span></div>
+              </div>
+            </>
+          ))}
+        </div>
+      </section>
+
+      <section class="ai-cta sv-how-cta" aria-labelledby="h-cta">
+        <Mascot decorative />
+        <h2 id="h-cta">Light up your wall</h2>
+        <p class="bt-when-visitor">Join free to start rating. It takes a minute, and every rating gets read.</p>
+        <p class="bt-when-signed-in" data-svh-progress>Pick up where you left off.</p>
+        <div class="ai-acts">
+          <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title="Join free to start rating">Join free</a>
+          <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/services">Start rating</a>
+          <a class="bt-btn bt-btn--secondary bt-when-visitor" href="/services">See the Service Hub</a>
+        </div>
+      </section>
+    </div>
+  </TocLayout>
+</BaseLayout>
+
+<script>
+  import "../../scripts/services/how";
+</script>
