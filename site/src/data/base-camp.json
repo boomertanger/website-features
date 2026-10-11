@@ -1,0 +1,61 @@
+{
+  "_about": "Public text for /base-camp (docs/specs/base-camp.md; mockup docs/design/mockups/base-camp.html). The Fan Club text (card backs, full stop stories, chapter 5's paragraph) is NOT here: it lives in sites/boomertanger/memberContent/base-camp, seeded from the gitignored functions/scripts/data/base-camp-member.json. US English; every claim is something Boomer told us or a checked fact. Never Boomer's real first name.",
+  "hero": {
+    "title": "Meet Boomertanger",
+    "lede": "Horror streamer, engineer, husband, dad of two, and the human of a corgi named Skipper. This is where his story starts.",
+    "start": "Start the climb",
+    "watch": "Watch live"
+  },
+  "chapters": [
+    { "id": "bc-ch1", "nav": "Personality", "title": "The personality behind the pixels", "lede": "" },
+    { "id": "bc-ch2", "nav": "Get to know", "title": "Get to know Boomer", "lede": "Boomertanger is a reflection of the guy who built it. Three sides of him, one card each." },
+    { "id": "bc-ch3", "nav": "Blueprint", "title": "Blueprint behind the boom", "lede": "It didn't start with a brand. It started with a kid on an island, a ColecoVision and a lot of curiosity." },
+    { "id": "bc-ch4", "nav": "His edge", "title": "His edge: built for horror gaming", "lede": "Why fans keep coming back, and why developers and other creators team up with him." },
+    { "id": "bc-ch5", "nav": "Beyond", "title": "Base Camp and beyond", "lede": "A growing fanbase, a new site and a lot more to build." }
+  ],
+  "personality": [
+    "Boomertanger pulls you into a world that's anything but ordinary. He's playful, a bit mischievous, and keeps things fresh, weird and very entertaining.",
+    "Just when you think you've figured him out, he flips the script with some unapologetic sass. He's bold and cheeky, and he isn't afraid to stir the pot.",
+    "Under all of it is a guy who keeps pushing forward. He keeps making things, keeps connecting with people, and won't settle for a stream you'd forget."
+  ],
+  "bubble": "Think you've got me figured out?",
+  "sides": [
+    { "key": "character", "suit": "heart", "name": "Character and values", "sub": "Family first. Genuinely nice." },
+    { "key": "streamer", "suit": "ghost", "name": "The streamer", "sub": "Scared of horror. Plays it anyway." },
+    { "key": "professional", "suit": "gear", "name": "The professional", "sub": "Two decades of engineering." }
+  ],
+  "sidesLock": { "title": "Turn the cards over", "text": "Fan Club members see all three sides of Boomer: family, the streamer, and the engineer." },
+  "stops": [
+    { "key": "island", "ic": "🏝", "title": "Island beginnings", "yr": "Newfoundland", "tease": "A close family, an RV and a swimming pool.", "link": { "label": "Visit Newfoundland", "href": "/base-camp/newfoundland" } },
+    { "key": "engineering", "ic": "🎓", "title": "Engineering the future", "yr": "1996 to 2000", "tease": "Computer science, then Minnesota." },
+    { "key": "gaming", "ic": "🕹", "title": "Gaming roots", "yr": "ColecoVision to 2023", "tease": "From a ColecoVision to a first stream." },
+    { "key": "rise", "ic": "📈", "title": "The rise", "yr": "2024 to 2025", "tease": "Granny, a son in chat, and three platforms." }
+  ],
+  "stopsLock": { "title": "Read the whole climb", "text": "Every stop on the trail, from Newfoundland to the Granny Gauntlet, is in the Fan Club. It's free." },
+  "then": { "date": "September 30, 2025", "total": 5753, "twitch": 514, "tiktok": 4688, "youtube": 552 },
+  "edge": [
+    { "title": "He loves horror. It gets him every time.", "text": "Games, movies, the slow build and the jump. He's a lifelong fan and he still screams. That's the fun of it.", "scene": "scream", "tone": "blood" },
+    { "title": "Indie horror is home.", "text": "Small studios, strange games, and the Granny Gauntlet that blew the channel up in June 2025.", "scene": "games", "tone": "gold", "go": { "label": "See what he's playing", "href": "/games" } },
+    { "title": "Chat is in the game.", "text": "Viewers remember the codes, pick the route and call the escape when it all goes wrong.", "scene": "chat", "tone": "teal", "go": { "label": "How Chat Games work", "href": "/live/chat-games" } },
+    { "title": "Mods are part of the team.", "text": "They help set the tone of the chat and keep it welcoming and fair. He trusts them with real say, and he gives them the credit.", "scene": "mods", "tone": "title", "go": { "label": "Meet the crew", "href": "/crew" } },
+    { "title": "Built by an engineer.", "text": "He started in R&D systems engineering in 2000, on projects for the Army, the Navy and NASA. He runs his stream setup the same way, and he built the site you're on.", "scene": "pcs", "tone": "ember", "go": { "label": "See the setup", "href": "/tech-stack" } }
+  ],
+  "beyond": {
+    "opener": "More cinematic horror, more chaos you can steer from chat, and more ways to be part of the story.",
+    "lock": { "title": "See what's coming", "text": "The plans for what's next are in the Fan Club." }
+  },
+  "trails": [
+    { "icon": "🌊", "title": "Newfoundland", "text": "The island where it all started.", "href": "/base-camp/newfoundland" },
+    { "icon": "🐕", "title": "Skipper", "text": "The corgi who runs the house.", "href": "/base-camp/skipper" }
+  ],
+  "askBoombot": [
+    { "q": "Why is it called Base Camp?", "a": "It's the starting point. Before you climb into the streams, this is where you find out who Boomer is, where he came from and what makes his streams his." },
+    { "q": "Is he really scared?", "a": "Yes. Scary games and movies genuinely terrify him. He plays them anyway because he loves the suspense." },
+    { "q": "Where can I watch?", "a": "Twitch is the main stage, TikTok is where a lot of people find him, and YouTube keeps the streams and highlights. The schedule shows when he's on next, in your own time zone." },
+    { "q": "What does the Fan Club open here?", "a": "Fan Club is free. On this page it opens the full story: all three sides of Boomer, every stop on the trail and what's coming next." }
+  ],
+  "closing": {
+    "visitor": { "title": "Pull up a seat at camp", "text": "The Fan Club is free, and it opens the rest of the story." },
+    "member": { "title": "See you at the next stream", "text": "Grab a spot by the fire. Chat's waiting." }
+  }
+}

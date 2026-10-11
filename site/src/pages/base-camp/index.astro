@@ -1,0 +1,160 @@
+---
+// /base-camp: the story of Boomertanger (docs/specs/base-camp.md "Page 1"; mockup docs/design/mockups/base-camp.html, round 4: W1, H1 The climb,
+// playing cards, E1 stage cards). A story page in the full frame: the BASECAMP bar, TocLayout rail, the hero (the climb: five waypoints link to the
+// chapters, the mascot and the painted sleeping Skipper by the fire), then five ghost-numbered chapters: 01 The personality behind the pixels,
+// 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (four stops, the story panel, Then and now), 04 His
+// edge (Top 5 as E1 stage cards), 05 Base Camp and beyond (trails, the Pup Post mail card, Ask BOOMBOT), and the closing call.
+// Public text: src/data/base-camp.json. The Fan Club text (card backs, stop stories, chapter 5's paragraph) loads in the browser from
+// sites/boomertanger/memberContent/base-camp for members only (scripts/base-camp/story.ts); the page HTML carries none of it.
+import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import PupPost from "../../components/base-camp/PupPost.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { climbScene, edgeScene, suitSvg, cardIndex, platformTile } from "../../scripts/base-camp/story-art";
+import data from "../../data/base-camp.json";
+import "../../styles/base-camp-story.css";
+
+const CH = data.chapters;
+const NAV: [string, string][] = CH.map((c) => [c.id, c.nav]);
+const chapter = (i: number) => {
+  const c = CH[i], n = String(i + 1).padStart(2, "0");
+  return `<header class="bt-chapter bt-chapter--ghost" data-n="${n}"><p class="bt-chapter-eyebrow" aria-hidden="true">${n} · Chapter</p><h2 class="bt-chapter-title" id="h-${c.id}">${c.title}</h2>${c.lede ? `<p class="bt-chapter-lede">${c.lede}</p>` : ""}</header>`;
+};
+const fmt = (n: number) => n.toLocaleString("en-US");
+const then = data.then;
+const PLATS = [["twitch", "Twitch"], ["tiktok", "TikTok"], ["youtube", "YouTube"]] as const;
+const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+---
+<BaseCampLayout title="Base Camp" section="story" description="Who Boomer is and how it all started: the personality behind the pixels, the climb from an island to three platforms, and why his horror streams work.">
+  <div data-bc-story>
+    <TocLayout items={NAV}>
+      <div class="ai-main bc-main">
+        <section class="ai-hero bc-hero" aria-labelledby="h-hero">
+          <div>
+            <span class="ai-kicker">Community · Base Camp</span>
+            <h1 class="bt-title bt-title--hero" id="h-hero">{data.hero.title}</h1>
+            <p>{data.hero.lede}</p>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href={`#${CH[0].id}`}>{data.hero.start}</a><a class="bt-btn bt-btn--secondary" href="/live">{data.hero.watch}</a></div>
+          </div>
+          <Fragment set:html={climbScene(CH.map((c) => c.nav), CH.map((c) => c.id))} />
+        </section>
+
+        <section class="bc-ch" id={CH[0].id} aria-labelledby={`h-${CH[0].id}`}>
+          <Fragment set:html={chapter(0)} />
+          <div class="bc-pers">
+            <div>{data.personality.map((p) => <p>{p}</p>)}</div>
+            <div class="bc-mascot-card"><div class="bc-bubble">{data.bubble}</div><Mascot aware decorative /></div>
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[1].id} aria-labelledby={`h-${CH[1].id}`}>
+          <Fragment set:html={chapter(1)} />
+          <div class="bc-hand">
+            {data.sides.map((s) => (
+              <button type="button" class="bt-flip bc-pcard" data-suit={s.suit} data-side={s.key} aria-label={`${s.name}. ${s.sub} Full story in the Fan Club.`}>
+                <span class="bt-flip-in">
+                  <span class="bt-flip-face pc-face" aria-hidden="true">
+                    <span class="pc-frame"></span>
+                    <Fragment set:html={cardIndex(s.suit) + cardIndex(s.suit, "pc-idx--br")} />
+                    <span class="pc-art" set:html={suitSvg(s.suit, "pc-big")} />
+                    <b class="pc-name">{s.name}</b><span class="pc-sub">{s.sub}</span><span class="pc-foil"></span>
+                  </span>
+                  <span class="bt-flip-face bt-flip-face--back pc-face pc-face--back" aria-hidden="true">
+                    <span class="pc-lattice"></span><span class="pc-medal"><Mascot decorative /></span><b class="pc-name">Fan Club card</b><span class="pc-sub">Join free below to turn it over.</span>
+                  </span>
+                </span>
+                <template data-back><span class="pc-lattice"></span><span class="pc-medal"><Mascot decorative /></span><b class="pc-name">Fan Club card</b><span class="pc-sub">Join free below to turn it over.</span></template>
+              </button>
+            ))}
+          </div>
+          <div data-bc-sides-lock></div>
+        </section>
+
+        <section class="bc-ch" id={CH[2].id} aria-labelledby={`h-${CH[2].id}`}>
+          <Fragment set:html={chapter(2)} />
+          <ol class="ai-jr ai-jr--4 bc-jr" data-journey>
+            {data.stops.map((s, i) => (
+              <li tabindex="0" class={i === 0 ? "is-sel" : ""} aria-label={`${s.title}, ${s.yr}. ${s.tease}`}>
+                <span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{s.ic}</span>
+                <span class="bc-yr">{s.yr}</span><b>{s.title}</b><span class="ai-jr-t">{s.tease}</span>
+              </li>
+            ))}
+          </ol>
+          <div data-bc-stop aria-live="polite"></div>
+          <h3 class="bt-heading bc-sub">Then and now</h3>
+          <div class="bc-then" data-bc-then>
+            <div class="bc-then-col">
+              <div class="bc-then-top"><span class="bt-label">Then</span><span class="bt-badge bt-badge--gray">{then.date}</span></div>
+              <div class="bc-big">{fmt(then.total)}<small>followers across platforms</small></div>
+              <ul class="bc-plats">{PLATS.map(([k, label]) => <li data-plat={k}><Fragment set:html={platformTile(k)} /><span class="bt-sr-only">{label}</span><span class="bc-plat-bar"><i style={`--w:${((then[k] / then.tiktok) * 100).toFixed(1)}%`}></i></span><b>{fmt(then[k])}</b></li>)}</ul>
+            </div>
+            <div class="bc-arrow" aria-hidden="true">→</div>
+            <div class="bc-then-col is-now">
+              <div class="bc-then-top"><span class="bt-label">Today</span><span class="bt-badge bt-badge--gold">Live count</span></div>
+              <div class="bc-big"><span data-bc-now aria-live="off">0</span><small>followers right now</small></div>
+              <ul class="bc-plats">{PLATS.map(([k, label]) => <li data-plat={k} hidden><Fragment set:html={platformTile(k)} /><span class="bt-sr-only">{label}</span><span class="bc-plat-bar"><i></i></span><b></b></li>)}</ul>
+              <div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-bc-replay>Play the climb again</button></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[3].id} aria-labelledby={`h-${CH[3].id}`}>
+          <Fragment set:html={chapter(3)} />
+          <div class="ai-stage bc-stage">
+            {data.edge.map((e, i) => {
+              const inner = `<span class="bc-e-ring" aria-hidden="true"></span><div class="ai-scene bc-e-scene">${edgeScene(e.scene)}<span class="bc-e-cue" aria-hidden="true"><i></i>Hover</span></div><div class="ai-part-copy"><span class="bc-e-n" aria-hidden="true">0${i + 1}</span><h3>${e.title}</h3><p>${e.text}</p>${e.go ? `<div class="ai-part-foot"><span class="bt-card-go">${e.go.label}${ARROW}</span></div>` : ""}</div>`;
+              const cls = `bt-card ai-part bt-spotlight bc-e${e.go ? " bt-card--door" : ""}${i === 0 ? " bc-wide" : ""}`;
+              return e.go
+                ? <a class={cls} data-tone={e.tone} href={e.go.href} set:html={inner} />
+                : <article class={cls} data-tone={e.tone} tabindex="0" set:html={inner} />;
+            })}
+          </div>
+        </section>
+
+        <section class="bc-ch" id={CH[4].id} aria-labelledby={`h-${CH[4].id}`}>
+          <Fragment set:html={chapter(4)} />
+          <div data-bc-beyond><p>{data.beyond.opener}</p></div>
+          <h3 class="bt-heading bc-sub">Two more trails</h3>
+          <div class="bc-trails">
+            {data.trails.map((t) => (
+              <a class="bt-card bt-card--door bc-trail" href={t.href}><span class="bt-icon-tile--lg" aria-hidden="true">{t.icon}</span><div><h3>{t.title}</h3><p>{t.text}</p></div></a>
+            ))}
+          </div>
+          <h3 class="bt-heading bc-sub">Send real mail</h3>
+          <PupPost ret={`#${CH[4].id}`} />
+          <h3 class="bt-heading bc-sub" id="bc-ask">Ask BOOMBOT</h3>
+          <div class="bt-chat">
+            {data.askBoombot.map(({ q, a }, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`bc-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`bc-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`bc-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta bc-cta" aria-labelledby="h-cta">
+          <Mascot aware decorative />
+          <div class="bt-when-visitor">
+            <h2 id="h-cta">{data.closing.visitor.title}</h2>
+            <p>{data.closing.visitor.text}</p>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join free to see the whole story">Join the Fan Club</a><a class="bt-btn bt-btn--secondary" href="/live">Watch live</a></div>
+          </div>
+          <div class="bt-when-signed-in">
+            <h2>{data.closing.member.title}</h2>
+            <p>{data.closing.member.text}</p>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/live">Watch live</a><a class="bt-btn bt-btn--secondary" href="/schedule">See the schedule</a></div>
+          </div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseCampLayout>
+
+<script>
+  import "../../scripts/base-camp/story";
+</script>

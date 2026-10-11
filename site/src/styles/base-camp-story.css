@@ -1,0 +1,228 @@
+/* site/src/styles/base-camp-story.css — /base-camp's own look (docs/specs/base-camp.md "Page 1"; mockup docs/design/mockups/base-camp.html, round 4):
+   the hero H1 "The climb" and its waypoints, chapter 1's mascot card, chapter 2's playing cards (a restyled kit .bt-flip), chapter 3's journey
+   selection, story panel and the Then and now counter, chapter 4's five stage-card scenes (the E1 chrome is in base-camp.css), and chapter 5's
+   trail cards. Loads after base-camp.css. Tokens only; container queries; reduced motion at the end. */
+
+/* ---------- Hero H1 "The climb": words left, the mountain right; the five purple waypoints are links to the chapters ---------- */
+.bt-root:not(#_) .bc-hero { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+.bt-root:not(#_) .bc-hero .bt-title--hero { font-size: 36px; }
+.bt-root:not(#_) .bc-hero p { margin: 0 0 18px; max-width: 46ch; }
+.bt-root:not(#_) .bc-scene { display: block; width: 100%; height: auto; overflow: hidden; }
+.bt-root:not(#_) .bc-scene--climb { aspect-ratio: 5 / 4; }
+.bt-root:not(#_) .s-spark--2 { animation-delay: 1.1s; }
+.bt-root:not(#_) .s-spark--3 { animation-delay: 2.2s; }
+.bt-root:not(#_) .s-wp { cursor: pointer; outline: none; }
+.bt-root:not(#_) .s-wp circle { fill: var(--bt-bg); stroke: var(--bt-primary); stroke-width: 2; transition: fill 0.2s, filter 0.2s; }
+.bt-root:not(#_) .s-wp text { fill: var(--bt-primary-soft); font-size: 9px; font-weight: 900; text-anchor: middle; dominant-baseline: central; pointer-events: none; }
+.bt-root:not(#_) .s-wp .s-wp-lab { fill: var(--bt-text-muted); font-size: 9px; font-weight: 700; text-anchor: start; opacity: 0; transition: opacity 0.2s; }
+.bt-root:not(#_) .s-wp:is(:hover, :focus-visible) circle { fill: var(--bt-primary); filter: drop-shadow(0 0 6px rgba(var(--bt-primary-rgb), 0.9)); }
+.bt-root:not(#_) .s-wp:is(:hover, :focus-visible) text { fill: var(--bt-text); }
+.bt-root:not(#_) .s-wp:is(:hover, :focus-visible) .s-wp-lab { opacity: 1; fill: var(--bt-text); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bc-hero { grid-template-columns: minmax(0, 1fr); gap: 14px; }
+  .bt-root:not(#_) .bc-hero .bt-title--hero { font-size: 26px; }
+}
+
+/* ---------- Chapter 1: words + the mascot with a speech bubble ---------- */
+.bt-root:not(#_) .bc-pers { display: grid; grid-template-columns: minmax(0, 1fr) 200px; gap: 24px; align-items: center; }
+.bt-root:not(#_) .bc-pers p { margin: 0 0 12px; color: var(--bt-text-muted); line-height: 1.65; max-width: 60ch; }
+.bt-root:not(#_) .bc-pers p:first-child { color: var(--bt-text); font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .bc-mascot-card { position: relative; display: grid; justify-items: center; gap: 10px; padding: 18px 14px 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 60% at 50% 70%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .bc-mascot-card .bt-mascot { width: 96px; height: auto; transition: transform 0.35s cubic-bezier(.3, 1.6, .4, 1); }
+.bt-root:not(#_) .bc-mascot-card:hover .bt-mascot { transform: rotate(-8deg) scale(1.06); }
+.bt-root:not(#_) .bc-bubble { position: relative; padding: 8px 12px; border: 1px solid var(--bt-border-2); border-radius: 14px 14px 14px 4px; background: var(--bt-surface-2); font-size: var(--bt-text-sm); line-height: 1.4; text-align: center; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-pers { grid-template-columns: minmax(0, 1fr); } }
+
+/* ---------- Chapter 2: a hand of three playing cards (the kit .bt-flip, restyled) ---------- */
+.bt-root:not(#_) .bc-hand { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px; padding: 6px 10px 10px; }
+.bt-root:not(#_) .bc-pcard { --suit: var(--bt-blood); --fx: 50%; height: auto; aspect-ratio: 5 / 7; transition: transform 0.45s cubic-bezier(.3, 1.4, .4, 1); }
+.bt-root:not(#_) .bc-pcard[data-suit="ghost"] { --suit: var(--bt-title); }
+.bt-root:not(#_) .bc-pcard[data-suit="gear"] { --suit: var(--bt-teal); }
+.bt-root:not(#_) .bc-hand .bc-pcard:nth-child(1) { transform: rotate(-4deg) translateY(10px); }
+.bt-root:not(#_) .bc-hand .bc-pcard:nth-child(3) { transform: rotate(4deg) translateY(10px); }
+.bt-root:not(#_) .bc-hand .bc-pcard:is(:hover, :focus-visible, .is-flipped) { transform: translateY(-10px) rotate(0deg); z-index: 3; }
+.bt-root:not(#_) .bc-pcard .pc-face { gap: 6px; padding: 26px 22px; border: 1px solid color-mix(in srgb, var(--suit) 45%, var(--bt-border-2)); border-radius: 18px; background: radial-gradient(90% 60% at 50% 42%, color-mix(in srgb, var(--suit) 16%, transparent), transparent 70%), linear-gradient(160deg, color-mix(in srgb, var(--bt-surface-2) 90%, var(--suit)), var(--bt-surface) 60%, var(--bt-bg)); box-shadow: 0 18px 40px -18px color-mix(in srgb, var(--suit) 45%, transparent), inset 0 1px 0 color-mix(in srgb, var(--bt-text) 8%, transparent); }
+.bt-root:not(#_) .bc-pcard .pc-frame { position: absolute; inset: 9px; border: 1px solid color-mix(in srgb, var(--bt-title) 35%, transparent); border-radius: 12px; pointer-events: none; }
+.bt-root:not(#_) .bc-pcard .pc-frame::after { content: ""; position: absolute; inset: 3px; border: 1px dashed color-mix(in srgb, var(--bt-title) 18%, transparent); border-radius: 10px; }
+.bt-root:not(#_) .pc-idx { position: absolute; top: 16px; left: 16px; display: flex; flex-direction: column; align-items: center; gap: 2px; line-height: 1; }
+.bt-root:not(#_) .pc-idx b { color: var(--suit); font-size: 26px; font-weight: 900; letter-spacing: -0.03em; text-shadow: 0 0 12px color-mix(in srgb, var(--suit) 50%, transparent); }
+.bt-root:not(#_) .pc-idx .pc-suit { width: 16px; height: 16px; }
+.bt-root:not(#_) .pc-idx--br { top: auto; left: auto; bottom: 16px; right: 16px; transform: rotate(180deg); }
+.bt-root:not(#_) .pc-suit :is(path, ellipse, circle) { fill: var(--suit); }
+.bt-root:not(#_) .pc-suit .pc-hole { fill: var(--bt-bg); }
+.bt-root:not(#_) .pc-art { position: relative; display: grid; place-items: center; width: 52%; aspect-ratio: 1; margin-bottom: 6px; }
+.bt-root:not(#_) .pc-art::before { content: ""; position: absolute; inset: -10%; border-radius: 50%; background: radial-gradient(circle, color-mix(in srgb, var(--suit) 28%, transparent), transparent 70%); }
+.bt-root:not(#_) .pc-big { position: relative; width: 100%; height: 100%; filter: drop-shadow(0 6px 16px color-mix(in srgb, var(--suit) 55%, transparent)); transition: transform 0.5s cubic-bezier(.3, 1.6, .4, 1); }
+.bt-root:not(#_) .bc-pcard:hover .pc-big { transform: scale(1.06) rotate(-4deg); }
+.bt-root:not(#_) .pc-name { font-size: var(--bt-text-lg); font-weight: 900; letter-spacing: -0.01em; }
+.bt-root:not(#_) .pc-sub { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .pc-foil { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(105deg, transparent calc(var(--fx) - 30%), color-mix(in srgb, var(--bt-logo-shine) 16%, transparent) calc(var(--fx) - 6%), color-mix(in srgb, var(--bt-title) 18%, transparent) var(--fx), transparent calc(var(--fx) + 26%)); mix-blend-mode: screen; opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.bt-root:not(#_) .bc-pcard:hover .pc-foil { opacity: 1; }
+/* reading side (members) */
+.bt-root:not(#_) .bc-pcard .pc-face--read { justify-content: flex-start; align-items: stretch; text-align: left; gap: 12px; padding: 26px 24px; overflow-y: auto; }
+.bt-root:not(#_) .pc-read-top { display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1px solid color-mix(in srgb, var(--bt-title) 25%, transparent); }
+.bt-root:not(#_) .pc-read-top .pc-suit { width: 18px; height: 18px; flex: none; }
+.bt-root:not(#_) .pc-read-top b { font-size: var(--bt-text-base); font-weight: 900; }
+.bt-root:not(#_) .pc-text { color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.6; }
+/* card back (visitors): a lattice and the mascot medal */
+.bt-root:not(#_) .bc-pcard .pc-face--back { background: var(--bt-surface); }
+.bt-root:not(#_) .pc-lattice { position: absolute; inset: 9px; border-radius: 12px; border: 1px solid color-mix(in srgb, var(--bt-title) 40%, transparent); background: repeating-linear-gradient(45deg, color-mix(in srgb, var(--bt-title) 14%, transparent) 0 1px, transparent 1px 12px), repeating-linear-gradient(-45deg, color-mix(in srgb, var(--bt-title) 14%, transparent) 0 1px, transparent 1px 12px), radial-gradient(70% 50% at 50% 45%, rgba(var(--bt-gold-rgb), 0.14), transparent 70%); }
+.bt-root:not(#_) .pc-medal { position: relative; display: grid; place-items: center; width: 92px; height: 92px; border-radius: 50%; background: var(--bt-bg); border: 2px solid var(--bt-title); box-shadow: 0 0 0 6px var(--bt-surface), 0 0 24px rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .pc-medal .bt-mascot { width: 54px; }
+.bt-root:not(#_) .pc-face--back :is(.pc-name, .pc-sub) { position: relative; padding: 2px 10px; border-radius: 8px; background: var(--bt-surface); }
+@container bt (max-width: 900px) { .bt-root:not(#_) .bc-hand { gap: 14px; } .bt-root:not(#_) .pc-text { font-size: var(--bt-text-sm); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bc-hand { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 0; justify-items: center; }
+  .bt-root:not(#_) .bc-pcard { width: min(100%, 300px); }
+  .bt-root:not(#_) .bc-hand .bc-pcard:nth-child(n) { transform: none; }
+}
+
+/* ---------- Chapter 3: the four stops (the kit's .ai-jr--4) + the story panel ---------- */
+.bt-root:not(#_) .bc-jr li { cursor: pointer; }
+.bt-root:not(#_) .bc-jr li.is-sel { border-color: rgba(var(--bt-gold-rgb), 0.55); }
+.bt-root:not(#_) .bc-jr .bc-yr { color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 800; }
+.bt-root:not(#_) .bc-story { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; padding: 20px 22px; border: 1px solid rgba(var(--bt-gold-rgb), 0.3); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 90% at 0% 0%, rgba(var(--bt-gold-rgb), 0.08), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .bc-story h3 { margin: 0 0 6px; font-size: var(--bt-text-xl); font-weight: 800; }
+.bt-root:not(#_) .bc-story p { margin: 0; color: var(--bt-text-muted); line-height: 1.65; max-width: 66ch; }
+.bt-root:not(#_) .bc-story-side { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-story { grid-template-columns: minmax(0, 1fr); padding: 16px; } .bt-root:not(#_) .bc-story-side { align-items: flex-start; } }
+
+/* Then and now: September 30, 2025 rolls up to today's live total (public/socials) */
+.bt-root:not(#_) .bc-then { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); gap: 12px; align-items: stretch; }
+.bt-root:not(#_) .bc-then:not(.has-now) { grid-template-columns: minmax(0, 1fr); max-width: 460px; }
+.bt-root:not(#_) .bc-then:not(.has-now) :is(.bc-arrow, .is-now) { display: none; }
+.bt-root:not(#_) .bc-then-col { display: flex; flex-direction: column; gap: 10px; padding: 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
+.bt-root:not(#_) .bc-then-col.is-now { border-color: rgba(var(--bt-gold-rgb), 0.45); background: radial-gradient(80% 90% at 100% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .bc-then-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+.bt-root:not(#_) .bc-big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .is-now .bc-big { color: var(--bt-title); }
+.bt-root:not(#_) .bc-big small { display: block; margin-top: 4px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 600; letter-spacing: 0; }
+.bt-root:not(#_) .bc-plats { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .bc-plats li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bc-plats b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bc-plat-bar { position: relative; height: 6px; border-radius: 3px; background: var(--bt-surface-2); overflow: hidden; }
+.bt-root:not(#_) .bc-plat-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--bt-title); width: var(--w, 0%); transition: width 1.2s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bc-arrow { display: grid; place-items: center; color: var(--bt-title); font-size: 26px; font-weight: 900; }
+.bt-root:not(#_) .bc-pi { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; color: var(--bt-on-brand); overflow: hidden; }
+.bt-root:not(#_) .bc-pi svg { width: 14px; height: 14px; fill: currentColor; }
+.bt-root:not(#_) .bc-pi--twitch { background: var(--bt-brand-twitch); }
+.bt-root:not(#_) .bc-pi--tiktok { background: var(--bt-brand-tiktok); box-shadow: inset 0 0 0 1px var(--bt-brand-tiktok-edge); }
+.bt-root:not(#_) .bc-pi--youtube { background: var(--bt-brand-youtube); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-then { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .bc-arrow { transform: rotate(90deg); height: 28px; } }
+
+/* ---------- Chapter 4: the five stage-card scenes (E1 chrome in base-camp.css) ---------- */
+.bt-root:not(#_) .g-lamp0 { stop-color: rgba(var(--bt-lamp-rgb), 0.38); } .bt-root:not(#_) .g-lamp1 { stop-color: rgba(var(--bt-lamp-rgb), 0); }
+.bt-root:not(#_) .g-red0 { stop-color: rgba(var(--bt-blood-rgb), 0.55); } .bt-root:not(#_) .g-red1 { stop-color: rgba(var(--bt-blood-rgb), 0); }
+.bt-root:not(#_) .g-gl0 { stop-color: color-mix(in srgb, var(--bt-logo-shine) 0%, transparent); } .bt-root:not(#_) .g-gl1 { stop-color: color-mix(in srgb, var(--bt-logo-shine) 70%, transparent); }
+/* 1 the hallway: the light flickers; then it dies, the door creaks open, red eyes appear and the scream meter jumps */
+.bt-root:not(#_) .h-wall { fill: color-mix(in srgb, var(--bt-surface-2) 70%, var(--bt-bg)); }
+.bt-root:not(#_) .h-ceil { fill: color-mix(in srgb, var(--bt-surface) 60%, var(--bt-bg)); }
+.bt-root:not(#_) .h-floor { fill: color-mix(in srgb, var(--bt-surface-2) 50%, var(--bt-bg)); }
+.bt-root:not(#_) .h-line { stroke: var(--bt-border-2); stroke-width: 1; fill: none; }
+.bt-root:not(#_) .h-frame { fill: none; stroke: color-mix(in srgb, var(--bt-text-muted) 40%, var(--bt-bg)); stroke-width: 4; }
+.bt-root:not(#_) .h-dark { fill: var(--bt-bg); }
+.bt-root:not(#_) .h-door { fill: color-mix(in srgb, var(--bt-surface-2) 85%, var(--bt-title)); stroke: var(--bt-border-2); transform-box: fill-box; transform-origin: 0 50%; transition: transform 0.9s cubic-bezier(.5, 0, .2, 1) 0.25s; }
+.bt-root:not(#_) .h-knob { fill: var(--bt-title); transition: opacity 0.3s 0.25s; }
+.bt-root:not(#_) .h-eye { fill: var(--bt-blood); opacity: 0; filter: drop-shadow(0 0 4px rgba(var(--bt-blood-rgb), 1)); transition: opacity 0.4s 0.9s; }
+.bt-root:not(#_) .h-redwash { opacity: 0; transition: opacity 0.8s 0.6s; }
+.bt-root:not(#_) .h-cone { animation: bc-flicker 4s steps(1, end) infinite; }
+.bt-root:not(#_) .h-lamp { fill: var(--bt-lamp); filter: drop-shadow(0 0 8px rgba(var(--bt-lamp-rgb), 0.9)); animation: bc-flicker 4s steps(1, end) infinite; }
+.bt-root:not(#_) .h-bar { fill: var(--bt-blood); transform-box: fill-box; transform-origin: 50% 100%; transform: scaleY(0.12); opacity: 0.5; transition: transform 0.3s, opacity 0.3s; }
+.bt-root:not(#_) .h-cue { fill: var(--bt-text-faint); font-size: 11px; font-weight: 800; letter-spacing: 0.2em; transition: fill 0.3s; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) :is(.h-cone, .h-lamp) { animation: bc-dying 0.7s steps(1, end) forwards; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .h-door { transform: scaleX(0.28) skewY(-6deg); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .h-knob { opacity: 0; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) :is(.h-eye, .h-redwash) { opacity: 1; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .h-bar { opacity: 1; animation: bc-meter 0.42s ease-in-out infinite alternate; animation-delay: calc(1s + var(--d)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .h-cue { fill: var(--bt-blood); }
+/* 2 the game shelf: dust in the spotlight; one game slides off the shelf */
+.bt-root:not(#_) .g-cone { opacity: 0.5; transition: opacity 0.4s; }
+.bt-root:not(#_) .g-shelf { fill: color-mix(in srgb, var(--bt-title) 25%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-spine { stroke: var(--bt-border-2); stroke-width: 1; transform-box: fill-box; transform-origin: 50% 100%; transition: transform 0.5s cubic-bezier(.3, 1.6, .4, 1); }
+.bt-root:not(#_) .g-t1 { fill: color-mix(in srgb, var(--bt-blood) 35%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-t2 { fill: color-mix(in srgb, var(--bt-teal) 30%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-t3 { fill: color-mix(in srgb, var(--bt-pink) 30%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-t4 { fill: color-mix(in srgb, var(--bt-blue) 30%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-t5 { fill: color-mix(in srgb, var(--bt-lime) 22%, var(--bt-surface-2)); }
+.bt-root:not(#_) .g-lab { fill: color-mix(in srgb, var(--bt-text) 35%, transparent); }
+.bt-root:not(#_) .g-case { fill: color-mix(in srgb, var(--bt-title) 40%, var(--bt-surface-2)); stroke: var(--bt-title); stroke-width: 1.5; }
+.bt-root:not(#_) .g-cover { fill: var(--bt-bg); }
+.bt-root:not(#_) .g-q { fill: var(--bt-title); font-size: 26px; font-weight: 900; text-anchor: middle; }
+.bt-root:not(#_) .g-pick { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 0.7s cubic-bezier(.3, 1.4, .4, 1), filter 0.4s; }
+.bt-root:not(#_) .g-mote { fill: var(--bt-lamp); opacity: 0; animation: bc-mote 3.6s ease-in-out infinite; animation-delay: var(--d); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .g-cone { opacity: 1; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .g-pick { transform: translate(0, -26px) rotate(-10deg) scale(1.12); filter: drop-shadow(0 0 14px rgba(var(--bt-gold-rgb), 0.8)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .g-spine:nth-of-type(odd) { transform: rotate(-3deg); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .g-spine:nth-of-type(even) { transform: rotate(3deg); }
+/* 3 chat: chat is typing; the messages flood in and the vote swings left */
+.bt-root:not(#_) .c-screen { fill: color-mix(in srgb, var(--bt-surface-2) 60%, var(--bt-bg)); stroke: var(--bt-border-2); }
+.bt-root:not(#_) .c-door { fill: var(--bt-surface-2); stroke: var(--bt-border-2); transition: fill 0.4s 0.8s, filter 0.4s 0.8s; }
+.bt-root:not(#_) .c-dl { fill: var(--bt-text-muted); font-size: 14px; font-weight: 900; text-anchor: middle; }
+.bt-root:not(#_) .c-vote { fill: var(--bt-surface-2); }
+.bt-root:not(#_) .c-vote-fill { fill: var(--bt-teal); transform-box: fill-box; transform-origin: 0 50%; transform: scaleX(0.5); transition: transform 1s cubic-bezier(.3, .7, .2, 1) 0.6s; }
+.bt-root:not(#_) .c-pct { fill: var(--bt-text-faint); font-size: 10px; font-weight: 800; letter-spacing: 0.12em; transition: fill 0.4s 1s; }
+.bt-root:not(#_) .c-panel { fill: color-mix(in srgb, var(--bt-surface) 70%, var(--bt-bg)); stroke: var(--bt-border-2); }
+.bt-root:not(#_) .c-msg rect { fill: var(--bt-surface-2); stroke: color-mix(in srgb, var(--bt-teal) 40%, var(--bt-border-2)); }
+.bt-root:not(#_) .c-msg text { fill: var(--bt-text); font-size: 11px; font-weight: 700; }
+.bt-root:not(#_) .c-msg--big rect { fill: color-mix(in srgb, var(--bt-teal) 28%, var(--bt-surface-2)); stroke: var(--bt-teal); }
+.bt-root:not(#_) .c-msg--big text { font-size: 17px; font-weight: 900; text-anchor: middle; fill: var(--bt-text); }
+.bt-root:not(#_) .c-msg { opacity: 0; transform: translate(14px, 8px); transition: opacity 0.3s, transform 0.4s cubic-bezier(.3, 1.6, .4, 1); transition-delay: calc(var(--i) * 0.18s); }
+.bt-root:not(#_) .c-typing circle { fill: var(--bt-text-muted); animation: bc-type 1s ease-in-out infinite; }
+.bt-root:not(#_) .c-typing circle:nth-child(2) { animation-delay: 0.15s; } .bt-root:not(#_) .c-typing circle:nth-child(3) { animation-delay: 0.3s; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .c-msg { opacity: 1; transform: none; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .c-vote-fill { transform: scaleX(0.72); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .c-door--l { fill: color-mix(in srgb, var(--bt-teal) 35%, var(--bt-surface-2)); filter: drop-shadow(0 0 10px color-mix(in srgb, var(--bt-teal) 80%, transparent)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .c-pct { fill: var(--bt-teal); }
+/* 4 mods: the shield catches the light and the crew rises with stars */
+.bt-root:not(#_) .m-rays path { fill: rgba(var(--bt-gold-rgb), 0.06); }
+.bt-root:not(#_) .m-rays { transform-box: view-box; transform-origin: 200px 90px; opacity: 0.4; transition: opacity 0.5s; animation: bc-spin 40s linear infinite; }
+.bt-root:not(#_) .m-shield { transform-box: fill-box; transform-origin: 50% 50%; transition: transform 0.6s cubic-bezier(.3, 1.6, .4, 1), filter 0.5s; }
+.bt-root:not(#_) .m-sh { fill: color-mix(in srgb, var(--bt-title) 30%, var(--bt-surface-2)); stroke: var(--bt-title); stroke-width: 3; }
+.bt-root:not(#_) .m-sh-in { fill: color-mix(in srgb, var(--bt-surface-2) 80%, var(--bt-bg)); stroke: color-mix(in srgb, var(--bt-title) 50%, transparent); stroke-width: 1; }
+.bt-root:not(#_) .m-tick { fill: none; stroke: var(--bt-title); stroke-width: 6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 60; stroke-dashoffset: 0; }
+.bt-root:not(#_) .m-av circle { fill: var(--bt-surface); stroke: var(--bt-border-2); stroke-width: 2; }
+.bt-root:not(#_) .m-av { transform-box: fill-box; transform-origin: 50% 100%; transition: transform 0.5s cubic-bezier(.3, 1.6, .4, 1); transition-delay: calc(0.25s + var(--i) * 0.1s); }
+.bt-root:not(#_) .m-star { fill: var(--bt-title); opacity: 0; transform-box: fill-box; transform-origin: 50% 50%; transform: scale(0.3); transition: opacity 0.3s, transform 0.5s cubic-bezier(.3, 1.6, .4, 1); transition-delay: calc(0.5s + var(--i) * 0.1s); filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.9)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-rays { opacity: 1; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-shield { transform: scale(1.12) translateY(-4px); filter: drop-shadow(0 0 18px rgba(var(--bt-gold-rgb), 0.55)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-sweep { animation: bc-sweep 1.2s ease-in-out 0.2s; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-tick { animation: bc-draw 0.6s ease-out 0.3s both; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-av { transform: translateY(-10px); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .m-star { opacity: 1; transform: none; }
+/* 5 two PCs: the fans spin up and a pulse runs from the gaming PC to the streaming PC */
+.bt-root:not(#_) .p-grid { stroke: color-mix(in srgb, var(--bt-rank-3) 10%, transparent); stroke-width: 1; fill: none; }
+.bt-root:not(#_) .p-case { fill: color-mix(in srgb, var(--bt-surface-2) 80%, var(--bt-bg)); stroke: var(--bt-border-2); stroke-width: 1.5; }
+.bt-root:not(#_) .p-ring { fill: var(--bt-bg); stroke: color-mix(in srgb, var(--bt-rank-3) 45%, var(--bt-border-2)); stroke-width: 2; transition: stroke 0.4s, filter 0.4s; }
+.bt-root:not(#_) .p-blade { fill: color-mix(in srgb, var(--bt-text-muted) 40%, var(--bt-surface-2)); }
+.bt-root:not(#_) .p-fan { animation: bc-spin 6s linear infinite; }
+.bt-root:not(#_) .p-led { fill: var(--bt-border-2); transition: fill 0.3s; }
+.bt-root:not(#_) .p-cable { fill: none; stroke: var(--bt-border-2); stroke-width: 4; stroke-linecap: round; }
+.bt-root:not(#_) .p-glow { fill: none; stroke: var(--bt-rank-3); stroke-width: 4; stroke-linecap: round; stroke-dasharray: 18 200; stroke-dashoffset: 220; opacity: 0; filter: drop-shadow(0 0 6px var(--bt-rank-3)); }
+.bt-root:not(#_) .p-tag { fill: var(--bt-text-faint); font-size: 9px; font-weight: 800; letter-spacing: 0.16em; text-anchor: middle; transition: fill 0.3s; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .p-fan { animation-duration: 0.45s; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .p-ring { stroke: var(--bt-rank-3); filter: drop-shadow(0 0 6px var(--bt-rank-3)); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .p-led { fill: var(--bt-rank-3); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .p-glow { opacity: 1; animation: bc-dash 1.1s linear infinite; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .p-tag { fill: var(--bt-rank-3); }
+
+/* ---------- Chapter 5: the trail cards ---------- */
+.bt-root:not(#_) .bc-trails { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .bt-card.bc-trail { display: flex; flex-direction: row; gap: 14px; align-items: center; justify-content: flex-start; text-align: left; text-decoration: none; color: inherit; }
+.bt-root:not(#_) .bc-trail h3 { margin: 0 0 2px; font-size: var(--bt-text-lg); font-weight: 800; display: flex; align-items: center; gap: 8px; flex-wrap: wrap; justify-content: flex-start; }
+.bt-root:not(#_) .bc-trail p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-trails { grid-template-columns: minmax(0, 1fr); } }
+
+@keyframes bc-flicker { 0%, 100% { opacity: 1; } 71% { opacity: 1; } 72% { opacity: 0.3; } 73% { opacity: 1; } 75% { opacity: 0.5; } 76% { opacity: 1; } }
+@keyframes bc-dying { 0% { opacity: 1; } 20% { opacity: 0.2; } 30% { opacity: 1; } 45% { opacity: 0.1; } 55% { opacity: 0.8; } 70%, 100% { opacity: 0; } }
+@keyframes bc-meter { from { transform: scaleY(0.15); } to { transform: scaleY(var(--h)); } }
+@keyframes bc-mote { 0% { opacity: 0; transform: translate(0, 0); } 30% { opacity: 0.9; } 100% { opacity: 0; transform: translate(4px, -50px); } }
+@keyframes bc-type { 50% { transform: translateY(-3px); opacity: 0.4; } }
+@keyframes bc-spin { to { transform: rotate(360deg); } }
+@keyframes bc-sweep { from { transform: translateX(0); } to { transform: translateX(160px); } }
+@keyframes bc-draw { from { stroke-dashoffset: 60; } to { stroke-dashoffset: 0; } }
+@keyframes bc-dash { to { stroke-dashoffset: 0; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bc-pcard, .bc-pcard *, .bc-plat-bar i, .bc-mascot-card .bt-mascot, .s-wp circle) { animation: none !important; transition: none !important; }
+  .bt-root:not(#_) .bc-hand .bc-pcard:nth-child(n) { transform: none; }
+}
