@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Service Hub How it works mockup, the Tester and Critic medal backs and BOOMBOT's core-service answer now match the real badge rules (tests count per version; Vault games and streams count toward Critic; only Vault games have their own badges).
 Service Hub part 7c/7d: the page strip (TalkBackNote.astro, rendered by BaseLayout from the route's manifest when talkBack is note, pins or rate; never on /admin, /auth, /live/obs, /live/control, checkout or 404), Rate half only while the talkBack module is off, one-tap Like / Love and the dialog for Not for me; site.json modules gain services; Service Hub joins the Community nav.
 Service Hub part 7b: /services, the member page: the SERVICE HUB bar, the members-only gate, the hero with the core-services ring and the next badge, Core services / Vault games / Streams chips, Not rated yet / Rated / Can test filters, search, and the collection wall with a Wall / List switch (bt.services.layout); ?as=member preview data.
 Service Hub part 7a: the shared rate and test dialogs (site/src/scripts/services: openRate with Keep or change for an older version, quickRate for one tap, openTest with OK / Problem per check and the Report it in Bug Zapper link), the badge moment from a short my/{uid} watch after a save, toast() gains an optional action link, and sample walkthrough checks for Feature Lab and Bug Zapper (checks never post, send or delete anything).
