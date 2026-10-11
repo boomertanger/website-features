@@ -270,6 +270,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Publish them at /privacy and /terms, linked in the footer (production indexable unless decided otherwise).
 - [ ] Decide whether the public mailing address on the legal pages should be a PO box or registered agent.
 - [ ] Finish the TikTok app review: privacy and terms live, domain verified, Web URL = homepage, redirect https://boomertanger.com/auth/tiktok/callback, sandbox demo video on boomertanger.com, then submit. Set TIKTOK_CLIENT_SECRET for production and press Connect TikTok.
+- [ ] Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to `none` on production (serviceSyncTick declares both on every project; production is public and needs no Cloudflare Access headers; docs/specs/service-hub.md §3b).
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.

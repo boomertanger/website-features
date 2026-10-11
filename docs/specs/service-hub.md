@@ -43,6 +43,17 @@ Status: `planned` · `building` · `live` · `retired` (plus a "Needs setup" fla
 | Bugs and ideas | Bug Zapper reports and Feature Lab ideas get an optional `serviceId` (from the reported page path through the manifest routes, or a picker). Triggers keep open counts on the service. |
 | Questions and feedback | Hotline Boom line 2 messages carry `context.serviceId` (Talk Back). Service Hub reads the team-lane counts from Hotline Boom's monthly `stats` (never `statsOwner`). |
 
+### 3b. Automatic sync (added Oct 10, 2026)
+New services and checks used to reach Firestore only when an admin opened `/admin/services`. A scheduled function now keeps them in step after every deploy.
+- **serviceSyncTick** (lib/services, every 15 minutes): fetches `<site URL>/services.json`. The site URL is `sites/{siteId}.siteUrl`, else the per-project map (staging → https://staging.boomertanger.com, production → https://boomertanger.com; the same lookup as lib/youtube).
+- **Cloudflare Access:** the request carries `CF-Access-Client-Id` / `CF-Access-Client-Secret` from the secrets `CF_ACCESS_CLIENT_ID` and `CF_ACCESS_CLIENT_SECRET` when they hold real values. Both secrets are declared on every project (a missing secret stops the deploy); production is public and holds the placeholder `none` (anything shorter than 16 characters, or "none", means no headers). Launch checklist item in docs/ROADMAP.md.
+- **No change, no writes:** the file's hash is compared with `services/main.buildHash` (where every sync keeps it). The same hash: nothing is written.
+- **A new hash:** the same sync core as `serviceSync` (lib/services/sync.js, shared by serviceSync, serviceSyncTick and scripts/sync-services.js), with one difference: **the automatic sync never retires a service.** A service missing from the build is listed in `services/main.missingFromBuild` and shown in Needs attention; an admin's Sync now still retires it, as before.
+- **Skips (no service data written):** the response isn't a real services.json (a Cloudflare login page, an error page, a redirect), the fetch fails, or the service count drops by more than 20% from the last sync.
+- **Failures:** each skip adds to `services/main.autoSync { failures, since, lastError, lastAt }` (since = the first failure in the row). After 3 in a row, /admin/services shows "Auto sync failing since <time>" with the last error. Any success (a sync or a no-change run) clears it.
+- **Shown on /admin/services:** "Last synced <time> · auto | manual" beside Sync now (`services/main.syncedAt`, `syncedBy`).
+- **Logged:** each real sync writes one adminLog entry (feature `serviceHub`, action `sync`, actor "auto sync", details.by "auto"). Skips and no-change runs write none.
+
 ## 4. Data model (`sites/boomertanger/services/main/…`, every client write false)
 | Path | Holds | Read |
 |---|---|---|
