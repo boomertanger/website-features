@@ -261,7 +261,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ## Deadlines
 - Squarespace: cancel by 2027-07-01.
-- Cloudflare Access service token "service-hub-sync" (serviceSyncTick on staging): expires 2027-10-10. Renew it before then: create a new token in Cloudflare Zero Trust (and allow it in the staging Service Auth policy), then set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET again on staging (firebase functions:secrets:set … --project staging) and redeploy serviceSyncTick. Once it expires, /admin/services shows "Auto sync failing" after 3 runs.
+- Cloudflare Access service token "service-hub-sync" (serviceSyncTick on staging): expires October 2027 (a 1-year token, created Oct 10, 2026). Renew it before then: rotate its client secret in Cloudflare Zero Trust (the client ID stays the same), then set CF_ACCESS_CLIENT_SECRET again on staging (firebase functions:secrets:set CF_ACCESS_CLIENT_SECRET --project staging) and redeploy serviceSyncTick so it picks up the new version. Once it expires, /admin/services shows "Auto sync failing" after 3 runs.
 
 ## Before launch
 - [x] MemberSpace cancelled Oct 9, 2026. It never went live and had no members, so there is nothing to migrate; the new site's accounts start fresh. (The renewal deadline of Oct 31 and its Oct 20 reminder no longer apply.)

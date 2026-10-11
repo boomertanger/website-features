@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: the service-hub-sync renewal item now says rotate the client secret in Cloudflare, set CF_ACCESS_CLIENT_SECRET again on staging and redeploy serviceSyncTick.
 docs: ROADMAP deadline to renew the Cloudflare Access service token service-hub-sync before 2027-10-10 (new token, then both CF Access secrets again on staging).
 site: /admin/services shows "Last synced <time> · auto | manual" beside Sync now, the "Auto sync failing since <time>" banner with the last error after 3 failed automatic runs, and a Needs attention row for each service the build no longer lists (?syncfail=1 previews both).
 functions: serviceSyncTick (every 15 minutes; fetches /services.json with the CF Access secrets when real, syncs only on a new hash, never retires, skips a login page, a failed fetch or a >20% drop, counts failures in services/main.autoSync); the sync core moved to lib/services/sync.js and serviceSync calls it unchanged (it now also records syncedBy and clears missingFromBuild); check-services-fn covers no change, a new hash, a login page, a redirect, three failures, a big drop and a missing service, and its serviceTest case clears Bug Zapper's checks first (the manifest has real checks since part 7a).
