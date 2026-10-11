@@ -116,6 +116,8 @@ function build(deps = {}) {
     // Turnstile
     const ip = ipOf(request);
     const tv = await verifyTurnstile({ token: d.turnstile, secret: secrets.turnstile ? secrets.turnstile() : "", ip, fetchFn });
+    // a failed check logs its diagnostics only: never the token, the secret, the message or an email
+    if (!tv.ok) console.warn(JSON.stringify({ severity: "WARNING", message: "hotline: turnstile check failed", reason: tv.reason, codes: tv.codes, called: tv.called, hostname: tv.hostname, action: tv.action, tokenLength: tv.tokenLength, status: tv.status ?? null, error: tv.error ?? null, member }));
     if (!tv.ok) throw fail("permission-denied", tv.reason === "timeout" ? "The check timed out. Try again." : "The check didn't pass. Try again.", "check-failed");
     const salt = secrets.salt ? secrets.salt() : "";
     if (!salt) throw fail("internal", "The contact form isn't set up yet.", "check-failed");

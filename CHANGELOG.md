@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions: contactSend logs every failed Turnstile check (reason, Cloudflare error-codes, hostname and action returned, whether siteverify was called, token length; never the token, secret, message or email); verifyTurnstile returns those diagnostics. site: /contact warns in the console when no Turnstile token arrived before sending.
 docs: ROADMAP marks Hotline Boom built on staging, real tests pending.
 docs: Talk Back recorded in design-system §8 (kit and color decisions); spec status and ROADMAP cite the approved mockups.
 Base Camp Mail Call part 4: the Mail Call teaser (MailCallTeaser.astro: Send Boomer real mail on /base-camp, Skipper gets real mail too on /base-camp/skipper, Go to Mail Call) replaces the full mail card, so the address appears only on Mail Call; /contact gains the line "Fan mail for Boomer or Skipper? It goes to Mail Call."; the base-camp-mail-call service manifest; Mail Call in ROADMAP workstream 19.

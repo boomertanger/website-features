@@ -302,6 +302,7 @@ async function send(f: HTMLFormElement) {
   M.sending = true; btn.disabled = true; btn.textContent = "Sending…";
   try {
     const turnstile = await token();
+    if (!turnstile) console.warn("hotline: no Turnstile token arrived before sending", { widget: !!ts.id, script: !!window.turnstile });
     const res = await call<{ ref: number; lane: Lane; replyTime: string }>("contactSend", {
       line: l.id, body, fields, name: member() ? undefined : name, email: member() ? undefined : email,
       source: val(f, "#hb-src") || null, onlyOwner: !!f.querySelector<HTMLInputElement>("#hb-only")?.checked,
