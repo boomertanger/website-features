@@ -125,3 +125,25 @@ Hero: taped polaroid with the hero loop (Skipper on the float), "Meet Skipper", 
 ## Later
 
 - Admin editor for Base Camp text; real photos for Newfoundland; more Skipper clips; Skipper Cam auto-detect from YouTube; approval alerts to authors once Boom Alerts ships; guest posting on Kind Words (Turnstile + hashed-IP limits) if wanted.
+
+
+## Addendum 2: Mail Call (confirmed Oct 11, 2026)
+
+Mockup: `docs/design/mockups/base-camp-mail-call.html`.
+
+**Route:** `/base-camp/mail-call`, the fourth stop in the Base Camp bar (The story / Newfoundland / Skipper / Mail Call). Not in the header nav. Public page; the address is Fan Club only; writing notes needs sign-in.
+
+**Sections**
+1. **Hero:** MAIL CALL in large white letters with a soft glow, "Fan mail, opened live", "Send real mail to Boomer and Skipper, and Boomer opens it live on stream. Not a letter writer? Leave a note right here.", buttons Send real mail / Leave a note. Scene: glowing ON AIR sign; desk lamp on the left lighting the letter (beam + pool of light; reduced motion = still); the mascot reading a letter in the middle; a small MAIL sack on the right; envelopes on the desk and floating. Nothing overlaps.
+2. **Send real mail:** the Pup Post mail card. This is now the only place the address appears.
+3. **How Mail Call works:** 4-step journey (Write it; It reaches the PO box; Opened live; Read on stream) and four promise cards (return addresses stay off camera; first names or handles only; "just for Boomer"; no food or treats).
+4. **Notes for Boomer:** Kind Words board `boomer`, torn notebook pages with a gold margin and a small mascot seal. Connections: Watches on Twitch / Watches on TikTok / Watches on YouTube / Fan Club member. Lede "Not a letter writer? Leave a note right here. Every note is read before it goes up." Link cards: Notes for Skipper (her page) and Something private? (Hotline Boom).
+5. **Mail Call on stream:** "Mail Call happens live. Check the schedule to catch the next one." See the schedule / Watch live; Ask BOOMBOT (What is Mail Call? / Can anyone see the address? / Will my letter be read on stream? / What shouldn't I send?); Back to camp.
+
+**Changes elsewhere**
+- Skipper page chapter 5 and Base Camp page chapter 5: replace the full mail card with the teaser ("Skipper gets real mail too" / "Send Boomer real mail", Go to Mail Call). Paw Notes stays on the Skipper page.
+- /contact (Hotline Boom): one line, "Fan mail for Boomer or Skipper? It goes to Mail Call."
+- Kind Words: add board `boomer` (connections above) everywhere boards are listed (kindSubmit validation, the /admin/kind-words board chips).
+- Service manifest for base-camp-mail-call.
+
+**Later:** a list of past Mail Call streams with VOD links; a mail counter; letter of the month.

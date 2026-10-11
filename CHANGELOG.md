@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Base Camp Mail Call part 1: the spec gains Addendum 2 (Mail Call at /base-camp/mail-call, the boomer Kind Words board, the teasers and the /contact line) and the approved mockup docs/design/mockups/base-camp-mail-call.html.
 Base Camp: the memberContent rule lets signed-in members read base-camp and mail as well as tech-stack (a list, not a wildcard).
 Base Camp part 7: Service Hub manifests (base-camp, base-camp-newfoundland, base-camp-skipper, and kind-words-admin for /admin/kind-words), and ROADMAP workstream 19 with the launch checklist and the on-stream mail rules under Base Camp notes.
 Base Camp part 6b: /base-camp/skipper (the polaroid hero loop, Watch the Skipper Cam and Send her some love; Meet Skipper with the tummy-rub ending; six favorite things as E1 cards with the real clips and photo; the Skipper Cam chapter: live muted youtube-nocookie embed for members, the painted sleeping Skipper and last on when off, a blurred screen and lock card for visitors; All about corgis with the Wales outline, red Pembroke and blue merle Cardigan, the numbers, the Queen corgis timeline and the royal shield quirks; the reel with the gallery; Skipper love: Pup Post with the sitting corgi by the mailbox and the mail card, then Paw Notes on the Kind Words board; Ask BOOMBOT). Clips are muted, loop, playsinline and play only on screen; posters only under reduced motion. The owner Skipper Cam card on /admin (Go live stays off until all three checks are ticked).
