@@ -1,0 +1,215 @@
+---
+// /base-camp/newfoundland: the island where Boomer grew up (docs/specs/base-camp.md "Page 2"; mockup docs/design/mockups/base-camp-newfoundland.html,
+// round 5). A public story page in the full frame: the BASECAMP bar, TocLayout rail, the Cape Spear dawn hero with the live clock ("Right now on the
+// Rock", real America/St_Johns time and the offset from the viewer), then seven ghost-numbered chapters holding ten things: 01 the chart (pins
+// and legend, the Titanic marker, Gander), 02 the rock itself (1 rock layers + Pangaea, 2 world clocks, 3 Iceberg Alley + the season strip),
+// 03 who came by sea (4 Vikings, 5 cod, 6 St. John's), 04 the war years (7: the bar, the bases, Bell Island, Placentia Bay, four stamp cards),
+// 05 the people (8 Gander, 9 the way we talk with the word of the day, 10 the dog, the pony and Famous Newfoundlands), 06 Kind words (the Puffin
+// Post board, mounted by the Kind Words engine into [data-kind-words]), 07 the timeline and Ask BOOMBOT, then "Back to camp".
+// Every word is the approved mockup's. The lists and time helpers: scripts/base-camp/newfoundland-data.ts; the art: newfoundland-art.ts.
+import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { THINGS, WORDS, ASK, WAR_STAMPS, FAMOUS, TIMELINE, MONTHS, SEASON, seasonLine, wordOfDay } from "../../scripts/base-camp/newfoundland-data";
+import { heroScene, chartSvg, pangaeaSvg, bergSvg, vikingSvg, codSvg, citySvg, ganderSvg, ponySvg, dogSvg, stampFlip } from "../../scripts/base-camp/newfoundland-art";
+import "../../styles/base-camp-newfoundland.css";
+
+const NAV: [string, string][] = [["nl-ch1", "Pin by pin"], ["nl-ch2", "The rock itself"], ["nl-ch3", "Who came by sea"], ["nl-ch4", "The war years"], ["nl-ch5", "The people"], ["nl-ch6", "Kind words"], ["nl-ch7", "A thousand years"]];
+const chapter = (n: number, id: string, title: string, lede: string) => {
+  const k = String(n).padStart(2, "0");
+  return `<header class="bt-chapter bt-chapter--ghost" data-n="${k}"><p class="bt-chapter-eyebrow" aria-hidden="true">${k} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
+};
+const pin = (n: number) => { const t = THINGS[n - 1]; return `<span class="nl-pin-chip"><i>${n}</i>${t.where}</span>`; };
+const mo = new Date().getMonth();          // build-time guesses; newfoundland.ts sets today's in the browser
+const [word, meaning] = wordOfDay();
+---
+<BaseCampLayout title="Newfoundland" section="newfoundland" description="Where Boomer grew up: ten things worth knowing about Newfoundland, the Rock. Stone older than the Atlantic, North America's first sunrise, Iceberg Alley, the Vikings, Gander and the way they talk.">
+  <div data-nl-page>
+    <TocLayout items={NAV}>
+      <div class="ai-main bc-main">
+        <section class="nl-hero" aria-labelledby="h-hero">
+          <Fragment set:html={heroScene()} />
+          <div class="nl-hero-copy">
+            <div>
+              <div class="nl-eyebrow">Where Boomer grew up</div>
+              <h1 class="bt-title bt-title--hero" id="h-hero">Newfoundland</h1>
+              <p class="nl-hero-lede">The Rock. A thousand years of arrivals, stone older than the ocean around it, and North America's first sunrise. Ten things worth knowing about the island.</p>
+              <span class="nl-say">Say it right: <b>New-fun-<em>LAND</em></b> rhymes with understand</span>
+            </div>
+            <div class="nl-clock" role="group" aria-label="The time in Newfoundland right now">
+              <div class="nl-clock-k"><i></i>Right now on the Rock</div>
+              <div class="nl-clock-t"><span data-nl-time>--:--</span><small data-nl-abbr></small></div>
+              <div class="nl-clock-s"><span data-nl-off>UTC−3:30</span>. That's <b data-nl-diff>…</b>.</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="nl-ch" id="nl-ch1" aria-labelledby="h-nl-ch1">
+          <Fragment set:html={chapter(1, "nl-ch1", "The island, pin by pin", "Ten things: eight places on the map and two you'll find everywhere. Tap a pin to jump to it.")} />
+          <div class="nl-chartwrap">
+            <div class="nl-chart" set:html={chartSvg()} />
+            <ol class="nl-legend">
+              {THINGS.map((t) => <li class={t.where === "Island-wide" ? "nl-wide" : undefined}><a href={`#nl-${t.id}`} data-leg={t.n}><i>{t.n}</i><span><b>{t.t}</b><span>{t.where}</span></span></a></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="nl-ch" id="nl-ch2" aria-labelledby="h-nl-ch2">
+          <Fragment set:html={chapter(2, "nl-ch2", "The rock itself", "Stone, ice and light. Newfoundland was strange and beautiful long before anyone arrived.")} />
+          <article class="nl-thing" id="nl-rock">
+            <Fragment set:html={pin(1)} />
+            <h3 class="nl-thing-title">The island is older than the ocean around it</h3>
+            <p>Newfoundland's rock was here long before the Atlantic. When the old supercontinent Pangaea held together, this coast was joined to Ireland and Scotland, and the mountains here are the same chain as theirs. Pull the continents apart and you get an ocean in the middle.</p>
+            <div class="nl-strata">
+              <div class="nl-layers">
+                <div class="nl-layer" tabindex="0" data-age="565 million years"><b>Mistaken Point</b><span>Fossils of some of the oldest large, complex life ever found, pressed into the rock of the Avalon Peninsula. It's a UNESCO World Heritage Site.</span></div>
+                <div class="nl-layer" tabindex="0" data-age="Under the crust"><b>The Tablelands</b><span>In Gros Morne National Park the Earth's mantle sits right at the surface: orange peridotite that looks more like Mars than Canada. It's one of the few places on the planet you can walk on it.</span></div>
+                <div class="nl-layer" tabindex="0" data-age="Carved by ice"><b>Fjords and cliffs</b><span>Glaciers cut deep fjords and left the bedrock close to the surface. The trees grow short and bent by the wind, and the coast rises straight out of the North Atlantic.</span></div>
+              </div>
+              <div class="nl-pangaea" data-pangaea><Fragment set:html={pangaeaSvg()} /><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm nl-pangaea-btn" data-split aria-pressed="false">Split the continents</button></div>
+            </div>
+          </article>
+
+          <article class="nl-thing" id="nl-light">
+            <Fragment set:html={pin(2)} />
+            <h3 class="nl-thing-title">First light, and half an hour ahead</h3>
+            <p>Cape Spear is the easternmost point in North America, so the continent's day starts here. Newfoundland even keeps its own clock. <b>Newfoundland Time is UTC−3:30</b>, half an hour off from everyone else, which makes the island one of the first places in North America to ring in the New Year.</p>
+            <div class="nl-clocks">
+              <div class="nl-zone is-home"><span>St. John's</span><b data-z="America/St_Johns">--</b><span class="nl-min">Newfoundland Time</span></div>
+              <div class="nl-zone"><span>Halifax</span><b data-z="America/Halifax">--</b><span data-zd="America/Halifax"></span></div>
+              <div class="nl-zone"><span>Toronto</span><b data-z="America/Toronto">--</b><span data-zd="America/Toronto"></span></div>
+              <div class="nl-zone"><span>Vancouver</span><b data-z="America/Vancouver">--</b><span data-zd="America/Vancouver"></span></div>
+            </div>
+          </article>
+
+          <article class="nl-thing" id="nl-ice">
+            <Fragment set:html={pin(3)} />
+            <h3 class="nl-thing-title">Iceberg Alley</h3>
+            <p>Every spring, icebergs that broke off Greenland's glaciers drift south past the coast, carrying ice that can be more than 10,000 years old. In April 1912 the Titanic struck one about 370 miles south of Newfoundland, and the Marconi station at Cape Race was among the first to pick up its distress calls.</p>
+            <div class="nl-berg" tabindex="0" data-tap role="group" aria-label="An iceberg. About 90% of it sits under the water."><Fragment set:html={bergSvg()} /><span class="nl-berg-hint" aria-hidden="true">Hover or tap to look under</span></div>
+            <div class="nl-season" aria-label="Iceberg season by month">{MONTHS.map((m, i) => <span class={`nl-mo${SEASON[i] === 2 ? " is-peak" : SEASON[i] === 1 ? " is-shoulder" : ""}${i === mo ? " is-now" : ""}`}>{m}</span>)}</div>
+            <div class="nl-season-line"><span data-nl-season set:html={seasonLine(mo)} /><span class="nl-key"><i class="nl-key--peak"></i>Peak</span><span class="nl-key"><i class="nl-key--edge"></i>Edges</span></div>
+          </article>
+        </section>
+
+        <section class="nl-ch" id="nl-ch3" aria-labelledby="h-nl-ch3">
+          <Fragment set:html={chapter(3, "nl-ch3", "Who came by sea", "Vikings, fishing fleets and empires. Everyone wanted a piece of this coast.")} />
+          <div class="nl-exhibits">
+            <article class="nl-ex" tabindex="0" id="nl-norse"><div class="nl-ex-scene" set:html={vikingSvg()} /><div class="nl-ex-body"><Fragment set:html={pin(4)} /><div class="nl-ex-big">c. 1000 AD</div><h3 class="nl-thing-title nl-ex-title">The Vikings got here first</h3>
+              <p>Norse explorers built a settlement at L'Anse aux Meadows on the island's northern tip, about <b>500 years before Columbus</b>. It's the only confirmed Viking site in North America: longhouses, an iron forge, workshops and Norse tools.</p></div></article>
+            <article class="nl-ex" tabindex="0" id="nl-cod"><div class="nl-ex-scene" set:html={codSvg()} /><div class="nl-ex-body"><Fragment set:html={pin(5)} /><div class="nl-ex-big">White gold</div><h3 class="nl-thing-title nl-ex-title">The cod that built empires</h3>
+              <p>For centuries the Grand Banks were the richest fishing grounds on Earth. Early explorers wrote that you could scoop the cod up in baskets. England and France fought over this fishery for generations, and French forces burned St. John's in 1696 and attacked it again in 1705.</p>
+              <div class="nl-chips"><span>England</span><span>France</span><span>Spain</span><span>Portugal</span><span>Basque fleets</span><span>New England</span></div>
+              <div class="nl-stamp"><span class="nl-stamp-ic" aria-hidden="true">€</span><div><b>Visit France without leaving North America</b><span>St. Pierre and Miquelon, just off the south coast, is still French: euros, bakeries, gendarmes and wine shops.</span></div></div></div></article>
+            <article class="nl-ex is-wide" tabindex="0" id="nl-city"><div class="nl-ex-scene" set:html={citySvg()} /><div class="nl-ex-body"><Fragment set:html={pin(6)} /><div class="nl-ex-big">Early 1500s</div><h3 class="nl-thing-title nl-ex-title">One of the oldest cities on the continent</h3>
+              <p>St. John's grew up around its harbour in the early 1500s, making it one of the oldest European settlements in North America. In 1901, on Signal Hill, <b>Guglielmo Marconi received the first transatlantic wireless signal</b>. Below the hill, the houses of the Battery cling to the cliffs, and the painted row houses downtown earned the name Jellybean Row.</p></div></article>
+          </div>
+        </section>
+
+        <section class="nl-ch" id="nl-ch4" aria-labelledby="h-nl-ch4">
+          <Fragment set:html={chapter(4, "nl-ch4", "The war years", "Before it joined Canada in 1949, Newfoundland went to war on its own name.")} />
+          <article class="nl-thing" id="nl-war">
+            <Fragment set:html={pin(7)} />
+            <h3 class="nl-thing-title">A dominion at war, two years before America</h3>
+            <p>Newfoundland wasn't part of Canada yet. It was a British dominion of its own, run at the time by a commission appointed from London, and it was at war from September 1939. The United States came in after Pearl Harbor, more than two years later. From an island of about 300,000 people, <b>thousands served</b>.</p>
+            <div class="nl-dossier">
+              <div class="nl-gap" data-gap><div class="nl-gap-ends"><div><b>Sept 3, 1939</b><span>Newfoundland at war</span></div><div><b>Dec 7, 1941</b><span>Pearl Harbor</span></div></div><div class="nl-gap-bar"><span class="nl-gap-fill"></span><span class="nl-gap-txt">2 years, 3 months</span></div></div>
+              <div class="nl-bases">
+                <div class="nl-base"><i aria-hidden="true">✈</i><b>Gander</b><span>One of the busiest airports in the world during the war, sending aircraft across the Atlantic.</span></div>
+                <div class="nl-base"><i aria-hidden="true">⚓</i><b>Argentia</b><span>A major U.S. naval base for convoy escorts and the hunt for submarines.</span></div>
+                <div class="nl-base"><i aria-hidden="true">🛩</i><b>Botwood</b><span>A seaplane base for flights across the ocean.</span></div>
+                <div class="nl-base"><i aria-hidden="true">🚢</i><b>St. John's</b><span>Merchant convoys gathered in the harbour under naval patrol.</span></div>
+              </div>
+              <div class="nl-twin">
+                <div class="nl-file"><b>Bell Island, 1942</b><span>German U-boats sank four ore carriers in Conception Bay, killing dozens of men. A torpedo that struck the loading pier is often called the only direct German attack on land in North America.</span></div>
+                <div class="nl-file"><b>Placentia Bay, 1941</b><span>Roosevelt and Churchill met aboard warships off Argentia and agreed on the Atlantic Charter, the statement that helped shape the world after the war.</span></div>
+              </div>
+              <div class="bt-flip-grid nl-medals nl-stamps" set:html={WAR_STAMPS.map(stampFlip).join("")} />
+            </div>
+          </article>
+        </section>
+
+        <section class="nl-ch" id="nl-ch5" aria-labelledby="h-nl-ch5">
+          <Fragment set:html={chapter(5, "nl-ch5", "The people", "Generous to strangers, hard to understand on a first visit, and impossible to forget.")} />
+          <article class="nl-thing" id="nl-gander">
+            <Fragment set:html={pin(8)} />
+            <h3 class="nl-thing-title">The town that took in seven thousand strangers</h3>
+            <p>On September 11, 2001, U.S. airspace closed and 38 planes were sent to Gander. The people of a town of about 10,000 opened their homes, cooked meals, handed out beds, showers and clothes, looked after pets stuck in cargo holds, and turned schools and churches into shelters. It was called Operation Yellow Ribbon, and the story became the musical <b>Come From Away</b>.</p>
+            <div class="nl-gander" data-gander><Fragment set:html={ganderSvg()} /><div class="nl-gstats"><div class="nl-gstat"><b data-to="38">38</b><span>planes sent to Gander</span></div><div class="nl-gstat"><b data-to="7000" data-pre="~">~7,000</b><span>people on those planes</span></div><div class="nl-gstat"><b data-to="10000" data-pre="~">~10,000</b><span>people living in Gander</span></div></div></div>
+          </article>
+
+          <article class="nl-thing" id="nl-talk">
+            <Fragment set:html={pin(9)} />
+            <h3 class="nl-thing-title">The way we talk</h3>
+            <p>Newfoundland English mixes Irish, West Country English, Scottish and French roots. It's one of the most distinctive ways of speaking English anywhere, and visitors love trying it out. Turn the cards over.</p>
+            <div class="nl-wotd"><div><div class="nl-wotd-k">Word of the day</div><div class="nl-wotd-w" data-nl-wotd-w>{word}</div><div class="nl-wotd-m" data-nl-wotd-m>{meaning}</div></div><span class="bt-badge bt-badge--gold">New one tomorrow</span></div>
+            <div class="bt-flip-grid nl-words">
+              {WORDS.map(([w, m]) => (
+                <button type="button" class={`bt-flip bt-flip--teal${w.length > 8 ? " is-phrase" : ""}`} aria-label={`${w}: ${m}`}><span class="bt-flip-in"><span class="bt-flip-face" aria-hidden="true"><span class="nl-word">{w}</span><span class="bt-flip-hint">What's it mean?</span></span><span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-v">{m}</span></span></span></button>
+              ))}
+            </div>
+          </article>
+
+          <article class="nl-thing" id="nl-breeds">
+            <Fragment set:html={pin(10)} />
+            <h3 class="nl-thing-title">Two breeds named for the island</h3>
+            <p>The Rock gave its name to two working animals, both built for hard weather and hard work. One of them became one of the most famous dogs in the world.</p>
+            <div class="nl-breeds">
+              <div class="nl-dog" tabindex="0" data-tap>
+                <div class="nl-dog-scene"><Fragment set:html={dogSvg()} /><span class="nl-berg-hint" aria-hidden="true">Hover or tap: rescue</span></div>
+                <div class="nl-dog-body">
+                  <div class="nl-ex-big nl-big--dog">The Newfoundland dog</div>
+                  <p>Bred to work beside the island's fishermen, the Newfoundland is a giant that loves the water. It has <b>webbed feet</b>, a thick <b>water-resistant double coat</b> and the strength to haul nets, pull carts and tow a person to shore. That gentle nature earned it the nickname "nature's babysitter."</p>
+                  <div class="nl-dogstats"><div><b>Up to 150 lb</b><span>A big male</span></div><div><b>Webbed</b><span>Feet made for swimming</span></div><div><b>Double coat</b><span>Sheds water</span></div></div>
+                  <div class="nl-coats"><span class="bt-label">Coats</span><span class="nl-coat"><i class="c1"></i>Black</span><span class="nl-coat"><i class="c2"></i>Brown</span><span class="nl-coat"><i class="c3"></i>Gray</span><span class="nl-coat"><i class="c4"></i>Landseer</span></div>
+                  <p class="nl-small">The black-and-white Landseer is named after Sir Edwin Landseer, the English painter whose portraits made it famous.</p>
+                </div>
+              </div>
+              <div class="nl-pony2" tabindex="0" data-tap>
+                <div class="nl-dog-scene nl-pony-scene"><Fragment set:html={ponySvg()} /><span class="nl-berg-hint" aria-hidden="true">Hover or tap: say hello</span></div>
+                <div class="nl-dog-body"><div class="nl-ex-big nl-big--pony">The Newfoundland pony</div><p>A tough, clever pony bred over centuries for the island's climate. Ponies hauled wood, pulled fishing gear and worked the farms. The breed nearly died out, and today it's protected as a heritage breed.</p>
+                  <div class="nl-dogstats nl-ponystats"><div><b>Small</b><span>About 11 to 14 hands</span></div><div><b>Shaggy</b><span>A thick winter coat</span></div><div><b>Protected</b><span>A heritage breed</span></div></div></div>
+              </div>
+            </div>
+            <h4 class="bt-heading nl-sub">Famous Newfoundlands</h4>
+            <div class="bt-flip-grid nl-famous nl-stamps" set:html={FAMOUS.map(stampFlip).join("")} />
+          </article>
+        </section>
+
+        <section class="nl-ch" id="nl-ch6" aria-labelledby="h-nl-ch6">
+          <Fragment set:html={chapter(6, "nl-ch6", "Kind words", "Newfoundlanders are famous for their hospitality. Share a story or a few kind words that'll make someone smile.")} />
+          <div data-kind-words="newfoundland"></div>
+        </section>
+
+        <section class="nl-ch" id="nl-ch7" aria-labelledby="h-nl-ch7">
+          <Fragment set:html={chapter(7, "nl-ch7", "A thousand years on the Rock", "Everything above, in order. Scroll sideways.")} />
+          <ol class="nl-time">{TIMELINE.map(([y, t]) => <li tabindex="0"><b>{y}</b><span>{t}</span></li>)}</ol>
+          <h3 class="bt-heading nl-sub">Ask BOOMBOT</h3>
+          <div class="bt-chat">
+            {ASK.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`nl-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <div class="bt-chat-a" id={`nl-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`nl-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta bc-cta" aria-labelledby="h-cta">
+          <Mascot aware decorative />
+          <h2 id="h-cta">Back to camp</h2>
+          <p>There's more of Boomer's story at Base Camp.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/base-camp">Back to Base Camp</a><a class="bt-btn bt-btn--secondary" href="/base-camp/skipper">Meet Skipper</a></div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseCampLayout>
+
+<script>
+  import "../../scripts/base-camp/newfoundland";
+</script>
