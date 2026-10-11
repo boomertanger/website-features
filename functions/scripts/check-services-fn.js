@@ -340,6 +340,7 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal((await get(`${BASE}/items/bug-zapper`)).ratings.comments, 0, "a hidden comment isn't counted");
 
   // ---------- serviceTest ----------
+  await wdb.doc(`${BASE}/items/bug-zapper`).update({ checks: [] });   // the manifest has real checks now (Service Hub part 7a): clear them for this case
   assert.equal(await why(call("fan", "serviceTest", { serviceId: "bug-zapper", device: "phone", results: [] })), "noChecks", "no checks yet");
   await wdb.doc(`${BASE}/items/bug-zapper`).update({ checks: ["Open the report form", "Attach a screenshot", "Send it"] });
   assert.equal(await why(call("fan", "serviceTest", { serviceId: "bug-zapper", device: "tablet", results: [] })), "device");
@@ -523,5 +524,107 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
     assert.ok(reads.includes("request.auth != null && request.auth.uid == uid"), "my/{uid}: that member only");
   }
   console.log("check-services-fn: wiring, hooks and rules ok");
+
+  // ---------- serviceSyncTick: the automatic sync (its own Firestore, a fake fetch) ----------
+  {
+    const { accessHeaders } = require("../lib/services");
+    const { parseBuild, bigDrop } = require("../lib/services/sync");
+    assert.deepEqual(accessHeaders("none", "none"), {}, "the production placeholder sends no headers");
+    assert.deepEqual(accessHeaders("short", "x".repeat(40)), {}, "anything too short to be real sends no headers");
+    assert.deepEqual(Object.keys(accessHeaders("a".repeat(32) + ".access", "b".repeat(64))), ["CF-Access-Client-Id", "CF-Access-Client-Secret"]);
+    assert.equal(parseBuild("<!doctype html><title>Sign in · Cloudflare Access</title>"), null, "a login page isn't services.json");
+    assert.equal(parseBuild({ hash: "nope", services: [{ id: "a" }] }), null, "a bad hash isn't services.json");
+    assert.equal(parseBuild({ hash: "a".repeat(64), services: [] }), null, "an empty list isn't services.json");
+    assert.ok(bigDrop(45, 35) && !bigDrop(45, 36) && !bigDrop(0, 1), "more than 20% fewer is a big drop");
+
+    const db2 = makeDb(), logs2 = [];
+    let reply = null; const seen = [];
+    const fetch2 = async (url, init) => { seen.push({ url, headers: init.headers }); return reply(); };
+    const json = (body) => () => ({ ok: true, status: 200, text: async () => JSON.stringify(body) });
+    const hub2 = require("../lib/services").build({ db: db2, now: () => clock, hooks: null, fetch: fetch2, siteUrl: "https://staging.example.com/", adminLogEntry: async (_d, f) => { logs2.push(f); return f; } });
+    const g2 = async (p) => { const s = await db2.doc(p).get(); return s.exists ? s.data() : null; };
+    const dump = () => JSON.stringify([...db2._store.entries()]);
+    await hub2.syncManifests(list, { buildHash: hash, apply: true, actor: { uid: "adm", name: "@adm" } });
+    assert.equal((await g2(BASE)).syncedBy, "manual", "Sync now is recorded as manual");
+    const logsAt = logs2.length;
+
+    // no change: same hash, nothing written
+    reply = json({ hash, services: list });
+    let before = dump();
+    let r = await hub2.syncTick({ cfId: "c".repeat(40), cfSecret: "d".repeat(64) });
+    assert.equal(r.result, "same");
+    assert.equal(dump(), before, "no change: not one write");
+    assert.equal(logs2.length, logsAt, "no change: no adminLog");
+    assert.equal(seen[0].url, "https://staging.example.com/services.json");
+    assert.equal(seen[0].headers["CF-Access-Client-Id"], "c".repeat(40), "the CF Access headers go with the request");
+
+    // a changed hash: the same core syncs it, logged once as auto sync
+    const bumped = list.map((m) => (m.id === "feature-lab" ? { ...m, version: "1.1" } : m));
+    reply = json({ hash: "b".repeat(64), services: bumped });
+    r = await hub2.syncTick({});
+    assert.equal(r.result, "synced");
+    assert.deepEqual(r.bump, ["feature-lab 1.0 → 1.1"]);
+    let main = await g2(BASE);
+    assert.deepEqual([main.buildHash, main.syncedBy], ["b".repeat(64), "auto"]);
+    assert.equal((await g2(`${BASE}/items/feature-lab`)).version, "1.1");
+    assert.equal(logs2.length, logsAt + 1, "a real sync writes one adminLog entry");
+    assert.deepEqual([logs2.at(-1).feature, logs2.at(-1).action, logs2.at(-1).actorName, logs2.at(-1).details.by], ["serviceHub", "sync", "auto sync", "auto"]);
+    assert.ok(!("CF-Access-Client-Id" in seen.at(-1).headers), "no secrets: no headers");
+
+    // a missing service: flagged for Needs attention, never retired
+    const fewer = bumped.filter((m) => m.id !== "home");
+    reply = json({ hash: "c".repeat(64), services: fewer });
+    r = await hub2.syncTick({});
+    assert.equal(r.result, "synced");
+    assert.deepEqual(r.missing, ["home"]);
+    assert.deepEqual(r.retire, [], "the automatic sync never retires");
+    assert.equal((await g2(`${BASE}/items/home`)).status, "live", "the missing service stays live");
+    assert.deepEqual((await g2(BASE)).missingFromBuild, [{ id: "home", name: "Home" }], "listed for Needs attention");
+
+    // a login page, then a redirect, then a fetch error: skipped, counted, no service data touched
+    const items = () => JSON.stringify([...db2._store.entries()].filter(([p]) => !p.endsWith("/services/main")));
+    before = items(); const logsBefore = logs2.length;
+    reply = () => ({ ok: true, status: 200, text: async () => "<!doctype html><title>Sign in · Cloudflare Access</title>" });
+    clock += 60000;
+    r = await hub2.syncTick({});
+    assert.deepEqual([r.result, r.reason, r.failures], ["skipped", "notServicesJson", 1]);
+    const since = (await g2(BASE)).autoSync.since;
+    reply = () => ({ ok: false, status: 302, text: async () => "" });
+    clock += 60000;
+    assert.equal((await hub2.syncTick({})).reason, "redirect");
+    reply = () => { throw new Error("getaddrinfo ENOTFOUND"); };
+    clock += 60000;
+    r = await hub2.syncTick({});
+    assert.deepEqual([r.reason, r.failures], ["fetch", 3]);
+    main = await g2(BASE);
+    assert.equal(main.autoSync.failures, 3, "three in a row");
+    assert.equal(main.autoSync.since.toMillis(), since.toMillis(), "the first failure's time is kept");
+    assert.match(main.autoSync.lastError, /ENOTFOUND/);
+    assert.equal(items(), before, "skips write no service data");
+    assert.equal(logs2.length, logsBefore, "skips write no adminLog");
+    assert.equal(main.buildHash, "c".repeat(64), "the stored hash is unchanged");
+
+    // a big drop: skipped
+    reply = json({ hash: "d".repeat(64), services: fewer.slice(0, Math.floor(fewer.length / 2)) });
+    r = await hub2.syncTick({});
+    assert.deepEqual([r.result, r.reason], ["skipped", "bigDrop"]);
+    assert.equal(items(), before, "a big drop writes no service data");
+    assert.equal((await g2(BASE)).buildHash, "c".repeat(64));
+
+    // any success clears the failures (even a no-change run)
+    reply = json({ hash: "c".repeat(64), services: fewer });
+    assert.equal((await hub2.syncTick({})).result, "same");
+    assert.equal((await g2(BASE)).autoSync.failures, 0, "a success clears the failure count");
+    before = dump();
+    await hub2.syncTick({});
+    assert.equal(dump(), before, "with no failures to clear, a no-change run writes nothing");
+
+    // the manual sync still retires what the build dropped
+    await hub2.syncManifests(fewer, { buildHash: "e".repeat(64), apply: true, actor: { uid: "adm", name: "@adm" } });
+    assert.equal((await g2(`${BASE}/items/home`)).status, "retired", "Sync now keeps retiring a missing service");
+    assert.deepEqual((await g2(BASE)).missingFromBuild, [], "and clears the Needs attention list");
+    assert.equal((await g2(BASE)).syncedBy, "manual");
+    console.log("check-services-fn: automatic sync ok");
+  }
 })().catch((err) => { console.error(err); process.exit(1); });
 

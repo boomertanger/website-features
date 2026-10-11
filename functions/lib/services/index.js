@@ -6,6 +6,8 @@
 //   serviceTest    verified members    { serviceId, device, results[] }: one counted test per member per version; 10 an hour
 //   serviceSync    admins              { manifests, buildHash }: upserts items from services/*.json; a version change appends versionHistory;
 //                                      a manifest that disappeared retires its item (never deleted). scripts/sync-services.js runs the same code.
+//   serviceSyncTick  every 15 minutes  fetches <site>/services.json (CF Access headers on staging) and syncs when its hash changed; never retires
+//                                      (a missing service goes to missingFromBuild); skips a login page or a >20% drop (lib/services/sync.js).
 //   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment (commentId or uid), retire, restore, hide
 //                                      (adminLog "serviceHub"); and setTaskGears { test, problems } (owner and A2+ only) for crew/main.serviceTaskGears
 //   serviceDetail  admins              { serviceId }: the item, its version history, ratings by version and up to 100 comments, newest first (value, comment,
@@ -20,11 +22,27 @@
 // Item ids: the manifest id; an Arcade game's slug (so it meets its manifest, tap-the-splat); vault-<slug>; stream-<streamId>.
 // build(deps) is what scripts/check-services-fn.js runs against the in-memory Firestore. deps: db, now(), adminLogEntry, factory, grant, tasks, hooks.
 const { onCall } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
+const { defineSecret } = require("firebase-functions/params");
 const { onDocumentWritten, onDocumentCreated } = require("firebase-functions/v2/firestore");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { SITE_ID, fail, requireAdmin, requireVerifiedMember } = require("../vault/common");
 const { makeBoards, raise, idStr } = require("../boards");
+const { makeSync } = require("./sync");
+
+// The site each project serves, for serviceSyncTick: sites/{siteId}.siteUrl first, then this map (a local copy of lib/youtube/index.js SITE_URLS).
+const SITE_URLS = { "boomertanger-staging": "https://staging.boomertanger.com", "boomertanger-prod": "https://boomertanger.com" };
+function envProjectId() {
+  if (process.env.GCLOUD_PROJECT) return process.env.GCLOUD_PROJECT;
+  try { return JSON.parse(process.env.FIREBASE_CONFIG || "{}").projectId || ""; } catch { return ""; }
+}
+// Cloudflare Access service token for a protected staging site. Declared on every project (a missing secret stops the deploy); production holds the
+// placeholder "none", and anything that short means no headers (ROADMAP launch checklist).
+const CF_ACCESS_CLIENT_ID = defineSecret("CF_ACCESS_CLIENT_ID");
+const CF_ACCESS_CLIENT_SECRET = defineSecret("CF_ACCESS_CLIENT_SECRET");
+const realSecret = (v) => typeof v === "string" && v.trim().length >= 16 && v.trim().toLowerCase() !== "none";
+function accessHeaders(id, secret) { return realSecret(id) && realSecret(secret) ? { "CF-Access-Client-Id": id.trim(), "CF-Access-Client-Secret": secret.trim() } : {}; }
 
 const ACTIONS = ["markTested", "linkVideo", "setCoversVersion", "hideComment", "retire", "restore", "hide", "setTaskGears"];
 const text = (err) => String((err && err.message) || err).slice(0, 160);
@@ -141,39 +159,18 @@ function build(deps = {}) {
     return { ok: true, serviceId: sid, version: item.version, counted, already: !counted, problems: v.value.problems };
   }
 
-  // ---------------------------------------------------------------------------------------------- serviceSync (and scripts/sync-services.js)
-  /**
-   * manifests: raw services/*.json objects. Returns the plan ({ create, update, bump, retire, same } as ids) and, with apply, writes it.
-   * actor: { uid, name } for adminLog (the script passes a name of its own).
-   */
-  async function syncManifests(manifests, { buildHash = null, apply = true, actor = null } = {}) {
-    if (!Array.isArray(manifests) || !manifests.length || manifests.length > 400) throw fail("invalid-argument", "Send the list of manifests (1 to 400).", "manifests");
-    const list = [], bad = [];
-    for (const m of manifests) { const n = L.normalizeManifest(m); if (n.ok) list.push(n.value); else bad.push(n.message); }
-    if (bad.length) throw fail("invalid-argument", `Some manifests are wrong: ${bad.slice(0, 5).join(" ")}`, "manifest");
-    if (new Set(list.map((m) => m.id)).size !== list.length) throw fail("invalid-argument", "Two manifests share an id.", "manifest");
-    const items = await allItems();
-    const existing = Object.fromEntries(items.map((it) => [it.id, it]));
-    const plan = L.planSync(existing, list);
-    const summary = { create: plan.create.map((m) => m.id), update: plan.update.map((m) => m.id), bump: plan.bump.map((b) => `${b.id} ${b.from} → ${b.to}`), retire: plan.retire.map((r) => r.id), same: plan.same.length };
-    if (!apply) return { ok: true, applied: false, ...summary };
-    const at = now();
-    const ops = [];
-    for (const m of plan.create) ops.push((b) => b.set(R.item(m.id), { ...blankItem(at), ...m, id: m.id, source: { manifest: true }, needsSetup: L.needsSetup(m), versionHistory: [{ version: m.version, at: ts(at) }] }));
-    for (const u of plan.update) {
-      const bumped = u.changed.includes("version");
-      const { changed, ...m } = u;
-      const patch = { ...Object.fromEntries(L.MANIFEST_FIELDS.map((k) => [k, m[k] ?? null])), "source.manifest": true, needsSetup: L.needsSetup(m), updatedAt: ts(at) };
-      if (bumped) { patch.version = m.version; patch.versionHistory = FieldValue.arrayUnion({ version: m.version, at: ts(at) }); }
-      ops.push((b) => b.update(R.item(m.id), patch));
-    }
-    for (const r of plan.retire) ops.push((b) => b.update(R.item(r.id), { status: "retired", updatedAt: ts(at) }));
-    for (let i = 0; i < ops.length; i += 400) { const b = db.batch(); ops.slice(i, i + 400).forEach((op) => op(b)); await b.commit(); }
-    await R.main.set({ buildHash, syncedAt: ts(at), count: list.length }, { merge: true });
-    await rebuildViews();
-    if (actor) await B.adminLog(actor, { action: "sync", id: "main", title: "Service Hub sync", details: { ...summary, buildHash } });
-    if (hooks && hooks.onBumps) await hooks.onBumps(plan.bump.filter((b) => b.status === "live"));
-    return { ok: true, applied: true, ...summary };
+  // ---------------------------------------------------------------------------------------------- serviceSync, serviceSyncTick (and scripts/sync-services.js)
+  // The core is lib/services/sync.js, shared by all three.
+  const S = makeSync({ db, now, R, B, hooks, allItems, rebuildViews: () => rebuildViews(), blankItem, ts, FieldValue, fetchFn: deps.fetch || ((...a) => fetch(...a)) });
+  const syncManifests = S.syncManifests;
+  /** serviceSyncTick's body: the site URL, the CF Access headers (none on production), then the shared tick. */
+  async function syncTick({ cfId = "", cfSecret = "" } = {}) {
+    let siteUrl = deps.siteUrl || null;
+    if (!siteUrl) { const s = await R.site.get(); siteUrl = (s.exists && s.get("siteUrl")) || SITE_URLS[envProjectId()] || SITE_URLS["boomertanger-prod"]; }
+    const out = await S.tick({ siteUrl, headers: accessHeaders(cfId, cfSecret) });
+    if (out.result === "skipped") console.warn("serviceSyncTick: skipped", out.reason, out.message);
+    else if (out.result === "synced") console.log("serviceSyncTick: synced", out.hash, JSON.stringify({ create: out.create, update: out.update, bump: out.bump, missing: out.missing }));
+    return out;
   }
   async function sync(request) {
     const c = requireAdmin(await B.caller(request));
@@ -418,6 +415,9 @@ function build(deps = {}) {
     serviceRate: onCall(rate),
     serviceTest: onCall(test),
     serviceSync: onCall({ timeoutSeconds: 120 }, sync),
+    serviceSyncTick: onSchedule({ schedule: "every 15 minutes", timeoutSeconds: 120, secrets: [CF_ACCESS_CLIENT_ID, CF_ACCESS_CLIENT_SECRET] }, async () => {
+      await syncTick({ cfId: CF_ACCESS_CLIENT_ID.value(), cfSecret: CF_ACCESS_CLIENT_SECRET.value() });
+    }),
     serviceAdmin: onCall(adminAction),
     serviceDetail: onCall(detail),
     onServiceRatingWritten: onDocumentWritten(`sites/{siteId}/services/main/ratings/{ratingId}`, async (event) => {
@@ -449,7 +449,7 @@ function build(deps = {}) {
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, detail, syncManifests, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
+  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
 }
 
-module.exports = { build };
+module.exports = { build, accessHeaders, realSecret };
