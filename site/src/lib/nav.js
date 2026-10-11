@@ -20,6 +20,7 @@ const MODULE_PAGES = {
   deck: { label: "Mod Deck", href: "/live/deck", icon: "club", blurb: "Your seat, the chats and the tools", staff: true },
   // Later: not in site.json modules yet, so they stay out of the navigation until enabled.
   bugzapper: { label: "Bug Zapper", href: "/bug-zapper", icon: "wrench", blurb: "Report something broken." },
+  services: { label: "Service Hub", href: "/services", icon: "hub", blurb: "Rate the site and help shape it" },
   featurelab: { label: "Feature Lab", href: "/feature-lab", icon: "bulb", blurb: "Suggest ideas and vote on them." },
   contact: { label: "Contact", href: "/contact", icon: "mail", blurb: "Questions, feedback, business, private notes" },
   techStack: { label: "Tech Stack", href: "/tech-stack", icon: "rig", blurb: "The setup behind every stream" },
@@ -39,7 +40,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "chatgames", "factory", "trophies"] },
-  { id: "community", label: "Community", pages: ["club", "crew", "goals", "techStack", "bugzapper", "featurelab", "contact", "monthly"] },
+  { id: "community", label: "Community", pages: ["club", "crew", "goals", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];
 

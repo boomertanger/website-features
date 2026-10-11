@@ -11,6 +11,8 @@ import TabBar from "../components/TabBar.astro";
 import PreviewChip from "../components/PreviewChip.astro";
 import AccountBanners from "../components/account/AccountBanners.astro";
 import Mascot from "../components/Mascot.astro";
+import TalkBackNote from "../components/services/TalkBackNote.astro";
+import { manifestFor } from "../lib/service-manifests";
 import site from "../data/site.json";
 import { isProduction, firebaseEnv } from "../lib/env.js";
 
@@ -23,6 +25,8 @@ interface Props {
   noindex?: boolean;
 }
 const { title, description = site.tagline, overlayHeader = false, noindex = false } = Astro.props;
+// The page strip (Service Hub §8a): the service whose manifest claims this route, if any (its talkBack value decides; TalkBackNote.astro).
+const stripService = manifestFor(Astro.url.pathname);
 const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tagline}`;
 ---
 <!doctype html>
@@ -65,6 +69,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
       <slot name="bar" />
       <main id="main" class="bt-site-main" tabindex="-1">
         <slot />
+        {stripService && stripService.talkBack !== "skip" && <TalkBackNote service={stripService.id} />}
       </main>
       <SiteFooter />
     </div>
