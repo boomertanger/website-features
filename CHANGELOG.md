@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: ROADMAP marks Hotline Boom built on staging, real tests pending.
 docs: Talk Back recorded in design-system §8 (kit and color decisions); spec status and ROADMAP cite the approved mockups.
 Base Camp Mail Call part 4: the Mail Call teaser (MailCallTeaser.astro: Send Boomer real mail on /base-camp, Skipper gets real mail too on /base-camp/skipper, Go to Mail Call) replaces the full mail card, so the address appears only on Mail Call; /contact gains the line "Fan mail for Boomer or Skipper? It goes to Mail Call."; the base-camp-mail-call service manifest; Mail Call in ROADMAP workstream 19.
 Base Camp Mail Call part 3: the Kind Words board boomer (Watches on Twitch / on TikTok / on YouTube / Fan Club member) in kindSubmit validation, the shared wall and composer, and the /admin/kind-words board chips; its notes are torn notebook pages with a gold margin and a small mascot seal, and the sent moment drops the note onto the pile. kindSubmit and kindReview redeployed to staging.

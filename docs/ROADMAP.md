@@ -22,7 +22,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
-| 14 | Hotline Boom (contact) | Spec confirmed, building | Community services |
+| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); real tests pending | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
@@ -212,7 +212,7 @@ Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
 ### 14. Hotline Boom (contact)
 Goal: the site's contact service: six lines on `/contact` (who reads each, which fields, which address replies), a private inbox at `/admin/inbox` for the owner and chosen admins (team lines only), and `/contact/how-it-works`.
 Spec: [docs/specs/hotline-boom.md](specs/hotline-boom.md) (confirmed Oct 9, 2026); mockups `docs/design/mockups/hotline-boom-contact.html` (Layout 3, W5), `hotline-boom-hero.html` (the /contact hero), `hotline-boom-inbox.html` (Split), `hotline-boom-how-it-works.html` (H1).
-Status: **Spec confirmed, building.** Parts, one commit each:
+Status: **Built on staging (parts 0-6); real tests pending (docs/testing/hotline-boom-test-plan.md).** Parts, one commit each:
 0. Docs: spec and mockups in, Boom Alerts topics, ROADMAP, design-system decisions.
 1. Kit: `.bt-reveal` + `shared/ui/reveal.js`, the `--bt-contact-privacy` token, the UI kit page.
 2. Backend: `contactSend`, `contactAction`, `contactNote`, `contactReply`, `contactSettings` (`functions/lib/hotline/`, Turnstile helper in `functions/lib/security/`), rules, indexes, TTL policies.
