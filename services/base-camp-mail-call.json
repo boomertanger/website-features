@@ -1,0 +1,20 @@
+{
+  "id": "base-camp-mail-call",
+  "name": "Base Camp: Mail Call",
+  "type": "page",
+  "area": "Community",
+  "blurb": "Fan mail for Boomer and Skipper: the PO box for the Fan Club, opened live, and Notes for Boomer.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/base-camp/mail-call"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-base-camp-mail-call",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

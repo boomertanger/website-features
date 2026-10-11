@@ -176,6 +176,15 @@
   .bt-root:not(#_) .pm-card.is-locked { padding-bottom: 170px; }
 }
 
+/* ---- The Mail Call teaser (components/base-camp/MailCallTeaser.astro): an airmail strip pointing to /base-camp/mail-call ---- */
+.bt-root:not(#_) .mc-teaser { position: relative; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 16px; align-items: center; padding: 18px 20px; border-radius: 12px; overflow: hidden; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 6%, var(--bt-surface-2)), var(--bt-surface)); border: 1px solid var(--bt-border-2); }
+.bt-root:not(#_) .mc-teaser::before { content: ""; position: absolute; inset: 0; border: 6px solid transparent; border-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--bt-red) 70%, var(--bt-bg)) 0 12px, transparent 12px 18px, color-mix(in srgb, var(--bt-blue) 70%, var(--bt-bg)) 18px 30px, transparent 30px 36px) 6; opacity: 0.7; pointer-events: none; }
+.bt-root:not(#_) .mc-teaser > * { position: relative; }
+.bt-root:not(#_) .mc-teaser b { display: block; font-size: var(--bt-text-lg); font-weight: 900; }
+.bt-root:not(#_) .mc-teaser span:not(.pm-stamp, .pm-stamp-in) { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .mc-teaser .pm-stamp { position: relative; transform: rotate(-4deg); }
+@container bt (max-width: 640px) { .bt-root:not(#_) .mc-teaser { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .mc-teaser .pm-stamp { display: none; } }
+
 @keyframes bc-ring { to { --bc-a: 360deg; } }
 @keyframes bc-blink { 50% { opacity: 0.25; } }
 @keyframes bc-flick { from { transform: scale(1, 1); } to { transform: scale(0.92, 1.08) skewX(-3deg); } }

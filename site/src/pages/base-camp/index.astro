@@ -3,13 +3,13 @@
 // playing cards, E1 stage cards). A story page in the full frame: the BASECAMP bar, TocLayout rail, the hero (the climb: five waypoints link to the
 // chapters, the mascot and the painted sleeping Skipper by the fire), then five ghost-numbered chapters: 01 The personality behind the pixels,
 // 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (four stops, the story panel, Then and now), 04 His
-// edge (Top 5 as E1 stage cards), 05 Base Camp and beyond (trails, the Pup Post mail card, Ask BOOMBOT), and the closing call.
+// edge (Top 5 as E1 stage cards), 05 Base Camp and beyond (trails, the Mail Call teaser, Ask BOOMBOT), and the closing call.
 // Public text: src/data/base-camp.json. The Fan Club text (card backs, stop stories, chapter 5's paragraph) loads in the browser from
 // sites/boomertanger/memberContent/base-camp for members only (scripts/base-camp/story.ts); the page HTML carries none of it.
 import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
-import PupPost from "../../components/base-camp/PupPost.astro";
+import MailCallTeaser from "../../components/base-camp/MailCallTeaser.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
 import { climbScene, edgeScene, suitSvg, cardIndex, platformTile } from "../../scripts/base-camp/story-art";
 import data from "../../data/base-camp.json";
@@ -122,7 +122,7 @@ const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true
             ))}
           </div>
           <h3 class="bt-heading bc-sub">Send real mail</h3>
-          <PupPost ret={`#${CH[4].id}`} />
+          <MailCallTeaser title="Send Boomer real mail" text="Letters, cards and drawings, opened live on stream." />
           <h3 class="bt-heading bc-sub" id="bc-ask">Ask BOOMBOT</h3>
           <div class="bt-chat">
             {data.askBoombot.map(({ q, a }, i) => (

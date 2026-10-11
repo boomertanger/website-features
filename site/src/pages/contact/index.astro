@@ -30,6 +30,7 @@ const mail = revealHtml({ rows: site.hotline.emails.map((e) => ({ key: e.key, la
           <a class="bt-btn bt-btn--ghost" href="/contact/how-it-works">How Hotline Boom works</a>
           <span class="hb-trust"><Fragment set:html={icon("private")} />Private lines are read by Boomertanger only</span>
         </div>
+        <p class="hb-mailcall"><span aria-hidden="true">✉️</span> Fan mail for Boomer or Skipper? It goes to <a class="bt-link" href="/base-camp/mail-call">Mail Call</a>.</p>
       </div>
       <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Answer it">
         <Fragment set:html={phoneScene()} />

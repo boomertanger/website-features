@@ -1,0 +1,13 @@
+---
+// The Mail Call teaser (docs/specs/base-camp.md "Addendum 2: Mail Call", Changes elsewhere): a small airmail strip with the PUP POST stamp that
+// points to /base-camp/mail-call. It replaces the full mail card on the Base Camp and Skipper pages; the address now appears only on Mail Call.
+import { PAW } from "../../scripts/base-camp/ui";
+
+interface Props { title: string; text: string }
+const { title, text } = Astro.props;
+---
+<div class="mc-teaser">
+  <span class="pm-stamp" aria-hidden="true"><span class="pm-stamp-in"><svg viewBox="0 0 24 26" aria-hidden="true" focusable="false" set:html={PAW} /><s>PUP POST</s></span></span>
+  <div><b>{title}</b><span>{text}</span></div>
+  <a class="bt-btn bt-btn--primary" href="/base-camp/mail-call">Go to Mail Call</a>
+</div>

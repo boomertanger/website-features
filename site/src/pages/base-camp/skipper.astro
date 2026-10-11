@@ -5,12 +5,12 @@
 // things as E1 stage cards with real media), 02 Skipper Cam (Fan Club: the live muted embed, the cam-off scene, a blurred screen and a lock card for
 // visitors; scripts/base-camp/skipper-cam.ts), 03 All about corgis (Wales, cor + ci, the fairy saddle, Pembroke vs Cardigan, numbers, the Queen's
 // corgis, six quirks on royal shield crests), 04 The reel (photos and clips, openGallery from shared/ui/lightbox.js), 05 Skipper love (Pup Post:
-// the mailbox scene and the mail card; Paw Notes: the Kind Words board "skipper" mounts into [data-kind-words]), then Ask BOOMBOT and Back to camp.
+// the mailbox scene and the Mail Call teaser; Paw Notes: the Kind Words board "skipper" mounts into [data-kind-words]), then Ask BOOMBOT and Back to camp.
 // Copy and media: src/data/base-camp/skipper.json. Media: Cloudinary skipper/ (skipper-art.ts); clips play only while on screen (skipper.ts).
 import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
-import PupPost from "../../components/base-camp/PupPost.astro";
+import MailCallTeaser from "../../components/base-camp/MailCallTeaser.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
 import { mediaHtml, posterUrl, imageUrl, videoUrl, MEDIA, PAWS, camOffScene, mailboxScene, walesCard, wordCard, saddleCard, breedSvg, CROWN, shield, chapterHtml } from "../../scripts/base-camp/skipper-art";
 import d from "../../data/base-camp/skipper.json";
@@ -142,7 +142,7 @@ const reelItems = d.reel.items.map((r) => {
               <p>{d.love.mailText}</p>
             </div>
           </div>
-          <PupPost ret={`#${CH[4].id}`} />
+          <MailCallTeaser title="Skipper gets real mail too" text="Send her a letter or a drawing, and Boomer opens it live on stream." />
           <div class="pn-head">
             <div class="kw-mark" aria-hidden="true"><span>PAW</span><span class="kw-mark-2 pn-mark2">NOTES</span></div>
             <h3 class="sk-thing-title">{d.love.notesTitle}</h3>
