@@ -529,6 +529,14 @@ service cloud.firestore {
         }
       }
 
+      // Skipper Cam (docs/specs/base-camp.md "Skipper Cam"): the video id of the unlisted live stream, written ONLY by skipperCamSet
+      // (functions/lib/skipperCam). The owner reads it for the /admin card; members get it only from skipperCamWatch while it is live.
+      // The public state is public/skipperCam (the public/{docId} rule above).
+      match /skipperCam/{docId} {
+        allow read: if siteId == 'boomertanger' && isSiteOwner(siteId);
+        allow write: if false;
+      }
+
       // Broken links reported from the 404 page (docs/specs/not-found.md "Data"): written ONLY by reportBrokenLink and
       // brokenLinkFix (functions/lib/brokenLinks). The /admin card reads them; no client writes.
       match /brokenLinks/{id} {

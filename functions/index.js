@@ -925,3 +925,8 @@ Object.assign(exports, servicesModule.functions);
 // 3 a day, one pending per board), kindWithdraw (the author, while pending) and kindReview (admins; never deletes; adminLog feature kindWords).
 // Lives in lib/kindWords/; not in lib/live.
 Object.assign(exports, require("./lib/kindWords").build({ adminLogEntry }).functions);
+
+// Skipper Cam (docs/specs/base-camp.md "Skipper Cam"): skipperCamSet (the owner; going live needs the three privacy checks and a video id),
+// skipperCamWatch (members, only while live; the video id is never logged) and skipperCamSweep (every 15 minutes: off after 12 hours).
+// Lives in lib/skipperCam/; not in lib/live.
+Object.assign(exports, require("./lib/skipperCam").build({ adminLogEntry }).functions);
