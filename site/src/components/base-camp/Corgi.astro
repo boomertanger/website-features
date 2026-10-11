@@ -1,0 +1,11 @@
+---
+// Skipper, drawn (docs/specs/base-camp.md "Corgi drawings"): one painted corgi as an inline SVG, standing, sitting or sleeping, in the red
+// Pembroke (.cgr) or blue merle Cardigan (.cgm) palette. The drawing comes from scripts/base-camp/corgi.ts (unique gradient and filter ids per
+// instance); its CSS is in styles/base-camp.css. Size it with CSS width. Without a label it's decorative.
+//   <Corgi pose="sleeping" />   <Corgi coat="merle" tail="long" label="A blue merle Cardigan Welsh Corgi" />
+import { corgiSvg, type CorgiPose } from "../../scripts/base-camp/corgi";
+
+interface Props { pose?: CorgiPose; coat?: "red" | "merle"; tail?: "short" | "long"; label?: string; class?: string }
+const { pose = "standing", coat = "red", tail = "short", label = "", class: cls = "" } = Astro.props;
+---
+<Fragment set:html={corgiSvg(pose, { coat, tail, label, cls })} />

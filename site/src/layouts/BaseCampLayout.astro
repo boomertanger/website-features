@@ -1,0 +1,22 @@
+---
+// One layout for the three Base Camp pages (docs/specs/base-camp.md): the site shell, the BASECAMP bar in BaseLayout's "bar" slot (so it stays
+// stuck, footer included), then the page. All three are public story pages; their Fan Club parts load in the browser (scripts/base-camp/member.ts)
+// and show lock cards to visitors. The shared feature CSS (styles/base-camp.css) loads after the How it works blocks; each page adds its own.
+import BaseLayout from "./BaseLayout.astro";
+import BaseCampBar from "../components/base-camp/BaseCampBar.astro";
+import "../styles/how-it-works.css";
+import "../styles/base-camp.css";
+
+interface Props { title: string; description?: string; section?: "story" | "newfoundland" | "skipper" | null }
+const { title, description, section = null } = Astro.props;
+---
+<BaseLayout title={title} description={description}>
+  <BaseCampBar slot="bar" section={section} />
+  <div class="bc-page bt-zone" data-bc-page>
+    <slot />
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/base-camp/layout";
+</script>

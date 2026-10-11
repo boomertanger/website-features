@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Base Camp part 2: the shared foundation: styles/base-camp.css (the BASECAMP bar, the night camp scene parts, the E1 stage-card chrome, the painted corgi palettes .cgr / .cgm, the Pup Post mail card), BaseCampLayout with the BASECAMP .bt-wordmark--power (W1 peak and tent) and The story / Newfoundland / Skipper seg nav, Corgi.astro and scripts/base-camp/corgi.ts (standing, sitting, sleeping; unique ids per drawing), PupPost.astro and pup-post.ts (members get the address from memberContent/mail and Copy address; visitors get blurred bars and a lock card), the member layer (member.ts, ?as=member preview from base-camp-member.sample.json on localhost and staging), and Base Camp in the Community nav.
 Base Camp part 1: the spec (docs/specs/base-camp.md, with the Pup Post addendum), the three approved mockups (base-camp, base-camp-newfoundland, base-camp-skipper) and the Newfoundland chart data (site/src/data/base-camp/newfoundland-map.json).
 docs: the Talk Back concept mockup (docs/design/mockups/talk-back-concept.html, from ask-from-anywhere.html) and Mod Machina pointers to talk-back.md §9: the Hotline inbox work row in §4a, the Inbox column in §4b and Operator of the Month in §5.
 docs: Talk Back re-homed as Hotline Boom part 2: the dialog, line 2 rename, stats (serviceStats for Service Hub), inbox Gears and the staff How it works page; Service Hub owns the page strip, Ask pins and the manifest registry; placement values note, pins, rate and skip.

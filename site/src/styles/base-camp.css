@@ -1,0 +1,197 @@
+/* site/src/styles/base-camp.css — what the three Base Camp pages share (docs/specs/base-camp.md; mockups docs/design/mockups/base-camp.html,
+   base-camp-newfoundland.html, base-camp-skipper.html): the BASECAMP bar and its W1 peak-and-tent icon, the night camp scene parts, the E1 stage
+   card chrome (running ring, tilt, spotlight, outlined number, idle cue), the painted corgi (.cg with the .cgr red and .cgm blue merle palettes;
+   standing, sitting, sleeping from scripts/base-camp/corgi.ts) and the Pup Post mail card (.pm-card). Each page's own CSS
+   (base-camp-story.css, base-camp-newfoundland.css, base-camp-skipper.css) loads after this one.
+   Prefix bc- (and the mockups' short scene prefixes s-, cg-, sz-, pm-). Tokens only: no raw colours (a mask only needs an opaque colour, so the
+   stamp edges use --bt-bg). Container queries (1024 / 640 / 420, and 900 where the How it works pieces use it); reduced motion at the end. */
+
+/* ---- The BASECAMP bar: the kit's .bt-topbar in a .bt-sticky-bar (like the Trophy Room's); the seg nav hides on phones ---- */
+.bt-root:not(#_) .bc-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
+.bt-root:not(#_) .bc-bar .bt-wordmark-text { letter-spacing: 0.06em; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-bar .bt-seg-nav { display: none; } }
+
+/* W1 "Peak and tent": rests; the tent door lights on hover, focus or .is-lit (with the wordmark's own CAMP power-on) */
+.bt-root:not(#_) .bc-ic { width: 34px; height: 34px; overflow: visible; }
+.bt-root:not(#_) .bc-ic .peak { fill: var(--bt-surface-2); stroke: var(--bt-text-muted); stroke-width: 1.6; stroke-linejoin: round; }
+.bt-root:not(#_) .bc-ic .snow { fill: var(--bt-text); opacity: 0.8; }
+.bt-root:not(#_) .bc-ic .tent { fill: var(--bt-title); }
+.bt-root:not(#_) .bc-ic .door { fill: var(--bt-bg); transition: fill 0.3s, filter 0.3s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bc-ic .door { fill: var(--bt-lamp); filter: drop-shadow(0 0 4px rgba(var(--bt-lamp-rgb), 0.9)); }
+
+/* ---- Page frame bits every Base Camp page uses ---- */
+.bt-root:not(#_) .bc-main { display: flex; flex-direction: column; gap: 52px; min-width: 0; }
+.bt-root:not(#_) .bc-ch { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 80px; }
+.bt-root:not(#_) .bc-ch > p { margin: 0; max-width: 64ch; color: var(--bt-text-muted); line-height: 1.65; }
+.bt-root:not(#_) .bc-sub { margin-top: 8px; }
+.bt-root:not(#_) .bc-cta .bt-mascot { width: 72px; height: auto; margin: 0 auto 8px; display: block; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bc-main { gap: 40px; } }
+
+/* ---- Night camp scene parts (the /base-camp hero, the trail cards) ---- */
+.bt-root:not(#_) .s-sky0 { stop-color: color-mix(in srgb, var(--bt-primary) 16%, var(--bt-bg)); }
+.bt-root:not(#_) .s-sky1 { stop-color: var(--bt-bg); }
+.bt-root:not(#_) .s-star { fill: var(--bt-text); opacity: 0.55; }
+.bt-root:not(#_) .s-far { fill: color-mix(in srgb, var(--bt-surface-2) 70%, var(--bt-bg)); }
+.bt-root:not(#_) .s-peak { fill: var(--bt-surface); stroke: var(--bt-border-2); stroke-width: 1.2; stroke-linejoin: round; }
+.bt-root:not(#_) .s-snow { fill: color-mix(in srgb, var(--bt-text) 22%, var(--bt-surface)); }
+.bt-root:not(#_) .s-ground { fill: var(--bt-bg); }
+.bt-root:not(#_) .s-trail { fill: none; stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 2; stroke-dasharray: 3 5; stroke-linecap: round; }
+.bt-root:not(#_) .s-flagpole { stroke: var(--bt-text-muted); stroke-width: 1.6; }
+.bt-root:not(#_) .s-flag { fill: var(--bt-title); transform-box: fill-box; transform-origin: 0 50%; animation: bc-flag 2.4s ease-in-out infinite; }
+.bt-root:not(#_) .s-tent { fill: color-mix(in srgb, var(--bt-title) 45%, var(--bt-surface)); stroke: color-mix(in srgb, var(--bt-title) 70%, var(--bt-bg)); stroke-width: 1.2; stroke-linejoin: round; }
+.bt-root:not(#_) .s-tentdoor { fill: rgba(var(--bt-lamp-rgb), 0.85); }
+.bt-root:not(#_) .s-glow0 { stop-color: rgba(var(--bt-gold-rgb), 0.55); }
+.bt-root:not(#_) .s-glow1 { stop-color: rgba(var(--bt-gold-rgb), 0); }
+.bt-root:not(#_) .s-log { stroke: color-mix(in srgb, var(--bt-text-muted) 60%, var(--bt-bg)); stroke-width: 4; stroke-linecap: round; }
+.bt-root:not(#_) .s-fl1 { fill: var(--bt-rank-3); transform-box: fill-box; transform-origin: 50% 100%; animation: bc-flick 0.9s ease-in-out infinite alternate; }
+.bt-root:not(#_) .s-fl2 { fill: var(--bt-title); transform-box: fill-box; transform-origin: 50% 100%; animation: bc-flick 0.7s ease-in-out infinite alternate-reverse; }
+.bt-root:not(#_) .s-fl3 { fill: var(--bt-lamp); transform-box: fill-box; transform-origin: 50% 100%; animation: bc-flick 0.55s ease-in-out infinite alternate; }
+.bt-root:not(#_) .s-spark { fill: var(--bt-lamp); opacity: 0; animation: bc-spark 3.2s ease-out infinite; }
+
+/* ---- E1 stage cards: running conic ring on hover, pointer tilt, spotlight, an outlined number that ignites, an idle cue, a scene with depth.
+        Hover, focus or .is-play (phones: scrolled into view; scripts/base-camp/stage.ts) plays the scene. Tones: data-tone blood | gold | teal | ember
+        (default title gold). Used by Top 5 on /base-camp and Skipper's favorite things. ---- */
+@property --bc-a { syntax: "<angle>"; inherits: false; initial-value: 0deg; }
+.bt-root:not(#_) .bc-stage { gap: 18px; perspective: 1200px; }
+.bt-root:not(#_) .bc-stage .bc-wide { grid-column: 1 / -1; }
+.bt-root:not(#_) .bc-e { --tone: var(--bt-title); --rx: 0deg; --ry: 0deg; position: relative; overflow: visible; isolation: isolate; border: 1px solid var(--bt-border-2); background: linear-gradient(180deg, color-mix(in srgb, var(--tone) 6%, var(--bt-surface)), var(--bt-surface) 55%); transform: rotateX(var(--rx)) rotateY(var(--ry)); transform-style: preserve-3d; transition: transform 0.25s ease-out, box-shadow 0.4s, border-color 0.4s; outline: none; }
+.bt-root:not(#_) .bc-e[data-tone="blood"] { --tone: var(--bt-blood); }
+.bt-root:not(#_) .bc-e[data-tone="gold"] { --tone: var(--bt-lamp); }
+.bt-root:not(#_) .bc-e[data-tone="teal"] { --tone: var(--bt-teal); }
+.bt-root:not(#_) .bc-e[data-tone="ember"] { --tone: var(--bt-rank-3); }
+.bt-root:not(#_) .bc-e > * { position: relative; z-index: 1; }
+.bt-root:not(#_) .bc-e .bc-e-ring { position: absolute; inset: -1px; z-index: 0; border-radius: inherit; padding: 1px; background: conic-gradient(from var(--bc-a), transparent 0 62%, var(--tone) 78%, var(--bt-logo-shine) 82%, var(--tone) 86%, transparent 94%); -webkit-mask: linear-gradient(var(--bt-bg) 0 0) content-box, linear-gradient(var(--bt-bg) 0 0); -webkit-mask-composite: xor; mask-composite: exclude; opacity: 0; transition: opacity 0.4s; pointer-events: none; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .bc-e-ring { opacity: 1; animation: bc-ring 2.6s linear infinite; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) { border-color: transparent; box-shadow: 0 26px 60px -24px color-mix(in srgb, var(--tone) 70%, transparent), 0 0 0 1px color-mix(in srgb, var(--tone) 30%, transparent); }
+.bt-root:not(#_) .bc-e:focus-visible { box-shadow: 0 0 0 2px var(--bt-primary), 0 26px 60px -24px color-mix(in srgb, var(--tone) 70%, transparent); }
+.bt-root:not(#_) .bc-e::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: inherit; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 30%), color-mix(in srgb, var(--tone) 14%, transparent), transparent 60%); opacity: 0; transition: opacity 0.3s; pointer-events: none; }
+.bt-root:not(#_) .bc-e:hover::after { opacity: 1; }
+.bt-root:not(#_) .bc-e .bc-e-scene { position: relative; height: auto; aspect-ratio: 2 / 1; overflow: hidden; border-radius: var(--bt-radius-xl) var(--bt-radius-xl) 0 0; border-bottom: 1px solid color-mix(in srgb, var(--tone) 25%, var(--bt-border)); background: radial-gradient(80% 90% at 50% 100%, color-mix(in srgb, var(--tone) 22%, transparent), transparent 70%), var(--bt-bg); }
+.bt-root:not(#_) .bc-e.bc-wide .bc-e-scene { aspect-ratio: 40 / 11; }
+.bt-root:not(#_) .bc-e .bc-e-scene > svg { width: 100%; height: 100%; display: block; transform: scale(1.02); transition: transform 0.6s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .bc-e-scene > svg { transform: scale(1.06); }
+.bt-root:not(#_) .bc-e .bc-e-scene::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 3%, transparent) 0 1px, transparent 1px 3px), radial-gradient(120% 100% at 50% 50%, transparent 55%, color-mix(in srgb, var(--bt-bg) 80%, transparent)); pointer-events: none; }
+.bt-root:not(#_) .bc-e-n { position: absolute; right: 18px; top: -30px; z-index: 3; font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -0.04em; color: transparent; -webkit-text-stroke: 1.5px color-mix(in srgb, var(--tone) 55%, transparent); transition: color 0.4s, text-shadow 0.4s, transform 0.5s cubic-bezier(.3, 1.6, .4, 1); }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .bc-e-n { color: var(--tone); -webkit-text-stroke-color: var(--tone); text-shadow: 0 0 22px color-mix(in srgb, var(--tone) 70%, transparent); transform: translateY(-4px) scale(1.06); }
+.bt-root:not(#_) .bc-e-cue { position: absolute; left: 14px; top: 12px; z-index: 2; display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 7px; border: 1px solid color-mix(in srgb, var(--tone) 40%, transparent); border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bt-bg) 70%, transparent); color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; transition: opacity 0.3s; }
+.bt-root:not(#_) .bc-e-cue i { width: 6px; height: 6px; border-radius: 50%; background: var(--tone); box-shadow: 0 0 8px var(--tone); animation: bc-blink 1.4s ease-in-out infinite; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .bc-e-cue { opacity: 0; }
+.bt-root:not(#_) .bc-e .ai-part-copy { padding: 18px 22px 22px; }
+.bt-root:not(#_) .bc-e .ai-part-copy h3 { padding-right: 64px; font-size: 22px; font-weight: 900; letter-spacing: -0.015em; line-height: 1.2; }
+.bt-root:not(#_) .bc-e.bc-wide .ai-part-copy h3 { font-size: 26px; }
+.bt-root:not(#_) a.bc-e { color: inherit; text-decoration: none; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bc-e.bc-wide .bc-e-scene { aspect-ratio: 2 / 1; }
+  .bt-root:not(#_) .bc-e .ai-part-copy h3, .bt-root:not(#_) .bc-e.bc-wide .ai-part-copy h3 { font-size: 20px; }
+  .bt-root:not(#_) .bc-e-n { font-size: 44px; top: -24px; }
+  .bt-root:not(#_) .bc-e-cue { display: none; }
+}
+
+/* ---- The painted corgi (look A: gradients, rim light, fur strokes and a fine displacement "fur" edge). .cgr red Pembroke, .cgm blue merle
+        Cardigan. Gradient and filter ids are unique per drawing (scripts/base-camp/corgi.ts). ---- */
+.bt-root:not(#_) .bc-corgi { display: block; width: 100%; height: auto; overflow: visible; }
+.bt-root:not(#_) .cgr { --c0: color-mix(in srgb, var(--bt-rank-3) 70%, var(--bt-bg)); --c1: color-mix(in srgb, var(--bt-rank-3) 52%, var(--bt-title)); --c2: color-mix(in srgb, color-mix(in srgb, var(--bt-rank-3) 40%, var(--bt-title)) 70%, var(--bt-text)); --c3: color-mix(in srgb, var(--bt-rank-3) 60%, var(--bt-bg)); --c0h: color-mix(in srgb, color-mix(in srgb, var(--bt-rank-3) 45%, var(--bt-title)) 75%, var(--bt-text)); }
+.bt-root:not(#_) .cgm { --c0: color-mix(in srgb, var(--bt-blue) 22%, color-mix(in srgb, var(--bt-text) 38%, var(--bt-bg))); --c1: color-mix(in srgb, var(--bt-blue) 18%, color-mix(in srgb, var(--bt-text) 58%, var(--bt-bg))); --c2: color-mix(in srgb, var(--bt-blue) 12%, color-mix(in srgb, var(--bt-text) 72%, var(--bt-bg))); --c3: color-mix(in srgb, var(--bt-blue) 20%, color-mix(in srgb, var(--bt-text) 40%, var(--bt-bg))); --c0h: color-mix(in srgb, var(--bt-blue) 14%, color-mix(in srgb, var(--bt-text) 70%, var(--bt-bg))); }
+.bt-root:not(#_) .cg-s0 { stop-color: var(--c0); } .bt-root:not(#_) .cg-s1 { stop-color: var(--c1); } .bt-root:not(#_) .cg-s2 { stop-color: var(--c2); } .bt-root:not(#_) .cg-s3 { stop-color: var(--c3); } .bt-root:not(#_) .cg-s0h { stop-color: var(--c0h); }
+.bt-root:not(#_) .cg-w0 { stop-color: color-mix(in srgb, var(--bt-text) 96%, var(--bt-title)); } .bt-root:not(#_) .cg-w1 { stop-color: color-mix(in srgb, var(--bt-text) 78%, var(--bt-blue)); }
+.bt-root:not(#_) .cg-coatf { stroke: color-mix(in srgb, var(--c0) 70%, var(--bt-bg)); stroke-width: 0.8; stroke-linejoin: round; }
+.bt-root:not(#_) .cg-ns { stroke: none; }
+.bt-root:not(#_) .cg .cg-white { fill: color-mix(in srgb, var(--bt-text) 92%, var(--bt-title)); stroke: color-mix(in srgb, var(--bt-text) 55%, var(--bt-blue)); stroke-width: 0.6; stroke-linejoin: round; }
+.bt-root:not(#_) .cg-far { fill: color-mix(in srgb, var(--c0) 80%, var(--bt-bg)); }
+.bt-root:not(#_) .cg-far-w { fill: color-mix(in srgb, var(--bt-text) 62%, var(--bt-blue)); }
+.bt-root:not(#_) .cg-spot { fill: color-mix(in srgb, var(--bt-bg) 75%, var(--bt-blue)); opacity: 0.8; }
+.bt-root:not(#_) .cg-tan { fill: color-mix(in srgb, color-mix(in srgb, var(--bt-rank-3) 45%, var(--bt-title)) 70%, var(--bt-bg)); }
+.bt-root:not(#_) .cg-brow { fill: color-mix(in srgb, var(--c2) 70%, var(--bt-text)); opacity: 0.8; }
+.bt-root:not(#_) .cg-furline { fill: none; stroke: color-mix(in srgb, var(--c0) 85%, var(--bt-bg)); stroke-width: 0.9; stroke-linecap: round; opacity: 0.55; }
+.bt-root:not(#_) .cg-wline { fill: none; stroke: color-mix(in srgb, var(--bt-text) 60%, var(--bt-blue)); stroke-width: 1; stroke-linecap: round; }
+.bt-root:not(#_) .cg-rim { fill: none; stroke: color-mix(in srgb, var(--c2) 60%, var(--bt-text)); stroke-width: 1.6; stroke-linecap: round; opacity: 0.7; }
+.bt-root:not(#_) .cg-thighshade { fill: none; stroke: color-mix(in srgb, var(--c0) 80%, var(--bt-bg)); stroke-width: 1.4; stroke-linecap: round; opacity: 0.6; }
+.bt-root:not(#_) .cg-bellyshade { fill: none; stroke: color-mix(in srgb, var(--c0) 70%, var(--bt-bg)); stroke-width: 3; stroke-linecap: round; opacity: 0.35; }
+.bt-root:not(#_) .cg-toe { fill: none; stroke: color-mix(in srgb, var(--bt-text) 50%, var(--bt-blue)); stroke-width: 0.9; stroke-linecap: round; }
+.bt-root:not(#_) .cg .cg-ear-in { fill: color-mix(in srgb, var(--bt-pink) 40%, var(--c1)); }
+.bt-root:not(#_) .cg-ear-far { filter: brightness(0.82); }
+.bt-root:not(#_) .cg-earfluff { fill: none; stroke: color-mix(in srgb, var(--bt-text) 80%, var(--bt-title)); stroke-width: 1; stroke-linecap: round; }
+.bt-root:not(#_) .cg-eyerim { fill: color-mix(in srgb, var(--bt-bg) 80%, var(--c0)); }
+.bt-root:not(#_) .cg-eye { fill: color-mix(in srgb, var(--bt-rank-3) 30%, var(--bt-bg)); }
+.bt-root:not(#_) .cg-glint { fill: var(--bt-text); }
+.bt-root:not(#_) .cg-mouth { fill: none; stroke: color-mix(in srgb, var(--bt-bg) 80%, var(--c0)); stroke-width: 1.2; stroke-linecap: round; }
+.bt-root:not(#_) .cg .cg-tongue { fill: color-mix(in srgb, var(--bt-pink) 70%, var(--bt-red)); stroke: color-mix(in srgb, var(--bt-red) 50%, var(--bt-bg)); stroke-width: 0.6; }
+.bt-root:not(#_) .cg-nose { fill: color-mix(in srgb, var(--bt-text) 6%, var(--bt-bg)); }
+.bt-root:not(#_) .cg-nosehi { fill: none; stroke: color-mix(in srgb, var(--bt-text) 55%, transparent); stroke-width: 1; stroke-linecap: round; }
+.bt-root:not(#_) .cg-whisk { fill: none; stroke: color-mix(in srgb, var(--bt-text) 45%, transparent); stroke-width: 0.5; stroke-linecap: round; }
+.bt-root:not(#_) .cg-dark { fill: var(--bt-bg); }
+.bt-root:not(#_) .y-shadow { fill: var(--bt-bg); opacity: 0.35; }
+.bt-root:not(#_) .cg-leg { transform-box: fill-box; transform-origin: 50% 0%; }
+.bt-root:not(#_) .cg-ears { transform-box: fill-box; transform-origin: 50% 100%; }
+/* the standing corgi wags; in a playing stage card she runs */
+.bt-root:not(#_) .cg-tail { transform-box: fill-box; transform-origin: 100% 50%; animation: cg-wag 0.5s ease-in-out infinite alternate; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .cg-leg--a { animation: cg-run 0.28s ease-in-out infinite alternate; }
+.bt-root:not(#_) .bc-e:is(:hover, :focus-visible, .is-play) .cg-leg--b { animation: cg-run 0.28s ease-in-out infinite alternate-reverse; }
+/* sleeping: slow breaths, a small nod, closed eyes */
+.bt-root:not(#_) .sk-breathe { transform-box: fill-box; transform-origin: 50% 100%; animation: sk-breathe 3.4s ease-in-out infinite; }
+.bt-root:not(#_) .sz-head { transform-box: fill-box; transform-origin: 20% 80%; animation: sz-nod 4.2s ease-in-out infinite; }
+.bt-root:not(#_) .sz-lid { fill: none; stroke: color-mix(in srgb, var(--bt-bg) 85%, var(--c0)); stroke-width: 1.6; stroke-linecap: round; }
+.bt-root:not(#_) .sz-lash { fill: none; stroke: color-mix(in srgb, var(--bt-bg) 85%, var(--c0)); stroke-width: 0.9; stroke-linecap: round; }
+.bt-root:not(#_) .cg-sleeping .cg-tail { animation: none; }
+
+/* ---- Pup Post: the real-mail envelope (Fan Club; components/base-camp/PupPost.astro, scripts/base-camp/pup-post.ts). Members see the address from
+        memberContent/mail and Copy address; everyone else sees blurred bars (no address in the page) and a lock card. ---- */
+.bt-root:not(#_) .pm-card { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr); gap: 0; min-height: 240px; padding: 26px 26px 22px; border-radius: 10px; overflow: hidden; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 6%, var(--bt-surface-2)), var(--bt-surface)); border: 1px solid var(--bt-border-2); box-shadow: 0 24px 40px -24px var(--bt-bg); }
+.bt-root:not(#_) .pm-card::before { content: ""; position: absolute; inset: 0; border: 9px solid transparent; border-image: repeating-linear-gradient(135deg, color-mix(in srgb, var(--bt-red) 70%, var(--bt-bg)) 0 14px, transparent 14px 22px, color-mix(in srgb, var(--bt-blue) 70%, var(--bt-bg)) 22px 36px, transparent 36px 44px) 9; opacity: 0.75; pointer-events: none; }
+.bt-root:not(#_) .pm-flap { position: absolute; left: 0; right: 0; top: 0; height: 60%; background: linear-gradient(to bottom right, transparent 49.6%, color-mix(in srgb, var(--bt-text) 7%, transparent) 50%, transparent 50.4%), linear-gradient(to bottom left, transparent 49.6%, color-mix(in srgb, var(--bt-text) 7%, transparent) 50%, transparent 50.4%); background-size: 50% 100%; background-position: left top, right top; background-repeat: no-repeat; pointer-events: none; }
+.bt-root:not(#_) .pm-left, .bt-root:not(#_) .pm-right { position: relative; }
+.bt-root:not(#_) .pm-left { display: flex; flex-direction: column; gap: 8px; padding-right: 22px; }
+.bt-root:not(#_) .pm-left h4 { margin: 0; font-size: var(--bt-text-xl); font-weight: 900; line-height: 1.2; }
+.bt-root:not(#_) .pm-left p { margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) .pm-left p b { color: var(--bt-text); }
+.bt-root:not(#_) .pm-small { font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .pm-k { color: var(--bt-title); font-size: var(--bt-text-2xs); font-weight: 900; letter-spacing: 0.12em; text-transform: uppercase; }
+.bt-root:not(#_) .pm-right { display: flex; flex-direction: column; justify-content: flex-end; gap: 12px; padding: 70px 0 0 22px; border-left: 1px dashed color-mix(in srgb, var(--bt-text) 18%, transparent); }
+.bt-root:not(#_) .pm-to { display: flex; flex-direction: column; gap: 3px; font-size: var(--bt-text-lg); line-height: 1.35; overflow-wrap: anywhere; }
+.bt-root:not(#_) .pm-to b { font-size: var(--bt-text-lg); font-style: italic; color: var(--bt-pink); }
+.bt-root:not(#_) .pm-to span:not(.pm-k) { font-weight: 800; border-bottom: 1px solid color-mix(in srgb, var(--bt-text) 14%, transparent); padding-bottom: 2px; }
+.bt-root:not(#_) .pm-to--locked i { display: block; height: 14px; margin: 6px 0; border-radius: 7px; background: color-mix(in srgb, var(--bt-text) 30%, transparent); filter: blur(3px); }
+.bt-root:not(#_) .pm-to--locked i:nth-of-type(1) { width: 70%; } .bt-root:not(#_) .pm-to--locked i:nth-of-type(2) { width: 55%; }
+.bt-root:not(#_) .pm-to--locked i:nth-of-type(3) { width: 62%; } .bt-root:not(#_) .pm-to--locked i:nth-of-type(4) { width: 78%; }
+.bt-root:not(#_) .pm-acts { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.bt-root:not(#_) .pm-note { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .pm-stamp { position: absolute; top: 0; right: 0; width: 60px; height: 70px; padding: 5px; background: color-mix(in srgb, var(--bt-text) 88%, var(--bt-title)); transform: rotate(5deg); -webkit-mask: radial-gradient(circle 2.8px, transparent 95%, var(--bt-bg)) -4px -4px / 8.5px 8.5px round, linear-gradient(var(--bt-bg) 0 0) content-box; -webkit-mask-composite: source-over; mask: radial-gradient(circle 2.8px, transparent 95%, var(--bt-bg)) -4px -4px / 8.5px 8.5px round, linear-gradient(var(--bt-bg) 0 0) content-box; mask-composite: add; }
+.bt-root:not(#_) .pm-stamp-in { position: relative; display: grid; place-items: center; width: 100%; height: 100%; border: 1px solid color-mix(in srgb, var(--bt-red) 60%, var(--bt-bg)); background: radial-gradient(80% 70% at 50% 40%, color-mix(in srgb, var(--bt-pink) 30%, var(--bt-surface)), var(--bt-surface)); }
+.bt-root:not(#_) .pm-stamp-in svg { width: 55%; } .bt-root:not(#_) .pm-stamp-in svg * { fill: color-mix(in srgb, var(--bt-pink) 75%, var(--bt-text)); }
+.bt-root:not(#_) .pm-stamp-in s { position: absolute; bottom: 2px; color: var(--bt-title); font-size: 6px; font-weight: 900; text-decoration: none; letter-spacing: 0.06em; }
+.bt-root:not(#_) .pm-mark { position: absolute; top: 2px; right: 44px; width: 130px; transform: rotate(-10deg); opacity: 0.7; overflow: visible; }
+.bt-root:not(#_) .pm-mark circle, .bt-root:not(#_) .pm-mark path { fill: none; stroke: color-mix(in srgb, var(--bt-text-muted) 75%, transparent); stroke-width: 1.6; }
+.bt-root:not(#_) .pm-mark text { fill: color-mix(in srgb, var(--bt-text-muted) 85%, transparent); font-size: 7.5px; font-weight: 900; letter-spacing: 0.08em; }
+.bt-root:not(#_) .pm-mark .pm-mark-d { font-size: 10px; }
+.bt-root:not(#_) .pm-lock { position: absolute; inset: auto 16px 16px 16px; z-index: 2; }
+.bt-root:not(#_) .pm-lock:empty { display: none; }
+.bt-root:not(#_) .pm-card.is-locked .pm-right { filter: saturate(0.7); }
+.bt-root:not(#_) .pm-card.is-locked { padding-bottom: 120px; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pm-card { grid-template-columns: minmax(0, 1fr); padding: 22px 18px 18px; }
+  .bt-root:not(#_) .pm-left { padding: 0 70px 16px 0; border-bottom: 1px dashed color-mix(in srgb, var(--bt-text) 18%, transparent); }
+  .bt-root:not(#_) .pm-right { border-left: 0; padding: 16px 0 0; position: static; }
+  .bt-root:not(#_) .pm-stamp { top: 18px; right: 16px; }
+  .bt-root:not(#_) .pm-mark { display: none; }
+  .bt-root:not(#_) .pm-card.is-locked { padding-bottom: 170px; }
+}
+
+@keyframes bc-ring { to { --bc-a: 360deg; } }
+@keyframes bc-blink { 50% { opacity: 0.25; } }
+@keyframes bc-flick { from { transform: scale(1, 1); } to { transform: scale(0.92, 1.08) skewX(-3deg); } }
+@keyframes bc-flag { 0%, 100% { transform: scaleX(1); } 50% { transform: scaleX(0.82); } }
+@keyframes bc-spark { 0% { opacity: 0; transform: translate(0, 0); } 15% { opacity: 1; } 100% { opacity: 0; transform: translate(6px, -60px); } }
+@keyframes cg-wag { from { transform: rotate(-12deg); } to { transform: rotate(14deg); } }
+@keyframes cg-run { from { transform: rotate(28deg); } to { transform: rotate(-28deg); } }
+@keyframes sk-breathe { 50% { transform: scaleY(1.05); } }
+@keyframes sz-nod { 50% { transform: rotate(1.5deg) translateY(0.6px); } }
+
+/* Reduced motion: the scenes stand still (the stage cards keep their colours and glow, and show their played state without moving).
+   !important here only, as in tech-stack.css: the hover rules above are more specific. */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.s-fl1, .s-fl2, .s-fl3, .s-flag, .s-spark, .cg-tail, .sk-breathe, .sz-head, .bc-e-cue i) { animation: none !important; }
+  .bt-root:not(#_) .s-spark { opacity: 0; }
+  .bt-root:not(#_) :is(.bc-e, .bc-e *) { animation: none !important; transition: none !important; }
+  .bt-root:not(#_) .bc-e { transform: none !important; }
+  .bt-root:not(#_) .bc-ic .door { transition: none; }
+}

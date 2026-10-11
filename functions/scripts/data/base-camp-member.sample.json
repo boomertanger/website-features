@@ -1,0 +1,20 @@
+{
+  "_note": "SAMPLE. The real file is functions/scripts/data/base-camp-member.json (gitignored while the repo is public). seed-base-camp.js writes memberContent/base-camp from sides, stops and beyond, and memberContent/mail from mail. The ?as=member preview on localhost and staging shows this sample.",
+  "sides": {
+    "character": "Sample text. The back of the Character and values card: who Boomer is at home, in his own words. The real text is in the member file.",
+    "streamer": "Sample text. The back of The streamer card: why horror, and why he keeps playing it. The real text is in the member file.",
+    "professional": "Sample text. The back of The professional card: the engineering years. The real text is in the member file."
+  },
+  "stops": {
+    "island": "Sample text. The full story of the first stop on the trail. The real text is in the member file.",
+    "engineering": "Sample text. The full story of the second stop on the trail. The real text is in the member file.",
+    "gaming": "Sample text. The full story of the third stop on the trail. The real text is in the member file.",
+    "rise": "Sample text. The full story of the fourth stop on the trail. The real text is in the member file."
+  },
+  "beyond": "Sample text. Chapter 5's full paragraph about what's next. The real text is in the member file.",
+  "mail": {
+    "_fill_in": "Sample address only. The real address goes in the gitignored member file, never here.",
+    "to": "Boomer or Skipper",
+    "lines": ["Boomertanger", "PO Box 0000", "Sample City, MN 00000"]
+  }
+}

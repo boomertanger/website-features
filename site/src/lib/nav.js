@@ -24,6 +24,7 @@ const MODULE_PAGES = {
   featurelab: { label: "Feature Lab", href: "/feature-lab", icon: "bulb", blurb: "Suggest ideas and vote on them." },
   contact: { label: "Contact", href: "/contact", icon: "mail", blurb: "Questions, feedback, business, private notes" },
   techStack: { label: "Tech Stack", href: "/tech-stack", icon: "rig", blurb: "The setup behind every stream" },
+  baseCamp: { label: "Base Camp", href: "/base-camp", icon: "camp", blurb: "Who Boomer is and how it all started." },
   // TODO: Horror Monthly (boomertang.com) has no page yet; site.json domains has the same "#" placeholder.
   monthly: { label: "Horror Monthly", href: "#", icon: "news", blurb: "The monthly horror roundup." },
 };
@@ -40,7 +41,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "chatgames", "factory", "trophies"] },
-  { id: "community", label: "Community", pages: ["club", "crew", "goals", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
+  { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];
 

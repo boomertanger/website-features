@@ -1,0 +1,27 @@
+---
+// The Pup Post mail card (docs/specs/base-camp.md "Pup Post mail card"): an airmail envelope that tells Fan Club members how to send real mail to
+// Boomer and Skipper. The page HTML holds only the words and blurred placeholder bars; scripts/base-camp/pup-post.ts fills the address in for
+// members from sites/boomertanger/memberContent/mail and shows the lock card to everyone else. Used on /base-camp (chapter 5) and
+// /base-camp/skipper (chapter 5); reusable on /contact for members later. ret = the #section a visitor comes back to after joining.
+import { PAW } from "../../scripts/base-camp/ui";
+
+interface Props { ret?: string; postmark?: string }
+const { ret = "", postmark = "MN" } = Astro.props;
+const uid = `pmk${Math.random().toString(36).slice(2, 8)}`;
+---
+<div class="pm-card is-locked" data-pup-post data-return={ret}>
+  <span class="pm-flap" aria-hidden="true"></span>
+  <div class="pm-left">
+    <span class="pm-k">Send real mail</span>
+    <h4>Letters, cards and drawings are welcome</h4>
+    <p>Write to Boomer, to Skipper, or to both. Boomer opens and reads mail <b>live on stream</b>, and return addresses always stay off camera.</p>
+    <p class="pm-small">Rather keep yours off stream? Write “just for Boomer” on the envelope. Please don't send food or treats.</p>
+    <p class="pm-small">Fan Club members only. Please keep the address in the club.</p>
+  </div>
+  <div class="pm-right">
+    <span class="pm-stamp" aria-hidden="true"><span class="pm-stamp-in"><svg viewBox="0 0 24 26" aria-hidden="true" focusable="false" set:html={PAW} /><s>PUP POST</s></span></span>
+    <svg class="pm-mark" viewBox="0 0 150 80" aria-hidden="true" focusable="false"><defs><path id={uid} d="M40 40 m-28 0 a28 28 0 1 1 56 0 a28 28 0 1 1 -56 0" /></defs><circle cx="40" cy="40" r="34" /><circle cx="40" cy="40" r="21" /><text><textPath href={`#${uid}`}>BOOMERTANGER · PUP POST ·</textPath></text><text class="pm-mark-d" x="40" y="44" text-anchor="middle">{postmark}</text><path d="M78 26 q9 -6 18 0 t18 0 t18 0 M78 40 q9 -6 18 0 t18 0 t18 0 M78 54 q9 -6 18 0 t18 0 t18 0" /></svg>
+    <div data-pm-to aria-live="polite"><div class="pm-to pm-to--locked" aria-hidden="true"><span class="pm-k">To</span><i></i><i></i><i></i><i></i></div></div>
+  </div>
+  <div class="pm-lock" data-pm-lock></div>
+</div>
