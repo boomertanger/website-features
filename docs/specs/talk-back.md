@@ -1,295 +1,227 @@
-# Talk Back
+# Talk Back (Hotline Boom part 2)
 
-> **Split decided Oct 10, 2026 (Service Hub chat).** Talk Back is no longer its own service. Nothing below is cancelled; it is re-homed:
-> - **Service Hub** (`claude/service-hub.md`, §8a) owns the page side: the margin note becomes the shared **page strip** (rate it + Ask a question + Give feedback, mockup option S1), the Ask pins stay, and the feature registry moves into the Service Hub manifests (`services/<id>.json` gains `sections`, `talkBack: note | pins | skip` and `help`). `talkback-features.json` is not created; the rollout page list (§9) and the "every spec gets a Talk Back line" rule become Service Hub's.
-> - **Hotline Boom part 2** owns everything else here: `contactSend` `kind` / `context` (stored as `context.serviceId`, same slug as the manifest id), the line 2 rename, BOOMBOT answers and `contactDeflect`, the stats, the inbox context bar and Sources › By feature, Part B (inbox Gears, Pick up, Clear desk, Operator of the Month) and Part C (the inbox How it works page).
-> - Order: Service Hub manifests first; Talk Back's Hotline Boom pieces after Hotline Boom passes its staging tests. Service Hub shows team-lane question and feedback counts per service as a grid column; owner-lane counts never leave `statsOwner`.
-> - Members call the Ask / Feedback half of the strip "Talk back".
+Status: **confirmed Oct 10, 2026**; re-homed the same day (split with Service Hub, below). Build after (1) Hotline Boom passes its first staging tests (docs/testing/hotline-boom-test-plan.md) and (2) Service Hub's manifests and `/services.json` exist.
+Name: **Talk Back** (working name was "Ask from anywhere"). Members see "Talk back" as the right half of the Service Hub page strip.
+Concept: `docs/design/mockups/talk-back-concept.html` (trigger option 4 "Note + pins"; the strip itself is now Service Hub mockup S1).
+Depends on: Hotline Boom (`docs/specs/hotline-boom.md`, whose §14 points here), Service Hub (`docs/specs/service-hub.md` §3a and §8a), Bug Zapper (`/bug-zapper?new=1&page=<path>`), Accounts (E1), Boom Alerts (`contact-reply`), Mod Machina Gears (`docs/specs/mod-machina.md` §4-5).
 
+## 0. Who owns what (split decided Oct 10, 2026)
 
-Status: **confirmed Oct 10, 2026** (all of §12 as recommended). Build only after Hotline Boom passes its first staging tests (docs/testing/hotline-boom-test-plan.md).
-Name: **Talk Back** (chosen Oct 10, 2026; working name was "Ask from anywhere").
-Concept: approved mockup `ask-from-anywhere.html` (save as `docs/design/mockups/talk-back-concept.html`), trigger option 4 "Note + pins".
-Depends on: Hotline Boom (`docs/specs/hotline-boom.md`), Bug Zapper (`/bug-zapper?new=1&page=<path>`), Accounts (E1 sign-in dialog), Boom Alerts (contact-reply alerts), Mod Machina Gears (`docs/specs/mod-machina.md` §4-5: the ledger, grantGears, the crew boards, the award run).
+| Piece | Owner |
+|---|---|
+| The page strip (`.bt-talkback`, `<TalkBackNote service="…"/>`: Rate it + Talk back halves, foot line), the Ask pins (`.bt-ask-pin`, `<AskPin section="…"/>`), their kit entries | **Service Hub** (§8a) |
+| The registry: manifests `services/<id>.json` with `sections`, `talkBack: note | pins | rate | skip`, `help`; `/services.json`; `scripts/check-services.js` | **Service Hub** (§3a). `talkback-features.json` is **not** created. |
+| The page rollout list and the rule that every feature spec says "Talk Back: note / pins / rate / skip" | **Service Hub** |
+| The dialog, BOOMBOT answers, `window.btTalkBack`, line 2 rename, `contactSend` `kind` + `context`, `contactDeflect`, the stats, the inbox context bar, Sources › By service | **This spec** (Hotline Boom part 2), Part A |
+| Inbox recognition: Gears, Pick up, tidying, Clear desk, Operator of the Month | **This spec**, Part B |
+| The staff inbox How it works page | **This spec**, Part C |
 
-Three parts: **A. Talk Back on feature pages** (§1-10), **B. Inbox recognition** (§11), Gears and credit for staff who answer and tidy Hotline Boom messages, and **C. the staff How it works page** for the inbox (§16). Part B changes Hotline Boom and Mod Machina, not just this feature; once confirmed, hotline-boom.md and mod-machina.md §4a, §4b and §5 get matching lines.
+**Placement values** (Service Hub decides per page; listed here so this spec matches): `note` = the strip with both halves; `pins` = the strip plus Ask pins, **at most 3 pins per page** to start; `rate` = the strip with only the Rate half, no Talk back and no pins; `skip` = no strip. **/contact and its sub-pages use `rate`**: people there are already talking to Hotline Boom, so the Talk Back dialog never opens on them. This spec keeps no always-skip list of its own; the list is Service Hub's (§8a).
 
-## 1. What it is
+## 1. The contract with Service Hub
 
-A small Hotline Boom door on every appropriate feature page. Anyone can ask a question or give feedback without leaving the page; the message arrives in the Hotline Boom inbox already labelled with the feature, section and page it came from. BOOMBOT offers the feature's own help answers while you type, so many questions never need sending.
+**Opening the dialog.** Two ways, both supported; Service Hub's strip and pins use the data attributes:
 
-It is **not** a new inbox, line or security model. It sends through `contactSend` to line 2 with an extra `context` field.
+- Markup: any button with `data-talkback="question"` or `"feedback"`, `data-service="<serviceId>"` and optional `data-section="<key>"`. Talk Back's loader handles clicks by delegation, so buttons work before any dialog code has loaded and need no inline script.
+- Script: `window.btTalkBack.open({ serviceId, section?, mode: "question" | "feedback" })` → `Promise<{ result: "sent" | "answered" | "closed" | "off" }>`.
 
-## 2. Who sees it
+Either opens the dialog in §4 unchanged. After a send the document fires `bt:talkback-sent` with `{ serviceId, kind }` (the strip may use it; nothing depends on it).
+
+**What the caller never passes:** the path and title. The dialog reads `location.pathname` (query and hash dropped) and `document.title` itself.
+
+**What Talk Back reads from Service Hub:** `/services.json` (built from the manifests) for each service's `name`, `area`, `sections` ({ key: label }) and `help` (path to `site/src/data/help/<id>.json`). Help files are bundled with `import.meta.glob` and loaded lazily per service. A service missing from `/services.json` still works: header "Ask about this page", no section label, no BOOMBOT.
+
+**The loader:** a small script in the base layout (`site/src/scripts/hotline/talkback-loader.ts`) defines `window.btTalkBack` and the click delegation and imports the dialog on first use. With the `talkBack` module off in `site.json`, `open()` resolves `{ result: "off" }` and does nothing (Service Hub already hides the half and the pins).
+
+**What Service Hub reads back:** team-lane counts per service from `hotline/main/serviceStats/{yyyy-mm}` (§6), `byService.{serviceId}.{ questions, feedback, boombot }`. Readable by site admins, so /admin/services can show it. Owner-lane counts never leave the owner-only `stats` doc.
+
+**Ids:** `serviceId` must match `^[a-z0-9][a-z0-9-]{0,63}$` and section keys `^[a-z0-9-]{1,40}$` (they become Firestore map keys, so no dots or slashes). `check-services.js` enforces this on manifests.
+
+**Order:** Service Hub manifests and `/services.json` first; the strip ships with only the Rate half; Talk Back is built after Hotline Boom's staging tests; switching on `talkBack` in `site.json` turns on the Talk back half, the pins and the loader.
+
+# Part A. The dialog and the inbox
+
+## 2. Who can send
 
 | Viewer | Gets |
 |---|---|
-| Visitor | The note, the pins and the dialog. Email field for the reply. Turnstile. Visitor rate limit (3 an hour, shared with /contact). Sent screen adds the Join free nudge. |
-| Member (signed in, signup finished) | The same, sending as @handle. Reply arrives in their alerts (and by email once Hotline email is on). Member rate limit from Hotline Boom, shared with /contact. |
-| Signed in, signup not finished | Treated the way `contactSend` already treats them (check hotline-boom.md; do not invent a new rule). |
-| Crew and admins | The same as members. Staff never get extra controls in the dialog. |
+| Visitor | The dialog with **Your name** and **Your email, for the reply** (Hotline Boom needs both). Turnstile. Visitor limit 3 an hour per `ipHash`, shared with /contact. Sent screen adds the Join free nudge. |
+| Member | "Sending as @handle", nothing to type. Member limit 5 a day, shared with /contact. Reply in their alerts (and by email once Hotline email is on). |
+| Signed in, signup not finished | Whatever `contactSend` already does; no new rule. |
+| Crew and admins | Same as members. No extra controls in the dialog. |
 
-Protections, all unchanged from /contact: Turnstile, rate limits, the name check (a message that names a crew member moves to the owner lane), and the privacy lanes (teamMessages / ownerMessages enforced by rules).
-
-Kill switch: a `talkBack` module in `site/src/data/site.json`. Off = no notes, no pins anywhere. It also hides when the contact module is off.
+Unchanged from /contact: Turnstile, honeypot, idempotency key (`clientRef`), the name check (a hit goes to the owner lane), the lanes and their rules. A visitor with more than 5 links in the message is stored as spam-suspect exactly as on /contact.
 
 ## 3. Line 2 rename
 
-Line 2 "Feedback" becomes **"Feedback & questions"** everywhere: the /contact phone menu, `/contact?line=2` (the deep link number is unchanged), /contact/how-it-works (H1 dial), the inbox labels and filters, alert titles and email subjects. The stored line key stays the same, so existing messages and settings are untouched.
+Line 2 (id `feedback`) is titled **"Feedback & questions"** everywhere: the /contact keypad and LCD, `/contact?line=2` (unchanged number), the How it works dial and chapter 1, inbox lamps, labels and filters, the reply subject (`Re: Feedback & questions (BT-<ref>)`), alert text. The line id stays `feedback`, so settings and old messages are untouched.
 
-The line 2 form on /contact gains the same **Question / Feedback** switch (no "Something's broken" there; /contact already points to Bug Zapper if it does today, otherwise add the same hand-off). Old line 2 messages with no kind show as Feedback.
+The /contact line 2 form keeps its About chips and mood and gains a **Question / Feedback** switch (`kind`). Old line 2 messages with no `kind` show as Feedback.
 
-## 4. Triggers
+## 4. The dialog
 
-### 4a. Margin note (every included feature page)
+`openModal({ variant: "sheet" })`: centred dialog, bottom sheet at 640px and below, portal on `<body>`; opening it closes nav panels, the account menu and the More sheet through `bt:overlay-open`. Feature CSS uses the `hb-` prefix.
 
-A calm strip at the end of the page's main content, after the closing call to action and above the footer, outside any TocLayout chapter (not in the rail):
-
-- the real mascot (small), **"Questions or feedback about {Feature}?"**
-- **Ask a question** (`.bt-btn--primary .bt-btn--sm`) and **Give feedback** (`.bt-btn--secondary .bt-btn--sm`), opening the dialog in Question or Feedback mode.
-- At 420px the buttons stack under the line.
-
-Astro: `<TalkBackNote feature="tap-the-splat" />`. One per page.
-
-### 4b. Ask pins (where questions cluster)
-
-A small dashed purple chip, **Ask**, in a `.bt-section-head-tools` slot. Opens the dialog in Question mode with that section attached and briefly highlights the section (no highlight under reduced motion). On phones (420px) it is icon-only with `aria-label="Ask about {Section}"`.
-
-Astro: `<AskPin section="leaderboard" label="Leaderboard" />` inside the section head tools; the page's feature comes from its `TalkBackNote`. Pins are added only where the approved page list (§9) says so.
-
-Nothing floats over the page. The footer game, the More sheet and the tab bar keep their space.
-
-## 5. The dialog
-
-`openModal({ variant: "sheet", feature: "talkBack" })`: a centred dialog that becomes a bottom sheet at 640px and below. It renders in the portal on `<body>` and opening it closes any open nav panel, account menu or More sheet through `bt:overlay-open`.
-
-**Header:** the Hotline Boom W5 icon, `.bt-modal-title` "Ask about {Feature}" (Question) or "Feedback on {Feature}" (Feedback), and the context tag (`.bt-tag` with a pin icon): "Boom Arcade › Tap the Splat › Leaderboard". A pinned section can be removed with a small ✕ ("Remove the section"); the feature can't.
+**Header:** the W5 icon (`HB_ICON`), `.bt-modal-title` "Ask about {Service}" or "Feedback on {Service}", and the context tag (`.bt-tag` with a pin): "{Area} › {Service} › {Section}" from `/services.json`. The section can be removed with ✕ ("Remove the section"); the service can't.
 
 **Mode switch** (`.bt-pills.bt-pills--mode`, `aria-pressed`): Question · Feedback · Something's broken. Switching keeps the typed text.
 
-**Question / Feedback:**
-- `.bt-textarea`, 2,000 characters, counter "0 / 2,000". Placeholders: "What would you like to know?" / "What worked, what didn't, what would you change?"
-- BOOMBOT box (Question mode only, §6).
-- Visitor: "Your email, for the reply" (`.bt-input`, required, same check as /contact). Member: "Sending as @gbo. The reply arrives in your alerts."
-- `label.bt-check` **Only Boomertanger should read this** (sends to the owner lane, exactly as on /contact).
-- Foot line: "Goes to Hotline Boom with this page attached. Protected from spam by Cloudflare." and **Send** (primary).
-- Turnstile runs as on /contact (invisible unless it needs a tap).
+**Question / Feedback:** `.bt-textarea`, max 5,000 with a counter (same cap as /contact); the BOOMBOT box (Question only, §5); visitor name + email, or "Sending as @gbo. The reply arrives in your alerts."; `label.bt-check` **Only Boomertanger should read this** (owner lane, as on /contact); foot line "Goes to Hotline Boom with this page attached. Protected from spam by Cloudflare."; **Send**. The "How did you find Boomertanger?" question is not asked here (`source` stays null). Line 2's About chips and mood aren't shown; the context replaces them.
 
-**Something's broken:** the form is replaced by a note: "**Bug Zapper is faster for this.** It tracks the bug until it's fixed, lets you add a screenshot, and you can watch it get squashed. The page is filled in for you." with **Report in Bug Zapper** (`/bug-zapper?new=1&page=<path>`) and **Send it as feedback instead** (ghost, switches to Feedback). Visitors see "Bug Zapper needs a free account" with **Join free** (opens E1 on Join free) and the same "Send it as feedback instead". The typed text isn't carried to Bug Zapper (later, §12).
+**Something's broken:** "**Bug Zapper is faster for this.** It tracks the bug until it's fixed, lets you add a screenshot, and you can watch it get squashed. The page is filled in for you." **Report in Bug Zapper** (`/bug-zapper?new=1&page=<path>`) and **Send it as feedback instead** (ghost). Visitors: "Bug Zapper needs a free account" with **Join free** (E1 on Join free) and the same fallback.
 
-**Sent:** `.bt-stamp--primary` "HOTLINE · SENT" (with the reference if `contactSend` returns one), `.bt-modal-title` "Got it, thanks!", then:
-- Member: "The reply will land in your alerts, usually within {reply time}. It's filed under Tap the Splat › Leaderboard."
-- Visitor: "Boomertanger usually replies within {reply time}, by email. It's filed under …" plus the nudge **"Join free to get the reply in your alerts"** with **Join free** (closes this dialog, opens E1 on Join free). See §11, question 1.
-- **Back to the page** closes it. The reply time is the same text /contact uses.
+**Sent:** `.bt-stamp--primary` "Hotline / Sent / BT-<ref>", "Got it, thanks!", then member: "The reply will land in your alerts, usually within {replyTime}. Filed under {Service} › {Section}." Visitor: "Boomertanger usually replies within {replyTime}, by email to {email}." plus **"Join free and next time the reply lands in your alerts"** with **Join free** (closes this, opens E1). `{replyTime}` comes from `hotline/main.replyTime`, as on /contact. **Back to the page**.
 
-**Close guard:** closing with text typed uses the same guard as the /contact form. Focus starts in the textarea and returns to the trigger.
+**Other states:** sending; **Too many** (the /contact wording with `retryAt`); Turnstile failed (retry, text kept); send failed ("Couldn't send. Your message is still here."); a line-off error if line 2 is switched off (dialog shows the /contact line-off state). Closing with text typed uses the /contact close guard. Focus starts in the textarea and returns to the trigger. Reduced motion: no stamp slam, no BOOMBOT typing.
 
-## 6. BOOMBOT answers
+## 5. BOOMBOT answers
 
-- Source (v1): the feature's own written help, the same Q&A shown in its How it works "Ask BOOMBOT". One file per feature, `site/src/data/help/<feature>.json`: `[{ id, q, a, keys: ["reset", "season", …] }]`. The How it works page renders its `.bt-chat` from the same file, so the help is written once (pages must look identical before and after).
-- Matching is local in the browser: no network, no AI. From 6 typed characters, show up to 2 entries whose keys appear in the text. Question mode only.
-- Box (`aria-live="polite"`): BOOMBOT (`boombotIcon(uid)`), "**BOOMBOT:** this might answer it.", the answers as `.bt-chat` answer bubbles, then **That answers it** (secondary sm) and "Not quite? Just send it."
-- **That answers it** closes the dialog with a toast "Glad BOOMBOT could help. Nothing was sent." and calls `contactDeflect` once per dialog open (§7).
-- If they send anyway, the message records which answers were shown (`boombotShown: [ids]`).
-- A feature with no help file gets no BOOMBOT box; everything else works.
-- BOOMBOT is always labelled BOOMBOT and never speaks as Boomertanger (design-system §8h).
+- Source: the service's help file (`help` in its manifest), `[{ id, q, a, keys: [] }]`. The service's How it works page renders its Ask BOOMBOT `.bt-chat` from the same file (moving each FAQ into its file is part of Service Hub's rollout pass; screenshots before and after match).
+- Local matching in the browser, no network or AI: from 6 typed characters, up to 2 entries whose keys appear in the text. Question mode only.
+- Box (`aria-live="polite"`): `boombotIcon(uid)`, "**BOOMBOT:** this might answer it.", answers as `.bt-chat` bubbles, **That answers it** and "Not quite? Just send it."
+- **That answers it:** toast "Glad BOOMBOT could help. Nothing was sent.", closes, and calls `contactDeflect` once per dialog open.
+- Sent anyway: the message stores `boombotShown: [ids]`.
+- No help file: no box. BOOMBOT is always labelled BOOMBOT and never speaks as Boomertanger.
 
-## 7. Data and functions
+## 6. Data and functions (functions/lib/hotline/*.js)
 
-### contactSend (changed)
+**`contactSend` (changed).** Line 2 only, all optional: `kind` (`question | feedback`, default `feedback`); `context { serviceId, section?, path, title }` (ids per §1, `path` a same-site pathname up to 200, `title` up to 120 plain text; invalid context is dropped, never a reason to refuse); `boombotShown` (up to 4 ids). Stored on the message. The name check is unchanged. The `contact-new` payload stays `{ ref, line }`. After the write it increments, besides today's `stats` and `statsTeam`:
+- `stats/{yyyy-mm}.byService.{id}.{ questions | feedback }` (every lane; owner only),
+- `serviceStats/{yyyy-mm}.byService.{id}.{ questions | feedback }` and `.sections.{key}.questions`, **team lane only** (an owner-lane message, ticked or name-check hit, never touches it).
 
-New optional fields, ignored on every line except 2:
-- `kind`: `"question" | "feedback"` (default `"feedback"`).
-- `context`: `{ feature, section?, path, title }`. Validated on the server: `feature` and `section` are slugs (`^[a-z0-9-]{1,40}$`), `path` is a same-site pathname starting with `/` (query and hash dropped, max 200), `title` max 120 characters, plain text. Invalid context is dropped, never a reason to refuse the message.
-- `boombotShown`: up to 4 help ids.
+**`contactDeflect` (new callable, visitors allowed).** `{ serviceId, answerId }` → `serviceStats/{yyyy-mm}.byService.{id}.boombot += 1`. No text, uid or email stored. 30 an hour per `ipHash`; over the limit it quietly does nothing.
 
-Stored on the message as-is. The name check still reads only the message text. The alert payload (notifyOutbox) still carries no message text; it may carry the feature name for the alert title.
+**Rules.** `serviceStats/*`: read owner, inbox admins, and site admins (`hasSiteRole('boomertanger','admin')`, the Service Hub readers); write none. Counts only, team lane only.
 
-After a successful send it increments the month's stats (below).
+**Message fields added:** `kind`, `context`, `boombotShown` (plus Part B's fields, §9g).
 
-### contactDeflect (new callable)
+## 7. Inbox
 
-`{ feature, answerId }` → increments `answered` for that feature and month. No text, no email, no uid stored. Rate limit 30 an hour per hashed IP (CONTACT_HASH_SALT), no Turnstile (it only moves a counter). Refused quietly when over the limit; the visitor still sees the toast.
+**Context bar** on a line 2 message with `context`, above the message: `.bt-tag` "From {Area} › {Service} › {Section}" and **Open the page** (stored path, new tab); "BOOMBOT showed 2 answers; they sent it anyway." when `boombotShown` is set. Row snippets read "Question: …" or "Feedback: …". Unknown service ids show the stored title and path.
 
-### Stats (function-written only)
+**Sources › By service** (new block in the Sources tab, same period chips: 30 days / 90 days / All time): one `.bt-meter` row per service (name from `/services.json`, questions + feedback, small split under the bar), **Answered by BOOMBOT: N**, and a hint when one section has 5+ questions in the period: "{Service} › {Section} keeps coming up. Its help may need a line about it." Admins read `serviceStats`; the owner's numbers come from `stats.byService` (all lanes) plus `serviceStats` for BOOMBOT. Empty: mascot "No questions from feature pages yet."
 
-Under Hotline Boom's existing contact root (use the path from hotline-boom.md):
+# Part B. Inbox recognition
 
-- `stats/{yyyy-mm}`: `byFeature.{feature}.{ questions, feedback, answered }` and `byFeature.{feature}.sections.{section}.questions`. Team-lane messages and deflections only. Readable by the owner and inbox admins.
-- `statsOwner/{yyyy-mm}`: the same shape for messages that landed in the owner lane (ticked "Only Boomertanger", or moved by the name check). Readable by the owner only.
+## 8. The idea
 
-Rules: both are read-only to those readers, write false. Nothing else in Firestore changes.
+Staff who answer people and keep the desk clear earn Gears on Mod Machina's ledger and get seen for it. Clicks pay only once they've proven right (spam that holds), or the reward goes to the state of the whole inbox (oldest first, Clear desk), which nobody can fake alone.
 
-### Feature registry
+## 9. Rules
 
-`site/src/data/talkback-features.json`: `{ "<feature>": { "name": "Tap the Splat", "area": "Boom Arcade", "sections": { "leaderboard": "Leaderboard" } } }`. Used by the note, the pins, the dialog header, the inbox context bar and the chart. Unknown slugs in the inbox show the stored title and path, and count as "Other" in the chart.
+### 9a. Who earns
 
-## 8. Inbox
+- Crew-roster admins whose `crewGrade` is in `hotline/main.inboxGrades` (default A2 Overseer and A3 Right Hand). If the owner adds A1 Steward to the inbox, Stewards earn too.
+- **The owner never earns** (not on the crew board). Owner-lane messages never pay anyone.
+- Nobody earns on a message they sent.
 
-**Context bar** on each line 2 message with a context, above the message body: `.bt-tag` "From Boom Arcade › Tap the Splat › Leaderboard" and **Open the page** (the stored path, new tab). If BOOMBOT showed answers: "BOOMBOT showed 2 answers; they sent it anyway." The list row subject reads "Question: …" or "Feedback: …". Messages from /contact show no bar.
-
-**Sources › By feature:** `.bt-pills` This month / Last month; one `.bt-meter` row per feature (name, count, sorted high to low; questions and feedback together, a small split under the bar); **Answered by BOOMBOT: N**; and one hint when a feature section has 5 or more questions in the month: "{Feature} › {Section} keeps coming up. Its help may need a line about it." The owner's chart adds `statsOwner`. Empty month: the mascot empty state "No questions from feature pages yet."
-
-**/admin card:** unchanged (it already counts line 2).
-
-## 9. Rollout
-
-1. Claude Code lists every page in `site/src/pages` in `docs/specs/talk-back-pages.md` with a proposed placement: **note**, **note + pins** (naming the sections), or **skip**, and the feature slug.
-   Always skip: /contact and its sub-pages, sign-in and auth pages (/auth/*), /admin and everything under it, /live/obs, /live/control and its checklist, checkout pages, 404 and other error pages.
-2. **Stop.** I approve or edit the list.
-3. One pass adds every note and pin, the registry entries, and moves each How it works FAQ into its help file (screenshots before and after match).
-
-**New features:** a standard step from then on. Every feature spec gets a line "Talk Back: note / note + pins (sections) / skip", and CLAUDE.md, design-system.md and the new-feature checklist say so.
-
-## 10. bt-ui
-
-New kit pieces (added to `shared/bt-ui.css`, `shared/ui/talkback.js` for the markup helpers, the UI kit page and design-system §5):
-- `.bt-talkback`: the margin-note strip (rest, hover, 420px stacked).
-- `.bt-ask-pin`: the dashed section-head chip (rest, hover, focus, icon-only).
-
-Reused: `openModal` sheet variant, `modalHeader`, `.bt-pills--mode`, `.bt-textarea`, `.bt-input`, `.bt-field`, `.bt-check`, `.bt-tag`, `.bt-btn`, `.bt-boombot` and `.bt-chat` bubbles, `.bt-stamp--primary`, `.bt-toast`, `.bt-notice`, `.bt-meter`, `.bt-empty`, `.bt-section-head`, the mascot, the W5 icon.
-
-Feature code: `site/src/components/talkback/TalkBackNote.astro`, `AskPin.astro`, `site/src/scripts/talkback/` (dialog, matching, send). No feature CSS beyond layout glue; no raw colours. Container queries only; reduced motion drops the highlight, the stamp slam and the BOOMBOT typing.
-
-## 11. Inbox recognition (Part B)
-
-Staff who answer people in the Hotline Boom inbox earn Gears on Mod Machina's existing ledger and get seen for it. The aim is to reward answering people and keeping the desk clear, never moving messages around. Clicks pay only once they've proven right (spam that holds), or the reward goes to the state of the whole inbox (oldest first, Clear desk), which nobody can fake alone.
-
-### 11a. Who earns
-
-- Staff on the **crew roster with an admin grade** (Steward, Overseer, Right Hand) who are inbox admins. They already appear on the crew board with the green Staff tag.
-- An inbox admin who isn't on the crew roster earns nothing; their replies still count in the This month strip (§11e).
-- **The owner never earns** (not on the crew board). The owner lane is owner-only, so owner-lane messages never pay anyone.
-- Nobody earns for replying to a message they sent themselves.
-
-### 11b. What pays (starting values, tunable in /admin/crew)
+### 9b. What pays (starting values, tunable in /admin/crew)
 
 | Source | Gears | When | Ledger key (`${source}:${ref}:${uid}`) |
 |---|---|---|---|
-| First staff reply | 4 | The first staff reply on a team-lane message, to whoever sent that reply (not the assignee) | `inboxReply:{messageId}:{uid}` |
-| Fast reply | +2 | That first reply came within 24 h of the message arriving | `inboxFast:{messageId}:{uid}` |
-| Oldest first | +1 | The first reply or the close was on the oldest open team-lane message at that moment (the server checks) | `inboxOldest:{messageId}:{uid}` |
-| Spam that held | 1 | Marked spam and still spam 7 days later (daily run). Un-spammed within the 7 days: nothing is paid and nothing needs reversing. Max 5 a day | `inboxSpam:{messageId}:{uid}` |
-| Clear desk (team) | +5 | 7 clear days in a row (§11f), to everyone who handled at least 3 messages that week | `inboxDesk:{weekId}:{uid}` |
-| Added to BOOMBOT's answers (later, with that feature) | +3 | The owner or an Overseer adds the reply to a feature's help, paid to whoever wrote the reply, once per message | `inboxBoombot:{messageId}:{uid}` |
+| First staff reply | 4 | The first reply on a team-lane message (`contactReply`, or **Mark as replied** while email is off), to whoever replied, not the assignee | `inboxReply:{messageId}:{uid}` |
+| Fast reply | +2 | That first reply within 24 h of `createdAt` | `inboxFast:{messageId}:{uid}` |
+| Oldest first | +1 | The first reply, or a close with no reply needed, was on the oldest waiting team-lane message at that moment (checked by the server) | `inboxOldest:{messageId}:{uid}` |
+| Spam that held | 1 | Marked spam by that person and still spam 7 days later (daily run). Un-spammed within 7 days: nothing paid, nothing to reverse. Max 5 a day | `inboxSpam:{messageId}:{uid}` |
+| Clear desk (team) | +5 | 7 clear days in a row (§9f), to everyone who handled at least 3 messages that week | `inboxDesk:{weekId}:{uid}` |
+| Added to BOOMBOT's answers (later) | +3 | The owner or an Overseer adds the reply to a service's help, to whoever wrote the reply, once per message | `inboxBoombot:{messageId}:{uid}` |
 
-- **"First" is decided once:** contactReply sets `firstStaffReplyAt` and `firstStaffReplyBy` on the message in a transaction, so two admins replying at once can't both be paid. Payment goes through `grantGears` with the keyed id, so a retry never pays twice.
-- **"Mark as replied"** (used until Hotline email is on) counts as the first staff reply. See §12 question 5.
-- **Daily cap:** 30 inbox Gears per person per day (America/Chicago, like the crew runs), the BOOMBOT bonus included. Over the cap the reply still sends; the ledger records nothing and the credit line says "Daily inbox cap reached".
-- Ledger rows say only "Hotline reply" / "Fast reply" / "Added to BOOMBOT". They carry no message text, sender, line or feature, so the Gears breakdown on the crew board reveals nothing about the message.
+- **"First" is decided once:** `contactReply` already sets `firstReplyAt`; it now also sets `firstReplyBy`, in a transaction that only succeeds while `firstReplyAt` is empty, so two admins replying at once can't both be paid. Payment through `grantGears` with the keyed ids.
+- **Daily cap:** 30 inbox Gears per person per day (America/Chicago). Over the cap the reply still sends; the ledger records nothing; the credit line says "Daily inbox cap reached".
+- Ledger rows say only "Hotline reply", "Fast reply", "Oldest first", "Spam cleared", "Clear desk" or "Added to BOOMBOT": no text, sender, line or service.
 
-### 11c. What never pays
+### 9c. What never pays
 
-Picking up (assigning), status changes, notes, closing without a reply, the spam click itself (only spam that holds pays, §11b), and escalating to Owner only. Closes are counted and shown (§11e) but never paid, so closing never beats answering.
+Picking up, assigning, status changes, notes, closing without a reply, the spam click itself, escalating (Owner only).
 
-- **Escalation stays neutral.** Escalating neither pays nor costs anything. A reply paid before the escalation stays paid. An escalated message drops out of the escalating admin's reply-time numbers, so escalating never looks slow, and it doesn't count as a miss.
-- **Spam:** a message marked spam before any reply can never pay a reply. If it's marked spam after a paid reply, that reply credit is reversed automatically through the existing Gears adjustment (`gearsAdjust`, reason "Marked as spam") and logged.
-- A message the name check moved to the owner lane never pays (the owner answers it).
+- **Escalation is neutral.** It neither pays nor costs. A reply paid before it stays paid (`gearsPaid` is copied with the message to the owner lane). An escalated message drops out of the escalating admin's reply-time numbers and never counts against a clear day.
+- **Spam after a paid reply:** the reply credit is reversed automatically through the existing Gears adjustment (`gearsAdjust`, reason "Marked as spam").
+- **Automatic spam** (the 5-links rule) never pays anyone.
+- A name-check hit lives in the owner lane, so it never pays.
 
-### 11d. Pick up
+### 9d. Pick up
 
-A **Pick up** button on each unassigned team-lane message (`.bt-btn--admin .bt-btn--sm`, staff green), meaning "assign to me", through contactAction. It shows "Picked up by @handle" on the row and in the message so two people don't answer the same thing. Anyone in the lane can still reply, and the replier gets the credit. A picked-up message has **Let it go** for the person who picked it up (and Reassign for A2+ if Hotline Boom already has assigning). Pick up pays nothing.
+**Pick up** on each unassigned team-lane message (`.bt-btn--admin .bt-btn--sm`) = `contactAction` assign to yourself. Shows "Picked up by @handle" on the row and in the detail. **Let it go** (assign null) for the person who picked it up; the existing assign select stays for everyone in the lane. Anyone can still reply; the replier is paid.
 
-### 11e. Seeing it
+### 9e. Seeing it
 
-**On the message (staff):** after the first reply, a small line "Paid 6 Gears to @handle (4 + 2 fast)". For the owner it adds **Remove credit**, which opens the existing Gears adjustment in /admin/crew prefilled with the person, the amount and the ledger ids (reason required, logged as `gearsAdjust`). No new adjustment tool.
+- **Credit line** on the message (staff): "Paid 6 Gears to @handle (4 + 2 fast)". The owner also gets **Remove credit**, opening the existing Gears adjustment in /admin/crew prefilled (person, amount, ledger ids; reason required). A link "How Gears work here" goes to Part C.
+- **This month strip** (top of the Inbox tab, owner and inbox admins): a card per staff member: avatar, first replies, fast replies, median reply time, **Tidied** (spam that held + closed with no reply needed), **Accuracy** (share of their spam marks the owner didn't overturn); plus the team median and the Clear desk streak. Team lane only; spam and escalated messages don't count. Empty: "No replies yet this month."
+- **/crew/board Inbox column:** first replies per period (This month, This season, All time); "—" for crew who don't work the inbox. Inbox Gears are part of each Gears total and breakdown.
+- **Top Gear:** inbox Gears count, but admins never win crew awards (unchanged rule).
+- **Operator of the Month** (staff award, last to build): in the award run (1st of the month, 00:05 Central). Score = first replies + 0.5 per spam mark that held + 1 per oldest-first pick, among staff with at least 5 first replies and 90%+ spam accuracy; ties go to the lower median reply time; no winner under the minimum. Prize: a Trophy Room trophy (`grant()`), a line on /crew beside Top Gear and Fan Favourite, an on-stream shout-out. `awards/{yyyy-mm}.operator`; a `crew-award` activity event.
 
-**/admin/inbox, This month strip** (top of the Inbox tab, owner and inbox admins): one compact card per staff member with their avatar, first replies this month, fast replies, median reply time ("4 replies · median 6 h"), **Tidied** (spam that held plus messages closed with no reply needed) and **Accuracy** (the share of their spam marks the owner didn't overturn), plus the team's median and the Clear desk streak ("Clear desk: 5 days"). Only team-lane messages that weren't spam or escalated count. Empty month: "No replies yet this month."
+### 9f. Clear desk and tidying
 
-**/crew/board, Inbox column:** first replies in the period (This month, This season, All time), for everyone on the board. Crew who don't work the inbox show "—". It's a count only. Gears from the inbox are part of each person's Gears total and their breakdown ("Hotline replies: 24").
+- **Clear day:** a daily check at 21:00 Central finds no team-lane message with status `new` or `open`, no `firstReplyAt`, older than 48 h. Waiting, done, spam, escalated and owner-lane messages don't count.
+- **Streak** in the strip; 7 clear days pays the team bonus and starts a new count.
+- **Moments:** clearing the last waiting message shows the mascot with an empty desk, "Desk clear" (the inbox-zero empty state gets this celebration). Marking spam gets a quick stamp with Undo in the toast for 5 seconds.
+- What counts as spam vs rude-but-real, and "done, no reply needed" (thank-yous, duplicates), are taught in Part C, not enforced.
 
-**Top Gear:** inbox Gears are ordinary Gears and count in the monthly total. The existing rule still holds: admins appear in their real place but never win crew awards, so today inbox Gears can't change who wins Top Gear. See §12 question 6.
+### 9g. Data
 
-**Operator of the Month (optional, last to build):** a monthly staff award in the existing award run (1st of the month, 00:05 Central), the one award admins can win. Chosen automatically by a score: first replies + 0.5 per spam mark that held + 1 per oldest-first pick, among staff with at least 5 first replies and spam accuracy of 90% or more; ties go to the lower median reply time; no winner under the minimum. Prize: a Trophy Room trophy (`grant()`), a line on /crew beside Top Gear and Fan Favourite, and an on-stream shout-out. Stored in `awards/{yyyy-mm}.operator`; a `crew-award` activity event.
+- Message (function-written): `firstReplyBy`, `pickedUpAt` (`assignee` already exists), `gearsPaid { amount, uids, ledgerIds }`, `spamBy`, `spamAt`.
+- `hotline/main/inboxStats/{yyyy-mm}`: `perStaff.{uid}.{ replies, fast, minutes: [..], oldest, spamHeld, spamOverturned, closed }`, `desk { streak, clearDays: [..] }`. Read owner and inbox admins; write none.
+- Crew settings (`crew/main`, beside `youtubeBoost`): `inbox: { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48, boombot: 3, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9, operatorAward: true }`, in the Gears settings on /admin/crew (owner and A2+).
+- Scheduled: `inboxSpamHold` (daily) and `inboxDeskCheck` (21:00 Central).
+- Crew board shape gains `inboxReplies`. **Deploy:** every Gears grant rebuilds the crew boards, so board functions and changed contact functions deploy together (lib/live first if touched, then batches of about 15 with 3-minute pauses; confirm the served revision).
+- adminLog feature `hotline`: new actions `pickUp`, `release`; removals and spam reversals log through the existing `gearsAdjust`.
 
-### 11f. Clear desk and tidying
+# Part C. The staff inbox How it works page
 
-- **A clear day:** a daily check at 21:00 Central finds no team-lane message older than 48 h still waiting (not replied, not closed, not spam). Escalated and owner-lane messages don't count against it.
-- **The streak** shows in the This month strip. 7 clear days in a row pays the team bonus (§11b) and starts a new week's count.
-- **The moment:** clearing the last waiting message shows the mascot with an empty desk and "Desk clear" (a small celebration; colour only under reduced motion). Marking spam gets a quick stamp. Undo is offered in the toast for 5 seconds.
-- **What counts as spam** vs rude-but-real, and "closed, no reply needed" (a thank-you, a duplicate) are explained on the How it works page (§16), not enforced by code.
+## 10. /admin/inbox/how-it-works
 
-### 11g. Data
+Built last, after Part B passes staging tests. Owner and inbox admins (the /admin gate). Static HTML, so nothing secret on it (the name check is explained without its rules). The public `/contact/how-it-works` stays the visitor page and gains one line about Talk back on feature pages.
 
-- On each message (function-written): `firstStaffReplyAt`, `firstStaffReplyBy`, `pickedUpBy`, `pickedUpAt`, `gearsPaid: { amount, uids, ledgerIds }`.
-- `inboxStats/{yyyy-mm}` under the contact root: `perStaff.{uid}.{ replies, fast, minutes: [..], oldest, spamHeld, spamOverturned, closed }` and `desk: { streak, clearDays: [..] }` (minutes to first reply, kept to the month's replies so the median is exact). Readable by the owner and inbox admins. Function-written only.
-- Crew settings (`crew/main`, beside `youtubeBoost`): `inbox: { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48, boombot: 3, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9, operatorAward: true }`, edited in the existing Gears settings on /admin/crew (owner and A2+), logged as today.
-- Crew board shape gains `inboxReplies`. **Deploy lesson:** every Gears grant rebuilds the crew boards, so the board rebuild functions and the changed contact functions go out together (staging first, retry a 429 once).
-- Scheduled: `inboxSpamHold` (daily, pays spam that held) and `inboxDeskCheck` (daily 21:00 Central, the clear day and the weekly bonus).
-- adminLog: `contactPickUp`, `contactRelease`, `gearsAdjust` (existing) for removals and spam reversals.
+**Ways in:** a ghost **How it works** link in the inbox hero (icon on phones), the /admin Hotline card, the credit line, and beside the inbox values in /admin/crew. /crew/how-it-works gets the inbox rows in its Gears chapter.
 
-## 12. Decisions (confirmed Oct 10, 2026, as recommended)
+**Frame:** full story page (TocLayout, `.bt-chapter--ghost`, hero scene, stage cards, journey, flow, `.bt-flip`, `.bt-placard`, a working example, Ask BOOMBOT, mascot and BOOMBOT art, closing call). No Talk back strip (it's under /admin).
 
-1. **Visitor nudge wording.** Joining after sending doesn't move that message's reply into alerts (the reply still goes to the email they typed). Recommend: "Join free and next time the reply lands in your alerts."
-2. **One help file per feature** that both the dialog and How it works read. Recommend yes, so answers never drift apart.
-3. **Owner-lane counts stay owner-only** (`statsOwner`). Recommend yes: admins never learn that something private was sent about a feature.
-4. **Visitors hitting "Something's broken"** see Join free (Bug Zapper is members only). Recommend yes.
-5. **"Mark as replied" pays** until Hotline email is on. It's the only way to reply today, but nothing proves the email was sent. Recommend yes, guarded by the daily cap, the credit line on the message and your Remove credit. The other choice is no inbox Gears until email is on.
-6. **Top Gear and admins.** Inbox Gears count toward Top Gear as you asked, but since only admins work the inbox and admins never win crew awards, they can't change the winner. Recommend keeping the rule (admins never win crew awards) and building **Operator of the Month** as the staff award, so inbox work has a prize of its own.
-7. **Inbox admins not on the crew roster earn nothing.** Recommend yes: Gears and the board are crew things.
+**Hero:** the Hotline Boom desk phone and W5 mark, message cards stacking and clearing, the mascot at the desk; "Answer people. Keep the desk clear."; counts from `inboxStats` (hidden if unreadable).
 
-Confirmed Oct 10, 2026: spam that held (1 Gear after 7 days), oldest first (+1), Clear desk (+5 team bonus), Tidied and Accuracy in the strip, the Operator of the Month score with the 90% accuracy floor, and the Desk clear moment.
+**Chapters:** 01 Your desk (team and owner lanes, the six lines, why some messages never reach you); 02 A message's journey (New → Pick up → Reply → Waiting → Done, the context bar, Open the page); 03 Answering well (tone, `replyTime`, Open in my email and Mark as replied until email is on, the BOOMBOT line); 04 When to escalate (personal matters, reports about people, anything about crew, safety; one-way; **always neutral**); 05 Spam and tidying (spam vs rude-but-real, done with no reply, the 7-day hold, Accuracy, Undo, Clear desk); 06 Gears for inbox work (§9b with live values from crew settings, caps, what never pays; flow action → check → Gears); 07 Being seen (strip, Inbox column, Top Gear rule, Operator of the Month; flip medals); 08 House rules placard (answer the oldest first; never mark real messages spam; escalate whenever in doubt, it never costs you; private stays private; never reply to your own message; check Picked up by); 09 Try it: work a pretend desk (four sample messages: a quick question, a two-day-old one, obvious spam, one naming a crew member; Pick up, reply, spam, escalate; a Gears tally with current values, spam "pending 7 days", escalation "neutral", Desk clear at the end; nothing saved); 10 Ask BOOMBOT (`site/src/data/help/hotline-inbox.json`). Closing call: **Open the inbox**.
 
-## 13. Out of scope (later)
+**Data:** reads crew settings and `inboxStats`; writes nothing.
 
-- **Add to BOOMBOT's answers** in the inbox (saves an answered Q&A into the feature's help; needs help to move from files to Firestore). Its +3 Gears bonus is specified now and switches on with it.
-- Carrying the typed text into Bug Zapper (`&desc=`).
-- Linking a visitor's past messages to the account they create.
-- A feature filter in the inbox list.
-- Moving the help into the How it works pages that don't exist yet.
-- Gears for owner-lane work, and mods working the inbox.
+## 11. Decisions (confirmed Oct 10, 2026)
 
-## 14. Edge cases
+1. Visitor nudge: "Join free and next time the reply lands in your alerts."
+2. One help file per service, read by the dialog and the How it works FAQ.
+3. Owner-lane counts stay owner-only (`stats.byService`); Service Hub and admins read `serviceStats` (team lane).
+4. Visitors on "Something's broken" see Join free.
+5. Mark as replied pays until email is on (cap, credit line, Remove credit).
+6. Admins never win crew awards; Operator of the Month is the staff award.
+7. Inbox staff not on the crew roster earn nothing.
+8. Tidying: spam that held (1 after 7 days), oldest first (+1), Clear desk (+5 team), Tidied and Accuracy, the Operator score with the 90% floor, the Desk clear moment.
+9. Split with Service Hub and the §1 contract.
 
-- Send fails (network, server): "Couldn't send. Your message is still here." Text kept.
-- Rate limited: the /contact wording with the minutes left.
-- Turnstile fails: the /contact wording, retry.
-- Signs in while the dialog is open: the dialog keeps the text and switches to "Sending as @handle" on the next redraw.
-- Page has no section pins: the note alone works.
-- Preview pages (`?as=`): path is stored without the query, so preview flags never reach the inbox.
-- Name check moves a message to the owner lane silently, exactly as on /contact.
-- Ask module off or contact module off: nothing renders.
-- Two admins reply at the same moment: the transaction picks one first reply; only that person is paid.
-- An admin picks up a message and someone else replies: the replier is paid; the pick-up clears.
-- A paid reply is deleted or the message is deleted later: credit stays unless the owner removes it (deletes don't reach into the ledger).
-- An admin loses their admin grade or leaves the crew: earned Gears stay, like every other Gears source.
-- A message escalated after a paid reply: credit stays; it drops out of reply-time numbers.
-- A reply to a message older than the fast window: base Gears only.
-- The owner un-spams a message within 7 days: no spam Gear, and it counts against that person's accuracy.
-- Two people act on the oldest message together: whoever's action lands first gets oldest first.
-- No messages at all in a week: every day is clear, but nobody handled 3, so no team bonus.
-- Daily cap reached mid-reply: the reply sends; no Gears; the line says so.
+## 12. Out of scope (later)
 
-## 15. Next step
+Add to BOOMBOT's answers in the inbox (its +3 Gears are specified; switches on with it); carrying typed text into Bug Zapper (`&desc=`); linking a visitor's past messages to a new account; a service filter in the inbox list; Gears for owner-lane work; mods working the inbox.
 
-Mockup round (published artifact, real bt-ui.css, desktop and phone, numbered options, a recommendation): the margin note and the pin (2-3 options each), the dialog in every state (question with BOOMBOT, feedback, broken for member and visitor, sending, error, rate limited, sent member and visitor with the nudge), the inbox context bar, Sources › By feature, plus Part B: Pick up and Picked up by on a row, the credit line with Remove credit, the This month strip, the Inbox column on /crew/board, the Operator of the Month card on /crew, the Desk clear moment, and Part C: the inbox How it works page (hero options and the Try it desk).
+## 13. Edge cases
 
-Build order once confirmed: A kit pieces, B functions and rules for Part A, C the dialog and components, D inbox context bar and By feature, E the page list (stop for approval), F the rollout pass, G Part B (Pick up, Gears, tidying, Clear desk, strip, board column), H Operator of the Month, I the How it works page (Part C), J docs.
+- Send fails, rate limited, Turnstile fails: §4 states; text kept.
+- Signs in with the dialog open: text kept, sender switches to "Sending as @handle".
+- `?as=` preview pages: path stored without the query.
+- Name-check hit: owner lane silently, no `serviceStats` count.
+- Line 2 switched off: dialog shows line-off; Talk back half stays (Service Hub may hide it on `line-off`, nice-to-have).
+- Two admins reply at once: one `firstReplyBy`, one payment.
+- Picked up by one, replied by another: replier paid; assignment stays until changed.
+- Message deleted or TTL-expired after payment: credit stays unless the owner removes it.
+- Admin loses inbox access or leaves the crew: earned Gears stay.
+- Escalated after a paid reply: credit stays; out of reply-time numbers.
+- Reply after the fast window: base Gears only.
+- Owner un-spams within 7 days: no spam Gear; counts against Accuracy.
+- Two people act on the oldest message together: the first transaction gets oldest first.
+- A quiet week: every day clear, nobody handled 3, no bonus.
+- Daily cap hit mid-reply: reply sends, no Gears, the line says so.
 
-## 16. The inbox How it works page (Part C)
+## 14. Mockups and build order
 
-A staff story page that teaches the whole system: what the desk is, how a message moves, how to answer, when to escalate, how to handle spam and tidying, and how Gears and recognition work. It's built last, after Part B passes its staging tests, so it explains what actually works.
+Mockup round (published artifact, real bt-ui.css, desktop and phone, numbered options, a recommendation), three batches. The strip and pins are in Service Hub's mockup and not repeated here.
+1. **Dialog and inbox:** every dialog state (question with BOOMBOT, feedback, broken member and visitor, sending, error, too many, sent member and visitor with the nudge), the inbox context bar, Sources › By service.
+2. **Part B:** Pick up and Picked up by, the credit line with Remove credit, the This month strip, Desk clear and the spam stamp, the Inbox column on /crew/board, the Operator of the Month card.
+3. **Part C:** the How it works page (hero options, the Try it desk).
 
-**Where:** `/admin/inbox/how-it-works`. Owner and inbox admins (the /admin gate; others get the usual no-access state). The public `/contact/how-it-works` stays the visitor page and only gains a line about asking from any feature page. The page is static HTML, so nothing secret goes on it (no name-check word lists, no limits beyond what staff already see).
-
-**Ways in:** a ghost **How it works** link in the inbox header (icon on phones), a link on the /admin inbox card, "How Gears work here" on the credit line, and a link beside the inbox values in /admin/crew Gears settings. /crew/how-it-works gets the inbox rows in its Gears chapter (one line linking here for staff).
-
-**Frame:** the full story-page frame (TocLayout rail, ghost-numbered chapters, hero with a scene, stage cards with hover scenes, journey line, flow diagram, flip medals, placard, a working example, Ask BOOMBOT, the real mascot and BOOMBOT art, closing call to action). No margin note (it's under /admin).
-
-**Hero:** the Hotline Boom desk phone with the W5 dial-up mark, message cards stacking and clearing, the mascot at the desk; "Answer people. Keep the desk clear." Counts from inboxStats (this month's replies, the Clear desk streak); hidden if unreadable.
-
-**Chapters:**
-1. **Your desk.** The two lanes (team and owner), the six lines, who sees what, and why some messages never reach you (owner lines, "Only Boomertanger", the name check, described without its rules). Stage cards per lane.
-2. **A message's journey.** Arrives → Pick up → Reply → Closed, with the context bar and "Open the page". Journey line.
-3. **Answering well.** Tone, the reply time to aim for, "Open in my email" and "Mark as replied" until Hotline email is on, what the "BOOMBOT showed 2 answers" line means.
-4. **When to escalate.** What belongs to the owner (personal matters, reports about people, anything about crew, safety), one-way escalation, and that **escalating is always neutral**: it never pays and never costs.
-5. **Spam and tidying.** Spam vs rude-but-real (with examples), closed with no reply needed (thank-yous, duplicates), the 7-day hold, Accuracy, Undo, and Clear desk.
-6. **Gears for inbox work.** The table from §11b with the current values read from crew settings, the daily caps, what never pays and why. A flow diagram: action → check → Gears.
-7. **Being seen.** The This month strip, the Inbox column on /crew/board, Top Gear (admins never win crew awards) and Operator of the Month (how the score works). Flip medals for Operator of the Month and the Clear desk streak.
-8. **House rules** placard: answer the oldest first; never mark real messages as spam; escalate whenever in doubt, it never costs you; private stays private; never reply to your own message; one person, one reply (check Picked up by).
-9. **Try it: work a pretend desk.** Four sample messages (a quick question, a two-day-old one, obvious spam, a message naming a crew member). Pick up, reply, mark spam, escalate; a Gears tally shows what each action would pay under the current values, the spam Gear shows "pending 7 days", escalation shows "neutral", and clearing the last one plays Desk clear. Nothing is saved.
-10. **Ask BOOMBOT** FAQ (from `site/src/data/help/hotline-inbox.json`, the same help-file format as §6): Why didn't my reply pay? What if two of us reply? Does escalating hurt me? Why is my spam Gear pending? What's the daily cap? Can credit be removed?
-
-**Closing call:** Open the inbox.
-
-**Data:** reads crew settings (the values) and inboxStats (hero counts) only. Writes nothing.
+Build (after Hotline Boom's staging tests and Service Hub's manifests): A `contactSend` fields, `contactDeflect`, stats, rules, line 2 rename; B the loader and dialog with BOOMBOT; C inbox context bar and By service; D Part B (Pick up, Gears, tidying, Clear desk, strip, board column); E Operator of the Month; F Part C; G docs (hotline-boom.md, mod-machina.md, ROADMAP, CHANGELOG). Turning on `talkBack` in `site.json` is a separate step after staging tests of A to C.

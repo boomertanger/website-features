@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Talk Back re-homed as Hotline Boom part 2: the dialog, line 2 rename, stats (serviceStats for Service Hub), inbox Gears and the staff How it works page; Service Hub owns the page strip, Ask pins and the manifest registry; placement values note, pins, rate and skip.
 docs: the service-hub-sync renewal item now says rotate the client secret in Cloudflare, set CF_ACCESS_CLIENT_SECRET again on staging and redeploy serviceSyncTick.
 docs: ROADMAP deadline to renew the Cloudflare Access service token service-hub-sync before 2027-10-10 (new token, then both CF Access secrets again on staging).
 site: /admin/services shows "Last synced <time> · auto | manual" beside Sync now, the "Auto sync failing since <time>" banner with the last error after 3 failed automatic runs, and a Needs attention row for each service the build no longer lists (?syncfail=1 previews both).
