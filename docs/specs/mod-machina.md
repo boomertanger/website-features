@@ -120,12 +120,14 @@ Gears count help. They are crew-only, separate from Trophy Room XP (mods still e
 | Queue review (vouch or note) | + 2, max 10 a month | Server |
 | Academy module passed | + 5 once | Server |
 | Bug Zapper triage confirmed / Feature Lab review | + 3 | Server (after the ports) |
+| Hotline inbox work (first reply, fast reply, oldest first, spam that held, Clear desk; see docs/specs/talk-back.md §9) | talk-back.md §9b | Server |
 
 Not counted: timeouts, bans, deleted messages (tracked for safety stats only), raw message counts (would reward spam).
 Caps: duty Gears stop at 6 hours a stream; recruits credited up to 10 a month.
 
 ### 4b. Boards
 - `/crew/board`: **This month** (default), **This season** (matches Night Shift), **All time**. Columns: Gears, duties, hours, rooms covered (platform icons), recruits.
+- Inbox column (talk-back.md §9e).
 - Your own row pinned; tap a mod to see their breakdown.
 - Visible to all members (you want people to see who helps), so it doubles as recruiting.
 - Admins appear with a green Staff tag and their real place, but never win crew awards (same rule as the season race).
@@ -136,6 +138,7 @@ Caps: duty Gears stop at 6 hours a stream; recruits credited up to 10 a month.
 | **Top Gear** | Monthly | Most Gears that month (automatic; ties → more duty hours) | Trophy (150 XP) · on-stream shout-out · **Mod's Pick**: chooses a game from the Game Vault shortlist for one stream next month |
 | **Fan Favourite** | Monthly | Member vote, last 5 days of the month | Trophy (150 XP) · on-stream shout-out · featured on /crew for the month |
 | **Boomer's Blessing** | Any time | Owner only (existing Legendary badge) | Badge + personal thank-you |
+| **Operator of the Month** | Monthly | Staff award (talk-back.md §9e) | See talk-back.md §9e |
 | **Crew of the Year** | December | Owner picks from the 12 monthly winners | Legendary trophy + physical merch |
 
 Fan Favourite vote: ballot = mods with at least 2 duties that month; voters = members with accounts at least 14 days old and at least one stream check-in that month; one vote each; results hidden until the vote closes; crew can't vote. Replaces the owner-picked "Mod MVP" in rewards.md (the owner keeps Boomer's Blessing for that).
