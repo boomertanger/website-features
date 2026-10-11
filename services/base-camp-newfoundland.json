@@ -1,0 +1,20 @@
+{
+  "id": "base-camp-newfoundland",
+  "name": "Base Camp: Newfoundland",
+  "type": "page",
+  "area": "Community",
+  "blurb": "The island where it all started, pin by pin, with Puffin Post kind words.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/base-camp/newfoundland"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-base-camp-newfoundland",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

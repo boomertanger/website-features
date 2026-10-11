@@ -27,6 +27,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
 | 18 | Service Hub | In progress (docs and manifests) | Service Hub |
+| 19 | Base Camp (/base-camp, /base-camp/newfoundland, /base-camp/skipper; Kind Words and the Skipper Cam; spec [docs/specs/base-camp.md](specs/base-camp.md)) | Built on staging (Oct 11, 2026); tests pending | Community services |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -247,6 +248,15 @@ Status: **In progress (docs and manifests).** Parts, one commit each (spec §13)
 Depends on: nothing for parts 1-9; part 10 waits for Hotline Boom's staging tests (Talk Back).
 Kickoff: "Start workstream 18 (Service Hub) from docs/ROADMAP.md."
 
+### 19. Base Camp
+Goal: the story of Boomertanger in three pages under one BASECAMP wordmark: /base-camp (who he is and how it started; mostly Fan Club), /base-camp/newfoundland (the island, ten things; public) and /base-camp/skipper (his corgi co-host; the Skipper Cam is Fan Club), plus two shared engines: Kind Words (Puffin Post and Paw Notes, read before they go up) and the Skipper Cam. The Pup Post mail card gives Fan Club members the PO box.
+Spec: [docs/specs/base-camp.md](specs/base-camp.md) (confirmed Oct 11, 2026, with the Pup Post addendum); mockups `docs/design/mockups/base-camp.html`, `base-camp-newfoundland.html`, `base-camp-skipper.html`.
+Status: **Built on staging (Oct 11, 2026); tests pending.** Parts: 1 docs; 2 the foundation (bar, corgi drawings, Pup Post card, member layer, nav); 3 /base-camp and seed-base-camp.js; 4 /base-camp/newfoundland; 5 Kind Words (rules, kindSubmit / kindWithdraw / kindReview, the wall and composer, /admin/kind-words); 6 the Skipper Cam functions, upload-skipper-media.js, /base-camp/skipper and the kit's openGallery; 7 manifests and this entry. The Fan Club text and the address live in the gitignored functions/scripts/data/base-camp-member.json; Skipper's media pack in the gitignored functions/scripts/data/skipper-media/.
+Open: the memberContent rule still only lets members read tech-stack (base-camp and mail need adding before members can see the cards, stories and address).
+Later (spec): an admin editor for Base Camp text; real photos for Newfoundland; more Skipper clips; Skipper Cam auto-detect from YouTube; approval alerts to authors once Boom Alerts ships; guest posting on Kind Words (Turnstile + hashed-IP limits) if wanted.
+
+**Base Camp notes: on-stream mail rules (for Boomer).** Open envelopes off camera and set the envelope aside before showing the letter. Read first names or handles only; skip last names, streets, schools and phone numbers written in letters. Kids' mail: first name only, and no photos of children without a parent's clear OK. "Just for Boomer" letters are read off stream.
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -340,6 +350,12 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### 404 page in production
 - [ ] 404 page: confirm it works on production after the first production deploy (rules + reportBrokenLink + brokenLinkFix deployed to prod).
+
+### Base Camp in production
+- [ ] Deploy firestore.rules (kindWords, skipperCam, the memberContent check) to production.
+- [ ] Deploy `kindSubmit`, `kindWithdraw`, `kindReview`, `skipperCamSet`, `skipperCamWatch`, `skipperCamSweep` to production (only those; confirm the served revision and the sweep's Cloud Scheduler job).
+- [ ] Run `seed-base-camp.js --apply` on production (includes the mail doc; the real address must be in the member file first). The script is staging-only today: lift its guard for this run.
+- [ ] Run `upload-skipper-media.js` on production (records only; files already uploaded with fixed ids). Same staging-only guard to lift.
 
 ### Real tests pending (staging)
 Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:

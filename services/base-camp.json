@@ -1,0 +1,20 @@
+{
+  "id": "base-camp",
+  "name": "Base Camp",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Who Boomer is and how it all started: the climb, his edge, and the Fan Club story.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/base-camp"
+  ],
+  "nav": "baseCamp",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-base-camp",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

@@ -1,0 +1,20 @@
+{
+  "id": "kind-words-admin",
+  "name": "Kind words queue",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "Read every Puffin Post postcard and Paw Notes note before it goes up.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "admins",
+  "routes": [
+    "/admin/kind-words"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-kind-words-admin",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}

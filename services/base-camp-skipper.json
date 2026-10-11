@@ -1,0 +1,20 @@
+{
+  "id": "base-camp-skipper",
+  "name": "Base Camp: Skipper",
+  "type": "page",
+  "area": "Community",
+  "blurb": "Meet Skipper the corgi: the Skipper Cam, the reel, Pup Post and Paw Notes.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/base-camp/skipper"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-base-camp-skipper",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}
