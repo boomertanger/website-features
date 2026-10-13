@@ -8,7 +8,10 @@
       "score": 7,
       "verdict": "The cutest thing that ever tried to kill you.",
       "review": "Short, silly and genuinely creepy in the right places, and it knows exactly when to stop.",
-      "tags": ["Short", "Comedy horror"]
+      "tags": [
+        "Short",
+        "Comedy horror"
+      ]
     },
     {
       "title": "Amanda the Adventurer",
@@ -16,7 +19,11 @@
       "score": 8,
       "verdict": "Never trust a kids' show that knows your name.",
       "review": "Sharp puzzles, a slow-burn mystery and Wooly the sheep: unsettling in a way few games manage.",
-      "tags": ["Puzzle", "Analog horror", "Short"]
+      "tags": [
+        "Puzzle",
+        "Analog horror",
+        "Short"
+      ]
     },
     {
       "title": "Inferis: Dead Below",
@@ -24,7 +31,11 @@
       "score": 5,
       "verdict": "Atmosphere for days, scares for minutes.",
       "review": "It looks the part, but at under an hour it's more mood piece than horror game. It was also the first game a studio gave me early access to, so it'll always have a place in the Vault.",
-      "tags": ["Short", "Psychological", "Walking sim"]
+      "tags": [
+        "Short",
+        "Psychological",
+        "Walking sim"
+      ]
     },
     {
       "title": "Joyville 2",
@@ -32,7 +43,11 @@
       "score": 7,
       "verdict": "Summer camp, two timelines, zero happy campers.",
       "review": "Clever past-and-present puzzles and a properly eerie camp; it builds nicely on the first one.",
-      "tags": ["Puzzle", "Mascot horror", "Time travel"]
+      "tags": [
+        "Puzzle",
+        "Mascot horror",
+        "Time travel"
+      ]
     },
     {
       "title": "Silent Breath",
@@ -40,7 +55,11 @@
       "score": 8,
       "verdict": "Don't Scream's scarier, prettier cousin.",
       "review": "Photoreal woods, a mic that punishes every yelp, and scares you can't predict. Pure stream fuel.",
-      "tags": ["Microphone", "Jump scares", "Found footage"]
+      "tags": [
+        "Microphone",
+        "Jump scares",
+        "Found footage"
+      ]
     },
     {
       "title": "Tales Beyond the Tomb - Pineville Night Stalker",
@@ -48,7 +67,11 @@
       "score": 7,
       "verdict": "A small town, a long night, and someone watching from the dark.",
       "review": "Short, tense and grounded: the true-crime feel makes every noise outside the window land harder.",
-      "tags": ["Short", "True-crime horror", "Anthology"]
+      "tags": [
+        "Short",
+        "True-crime horror",
+        "Anthology"
+      ]
     },
     {
       "title": "True Nightmare - Roadside Cafe",
@@ -56,7 +79,11 @@
       "score": 7,
       "verdict": "Every order is weirder than the last. Tip your waitress.",
       "review": "A cozy job that turns quietly menacing; the café routine makes the scares hit harder.",
-      "tags": ["Short", "VHS", "Night shift"]
+      "tags": [
+        "Short",
+        "VHS",
+        "Night shift"
+      ]
     },
     {
       "title": "9 Childs Street",
@@ -64,7 +91,11 @@
       "score": 7,
       "verdict": "Never go into the neighbor's house. Especially at night.",
       "review": "A short, sharp trip through a creepy house that does a lot with a flashlight, shadows and sound.",
-      "tags": ["Short", "Haunted house", "Walking sim"]
+      "tags": [
+        "Short",
+        "Haunted house",
+        "Walking sim"
+      ]
     },
     {
       "title": "Amenti",
@@ -72,7 +103,11 @@
       "score": 7,
       "verdict": "Say cheese. Something else in the tomb is smiling back.",
       "review": "The camera mechanic is a great hook, and the tomb is gorgeous and genuinely unnerving.",
-      "tags": ["Short", "Photography", "Ancient Egypt"]
+      "tags": [
+        "Short",
+        "Photography",
+        "Ancient Egypt"
+      ]
     },
     {
       "title": "April 24th",
@@ -80,10 +115,65 @@
       "score": 7,
       "verdict": "One house, one night, a stack of tapes you shouldn't watch.",
       "review": "Short and brutal: the VHS framing works, though it's more shock than story.",
-      "tags": ["Short", "VHS", "Found footage"]
+      "tags": [
+        "Short",
+        "VHS",
+        "Found footage"
+      ]
+    },
+    {
+      "title": "At Dead of Night",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Check in. Don't let Jimmy check you out.",
+      "review": "One of the best live-action horror games ever made, and Jimmy is an all-time great stalker.",
+      "tags": [
+        "FMV",
+        "Live action",
+        "Stalker"
+      ]
+    },
+    {
+      "title": "The Beast Inside",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The cabin-in-the-woods story horror fans deserve.",
+      "review": "Beautiful, tense and full of twists: an underrated gem that deserves more attention.",
+      "tags": [
+        "Story rich",
+        "Two timelines",
+        "Mystery"
+      ]
+    },
+    {
+      "title": "Blood Bear",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Went camping. Woke up as the main course.",
+      "review": "An ambitious little survival horror game with a great setting and real tension; impressive for a solo first game. The developer even dropped into my stream while I played it, which made the night.",
+      "tags": [
+        "Survival",
+        "Forest",
+        "Solo developer"
+      ]
+    },
+    {
+      "title": "Bloodwash",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The scariest laundry day in history.",
+      "review": "Puppet Combo grime at its best: a short, nasty giallo slasher that gets right under your skin.",
+      "tags": [
+        "Short",
+        "Slasher",
+        "Retro (PS1-style)"
+      ]
     }
   ],
   "pending": [
-    { "title": "Granny Legacy", "note": "No game found under this name; ask Boomer who made it or where he played it." }
+    {
+      "title": "Granny Legacy",
+      "note": "No game found under this name; ask Boomer who made it or where he played it."
+    }
   ]
 }
