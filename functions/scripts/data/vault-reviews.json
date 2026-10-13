@@ -405,6 +405,416 @@
       "title": "Five Nights at Freddy's: Secret of the Mimic",
       "status": "playing",
       "note": "Not finished yet: set status to Playing, no score or review."
+    },
+    {
+      "title": "The Forest",
+      "status": "finished",
+      "score": 10,
+      "verdict": "The survival horror game every other one is chasing.",
+      "review": "Endless, terrifying and better with friends: a true classic. My favorite game of all time, until Sons of the Forest came out.",
+      "tags": [
+        "Survival",
+        "Co-op",
+        "Cannibals"
+      ]
+    },
+    {
+      "title": "Fork Road",
+      "status": "finished",
+      "score": 4,
+      "verdict": "A few clever puzzles, a few cheap scares.",
+      "review": "Fine for an hour, but it won't stay with you.",
+      "tags": [
+        "Short",
+        "Puzzle",
+        "Jump scares"
+      ]
+    },
+    {
+      "title": "Garten of Banban",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Kindergarten's closed. The mascots never left.",
+      "review": "Silly, creepy and short: a fun mascot-horror romp that's more meme than masterpiece.",
+      "tags": [
+        "Mascot horror",
+        "Puzzle",
+        "Short"
+      ],
+      "hint": "The first game (2023), not the sequels"
+    },
+    {
+      "title": "Granny",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The grandmother of modern indie horror.",
+      "review": "Hundreds of millions of downloads for a reason: pure, perfect cat-and-mouse terror.",
+      "tags": [
+        "Hide and seek",
+        "Escape",
+        "Granny series"
+      ],
+      "hint": "The original by DVloper (2017)"
+    },
+    {
+      "title": "Granny: Chapter Two",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The Granny sequel that doubles the dread.",
+      "review": "Two hunters with two different senses make every move a gamble: second best of the series.",
+      "tags": [
+        "Hide and seek",
+        "Escape",
+        "Granny series"
+      ]
+    },
+    {
+      "title": "Granny 3",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The best Granny yet, and the hardest to leave.",
+      "review": "A massive mansion, smarter grandparents and the most satisfying escapes in the series.",
+      "tags": [
+        "Hide and seek",
+        "Escape",
+        "Granny series"
+      ]
+    },
+    {
+      "title": "Granny 4: The Rebellion",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Granny brought the whole family this time.",
+      "review": "A fan-made Granny with four hunters at once: chaotic, scrappy and surprisingly tense.",
+      "tags": [
+        "Hide and seek",
+        "Fan game",
+        "Granny series"
+      ],
+      "hint": "Fan game by Fighter Gamer (not DVloper); may need adding by hand"
+    },
+    {
+      "title": "Granny 5: Time To Wake Up",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Wake up. Granny's already up.",
+      "review": "One of the best Granny fan games: a huge house, tons of items and a real challenge.",
+      "tags": [
+        "Hide and seek",
+        "Fan game",
+        "Granny series"
+      ],
+      "hint": "Fan game by A Twelve Studio on itch.io: https://atwelve.itch.io/granny5 (may need adding by hand)"
+    },
+    {
+      "title": "Granny: Escape Together",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Granny's house, now with friends to blame.",
+      "review": "Co-op Granny is pure chaos: one person drops a vase and everyone pays for it.",
+      "tags": [
+        "Co-op",
+        "Hide and seek",
+        "Granny series"
+      ]
+    },
+    {
+      "title": "Granny Remake",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Strange Granny, new house, a UFO you'll never see coming.",
+      "review": "A great-looking, trap-packed reimagining with more ways out than ever, including one that's out of this world.",
+      "tags": [
+        "Hide and seek",
+        "Escape",
+        "Remake"
+      ]
+    },
+    {
+      "title": "Helldivers 2",
+      "status": "finished",
+      "score": 8,
+      "verdict": "For Super Earth! Spreading democracy, one terrifying bug at a time.",
+      "review": "More action than horror, but it's action horror all the same: the bugs are scary, the swarms are terrifying, and the dread when the next wave hits is real. I wouldn't want my action any other way.",
+      "tags": [
+        "Co-op",
+        "Action horror",
+        "Sci-fi"
+      ]
+    },
+    {
+      "title": "HELLSEED",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Italy, 1980. The doctor is missing. Something else is home.",
+      "review": "A moody Italian-horror slow burn with puzzles and a presence that hunts you through the house.",
+      "tags": [
+        "Psychological",
+        "Italian horror",
+        "Puzzle"
+      ]
+    },
+    {
+      "title": "Indigo Park",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Mascot horror finally got its Disneyland.",
+      "review": "A free game this polished shouldn't exist: great characters, great chases and a story you'll want more of.",
+      "tags": [
+        "Mascot horror",
+        "Free",
+        "Theme park"
+      ],
+      "hint": "Indigo Park: Chapter 1"
+    },
+    {
+      "title": "Joyville",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Happy campers, unhappy reunion.",
+      "review": "A nostalgic camp turned nightmare, with a teddy bear sidekick you'll actually miss.",
+      "tags": [
+        "Puzzle",
+        "Mascot horror",
+        "Camp"
+      ],
+      "hint": "The first game (2023), not Joyville 2"
+    },
+    {
+      "title": "Labyrinthine",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Split up, they said. It'll be fine, they said.",
+      "review": "Brilliant fun with a squad; the story mode's fine, but the random mazes with friends are where it shines.",
+      "tags": [
+        "Co-op",
+        "Maze",
+        "Puzzle"
+      ]
+    },
+    {
+      "title": "The Last Visit: 98th",
+      "status": "finished",
+      "score": 5,
+      "verdict": "Snow, concrete and a feeling you're not alone.",
+      "review": "A short, atmospheric walk with a great setting; more chills from the mood than the scares.",
+      "tags": [
+        "Walking sim",
+        "Winter",
+        "Post-Soviet"
+      ]
+    },
+    {
+      "title": "Limoria",
+      "status": "finished",
+      "score": 6,
+      "verdict": "The Shining meets the Backrooms, and the hallways never end.",
+      "review": "Beautiful and eerie, but short, and that head-bob will test your stomach.",
+      "tags": [
+        "Liminal",
+        "Hotel",
+        "Walking sim"
+      ]
+    },
+    {
+      "title": "Locked Up",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Patience is rewarded. Mostly with terror.",
+      "review": "A slow-burn corridor loop with some great scares, as long as you don't mind the pace.",
+      "tags": [
+        "Short",
+        "Psychological",
+        "Loop"
+      ],
+      "hint": "By EMIKA GAMES (2020)"
+    },
+    {
+      "title": "Lost Luminosity",
+      "status": "finished",
+      "score": 6,
+      "verdict": "The neighbors were right about the noises.",
+      "review": "A short, moody apartment mystery that's more sad than scary, in a good way.",
+      "tags": [
+        "Psychological",
+        "Apartment",
+        "Story rich"
+      ]
+    },
+    {
+      "title": "Metel - Horror Escape",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The best 'put everything back' horror game ever made.",
+      "review": "Every footstep from the maniac turns into a mad dash to hide the evidence: brilliantly stressful.",
+      "tags": [
+        "Escape",
+        "Stealth",
+        "Puzzle"
+      ]
+    },
+    {
+      "title": "Metro 2033 Redux",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Moscow's underground, and the horrors live underground too.",
+      "review": "Brilliantly tense and atmospheric, even if the gunplay shows its age.",
+      "tags": [
+        "Post-apocalyptic",
+        "Shooter",
+        "Survival horror"
+      ]
+    },
+    {
+      "title": "Metro: Last Light",
+      "status": "finished",
+      "score": 7,
+      "verdict": "More metro, more mutants, more mask-wiping panic.",
+      "review": "Bigger, prettier and more confident than 2033, with the same gasp-for-filters dread.",
+      "tags": [
+        "Post-apocalyptic",
+        "Shooter",
+        "Survival horror"
+      ],
+      "hint": "Metro: Last Light Redux (2014), not the 2013 original"
+    },
+    {
+      "title": "The Mortuary Assistant",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Night shift at the mortuary, and the dead won't stay put.",
+      "review": "A brilliant mix of routine work and pure terror; once the demon gets involved, nothing is safe.",
+      "tags": [
+        "Occult",
+        "Night shift",
+        "Replayable"
+      ]
+    },
+    {
+      "title": "Night Delivery",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The worst delivery route in Japan.",
+      "review": "Everyday streets made terrifying: one of Chilla's Art's most unsettling little nightmares.",
+      "tags": [
+        "Short",
+        "J-horror",
+        "Night shift"
+      ],
+      "hint": "By Chilla's Art (2021)"
+    },
+    {
+      "title": "Night Security",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Your only job: watch the building. Something is watching you.",
+      "review": "Chilla's Art's slow-burn dread at its best: every empty corridor feels occupied.",
+      "tags": [
+        "Short",
+        "J-horror",
+        "Night shift"
+      ],
+      "hint": "By Chilla's Art (2023)"
+    },
+    {
+      "title": "Order 13",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Pick. Pack. Ship. Pray. Feed the cat.",
+      "review": "A brilliant mix of warehouse grind and pure dread, and the cat makes every run matter.",
+      "tags": [
+        "Job sim",
+        "Cats",
+        "Survival horror"
+      ]
+    },
+    {
+      "title": "Pacify",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Fun first scream, fewer surprises after.",
+      "review": "A blast the first few runs, though the scares wear thin once you know the routine.",
+      "tags": [
+        "Co-op",
+        "Proximity chat",
+        "Jump scares"
+      ]
+    },
+    {
+      "title": "Pieces of Me",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Fewer jump scares, more lump in your throat.",
+      "review": "A quiet, sad and unsettling walk through the past; less scary than EMIKA's others, but more affecting.",
+      "tags": [
+        "Psychological",
+        "Story rich",
+        "Drama"
+      ],
+      "hint": "By EMIKA GAMES (2024)"
+    },
+    {
+      "title": "Poppy Playtime",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Huggy Wuggy just wants a hug. A very long, very final hug.",
+      "review": "The game that made Huggy Wuggy a nightmare icon: a tight, creepy hour that kicked off a whole franchise.",
+      "tags": [
+        "Mascot horror",
+        "Puzzle",
+        "Free"
+      ],
+      "hint": "Chapter 1 (the base game), not later chapters"
+    },
+    {
+      "title": "September 7th",
+      "status": "finished",
+      "score": 7,
+      "verdict": "The Elf on the Shelf got a horror reboot.",
+      "review": "Forty minutes of escalating holiday dread, with one doll you'll want to burn.",
+      "tags": [
+        "Short",
+        "Holiday horror",
+        "Jump scares"
+      ],
+      "hint": "By EMIKA GAMES (2023)"
+    },
+    {
+      "title": "Silverpine Creek",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Granny moved to the countryside and became a witch.",
+      "review": "A creepy, physics-driven village chase that's better than its Steam score suggests.",
+      "tags": [
+        "Witch",
+        "Village",
+        "Hide and seek"
+      ]
+    },
+    {
+      "title": "SlackJaw",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Open wide. The basement is calling.",
+      "review": "Great atmosphere and a nasty villain, over a little too quickly.",
+      "tags": [
+        "Escape room",
+        "Stealth",
+        "True-crime horror"
+      ],
+      "hint": "SLACKJAW by Nostromo Interactive (2025)"
+    },
+    {
+      "title": "Sons of the Forest",
+      "status": "finished",
+      "score": 10,
+      "verdict": "Find the billionaire. Lose your mind. Build a treehouse.",
+      "review": "The perfect survival horror sandbox: terrifying at night, gorgeous by day, and endlessly fun with friends. It knocked The Forest off the top spot as my favorite game of all time.",
+      "tags": [
+        "Survival",
+        "Co-op",
+        "Cannibals"
+      ]
     }
   ],
   "pending": [
