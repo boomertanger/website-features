@@ -11,7 +11,7 @@ const RESTORE = "bt-vault-restore";
 
 export const DEFAULT_LABEL = "All games, last streamed";
 
-/** The Vault's default order: last streamed first, then most wanted, then A to Z. */
+/** The Vault's default order: last streamed first, then most votes, then A to Z. */
 export const byLastStreamed = (a: VCard, b: VCard) => (b.last || 0) - (a.last || 0) || b.wanted - a.wanted || a.sortTitle.localeCompare(b.sortTitle);
 
 export function saveCtx(ctx: VaultCtx) {

@@ -26,7 +26,7 @@ Naming: **Vault games** (`vaultGames`) are games Boomertanger streams. **Arcade 
 |---|---|
 | Visitors | View everything. Add a game opens the Join dialog titled "Join to add games". |
 | Members, email not verified | View everything. Add a game shows the verify-email prompt. |
-| Members, email verified | Add up to 5 games a day (no account-age wait). "I want this too" on wishlist games. Suggest a cover for a game that has none (§6). |
+| Members, email verified | Add up to 5 games a day (no account-age wait). "Play this, Boomer!" (a vote) on wishlist games. Suggest a cover for a game that has none (§6). |
 | Mods | Approve or reject the queue (adds and covers); hide or unhide a community pick; replace a cover. |
 | Admins and owner | Everything: add without the theme check, edit, write reviews, set status, delete, upload a cover override. |
 
@@ -175,7 +175,7 @@ Whole Vault in the browser from `public/vault`; no server calls.
   "bunker amnesia" → Amnesia: The Bunker, "dead space" → none).
 - Filters: status, tags, length (from `timeToBeat.normally`: Short ≤ 3 h, Medium ≤ 10 h,
   Long > 10 h), Community picks. Sort: Last streamed, Most streamed, Boomer's score, Most
-  wanted, Newest, A–Z.
+  votes, Newest, A–Z.
 - State in the URL (`/games?q=…&status=…&sort=…`); `/` focuses search; no match turns into
   Add (visitors: Join free).
 - Round 2 (pending confirmation): command panel under the search (games with matched
@@ -203,11 +203,11 @@ Feature key `game-vault`.
 
 - `/games`: GAMEVAULT feature bar (`.bt-wordmark--power`; the vault-dial icon rests, and on
   hover spins a combination and lights the lamp), Add a game (members), Queue + count
-  (staff, green). Round 2: shelves (Now playing, Most wanted with rank numerals and I want this too,
+  (staff, green). Round 2: shelves (Now playing, Most wanted on stream with rank numerals and Play this, Boomer!,
   Boomer's best, The ones that got away); grid when searching or filtering. (Round 2's vault door
   hero and ledger counts were replaced by the page redesign below.)
 - Cards (round 2 C5 + C6): tilt + glare on pointer devices, verdict reveal on hover,
-  caution tape (abandoned), pulse (playing), want stamp (wishlist), 10/10 ribbon.
+  caution tape (abandoned), pulse (playing), votes stamp ("N votes", wishlist), 10/10 ribbon.
 - Game page `/games/{slug}` (round 2 E4): ambient banner, score dial (Boomer's gold),
   review, Every stream timeline, about + IGDB credit, facts, where to play, stats; admin
   Edit; staff Hide on community picks; "Suggest a cover" on mascot covers.
@@ -223,10 +223,11 @@ Round 3 (`docs/design/mockups/game-vault-round-3.html`; approved R4 S1 N1 P12):
   shown already open, nothing moves.
 - **S1 Shelves, then All games.** Without a search or filter, /games shows the shelves and then
   the All games grid with its count, always. Shelves only show when they have games, except
-  **Most wanted**, which always shows above the grid while there's at least one wishlist game:
-  - with wants: the top 5 by wants (games with at least one), with rank numerals;
-  - with no wants yet: up to 5 wishlist games, newest first, no numerals, with their I want this
-    too buttons and the line "Nothing wanted yet. Tap I want this too on a game to be the first.";
+  **Most wanted on stream** (subtitle "What members want Boomer to play next."), which always shows
+  above the grid while there's at least one wishlist game:
+  - with votes: the top 5 by votes (games with at least one), with rank numerals;
+  - with no votes yet: up to 5 wishlist games, newest first, no numerals, with their Play this,
+    Boomer! buttons and the line "Nothing voted yet. Tap Play this, Boomer! on a game to be the first.";
   - hidden only when there are no wishlist games at all.
   Searching or filtering still shows just the grid.
 - **N1 Back link that remembers.** A "Back to the Vault" pill at the top of the game banner with a
@@ -249,7 +250,7 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   match strip, a hint line ("Try “granny”, “vr”…" using only examples that match something) and
   the counts (games, finished, played in VR; zeros hidden). Right: the Now playing spotlight (the
   latest playing game, a tilting cover with the green pulse, the second playing game tucked behind,
-  its name and "Also playing"); with nothing playing it spotlights the top Most wanted game
+  its name and "Also playing"); with nothing playing it spotlights the top Most wanted on stream game
   (gold, no pulse); with neither the hero is the left column alone. While searching: the wall
   pauses, non-matches fade to grey, matches light up purple, the spotlight steps back, the strip
   shows up to 7 matches and Enter scrolls to the results (or opens Add a game when nothing
@@ -265,7 +266,7 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   search and filters" above the grid. Up to 1024px the menus, Community picks and Sort move into a
   Filters button (a dialog with Sort, Length, Tags, Community picks and a live "Show N games");
   phones: search on row 1, status tabs + Filters on row 2.
-- **SH3 Section heads.** Now playing, Most wanted, Boomer's best, The ones that got away and All
+- **SH3 Section heads.** Now playing, Most wanted on stream, Boomer's best, The ones that got away and All
   games: an icon tile, the heading with a count pill (games in that shelf; See all still counts every
   game with the status), a thin gold rule running to the arrows and See all. Kit: `.bt-section-head`.
 - **B1 Phone bar, every Vault page.** Under 640px the bar's words become icons: ? How it works, the
@@ -275,7 +276,7 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   Under 640px only (desktop and tablet keep V3), the cover wall (5 columns of real covers) fills the
   background behind the kicker, title, line, big search and counts and fades to the page colour toward
   the bottom; no spotlight and no poster band. The "Now playing" shelf (the same section head and cards
-  as the other shelves) leads the page above Most wanted and hides when nothing is playing. Searching
+  as the other shelves) leads the page above Most wanted on stream and hides when nothing is playing. Searching
   works as on desktop: the wall pauses, non-matches fade, matches light up and the strip of matches shows
   under the search. Reduced motion: no drift.
 - **G1 Game page section heads (part 9).** Boomer's review, Every stream (note: "6 streams, 14

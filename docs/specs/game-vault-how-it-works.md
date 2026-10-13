@@ -13,7 +13,7 @@ The mockup's copy is the starting copy; Boomer may edit wording later.
   How it works blocks: hero, stage cards with scenes, journey, house-rules placard,
   BOOMBOT FAQ, CTA. Chapters use `.bt-chapter--ghost`.
 - **Reads:** `sites/{siteId}/public/vault` only (already used by /games). **Writes:**
-  nothing. Every demo on the page (search, wants, score, story) works on local state.
+  nothing. Every demo on the page (search, votes, score, story) works on local state.
 - **Ways in:** the "How it works" link in the GAMEVAULT bar; "How adding works" in the
   Add a game dialog (→ `#s-add`); refusal messages link to `#s-fair`; every chapter has
   an anchor.
@@ -25,8 +25,8 @@ The mockup's copy is the starting copy; Boomer may edit wording later.
 | Hero | | Every horror game, in one vault | **H2 cover wall**: 4 columns of real covers drifting slowly behind the hero, masked toward the text; still under reduced motion; decorative (aria-hidden). Counts from the summary doc: games in the Vault, finished, played in VR (games with Boomer's VR tag); a count of 0 is hidden. |
 | 01 | s-what | What the Vault is | Four status cards (Playing, Finished, Abandoned, Wishlist); pointing at one shows its mark on a cover (pulse, dial, tape, stamp). |
 | 02 | s-find | Finding games | A working search over the real summary doc (shared/vault-search.js) + clickable tips. Each tip's example must return at least one real game. |
-| 03 | s-add | Adding a game | **J1 journey**, 5 steps (Paste or search, Pick it, The checks, In the Vault, Or a quick check — the last dashed as the fork), + 3 fact cards (verified email, 5 a day, duplicates count as a want). |
-| 04 | s-wants | Community picks and "I want this too" | A local "Most wanted (try it)" list that re-ranks as you want games; 3 points beside it. |
+| 03 | s-add | Adding a game | **J1 journey**, 5 steps (Paste or search, Pick it, The checks, In the Vault, Or a quick check — the last dashed as the fork), + 3 fact cards (verified email, 5 a day, duplicates count as a vote: "Already in the Vault, so your vote was added."). |
+| 04 | s-wants | Community picks and Play this, Boomer! | A local "Most wanted on stream (try it)" list that re-ranks as you vote (Play this, Boomer! / Voted); 3 points beside it. |
 | 05 | s-covers | Covers | Three cards: from the game databases (IGDB/Steam), suggest one when there's none, a mod checks it first. |
 | 06 | s-reviews | Boomer's reviews and scores | The score dial with sample scores 3/6/8/10 and verdicts; Boomer's gold. |
 | 07 | s-moves | How a game moves | "One game's story": Wishlist → Playing → Finished/Abandoned with a cover token and ticking stream/hour counts; Play / Play again. |

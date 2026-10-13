@@ -98,7 +98,7 @@ const pub = async () => (await site.collection("public").doc("vault").get()).dat
   assert.equal(r.wantedCount, 1, "a member counts once");
   assert.ok((await site.collection("vaultGames").doc("granny-chapter-two").collection("wants").doc("viewer2").get()).exists);
   assert.equal((await pub()).games[0].wanted, 1);
-  // "I want this too": on and off
+  // "Play this, Boomer!" (a vote): on and off
   r = await call("vaultWant", "viewer1", { slug: "granny-chapter-two", on: true }); assert.equal(r.wantedCount, 2);
   r = await call("vaultWant", "viewer1", { slug: "granny-chapter-two", on: true }); assert.equal(r.wantedCount, 2);
   r = await call("vaultWant", "viewer1", { slug: "granny-chapter-two", on: false }); assert.equal(r.wantedCount, 1);

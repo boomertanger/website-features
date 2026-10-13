@@ -2,7 +2,7 @@
 // The shared How it works behaviour (journey, spotlight, BOOMBOT), plus the Vault's pieces. One read,
 // public/vault: the hero's cover wall and counts (games, finished, played in VR from Boomer's VR tag; a
 // 0 is hidden), real covers in the scenes, and chapter 02's search (shared/vault-search.js). Everything
-// else is local and writes nothing: the Most wanted list you can push around, the score dial, and one
+// else is local and writes nothing: the Most wanted on stream list you can push around, the score dial, and one
 // game's story. Reduced motion: no drifting wall, no reordering slide, the story jumps to its end.
 import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
 import { buildIndex, search, hasTag } from "../../../../shared/vault-search.js";
@@ -105,7 +105,7 @@ function runSearch(q: string) {
     : `<div class="vh-none">Nothing in the Vault for “${esc(query)}”. On the Vault, that turns into <b>Add “${esc(query)}”</b>.</div>`;
 }
 
-// ---------- 04 Most wanted (try it): local, nothing is saved ----------
+// ---------- 04 Most wanted on stream (try it): local, nothing is saved ----------
 interface MW { slug: string; title: string; cover: VCard["cover"]; by: string | null; n: number }
 let mw: MW[] = [];
 const mine = new Set<string>();
@@ -121,7 +121,7 @@ function drawWants(bumped = "") {
   if (!mw.length) { box.innerHTML = '<p class="vh-none">The Vault didn\'t load.</p>'; return; }
   const before = new Map([...box.querySelectorAll<HTMLElement>("[data-mw]")].map((el) => [el.dataset.mw!, el.getBoundingClientRect().top]));
   const list = [...mw].sort((a, b) => b.n - a.n);
-  box.innerHTML = list.map((m, i) => `<div class="vh-mw-row" data-mw="${esc(m.slug)}"><span class="vh-mw-rank" style="--rk:${i < 3 ? `var(--bt-rank-${i + 1})` : "var(--bt-text-faint)"}" aria-label="Number ${i + 1}">${i + 1}</span>${coverHtml(m.cover, { alt: "", size: "sm" })}<span><b>${esc(m.title)}</b><small>${m.n} want it${m.by ? ` · picked by @${esc(m.by)}` : ""}</small></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-want="${esc(m.slug)}" aria-pressed="${mine.has(m.slug)}">${I.heart}${mine.has(m.slug) ? "Wanted" : "I want this too"}</button></div>`).join("");
+  box.innerHTML = list.map((m, i) => `<div class="vh-mw-row" data-mw="${esc(m.slug)}"><span class="vh-mw-rank" style="--rk:${i < 3 ? `var(--bt-rank-${i + 1})` : "var(--bt-text-faint)"}" aria-label="Number ${i + 1}">${i + 1}</span>${coverHtml(m.cover, { alt: "", size: "sm" })}<span><b>${esc(m.title)}</b><small>${m.n} ${m.n === 1 ? "vote" : "votes"}${m.by ? ` · picked by @${esc(m.by)}` : ""}</small></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-want="${esc(m.slug)}" aria-pressed="${mine.has(m.slug)}"${mine.has(m.slug) ? ` aria-label="Remove your vote for ${esc(m.title)}"` : ""}>${I.heart}${mine.has(m.slug) ? "Voted" : "Play this, Boomer!"}</button></div>`).join("");
   box.querySelectorAll<HTMLElement>("[data-mw]").forEach((el) => {
     const d = (before.get(el.dataset.mw!) ?? 0) - el.getBoundingClientRect().top;
     if (!reduce() && before.size && d) el.animate([{ transform: `translateY(${d}px)` }, { transform: "none" }], { duration: 450, easing: "cubic-bezier(.2,.7,.2,1)" });
@@ -132,7 +132,7 @@ function drawWants(bumped = "") {
 
 // ---------- 07 one game's story ----------
 const STORY = [
-  { x: "16.66%", st: "wishlist", streams: 0, hours: 0, cap: "Added to the Vault. Members start wanting it." },
+  { x: "16.66%", st: "wishlist", streams: 0, hours: 0, cap: "Added to the Vault. Members start voting for it." },
   { x: "50%", st: "playing", streams: 1, hours: 2, cap: "Boomer streams it. Every stream adds to its count and hours, automatically." },
   { x: "50%", st: "playing", streams: 2, hours: 5, cap: "Boomer streams it. Every stream adds to its count and hours, automatically." },
   { x: "50%", st: "playing", streams: 3, hours: 8, cap: "Boomer streams it. Every stream adds to its count and hours, automatically." },

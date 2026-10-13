@@ -170,7 +170,7 @@ export async function openAddGame(q = "", opts: AddOptions = {}) {
     if (r.decision === "duplicate") {
       refreshVault();
       const extra = await followUp(r, title);
-      const want = r.status === "wishlist" && r.wantedCount ? `We counted you in: ${r.wantedCount} ${r.wantedCount === 1 ? "person wants" : "people want"} Boomer to play it.` : `It's ${r.status === "wishlist" ? "on the Wishlist" : `marked ${badge((r.status || "wishlist") as any)}`}.`;
+      const want = r.status === "wishlist" && r.wantedCount ? `Already in the Vault, so your vote was added. It has ${r.wantedCount} ${r.wantedCount === 1 ? "vote" : "votes"} now.` : `It's ${r.status === "wishlist" ? "on the Wishlist" : `marked ${badge((r.status || "wishlist") as any)}`}.`;
       return result("", `${title} is already here`, want + extra, "Already in the Vault", [another(), view(r.slug!)], { cover: c.cover });
     }
     if (r.decision === "queued") {

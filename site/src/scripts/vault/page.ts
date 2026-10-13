@@ -1,12 +1,12 @@
 // /games, the Vault page (docs/specs/game-vault.md §7, §9; round 2 A65 + B34 + C56, round 3, and the
 // page redesign game-vault-page.html V3): the hero (a drifting wall of real covers; the big search with
-// its match strip and hint; the counts; the Now playing spotlight, or the top Most wanted game when
+// its match strip and hint; the counts; the Now playing spotlight, or the top Most wanted on stream game when
 // nothing is playing), the sticky filter bar (status seg nav, Tags / Length menus, Community picks, sort;
 // a compact search slides in when the hero's scrolls away; phones get a Filters dialog), removable
-// tokens, state in the URL, the shelves (Now playing, Most wanted, Boomer's best, The ones that got away) and then
+// tokens, state in the URL, the shelves (Now playing, Most wanted on stream, Boomer's best, The ones that got away) and then
 // the All games grid, just the gliding grid when searching or filtering, and the states (loading, empty,
-// no matches, error). Shelves only show when they have games, except Most wanted, which shows whenever
-// there's a wishlist game: the top 5 by wants with rank numerals, or, before anyone wants anything, the 5
+// no matches, error). Shelves only show when they have games, except Most wanted on stream, which shows whenever
+// there's a wishlist game: the top 5 by votes with rank numerals, or, before anyone votes, the 5
 // newest wishlist games and a nudge to be the first. Searching lights the matching covers on the wall.
 // Leaving for a game stores the list you were in (scripts/vault/context.ts) for the game page's Back to
 // the Vault and previous / next, and coming back that way puts you at the same scroll position.
@@ -28,7 +28,7 @@ import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 const root = document.querySelector<HTMLElement>("[data-vault]");
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 const SUB = "Every horror game on the channel: what Boomer's playing, what he finished, what beat him and what's next.";
-const SORTS: [string, string][] = [["last", "Last streamed"], ["most", "Most streamed"], ["score", "Boomer's score"], ["wanted", "Most wanted"], ["new", "Newest"], ["az", "A–Z"]];
+const SORTS: [string, string][] = [["last", "Last streamed"], ["most", "Most streamed"], ["score", "Boomer's score"], ["wanted", "Most votes"], ["new", "Newest"], ["az", "A–Z"]];
 
 interface State { q: string; status: "all" | Status; tags: string[]; len: string; picks: boolean; sort: string }
 const st: State = { q: "", status: "all", tags: [], len: "", picks: false, sort: "last" };
@@ -110,14 +110,14 @@ function wallHtml() {
     return `<div class="gvh-col" style="--d:${34 + (c % 4) * 6}s">${Array.from({ length: copies }, () => col).flat().map((g) => `<span class="gvh-c" data-slug="${esc(g.slug)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</span>`).join("")}</div>`;
   }).join("")}</div>`;
 }
-/** The spotlight: what's playing (the latest, with the second tucked behind), else the top Most wanted game. */
+/** The spotlight: what's playing (the latest, with the second tucked behind), else the top Most wanted on stream game. */
 function spotlight() {
   const playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
   const g = playing[0] || mostWantedGames()[0];
   if (!g) return { html: "", kind: "" };
   const also = playing[1];
-  const label = playing[0] ? "Now playing" : "Most wanted";
-  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "member")} want it</small>` : ""}</div></div>`;
+  const label = playing[0] ? "Now playing" : "Most wanted on stream";
+  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "vote")}</small>` : ""}</div></div>`;
   return { html, kind: playing[0] ? "playing" : "wanted" };
 }
 function heroCounts() {
@@ -187,7 +187,7 @@ function popover(kind: "tags" | "len") {
   return `<div class="bt-popover" role="group" aria-label="Length">${opts}<div class="bt-popover-foot"><span class="bt-meta">From IGDB's time to beat</span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-close-menu>Show ${plural(list().length, "game")}</button></div></div>`;
 }
 
-const ICONS: Record<string, string> = { "Now playing": "🎮", "Most wanted": "🔖", "Boomer's best": "🏆", "The ones that got away": "🪦", "All games": "🗝" };
+const ICONS: Record<string, string> = { "Now playing": "🎮", "Most wanted on stream": "🔖", "Boomer's best": "🏆", "The ones that got away": "🪦", "All games": "🗝" };
 function shelf(title: string, sub: string, games: VCard[], { ranked = false, wants = false, status }: { ranked?: boolean; wants?: boolean; status: Status }) {
   if (!games.length) return "";
   const items = games.map((g, i) => ranked
@@ -195,7 +195,7 @@ function shelf(title: string, sub: string, games: VCard[], { ranked = false, wan
     : wants ? `<div class="gv-want">${vcard(g, { key: false })}${wantButton(g)}</div>` : vcard(g, { key: false })).join("");
   return `<section data-shelf-wrap aria-label="${esc(title)}">${sectionHeadHtml({ icon: ICONS[title], title, count: games.length, sub, tools: `<span class="bt-shelf-arrows"><button type="button" class="bt-icon-btn" data-shelf-prev aria-label="Scroll ${esc(title)} back">‹</button><button type="button" class="bt-icon-btn" data-shelf-next aria-label="Scroll ${esc(title)} on">›</button></span><button type="button" class="bt-link-btn" data-see="${status}">See all ${count(status)}</button>` })}<div class="bt-shelf${ranked ? " bt-shelf--ranked" : ""}">${items}</div></section>`;
 }
-/** Most wanted: the top 5 by wants (ranked); before anyone wants anything, the 5 newest wishlist games. */
+/** Most wanted on stream: the top 5 by votes (ranked); before anyone votes, the 5 newest wishlist games. */
 function mostWantedGames() {
   const wish = V.games.filter((g) => g.status === "wishlist");
   const wanted = wish.filter((g) => g.wanted > 0).sort((a, b) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0)).slice(0, 5);
@@ -204,8 +204,8 @@ function mostWantedGames() {
 }
 function mostWanted() {
   const games = mostWantedGames();
-  if (games.some((g) => g.wanted > 0)) return shelf("Most wanted", "What members want Boomer to play next.", games, { ranked: true, status: "wishlist" });
-  return shelf("Most wanted", "Nothing wanted yet. Tap I want this too on a game to be the first.", games, { wants: true, status: "wishlist" });
+  if (games.some((g) => g.wanted > 0)) return shelf("Most wanted on stream", "What members want Boomer to play next.", games, { ranked: true, status: "wishlist" });
+  return shelf("Most wanted on stream", "Nothing voted yet. Tap Play this, Boomer! on a game to be the first.", games, { wants: true, status: "wishlist" });
 }
 function shelves() {
   const by = (s: Status, sort: (a: VCard, b: VCard) => number) => V.games.filter((g) => g.status === s).sort(sort);
@@ -419,7 +419,7 @@ async function boot() {
   renderControls();
   renderResults();
   renderHero();
-  onAuth(() => { renderResults(); renderHero(); });   // the Add / Join wording and the want buttons follow sign-in
+  onAuth(() => { renderResults(); renderHero(); });   // the Add / Join wording and the vote buttons follow sign-in
   // Back to the Vault: the same URL, so scroll to where you left it.
   const ctx = loadCtx();
   if (takeRestore() && ctx && ctx.url === `${location.pathname}${location.search}`) requestAnimationFrame(() => scrollTo({ top: ctx.scroll, behavior: "auto" }));

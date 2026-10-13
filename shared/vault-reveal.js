@@ -30,7 +30,7 @@ export function statusLine(g) {
 
 /** The hover panel. */
 export function reveal(g) {
-  const want = g.wanted > 0 ? `${g.wanted} want it` : "";
+  const want = g.wanted > 0 ? plural(g.wanted, "vote") : "";
   const pick = g.by ? `Community pick by @${g.by}` : "";
   if (g.verdict) return { title: g.verdict, quoted: true, line: g.streams > 0 ? streamsLine(g) : statusLine(g) };
   if (g.status === "wishlist") return { title: "Not played yet", quoted: false, line: [want || "On the Wishlist", pick].filter(Boolean).join(". ") };
@@ -40,6 +40,6 @@ export function reveal(g) {
 /** The line under a card's title. */
 export function metaLine(g) {
   if (g.streams > 0) return `${plural(g.streams, "stream")}${g.last ? `, last ${shortDate(g.last)}` : ""}`;
-  if (g.status === "wishlist") return g.wanted > 0 ? `Not streamed yet, ${g.wanted} want it` : "Not streamed yet";
+  if (g.status === "wishlist") return g.wanted > 0 ? `Not streamed yet, ${plural(g.wanted, "vote")}` : "Not streamed yet";
   return g.ttb ? `About ${g.ttb} h to beat` : "No streams on record yet";
 }

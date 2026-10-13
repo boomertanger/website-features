@@ -136,7 +136,7 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
       <section class="ff-hw-sec" id="s-acts" aria-labelledby="h-acts">
         <Fragment set:html={chapter(3, "h-acts", "Activities", "Real things around the site: play, wishlist, explore. New kinds appear as new parts of the site open.")} />
         <div class="bt-task-list ff-hw-acts-list" set:html={ACTS.map((a) => taskRowHtml(a)).join("")} />
-        <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: want a game, finish a run, punch the clock.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
+        <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: vote for a game, finish a run, punch the clock.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
       </section>
 
       <section class="ff-hw-sec" id="s-clock" aria-labelledby="h-clock">

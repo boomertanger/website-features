@@ -97,7 +97,7 @@ module.exports = function makeStore({ adminLogEntry }) {
     });
   }
 
-  // ---------- "I want this too" ----------
+  // ---------- "Play this, Boomer!" (votes) ----------
   /** Counts a member once on a game that is already there (or removes the count). Returns the new wantedCount. */
   async function setWant(slug, uid, on) {
     const gRef = games.doc(slug), wRef = gRef.collection("wants").doc(uid);

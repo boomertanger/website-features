@@ -14,7 +14,7 @@ import { I } from "../../scripts/vault/art";
 import { badge } from "../../scripts/vault/ui";
 
 const JOIN_TITLE = "Join to add games";
-const NAV: [string, string][] = [["s-what", "What the Vault is"], ["s-find", "Finding games"], ["s-add", "Adding a game"], ["s-wants", "Picks and wants"], ["s-covers", "Covers"], ["s-reviews", "Reviews and scores"], ["s-moves", "How a game moves"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
+const NAV: [string, string][] = [["s-what", "What the Vault is"], ["s-find", "Finding games"], ["s-add", "Adding a game"], ["s-wants", "Picks and votes"], ["s-covers", "Covers"], ["s-reviews", "Reviews and scores"], ["s-moves", "How a game moves"], ["s-fair", "Fair play"], ["s-faq", "FAQ"]];
 const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
 // A cover the script fills from public/vault (data-vh-cover="status|any"); the mascot until then.
 const slot = (pick: string, extra = "", over = "") => `<span class="bt-cover${extra ? ` ${extra}` : ""}" data-vh-cover="${pick}"><span class="bt-cover-fallback" data-vh-mascot></span>${over}</span>`;
@@ -24,7 +24,7 @@ const STATUSES = [
   ["playing", "🎮", "Playing", "On stream right now. Boomer is somewhere in the middle of it.", `<div class="ai-scene vh-scene vh-scene--playing" aria-hidden="true">${slot("playing")}</div>`],
   ["finished", "🏁", "Finished", "Beaten on stream. Most get Boomer's score and a review.", `<div class="ai-scene vh-scene vh-scene--finished" aria-hidden="true">${dialHtml(9, { caption: "" })}</div>`],
   ["abandoned", "🪦", "Abandoned", "The ones that beat Boomer's patience. They can always come back.", `<div class="ai-scene vh-scene vh-scene--abandoned" aria-hidden="true">${slot("abandoned", "", '<span class="gv-tape">ABANDONED</span>')}</div>`],
-  ["wishlist", "🔖", "Wishlist", "Not played yet. Members can want them, and the most wanted rise.", `<div class="ai-scene vh-scene vh-scene--wishlist" aria-hidden="true">${slot("wishlist", "", '<span class="gv-stamp">6 want it</span>')}</div>`],
+  ["wishlist", "🔖", "Wishlist", "Not played yet. Members vote with Play this, Boomer!, and the most voted rise.", `<div class="ai-scene vh-scene vh-scene--wishlist" aria-hidden="true">${slot("wishlist", "", '<span class="gv-stamp">6 votes</span>')}</div>`],
 ] as const;
 // Each example returns real games on staging (checked against public/vault).
 const TIPS = [["🔤", "Typos are fine", "Try", "grany"], ["🔀", "Any word order", "Try", "fathom fears"], ["🏢", "Developers work too", "Try", "chilla"], ["🏷", "So do tags", "Try", "co-op"], ["🔗", "Share what you found", "The address keeps your search, filters and sort, so you can paste it in chat.", ""]];
@@ -40,28 +40,28 @@ const RULES = [
   ["🧩", "Full games only", "DLC, packs, bundles, updates and mods can't be added. Remakes, remasters and episodes are fine."],
   ["👻", "Real games only", "Cancelled or rumoured games can't be added."],
   ["🔞", "No adult sexual content", "Violence and gore are welcome. Sexual content isn't."],
-  ["🧷", "One game, one entry", "Adding a game that's already here counts as a want for it instead."],
+  ["🧷", "One game, one entry", "Adding a game that's already here counts as your vote for it instead."],
   ["🖐", "Five a day", "Members with a verified email can add up to 5 games a day."],
   ["🚫", "Picks that break the rules get hidden", "And the member who added it can't add games for 7 days."],
 ];
 const FAQS = [
   ["Why did my game go to a mod?", "The Vault couldn't tell for sure that it's a horror game, it's only on Steam so far, or you added it by hand. A mod takes a quick look, and you'll hear back either way."],
   ["Why can't I add DLC or a game pack?", "The Vault lists full games only, so each game has one entry. Add the main game instead. Remakes, remasters and episodes are fine."],
-  ["How do I get Boomer to play my pick?", "Get people to want it. Most wanted is one of the places Boomer looks when he plans streams. No promises, but it's how you get heard."],
+  ["How do I get Boomer to play my pick?", "Get people to tap Play this, Boomer! on it. Most wanted on stream is one of the places Boomer looks when he plans streams. No promises, but it's how you get heard."],
   ["Why does a game have the mascot as its cover?", "We couldn't find official art for it. If you have it, use Suggest a cover on the game's page; a mod checks it before it shows."],
   ["A game I added disappeared. What happened?", "A mod hid it because it broke a house rule. You'll see why in your notifications, and you can add games again after 7 days."],
   ["How are the hours and stream counts worked out?", "Automatically, from every stream that plays the game. Streams from before the site are counted too, added by Boomer."],
 ];
 const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</a><a class="bt-btn bt-btn--secondary bt-when-visitor" href="/account" data-signin="join" data-signin-title="${JOIN_TITLE}">Join free</a><button type="button" class="bt-btn bt-btn--secondary bt-when-signed-in" data-gv-add>${I.plusSm}Add a game</button>`;
 ---
-<VaultLayout title="How the Game Vault works" description="Every horror game on the channel in one vault: finding games, adding them, wants, covers, Boomer's reviews and the house rules." section="how">
+<VaultLayout title="How the Game Vault works" description="Every horror game on the channel in one vault: finding games, adding them, votes, covers, Boomer's reviews and the house rules." section="how">
   <TocLayout items={NAV}>
     <div class="ai-main vh-page" data-vh>
       <section class="ai-hero vh-hero--wall" aria-labelledby="h-hero">
         <div class="vh-wall" aria-hidden="true" data-vh-wall></div>
         <span class="ai-kicker">Game Vault</span>
         <h1 class="bt-title bt-title--hero" id="h-hero">Every horror game, in one vault</h1>
-        <p>Everything Boomer has played on stream, what he's playing now, and what he should play next. Members add games and push their favourites up the Most wanted list.</p>
+        <p>Everything Boomer has played on stream, what he's playing now, and what he should play next. Members add games and push their favourites up the Most wanted on stream list.</p>
         <div class="vh-counts" data-vh-counts hidden></div>
         <div class="ai-acts" set:html={acts} />
       </section>
@@ -105,18 +105,18 @@ const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</
         <div class="vh-facts">
           <div class="vh-fact"><span aria-hidden="true">✉️</span><div><b>Members with a verified email</b><p>Visitors can browse everything; joining is free.</p></div></div>
           <div class="vh-fact"><span aria-hidden="true">🖐</span><div><b>5 games a day</b><p>Games sent for a check only count once they're approved.</p></div></div>
-          <div class="vh-fact"><span aria-hidden="true">➕</span><div><b>Already there? You count</b><p>Adding a game that's in the Vault adds your want to it instead.</p></div></div>
+          <div class="vh-fact"><span aria-hidden="true">➕</span><div><b>Already there? You count</b><p>Already in the Vault, so your vote was added.</p></div></div>
         </div>
       </section>
 
       <section class="ai-sec" id="s-wants" aria-labelledby="h-s-wants">
-        <Fragment set:html={chapter(4, "s-wants", "Community picks and “I want this too”", "Games members add are community picks: they keep the name of whoever added them, even after Boomer plays them.")} />
+        <Fragment set:html={chapter(4, "s-wants", "Community picks and Play this, Boomer!", "Games members add are community picks: they keep the name of whoever added them, even after Boomer plays them.")} />
         <div class="vh-split">
-          <div class="vh-mw"><span class="bt-label">Most wanted (try it)</span><div class="bt-stack vh-mw-list" data-mwlist></div></div>
+          <div class="vh-mw"><span class="bt-label">Most wanted on stream (try it)</span><div class="bt-stack vh-mw-list" data-mwlist></div></div>
           <ul class="vh-points">
-            <li><span aria-hidden="true">💜</span><span><b>One want per member, per game.</b> Tap I want this too on any wishlist game, or add a game that's already there. Changed your mind? Tap it again.</span></li>
-            <li><span aria-hidden="true">🏆</span><span><b>Most wanted is ranked by wants.</b> The top games sit in the Most wanted shelf at the top of the Vault.</span></li>
-            <li><span aria-hidden="true">📅</span><span><b>Boomer checks it when he plans.</b> Most wanted is one of the places he looks when he picks what to stream next. No promises, but it's how you get heard.</span></li>
+            <li><span aria-hidden="true">💜</span><span><b>One vote per member, per game.</b> Tap Play this, Boomer! on any wishlist game, or add a game that's already there. Changed your mind? Tap Voted to take it back.</span></li>
+            <li><span aria-hidden="true">🏆</span><span><b>Most wanted on stream is ranked by votes.</b> The top games sit in the Most wanted on stream shelf at the top of the Vault.</span></li>
+            <li><span aria-hidden="true">📅</span><span><b>Boomer checks it when he plans.</b> Most wanted on stream is one of the places he looks when he picks what to stream next. No promises, but it's how you get heard.</span></li>
           </ul>
         </div>
       </section>
@@ -154,12 +154,12 @@ const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</
               <span class="vh-arrow" style="left:24%;width:18%"><span>Boomer streams it</span></span>
               <span class="vh-arrow" style="left:58%;width:18%"><span>He beats it, or gives up</span></span>
               <span class="vh-token" aria-hidden="true">{/* the story's cover */}<Fragment set:html={slot("any:2")} /></span>
-              <div class="vh-node is-lit" data-node="wishlist"><Fragment set:html={badge("wishlist")} /><p>Added by Boomer or a member. Members can want it.</p></div>
+              <div class="vh-node is-lit" data-node="wishlist"><Fragment set:html={badge("wishlist")} /><p>Added by Boomer or a member. Members can vote for it.</p></div>
               <div class="vh-node" data-node="playing"><Fragment set:html={badge("playing")} /><p>On stream. Streams and hours add up after each one.</p></div>
               <div class="vh-node" data-node="finished"><div class="vh-node-end"><Fragment set:html={badge("finished")} /><Fragment set:html={badge("abandoned")} /></div><p>Beaten, or given up on. Abandoned games can come back to Playing.</p></div>
             </div>
           </div>
-          <div class="vh-tick" aria-live="polite" data-tick><span data-tick-title>A game:</span> <b data-tick-status>Wishlist</b> · <b data-tick-streams>0</b> streams · <b data-tick-hours>0 h</b> on stream <span class="vh-tick-cap" data-tick-cap>Added to the Vault. Members start wanting it.</span></div>
+          <div class="vh-tick" aria-live="polite" data-tick><span data-tick-title>A game:</span> <b data-tick-status>Wishlist</b> · <b data-tick-streams>0</b> streams · <b data-tick-hours>0 h</b> on stream <span class="vh-tick-cap" data-tick-cap>Added to the Vault. Members start voting for it.</span></div>
         </div>
       </section>
 
@@ -191,7 +191,7 @@ const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</
 
       <section class="ai-cta" aria-labelledby="h-cta">
         <h2 id="h-cta">Ready to dig in?</h2>
-        <p class="bt-when-visitor">Browse every game now. Join free to add games and want your favourites.</p>
+        <p class="bt-when-visitor">Browse every game now. Join free to add games and vote for your favourites.</p>
         <p class="bt-when-signed-in">Every game Boomer has played, and the ones he should play next.</p>
         <div class="ai-acts" set:html={acts} />
       </section>

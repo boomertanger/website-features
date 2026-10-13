@@ -37,7 +37,7 @@ export const isEarly = (g: { releaseStatus?: string }) => g.releaseStatus === "e
 export function vcard(g: VCard, { key = true }: { key?: boolean } = {}) {
   let over = "";
   if (g.status === "abandoned") over += '<span class="gv-tape" aria-hidden="true">ABANDONED</span>';
-  if (g.status === "wishlist" && g.wanted) over += `<span class="gv-stamp" aria-hidden="true">${g.wanted} want it</span>`;
+  if (g.status === "wishlist" && g.wanted) over += `<span class="gv-stamp" aria-hidden="true">${g.wanted} ${g.wanted === 1 ? "vote" : "votes"}</span>`;
   if (g.score === 10) over += '<span class="gv-ribbon" aria-hidden="true">10/10</span>';
   // The hover panel follows the game: its verdict, else "No review yet" with a status line, else (wishlist) "Not played yet".
   const r = revealOf(g);

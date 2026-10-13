@@ -3,7 +3,7 @@
 // pointer, the score dial in Boomer's gold, the review, Every stream (a dot per stream sized by
 // its length; history from before the site as one hollow dot), about + the IGDB credit, facts,
 // where to play (the stores' own marks), and the stats. Community picks get the banner with
-// I want this too and, for staff, Hide; admins get Edit; a game with no cover offers
+// Play this, Boomer! and, for staff, Hide; admins get Edit; a game with no cover offers
 // "Suggest a cover". Round 3 N1 + P12: the banner's top bar has Back to the Vault (with a reminder of
 // the list you came from; it returns to that /games URL and scroll position) and the pager ("3 of 14",
 // ‹ › with a cover preview, the ← → keys), stepping through that same list in place: the banner
@@ -116,8 +116,8 @@ function hero(g: any) {
 function pickBanner(g: any) {
   if (g.origin !== "community") return "";
   const when = g.createdAt ? ` on ${shortDate(g.createdAt)}` : "";
-  const wanted = g.status === "wishlist" ? ` <b data-wanted>${g.wantedCount || 0} ${g.wantedCount === 1 ? "person wants" : "people want"}</b> Boomer to play it.` : "";
-  return `<div class="gv-pick-banner">${I.people}<span><b>Community pick</b> added by <b>@${esc(g.addedBy?.handle || "a member")}</b>${when}.${wanted}</span>${wantButton({ slug: g.slug, wanted: g.wantedCount || 0, status: g.status }, { big: true })}</div>`;
+  const wanted = g.status === "wishlist" ? ` <b data-wanted>${g.wantedCount || 0} ${g.wantedCount === 1 ? "vote" : "votes"}</b> for Boomer to play it.` : "";
+  return `<div class="gv-pick-banner">${I.people}<span><b>Community pick</b> added by <b>@${esc(g.addedBy?.handle || "a member")}</b>${when}.${wanted}</span>${wantButton({ slug: g.slug, title: g.title, wanted: g.wantedCount || 0, status: g.status }, { big: true })}</div>`;
 }
 
 function review(g: any) {
@@ -208,7 +208,7 @@ function render() {
   initWants(root!, (_slug, n) => {
     G.wantedCount = n;
     const el = root!.querySelector("[data-wanted]");
-    if (el) el.textContent = `${n} ${n === 1 ? "person wants" : "people want"}`;
+    if (el) el.textContent = `${n} ${n === 1 ? "vote" : "votes"}`;
   });
 }
 
@@ -265,7 +265,7 @@ async function boot() {
   setupNav(vault, slug);
   render();
   await loadStreams(slug);
-  onAuth(() => render());   // staff tools and the want button follow sign-in
+  onAuth(() => render());   // staff tools and the vote button follow sign-in
 }
 
 addEventListener("popstate", async () => {

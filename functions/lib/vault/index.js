@@ -4,7 +4,7 @@
 //
 //   vaultLookup               verified members   candidates for a name, Steam link or IGDB link
 //   vaultAddGame              verified members   the §3 checks, then added / queued / refused / already there
-//   vaultWant                 verified members   "I want this too" on a wishlist game
+//   vaultWant                 verified members   "Play this, Boomer!" (a vote) on a wishlist game
 //   vaultQueueList            mods, admins       the queue, with 10-minute signed previews of pending covers
 //   vaultReviewQueue          mods, admins       approve / reject / replace an add or a cover
 //   vaultHideGame             mods, admins       hide / unhide a community pick (hiding pauses the adder 7 days)
@@ -15,7 +15,7 @@
 //   vaultSweepPendingCovers   daily              removes pending uploads never submitted within 24 hours
 //   vaultRefresh              weekly             re-fetches unreleased and early-access games
 // (adminEditItem's new kind vaultGame is in edit.js; onStreamWritten is in lib/streams.)
-// Fun Factory events (type vault, docs/specs/fun-factory.md §4): want ("I want this too" turned on,
+// Fun Factory events (type vault, docs/specs/fun-factory.md §4): want ("Play this, Boomer!" turned on,
 // once per game per member ever), add (a member's game gets in, directly or approved from the
 // queue; never a rejected one), cover (a member's cover suggestion approved).
 //
@@ -211,7 +211,7 @@ module.exports = function vault(deps) {
     if (typeof slug !== "string" || !slug || typeof on !== "boolean") throw fail("invalid-argument", "slug and on are required.", "args");
     const g = await games.doc(slug).get();
     if (!g.exists || g.get("hidden") === true) throw fail("not-found", "That game isn't in the Vault.", "noGame");
-    if (g.get("status") !== "wishlist") throw fail("failed-precondition", "Only wishlist games can be wanted.", "notWishlist");
+    if (g.get("status") !== "wishlist") throw fail("failed-precondition", "Only wishlist games can get votes.", "notWishlist");
     const wantedCount = await store.setWant(slug, c.uid, on);
     await store.rebuildPublic();
     if (on) await factory.recordFactoryEvent(c.uid, "vault", { action: "want", slug }, `want-${slug}`, { keep: true });

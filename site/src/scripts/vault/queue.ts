@@ -94,7 +94,7 @@ async function act(kind: string) {
   busy = true;
   try {
     const r = await call<{ result: string; slug?: string }>("vaultReviewQueue", { id: q.id, decision: "approve" });
-    say(r.result === "duplicate" ? "It was already in the Vault, so it counted as a want." : "");
+    say(r.result === "duplicate" ? "Already in the Vault, so the member's vote was added." : "");
     refreshQueueCount();
     await next("approve");
   } catch (err) { say(messageFor(err)); }

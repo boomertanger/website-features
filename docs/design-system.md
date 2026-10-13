@@ -1512,15 +1512,15 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
 - **Routing.** Cloudflare Pages rewrites `/games/:slug` to the one client-rendered page
   `/games/view/` (`site/public/_redirects`, status 200); `/games/queue` is matched first and
   rewritten to itself.
-- **"I want this too" is remembered per browser.** The server never shows who wants what, so
-  the button remembers the games you pressed in this browser; pressing again elsewhere is
+- **"Play this, Boomer!" is remembered per browser.** The server never shows who voted for what, so
+  the button ("Voted" once pressed; tap again to remove the vote) remembers the games you pressed in this browser; pressing again elsewhere is
   harmless (the server counts each member once).
 - **Round 3** (`game-vault-round-3.html`, approved R4 S1 N1 P12; details in the spec's §9):
   - ~~The door opens all the way.~~ Superseded by the V3 hero (part 8, below).
   - **Shelves, then All games, always.** Shelves are highlights and only show with games; the full
-    grid always follows, so the page is never one row. **Most wanted is the exception**: it shows
-    whenever there's a wishlist game, ranked by wants (top 5, numerals) or, before anyone wants
-    anything, the 5 newest wishlist games with a nudge to be the first. Search and filters show
+    grid always follows, so the page is never one row. **Most wanted on stream is the exception**: it shows
+    whenever there's a wishlist game, ranked by votes (top 5, numerals) or, before anyone votes,
+    the 5 newest wishlist games with a nudge to be the first. Search and filters show
     just the grid.
   - **A game page knows the list you came from.** Back to the Vault returns to the same URL and
     scroll position; the pager and the Up next card step through that same list in place (the
@@ -1533,7 +1533,7 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
 - **Page redesign, part 8** (`game-vault-page.html`, approved V3 SH3 B1; details in the spec's §9):
   - **The door is replaced by V3, search + spotlight.** The hero is a wall of real covers behind the
     big search, its match strip and the counts, with a Now playing spotlight on the right (the top
-    Most wanted game when nothing is playing). Searching pauses the wall, greys the non-matches and
+    Most wanted on stream game when nothing is playing). Searching pauses the wall, greys the non-matches and
     lights the matches purple. This supersedes the door (R4) and the ledger; the door's code, CSS and
     sessionStorage mark are deleted.
   - **Filtering lives in a sticky bar under the hero**, under the GAMEVAULT bar (`.gp-fbar`, using
@@ -1550,7 +1550,7 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   - **M3, the phone hero keeps the wall.** Under 640px the cover wall fills the background behind the
     title, search and counts and fades to the page colour; there is no spotlight and no poster band
     (the M2 poster was built first and replaced). What's playing is the first shelf, Now playing, above
-    Most wanted. Desktop and tablet keep V3 (wall plus spotlight).
+    Most wanted on stream. Desktop and tablet keep V3 (wall plus spotlight).
   - **G1, section heads sit above the cards on the game page.** The same `.bt-section-head` as the
     /games shelves (compact `--sm`, with a `meta` note), not a second piece and not a title inside
     the card; the cards stay clean.

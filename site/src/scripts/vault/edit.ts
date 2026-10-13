@@ -104,7 +104,7 @@ export function openEditor(g: any, { onSaved }: { onSaved: () => void }) {
   // delete
   $("[data-delete]").addEventListener("click", () => confirmAction({
     title: `Delete ${g.title}?`,
-    message: "It's removed from the Vault with its cover, wants and updates. This can't be undone. A game that appears in any stream can't be deleted; set it to Abandoned instead.",
+    message: "It's removed from the Vault with its cover, votes and updates. This can't be undone. A game that appears in any stream can't be deleted; set it to Abandoned instead.",
     confirmLabel: "Delete game", busyLabel: "Deleting…", danger: true, feature: "game-vault",
     onConfirm: async () => {
       try { await call("vaultDeleteGame", { slug: g.slug }); }

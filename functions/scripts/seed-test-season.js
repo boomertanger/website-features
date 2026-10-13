@@ -6,7 +6,7 @@
 // days), live activity types only, XP from the idea library:
 //   Chapter 1 · Clock On
 //     Daily      Clock in (check in once, 10 XP) · Play a round (any Arcade run, 15 XP)
-//     Weekly     Splat run (finish Tap the Splat 3 times, 60 XP) · Wishlist voter (I want this too on 2 games, 50 XP)
+//     Weekly     Splat run (finish Tap the Splat 3 times, 60 XP) · Wishlist voter (Play this, Boomer! on 2 games, 50 XP)
 //     Story      Site tour (visit 3 sections, 100 XP)
 //     Milestone  Ten check-ins (100 XP)
 //   Chapter 2 · Static (unlocks in 2 days)
@@ -77,7 +77,7 @@ function plan(now) {
 
   campaign("weekly", { chapterId: "ch1", name: "This week", cadence: "weekly", opensAt: ts(now), order: 2, ...shown });
   activity("splat-run", { campaignId: "weekly", title: "Splat run", instructions: "Finish Tap the Splat 3 times.", link: "/arcade", typeId: "arcade", params: { action: "finish", gameId: "tapTheSplat" }, repeat: "weekly", target: 3, xp: 60, order: 1, ...shown });
-  activity("wishlist-voter", { campaignId: "weekly", title: "Wishlist voter", instructions: "Tap I want this too on 2 games on the wishlist.", link: "/games", typeId: "vault", params: { action: "want" }, repeat: "weekly", target: 2, xp: 50, order: 2, ...shown });
+  activity("wishlist-voter", { campaignId: "weekly", title: "Wishlist voter", instructions: "Tap Play this, Boomer! on 2 games on the wishlist.", link: "/games", typeId: "vault", params: { action: "want" }, repeat: "weekly", target: 2, xp: 50, order: 2, ...shown });
 
   campaign("tour", { chapterId: "ch1", name: "Site tour", cadence: "story", opensAt: ts(now), order: 3, ...shown });
   activity("site-tour", { campaignId: "tour", title: "Site tour", instructions: "Visit 3 sections of the site.", typeId: "visit", target: 3, xp: 100, order: 1, ...shown });
