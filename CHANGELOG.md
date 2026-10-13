@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions: apply-vault-reviews.js handles status-only entries (no score: sets the status, leaves the review alone), uses an optional "hint" (year, developer or publisher, Steam app id, store link; text after "not" ignored) only to choose between several candidates, and needs the words in the same order for a non-exact match (so "Road Of Fear" never matches "Fear of Road"); vault-reviews.json now has 34 entries, applied on staging (15 changed, 6 not found).
 data: vault-reviews.json gains four reviews (At Dead of Night, The Beast Inside, Blood Bear, Bloodwash), applied on staging.
 functions: scripts/apply-vault-reviews.js applies Boomer's Game Vault reviews from scripts/data/vault-reviews.json (status, review score, verdict and text, added Boomer tags) through adminEditItem's vaultGame path (lib/vault/edit.js now exposes applyEdit, the edit after the caller check; editVaultGame is unchanged), matching titles with shared/vault-search.js and skipping unclear ones; dry run by default, --apply writes, staging unless --project production.
 functions: contactSend logs every failed Turnstile check (reason, Cloudflare error-codes, hostname and action returned, whether siteverify was called, token length; never the token, secret, message or email); verifyTurnstile returns those diagnostics. site: /contact warns in the console when no Turnstile token arrived before sending.

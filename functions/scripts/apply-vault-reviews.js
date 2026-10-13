@@ -3,9 +3,12 @@
 //
 // Applies Boomer's Game Vault reviews from a JSON file (default functions/scripts/data/vault-reviews.json).
 // For each entry in "reviews" it finds the game by title with the Vault's forgiving matcher
-// (shared/vault-search.js; skipped and reported unless there's one clear match), then sets the status,
-// the review (score, verdict, body) and adds the entry's tags to the game's Boomer tags (existing tags
-// kept, same tag in another case not added twice). Every write goes through adminEditItem's vaultGame
+// (shared/vault-search.js; skipped and reported unless there's one clear match: an exact title, or one
+// close match with the words in the same order), then sets the status, the review (score, verdict, body)
+// and adds the entry's tags to the game's Boomer tags (existing tags kept, same tag in another case not
+// added twice). An entry without a score sets only its status (and tags, if listed); the review stays as
+// it is. An optional "hint" (year, developer, Steam app id, store link) only chooses between several
+// candidates; it never makes a match on its own. Every write goes through adminEditItem's vaultGame
 // path (functions/lib/vault/edit.js applyEdit): the same validation and conflict check, one adminLog
 // entry per game (actor "apply-vault-reviews.js"), the Latest updates event when a game becomes
 // finished, and the public/vault rebuild. "pending" entries are ignored.
@@ -52,14 +55,49 @@ function mergeTags(existing, add) {
   return out;
 }
 
-/** The one clear match for a title, or { why } when there isn't one. */
-function pick(S, index, title) {
-  const hits = S.search(index, title, { limit: 3 });
+/** The query's words appear in the game's title in the same order (a typo allowed in words of 5+ letters). */
+function inOrder(S, query, title) {
+  const q = S.normalize(query).split(" "), t = S.normalize(title).split(" ");
+  let at = 0;
+  for (const w of q) {
+    while (at < t.length && !(t[at] === w || (w.length >= 5 && S.editDistance(w, t[at], 1) <= 1))) at++;
+    if (at++ >= t.length) return false;
+  }
+  return true;
+}
+
+/** How well a game fits a hint: a point each for its Steam app id, a store link, its release year and a developer or publisher named
+ *  in the hint. Text after "not" is ignored ("the 2023 remake, not the 2008 original"). */
+function hintScore(S, hint, d) {
+  const h = String(hint).split(/\bnot\b/i)[0], hn = ` ${S.normalize(h)} `;
+  const g = d.data();
+  let n = 0;
+  if (g.ids?.steam && new RegExp(`\\b${g.ids.steam}\\b`).test(h)) n++;
+  const urls = (h.match(/https?:\/\/\S+/g) || []).map((u) => u.replace(/[).,']+$/, "").replace(/\/+$/, "").toLowerCase());
+  if (urls.some((u) => Object.values(g.links || {}).some((l) => String(l).toLowerCase().replace(/\/+$/, "").startsWith(u)))) n++;
+  const year = g.releaseDate?.toDate ? String(g.releaseDate.toDate().getUTCFullYear()) : null;
+  if (year && new RegExp(`\\b${year}\\b`).test(h)) n++;
+  if ([...(g.developers || []), ...(g.publishers || [])].some((p) => S.normalize(p) && hn.includes(` ${S.normalize(p)} `))) n++;
+  return n;
+}
+
+/** The one clear match for a title, or { why } when there isn't one. A hint only chooses between several candidates. */
+function pick(S, index, title, hint) {
+  const hits = S.search(index, title, { limit: 8 });
   if (!hits.length) return { why: "not found" };
-  const [a, b] = hits;
-  if (S.normalize(a.game.title) === S.normalize(title)) return { hit: a };
-  if (a.score < CLEAR_SCORE) return { why: `not found (closest: "${a.game.title}", ${a.score.toFixed(2)})` };
-  if (b && a.score - b.score < CLEAR_GAP) return { why: `unclear: "${a.game.title}" ${a.score.toFixed(2)} vs "${b.game.title}" ${b.score.toFixed(2)}` };
+  const exact = hits.filter((x) => S.normalize(x.game.title) === S.normalize(title));
+  const close = hits.filter((x) => x.score >= CLEAR_SCORE && inOrder(S, title, x.game.title));
+  const choose = (cands, label) => {
+    if (!hint) return { why: `${label}, no hint: ${cands.map((x) => `"${x.game.title}"`).join(", ")}` };
+    const ranked = cands.map((x) => ({ x, n: hintScore(S, hint, x.game.doc) })).sort((p, q) => q.n - p.n);
+    if (ranked[0].n > 0 && (ranked.length < 2 || ranked[0].n > ranked[1].n)) return { hit: ranked[0].x, viaHint: true };
+    return { why: `${label}, the hint doesn't pick one: ${cands.map((x) => `"${x.game.title}"`).join(", ")}` };
+  };
+  if (exact.length === 1) return { hit: exact[0] };
+  if (exact.length > 1) return choose(exact, "several games with this title");
+  if (!close.length) return { why: `not found${hits[0].score >= CLEAR_SCORE ? ` (closest: "${hits[0].game.title}", words in another order)` : ""}` };
+  const [a, b] = close;
+  if (b && a.score - b.score < CLEAR_GAP) return choose(close.filter((x) => a.score - x.score < CLEAR_GAP), "several close matches");
   return { hit: a };
 }
 
@@ -82,13 +120,17 @@ async function main() {
   const rows = [];
   let applied = 0, unchanged = 0, skipped = 0, failed = 0;
   for (const r of reviews) {
-    const row = { file: r.title, match: "", score: r.score, changes: "" };
+    const row = { file: r.title, match: "", score: `${r.score ?? "-"} / ${r.status || "-"}`, changes: "" };
     rows.push(row);
-    const m = pick(S, index, r.title);
+    const m = pick(S, index, r.title, r.hint);
     if (!m.hit) { skipped++; row.match = m.why; row.changes = "skipped"; continue; }
     const d = m.hit.game.doc, g = d.data();
-    row.match = `${g.title} (${d.id}, ${g.origin || "?"}, match ${m.hit.score.toFixed(2)})`;
-    const want = { status: r.status, review: { score: r.score, verdict: r.verdict || "", body: r.review || "" }, boomerTags: mergeTags(E.currentValue("boomerTags", g), r.tags || []) };
+    row.match = `${g.title} (${d.id}, ${g.origin || "?"}, match ${m.hit.score.toFixed(2)}${m.viaHint ? ", chosen by the hint" : ""})`;
+    // an entry without a score is status only: the review (and tags, unless listed) stay as they are
+    const want = {};
+    if (r.status) want.status = r.status;
+    if (r.score !== undefined && r.score !== null) want.review = { score: r.score, verdict: r.verdict || "", body: r.review || "" };
+    if (Array.isArray(r.tags) && r.tags.length) want.boomerTags = mergeTags(E.currentValue("boomerTags", g), r.tags);
     const changes = {}, before = {}, notes = [];
     try {
       for (const [f, v] of Object.entries(want)) {
@@ -110,7 +152,7 @@ async function main() {
     } catch (err) { failed++; row.changes += ` FAILED: ${err.message}`; }
   }
 
-  console.log("| Title in the file | Matched game | Score | Changes |\n|---|---|---|---|");
+  console.log("| Title in the file | Matched game | Score / status | Changes |\n|---|---|---|---|");
   for (const r of rows) console.log(`| ${r.file} | ${r.match} | ${r.score} | ${r.changes} |`);
   const pending = Array.isArray(data.pending) ? data.pending.length : 0;
   console.log(`\n${args.apply ? `Applied ${applied}` : `Would change ${rows.filter((r) => !/^(skipped|already|invalid)/.test(r.changes)).length}`}, unchanged ${unchanged}, skipped ${skipped}, failed ${failed}; ${pending} pending entr${pending === 1 ? "y" : "ies"} ignored.`);

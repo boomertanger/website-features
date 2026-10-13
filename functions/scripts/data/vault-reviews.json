@@ -168,12 +168,253 @@
         "Slasher",
         "Retro (PS1-style)"
       ]
+    },
+    {
+      "title": "The Cabin Factory",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Clock in. Inspect cabin. Run.",
+      "review": "Anomaly-spotting with a story: the dread of peering at every detail never lets up.",
+      "tags": [
+        "Short",
+        "Anomaly hunting",
+        "Walking sim"
+      ]
+    },
+    {
+      "title": "Clink",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Is it in her head or in the house? Yes.",
+      "review": "Quiet and unsettling: more mood than scares, but the uncertainty sticks with you.",
+      "tags": [
+        "Short",
+        "Psychological",
+        "Walking sim"
+      ]
+    },
+    {
+      "title": "The Convenience Store",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Restock the shelves. Ignore the man staring through the window.",
+      "review": "Short, simple and properly unsettling, with the low-key J-horror that made Chilla's Art famous.",
+      "tags": [
+        "Short",
+        "J-horror",
+        "Night shift"
+      ]
+    },
+    {
+      "title": "The Cursed Tape",
+      "status": "finished",
+      "score": 6,
+      "verdict": "A short tape with a few good scares.",
+      "review": "Effective while it lasts, but over before it really gets under your skin.",
+      "tags": [
+        "Short",
+        "VHS",
+        "Walking sim"
+      ]
+    },
+    {
+      "title": "Dead Space",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Cut off their limbs, not your lights. Space horror perfected.",
+      "review": "Motive rebuilt the Ishimura from the ground up and kept everything that mattered: the dismemberment, the dread, the silence of the vacuum. It's how a remake should be done, and as a fan who's finished every Dead Space, I'd call it the best way to play the original.",
+      "tags": [
+        "Sci-fi horror",
+        "Survival horror",
+        "Remake",
+        "Third person"
+      ],
+      "hint": "The 2023 remake by Motive Studio (Steam app 1693980), not the 2008 original"
+    },
+    {
+      "title": "Deadly Night",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Check in at the motel. Check out under the bed.",
+      "review": "A sleazy, nerve-shredding game of hide-and-seek with a killer, and Puppet Combo grime at its finest.",
+      "tags": [
+        "Slasher",
+        "Stealth",
+        "Retro (PS1-style)"
+      ]
+    },
+    {
+      "title": "Demonologist",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Bring friends, bring salt, bring a spare pair of pants.",
+      "review": "A great ghost-hunting game that's even better with a squad, though it borrows a lot from Phasmo.",
+      "tags": [
+        "Co-op",
+        "Ghost hunting",
+        "Exorcism"
+      ]
+    },
+    {
+      "title": "Devour",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Run. Scream. Hide. Burn the goats. Repeat.",
+      "review": "Chaotic, loud and endlessly replayable: one of the best co-op screamfests for a stream with friends.",
+      "tags": [
+        "Co-op",
+        "Jump scares",
+        "VR"
+      ]
+    },
+    {
+      "title": "Don't Scream",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The game that turned my chat into a library.",
+      "review": "Nobody breathes while you play this one, and that's the magic.",
+      "tags": [
+        "Microphone",
+        "Jump scares",
+        "Short"
+      ]
+    },
+    {
+      "title": "Evil Nun: The Broken Mask",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Shh. Sister Madeline is listening, and she brought her hammer.",
+      "review": "A polished mobile classic reborn for PC: tense, puzzle-packed and a great Granny alternative.",
+      "tags": [
+        "Hide and seek",
+        "Puzzle",
+        "Escape"
+      ]
+    },
+    {
+      "title": "Fears to Fathom - Home Alone",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The free horror game that started a franchise.",
+      "review": "Simple, grounded and terrifying because it feels real: one of the best free scares on Steam.",
+      "tags": [
+        "Short",
+        "Free",
+        "Episodic"
+      ]
+    },
+    {
+      "title": "Fears to Fathom - Norwood Hitchhike",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Small town, cheap motel, very bad decisions.",
+      "review": "Driving, hiding and keeping quiet into your mic: the episode where Fears to Fathom found its feet.",
+      "tags": [
+        "Episodic",
+        "Motel",
+        "Microphone"
+      ]
+    },
+    {
+      "title": "Fears to Fathom - Carson House",
+      "status": "finished",
+      "score": 7,
+      "verdict": "A hundred bucks to house-sit. Worst deal ever.",
+      "review": "Takes its time getting going, but the creeping feeling that you're not alone is pure Fears to Fathom.",
+      "tags": [
+        "Episodic",
+        "House-sitting",
+        "Slow burn"
+      ]
+    },
+    {
+      "title": "Fears to Fathom - Ironbark Lookout",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Alone in a fire tower. Not alone in the woods.",
+      "review": "The best Fears to Fathom yet: Firewatch's isolation turned into slow, creeping dread.",
+      "tags": [
+        "Episodic",
+        "Forest",
+        "Isolation"
+      ]
+    },
+    {
+      "title": "Fears to Fathom - Woodbury Getaway",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Book the cabin. Read the reviews first.",
+      "review": "The longest, most grown-up Fears to Fathom: less jump, more skin-crawling discomfort.",
+      "tags": [
+        "Episodic",
+        "Getaway",
+        "Slow burn"
+      ]
+    },
+    {
+      "title": "Road Of Fear",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Just a camping trip with the boys. Famous last words.",
+      "review": "Strong Fears to Fathom energy: good vibes around the fire, then a drive home you'll never forget.",
+      "tags": [
+        "Road trip",
+        "Driving",
+        "Indie (itch.io)"
+      ],
+      "hint": "By ZestosYt on itch.io: https://zestosyt.itch.io/roadoffear (listed as 'Fear of Road' in the import CSV)"
+    },
+    {
+      "title": "Find Yourself",
+      "status": "finished",
+      "score": 6,
+      "verdict": "An hour on the other side, and not one second to breathe.",
+      "review": "Intense and creepy; it throws jump scares at you so fast the tension never gets a chance to build.",
+      "tags": [
+        "Short",
+        "Psychological",
+        "Jump scares"
+      ]
+    },
+    {
+      "title": "Five Nights at Freddy's",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Watch the cameras. Close the doors. Pray the power lasts.",
+      "review": "A masterclass in tension from almost nothing; every flicker of the camera is a heart attack.",
+      "tags": [
+        "Point and click",
+        "Animatronics",
+        "Jump scares"
+      ],
+      "hint": "The original 2014 game by Scott Cawthon"
+    },
+    {
+      "title": "Five Nights at Freddy's 2",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Put the mask on. Wind the box. Don't look at the vent.",
+      "review": "More animatronics, more chaos; tougher than the first, and a bit more frustrating with it.",
+      "tags": [
+        "Point and click",
+        "Animatronics",
+        "Jump scares"
+      ]
+    },
+    {
+      "title": "Five Nights at Freddy's: Secret of the Mimic",
+      "status": "playing",
+      "note": "Not finished yet: set status to Playing, no score or review."
     }
   ],
   "pending": [
     {
       "title": "Granny Legacy",
       "note": "No game found under this name; ask Boomer who made it or where he played it."
+    },
+    {
+      "title": "Dead Space 2, Dead Space 3, Dead Space (2008)",
+      "note": "Boomer has finished every Dead Space; ask whether to add them to the Vault."
     }
   ]
 }
