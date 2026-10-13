@@ -148,3 +148,36 @@ export function search(index, query, { limit = 50 } = {}) {
   hits.sort((a, b) => b.score - a.score || String(a.game.title).localeCompare(String(b.game.title), "en"));
   return hits.slice(0, limit);
 }
+
+// ---------- tags ----------
+// IGDB tags (tags.auto) and Boomer's tags (tags.boomer) are one set everywhere: on cards, in the Tags
+// menu and its counts, in search, in the filter and on the game page. Tags compare without case or
+// extra spaces ("VR", "vr" and " Vr " are one tag); the first spelling seen is the one shown.
+
+/** The compare key of a tag: "  Walking  Sim " -> "walking sim". */
+export const tagKey = (t) => String(t ?? "").replace(/\s+/g, " ").trim().toLowerCase();
+
+/** Lists of tags merged into one, without repeats in another case: mergeTags(["VR"], ["vr", "Short"]) -> ["VR", "Short"]. */
+export function mergeTags(...lists) {
+  const out = [], seen = new Set();
+  for (const list of lists) for (const raw of list || []) {
+    const t = String(raw ?? "").replace(/\s+/g, " ").trim(), k = t.toLowerCase();
+    if (t && !seen.has(k)) { seen.add(k); out.push(t); }
+  }
+  return out;
+}
+
+/** True when the list has the tag, in any case. */
+export const hasTag = (tags, t) => (tags || []).some((x) => tagKey(x) === tagKey(t));
+
+/** The Tags menu: [{ tag, count }] over cards (each card's tags a list), one row per tag in any case, the most used
+ *  spelling shown; most used first, then A to Z. */
+export function tagSummary(cards) {
+  const rows = new Map();
+  for (const c of cards || []) for (const t of mergeTags(c.tags)) {
+    const k = tagKey(t), r = rows.get(k) || { count: 0, spellings: new Map() };
+    r.count++; r.spellings.set(t, (r.spellings.get(t) || 0) + 1); rows.set(k, r);
+  }
+  return [...rows.values()].map((r) => ({ tag: [...r.spellings].sort((a, b) => b[1] - a[1])[0][0], count: r.count }))
+    .sort((a, b) => b.count - a.count || a.tag.localeCompare(b.tag, "en"));
+}

@@ -5,7 +5,7 @@
 // else is local and writes nothing: the Most wanted list you can push around, the score dial, and one
 // game's story. Reduced motion: no drifting wall, no reordering slide, the story jumps to its end.
 import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
-import { buildIndex, search } from "../../../../shared/vault-search.js";
+import { buildIndex, search, hasTag } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { dialHtml, initDials } from "../../../../shared/ui/dial.js";
 import { litText } from "../../../../shared/ui/cmd.js";
@@ -46,7 +46,7 @@ async function boot() {
 // ---------- hero: counts and the cover wall (H2) ----------
 function counts() {
   const box = root!.querySelector<HTMLElement>("[data-vh-counts]")!;
-  const n = [[games.length, "games in the Vault"], [games.filter((g) => g.status === "finished").length, "finished"], [games.filter((g) => g.tags.includes("VR")).length, "played in VR"]] as const;
+  const n = [[games.length, "games in the Vault"], [games.filter((g) => g.status === "finished").length, "finished"], [games.filter((g) => hasTag(g.tags, "VR")).length, "played in VR"]] as const;
   const shown = n.filter(([v]) => v > 0);
   if (!shown.length) return;
   box.innerHTML = shown.map(([v, l]) => `<div><b data-count-to="${v}">${v}</b><small>${l}</small></div>`).join("");

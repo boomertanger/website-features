@@ -22,7 +22,7 @@ const GAMES = [
 
 (async () => {
   const src = fs.readFileSync(path.join(__dirname, "..", "..", "shared", "vault-search.js"), "utf8");
-  const { buildIndex, search, normalize, editDistance } = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
+  const { buildIndex, search, normalize, editDistance, tagKey, mergeTags, hasTag, tagSummary } = await import("data:text/javascript;base64," + Buffer.from(src).toString("base64"));
   const index = buildIndex(GAMES);
   const titles = (q) => search(index, q).map((h) => h.game.title);
   const first = (q) => titles(q)[0];
@@ -87,6 +87,18 @@ const GAMES = [
   assert.equal(editDistance("outlast", "outlsat"), 1);
   assert.equal(editDistance("abc", "xyz", 1), 2);
 
+  // Boomer tags are tags like IGDB's (the "VR" bug on Secret of the Mimic): one set, any case
+  const mimic = { title: "Five Nights at Freddy's: Secret of the Mimic", tags: { auto: ["First person", "Virtual Reality"], boomer: ["VR"] } };
+  const card = { ...mimic, tags: mergeTags(mimic.tags.auto, mimic.tags.boomer) };      // store.js card(): auto + boomer
+  assert.deepEqual(card.tags, ["First person", "Virtual Reality", "VR"]);
+  for (const q of ["VR", "vr", "Vr", " vR "]) assert.ok(hasTag(card.tags, q), q);       // the /games filter
+  assert.equal(search(buildIndex([mimic]), "vr")[0]?.game.title, mimic.title);         // search, from the doc's { auto, boomer }
+  assert.equal(search(buildIndex([card]), "VR")[0]?.game.title, mimic.title);          // search, from the card's list
+  assert.deepEqual(mergeTags(["VR", "Short"], ["vr", " short ", "Walking  sim"]), ["VR", "Short", "Walking sim"]);
+  assert.equal(tagKey("  Walking  Sim "), "walking sim");
+  const menu = tagSummary([card, { tags: ["vr", "Short"] }, { tags: ["VR", "VR"] }]);   // the Tags menu and its counts
+  assert.deepEqual(menu.find((t) => tagKey(t.tag) === "vr"), { tag: "VR", count: 3 });
+  assert.equal(menu.filter((t) => tagKey(t.tag) === "vr").length, 1);
   console.log("check-vault-search: ok");
 })().catch((err) => {
   console.error(err);

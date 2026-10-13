@@ -11,6 +11,7 @@
 // "‹ Previous". The list comes from scripts/vault/context.ts; a direct visit uses the whole Vault,
 // last streamed first.
 import { coverHtml, coverUrl } from "../../../../shared/ui/cover.js";
+import { mergeTags } from "../../../../shared/vault-search.js";
 import { backHtml, pagerHtml } from "../../../../shared/ui/pager.js";
 import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { initSpotlights } from "../../../../shared/ui/spotlight.js";
@@ -103,7 +104,9 @@ function tools(g: any) {
 function hero(g: any) {
   const t = totals(g);
   const art = coverUrl(g.cover);
-  const tags = (g.tags?.auto || []).slice(0, 4).map((x: string) => tag(x)).join("");
+  // Boomer's tags first, then IGDB's (no repeats in another case); IGDB tags fill up to four
+  const boomer = mergeTags(g.tags?.boomer);
+  const tags = mergeTags(boomer, g.tags?.auto).slice(0, Math.max(4, boomer.length)).map((x: string) => tag(x)).join("");
   const by = [g.developers?.[0], year(g.releaseDate)].filter(Boolean).join(", ");
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
   const dial = g.review?.score ? dialHtml(g.review.score) : "";

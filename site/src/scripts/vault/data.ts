@@ -3,6 +3,7 @@
 // A game page reads its own vaultGames/{slug}. All writes go through the callables.
 import { db, doc, getDoc, collection, getDocs, query, where, SITE_ID } from "../../lib/db";
 import { getCount } from "firebase/firestore/lite";
+import { mergeTags, tagSummary } from "../../../../shared/vault-search.js";
 
 export type Status = "playing" | "finished" | "abandoned" | "wishlist";
 export interface Cover { source: "igdb" | "steam" | "upload"; igdbImageId?: string; steamAppId?: string; url?: string; publicId?: string; byHandle?: string | null }
@@ -20,7 +21,10 @@ export interface Vault { games: VCard[]; tags: { tag: string; count: number }[];
 export async function loadVault(): Promise<Vault> {
   const snap = await getDoc(doc(db, "sites", SITE_ID, "public", "vault"));
   const d = snap.exists() ? snap.data() : null;
-  return { games: (d?.games as VCard[]) || [], tags: (d?.tags as Vault["tags"]) || [], count: d?.count || 0 };
+  // a card's tags are its IGDB and Boomer tags (store.js card()); one set without repeats in another case, and the
+  // Tags menu counted from the cards the same way (so "VR" and "vr" are one row)
+  const games = ((d?.games as VCard[]) || []).map((g) => ({ ...g, tags: mergeTags(g.tags) }));
+  return { games, tags: tagSummary(games), count: d?.count || games.length };
 }
 
 const ms = (v: any): number | null => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);

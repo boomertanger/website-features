@@ -10,7 +10,7 @@
 // newest wishlist games and a nudge to be the first. Searching lights the matching covers on the wall.
 // Leaving for a game stores the list you were in (scripts/vault/context.ts) for the game page's Back to
 // the Vault and previous / next, and coming back that way puts you at the same scroll position.
-import { buildIndex, search } from "../../../../shared/vault-search.js";
+import { buildIndex, search, hasTag, tagKey } from "../../../../shared/vault-search.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { initSegNav } from "../../../../shared/ui/seg-nav.js";
 import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
@@ -65,7 +65,7 @@ const filtering = () => !!(st.q.trim() || st.status !== "all" || st.tags.length 
 const count = (s: State["status"]) => V.games.filter((g) => s === "all" || g.status === s).length;
 function list(): VCard[] {
   let gs = V.games.filter((g) => (st.status === "all" || g.status === st.status) && (!st.picks || g.origin === "community")
-    && st.tags.every((t) => g.tags.includes(t)) && (!st.len || lenOf(g) === st.len));
+    && st.tags.every((t) => hasTag(g.tags, t)) && (!st.len || lenOf(g) === st.len));
   const q = st.q.trim();
   if (q) {
     const rank = new Map<string, number>();
@@ -121,7 +121,7 @@ function spotlight() {
   return { html, kind: playing[0] ? "playing" : "wanted" };
 }
 function heroCounts() {
-  const n = [[V.games.length, "games in the Vault"], [count("finished"), "finished"], [V.games.filter((g) => g.tags.includes("VR")).length, "played in VR"]] as const;
+  const n = [[V.games.length, "games in the Vault"], [count("finished"), "finished"], [V.games.filter((g) => hasTag(g.tags, "VR")).length, "played in VR"]] as const;
   const shown = n.filter(([v]) => v > 0);
   return `<div class="vh-counts"${shown.length ? "" : " hidden"}>${shown.map(([v, l]) => `<div><b data-count-to="${v}">${v}</b><small>${l}</small></div>`).join("")}</div>`;
 }
@@ -180,7 +180,7 @@ function tokensHtml() {
 
 function popover(kind: "tags" | "len") {
   if (kind === "tags") {
-    const tags = V.tags.map((t) => `<label class="bt-check"><input type="checkbox" data-tag="${esc(t.tag)}"${st.tags.includes(t.tag) ? " checked" : ""}><span>${esc(t.tag)}</span><span class="bt-popover-n">${t.count}</span></label>`).join("");
+    const tags = V.tags.map((t) => `<label class="bt-check"><input type="checkbox" data-tag="${esc(t.tag)}"${hasTag(st.tags, t.tag) ? " checked" : ""}><span>${esc(t.tag)}</span><span class="bt-popover-n">${t.count}</span></label>`).join("");
     return `<div class="bt-popover" role="group" aria-label="Tags">${tags || '<span class="bt-meta">No tags yet.</span>'}<div class="bt-popover-foot"><button type="button" class="bt-link-btn" data-clear-tags>Clear</button><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-close-menu>Show ${plural(list().length, "game")}</button></div></div>`;
   }
   const opts = [["", "Any length"], ...LENGTHS].map(([k, l]) => `<label class="bt-check"><input type="radio" name="gv-len" data-len="${k}"${st.len === k ? " checked" : ""}><span>${l}</span><span class="bt-popover-n">${k ? V.games.filter((g) => lenOf(g) === k).length : ""}</span></label>`).join("");
@@ -291,7 +291,7 @@ function toggleMenu(kind: "" | "tags" | "len") {
 
 /** Phones: Tags, Length, Community picks and Sort in a dialog (the bar has no room for them). */
 function openFilters() {
-  const tags = V.tags.map((t) => `<label class="bt-check"><input type="checkbox" data-f-tag="${esc(t.tag)}"${st.tags.includes(t.tag) ? " checked" : ""}><span>${esc(t.tag)}</span><span class="bt-popover-n">${t.count}</span></label>`).join("");
+  const tags = V.tags.map((t) => `<label class="bt-check"><input type="checkbox" data-f-tag="${esc(t.tag)}"${hasTag(st.tags, t.tag) ? " checked" : ""}><span>${esc(t.tag)}</span><span class="bt-popover-n">${t.count}</span></label>`).join("");
   const lens = [["", "Any length"], ...LENGTHS].map(([k, l]) => `<label class="bt-check"><input type="radio" name="gv-flen" data-f-len="${k}"${st.len === k ? " checked" : ""}><span>${l}</span></label>`).join("");
   const content = `${modalHeader("Filters")}
   <div class="bt-stack gv-fsheet" style="gap:18px">
@@ -306,7 +306,7 @@ function openFilters() {
   const sync = () => { show.textContent = `Show ${plural(list().length, "game")}`; };
   m.modal.addEventListener("change", (e) => {
     const el = e.target as HTMLInputElement;
-    if (el.dataset.fTag != null) st.tags = el.checked ? [...st.tags, el.dataset.fTag] : st.tags.filter((x) => x !== el.dataset.fTag);
+    if (el.dataset.fTag != null) st.tags = el.checked ? [...st.tags, el.dataset.fTag] : st.tags.filter((x) => tagKey(x) !== tagKey(el.dataset.fTag));
     else if (el.dataset.fLen != null) st.len = el.dataset.fLen;
     else if (el.dataset.fPicks != null) st.picks = el.checked;
     else if (el.dataset.fSort != null) st.sort = (el as unknown as HTMLSelectElement).value;
@@ -361,7 +361,7 @@ function wire() {
   root!.querySelector<HTMLSelectElement>("[data-sort]")!.addEventListener("change", (e) => { st.sort = (e.target as HTMLSelectElement).value; update(); });
   root!.addEventListener("change", (e) => {
     const el = e.target as HTMLInputElement;
-    if (el.dataset.tag != null) { st.tags = el.checked ? [...st.tags, el.dataset.tag] : st.tags.filter((x) => x !== el.dataset.tag); update(); }
+    if (el.dataset.tag != null) { st.tags = el.checked ? [...st.tags, el.dataset.tag] : st.tags.filter((x) => tagKey(x) !== tagKey(el.dataset.tag)); update(); }
     if (el.dataset.len != null) { st.len = el.dataset.len; update(); }
   });
   root!.addEventListener("click", (e) => {

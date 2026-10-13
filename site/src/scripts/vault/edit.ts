@@ -6,6 +6,7 @@
 import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
+import { hasTag } from "../../../../shared/vault-search.js";
 import { call } from "../../lib/call";
 import { messageFor, reasonOf } from "../../lib/errors";
 import { esc, STATUS, STATUS_KEYS } from "./ui";
@@ -73,13 +74,23 @@ export function openEditor(g: any, { onSaved }: { onSaved: () => void }) {
     tagBox.innerHTML = `${tags.map((t, i) => `<span class="bt-tag">${esc(t)}<button type="button" data-untag="${i}" aria-label="Remove ${esc(t)}">×</button></span>`).join("")}${tags.length < 12 ? '<input type="text" maxlength="30" placeholder="Add a tag" aria-label="Add a tag" data-newtag>' : ""}`;
   };
   tagBox.addEventListener("click", (e) => { const b = (e.target as Element).closest<HTMLElement>("[data-untag]"); if (b) { tags.splice(Number(b.dataset.untag), 1); drawTags(); } });
+  // a tag is added on Enter or a comma, when the box loses focus, and on Save (a typed tag is never dropped);
+  // the same tag in another case isn't added twice
+  const addTyped = (refocus: boolean) => {
+    const inp = tagBox.querySelector<HTMLInputElement>("[data-newtag]");
+    const t = (inp?.value || "").replace(/\s+/g, " ").trim();
+    if (!inp || !t) return;
+    if (!hasTag(tags, t) && tags.length < 12) tags.push(t);
+    drawTags();
+    if (refocus) tagBox.querySelector<HTMLInputElement>("[data-newtag]")?.focus();
+  };
   tagBox.addEventListener("keydown", (e) => {
     const inp = e.target as HTMLInputElement;
     if (!inp.matches("[data-newtag]") || (e.key !== "Enter" && e.key !== ",")) return;
     e.preventDefault();
-    const t = inp.value.replace(/\s+/g, " ").trim();
-    if (t && !tags.includes(t) && tags.length < 12) { tags.push(t); drawTags(); tagBox.querySelector<HTMLInputElement>("[data-newtag]")?.focus(); }
+    addTyped(true);
   });
+  tagBox.addEventListener("focusout", (e) => { if ((e.target as Element).matches("[data-newtag]")) addTyped(false); });
   drawTags();
 
   // cover
@@ -115,6 +126,7 @@ export function openEditor(g: any, { onSaved }: { onSaved: () => void }) {
     const review = score ? { score, verdict, body } : null;
     if (!score && (verdict || body)) return showErr("Pick a score to save a verdict or review (or clear them).");
     if (JSON.stringify(review) !== JSON.stringify(before.review)) changes.review = review;
+    addTyped(false);
     if (JSON.stringify(tags) !== JSON.stringify(before.boomerTags)) changes.boomerTags = tags;
     const ls = Number(val("lstreams") || 0), lh = Number(val("lhours") || 0), ll = val("llast");
     if (!Number.isInteger(ls) || ls < 0 || lh < 0) return showErr("Earlier streams and hours must be zero or more.");
