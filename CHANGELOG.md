@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+functions: scripts/apply-vault-reviews.js applies Boomer's Game Vault reviews from scripts/data/vault-reviews.json (status, review score, verdict and text, added Boomer tags) through adminEditItem's vaultGame path (lib/vault/edit.js now exposes applyEdit, the edit after the caller check; editVaultGame is unchanged), matching titles with shared/vault-search.js and skipping unclear ones; dry run by default, --apply writes, staging unless --project production.
 functions: contactSend logs every failed Turnstile check (reason, Cloudflare error-codes, hostname and action returned, whether siteverify was called, token length; never the token, secret, message or email); verifyTurnstile returns those diagnostics. site: /contact warns in the console when no Turnstile token arrived before sending.
 docs: ROADMAP marks Hotline Boom built on staging, real tests pending.
 docs: Talk Back recorded in design-system §8 (kit and color decisions); spec status and ROADMAP cite the approved mockups.

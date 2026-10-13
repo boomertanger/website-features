@@ -112,8 +112,12 @@ module.exports = function makeEditor({ store, deps }) {
   const db = admin.firestore();
 
   async function editVaultGame(request) {
-    const c = requireAdmin(await callerInfo(request));
-    const { id, changes, before = {}, reason = "" } = request.data || {};
+    return applyEdit(requireAdmin(await callerInfo(request)), request.data);
+  }
+
+  /** The edit itself, after the caller check: c is { uid, name } (a script passes uid null and its own name). */
+  async function applyEdit(c, data) {
+    const { id, changes, before = {}, reason = "" } = data || {};
     if (typeof id !== "string" || !id) throw fail("invalid-argument", "id is required.", "args");
     if (!changes || typeof changes !== "object" || Array.isArray(changes) || !Object.keys(changes).length) throw fail("invalid-argument", "changes is required.", "args");
     if (!before || typeof before !== "object") throw fail("invalid-argument", "before is required.", "args");
@@ -224,7 +228,8 @@ module.exports = function makeEditor({ store, deps }) {
     return { ok: true, changed: true, warnings };
   }
 
-  return { editVaultGame };
+  return { editVaultGame, applyEdit };
 };
 
 module.exports.validate = validate;
+module.exports.currentValue = currentValue;

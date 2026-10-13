@@ -1,0 +1,89 @@
+{
+  "note": "Boomer's Game Vault reviews, chosen with Claude. Apply with functions/scripts/apply-vault-reviews.js (staging first; production later with --project production).",
+  "updated": "2026-10-13",
+  "reviews": [
+    {
+      "title": "The Baby in Yellow",
+      "status": "finished",
+      "score": 7,
+      "verdict": "The cutest thing that ever tried to kill you.",
+      "review": "Short, silly and genuinely creepy in the right places, and it knows exactly when to stop.",
+      "tags": ["Short", "Comedy horror"]
+    },
+    {
+      "title": "Amanda the Adventurer",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Never trust a kids' show that knows your name.",
+      "review": "Sharp puzzles, a slow-burn mystery and Wooly the sheep: unsettling in a way few games manage.",
+      "tags": ["Puzzle", "Analog horror", "Short"]
+    },
+    {
+      "title": "Inferis: Dead Below",
+      "status": "finished",
+      "score": 5,
+      "verdict": "Atmosphere for days, scares for minutes.",
+      "review": "It looks the part, but at under an hour it's more mood piece than horror game. It was also the first game a studio gave me early access to, so it'll always have a place in the Vault.",
+      "tags": ["Short", "Psychological", "Walking sim"]
+    },
+    {
+      "title": "Joyville 2",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Summer camp, two timelines, zero happy campers.",
+      "review": "Clever past-and-present puzzles and a properly eerie camp; it builds nicely on the first one.",
+      "tags": ["Puzzle", "Mascot horror", "Time travel"]
+    },
+    {
+      "title": "Silent Breath",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Don't Scream's scarier, prettier cousin.",
+      "review": "Photoreal woods, a mic that punishes every yelp, and scares you can't predict. Pure stream fuel.",
+      "tags": ["Microphone", "Jump scares", "Found footage"]
+    },
+    {
+      "title": "Tales Beyond the Tomb - Pineville Night Stalker",
+      "status": "finished",
+      "score": 7,
+      "verdict": "A small town, a long night, and someone watching from the dark.",
+      "review": "Short, tense and grounded: the true-crime feel makes every noise outside the window land harder.",
+      "tags": ["Short", "True-crime horror", "Anthology"]
+    },
+    {
+      "title": "True Nightmare - Roadside Cafe",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Every order is weirder than the last. Tip your waitress.",
+      "review": "A cozy job that turns quietly menacing; the café routine makes the scares hit harder.",
+      "tags": ["Short", "VHS", "Night shift"]
+    },
+    {
+      "title": "9 Childs Street",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Never go into the neighbor's house. Especially at night.",
+      "review": "A short, sharp trip through a creepy house that does a lot with a flashlight, shadows and sound.",
+      "tags": ["Short", "Haunted house", "Walking sim"]
+    },
+    {
+      "title": "Amenti",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Say cheese. Something else in the tomb is smiling back.",
+      "review": "The camera mechanic is a great hook, and the tomb is gorgeous and genuinely unnerving.",
+      "tags": ["Short", "Photography", "Ancient Egypt"]
+    },
+    {
+      "title": "April 24th",
+      "status": "finished",
+      "score": 7,
+      "verdict": "One house, one night, a stack of tapes you shouldn't watch.",
+      "review": "Short and brutal: the VHS framing works, though it's more shock than story.",
+      "tags": ["Short", "VHS", "Found footage"]
+    }
+  ],
+  "pending": [
+    { "title": "Granny Legacy", "note": "No game found under this name; ask Boomer who made it or where he played it." }
+  ]
+}
