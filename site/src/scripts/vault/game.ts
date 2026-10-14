@@ -26,7 +26,7 @@ import { messageFor } from "../../lib/errors";
 import { loadGame, loadStreamsFor, loadVault, type StreamRow, type VCard, type Vault } from "./data";
 import { loadCtx, markRestore, byLastStreamed, DEFAULT_LABEL } from "./context";
 import { vaultIcon, I } from "./art";
-import { esc, badge, tag, hours, plural, longDate, shortDate, isEarly, metaLine, isPinned, UP_NEXT } from "./ui";
+import { esc, badge, tag, hours, plural, votesText, longDate, shortDate, isEarly, metaLine, isPinned, UP_NEXT } from "./ui";
 import { isStaff, isAdmin } from "./gate";
 import { wantButton, initWants } from "./wants";
 
@@ -117,7 +117,7 @@ function hero(g: any) {
 function pickBanner(g: any) {
   if (g.origin !== "community") return "";
   const when = g.createdAt ? ` on ${shortDate(g.createdAt)}` : "";
-  const wanted = g.status === "wishlist" ? ` <b data-wanted>${g.wantedCount || 0} ${g.wantedCount === 1 ? "vote" : "votes"}</b> for Boomer to play it.` : "";
+  const wanted = g.status === "wishlist" ? ` <b data-wanted>${votesText(g.wantedCount || 0)}</b> for Boomer to play it.` : "";
   return `<div class="gv-pick-banner">${I.people}<span><b>Community pick</b> added by <b>@${esc(g.addedBy?.handle || "a member")}</b>${when}.${wanted}</span>${wantButton({ slug: g.slug, title: g.title, wanted: g.wantedCount || 0, status: g.status }, { big: true })}</div>`;
 }
 
@@ -209,7 +209,7 @@ function render() {
   initWants(root!, (_slug, n) => {
     G.wantedCount = n;
     const el = root!.querySelector("[data-wanted]");
-    if (el) el.textContent = `${n} ${n === 1 ? "vote" : "votes"}`;
+    if (el) el.textContent = votesText(n);
   });
 }
 

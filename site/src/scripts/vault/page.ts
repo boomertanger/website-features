@@ -24,7 +24,7 @@ import site from "../../data/site.json";
 import { onAuth, getAuthState } from "../../lib/auth";
 import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, I } from "./art";
-import { esc, badge, vcard, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS, isPinned, pinnedFirst, UP_NEXT } from "./ui";
+import { esc, badge, vcard, plural, votesText, STATUS, STATUS_KEYS, lenOf, LENGTHS, isPinned, pinnedFirst, UP_NEXT } from "./ui";
 import { wantButton, initWants } from "./wants";
 import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 
@@ -212,8 +212,9 @@ function mostWantedGames() {
   return [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
 }
 // ---------- the phone hero's story card (option 1C; M3 under 640px only, docs/design/mockups/game-vault-phone-hero-story.html) ----------
-// Up to 4 To play games: Boomer's pinned "Up next" games first (oldest pin first), then the most-voted ones not already shown, badged with
-// their rank on the Most wanted on stream shelf. The kit's .bt-stories runs it (shared/ui/stories.js); the card is drawn here.
+// Up to 4 To play games: Boomer's pinned "Up next" games first (oldest pin first), then the ones with votes, most first, badged with
+// their rank on the Most wanted on stream shelf ("Most wanted #N"), then the newest To play games with no votes fill the spots ("To play").
+// The kit's .bt-stories runs it (shared/ui/stories.js); the card is drawn here.
 interface ToPlay { g: VCard; badge: string }
 const byVotes = (a: VCard, b: VCard) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0);
 function toPlayList(): ToPlay[] {
@@ -221,19 +222,21 @@ function toPlayList(): ToPlay[] {
   const shelfRank = mostWantedGames().filter((g) => g.wanted > 0);   // the shelf's own ranked order (it is unranked before anyone votes)
   const pins = wish.filter(isPinned).sort((a, b) => (a.pinnedAt || 0) - (b.pinnedAt || 0)).map((g) => ({ g, badge: "Up next" }));
   const rest = wish.filter((g) => !isPinned(g) && g.wanted > 0).sort(byVotes).map((g) => ({ g, badge: `Most wanted #${shelfRank.indexOf(g) + 1 || shelfRank.length + 1}` }));
-  const list = [...pins, ...rest].slice(0, 4);
-  // ?toplay=none|one|four: a preview on localhost and staging, never production
+  const newest = (a: VCard, b: VCard) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle);
+  const fill = wish.filter((g) => !isPinned(g) && !(g.wanted > 0)).sort(newest).map((g) => ({ g, badge: "To play" }));
+  const list = [...pins, ...rest, ...fill].slice(0, 4);
+  // ?toplay=none|one|four|fill: a preview on localhost and staging, never production (fill: as before anyone votes)
   const pv = isProduction ? null : new URLSearchParams(location.search).get("toplay");
   if (pv === "none") return [];
+  if (pv === "fill") return [...pins, ...fill].slice(0, 4).map((x) => ({ g: { ...x.g, wanted: 0 }, badge: x.badge }));
   if (pv === "one") return (list.length ? list : wish.slice(0, 1).map((g) => ({ g, badge: "Up next" }))).slice(0, 1);
-  if (pv === "four") {
-    const more = wish.filter((g) => !list.some((x) => x.g === g)).sort(byVotes);
-    const four = [...list, ...more.map((g) => ({ g, badge: "" }))].slice(0, 4);
-    return four.map((x, i) => ({ g: x.g, badge: x.badge || (i === 0 ? "Up next" : `Most wanted #${i}`) }));
+  if (pv === "four") {   // a pin, then three with votes (sample counts where the data has none yet)
+    const more = wish.filter((g) => !isPinned(g)).sort(byVotes).slice(0, 3).map((g, i) => ({ g: g.wanted > 0 ? g : { ...g, wanted: [31, 27, 19][i] }, badge: `Most wanted #${i + 1}` }));
+    return [...pins.slice(0, 1), ...more].slice(0, 4);
   }
   return list;
 }
-const votesHtml = (n: number) => `<b>${n}</b> ${n === 1 ? "vote" : "votes"}`;
+const votesHtml = (n: number) => (n > 0 ? `<b>${n}</b> ${n === 1 ? "vote" : "votes"}` : votesText(0));
 function toPlayCard({ g, badge }: ToPlay) {
   const href = `/games/${encodeURIComponent(g.slug)}`;
   return `<div class="gvs-card"><a class="gv-cover-tilt gvs-cover" href="${href}" tabindex="-1" aria-hidden="true">${coverHtml(g.cover, { tilt: true, alt: "" })}</a><div class="gvs-info"><span class="bt-badge bt-badge--gold">${esc(badge)}</span><a class="gvs-title" href="${href}">${esc(g.title)}</a><span class="gvs-votes" data-gvs-votes="${esc(g.slug)}">${votesHtml(g.wanted)}</span>${wantButton(g)}</div></div>`;

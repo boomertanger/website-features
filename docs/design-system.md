@@ -1590,7 +1590,8 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   only. The pin is set with the green admin "Pin to top" / "Unpin" button on the game page (spec §9).
   The UI Kit shows it on a cover card.
 - **The phone hero's story card (1C, Oct 14, 2026) is the kit's `.bt-stories`.** Under 640px only, below the M3 counts: pinned
-  "Up next" games, then the most-voted To play games (max 4), the card drawn by `scripts/vault/page.ts` (`.gvs-*` in
+  "Up next" games, then To play games with votes, most first ("Most wanted #N"), then the newest To play games with no votes
+  (gold "To play", "No votes yet"; never "0 votes", `votesText` in `scripts/vault/ui.ts`) (max 4), the card drawn by `scripts/vault/page.ts` (`.gvs-*` in
   `game-vault.css`). Gold for the badges, the story bars and the active small cover's ring; purple only on the vote button and
   focus. It steps back while searching, like the desktop spotlight. Spec §9 (M3).
 

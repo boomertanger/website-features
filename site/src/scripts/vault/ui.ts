@@ -28,6 +28,8 @@ export function shortDate(ms: number | null | undefined) {
 }
 export const longDate = (ms: number | null | undefined) => (ms ? new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
 export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+/** A To play game's votes: "No votes yet" (never "0 votes"), "1 vote", "N votes". */
+export const votesText = (n: number) => (n > 0 ? plural(n, "vote") : "No votes yet");
 
 /** The line under a card's title; a played game with no streams shows its time to beat, never "Not streamed yet". */
 export const metaLine = (g: VCard): string => cardMeta(g);

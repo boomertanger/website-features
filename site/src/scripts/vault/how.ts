@@ -11,7 +11,7 @@ import { dialHtml, initDials } from "../../../../shared/ui/dial.js";
 import { litText } from "../../../../shared/ui/cmd.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { loadVault, type VCard } from "./data";
-import { esc, badge, STATUS } from "./ui";
+import { esc, badge, STATUS, votesText } from "./ui";
 import { I } from "./art";
 
 const root = document.querySelector<HTMLElement>("[data-vh]");
@@ -121,7 +121,7 @@ function drawWants(bumped = "") {
   if (!mw.length) { box.innerHTML = '<p class="vh-none">The Vault didn\'t load.</p>'; return; }
   const before = new Map([...box.querySelectorAll<HTMLElement>("[data-mw]")].map((el) => [el.dataset.mw!, el.getBoundingClientRect().top]));
   const list = [...mw].sort((a, b) => b.n - a.n);
-  box.innerHTML = list.map((m, i) => `<div class="vh-mw-row" data-mw="${esc(m.slug)}"><span class="vh-mw-rank" style="--rk:${i < 3 ? `var(--bt-rank-${i + 1})` : "var(--bt-text-faint)"}" aria-label="Number ${i + 1}">${i + 1}</span>${coverHtml(m.cover, { alt: "", size: "sm" })}<span><b>${esc(m.title)}</b><small>${m.n} ${m.n === 1 ? "vote" : "votes"}${m.by ? ` · picked by @${esc(m.by)}` : ""}</small></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-want="${esc(m.slug)}" aria-pressed="${mine.has(m.slug)}"${mine.has(m.slug) ? ` aria-label="Remove your vote for ${esc(m.title)}"` : ""}>${I.heart}${mine.has(m.slug) ? "Voted" : "Play this, Boomer!"}</button></div>`).join("");
+  box.innerHTML = list.map((m, i) => `<div class="vh-mw-row" data-mw="${esc(m.slug)}"><span class="vh-mw-rank" style="--rk:${i < 3 ? `var(--bt-rank-${i + 1})` : "var(--bt-text-faint)"}" aria-label="Number ${i + 1}">${i + 1}</span>${coverHtml(m.cover, { alt: "", size: "sm" })}<span><b>${esc(m.title)}</b><small>${votesText(m.n)}${m.by ? ` · picked by @${esc(m.by)}` : ""}</small></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-want="${esc(m.slug)}" aria-pressed="${mine.has(m.slug)}"${mine.has(m.slug) ? ` aria-label="Remove your vote for ${esc(m.title)}"` : ""}>${I.heart}${mine.has(m.slug) ? "Voted" : "Play this, Boomer!"}</button></div>`).join("");
   box.querySelectorAll<HTMLElement>("[data-mw]").forEach((el) => {
     const d = (before.get(el.dataset.mw!) ?? 0) - el.getBoundingClientRect().top;
     if (!reduce() && before.size && d) el.animate([{ transform: `translateY(${d}px)` }, { transform: "none" }], { duration: 450, easing: "cubic-bezier(.2,.7,.2,1)" });
