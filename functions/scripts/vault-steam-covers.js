@@ -10,8 +10,9 @@
 // Which games: every game with a Steam app id that is Steam-only (no IGDB record; its cover was a Steam hotlink) or has
 // no cover at all. Games with no Steam app (added by hand) are listed and left coverless.
 // Which image: Steam's portrait library image (library_600x900, from IStoreBrowseService/GetItems, since newer apps keep
-// it under a hashed path), cropped to 3:4 on the way in (600x800, c_fill, g_auto); with no portrait, the header capsule,
-// padded to 600x800 over a blurred copy of itself (a header is too small to crop to 3:4).
+// it under a hashed path, sometimes named library_capsule), cropped to 3:4 on the way in (600x800, c_fill, g_auto). With no
+// portrait, the header capsule (header_2x, else header; else the store page's header_image), cropped to 3:4 from the centre
+// and scaled up to 600x800 (the card's frame shows the middle of it). A game gets nothing only when Steam has no art at all.
 //
 // Dry run by default (every game and the image it would use); --apply uploads and sets the covers. Staging unless
 // --project production is given.
@@ -28,7 +29,7 @@ const { adminLogEntry } = require("./import-vault");
 
 const STEAM_ASSETS = "https://shared.akamai.steamstatic.com/store_item_assets/";
 const PORTRAIT_T = "c_fill,g_auto,w_600,h_800";
-const HEADER_T = "c_pad,w_600,h_800,b_blurred:400:15";
+const HEADER_T = "c_fill,g_center,w_600,h_800";
 
 function parseArgs(argv) {
   const a = { project: "staging", apply: false, secretManager: false };
@@ -72,10 +73,14 @@ async function steamArt(appIds) {
     if (!res.ok) throw new Error(`Steam GetItems: HTTP ${res.status}`);
     for (const it of (await res.json()).response?.store_items || []) {
       const a = it.assets || {}, url = (file) => (file && a.asset_url_format ? STEAM_ASSETS + a.asset_url_format.replace("${FILENAME}", file) : null);
-      out[String(it.appid)] = { portrait: url(a.library_capsule_2x) || url(a.library_capsule), header: url(a.header) };
+      out[String(it.appid)] = { portraits: [url(a.library_capsule_2x), url(a.library_capsule)].filter(Boolean), headers: [url(a.header_2x), url(a.header)].filter(Boolean) };
     }
   }
   return out;
+}
+/** The store page's header_image, the last fallback when Steam's asset list has none. */
+async function storeHeader(appId) {
+  try { const r = await fetch(`https://store.steampowered.com/api/appdetails?appids=${appId}&filters=basic`); return (await r.json())?.[appId]?.data?.header_image || null; } catch { return null; }
 }
 const live = async (url) => { try { const r = await fetch(url, { method: "HEAD" }); return r.ok && /^image\//.test(r.headers.get("content-type") || ""); } catch { return false; } };
 
@@ -97,8 +102,9 @@ async function main() {
   const plan = [];
   for (const g of targets) {
     const a = art[String(g.ids.steam)] || {};
-    const portrait = a.portrait && (await live(a.portrait)) ? a.portrait : null;
-    const header = !portrait && a.header && (await live(a.header)) ? a.header : null;
+    const first = async (urls) => { for (const u of urls) if (u && (await live(u))) return u; return null; };
+    const portrait = await first(a.portraits || []);
+    const header = portrait ? null : await first([...(a.headers || []), await storeHeader(g.ids.steam)]);
     plan.push({ g, url: portrait || header, kind: portrait ? "portrait" : header ? "header" : null });
   }
   console.log(`\n${targets.length} game(s) get a Steam cover:`);
