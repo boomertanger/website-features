@@ -128,7 +128,7 @@ function playBody(st: PlayState, el: PlayHost): string {
   const join = `<button type="button" class="bt-btn bt-btn--primary" data-signin="join" data-signin-title="Join free to play Hot Seat">Join free to play</button>`;
   const phase = d.phase;
   if (!member) return `<div class="lhs-me"><span class="lhs-hot">${FLAME}</span><h3>Hot Seat is on</h3>${card}<p>Three members answer the same card; everyone checked in votes. The winner gets 25 XP.</p>${join}</div>`;
-  if (phase === "over") return `<div class="lhs-me"><span class="lhs-hot">${FLAME}</span><h3>That's Hot Seat for tonight</h3><p>Thanks for playing. Your XP is in your trophy case.</p></div>`;
+  if (phase === "over") return `<div class="lhs-me"><span class="lhs-hot">${FLAME}</span><h3>That's Hot Seat for tonight</h3><p>Thanks for playing. Your XP is already on your level.</p></div>`;
   if (phase === "void") return `<div class="lhs-me">${mascotHtml()}<h3>Not enough players this round</h3><p>The next card comes up when the Captain is ready.</p>${vol}</div>`;
   if (phase === "starting" || phase === "waiting") return `<div class="lhs-me"><span class="lhs-hot">${FLAME}</span><h3>Hot Seat is on</h3>${card}<p>Three players are about to be picked from everyone checked in this beat.</p>${closeLine(run, "until the pick")}${vol}</div>`;
   if (phase === "accept") {

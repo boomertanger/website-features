@@ -8,6 +8,7 @@ import type { Report } from "./data";
 import { S } from "./store";
 import { isPreview } from "./gate";
 import { esc, mine, bugFinder, stamp, longDate, plural } from "./ui";
+import { badgeAlertButtons, badgeHref } from "../trophies/links";
 
 const seen = seenOnce("bt.bugs.seen");
 let showing = false;
@@ -30,8 +31,8 @@ export async function runMoments() {
     for (const r of list) {
       if (CONFIRMED_LIKE.includes(r.status) && !seen.has(`c:${r.id}`)) {
         if (!isPreview()) seen.add(`c:${r.id}`);
-        const go = await show(`${modalHeader("Your bug was confirmed", "Night Shift counts it toward Exterminator.")}<div class="bz-moment"><span data-art>${bugFinder(96, "Bug Finder")}</span><h3>You earned Bug Finder</h3><p>The team reproduced “${esc(r.title)}”. It's on the list to fix. +25 XP.</p></div><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Nice</button><a class="bt-btn bt-btn--primary" href="/trophies" data-go>See your trophy case</a></div>`, "var(--bt-gold)");
-        if (go === "go") location.href = "/trophies";
+        const go = await show(`${modalHeader("Your bug was confirmed", "Night Shift counts it toward Exterminator.")}<div class="bz-moment"><span data-art>${bugFinder(96, "Bug Finder")}</span><h3>You earned Bug Finder</h3><p>The team reproduced “${esc(r.title)}”. It's on the list to fix. +25 XP.</p></div><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Nice</button>${badgeAlertButtons("bug-finder", { goAttr: "data-go" })}</div>`, "var(--bt-gold)");
+        if (go === "go") location.href = badgeHref("bug-finder");
       }
       if (r.status === "fixed" && !seen.has(`f:${r.id}`)) {
         if (!isPreview()) seen.add(`f:${r.id}`);

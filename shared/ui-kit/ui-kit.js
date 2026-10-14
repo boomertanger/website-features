@@ -1041,6 +1041,10 @@ function init() {
   menu = initAdminMenu(preview);
   initRowSpotlight(mount);
   mount.querySelectorAll("[data-kit-seg]").forEach((n) => initSegNav(n));
+  // the flip card section: the second card shows .is-spotlight (held on); the link plays it again
+  const spotCard = () => mount.querySelectorAll(".bt-flip-grid .bt-flip")[1];
+  spotCard()?.classList.add("is-spotlight");
+  mount.querySelector("[data-kit-spot]")?.addEventListener("click", () => { const c = spotCard(); if (!c) return; c.classList.remove("is-spotlight"); void c.offsetWidth; c.classList.add("is-spotlight"); });
   // the sticky seg nav demo: .is-stuck once the bar reaches the top of its box (as the Vault's filter bar does on the page)
   mount.querySelectorAll("[data-kit-stick]").forEach((box) => { const bar = box.querySelector(".kit-stick-bar"), hero = box.querySelector(".kit-stick-hero"); box.addEventListener("scroll", () => bar.classList.toggle("is-stuck", box.scrollTop >= hero.offsetHeight), { passive: true }); });
   mount.querySelectorAll("[data-kit-toc]").forEach((n) => initToc(n, { observe: false }).set(+n.dataset.kitToc));
@@ -1189,7 +1193,7 @@ function storyKitHtml() {
   <section class="kit-section" id="kit-story-pieces">
     <h2 class="kit-h">Flip card, placard and chat</h2>
     <p class="kit-p">Promoted from the Arcade's How it works (the Trophy Room is the second page to use them). Same look and behaviour; under reduced motion the flip cross-fades, the bulbs and typing dots stop.</p>
-    <p class="kit-sub">Flip card: .bt-flip (hover or focus turns it; a tap toggles .is-flipped, shared/ui/flip-card.js) in a .bt-flip-grid (4 columns, 2 at 900px). Tones --red --gold --teal --primary</p>
+    <p class="kit-sub">Flip card: .bt-flip (hover or focus turns it; a tap toggles .is-flipped, shared/ui/flip-card.js) in a .bt-flip-grid (4 columns, 2 at 900px). Tones --red --gold --teal --primary. .is-spotlight (the second card, held on here): the card a deep link points to, a gold ring and glow that pulses twice and settles; under reduced motion a steady gold outline. <button type="button" class="bt-link-btn" data-kit-spot>Spotlight it again</button></p>
     <div class="bt-flip-grid">${flip("red", "🩸", "Splat finisher", "Finished Tap the Splat", "Finish Tap the Splat once.", "Unlocks pitching")}${flip("gold", "🏆", "Top 10", "Reached a top 10", "Place in an all-time top 10.", "Contest entry")}${flip("teal", "💡", "Idea shipped", "Your idea made it", "Post an idea that ships.", "Credited in notes")}${flip("primary", "🗝", "Keeper", "Led a version", "Take a version to release.", "Forever on profile")}</div>
     <p class="kit-sub">Placard: .bt-placard with .bt-placard-head (blinking bulbs) over ol.bt-placard-list of li.bt-placard-rule (.bt-placard-n numeral, b, text); one column at 640px</p>
     <div class="bt-placard"><div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div><ol class="bt-placard-list">${rules.map(([ic, t, d], i) => `<li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">${String(i + 1).padStart(2, "0")}</span><b>${t} <span aria-hidden="true">${ic}</span></b><span>${d}</span></li>`).join("")}</ol></div>

@@ -7,6 +7,7 @@
 //   handles/{handle}                                 handle -> uid (public)
 import type { BadgeDoc, Held } from "./card";
 import { onAuth, type AuthState } from "../../lib/auth";
+import { isProduction } from "../../lib/env.js";
 
 export interface Collection { id: string; name: string; icon: string; blurb: string; order: number; crewOnly: boolean }
 export interface Trophy { id: string; kind: string; place: number | null; label: string; period: string; earnedAt: Date | null }
@@ -63,6 +64,7 @@ function sortCatalog({ collections, badges }: { collections: Collection[]; badge
 
 /** The badges a member holds: badgeId -> { earnedAt, serial }. */
 export async function loadHeld(uid: string): Promise<Map<string, Held>> {
+  if (uid === PREVIEW_UID) return previewHeld();
   const { db, collection, getDocs, SITE_ID } = await lib();
   const snap = await getDocs(collection(db, "sites", SITE_ID, "profiles", uid, "badges"));
   return new Map(snap.docs.map((d) => { const x = d.data(); return [d.id, { earnedAt: toDate(x.earnedAt), serial: Number.isFinite(x.serial) ? x.serial : null }]; }));
@@ -106,6 +108,47 @@ export async function uidForHandle(handle: string): Promise<string | null> {
 
 /** Mods and admins see the Crew collection. */
 export const isCrew = (roles: string[], isAdmin: boolean) => isAdmin || roles.includes("mod") || roles.includes("admin");
+
+// ---------- preview (localhost and staging only, signed out) ----------
+// ?as=member|crew|admin draws /trophies and /account#rewards for a sample member, so the badge deep links (?badge=, ?pin=) can be tried
+// without an account: every third badge of the catalog is held (never a secret or a Crew badge), the first two held are pinned (?pins=N
+// pins N instead; ?pins=full fills the trophy case). Nothing is ever written: the Rewards tab's Save stays local in the preview.
+export const PREVIEW_UID = "preview-member";
+const previewShowcase: string[] = [];
+export function previewMember(): AuthState | null {
+  if (isProduction) return null;
+  const as = new URLSearchParams(location.search).get("as");
+  if (as !== "member" && as !== "crew" && as !== "admin") return null;
+  const roles = as === "admin" ? ["admin", "mod"] : as === "crew" ? ["mod"] : [];
+  return { status: "verified", user: { uid: PREVIEW_UID }, account: null, roles, isAdmin: as === "admin",
+    profile: { handle: "preview", displayName: "Preview member", xp: 2400, showcase: previewShowcase } } as unknown as AuthState;
+}
+async function previewHeld(): Promise<Map<string, Held>> {
+  const { badges } = await loadCatalog();
+  const mine = badges.filter((b, i) => i % 3 === 0 && !b.secret?.hint && !b.crewOnly);
+  if (!previewShowcase.length) {
+    const want = new URLSearchParams(location.search).get("pins");
+    const n = want === "full" ? 6 : want != null && Number.isFinite(Number(want)) ? Number(want) : 2;
+    previewShowcase.push(...mine.slice(0, n).map((b) => b.id));
+  }
+  return new Map(mine.map((b, i) => [b.id, { earnedAt: new Date(Date.now() - (i + 1) * 86400000), serial: i + 1 }]));
+}
+/** onMember, or (localhost and staging, signed out) the preview member: the members-only pages show for it. */
+export function onMemberOrPreview(fn: (s: AuthState) => void) {
+  const pv = previewMember();
+  let done = false;
+  const off = onAuth((s) => {
+    if (done) return;
+    const member = !!s.user && (s.status === "verified" || s.status === "unverified");
+    if (!member && !(pv && s.status === "signedOut")) return;
+    done = true;
+    queueMicrotask(() => off());
+    if (member) return fn(s);
+    document.body.dataset.authState = "verified";   // the Trophy Room's members-only frame shows its page
+    document.querySelectorAll<HTMLElement>("[data-acct-when]").forEach((el) => { el.hidden = el.dataset.acctWhen !== "member"; });   // /account
+    fn(pv!);
+  });
+}
 
 /** Runs fn once, as soon as a signed-up member (verified or not) is signed in. */
 export function onMember(fn: (s: AuthState) => void) {

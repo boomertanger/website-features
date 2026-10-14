@@ -17,6 +17,7 @@ import { I, bigFlask, mascot } from "./art";
 import { handleVote } from "./vote";
 import { authorText, fillAuthors } from "../boards/profiles";
 import { openIdea } from "./idea";
+import { badgeAlertButtons } from "../trophies/links";
 
 const root = document.querySelector<HTMLElement>("[data-fl]");
 const viewMemory = viewPref("bt.lab.view", "list", "road"), shippedSeen = seenOnce("bt.lab.shippedSeen");
@@ -68,7 +69,7 @@ function shippedMoment() {
     if (!isPreview()) shippedSeen.add(mine.id);
   }
   box.hidden = false;
-  box.innerHTML = `<div class="fl-ship" data-burst><span class="fl-ship-art">${architect(74, "The Architect, Epic")}${stamp("Shipped", "", "", "lime", "sm")}</span><div><h3>Your idea shipped</h3><p>"${esc(mine.title)}" is live. You earned <b>The Architect</b> (Epic, +100 XP).</p><div class="fl-ship-acts"><a class="bt-btn bt-btn--primary bt-btn--sm" href="/trophies">See it in your trophy case</a><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-ship-close>Close</button></div></div></div>`;
+  box.innerHTML = `<div class="fl-ship" data-burst><span class="fl-ship-art">${architect(74, "The Architect, Epic")}${stamp("Shipped", "", "", "lime", "sm")}</span><div><h3>Your idea shipped</h3><p>"${esc(mine.title)}" is live. You earned <b>The Architect</b> (Epic, +100 XP).</p><div class="fl-ship-acts">${badgeAlertButtons("architect", { size: "sm" })}<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-ship-close>Close</button></div></div></div>`;
   burst(box.querySelector<HTMLElement>("[data-burst]"));
 }
 

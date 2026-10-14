@@ -8,13 +8,14 @@ import { collection, getDocs, getDoc, doc, query, orderBy, limit } from "firebas
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { onAuth } from "../../lib/auth";
+import { badgeHref } from "../trophies/links";
 
 const tile = document.querySelector<HTMLElement>("[data-updates]");
 const POLL_MS = 60_000, ROWS = 5;
 const ICON: Record<string, string> = { "now-playing": "🎮", finished: "🏁", "games-added": "🗝️" };
 const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-interface Ev { id: string; feature?: string; type?: string; summary?: string; link?: string; createdAt?: { toMillis(): number }; count?: number; titles?: string[]; covers?: any[]; gameId?: string }
+interface Ev { id: string; feature?: string; type?: string; summary?: string; link?: string; badgeId?: string; createdAt?: { toMillis(): number }; count?: number; titles?: string[]; covers?: any[]; gameId?: string }
 let covers: Map<string, any> | null = null;      // the Vault's covers, read once (public/vault) when an event needs one
 let last: Map<string, Ev> = new Map();
 let timer = 0;
@@ -42,7 +43,8 @@ async function vaultCovers(db: any) {
 
 function row(e: Ev, prev: Ev | undefined) {
   const ms = e.createdAt?.toMillis?.();
-  const href = e.link && e.link.startsWith("/") ? e.link : "";
+  const link = e.type === "badge-earned" && e.badgeId ? badgeHref(e.badgeId) : e.link;   // the catalog, on that badge
+  const href = link && link.startsWith("/") ? link : "";
   const open = (cls: string) => (href ? `<a class="${cls}" href="${esc(href)}" data-ev="${esc(e.id)}">` : `<div class="${cls}" data-ev="${esc(e.id)}">`);
   const close = href ? "</a>" : "</div>";
   if (e.feature === "game-vault" && e.type === "games-added") {

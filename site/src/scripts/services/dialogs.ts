@@ -10,6 +10,7 @@ import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { getAuthState } from "../../lib/auth";
 import { messageFor, reasonOf } from "../../lib/errors";
 import { gate, my, serviceOf, ratingOf, checksOf, rate, test, watchBadges, toPick, toValue, BADGES, type Pick, type Service } from "./data";
+import { badgeAlertButtons } from "../trophies/links";
 
 const FEATURE = "services";
 const JOIN = "Join free to rate";
@@ -37,7 +38,7 @@ function celebrate(ids: string[]) {
     content: modalHeader(full ? "Every core service rated" : "New badge")
       + `<div class="sv-celebrate"><div class="sv-stampbox">${stampHtml({ kicker: "Badge", label: b.name, sub: full ? "All rated" : "", tone: full ? "lime" : "" })}</div>`
       + `<p>${esc(b.line)}${others.length ? ` Also: ${esc(others.join(", "))}.` : ""} It's in your Trophy Room.</p></div>`
-      + `<div class="bt-modal-actions"><a class="bt-btn bt-btn--secondary" href="/trophies">Trophy Room</a><button type="button" class="bt-btn bt-btn--primary" data-bt-close>Nice</button></div>`,
+      + `<div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--ghost" data-bt-close>Nice</button>${badgeAlertButtons(main)}</div>`,
   });
 }
 /** Run a save, then watch for the badges it pays (captured before, so a fast trigger still counts). */

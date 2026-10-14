@@ -83,9 +83,9 @@ async function clockItem(uid: string, live: boolean) {
       st = { current: r.streak.current, lastCheckIn: r.day, at: Date.now() };
       try { sessionStorage.setItem(`ff-streak-${uid}`, JSON.stringify(st)); } catch { /* not cached */ }
       if (r.streak.badges.length) {
-        const { loadCatalog } = await import("../trophies/data");
+        const [{ loadCatalog }, { badgeHref }] = await Promise.all([import("../trophies/data"), import("../trophies/links")]);
         const names = await loadCatalog().then((c) => new Map(c.badges.map((x) => [x.id, x.name]))).catch(() => new Map<string, string>());
-        for (const id of r.streak.badges) toast(`New badge: ${names.get(id) || "a streak badge"}`);
+        for (const id of r.streak.badges) toast(`New badge: ${names.get(id) || "a streak badge"}`, { action: { label: "See your badge", onClick: () => { location.href = badgeHref(id); } } });
       }
       if (r.streak.spent) toast(`A streak saver covered ${r.streak.spent === 1 ? "a missed day" : `${r.streak.spent} missed days`}. Your streak lives on.`, { kind: "info" });
       if (r.streak.earnedSaver) toast("7 days in a row: you earned a streak saver.");

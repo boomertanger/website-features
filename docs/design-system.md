@@ -805,7 +805,10 @@ became their second user; `docs/specs/rewards.md` §12). Same look and behaviour
   turns it; a tap toggles `.is-flipped` (`shared/ui/flip-card.js` `initFlipCards(root)`). Tones
   `--red` `--gold` `--teal` `--primary`, or set `--c`. `.bt-flip-grid`: four columns, two at
   ≤ 900px. Give the button an `aria-label` with both sides (the faces are `aria-hidden`). Reduced
-  motion: it cross-fades to the back.
+  motion: it cross-fades to the back. `.is-spotlight`: the card a deep link points to (`/trophies?badge=<id>`,
+  `/account?pin=<id>#rewards`): a gold ring and glow (`--bt-title`, `--bt-gold`) that pulses twice and settles; the
+  page removes it after about 2.4 s. Reduced motion: a steady gold outline, no animation. Focus the card with
+  `focus({ preventScroll: true, focusVisible: false })` so it is focused without turning over.
 - **Placard: `.bt-placard`**, an arcade cabinet's instruction placard: `.bt-placard-head` (two
   blinking bulbs, a lit title) over `ol.bt-placard-list` of `li.bt-placard-rule`
   (`.bt-placard-n` outlined numeral, `b`, text); one column at ≤ 640px.

@@ -20,6 +20,7 @@ import { medalHtml } from "../../../../shared/ui/medal.js";
 import { toast } from "../../../../shared/ui/toast.js";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
 import site from "../../data/site.json";
+import { badgeHref } from "../trophies/links";
 
 const esc = (v: unknown) => escapeHtml(String(v ?? ""));
 const root = document.querySelector<HTMLElement>("[data-pass]")!;
@@ -293,7 +294,7 @@ async function clockIn(btn: HTMLButtonElement) {
   try {
     const r = await call<{ day: string; streak: { current: number; best: number; savers: number; saversCap: number; already: boolean; spent: number; earnedSaver: boolean; badges: string[] }; completed: string[] }>("factoryCheckIn", {});
     M.streak = { ...M.streak, current: r.streak.current, best: r.streak.best, savers: r.streak.savers, saversCap: r.streak.saversCap, lastCheckIn: r.day };
-    for (const id of r.streak.badges) toast(`New badge: ${M.badges.get(id)?.name || "a streak badge"}`);
+    for (const id of r.streak.badges) toast(`New badge: ${M.badges.get(id)?.name || "a streak badge"}`, { action: { label: "See your badge", onClick: () => { location.href = badgeHref(id); } } });
     if (r.streak.spent) toast(`A streak saver covered ${r.streak.spent === 1 ? "a missed day" : `${r.streak.spent} missed days`}. Your streak lives on.`, { kind: "info" });
     if (r.streak.earnedSaver) toast("7 days in a row: you earned a streak saver.");
     if (!r.streak.already) toast(`Punched in. ${plural(r.streak.current, "day")} in a row.`);
