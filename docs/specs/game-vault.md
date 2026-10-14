@@ -248,10 +248,9 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   (from `public/vault`; 8 columns, 5 on phones; skipped with fewer than 8 covers) drifts behind
   the hero. Left: kicker, title, line, the big search ("Search N games…", N from the summary), the
   match strip, a hint line ("Try “granny”, “vr”…" using only examples that match something) and
-  the counts (games, finished, played in VR; zeros hidden). Right: the Now playing spotlight (the
-  latest playing game, a tilting cover with the green pulse, the second playing game tucked behind,
-  its name and "Also playing"); with nothing playing it spotlights the top Most wanted on stream game
-  (gold, no pulse); with neither the hero is the left column alone. While searching: the wall
+  the counts (games, finished, played in VR; zeros hidden). Right: the spotlight, since Oct 14, 2026 the film strip spotlight
+  (below, after M3: the playing game(s), then the To play games, on a poster with a 2 x 2 square of small covers); with nothing
+  to show the hero is the left column alone. While searching: the wall
   pauses, non-matches fade to grey, matches light up purple, the spotlight steps back, the strip
   shows up to 7 matches and Enter scrolls to the results (or opens Add a game when nothing
   matches). The matches are the same list the grid shows, filters included. Reduced motion: no
@@ -274,8 +273,9 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
 - **SH3 Section heads.** Now playing, Most wanted on stream, Boomer's best, The ones that got away and All
   games: an icon tile, the heading with a count pill (games in that shelf; See all still counts every
   game with the status), a thin gold rule running to the arrows and See all. Kit: `.bt-section-head`.
-- **B1 Phone bar, every Vault page.** Under 640px the bar's words become icons: ? How it works, the
-  green queue icon (staff) with its count as a badge, + Add a game; each 40px, with aria-labels.
+- **B1 Phone bar, every Vault page.** Under 640px the bar's words become icons: the magnifier (Search the Vault, P1, Oct 14,
+  2026), ? How it works, the green queue icon (staff) with its count as a badge, + Add a game; each 40px, with aria-labels.
+  Below 375px the gaps between them tighten from 8 to 4px (a container query on the bar) so the wordmark stays whole as staff.
   Desktop unchanged.
 - **M3 Phone hero (part 9, `game-vault-phone-heroes.html`, approved; M3 replaced the first-built M2 poster).**
   Under 640px only (desktop and tablet keep V3), the cover wall (5 columns of real covers) fills the
@@ -287,22 +287,35 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   **Tighter phone hero (Oct 14, 2026, `game-vault-phone-hero-1c-title.html` "Proposed").** The kicker, title and line sit over
   the wall near the top (the wall fades out from 40% to 80% of the hero); the counts become one small line ("142 games  111
   finished  15 in VR", zeros hidden); the "Try “granny”, “vr”" hint shows only while the search is focused or has text. With
-  that, the story card, its bars and small covers fit on the first screen of a 390x844 phone. Wall drift, search and reduced motion
+  that, the spotlight fits on the first screen of a 390x844 phone (since the film strip, without the hero search: P1 below). Wall drift, search and reduced motion
   as before.
-  **M3 now includes the story card (option 1C, `game-vault-phone-hero-story.html`, approved Oct 14, 2026).** Below the counts, the
-  kit's `.bt-stories` flips through up to 4 To play games on top of the wall: Boomer's pinned "Up next" games first (pinnedAt
-  order), then the To play games with at least one vote, most first, badged gold "Up next" or "Most wanted #N" (N = the game's
-  rank on the Most wanted on stream shelf), then the newest To play games with no votes fill the spots, badged gold "To play" (Oct
-  14, 2026: before the fill, staging showed one lonely card). The card: the tilting cover (pointer devices only) and the title link to
-  the game page, "N votes" ("1 vote"; "No votes yet" instead of "0 votes", here and anywhere a To play game shows its
-  votes: the game page's Community pick banner and the How it works demo), and the vote button (Play this, Boomer! / Voted: `vaultWant`, the same rules, the Join dialog
-  for visitors, a small pop when you vote). Story bars fill over 5 s and the next game fades in; the small covers underneath jump to
-  one; swipe left or right; it pauses while touched, hovered or focused and while the tab is hidden. One game: just the card; none:
-  hidden (the hero as before). Searching: the card steps back (faded, inert) and returns when the search clears. Reduced motion: no
-  auto-advance, fade or tilt; the bars show the position; small covers and swipe still work. Data: `public/vault` as read once per
-  visit; a vote on the card or a shelf updates the page's copy and the card's count (other people's votes show on the next visit, as
-  with the shelves). Preview off production: `?toplay=none|one|four|fill` (four: a pin and three with sample votes; fill: as before
-  anyone votes).
+  **Film strip spotlight, every size (Oct 14, 2026; `game-vault-film-strip.html` D3b + M1 and `game-vault-tablet-phone-search.html`
+  T2 + P1, approved; replaces the desktop Now playing spotlight and the phone story card with its bars).** One spotlight on the kit's
+  `.bt-stories` (square layout): a tilting poster (pointer devices only), the small covers in a 2 x 2 square with a thin ring that draws
+  around the current one over 5 s (gold; green for a playing game), then the next game fades in; tap a small cover to jump; swipe the
+  poster on touch screens; it pauses while touched, hovered or focused and while the tab is hidden. Under the poster and square: the
+  badge, the title (to the game page), the votes with the vote button (Play this, Boomer! / Voted: `vaultWant`, the Join dialog for
+  visitors, a small pop when you vote) and the credit line ("Boomer's pick", "Added by @handle", "Added by a member"; for a playing
+  game "N streams so far"). Max 4 games:
+  - Desktop and tablet start with the game(s) Boomer is playing (latest first): green "Now playing" with the pulse and Watch live
+    (to /live) while he is live, green "Playing" and See the game otherwise (the page's live state, `.bt-when-live` / `-off`); no vote
+    button. Phones skip them (the Now playing shelf leads the page there).
+  - Then Boomer's pinned "Up next" games (pinnedAt order), the To play games with at least one vote, most first ("Most wanted #N", N
+    = the rank on the Most wanted on stream shelf), and the newest To play games with no votes ("To play", "No votes yet": never
+    "0 votes", here and anywhere a To play game shows its votes: the game page's Community pick banner and the How it works demo).
+  - One game: just the poster and its details; none: hidden (the hero is the text column alone).
+  Layout: 1024px and wider (D3b) the hero's right column, the poster about 210px with the square (60px covers) about 36px beside it,
+  centered on it, the details under both; 640 to 1023px (T2) the title, line, search, hint and counts take the full width and the
+  spotlight sits under them as one row on a dark panel: poster (170px), square, then the details and vote button; under 640px (M1)
+  the poster about 164px left, the square (68px covers) right, the badge, title, votes and vote button under both (no credit line),
+  with the vote button on the first screen of a 390x844 phone. Searching steps it back (faded, smaller, inert, paused) and it returns
+  when the search clears. Reduced motion: no auto-advance, fade or tilt; the full ring on the current small cover. Data: `public/vault`
+  as read once per visit; a vote on the spotlight or a shelf updates the page's copy and the count (other people's votes show on
+  the next visit, as with the shelves). Previews off production: `?toplay=none|one|four|fill` (four: a pin and three with sample
+  votes; fill: as before anyone votes) and `?playing=on|live` (a stand-in playing game; live also puts the page in the live state).
+  **Phone search (P1).** Under 640px the hero has no search: the B1 bar's magnifier ("Search the Vault") scrolls to the filter bar's
+  search and focuses it (from another Vault page it opens /games#gv-search), the "Try “granny”, “vr”" hint and the match count show
+  under that search while it is focused or has text, and the wall still pauses, greys the non-matches and lights the matches.
 - **G1 Game page section heads (part 9).** Boomer's review, Every stream (note: "6 streams, 14
   hours"), About the game, Details, Where to play, On stream and Up next each get the SH3 section head
   above their card (the kit's `.bt-section-head`, compact `--sm` size, `meta` note), replacing the

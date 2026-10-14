@@ -658,13 +658,18 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   init markers stay (no double wiring), and an element marked `data-patch="own"` (where another script mounts content: the drop
   panel, a Chat Games run panel, the game picker's results) is left alone. Use it for any redraw driven by live data or a timer;
   plain `innerHTML` is for first draws and one-off dialogs.
-- **Stories:** `.bt-stories` (`shared/ui/stories.js`, Oct 14, 2026): `initStories(host, { items, render, thumb, label, name })`
-  draws `.bt-stories-bars` (gold, filling over 5 s), `.bt-stories-stage` (the caller's card for the current item; fades between
-  items) and `.bt-stories-picks` (`.bt-stories-pick` buttons, "Show <label>", the current one `.is-on`: raised with a gold ring),
-  plus a polite live region that announces manual changes only. A region with `aria-roledescription="carousel"`. Swipe on the
-  stage; pauses while touched, hovered or focused, while the tab is hidden, and for the caller's reasons (`s.pause("search", true)`
-  adds `.is-paused`). One item: `.bt-stories--single` (just the stage). Reduced motion: no auto-advance or fade, the bars show the
-  position. Unlike `.bt-hero` (full-width slides) it carries a small card and a picker. First used by the Game Vault's phone hero.
+- **Stories:** `.bt-stories` (`shared/ui/stories.js`; ring version Oct 14, 2026): `initStories(host, { items, render, details,
+  thumb, label, tone, name, layout })` draws `.bt-stories-stage` (the caller's poster for the current item), `.bt-stories-picks`
+  (`.bt-stories-pick` buttons, "Show <label>", the current one `.is-on`, each with a `.bt-stories-ring`) and, with `details`,
+  `.bt-stories-details` (fades with the poster), plus a polite live region that announces manual changes only. Progress is a thin
+  ring drawn around the current small cover over 5 s (`--bt-ring` 0..1; gold, `.bt-stories-pick--green` when `tone(item)` is
+  "green"), then the next item shows; there are no bars. `layout: "square"` (default) puts the small covers in a 2 x 2 square,
+  `"row"` in one row; `--bt-stories-pick` sets their width; the caller's grid places the stage, picks and details. A region with
+  `aria-roledescription="carousel"`. Tap a small cover to jump, swipe the poster; pauses while touched, hovered or focused, while
+  the tab is hidden, and for the caller's reasons (`s.pause("search", true)` adds `.is-paused`). One item: `.bt-stories--single`
+  (the poster and details only). Reduced motion: no auto-advance or fade, the full ring on the current small cover. Unlike
+  `.bt-hero` (full-width slides) it carries a poster and a picker. Used by the Game Vault's film strip spotlight; the UI Kit shows
+  every state (square, playing, few votes, row, one, reduced motion, paused).
 - **Home zone and tiles:** `.bt-zone[data-view]` > `.bt-home-grid` > `.bt-home-left`
   (children `.bt-wide` span two columns) + `.bt-home-right` (sticky). Visitors get one
   column with three tiles in a row. `.bt-tile [--hot|--next|--board|--fuzz]` >
@@ -1635,11 +1640,16 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   is the newest pinned game, then the top Most wanted on stream game; that shelf stays ranked by votes
   only. The pin is set with the green admin "Pin to top" / "Unpin" button on the game page (spec §9).
   The UI Kit shows it on a cover card.
-- **The phone hero's story card (1C, Oct 14, 2026) is the kit's `.bt-stories`.** Under 640px only, below the M3 counts: pinned
-  "Up next" games, then To play games with votes, most first ("Most wanted #N"), then the newest To play games with no votes
-  (gold "To play", "No votes yet"; never "0 votes", `votesText` in `scripts/vault/ui.ts`) (max 4), the card drawn by `scripts/vault/page.ts` (`.gvs-*` in
-  `game-vault.css`). Gold for the badges, the story bars and the active small cover's ring; purple only on the vote button and
-  focus. It steps back while searching, like the desktop spotlight. Spec §9 (M3).
+- **The film strip spotlight (Oct 14, 2026; D3b, T2, M1) is the kit's `.bt-stories` (square layout), on every screen size.** It
+  replaces the desktop Now playing spotlight and the phone story card. Desktop and tablet start with the playing game(s) (green
+  "Now playing" with the pulse and Watch live while Boomer is live, "Playing" and See the game otherwise; green ring; no vote
+  button), then pinned "Up next", To play games with votes ("Most wanted #N") and the newest To play games (gold "To play", "No
+  votes yet"; never "0 votes", `votesText` in `scripts/vault/ui.ts`); phones the To play games only; max 4. Drawn by
+  `scripts/vault/page.ts` (`.gvs-*` in `game-vault.css`): 1024px and up the poster with the square beside it and the details under;
+  640-1023px one row under the full-width hero text; under 640px the poster and square side by side, details under, with the vote
+  button on the first screen. Gold for the To play badges, ring and glow; green for a playing game; purple only on buttons, links
+  and focus. It steps back while searching. Phones have no hero search: the B1 bar's magnifier focuses the filter bar's search
+  (P1); below 375px that bar's gaps tighten to 4px (container query `gvbar`). Spec §9.
 
 ### 8j. Trophy Room
 
