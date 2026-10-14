@@ -22,7 +22,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
-| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); real tests pending | Community services |
+| 14 | Hotline Boom (contact) | Built on staging (parts 0-6, Talk Back Part A); real tests pending | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
@@ -220,7 +220,8 @@ Status: **Built on staging (parts 0-6); real tests pending (docs/testing/hotline
 4. `/admin/inbox` (Split: Inbox, Sources, Settings) and the /admin card.
 5. `/contact/how-it-works` (H1, the dial).
 6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
-Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups approved Oct 11, 2026: [docs/specs/talk-back.md](specs/talk-back.md), `docs/design/mockups/talk-back-*.html`; build after Hotline Boom's staging tests and Service Hub's manifests. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
+Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups approved Oct 11, 2026: [docs/specs/talk-back.md](specs/talk-back.md), `docs/design/mockups/talk-back-*.html`. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
+**Talk Back Part A: built on staging (Oct 14, 2026); real tests pending (docs/testing/talk-back-test-plan.md).** Four commits: (1) backend: line 2 "Feedback & questions", contactSend kind / context / boombotShown, stats.byService and serviceStats, contactDeflect, the serviceStats rule; (2) the dialog, the loader, `.bt-pills[data-n="3"]`, Bug Zapper's help file; (3) the inbox context bar, Question:/Feedback: rows, Sources › By service, /contact's Question / Feedback switch; (4) `talkBack` on in site.json, the test plan, docs. **Next: Part B** (inbox recognition: Gears, Pick up, tidying, Clear desk, Operator of the Month) **and Part C** (the staff inbox How it works page). Service Hub part 10's questions column and the first Ask pins on pages follow.
 Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
 
 ### 16. Tech Stack
@@ -348,6 +349,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Redirect rules on the other 11 domains add `?via=<domain>`.
 - [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
 - [ ] The Squarespace contact page switched off.
+- [ ] Talk Back: deploy `contactDeflect` (with the other contact functions) and the `serviceStats` rule to production (rules first, separately); keep `"talkBack"` in site.json modules; production Turnstile hostnames cover every page with a strip, not just /contact.
 
 ### 404 page in production
 - [ ] 404 page: confirm it works on production after the first production deploy (rules + reportBrokenLink + brokenLinkFix deployed to prod).

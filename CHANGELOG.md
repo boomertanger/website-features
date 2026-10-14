@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(hotline): Talk Back switched on for staging (talkBack in site.json modules); docs/testing/talk-back-test-plan.md; talk-back.md §1 as built; ROADMAP (Part A built, B and C next) and the production launch items
 - feat(hotline): Talk Back in the inbox: the context bar (From {Area} › {Service} › {Section}, Open the page, what BOOMBOT showed), Question:/Feedback: rows, Sources › By service (split bars, Answered by BOOMBOT, the section hint); /contact line 2 gets the Question / Feedback switch
 - feat(hotline): Talk Back dialog: window.btTalkBack and the loader in BaseLayout, the sheet (Question / Feedback / Something's broken, BOOMBOT answers from the service's help file, Sent, too many, line off), send.ts shared with /contact, kit .bt-pills[data-n="3"] and the UI kit section, Bug Zapper's help file, the help-file check
 Talk Back Part A, backend (docs/specs/talk-back.md §3, §6): contactSend takes kind (question | feedback), context { serviceId, section, path, title } and boombotShown on line 2 only (an invalid context is dropped, never refused) and counts them per service: stats.byService (every lane, owner only) and the new hotline/main/serviceStats (team lane only; read by the owner, inbox admins and site admins). New callable contactDeflect counts BOOMBOT answers (30 an hour per ipHash). Line 2 is now "Feedback & questions" (reply subject, /contact, its How it works, the inbox). check-hotline covers it; hotline-boom manifest 1.1.

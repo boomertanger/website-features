@@ -23,13 +23,14 @@ Depends on: Hotline Boom (`docs/specs/hotline-boom.md`, whose §14 points here),
 **Opening the dialog.** Two ways, both supported; Service Hub's strip and pins use the data attributes:
 
 - Markup: any button with `data-talkback="question"` or `"feedback"`, `data-service="<serviceId>"` and optional `data-section="<key>"`. Talk Back's loader handles clicks by delegation, so buttons work before any dialog code has loaded and need no inline script.
+- **As built (Oct 14, 2026):** Service Hub's strip (`shared/ui/talkback.js`) renders `section.bt-talkback[data-service="<id>"]` with Talk back buttons `[data-talk="question|feedback"]`; `scripts/services/strip.ts` already calls `window.btTalkBack.open({ serviceId, mode })` for those, so the loader doesn't bind them again. Ask pins are `.bt-ask-pin[data-ask-section="<key>"]` (`askPinHtml`); the loader handles them by delegation and takes the service from the page's `.bt-talkback[data-service]` (mode question). No page places a pin yet.
 - Script: `window.btTalkBack.open({ serviceId, section?, mode: "question" | "feedback" })` → `Promise<{ result: "sent" | "answered" | "closed" | "off" }>`.
 
 Either opens the dialog in §4 unchanged. After a send the document fires `bt:talkback-sent` with `{ serviceId, kind }` (the strip may use it; nothing depends on it).
 
 **What the caller never passes:** the path and title. The dialog reads `location.pathname` (query and hash dropped) and `document.title` itself.
 
-**What Talk Back reads from Service Hub:** `/services.json` (built from the manifests) for each service's `name`, `area`, `sections` ({ key: label }) and `help` (path to `site/src/data/help/<id>.json`). Help files are bundled with `import.meta.glob` and loaded lazily per service. A service missing from `/services.json` still works: header "Ask about this page", no section label, no BOOMBOT.
+**What Talk Back reads from Service Hub:** the manifests (`services/<id>.json`), **read at build time** with the same `import.meta.glob` as `site/src/pages/services.json.ts` (never by fetching `/services.json`), for each service's `name`, `area`, `sections` ({ key: label }) and `help` (path to `site/src/data/help/<id>.json`; `check-services.js` checks it). Help files are bundled with `import.meta.glob` and loaded lazily per service. The context reads "{area} › {name} › {section label}". A service missing from `/services.json` still works: header "Ask about this page", no section label, no BOOMBOT.
 
 **The loader:** a small script in the base layout (`site/src/scripts/hotline/talkback-loader.ts`) defines `window.btTalkBack` and the click delegation and imports the dialog on first use. With the `talkBack` module off in `site.json`, `open()` resolves `{ result: "off" }` and does nothing (Service Hub already hides the half and the pins).
 
