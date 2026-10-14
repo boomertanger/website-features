@@ -1,6 +1,6 @@
 // shared/ui-kit/kit-services.js — the "Service Hub" section of the UI Kit page (/dev/ui-kit): every Service Hub piece in every state (docs/specs/service-hub.md
-// §12; design-system.md §5 "Service Hub pieces"): .bt-rate (none, each value, the required error, plus a live one), .bt-talkback (member new, member rated,
-// visitor, rate only, talk only), .bt-ask-pin, .bt-ind, .bt-filter-tile, .bt-rating-bar, .bt-cov-cell, .bt-wall, .bt-kanban and the map pieces, inside a frame
+// §12; design-system.md §5 "Service Hub pieces"): .bt-rate (none, each value, the required error, plus a live one), .bt-talkback (the compact strip, V5 + S1:
+// note, pins with an Ask pin, rate only, rated, visitor, talk only), .bt-ask-pin, .bt-ind, .bt-filter-tile, .bt-rating-bar, .bt-cov-cell, .bt-wall, .bt-kanban and the map pieces, inside a frame
 // with the Desktop / Tablet / Phone switcher (the frame is the "bt" container, so the pieces' container queries answer to it).
 // Static sample data, no reads, no writes. ui-kit.js appends servicesKitHtml({ mascotHtml }) and calls initServicesKit(mount).
 import { rateHtml, initRate, RATE_ICON } from "../ui/rate.js";
@@ -22,7 +22,7 @@ const bar = (lv, lk, np) => { const n = lv + lk + np, p = (x) => ((x / n) * 100)
 const tile = (name, o = {}) => `<button type="button" class="bt-wall-tile${o.v ? " is-rated" : ""}${o.isNew ? " is-new" : ""}"${o.v ? ` data-v="${o.v}"` : ""}>${o.v ? `<span class="bt-wall-badge">${RATE_ICON[o.v]}</span>` : ""}${IC.game}<b>${name}</b>${o.isNew ? `<span class="bt-wall-q">New version</span>` : o.v ? "" : `<span class="bt-wall-q">Rate</span>`}</button>`;
 
 export function servicesKitHtml({ mascotHtml = "" } = {}) {
-  const tb = (o) => talkbackHtml({ service: "tap-the-splat", name: "Tap the Splat", mascotHtml, ...o });
+  const tb = (o) => talkbackHtml({ service: "tap-the-splat", name: "Tap the Splat", ...o });
   return `
   <section class="kit-section" id="kit-services">
     <h2 class="kit-h">Service Hub (.bt-rate, .bt-talkback, .bt-ask-pin, .bt-ind, .bt-filter-tile, .bt-rating-bar, .bt-cov-cell, .bt-wall, .bt-kanban, .bt-map-zone)</h2>
@@ -41,11 +41,13 @@ export function servicesKitHtml({ mascotHtml = "" } = {}) {
         </div>
 
         <h3 class="kit-sub">The page strip (.bt-talkback)</h3>
-        ${sub("Member, not rated yet")}${tb({ state: "new" })}
-        ${sub("Member, rated (Love it)")}${tb({ state: "rated", rating: { value: "love", version: "1.0", date: "Oct 3" } })}
-        ${sub("Visitor")}${tb({ state: "visitor" })}
-        ${sub("Rate only (talkBack \"rate\", or the talkBack switch off)")}${tb({ state: "new", talk: false })}
-        ${sub("Talk back only (the services switch off)")}${tb({ state: "new", rate: false })}
+        <p class="kit-p">Compact (V5 "Talk word pill" + S1, Oct 14, 2026; <span class="kit-code">docs/design/mockups/page-strip-compact.html</span>): one row, "Rate it", three icon-only buttons in a group named "Rate {name}" (each with an aria-label and title), and the purple Talk pill that opens Talk Back in Question mode. After a rating the toast says "Thanks! Only Boomer and the admins see ratings." Narrow the frame to Phone: at 345px and below the buttons shrink to 36px. Tap the buttons to see the pressed state.</p>
+        ${sub("Note (talkBack \"note\"): member, not rated yet")}${tb({ state: "new" })}
+        ${sub("Pins (talkBack \"pins\"): the same strip; the Ask pins sit on the page's section heads (below)")}${tb({ state: "new" })}
+        ${sub("Rate (talkBack \"rate\", /contact): no Talk pill")}${tb({ state: "new", talk: false })}
+        ${sub("Rated (Love it pressed)")}${tb({ state: "rated", rating: { value: "love", version: "1.0", date: "Oct 3" } })}
+        ${sub("Visitor (the buttons open the sign-in dialog on Join free)")}${tb({ state: "visitor" })}
+        ${sub("Talk only (the services switch off)")}${tb({ state: "new", rate: false })}
 
         <h3 class="kit-sub">Ask pin (.bt-ask-pin)</h3>
         <div class="bt-section-head"><span class="bt-section-head-ic" aria-hidden="true">🏆</span><span class="bt-section-head-text"><span class="bt-section-head-title">Leaderboard</span></span><span class="bt-section-head-rule"></span><span class="bt-section-head-tools">${askPinHtml({ section: "leaderboard", label: "Leaderboard" })}</span></div>
@@ -105,8 +107,8 @@ export function initServicesKit(mount) {
     const t = e.target.closest(".bt-filter-tile"); if (!t) return;
     e.currentTarget.querySelectorAll(".bt-filter-tile").forEach((x) => x.setAttribute("aria-pressed", String(x === t)));
   });
-  sec.querySelectorAll(".bt-talkback-rb").forEach((b) => b.addEventListener("click", () => {
-    b.closest(".bt-talkback-btns").querySelectorAll(".bt-talkback-rb").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
+  sec.querySelectorAll(".bt-talkback-rb[data-rate-v]").forEach((b) => b.addEventListener("click", () => {
+    b.closest(".bt-talkback-rates").querySelectorAll(".bt-talkback-rb").forEach((x) => x.setAttribute("aria-pressed", String(x === b)));
   }));
   sec.querySelectorAll(".bt-map-node").forEach((n) => n.addEventListener("click", () => { sec.querySelectorAll(".bt-map-node").forEach((x) => x.classList.toggle("is-sel", x === n)); }));
 }

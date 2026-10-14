@@ -13,7 +13,6 @@
 @keyframes sv-how-tap { 0%, 60%, 100% { transform: none; } 70% { transform: scale(1.12); } 80% { transform: scale(0.96); } }
 .bt-root:not(#_) .sv-how-scene .sv-how-toast { align-self: flex-end; transform: rotate(1.5deg); animation: sv-how-toast 2.6s ease-in-out infinite; }
 /* the hero's paragraph rule (how-it-works.css .ai-hero p) must not reach the strip's foot line */
-.bt-root:not(#_) .ai-hero .sv-how-scene .bt-talkback-foot { max-width: none; margin: 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
 @keyframes sv-how-toast { 0%, 66% { opacity: 0.35; translate: 0 6px; } 76%, 100% { opacity: 1; translate: 0 0; } }
 
 /* 01 stage cards: hover scenes */

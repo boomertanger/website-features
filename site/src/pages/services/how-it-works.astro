@@ -24,12 +24,10 @@ const talkOn = (site.modules as string[]).includes("talkBack");
 const SOON = talkOn ? "" : `<span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Coming soon</span>`;
 const NAV: [string, string][] = [["s-what", "What it is"], ["s-try", "Try it"], ["s-which", "Rating or Talk back"], ["s-test", "Test new versions"], ["s-next", "What happens next"], ["s-badges", "Badges"], ["s-rules", "House rules"], ["s-faq", "Ask BOOMBOT"]];
 const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
-const MARK = "<!--mascot-->";
-const halves = (html: string) => html.split(MARK);
 
 // Hero H2: the real strip for Tap the Splat (as members see it today), Love it pulsing, and its toast. Decorative.
-const [heroA, heroB] = halves(talkbackHtml({ service: "tap-the-splat", name: "Tap the Splat", state: "new", rate: true, talk: talkOn, mascotHtml: MARK })
-  .replace('data-rate-v="love" aria-pressed="false"', 'data-rate-v="love" aria-pressed="true"').replace(/<button /g, '<button tabindex="-1" '));
+const heroStrip = talkbackHtml({ service: "tap-the-splat", name: "Tap the Splat", state: "new", rate: true, talk: talkOn })
+  .replace('data-rate-v="love" aria-pressed="false"', 'data-rate-v="love" aria-pressed="true"').replace(/<button /g, '<button tabindex="-1" ');
 
 // 01 What it is: stage cards with hover scenes
 const PARTS = [
@@ -40,7 +38,7 @@ const PARTS = [
 ];
 
 // 02 Try it: the sample strip (the kit's markup) and the mini wall
-const [tryA, tryB] = halves(talkbackHtml({ service: "sample-bone-library", name: "the sample Bone Library", state: "new", rate: true, talk: false, mascotHtml: MARK }));
+const tryStrip = talkbackHtml({ service: "sample-bone-library", name: "the sample Bone Library", state: "new", rate: true, talk: false });
 
 // 04 Test new versions: three sample rows
 const CHECKS = [["Open the Arcade from the Play menu", true], ["Start Tap the Splat from its page", true], ["Finish a run on your phone", false]] as const;
@@ -85,8 +83,8 @@ const FAQS = HELP as { id: string; q: string; a: string; keys: string[] }[];
           <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/services">Start rating</a><a class="bt-btn bt-btn--secondary" href="#s-try">Try it here</a></div>
         </div>
         <div class="sv-how-scene" aria-hidden="true" inert>
-          <Fragment set:html={heroA} /><Mascot decorative /><Fragment set:html={heroB} />
-          <div class="bt-toast sv-how-toast"><span class="bt-toast-ic">✓</span><span class="bt-toast-text">Saved: you love Tap the Splat.</span></div>
+          <Fragment set:html={heroStrip} />
+          <div class="bt-toast sv-how-toast"><span class="bt-toast-ic">✓</span><span class="bt-toast-text">Thanks! Only Boomer and the admins see ratings.</span></div>
         </div>
       </section>
 
@@ -108,7 +106,7 @@ const FAQS = HELP as { id: string; q: string; a: string; keys: string[] }[];
         <div class="sv-try" data-try>
           <div class="sv-try-l">
             <span class="sv-try-tag">Try it · sample</span>
-            <Fragment set:html={tryA} /><Mascot decorative /><Fragment set:html={tryB} />
+            <Fragment set:html={tryStrip} />
             <div class="bt-field sv-try-why" data-try-why hidden>
               <label class="bt-label" for="sv-try-text">Why not? <span class="sv-req">Required</span></label>
               <textarea class="bt-textarea" id="sv-try-text" rows="3" maxlength="500" placeholder="What would make it better?" data-try-text></textarea>

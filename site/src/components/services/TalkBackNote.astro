@@ -1,13 +1,12 @@
 ---
-// The page strip (docs/specs/service-hub.md §8a; S1; the kit's .bt-talkback from shared/ui/talkback.js): "How's {Service}?" with Rate it on the
-// left and Talk back on the right. BaseLayout renders it at the end of every page whose manifest says talkBack note, pins or rate (skip = none),
+// The page strip (docs/specs/service-hub.md §8a; the kit's .bt-talkback from shared/ui/talkback.js), compact since Oct 14, 2026 (V5 + S1): one row,
+// "Rate it" with three icon-only rating buttons, and the purple Talk pill on the right. BaseLayout renders it at the end of every page whose manifest says talkBack note, pins or rate (skip = none),
 // after the page and above the footer, outside any TocLayout chapter. No per-page edits.
-//   Rate half: the services module is on, and the service is live and not an admin tool (members can't rate the rest).
-//   Talk back half: the talkBack module is on (off until Hotline Boom passes its staging tests; spec §8b) and talkBack is note or pins.
+//   The rating buttons: the services module is on, and the service is live and not an admin tool (members can't rate the rest).
+//   The Talk pill: the talkBack module is on and talkBack is note or pins ("rate", as on /contact: no pill).
 // Rendered here in the "not rated yet" state; scripts/services/strip.ts swaps in the visitor or rated state once auth is known, and hides the
 // strip from viewers a crew-only service isn't open to.
 import { talkbackHtml } from "../../../../shared/ui/talkback.js";
-import Mascot from "../Mascot.astro";
 import site from "../../data/site.json";
 import { manifestById } from "../../lib/service-manifests";
 import "../../styles/services-dialogs.css";
@@ -19,12 +18,11 @@ const placement = m?.talkBack || "skip";
 const rate = !!m && modules.includes("services") && placement !== "skip" && m.status === "live" && m.type !== "adminTool";
 const talk = !!m && modules.includes("talkBack") && (placement === "note" || placement === "pins");
 const open = !!m && ["everyone", "members"].includes(m.audience);
-const MARK = "<!--sv-mascot-->";
-const [before, after] = m && (rate || talk) ? talkbackHtml({ service: m.id, name: m.name, state: "new", rate, talk, mascotHtml: MARK }).split(MARK) : ["", ""];
+const html = m && (rate || talk) ? talkbackHtml({ service: m.id, name: m.name, state: "new", rate, talk }) : "";
 ---
 {m && (rate || talk) && (
   <div class="bt-zone sv-strip-zone" data-sv-strip data-name={m.name} data-version={m.version} data-audience={m.audience} data-talk-on={talk ? "" : undefined} hidden={!open}>
-    <Fragment set:html={before} /><Mascot decorative /><Fragment set:html={after} />
+    <Fragment set:html={html} />
   </div>
 )}
 

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(service-hub): compact page strip (V5 "Talk word pill" + S1): one row with "Rate it", three icon-only rating buttons and the purple Talk pill (opens Talk Back in Question mode); the thanks toast after a rating; 36px buttons at 345px and below
 - feat(hotline): Talk Back switched on for staging (talkBack in site.json modules); docs/testing/talk-back-test-plan.md; talk-back.md §1 as built; ROADMAP (Part A built, B and C next) and the production launch items
 - feat(hotline): Talk Back in the inbox: the context bar (From {Area} › {Service} › {Section}, Open the page, what BOOMBOT showed), Question:/Feedback: rows, Sources › By service (split bars, Answered by BOOMBOT, the section hint); /contact line 2 gets the Question / Feedback switch
 - feat(hotline): Talk Back dialog: window.btTalkBack and the loader in BaseLayout, the sheet (Question / Feedback / Something's broken, BOOMBOT answers from the service's help file, Sent, too many, line off), send.ts shared with /contact, kit .bt-pills[data-n="3"] and the UI kit section, Bug Zapper's help file, the help-file check

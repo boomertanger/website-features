@@ -5486,9 +5486,10 @@
 /* ================= Service Hub pieces (docs/specs/service-hub.md §12; design-system.md §5 "Service Hub pieces"; mockups service-hub-round-1.html, service-hub-how-it-works.html) =================
    .bt-rate            the three-button rating control (R1): .bt-rate-btn[data-v=nope|like|love][aria-checked] with a one-line hint (small); the comment field under it
                        (.bt-rate-field) turns required in place for Not for me ([data-required="true"] shows .bt-rate-req), .is-error marks it. shared/ui/rate.js.
-   .bt-talkback        the page strip (S1): .bt-talkback-head (mascot, "How's {Service}?"), .bt-talkback-body = .bt-talkback-rate | .bt-talkback-div | .bt-talkback-talk,
-                       .bt-talkback-foot. Rate half: .bt-talkback-rb pills, or rated (.bt-talkback-mine: "You love it · Change"), or the visitor's Join free to rate.
-                       data-rate="off" / data-talk="off" hide a half (talkBack "rate", the kill switches). Stacks at 640; the buttons share the row at 420. shared/ui/talkback.js.
+   .bt-talkback        the page strip, compact (V5 "Talk word pill" + S1, Oct 14, 2026): one row, about 56px on a phone. .bt-talkback-q ("Rate it"),
+                       .bt-talkback-rates (role=group "Rate {name}") of three icon-only .bt-talkback-rb[data-v][aria-pressed] (gold, blue, pink), and the purple
+                       .bt-talkback-talk pill (S1 icon + "Talk"). data-rate="off" leaves out the buttons; no pill for talkBack "rate". At 345px and below the
+                       buttons go 40 -> 36px and the gaps tighten (fits 320). shared/ui/talkback.js.
    .bt-ask-pin         the dashed Ask chip for .bt-section-head-tools; icon-only at 420 (keep its aria-label).
    .bt-ind             indicator chips in .bt-inds (bugs with .bt-level bars, video, tested, ideas): --blue --gold --pink --red --lime, --off.
    .bt-filter-tile     a summary tile that filters ([aria-pressed]); --tone sets its dot; .bt-filter-tiles lays them out (6 / 3 / 2 across).
@@ -5508,9 +5509,9 @@
 .bt-root:not(#_) .bt-rate-btn:hover { border-color: var(--bt-primary); color: var(--bt-text); }
 .bt-root:not(#_) .bt-rate-btn:hover svg { transform: translateY(-2px) rotate(-6deg); }
 .bt-root:not(#_) .bt-rate-btn:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-talkback-myrate, .bt-wall-tile)[data-v="nope"] { --rt: var(--bt-rate-nope); }
-.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-talkback-myrate, .bt-wall-tile)[data-v="like"] { --rt: var(--bt-rate-like); }
-.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-talkback-myrate, .bt-wall-tile)[data-v="love"] { --rt: var(--bt-rate-love); }
+.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-wall-tile)[data-v="nope"] { --rt: var(--bt-rate-nope); }
+.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-wall-tile)[data-v="like"] { --rt: var(--bt-rate-like); }
+.bt-root:not(#_) :is(.bt-rate-btn, .bt-talkback-rb, .bt-wall-tile)[data-v="love"] { --rt: var(--bt-rate-love); }
 .bt-root:not(#_) .bt-rate-btn[aria-checked="true"] { border-color: var(--rt); background: color-mix(in srgb, var(--rt) 14%, var(--bt-bg)); color: var(--bt-text); box-shadow: 0 0 0 1px var(--rt) inset, 0 0 18px color-mix(in srgb, var(--rt) 30%, transparent); }
 .bt-root:not(#_) .bt-rate-btn[aria-checked="true"] svg { transform: scale(1.12); }
 .bt-root:not(#_) .bt-rate-btn small { font-size: var(--bt-text-xs); font-weight: 600; color: var(--bt-text-faint); }
@@ -5520,33 +5521,31 @@
 .bt-root:not(#_) .bt-rate-field.is-error .bt-textarea { border-color: var(--bt-danger); }
 .bt-root:not(#_) .bt-rate-field .bt-error { margin: 0; }
 
-/* .bt-talkback: the page strip */
-.bt-root:not(#_) .bt-talkback { display: flex; flex-direction: column; gap: 12px; padding: 16px 18px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border-2); background: radial-gradient(70% 140% at 0% 0%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
-.bt-root:not(#_) .bt-talkback-head { display: flex; align-items: center; gap: 12px; }
-.bt-root:not(#_) .bt-talkback-head .bt-mascot, .bt-root:not(#_) .bt-talkback-head > svg, .bt-root:not(#_) .bt-talkback-head > img { width: 40px; height: auto; flex: none; }
-.bt-root:not(#_) .bt-talkback-head > div { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
-.bt-root:not(#_) .bt-talkback-head b { font-size: var(--bt-text-lg); font-weight: 800; color: var(--bt-text); }
-.bt-root:not(#_) .bt-talkback-head span { font-size: var(--bt-text-md); color: var(--bt-text-muted); }
-.bt-root:not(#_) .bt-talkback-body { display: grid; grid-template-columns: minmax(0, 1fr) 1px minmax(0, 1fr); gap: 18px; align-items: start; }
-.bt-root:not(#_) .bt-talkback-div { align-self: stretch; background: var(--bt-border-2); }
-.bt-root:not(#_) :is(.bt-talkback-rate, .bt-talkback-talk) { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
-.bt-root:not(#_) :is(.bt-talkback-rate, .bt-talkback-talk) > small { font-size: var(--bt-text-sm); color: var(--bt-text-faint); }
-.bt-root:not(#_) .bt-talkback-btns { display: flex; gap: 6px; flex-wrap: wrap; }
-.bt-root:not(#_) .bt-talkback-rb { --rt: var(--bt-text-muted); display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border-radius: var(--bt-radius-full); border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); font: inherit; font-weight: 700; font-size: var(--bt-text-md); white-space: nowrap; cursor: pointer; transition: border-color 0.15s, color 0.15s; }
-.bt-root:not(#_) .bt-talkback-rb svg { width: 17px; height: 17px; color: var(--rt); fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.4, 1); }
-.bt-root:not(#_) .bt-talkback-rb:hover { border-color: var(--rt); color: var(--bt-text); }
+/* .bt-talkback: the page strip, compact (V5 + S1; docs/design/mockups/page-strip-compact.html) */
+.bt-root:not(#_) .bt-talkback { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 14px; border-radius: 16px; border: 1px solid var(--bt-border); background: var(--bt-surface); }
+.bt-root:not(#_) .bt-talkback-q { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; color: var(--bt-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-talkback-rates { display: inline-flex; gap: 6px; flex: none; }
+.bt-root:not(#_) .bt-talkback-rb { --rt: var(--bt-text-muted); width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--rt); cursor: pointer; transition: transform 0.15s, background 0.15s, border-color 0.15s; }
+.bt-root:not(#_) .bt-talkback-rb svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.4, 1); }
+.bt-root:not(#_) .bt-talkback-rb:hover { border-color: var(--rt); }
 .bt-root:not(#_) .bt-talkback-rb:hover svg { transform: translateY(-2px) rotate(-6deg); }
-.bt-root:not(#_) .bt-talkback-rb:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-.bt-root:not(#_) .bt-talkback-rb[aria-pressed="true"] { border-color: var(--rt); color: var(--bt-text); background: color-mix(in srgb, var(--rt) 14%, var(--bt-bg)); }
-.bt-root:not(#_) .bt-talkback-mine { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
-.bt-root:not(#_) .bt-talkback-myrate { display: inline-flex; align-items: center; gap: 6px; font-size: var(--bt-text-sm); font-weight: 700; color: var(--rt); }
-.bt-root:not(#_) .bt-talkback-myrate svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
-.bt-root:not(#_) .bt-talkback-foot { margin: 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.45; }
-/* one half on its own (talkBack "rate", or a kill switch): no divider, one column */
-.bt-root:not(#_) .bt-talkback:is([data-rate="off"], [data-talk="off"]) .bt-talkback-body { grid-template-columns: minmax(0, 1fr); }
-.bt-root:not(#_) .bt-talkback:is([data-rate="off"], [data-talk="off"]) .bt-talkback-div,
-.bt-root:not(#_) .bt-talkback[data-rate="off"] .bt-talkback-rate,
-.bt-root:not(#_) .bt-talkback[data-talk="off"] .bt-talkback-talk { display: none; }
+.bt-root:not(#_) .bt-talkback-rb[aria-pressed="true"] { border-color: var(--rt); background: color-mix(in srgb, var(--rt) 16%, var(--bt-bg)); box-shadow: 0 0 0 1px var(--rt) inset; animation: bt-talkback-pop 0.3s ease-out; }
+@keyframes bt-talkback-pop { 50% { transform: scale(1.15); } }
+.bt-root:not(#_) .bt-talkback-talk { display: inline-flex; align-items: center; gap: 6px; height: 40px; flex: none; padding: 0 14px 0 11px; border-radius: var(--bt-radius-full); border: 1px solid rgba(var(--bt-primary-rgb), 0.65); background: var(--bt-primary-bg); color: var(--bt-primary-soft); font: inherit; font-weight: 800; font-size: 14px; cursor: pointer; transition: background 0.15s, border-color 0.15s; }
+.bt-root:not(#_) .bt-talkback-talk svg { width: 18px; height: 18px; flex: none; }
+.bt-root:not(#_) .bt-talkback-talk:hover { border-color: var(--bt-primary); background: color-mix(in srgb, var(--bt-primary) 26%, var(--bt-bg)); color: var(--bt-text); }
+.bt-root:not(#_) :is(.bt-talkback-rb, .bt-talkback-talk):focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+@container bt (max-width: 345px) {
+  .bt-root:not(#_) .bt-talkback { gap: 6px; padding-left: 12px; }
+  .bt-root:not(#_) .bt-talkback-rates { gap: 4px; }
+  .bt-root:not(#_) .bt-talkback-rb { width: 36px; height: 36px; }
+  .bt-root:not(#_) .bt-talkback-rb svg { width: 17px; height: 17px; }
+  .bt-root:not(#_) .bt-talkback-talk { height: 36px; padding: 0 11px 0 9px; font-size: 13px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-talkback-rb[aria-pressed="true"] { animation: none; }
+  .bt-root:not(#_) :is(.bt-talkback-rb, .bt-talkback-talk) { transition: none; }
+}
 
 /* .bt-ask-pin */
 .bt-root:not(#_) .bt-ask-pin { display: inline-flex; align-items: center; gap: 6px; padding: 5px 11px; border: 1px dashed var(--bt-primary); border-radius: var(--bt-radius-full); background: transparent; color: var(--bt-primary-soft); font: inherit; font-size: var(--bt-text-sm); font-weight: 700; cursor: pointer; }
@@ -5643,8 +5642,6 @@
   .bt-root:not(#_) .bt-map-zones { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .bt-talkback-body { grid-template-columns: minmax(0, 1fr); gap: 12px; }
-  .bt-root:not(#_) .bt-talkback-div { height: 1px; align-self: auto; }
   .bt-root:not(#_) .bt-filter-tiles { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .bt-root:not(#_) .bt-filter-tile b { font-size: 20px; }
   .bt-root:not(#_) .bt-kanban { grid-template-columns: repeat(4, 82%); }
@@ -5655,7 +5652,6 @@
 @container bt (max-width: 420px) {
   .bt-root:not(#_) .bt-rate-btn { padding: 12px 4px 10px; }
   .bt-root:not(#_) .bt-rate-btn small { display: none; }
-  .bt-root:not(#_) .bt-talkback-btns :is(.bt-talkback-rb, .bt-btn) { flex: 1 1 0; justify-content: center; padding-left: 6px; padding-right: 6px; }
   .bt-root:not(#_) .bt-ask-pin span { display: none; }
   .bt-root:not(#_) .bt-ask-pin { padding: 6px; }
 }

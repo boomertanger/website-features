@@ -1,7 +1,8 @@
-// The page strip's wiring (docs/specs/service-hub.md §8a; TalkBackNote.astro): once auth is known, the Rate half shows the visitor's "Join free to
-// rate", the member's three buttons, or their rating ("You love it · Change", the version and date). Like it and Love it save in one tap with the
-// toast; Not for me and Change open the rating dialog. The member's rating is read from my/{uid} (and the rating doc for its date) after sign-in;
-// visitors cost no read. Talk back's buttons call window.btTalkBack.open (Hotline Boom part 2) when that half is on.
+// The page strip's wiring (docs/specs/service-hub.md §8a; TalkBackNote.astro; the compact strip, V5 + S1, Oct 14, 2026): once auth is known, the
+// three rating buttons become the visitor's Join free buttons (data-signin="join"), or the member's buttons with their rating pressed. Like it and
+// Love it save in one tap; Not for me opens the rating dialog for its required comment; either way the toast says "Thanks! Only Boomer and the admins
+// see ratings." Tapping the rating you already gave opens the rating dialog (Keep or change on a newer version). The member's rating is read from
+// my/{uid} after sign-in; visitors cost no read. The Talk pill ([data-talk="question"]) calls window.btTalkBack.open (Hotline Boom part 2).
 // Light on purpose: everything else loads only on a page that has a strip.
 import { whenReady } from "../../lib/auth";
 
@@ -18,34 +19,31 @@ async function init(zone: HTMLElement, strip: HTMLElement) {
   const who = D.whoOf(s);
   const preview = D.gate.isPreview(s);
   const visitor = !preview && s.status === "signedOut";
-  // crew-only services: the strip is for the people who can rate them
+  // crew-only services: the buttons are for the people who can rate them
   const open = visitor ? ["everyone", "members"].includes(audience) : D.audienceOpen(audience, who);
   if (!open && !talkOn) { zone.hidden = true; return; }
   zone.hidden = false;
+  const now = zone.dataset.version;
 
-  const rateHalf = strip.querySelector<HTMLElement>(".bt-talkback-rate");
-  const talkHalf = strip.querySelector<HTMLElement>(".bt-talkback-talk");
-  const day = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
-  /** Redraw the halves for a state, from the kit's own markup (the head and foot don't change). */
+  /** Redraw the row for a state, from the kit's own markup (the section and its attributes stay). */
   const draw = (state: "new" | "rated" | "visitor", rating?: { value: string; version: string; date: string }) => {
     const t = document.createElement("template");
-    t.innerHTML = talkbackHtml({ service: id, name, state, rating, rate: rateOn, talk: talkOn });
-    if (rateHalf) rateHalf.innerHTML = t.content.querySelector(".bt-talkback-rate")?.innerHTML || "";
-    if (talkHalf) talkHalf.innerHTML = t.content.querySelector(".bt-talkback-talk")?.innerHTML || "";
+    t.innerHTML = talkbackHtml({ service: id, name, state, rating, rate: rateOn && open, talk: talkOn });
+    strip.innerHTML = t.content.querySelector(".bt-talkback")?.innerHTML || "";
+    // a rating on an older version: the pressed button says so (tapping it opens Keep or change)
+    const mine = strip.querySelector<HTMLElement>('[data-rate-v][aria-pressed="true"]');
+    if (mine && rating && now && rating.version !== now) mine.title = `Rated v${rating.version}. ${name} is on v${now} now: tap to keep or change.`;
   };
+  const day = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
   const showMine = async () => {
     const m = await D.my();
     const r = m.rated[id];
     if (!r) { draw("new"); return; }
     const doc = await D.ratingOf(id);
     draw("rated", { value: D.toPick(r.value), version: r.version, date: day(doc?.at ?? null) });
-    // a rating on an older version: say so (Change opens Keep or change)
-    const now = zone.dataset.version;
-    const small = rateHalf?.querySelector("small");
-    if (small && now && r.version !== now) small.textContent = `Rated v${r.version}. ${name} is on v${now} now: tap Change to keep or update your rating.`;
   };
 
-  if (!rateOn || !open) { if (rateHalf) rateHalf.hidden = true; }
+  if (!rateOn || !open) draw("new");
   else if (visitor) draw("visitor");
   else await showMine().catch(() => draw("new"));
 
@@ -55,17 +53,17 @@ async function init(zone: HTMLElement, strip: HTMLElement) {
   });
   strip.addEventListener("click", async (e) => {
     const t = e.target as HTMLElement;
-    const v = t.closest<HTMLElement>("[data-rate-v]");
+    const v = t.closest<HTMLButtonElement>("[data-rate-v]");
     if (v) {
+      const { quickRate, openRate } = await import("./dialogs");
+      if (v.getAttribute("aria-pressed") === "true") { void openRate({ serviceId: id, thanks: true }); return; }
       const btns = strip.querySelectorAll<HTMLButtonElement>("[data-rate-v]");
+      const was = [...btns].map((b) => b.getAttribute("aria-pressed"));
       if (v.dataset.rateV !== "nope") btns.forEach((b) => { b.disabled = true; b.setAttribute("aria-pressed", String(b === v)); });
-      const { quickRate } = await import("./dialogs");
       const ok = await quickRate(id, v.dataset.rateV as "nope" | "like" | "love");
-      if (!ok) btns.forEach((b) => { b.disabled = false; b.setAttribute("aria-pressed", "false"); });
+      if (!ok) btns.forEach((b, i) => { b.disabled = false; b.setAttribute("aria-pressed", was[i] || "false"); });
       return;
     }
-    if (t.closest("[data-rate-change]")) { const { openRate } = await import("./dialogs"); void openRate({ serviceId: id }); return; }
-    const talk = t.closest<HTMLElement>("[data-talk]");
-    if (talk) (window as any).btTalkBack?.open?.({ serviceId: id, mode: talk.dataset.talk });
+    if (t.closest("[data-talk]")) (window as any).btTalkBack?.open?.({ serviceId: id, mode: "question" });
   });
 }
