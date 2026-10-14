@@ -13,7 +13,9 @@
 // mirrored from sites/{siteId}/members/{uid}.roles by a Cloud Function.
 //
 // <body> reflects the state for CSS: data-auth-state = status, and data-auth =
-// visitor | member | admin. A real signed-in member always wins over the ?as=
+// visitor | member | admin, data-staff (mods and admins) and the role flags data-crew /
+// data-overseer / data-owner (.bt-when-* in bt-ui.css). The flags are also kept in
+// localStorage "bt.who" so BaseLayout can set them before first paint on the next page. A real signed-in member always wins over the ?as=
 // preview switch (non-production only); signed out, the preview stays as set.
 import { onAuthStateChanged, onIdTokenChanged, signOut as fbSignOut, sendEmailVerification, type User } from "firebase/auth";
 import { auth, SITE_ID } from "./firebase";
@@ -41,23 +43,44 @@ export interface AuthState {
   account: Account | null;
   roles: string[];
   isAdmin: boolean;
+  /** Mod Machina grade from the claims: 1-4 (mods) or "A1"-"A3" (admins); crewStatus active, reserve, paused, alumni... */
+  crewGrade?: number | string | null;
+  crewStatus?: string | null;
+  /** The site owner (sites/{siteId}.ownerUid; only checked for admins). */
+  isOwner?: boolean;
 }
 
 const EMPTY: AuthState = { status: "loading", user: null, profile: null, account: null, roles: [], isAdmin: false };
 let state: AuthState = EMPTY;
 const listeners = new Set<(s: AuthState) => void>();
-const previewAuth = document.body.dataset.auth || "visitor";   // set by the ?as= switch before this runs
+const previewAuth = document.body.dataset.previewAuth || "";   // set by the ?as= switch before this runs ("" = no preview)
+
+/** The role flags for CSS: crew = on the crew and not Paused or Alumni, or the owner; overseer = A2 Overseer and up, or the owner. */
+export function roleFlags(s: AuthState) {
+  const owner = !!s.isOwner;
+  const crew = owner || (s.crewGrade != null && !["paused", "alumni"].includes(String(s.crewStatus || "")));
+  const overseer = owner || s.crewGrade === "A2" || s.crewGrade === "A3";
+  return { staff: s.isAdmin || s.roles.includes("mod"), crew, overseer, owner };
+}
 
 function publish(next: AuthState) {
   state = next;
   const b = document.body;
   b.dataset.authState = next.status;
-  if (next.user && next.status !== "needsSignup") b.dataset.auth = next.isAdmin ? "admin" : "member";
-  else if (next.user) b.dataset.auth = "visitor";
-  else b.dataset.auth = previewAuth;
-  // data-staff: mods and admins (.bt-when-staff). With nobody signed in, the ?as=admin preview counts as staff.
-  const staff = next.user && next.status !== "needsSignup" ? next.isAdmin || next.roles.includes("mod") : !next.user && previewAuth === "admin";
-  b.dataset.staff = staff ? "on" : "off";
+  const on = (v: boolean) => (v ? "on" : "off");
+  const member = !!next.user && next.status !== "needsSignup";
+  if (!next.user && previewAuth) {
+    b.dataset.auth = previewAuth;   // signed out on a preview: the ?as= flags stay as the switch set them
+  } else {
+    const f = member ? roleFlags(next) : { staff: false, crew: false, overseer: false, owner: false };
+    b.dataset.auth = member ? (next.isAdmin ? "admin" : "member") : "visitor";
+    b.dataset.staff = on(f.staff); b.dataset.crew = on(f.crew); b.dataset.overseer = on(f.overseer); b.dataset.owner = on(f.owner);
+    // The next page sets these before first paint (BaseLayout); signed out (or mid-signup), there is nothing to remember.
+    try {
+      if (member) localStorage.setItem("bt.who", JSON.stringify({ v: 1, uid: next.user!.uid, auth: b.dataset.auth, ...f }));
+      else localStorage.removeItem("bt.who");
+    } catch { /* storage blocked: the flags just arrive with the sign-in */ }
+  }
   listeners.forEach((fn) => { try { fn(next); } catch (err) { console.error(err); } });
 }
 
@@ -95,20 +118,27 @@ async function load(user: User | null, forceToken = false) {
   }
   // Roles from the token's claims. When the server changed them after this token
   // was issued (users/{uid}.claimsUpdatedAt), fetch a fresh token first.
-  let roles: string[] = [];
+  let roles: string[] = [], crewGrade: number | string | null = null, crewStatus: string | null = null;
   try {
     let token = await user.getIdTokenResult(forceToken);
     const changed = account?.claimsUpdatedAt?.toMillis?.() ?? 0;
     if (!forceToken && changed > Date.parse(token.issuedAtTime)) token = await user.getIdTokenResult(true);
     const claimed = (token.claims.roles as Record<string, unknown> | undefined)?.[SITE_ID];
     roles = Array.isArray(claimed) ? claimed.filter((r): r is string => typeof r === "string") : [];
+    crewGrade = (token.claims.crewGrade as number | string | undefined) ?? null;
+    crewStatus = (token.claims.crewStatus as string | undefined) ?? null;
   } catch (err) { console.error("auth: couldn't read the ID token", err); }
+  // The owner is an admin whose uid is the site doc's ownerUid (only admins pay for this read)
+  let isOwner = false;
+  if (roles.includes("admin")) {
+    try { const { db, doc, getDoc } = await import("./db"); isOwner = (await getDoc(doc(db, "sites", SITE_ID))).get("ownerUid") === user.uid; } catch { /* not the owner as far as we can tell */ }
+  }
   if (seq !== loadSeq) return;   // a newer sign-in/out won
   // Only a confirmed missing signup sends someone to the signup steps; a failed
   // read keeps them signed in rather than asking them to sign up again.
   const needsSignup = readOk && !account?.signedUpAt;
   const status: AuthStatus = needsSignup ? "needsSignup" : user.emailVerified ? "verified" : "unverified";
-  publish({ status, user, account, profile, roles, isAdmin: roles.includes("admin") });
+  publish({ status, user, account, profile, roles, isAdmin: roles.includes("admin"), crewGrade, crewStatus, isOwner });
 }
 
 /** Re-reads the member's docs (and optionally the token's claims), e.g. after a callable changed them. */
@@ -157,7 +187,8 @@ export function startAuth() {
       user.getIdTokenResult().then((t) => {
         const claimed = (t.claims.roles as Record<string, unknown> | undefined)?.[SITE_ID];
         const roles = Array.isArray(claimed) ? (claimed as string[]) : [];
-        if (roles.join() !== state.roles.join()) publish({ ...state, roles, isAdmin: roles.includes("admin") });
+        const crewGrade = (t.claims.crewGrade as number | string | undefined) ?? null, crewStatus = (t.claims.crewStatus as string | undefined) ?? null;
+        if (roles.join() !== state.roles.join() || crewGrade !== (state.crewGrade ?? null) || crewStatus !== (state.crewStatus ?? null)) publish({ ...state, roles, isAdmin: roles.includes("admin"), crewGrade, crewStatus });
       }).catch(() => {});
     }
     lastUid = user?.uid ?? null;

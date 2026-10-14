@@ -220,7 +220,9 @@ Recruit Rush and Beat Goal bars. New followers and subs once the broadcaster tok
 
 **Wordmark.** CONTROL + accent ROOM on `.bt-wordmark--power` in a `.bt-topbar`, with a radar-scope icon
 (sweeps while live, blip in the live colour, faster on hover; still under reduced motion). Top nav: Live,
-Questions, How it works (and Controls, Mod Deck, Checklist templates for the owner). The gold page title shows
+Questions, How it works (/live?how=1), then only for people who have them: Mod Deck (the crew), Controls (the owner and A2
+Overseer and up), Checklist (the owner). The same bar and links on every /live page, the Mod Deck included (Oct 14, 2026;
+design-system.md §5 "Feature bars"). The gold page title shows
 the stream's own title ("MONSTER MONDAY").
 
 **Looks (reskins).** The Control Room pages ship with switchable looks sharing one set of markup and data:

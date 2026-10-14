@@ -114,12 +114,14 @@ async function update() {
   if (v !== view) {
     parts[view as View]?.unmount?.();
     view = v;
+    const load = loaders[v];
+    // The new view shows only once its module is here, and is drawn in the same task (no paint in between): showing it first put its
+    // static markup on screen and then pushed it down when the ticket and the rest arrived (layout shift 0.07 on phones).
+    if (load) parts[v] ||= (await load()).default;
+    if (mine !== seq) return;
     root.dataset.view = v;
     for (const [k, b] of Object.entries(boxes)) b.hidden = k !== v;
-    const load = loaders[v];
     if (!load) return;
-    parts[v] ||= (await load()).default;
-    if (mine !== seq) return;
     parts[v]!.mount(ctx, boxes[v]);
     if (changedState) crBoot(root);
     return;

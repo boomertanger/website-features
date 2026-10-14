@@ -4,7 +4,7 @@
 // DISPLAY ONLY: every button is a callable the server checks again (grade, lockout, first write wins). Preview (non-production, signed out): ?state=off|open|duty|away|prompt|acting|ended|after
 // and ?as=deckhand|lead|captain|owner draw sample data from mod-deck-preview.ts and never touch Firestore or a callable. Captain tools, flags and Confirm tonight's crew come in part 5:
 // [data-slot="helm"] and [data-confirm-slot] are left for them.
-import { initLiveBar, addOwnerLinks } from "./bar";
+import { initLiveBar } from "./bar";
 import { initDutyBar } from "../../../../shared/ui/duty-bar.js";
 import { initPrompt } from "../../../../shared/ui/prompt.js";
 import { initCrewNotes } from "../../../../shared/ui/crew-notes.js";
@@ -85,7 +85,6 @@ onAuth((real) => {
 
 // ---------------------------------------------------------------------------------------------- the page
 function mount(me: Me, src: Source) {
-  if (me.owner) addOwnerLinks();   // the owner's Checklist templates link, as on the Control Room's bar (one bar, one set of links)
   const origin = "https://boomertanger.com";
   const M: Model = {
     me, pub: null, duty: null, rec: null, stream: null, next: null, notes: [], cues: [], swaps: [], boost: 1.5,

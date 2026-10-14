@@ -4,7 +4,7 @@
   "type": "adminTool",
   "area": "Watch",
   "blurb": "The owner's controls: start and stop, beats, check-ins, scenes, drops and the checklist.",
-  "version": "1.0",
+  "version": "1.1",
   "status": "live",
   "audience": "owner",
   "routes": [

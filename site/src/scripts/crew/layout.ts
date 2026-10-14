@@ -25,11 +25,11 @@ export const isAdmin = (s: AuthState) => s.isAdmin || s.roles.includes("admin");
 export const previewAs = (): "member" | "admin" | null => {
   if (isProduction) return null;
   const v = new URLSearchParams(location.search).get("as");
-  return v === "member" || v === "admin" ? v : null;
+  return v === "member" || v === "admin" ? v : v === "crew" ? "member" : null;   // ?as=crew: a crew member (a Warden), shown member data
 };
 const previewState = (): AuthState | null => {
-  const p = previewAs();
-  return p ? ({ status: "verified", user: null, profile: null, account: null, roles: p === "admin" ? ["admin", "mod"] : [], isAdmin: p === "admin" } as unknown as AuthState) : null;
+  const p = previewAs(), crew = new URLSearchParams(location.search).get("as") === "crew";
+  return p ? ({ status: "verified", user: null, profile: null, account: null, roles: p === "admin" ? ["admin", "mod"] : crew ? ["mod"] : [], isAdmin: p === "admin", crewGrade: p === "admin" ? "A3" : crew ? 3 : null, crewStatus: "active" } as unknown as AuthState) : null;
 };
 
 const root = document.querySelector<HTMLElement>("[data-cr]");

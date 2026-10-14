@@ -4,11 +4,10 @@
    .bt-timecard, .bt-ladder, .bt-ring, .bt-quiz…). Tokens only: no raw colours. Container queries
    (1024 / 640 / 420); every animation has a reduced-motion version. */
 
-/* ---- The bar (the page content width, like Night Shift's) ---- */
+/* ---- The MODMACHINA bar (components/crew/CrewBar.astro; the kit's .bt-topbar--rows does the phone row): the page content width ---- */
 .bt-root:not(#_) .cr-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .cr-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
 .bt-root:not(#_) .cr-tag { flex: none; }
-.bt-root:not(#_) .cr-barico { display: none; }
 
 /* ---- Gated pages: .cr[data-access] picks skeleton, gate or page ---- */
 .bt-root:not(#_) .cr :is(.cr-skel, .cr-gate) { display: none; }
@@ -28,15 +27,3 @@
 .bt-root:not(#_) .cr-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .bt-root:not(#_) .cr-gate-acts[hidden] { display: none; }
 
-@container bt (max-width: 640px) {
-  .bt-root:not(#_) .cr-barlinks { display: none; }
-  .bt-root:not(#_) .cr-barico { display: inline-flex; }
-  .bt-root:not(#_) .cr-tag { display: none; }
-}
-
-@container bt (max-width: 420px) {
-  /* Seven icons (three for crew only) plus the wordmark don't fit a phone: keep the gear and eye, drop the letters. */
-  .bt-root:not(#_) .cr-brand .bt-wordmark-text { display: none; }
-  .bt-root:not(#_) .cr-bar { gap: 8px; }
-  .bt-root:not(#_) .cr-barico { min-width: 0; overflow-x: auto; scrollbar-width: none; }
-}

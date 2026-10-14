@@ -13,10 +13,14 @@
     "preview": "astro preview",
     "check": "node scripts/check-tech-stack.js && node scripts/check-services.js",
     "check:tech-stack": "node scripts/check-tech-stack.js",
-    "check:services": "node scripts/check-services.js"
+    "check:services": "node scripts/check-services.js",
+    "test:bars": "node tests/bars.mjs"
   },
   "dependencies": {
     "astro": "^7.3.5",
     "firebase": "^12.19.0"
+  },
+  "devDependencies": {
+    "playwright-core": "^1.57.0"
   }
 }

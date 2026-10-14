@@ -48,6 +48,8 @@ const SEATS: [string, string[]][] = [["twitch", ["SS", "V", ""]], ["ytLandscape"
           <h1 class="bt-title bt-title--hero" id="h-hero" data-cj-h>Take a seat on the crew</h1>
           <p data-cj-p>Help keep the chats fun and safe while Boomer plays. Pick the chats you like, train at your own pace, and help on the streams that suit you. About five minutes to apply.</p>
           <div class="ai-acts" data-cj-acts>
+            <!-- the visitor's two buttons from the start (scripts/crew/join.ts hero() swaps the first per state): the row is already two buttons tall on phones -->
+            <a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to apply for the crew">Join free to apply</a>
             <a class="bt-btn bt-btn--secondary" href="/crew/how-it-works">How the crew works</a>
           </div>
         </div>

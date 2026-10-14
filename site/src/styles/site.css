@@ -73,3 +73,10 @@
 
 /* Placeholder pages: the page title block and a Coming soon card. */
 .bt-root:not(#_) .bt-page-intro { display: flex; flex-direction: column; gap: var(--bt-space-2); padding-top: var(--bt-space-4); }
+
+/* ---- Pages drawn after load reserve the first screen (Oct 14, 2026: layout shift near 0) ----
+   The Control Room and Mod Machina pages (gated or not), /live and /live/questions draw their content once the sign-in and the data
+   arrive; the talk-back strip and the footer come after them. With at least a screen reserved, those start below the first screen and
+   never jump when the page fills in (they were most of the layout shift: 0.28-0.78). The crew board's table does the same for its legend. */
+.bt-root:not(#_) :is(.lv, .cr, [data-lp], [data-lq]) { min-height: 100vh; min-height: 100svh; }
+.bt-root:not(#_) [data-cp-board] [data-cp-body] { min-height: 100vh; min-height: 100svh; }

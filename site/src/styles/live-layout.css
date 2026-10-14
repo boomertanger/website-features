@@ -1,15 +1,8 @@
 /* site/src/styles/live-layout.css — the Control Room staff pages' shared frame (docs/specs/control-room.md §2): the bar, gates and skeleton
    (lv-* prefix; tokens only; container queries 1024/640/420). Page-specific rules are in live-control.css. */
 
-/* ---- The bar (the page content width, like the Scream Planner's) ---- */
+/* ---- The CONTROLROOM bar (components/live/ControlRoomBar.astro; the kit's .bt-topbar--rows does the phone row): the page content width ---- */
 .bt-root:not(#_) .lv-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
-.bt-root:not(#_) .lv-brand { display: flex; align-items: center; gap: 10px; min-width: 0; }
-.bt-root:not(#_) .lv-barico { display: none; }
-.bt-root:not(#_) .lv-owner-slot { display: contents; }
-.bt-root:not(#_) .lv-owner-slot[hidden] { display: none; }
-/* Mod Deck is not built yet: shown, dimmed, not a link yet */
-.bt-root:not(#_) .lv-soon { opacity: 0.55; cursor: default; pointer-events: none; }
-.bt-root:not(#_) .lv-soon small { margin-left: 4px; padding: 1px 6px; border-radius: var(--bt-radius-full); background: var(--bt-surface-2); color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 700; }
 
 /* ---- Gated pages: .lv[data-access] picks skeleton, gate or page ---- */
 .bt-root:not(#_) .lv :is(.lv-skel, .lv-gate) { display: none; }
@@ -28,12 +21,3 @@
 .bt-root:not(#_) .lv-gate-acts { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; }
 .bt-root:not(#_) .lv-gate-acts[hidden] { display: none; }
 
-@container bt (max-width: 640px) {
-  .bt-root:not(#_) .lv-barlinks { display: none; }
-  .bt-root:not(#_) .lv-barico { display: inline-flex; }
-}
-@container bt (max-width: 420px) {
-  .bt-root:not(#_) .lv-brand .bt-wordmark-text { display: none; }
-  .bt-root:not(#_) .lv-bar { gap: 8px; }
-  .bt-root:not(#_) .lv-barico { min-width: 0; overflow-x: auto; scrollbar-width: none; }
-}

@@ -2,7 +2,7 @@
 // (LiveLayout.astro, LiveFrame.astro): .lv[data-access] is  loading (skeleton) · join (visitors) · signup (mid-signup) · gate (signed in, not allowed) · page.
 // Who may open it (docs/specs/control-room.md §2): the owner and A2 Overseer and up. Role checks here only control what is shown; the callables and
 // Firestore rules are the real protection. The "Checklist templates" link is added to the bar for the owner's uid only (never an empty slot).
-import { initLiveBar, addOwnerLinks } from "./bar";
+import { initLiveBar } from "./bar";
 import { onAuth, type AuthState } from "../../lib/auth";
 import { isProduction } from "../../lib/env.js";
 import type { Role } from "./model";
@@ -16,7 +16,7 @@ const bar = initLiveBar();   // the shared bar (scripts/live/bar.ts), the same a
 export const livePreview = (): Role | null => {
   if (isProduction) return null;
   const v = new URLSearchParams(location.search).get("as");
-  return v === "admin" ? "owner" : v === "a2" ? "a2" : null;
+  return v === "admin" || v === "owner" ? "owner" : v === "a2" ? "a2" : null;
 };
 const previewState = (): AuthState | null => {
   const p = livePreview();
@@ -32,7 +32,6 @@ async function roleOf(s: AuthState): Promise<Role | null> {
   return roleCache;
 }
 
-// addOwnerLinks: scripts/live/bar.ts (shared with the Mod Deck)
 
 let shown = false;
 let granted: { state: AuthState; role: Role } | null = null;
@@ -46,7 +45,6 @@ if (root && root.dataset.access !== "page") {
       root.dataset.access = access;
       root.querySelector<HTMLElement>("[data-lv-gate-visitor]")!.hidden = access !== "join";
       root.querySelector<HTMLElement>("[data-lv-gate-signup]")!.hidden = access !== "signup";
-      if (role === "owner") addOwnerLinks();
       bar?.sync();
       if (access === "page" && !shown) { shown = true; granted = { state: s, role: role! }; document.dispatchEvent(new CustomEvent("lv:access", { detail: granted })); }
     };

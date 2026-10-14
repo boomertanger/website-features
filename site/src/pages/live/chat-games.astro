@@ -9,7 +9,7 @@
 // The only reads are public: public/live (the shared listener: live or not) and the Scream Planner's published schedule (the next stream, for members).
 // Every rule stated here matches the as-built spec (§4 to §7, §11).
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import LiveBar from "../../components/live/LiveBar.astro";
+import ControlRoomBar from "../../components/live/ControlRoomBar.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
@@ -99,7 +99,7 @@ const FAQS = [
 ] as const;
 ---
 <BaseLayout title="How Chat Games work" description="Ask questions, take the Hot Seat, vote, and call what happens next. How every Chat Game works, what each one pays, and the house rules.">
-  <LiveBar slot="bar" />
+  <ControlRoomBar slot="bar" />
   <div class="cgh bt-zone" data-cgh>
     <TocLayout items={NAV}>
       <div class="ai-main">

@@ -4,7 +4,7 @@
   "type": "feature",
   "area": "Watch",
   "blurb": "Watch the stream, check in at the breaks, and see who's on duty.",
-  "version": "1.0",
+  "version": "1.1",
   "status": "live",
   "audience": "everyone",
   "routes": [

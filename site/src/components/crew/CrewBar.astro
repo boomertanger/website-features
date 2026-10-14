@@ -1,25 +1,29 @@
 ---
-// Mod Machina's feature bar (design-system.md §8h pattern, like Night Shift's): the kit's .bt-topbar in a
-// .bt-sticky-bar with the MOD MACHINA .bt-wordmark--power (gear and eye). Everyone sees The crew, How it works,
-// Board and Join; crew members (.bt-when-staff, display only) also see HQ, Academy, Queue and Games (the Chat Games pool). Icon-only
-// .bt-seg-nav--icons on phones. Wired in scripts/crew/layout.ts.
+// The MODMACHINA bar, on every /crew page and /admin/crew (docs/design-system.md §5 "Feature bars": the URL decides the bar; §8h pattern):
+// the kit's .bt-topbar.bt-topbar--rows in a .bt-sticky-bar with the MOD MACHINA .bt-wordmark--power (gear and eye) and a .bt-topnav with
+// one .bt-seg-nav--scroll (on phones, one row under the wordmark that scrolls sideways). Everyone sees The crew, How it works, Board and
+// Join; staff (mods and admins, .bt-when-staff) also see HQ, Academy, Queue and Games (the Chat Games pool); the crew (.bt-when-crew) see
+// Mod Deck, into /live/deck. Role links are in the HTML and shown by the body flags BaseLayout sets before first paint, so nothing pops in;
+// the inline ROW_CURRENT script scrolls the current link into view before first paint. Wired in scripts/crew/layout.ts.
 import { MM_ICON } from "../../../../shared/ui/mod-machina.js";
+import { ROW_CURRENT } from "../../lib/row-current.js";
 
 interface Props { section?: string | null; admin?: boolean; gated?: boolean }
 const { section = null, admin = false, gated = false } = Astro.props;
 const links = [
-  { id: "crew", label: "The crew", href: "/crew", icon: "club", staff: false },
-  { id: "how", label: "How it works", href: "/crew/how-it-works", icon: "help", staff: false },
-  { id: "board", label: "Board", href: "/crew/board", icon: "trophy", staff: false },
-  { id: "join", label: "Join", href: "/crew/join", icon: "plus", staff: false },
-  { id: "hq", label: "HQ", href: "/crew/hq", icon: "home", staff: true },
-  { id: "academy", label: "Academy", href: "/crew/academy", icon: "bulb", staff: true },
-  { id: "queue", label: "Queue", href: "/crew/queue", icon: "eye", staff: true },
-  { id: "games", label: "Games", href: "/crew/games", icon: "game", staff: true },
+  { id: "crew", label: "The crew", href: "/crew" },
+  { id: "how", label: "How it works", href: "/crew/how-it-works" },
+  { id: "board", label: "Board", href: "/crew/board" },
+  { id: "join", label: "Join", href: "/crew/join" },
+  { id: "hq", label: "HQ", href: "/crew/hq", when: "bt-when-staff" },
+  { id: "academy", label: "Academy", href: "/crew/academy", when: "bt-when-staff" },
+  { id: "queue", label: "Queue", href: "/crew/queue", when: "bt-when-staff" },
+  { id: "games", label: "Games", href: "/crew/games", when: "bt-when-staff" },
+  { id: "deck", label: "Mod Deck", href: "/live/deck", when: "bt-when-crew" },
 ];
 ---
 <div class="bt-sticky-bar cr-dock" data-cr-dock data-gated={gated ? "" : undefined}>
-  <div class="bt-topbar cr-bar">
+  <div class="bt-topbar bt-topbar--rows cr-bar">
     <div class="cr-brand">
       <a class="bt-wordmark bt-wordmark--power" href="/crew" aria-label="Mod Machina">
         <span class="bt-wordmark-icon" set:html={MM_ICON} />
@@ -27,11 +31,11 @@ const links = [
       </a>
       {admin && <span class="bt-badge bt-badge--admin cr-tag">Admin</span>}
     </div>
-    <nav class="bt-seg-nav cr-barlinks" aria-label="Mod Machina">
-      {links.map((l) => <a class:list={[l.staff && "bt-when-staff"]} href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
-    </nav>
-    <nav class="bt-seg-nav bt-seg-nav--icons cr-barico" aria-label="Mod Machina">
-      {links.map((l) => <a class:list={[l.staff && "bt-when-staff"]} href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>)}
-    </nav>
+    <div class="bt-topnav">
+      <nav class="bt-seg-nav bt-seg-nav--scroll" aria-label="Mod Machina">
+        {links.map((l) => <a class:list={[l.when]} href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
+      </nav>
+      <script is:inline set:html={ROW_CURRENT} />
+    </div>
   </div>
 </div>

@@ -4,14 +4,14 @@
 // for the crew, the mod queue of held questions. Everyone reads; members ask and vote; the crew moderates (the callables and rules check again).
 // Everything below the hero is drawn by scripts/live/questions-page.ts. Preview (staging, signed out): ?as=member or ?as=mod.
 import BaseLayout from "../../layouts/BaseLayout.astro";
-import LiveBar from "../../components/live/LiveBar.astro";
+import ControlRoomBar from "../../components/live/ControlRoomBar.astro";
 import Mascot from "../../components/Mascot.astro";
 import "../../styles/live-layout.css";
 import "../../styles/control-room-looks.css";
 import "../../styles/live-questions.css";
 ---
 <BaseLayout title="Questions" description="Ask Boomertanger anything. Vote for the questions you want answered; the top ones get answered on stream.">
-  <LiveBar slot="bar" />
+  <ControlRoomBar slot="bar" section="questions" />
   <div class="lq bt-zone" data-lq data-look="hull">
     <section class="lq-hero" aria-labelledby="lq-h">
       <div>

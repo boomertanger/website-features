@@ -7,7 +7,7 @@
 // The static shell is here; scripts/live/pub.ts decides the view and fills it. The gold title is the stream's own (the next stream's when off air).
 // Preview (staging and previews only): ?live=off|public|backstage or ?state=off|soon|live|break|backstage|ended, ?as=visitor|member, ?look=crt.
 import BaseLayout from "../layouts/BaseLayout.astro";
-import LiveBar from "../components/live/LiveBar.astro";
+import ControlRoomBar from "../components/live/ControlRoomBar.astro";
 import TocLayout from "../components/TocLayout.astro";
 import Mascot from "../components/Mascot.astro";
 import { boombotIcon } from "../../../shared/ui/arcade.js";
@@ -39,7 +39,7 @@ const FAQS = [
 ];
 ---
 <BaseLayout title="Live" description="Watch the stream, check in at every beat and see who is on the crew. When we're off air, see what's next.">
-  <LiveBar slot="bar" />
+  <ControlRoomBar slot="bar" section="live" />
   <div class="lp bt-zone" data-lp data-look="hull" data-view="loading" data-state="loading">
     <header class="lp-head" data-lp-head hidden>
       <h1 class="bt-title lp-title" data-lp-title>Live</h1>
