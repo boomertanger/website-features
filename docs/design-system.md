@@ -219,7 +219,12 @@ rAF-throttled JS fallback). While stuck it sets `--bt-sticky-top` to 66px. At �
 always a 62px bar (icon buttons 44 × 44); it never hides within the first screen (scrollY < 60% of the viewport
 height), then hides (`.is-hidden`) after 200px of continuous downward scroll (any upward
 scroll resets the count) and comes back after 24px up, and whenever focus is inside;
-`--bt-sticky-top` is 62px while shown, 0 while hidden, so a chip row slides up with it. The
+`--bt-sticky-top` is 62px while shown, 0 while hidden. For things that go with the bar as it hides
+(the chapter rail) it also writes `--bt-sticky-h` (the bar's stuck height whenever the bar can stick, set at init, so it
+never changes at the stick moment) and `--bt-sticky-shift` (minus that height while hidden, else 0): the kit's
+`.bt-sticky-follow` sticks at `top: var(--bt-sticky-h)` and moves with `transform: translateY(var(--bt-sticky-shift))`
+on the bar's own 0.3s timing, so the two slide together and nothing re-lays out while the page scrolls. Never animate
+`top` to follow the bar: the rail chased it and shook (Oct 14, 2026). The
 thresholds are constants at the top of `sticky-bar.js`. Reduced motion: it never hides.
 
 **Icon-only seg nav: `.bt-seg-nav--icons`**: the `.bt-seg-nav` track and lit pill with an
@@ -238,7 +243,7 @@ under the wordmark at 640px and narrower, with the sticky bar at 118px (rest and
 Use it instead of hiding a feature bar's links on phones.
 
 **Feature bars: the URL decides the bar** (Oct 14, 2026; the Control Room and Mod Machina clean-up). A feature
-area has exactly one bar, and every page under its URL shows it: every `/live` page (`/live`, `/live/questions`,
+area has exactly one bar, and every page under its URL shows it: every `/live` page (`/live`, `/live/how-it-works`, `/live/questions`,
 `/live/chat-games`, `/live/control`, `/live/control/checklist`, `/live/deck`) the CONTROLROOM bar
 (`components/live/ControlRoomBar.astro`), every `/crew` page and `/admin/crew` the MODMACHINA bar
 (`components/crew/CrewBar.astro`). A page never picks a bar by what it does or who is looking (the Mod Deck's own MOD
@@ -263,7 +268,7 @@ links in one bar go to the same page: when the first link is the area's home, th
   rows), no live data in the bar, and the text keeps its width when Inter loads (bt-ui.css's metric-matched
   `"Inter Fallback"` faces and `"Inter Caps Fallback"` for the wordmarks).
 - **Phone link row (640px and narrower):** the wordmark on the first row, the links in one row under it, full width,
-  scrolling sideways. `ROW_CURRENT` marks the link for this URL (`/live?how=1` lights How it works) and scrolls it into
+  scrolling sideways. `ROW_CURRENT` marks the link for this URL (a link with a query beats the bare path when the URL has it) and scrolls it into
   view while the page is still parsing, so it is in place on the first frame: no animation, no reset to the start.
   `seg-nav.js` keeps it there (a hidden current link, a role link the viewer doesn't have, scrolls nothing).
 - **Pages under a bar that draw after load** reserve the first screen (`.lv`, `.cr`, `[data-lp]`, `[data-lq]`:
@@ -279,7 +284,9 @@ with a thin gold progress bar above it (`--bt-toc-prog`). Behavior: `shared/ui/t
 (`initToc(nav)` follows the scroll with an IntersectionObserver; `initToc(nav, { observe:
 false }).set(i)` for demos). The current stop is the last section whose top has passed a
 line 30% down the screen (the last one on screen at the very bottom; a menu click sets it at
-once), so it works for tall sections and for short targets like Markdown `h2`s. Long text
+once), so it works for tall sections and for short targets like Markdown `h2`s. Updating the current stop never
+scrolls the page; on phones it scrolls only the chip row, at once (never a smooth scroll started by a scroll event), and
+only when the current chip is out of view; the chips have a fixed height (32px), so the row never changes height. Long text
 pages use the shared `site/src/components/TocLayout.astro` (`items: [id, label][]`): the
 sticky rail in a left column, the content on the right, the chip row at ≤ 640px, and
 jumps landing below the header (`scroll-margin-top` from `--bt-header-h`). How it works,

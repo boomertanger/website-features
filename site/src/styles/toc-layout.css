@@ -3,7 +3,7 @@
    this file only places it. Tokens only: no raw colors. */
 
 .bt-root:not(#_) .tl-wrap { display: grid; grid-template-columns: 200px minmax(0, 1fr); gap: 32px; width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; padding: 28px var(--bt-gutter) 56px; }
-.bt-root:not(#_) .tl-nav { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 16px); align-self: start; }
+.bt-root:not(#_) .tl-nav { position: sticky; top: calc(var(--bt-sticky-h, 0px) + 16px); align-self: start; }   /* the bar's stuck height: set before the bar sticks, so the rail never jumps when it does */
 .bt-root:not(#_) .tl-main { min-width: 0; }
 /* Sticky offsets use --bt-sticky-top (what's stuck at the top right now), never the header
    height: the site header scrolls away. A jump from the menu lands just below it. */
@@ -11,9 +11,9 @@
 
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .tl-wrap { grid-template-columns: minmax(0, 1fr); gap: 16px; padding: 18px 16px 40px; }
-  /* Follows the Arcade's hide-on-scroll bar up and down (--bt-sticky-top 46px or 0). */
-  .bt-root:not(#_) .tl-nav { top: var(--bt-sticky-top, 0px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); transition: top 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+  /* Sticks under the feature bar and slides away with it as it hides (.bt-sticky-follow: top is the bar's stuck height, the hide a
+     transform on the bar's timing). Animating top here made the row chase the bar and shake (Oct 14, 2026). */
+  .bt-root:not(#_) .tl-nav { top: var(--bt-sticky-h, 0px); z-index: 3; margin: 0 -16px; padding: 13px 16px 8px; background-color: var(--bt-bg); }
   /* ...and below the sticky chip row too. */
   .bt-root:not(#_) .tl-main [id] { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 72px); }
 }
-@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .tl-nav { transition: none; } }

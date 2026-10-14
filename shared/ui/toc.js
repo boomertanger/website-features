@@ -4,7 +4,8 @@
 // of the page, the last one on screen; a menu click sets it at once), earlier ones are
 // .is-past, the rail fills to the current stop (--bt-toc-fill) and the phone chip row's
 // gold bar shows how far through the page you are (--bt-toc-prog). On phones the current
-// chip is kept in view in the row.
+// chip is kept in view in the row: only the row scrolls (never the page), at once (never a
+// smooth scroll started by a scroll event), and only when the chip is out of view.
 //
 //   <nav class="bt-toc" aria-label="On this page">
 //     <span class="bt-toc-rail"></span><span class="bt-toc-fill"></span>
@@ -27,8 +28,12 @@ export function initToc(nav, { observe = true } = {}) {
     const a = links[i];
     if (fill) nav.style.setProperty("--bt-toc-fill", `${Math.max(0, a.offsetTop + a.offsetHeight / 2 - 14)}px`);
     nav.style.setProperty("--bt-toc-prog", `${Math.round(((i + 1) / links.length) * 100)}%`);
-    // Phones: the chip row scrolls sideways; keep the current chip in it.
-    if (nav.scrollWidth > nav.clientWidth + 1) nav.scrollTo({ left: a.offsetLeft - 16, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    // Phones: the chip row scrolls sideways; keep the current chip in it. The row only, at once, and only when the chip is
+    // (partly) out of view: a smooth scroll on every change, started while the page itself was scrolling, made the row shake.
+    if (nav.scrollWidth > nav.clientWidth + 1 && a.offsetWidth) {
+      const pad = 16, l = a.offsetLeft, r = l + a.offsetWidth;
+      if (l < nav.scrollLeft + pad || r > nav.scrollLeft + nav.clientWidth - pad) nav.scrollLeft = Math.max(0, l - pad);
+    }
   }
   if (observe) {
     // Works for tall sections and for short targets like a Markdown page's h2s, which can

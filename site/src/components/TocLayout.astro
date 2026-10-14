@@ -1,8 +1,9 @@
 ---
 // A long page with an "On this page" menu (docs/design-system.md §5 .bt-toc): the kit's
 // progress rail in a sticky left column, the page's content on the right; at <= 640px the
-// rail becomes the kit's chip row, sticky under the header. shared/ui/toc.js follows the
-// scroll. Used by /arcade/how-it-works, /terms and /privacy.
+// rail becomes the kit's chip row, sticky under the feature bar and sliding away with it
+// (the kit's .bt-sticky-follow: a transform on the bar's timing, never an animated top). shared/ui/toc.js
+// follows the scroll. Used by the story pages (/arcade/how-it-works, /live/how-it-works, ...), /terms and /privacy.
 //   items: [id, label] for each section, in page order (the ids must exist in the content).
 import "../styles/toc-layout.css";
 
@@ -10,7 +11,7 @@ interface Props { items: [string, string][]; label?: string }
 const { items, label = "On this page" } = Astro.props;
 ---
 <div class="tl-wrap">
-  <nav class="bt-toc tl-nav" aria-label={label}>
+  <nav class="bt-toc bt-sticky-follow tl-nav" aria-label={label}>
     <span class="bt-toc-rail" aria-hidden="true"></span><span class="bt-toc-fill" aria-hidden="true"></span>
     {items.map(([id, text]) => <a href={`#${id}`}>{text}</a>)}
   </nav>

@@ -1571,7 +1571,7 @@
   .bt-root:not(#_) .bt-toc { flex-direction: row; flex-wrap: nowrap; gap: 6px; padding: 11px 0 0; overflow-x: auto; scrollbar-width: none; background: linear-gradient(90deg, var(--bt-title) 0 var(--bt-toc-prog, 0%), var(--bt-border-2) var(--bt-toc-prog, 0%)) 0 0 / 100% 3px no-repeat; }
   .bt-root:not(#_) .bt-toc::-webkit-scrollbar { display: none; }
   .bt-root:not(#_) :is(.bt-toc-rail, .bt-toc-fill) { display: none; }
-  .bt-root:not(#_) .bt-toc a { flex: none; padding: 6px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; }
+  .bt-root:not(#_) .bt-toc a { flex: none; box-sizing: border-box; height: 32px; padding: 0 12px; line-height: 30px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-full); white-space: nowrap; }   /* a fixed row height: the row never grows or shrinks while the page scrolls */
   .bt-root:not(#_) .bt-toc a::before { display: none; }
   .bt-root:not(#_) .bt-toc a.is-past { border-color: color-mix(in srgb, var(--bt-title) 45%, var(--bt-border)); }
   .bt-root:not(#_) .bt-toc a[aria-current="true"] { border-color: var(--bt-primary); background: var(--bt-primary-bg); }
@@ -1603,6 +1603,11 @@
    On phones the bar is always 62px (no slimming). Reduced motion: no transitions and it never
    hides. */
 .bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 80px; --bt-sticky-bar-h: 66px; --bt-sticky-ease: 0.25s cubic-bezier(0.3, 0.7, 0.2, 1); position: sticky; top: 0; z-index: var(--bt-z-sticky); margin-bottom: 0; border-bottom: 1px solid transparent; transition: margin-bottom var(--bt-sticky-ease), background-color 0.25s, box-shadow 0.25s, border-color 0.25s, transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+/* .bt-sticky-follow: something that sticks under a .bt-sticky-bar and goes with it when the bar hides on phones (the chapter rail):
+   top is the bar's stuck height (--bt-sticky-h, which only changes when the bar sticks or un-sticks), and the hide is a transform on
+   the bar's own timing (--bt-sticky-shift), so nothing re-lays out while the page scrolls and the two slide together. */
+.bt-root:not(#_) .bt-sticky-follow { position: sticky; top: var(--bt-sticky-h, 0px); transform: translateY(var(--bt-sticky-shift, 0px)); transition: transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bt-sticky-follow { transition: none; } }
 .bt-root:not(#_) .bt-sticky-sentinel { height: 1px; margin-bottom: -1px; pointer-events: none; }
 /* The height and the margin move together (same timing), so the total never changes. */
 .bt-root:not(#_) .bt-sticky-bar > .bt-topbar { height: calc(var(--bt-sticky-bar-rest) - 1px); padding-top: 0; padding-bottom: 0; transition: height var(--bt-sticky-ease); }

@@ -15,6 +15,13 @@
 //     SHOW_AFTER px up, and whenever focus is inside it. Never hides under reduced motion.
 //   - Writes --bt-sticky-top on `root` (default <body>): the bar's --bt-sticky-bar-h while it's
 //     stuck and shown, 0 otherwise, so other sticky things tuck in under it.
+//   - And, for things that follow the bar as it hides (the chapter rail, .bt-sticky-follow): --bt-sticky-h, the bar's
+//     stuck height whenever the bar can stick (0 when CSS switched sticky off; it does not wait for the bar to stick: a
+//     follower lower on the page can only reach the top once the bar has, so it never jumps at the stick moment), and
+//     --bt-sticky-shift, minus that height while it's
+//     hidden (0 otherwise). A follower sticks at top: --bt-sticky-h and moves with transform: translateY(--bt-sticky-shift),
+//     on the bar's own timing, so the two slide together and no layout changes while the page scrolls (animating top made
+//     the rail chase the bar and shake, Oct 14, 2026).
 //
 //   initStickyBar(bar, { progress = false, root = document.body })  → { sync } (idempotent)
 
@@ -46,12 +53,15 @@ export function initStickyBar(bar, { progress = false, root = document.body } = 
   let atTop = false, hidden = false, last = scrollY, down = 0, up = 0, ticking = false;
 
   const sync = () => {
-    const on = atTop && getComputedStyle(bar).position === "sticky";
+    const sticky = getComputedStyle(bar).position === "sticky";
+    const on = atTop && sticky;
     if (!on || !narrow.matches || reduce.matches) hidden = false;
     bar.classList.toggle("is-stuck", on);
     bar.classList.toggle("is-hidden", on && hidden);
     const h = getComputedStyle(bar).getPropertyValue("--bt-sticky-bar-h").trim() || "0px";
     root.style.setProperty("--bt-sticky-top", on && !hidden ? h : "0px");
+    root.style.setProperty("--bt-sticky-h", sticky ? h : "0px");
+    root.style.setProperty("--bt-sticky-shift", on && hidden ? `calc(-1 * ${h})` : "0px");
   };
   const setHidden = (v) => { if (hidden !== v) { hidden = v; sync(); } };
 
@@ -83,6 +93,7 @@ export function initStickyBar(bar, { progress = false, root = document.body } = 
   bar.addEventListener("focusin", () => setHidden(false));
   narrow.addEventListener("change", sync);
   reduce.addEventListener("change", sync);
+  sync();   // the variables are there from the start (a follower reads --bt-sticky-h before the first scroll)
   frame();
 
   bar._stickyBar = { sync };
