@@ -223,6 +223,15 @@ on the current one. Each link has `aria-label` and `title` with its name and is 
 44 × 44px; the current one (`aria-current="page"`) gets the lit background and the purple
 underline.
 
+**Scrolling seg nav: `.bt-seg-nav--scroll`** (added Oct 14, 2026, for the Base Camp bar on
+phones): the same track and pill for a row of links that may not fit. It scrolls sideways with
+no visible scrollbar and snaps to each link; `seg-nav.js` scrolls the current link into view on
+load (centred, without moving the page) and sets `.is-more-start` / `.is-more-end` while links
+run past an edge, which fades that edge with a mask (no colours). At 640px and narrower each
+link is at least 44px tall. The feature sets its width: the Base Camp bar puts it full width
+under the wordmark at 640px and narrower, with the sticky bar at 118px (rest and stuck alike).
+Use it instead of hiding a feature bar's links on phones.
+
 **Side menu: `.bt-toc`** (C3), the progress rail. `<nav class="bt-toc" aria-label="On this
 page">` > `.bt-toc-rail`, `.bt-toc-fill`, `a[href="#section"]`: stops on a vertical line,
 passed sections (`.is-past`) gold, the current one (`aria-current="true"`) a glowing purple

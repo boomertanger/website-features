@@ -1457,7 +1457,8 @@
    .bt-seg-nav         top-bar tabs: one dark rounded track; a lit pill with a glowing tick
                        glides to the hovered or focused tab and settles back on the current
                        one (a[aria-current="page"]). Behavior: shared/ui/seg-nav.js; without
-                       it the current tab is lit on its own.
+                       it the current tab is lit on its own. --icons: icon-only (Arcade bar on
+                       phones); --scroll: scrolls sideways with edge fades (Base Camp bar on phones).
    .bt-toc             "On this page" progress rail: stops on a line, passed sections gold,
                        the current one a glowing purple dot, the line filling to it; at <= 640px
                        a swipeable chip row with a thin gold progress bar. Behavior:
@@ -1632,6 +1633,23 @@
 .bt-root:not(#_) .bt-seg-nav--icons a { display: grid; place-items: center; width: 44px; height: 44px; padding: 0; }
 .bt-root:not(#_) .bt-seg-nav--icons svg { display: block; width: 20px; height: 20px; }
 .bt-root:not(#_) .bt-seg-nav--icons .bt-seg-nav-pill { top: 3px; bottom: 3px; }
+
+/* ---- Scrolling seg nav: .bt-seg-nav--scroll (a feature bar's links on phones, e.g. Base Camp) ----
+   The same track and lit pill as .bt-seg-nav, for a row of links that may not fit: it scrolls
+   sideways with no visible scrollbar and snaps to each link. shared/ui/seg-nav.js scrolls the
+   current link (aria-current="page") into view on load and sets .is-more-start / .is-more-end
+   while there are links past that edge, which fades that edge out (a mask; no colours involved).
+   The feature decides its width (e.g. full width under its wordmark at 640px). At 640px and
+   narrower each link is at least 44px tall. Reduced motion: the scroll jumps, never glides. */
+.bt-root:not(#_) .bt-seg-nav--scroll { max-width: 100%; overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-padding-inline: 4px; scrollbar-width: none; -webkit-overflow-scrolling: touch; }
+.bt-root:not(#_) .bt-seg-nav--scroll::-webkit-scrollbar { display: none; }
+.bt-root:not(#_) .bt-seg-nav--scroll a { flex: 0 0 auto; scroll-snap-align: start; }
+.bt-root:not(#_) .bt-seg-nav--scroll.is-more-end { -webkit-mask-image: linear-gradient(90deg, var(--bt-bg) calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, var(--bt-bg) calc(100% - 36px), transparent); }
+.bt-root:not(#_) .bt-seg-nav--scroll.is-more-start { -webkit-mask-image: linear-gradient(90deg, transparent, var(--bt-bg) 36px); mask-image: linear-gradient(90deg, transparent, var(--bt-bg) 36px); }
+.bt-root:not(#_) .bt-seg-nav--scroll.is-more-start.is-more-end { -webkit-mask-image: linear-gradient(90deg, transparent, var(--bt-bg) 36px, var(--bt-bg) calc(100% - 36px), transparent); mask-image: linear-gradient(90deg, transparent, var(--bt-bg) 36px, var(--bt-bg) calc(100% - 36px), transparent); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-seg-nav--scroll a, .bt-root:not(#_) .bt-sticky-bar .bt-seg-nav--scroll a { display: inline-flex; align-items: center; min-height: 44px; }
+}
 
 /* ================= Door cards, big icon tiles, spotlight =================
    From docs/design/mockups/how-it-works-round-2.html (section 1 "Stage").

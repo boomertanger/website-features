@@ -25,11 +25,31 @@ export function initSegNav(nav) {
   nav.addEventListener("focusout", () => setTimeout(() => { if (!nav.contains(document.activeElement)) place(current()); }, 0));
   new ResizeObserver(settle).observe(nav);
   settle();
+  if (nav.classList.contains("bt-seg-nav--scroll")) scrolling(nav, current);
   // Web fonts can change the tab widths after the first paint.
   document.fonts?.ready.then(settle);
   nav.classList.add("is-ready");
   nav._segNav = { place: () => place(current()) };
   return nav._segNav;
+}
+
+/** .bt-seg-nav--scroll: the current link scrolled into view (centred, without moving the page) and the
+ *  edge fades (.is-more-start / .is-more-end) kept in step with the scroll position and the size. */
+function scrolling(nav, current) {
+  const edges = () => {
+    const max = nav.scrollWidth - nav.clientWidth;
+    nav.classList.toggle("is-more-start", max > 1 && nav.scrollLeft > 1);
+    nav.classList.toggle("is-more-end", max > 1 && nav.scrollLeft < max - 1);
+  };
+  const show = () => {
+    const a = current();
+    if (a && nav.scrollWidth > nav.clientWidth) nav.scrollLeft = Math.max(0, a.offsetLeft - (nav.clientWidth - a.offsetWidth) / 2);
+    edges();
+  };
+  nav.addEventListener("scroll", edges, { passive: true });
+  new ResizeObserver(edges).observe(nav);
+  show();
+  document.fonts?.ready.then(show);
 }
 
 /** Wires every .bt-seg-nav under root. */

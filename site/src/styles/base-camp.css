@@ -9,7 +9,13 @@
 /* ---- The BASECAMP bar: the kit's .bt-topbar in a .bt-sticky-bar (like the Trophy Room's); the seg nav hides on phones ---- */
 .bt-root:not(#_) .bc-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .bc-bar .bt-wordmark-text { letter-spacing: 0.06em; }
-@container bt (max-width: 640px) { .bt-root:not(#_) .bc-bar .bt-seg-nav { display: none; } }
+/* Phones: two rows, the wordmark on top and the four links full width below it (the kit's .bt-seg-nav--scroll scrolls them sideways
+   when they don't fit). The sticky bar is taller to match (its height and the stuck height stay equal, as the kit wants on phones). */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bc-dock { --bt-sticky-bar-rest: 118px; --bt-sticky-bar-h: 118px; }
+  .bt-root:not(#_) .bc-dock > .bc-bar { flex-wrap: wrap; align-content: center; justify-content: flex-start; row-gap: 8px; padding: 0 var(--bt-gutter); }
+  .bt-root:not(#_) .bc-bar .bt-seg-nav { display: flex; width: 100%; }
+}
 
 /* W1 "Peak and tent": rests; the tent door lights on hover, focus or .is-lit (with the wordmark's own CAMP power-on) */
 .bt-root:not(#_) .bc-ic { width: 34px; height: 34px; overflow: visible; }

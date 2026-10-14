@@ -1,7 +1,8 @@
 ---
 // The BASECAMP bar (docs/specs/base-camp.md "Brand"; design-system.md §8h pattern, like the Trophy Room's): the kit's .bt-topbar in a
 // .bt-sticky-bar with the BASECAMP .bt-wordmark--power (W1 peak and tent: CAMP rests purple and lights gold, the tent door lights on hover or
-// focus) and The story / Newfoundland / Skipper / Mail Call as a .bt-seg-nav (hidden on phones). Wired in scripts/base-camp/layout.ts.
+// focus) and The story / Newfoundland / Skipper / Mail Call as a .bt-seg-nav--scroll (on phones a full-width row under the wordmark that
+// scrolls sideways, the current link scrolled into view). Wired in scripts/base-camp/layout.ts.
 import { BC_ICON } from "../../scripts/base-camp/ui";
 
 interface Props { section?: "story" | "newfoundland" | "skipper" | "mailcall" | null }
@@ -19,7 +20,7 @@ const links = [
       <span class="bt-wordmark-icon" set:html={BC_ICON} />
       <span class="bt-wordmark-text" aria-hidden="true">BASE<span class="bt-wordmark-accent">CAMP</span></span>
     </a>
-    <nav class="bt-seg-nav" aria-label="Base Camp">
+    <nav class="bt-seg-nav bt-seg-nav--scroll" aria-label="Base Camp">
       {links.map((l) => <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>)}
     </nav>
   </div>
