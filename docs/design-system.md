@@ -1894,5 +1894,5 @@ Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 1
 - **Planned kit addition: `.bt-pills[data-n="3"]`**, a three-way pill (Question / Feedback / Something's broken); add it to `bt-ui.css` and the UI kit page when Talk Back is built.
 - **BOOMBOT answers in the dialog use the kit chat** (`.bt-chat-a` bubbles), never a new answer-card style.
 - **Colors:** By service bars are blue (questions) and teal (feedback), never purple; Gears credit is gold; Pick up is admin green (`.bt-btn--admin`, staff-only page); Desk clear uses the lime stamp; spam marks use a gray stamp; the Top Gear flip medal is blue, never red (red stays for destroying data).
-- **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero (`hotline-boom-hero.html`) with a thicker ear and mouth piece; the mascot stays in the Desk clear moment and the closing call.
+- **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero in its picked V2 Bakelite look (`hotline-boom-hero.html`), and a mug with the mascot logo; the mascot stays in the Desk clear moment and the closing call.
 
