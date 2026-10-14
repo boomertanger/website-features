@@ -473,3 +473,11 @@
   .bt-root:not(#_) .tr-pf-edit { margin-left: 0; }
   .bt-root:not(#_) .tr-pf-head .tr-prof-id { flex: 1; }
 }
+
+/* /account?pin=<id>#rewards: the new pin (or, with the case full, the badge in the picker) is spotlit like the catalog's deep link
+   (the kit's .bt-flip.is-spotlight ring and pulse); reduced motion: a steady gold outline. */
+.bt-root:not(#_) :is(.tr-pinrow, .tr-pick).is-spotlight { box-shadow: 0 0 0 2px var(--bt-title), 0 0 22px color-mix(in srgb, var(--bt-gold) 45%, transparent); animation: bt-flip-spot 0.9s ease-in-out 2; }
+.bt-root:not(#_) .tr-case-full { margin: 0 0 12px; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.tr-pinrow, .tr-pick).is-spotlight { animation: none; box-shadow: none; outline: 2px solid var(--bt-gold); outline-offset: 3px; }
+}

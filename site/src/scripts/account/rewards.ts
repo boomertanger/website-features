@@ -4,6 +4,10 @@
 // first pin is the featured badge), their persona (setPersona; Liker and Gifter stay locked) and
 // their history (myRewardHistory, 25 at a time). No badges yet: "Your first badge is one game
 // away", with Play Tap the Splat cueing the footer game like the Arcade's Play now.
+// ?pin=<id> (the "Pin it" link on every badge-earned alert, scripts/trophies/links.ts): the tab opens (#rewards), and a badge the member
+// holds that isn't pinned becomes the LAST pin in the editor (or, with every slot full, an inline note and the badge highlighted in the
+// picker); the trophy case scrolls into view and the pin is spotlit. Nothing is saved until Save (setShowcase, as always). A badge the
+// member doesn't hold: the tab as usual and a toast. ?pin= leaves the URL once handled.
 import { medalHtml, RARITY } from "../../../../shared/ui/medal.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { call } from "../../lib/call";
@@ -12,7 +16,8 @@ import { refresh, type AuthState } from "../../lib/auth";
 import { isProduction } from "../../lib/env.js";
 import { progress, showcaseLimit, PERSONAS, LOCKED_PERSONAS, PERSONA_ICONS } from "../../lib/rewards.js";
 import { meStripHtml, earnedLine, type BadgeDoc, type Held } from "../trophies/card";
-import { loadCatalog, loadHeld, ownProfile, onMember } from "../trophies/data";
+import { loadCatalog, loadHeld, ownProfile, onMemberOrPreview, PREVIEW_UID } from "../trophies/data";
+import { toast } from "../../../../shared/ui/toast.js";
 import { playNow } from "../arcade/play-now";
 
 const pane = document.querySelector<HTMLElement>("[data-rw]");
@@ -33,15 +38,33 @@ function say(kind: "ok" | "err", text: string) {
 if (pane) {
   pane.addEventListener("click", (e) => { if ((e.target as Element).closest("[data-play-now]")) playNow(); });
   let started = false;
-  onMember((s) => {
+  onMemberOrPreview((s) => {
     const go = () => { if (!started && !pane.hidden) { started = true; void load(s); } };
     new MutationObserver(go).observe(pane, { attributes: true, attributeFilter: ["hidden"] });
     go();
   });
 }
 
+const SPOTLIGHT_MS = 2400;
+const reduce = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+/** ?pin=<id>, read once and then taken out of the URL (the hash, #rewards, stays). */
+function takePin(): string | null {
+  const u = new URL(location.href), id = u.searchParams.get("pin");
+  if (id == null) return null;
+  u.searchParams.delete("pin");
+  history.replaceState(history.state, "", u.pathname + u.search + u.hash);
+  return id;
+}
+function spotlight(el: HTMLElement | null) {
+  if (!el) return;
+  el.scrollIntoView({ block: "center", behavior: reduce() ? "auto" : "smooth" });
+  el.classList.remove("is-spotlight"); void el.offsetWidth; el.classList.add("is-spotlight");
+  setTimeout(() => el.classList.remove("is-spotlight"), SPOTLIGHT_MS);
+}
+
 async function load(s: AuthState) {
   const uid = s.user!.uid;
+  const pinWant = takePin();
   try {
     const [{ badges }, held] = await Promise.all([loadCatalog(), loadHeld(uid)]);
     const profile = ownProfile(s);
@@ -55,14 +78,15 @@ async function load(s: AuthState) {
     $("[data-rw-next]").textContent = `${(p.nextXp - p.xp).toLocaleString("en-US")} XP to level ${p.level + 1}.`;
     $("[data-rw-level]").hidden = false;
 
+    if (pinWant != null && !held.has(pinWant)) toast("You don't hold that badge yet.", { kind: "info" });
     if (!held.size) {
       $("[data-rw-empty-art]").innerHTML = medalHtml({ emoji: byId.get("splat-finisher")?.emoji ?? "🩸", rarity: 1, size: 72, secret: false });
       $("[data-rw-empty]").hidden = false;
     } else {
-      initCase(byId, held, profile?.showcase ?? [], showcaseLimit({ roles: s.roles, isOwner: false, staging: !isProduction }));
+      initCase(byId, held, profile?.showcase ?? [], showcaseLimit({ roles: s.roles, isOwner: false, staging: !isProduction }), pinWant && held.has(pinWant) ? pinWant : null, uid === PREVIEW_UID);
     }
-    initPersona(profile?.persona ?? null);
-    void initHistory();
+    initPersona(profile?.persona ?? null, uid === PREVIEW_UID);
+    void initHistory(uid === PREVIEW_UID);
   } catch (err) {
     console.error(err);
     $("[data-rw-loading]").hidden = true;
@@ -71,7 +95,7 @@ async function load(s: AuthState) {
 }
 
 // ---------- trophy case ----------
-function initCase(byId: Map<string, BadgeDoc>, held: Map<string, Held>, saved: string[], limit: number) {
+function initCase(byId: Map<string, BadgeDoc>, held: Map<string, Held>, saved: string[], limit: number, pinWant: string | null = null, preview = false) {
   const list = $("[data-rw-pins]"), pick = $("[data-rw-pick]");
   const save = $<HTMLButtonElement>("[data-rw-save]"), reset = $<HTMLButtonElement>("[data-rw-reset]");
   let savedIds = saved.filter((id) => held.has(id)).slice(0, limit);
@@ -155,21 +179,39 @@ function initCase(byId: Map<string, BadgeDoc>, held: Map<string, Held>, saved: s
   save.addEventListener("click", async () => {
     save.disabled = true;
     try {
-      const r = await call<{ showcase: string[] }>("setShowcase", { badgeIds: pins });
+      const r = preview ? { showcase: [...pins] } : await call<{ showcase: string[] }>("setShowcase", { badgeIds: pins });   // the preview saves nothing
       savedIds = [...r.showcase]; pins = [...r.showcase];
       draw();
       say("ok", pins.length ? `Trophy case saved. ${byId.get(pins[0])?.name ?? "Your first pin"} is your featured badge.` : "Trophy case cleared.");
-      void refresh();
+      full.hidden = true;
+      if (!preview) void refresh();
     } catch (err) {
       save.disabled = false;
       say("err", messageFor(err));
     }
   });
+  // "Your trophy case is full": shown when ?pin= asked for a badge and every slot is taken; gone once a pin is removed or the case is saved
+  const full = document.createElement("p");
+  full.className = "bt-notice tr-case-full";
+  full.setAttribute("role", "status");
+  full.hidden = true;
+  full.textContent = "Your trophy case is full. Unpin one to make room.";
+  pick.before(full);
+  list.addEventListener("click", () => { if (pins.length < limit) full.hidden = true; });
   draw();
+
+  // ?pin=<id>: the badge joins the editor as the last pin (unsaved until Save), or the case is full, or it is pinned already
+  if (pinWant) {
+    let target: HTMLElement | null = null;
+    if (pins.includes(pinWant)) target = list.querySelector<HTMLElement>(`[data-id="${CSS.escape(pinWant)}"]`);
+    else if (pins.length < limit) { pins.push(pinWant); draw(); target = list.querySelector<HTMLElement>(`[data-id="${CSS.escape(pinWant)}"]`); }
+    else { full.hidden = false; target = pick.querySelector<HTMLElement>(`[data-id="${CSS.escape(pinWant)}"]`); }
+    requestAnimationFrame(() => spotlight(target));
+  }
 }
 
 // ---------- persona ----------
-function initPersona(current: string | null) {
+function initPersona(current: string | null, preview = false) {
   const box = $("[data-rw-personas]");
   let value = current;
   const draw = () => {
@@ -189,9 +231,9 @@ function initPersona(current: string | null) {
     value = p; draw();
     box.setAttribute("aria-busy", "true");
     try {
-      await call("setPersona", { persona: p });
+      if (!preview) await call("setPersona", { persona: p });   // the preview saves nothing
       say("ok", p ? `Your persona is ${p}.` : "Persona cleared.");
-      void refresh();
+      if (!preview) void refresh();
     } catch (err) {
       value = before; draw();
       say("err", messageFor(err));
@@ -213,9 +255,10 @@ function initPersona(current: string | null) {
 }
 
 // ---------- history ----------
-async function initHistory() {
+async function initHistory(preview = false) {
   const list = $("[data-rw-hist]"), more = $<HTMLButtonElement>("[data-rw-more]");
   $("[data-rw-history]").hidden = false;
+  if (preview) { more.hidden = true; $("[data-rw-hist-empty]").hidden = false; return; }   // no history in the preview
   let cursor: string | null = null;
   const fmt = (ms: number | null) => (ms ? new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" }) : "");
   const row = (it: HistItem) => {
