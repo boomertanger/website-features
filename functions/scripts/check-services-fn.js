@@ -338,6 +338,20 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   await call("adm", "serviceAdmin", { action: "hideComment", serviceId: "bug-zapper", uid: "fan2", hidden: true });
   await hub.ratingWritten(null, await get(`${BASE}/ratings/bug-zapper__fan2`));
   assert.equal((await get(`${BASE}/items/bug-zapper`)).ratings.comments, 0, "a hidden comment isn't counted");
+  // re-rating writes the rating with a plain set(): no FieldValue.delete() in it (Firestore refuses that; it failed every rating on staging,
+  // Oct 14, 2026). Same comment: the hide and who hid it stay. A new comment: shown again, no hiddenBy.
+  clock += 3600000;   // a new hour for fan2's rate limit
+  const was = await get(`${BASE}/ratings/bug-zapper__fan2`);
+  assert.equal(await why(call("fan2", "serviceRate", { serviceId: "bug-zapper", value: was.value, comment: was.comment })), "ok", "re-rating with the same comment saves");
+  let rr = await get(`${BASE}/ratings/bug-zapper__fan2`);
+  assert.equal(rr.hidden, true, "the hide stands while the comment is the same"); assert.ok(rr.hiddenBy, "and who hid it is kept");
+  assert.equal(await why(call("fan2", "serviceRate", { serviceId: "bug-zapper", value: "dislike", comment: "Still slow on my phone, but better" })), "ok", "a new comment saves");
+  rr = await get(`${BASE}/ratings/bug-zapper__fan2`);
+  assert.equal(rr.hidden, false, "a new comment is shown again"); assert.equal(rr.hiddenBy, undefined, "with no hiddenBy");
+  // back as it was for the checks below: the first comment, hidden by the admin
+  await call("fan2", "serviceRate", { serviceId: "bug-zapper", value: was.value, comment: was.comment });
+  await call("adm", "serviceAdmin", { action: "hideComment", serviceId: "bug-zapper", uid: "fan2", hidden: true });
+  await hub.ratingWritten(null, await get(`${BASE}/ratings/bug-zapper__fan2`));
 
   // ---------- serviceTest ----------
   await wdb.doc(`${BASE}/items/bug-zapper`).update({ checks: [] });   // the manifest has real checks now (Service Hub part 7a): clear them for this case

@@ -123,7 +123,9 @@ function build(deps = {}) {
       const keepHidden = !!prev && prev.hidden === true && prev.comment === v.value.comment;   // an admin hid this comment and it didn't change
       tx.set(R.rating(sid, c.uid), {
         serviceId: sid, uid: c.uid, handle: c.handle || null, type: item.type, value: v.value.value, comment: v.value.comment, version: item.version,
-        countable: !(c.isOwner || c.isAdmin), hidden: keepHidden, ...(keepHidden ? {} : { hiddenBy: FieldValue.delete() }),
+        // a plain set() replaces the doc, so a field left out is gone (FieldValue.delete() is refused outside update() / merge, which
+        // failed every rating on staging); a hide that still stands keeps who hid it
+        countable: !(c.isOwner || c.isAdmin), hidden: keepHidden, ...(keepHidden && prev.hiddenBy ? { hiddenBy: prev.hiddenBy } : {}),
         history: L.pushHistory(prev && prev.history, { value: v.value.value, version: item.version, at: ts(at) }),
         createdAt: prev ? prev.createdAt : ts(at), updatedAt: ts(at),
       });

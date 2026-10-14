@@ -3,6 +3,8 @@
 // paths, get, create (fails if it exists), set (with merge), update (dotted keys), delete,
 // collectionGroup, where "==" / "<" / ">" / "in", orderBy, limit, count(), getAll, runTransaction (run straight
 // through), recursiveDelete, and the FieldValue sentinels increment, serverTimestamp, delete, arrayUnion and arrayRemove.
+// Like real Firestore, FieldValue.delete() is refused in create(), in set() without { merge: true } and nested inside an
+// update() value (it must be a top-level field of the update), with Firestore's own message, so a check fails where staging would.
 const admin = require("firebase-admin");
 
 const clone = (v) => (v && typeof v === "object" && !isSentinel(v) && !(v instanceof admin.firestore.Timestamp) ? (Array.isArray(v) ? v.map(clone) : Object.fromEntries(Object.entries(v).map(([k, x]) => [k, clone(x)]))) : v);
@@ -27,6 +29,16 @@ function applyValue(cur, v) {
   if (k === "arrayUnion") return [...new Set([...(Array.isArray(cur) ? cur : []), ...v.elements])];
   if (k === "arrayRemove") return (Array.isArray(cur) ? cur : []).filter((x) => !v.elements.some((y) => cmp(x, y) === 0));
   throw new Error(`fake-firestore: unsupported sentinel ${k}`);
+}
+/** The dotted path of the first FieldValue.delete() in v (looking inside maps), or null. */
+function deleteAt(v, at = "") {
+  if (isSentinel(v)) return sentinelKind(v) === "delete" ? at : null;
+  if (!v || typeof v !== "object" || Array.isArray(v) || v instanceof admin.firestore.Timestamp) return null;
+  for (const [k, x] of Object.entries(v)) { const p = deleteAt(x, at ? `${at}.${k}` : k); if (p) return p; }
+  return null;
+}
+function refuseDelete(at) {
+  throw new Error(`Value for argument "data" is not a valid Firestore document. FieldValue.delete() must appear at the top-level and can only be used in update() or set() with {merge:true} (found in field "${at}").`);
 }
 function merge(target, patch) {
   for (const [k, v] of Object.entries(patch)) {
@@ -56,10 +68,11 @@ function makeDb() {
     constructor(path) { this.path = path; this.id = path.split("/").pop(); }
     collection(id) { return new Query(`${this.path}/${id}`); }
     async get() { return new Snap(this, store.get(this.path)); }
-    async create(d) { if (store.has(this.path)) { const e = new Error("6 ALREADY_EXISTS: already exists"); e.code = 6; throw e; } store.set(this.path, merge({}, d)); }
-    async set(d, opt = {}) { store.set(this.path, merge(opt.merge && store.has(this.path) ? store.get(this.path) : {}, d)); }
+    async create(d) { const at = deleteAt(d); if (at) refuseDelete(at); if (store.has(this.path)) { const e = new Error("6 ALREADY_EXISTS: already exists"); e.code = 6; throw e; } store.set(this.path, merge({}, d)); }
+    async set(d, opt = {}) { const at = opt.merge ? null : deleteAt(d); if (at) refuseDelete(at); store.set(this.path, merge(opt.merge && store.has(this.path) ? store.get(this.path) : {}, d)); }
     async update(d) {
       if (!store.has(this.path)) { const e = new Error("5 NOT_FOUND"); e.code = 5; throw e; }
+      for (const [k, v] of Object.entries(d)) { const at = isSentinel(v) ? null : deleteAt(v, k); if (at) refuseDelete(at); }   // only a top-level field may be deleted
       const cur = store.get(this.path);
       for (const [k, v] of Object.entries(d)) {
         const parts = k.split("."), last = parts.pop();
