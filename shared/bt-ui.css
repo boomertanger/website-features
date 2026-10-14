@@ -2622,26 +2622,31 @@
   .bt-root:not(#_) .bt-tts[data-links="1"] a.bt-tts-link { animation: none; }
 }
 
-/* ---- Stories: .bt-stories — behavior: shared/ui/stories.js (the caller draws each item's card) ----
-   A small stories carousel: story bars across the top fill over 5 s (gold), the current item fades in on the stage, and a row of small
-   covers underneath shows them all (the current one raised with a gold ring; each is a button, "Show <title>"). It pauses while touched,
-   hovered or focused, while the tab is hidden, and for the caller's reasons (.is-paused). One item (.bt-stories--single): just the stage.
-   Reduced motion: no auto-advance and no fade; the bars only show the position. First used by the Game Vault's phone hero (1C). */
-.bt-root:not(#_) .bt-stories { position: relative; }
-.bt-root:not(#_) .bt-stories-bars { display: flex; gap: 4px; margin-bottom: 8px; }
-.bt-root:not(#_) .bt-stories-bars i { position: relative; flex: 1; height: 3px; overflow: hidden; border-radius: 2px; background: var(--bt-border-2); }
-.bt-root:not(#_) .bt-stories-bars i::after { content: ""; position: absolute; inset: 0; background: var(--bt-gold); transform: scaleX(var(--p, 0)); transform-origin: left; }
-.bt-root:not(#_) .bt-stories-stage { transition: opacity 0.3s; touch-action: pan-y; }
-.bt-root:not(#_) .bt-stories-stage.is-out { opacity: 0; }
-.bt-root:not(#_) .bt-stories-picks { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
-.bt-root:not(#_) .bt-stories-pick { flex: 0 0 52px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; opacity: 0.5; transition: opacity 0.3s, transform 0.3s; }
-.bt-root:not(#_) .bt-stories-pick .bt-cover { width: 100%; border-radius: 6px; }
-.bt-root:not(#_) .bt-stories-pick.is-on { opacity: 1; transform: translateY(-3px); }
-.bt-root:not(#_) .bt-stories-pick.is-on .bt-cover { box-shadow: 0 0 0 2px var(--bt-gold); }
+/* ---- Stories: .bt-stories — behavior: shared/ui/stories.js (the caller draws each item's poster and details) ----
+   A small stories carousel (the Game Vault's film strip spotlight, game-vault-film-strip.html): the current item's poster on the stage, a
+   small cover per item, and a thin ring that draws around the current small cover over 5 s (gold; .bt-stories-pick--green for the game
+   Boomer is playing), then the next item fades in. .bt-stories--square puts the small covers in a 2 x 2 square (used everywhere today),
+   .bt-stories--row in one row; --bt-stories-pick sets their width. It pauses while touched, hovered or focused, while the tab is hidden,
+   and for the caller's reasons (.is-paused). One item (.bt-stories--single): just the poster and details. Reduced motion: no
+   auto-advance and no fade; the current small cover has the full ring. Where the stage, picks and details sit is the caller's grid. */
+.bt-root:not(#_) .bt-stories { position: relative; --bt-stories-pick: 60px; }
+.bt-root:not(#_) :is(.bt-stories-stage, .bt-stories-details) { min-width: 0; transition: opacity 0.3s; }
+.bt-root:not(#_) .bt-stories-stage { touch-action: pan-y; }
+.bt-root:not(#_) :is(.bt-stories-stage, .bt-stories-details).is-out { opacity: 0; }
+.bt-root:not(#_) .bt-stories-picks { display: flex; gap: 12px; }
+.bt-root:not(#_) .bt-stories--square .bt-stories-picks { display: grid; grid-template-columns: repeat(2, var(--bt-stories-pick)); gap: 12px; align-content: center; }
+.bt-root:not(#_) .bt-stories--row .bt-stories-picks { justify-content: center; margin-top: 14px; }
+.bt-root:not(#_) .bt-stories-pick { position: relative; flex: 0 0 var(--bt-stories-pick); width: var(--bt-stories-pick); padding: 0; border: 0; border-radius: 7px; background: none; cursor: pointer; opacity: 0.55; transition: opacity 0.3s; }
+.bt-root:not(#_) .bt-stories-pick .bt-cover { width: 100%; border-radius: 7px; }
+.bt-root:not(#_) .bt-stories-pick.is-on { opacity: 1; }
 .bt-root:not(#_) .bt-stories-pick:hover { opacity: 0.85; }
-.bt-root:not(#_) .bt-stories-pick:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; opacity: 1; }
+.bt-root:not(#_) .bt-stories-pick:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 6px; opacity: 1; }
+/* the ring: just outside the small cover; --bt-ring (0..1, set by stories.js) is how much of it is drawn */
+.bt-root:not(#_) .bt-stories-ring { position: absolute; inset: -4px; width: calc(100% + 8px); height: calc(100% + 8px); overflow: visible; pointer-events: none; }
+.bt-root:not(#_) .bt-stories-ring rect { fill: none; stroke: var(--bt-gold); stroke-width: 2.5; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: calc(100 - 100 * var(--bt-ring, 0)); }
+.bt-root:not(#_) .bt-stories-pick--green .bt-stories-ring rect { stroke: var(--bt-green); }
 @media (prefers-reduced-motion: reduce) {
-  .bt-root:not(#_) :is(.bt-stories-stage, .bt-stories-pick) { transition: none; }
+  .bt-root:not(#_) :is(.bt-stories-stage, .bt-stories-details, .bt-stories-pick) { transition: none; }
 }
 
 /* ---- Hero carousel, stories mode (3B) — behavior: shared/ui/hero-carousel.js ---- */

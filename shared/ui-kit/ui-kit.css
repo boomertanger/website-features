@@ -203,3 +203,6 @@
 .bt-root:not(#_) .kit-fbar { container-type: inline-size; container-name: bt; margin-bottom: 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); overflow: hidden; }
 .bt-root:not(#_) .kit-fbar .bt-topbar { padding-top: 14px; padding-bottom: 14px; border-bottom: 0; }
 .bt-root:not(#_) .kit-fbar--phone { width: 360px; max-width: 100%; }
+
+/* The Stories demos: the details span both columns under the poster and the square (the caller's grid; the Vault does the same) */
+.bt-root:not(#_) [data-kit-stories] .bt-stories-details { grid-column: 1 / -1; }

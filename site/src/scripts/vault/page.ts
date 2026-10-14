@@ -255,7 +255,7 @@ function mountToplay() {
   host.hidden = !items.length;
   if (!items.length) { toplay?.destroy(); toplay = null; return; }
   toplay = initStories(host, {
-    items, name: "To play games", label: (x: ToPlay) => x.g.title,
+    items, name: "To play games", layout: "row", label: (x: ToPlay) => x.g.title,
     render: toPlayCard,
     thumb: (x: ToPlay) => coverHtml(x.g.cover, { alt: "", size: "sm" }),
     onShow: () => initWants(host, (slug: string, n: number) => {

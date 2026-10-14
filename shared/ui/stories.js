@@ -1,29 +1,37 @@
-// shared/ui/stories.js — .bt-stories: a small stories carousel (docs/design-system.md §5 "Stories"; first used by the Game Vault's phone
-// hero, docs/design/mockups/game-vault-phone-hero-story.html, option 1C). The caller passes the items and draws each one's content; this
-// draws the frame and runs it:
+// shared/ui/stories.js — .bt-stories: a small stories carousel (docs/design-system.md §5 "Stories"; the Game Vault's film strip spotlight,
+// docs/design/mockups/game-vault-film-strip.html D3b / M1 and game-vault-tablet-phone-search.html T2). The caller passes the items and draws
+// each one's poster (and, optionally, its details); this draws the frame and runs it:
 //
-//   <div class="bt-stories" role="region" aria-roledescription="carousel" aria-label="…">
-//     <div class="bt-stories-bars" aria-hidden="true"><i></i>…</div>      story bars, one per item, filling over `duration`
-//     <div class="bt-stories-stage">…render(item)…</div>                    the current item (fades between items)
-//     <div class="bt-stories-picks"><button aria-label="Show …">…thumb(item)…</button>…</div>   one small cover per item
+//   <div class="bt-stories bt-stories--square|--row" role="region" aria-roledescription="carousel" aria-label="…">
+//     <div class="bt-stories-stage">…render(item)…</div>                    the current item's poster (fades between items; swipe it)
+//     <div class="bt-stories-picks">                                        one small cover per item, each with its progress ring:
+//       <button class="bt-stories-pick [bt-stories-pick--green]" aria-label="Show …">…thumb(item)…<svg class="bt-stories-ring">…</svg></button>…
+//     </div>
+//     <div class="bt-stories-details">…details(item)…</div>                 optional: the badge, title, buttons (fades with the poster)
 //     <span class="bt-sr-only" aria-live="polite"></span>                   announces manual changes only, never the auto ones
 //   </div>
 //
-//   const s = initStories(host, { items, render, thumb, label, name, duration = 5000, reduced, paused, onShow })
-//     items     the list (any shape)               render(item, i) -> HTML for the stage
-//     thumb(item, i) -> HTML for its small cover    label(item) -> its name ("Show <label>"; also what is announced)
+//   const s = initStories(host, { items, render, details, thumb, label, tone, name, layout, duration = 5000, reduced, paused, onShow })
+//     items     the list (any shape)               render(item, i) -> HTML for the poster stage
+//     details(item, i) -> HTML for the details     thumb(item, i) -> HTML for its small cover
+//     label(item) -> its name ("Show <label>"; also what is announced)
+//     tone(item) -> "green" for a green ring (the game Boomer is playing); gold otherwise
+//     layout    "square" (the small covers in a 2 x 2 square; default) or "row" (one row)
 //     name      the region's aria-label            onShow(item, i, { manual }) after an item is shown (wire its buttons here)
 //     reduced   force reduced motion (the UI Kit)  paused  start paused (the UI Kit)
 //   s.go(i, { manual })  s.pause(reason, on)  s.update(items)  s.destroy()   -> pause reasons stack ("touch", "search", …)
 //
-// Behaviour: the bars fill over 5 s, then the next item fades in (and round again); tapping a small cover jumps to it; swiping left or right
-// on the stage changes it; it pauses while touched, hovered or focused, while the tab is hidden, and for any caller reason. One item: just
-// the stage (no bars, no small covers, no auto-advance). Reduced motion (or reduced: true): no auto-advance and no fade; the bars only show
-// the position; the small covers and swipe still work.
+// Behaviour: a thin ring draws around the current small cover over 5 s, then the next item fades in (and round again); tapping a small cover
+// jumps to it; swiping left or right on the poster changes it; it pauses while touched, hovered or focused, while the tab is hidden, and for
+// any caller reason. One item: just the poster and its details (no small covers, no auto-advance). Reduced motion (or reduced: true): no
+// auto-advance and no fade; the current small cover has the full ring; the small covers and swipe still work. The caller places the stage,
+// the picks and the details (a grid on the host): the kit only sets the square or the row of small covers and the ring.
 
 const reduceMq = typeof matchMedia === "function" ? matchMedia("(prefers-reduced-motion: reduce)") : null;
+// The ring: a rounded rectangle just outside the small cover; pathLength 100, so the dash offset is the share still to draw (--bt-ring 0..1).
+const RING = `<svg class="bt-stories-ring" viewBox="0 0 100 133" preserveAspectRatio="none" aria-hidden="true" focusable="false"><rect x="1" y="1" width="98" height="131" rx="9" pathLength="100" vector-effect="non-scaling-stroke"/></svg>`;
 
-export function initStories(host, { items = [], render, thumb, label = (x) => String(x), name = "Stories", duration = 5000, reduced, paused = false, onShow } = {}) {
+export function initStories(host, { items = [], render, details, thumb, label = (x) => String(x), tone, name = "Stories", layout = "square", duration = 5000, reduced, paused = false, onShow } = {}) {
   if (!host) return null;
   host._stories?.destroy();
   let list = [...items];
@@ -32,7 +40,7 @@ export function initStories(host, { items = [], render, thumb, label = (x) => St
   if (paused) host.classList.add("is-paused");
   const isReduced = () => reduced ?? !!reduceMq?.matches;
 
-  host.classList.add("bt-stories");
+  host.classList.add("bt-stories", layout === "row" ? "bt-stories--row" : "bt-stories--square");
   host.setAttribute("role", "region");
   host.setAttribute("aria-roledescription", "carousel");
   host.setAttribute("aria-label", name);
@@ -40,28 +48,31 @@ export function initStories(host, { items = [], render, thumb, label = (x) => St
   const draw = () => {
     const many = list.length > 1;
     host.classList.toggle("bt-stories--single", !many);
-    host.innerHTML = `${many ? `<div class="bt-stories-bars" aria-hidden="true">${list.map(() => "<i></i>").join("")}</div>` : ""}<div class="bt-stories-stage"></div>${many ? `<div class="bt-stories-picks">${list.map((it, i) => `<button type="button" class="bt-stories-pick" data-pick="${i}" aria-label="Show ${escAttr(label(it))}">${thumb ? thumb(it, i) : ""}</button>`).join("")}</div>` : ""}<span class="bt-sr-only" aria-live="polite" data-stories-say></span>`;
+    const picks = many ? `<div class="bt-stories-picks">${list.map((it, i) => `<button type="button" class="bt-stories-pick${tone?.(it) === "green" ? " bt-stories-pick--green" : ""}" data-pick="${i}" aria-label="Show ${escAttr(label(it))}">${thumb ? thumb(it, i) : ""}${RING}</button>`).join("")}</div>` : "";
+    host.innerHTML = `<div class="bt-stories-stage"></div>${picks}${details ? `<div class="bt-stories-details"></div>` : ""}<span class="bt-sr-only" aria-live="polite" data-stories-say></span>`;
   };
   const stage = () => host.querySelector(".bt-stories-stage");
-  const bars = () => [...host.querySelectorAll(".bt-stories-bars i")];
+  const info = () => host.querySelector(".bt-stories-details");
   const picks = () => [...host.querySelectorAll(".bt-stories-pick")];
-  const paint = (p = 0) => bars().forEach((b, j) => b.style.setProperty("--p", j < cur ? 1 : j === cur ? (isReduced() ? 1 : p) : 0));
+  // the current cover's ring at p (0..1), the others empty; reduced motion: the current one full
+  const paint = (p = 0) => picks().forEach((b, j) => b.style.setProperty("--bt-ring", String(j === cur ? (isReduced() ? 1 : p) : 0)));
 
   const show = (i, { manual = false } = {}) => {
     if (!list.length) return;
     cur = ((i % list.length) + list.length) % list.length;
     elapsed = 0;
-    const st = stage();
+    const st = stage(), dt = info();
     const put = () => {
       st.innerHTML = render(list[cur], cur);
-      st.classList.remove("is-out");
+      if (dt) dt.innerHTML = details(list[cur], cur);
+      st.classList.remove("is-out"); dt?.classList.remove("is-out");
       picks().forEach((b, j) => { b.classList.toggle("is-on", j === cur); b.setAttribute("aria-current", j === cur ? "true" : "false"); });
       paint(0);
       if (manual) host.querySelector("[data-stories-say]").textContent = `${label(list[cur])}, ${cur + 1} of ${list.length}`;
       onShow?.(list[cur], cur, { manual });
     };
     if (isReduced() || !st.innerHTML) put();
-    else { st.classList.add("is-out"); setTimeout(() => { if (!destroyed) put(); }, 300); }
+    else { st.classList.add("is-out"); dt?.classList.add("is-out"); setTimeout(() => { if (!destroyed) put(); }, 300); }
   };
 
   const tick = (now) => {
@@ -114,6 +125,8 @@ export function initStories(host, { items = [], render, thumb, label = (x) => St
     destroy: () => {
       destroyed = true; cancelAnimationFrame(raf);
       for (const [t, f] of [["pointerenter", enter], ["pointerleave", leave], ["focusin", fin], ["focusout", fout], ["pointerdown", down], ["pointerup", up], ["pointercancel", cancel], ["click", click]]) host.removeEventListener(t, f);
+      host.classList.remove("bt-stories", "bt-stories--square", "bt-stories--row", "bt-stories--single", "is-paused");
+      host.innerHTML = "";
       host._stories = null;
     },
   };
