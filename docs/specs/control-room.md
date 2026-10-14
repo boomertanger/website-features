@@ -193,7 +193,7 @@ one column in this order: video, beats, check-in, Play panel, Now playing, crew,
 
 | State | What shows |
 | --- | --- |
-| Off air | The waiting room (story frame): `.bt-toc` rail, hero with a scene and the mascot, countdown, the next stream's ticket (games, platforms, Captain, Remind me), ghost-numbered chapters (How a stream runs as a four-stage journey line; Check in at every beat with a working practice check-in, word "lantern"; Ask before the doors open with the Standing questions; Ask BOOMBOT), closing call to action. |
+| Off air | The waiting room: hero with a scene and the mascot, countdown, the next stream's ticket (games, platforms, Captain, Remind me) and a small "New here? How it works" link. Since Oct 14, 2026 the story is its own page, **/live/how-it-works** (TocLayout rail, hero with the scene and mascot, ghost-numbered chapters: How a stream runs as a four-stage journey line; Check in at every beat with a working practice check-in, word "lantern"; Ask a question; Chat Games; Ask BOOMBOT; closing call to action). The CONTROLROOM bar's How it works link goes there on every /live page; /live?how=1 redirects there. |
 | Starting soon | From 15 minutes before the planned start, or while delayed: the same frame with "Starting soon" and the countdown. |
 | Live (public) | The Bridge layout. Beacon and mascot red. |
 | Break | The live layout with the open check-in (marching edges, countdown ring, live count, First in) and the running activity. |

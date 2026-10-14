@@ -1,29 +1,21 @@
-// The waiting room on /live (docs/specs/control-room.md §7a; mockup control-room-batch-1.html, the Off air and Starting soon states): off air and Starting
-// soon, and (/live?how=1) the same story while a stream is on. A story page: the static chapters are in live.astro (TocLayout rail, ghost-numbered
-// chapters, the four-beat journey, the practice check-in's frame, Ask BOOMBOT, the closing call); this part fills the live bits:
+// The waiting room on /live (docs/specs/control-room.md §7a; mockup control-room-batch-1.html, the Off air and Starting soon states): the hero, the
+// countdown, the next-stream ticket and Remind me, with a "New here? How it works" link. The story chapters (the four-beat journey, the practice
+// check-in, Ask BOOMBOT, the closing call) are their own page since Oct 14, 2026: /live/how-it-works (scripts/live/how-page.ts). This part fills:
 //   hero        badge, lede, the countdown, "Running late · now 9:00 PM"
 //   ticket      the next stream: day, time in both zones, covers of the games, platforms, Captain; Remind me, Add to calendar, Full schedule
-//   practice    a working check-in with the word "lantern" that saves nothing
 // Remind me goes through Boom Alerts (pub-data.ts remind): until alertsRemindMe exists it says so and hands over a calendar file instead.
-import { crPanelHtml } from "../../../../shared/ui/cr-panel.js";
 import { coverHtml } from "../../../../shared/ui/cover.js";
 import { streamIcs } from "../../../../shared/ui/navgroup.js";
 import { dayParts, platformsHtml } from "../../../../shared/ui/scream-planner.js";
 import site from "../../data/site.json";
 import { toast, messageFor, mascotHtml } from "./ui";
-import { checkinHtml, clock, dualTimeHtml, esc, initCheckin, initHowItWorks, pad2, ticketHtml, type PubCtx, type ViewPart } from "./pub-ui";
-
-const PRACTICE_WORD = "lantern";
-
-// accents, case, spaces and punctuation are ignored, like the real check-in
-const norm = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
+import { clock, dualTimeHtml, esc, pad2, ticketHtml, type PubCtx, type ViewPart } from "./pub-ui";
 
 let box: HTMLElement;
 let cur: PubCtx;
 let timer = 0;
 let cdMode = "";
 let ticketKey = "";
-let tries = 5;
 let reminded = "";
 
 /* ------------------------------------------------------------------ the countdown */
@@ -98,42 +90,15 @@ async function remind(ctx: PubCtx, btn: HTMLElement) {
   finally { btn.removeAttribute("aria-busy"); }
 }
 
-/* ------------------------------------------------------------------ the practice check-in */
-function drawTry() {
-  const host = box.querySelector<HTMLElement>("[data-lp-try]");
-  if (!host) return;
-  const card = checkinHtml({ dialog: true, state: "entry", beat: "start", time: "5:00", count: 0, countLabel: "checked in (practice)", tries, id: "lp-try", wordLabel: "Type the word you just heard", rooms: ["twitch", "ytLandscape", "ytVertical", "tiktok"] });
-  host.innerHTML = crPanelHtml({ cls: "lp-try-card", title: "Practice check-in", icon: "checkin", tagHtml: `<span class="bt-badge bt-badge--gray">Practice</span>`, bodyHtml: `${card}<p class="lp-private">Nothing is saved. This is a practice run.</p>` });
-  initCheckin(host, {
-    onSubmit: async (word: string) => {
-      await new Promise((r) => setTimeout(r, 250));
-      if (norm(word) === PRACTICE_WORD) {
-        setTimeout(() => host.querySelector(".bt-checkin-done")?.insertAdjacentHTML("beforeend", `<button type="button" class="bt-link-btn" data-lp-again>Try again</button>`), 0);
-        return { ok: true, xp: 10, streak: "practice only, nothing is saved" };
-      }
-      tries--;
-      if (tries <= 0) {
-        setTimeout(() => host.querySelector(".bt-checkin-note")?.insertAdjacentHTML("beforeend", `<button type="button" class="bt-link-btn" data-lp-again>Try again</button>`), 0);
-        return { locked: true };
-      }
-      return { ok: false, left: tries };
-    },
-  });
-}
-
 /* ------------------------------------------------------------------ the part */
 const part: ViewPart = {
   mount(ctx, el) {
     box = el; cur = ctx;
-    initHowItWorks(box);
-    tries = 5;
-    drawTry();
     box.addEventListener("click", (e) => {
       const t = e.target as HTMLElement;
-      const rem = t.closest<HTMLElement>("[data-lp-remind]"), cal = t.closest("[data-lp-cal]"), again = t.closest("[data-lp-again]");
+      const rem = t.closest<HTMLElement>("[data-lp-remind]"), cal = t.closest("[data-lp-cal]");
       if (rem) void remind(cur, rem);
       else if (cal) downloadIcs(cur);
-      else if (again) { tries = 5; drawTry(); }
     });
     clearInterval(timer);
     timer = window.setInterval(() => { if (!document.hidden) countdownTick(); }, 1000);
@@ -142,10 +107,8 @@ const part: ViewPart = {
   update(ctx) {
     cur = ctx;
     const n = ctx.next, p = ctx.pub;
-    const onAir = ctx.how && (p.state === "live" || p.state === "backstage");
-    box.querySelector<HTMLElement>("[data-lp-onair]")!.hidden = !onAir;
     const badge = box.querySelector<HTMLElement>("[data-lp-badge]")!;
-    const b = ctx.soon ? ["bt-badge--gold", "Starting soon"] : onAir ? ["bt-badge--red", "On air now"] : ["bt-badge--gray", "Off air"];
+    const b = ctx.soon ? ["bt-badge--gold", "Starting soon"] : ["bt-badge--gray", "Off air"];
     badge.className = `bt-badge ${b[0]}`; badge.textContent = b[1];
     // The lede
     const lede = box.querySelector<HTMLElement>("[data-lp-lede]")!;

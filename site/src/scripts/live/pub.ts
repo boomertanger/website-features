@@ -1,7 +1,7 @@
 // The public /live page (docs/specs/control-room.md §7; mockup docs/design/mockups/control-room-batch-1.html, layout 1 "Bridge"; design-system.md §8p).
 // ONE controller: it reads public/live (the one shared listener, lib/live.ts), the next stream and the live stream's own document, decides which of
 // the three views shows, and hands each change to that view. The views are separate parts so the page stays small:
-//   room    the waiting room (off air, Starting soon; also /live?how=1 while a stream is on)   pub-room.ts
+//   room    the waiting room (off air, Starting soon; How it works is its own page, /live/how-it-works)   pub-room.ts
 //   live    the Bridge: live, Break and backstage                                                pub-bridge.ts
 //   ended   the wrap-up for the 2 hours after a stream                                            pub-ended.ts
 // Non-production preview: ?live=off|public|backstage or ?state=off|soon|live|break|backstage|ended (pub-preview.ts); ?as=visitor|member; ?look=crt.
@@ -24,13 +24,9 @@ const dock = document.querySelector<HTMLElement>("[data-lv-dock]");
 if (dock) initStickyBar(dock, {});
 
 const root = document.querySelector<HTMLElement>("[data-lp]")!;
-const how = new URLSearchParams(location.search).get("how") === "1";
-document.querySelectorAll<HTMLElement>("[data-lp-nav]").forEach((a) => {
-  if (a.dataset.lpNav === (how ? "how" : "live")) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current");
-});
 
 const EMPTY: PubLive = { state: "off", look: "hull", streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null }, counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null, crew: { captain: null, chats: {}, onDuty: [] }, chatGame: null };
-const ctx = { root, pub: EMPTY, next: null, stream: null, vault: new Map(), how, soon: false, member: false } as unknown as PubCtx;
+const ctx = { root, pub: EMPTY, next: null, stream: null, vault: new Map(), soon: false, member: false } as unknown as PubCtx;
 
 const boxes = Object.fromEntries([...root.querySelectorAll<HTMLElement>("[data-lp-view]")].map((b) => [b.dataset.lpView!, b])) as Record<string, HTMLElement>;
 // One module per view, loaded the first time that view shows.
@@ -48,7 +44,6 @@ let stateKey = "";
 const ENDED_WINDOW = 2 * 3600_000;
 const viewOf = (): View => {
   const p = ctx.pub, now = Date.now();
-  if (ctx.how) return "room";
   if (p.state === "live" || p.state === "backstage") return "live";
   if (p.state === "ended" && p.actualEnd && now - p.actualEnd < ENDED_WINDOW) return "ended";
   return "room";
@@ -64,7 +59,7 @@ const AUDIENCE: Record<string, string> = { fanClub: "Fan Club", subClub: "Sub Cl
 /** The gold page title is the stream's own (the next stream's when off air); the head and its tags follow the state. */
 function paintHead(v: View, key: string) {
   const p = ctx.pub;
-  const title = v === "room" ? (ctx.how && p.title) || ctx.next?.title || "Off air" : p.title || (p.state === "backstage" ? "After-show" : "Live now");
+  const title = v === "room" ? ctx.next?.title || "Off air" : p.title || (p.state === "backstage" ? "After-show" : "Live now");
   document.querySelectorAll<HTMLElement>("[data-lp-title]").forEach((el) => { if (el.textContent !== title) el.textContent = title; });
   const head = root.querySelector<HTMLElement>("[data-lp-head]");
   if (!head) return;
@@ -81,7 +76,7 @@ function paintHead(v: View, key: string) {
 
 let nextAt = 0, nextFor = "";
 async function ensureNext(api: PubCtx["api"]) {
-  const need = ctx.pub.state === "off" || ctx.pub.state === "ended" || ctx.how;
+  const need = ctx.pub.state === "off" || ctx.pub.state === "ended";
   if (!need) { ctx.next = null; return; }
   if (Date.now() - nextAt < 60_000 && nextFor === ctx.pub.state) return;
   nextAt = Date.now(); nextFor = ctx.pub.state;

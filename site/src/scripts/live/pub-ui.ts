@@ -22,8 +22,6 @@ export interface PubCtx {
   auth: AuthState;
   /** A signed-up member (can check in). In preview, ?as=member counts. */
   member: boolean;
-  /** The waiting-room story shown on request (/live?how=1), even while a stream is on. */
-  how: boolean;
   /** Starting soon (inside 15 minutes, or running late). */
   soon: boolean;
 }

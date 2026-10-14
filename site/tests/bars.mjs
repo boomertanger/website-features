@@ -18,7 +18,7 @@ const CR = { visitor: ["Live", "Questions", "How it works"], member: ["Live", "Q
   a2: ["Live", "Questions", "How it works", "Mod Deck", "Controls"], owner: ["Live", "Questions", "How it works", "Mod Deck", "Controls", "Checklist"] };
 const MM_ALL = ["The crew", "How it works", "Board", "Join"], MM_STAFF = [...MM_ALL, "HQ", "Academy", "Queue", "Games", "Mod Deck"];
 const MM = { visitor: MM_ALL, member: MM_ALL, crew: MM_STAFF, a2: MM_STAFF, owner: MM_STAFF };
-const LIVE = ["/live", "/live/questions", "/live/chat-games", "/live/control", "/live/control/checklist", "/live/deck"];
+const LIVE = ["/live", "/live/how-it-works", "/live/questions", "/live/chat-games", "/live/control", "/live/control/checklist", "/live/deck"];
 const CREW = ["/crew", "/crew/how-it-works", "/crew/board", "/crew/join", "/crew/vote", "/crew/hq", "/crew/academy", "/crew/queue", "/crew/games", "/crew/profile", "/crew/tasks", "/admin/crew"];
 
 const fails = [];
@@ -97,4 +97,4 @@ for (const w of [1280, 390]) {
 }
 await browser.close();
 if (fails.length) { console.error(`bars: ${fails.length} problem(s)\n  ` + fails.join("\n  ")); process.exit(1); }
-console.log("bars: all checks passed (CONTROLROOM and MODMACHINA bars, 5 roles, 18 pages, 1280 and 390 px, Mod Deck back and forward)");
+console.log("bars: all checks passed (CONTROLROOM and MODMACHINA bars, 5 roles, 19 pages, 1280 and 390 px, Mod Deck back and forward)");

@@ -4,11 +4,12 @@
   "type": "feature",
   "area": "Watch",
   "blurb": "Watch the stream, check in at the breaks, and see who's on duty.",
-  "version": "1.1",
+  "version": "1.2",
   "status": "live",
   "audience": "everyone",
   "routes": [
-    "/live"
+    "/live",
+    "/live/how-it-works"
   ],
   "nav": "live",
   "testPlan": "docs/testing/control-room-test-plan.md",

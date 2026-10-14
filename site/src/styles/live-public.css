@@ -239,3 +239,11 @@
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) :is(.lp-curtain.is-close, .lp-curtain.is-open-in, .lp-vbox.is-fresh) { animation: none; }
 }
+
+/* ---- /live off air: the "New here?" line under the ticket (the story is /live/how-it-works) ---- */
+.bt-root:not(#_) .lp-new { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .lp-new a { color: var(--bt-text); font-weight: 700; }
+
+/* ---- /live/how-it-works: the hero on the page width, then TocLayout's rail and chapters ---- */
+.bt-root:not(#_) .lh { padding-bottom: 0; }
+.bt-root:not(#_) .lh-top { padding-bottom: 0; }

@@ -1,17 +1,16 @@
 ---
 // /live: the public Control Room page (docs/specs/control-room.md §2 and §7; mockup docs/design/mockups/control-room-batch-1.html layout 1 "Bridge",
 // looks Hull map Mk II and CRT; design-system.md §8p). Everyone sees it. It reads ONE public document (public/live) and draws one of three views:
-//   room    the waiting room (off air and Starting soon): a story page in the Arcade How it works frame
+//   room    the waiting room (off air and Starting soon): the hero, the countdown, the next-stream ticket and Remind me, and a "New here?"
+//           link to /live/how-it-works (the story chapters moved there on Oct 14, 2026; /live?how=1 redirects there)
 //   live    the Bridge (live, Break and backstage): a tool page built for speed
 //   ended   the wrap-up for the two hours after a stream
 // The static shell is here; scripts/live/pub.ts decides the view and fills it. The gold title is the stream's own (the next stream's when off air).
 // Preview (staging and previews only): ?live=off|public|backstage or ?state=off|soon|live|break|backstage|ended, ?as=visitor|member, ?look=crt.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import ControlRoomBar from "../components/live/ControlRoomBar.astro";
-import TocLayout from "../components/TocLayout.astro";
 import Mascot from "../components/Mascot.astro";
-import { boombotIcon } from "../../../shared/ui/arcade.js";
-import { corridorSvg, stageSceneSvg } from "../lib/live-art.js";
+import { corridorSvg } from "../lib/live-art.js";
 import "../styles/how-it-works.css";
 import "../styles/live-layout.css";
 import "../styles/control-room-looks.css";
@@ -22,24 +21,18 @@ import "../styles/live-questions.css";   // the Questions session in the Play pa
 import "../styles/live-hotseat.css";   // Hot Seat in the Play panel (Chat Games part 4)
 import "../styles/live-choices.css";   // Would You Rather, Predictions and the waiting strip (Chat Games part 5)
 
-const JOIN_ALERTS = "Join to get go-live alerts";
-const NAV: [string, string][] = [["wr-next", "Next stream"], ["wr-beats", "How a stream runs"], ["wr-try", "Check in"], ["wr-q", "Ask a question"], ["wr-games", "Chat Games"], ["wr-faq", "Ask BOOMBOT"]];
-const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
-// The four beats of every stream (docs/specs/control-room.md §4): each is a stage card with a small scene that moves while the card is lit.
-const BEATS = [
-  ["🚪", "Start", "Doors open. Say hi, check in, see tonight's games."],
-  ["☕", "Break 1", "Check in again while Boomer takes a breather. Questions and Chat Games often run here."],
-  ["🎭", "Break 2", "Check in, take a look at the schedule, and spend more time with chat."],
-  ["🏁", "End", "Last check-in, thanks to the crew, and sometimes an after-show for members."],
-];
-const FAQS = [
-  ["What if I miss a check-in?", "That beat is missed, but your stream streak is safe if you checked in to another beat, spent 15 minutes in Twitch chat, or claimed a live drop."],
-  ["I watch on TikTok. Can I still check in?", "Yes. The word is said out loud and shown on stream, so it works from Twitch, YouTube, YouTube Vertical and TikTok. Pick where you are watching when you type it."],
-  ["What is backstage?", "Members-only streams and after-shows that play right here on /live. A free Fan Club account gets you in."],
-];
 ---
 <BaseLayout title="Live" description="Watch the stream, check in at every beat and see who is on the crew. When we're off air, see what's next.">
   <ControlRoomBar slot="bar" section="live" />
+  <script is:inline>
+    // /live?how=1 was How it works; it is its own page now (the other query values come along, e.g. a preview's ?as=)
+    (function () {
+      var q = new URLSearchParams(location.search);
+      if (q.get("how") !== "1") return;
+      q.delete("how");
+      location.replace("/live/how-it-works" + (q.toString() ? "?" + q : "") + location.hash);
+    })();
+  </script>
   <div class="lp bt-zone" data-lp data-look="hull" data-view="loading" data-state="loading">
     <header class="lp-head" data-lp-head hidden>
       <h1 class="bt-title lp-title" data-lp-title>Live</h1>
@@ -52,10 +45,8 @@ const FAQS = [
       <span class="bt-skeleton lp-skel-card"></span>
     </div>
     <div class="lp-view" data-lp-view="room" hidden>
-      <TocLayout items={NAV}>
+      <div class="lp-roomwrap">
         <div class="ai-main lp-room">
-          <div class="bt-notice lp-onair" data-lp-onair hidden role="status">The stream is on right now. <a class="bt-link-btn" href="/live">Back to the stream</a></div>
-
           <section class="lp-hero" id="wr-next" aria-labelledby="wr-h">
             <Fragment set:html={corridorSvg("lp-hero")} />
             <Mascot class="lp-hero-mascot" aware decorative />
@@ -73,80 +64,11 @@ const FAQS = [
           </section>
 
           <div class="lp-ticket-wrap" data-lp-ticket></div>
+          <p class="lp-new">New here? <a href="/live/how-it-works">How it works</a>: the four beats, check-ins and a practice run.</p>
 
-          <section class="ai-sec" id="wr-beats" aria-labelledby="h-beats">
-            <Fragment set:html={chapter(1, "h-beats", "How a stream runs", "Every stream has four beats. At each one Boomer puts this page on stream and opens a check-in.")} />
-            <ol class="ai-jr ai-jr--4 lp-jr" data-journey>
-              {BEATS.map(([ic, t, d], i) => (
-                <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span><Fragment set:html={stageSceneSvg(i)} /></li>
-              ))}
-            </ol>
-          </section>
 
-          <section class="ai-sec" id="wr-try" aria-labelledby="h-try">
-            <Fragment set:html={chapter(2, "h-try", "Check in at every beat", "Listen for the word, type it here, keep your stream streak. Try it now: this one is a practice word.")} />
-            <div class="lp-try">
-              <div class="lp-try-say">
-                <small>Boomer says on stream</small>
-                <b data-lp-word>lantern</b>
-                <small>The word changes every beat and only works while the window is open.</small>
-              </div>
-              <div data-lp-try></div>
-            </div>
-          </section>
-
-          <section class="ai-sec" id="wr-q" aria-labelledby="h-q">
-            <Fragment set:html={chapter(3, "h-q", "Ask before the doors open", "Questions for the stream, voted up by everyone.")} />
-            <div class="bt-card lp-soon">
-              <Mascot decorative />
-              <div>
-                <h3>Questions</h3>
-                <p>Ask Boomer anything, any time, and vote up the ones you want answered. The top ones get answered on stream at the breaks, and the asker gets 15 XP.</p>
-                <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/live/questions">Ask a question</a>
-              </div>
-            </div>
-          </section>
-
-          <section class="ai-sec" id="wr-games" aria-labelledby="h-games">
-            <Fragment set:html={chapter(4, "h-games", "Chat Games", "Games you play with the whole stream, from whichever platform you watch on.")} />
-            <div class="bt-card lp-soon">
-              <Mascot aware decorative />
-              <div>
-                <h3>Questions, Hot Seat, Would You Rather and Predictions</h3>
-                <p>The Captain calls a game, you play it in the Play panel on this page, and the result shows on stream. Every game is free, and every game pays XP.</p>
-                <a class="bt-btn bt-btn--secondary bt-btn--sm" href="/live/chat-games">How Chat Games work</a>
-              </div>
-            </div>
-          </section>
-
-          <section class="ai-sec" id="wr-faq" aria-labelledby="h-faq">
-            <Fragment set:html={chapter(5, "h-faq", "Ask BOOMBOT", "Quick answers about streams, check-ins and backstage.")} />
-            <div class="bt-chat">
-              {FAQS.map(([q, a], i) => (
-                <>
-                  <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`lp-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
-                  <div class="bt-chat-a" id={`lp-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
-                    <span class="bt-chat-av" set:html={boombotIcon(`lp-bb-${i}`)} />
-                    <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
-                  </div>
-                </>
-              ))}
-            </div>
-          </section>
-
-          <section class="ai-cta lp-cta" aria-labelledby="h-cta">
-            <Mascot decorative />
-            <h2 id="h-cta"><span class="bt-when-visitor">Get a seat on the bridge</span><span class="bt-when-signed-in">See you on the bridge</span></h2>
-            <p class="bt-when-visitor">Join free to check in, keep a stream streak, get go-live alerts and watch backstage.</p>
-            <p class="bt-when-signed-in">Turn on a reminder and you will hear the doors open.</p>
-            <div class="ai-acts">
-              <a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title={JOIN_ALERTS}>Join free</a>
-              <button type="button" class="bt-btn bt-btn--primary bt-when-signed-in" data-lp-remind>Remind me</button>
-              <a class="bt-btn bt-btn--secondary" href="/schedule">Full schedule</a>
-            </div>
-          </section>
         </div>
-      </TocLayout>
+      </div>
     </div>
     <div class="lp-view" data-lp-view="live" hidden></div>
     <div class="lp-view" data-lp-view="ended" hidden></div>

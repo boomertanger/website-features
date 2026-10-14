@@ -1,12 +1,12 @@
 ---
 // The CONTROLROOM bar, on every /live page (docs/design-system.md §5 "Feature bars": the URL decides the bar; docs/specs/control-room.md §7c):
-// /live, /live/questions, /live/chat-games, /live/control, /live/control/checklist and /live/deck all show this one bar, with the same links
+// /live, /live/how-it-works, /live/questions, /live/chat-games, /live/control, /live/control/checklist and /live/deck all show this one bar, with the same links
 // in the same order for the same person. The kit's .bt-topbar.bt-topbar--rows in a .bt-sticky-bar: the radar-scope wordmark (not a link:
 // Live already goes to /live) and a .bt-topnav with one .bt-seg-nav--scroll (on phones, one row under the wordmark that scrolls sideways).
-//   Live · Questions · How it works (/live?how=1), then only for people who have them: Mod Deck (.bt-when-crew), Controls (.bt-when-overseer:
+//   Live · Questions · How it works (/live/how-it-works), then only for people who have them: Mod Deck (.bt-when-crew), Controls (.bt-when-overseer:
 //   the owner and A2 Overseer and up), Checklist (.bt-when-owner).
 // Role links are in the HTML and shown by the body flags BaseLayout sets before first paint, so nothing pops in. The inline ROW_CURRENT
-// script marks the current link (with ?how=1 too) and scrolls it into view before first paint. scripts/live/bar.ts wires the bar.
+// script marks the current link and scrolls it into view before first paint. scripts/live/bar.ts wires the bar.
 import { crWordmarkHtml } from "../../../../shared/ui/control-room.js";
 import { ROW_CURRENT } from "../../lib/row-current.js";
 import "../../styles/live-layout.css";
@@ -16,7 +16,7 @@ const { section = null, gated = false } = Astro.props;
 const links = [
   { id: "live", label: "Live", href: "/live" },
   { id: "questions", label: "Questions", href: "/live/questions" },
-  { id: "how", label: "How it works", href: "/live?how=1" },
+  { id: "how", label: "How it works", href: "/live/how-it-works" },
   { id: "deck", label: "Mod Deck", href: "/live/deck", when: "bt-when-crew" },
   { id: "control", label: "Controls", href: "/live/control", when: "bt-when-overseer" },
   { id: "checklist", label: "Checklist", href: "/live/control/checklist", when: "bt-when-owner" },

@@ -1,7 +1,7 @@
 // The phone link row's first-paint script (docs/design-system.md §5 "Feature bars"; kit .bt-topbar--rows). Rendered inline right after a
 // feature bar's .bt-seg-nav (<script is:inline set:html={ROW_CURRENT} />), it runs while the page is still parsing, before first paint:
 //   1. marks the link for this URL as the current one (aria-current="page"): the same path, and every query value the link has matches
-//      (so /live?how=1 beats /live on the How it works view); with no exact match the server's choice stays (/crew/tasks under HQ)
+//      (a link with a query, like ?tab=x, beats the bare path when the page has it); with no exact match the server's choice stays (/crew/tasks under HQ)
 //   2. scrolls the row so that link is in view (centred), instantly: no animation and no reset to the start
 // shared/ui/seg-nav.js then keeps it there. Plain ES5, no imports: it is inlined as text.
 export const ROW_CURRENT = `(function (s) {
