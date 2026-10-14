@@ -115,18 +115,6 @@ function wallHtml() {
     return `<div class="gvh-col" style="--d:${34 + (c % 4) * 6}s">${Array.from({ length: copies }, () => col).flat().map((g) => `<span class="gvh-c" data-slug="${esc(g.slug)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</span>`).join("")}</div>`;
   }).join("")}</div>`;
 }
-/** The spotlight: what's playing (the latest, with the second tucked behind), else Boomer's newest pinned game, else the top Most wanted on stream game. */
-function spotlight() {
-  const playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
-  // with nothing playing: Boomer's newest pinned game, else the top Most wanted on stream game
-  const pinned = V.games.filter(isPinned).sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0))[0];
-  const g = playing[0] || pinned || mostWantedGames()[0];
-  if (!g) return { html: "", kind: "" };
-  const also = playing[1];
-  const label = playing[0] ? "Now playing" : pinned ? "Up next" : "Most wanted on stream";
-  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}${!playing[0] && pinned ? UP_NEXT : ""}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "vote")}</small>` : ""}</div></div>`;
-  return { html, kind: playing[0] ? "playing" : "wanted" };
-}
 /** The counts: big numbers on desktop and tablet; one small line on phones ("142 games  111 finished  15 in VR"). Zeros are hidden. */
 function heroCounts() {
   const n = [[V.games.length, "games in the Vault", "games"], [count("finished"), "finished", "finished"], [V.games.filter((g) => hasTag(g.tags, "VR")).length, "played in VR", "in VR"]] as const;
@@ -134,11 +122,10 @@ function heroCounts() {
   return `<div class="vh-counts"${shown.length ? "" : " hidden"}>${shown.map(([v, l, s]) => `<div><b data-count-to="${v}">${v}</b><small>${l === s ? l : `<span class="gvh-long">${l}</span><span class="gvh-short">${s}</span>`}</small></div>`).join("")}</div>`;
 }
 function hero() {
-  const sp = spotlight();
   const ex = EXAMPLES.filter((w) => search(index, w, { limit: 1 }).length);
-  return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">${esc(site.name)}</span><h1 class="bt-title bt-title--hero">Horror Game Vault</h1><p>${SUB}</p>
+  return `<section class="gvh gvh--solo" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">${esc(site.name)}</span><h1 class="bt-title bt-title--hero">Horror Game Vault</h1><p>${SUB}</p>
   <label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q data-hero-search autocomplete="off" spellcheck="false" placeholder="Search ${V.games.length} games…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label>
-  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}<div class="gvs" data-toplay hidden></div></div>${sp.html}</div></section>`;
+  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}</div><div class="gvs" data-toplay hidden></div></div></section>`;
 }
 /** Searching: the wall pauses, non-matches grey out, matches light up, the strip shows up to 7, the hint counts. */
 function renderHero() {
@@ -211,12 +198,18 @@ function mostWantedGames() {
   if (wanted.length) return wanted;
   return [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
 }
-// ---------- the phone hero's story card (option 1C; M3 under 640px only, docs/design/mockups/game-vault-phone-hero-story.html) ----------
-// Up to 4 To play games: Boomer's pinned "Up next" games first (oldest pin first), then the ones with votes, most first, badged with
-// their rank on the Most wanted on stream shelf ("Most wanted #N"), then the newest To play games with no votes fill the spots ("To play").
-// The kit's .bt-stories runs it (shared/ui/stories.js); the card is drawn here.
-interface ToPlay { g: VCard; badge: string }
+// ---------- the film strip spotlight (every size; game-vault-film-strip.html D3b + M1, game-vault-tablet-phone-search.html T2) ----------
+// Up to 4 games on the kit's .bt-stories (shared/ui/stories.js): a tilting poster, the small covers in a 2 x 2 square with the ring that
+// draws around the current one over 5 s, and the details (badge, title, votes with the vote button, the credit line).
+//   Desktop and tablet start with the game(s) Boomer is playing: green "Now playing" with the pulse and Watch live (to /live) while he is
+//   live, green "Playing" and See the game otherwise (.bt-when-live / .bt-when-off follow the body's data-live), no vote button. Then the
+//   To play games below. Phones show the To play games only (the Now playing shelf leads the page there).
+//   To play: Boomer's pinned "Up next" games first (oldest pin first), then the ones with votes, most first, badged with their rank on the
+//   Most wanted on stream shelf ("Most wanted #N"), then the newest To play games with no votes ("To play", "No votes yet").
+// One game: just the poster and its details; none: hidden (the hero is the left column alone).
+interface ToPlay { g: VCard; badge: string; play?: boolean }
 const byVotes = (a: VCard, b: VCard) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0);
+const preview = (k: string) => (isProduction ? null : new URLSearchParams(location.search).get(k));
 function toPlayList(): ToPlay[] {
   const wish = V.games.filter((g) => g.status === "wishlist");
   const shelfRank = mostWantedGames().filter((g) => g.wanted > 0);   // the shelf's own ranked order (it is unranked before anyone votes)
@@ -226,7 +219,7 @@ function toPlayList(): ToPlay[] {
   const fill = wish.filter((g) => !isPinned(g) && !(g.wanted > 0)).sort(newest).map((g) => ({ g, badge: "To play" }));
   const list = [...pins, ...rest, ...fill].slice(0, 4);
   // ?toplay=none|one|four|fill: a preview on localhost and staging, never production (fill: as before anyone votes)
-  const pv = isProduction ? null : new URLSearchParams(location.search).get("toplay");
+  const pv = preview("toplay");
   if (pv === "none") return [];
   if (pv === "fill") return [...pins, ...fill].slice(0, 4).map((x) => ({ g: { ...x.g, wanted: 0 }, badge: x.badge }));
   if (pv === "one") return (list.length ? list : wish.slice(0, 1).map((g) => ({ g, badge: "Up next" }))).slice(0, 1);
@@ -236,13 +229,47 @@ function toPlayList(): ToPlay[] {
   }
   return list;
 }
+/** The games Boomer is playing, latest first. ?playing=on|live (localhost and staging): a stand-in when the data has none; live also puts
+ *  the page in the live state (the pulse and Watch live). The ?toplay=none|one previews show those states alone. */
+function playingList(): ToPlay[] {
+  const tp = preview("toplay");
+  if (tp === "none" || tp === "one") return [];
+  let playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
+  const pv = preview("playing");
+  if ((pv === "on" || pv === "live") && !playing.length) {
+    const stand = V.games.find((g) => g.status === "finished" && g.cover) || V.games.find((g) => g.status !== "wishlist");
+    if (stand) playing = [{ ...stand, status: "playing" }];
+  }
+  return playing.map((g) => ({ g, badge: "Playing", play: true }));
+}
+/** The spotlight's games: phones the To play games only, desktop and tablet the playing game(s) first. Max 4. */
+const spotList = (onPhone: boolean): ToPlay[] => (onPhone ? toPlayList() : [...playingList(), ...toPlayList()]).slice(0, 4);
+
 const votesHtml = (n: number) => (n > 0 ? `<b>${n}</b> ${n === 1 ? "vote" : "votes"}` : votesText(0));
-function toPlayCard({ g, badge }: ToPlay) {
-  const href = `/games/${encodeURIComponent(g.slug)}`;
-  return `<div class="gvs-card"><a class="gv-cover-tilt gvs-cover" href="${href}" tabindex="-1" aria-hidden="true">${coverHtml(g.cover, { tilt: true, alt: "" })}</a><div class="gvs-info"><span class="bt-badge bt-badge--gold">${esc(badge)}</span><a class="gvs-title" href="${href}">${esc(g.title)}</a><span class="gvs-votes" data-gvs-votes="${esc(g.slug)}">${votesHtml(g.wanted)}</span>${wantButton(g)}</div></div>`;
+const gameHref = (g: VCard) => `/games/${encodeURIComponent(g.slug)}`;
+/** The credit line under the details: how far into a playing game, else who picked it. */
+function credit({ g, play }: ToPlay) {
+  if (play) return g.streams ? `${plural(g.streams, "stream")} so far` : "First stream of this game";
+  if (isPinned(g)) return "Boomer's pick";
+  if (g.origin === "community") return g.by ? `Added by @${g.by}` : "Added by a member";
+  return "On Boomer's list";
+}
+function spotPoster({ g, play }: ToPlay) {
+  return `<a class="gv-cover-tilt gvs-poster${play ? " is-play" : ""}" href="${gameHref(g)}" tabindex="-1" aria-hidden="true">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a>`;
+}
+function spotDetails(x: ToPlay) {
+  const { g, badge, play } = x;
+  const head = play
+    ? `<span class="bt-badge bt-badge--green gvs-badge bt-when-live"><span class="bt-badge-dot gvs-pulse"></span>Now playing</span><span class="bt-badge bt-badge--green gvs-badge bt-when-off">Playing</span>`
+    : `<span class="bt-badge bt-badge--gold gvs-badge">${esc(badge)}</span>`;
+  const row = play
+    ? `<a class="bt-btn bt-btn--primary bt-btn--sm bt-when-live" href="/live">Watch live</a><a class="bt-link-btn bt-when-off" href="${gameHref(g)}">See the game</a>`
+    : `<span class="gvs-votes" data-gvs-votes="${esc(g.slug)}">${votesHtml(g.wanted)}</span>${wantButton(g)}`;
+  return `${head}<a class="gvs-title" href="${gameHref(g)}">${esc(g.title)}</a><div class="gvs-row">${row}</div><p class="gvs-credit">${esc(credit(x))}</p>`;
 }
 let toplay: ReturnType<typeof initStories> = null;
-/** A vote on the card or a shelf: the page's copy of the summary and the card's count follow it; voting on the card pops the button. */
+let toplayFor: boolean | null = null;
+/** A vote on the spotlight or a shelf: the page's copy of the summary and the spotlight's count follow it; voting there pops the button. */
 function voted(slug: string, n: number) {
   const g = V.games.find((x) => x.slug === slug);
   if (g) g.wanted = n;
@@ -251,12 +278,15 @@ function voted(slug: string, n: number) {
 function mountToplay() {
   const host = root!.querySelector<HTMLElement>("[data-toplay]");
   if (!host) return;
-  const items = toPlayList();
+  toplayFor = phone.matches;
+  const items = spotList(toplayFor);
+  toplay?.destroy(); toplay = null;
   host.hidden = !items.length;
-  if (!items.length) { toplay?.destroy(); toplay = null; return; }
+  root!.querySelector("[data-hero]")?.classList.toggle("gvh--solo", !items.length);
+  if (!items.length) return;
   toplay = initStories(host, {
-    items, name: "To play games", layout: "row", label: (x: ToPlay) => x.g.title,
-    render: toPlayCard,
+    items, name: "Spotlight", layout: "square", label: (x: ToPlay) => x.g.title, tone: (x: ToPlay) => (x.play ? "green" : ""),
+    render: spotPoster, details: spotDetails,
     thumb: (x: ToPlay) => coverHtml(x.g.cover, { alt: "", size: "sm" }),
     onShow: () => initWants(host, (slug: string, n: number) => {
       voted(slug, n);
@@ -272,9 +302,10 @@ function toplaySearching(on: boolean) {
   host.inert = on;   // steps back: not clickable or focusable while searching
   toplay?.pause("search", on);
 }
-// Phones only (the M3 hero; the page frame spans the screen, so a media query matches the kit's 640px container breakpoint)
+// Phones show the To play games only; the page frame spans the screen, so a media query matches the kit's 640px container breakpoint.
+// (Only which games are shown follows it; the layout is container queries in game-vault.css.)
 const phone = matchMedia("(max-width: 640px)");
-function syncToplay() { if (phone.matches) { if (!toplay) mountToplay(); } else { toplay?.destroy(); toplay = null; } }
+function syncToplay() { if (toplayFor !== phone.matches) mountToplay(); }
 function mostWanted() {
   const games = mostWantedGames();
   if (games.some((g) => g.wanted > 0)) return shelf("Most wanted on stream", "What members want Boomer to play next.", games, { ranked: true, status: "wishlist" });

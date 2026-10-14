@@ -43,7 +43,8 @@ export function normaliseLive(d: any): PubLive {
 export function livePreview(): { live: string | null; state: string | null } | null {
   if (isProduction) return null;
   const q = new URLSearchParams(location.search);
-  const live = q.get("live"), state = q.get("state");
+  // ?playing=live (the Game Vault's spotlight preview) is the live state too
+  const live = q.get("live") || (q.get("playing") === "live" ? "public" : null), state = q.get("state");
   return live || state ? { live, state } : null;
 }
 

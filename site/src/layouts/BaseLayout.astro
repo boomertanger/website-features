@@ -97,6 +97,7 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
             }, true);
           }
           if (["off", "public", "backstage"].indexOf(live) >= 0) b.dataset.live = live;
+          else if (p.get("playing") === "live") b.dataset.live = "public";   // the Game Vault spotlight's ?playing=live preview: Boomer is live
         })();
       </script>
     )}
