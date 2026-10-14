@@ -187,3 +187,14 @@
 #bt-ui-kit .kit-sh-card { padding: 10px 12px; }
 @container bt (max-width: 640px) { #bt-ui-kit .kit-sh-grid2 { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-reduced-motion: reduce) { #bt-ui-kit .kit-sh-frame { transition: none; } }
+
+/* The sticky seg nav demo (Boom Arcade section): a small scrolling box with a sticky filter bar */
+.bt-root:not(#_) .kit-stick { width: 360px; max-width: 100%; height: 260px; overflow-y: auto; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-bg); }
+.bt-root:not(#_) .kit-stick-hero { display: grid; place-items: center; height: 120px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .kit-stick-bar { position: sticky; top: 0; z-index: 1; display: flex; padding: 12px; border-bottom: 1px solid var(--bt-border); background: var(--bt-bg); }
+.bt-root:not(#_) .kit-stick-bar.is-stuck { padding: 6px 12px; background: color-mix(in srgb, var(--bt-bg) 85%, transparent); -webkit-backdrop-filter: blur(10px); backdrop-filter: blur(10px); }
+.bt-root:not(#_) .kit-stick-bar .bt-seg-nav { flex: 1 1 0; min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bt-root:not(#_) .kit-stick-bar .bt-seg-nav a { padding: 7px 13px; }
+.bt-root:not(#_) .kit-stick-bar.is-stuck .bt-seg-nav a { padding: 6px 11px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .kit-stick-bar.is-stuck .bt-chip-n { display: none; }
+.bt-root:not(#_) .kit-stick-body { height: 600px; background: repeating-linear-gradient(180deg, transparent 0 48px, var(--bt-border) 48px 49px); }

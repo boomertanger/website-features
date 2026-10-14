@@ -185,7 +185,12 @@ underline.
 (`aria-current="page"` on the current one): one dark rounded track; a lit pill with a small
 glowing purple tick glides to the hovered or focused tab and settles back on the current
 one. Behavior: `shared/ui/seg-nav.js` (`initSegNav(nav)` / `initSegNavs(root)`) adds and
-moves one shared `.bt-seg-nav-pill`; without it the current tab is lit on its own. Used for
+moves one shared `.bt-seg-nav-pill`; without it the current tab is lit on its own. At rest the
+current tab is always lit by CSS (nothing measured, so it can't go stale when a sticky bar sticks,
+tabs shrink or fonts load); the measured pill shows only while gliding (`.is-gliding`), is
+re-measured without animating whenever the nav or a tab changes size (ResizeObserver on both),
+and hands back to the CSS when it is home. A row that overflows scrolls the current tab into view
+(inside the row only). UI Kit: "Sticky, after scroll" (Oct 14, 2026). Used for
 the Arcade top-bar links (hidden on phones).
 
 **Sticky offsets: `--bt-sticky-top`.** The site header is not sticky; it scrolls away. So a

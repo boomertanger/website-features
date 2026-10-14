@@ -1457,7 +1457,8 @@
    .bt-seg-nav         top-bar tabs: one dark rounded track; a lit pill with a glowing tick
                        glides to the hovered or focused tab and settles back on the current
                        one (a[aria-current="page"]). Behavior: shared/ui/seg-nav.js; without
-                       it the current tab is lit on its own. --icons: icon-only (Arcade bar on
+                       it the current tab is lit on its own. At rest it always is (CSS, never
+                       measured); the measured pill shows only while gliding (.is-gliding). --icons: icon-only (Arcade bar on
                        phones); --scroll: scrolls sideways with edge fades (Base Camp bar on phones).
    .bt-toc             "On this page" progress rail: stops on a line, passed sections gold,
                        the current one a glowing purple dot, the line filling to it; at <= 640px
@@ -1484,13 +1485,14 @@
 .bt-root:not(#_) .bt-seg-nav a:hover { color: var(--bt-text); text-decoration: none; }
 .bt-root:not(#_) .bt-seg-nav a[aria-current="page"] { color: var(--bt-text); }
 .bt-root:not(#_) .bt-seg-nav a:focus-visible { outline-offset: 0; }
-/* The lit pill (and its tick): on the current tab without JS; seg-nav.js moves one shared pill. */
+/* The lit pill (and its tick): on the current tab, by CSS, at rest (never measured, so never stale). seg-nav.js shows one shared,
+   measured pill only while it glides to a hovered or focused tab (.is-gliding), then hands back to the current tab. */
 .bt-root:not(#_) .bt-seg-nav :is(a[aria-current="page"], .bt-seg-nav-pill) { background: linear-gradient(180deg, var(--bt-surface-2), var(--bt-surface)); box-shadow: 0 0 0 1px var(--bt-border-2) inset, 0 4px 14px var(--bt-seg-shadow); }
 .bt-root:not(#_) .bt-seg-nav :is(a[aria-current="page"], .bt-seg-nav-pill)::after { content: ""; position: absolute; left: 50%; bottom: 0; width: 18px; height: 2px; margin-left: -9px; border-radius: 2px; background: var(--bt-primary); box-shadow: 0 0 8px rgba(var(--bt-primary-rgb), 0.9); }
-.bt-root:not(#_) .bt-seg-nav-pill { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: var(--bt-radius-full); pointer-events: none; opacity: 0; transition: transform 0.28s cubic-bezier(.3, .7, .2, 1), width 0.28s cubic-bezier(.3, .7, .2, 1), opacity 0.2s; }
-.bt-root:not(#_) .bt-seg-nav.is-ready .bt-seg-nav-pill { opacity: 1; }
-.bt-root:not(#_) .bt-seg-nav.is-ready a[aria-current="page"] { background: none; box-shadow: none; }
-.bt-root:not(#_) .bt-seg-nav.is-ready a[aria-current="page"]::after { display: none; }
+.bt-root:not(#_) .bt-seg-nav-pill { position: absolute; z-index: 0; top: 4px; bottom: 4px; left: 0; width: 0; border-radius: var(--bt-radius-full); pointer-events: none; opacity: 0; transition: transform 0.28s cubic-bezier(.3, .7, .2, 1), width 0.28s cubic-bezier(.3, .7, .2, 1); }
+.bt-root:not(#_) .bt-seg-nav.is-gliding .bt-seg-nav-pill { opacity: 1; }
+.bt-root:not(#_) .bt-seg-nav.is-gliding a[aria-current="page"] { background: none; box-shadow: none; }
+.bt-root:not(#_) .bt-seg-nav.is-gliding a[aria-current="page"]::after { display: none; }
 
 .bt-root:not(#_) .bt-toc { position: relative; display: flex; flex-direction: column; gap: 4px; padding-left: 22px; }
 .bt-root:not(#_) .bt-toc-rail, .bt-root:not(#_) .bt-toc-fill { position: absolute; left: 6px; top: 14px; width: 2px; border-radius: 2px; }
