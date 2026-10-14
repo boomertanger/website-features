@@ -9,6 +9,13 @@
 /* ---- The BASECAMP bar: the kit's .bt-topbar in a .bt-sticky-bar (like the Trophy Room's); the seg nav hides on phones ---- */
 .bt-root:not(#_) .bc-bar { width: 100%; max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; }
 .bt-root:not(#_) .bc-bar .bt-wordmark-text { letter-spacing: 0.06em; }
+/* Hero titles at 640px and narrower: the kit's 28px, but never wider than the column ("NEWFOUNDLAND" is ~9x the font size wide; at
+   320px the column is ~222px). The column is a size container only here. A word is never broken. */
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) :is(.bc-hero, .nl-hero, .sk-hero, .mc-hero) :has(> .bt-title--hero) { container-type: inline-size; }   /* the title's own column */
+  .bt-root:not(#_) :is(.nl-hero, .sk-hero, .mc-hero) .bt-title.bt-title--hero { font-size: clamp(22px, 10.5cqi, 28px); overflow-wrap: normal; hyphens: manual; }
+}
+
 /* Phones: two rows, the wordmark on top and the four links full width below it (the kit's .bt-seg-nav--scroll scrolls them sideways
    when they don't fit). The sticky bar is taller to match (its height and the stuck height stay equal, as the kit wants on phones). */
 @container bt (max-width: 640px) {

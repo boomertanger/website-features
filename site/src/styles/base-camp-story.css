@@ -20,7 +20,7 @@
 .bt-root:not(#_) .s-wp:is(:hover, :focus-visible) .s-wp-lab { opacity: 1; fill: var(--bt-text); }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bc-hero { grid-template-columns: minmax(0, 1fr); gap: 14px; }
-  .bt-root:not(#_) .bc-hero .bt-title--hero { font-size: 26px; }
+  .bt-root:not(#_) .bc-hero .bt-title--hero { font-size: clamp(22px, 10.5cqi, 26px); overflow-wrap: normal; hyphens: manual; }   /* its column is a size container (base-camp.css) */
 }
 
 /* ---------- Chapter 1: words + the mascot with a speech bubble ---------- */

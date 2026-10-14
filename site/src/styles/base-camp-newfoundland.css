@@ -9,9 +9,6 @@
 .bt-root:not(#_) .nl-ch { display: flex; flex-direction: column; gap: 20px; scroll-margin-top: 80px; }
 .bt-root:not(#_) :is(.nl-thing, .nl-ex) { scroll-margin-top: 80px; }
 .bt-root:not(#_) .nl-ex-title { font-size: 22px; }
-.bt-root:not(#_) .nl-big--dog { font-size: 38px; }
-.bt-root:not(#_) .nl-big--pony { font-size: 30px; }
-@container bt (max-width: 640px) { .bt-root:not(#_) :is(.nl-big--dog, .nl-big--pony) { font-size: 28px; } }
 .bt-root:not(#_) .nl-sub { margin-top: 8px; }
 .bt-root:not(#_) .nl-key--peak { background: var(--bt-teal); }
 .bt-root:not(#_) .nl-key--edge { background: color-mix(in srgb, var(--bt-teal) 30%, var(--bt-surface)); }
@@ -213,7 +210,17 @@
 .bt-root:not(#_) .nl-stamp-ic { display: grid; place-items: center; width: 54px; height: 54px; border-radius: 50%; border: 2px solid color-mix(in srgb, var(--bt-blue) 70%, transparent); color: var(--bt-text); font-size: 22px; font-weight: 900; }
 .bt-root:not(#_) .nl-stamp b { display: block; font-size: var(--bt-text-base); }
 .bt-root:not(#_) .nl-stamp span { color: var(--bt-text-muted); font-size: var(--bt-text-sm); line-height: 1.45; }
-@container bt (max-width: 640px) { .bt-root:not(#_) .nl-exhibits { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .nl-ex.is-wide { flex-direction: column; } .bt-root:not(#_) .nl-ex.is-wide .nl-ex-scene { aspect-ratio: 16 / 10; min-height: 0; flex: none; } .bt-root:not(#_) .nl-ex-big { font-size: 36px; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .nl-exhibits { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .nl-ex.is-wide { flex-direction: column; } .bt-root:not(#_) .nl-ex.is-wide .nl-ex-scene { aspect-ratio: 16 / 10; min-height: 0; flex: none; } }
+/* Big gradient headlines (.nl-ex-big: the chapter 3 exhibits, the dog card, the pony card) size from their own card, each a size
+   container, so the longest word ("Newfoundland", about 7.05x the font size wide) always fits on one line inside the card's 22px
+   padding (11cqi leaves room on any card over ~200px). A word is never broken or hyphenated; padding-bottom keeps room for g and y. */
+.bt-root:not(#_) :is(.nl-ex, .nl-dog, .nl-pony2) { container-type: inline-size; }
+.bt-root:not(#_) .nl-ex-big { font-size: clamp(22px, 15cqi, 46px); overflow-wrap: normal; word-break: normal; hyphens: manual; }   /* the exhibits: short words, so a larger share */
+.bt-root:not(#_) .nl-ex-big:is(.nl-big--dog, .nl-big--pony) { font-size: clamp(22px, 11cqi, 38px); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .nl-ex-big { font-size: clamp(22px, 15cqi, 36px); }
+  .bt-root:not(#_) .nl-ex-big:is(.nl-big--dog, .nl-big--pony) { font-size: clamp(22px, 11cqi, 36px); }
+}
 /* scene bits: viking, cod, St. John's */
 .bt-root:not(#_) .v-sod { fill: color-mix(in srgb, var(--bt-lime) 22%, var(--bt-surface-2)); }
 .bt-root:not(#_) .v-wall { fill: color-mix(in srgb, var(--bt-title) 18%, var(--bt-surface-2)); }
