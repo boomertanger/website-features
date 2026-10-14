@@ -127,10 +127,11 @@ function spotlight() {
   const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}${!playing[0] && pinned ? UP_NEXT : ""}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "vote")}</small>` : ""}</div></div>`;
   return { html, kind: playing[0] ? "playing" : "wanted" };
 }
+/** The counts: big numbers on desktop and tablet; one small line on phones ("142 games  111 finished  15 in VR"). Zeros are hidden. */
 function heroCounts() {
-  const n = [[V.games.length, "games in the Vault"], [count("finished"), "finished"], [V.games.filter((g) => hasTag(g.tags, "VR")).length, "played in VR"]] as const;
+  const n = [[V.games.length, "games in the Vault", "games"], [count("finished"), "finished", "finished"], [V.games.filter((g) => hasTag(g.tags, "VR")).length, "played in VR", "in VR"]] as const;
   const shown = n.filter(([v]) => v > 0);
-  return `<div class="vh-counts"${shown.length ? "" : " hidden"}>${shown.map(([v, l]) => `<div><b data-count-to="${v}">${v}</b><small>${l}</small></div>`).join("")}</div>`;
+  return `<div class="vh-counts"${shown.length ? "" : " hidden"}>${shown.map(([v, l, s]) => `<div><b data-count-to="${v}">${v}</b><small>${l === s ? l : `<span class="gvh-long">${l}</span><span class="gvh-short">${s}</span>`}</small></div>`).join("")}</div>`;
 }
 function hero() {
   const sp = spotlight();

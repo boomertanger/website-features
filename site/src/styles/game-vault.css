@@ -59,6 +59,7 @@
 .bt-root:not(#_) .gvh-copy > p { max-width: 46ch; color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: 1.55; }
 .bt-root:not(#_) .gvh-kicker { font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.14em; text-transform: uppercase; color: var(--bt-text-faint); }
 .bt-root:not(#_) .gvh .vh-counts { margin: 4px 0 0; }
+.bt-root:not(#_) .gvh .gvh-short { display: none; }
 .bt-root:not(#_) .gvh .bt-cover { border-radius: 8px; }
 
 /* The drifting wall: real covers, columns of tiles scrolling up and down */
@@ -119,7 +120,7 @@
 .bt-root:not(#_) .gvs .bt-btn.is-pop { animation: gvs-pop 0.5s ease; }   /* the vote moment */
 @keyframes gvs-pop { 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .gvs { display: block; margin-top: 18px; transition: opacity 0.3s; }
+  .bt-root:not(#_) .gvs { display: block; margin-top: 16px; transition: opacity 0.3s; }
   .bt-root:not(#_) .gvs[hidden] { display: none; }
   .bt-root:not(#_) .gvh.is-searching .gvs { opacity: 0.25; pointer-events: none; }
 }
@@ -129,24 +130,34 @@
   .bt-root:not(#_) .gvs { transition: none; }
 }
 
-/* Phones (M3, game-vault-phone-heroes.html, approved): the cover wall (5 columns) fills the background behind the kicker,
-   title, line, big search and counts and fades to the page colour toward the bottom; no spotlight and no poster
-   band. Now playing is the first shelf instead (it hides when nothing is playing). Searching works as on desktop:
-   the wall pauses, non-matches grey out, matches light up, and the strip shows under the search. Desktop and
+/* Phones (M3, game-vault-phone-heroes.html, approved; tightened by game-vault-phone-hero-1c-title.html "Proposed"): the cover wall
+   (5 columns) fills the background behind the kicker, title, line, big search and counts and fades to the page colour toward the
+   bottom; no spotlight and no poster band. The title sits over the wall near the top, the counts are one small line and the
+   "Try ..." hint shows only while the search is focused or has text, so the story card, its bars and small covers fit on the
+   first screen of a 390x844 phone. Now playing is the first shelf instead (it hides when nothing is playing). Searching works as
+   on desktop: the wall pauses, non-matches grey out, matches light up, and the strip shows under the search. Desktop and
    tablet keep the V3 hero above. */
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .gvh { min-height: 0; background: var(--bt-bg); }
   .bt-root:not(#_) .gvh-spot { display: none; }
-  .bt-root:not(#_) .gvh-wall { inset: -40px; grid-template-columns: repeat(5, 1fr); opacity: 0.48; }
+  .bt-root:not(#_) .gvh-wall { inset: -40px; grid-template-columns: repeat(5, 1fr); opacity: 0.55; -webkit-mask-image: linear-gradient(180deg, #000 0%, #000 40%, transparent 80%); mask-image: linear-gradient(180deg, #000 0%, #000 40%, transparent 80%); }
   .bt-root:not(#_) .gvh-col:nth-child(n + 6) { display: none; }
-  /* the wall shows brightly in the band above the kicker (no text there) and the overlay is dark behind the text, kept at AA */
-  .bt-root:not(#_) .gvh::before { background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--bt-bg) 15%, transparent) 16%, color-mix(in srgb, var(--bt-bg) 90%, transparent) 26%, color-mix(in srgb, var(--bt-bg) 94%, transparent) 60%, var(--bt-bg) 100%); }
+  /* the text sits over the wall: the overlay keeps the wall visible round the title and darkens behind the line and search (AA) */
+  .bt-root:not(#_) .gvh::before { background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 50%, transparent) 0%, color-mix(in srgb, var(--bt-bg) 78%, transparent) 22%, color-mix(in srgb, var(--bt-bg) 88%, transparent) 50%, var(--bt-bg) 100%); }
   .bt-root:not(#_) .gvh-in { grid-template-columns: minmax(0, 1fr); gap: 0; min-height: 0; padding: 0; }
-  .bt-root:not(#_) .gvh-copy { gap: 12px; padding: 120px var(--bt-gutter) 20px; }
-  .bt-root:not(#_) .gvh-copy > p { font-size: var(--bt-text-base); }
-  .bt-root:not(#_) .gvh .vh-counts { gap: 8px 22px; }
-  .bt-root:not(#_) .gvh .vh-counts b { font-size: 22px; }
+  .bt-root:not(#_) .gvh-copy { gap: 12px; padding: 22px var(--bt-gutter) 14px; }
+  .bt-root:not(#_) .gvh-copy .bt-title--hero { margin: -8px 0 -4px; font-size: 38px; line-height: 0.98; text-wrap: balance; }
+  .bt-root:not(#_) .gvh-copy > p { font-size: var(--bt-text-base); color: var(--bt-text); text-shadow: 0 1px 8px var(--bt-scrim-strong); }
+  .bt-root:not(#_) .gvh .vh-counts { gap: 4px 14px; margin: -2px 0 0; }
+  .bt-root:not(#_) .gvh .vh-counts div { flex-direction: row; align-items: baseline; gap: 4px; }
+  .bt-root:not(#_) .gvh .vh-counts b { font-size: var(--bt-text-sm); font-weight: 800; letter-spacing: 0; }
+  .bt-root:not(#_) .gvh .vh-counts small { font-size: var(--bt-text-sm); }
+  .bt-root:not(#_) .gvh .gvh-long { display: none; }
+  .bt-root:not(#_) .gvh .gvh-short { display: inline; }
+  /* the "Try ..." hint: only while the search is focused or has text */
+  .bt-root:not(#_) .gvh:not(.is-searching) .gvh-copy:not(:focus-within) .gvh-hint { display: none; }
   .bt-root:not(#_) .gvh-strip { justify-content: center; }
+  .bt-root:not(#_) .gvh-strip:empty { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .gvh-col { animation: none; }

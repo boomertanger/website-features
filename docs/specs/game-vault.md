@@ -284,6 +284,11 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   as the other shelves) leads the page above Most wanted on stream and hides when nothing is playing. Searching
   works as on desktop: the wall pauses, non-matches fade, matches light up and the strip of matches shows
   under the search. Reduced motion: no drift.
+  **Tighter phone hero (Oct 14, 2026, `game-vault-phone-hero-1c-title.html` "Proposed").** The kicker, title and line sit over
+  the wall near the top (the wall fades out from 40% to 80% of the hero); the counts become one small line ("142 games  111
+  finished  15 in VR", zeros hidden); the "Try “granny”, “vr”" hint shows only while the search is focused or has text. With
+  that, the story card, its bars and small covers fit on the first screen of a 390x844 phone. Wall drift, search and reduced motion
+  as before.
   **M3 now includes the story card (option 1C, `game-vault-phone-hero-story.html`, approved Oct 14, 2026).** Below the counts, the
   kit's `.bt-stories` flips through up to 4 To play games on top of the wall: Boomer's pinned "Up next" games first (pinnedAt
   order), then the most-voted To play games not already shown (only games with a vote), badged gold "Up next" or "Most wanted #N"
