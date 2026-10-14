@@ -1560,6 +1560,13 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   button) full width. Built on the existing hero markup: `.gv-hero-text` and `.gv-badges` become
   `display: contents` and the hero grid places the pieces; no second copy of the title. "Not rated"
   (`.gv-norate`, shown on phones only) stands in for the dial on played games with no score.
+- **Up next is Boomer's pin, and it's gold.** A pinned Wishlist game shows a small gold "Up next"
+  badge (kit `.bt-badge--gold`, no dot) after its status badge, on the card and in the game page hero;
+  gold because it's Boomer's choice, like his score, never purple (it isn't clickable). Pinned games
+  lead the Wishlist tab (oldest pin first) ahead of the chosen sort, and the hero spotlight's fallback
+  is the newest pinned game, then the top Most wanted on stream game; that shelf stays ranked by votes
+  only. The pin is set with the green admin "Pin to top" / "Unpin" button on the game page (spec §9).
+  The UI Kit shows it on a cover card.
 
 ### 8j. Trophy Room
 

@@ -32,6 +32,14 @@ export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n ==
 /** The line under a card's title; a played game with no streams shows its time to beat, never "Not streamed yet". */
 export const metaLine = (g: VCard): string => cardMeta(g);
 export const isEarly = (g: { releaseStatus?: string }) => g.releaseStatus === "early_access";
+/** Boomer's "Up next" pin: a Wishlist game he pinned to the top. */
+export const isPinned = (g: { pinned?: boolean; status?: string }) => g.pinned === true && g.status === "wishlist";
+export const UP_NEXT = '<span class="bt-badge bt-badge--gold">Up next</span>';
+/** Pinned games first, in the order they were pinned; the rest keep their order. */
+export function pinnedFirst<T extends { pinned?: boolean; status?: string; pinnedAt?: number | null }>(gs: T[]): T[] {
+  const pins = gs.filter(isPinned).sort((a, b) => (a.pinnedAt || 0) - (b.pinnedAt || 0));
+  return [...pins, ...gs.filter((g) => !isPinned(g))];
+}
 
 /** The cover card (C5 + C6): tape, stamp, ribbon and pulse on the art; the verdict slides up on hover. */
 export function vcard(g: VCard, { key = true }: { key?: boolean } = {}) {
@@ -44,7 +52,7 @@ export function vcard(g: VCard, { key = true }: { key?: boolean } = {}) {
   over += `<span class="gv-reveal" aria-hidden="true">${r.quoted ? `<q>${esc(r.title)}</q>` : `<b>${esc(r.title)}</b>`}<span>${esc(r.line)}</span></span>`;
   const extras = g.origin === "community" || isEarly(g)
     ? `<div class="bt-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}</div>` : "";
-  return `<a class="bt-cover-card" href="/games/${encodeURIComponent(g.slug)}"${key ? ` data-key="${esc(g.slug)}"` : ""}>${coverHtml(g.cover, { tilt: true, cls: g.status === "playing" ? "gv-rim" : "", over })}<div class="bt-cover-card-body"><div class="bt-cover-card-title">${esc(g.title)}</div><div class="bt-cover-card-row">${badge(g.status)}${score(g.score)}</div><div class="bt-cover-card-meta">${metaLine(g)}</div>${extras}</div></a>`;
+  return `<a class="bt-cover-card" href="/games/${encodeURIComponent(g.slug)}"${key ? ` data-key="${esc(g.slug)}"` : ""}>${coverHtml(g.cover, { tilt: true, cls: g.status === "playing" ? "gv-rim" : "", over })}<div class="bt-cover-card-body"><div class="bt-cover-card-title">${esc(g.title)}</div><div class="bt-cover-card-row">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}${score(g.score)}</div><div class="bt-cover-card-meta">${metaLine(g)}</div>${extras}</div></a>`;
 }
 
 export const lenOf = (g: VCard) => (g.ttb == null ? null : g.ttb <= 3 ? "short" : g.ttb <= 10 ? "medium" : "long");

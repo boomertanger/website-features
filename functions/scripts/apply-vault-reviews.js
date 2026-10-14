@@ -8,7 +8,8 @@
 // and adds the entry's tags to the game's Boomer tags (existing tags kept, same tag in another case not
 // added twice). An entry without a score sets only its status (and tags, if listed); the review stays as
 // it is. An optional "hint" (year, developer, Steam app id, store link) only chooses between several
-// candidates; it never makes a match on its own. Every write goes through adminEditItem's vaultGame
+// candidates; it never makes a match on its own. "pinned": true pins the game to the top of the Wishlist
+// (Boomer's "Up next"; Wishlist games only), false unpins it. Every write goes through adminEditItem's vaultGame
 // path (functions/lib/vault/edit.js applyEdit): the same validation and conflict check, one adminLog
 // entry per game (actor "apply-vault-reviews.js"), the Latest updates event when a game becomes
 // finished, and the public/vault rebuild. "pending" entries are ignored.
@@ -131,6 +132,8 @@ async function main() {
     if (r.status) want.status = r.status;
     if (r.score !== undefined && r.score !== null) want.review = { score: r.score, verdict: r.verdict || "", body: r.review || "" };
     if (Array.isArray(r.tags) && r.tags.length) want.boomerTags = mergeTags(E.currentValue("boomerTags", g), r.tags);
+    // "pinned": true pins it to the top of the Wishlist (Boomer's Up next; Wishlist games only), false unpins it
+    if (typeof r.pinned === "boolean") want.pinned = r.pinned;
     const changes = {}, before = {}, notes = [];
     try {
       for (const [f, v] of Object.entries(want)) {
@@ -139,6 +142,7 @@ async function main() {
         changes[f] = v; before[f] = now;
         if (f === "status") notes.push(`status ${now} -> ${next}`);
         else if (f === "review") notes.push(now ? `review ${now.score} -> ${next.score} (verdict, text)` : `review added (${next.score})`);
+        else if (f === "pinned") notes.push(next ? "pinned (Up next)" : "unpinned");
         else notes.push(`tags +${next.length - now.length}: ${next.slice(now.length).join(", ")}`);
       }
     } catch (err) { failed++; row.changes = `invalid: ${err.message}`; continue; }

@@ -21,7 +21,7 @@ import { flipSwap } from "../../../../shared/ui/flip.js";
 import { onAuth, getAuthState } from "../../lib/auth";
 import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, I } from "./art";
-import { esc, badge, vcard, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS } from "./ui";
+import { esc, badge, vcard, plural, STATUS, STATUS_KEYS, lenOf, LENGTHS, isPinned, pinnedFirst, UP_NEXT } from "./ui";
 import { wantButton, initWants } from "./wants";
 import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 
@@ -81,7 +81,9 @@ function list(): VCard[] {
     new: (a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle),
     az: (a, b) => a.sortTitle.localeCompare(b.sortTitle, "en"),
   };
-  return gs.sort(cmp[st.sort] || cmp.last);
+  gs.sort(cmp[st.sort] || cmp.last);
+  // the Wishlist: Boomer's pinned games ("Up next") come first, in pinned order, before the chosen sort
+  return st.status === "wishlist" ? pinnedFirst(gs) : gs;
 }
 
 // ---------- the list you leave from (round 3 N1) ----------
@@ -110,14 +112,16 @@ function wallHtml() {
     return `<div class="gvh-col" style="--d:${34 + (c % 4) * 6}s">${Array.from({ length: copies }, () => col).flat().map((g) => `<span class="gvh-c" data-slug="${esc(g.slug)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</span>`).join("")}</div>`;
   }).join("")}</div>`;
 }
-/** The spotlight: what's playing (the latest, with the second tucked behind), else the top Most wanted on stream game. */
+/** The spotlight: what's playing (the latest, with the second tucked behind), else Boomer's newest pinned game, else the top Most wanted on stream game. */
 function spotlight() {
   const playing = V.games.filter((g) => g.status === "playing").sort((a, b) => (b.last || 0) - (a.last || 0));
-  const g = playing[0] || mostWantedGames()[0];
+  // with nothing playing: Boomer's newest pinned game, else the top Most wanted on stream game
+  const pinned = V.games.filter(isPinned).sort((a, b) => (b.pinnedAt || 0) - (a.pinnedAt || 0))[0];
+  const g = playing[0] || pinned || mostWantedGames()[0];
   if (!g) return { html: "", kind: "" };
   const also = playing[1];
-  const label = playing[0] ? "Now playing" : "Most wanted on stream";
-  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "vote")}</small>` : ""}</div></div>`;
+  const label = playing[0] ? "Now playing" : pinned ? "Up next" : "Most wanted on stream";
+  const html = `<div class="gvh-spot">${also ? coverHtml(also.cover, { cls: "gvh-also", alt: "" }) : ""}<a class="gv-cover-tilt" href="/games/${encodeURIComponent(g.slug)}" aria-label="${esc(`${label}: ${g.title}`)}">${coverHtml(g.cover, { tilt: true, alt: "", eager: true })}</a><div class="gvh-spot-tag">${playing[0] ? badge("playing") : badge("wishlist")}${!playing[0] && pinned ? UP_NEXT : ""}<b>${esc(g.title)}</b>${also ? `<small>Also playing: ${esc(also.title)}</small>` : g.wanted ? `<small>${plural(g.wanted, "vote")}</small>` : ""}</div></div>`;
   return { html, kind: playing[0] ? "playing" : "wanted" };
 }
 function heroCounts() {

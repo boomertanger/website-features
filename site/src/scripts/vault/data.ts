@@ -15,6 +15,8 @@ export interface VCard {
   developers: string[]; tags: string[]; ttb: number | null;
   score: number | null; verdict: string | null;
   streams: number; minutes: number; last: number | null; added: number | null; statusAt: number | null;
+  /** Boomer's "Up next" pin (Wishlist games only); pinnedAt is when it was pinned. */
+  pinned?: boolean; pinnedAt?: number | null;
 }
 export interface Vault { games: VCard[]; tags: { tag: string; count: number }[]; count: number }
 
@@ -36,7 +38,7 @@ export async function loadGame(slug: string) {
   const g: any = snap.data();
   return {
     ...g, slug,
-    releaseDate: ms(g.releaseDate), createdAt: ms(g.createdAt), statusChangedAt: ms(g.statusChangedAt),
+    releaseDate: ms(g.releaseDate), createdAt: ms(g.createdAt), statusChangedAt: ms(g.statusChangedAt), pinnedAt: ms(g.pinnedAt),
     review: g.review ? { ...g.review, updatedAt: ms(g.review.updatedAt) } : null,
     stats: g.stats ? { ...g.stats, firstStreamedAt: ms(g.stats.firstStreamedAt), lastStreamedAt: ms(g.stats.lastStreamedAt) } : null,
     legacy: g.legacy ? { ...g.legacy, lastStreamedAt: ms(g.legacy.lastStreamedAt) } : null,

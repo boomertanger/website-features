@@ -295,6 +295,17 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
 - The cover card's hover panel follows the game (already in round 3's follow-ups): "No review yet"
   with a status line for playing, finished and abandoned games without a verdict, "Not played yet"
   only on the Wishlist (`shared/vault-reveal.js`).
+- **Up next (Boomer's pin, added Oct 13, 2026).** The owner or an admin can pin Wishlist games:
+  optional `pinned` (boolean) and `pinnedAt` (timestamp) on `vaultGames/{slug}`, set only through
+  adminEditItem (kind vaultGame, change `pinned: true | false`; Wishlist games only, and a game that
+  leaves the Wishlist is unpinned in the same edit; adminLog action `pin`). The game page has a green
+  admin "Pin to top" / "Unpin" button beside Edit on Wishlist games. Cards in `public/vault` carry
+  `pinned` and `pinnedAt` (ms). On /games, pinned games come first in the Wishlist tab (the status
+  filter Wishlist, without a search), oldest pin first, before the chosen sort; each shows a small gold
+  "Up next" badge (`.bt-badge--gold`) on its card and in the game page hero. With nothing playing, the
+  hero spotlight shows the newest pinned game (labelled Up next) before the top Most wanted on stream
+  game. Most wanted on stream itself stays ranked by votes only. `apply-vault-reviews.js` honours
+  `"pinned": true` (and `false`) in `vault-reviews.json`.
 
 ## 10. Edge cases
 

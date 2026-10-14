@@ -4,7 +4,7 @@
 // the older kinds use.
 //
 //   adminEditItem({ feature: "vaultGame", id: slug, changes, before, reason })
-//   changes (any of): status, review, boomerTags, legacy, summary, links, cover
+//   changes (any of): status, review, boomerTags, legacy, summary, links, cover, pinned
 //   before: the current value of every changed field, as the editor loaded it (the same
 //           conflict check as the other kinds: "This was changed while you were editing.")
 //
@@ -14,6 +14,8 @@
 //   legacy      { streamCount, minutes, lastStreamedAt (ms) | null }: history from before the site
 //   summary     up to 2000 characters
 //   links       { steam, itch, gog, epic, official }: https links or "" (up to 300 characters)
+//   pinned      true | false: Boomer's "Up next" pin, Wishlist games only (sets / clears pinnedAt; a game
+//               that leaves the Wishlist is unpinned in the same edit)
 //   cover       { action: "replace", publicId } (a file the admin uploaded to game-vault/covers,
 //               verified server-side) | { action: "remove" } (back to the IGDB / Steam art)
 const admin = require("firebase-admin");
@@ -83,6 +85,9 @@ function validate(field, value) {
       }
       return out;
     }
+    case "pinned":
+      if (typeof value !== "boolean") throw invalid(field, "Pinned is true or false.");
+      return value;
     case "cover": {
       if (!value || (value.action !== "replace" && value.action !== "remove")) throw invalid(field, "Cover change must be replace or remove.");
       if (value.action === "replace" && (typeof value.publicId !== "string" || !value.publicId.startsWith(`${cloud.PUBLIC_FOLDER}/`) || value.publicId.length > 200)) throw invalid(field, "Upload the cover to the covers folder first.");
@@ -103,6 +108,7 @@ function currentValue(field, g) {
     case "summary": return g.summary || "";
     case "links": return g.links || {};
     case "cover": return g.cover || null;
+    case "pinned": return g.pinned === true;
     default: return undefined;
   }
 }
@@ -150,6 +156,7 @@ module.exports = function makeEditor({ store, deps }) {
         const snap = await tx.get(ref);
         if (!snap.exists) throw new HttpsError("not-found", "This game no longer exists.", { reason: "noGame" });
         const g = snap.data();
+        const finalStatus = values.status ?? g.status;
         for (const f of fields) {
           if (!same(currentValue(f, g), before[f])) throw new HttpsError("aborted", CONFLICT, { reason: "conflict", field: f });
         }
@@ -187,7 +194,15 @@ module.exports = function makeEditor({ store, deps }) {
             }
             oldAssetPublicId = g.cover?.source === "upload" ? g.cover.publicId : null;
             update.cover = coverAfter; note(f, coverAfter ? { source: coverAfter.source, publicId: coverAfter.publicId || null } : null);
+          } else if (f === "pinned") {
+            if (v && finalStatus !== "wishlist") throw invalid(f, "Only Wishlist games can be pinned.");
+            if (v === (g.pinned === true)) continue;
+            update.pinned = v; update.pinnedAt = v ? FieldValue.serverTimestamp() : FieldValue.delete(); note(f, v);
           }
+        }
+        // a pin is for the Wishlist only: a game that leaves it is unpinned in the same edit
+        if (update.status && finalStatus !== "wishlist" && g.pinned === true && !("pinned" in update)) {
+          update.pinned = false; update.pinnedAt = FieldValue.delete(); note("pinned", false);
         }
         if (!Object.keys(logChanges).length) return { changed: false };
 
@@ -196,7 +211,7 @@ module.exports = function makeEditor({ store, deps }) {
         update.updatedAt = FieldValue.serverTimestamp();
         tx.update(ref, update);
         const changed = Object.keys(logChanges);
-        const action = changed.length === 1 && changed[0] === "status" ? "status" : changed.length === 1 && changed[0] === "review" ? "review" : changed.length === 1 && changed[0] === "cover" ? "cover" : "edit";
+        const action = changed.length === 1 && changed[0] === "status" ? "status" : changed.length === 1 && changed[0] === "review" ? "review" : changed.length === 1 && changed[0] === "cover" ? "cover" : changed.length === 1 && changed[0] === "pinned" ? "pin" : "edit";
         tx.set(db.collection("adminLog").doc(), await store.buildLog({ action, slug: id, title: g.title, actorUid: c.uid, actorName: c.name, reason: reason.trim(), changes: logChanges }));
         return { changed: true, g, update, oldAssetPublicId };
       });

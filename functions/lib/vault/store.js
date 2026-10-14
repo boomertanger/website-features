@@ -139,6 +139,9 @@ module.exports = function makeStore({ adminLogEntry }) {
       last: stats.lastStreamedAt,
       added: msOf(g.createdAt),
       statusAt: msOf(g.statusChangedAt),
+      // Boomer's "Up next" pin (Wishlist games only; lib/vault/edit.js)
+      pinned: g.pinned === true && g.status === "wishlist",
+      pinnedAt: g.pinned === true && g.status === "wishlist" ? msOf(g.pinnedAt) : null,
     };
     // Firestore refuses undefined; a field a game lacks becomes null in the card.
     return Object.fromEntries(Object.entries(c).map(([k, v]) => [k, v === undefined ? null : v]));

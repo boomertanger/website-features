@@ -26,7 +26,7 @@ import { messageFor } from "../../lib/errors";
 import { loadGame, loadStreamsFor, loadVault, type StreamRow, type VCard, type Vault } from "./data";
 import { loadCtx, markRestore, byLastStreamed, DEFAULT_LABEL } from "./context";
 import { vaultIcon, I } from "./art";
-import { esc, badge, tag, hours, plural, longDate, shortDate, isEarly, metaLine } from "./ui";
+import { esc, badge, tag, hours, plural, longDate, shortDate, isEarly, metaLine, isPinned, UP_NEXT } from "./ui";
 import { isStaff, isAdmin } from "./gate";
 import { wantButton, initWants } from "./wants";
 
@@ -97,6 +97,7 @@ function totals(g: any) {
 function tools(g: any) {
   const t: string[] = [];
   if (isAdmin()) t.push(`<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-edit>${I.pencil}<span class="bt-btn-label">Edit</span></button>`);
+  if (isAdmin() && g.status === "wishlist") t.push(`<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-pin aria-pressed="${isPinned(g)}">${isPinned(g) ? "Unpin" : "Pin to top"}</button>`);
   if (isStaff() && g.origin === "community") t.push(`<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-hide>${g.hidden ? I.eye : I.eyeOff}${g.hidden ? "Unhide" : "Hide"}</button>`);
   return t.length ? `<div class="gv-page-tools">${t.join("")}</div>` : "";
 }
@@ -110,7 +111,7 @@ function hero(g: any) {
   const by = [g.developers?.[0], year(g.releaseDate)].filter(Boolean).join(", ");
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
   const dial = g.review?.score ? dialHtml(g.review.score) : "";
-  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial || (g.status === "wishlist" ? "" : '<span class="bt-score-none gv-norate">Not rated</span>')}</div></section>`;
+  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial || (g.status === "wishlist" ? "" : '<span class="bt-score-none gv-norate">Not rated</span>')}</div></section>`;
 }
 
 function pickBanner(g: any) {
@@ -300,6 +301,16 @@ root?.addEventListener("click", async (e) => {
   }
   if (el.closest("[data-back]")) { markRestore(); return; }
   if (el.closest("[data-edit]")) { const { openEditor } = await import("./edit"); openEditor(G, { onSaved: boot }); return; }
+  if (el.closest("[data-pin]")) {
+    const b = el.closest<HTMLButtonElement>("[data-pin]")!, on = !isPinned(G);
+    b.disabled = true; b.textContent = on ? "Pinning…" : "Unpinning…";
+    try {
+      await call("adminEditItem", { feature: "vaultGame", id: G.slug, changes: { pinned: on }, before: { pinned: isPinned(G) }, reason: on ? "Pinned to the top (Up next)" : "Unpinned" });
+      G.pinned = on; G.pinnedAt = on ? Date.now() : null;
+      render();
+    } catch (err) { b.disabled = false; b.textContent = on ? "Pin to top" : "Unpin"; b.title = messageFor(err, "Couldn't save that. Try again."); }
+    return;
+  }
   if (el.closest("[data-suggest]")) { const { openCoverSuggest } = await import("./cover-suggest"); openCoverSuggest({ slug: G.slug, title: G.title }); return; }
   if (el.closest("[data-hide]")) {
     const hiding = !G.hidden;

@@ -407,6 +407,14 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
   assert.equal(D.finishedEvent({ title: "Silent Hill 2", slug: "silent-hill-2" }, 9).summary, "Finished Silent Hill 2. Boomer's score: 9");
   assert.equal(D.finishedEvent({ title: "Silent Hill 2", slug: "silent-hill-2" }).summary, "Finished Silent Hill 2.");
 
+  // Boomer's "Up next" pin (adminEditItem vaultGame, lib/vault/edit.js): a boolean field, false when unset
+  const E = require("../lib/vault/edit");
+  assert.equal(E.validate("pinned", true), true);
+  assert.equal(E.validate("pinned", false), false);
+  assert.throws(() => E.validate("pinned", "yes"), /true or false/);
+  assert.equal(E.currentValue("pinned", { status: "wishlist" }), false);
+  assert.equal(E.currentValue("pinned", { status: "wishlist", pinned: true }), true);
+
   console.log("check-vault: ok");
 })().catch((err) => {
   console.error(err);
