@@ -9,7 +9,7 @@ export interface Pick { gameId: string; title: string }
 const norm = (t: string) => t.toLowerCase().normalize("NFKD").replace(/[^a-z0-9 ]/g, "");
 
 export function gamePickerHtml(id: string, { placeholder = "Search the Game Vault", label = "Search the Game Vault" } = {}) {
-  return `<div class="lc-gp" data-gp="${esc(id)}"><label class="bt-label" for="gp-${esc(id)}">${esc(label)}</label><input class="bt-input" id="gp-${esc(id)}" type="search" autocomplete="off" placeholder="${esc(placeholder)}" data-gp-q><div class="lc-gp-res" data-gp-res aria-live="polite"></div></div>`;
+  return `<div class="lc-gp" data-gp="${esc(id)}"><label class="bt-label" for="gp-${esc(id)}">${esc(label)}</label><input class="bt-input" id="gp-${esc(id)}" type="search" autocomplete="off" placeholder="${esc(placeholder)}" data-gp-q><div class="lc-gp-res" data-gp-res data-patch="own" aria-live="polite"></div></div>`;
 }
 
 /** Wires one picker (call after its markup is in the page). `actionLabel` is the result button's text. */

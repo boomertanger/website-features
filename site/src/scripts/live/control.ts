@@ -25,6 +25,7 @@ import { initCrew, sampleCrew } from "./control-crew";
 import { initRush } from "./control-rush";
 import { initGames } from "./control-games";
 import { mountDropPanel, previewDropIo, type DropPanel } from "./drop-panel";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const POLL_MS = 5000;
 const SITE_TILE = `<span class="bt-platform-icon bt-platform-icon--sm bt-platform-icon--site" aria-hidden="true">BT</span>`;
@@ -34,7 +35,7 @@ const ICONS = { radar: CR_ICON };
 function slot(id: string, html: string): HTMLElement | null {
   const el = ctx.root.querySelector<HTMLElement>(`[data-slot="${id}"]`);
   if (!el) return null;
-  if (el.dataset.k !== html) { el.dataset.k = html; el.innerHTML = html; el.dataset.fresh = "1"; }
+  if (el.dataset.k !== html) { el.dataset.k = html; patchHTML(el, html); el.dataset.fresh = "1"; }   // patched, never replaced: scroll and focus stay
   return el;
 }
 
@@ -166,7 +167,7 @@ function grid() {
   return `<div class="lc-grid" data-owner="${owner ? 1 : 0}">`
     + (owner ? `<div class="lc-a-list" data-slot="rail"></div>` : "")
     + `<div class="lc-a-status" data-slot="status"></div><div class="lc-a-beats" data-slot="beats"></div><div class="lc-a-stage" data-slot="stage"></div><div class="lc-a-scene" data-slot="scene"></div>`
-    + `<div class="lc-a-launch"><div data-slot="launch"></div>${owner ? `<div data-drop-slot></div><div data-slot="rush"></div>` : ""}</div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
+    + `<div class="lc-a-launch"><div data-slot="launch"></div>${owner ? `<div data-drop-slot data-patch="own"></div><div data-slot="rush"></div>` : ""}</div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
     + (owner ? `<div class="lc-a-deck" data-slot="deck"></div>` : "")
     + `</div>`;
 }
@@ -181,7 +182,7 @@ function render() {
   root.dataset.live = document.body.dataset.live;
   if (lastMode !== ctx.mode) {
     const wasMode = lastMode; lastMode = ctx.mode;
-    root.querySelector<HTMLElement>("[data-lc-body]")!.innerHTML = ctx.mode === "ended" ? `<div data-slot="wrap"></div>` : grid();
+    patchHTML(root.querySelector<HTMLElement>("[data-lc-body]")!, ctx.mode === "ended" ? `<div data-slot="wrap"></div>` : grid());
     if (wasMode && !reduced()) crBoot(root);
   }
   slot("hero", heroHtml());

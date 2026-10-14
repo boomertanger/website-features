@@ -10,6 +10,7 @@ import { makeApi } from "./api";
 import { BEATS, BEAT_LABEL, type Beat, type CBeats, type CItem } from "./model";
 import { SHORTCUT_LABEL } from "./rail";
 import { esc, toast, messageFor, withBusy, mascotHtml, reduced } from "./ui";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const TEXT_MAX = 120, NOTE_MAX = 300, ITEMS_MAX = 40;
 const uid = () => `t-${Math.random().toString(36).slice(2, 9)}`;
@@ -46,10 +47,10 @@ onAccess(async (s, role) => {
     <div class="lt-tools"><button type="button" class="bt-icon-btn bt-icon-btn--sm" data-move="-1" aria-label="Move up"${i === 0 ? " disabled" : ""}>↑</button><button type="button" class="bt-icon-btn bt-icon-btn--sm" data-move="1" aria-label="Move down"${i === n - 1 ? " disabled" : ""}>↓</button><button type="button" class="bt-icon-btn bt-icon-btn--sm" data-del aria-label="Delete this item">✕</button></div></li>`;
 
   const draw = () => {
-    root.innerHTML = `<div class="lt-head"><div><h1 class="bt-title lc-title">Checklist templates</h1><p class="lc-hero-sub">Four lists, one per beat. Every stream gets a fresh copy when you press Start. Changes only affect streams you start afterwards.</p></div><div class="lt-save"><span class="lc-hint" data-state role="status">${dirty ? "Unsaved changes" : "Saved"}</span><button type="button" class="bt-btn bt-btn--primary" data-save${dirty ? "" : " disabled"}>Save templates</button></div></div>
+    patchHTML(root, `<div class="lt-head"><div><h1 class="bt-title lc-title">Checklist templates</h1><p class="lc-hero-sub">Four lists, one per beat. Every stream gets a fresh copy when you press Start. Changes only affect streams you start afterwards.</p></div><div class="lt-save"><span class="lc-hint" data-state role="status">${dirty ? "Unsaved changes" : "Saved"}</span><button type="button" class="bt-btn bt-btn--primary" data-save${dirty ? "" : " disabled"}>Save templates</button></div></div>
       <div class="lt-grid">${BEATS.map((b) => crPanelHtml({ cls: "lt-panel", title: BEAT_LABEL[b], icon: "checklist", tagHtml: `<span class="bt-badge bt-badge--gray">${data[b].length} ${data[b].length === 1 ? "item" : "items"}</span>`,
         bodyHtml: (data[b].length ? `<ol class="lt-list" data-beat="${b}">${data[b].map((it, i) => rowHtml(b, it, i, data[b].length)).join("")}</ol>` : `<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Nothing on this list yet.</p></div>`)
-          + `<div class="lt-add"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-add="${b}"${data[b].length >= ITEMS_MAX ? " disabled" : ""}>Add an item</button></div>` })).join("")}</div>`;
+          + `<div class="lt-add"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-add="${b}"${data[b].length >= ITEMS_MAX ? " disabled" : ""}>Add an item</button></div>` })).join("")}</div>`);
     if (focusKey) { const [id, what] = focusKey.split("|"); root.querySelector<HTMLElement>(`.lt-row[data-id="${id}"] ${what}`)?.focus(); focusKey = ""; }
   };
   const find = (row: HTMLElement) => { const b = row.dataset.beat as Beat; return { b, i: data[b].findIndex((x) => x.id === row.dataset.id) }; };

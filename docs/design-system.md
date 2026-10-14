@@ -606,6 +606,12 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   optional `.bt-hero-media`. Stream: `.bt-hero-split`, `.bt-countdown`,
   `.bt-hero-player [--public|--backstage]` + `.bt-hero-viewers`. The segment bars
   (`.bt-hero-stories`) are built by `hero-carousel.js`.
+- **Live redraws patch, never replace:** `patchHTML(el, html)` (`shared/ui/patch.js`, Oct 14, 2026) updates a panel to new markup by changing
+  only what differs (keyed by id, data-key, data-id, data-slot), so a live page never resets scroll or focus: a focused field keeps
+  its value and caret, an unfocused one changes only when the server value changed, `data-*-ready` / `data-wired` / `data-done`
+  init markers stay (no double wiring), and an element marked `data-patch="own"` (where another script mounts content: the drop
+  panel, a Chat Games run panel, the game picker's results) is left alone. Use it for any redraw driven by live data or a timer;
+  plain `innerHTML` is for first draws and one-off dialogs.
 - **Stories:** `.bt-stories` (`shared/ui/stories.js`, Oct 14, 2026): `initStories(host, { items, render, thumb, label, name })`
   draws `.bt-stories-bars` (gold, filling over 5 s), `.bt-stories-stage` (the caller's card for the current item; fades between
   items) and `.bt-stories-picks` (`.bt-stories-pick` buttons, "Show <label>", the current one `.is-on`: raised with a gold ring),

@@ -11,6 +11,7 @@ import { current, type Ctx } from "./state";
 import { esc, toast, messageFor } from "./ui";
 import { previewRush, rushBodyHtml, rushFrom, type PubRush } from "./rush";
 import { realDropIo, previewDropIo, type DropBadge, type DropIo } from "./drop-panel";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 interface Saved { on: boolean; goal: number; reward: string; count: number; hitAt: number | null; rewardBadgeId: string | null; rushDropId: string | null }
 const POLL_MS = 5000;
@@ -102,7 +103,7 @@ export function initRush(ctx: Ctx) {
 
   function put(el: Element | null, name: string, html: string) {
     if (!el || keys[name] === html) return;
-    keys[name] = html; el.innerHTML = html;
+    keys[name] = html; patchHTML(el, html);
   }
   function paint() {
     const host = ctx.root.querySelector<HTMLElement>('[data-slot="rush"]');

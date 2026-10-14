@@ -15,6 +15,7 @@ import { esc, askLive, withBusy, toast, messageFor, mascotHtml, reduced } from "
 import { isProduction } from "../../lib/env.js";
 import type { PlatformStatus } from "./model";
 import { gamePickerHtml, initGamePicker } from "./gamepick";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 let len = 0;                       // the chosen window length (minutes)
 let brbMin = 5;
@@ -150,7 +151,7 @@ function swPoll(ctx: Ctx) {
   ctx.api.call<PlatformStatus>("livePlatformStatus", { streamId: s.id }).then((r) => {
     swStatus = r;
     const el = ctx.root.querySelector<HTMLElement>("[data-sw-status]");
-    if (el) el.innerHTML = swStatusHtml(r);
+    if (el) patchHTML(el, swStatusHtml(r));
     const btn = ctx.root.querySelector<HTMLElement>('[data-act="sw-done"]');
     if (btn && r.youtube.live) { btn.textContent = "Done"; btn.className = "bt-btn bt-btn--primary bt-btn--sm"; }
   }, () => { /* quiet: the card keeps its last answer */ }).finally(() => { swBusy = false; });

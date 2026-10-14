@@ -7,6 +7,7 @@ import { dutyFrom, flagFrom, type DutyState, type Flag } from "./mod-deck-data";
 import { flagStackHtml, confirmNightHtml, makeChime, flagTitle, avatarHtml } from "./mod-deck-tools";
 import { esc, toast, messageFor } from "./ui";
 import type { Ctx } from "./state";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 export interface CrewState { duty: DutyState | null; flags: Flag[] }
 const POLL_MS = 5000;
@@ -54,7 +55,7 @@ export function initCrew(ctx: Ctx, read: (streamId: string) => Promise<CrewState
     if (!el) return;
     const html = flagsHtml();
     const k = `${st.flags.map((f) => f.id + (f.seenAt ? "s" : "n")).join()}|${chime.isReady()}`;
-    if (el.dataset.k !== k) { el.dataset.k = k; el.innerHTML = html; }
+    if (el.dataset.k !== k) { el.dataset.k = k; patchHTML(el, html); }
     if (!(el as any)._flags) {
       (el as any)._flags = true;
       initFlags(el, { onSeen: (id: string) => void ack(id, "seen"), onDone: (id: string) => void ack(id, "done"), onSound: () => { chime.arm(); paint(); } });

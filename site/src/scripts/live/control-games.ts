@@ -53,7 +53,7 @@ export function initGames(ctx: Ctx) {
       : `<div class="lc-empty lc-empty--sm">${mascotHtml()}<p>Chat Games switch on here as each one ships: Questions and Hot Seat first.</p></div>`;
     const hint = live ? (g ? `${esc(g.title || "A game")} is on stream` : "One on stream at a time") : "Ready when you are live";
     // the running game's run controls and the Waiting panel: btChatGames.mountRun (part 7), in one element that outlives this redraw (syncRunPanel)
-    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + `<div data-cgrun-host></div>` });
+    return crPanelHtml({ id: "lc-launch", cls: "lc-a-launch", title: "Launch panel", icon: "launch", tagHtml: `<small class="lc-hint">${hint}</small>`, bodyHtml: body + `<div data-cgrun-host data-patch="own"></div>` });
   };
 
   // ---- the run controls (btChatGames.mountRun, part 7; the same panels the Mod Deck mounts): Questions, Hot Seat, Would You Rather and Predictions

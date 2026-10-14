@@ -18,6 +18,7 @@ import { call } from "../../lib/call";
 import { toast, mascotHtml, reduced } from "./ui";
 import { getRun, watchRun, watchQuestion, laneList, myVotes, setVote, askQuestion, controlRun, waitingCount, qPreview, ago, type QRun, type Question } from "./questions-data";
 import "./cg-questions-scene";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const signedIn = () => !!getAuthState().user;
 const isMember = () => { const s = getAuthState(); return (s.status === "verified" || s.status === "unverified") && !!s.profile; };
@@ -124,9 +125,9 @@ async function play(el: PlayHost, { chatGame }: { chatGame: { runId: string } })
       ? `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-lq-ask>Ask a question</button>`
       : `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="join" data-signin-title="Join free to ask and vote">Join free to ask</button>`;
     el.dataset.lqClose = String(run.ending ? 0 : run.closesAt || 0);
-    el.innerHTML = `<div class="lq-play"><div class="lq-play-top">${timerHtml(run)}</div>${card}`
+    patchHTML(el, `<div class="lq-play"><div class="lq-play-top">${timerHtml(run)}</div>${card}`
       + `${d?.next ? `<p class="lq-next"><span>Next up</span> ${esc(d.next.text)} <b>▲ ${d.next.votes}</b></p>` : ""}`
-      + `<div class="lq-play-acts">${ask}<a class="bt-btn bt-btn--ghost bt-btn--sm" href="/live/questions">All questions</a></div></div>`;
+      + `<div class="lq-play-acts">${ask}<a class="bt-btn bt-btn--ghost bt-btn--sm" href="/live/questions">All questions</a></div></div>`);
   };
   el._lqVoted = (on) => { voted = on; };
   el._lqDraw = draw;
@@ -233,7 +234,7 @@ function run(el: HTMLElement, { chatGame, may, preview: pv }: { chatGame: { runI
   const load = async () => {
     if (busy || stopped) return;
     busy = true;
-    try { data = await loadRunPanel(chatGame.runId, pv); if (!stopped) { const html = data ? runPanelHtml(data, may) : ""; if (box.innerHTML !== html) box.innerHTML = html; } }
+    try { data = await loadRunPanel(chatGame.runId, pv); if (!stopped) { const html = data ? runPanelHtml(data, may) : ""; if (box.innerHTML !== html) patchHTML(box, html); } }
     catch { /* keep the last */ }
     finally { busy = false; }
   };

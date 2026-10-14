@@ -9,6 +9,7 @@ import { stampsHtml as _stampsHtml } from "../../../../shared/ui/checkin.js";
 import { db, doc, getDoc, getDocs, collection, query, where, SITE_ID } from "../../lib/db";
 import { onMember } from "../trophies/data";
 import { addDays, weekIdOf, ymd } from "../planner/pub";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const stampsHtml = _stampsHtml as unknown as (stamps: Record<string, boolean>, label?: string) => string;
 const pane = document.querySelector<HTMLElement>("[data-st]");
@@ -87,7 +88,7 @@ export function paint(rows: StreamRow[]) {
   if (!pane) return;
   pane.querySelector<HTMLElement>("[data-st-loading]")!.hidden = true;
   const box = pane.querySelector<HTMLElement>("[data-st-body]")!;
-  box.innerHTML = streamsHtml(rows);
+  patchHTML(box, streamsHtml(rows));
   box.hidden = false;
 }
 

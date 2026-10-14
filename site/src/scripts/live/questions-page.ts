@@ -17,6 +17,7 @@ import { laneList, mine, heldList, myVotes, getRun, withdrawQuestion, moderateQu
 import { openAsk, vote } from "./cg-questions";
 import "./chatgames-site";
 import type { PubLive } from "./model";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const root = document.querySelector<HTMLElement>("[data-lq]");
 const mainEl = document.querySelector<HTMLElement>("[data-lq-main]");
@@ -100,8 +101,8 @@ function render() {
   const empty = `<div class="lq-empty">${mascotHtml()}<b>${S.lane === "tonight" ? (live() ? "No questions for tonight yet" : "Tonight's lane opens when the stream is live") : "No Standing questions yet"}</b><span>${isMember() ? "Be the first to ask." : "Join free to ask and vote."}</span>${isMember() ? `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-lq-ask>Ask a question</button>` : `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="join" data-signin-title="Join free to ask and vote">Join free</button>`}</div>`;
   const list = S.list.length ? `<div class="bt-qcard-list">${S.list.map((x) => cardFor(x)).join("")}</div>` : empty;
   const note = S.lane === "tonight" ? "At Stop, Tonight questions with 5+ votes move to Standing; the rest clear." : "Unanswered Standing questions are archived after 30 days.";
-  mainEl.innerHTML = crPanelHtml({ id: "lq-queue", title: "The queue", icon: "questions", tagHtml: isStaff() && S.held.length ? `<span class="bt-badge bt-badge--teal"><span class="bt-badge-dot"></span>${S.held.length} held</span>` : "",
-    bodyHtml: `<div class="lq-bar">${pills}<span class="lq-sp"></span>${sort}</div>${list}<p class="lq-note">${note}</p>` });
+  patchHTML(mainEl, crPanelHtml({ id: "lq-queue", title: "The queue", icon: "questions", tagHtml: isStaff() && S.held.length ? `<span class="bt-badge bt-badge--teal"><span class="bt-badge-dot"></span>${S.held.length} held</span>` : "",
+    bodyHtml: `<div class="lq-bar">${pills}<span class="lq-sp"></span>${sort}</div>${list}<p class="lq-note">${note}</p>` }));
 
   const parts: string[] = [];
   const d = S.run?.display;
@@ -124,7 +125,7 @@ function render() {
         : `<div class="lq-empty">${mascotHtml()}<b>Nothing held</b><span>Questions from new accounts wait here for a mod.</span></div>` }));
   }
   if (!parts.length) parts.push(crPanelHtml({ title: "Join to ask", icon: "questions", bodyHtml: `<div class="lq-empty">${mascotHtml()}<b>Ask and vote with a free account</b><span>The top questions get answered on stream.</span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-signin="join" data-signin-title="Join free to ask and vote">Join free</button></div>` }));
-  sideEl.innerHTML = parts.join("");
+  patchHTML(sideEl, parts.join(""));
 }
 function statusChip(x: Question) {
   const m: Record<string, [string, string]> = { held: ["teal", "Held for a mod"], tonight: ["blue", "Tonight"], standing: ["gold", "Standing"], answered: ["lime", x.capped ? "Answered · XP maxed" : `Answered · +${x.xp ?? 15} XP`], hidden: ["gray", "Hidden by a mod"], merged: ["gray", "Merged into a similar question"], cleared: ["gray", "Cleared"], archived: ["gray", "Archived"] };

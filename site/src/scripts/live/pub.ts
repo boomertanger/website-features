@@ -16,6 +16,7 @@ import type { PubLive } from "./model";
 import { pubApi } from "./pub-data";
 import { esc, isMember, clock, type PubCtx, type View, type ViewPart } from "./pub-ui";
 import { velvetHtml } from "../../../../shared/ui/scream-planner.js";
+import { patchHTML } from "../../../../shared/ui/patch.js";
 
 initSegNavs();
 initPowerWordmarks();
@@ -74,8 +75,8 @@ function paintHead(v: View, key: string) {
   if (v === "live" && p.state === "backstage") { subHtml = `Backstage for <b>${esc(who)}</b>`; tagsHtml = velvetHtml(`Backstage · ${who}`); }
   else if (v === "live") { subHtml = p.game ? `Now playing <b>${esc(p.game.title)}</b>` : key === "break" ? "On a break" : ""; tagsHtml = `<span class="bt-live-tag"><i></i>${key === "break" ? "Break · check-in open" : "Live"}</span>`; }
   else if (v === "ended") { subHtml = p.actualEnd ? `Ended at <b>${esc(clock(p.actualEnd))}</b>` : ""; tagsHtml = `<span class="bt-badge bt-badge--lime">Just ended</span>`; }
-  if (sub.innerHTML !== subHtml) sub.innerHTML = subHtml;
-  if (tags.innerHTML !== tagsHtml) tags.innerHTML = tagsHtml;
+  if (sub.innerHTML !== subHtml) patchHTML(sub, subHtml);
+  if (tags.innerHTML !== tagsHtml) patchHTML(tags, tagsHtml);
 }
 
 let nextAt = 0, nextFor = "";
