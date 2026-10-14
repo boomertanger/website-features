@@ -10,6 +10,7 @@ import { composerHtml, initComposer } from "../ui/composer.js";
 import { thumbHtml, initLightboxTriggers } from "../ui/lightbox.js";
 import { BA_ICON, ttsLogoHtml, boombotIcon } from "../ui/arcade.js";
 import { initSegNav } from "../ui/seg-nav.js";
+import { storiesKitHtml, initStoriesKit } from "./kit-stories.js";
 import { initToc } from "../ui/toc.js";
 import { initSpotlights } from "../ui/spotlight.js";
 import { cycleWheelHtml, initCycleWheels } from "../ui/cycle-wheel.js";
@@ -846,6 +847,7 @@ function pageHtml() {
 ${navHtml()}
 ${arcadeHtml()}
 ${vaultKitHtml()}
+${storiesKitHtml()}
 ${pagerKitHtml()}
 ${trophyKitHtml()}
 ${storyKitHtml()}
@@ -1035,6 +1037,7 @@ function init() {
   initSpotlights(mount);
   initCycleWheels(mount);
   initVaultKit(mount);
+  initStoriesKit(mount);
   initFlipCards(mount);
   initChat(mount);
   initFactoryKit(mount);

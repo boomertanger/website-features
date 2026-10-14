@@ -2586,6 +2586,28 @@
   .bt-root:not(#_) .bt-tts[data-links="1"] a.bt-tts-link { animation: none; }
 }
 
+/* ---- Stories: .bt-stories — behavior: shared/ui/stories.js (the caller draws each item's card) ----
+   A small stories carousel: story bars across the top fill over 5 s (gold), the current item fades in on the stage, and a row of small
+   covers underneath shows them all (the current one raised with a gold ring; each is a button, "Show <title>"). It pauses while touched,
+   hovered or focused, while the tab is hidden, and for the caller's reasons (.is-paused). One item (.bt-stories--single): just the stage.
+   Reduced motion: no auto-advance and no fade; the bars only show the position. First used by the Game Vault's phone hero (1C). */
+.bt-root:not(#_) .bt-stories { position: relative; }
+.bt-root:not(#_) .bt-stories-bars { display: flex; gap: 4px; margin-bottom: 8px; }
+.bt-root:not(#_) .bt-stories-bars i { position: relative; flex: 1; height: 3px; overflow: hidden; border-radius: 2px; background: var(--bt-border-2); }
+.bt-root:not(#_) .bt-stories-bars i::after { content: ""; position: absolute; inset: 0; background: var(--bt-gold); transform: scaleX(var(--p, 0)); transform-origin: left; }
+.bt-root:not(#_) .bt-stories-stage { transition: opacity 0.3s; touch-action: pan-y; }
+.bt-root:not(#_) .bt-stories-stage.is-out { opacity: 0; }
+.bt-root:not(#_) .bt-stories-picks { display: flex; justify-content: center; gap: 10px; margin-top: 12px; }
+.bt-root:not(#_) .bt-stories-pick { flex: 0 0 52px; padding: 0; border: 0; border-radius: 6px; background: none; cursor: pointer; opacity: 0.5; transition: opacity 0.3s, transform 0.3s; }
+.bt-root:not(#_) .bt-stories-pick .bt-cover { width: 100%; border-radius: 6px; }
+.bt-root:not(#_) .bt-stories-pick.is-on { opacity: 1; transform: translateY(-3px); }
+.bt-root:not(#_) .bt-stories-pick.is-on .bt-cover { box-shadow: 0 0 0 2px var(--bt-gold); }
+.bt-root:not(#_) .bt-stories-pick:hover { opacity: 0.85; }
+.bt-root:not(#_) .bt-stories-pick:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; opacity: 1; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-stories-stage, .bt-stories-pick) { transition: none; }
+}
+
 /* ---- Hero carousel, stories mode (3B) — behavior: shared/ui/hero-carousel.js ---- */
 .bt-root:not(#_) .bt-hero { position: relative; overflow: hidden; border-bottom: 1px solid var(--bt-border); background: var(--bt-bg); }
 .bt-root:not(#_) .bt-hero:focus-visible { outline-offset: -2px; }
