@@ -53,6 +53,7 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
           var p = new URLSearchParams(location.search), b = document.body;
           var as = p.get("as"), live = p.get("live");
           if (["visitor", "member", "admin"].indexOf(as) >= 0) { b.dataset.auth = as; b.dataset.staff = as === "admin" ? "on" : "off"; }
+          if (as === "owner") { b.dataset.auth = "admin"; b.dataset.staff = "on"; }   // the Mod Deck's ?as=owner preview: the owner is an admin, as when signed in
           if (["off", "public", "backstage"].indexOf(live) >= 0) b.dataset.live = live;
         })();
       </script>

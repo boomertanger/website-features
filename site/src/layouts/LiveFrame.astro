@@ -1,0 +1,25 @@
+---
+// The shared frame of the live tools (the Control Room's staff pages and the Mod Deck): the site shell, the sticky radar bar (CrBar) in
+// BaseLayout's "bar" slot, then the .lv page wrapper with its skeleton, the gate (each page's own words, in the "gate" slot) and the page.
+// One frame for both, so going between /live/control and /live/deck nothing outside the page moves. LiveLayout.astro and DeckLayout.astro
+// are thin wrappers that add their gate and their script (scripts/live/layout.ts, scripts/live/mod-deck.ts), which set
+// .lv[data-access] = loading | gate | join | signup | page.
+import BaseLayout from "./BaseLayout.astro";
+import CrBar from "../components/live/CrBar.astro";
+import "../styles/live-layout.css";
+
+interface Props { title: string; description?: string; brand: "control" | "deck"; section?: string | null; ownerOnly?: boolean }
+const { title, description, brand, section = null, ownerOnly = false } = Astro.props;
+---
+<BaseLayout title={title} description={description} noindex>
+  <CrBar slot="bar" brand={brand} section={section} gated />
+  <div class="lv" data-lv={brand === "control" ? "" : undefined} data-deck={brand === "deck" ? "" : undefined} data-access="loading" data-owner-only={ownerOnly ? "" : undefined}>
+    <div class="bt-zone lv-skel" aria-hidden="true">
+      <span class="bt-skeleton lv-skel-title"></span>
+      <span class="bt-skeleton lv-skel-line"></span>
+      <span class="bt-skeleton lv-skel-card"></span>
+    </div>
+    <slot name="gate" />
+    <div class="lv-page" data-lv-page><slot /></div>
+  </div>
+</BaseLayout>

@@ -1,18 +1,13 @@
-// Control Room layout behaviour: the sticky CONTROLROOM bar, the seg navs, the wordmark's touch power-on, and which part of a gated page shows
-// (LiveLayout.astro): .lv[data-access] is  loading (skeleton) · join (visitors) · signup (mid-signup) · gate (signed in, not allowed) · page.
+// Control Room layout behaviour: the shared live bar (scripts/live/bar.ts: sticky bar, seg navs, the wordmark's touch power-on) and which part of a gated page shows
+// (LiveLayout.astro, LiveFrame.astro): .lv[data-access] is  loading (skeleton) · join (visitors) · signup (mid-signup) · gate (signed in, not allowed) · page.
 // Who may open it (docs/specs/control-room.md §2): the owner and A2 Overseer and up. Role checks here only control what is shown; the callables and
 // Firestore rules are the real protection. The "Checklist templates" link is added to the bar for the owner's uid only (never an empty slot).
-import { initSegNavs } from "../../../../shared/ui/seg-nav.js";
-import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
-import { initStickyBar } from "../../../../shared/ui/sticky-bar.js";
+import { initLiveBar, addOwnerLinks } from "./bar";
 import { onAuth, type AuthState } from "../../lib/auth";
 import { isProduction } from "../../lib/env.js";
 import type { Role } from "./model";
 
-initSegNavs();
-initPowerWordmarks();
-const dock = document.querySelector<HTMLElement>("[data-lv-dock]");
-const bar = dock ? initStickyBar(dock, {}) : null;
+const bar = initLiveBar();   // the shared bar (scripts/live/bar.ts), the same as the Mod Deck's
 
 /**
  * Preview (non-production only): signed out with ?as=admin (the owner) or ?as=a2 (an Overseer: owner-only parts hidden) the pages show sample data from
@@ -37,22 +32,7 @@ async function roleOf(s: AuthState): Promise<Role | null> {
   return roleCache;
 }
 
-function addOwnerLinks() {
-  document.querySelectorAll<HTMLElement>("[data-lv-owner-slot]").forEach((slot) => {
-    if (slot.querySelector("[data-lv-owner-link]")) return;
-    const a = document.createElement("a");
-    a.setAttribute("data-lv-owner-link", "");
-    a.href = "/live/control/checklist";
-    if (location.pathname.replace(/\/$/, "") === "/live/control/checklist") a.setAttribute("aria-current", "page");
-    const q = location.search;
-    if (q && !isProduction) a.href += q;
-    if (slot.dataset.icon === "1") { a.setAttribute("aria-label", "Checklist templates"); a.title = "Checklist templates"; a.innerHTML = `<svg aria-hidden="true"><use href="#i-bulb"/></svg>`; }
-    else a.textContent = "Checklist templates";
-    slot.append(a);
-    slot.hidden = false;
-  });
-  initSegNavs();
-}
+// addOwnerLinks: scripts/live/bar.ts (shared with the Mod Deck)
 
 let shown = false;
 let granted: { state: AuthState; role: Role } | null = null;
