@@ -144,7 +144,7 @@
 .bt-root:not(#_) .hb-lane--owner svg { color: var(--bt-title); }
 
 /* ---------- Layout 3: the keypad menu (LCD + rows) beside the form ---------- */
-.bt-root:not(#_) .hb-menu-grid { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 34px; scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 16px); }
+.bt-root:not(#_) .hb-menu-grid { display: grid; grid-template-columns: minmax(300px, 400px) minmax(0, 1fr); gap: 20px; align-items: start; margin-top: 34px; scroll-margin-top: calc(var(--bt-sticky-h, 0px) + 16px); }
 .bt-root:not(#_) .hb-col > .bt-section-head { margin-bottom: 12px; }
 .bt-root:not(#_) .hb-menu { background: var(--bt-surface); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); padding: 8px; }
 .bt-root:not(#_) .hb-lcd { display: grid; gap: 2px; margin: 4px 4px 8px; padding: 12px 14px; border-radius: 12px; background: repeating-linear-gradient(180deg, rgba(var(--hb-teal-rgb), 0.05) 0 1px, transparent 1px 3px), var(--hb-lcd-bg); border: 1px solid var(--hb-lcd-edge); box-shadow: inset 0 2px 10px rgba(var(--bt-ink-rgb), 0.7); text-transform: uppercase; font-variant-numeric: tabular-nums; }
@@ -180,6 +180,10 @@
 .bt-root:not(#_) .hb-idle .bt-mascot { width: 70px; }
 .bt-root:not(#_) .hb-idle b { color: var(--bt-text); font-size: var(--bt-text-xl); }
 .bt-root:not(#_) .hb-backrow { display: none; }
+/* Phones, after picking a line: the Back to the menu arrow is a 16px button icon (the icon helper draws a bare svg, which grew to fill
+   the row), and the pane scrolls in below the sticky bar so the button is never under it (it was, and the tap missed). */
+.bt-root:not(#_) .hb-backrow .bt-btn svg { flex: none; width: 16px; height: 16px; }
+.bt-root:not(#_) :is(.hb-main, .hb-pane) { scroll-margin-top: calc(var(--bt-sticky-h, 0px) + 16px); }   /* the bar's stuck height: it sticks during the scroll */
 .bt-root:not(#_) .hb-menu .bt-skeleton-row { padding: 10px; }
 .bt-root:not(#_) .hb-sk-key { width: 46px; height: 46px; border-radius: 50%; flex: none; }
 .bt-root:not(#_) .hb-sk-a { width: 45%; height: 14px; }

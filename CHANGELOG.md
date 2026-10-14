@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+Fix (phones): /contact's "Back to the menu" arrow is a 16px button icon again (the bare svg grew to 114px), and the button works: after picking a line (or ?line=N) the form scrolled in under the sticky bar, so the tap landed on the bar; .hb-main and .hb-pane now scroll in below the bar's stuck height (--bt-sticky-h). /admin/inbox's "Back to the inbox" gets the same 16px icon rule and scroll margin. Checked at 390px: tap returns to the menu, no sideways scroll.
 site: the alert's Pin it opens /account?pin=<id>#rewards with the badge added to the trophy case editor (saved only on Save).
 site+ui: badge-earned alerts say See your badge and link to /trophies?badge=<id>; the catalog opens on that badge's collection, scrolls to it and spotlights it (new .bt-flip.is-spotlight).
 Newfoundland, chapter 05 "The way we talk": new words (Yes b'y!, Best kind, Whaddaya at?, How ya gettin' on?, Luh!, Crooked, Scoff, Get on the go) with word, meaning and example in site/src/data/base-camp/newfoundland-words.json; the old words are gone. The flip cards show the word on the front and the meaning with the example in italics on the back; they grow to fit their text at every width (both faces share one grid cell, 150px at least), the longer phrases use the smaller word size and the words come down a size under 420px. The aria-label reads the word, meaning and example. The word of the day rotates through the same eight and shows the example too. Checked at 1100, 640, 390 and 320px.

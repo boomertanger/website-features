@@ -124,6 +124,8 @@
 .bt-root:not(#_) .hb-ib-earlier .hb-ib-k { width: 26px; height: 26px; font-size: 12px; grid-row: auto; }
 .bt-root:not(#_) .hb-ib-earlier b { color: var(--bt-text); font-weight: 600; flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-root:not(#_) .hb-ib-backrow { display: none; }
+.bt-root:not(#_) .hb-ib-backrow .bt-btn svg { flex: none; width: 16px; height: 16px; }   /* the button icon size, whatever the helper draws */
+.bt-root:not(#_) .hb-ib-detail { scroll-margin-top: calc(var(--bt-sticky-h, 0px) + 16px); }   /* phones: Back to the inbox stays clear of the sticky bar */
 
 /* ---------- reply / note composer ---------- */
 .bt-root:not(#_) .hb-ib-compose { border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-bg); overflow: hidden; }
