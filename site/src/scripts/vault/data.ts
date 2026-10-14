@@ -15,7 +15,7 @@ export interface VCard {
   developers: string[]; tags: string[]; ttb: number | null;
   score: number | null; verdict: string | null;
   streams: number; minutes: number; last: number | null; added: number | null; statusAt: number | null;
-  /** Boomer's "Up next" pin (Wishlist games only); pinnedAt is when it was pinned. */
+  /** Boomer's "Up next" pin (To play games only, status wishlist); pinnedAt is when it was pinned. */
   pinned?: boolean; pinnedAt?: number | null;
 }
 export interface Vault { games: VCard[]; tags: { tag: string; count: number }[]; count: number }

@@ -811,7 +811,7 @@ for the Vault, reusable anywhere; all on the live UI kit page (Covers, search an
   itch.io and Epic Games Store marks (Simple Icons, CC0), one-colour, for "Where to play".
 - **Back pill: `.bt-back`** (`shared/ui/pager.js` `backHtml({ href, label, long, short })`; round 3
   N1): a frosted pill with a chevron, `.bt-back-long` ("Back to the Vault") and a small reminder of
-  the list you came from ("Wishlist, A-Z"); on phones `.bt-back-short` ("Vault") replaces both.
+  the list you came from ("To play, A-Z"); on phones `.bt-back-short` ("Vault") replaces both.
 - **Pager: `.bt-pager`** (`pagerHtml({ pos, total, prev, next, keys, label })`; round 3 P12):
   `.bt-pager-pos` ("3 of 14") and round ‹ › links (`.bt-pager-btn` with `data-pg="-1" / "1"` in a
   `.bt-pager-wrap`); a side with nothing is an empty `.bt-pager-gap`, so the other button doesn't
@@ -1495,7 +1495,7 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   admin Edit all use it. Mods see the queue and Hide; only admins see Edit and Delete.
 - **Boomer's gold is his own voice.** The score dial lights in `--bt-title`, the colour the site
   already uses for Boomer's words (titles, verdicts); never a status. Statuses keep their badge
-  tones (Playing green, Finished lime, Abandoned gray, Wishlist gold).
+  tones (Playing green, Finished lime, Abandoned gray, To play gold). The Wishlist status is shown to members as **To play** (display only; the stored value stays `wishlist`, Oct 14, 2026).
 - **Covers come from IGDB or Steam at display time.** We store only the IGDB image id or the
   Steam app id and build the URL in the browser (`shared/ui/cover.js`); nothing is copied to
   our side unless an admin or mod uploads an override (Cloudinary `game-vault/covers`). A game
@@ -1519,8 +1519,8 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   - ~~The door opens all the way.~~ Superseded by the V3 hero (part 8, below).
   - **Shelves, then All games, always.** Shelves are highlights and only show with games; the full
     grid always follows, so the page is never one row. **Most wanted on stream is the exception**: it shows
-    whenever there's a wishlist game, ranked by votes (top 5, numerals) or, before anyone votes,
-    the 5 newest wishlist games with a nudge to be the first. Search and filters show
+    whenever there's a To play game, ranked by votes (top 5, numerals) or, before anyone votes,
+    the 5 newest To play games with a nudge to be the first. Search and filters show
     just the grid.
   - **A game page knows the list you came from.** Back to the Vault returns to the same URL and
     scroll position; the pager and the Up next card step through that same list in place (the
@@ -1560,10 +1560,10 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   button) full width. Built on the existing hero markup: `.gv-hero-text` and `.gv-badges` become
   `display: contents` and the hero grid places the pieces; no second copy of the title. "Not rated"
   (`.gv-norate`, shown on phones only) stands in for the dial on played games with no score.
-- **Up next is Boomer's pin, and it's gold.** A pinned Wishlist game shows a small gold "Up next"
+- **Up next is Boomer's pin, and it's gold.** A pinned To play game shows a small gold "Up next"
   badge (kit `.bt-badge--gold`, no dot) after its status badge, on the card and in the game page hero;
   gold because it's Boomer's choice, like his score, never purple (it isn't clickable). Pinned games
-  lead the Wishlist tab (oldest pin first) ahead of the chosen sort, and the hero spotlight's fallback
+  lead the To play tab (oldest pin first) ahead of the chosen sort, and the hero spotlight's fallback
   is the newest pinned game, then the top Most wanted on stream game; that shelf stays ranked by votes
   only. The pin is set with the green admin "Pin to top" / "Unpin" button on the game page (spec §9).
   The UI Kit shows it on a cover card.

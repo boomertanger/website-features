@@ -12,7 +12,7 @@
 // already include history from before the site), last, wanted, ttb, by. Checked in
 // functions/scripts/check-vault-reveal.js.
 
-const STATUS_WORD = { playing: "Playing", finished: "Finished", abandoned: "Abandoned", wishlist: "On the Wishlist" };
+const STATUS_WORD = { playing: "Playing", finished: "Finished", abandoned: "Abandoned", wishlist: "On the To play list" };
 const plural = (n, one, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
 const hours = (minutes) => Math.round((minutes || 0) / 60);
 const shortDate = (ms) => new Date(ms).toLocaleDateString("en-US", { month: "short", day: "numeric" });
@@ -33,7 +33,7 @@ export function reveal(g) {
   const want = g.wanted > 0 ? plural(g.wanted, "vote") : "";
   const pick = g.by ? `Community pick by @${g.by}` : "";
   if (g.verdict) return { title: g.verdict, quoted: true, line: g.streams > 0 ? streamsLine(g) : statusLine(g) };
-  if (g.status === "wishlist") return { title: "Not played yet", quoted: false, line: [want || "On the Wishlist", pick].filter(Boolean).join(". ") };
+  if (g.status === "wishlist") return { title: "Not played yet", quoted: false, line: [want || "On the To play list", pick].filter(Boolean).join(". ") };
   return { title: "No review yet", quoted: false, line: statusLine(g) };
 }
 

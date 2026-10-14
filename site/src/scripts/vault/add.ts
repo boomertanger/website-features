@@ -44,7 +44,7 @@ export async function openAddGame(q = "", opts: AddOptions = {}) {
   const steps = (n: number) => `<div class="gv-steps3" style="--p:${(n - 1) / 2}"><div class="${n >= 1 ? "is-on" : ""}"><i>1</i>Find it</div><div class="${n >= 2 ? "is-on" : ""}"><i>2</i>Checks</div><div class="${n >= 3 ? "is-on" : ""}"><i>3</i>In the Vault</div></div>`;
   const previewCard = (c: Candidate | null) => {
     const g: VCard = { slug: "preview", title: c?.title || "Your game", sortTitle: "", altNames: [], status: "wishlist", origin: boomer ? "boomer" : "community", by: boomer ? null : me, wanted: boomer ? 0 : 1, cover: c?.cover || null, release: null, releaseStatus: "released", developers: [], tags: [], ttb: null, score: null, verdict: null, streams: 0, minutes: 0, last: null, added: null, statusAt: null };
-    return `<div class="gv-preview" aria-hidden="true"><span class="bt-label">How it'll look</span>${vcard(g, { key: false })}<span class="bt-hint">${boomer ? "It goes on the Wishlist as one of yours." : `Your name goes on it: Community pick by @${esc(me)}.`}</span></div>`;
+    return `<div class="gv-preview" aria-hidden="true"><span class="bt-label">How it'll look</span>${vcard(g, { key: false })}<span class="bt-hint">${boomer ? "It goes on the To play list as one of yours." : `Your name goes on it: Community pick by @${esc(me)}.`}</span></div>`;
   };
   const body = (html: string) => { m.modal.innerHTML = html; m.modal.querySelector<HTMLElement>("input, button:not([data-bt-close])")?.focus(); };
   const header = (title: string, sub = "") => modalHeader(esc(title), sub);
@@ -57,7 +57,7 @@ export async function openAddGame(q = "", opts: AddOptions = {}) {
       <div data-notice role="status">${notice}</div>
       <div class="gv-results" data-results aria-live="polite"></div>
       <div class="gv-dlinks"><button type="button" class="bt-link-btn" data-byhand>Can't find it? Add it by hand</button>${HOW_ADD}</div>
-      ${boomer ? "" : '<p class="bt-fine bt-fine--left">New adds land on the Wishlist as your Community pick. You can add 5 a day.</p>'}
+      ${boomer ? "" : '<p class="bt-fine bt-fine--left">New adds land on the To play list as your Community pick. You can add 5 a day.</p>'}
     </div><div data-preview>${previewCard(null)}</div></div>
     <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-go disabled>Add to the Vault</button></div>`);
     const input = m.modal.querySelector<HTMLInputElement>("[data-q]")!;
@@ -165,12 +165,12 @@ export async function openAddGame(q = "", opts: AddOptions = {}) {
     if (r.decision === "added") {
       refreshVault();
       const extra = await followUp(r, title);
-      return result("", `${title} is in the Vault`, (boomer ? "It's on the Wishlist. Set its status and score from its page." : "It's on the Wishlist as your Community pick. When Boomer streams it, it moves to Playing and your name stays on it.") + extra, "Added to the Vault", [another(), view(r.slug!)], { lock: true, cover: c.cover, step: 3 });
+      return result("", `${title} is in the Vault`, (boomer ? "It's on the To play list. Set its status and score from its page." : "It's on the To play list as your Community pick. When Boomer streams it, it moves to Playing and your name stays on it.") + extra, "Added to the Vault", [another(), view(r.slug!)], { lock: true, cover: c.cover, step: 3 });
     }
     if (r.decision === "duplicate") {
       refreshVault();
       const extra = await followUp(r, title);
-      const want = r.status === "wishlist" && r.wantedCount ? `Already in the Vault, so your vote was added. It has ${r.wantedCount} ${r.wantedCount === 1 ? "vote" : "votes"} now.` : `It's ${r.status === "wishlist" ? "on the Wishlist" : `marked ${badge((r.status || "wishlist") as any)}`}.`;
+      const want = r.status === "wishlist" && r.wantedCount ? `Already in the Vault, so your vote was added. It has ${r.wantedCount} ${r.wantedCount === 1 ? "vote" : "votes"} now.` : `It's ${r.status === "wishlist" ? "on the To play list" : `marked ${badge((r.status || "wishlist") as any)}`}.`;
       return result("", `${title} is already here`, want + extra, "Already in the Vault", [another(), view(r.slug!)], { cover: c.cover });
     }
     if (r.decision === "queued") {

@@ -26,8 +26,8 @@ const EX_STREAK = 12;
 
 const CHAPTERS = [["Ch 1 · The Awakening", "Oct 5 to 25", "is-done"], ["Ch 2 · The Rift Opens", "Oct 26 to Nov 15", "is-now"], ["Ch 3 · Unlocks Nov 16", "4 weeks", "is-locked"], ["Ch 4 · Unlocks Dec 14", "3 weeks", "is-locked"]];
 const CAD = [
-  ["☀️", "Daily", "blue", "Resets every day", "Quick jobs: punch the clock, play a round, add a game to your wishlist. A couple of minutes.", "Daily Ops"],
-  ["📅", "Weekly", "gold", "Resets Mondays", "Bigger jobs for the week: three Splat runs, a personal best, two wishlist votes.", "Weekly Rotations"],
+  ["☀️", "Daily", "blue", "Resets every day", "Quick jobs: punch the clock, play a round, add a game to the To play list. A couple of minutes.", "Daily Ops"],
+  ["📅", "Weekly", "gold", "Resets Mondays", "Bigger jobs for the week: three Splat runs, a personal best, two Play this, Boomer! votes.", "Weekly Rotations"],
   ["📖", "Story", "rank-3", "Open all season", "The season's theme as a path of missions. Finish it for the season badge.", "Investigate the Signal"],
   ["🏔", "Milestone", "pink", "Open all season", "Long counts for the dedicated: 30 punches, 25 runs, every medal found.", "The Long Haul"],
   ["⚡", "Event", "teal", "A few days only", "Surprise windows: a Halloween hunt, a game night, an anniversary.", "Full Moon Event"],
@@ -38,7 +38,7 @@ const ACTS = [
   { icon: "🩸", title: "Splat run", sub: "Weekly · finish Tap the Splat 3 times", n: 2, of: 3, xp: 60 },
   { icon: "🗺", title: "Site tour", sub: "Storyline · visit 6 sections", n: 6, of: 6, xp: 100 },
   { icon: "🏅", title: "Hidden medals", sub: "Storyline · find all 5", n: 3, of: 5, xp: 150 },
-  { icon: "⭐", title: "Wishlist voter", sub: "Weekly · want 2 wishlist games", n: 1, of: 2, xp: 50 },
+  { icon: "⭐", title: "To play voter", sub: "Weekly · vote for 2 To play games", n: 1, of: 2, xp: 50 },
   { icon: "🏔", title: "Month of shifts", sub: "Milestone · punch the clock on 30 days", n: 12, of: 30, xp: 250 },
   { icon: "📺", title: "Check in to the stream", sub: "Needs the Control Room", soon: true },
   { icon: "🗳", title: "Pick the games", sub: "Needs the Schedule Planner", soon: true },
@@ -134,7 +134,7 @@ const nextDaily = DAILY.find((b) => b.n > EX_STREAK);
       </section>
 
       <section class="ff-hw-sec" id="s-acts" aria-labelledby="h-acts">
-        <Fragment set:html={chapter(3, "h-acts", "Activities", "Real things around the site: play, wishlist, explore. New kinds appear as new parts of the site open.")} />
+        <Fragment set:html={chapter(3, "h-acts", "Activities", "Real things around the site: play, vote, explore. New kinds appear as new parts of the site open.")} />
         <div class="bt-task-list ff-hw-acts-list" set:html={ACTS.map((a) => taskRowHtml(a)).join("")} />
         <div class="ff-hw-flow"><div><b>You do it</b> anywhere on the site: vote for a game, finish a run, punch the clock.</div><div><b>The site counts it</b> on its server, the moment it happens.</div><div><b>XP lands</b> when you hit the target, plus any badge the activity gives.</div></div>
       </section>

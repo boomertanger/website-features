@@ -26,7 +26,7 @@ Naming: **Vault games** (`vaultGames`) are games Boomertanger streams. **Arcade 
 |---|---|
 | Visitors | View everything. Add a game opens the Join dialog titled "Join to add games". |
 | Members, email not verified | View everything. Add a game shows the verify-email prompt. |
-| Members, email verified | Add up to 5 games a day (no account-age wait). "Play this, Boomer!" (a vote) on wishlist games. Suggest a cover for a game that has none (§6). |
+| Members, email verified | Add up to 5 games a day (no account-age wait). "Play this, Boomer!" (a vote) on To play games. Suggest a cover for a game that has none (§6). |
 | Mods | Approve or reject the queue (adds and covers); hide or unhide a community pick; replace a cover. |
 | Admins and owner | Everything: add without the theme check, edit, write reviews, set status, delete, upload a cover override. |
 
@@ -61,7 +61,7 @@ runs these checks, stopping at the first that decides:
 
 | Result | Member sees | Recorded |
 |---|---|---|
-| Added | "Added to the Vault" + link | Wishlist game, origin `community`, `addedBy.handle` |
+| Added | "Added to the Vault" + link | To play game, origin `community`, `addedBy.handle` |
 | Already there | "Already in the Vault", "N people want it" | `wants/{uid}`, `wantedCount` +1 |
 | Queued | "Sent for a quick check" | `vaultQueue/{id}` (kind `add`) |
 | Refused | A plain reason. Adult and profanity refusals stay vague on purpose ("This game can't be added to the Vault.") | adminLog `refused` with uid (private, TTL) |
@@ -84,7 +84,7 @@ All under `sites/{siteId}/` (siteId `boomertanger`).
 | Field | Notes |
 |---|---|
 | `title`, `sortTitle`, `slug`, `altNames[]` | Slug never changes once set. `sortTitle` drops "The"/"A". `altNames`: up to 5 from IGDB (acronyms like "RE2"), for search. |
-| `status` | `playing` (green) · `finished` (lime) · `abandoned` (gray) · `wishlist` (gold) |
+| `status` | `playing` (green) · `finished` (lime) · `abandoned` (gray) · `wishlist` (gold; members see it as **To play**: display only, the stored value stays `wishlist`, Oct 14, 2026) |
 | `origin`, `addedBy` | `boomer` or `community`; `addedBy: { handle }` only (uid is private) |
 | `wantedCount` | From `wants/{uid}` (function-written) |
 | `summary` | IGDB, falling back to Steam's short description. Page credit: "Game info from IGDB". |
@@ -121,7 +121,7 @@ All under `sites/{siteId}/` (siteId `boomertanger`).
 |---|---|---|
 | `vaultLookup` | Verified members | Parse input, return up to 8 candidates with an "In the Vault" flag. Cached. 30/hour. |
 | `vaultAddGame` | Verified members; staff skip check 7 | §3 checks, then the write in one transaction (game + keys + public/vault refresh queued). Accepts an optional `pendingCoverId` for by-hand adds. Returns the check list. |
-| `vaultWant` | Verified members | `{ slug, on }`: add or remove the member's +1 on a wishlist game |
+| `vaultWant` | Verified members | `{ slug, on }`: add or remove the member's +1 on a To play game |
 | `vaultReviewQueue` | Mods, admins | `{ id, decision: approve | reject | replace, reason?, replacementUploadId? }` for adds and covers |
 | `vaultQueueList` | Mods, admins | Queue items, with short-lived signed URLs (10 min) for pending covers |
 | `vaultHideGame` | Mods, admins | Hide/unhide a community pick; hiding starts the 7-day pause |
@@ -132,7 +132,7 @@ All under `sites/{siteId}/` (siteId `boomertanger`).
 | `vaultCoverSubmit` | Verified members | Verifies the uploaded file (format, bytes, size) via Cloudinary, records it with `recordAssetCreated()`, creates a `cover` queue item |
 | `vaultSweepPendingCovers` | Daily schedule | Deletes pending uploads never submitted within 24 h (through the approved delete path) |
 | `vaultRefresh` | Weekly schedule | Re-fetch unreleased and early-access games |
-| `onStreamWritten` | Trigger | See stream-object.md: recompute affected games' `stats`, refresh `public/vault`, move a streamed wishlist game to `playing` |
+| `onStreamWritten` | Trigger | See stream-object.md: recompute affected games' `stats`, refresh `public/vault`, move a streamed To play game to `playing` |
 
 IGDB uses the existing Twitch app (`TWITCH_CLIENT_ID` param + `TWITCH_CLIENT_SECRET`
 secret) and the growth collector's app-token helper; 4 requests/second max. Steam store
@@ -207,7 +207,7 @@ Feature key `game-vault`.
   Boomer's best, The ones that got away); grid when searching or filtering. (Round 2's vault door
   hero and ledger counts were replaced by the page redesign below.)
 - Cards (round 2 C5 + C6): tilt + glare on pointer devices, verdict reveal on hover,
-  caution tape (abandoned), pulse (playing), votes stamp ("N votes", wishlist), 10/10 ribbon.
+  caution tape (abandoned), pulse (playing), votes stamp ("N votes", To play), 10/10 ribbon.
 - Game page `/games/{slug}` (round 2 E4): ambient banner, score dial (Boomer's gold),
   review, Every stream timeline, about + IGDB credit, facts, where to play, stats; admin
   Edit; staff Hide on community picks; "Suggest a cover" on mascot covers.
@@ -224,14 +224,14 @@ Round 3 (`docs/design/mockups/game-vault-round-3.html`; approved R4 S1 N1 P12):
 - **S1 Shelves, then All games.** Without a search or filter, /games shows the shelves and then
   the All games grid with its count, always. Shelves only show when they have games, except
   **Most wanted on stream** (subtitle "What members want Boomer to play next."), which always shows
-  above the grid while there's at least one wishlist game:
+  above the grid while there's at least one To play game:
   - with votes: the top 5 by votes (games with at least one), with rank numerals;
-  - with no votes yet: up to 5 wishlist games, newest first, no numerals, with their Play this,
+  - with no votes yet: up to 5 To play games, newest first, no numerals, with their Play this,
     Boomer! buttons and the line "Nothing voted yet. Tap Play this, Boomer! on a game to be the first.";
-  - hidden only when there are no wishlist games at all.
+  - hidden only when there are no To play games at all.
   Searching or filtering still shows just the grid.
 - **N1 Back link that remembers.** A "Back to the Vault" pill at the top of the game banner with a
-  reminder of the list you came from ("Wishlist, A-Z"; just "Vault" on phones). It returns to that
+  reminder of the list you came from ("To play, A-Z"; just "Vault" on phones). It returns to that
   exact /games URL and scroll position. /games stores the context in sessionStorage when you leave
   for a game (URL, scroll, label, the games in order); a direct visit with none goes back to /games
   in the default order.
@@ -288,20 +288,20 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   Then a two-column row: the cover at about 58% on the left (tilt on pointer devices only), and on the
   right the status badge, the tags (one per line) and the score dial (about 112px, Boomer's gold,
   lights up on view). A game with no score shows just the badge and tags, plus "Not rated" in the
-  dial's place when it has been played (not on the Wishlist). Under the row, full width: the title
+  dial's place when it has been played (not on the To play list). Under the row, full width: the title
   (wraps, never cut off), the byline (developer, year, time to beat), then the stream count line with
   the admin Edit button (green, small) at its right. The blurred cover stays behind the whole block
   and fades to the page colour. Reduced motion: no tilt, the dial shows lit.
 - The cover card's hover panel follows the game (already in round 3's follow-ups): "No review yet"
   with a status line for playing, finished and abandoned games without a verdict, "Not played yet"
-  only on the Wishlist (`shared/vault-reveal.js`).
-- **Up next (Boomer's pin, added Oct 13, 2026).** The owner or an admin can pin Wishlist games:
+  only on the To play list (`shared/vault-reveal.js`).
+- **Up next (Boomer's pin, added Oct 13, 2026).** The owner or an admin can pin To play games:
   optional `pinned` (boolean) and `pinnedAt` (timestamp) on `vaultGames/{slug}`, set only through
-  adminEditItem (kind vaultGame, change `pinned: true | false`; Wishlist games only, and a game that
-  leaves the Wishlist is unpinned in the same edit; adminLog action `pin`). The game page has a green
-  admin "Pin to top" / "Unpin" button beside Edit on Wishlist games. Cards in `public/vault` carry
-  `pinned` and `pinnedAt` (ms). On /games, pinned games come first in the Wishlist tab (the status
-  filter Wishlist, without a search), oldest pin first, before the chosen sort; each shows a small gold
+  adminEditItem (kind vaultGame, change `pinned: true | false`; To play games only, and a game that
+  leaves To play is unpinned in the same edit; adminLog action `pin`). The game page has a green
+  admin "Pin to top" / "Unpin" button beside Edit on To play games. Cards in `public/vault` carry
+  `pinned` and `pinnedAt` (ms). On /games, pinned games come first in the To play tab (the status
+  filter To play, without a search), oldest pin first, before the chosen sort; each shows a small gold
   "Up next" badge (`.bt-badge--gold`) on its card and in the game page hero. With nothing playing, the
   hero spotlight shows the newest pinned game (labelled Up next) before the top Most wanted on stream
   game. Most wanted on stream itself stays ranked by votes only. `apply-vault-reviews.js` honours

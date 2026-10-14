@@ -19,7 +19,7 @@ export function initGamePicker(box: HTMLElement, ctx: Ctx, { onPick, actionLabel
     const t = norm(q.value.trim());
     if (!t) { res.innerHTML = ""; return; }
     const hits = [...ctx.vault.values()].filter((g) => norm(g.title).includes(t) || (g.altNames || []).some((a) => norm(a).includes(t))).slice(0, 6);
-    res.innerHTML = hits.map((g) => `<div class="lc-game-row">${coverHtml(g.cover ?? null, { alt: g.title, cls: "bt-cover--sm" })}<div><b>${esc(g.title)}</b><small>${esc(g.status === "wishlist" ? "Wishlist" : "In the Vault")}</small></div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-gp-pick="${esc(g.slug)}">${esc(actionLabel)}</button></div>`).join("")
+    res.innerHTML = hits.map((g) => `<div class="lc-game-row">${coverHtml(g.cover ?? null, { alt: g.title, cls: "bt-cover--sm" })}<div><b>${esc(g.title)}</b><small>${esc(g.status === "wishlist" ? "To play" : "In the Vault")}</small></div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-gp-pick="${esc(g.slug)}">${esc(actionLabel)}</button></div>`).join("")
       + `<div class="lc-gp-add">${hits.length ? "Not the one?" : "Not in the Vault."} <button type="button" class="bt-link-btn" data-gp-add>Add it to the Vault</button></div>`;
   };
   q.addEventListener("input", draw);

@@ -32,11 +32,11 @@ const path = require("path");
 
   // 3. wishlist: "Not played yet", with "N votes" ("1 vote") when N > 0
   assert.deepEqual(reveal(G({ status: "wishlist", wanted: 3 })), { title: "Not played yet", quoted: false, line: "3 votes" });
-  assert.equal(reveal(G({ status: "wishlist" })).line, "On the Wishlist", "no votes: no count");
+  assert.equal(reveal(G({ status: "wishlist" })).line, "On the To play list", "no votes: no count");
   assert.equal(reveal(G({ status: "wishlist", wanted: 1, by: "gbo" })).line, "1 vote. Community pick by @gbo");
 
   // statusLine and metaLine
-  assert.equal(statusLine(G({ status: "wishlist" })), "On the Wishlist");
+  assert.equal(statusLine(G({ status: "wishlist" })), "On the To play list");
   assert.equal(metaLine(G({ streams: 6, last: Date.UTC(2026, 8, 12, 12) })), "6 streams, last Sep 12");
   assert.equal(metaLine(G({ ttb: 6 })), "About 6 h to beat", "a finished game with no streams isn't 'Not streamed yet'");
   assert.equal(metaLine(G({})), "No streams on record yet", "the badge already says Finished");

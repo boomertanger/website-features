@@ -24,11 +24,11 @@ const STATUSES = [
   ["playing", "🎮", "Playing", "On stream right now. Boomer is somewhere in the middle of it.", `<div class="ai-scene vh-scene vh-scene--playing" aria-hidden="true">${slot("playing")}</div>`],
   ["finished", "🏁", "Finished", "Beaten on stream. Most get Boomer's score and a review.", `<div class="ai-scene vh-scene vh-scene--finished" aria-hidden="true">${dialHtml(9, { caption: "" })}</div>`],
   ["abandoned", "🪦", "Abandoned", "The ones that beat Boomer's patience. They can always come back.", `<div class="ai-scene vh-scene vh-scene--abandoned" aria-hidden="true">${slot("abandoned", "", '<span class="gv-tape">ABANDONED</span>')}</div>`],
-  ["wishlist", "🔖", "Wishlist", "Not played yet. Members vote with Play this, Boomer!, and the most voted rise.", `<div class="ai-scene vh-scene vh-scene--wishlist" aria-hidden="true">${slot("wishlist", "", '<span class="gv-stamp">6 votes</span>')}</div>`],
+  ["wishlist", "🔖", "To play", "Not played yet. Members vote with Play this, Boomer!, and the most voted rise.", `<div class="ai-scene vh-scene vh-scene--wishlist" aria-hidden="true">${slot("wishlist", "", '<span class="gv-stamp">6 votes</span>')}</div>`],
 ] as const;
 // Each example returns real games on staging (checked against public/vault).
 const TIPS = [["🔤", "Typos are fine", "Try", "grany"], ["🔀", "Any word order", "Try", "fathom fears"], ["🏢", "Developers work too", "Try", "chilla"], ["🏷", "So do tags", "Try", "co-op"], ["🔗", "Share what you found", "The address keeps your search, filters and sort, so you can paste it in chat.", ""]];
-const JSTEPS = [["🔗", "Paste or search", "Paste a Steam link, or type the game's name."], ["👆", "Pick it", "Choose the right game. You'll see how its card will look."], ["🔍", "The checks", "Is it a full game? Already here? Real? Right for the channel?"], ["🗝", "In the Vault", "Horror games go straight onto the Wishlist with your name on them."], ["🛡", "Or a quick check", "Anything else gets a quick look from a mod first."]];
+const JSTEPS = [["🔗", "Paste or search", "Paste a Steam link, or type the game's name."], ["👆", "Pick it", "Choose the right game. You'll see how its card will look."], ["🔍", "The checks", "Is it a full game? Already here? Real? Right for the channel?"], ["🗝", "In the Vault", "Horror games go straight onto the To play list with your name on them."], ["🛡", "Or a quick check", "Anything else gets a quick look from a mod first."]];
 const COVERS = [
   ["🗂", "Most come from the game databases", "When a game is added, the site finds its official cover on IGDB or Steam. Each game page credits where its info came from.", `<div class="ai-scene" aria-hidden="true"><div class="vh-db"><div class="vh-db-src"><span>IGDB</span><span>Steam</span></div><span class="vh-db-arrow">${goSvg}</span><div class="vh-cv"><span class="bt-cover vh-cv-before"><span class="bt-cover-fallback" data-vh-mascot></span></span>${slot("any:0", "vh-cv-after")}</div></div></div>`],
   ["🖼", "No cover? Suggest one", "If a game is showing the mascot, members can suggest its cover: JPG, PNG or WebP, cropped to the cover shape before it uploads.", `<div class="ai-scene" aria-hidden="true"><div class="vh-drop">${slot("any:1", "vh-fly")}<span class="bt-cover vh-drop-mascot"><span class="bt-cover-fallback" data-vh-mascot></span></span><div class="bt-dropzone"><span><b>Drop a cover</b></span></div></div></div>`],
@@ -114,7 +114,7 @@ const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</
         <div class="vh-split">
           <div class="vh-mw"><span class="bt-label">Most wanted on stream (try it)</span><div class="bt-stack vh-mw-list" data-mwlist></div></div>
           <ul class="vh-points">
-            <li><span aria-hidden="true">💜</span><span><b>One vote per member, per game.</b> Tap Play this, Boomer! on any wishlist game, or add a game that's already there. Changed your mind? Tap Voted to take it back.</span></li>
+            <li><span aria-hidden="true">💜</span><span><b>One vote per member, per game.</b> Tap Play this, Boomer! on any To play game, or add a game that's already there. Changed your mind? Tap Voted to take it back.</span></li>
             <li><span aria-hidden="true">🏆</span><span><b>Most wanted on stream is ranked by votes.</b> The top games sit in the Most wanted on stream shelf at the top of the Vault.</span></li>
             <li><span aria-hidden="true">📅</span><span><b>Boomer checks it when he plans.</b> Most wanted on stream is one of the places he looks when he picks what to stream next. No promises, but it's how you get heard.</span></li>
           </ul>
@@ -159,7 +159,7 @@ const acts = `<a class="bt-btn bt-btn--primary" href="/games">Browse the Vault</
               <div class="vh-node" data-node="finished"><div class="vh-node-end"><Fragment set:html={badge("finished")} /><Fragment set:html={badge("abandoned")} /></div><p>Beaten, or given up on. Abandoned games can come back to Playing.</p></div>
             </div>
           </div>
-          <div class="vh-tick" aria-live="polite" data-tick><span data-tick-title>A game:</span> <b data-tick-status>Wishlist</b> · <b data-tick-streams>0</b> streams · <b data-tick-hours>0 h</b> on stream <span class="vh-tick-cap" data-tick-cap>Added to the Vault. Members start voting for it.</span></div>
+          <div class="vh-tick" aria-live="polite" data-tick><span data-tick-title>A game:</span> <b data-tick-status>To play</b> · <b data-tick-streams>0</b> streams · <b data-tick-hours>0 h</b> on stream <span class="vh-tick-cap" data-tick-cap>Added to the Vault. Members start voting for it.</span></div>
         </div>
       </section>
 

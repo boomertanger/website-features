@@ -8,7 +8,7 @@ import type { VCard, Status } from "./data";
 
 export { esc };
 export const STATUS: Record<Status, [string, string]> = {
-  playing: ["Playing", "green"], finished: ["Finished", "lime"], abandoned: ["Abandoned", "gray"], wishlist: ["Wishlist", "gold"],
+  playing: ["Playing", "green"], finished: ["Finished", "lime"], abandoned: ["Abandoned", "gray"], wishlist: ["To play", "gold"],
 };
 export const STATUS_KEYS: Status[] = ["playing", "finished", "abandoned", "wishlist"];
 
@@ -32,7 +32,7 @@ export const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n ==
 /** The line under a card's title; a played game with no streams shows its time to beat, never "Not streamed yet". */
 export const metaLine = (g: VCard): string => cardMeta(g);
 export const isEarly = (g: { releaseStatus?: string }) => g.releaseStatus === "early_access";
-/** Boomer's "Up next" pin: a Wishlist game he pinned to the top. */
+/** Boomer's "Up next" pin: a To play game he pinned to the top. */
 export const isPinned = (g: { pinned?: boolean; status?: string }) => g.pinned === true && g.status === "wishlist";
 export const UP_NEXT = '<span class="bt-badge bt-badge--gold">Up next</span>';
 /** Pinned games first, in the order they were pinned; the rest keep their order. */

@@ -82,12 +82,12 @@ function list(): VCard[] {
     az: (a, b) => a.sortTitle.localeCompare(b.sortTitle, "en"),
   };
   gs.sort(cmp[st.sort] || cmp.last);
-  // the Wishlist: Boomer's pinned games ("Up next") come first, in pinned order, before the chosen sort
+  // To play (status wishlist): Boomer's pinned games ("Up next") come first, in pinned order, before the chosen sort
   return st.status === "wishlist" ? pinnedFirst(gs) : gs;
 }
 
 // ---------- the list you leave from (round 3 N1) ----------
-/** "Wishlist, A-Z", "All games, last streamed", "Search “granny”". */
+/** "To play, A-Z", "All games, last streamed", "Search “granny”". */
 function ctxLabel() {
   const q = st.q.trim();
   if (q) return `Search “${q}”`;
@@ -228,7 +228,7 @@ function addCta(q: string, big = false) {
 function noMatch() {
   const q = st.q.trim();
   const what = q ? `“${esc(q)}”` : "those filters";
-  return `<div class="bt-empty gv-state"><div class="gv-flash">${mascotSvg()}<span class="gv-beam" aria-hidden="true"></span></div><p class="bt-empty-title">Nothing on the shelf for ${what}</p><span>${q ? "Know the game? Add it and it lands on the Wishlist." : "Try fewer filters."}</span>${q ? addCta(q, true) : '<button type="button" class="bt-btn bt-btn--secondary" data-reset>Clear filters</button>'}</div>`;
+  return `<div class="bt-empty gv-state"><div class="gv-flash">${mascotSvg()}<span class="gv-beam" aria-hidden="true"></span></div><p class="bt-empty-title">Nothing on the shelf for ${what}</p><span>${q ? "Know the game? Add it and it lands on the To play list." : "Try fewer filters."}</span>${q ? addCta(q, true) : '<button type="button" class="bt-btn bt-btn--secondary" data-reset>Clear filters</button>'}</div>`;
 }
 const mascotSvg = () => document.getElementById("bt-mascot-tpl")?.innerHTML ?? "";
 const grid = (gs: VCard[]) => `<div class="bt-cover-grid">${gs.map((g) => vcard(g)).join("")}</div>`;

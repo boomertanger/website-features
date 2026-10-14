@@ -1,6 +1,6 @@
 // The list you came from (docs/specs/game-vault.md §9; round 3 N1 + P12). /games stores it in
 // sessionStorage as you leave for a game: the exact /games URL (search, filters, sort), the scroll
-// position, a short label ("Wishlist, A-Z") and the games in that list, in order. A game page uses it
+// position, a short label ("To play, A-Z") and the games in that list, in order. A game page uses it
 // for Back to the Vault and for previous / next. A direct visit has none: Back goes to /games and
 // the pager steps through the whole Vault in the default order (last streamed first).
 import type { VCard } from "./data";
