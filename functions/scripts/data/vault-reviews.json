@@ -403,8 +403,8 @@
     },
     {
       "title": "Five Nights at Freddy's: Secret of the Mimic",
-      "status": "playing",
-      "note": "Not finished yet: set status to Playing, no score or review."
+      "status": "wishlist",
+      "note": "Not finished yet: Wishlist, no score or review."
     },
     {
       "title": "The Forest",
@@ -815,13 +815,418 @@
         "Co-op",
         "Cannibals"
       ]
+    },
+    {
+      "title": "Stay Out of the House",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The slasher escape room every horror fan should try.",
+      "review": "Deep, replayable and terrifying: the game where Puppet Combo hit its peak.",
+      "tags": [
+        "Slasher",
+        "Stealth",
+        "Retro (PS1-style)"
+      ]
+    },
+    {
+      "title": "Still Wakes the Deep",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Great rig, great cast, mostly on rails.",
+      "review": "A stunning, moving ride that's more Netflix miniseries than survival game.",
+      "tags": [
+        "Lovecraftian",
+        "Body horror",
+        "Story rich"
+      ]
+    },
+    {
+      "title": "Supernormal",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Ask the ghosts a question. Pray they don't answer.",
+      "review": "A gorgeous, photoreal apartment haunting where your own voice is both a clue and a trap.",
+      "tags": [
+        "Microphone",
+        "Detective",
+        "Photoreal"
+      ]
+    },
+    {
+      "title": "Tattletail",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Feed him, brush him, keep him quiet. Mama's listening.",
+      "review": "A cult classic: the most annoying toy of 1998 and the scariest mom in horror.",
+      "tags": [
+        "Short",
+        "Holiday horror",
+        "Retro (1990s)"
+      ]
+    },
+    {
+      "title": "Tales Beyond the Tomb - The Farm's Secret",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The most uncomfortable episode in the series, on purpose.",
+      "review": "Gripping and grim: being the killer's unwilling accomplice is horror of a whole different kind.",
+      "tags": [
+        "True-crime horror",
+        "Anthology",
+        "Retro (PS1-style)"
+      ]
+    },
+    {
+      "title": "Tales Beyond the Tomb - The Last Vigil",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Night shift at the cemetery. Not everyone is resting.",
+      "review": "A creepy graveyard watch that turns a quiet job into a long, terrifying night.",
+      "tags": [
+        "Night shift",
+        "Cemetery",
+        "Anthology"
+      ]
+    },
+    {
+      "title": "Tales Beyond the Tomb - Route 86",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Road trip with friends. Wrong turn. Wrong everything.",
+      "review": "The biggest episode yet: multiple characters, real voice acting and a mic that punishes every scream.",
+      "tags": [
+        "Road trip",
+        "Stealth",
+        "Anthology"
+      ]
+    },
+    {
+      "title": "There's Something in the Ice",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Antarctica, a storm, and a sample that should've stayed frozen.",
+      "review": "Gorgeous and tense, though the story stays on the surface.",
+      "tags": [
+        "Sci-fi horror",
+        "Antarctica",
+        "Walking sim"
+      ]
+    },
+    {
+      "title": "The Twins",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Bob, Buck, Granny and Gramps walk into a prison…",
+      "review": "My favorite horror escape game, period. Steal the coin, the painting and the diamond while the twins hunt you, then turn on With Guests and watch it turn into pure chaos.",
+      "tags": [
+        "Hide and seek",
+        "Heist",
+        "DVloper",
+        "Granny series"
+      ],
+      "hint": "By DVloper (the Granny developer), 2020; not Randumb Studios' The Twins"
+    },
+    {
+      "title": "Wick",
+      "status": "finished",
+      "score": 7,
+      "verdict": "One candle, one night, five ghost kids. Good luck.",
+      "review": "A classic stream-scare: simple, sharp and full of jump scares in the dark woods.",
+      "tags": [
+        "Jump scares",
+        "Forest",
+        "Survival horror"
+      ],
+      "hint": "By Hellbent Games (2015)"
+    },
+    {
+      "title": "Witch's Doll",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Don't play with the witch's doll. It plays with you.",
+      "review": "A gorgeous, grimy UE5 nightmare packed with jump scares in under an hour and a half.",
+      "tags": [
+        "Walking sim",
+        "Jump scares",
+        "Photoreal"
+      ]
+    },
+    {
+      "title": "Zoochosis",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Feed the giraffe. Check its neck. Run.",
+      "review": "A fresh, creepy concept with fantastic creature designs, even if the zookeeping gets a bit repetitive.",
+      "tags": [
+        "Mutants",
+        "Night shift",
+        "Job sim"
+      ]
+    },
+    {
+      "title": "Alien: Isolation",
+      "status": "finished",
+      "score": 10,
+      "verdict": "In space, no one can hear you scream. In VR, your chat can.",
+      "review": "A perfect, punishing cat-and-mouse with the best Xenomorph in gaming; VR turns every locker into a panic attack.",
+      "tags": [
+        "VR",
+        "Sci-fi horror",
+        "Stealth"
+      ]
+    },
+    {
+      "title": "Alien: Rogue Incursion",
+      "status": "finished",
+      "score": 10,
+      "verdict": "Game over, man? Not in VR. Not yet.",
+      "review": "Aliens in your face, a pulse rifle in your hands: the most immersive Xenomorph fight in gaming. I loved every minute of it in VR.",
+      "tags": [
+        "VR",
+        "Sci-fi horror",
+        "Shooter"
+      ],
+      "hint": "Part One, the VR original by Survios (2024), not the non-VR Evolved Edition"
+    },
+    {
+      "title": "The Exorcist: Legion VR",
+      "status": "abandoned",
+      "score": 5,
+      "verdict": "Holy water can't fix a soft-lock.",
+      "review": "Beautiful, unsettling and unplayable in the end: I hit a wall the game wouldn't let me past, more than once.",
+      "tags": [
+        "VR",
+        "Exorcism",
+        "Buggy"
+      ]
+    },
+    {
+      "title": "Five Nights at Freddy's: Help Wanted",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The FNaF office was scary on a monitor. In VR, Freddy's right there.",
+      "review": "The best way to play Five Nights at Freddy's: the original nights in VR are harder than ever, because you have to reach out and physically hit every button instead of tapping a key, and the jump scares land inches from your face.",
+      "tags": [
+        "VR",
+        "Animatronics",
+        "Jump scares"
+      ]
+    },
+    {
+      "title": "Granny VR",
+      "status": "finished",
+      "score": 5,
+      "verdict": "Granny's scarier in VR. So are the bugs.",
+      "review": "Hearing Granny creak past while you hide is great, but holding an item stops you breaking through boxes, and it streams as badly as it plays.",
+      "tags": [
+        "VR",
+        "Fan game",
+        "Granny series"
+      ],
+      "hint": "Unofficial fan port of Granny for VR (SideQuest/itch.io); may need adding by hand"
+    },
+    {
+      "title": "Half-Life: Alyx",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Shh. Jeff can hear you.",
+      "review": "Stunning, clever and surprisingly scary: the benchmark every VR game is still chasing.",
+      "tags": [
+        "VR",
+        "Sci-fi horror",
+        "Shooter"
+      ]
+    },
+    {
+      "title": "Hello Puppets! VR",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The best co-star in VR horror lives on my hand.",
+      "review": "Funny, frightening and totally original: nothing else in VR plays like this. It's an older VR game and doesn't stream great, but in the headset it really hits.",
+      "tags": [
+        "VR",
+        "Comedy horror",
+        "Puppets"
+      ]
+    },
+    {
+      "title": "Home Sweet Home",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The scariest school in VR horror.",
+      "review": "Relentless dread, a terrifying spirit and folklore you won't find anywhere else: a must for VR horror fans.",
+      "tags": [
+        "VR",
+        "Thai horror",
+        "Stealth"
+      ],
+      "hint": "By Yggdrazil Group (2017); played in VR"
+    },
+    {
+      "title": "MADiSON VR",
+      "status": "finished",
+      "score": 10,
+      "verdict": "The scariest game ever made, and now you're inside it.",
+      "review": "Every flash of the camera, every whisper, every jump scare is up close and personal: VR horror at its nastiest.",
+      "tags": [
+        "VR",
+        "Psychological",
+        "Occult"
+      ]
+    },
+    {
+      "title": "The Midnight Walk",
+      "status": "wishlist",
+      "note": "Not finished yet: Wishlist, no score or review."
+    },
+    {
+      "title": "Narcosis",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Deep sea, low air, high anxiety.",
+      "review": "A slow, suffocating walk along the ocean floor that's all about dread; in VR, every breath counts.",
+      "tags": [
+        "VR",
+        "Underwater",
+        "Psychological"
+      ]
+    },
+    {
+      "title": "Phasmophobia",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The co-op horror game every other ghost hunt is copying.",
+      "review": "Talk to the ghost, gather the evidence, survive the hunt: nothing beats a full Phasmo squad in VR.",
+      "tags": [
+        "VR",
+        "Co-op",
+        "Ghost hunting"
+      ]
+    },
+    {
+      "title": "Granny Legacy",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Pepper spray, crossbows and Slendrina. Granny's been busy.",
+      "review": "A fun, replayable twist on the original with plenty of new ways to die, though there are a few changes where I still prefer the OG Granny.",
+      "tags": [
+        "Hide and seek",
+        "Fan game",
+        "Granny series"
+      ],
+      "hint": "Fan game by Candy on Game Jolt: https://gamejolt.com/games/grannylegacy/1011593 (needs DVloper's Granny on Steam); may need adding by hand"
+    },
+    {
+      "title": "Hollowbrook - Apartments",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Episode one, and Hollowbrook already has me hooked.",
+      "review": "Moody, stylish and tense: a great start to a horror series I'll be watching closely.",
+      "tags": [
+        "Short",
+        "Episodic",
+        "Slasher"
+      ],
+      "hint": "By Yetiface Games (2025), Steam app 3983920; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Within of Static - Ashburg Rental",
+      "status": "finished",
+      "score": 8,
+      "verdict": "616 GAMES does it again, and this one's even creepier.",
+      "review": "A tight, realistic nightmare that proves the Tales Beyond the Tomb team has more stories to tell.",
+      "tags": [
+        "Short",
+        "Stalker",
+        "Anthology"
+      ],
+      "hint": "Episode 1 by 616 GAMES (Dec 2025), Steam app 4092670; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Total Chaos",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Welcome to Fort Oasis. Nothing here is an oasis.",
+      "review": "A brutal, grimy survival horror where every bullet matters and your own mind turns against you.",
+      "tags": [
+        "Survival horror",
+        "Island",
+        "Madness"
+      ],
+      "hint": "By Trigger Happy Interactive (Nov 2025), Steam app 2208350; the remake, not the Doom II mod; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "SUFFOCATE",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Taiwanese horror at its most unflinching.",
+      "review": "Gory, unsettling and culturally fresh; a few rough edges, but a story you won't forget.",
+      "tags": [
+        "Taiwanese horror",
+        "Cult",
+        "Story rich"
+      ],
+      "hint": "By Naughty Cow (Oct 2025), Steam app 1965270; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Sushi House",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By Noirbit (Nov 2025), Steam app 3687470; not 'The Sushi Bar' by KM Studios; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Skinwalkers Valley",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By Fireplay Studio (Nov 2025); not Skinwalker Hunt; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Skinfreak",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Overtime at the office. The killer's working late too.",
+      "review": "Black Eyed Priest does it again: a grimy, funny, nasty slasher with a fantastic 80s B-movie vibe.",
+      "tags": [
+        "Slasher",
+        "Giallo",
+        "Retro (PS1-style)"
+      ],
+      "hint": "SKINFREAK by Black Eyed Priest (Oct 2025), Steam app 4007340; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Skin Stapler",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By Tainted Pact (Aug 2026), Steam app 4310610; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Silent Nights",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By JustTomcuk (Mar 2023), Steam app 2314180; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "ROUTINE",
+      "status": "finished",
+      "score": 9,
+      "verdict": "The moon base went quiet. You're about to find out why.",
+      "review": "Worth the 13-year wait: the most atmospheric sci-fi horror since Alien: Isolation, with an 80s future you can almost smell.",
+      "tags": [
+        "Sci-fi horror",
+        "Space station",
+        "Retro-futuristic"
+      ],
+      "hint": "By Lunar Software (Dec 2025), Steam app 606160; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Rewind or Die",
+      "status": "wishlist",
+      "pinned": true,
+      "note": "Boomer's own wishlist pick, pinned to the top of the Wishlist (Boomer's 'Up next'). No score or review.",
+      "hint": "By Comp-3 Interactive, published by Torture Star Video (Apr 2023), Steam app 2329130; not the Rewind or Die demo by Overwrite Game Studios; probably not in the Vault yet, so add it if missing"
     }
   ],
   "pending": [
-    {
-      "title": "Granny Legacy",
-      "note": "No game found under this name; ask Boomer who made it or where he played it."
-    },
     {
       "title": "Dead Space 2, Dead Space 3, Dead Space (2008)",
       "note": "Boomer has finished every Dead Space; ask whether to add them to the Vault."

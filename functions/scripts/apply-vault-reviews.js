@@ -131,7 +131,9 @@ async function main() {
     const want = {};
     if (r.status) want.status = r.status;
     if (r.score !== undefined && r.score !== null) want.review = { score: r.score, verdict: r.verdict || "", body: r.review || "" };
-    if (Array.isArray(r.tags) && r.tags.length) want.boomerTags = mergeTags(E.currentValue("boomerTags", g), r.tags);
+    // "tags" and "boomerTags" (either or both) are Boomer's tags, added to the ones the game has
+    const addTags = [...(Array.isArray(r.tags) ? r.tags : []), ...(Array.isArray(r.boomerTags) ? r.boomerTags : [])];
+    if (addTags.length) want.boomerTags = mergeTags(E.currentValue("boomerTags", g), addTags);
     // "pinned": true pins it to the top of the Wishlist (Boomer's Up next; Wishlist games only), false unpins it
     if (typeof r.pinned === "boolean") want.pinned = r.pinned;
     const changes = {}, before = {}, notes = [];
