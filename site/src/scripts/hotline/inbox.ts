@@ -5,6 +5,10 @@
 //   contactReply  { lane, id, text, from, markWaiting, manual }                     contactSettings { inboxGrades, replyTime, nameCheck, emailOwner, lines }
 // Email off (no RESEND_API_KEY yet): contactReply answers { sent: false, reason: "email-off", mailto }, so the composer offers "Open in my email" and then "Mark as replied" (manual).
 // Tabs: ?tab=inbox | sources | settings. ?id=<message id> opens that message.
+// Talk Back (docs/specs/talk-back.md §7): a line 2 message sent from a feature page shows the context bar (C1: "From {Area} › {Service} › {Section}",
+// Open the page, what BOOMBOT showed), its row reads "Question:" or "Feedback:", and Sources has By service (V2 split bars; owner: stats.byService, all
+// lanes; inbox admins: serviceStats, team lane; Answered by BOOMBOT from serviceStats; a hint when a section keeps coming up). Names and areas come from
+// the Service Hub manifests, read at build time.
 // Preview (non-production, signed out, ?as=admin; &owner=0 for an inbox admin's view): sample data from src/data/preview-hotline-inbox.json, changes stay in the page.
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { readoutsHtml } from "../../../../shared/ui/readout.js";
@@ -19,6 +23,7 @@ import { call } from "../../lib/call";
 import { messageFor } from "../../lib/errors";
 import { isProduction } from "../../lib/env.js";
 import { icon } from "./art";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
 
 type Lane = "team" | "owner";
 type Status = "new" | "open" | "waiting" | "done" | "spam";
@@ -27,7 +32,11 @@ interface Msg {
   sender: { uid?: string; handle?: string; name?: string; email?: string }; fields: Record<string, string>; body: string;
   source: string | null; via: string | null; onlyOwner: boolean; namecheck: { uid: string; handle: string | null; grade: string | null } | null;
   escalatedBy: string | null; createdAt: number; firstReplyAt: number | null;
+  kind: "question" | "feedback" | null; context: { serviceId: string; section: string | null; path: string; title: string | null } | null; boombotShown: string[] | null;   // Talk Back, line 2 only
 }
+interface Svc { id: string; name: string; area: string; sections?: Record<string, string> }
+const SERVICES = new Map((Object.values(import.meta.glob("../../../../services/*.json", { eager: true, import: "default" })) as Svc[]).map((m) => [m.id, m]));
+interface SvcCount { questions: number; feedback: number; boombot: number; sections: Record<string, number> }
 interface Note { id: string; kind: "reply" | "note" | "event"; by: string | null; from?: string; text: string; at: number; event?: string; value?: string | null; manual?: boolean }
 interface PreviewData { ownerUid: string; handles: Record<string, string>; staff: string[]; messages: any[] }
 interface Main { inboxGrades: string[]; replyTime: string; lines: Record<string, boolean>; nameCheck: boolean; emailOwner: { business: boolean; private: boolean } }
@@ -72,6 +81,7 @@ const S = {
   handles: new Map<string, string>(), staff: [] as { uid: string; handle: string }[], streams: new Map<string, string>(),
   manual: null as null | { id: string; mailto: string; to: string | null; text: string; from: string; markWaiting: boolean },
   period: "90" as "30" | "90" | "all", stats: null as null | Record<string, any>, busy: false, stamp: false,
+  svcMonths: null as null | Record<string, Record<string, any>>,   // serviceStats/{yyyy-mm}.byService (team lane counts and BOOMBOT), read once
   draft: null as null | Main,
 };
 
@@ -80,12 +90,21 @@ const svg = (k: string, cls = "") => icon(k).replace("<svg ", `<svg width="16" h
 const extra: Record<string, string> = {
   flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>', reply: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/>',
   note: '<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h5"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
+  ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
 };
 const ic = (k: string, cls = "") => (extra[k] ? `<svg width="16" height="16"${cls ? ` class="${cls}"` : ""} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${extra[k]}</svg>` : svg(k, cls));
 const badge = (s: Status) => `<span class="bt-badge bt-badge--${ST[s][1]}"><span class="bt-badge-dot"></span>${ST[s][0]}</span>`;
 const key = (m: Msg) => `<span class="hb-ib-k" aria-hidden="true">${LINES[m.line]?.[0] ?? "?"}</span>`;
 const title = (m: Msg) => LINES[m.line]?.[1] ?? "Message";
+/** The row's label: line 2 says what kind it is (old messages with no kind are feedback). */
+const rowLabel = (m: Msg) => (m.line === "feedback" ? (m.kind === "question" ? "Question" : "Feedback") : title(m));
+/** "{Area} › {Service} › {Section}" for a Talk Back context; an unknown service shows the stored title (or path). */
+function whereOf(c: NonNullable<Msg["context"]>, withArea = true) {
+  const s = SERVICES.get(c.serviceId);
+  if (!s) return c.title || c.path;
+  return [withArea ? s.area : null, s.name, c.section ? s.sections?.[c.section] || null : null].filter(Boolean).join(" › ");
+}
 const laneTag = (lane: Lane) => (lane === "owner" ? `<span class="bt-tag hb-lane hb-lane--owner">${ic("private")}Only Boomertanger</span>` : `<span class="bt-tag hb-lane">${ic("team")}Inbox team</span>`);
 const nameOf = (m: Msg) => (m.sender.uid ? (m.sender.handle ? `@${m.sender.handle}` : "Deleted member") : m.sender.name || "Visitor");
 const initialsOf = (m: Msg) => (m.sender.handle || m.sender.name || "?").replace(/[^a-z0-9]/gi, "").slice(0, 2).toUpperCase() || "?";
@@ -108,6 +127,9 @@ function toMsg(id: string, lane: Lane, d: any): Msg {
     id, lane, ref: Number(d.ref) || 0, line: String(d.line || ""), status: (ST[d.status as Status] ? d.status : "new") as Status, assignee: d.assignee || null,
     sender: d.sender || {}, fields: d.fields || {}, body: String(d.body || ""), source: d.source || null, via: d.via || null, onlyOwner: d.onlyOwner === true,
     namecheck: d.namecheck || null, escalatedBy: d.escalatedBy || null, createdAt: ms(d.createdAt) ?? 0, firstReplyAt: ms(d.firstReplyAt),
+    kind: d.line === "feedback" ? (d.kind === "question" ? "question" : "feedback") : null,
+    context: d.line === "feedback" && d.context && typeof d.context.serviceId === "string" ? { serviceId: d.context.serviceId, section: d.context.section || null, path: String(d.context.path || "/"), title: d.context.title || null } : null,
+    boombotShown: Array.isArray(d.boombotShown) && d.boombotShown.length ? d.boombotShown.map(String) : null,
   };
 }
 async function loadLane(lane: Lane): Promise<Msg[]> {
@@ -161,15 +183,83 @@ async function loadStaff() {
   } catch { S.staff = S.ownerUid ? [{ uid: S.ownerUid, handle: S.handles.get(S.ownerUid) || "boomertanger" }] : []; }
 }
 async function loadStats() {
-  if (P) { const sum: Record<string, any> = { total: S.msgs.length, answered: S.msgs.filter((m) => m.firstReplyAt).length, source: {}, via: {} }; for (const m of S.msgs) { if (m.source) sum.source[m.source] = (sum.source[m.source] || 0) + 1; if (m.via) sum.via[m.via.replace(/./g, "_")] = (sum.via[m.via.replace(/./g, "_")] || 0) + 1; } S.stats = sum; return; }
+  if (P) { const sum: Record<string, any> = { total: S.msgs.length, answered: S.msgs.filter((m) => m.firstReplyAt).length, source: {}, via: {}, byService: {} }; for (const m of S.msgs) if (m.context) { const t = (sum.byService[m.context.serviceId] ??= { questions: 0, feedback: 0 }); t[m.kind === "question" ? "questions" : "feedback"]++; } for (const m of S.msgs) { if (m.source) sum.source[m.source] = (sum.source[m.source] || 0) + 1; if (m.via) sum.via[m.via.replace(/./g, "_")] = (sum.via[m.via.replace(/./g, "_")] || 0) + 1; } S.stats = sum; return; }
   const snap = await getDocs(collection(db, ...base(), S.owner ? "stats" : "statsTeam"));
-  const sum: Record<string, any> = { total: 0, answered: 0, source: {}, via: {} };
+  const sum: Record<string, any> = { total: 0, answered: 0, source: {}, via: {}, byService: {} };
   for (const d of snap.docs) {
     const x = d.data() as any;
     sum.total += Number(x.total) || 0; sum.answered += Number(x.answered) || 0;
     for (const k of ["source", "via"]) for (const [a, n] of Object.entries(x[k] || {})) sum[k][a] = (sum[k][a] || 0) + (Number(n) || 0);
+    if (S.owner) for (const [id, v] of Object.entries((x.byService || {}) as Record<string, any>)) { const t = (sum.byService[id] ??= { questions: 0, feedback: 0 }); t.questions += Number(v?.questions) || 0; t.feedback += Number(v?.feedback) || 0; }
   }
   S.stats = sum;
+}
+
+/** serviceStats, every month (a few small docs): BOOMBOT's count and the per-section questions. Preview: the sample's boombot number. */
+async function loadServiceStats() {
+  if (P) {   // the sample BOOMBOT counts, plus the team lane's Talk Back messages as this month's counts
+    const mo: Record<string, any> = JSON.parse(JSON.stringify((P as any).serviceStats || {}));
+    for (const m of S.msgs) if (m.context && m.lane === "team") { const t = (mo[m.context.serviceId] ??= {}); const k = m.kind === "question" ? "questions" : "feedback"; t[k] = (t[k] || 0) + 1; if (k === "questions" && m.context.section) { t.sections ??= {}; t.sections[m.context.section] = { questions: (t.sections[m.context.section]?.questions || 0) + 1 }; } }
+    S.svcMonths = { [new Date().toISOString().slice(0, 7)]: mo };
+    return;
+  }
+  const snap = await getDocs(collection(db, ...base(), "serviceStats"));
+  S.svcMonths = Object.fromEntries(snap.docs.map((d) => [d.id, ((d.data() as any).byService || {}) as Record<string, any>]));
+}
+/** By service for the period: per service { questions, feedback, boombot, sections }, plus the owner-only messages counted in it.
+ *  30 and 90 days count the loaded messages (both lanes for the owner, the team lane for inbox admins); All time reads the stats docs.
+ *  BOOMBOT and the sections' all-time counts come from serviceStats, by month (a period starts at the month it falls in). */
+function byService() {
+  const out: Record<string, SvcCount> = {};
+  const one = (id: string) => (out[id] ??= { questions: 0, feedback: 0, boombot: 0, sections: {} });
+  let ownerOnly = 0;
+  const since = S.period === "all" ? 0 : Date.now() - Number(S.period) * 864e5;
+  const fromMonth = S.period === "all" ? "" : new Date(since).toISOString().slice(0, 7);
+  if (S.period === "all") {
+    if (S.owner) for (const [id, v] of Object.entries((S.stats?.byService || {}) as Record<string, any>)) { one(id).questions += v.questions; one(id).feedback += v.feedback; }
+    for (const months of Object.values(S.svcMonths || {})) for (const [id, v] of Object.entries(months)) {
+      if (!S.owner) { one(id).questions += Number(v?.questions) || 0; one(id).feedback += Number(v?.feedback) || 0; }
+      for (const [k, sv] of Object.entries((v?.sections || {}) as Record<string, any>)) one(id).sections[k] = (one(id).sections[k] || 0) + (Number(sv?.questions) || 0);
+    }
+    if (S.owner) ownerOnly = Math.max(0, Object.values(out).reduce((n, s) => n + s.questions + s.feedback, 0) - Object.values(S.svcMonths || {}).reduce((n, mo) => n + Object.values(mo).reduce((a, v: any) => a + (Number(v?.questions) || 0) + (Number(v?.feedback) || 0), 0), 0));
+  } else {
+    for (const m of S.msgs) {
+      if (!m.context || m.createdAt < since) continue;
+      const t = one(m.context.serviceId);
+      if (m.kind === "question") { t.questions++; if (m.lane === "team" && m.context.section) t.sections[m.context.section] = (t.sections[m.context.section] || 0) + 1; } else t.feedback++;
+      if (m.lane === "owner") ownerOnly++;
+    }
+  }
+  for (const [mo, months] of Object.entries(S.svcMonths || {})) if (mo >= fromMonth) for (const [id, v] of Object.entries(months)) if (Number(v?.boombot)) one(id).boombot += Number(v.boombot);
+  return { out, ownerOnly };
+}
+function byServiceHtml() {
+  if (!S.svcMonths || (S.period === "all" && !S.stats)) {
+    if (!S.svcMonths) void loadServiceStats().then(paint, () => { S.svcMonths = {}; paint(); });
+    return `<section class="hb-ib-panel hb-ib-svc">${sectionHeadHtml({ icon: ic("pin"), title: "By service", sub: "Questions and feedback sent from feature pages", small: true, level: 2 } as any)}<div class="bt-skeleton hb-ib-sk-list" aria-hidden="true"></div></section>`;
+  }
+  const { out, ownerOnly } = byService();
+  const rows = Object.entries(out).map(([id, v]) => ({ id, ...v, total: v.questions + v.feedback })).filter((r) => r.total > 0).sort((a, b) => b.total - a.total);
+  const boombot = Object.values(out).reduce((n, v) => n + v.boombot, 0);
+  const max = rows[0]?.total || 1;
+  const per = S.period === "all" ? "all time" : `${S.period} days`;
+  const head = sectionHeadHtml({ icon: ic("pin"), title: "By service", sub: "Questions and feedback sent from feature pages", small: true, level: 2 } as any);
+  const bb = `<div class="hb-ib-bbcard">${boombotIcon("hb-ib-bb-card")}<span class="bt-label">Answered by BOOMBOT</span><span class="hb-ib-big">${boombot}</span><span>questions where someone tapped "That answers it", so nothing was sent.</span></div>`;
+  if (!rows.length) return `<section class="hb-ib-panel hb-ib-svc">${head}<div class="hb-ib-svc-grid"><div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">No questions from feature pages yet.</span><span>Talk Back messages land here by service.</span></div><div class="hb-ib-svc-side">${bb}</div></div></section>`;
+  // the busiest section with 5+ questions in the period
+  let hot: { id: string; key: string; n: number } | null = null;
+  for (const r of rows) for (const [k, n] of Object.entries(r.sections)) if (n >= 5 && (!hot || n > hot.n)) hot = { id: r.id, key: k, n };
+  const hint = hot ? `<div class="bt-notice bt-notice--warn"><b>${esc(whereOf({ serviceId: hot.id, section: hot.key, path: "", title: hot.id }, false))} keeps coming up.</b> ${hot.n} questions in ${per}. Its help may need a line about it.</div>` : "";
+  const q = rows.reduce((n, r) => n + r.questions, 0), f = rows.reduce((n, r) => n + r.feedback, 0);
+  const row = (r: (typeof rows)[number]) => {
+    const s = SERVICES.get(r.id);
+    return `<div class="hb-ib-svc-row"><span class="hb-ib-svc-name">${esc(s?.name || r.id)}<small>${esc(s?.area || "Unknown service")}</small></span><div class="bt-meter bt-meter--stack"><div class="bt-meter-track" role="img" aria-label="${esc(s?.name || r.id)}: ${r.questions} question${r.questions === 1 ? "" : "s"}, ${r.feedback} feedback" style="width:${(r.total / max) * 100}%"><span class="bt-meter-seg" style="--c:var(--bt-blue);width:${(r.questions / r.total) * 100}%"></span><span class="bt-meter-seg" style="--c:var(--bt-teal);width:${(r.feedback / r.total) * 100}%"></span></div></div><span class="hb-ib-svc-n">${r.total}</span></div>`;
+  };
+  return `<section class="hb-ib-panel hb-ib-svc">${head}<div class="hb-ib-svc-grid"><div class="hb-ib-svc-list">
+      <ul class="bt-meter-keys"><li style="--c:var(--bt-blue)"><i></i>Questions <b>${q}</b></li><li style="--c:var(--bt-teal)"><i></i>Feedback <b>${f}</b></li></ul>
+      ${rows.map(row).join("")}
+      ${S.owner ? `<p class="hb-ib-src-foot">${ic("private")}Includes ${ownerOnly} owner-only message${ownerOnly === 1 ? "" : "s"}. Inbox admins don't see these.</p>` : `<p class="hb-ib-src-foot">Counts the team lines only.</p>`}
+    </div><div class="hb-ib-svc-side">${bb}${hint}</div></div></section>`;
 }
 
 /* ---------- filters ---------- */
@@ -205,7 +295,7 @@ function toolsHtml() {
 }
 function rowHtml(m: Msg) {
   const own = m.lane === "owner";
-  return `<button type="button" class="bt-row bt-row--clickable hb-ib-item${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}" data-open="${m.id}" aria-current="${S.sel === m.id && (!narrow() || S.reading)}">${key(m)}<span class="hb-ib-who"><span>${esc(nameOf(m))}</span>${own ? ic("private", "is-lock") : ""}${m.namecheck && S.owner ? ic("flag", "is-flag") : ""}</span><span class="hb-ib-snip"><b>${esc(title(m))}:</b> ${esc(snippet(m))}</span><span class="hb-ib-side"><span class="hb-ib-when">${esc(ago(m.createdAt))}</span><span class="hb-ib-side-row">${m.assignee ? `<span class="hb-ib-av" title="${esc(handleOf(m.assignee))}">${esc(handleOf(m.assignee).replace("@", "").slice(0, 2).toUpperCase())}</span>` : ""}${badge(m.status)}</span></span></button>`;
+  return `<button type="button" class="bt-row bt-row--clickable hb-ib-item${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}" data-open="${m.id}" aria-current="${S.sel === m.id && (!narrow() || S.reading)}">${key(m)}<span class="hb-ib-who"><span>${esc(nameOf(m))}</span>${own ? ic("private", "is-lock") : ""}${m.namecheck && S.owner ? ic("flag", "is-flag") : ""}</span><span class="hb-ib-snip"><b>${esc(rowLabel(m))}:</b> ${esc(snippet(m))}</span><span class="hb-ib-side"><span class="hb-ib-when">${esc(ago(m.createdAt))}</span><span class="hb-ib-side-row">${m.assignee ? `<span class="hb-ib-av" title="${esc(handleOf(m.assignee))}">${esc(handleOf(m.assignee).replace("@", "").slice(0, 2).toUpperCase())}</span>` : ""}${badge(m.status)}</span></span></button>`;
 }
 function historyHtml(m: Msg) {
   const notes = S.notes.get(m.id);
@@ -247,6 +337,13 @@ function composeHtml(m: Msg) {
       <div class="bt-composer-actions"><label class="hb-ib-check"><input type="checkbox" checked data-waiting>Then mark it Waiting</label><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-send>${S.ctab === "reply" ? "Send reply" : "Save note"}</button></div>
     </div></div>`;
 }
+/** Talk Back's context bar (C1): where it was sent from, Open the page (the stored path, new tab), and what BOOMBOT showed. */
+function contextHtml(m: Msg) {
+  const c = m.context;
+  if (!c) return "";
+  const n = m.boombotShown?.length || 0;
+  return `<div class="hb-ib-ctx"><span>From</span><span class="bt-tag">${ic("pin")}${esc(whereOf(c))}</span><a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(c.path)}" target="_blank" rel="noopener">${ic("ext")}Open the page</a>${SERVICES.has(c.serviceId) ? "" : `<span class="hb-ib-ctx-path">${esc(c.path)}</span>`}${n ? `<span class="hb-ib-ctx-bb">${boombotIcon(`hb-ib-bb-${m.id}`)}BOOMBOT showed ${n === 1 ? "1 answer" : `${n} answers`}; they sent it anyway.</span>` : ""}</div>`;
+}
 function detailHtml(m: Msg | null) {
   if (!m) return `<div class="hb-ib-detail"><div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">Pick a message</span><span>It opens here.</span></div></div>`;
   const own = m.lane === "owner", member = !!m.sender.uid;
@@ -257,6 +354,7 @@ function detailHtml(m: Msg | null) {
     <div class="hb-ib-backrow"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-close>${ic("back")}Back to the inbox</button></div>
     ${S.stamp ? `<span class="hb-ib-stampfx">${stampHtml({ kicker: "Hotline", label: "Replied", tone: "lime", size: "sm" })}</span>` : ""}
     <div class="hb-ib-d-head${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}">${key(m)}<div><h2 class="bt-heading">${esc(title(m))}</h2><div class="hb-ib-d-meta"><span class="hb-ib-ref">BT-${m.ref}</span><span>${esc(ago(m.createdAt, " ago"))}</span>${laneTag(m.lane)}${badge(m.status)}</div></div></div>
+    ${contextHtml(m)}
     ${m.namecheck && S.owner ? `<p class="bt-notice bt-notice--warn">${ic("flag")} <b>Moved to Owner only by the name check.</b> It mentions ${m.namecheck.handle ? `@${esc(m.namecheck.handle)}` : "someone on the crew"}${m.namecheck.grade != null ? `, ${/^A/.test(String(m.namecheck.grade)) ? "an" : "a"} ${esc(GRADE_NAMES[String(m.namecheck.grade)] || `grade ${m.namecheck.grade}`)} on the crew` : ""}, so the inbox team never saw it.</p>` : ""}
     ${m.escalatedBy && S.owner ? `<p class="bt-notice">Moved to Owner only by ${esc(handleOf(m.escalatedBy))}.</p>` : ""}
     ${m.onlyOwner ? `<p class="bt-notice">The sender ticked "Only Boomertanger should read this".</p>` : ""}
@@ -311,7 +409,8 @@ function sourcesHtml() {
     <div class="hb-ib-src">
       <section class="hb-ib-panel">${sectionHeadHtml({ icon: ic("chart"), title: "How they found Boomertanger", sub: "Percent of people who answered", small: true, level: 2 } as any)}${bars}<p class="hb-ib-src-foot">${S.owner ? "Counts every line." : "Counts the team lines only."} Members answer once; visitors once per browser.</p></section>
       <section class="hb-ib-panel">${sectionHeadHtml({ icon: ic("link"), title: "Arrived through", sub: "The domain or ?via= link", small: true, level: 2 } as any)}${vias}<p class="hb-ib-src-foot">Other domains that redirect here with ?via= set show up on their own.</p></section>
-    </div>`;
+    </div>
+    ${byServiceHtml()}`;
 }
 
 /* ---------- settings tab (owner) ---------- */

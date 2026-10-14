@@ -210,6 +210,8 @@
 .bt-root:not(#_) .hb-label-row { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
 .bt-root:not(#_) .hb-opt { font-weight: 500; text-transform: none; letter-spacing: 0; color: var(--bt-text-faint); }
 .bt-root:not(#_) .hb-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.bt-root:not(#_) .hb-form .hb-kind { max-width: 320px; }   /* line 2's Question / Feedback switch (the kit's two-way pill) */
+.bt-root:not(#_) .hb-form .hb-kind svg { width: 15px; height: 15px; flex: none; }
 .bt-root:not(#_) .hb-chips .bt-chip[aria-pressed="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
 .bt-root:not(#_) .hb-check { display: flex; gap: 10px; align-items: flex-start; font-size: var(--bt-text-base); color: var(--bt-text); cursor: pointer; }
 .bt-root:not(#_) .hb-check input { width: 18px; height: 18px; margin: 2px 0 0; accent-color: var(--bt-primary); flex: none; }

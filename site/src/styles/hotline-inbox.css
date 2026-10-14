@@ -176,6 +176,38 @@
 .bt-root:not(#_) .hb-ib-src-foot { margin: 12px 0 0; font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.5; }
 @container bt (max-width: 1024px) { .bt-root:not(#_) .hb-ib-src { grid-template-columns: minmax(0, 1fr); } }
 
+/* ---------- Talk Back (docs/specs/talk-back.md §7; mockup talk-back-dialog-inbox.html C1 and V2) ---------- */
+/* the context bar on a line 2 message sent from a feature page */
+.bt-root:not(#_) .hb-ib-ctx { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .hb-ib-ctx .bt-tag { white-space: normal; color: var(--bt-text); min-width: 0; }
+.bt-root:not(#_) .hb-ib-ctx .bt-tag svg { width: 13px; height: 13px; flex: none; }
+.bt-root:not(#_) .hb-ib-ctx .bt-btn { margin-left: auto; }
+.bt-root:not(#_) .hb-ib-ctx-path { width: 100%; font-size: var(--bt-text-xs); color: var(--bt-text-faint); overflow-wrap: anywhere; }
+.bt-root:not(#_) .hb-ib-ctx-bb { display: flex; align-items: center; gap: 8px; width: 100%; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .hb-ib-ctx-bb .bt-boombot { width: 20px; height: 20px; flex: none; }
+/* Sources › By service: split bars (questions blue, feedback teal), BOOMBOT's count and the section hint */
+.bt-root:not(#_) .hb-ib-svc { margin-top: 16px; }
+.bt-root:not(#_) .hb-ib-svc-grid { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: 18px; align-items: start; }
+.bt-root:not(#_) .hb-ib-svc-list { display: grid; gap: 14px; min-width: 0; }
+.bt-root:not(#_) .hb-ib-svc-list .bt-meter-keys { margin: 0; }
+.bt-root:not(#_) .hb-ib-svc-row { display: grid; grid-template-columns: 150px minmax(0, 1fr) 44px; gap: 12px; align-items: center; }
+.bt-root:not(#_) .hb-ib-svc-name { font-size: var(--bt-text-md); font-weight: 700; color: var(--bt-text); line-height: 1.3; min-width: 0; overflow-wrap: anywhere; }
+.bt-root:not(#_) .hb-ib-svc-name small { display: block; font-weight: 500; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .hb-ib-svc-row .bt-meter-track { min-width: 6px; }
+.bt-root:not(#_) .hb-ib-svc-n { text-align: right; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--bt-text); }
+.bt-root:not(#_) .hb-ib-svc-list .hb-ib-src-foot { display: flex; align-items: center; gap: 6px; margin: 0; }
+.bt-root:not(#_) .hb-ib-svc-side { display: grid; gap: 10px; }
+.bt-root:not(#_) .hb-ib-bbcard { display: grid; gap: 6px; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--bt-border); background: var(--bt-bg); font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .hb-ib-bbcard .bt-boombot { width: 28px; height: 28px; }
+.bt-root:not(#_) .hb-ib-bbcard .bt-label { margin: 0; }
+.bt-root:not(#_) .hb-ib-big { font-size: 34px; font-weight: 900; color: var(--bt-text); line-height: 1; font-variant-numeric: tabular-nums; }
+@container bt (max-width: 1024px) { .bt-root:not(#_) .hb-ib-svc-grid { grid-template-columns: minmax(0, 1fr); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .hb-ib-ctx .bt-btn { margin-left: 0; width: 100%; }
+  .bt-root:not(#_) .hb-ib-svc-row { grid-template-columns: minmax(0, 1fr) 40px; }
+  .bt-root:not(#_) .hb-ib-svc-row > .bt-meter { grid-column: 1 / -1; grid-row: 2; }
+}
+
 /* ---------- Settings (owner only, kit .bt-admin-panel) ---------- */
 .bt-root:not(#_) .hb-ib-set { display: grid; gap: 16px; margin-top: 22px; max-width: 860px; }
 .bt-root:not(#_) .hb-ib-set-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 4px 16px; align-items: center; padding: 12px 0; border-top: 1px solid var(--bt-admin-panel-border); }

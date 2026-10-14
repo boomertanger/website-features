@@ -1,6 +1,6 @@
 // /contact, Hotline Boom (docs/specs/hotline-boom.md §3, §4, §9, §11; mockup docs/design/mockups/hotline-boom-contact.html Layout 3). Draws the keypad menu (LCD + six line rows) and
 // the form for the picked line, sends it through contactSend, and shows Sent or Too many. Also: the hero phone (answers on tap), the status pill from hotline/main.replyTime, ?line=N,
-// keys 1 to 6, the Turnstile widget, the "How did you find" question (asked once), the landing source (?via= or the referrer, kept for the visit) and the email reveal rows.
+// keys 1 to 6, line 2's Question / Feedback switch (kind; docs/specs/talk-back.md §3), the Turnstile widget, the "How did you find" question (asked once), the landing source (?via= or the referrer, kept for the visit) and the email reveal rows.
 //
 // Who sees what: visitors type a name and an email; members send as @handle. Members under 18 (and members with no age band) don't get Business, and the keys renumber. Lines switched
 // off in Settings are hidden. ?line=N uses the line's fixed number (1 to 6, Shop links ?line=4) and is ignored when that line isn't open to the viewer.
@@ -32,6 +32,7 @@ const KINDS: [string, string][] = [["sponsorship", "Sponsorship"], ["collab", "C
 const TIMELINES: [string, string][] = [["norush", "No rush"], ["month", "This month"], ["twoweeks", "Within two weeks"], ["urgent", "It's urgent"]];
 const SOURCES: [string, string][] = [["twitch", "Twitch"], ["youtube", "YouTube"], ["tiktok", "TikTok"], ["instagram", "Instagram"], ["search", "Google or another search"], ["friend", "A friend told me"], ["streamer", "Another streamer"], ["community", "Reddit or Discord"], ["other", "Something else"]];
 const MAX = 5000;
+const ASK_PH = "What would you like to know?";   // line 2 with Question picked
 const ASKED_KEY = "bt.hotline.asked";
 const VIA_KEY = "bt.hotline.via";
 
@@ -52,6 +53,7 @@ const M = {
   state: "form" as "form" | "sent" | "limit",
   about: null as string | null,
   mood: null as string | null,
+  kind: "feedback" as "question" | "feedback",   // line 2 only
   sending: false,
   clientRef: newRef(),
   sent: null as null | { ref: number; lane: Lane; replyTime: string; email: string | null },
@@ -101,7 +103,8 @@ function streamField() {
 }
 
 function extrasHtml(l: Line) {
-  if (l.id === "feedback") return `${field("about", `<span class="bt-label" id="hb-about-l">What's it about?</span><div class="hb-chips" role="group" aria-labelledby="hb-about-l">${chips("about", ABOUT, M.about)}</div>`)}
+  if (l.id === "feedback") return `${field("kind", `<span class="bt-label" id="hb-kind-l">Is it a question or feedback?</span><div class="bt-pills bt-pills--mode hb-kind" role="group" aria-labelledby="hb-kind-l">${([["question", "Question"], ["feedback", "Feedback"]] as const).map(([v, t]) => `<button type="button" class="${M.kind === v ? "is-on" : ""}" aria-pressed="${M.kind === v}" data-hbkind="${v}">${icon(v === "question" ? "help2" : "feedback")}${t}</button>`).join("")}</div>`)}
+    ${field("about", `<span class="bt-label" id="hb-about-l">What's it about?</span><div class="hb-chips" role="group" aria-labelledby="hb-about-l">${chips("about", ABOUT, M.about)}</div>`)}
     <div data-hb-stream>${streamField()}</div>
     ${field("mood", `<span class="bt-label" id="hb-mood-l">How did it land? <span class="hb-opt">(optional)</span></span><div class="hb-chips" role="group" aria-labelledby="hb-mood-l">${chips("mood", MOODS, M.mood)}</div>`)}`;
   if (l.id === "help") return `<div class="bt-field"><span class="bt-label">Quick answers first</span><div class="hb-faq">
@@ -123,7 +126,7 @@ function formHtml(l: Line, n: number) {
     <div class="hb-form-head"><span class="hb-ico">${icon(l.id)}</span><div><p class="hb-pressed">Line ${n}</p><h3 class="bt-heading">${esc(l.title)}</h3>${laneTag(l.lane)}</div></div>
     ${senderHtml()}
     ${extrasHtml(l)}
-    ${field("body", `<div class="hb-label-row"><label class="bt-label" for="hb-msg">Message</label><span class="hb-count" data-count>0 / 5,000</span></div><textarea class="bt-textarea" id="hb-msg" maxlength="${MAX}" rows="6" placeholder="${esc(l.ph)}"></textarea>`, "Write a message first.")}
+    ${field("body", `<div class="hb-label-row"><label class="bt-label" for="hb-msg">Message</label><span class="hb-count" data-count>0 / 5,000</span></div><textarea class="bt-textarea" id="hb-msg" maxlength="${MAX}" rows="6" placeholder="${esc(l.id === "feedback" && M.kind === "question" ? ASK_PH : l.ph)}"></textarea>`, "Write a message first.")}
     ${asked() ? "" : field("source", `<label class="bt-label" for="hb-src">How did you find Boomertanger? <span class="hb-opt">(optional, asked once)</span></label><select class="bt-select" id="hb-src">${opts(SOURCES, "Choose one")}</select>`)}
     ${l.lane === "team" ? `<label class="hb-check"><input type="checkbox" id="hb-only"><span>Only Boomertanger should read this<small>Keeps it away from the admins who help with the inbox.</small></span></label>` : ""}
     ${l.id === "private" ? `<p class="hb-crisis">If you're in danger or thinking about hurting yourself, call or text 988 (in the US) or your local emergency number now. This inbox isn't watched around the clock.</p>` : ""}
@@ -201,7 +204,7 @@ function count() {
 }
 
 function pick(id: string, scroll: boolean) {
-  if (M.pick !== id) { M.about = null; M.mood = null; M.error = ""; }
+  if (M.pick !== id) { M.about = null; M.mood = null; M.kind = "feedback"; M.error = ""; }
   M.pick = id; M.state = "form";
   render();
   if (scroll) main?.querySelector(".hb-pane")?.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" });
@@ -255,6 +258,7 @@ async function send(f: HTMLFormElement) {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) { bad.push("email"); markBad(f, "email", email ? "That email doesn't look right." : "Add an email so Boomertanger can reply."); }
   }
   const fields: Record<string, string> = {};
+  const kind = l.id === "feedback" ? M.kind : undefined;
   if (l.id === "feedback") { if (M.about) fields.about = M.about; if (M.about === "stream" && val(f, "#hb-stream")) fields.stream = val(f, "#hb-stream"); if (M.mood) fields.mood = M.mood; }
   if (l.id === "business") { fields.company = val(f, "#hb-co"); if (!fields.company) bad.push("company"); if (val(f, "#hb-site")) fields.website = val(f, "#hb-site"); fields.kind = val(f, "#hb-kind"); if (val(f, "#hb-when")) fields.timeline = val(f, "#hb-when"); }
   if (l.id === "report") { fields.who = val(f, "#hb-whom"); if (!fields.who) bad.push("who"); }
@@ -273,7 +277,7 @@ async function send(f: HTMLFormElement) {
     const res = await call<{ ref: number; lane: Lane; replyTime: string }>("contactSend", {
       line: l.id, body, fields, name: member() ? undefined : name, email: member() ? undefined : email,
       source: val(f, "#hb-src") || null, onlyOwner: !!f.querySelector<HTMLInputElement>("#hb-only")?.checked,
-      turnstile, clientRef: M.clientRef, via: store(globalThis.sessionStorage, VIA_KEY) || null, hp: val(f, "#hb-fax"), askedSource: showedSource,
+      turnstile, clientRef: M.clientRef, via: store(globalThis.sessionStorage, VIA_KEY) || null, hp: val(f, "#hb-fax"), askedSource: showedSource, kind,
     });
     if (showedSource) {
       if (member() && M.auth?.account) (M.auth.account as { hotlineAskedSource?: boolean }).hotlineAskedSource = true;
@@ -326,10 +330,14 @@ if (page && main) {
       if (M.about === "stream" && !M.streams) loadStreams().then(() => keep(() => { const box = main.querySelector("[data-hb-stream]"); if (box) box.innerHTML = streamField(); }));
       return;
     }
+    const kd = t.closest<HTMLElement>("[data-hbkind]");
+    if (kd) { M.kind = kd.dataset.hbkind === "question" ? "question" : "feedback"; main.querySelectorAll<HTMLElement>("[data-hbkind]").forEach((c) => { const on = c.dataset.hbkind === M.kind; c.classList.toggle("is-on", on); c.setAttribute("aria-pressed", String(on)); });
+      const ta = main.querySelector<HTMLTextAreaElement>("#hb-msg"); if (ta) ta.placeholder = M.kind === "question" ? ASK_PH : LINES.find((x) => x.id === "feedback")!.ph;
+      return; }
     const md = t.closest<HTMLElement>("[data-mood]");
     if (md) { M.mood = M.mood === md.dataset.mood ? null : md.dataset.mood!; main.querySelectorAll<HTMLElement>("[data-mood]").forEach((c) => c.setAttribute("aria-pressed", String(c.dataset.mood === M.mood))); return; }
     if (t.closest("[data-back]")) { M.pick = null; M.error = ""; render(); if (narrow()) main.scrollIntoView({ block: "start" }); return; }
-    if (t.closest("[data-again]")) { M.state = "form"; M.pick = null; M.about = null; M.mood = null; M.sent = null; render(); main.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" }); }
+    if (t.closest("[data-again]")) { M.state = "form"; M.pick = null; M.about = null; M.mood = null; M.kind = "feedback"; M.sent = null; render(); main.scrollIntoView({ behavior: reduced() ? "auto" : "smooth", block: "start" }); }
   });
   main.addEventListener("input", (e) => {
     const t = e.target as HTMLElement;
