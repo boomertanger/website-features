@@ -147,6 +147,8 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
       if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
       import "../scripts/account/ui";
       import "../scripts/factory/site-wide";
+      // Talk Back (Hotline Boom part 2): window.btTalkBack and the [data-talkback] / Ask pin clicks; the dialog loads on first use.
+      import "../scripts/hotline/talkback-loader";
       // Header menus (Watch / Play / Community): hover or click opens a panel.
       import { initNavGroups } from "../../../shared/ui/navgroup.js";
       import { onNavOpen, onNavClose } from "../scripts/nav-features";

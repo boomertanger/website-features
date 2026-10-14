@@ -3,6 +3,7 @@
 // (npm run build) and by npm run check. It reads every services/<id>.json at the repo root and the routes in src/pages. No network.
 // FAILS on: a manifest that isn't valid JSON or misses a required field (or has a wrong value), a duplicate id, two manifests claiming the same
 // route, a manifest route that doesn't exist in src/pages, and talkBack "pins" with no sections (or more than 3: pins start small, spec §8a).
+// Also a help file (BOOMBOT's answers, talk-back.md §5) that isn't site/src/data/help/<id>.json or isn't [{ id, q, a, keys }] with unique ids.
 // WARNS (doesn't fail) with the routes in src/pages that no manifest claims. API endpoints and dev-only pages (/dev/*) are ignored.
 //   node scripts/check-services.js          (from site/)
 import fs from "node:fs";
@@ -19,6 +20,25 @@ const TYPES = ["feature", "page", "arcadeGame", "streamSetup", "adminTool"];
 const STATUS = ["planned", "building", "live", "retired"];
 const AUDIENCE = ["everyone", "members", "crew", "staff", "admins", "owner"];
 const TALKBACK = ["note", "pins", "rate", "skip"];
+const ANSWER_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;   // as functions/lib/hotline/logic.js (contactDeflect's answerId, boombotShown)
+/** A help file: BOOMBOT's answers for one service, read by the Talk Back dialog and the service's How it works page (talk-back.md §5). */
+function checkHelp(where, m) {
+  if (m.id && m.help !== `site/src/data/help/${m.id}.json`) { fail(`${where}: help must be site/src/data/help/${m.id}.json (Talk Back bundles that folder)`); return; }
+  const file = path.resolve(here, "../..", m.help);
+  if (!fs.existsSync(file)) { fail(`${where}: help ${m.help} doesn't exist`); return; }
+  let list;
+  try { list = JSON.parse(fs.readFileSync(file, "utf8")); } catch (e) { fail(`${m.help}: not valid JSON (${e.message})`); return; }
+  if (!Array.isArray(list) || !list.length) { fail(`${m.help}: must be a non-empty list of { id, q, a, keys }`); return; }
+  const seen = new Set();
+  list.forEach((h, i) => {
+    const at = `${m.help} #${i + 1}`;
+    if (!h || typeof h !== "object") { fail(`${at}: must be { id, q, a, keys }`); return; }
+    if (typeof h.id !== "string" || !ANSWER_ID.test(h.id)) fail(`${at}: id ${JSON.stringify(h.id)} must be kebab-case (a-z, 0-9, -)`);
+    else if (seen.has(h.id)) fail(`${at}: id "${h.id}" is used twice`); else seen.add(h.id);
+    for (const k of ["q", "a"]) if (typeof h[k] !== "string" || !h[k].trim()) fail(`${at}: "${k}" must be a non-empty string`);
+    if (!Array.isArray(h.keys) || !h.keys.length || h.keys.some((k) => typeof k !== "string" || !k.trim() || k !== k.toLowerCase())) fail(`${at}: keys must be a non-empty list of lowercase words`);
+  });
+}
 const REQUIRED = ["id", "name", "type", "area", "blurb", "version", "status", "audience", "routes", "nav", "testPlan", "checks", "videoTag", "sections", "talkBack", "help"];
 
 /** Every page route in src/pages: "/games/view", "/crew/academy/[slug]", "/404". Endpoints (.ts/.js) and /dev/* are left out. */
@@ -64,6 +84,7 @@ for (const f of files) {
   if (Array.isArray(m.checks) && m.checks.length && (m.checks.length < 3 || m.checks.length > 8)) fail(`${where}: a service lists 3 to 8 checks (or none yet)`);
   if ("nav" in m && m.nav !== null && typeof m.nav !== "string") fail(`${where}: nav must be a nav.js id or null`);
   if ("help" in m && m.help !== null && typeof m.help !== "string") fail(`${where}: help must be a path or null`);
+  else if (typeof m.help === "string") checkHelp(where, m);
   if ("testPlan" in m && m.testPlan !== null) {
     if (typeof m.testPlan !== "string") fail(`${where}: testPlan must be a path or null`);
     else if (!fs.existsSync(path.resolve(here, "../..", m.testPlan))) fail(`${where}: testPlan ${m.testPlan} doesn't exist`);

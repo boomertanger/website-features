@@ -1,0 +1,30 @@
+/* Hotline Boom's W5 Dial-up wordmark icon (scripts/hotline/art.ts hbIcon(); docs/design/mockups/hotline-boom-contact.html W5) and its colours, declared once.
+   Split from hotline.css so the Talk Back dialog (scripts/hotline/talkback.ts, any page) loads only this; HotlineLayout loads it before hotline.css, which
+   uses the same colours for the hero phone and the big dial. The wheel dials to the finger stop on power-on (.bt-wordmark--power). */
+.bt-root:not(#_) {
+  --hb-body-1: #141015;        /* dark fills: the W5 wordmark wheel's base and the big dial's base */
+  --hb-dial-plate: #0b090c;    /* the dial's centre plate */
+  --hb-hole: #120e14;          /* the dial holes */
+  --hb-hand-0: #b98aff;        /* the glossy purple handset (and the W5 wheel) */
+  --hb-hand-1: #7a33e6;
+  --hb-gold-hi: #ffd36b;       /* the gold highlight when the wordmark powers on */
+  --hb-hole-lit: #3a2408;      /* the W5 holes when lit */
+}
+.bt-root:not(#_) .hb-wmi { overflow: visible; display: block; }
+.bt-root:not(#_) .hb-wmi .shadow { fill: var(--bt-bg); opacity: 0.45; }
+.bt-root:not(#_) .hb-wmi .s-hand1 { stop-color: var(--hb-hand-0); transition: stop-color 0.3s; }
+.bt-root:not(#_) .hb-wmi .s-hand2 { stop-color: var(--hb-hand-1); transition: stop-color 0.3s; }
+.bt-root:not(#_) .hb-wmi .shine { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.55); stroke-width: 0.9; stroke-linecap: round; }
+.bt-root:not(#_) .hb-wmi--w5 .base { fill: var(--hb-body-1); stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1; }
+.bt-root:not(#_) .hb-wmi--w5 .ring { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 0.6; }
+.bt-root:not(#_) .hb-wmi--w5 .holes circle { fill: var(--hb-hole); stroke: rgba(var(--bt-sheen-rgb), 0.22); stroke-width: 0.6; transition: fill 0.3s; }
+.bt-root:not(#_) .hb-wmi--w5 .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), 0.8); stroke-width: 1; }
+.bt-root:not(#_) .hb-wmi--w5 .glyph { fill: var(--bt-title); }
+.bt-root:not(#_) .hb-wmi--w5 .stop { stroke: var(--bt-title); stroke-width: 2.2; stroke-linecap: round; }
+.bt-root:not(#_) .hb-wmi--w5 .disc { transform-box: view-box; transform-origin: 20px 20px; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi .s-hand1 { stop-color: var(--hb-gold-hi); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi .s-hand2 { stop-color: var(--bt-title); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .disc { animation: hbw-dial 1.2s cubic-bezier(0.45, 0, 0.2, 1); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .holes circle { fill: var(--hb-hole-lit); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .plate { filter: drop-shadow(0 0 3px rgba(var(--bt-gold-rgb), 0.8)); }
+@keyframes hbw-dial { 0% { transform: none; } 38% { transform: rotate(118deg); } 48% { transform: rotate(118deg); } 100% { transform: none; } }

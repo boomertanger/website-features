@@ -1,0 +1,32 @@
+[
+  {
+    "id": "who-sees",
+    "q": "Who can see my report?",
+    "a": "Everyone can see the report itself, so others can say it got them too. Your screenshot, your device details and your thread with the team are only for you and the team. Tick the security box and the whole report is private.",
+    "keys": ["who can see", "see my report", "private", "public", "screenshot", "device", "visible", "who sees"]
+  },
+  {
+    "id": "bit-me-too",
+    "q": "What does “bit me too” do?",
+    "a": "It tells the team how many people a bug is hitting, and bugs that hit more people get fixed sooner. You also get a heads-up when it's fixed.",
+    "keys": ["bit me too", "me too", "same bug", "same problem", "upvote", "vote", "happening to me"]
+  },
+  {
+    "id": "cant-reproduce",
+    "q": "Why is my report “Can't reproduce”?",
+    "a": "The team tried and couldn't make it happen. Add anything you can in your thread (your browser, what you clicked) and they'll look again.",
+    "keys": ["reproduce", "can't reproduce", "cant reproduce", "closed", "not fixed", "status", "why was"]
+  },
+  {
+    "id": "rewards",
+    "q": "Do I get anything for reporting?",
+    "a": "Yes. A report that gets confirmed earns you Bug Finder (+25 XP), and reporting counts toward Night Shift missions like Bug hunter and Exterminator.",
+    "keys": ["xp", "reward", "badge", "bug finder", "points", "earn", "night shift", "mission"]
+  },
+  {
+    "id": "security",
+    "q": "I found a security problem. What now?",
+    "a": "Report it with the security box ticked, so only the team sees it. Don't test it further or share it. The team will reply in your thread.",
+    "keys": ["security", "hack", "exploit", "vulnerability", "password", "leak", "unsafe"]
+  }
+]

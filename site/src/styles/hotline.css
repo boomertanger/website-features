@@ -3,7 +3,7 @@
    card's layout, the Sent stamp layout. Components (.bt-section-head, .bt-field, .bt-chip, .bt-tag, .bt-btn, .bt-card--door, .bt-stamp, .bt-empty, .bt-reveal)
    come from shared/bt-ui.css, untouched. Feature colours are declared once here; everything else is a --bt-* token. Container queries only; reduced motion respected. */
 .bt-root:not(#_) {
-  --hb-body-1: #141015;        /* dark fills: the W5 wordmark wheel's base and the big dial's base */
+  /* the W5 icon's colours (--hb-body-1, --hb-dial-plate, --hb-hole, --hb-hand-0/1, --hb-gold-hi, --hb-hole-lit) are in hotline-icon.css; this file uses them too */
   /* the /contact hero phone, V2 "Bakelite" (hotline-boom-hero.html): black glossy Bakelite with gold edges */
   --hb-bk-hand-0: #4a4650;     /* the handset and its domed cups, top to bottom */
   --hb-bk-hand-1: #08070a;
@@ -14,13 +14,7 @@
   --hb-bk-foot: #3a2c22;       /* the two feet */
   --hb-bk-cord: #3d3a40;       /* the coiled cord */
   --hb-bk-bezel: #0c0a0d;      /* the ring round the dial */
-  --hb-dial-plate: #0b090c;    /* the dial's centre plate */
-  --hb-hole: #120e14;          /* the dial holes */
-  --hb-hand-0: #b98aff;        /* the glossy purple handset (and the W5 wheel) */
-  --hb-hand-1: #7a33e6;
   --hb-ring-1: #6a26d9;        /* the dial ring's lower stop */
-  --hb-gold-hi: #ffd36b;       /* the gold highlight when the wordmark powers on */
-  --hb-hole-lit: #3a2408;      /* the W5 holes when lit */
   --hb-key-0: #2b2529;         /* the keypad keys */
   --hb-key-1: #151214;
   --hb-key-floor: #070607;
@@ -34,25 +28,7 @@
   --hb-hole-on: #2a1650;       /* a team hole on the big dial, hovered or dialed */
 }
 
-/* ---------- the wordmark icon, W5 Dial-up (scripts/hotline/art.ts) ---------- */
-.bt-root:not(#_) .hb-wmi { overflow: visible; display: block; }
-.bt-root:not(#_) .hb-wmi .shadow { fill: var(--bt-bg); opacity: 0.45; }
-.bt-root:not(#_) .hb-wmi .s-hand1 { stop-color: var(--hb-hand-0); transition: stop-color 0.3s; }
-.bt-root:not(#_) .hb-wmi .s-hand2 { stop-color: var(--hb-hand-1); transition: stop-color 0.3s; }
-.bt-root:not(#_) .hb-wmi .shine { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.55); stroke-width: 0.9; stroke-linecap: round; }
-.bt-root:not(#_) .hb-wmi--w5 .base { fill: var(--hb-body-1); stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1; }
-.bt-root:not(#_) .hb-wmi--w5 .ring { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 0.6; }
-.bt-root:not(#_) .hb-wmi--w5 .holes circle { fill: var(--hb-hole); stroke: rgba(var(--bt-sheen-rgb), 0.22); stroke-width: 0.6; transition: fill 0.3s; }
-.bt-root:not(#_) .hb-wmi--w5 .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), 0.8); stroke-width: 1; }
-.bt-root:not(#_) .hb-wmi--w5 .glyph { fill: var(--bt-title); }
-.bt-root:not(#_) .hb-wmi--w5 .stop { stroke: var(--bt-title); stroke-width: 2.2; stroke-linecap: round; }
-.bt-root:not(#_) .hb-wmi--w5 .disc { transform-box: view-box; transform-origin: 20px 20px; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi .s-hand1 { stop-color: var(--hb-gold-hi); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi .s-hand2 { stop-color: var(--bt-title); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .disc { animation: hbw-dial 1.2s cubic-bezier(0.45, 0, 0.2, 1); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .holes circle { fill: var(--hb-hole-lit); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .hb-wmi--w5 .plate { filter: drop-shadow(0 0 3px rgba(var(--bt-gold-rgb), 0.8)); }
-@keyframes hbw-dial { 0% { transform: none; } 38% { transform: rotate(118deg); } 48% { transform: rotate(118deg); } 100% { transform: none; } }
+/* ---------- the wordmark icon, W5 Dial-up: styles/hotline-icon.css (its colours too); its size in the bar here ---------- */
 .bt-root:not(#_) .hb-bar .bt-wordmark .bt-wordmark-icon > svg { width: 36px; height: 36px; }
 
 /* ---------- the feature bar (components/hotline/HotlineBar.astro) and the page wrapper ---------- */

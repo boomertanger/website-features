@@ -1,0 +1,66 @@
+/* Talk Back, the dialog (docs/specs/talk-back.md §4, §5; mockup docs/design/mockups/talk-back-dialog-inbox.html, B2). Hotline Boom feature CSS, hb-tb- prefix.
+   Loaded with the dialog (scripts/hotline/talkback.ts), on any page. The dialog is openModal({ variant: "sheet" }) in a portal on <body>, so every rule
+   is scoped to .bt-portal[data-feature="talkback"]. Components (.bt-modal--sheet, .bt-pills[data-n="3"], .bt-chat-a, .bt-textarea, .bt-check,
+   .bt-notice, .bt-stamp, .bt-tag, .bt-btn, .bt-empty) come from shared/bt-ui.css untouched; the W5 icon from hotline-icon.css. Tokens only. */
+.bt-portal[data-feature="talkback"]:not(#_) .bt-modal--sheet { max-width: 540px; }
+.bt-portal[data-feature="talkback"]:not(#_) :is(.hb-tb, .hb-tb-form) { display: grid; gap: 14px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-head { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 12px; align-items: start; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-head .hb-wmi { width: 38px; height: 38px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-head .bt-modal-title { margin: 0; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-ctx { display: flex; flex-wrap: wrap; align-items: center; gap: 4px; margin-top: 6px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-ctx .bt-tag { white-space: normal; flex: 0 1 auto; min-width: 0; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-ctx .bt-tag svg { width: 13px; height: 13px; flex: none; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-unsec { margin: -2px -4px -2px 2px; border: 0; background: none; color: var(--bt-text-faint); cursor: pointer; padding: 2px; display: grid; place-items: center; border-radius: 50%; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-unsec:is(:hover, :focus-visible) { color: var(--bt-text); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-unsec:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 1px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-form .bt-textarea { min-height: 96px; width: 100%; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-form .bt-field .bt-error { display: none; }   /* as on /contact: a field error shows only once it is bad */
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-form .bt-field.is-bad .bt-error { display: block; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-form .bt-field.is-bad :is(.bt-input, .bt-textarea) { border-color: var(--bt-danger-text); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-count { font-size: var(--bt-text-xs); color: var(--bt-text-faint); text-align: right; margin-top: 4px; font-variant-numeric: tabular-nums; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-as { display: flex; align-items: center; gap: 10px; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-av { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; background: var(--bt-primary-bg); color: var(--bt-primary-soft); font-size: 10px; font-weight: 800; flex: none; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-as b { color: var(--bt-text); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-fax { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-foot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 12px; border-top: 1px solid var(--bt-border); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-foot > span { flex: 1; min-width: 180px; font-size: var(--bt-text-xs); color: var(--bt-text-faint); line-height: 1.45; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-acts { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-acts > span { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-ts:empty { display: none; }
+/* BOOMBOT B2: the kit chat, sized for a dialog */
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-form [data-help]:empty { margin-top: -14px; }   /* the live region stays in place, without its gap */
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 { display: grid; gap: 10px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .bt-chat-a { max-width: 100%; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .bt-chat-av { width: 38px; height: 38px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .bt-chat-av .bt-boombot { width: 24px; height: 24px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .bt-chat-bub { padding: 10px 14px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .bt-chat-bub b { display: block; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .hb-tb-acts { padding-left: 48px; }
+/* Something's broken: the Bug Zapper card */
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-zap { display: grid; gap: 12px; padding: 14px; border-radius: 14px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-zap p { margin: 0; font-size: var(--bt-text-md); color: var(--bt-text-muted); line-height: 1.5; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-zap b { color: var(--bt-text); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-zap .bt-btn svg { width: 16px; height: 16px; }
+/* Sent */
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-done { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 6px 0 2px; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-done .bt-modal-title { margin: 0; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-done > p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.5; max-width: 38ch; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-done > p b { color: var(--bt-text); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-join { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 12px; align-items: center; width: 100%; text-align: left; padding: 12px 14px; border-radius: 14px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-join .bt-mascot { width: 40px; grid-row: span 2; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-join b { color: var(--bt-text); font-size: var(--bt-text-md); }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-join .bt-btn { justify-self: start; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-done .hb-tb-acts { justify-content: center; }
+.bt-portal[data-feature="talkback"]:not(#_) .bt-btn[aria-busy="true"] { opacity: 0.75; cursor: progress; }
+.bt-portal[data-feature="talkback"]:not(#_) .hb-tb-spin { width: 14px; height: 14px; border-radius: 50%; border: 2px solid currentColor; border-right-color: transparent; animation: hb-tb-spin 0.8s linear infinite; }
+@keyframes hb-tb-spin { to { transform: rotate(360deg); } }
+@container bt (max-width: 640px) {
+  .bt-portal[data-feature="talkback"]:not(#_) .hb-tb-pair { grid-template-columns: 1fr; }
+  .bt-portal[data-feature="talkback"]:not(#_) .hb-tb-foot .bt-btn { width: 100%; }
+  .bt-portal[data-feature="talkback"]:not(#_) .hb-tb-b2 .hb-tb-acts { padding-left: 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-portal[data-feature="talkback"]:not(#_) .hb-tb-spin { animation-duration: 2.4s; }
+  .bt-portal[data-feature="talkback"]:not(#_) .bt-stamp { animation: none; }
+}

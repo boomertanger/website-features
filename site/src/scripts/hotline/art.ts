@@ -95,6 +95,7 @@ export const I: Record<string, string> = {
   back: '<path d="M19 12H5M11 6l-6 6 6 6"/>',
   arrow: '<path d="M5 12h14M13 6l6 6-6 6"/>',
   flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>',
+  pin: '<path d="M12 21s-6-5.6-6-11a6 6 0 0 1 12 0c0 5.4-6 11-6 11z"/><circle cx="12" cy="10" r="2.2"/>',
 };
 export const icon = (k: string, sw = 2) => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${I[k] || ""}</svg>`;
 

@@ -5,6 +5,7 @@
 // hunter, Exterminator), the House rules placard (seven rules), Ask BOOMBOT and the closing call to action. The only read is the all-time zapped count (one count query; the number is
 // hidden if it can't be read); scripts/bugs/how.ts fills it in. Only the calls to action change by viewer.
 import BugLayout from "../../layouts/BugLayout.astro";
+import HELP from "../../data/help/bug-zapper.json";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
@@ -49,13 +50,8 @@ const RULES = [
   ["💬", "Be kind in threads", "The team reads every reply. Rude or off-topic replies get hidden."],
   ["🚫", "No spam or joke reports", "They get hidden by a mod, and repeat offenders lose reporting."],
 ] as const;
-const FAQS = [
-  ["Who can see my report?", "Everyone can see the report itself, so others can say it got them too. Your screenshot, your device details and your thread with the team are only for you and the team. Tick the security box and the whole report is private."],
-  ["What does “bit me too” do?", "It tells the team how many people a bug is hitting, and bugs that hit more people get fixed sooner. You also get a heads-up when it's fixed."],
-  ["Why is my report “Can't reproduce”?", "The team tried and couldn't make it happen. Add anything you can in your thread (your browser, what you clicked) and they'll look again."],
-  ["Do I get anything for reporting?", "Yes. A report that gets confirmed earns you Bug Finder (+25 XP), and reporting counts toward Night Shift missions like Bug hunter and Exterminator."],
-  ["I found a security problem. What now?", "Report it with the security box ticked, so only the team sees it. Don't test it further or share it. The team will reply in your thread."],
-] as const;
+// Ask BOOMBOT reads Bug Zapper's help file, the same one Talk Back's BOOMBOT answers from (docs/specs/talk-back.md §5)
+const FAQS = HELP.map((h) => [h.q, h.a] as const);
 const acts = `<a class="bt-btn bt-btn--primary bt-when-visitor" href="/account" data-signin="join" data-signin-title="${JOIN_TITLE}">Join free</a><button type="button" class="bt-btn bt-btn--primary bt-when-signed-in" data-bz-new>${I.plus}Report a bug</button><a class="bt-btn bt-btn--secondary" href="/bug-zapper">Browse the board</a>`;
 ---
 <BugLayout title="How Bug Zapper works" description="Spot it. Report it. We zap it. How to report a bug, add a “bit me too”, and earn Bug Finder." section="how">

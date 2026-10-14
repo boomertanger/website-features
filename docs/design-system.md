@@ -681,6 +681,9 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
 - **Pill switches:** `.bt-pills[data-attr]` > `button[data-value]` (`.is-on`,
   `data-tone="gold"`, `.bt-pills-n` count, `.bt-pills-av`). `.bt-pills--view` is the
   phone-only For you / Boom Board switch (signed-in only). Behavior: `pill-switch.js`.
+  `.bt-pills[data-n="3"]` is the three-way pill (three columns, rounder-square, smaller text, 15px
+  icons), used by the Talk Back dialog for Question / Feedback / Something's broken (UI Kit section
+  "Talk Back dialog").
 - **Boom Board:** `.bt-mark` (`.bt-mark-w1` BOOM + `.bt-mark-w2` BOARD, `--sm`) with the
   animated `.bt-bb-icon` (bubble, burst, ring, dots). `[data-board][data-filter]`
   (`boom` hides `[data-kind="crowd"]`, `crowd` hides `[data-kind="boom"]`) >
@@ -1891,7 +1894,7 @@ Spec `docs/specs/service-hub.md` (confirmed Oct 10, 2026, with the Talk Back mer
 
 ### 8ab. Talk Back
 Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 10, 2026); mockups `docs/design/mockups/talk-back-*.html` (approved Oct 11, 2026). **Recorded decisions:**
-- **Planned kit addition: `.bt-pills[data-n="3"]`**, a three-way pill (Question / Feedback / Something's broken); add it to `bt-ui.css` and the UI kit page when Talk Back is built.
+- **Kit addition: `.bt-pills[data-n="3"]`** (built with Talk Back Part A, Oct 14, 2026), a three-way pill (Question / Feedback / Something's broken), in `bt-ui.css` and the UI kit page (section "Talk Back dialog"). Use it only for a three-way mode switch in a dialog; three or more filter options stay `.bt-chip`s.
 - **BOOMBOT answers in the dialog use the kit chat** (`.bt-chat-a` bubbles), never a new answer-card style.
 - **Colors:** By service bars are blue (questions) and teal (feedback), never purple; Gears credit is gold; Pick up is admin green (`.bt-btn--admin`, staff-only page); Desk clear uses the lime stamp; spam marks use a gray stamp; the Top Gear flip medal is blue, never red (red stays for destroying data).
 - **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero in its picked V2 Bakelite look (`hotline-boom-hero.html`), and a mug with the mascot logo; the mascot stays in the Desk clear moment and the closing call.

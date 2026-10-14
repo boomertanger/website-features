@@ -11,9 +11,9 @@ import { initReveals } from "../../../../shared/ui/reveal.js";
 import { onAuth, initialsOf, type AuthState } from "../../lib/auth";
 import { db, doc, getDoc, getDocs, collection, query, where, SITE_ID } from "../../lib/db";
 import { call } from "../../lib/call";
-import { reasonOf, messageFor } from "../../lib/errors";
 import { addDays, weekIdOf, ymd } from "../planner/pub";
 import { icon } from "./art";
+import { newRef, turnstileWidget, sendFailure, limitWhen } from "./send";
 
 type Lane = "team" | "owner";
 interface Line { key: number; id: string; title: string; line: string; lane: Lane; ph: string; from: string }
@@ -60,7 +60,6 @@ const M = {
   error: "" as string,
 };
 
-function newRef() { return (crypto.randomUUID ? crypto.randomUUID() : `${Date.now()}-${Math.random().toString(36).slice(2, 12)}`).replace(/[^A-Za-z0-9_-]/g, ""); }
 const member = () => !!M.auth && (M.auth.status === "verified" || M.auth.status === "unverified") && !!M.auth.profile;
 const adult = () => !member() || M.auth?.account?.ageBand === "18+";
 /** The lines open to this viewer, in order (their display keys renumber when one is missing). */
@@ -170,8 +169,7 @@ function sentHtml() {
 }
 
 function limitHtml() {
-  const t = M.retryAt ? new Date(M.retryAt) : null;
-  const when = t ? (t.getTime() - Date.now() > 20 * 3600e3 ? t.toLocaleString(undefined, { weekday: "long", hour: "numeric", minute: "2-digit" }) : t.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })) : "";
+  const when = limitWhen(M.retryAt);
   return `<div class="bt-empty hb-limit" role="status" tabindex="-1" data-done>${mascot()}<span class="bt-empty-title">That's the limit for now</span><span>${member() ? "You've sent a lot of messages today." : "You've sent a lot of messages in the last hour."}${when ? ` You can send another after ${esc(when)}.` : " Try again later."}</span><span>In a hurry? The email addresses below still work.</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-again>Back to the menu</button></div>`;
 }
 
@@ -189,12 +187,12 @@ function render() {
 function keep(fn: () => void) {
   const vals: Record<string, string | boolean> = {};
   main?.querySelectorAll<HTMLInputElement>("input, textarea, select").forEach((el) => { if (el.id) vals[el.id] = el.type === "checkbox" ? el.checked : el.value; });
-  const token = ts.token;
+  const token = ts.current;
   fn();
   Object.entries(vals).forEach(([id, v]) => { const el = document.getElementById(id) as HTMLInputElement | null; if (!el) return; if (el.type === "checkbox") el.checked = v as boolean;
     else if (el instanceof HTMLSelectElement) { if ([...el.options].some((o) => o.value === v)) el.value = v as string; }
     else el.value = v as string; });
-  ts.token = token;
+  ts.keep(token);
   count();
 }
 function count() {
@@ -210,40 +208,9 @@ function pick(id: string, scroll: boolean) {
 }
 function press(row: Element | null) { row?.classList.add("is-press"); setTimeout(() => row?.classList.remove("is-press"), 140); }
 
-/* ---------- Turnstile (explicit render; the token is single use, so the widget resets after each send) ---------- */
-declare global { interface Window { turnstile?: { render(el: HTMLElement, o: Record<string, unknown>): string; reset(id?: string): void; remove(id?: string): void } } }
-const ts = { loading: null as Promise<void> | null, id: "" as string, token: "" as string, waiters: [] as ((t: string) => void)[] };
-function loadTurnstile(): Promise<void> {
-  if (window.turnstile) return Promise.resolve();
-  ts.loading ??= new Promise((res, rej) => {
-    const s = document.createElement("script");
-    s.src = "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
-    s.async = true; s.onload = () => res(); s.onerror = () => { ts.loading = null; rej(new Error("turnstile")); };
-    document.head.appendChild(s);
-  });
-  return ts.loading;
-}
-function mountTurnstile() {
-  const key = page?.dataset.tsKey;
-  const box = main?.querySelector<HTMLElement>("[data-ts]");
-  if (!key || !box) return;
-  ts.token = ""; ts.id = "";
-  loadTurnstile().then(() => {
-    if (!box.isConnected || !window.turnstile) return;
-    ts.id = window.turnstile.render(box, {
-      sitekey: key, theme: "dark", appearance: "interaction-only", action: "contact",
-      callback: (t: string) => { ts.token = t; ts.waiters.splice(0).forEach((fn) => fn(t)); },
-      "expired-callback": () => { ts.token = ""; },
-      "error-callback": () => { ts.token = ""; return false; },
-    });
-  }, () => { /* blocked: the send gets "the check didn't pass" and can retry */ });
-}
-/** The current token, waiting up to 12 s for the widget to finish. */
-function token(): Promise<string> {
-  if (ts.token) return Promise.resolve(ts.token);
-  return new Promise((res) => { const fn = (t: string) => { clearTimeout(timer); res(t); }; const timer = setTimeout(() => { ts.waiters = ts.waiters.filter((x) => x !== fn); res(""); }, 12000); ts.waiters.push(fn); });
-}
-function resetTurnstile() { ts.token = ""; try { if (ts.id) window.turnstile?.reset(ts.id); } catch { /* gone */ } }
+/* ---------- Turnstile (send.ts; one widget for the form, mounted on each render) ---------- */
+const ts = turnstileWidget(page?.dataset.tsKey);
+const mountTurnstile = () => ts.mount(main?.querySelector<HTMLElement>("[data-ts]"));
 
 /* ---------- the Feedback "Which stream?" list: the last 8 finished public streams ---------- */
 async function loadStreams() {
@@ -301,7 +268,7 @@ async function send(f: HTMLFormElement) {
   const btn = f.querySelector<HTMLButtonElement>(".hb-sendbtn")!;
   M.sending = true; btn.disabled = true; btn.textContent = "Sending…";
   try {
-    const turnstile = await token();
+    const turnstile = await ts.token();
     if (!turnstile) console.warn("hotline: no Turnstile token arrived before sending", { widget: !!ts.id, script: !!window.turnstile });
     const res = await call<{ ref: number; lane: Lane; replyTime: string }>("contactSend", {
       line: l.id, body, fields, name: member() ? undefined : name, email: member() ? undefined : email,
@@ -316,14 +283,13 @@ async function send(f: HTMLFormElement) {
     M.state = "sent"; M.clientRef = newRef(); M.error = "";
     finish();
   } catch (err) {
-    const reason = reasonOf(err);
-    const d = (err as { details?: { field?: string; retryAt?: number } }).details;
-    if (reason === "rate-limited") { M.retryAt = Number(d?.retryAt) || 0; M.state = "limit"; finish(); return; }
-    if (reason === "line-off") { M.settings.lines[l.id] = false; M.pick = null; M.error = ""; render(); toastLater("That line just closed. Pick another one, or use email below."); return; }
-    if (reason === "bad-input" && d?.field && d.field !== "line" && markBad(f, d.field, messageFor(err))) {
-      f.querySelector<HTMLElement>(`[data-f="${d.field}"] :is(input, textarea, select)`)?.focus();
-    } else formError(f, messageFor(err, "That didn't send. Your message is still here: try again."));
-    resetTurnstile();
+    const why = sendFailure(err, "That didn't send. Your message is still here: try again.");
+    if (why.kind === "limit") { M.retryAt = why.retryAt; M.state = "limit"; finish(); return; }
+    if (why.kind === "line-off") { M.settings.lines[l.id] = false; M.pick = null; M.error = ""; render(); toastLater("That line just closed. Pick another one, or use email below."); return; }
+    if (why.kind === "field" && markBad(f, why.field, why.message)) {
+      f.querySelector<HTMLElement>(`[data-f="${why.field}"] :is(input, textarea, select)`)?.focus();
+    } else formError(f, why.message);
+    ts.reset();
   } finally {
     M.sending = false;
     if (btn.isConnected) { btn.disabled = false; btn.textContent = "Send message"; }

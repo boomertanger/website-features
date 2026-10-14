@@ -2806,7 +2806,8 @@
 
 /* ---- Pill switches — behavior: shared/ui/pill-switch.js ----
    .bt-pills          two-option segmented pill (e.g. Boom / Everyone)
-   .bt-pills--view    the phone-only For you / Boom Board switch */
+   .bt-pills--view    the phone-only For you / Boom Board switch
+   .bt-pills[data-n="3"]  a three-way pill (Talk Back's Question / Feedback / Something's broken): three columns, rounder-square, smaller text */
 .bt-root:not(#_) .bt-pills { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; border-radius: var(--bt-radius-full); background: var(--bt-bg); border: 1px solid var(--bt-border-2); }
 .bt-root:not(#_) .bt-pills button { border: 0; border-radius: var(--bt-radius-full); padding: 8px 0; background: none; color: var(--bt-text-muted); font-weight: 700; font-size: var(--bt-text-md); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 7px; }
 .bt-root:not(#_) .bt-pills button.is-on { background: var(--bt-primary-bg); color: var(--bt-text); }
@@ -2817,6 +2818,10 @@
 .bt-root:not(#_) .bt-pills-av .bt-mascot { width: 12px; }
 .bt-root:not(#_) .bt-pills--view { display: none; background: var(--bt-surface); }
 .bt-root:not(#_) .bt-pills--view button { padding: 9px 0; gap: 6px; }
+.bt-root:not(#_) .bt-pills[data-n="3"] { grid-template-columns: repeat(3, minmax(0, 1fr)); border-radius: 14px; }
+.bt-root:not(#_) .bt-pills[data-n="3"] button { border-radius: 10px; padding: 9px 4px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .bt-pills[data-n="3"] button svg { width: 15px; height: 15px; flex: none; }
+.bt-root:not(#_) .bt-pills[data-n="3"] button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 1px; }
 
 /* ---- Home layout (6A): visitors get one column; members get the bento + sticky board ---- */
 .bt-root:not(#_) .bt-home-grid { display: grid; grid-template-columns: minmax(0, 1.55fr) minmax(0, 1fr); gap: 16px; align-items: start; }

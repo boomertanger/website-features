@@ -23,5 +23,5 @@
   "videoTag": "#bt-bug-zapper",
   "sections": {},
   "talkBack": "note",
-  "help": null
+  "help": "site/src/data/help/bug-zapper.json"
 }
