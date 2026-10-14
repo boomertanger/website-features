@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Hotline Boom: contact page hero</title>
+<title>Hotline Boom: contact page hero (V2 Bakelite)</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 <style>/* shared/bt-ui.css — Boomertanger shared UI kit
@@ -4929,43 +4929,13 @@ body.bt-root.mk:not(#_) { overflow: visible; overflow-x: clip; max-width: none; 
 /* The scene: ringing desk phone; hover or tap answers it */
 .hb-dev:not(#_) .hb-stage { position: relative; display: grid; justify-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; border: 0; background: none; padding: 0; font: inherit; color: inherit; }
 .hb-dev:not(#_) .hb-stage:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 6px; border-radius: 20px; }
-.hb-dev:not(#_) .hb-scene { width: 100%; height: auto; overflow: visible; }
-.hb-dev:not(#_) .hb-scene .g-glow0 { stop-color: var(--bt-primary); stop-opacity: .34; } .hb-dev:not(#_) .hb-scene .g-glow1 { stop-color: var(--bt-primary); stop-opacity: 0; }
-.hb-dev:not(#_) .hb-scene .g-body0 { stop-color: var(--hb-body-0); } .hb-dev:not(#_) .hb-scene .g-body1 { stop-color: var(--hb-body-1); }
-.hb-dev:not(#_) .hb-scene .g-hand0 { stop-color: #b98aff; } .hb-dev:not(#_) .hb-scene .g-hand1 { stop-color: #7a33e6; } .hb-dev:not(#_) .hb-scene .g-ring1 { stop-color: #6a26d9; }
-.hb-dev:not(#_) .hb-scene .glow { fill: url(#hb-sg-glow); }
-.hb-dev:not(#_) .hb-scene .floor { fill: #000; opacity: .55; }
-.hb-dev:not(#_) .hb-scene .cord { fill: none; stroke: var(--bt-text-faint); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.hb-dev:not(#_) .hb-scene .base { fill: url(#hb-sg-body); stroke: rgba(var(--bt-gold-rgb), .55); stroke-width: 1.6; }
-.hb-dev:not(#_) .hb-scene .rim { stroke: rgba(var(--bt-gold-rgb), .5); stroke-width: 1.5; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .sheen { stroke: rgba(255,255,255,.08); stroke-width: 5; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .bezel { fill: var(--hb-body-1); stroke: rgba(var(--bt-gold-rgb), .55); stroke-width: 1.4; }
-.hb-dev:not(#_) .hb-scene .ring { fill: url(#hb-sg-ring); stroke: rgba(0,0,0,.35); stroke-width: 1; }
-.hb-dev:not(#_) .hb-scene .ring-shine { fill: none; stroke: rgba(255,255,255,.5); stroke-width: 2; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .holes circle { fill: var(--hb-hole); stroke: rgba(255,255,255,.2); stroke-width: 1; }
-.hb-dev:not(#_) .hb-scene .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), .85); stroke-width: 1.4; }
-.hb-dev:not(#_) .hb-scene .glyph { fill: var(--bt-title); }
-.hb-dev:not(#_) .hb-scene .stop { stroke: var(--bt-title); stroke-width: 3.4; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .prong { fill: #241e25; stroke: rgba(var(--bt-gold-rgb), .4); stroke-width: 1; }
-.hb-dev:not(#_) .hb-scene .hs { fill: none; stroke: url(#hb-sg-hand); stroke-width: 15; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .cup { fill: url(#hb-sg-hand); stroke: rgba(0,0,0,.3); stroke-width: 1; }
-.hb-dev:not(#_) .hb-scene .hs-gloss, .hb-dev:not(#_) .hb-scene .cup-gloss { fill: none; stroke: rgba(255,255,255,.55); stroke-width: 2; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .cup-gloss { stroke-width: 1.6; stroke: rgba(255,255,255,.35); }
-.hb-dev:not(#_) .hb-scene .rings path { fill: none; stroke: var(--bt-title); stroke-width: 3; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .arcs path { fill: none; stroke: var(--bt-primary-soft); stroke-width: 3; stroke-linecap: round; }
-.hb-dev:not(#_) .hb-scene .handset { transform-box: view-box; transform-origin: 150px 90px; animation: hb-rattle 6.5s ease-in-out .6s infinite; transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
-.hb-dev:not(#_) .hb-scene :is(.rings, .arcs) { opacity: 0; animation: hb-ringfx 6.5s linear .6s infinite; }
 @keyframes hb-rattle { 0%, 20%, 100% { transform: none; } 1.5% { transform: translateY(-8px) rotate(-4deg); } 3% { transform: translateY(-3px) rotate(4deg); } 4.5% { transform: translateY(-8px) rotate(-3deg); } 6% { transform: translateY(-2px) rotate(3deg); } 7.5% { transform: translateY(-7px) rotate(-3deg); } 9% { transform: none; } 11% { transform: translateY(-8px) rotate(4deg); } 12.5% { transform: translateY(-3px) rotate(-4deg); } 14% { transform: translateY(-8px) rotate(3deg); } 15.5% { transform: translateY(-2px) rotate(-3deg); } 17% { transform: translateY(-6px) rotate(2deg); } 18.5% { transform: none; } }
 @keyframes hb-ringfx { 0% { opacity: 0; } 1%, 8% { opacity: 1; } 9.5% { opacity: 0; } 10.5%, 17.5% { opacity: 1; } 19%, 100% { opacity: 0; } }
 /* Answered: the handset lifts off, ringing stops, a bubble says hello */
 .hb-dev:not(#_) .hb-bubble { position: absolute; top: -6px; left: 50%; transform: translate(-50%, 8px) scale(.9); opacity: 0; padding: 9px 14px; border-radius: 16px 16px 16px 4px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); box-shadow: 0 10px 24px rgba(0,0,0,.5); font-size: var(--bt-text-md); font-weight: 700; color: var(--bt-text); white-space: nowrap; pointer-events: none; transition: opacity .25s, transform .35s cubic-bezier(.3,1.5,.5,1); }
 .hb-dev:not(#_) .hb-bubble b { color: var(--bt-primary-soft); }
-.hb-dev:not(#_) .hb-stage.is-answered .hb-scene .handset { animation: none; transform: translate(-14px, -34px) rotate(-14deg); }
-.hb-dev:not(#_) .hb-stage.is-answered .hb-scene :is(.rings, .arcs) { animation: none; opacity: 0; }
 .hb-dev:not(#_) .hb-stage.is-answered .hb-bubble { opacity: 1; transform: translate(-50%, 0) scale(1); }
 @media (hover: hover) and (pointer: fine) {
-  .hb-dev:not(#_) .hb-stage:hover .hb-scene .handset { animation: none; transform: translate(-14px, -34px) rotate(-14deg); }
-  .hb-dev:not(#_) .hb-stage:hover .hb-scene :is(.rings, .arcs) { animation: none; opacity: 0; }
   .hb-dev:not(#_) .hb-stage:hover .hb-bubble { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
 .hb-dev:not(#_) .hb-stage-hint { margin-top: -6px; font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
@@ -4984,15 +4954,106 @@ body.bt-root.mk:not(#_) { overflow: visible; overflow-x: clip; max-width: none; 
 }
 @media (prefers-reduced-motion: reduce) {
   .hb-dev *, .hb-dev *::before, .hb-dev *::after { animation: none !important; transition: none !important; }
-  .hb-dev:not(#_) .hb-scene :is(.rings, .arcs) { opacity: 1; }
-  .hb-dev:not(#_) .hb-stage.is-answered .hb-scene :is(.rings, .arcs) { opacity: 0; }
 }
+
+/* ===== Hero scene, five looks (feature CSS) ===== */
+.hbv:not(#_) .hb-scene { width: 100%; height: auto; overflow: visible; display: block;
+  --h0: #c09bff; --h1: #6f2be0; --rim: #4f1fa6; --b0: #332a37; --b1: #120e13; --p0: #2a2230; --p2: #070508;
+  --edge: rgba(var(--bt-gold-rgb), .55); --gl: var(--bt-primary); --gla: .34; --r0: #b98aff; --r1: #6a26d9; --c0: rgba(255, 226, 160, .2); --c1: rgba(255, 226, 160, 0); }
+.hbv:not(#_) .hb-scene[data-hv="bakelite"] { --h0: #4a4650; --h1: #08070a; --rim: #1c1a20; --b0: #2c2a2f; --b1: #060507; --p0: #26242a; --p2: #000; --gla: .22; }
+.hbv:not(#_) .hb-scene .g-glow0 { stop-color: var(--gl); stop-opacity: var(--gla); } .hbv:not(#_) .hb-scene .g-glow1 { stop-color: var(--gl); stop-opacity: 0; }
+.hbv:not(#_) .hb-scene .g-b0 { stop-color: var(--b0); } .hbv:not(#_) .hb-scene .g-b1 { stop-color: var(--b1); }
+.hbv:not(#_) .hb-scene .g-p0 { stop-color: var(--p0); } .hbv:not(#_) .hb-scene .g-p2 { stop-color: var(--p2); }
+.hbv:not(#_) .hb-scene .g-h0 { stop-color: var(--h0); } .hbv:not(#_) .hb-scene .g-h1 { stop-color: var(--h1); }
+.hbv:not(#_) .hb-scene .g-r0 { stop-color: var(--r0); } .hbv:not(#_) .hb-scene .g-r1 { stop-color: var(--r1); }
+.hbv:not(#_) .hb-scene .g-c0 { stop-color: var(--c0); } .hbv:not(#_) .hb-scene .g-c1 { stop-color: var(--c1); }
+.hbv:not(#_) .hb-scene .floor { fill: #000; opacity: .6; }
+.hbv:not(#_) .hb-scene .foot { fill: #3a2c22; }
+.hbv:not(#_) .hb-scene :is(.plinth, .body, .post) { stroke: var(--edge); stroke-width: 1.5; }
+.hbv:not(#_) .hb-scene .plinth-hi { stroke: rgba(var(--bt-gold-rgb), .45); stroke-width: 1.3; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .body-hi { fill: none; stroke: rgba(255,255,255,.11); stroke-width: 7; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .body-lo { fill: none; stroke: rgba(0,0,0,.4); stroke-width: 7; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .post-hi { stroke: rgba(255,255,255,.14); stroke-width: 2; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .hs-shadow { fill: #000; opacity: .4; }
+.hbv:not(#_) .hb-scene .cord { fill: none; stroke: #6f6670; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.hbv:not(#_) .hb-scene[data-hv="bakelite"] .cord { stroke: #3d3a40; }
+.hbv:not(#_) .hb-scene .cord-shadow { fill: none; stroke: #000; opacity: .45; stroke-width: 2.4; }
+.hbv:not(#_) .hb-scene .bezel { fill: #0c0a0d; stroke: rgba(var(--bt-gold-rgb), .6); stroke-width: 1.4; }
+.hbv:not(#_) .hb-scene .ring { stroke: rgba(0,0,0,.35); stroke-width: 1; }
+.hbv:not(#_) .hb-scene .ring-shine { fill: none; stroke: rgba(255,255,255,.5); stroke-width: 2; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .holes circle { fill: #120e14; stroke: rgba(255,255,255,.2); stroke-width: 1; }
+.hbv:not(#_) .hb-scene .plate { fill: #0b090c; stroke: rgba(var(--bt-gold-rgb), .85); stroke-width: 1.4; }
+.hbv:not(#_) .hb-scene .glyph { fill: var(--bt-title); }
+.hbv:not(#_) .hb-scene .stop { stroke: var(--bt-title); stroke-width: 3.4; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .hs { fill: none; stroke-width: 20; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .cup { stroke: rgba(0,0,0,.35); stroke-width: 1; }
+.hbv:not(#_) .hb-scene .cup-rim { fill: var(--rim); opacity: .85; }
+.hbv:not(#_) .hb-scene .hs-gloss { fill: none; stroke: rgba(255,255,255,.6); stroke-width: 2.2; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .cup-gloss { fill: none; stroke: rgba(255,255,255,.4); stroke-width: 1.8; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .rings path { fill: none; stroke: var(--bt-title); stroke-width: 3; stroke-linecap: round; }
+.hbv:not(#_) .hb-scene .arcs path { fill: none; stroke: var(--bt-primary-soft); stroke-width: 3; stroke-linecap: round; }
+/* Off by default; looks switch them on */
+.hbv:not(#_) .hb-scene :is(.spot, .peek, .burst) { display: none; }
+.hbv:not(#_) .hb-scene[data-hv="spotlight"] .spot { display: inline; }
+.hbv:not(#_) .hb-scene[data-hv="spotlight"] .glow { opacity: .35; }
+.hbv:not(#_) .hb-scene[data-hv="spotlight"] .floor { opacity: .75; }
+.hbv:not(#_) .hb-scene .mote { fill: #ffe9b8; opacity: 0; animation: hbv-mote 4.2s ease-in-out infinite; }
+@keyframes hbv-mote { 0%, 100% { opacity: 0; transform: translateY(0); } 50% { opacity: .8; transform: translateY(-6px); } }
+.hbv:not(#_) .hb-scene[data-hv="burst"] .burst { display: inline; }
+.hbv:not(#_) .hb-scene .burst polygon { fill: var(--bt-title); stroke: #2a1600; stroke-width: 1.5; stroke-linejoin: round; }
+.hbv:not(#_) .hb-scene .burst text { font: 900 10px/1 Inter, system-ui, sans-serif; fill: #2a1600; text-anchor: middle; letter-spacing: .02em; }
+.hbv:not(#_) .hb-scene .burst { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: hbv-burst 6.5s cubic-bezier(.3,1.6,.5,1) .6s infinite; }
+@keyframes hbv-burst { 0% { opacity: 0; transform: scale(.4) rotate(-20deg); } 2% { opacity: 1; transform: scale(1.1) rotate(6deg); } 4%, 16% { opacity: 1; transform: scale(1) rotate(0deg); } 19%, 100% { opacity: 0; transform: scale(.6); } }
+.hbv:not(#_) .hb-scene[data-hv="peek"] .peek { display: inline; }
+.hbv:not(#_) .hb-scene .peek { transform-box: view-box; transform-origin: 234px 186px; animation: hbv-peek 6.5s ease-in-out .6s infinite; transition: transform .45s cubic-bezier(.3,1.5,.5,1); }
+@keyframes hbv-peek { 0%, 100% { transform: translateY(14px); } 3%, 17% { transform: translateY(0) rotate(-4deg); } 22% { transform: translateY(14px); } }
+/* Ringing and answering (all looks) */
+.hbv:not(#_) .hb-scene .handset { transform-box: view-box; transform-origin: 150px 76px; animation: hb-rattle 6.5s ease-in-out .6s infinite; transition: transform .45s cubic-bezier(.3,1.4,.5,1); }
+.hbv:not(#_) .hb-scene :is(.rings, .arcs) { opacity: 0; animation: hb-ringfx 6.5s linear .6s infinite; }
+.hbv:not(#_) .hb-stage.is-answered .hb-scene .handset { animation: none; transform: translate(-14px, -36px) rotate(-12deg); }
+.hbv:not(#_) .hb-stage.is-answered .hb-scene :is(.rings, .arcs, .burst) { animation: none; opacity: 0; }
+.hbv:not(#_) .hb-stage.is-answered .hb-scene .peek { animation: none; transform: translateY(-10px) rotate(6deg); }
+@media (hover: hover) and (pointer: fine) {
+  .hbv:not(#_) .hb-stage:hover .hb-scene .handset { animation: none; transform: translate(-14px, -36px) rotate(-12deg); }
+  .hbv:not(#_) .hb-stage:hover .hb-scene :is(.rings, .arcs, .burst) { animation: none; opacity: 0; }
+  .hbv:not(#_) .hb-stage:hover .hb-scene .peek { animation: none; transform: translateY(-10px) rotate(6deg); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .hbv:not(#_) .hb-scene *, .hbv:not(#_) .hb-scene { animation: none !important; transition: none !important; }
+  .hbv:not(#_) .hb-scene :is(.rings, .arcs) { opacity: 1; }
+  .hbv:not(#_) .hb-scene .burst { opacity: 1; }
+  .hbv:not(#_) .hb-scene .mote { opacity: .6; }
+  .hbv:not(#_) .hb-scene .peek { transform: none; }
+  .hbv:not(#_) .hb-stage.is-answered .hb-scene :is(.rings, .arcs, .burst) { opacity: 0; }
+}
+
+/* Gallery (mockup chrome) */
+.mk-seg { display: inline-flex; gap: 3px; padding: 3px; border-radius: 999px; background: var(--bt-bg); border: 1px solid var(--bt-border-2); flex-wrap: wrap; }
+.mk-seg button { border: 0; border-radius: 999px; padding: 7px 12px; background: none; color: var(--bt-text-muted); font: 700 12px/1 Inter, system-ui, sans-serif; cursor: pointer; }
+.mk-seg button.is-on { background: var(--bt-primary-bg); color: var(--bt-text); }
+.mk-switch { max-width: 1240px; margin: 14px auto 0; padding: 0 20px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 12px; font-weight: 700; color: var(--bt-text-faint); }
+.mk-gal { max-width: 1240px; margin: 0 auto; padding: 0 20px; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 12px; }
+.mk-card.bt-root:not(#_) { max-width: none; border-radius: 16px; border: 1px solid var(--bt-border); background: var(--bt-surface); padding: 14px 14px 16px; display: grid; gap: 8px; cursor: default; overflow: visible; margin: 0; }
+.mk-card.is-on:not(#_) { border-color: var(--bt-primary); box-shadow: 0 0 0 1px var(--bt-primary) inset; }
+.mk-card .hb-stage { margin: 4px 0 2px; }
+.mk-card b { font-size: 15px; color: var(--bt-text); }
+.mk-card p { margin: 0; font-size: 13px; line-height: 1.5; color: var(--bt-text-muted); }
+.mk-card .mk-card-acts { display: flex; gap: 8px; }
+.mk-recbox { max-width: 1240px; margin: 14px auto 0; padding: 0 20px; }
+.mk-recbox div { border: 1px solid rgba(var(--bt-gold-rgb), .45); border-radius: 12px; padding: 12px 14px; background: rgba(var(--bt-gold-rgb), .07); font-size: 13px; line-height: 1.55; color: var(--bt-text-muted); }
+.mk-recbox b { color: var(--bt-title); }
+@media (max-width: 560px) { .mk-gal, .mk-switch, .mk-recbox { padding: 0 12px; } }
+
+.mk-card.hb-dev:not(#_) { display: grid; grid-template-columns: minmax(0, 1fr); align-content: start; }
+.mk-card.hb-dev:not(#_) > * { grid-column: 1; grid-row: auto; }
+.mk-card.hb-dev:not(#_) .hb-stage { grid-column: 1; grid-row: auto; align-self: auto; }
 </style></head>
 <body class="bt-root mk">
 <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs><symbol id="mascot" viewBox="30 92 145 162"><path class="m-hd" d="M46.93,154.29s-.34-20.19,14.53-36.58c8.21-9.05,21.21-18.67,41.08-19.16,23.28-.58,39.12,16.05,43.21,20.98,13.84,16.66,13.06,35.54,13.06,35.54,0,0,12.77,4.35,11.81,18.12-1.24,17.69-21.24,18.56-21.24,18.56l1.84,11.13-9.92-3.77-4.74,22.55-5.32-5.13-12.97,16.11-27.82,18.97-3.48-19.21-12.97-13.02-11.42-19.79-9.29,1.84,1.06-9.97s-20.52-2.13-20.56-19.94c-.03-12.48,13.15-17.23,13.15-17.23h0Z"/> <path class="m-ln" d="M146.66,155.61c11.28-1.41,20.64,6.58,21.39,15.12.82,9.27-8.48,19.47-20.91,18.5"/> <path class="m-ln" d="M57.16,188.84c-12.43.98-21.72-9.23-20.91-18.5.75-8.54,10.11-16.53,21.39-15.12"/> <path class="m-ln" d="M155.92,157.03c2.93-27.39-22.38-53.93-49.11-55.93-29.75-2.23-57.88,22.34-57.88,55.13"/> <polygon class="m-ln" points="57.16 146.38 63.6 147.12 70.85 128.77 75.44 129.57 88.53 124.67 104.47 109.78 108.41 119.86 114.79 116.71 116.51 121.13 131.95 134.32 138.87 144.65 148.3 143.13 144.38 159.35 150.83 173.91 145.64 184.42 148.03 199.05 139.51 195.76 135.07 216.66 130.99 212.81 116.61 230.78 92.23 247.38 89.17 231.14 75.98 217.79 63.92 196.88 56.16 198.33 57.69 184.02 51.64 173.91 59.28 160.08 57.16 146.38"/> <polygon class="m-ln" points="108.01 221.65 123.09 202.21 117.21 189.16 102.38 174.07 86.92 189.23 80.23 202.28 89.75 217.04 108.01 221.65"/> <line class="m-ln" x1="85.77" y1="210.96" x2="122.19" y2="203.25"/> <line class="m-th" x1="98.85" y1="188.79" x2="97.58" y2="195.37"/> <line class="m-th" x1="105.78" y1="188.72" x2="107.05" y2="195.3"/> <polygon class="m-gl" points="102.38 174.07 86.92 189.23 71.1 184.18 64.12 174.29 67.73 166.35 80.63 157.37 101.94 157.34 123.49 157.3 136.39 166.28 139.87 174.02 133.03 184.11 117.21 189.16 102.38 174.07"/> <line class="m-sp" x1="94.17" y1="167.44" x2="81.55" y2="179.5"/> <line class="m-sp" x1="83.98" y1="166.38" x2="77.96" y2="172.05"/> <line class="m-sp" x1="130.55" y1="169.99" x2="118.72" y2="181.56"/> <line class="m-sp" x1="121.57" y1="167.4" x2="115.72" y2="173.18"/></symbol></defs></svg>
-<div class="mk-top"><h1>Hotline Boom: the /contact hero</h1><p>The top of the contact page as it will build: the site header, the HOTLINE BOOM bar with the W5 dial wordmark, and the hero. The desk phone is redrawn to match the new wordmarks (glossy handset, gold-rimmed body, the same purple dial with the gold handset in the centre). It rings now and then; hover it (or tap on a phone) and it's answered: the handset lifts off and a bubble says hello. The menu and form start right below.</p></div>
+<div class="mk-top"><h1>Hotline Boom: the /contact hero, V2 Bakelite (picked)</h1><p>One improved drawing of the classic rotary desk phone (deeper shading, a shadow under the handset, highlights on the body and posts, a two-tone cord), in five looks. The dial is the same in all of them. Pick a look and it fills the hero in both the desktop and phone previews. Each one rings now and then; hover it (or tap on a phone) to answer.</p></div>
+<div class="mk-switch"><span>Look in the hero:</span><div class="mk-seg" id="mk-look"><button data-v="classic">V1 Classic</button><button data-v="bakelite" class="is-on">V2 Bakelite (picked)</button><button data-v="spotlight">V3 Spotlight</button><button data-v="burst">V4 Ring burst</button><button data-v="peek">V5 Mascot peek</button></div></div>
 <div class="mk-label">Desktop</div>
-<div class="mk-row"><div class="bt-root hb-dev hb-dev--desk">
+<div class="mk-row"><div class="bt-root hb-dev hbv hb-dev--desk">
   <header class="hb-hdr"><a class="bt-logo" href="#" aria-label="Boomertanger home"><svg class="bt-mascot bt-mascot--aware" viewBox="30 92 145 162" aria-hidden="true" data-m></svg><span class="bt-logo-text"><span class="bt-logo-w1">Boomer</span><span class="bt-logo-w2">tanger</span></span></a><nav aria-label="Main"><a href="#">Watch</a><a href="#">Play</a><a href="#" aria-current="page">Community</a><a href="#">Shop</a></nav><span class="hb-sp"></span><a class="bt-btn bt-btn--primary bt-btn--sm" href="#">Join free</a></header>
   <div class="bt-topbar"><a class="bt-wordmark bt-wordmark--power" href="#" data-wm></a><nav class="bt-topnav" aria-label="Hotline Boom"><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01"/></svg><span class="bt-btn-label">How it works</span></a></nav></div>
   <div class="hb-wrap">
@@ -5003,44 +5064,14 @@ body.bt-root.mk:not(#_) { overflow: visible; overflow-x: clip; max-width: none; 
         <p class="hb-lede">Your direct line to Boomertanger. Pick what it's about and it reaches the right person, from fan mail to business deals.</p>
         <div class="hb-links"><a class="bt-btn bt-btn--primary" href="#">Pick a line</a><a class="bt-btn bt-btn--ghost" href="#">How Hotline Boom works</a><span class="hb-trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Private lines are read by Boomertanger only</span></div>
       </div>
-      <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Tap to answer."><svg class="hb-scene" viewBox="0 0 300 220" role="img" aria-label="A ringing desk phone. Hover or tap to answer.">
-  <defs>
-    <radialGradient id="hb-sg-glow" cx="50%" cy="55%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
-    <linearGradient id="hb-sg-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-body0"/><stop offset="1" class="g-body1"/></linearGradient>
-    <linearGradient id="hb-sg-hand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-hand1"/></linearGradient>
-    <linearGradient id="hb-sg-ring" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-ring1"/></linearGradient>
-  </defs>
-  <ellipse class="glow" cx="150" cy="128" rx="150" ry="100"/>
-  <ellipse class="floor" cx="150" cy="203" rx="92" ry="8"/>
-  <path class="cord" d="M228.0 180.0 L228.2 180.6 L228.3 181.2 L228.3 181.7 L228.2 182.2 L227.9 182.7 L227.5 183.1 L227.1 183.4 L226.6 183.6 L226.0 183.7 L225.4 183.7 L224.8 183.6 L224.2 183.4 L223.7 183.2 L223.1 182.8 L222.7 182.3 L222.3 181.8 L222.0 181.2 L221.9 180.5 L221.8 179.8 L221.9 179.0 L222.1 178.3 L222.4 177.5 L222.9 176.8 L223.5 176.1 L224.2 175.4 L225.1 174.8 L226.0 174.2 L227.0 173.8 L228.1 173.4 L229.2 173.1 L230.3 172.9 L231.5 172.8 L232.7 172.8 L233.8 172.9 L234.8 173.1 L235.8 173.4 L236.7 173.8 L237.6 174.2 L238.3 174.7 L238.8 175.2 L239.3 175.8 L239.6 176.4 L239.8 176.9 L239.8 177.5 L239.7 178.0 L239.5 178.5 L239.2 178.9 L238.8 179.3 L238.3 179.6 L237.7 179.8 L237.1 179.9 L236.5 179.9 L235.8 179.7 L235.1 179.5 L234.5 179.2 L233.9 178.8 L233.4 178.4 L233.0 177.8 L232.7 177.2 L232.4 176.5 L232.3 175.8 L232.3 175.0 L232.5 174.2 L232.8 173.4 L233.2 172.7 L233.7 171.9 L234.4 171.2 L235.2 170.6 L236.0 170.0 L237.0 169.5 L238.0 169.1 L239.1 168.8 L240.2 168.6 L241.3 168.5 L242.4 168.5 L243.4 168.6 L244.4 168.8 L245.4 169.0 L246.2 169.4 L247.0 169.8 L247.6 170.2 L248.1 170.7 L248.5 171.3 L248.8 171.8 L248.9 172.4 L248.9 172.9 L248.8 173.4 L248.5 173.9 L248.1 174.3 L247.7 174.6 L247.1 174.9 L246.5 175.1 L245.8 175.1 L245.1 175.1 L244.4 175.0 L243.7 174.8 L243.0 174.5 L242.3 174.0 L241.8 173.5 L241.3 172.9 L240.9 172.3 L240.6 171.6 L240.4 170.8 L240.4 170.0 L240.5 169.2 L240.7 168.5 L241.1 167.7 L241.6 166.9 L242.2 166.2 L242.9 165.5 L243.7 165.0 L244.6 164.4 L245.6 164.0 L246.6 163.7 L247.6 163.5 L248.6 163.3 L249.7 163.3 L250.7 163.3 L251.6 163.5 L252.5 163.7 L253.3 164.1 L254.0 164.5 L254.6 164.9 L255.1 165.4 L255.4 165.9 L255.6 166.4 L255.7 167.0 L255.6 167.5 L255.4 168.0 L255.1 168.4 L254.6 168.8 L254.1 169.1 L253.5 169.4 L252.8 169.5 L252.1 169.6 L251.3 169.5 L250.5 169.4 L249.8 169.1 L249.0 168.8 L248.3 168.3 L247.7 167.8 L247.2 167.2 L246.7 166.5 L246.4 165.8 L246.2 165.0 L246.1 164.2 L246.1 163.4 L246.3 162.6 L246.6 161.8 L247.0 161.0 L247.6 160.3 L248.2 159.6 L249.0 159.0 L249.8 158.5 L250.7 158.0 L251.7 157.7 L252.6 157.4 L253.6 157.2 L254.6 157.2 L255.5 157.2 L256.4 157.4 L257.3 157.6 L258.0 157.9 L258.6 158.3 L259.2 158.7 L259.6 159.2 L259.9 159.6 L260.0 160.2 L260.0 160.7 L259.9 161.2 L259.6 161.6 L259.3 162.1 L258.8 162.4 L258.2 162.7 L257.5 162.9 L256.8 163.1 L256.0 163.1 L255.1 163.0 L254.3 162.9 L253.5 162.6 L252.7 162.2 L251.9 161.8 L251.2 161.2 L250.6 160.6 L250.1 159.9 L249.7 159.2 L249.5 158.4 L249.3 157.5 L249.3 156.7 L249.4 155.8 L249.7 155.0 L250.0 154.2 L250.5 153.5 L251.1 152.8 L251.8 152.1 L252.6 151.6 L253.4 151.1 L254.3 150.7 L255.3 150.5 L256.2 150.3 L257.1 150.2 L258.0 150.2 L258.8 150.4 L259.6 150.6 L260.3 150.8 L260.9 151.2 L261.3 151.6 L261.7 152.0 L261.9 152.5 L262.0 153.0 L262.0 153.5 L261.8 154.0 L261.5 154.4 L261.0 154.8 L260.5 155.1 L259.8 155.4 L259.1 155.6 L258.3 155.7 L257.5 155.7 L256.6 155.7 L255.7 155.5 L254.8 155.2 L253.9 154.8 L253.1 154.3 L252.4 153.7 L251.7 153.1 L251.2 152.4 L250.7 151.6 L250.4 150.8 L250.2 150.0 L250.1 149.1 L250.2 148.2 L250.3 147.4 L250.7 146.6 L251.1 145.8 L251.6 145.1 L252.3 144.4 L253.0 143.8 L253.8 143.4 L254.6 143.0 L255.5 142.7 L256.4 142.5 L257.2 142.4 L258.1 142.4 L258.8 142.5 L259.5 142.6 L260.2 142.9 L260.7 143.2 L261.1 143.6 L261.4 144.0 L261.6 144.5 L261.6 145.0 L261.5 145.4 L261.3 145.9 L260.9 146.3 L260.4 146.7 L259.8 147.0 L259.1 147.3 L258.3 147.4 L257.4 147.5 L256.5 147.5 L255.6 147.4 L254.7 147.2 L253.7 146.9 L252.8 146.5 L251.9 146.0 L251.1 145.4 L250.4 144.7 L249.8 144.0 L249.3 143.2 L248.9 142.4 L248.6 141.5 L248.5 140.6 L248.5 139.7 L248.6 138.9 L248.9 138.0 L249.3 137.2 L249.8 136.5 L250.3 135.8 L251.0 135.2 L251.7 134.7 L252.5 134.3 L253.3 134.0 L254.1 133.8 L254.9 133.6 L255.7 133.6 L256.4 133.7 L257.1 133.8 L257.7 134.1 L258.1 134.4 L258.5 134.8 L258.7 135.2 L258.8 135.6 L258.8 136.0 L258.6 136.5 L258.3 136.9 L257.9 137.3 L257.4 137.7 L256.7 138.0 L255.9 138.2 L255.1 138.4 L254.2 138.4 L253.2 138.4 L252.2 138.3 L251.2 138.0 L250.2 137.7 L249.3 137.3 L248.3 136.8 L247.5 136.2 L246.7 135.5 L246.0 134.7 L245.5 133.9 L245.0 133.0 L244.7 132.2 L244.5 131.3 L244.4 130.3 L244.5 129.5 L244.7 128.6 L245.0 127.8 L245.5 127.0 L246.0 126.3 L246.6 125.7 L247.3 125.2 L248.0 124.7 L248.7 124.4 L249.5 124.2 L250.3 124.0 L251.0 124.0 L251.6 124.0 L252.2 124.2 L252.7 124.4 L253.2 124.7 L253.5 125.0 L253.6 125.4 L253.7 125.8 L253.6 126.2 L253.4 126.7 L253.0 127.1 L252.5 127.5 L251.9 127.8 L251.2 128.1 L250.4 128.3 L249.5 128.4 L248.5 128.5 L247.5 128.4 L246.5 128.3 L245.4 128.0 L244.3 127.7 L243.3 127.2 L242.3 126.7 L241.4 126.0 L240.6 125.3 L239.9 124.6 L239.2 123.7 L238.7 122.8 L238.3 121.9 L238.1 121.0 L238.0 120.1 L238.0 119.2 L238.1 118.3 L238.4 117.5 L238.8 116.7 L239.2 116.0 L239.8 115.3 L240.4 114.8 L241.1 114.3 L241.8 114.0 L242.5 113.7 L243.2 113.5 L243.8 113.5 L244.4 113.5 L245.0 113.6 L245.4 113.8 L245.8 114.1 L246.0 114.4 L246.1 114.8 L246.1 115.2 L246.0 115.6 L245.7 116.0 L245.3 116.4 L244.8 116.7 L244.1 117.0 L243.3 117.3 L242.5 117.5 L241.5 117.6 L240.5 117.6 L239.4 117.5 L238.3 117.4 L237.2 117.1 L236.1 116.7 L235.0 116.3 L233.9 115.7 L233.0 115.1 L232.1 114.3 L231.3 113.5 L230.6 112.7 L230.0 111.8 L229.6 110.8 L229.3 109.9 L229.1 108.9 L229.1 108.0 L229.2 107.1 L229.4 106.3 L229.7 105.4 L230.1 104.7 L230.6 104.1 L231.2 103.5 L231.8 103.0 L232.4 102.6 L233.0 102.3 L233.7 102.2 L234.3 102.1 L234.8 102.1 L235.3 102.2 L235.7 102.4 L236.0 102.6 L236.2 102.9 L236.3 103.2 L236.2 103.6 L236.0 104.0"/>
-  <path class="base" d="M70 188 L92 120 Q95 112 104 112 H196 Q205 112 208 120 L230 188 Q233 198 222 198 H78 Q67 198 70 188Z"/>
-  <path class="rim" d="M101 121 H199"/>
-  <path class="sheen" d="M86 176 L100 128"/>
-  <circle class="bezel" cx="150" cy="150" r="36"/>
-  <circle class="ring" cx="150" cy="150" r="31"/>
-  <path class="ring-shine" d="M127 133 A28 28 0 0 1 148 122"/>
-  <g class="holes"><circle cx="146.18" cy="128.33" r="4.3"/><circle cx="157.52" cy="129.33" r="4.3"/><circle cx="166.85" cy="135.86" r="4.3"/><circle cx="171.67" cy="146.18" r="4.3"/><circle cx="170.67" cy="157.52" r="4.3"/><circle cx="164.14" cy="166.85" r="4.3"/><circle cx="153.82" cy="171.67" r="4.3"/><circle cx="142.48" cy="170.67" r="4.3"/><circle cx="133.15" cy="164.14" r="4.3"/><circle cx="128.33" cy="153.82" r="4.3"/></g>
-  <circle class="plate" cx="150" cy="150" r="11"/>
-  <path class="glyph" d="M143.6 152.8 C143.6 150.9 144.4 149.9 145.9 149.8 L146.7 149.8 C147.2 148.8 148.2 148.3 150 148.3 C151.8 148.3 152.8 148.8 153.3 149.8 L154.1 149.8 C155.6 149.9 156.4 150.9 156.4 152.8 C156.4 153.4 156.1 153.7 155.5 153.7 H153.8 C153.3 153.7 153 153.4 153 152.9 V151.7 C153 151.1 152.5 150.8 151.7 150.8 H148.3 C147.5 150.8 147 151.1 147 151.7 V152.9 C147 153.4 146.7 153.7 146.2 153.7 H144.5 C143.9 153.7 143.6 153.4 143.6 152.8Z"/>
-  <path class="stop" d="M171.5 173.5 L176.5 179"/>
-  <rect class="prong" x="104" y="99" width="12" height="15" rx="3"/><rect class="prong" x="184" y="99" width="12" height="15" rx="3"/>
-  <g class="handset">
-    <path class="hs" d="M88 92 C110 56 190 56 212 92"/>
-    <rect class="cup" x="62" y="85" width="46" height="17" rx="8.5"/>
-    <rect class="cup" x="192" y="85" width="46" height="17" rx="8.5"/>
-    <path class="hs-gloss" d="M112 75 C130 64 170 64 188 75"/>
-    <path class="cup-gloss" d="M70 89 H98 M200 89 H228"/>
-  </g>
-  <g class="rings"><path d="M46 58 L33 49"/><path d="M40 80 H25"/><path d="M254 58 L267 49"/><path d="M260 80 H275"/><path d="M150 40 V27"/></g>
-  <g class="arcs"><path d="M60 62 q-11 17 0 34"/><path d="M240 62 q11 17 0 34"/></g>
-</svg>
+      <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Tap to answer."><span class="hb-slot" data-scene></span>
 <span class="hb-bubble" aria-hidden="true">Hotline <b>Boom</b>, what's it about?</span><span class="hb-stage-hint">Pick it up</span></button>
     </section>
   </div>
   <div class="hb-fade" aria-hidden="true"></div>
 </div></div>
 <div class="mk-label">Phone</div>
-<div class="mk-row mk-row--phone"><div><div class="bt-root hb-dev hb-dev--phone">
+<div class="mk-row mk-row--phone"><div><div class="bt-root hb-dev hbv hb-dev--phone">
   <header class="hb-hdr"><a class="bt-logo" href="#" aria-label="Boomertanger home"><svg class="bt-mascot bt-mascot--aware" viewBox="30 92 145 162" aria-hidden="true" data-m></svg><span class="bt-logo-text"><span class="bt-logo-w1">Boomer</span><span class="bt-logo-w2">tanger</span></span></a><nav aria-label="Main"><a href="#">Watch</a><a href="#">Play</a><a href="#" aria-current="page">Community</a><a href="#">Shop</a></nav><span class="hb-sp"></span><a class="bt-btn bt-btn--primary bt-btn--sm" href="#">Join free</a></header>
   <div class="bt-topbar"><a class="bt-wordmark bt-wordmark--power" href="#" data-wm></a><nav class="bt-topnav" aria-label="Hotline Boom"><a class="bt-btn bt-btn--ghost bt-btn--sm" href="#"><svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01"/></svg><span class="bt-btn-label">How it works</span></a></nav></div>
   <div class="hb-wrap">
@@ -5051,44 +5082,84 @@ body.bt-root.mk:not(#_) { overflow: visible; overflow-x: clip; max-width: none; 
         <p class="hb-lede">Your direct line to Boomertanger. Pick what it's about and it reaches the right person, from fan mail to business deals.</p>
         <div class="hb-links"><a class="bt-btn bt-btn--primary" href="#">Pick a line</a><a class="bt-btn bt-btn--ghost" href="#">How Hotline Boom works</a><span class="hb-trust"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg>Private lines are read by Boomertanger only</span></div>
       </div>
-      <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Tap to answer."><svg class="hb-scene" viewBox="0 0 300 220" role="img" aria-label="A ringing desk phone. Hover or tap to answer.">
-  <defs>
-    <radialGradient id="hb-sg-glow" cx="50%" cy="55%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
-    <linearGradient id="hb-sg-body" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-body0"/><stop offset="1" class="g-body1"/></linearGradient>
-    <linearGradient id="hb-sg-hand" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-hand1"/></linearGradient>
-    <linearGradient id="hb-sg-ring" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-ring1"/></linearGradient>
-  </defs>
-  <ellipse class="glow" cx="150" cy="128" rx="150" ry="100"/>
-  <ellipse class="floor" cx="150" cy="203" rx="92" ry="8"/>
-  <path class="cord" d="M228.0 180.0 L228.2 180.6 L228.3 181.2 L228.3 181.7 L228.2 182.2 L227.9 182.7 L227.5 183.1 L227.1 183.4 L226.6 183.6 L226.0 183.7 L225.4 183.7 L224.8 183.6 L224.2 183.4 L223.7 183.2 L223.1 182.8 L222.7 182.3 L222.3 181.8 L222.0 181.2 L221.9 180.5 L221.8 179.8 L221.9 179.0 L222.1 178.3 L222.4 177.5 L222.9 176.8 L223.5 176.1 L224.2 175.4 L225.1 174.8 L226.0 174.2 L227.0 173.8 L228.1 173.4 L229.2 173.1 L230.3 172.9 L231.5 172.8 L232.7 172.8 L233.8 172.9 L234.8 173.1 L235.8 173.4 L236.7 173.8 L237.6 174.2 L238.3 174.7 L238.8 175.2 L239.3 175.8 L239.6 176.4 L239.8 176.9 L239.8 177.5 L239.7 178.0 L239.5 178.5 L239.2 178.9 L238.8 179.3 L238.3 179.6 L237.7 179.8 L237.1 179.9 L236.5 179.9 L235.8 179.7 L235.1 179.5 L234.5 179.2 L233.9 178.8 L233.4 178.4 L233.0 177.8 L232.7 177.2 L232.4 176.5 L232.3 175.8 L232.3 175.0 L232.5 174.2 L232.8 173.4 L233.2 172.7 L233.7 171.9 L234.4 171.2 L235.2 170.6 L236.0 170.0 L237.0 169.5 L238.0 169.1 L239.1 168.8 L240.2 168.6 L241.3 168.5 L242.4 168.5 L243.4 168.6 L244.4 168.8 L245.4 169.0 L246.2 169.4 L247.0 169.8 L247.6 170.2 L248.1 170.7 L248.5 171.3 L248.8 171.8 L248.9 172.4 L248.9 172.9 L248.8 173.4 L248.5 173.9 L248.1 174.3 L247.7 174.6 L247.1 174.9 L246.5 175.1 L245.8 175.1 L245.1 175.1 L244.4 175.0 L243.7 174.8 L243.0 174.5 L242.3 174.0 L241.8 173.5 L241.3 172.9 L240.9 172.3 L240.6 171.6 L240.4 170.8 L240.4 170.0 L240.5 169.2 L240.7 168.5 L241.1 167.7 L241.6 166.9 L242.2 166.2 L242.9 165.5 L243.7 165.0 L244.6 164.4 L245.6 164.0 L246.6 163.7 L247.6 163.5 L248.6 163.3 L249.7 163.3 L250.7 163.3 L251.6 163.5 L252.5 163.7 L253.3 164.1 L254.0 164.5 L254.6 164.9 L255.1 165.4 L255.4 165.9 L255.6 166.4 L255.7 167.0 L255.6 167.5 L255.4 168.0 L255.1 168.4 L254.6 168.8 L254.1 169.1 L253.5 169.4 L252.8 169.5 L252.1 169.6 L251.3 169.5 L250.5 169.4 L249.8 169.1 L249.0 168.8 L248.3 168.3 L247.7 167.8 L247.2 167.2 L246.7 166.5 L246.4 165.8 L246.2 165.0 L246.1 164.2 L246.1 163.4 L246.3 162.6 L246.6 161.8 L247.0 161.0 L247.6 160.3 L248.2 159.6 L249.0 159.0 L249.8 158.5 L250.7 158.0 L251.7 157.7 L252.6 157.4 L253.6 157.2 L254.6 157.2 L255.5 157.2 L256.4 157.4 L257.3 157.6 L258.0 157.9 L258.6 158.3 L259.2 158.7 L259.6 159.2 L259.9 159.6 L260.0 160.2 L260.0 160.7 L259.9 161.2 L259.6 161.6 L259.3 162.1 L258.8 162.4 L258.2 162.7 L257.5 162.9 L256.8 163.1 L256.0 163.1 L255.1 163.0 L254.3 162.9 L253.5 162.6 L252.7 162.2 L251.9 161.8 L251.2 161.2 L250.6 160.6 L250.1 159.9 L249.7 159.2 L249.5 158.4 L249.3 157.5 L249.3 156.7 L249.4 155.8 L249.7 155.0 L250.0 154.2 L250.5 153.5 L251.1 152.8 L251.8 152.1 L252.6 151.6 L253.4 151.1 L254.3 150.7 L255.3 150.5 L256.2 150.3 L257.1 150.2 L258.0 150.2 L258.8 150.4 L259.6 150.6 L260.3 150.8 L260.9 151.2 L261.3 151.6 L261.7 152.0 L261.9 152.5 L262.0 153.0 L262.0 153.5 L261.8 154.0 L261.5 154.4 L261.0 154.8 L260.5 155.1 L259.8 155.4 L259.1 155.6 L258.3 155.7 L257.5 155.7 L256.6 155.7 L255.7 155.5 L254.8 155.2 L253.9 154.8 L253.1 154.3 L252.4 153.7 L251.7 153.1 L251.2 152.4 L250.7 151.6 L250.4 150.8 L250.2 150.0 L250.1 149.1 L250.2 148.2 L250.3 147.4 L250.7 146.6 L251.1 145.8 L251.6 145.1 L252.3 144.4 L253.0 143.8 L253.8 143.4 L254.6 143.0 L255.5 142.7 L256.4 142.5 L257.2 142.4 L258.1 142.4 L258.8 142.5 L259.5 142.6 L260.2 142.9 L260.7 143.2 L261.1 143.6 L261.4 144.0 L261.6 144.5 L261.6 145.0 L261.5 145.4 L261.3 145.9 L260.9 146.3 L260.4 146.7 L259.8 147.0 L259.1 147.3 L258.3 147.4 L257.4 147.5 L256.5 147.5 L255.6 147.4 L254.7 147.2 L253.7 146.9 L252.8 146.5 L251.9 146.0 L251.1 145.4 L250.4 144.7 L249.8 144.0 L249.3 143.2 L248.9 142.4 L248.6 141.5 L248.5 140.6 L248.5 139.7 L248.6 138.9 L248.9 138.0 L249.3 137.2 L249.8 136.5 L250.3 135.8 L251.0 135.2 L251.7 134.7 L252.5 134.3 L253.3 134.0 L254.1 133.8 L254.9 133.6 L255.7 133.6 L256.4 133.7 L257.1 133.8 L257.7 134.1 L258.1 134.4 L258.5 134.8 L258.7 135.2 L258.8 135.6 L258.8 136.0 L258.6 136.5 L258.3 136.9 L257.9 137.3 L257.4 137.7 L256.7 138.0 L255.9 138.2 L255.1 138.4 L254.2 138.4 L253.2 138.4 L252.2 138.3 L251.2 138.0 L250.2 137.7 L249.3 137.3 L248.3 136.8 L247.5 136.2 L246.7 135.5 L246.0 134.7 L245.5 133.9 L245.0 133.0 L244.7 132.2 L244.5 131.3 L244.4 130.3 L244.5 129.5 L244.7 128.6 L245.0 127.8 L245.5 127.0 L246.0 126.3 L246.6 125.7 L247.3 125.2 L248.0 124.7 L248.7 124.4 L249.5 124.2 L250.3 124.0 L251.0 124.0 L251.6 124.0 L252.2 124.2 L252.7 124.4 L253.2 124.7 L253.5 125.0 L253.6 125.4 L253.7 125.8 L253.6 126.2 L253.4 126.7 L253.0 127.1 L252.5 127.5 L251.9 127.8 L251.2 128.1 L250.4 128.3 L249.5 128.4 L248.5 128.5 L247.5 128.4 L246.5 128.3 L245.4 128.0 L244.3 127.7 L243.3 127.2 L242.3 126.7 L241.4 126.0 L240.6 125.3 L239.9 124.6 L239.2 123.7 L238.7 122.8 L238.3 121.9 L238.1 121.0 L238.0 120.1 L238.0 119.2 L238.1 118.3 L238.4 117.5 L238.8 116.7 L239.2 116.0 L239.8 115.3 L240.4 114.8 L241.1 114.3 L241.8 114.0 L242.5 113.7 L243.2 113.5 L243.8 113.5 L244.4 113.5 L245.0 113.6 L245.4 113.8 L245.8 114.1 L246.0 114.4 L246.1 114.8 L246.1 115.2 L246.0 115.6 L245.7 116.0 L245.3 116.4 L244.8 116.7 L244.1 117.0 L243.3 117.3 L242.5 117.5 L241.5 117.6 L240.5 117.6 L239.4 117.5 L238.3 117.4 L237.2 117.1 L236.1 116.7 L235.0 116.3 L233.9 115.7 L233.0 115.1 L232.1 114.3 L231.3 113.5 L230.6 112.7 L230.0 111.8 L229.6 110.8 L229.3 109.9 L229.1 108.9 L229.1 108.0 L229.2 107.1 L229.4 106.3 L229.7 105.4 L230.1 104.7 L230.6 104.1 L231.2 103.5 L231.8 103.0 L232.4 102.6 L233.0 102.3 L233.7 102.2 L234.3 102.1 L234.8 102.1 L235.3 102.2 L235.7 102.4 L236.0 102.6 L236.2 102.9 L236.3 103.2 L236.2 103.6 L236.0 104.0"/>
-  <path class="base" d="M70 188 L92 120 Q95 112 104 112 H196 Q205 112 208 120 L230 188 Q233 198 222 198 H78 Q67 198 70 188Z"/>
-  <path class="rim" d="M101 121 H199"/>
-  <path class="sheen" d="M86 176 L100 128"/>
-  <circle class="bezel" cx="150" cy="150" r="36"/>
-  <circle class="ring" cx="150" cy="150" r="31"/>
-  <path class="ring-shine" d="M127 133 A28 28 0 0 1 148 122"/>
-  <g class="holes"><circle cx="146.18" cy="128.33" r="4.3"/><circle cx="157.52" cy="129.33" r="4.3"/><circle cx="166.85" cy="135.86" r="4.3"/><circle cx="171.67" cy="146.18" r="4.3"/><circle cx="170.67" cy="157.52" r="4.3"/><circle cx="164.14" cy="166.85" r="4.3"/><circle cx="153.82" cy="171.67" r="4.3"/><circle cx="142.48" cy="170.67" r="4.3"/><circle cx="133.15" cy="164.14" r="4.3"/><circle cx="128.33" cy="153.82" r="4.3"/></g>
-  <circle class="plate" cx="150" cy="150" r="11"/>
-  <path class="glyph" d="M143.6 152.8 C143.6 150.9 144.4 149.9 145.9 149.8 L146.7 149.8 C147.2 148.8 148.2 148.3 150 148.3 C151.8 148.3 152.8 148.8 153.3 149.8 L154.1 149.8 C155.6 149.9 156.4 150.9 156.4 152.8 C156.4 153.4 156.1 153.7 155.5 153.7 H153.8 C153.3 153.7 153 153.4 153 152.9 V151.7 C153 151.1 152.5 150.8 151.7 150.8 H148.3 C147.5 150.8 147 151.1 147 151.7 V152.9 C147 153.4 146.7 153.7 146.2 153.7 H144.5 C143.9 153.7 143.6 153.4 143.6 152.8Z"/>
-  <path class="stop" d="M171.5 173.5 L176.5 179"/>
-  <rect class="prong" x="104" y="99" width="12" height="15" rx="3"/><rect class="prong" x="184" y="99" width="12" height="15" rx="3"/>
-  <g class="handset">
-    <path class="hs" d="M88 92 C110 56 190 56 212 92"/>
-    <rect class="cup" x="62" y="85" width="46" height="17" rx="8.5"/>
-    <rect class="cup" x="192" y="85" width="46" height="17" rx="8.5"/>
-    <path class="hs-gloss" d="M112 75 C130 64 170 64 188 75"/>
-    <path class="cup-gloss" d="M70 89 H98 M200 89 H228"/>
-  </g>
-  <g class="rings"><path d="M46 58 L33 49"/><path d="M40 80 H25"/><path d="M254 58 L267 49"/><path d="M260 80 H275"/><path d="M150 40 V27"/></g>
-  <g class="arcs"><path d="M60 62 q-11 17 0 34"/><path d="M240 62 q11 17 0 34"/></g>
-</svg>
+      <button type="button" class="hb-stage" aria-pressed="false" aria-label="A ringing desk phone. Tap to answer."><span class="hb-slot" data-scene></span>
 <span class="hb-bubble" aria-hidden="true">Hotline <b>Boom</b>, what's it about?</span><span class="hb-stage-hint">Pick it up</span></button>
     </section>
   </div>
   <div class="hb-fade" aria-hidden="true"></div>
 </div><div class="mk-cap">On phones the title and a small phone share the first row; the rest follows full width.</div></div></div>
-<div class="mk-note"><p><b>What changed from the contact mockup.</b> Higher-quality phone art (two-tone gradients, gloss, a W5-style dial so the scene and the wordmark match), a "Lines open" status pill using the reply-time setting, a Pick a line button that jumps to the menu, and the answer moment on hover or tap. Teal is used for the status dot (the spare tone; green stays admin-only, lime stays "done").</p><p><b>Kit:</b> .bt-topbar, .bt-wordmark--power, .bt-title--hero, .bt-btn. Feature CSS: the scene and the status pill. Reduced motion: no ringing or lifting; the ring marks show still, and answering just hides them.</p></div>
+<div class="mk-label">All five looks</div>
+<div class="mk-gal" id="mk-gal"></div>
+<div class="mk-recbox"><div><b>Picked: V2 Bakelite</b> (Oct 2026). The hero uses this look; the others stay here for reference. Earlier recommendation, V3 Spotlight: It ties the contact page to the footer's L3 spotlight, so the phone feels like it's on stage, and it adds mood without clutter: the purple handset and the dial stay the brightest things in the frame. V5 is the most fun and could be saved for the How it works page or a seasonal swap. V2 is the most faithful to your photo, but the black handset reads darker and less like the W5 wordmark at small sizes.</div></div>
+<div class="mk-note"><p><b>The looks.</b> V1 Classic: glossy purple handset on a plum body. V2 Bakelite: black like your photo, with the purple dial. V3 Spotlight: a soft gold stage light from above with dust drifting in it. V4 Ring burst: a gold "RING!" burst pops while it rings. V5 Mascot peek: the mascot ducks behind the phone, pops up when it rings, and stays up when you answer.</p><p><b>Earlier notes.</b> Higher-quality phone art (two-tone gradients, gloss, a W5-style dial so the scene and the wordmark match), a "Lines open" status pill using the reply-time setting, a Pick a line button that jumps to the menu, and the answer moment on hover or tap. Teal is used for the status dot (the spare tone; green stays admin-only, lime stays "done").</p><p><b>Kit:</b> .bt-topbar, .bt-wordmark--power, .bt-title--hero, .bt-btn. Feature CSS: the scene and the status pill. Reduced motion: no ringing or lifting; the ring marks show still, and answering just hides them.</p></div>
 <script>
+/* Hotline Boom hero scene: one drawing, five looks (data-hv) */
+let __sv = 0;
+const HOLES = '<circle cx="146.18" cy="128.33" r="4.3"/><circle cx="157.52" cy="129.33" r="4.3"/><circle cx="166.85" cy="135.86" r="4.3"/><circle cx="171.67" cy="146.18" r="4.3"/><circle cx="170.67" cy="157.52" r="4.3"/><circle cx="164.14" cy="166.85" r="4.3"/><circle cx="153.82" cy="171.67" r="4.3"/><circle cx="142.48" cy="170.67" r="4.3"/><circle cx="133.15" cy="164.14" r="4.3"/><circle cx="128.33" cy="153.82" r="4.3"/>';
+const CORD = 'M50.0 108.0 L49.7 108.9 L49.2 109.9 L48.6 110.8 L47.9 111.6 L47.0 112.3 L46.0 113.0 L44.9 113.6 L43.8 114.0 L42.6 114.4 L41.4 114.6 L40.2 114.7 L39.1 114.6 L38.0 114.5 L37.0 114.3 L36.2 113.9 L35.4 113.5 L34.8 113.1 L34.3 112.6 L34.1 112.0 L33.9 111.5 L34.0 111.0 L34.1 110.5 L34.5 110.1 L34.9 109.8 L35.5 109.5 L36.2 109.3 L36.9 109.3 L37.7 109.4 L38.5 109.6 L39.3 109.9 L40.1 110.3 L40.8 110.8 L41.4 111.5 L41.9 112.2 L42.3 113.0 L42.5 113.9 L42.6 114.8 L42.5 115.8 L42.3 116.7 L41.9 117.7 L41.4 118.5 L40.7 119.4 L39.9 120.2 L39.0 120.8 L38.0 121.4 L36.9 121.9 L35.7 122.2 L34.6 122.5 L33.5 122.6 L32.4 122.6 L31.3 122.5 L30.4 122.2 L29.5 121.9 L28.8 121.5 L28.2 121.1 L27.7 120.6 L27.5 120.0 L27.4 119.5 L27.4 119.0 L27.6 118.5 L28.0 118.1 L28.5 117.7 L29.1 117.4 L29.8 117.2 L30.5 117.2 L31.4 117.2 L32.2 117.4 L33.0 117.7 L33.9 118.1 L34.6 118.6 L35.3 119.2 L35.9 119.9 L36.3 120.7 L36.6 121.6 L36.8 122.5 L36.8 123.5 L36.7 124.4 L36.4 125.3 L35.9 126.2 L35.3 127.1 L34.5 127.9 L33.7 128.6 L32.7 129.2 L31.7 129.6 L30.6 130.0 L29.5 130.3 L28.4 130.4 L27.4 130.4 L26.3 130.3 L25.4 130.1 L24.6 129.8 L23.9 129.4 L23.3 129.0 L22.9 128.5 L22.6 127.9 L22.5 127.4 L22.6 126.9 L22.8 126.4 L23.2 125.9 L23.7 125.6 L24.3 125.3 L25.1 125.1 L25.9 125.0 L26.7 125.0 L27.6 125.1 L28.5 125.4 L29.4 125.8 L30.2 126.3 L30.9 126.9 L31.6 127.6 L32.1 128.4 L32.5 129.2 L32.7 130.1 L32.8 131.0 L32.7 132.0 L32.5 132.9 L32.1 133.8 L31.6 134.7 L30.9 135.5 L30.1 136.2 L29.2 136.8 L28.2 137.3 L27.2 137.7 L26.2 138.0 L25.1 138.1 L24.1 138.1 L23.1 138.1 L22.2 137.9 L21.4 137.6 L20.7 137.2 L20.2 136.8 L19.8 136.3 L19.5 135.7 L19.4 135.2 L19.5 134.7 L19.8 134.2 L20.2 133.7 L20.7 133.3 L21.4 133.0 L22.1 132.8 L23.0 132.7 L23.9 132.7 L24.8 132.8 L25.7 133.0 L26.6 133.4 L27.5 133.8 L28.3 134.4 L29.0 135.1 L29.6 135.9 L30.1 136.7 L30.4 137.6 L30.5 138.5 L30.5 139.5 L30.4 140.4 L30.1 141.3 L29.6 142.2 L29.0 143.0 L28.3 143.7 L27.4 144.3 L26.5 144.8 L25.6 145.3 L24.6 145.5 L23.5 145.7 L22.6 145.8 L21.6 145.7 L20.7 145.5 L20.0 145.2 L19.3 144.9 L18.8 144.5 L18.4 144.0 L18.2 143.4 L18.1 142.9 L18.2 142.4 L18.5 141.8 L18.9 141.4 L19.4 141.0 L20.1 140.6 L20.9 140.4 L21.8 140.3 L22.7 140.2 L23.7 140.3 L24.7 140.5 L25.6 140.9 L26.6 141.3 L27.4 141.9 L28.2 142.5 L28.9 143.3 L29.4 144.1 L29.8 145.0 L30.0 145.9 L30.1 146.8 L30.0 147.8 L29.8 148.7 L29.4 149.6 L28.8 150.4 L28.2 151.1 L27.4 151.7 L26.5 152.3 L25.6 152.7 L24.7 153.0 L23.7 153.2 L22.8 153.3 L21.9 153.2 L21.0 153.1 L20.3 152.8 L19.6 152.5 L19.1 152.0 L18.8 151.6 L18.5 151.0 L18.5 150.5 L18.6 150.0 L18.9 149.4 L19.3 149.0 L19.9 148.5 L20.6 148.2 L21.4 147.9 L22.3 147.8 L23.3 147.7 L24.3 147.8 L25.3 148.0 L26.4 148.3 L27.3 148.7 L28.3 149.2 L29.1 149.9 L29.8 150.6 L30.4 151.4 L30.9 152.3 L31.2 153.2 L31.3 154.1 L31.3 155.1 L31.2 156.0 L30.8 156.9 L30.4 157.7 L29.8 158.4 L29.1 159.1 L28.3 159.6 L27.4 160.1 L26.5 160.4 L25.6 160.6 L24.7 160.7 L23.8 160.7 L23.0 160.5 L22.3 160.3 L21.7 160.0 L21.2 159.5 L20.9 159.1 L20.7 158.5 L20.6 158.0 L20.8 157.5 L21.1 156.9 L21.5 156.4 L22.1 156.0 L22.8 155.6 L23.7 155.3 L24.6 155.2 L25.6 155.1 L26.7 155.1 L27.8 155.3 L28.8 155.6 L29.9 156.0 L30.8 156.5 L31.7 157.1 L32.5 157.8 L33.2 158.6 L33.7 159.5 L34.1 160.4 L34.3 161.3 L34.4 162.2 L34.3 163.2 L34.1 164.0 L33.7 164.9 L33.2 165.6 L32.5 166.3 L31.8 166.9 L31.0 167.3 L30.1 167.7 L29.3 167.9 L28.4 168.0 L27.6 168.0 L26.8 167.9 L26.1 167.7 L25.5 167.3 L25.0 166.9 L24.7 166.5 L24.5 166.0 L24.5 165.4 L24.7 164.9 L25.0 164.3 L25.4 163.8 L26.1 163.4 L26.8 163.0 L27.7 162.7 L28.6 162.5 L29.7 162.4 L30.8 162.4 L31.9 162.5 L33.0 162.8 L34.1 163.2 L35.1 163.7 L36.1 164.3 L37.0 165.0 L37.7 165.8 L38.3 166.6 L38.8 167.5 L39.1 168.4 L39.2 169.3 L39.2 170.3 L39.0 171.1 L38.7 172.0 L38.2 172.7 L37.7 173.4 L37.0 174.0 L36.2 174.5 L35.4 174.9 L34.6 175.1 L33.8 175.3 L33.0 175.3 L32.3 175.2 L31.6 174.9 L31.0 174.6 L30.6 174.2 L30.3 173.8 L30.1 173.3 L30.1 172.7 L30.3 172.2 L30.6 171.6 L31.1 171.1 L31.7 170.6 L32.5 170.2 L33.4 169.9 L34.4 169.7 L35.5 169.6 L36.6 169.6 L37.8 169.7 L39.0 169.9 L40.1 170.3 L41.2 170.8 L42.2 171.3 L43.1 172.0 L43.9 172.8 L44.6 173.6 L45.2 174.5 L45.5 175.4 L45.7 176.3 L45.8 177.2 L45.7 178.1 L45.4 179.0 L45.1 179.8 L44.6 180.5 L43.9 181.1 L43.3 181.6 L42.5 182.0 L41.7 182.2 L41.0 182.4 L40.2 182.4 L39.5 182.3 L38.9 182.1 L38.3 181.8 L37.9 181.4 L37.6 181.0 L37.5 180.5 L37.5 179.9 L37.7 179.4 L38.0 178.8 L38.5 178.3 L39.2 177.8 L40.0 177.4 L40.9 177.1 L41.9 176.8 L43.0 176.7 L44.2 176.7 L45.4 176.7 L46.6 177.0 L47.8 177.3 L49.0 177.7 L50.0 178.3 L51.0 179.0 L51.9 179.7 L52.7 180.5 L53.3 181.4 L53.7 182.3 L54.0 183.2 L54.1 184.1 L54.1 185.0 L53.9 185.9 L53.6 186.7 L53.2 187.4 L52.6 188.0 L52.0 188.5 L51.3 188.9 L50.6 189.2 L49.8 189.4 L49.1 189.4 L48.5 189.4 L47.9 189.2 L47.3 188.9 L46.9 188.5 L46.7 188.1 L46.6 187.6 L46.6 187.0 L46.8 186.5 L47.1 185.9 L47.7 185.4 L48.3 184.9 L49.2 184.5 L50.1 184.1 L51.2 183.8 L52.3 183.7 L53.5 183.6 L54.8 183.7 L56.0 183.9 L57.3 184.2 L58.5 184.6 L59.6 185.2 L60.7 185.8 L61.6 186.5 L62.4 187.3 L63.1 188.2 L63.6 189.1 L64.0 190.0';
+function heroScene(v) {
+  const u = 'hs' + (++__sv);
+  const motes = [[118, 40], [162, 70], [140, 110], [190, 34], [104, 92], [176, 120]].map(([x, y], i) => `<circle class="mote" cx="${x}" cy="${y}" r="${i % 2 ? 1.3 : 1.8}" style="animation-delay:${i * .7}s"/>`).join('');
+  const burst = Array.from({ length: 20 }, (_, i) => { const r = i % 2 ? 19 : 30, a = -Math.PI / 2 + i * Math.PI / 10; return `${(252 + r * Math.cos(a)).toFixed(1)},${(32 + r * Math.sin(a)).toFixed(1)}`; }).join(' ');
+  return `<svg class="hb-scene" data-hv="${v}" viewBox="0 0 300 220" role="img" aria-label="A ringing rotary desk phone. Hover or tap to answer.">
+  <defs>
+    <radialGradient id="${u}g" cx="50%" cy="55%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
+    <linearGradient id="${u}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-b0"/><stop offset="1" class="g-b1"/></linearGradient>
+    <linearGradient id="${u}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-p0"/><stop offset=".7" class="g-b1"/><stop offset="1" class="g-p2"/></linearGradient>
+    <linearGradient id="${u}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-h0"/><stop offset="1" class="g-h1"/></linearGradient>
+    <linearGradient id="${u}r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-r0"/><stop offset="1" class="g-r1"/></linearGradient>
+    <linearGradient id="${u}c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-c0"/><stop offset="1" class="g-c1"/></linearGradient>
+    <filter id="${u}blur" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="5"/></filter>
+    <radialGradient id="${u}pool" cx="50%" cy="50%" r="50%"><stop offset="0" class="g-c0"/><stop offset="1" class="g-c1"/></radialGradient>
+  </defs>
+  <ellipse class="glow" fill="url(#${u}g)" cx="150" cy="128" rx="150" ry="100"/>
+  <g class="spot"><path class="cone" filter="url(#${u}blur)" fill="url(#${u}c)" d="M122 -12 H178 L266 208 H34 Z"/><ellipse class="pool" fill="url(#${u}pool)" cx="150" cy="208" rx="130" ry="12"/>${motes}</g>
+  <ellipse class="floor" cx="150" cy="214" rx="104" ry="6"/>
+  <g class="peek"><svg x="194" y="100" width="80" height="89" style="width:80px;height:89px" viewBox="30 92 145 162" class="bt-mascot bt-mascot--aware" aria-hidden="true">${(document.getElementById('mascot') || {}).innerHTML || ''}</svg></g>
+  <rect class="foot" x="76" y="202" width="32" height="9" rx="3"/><rect class="foot" x="192" y="202" width="32" height="9" rx="3"/>
+  <rect class="plinth" fill="url(#${u}p)" x="54" y="176" width="192" height="28" rx="9"/>
+  <path class="plinth-hi" d="M66 182.5 H234"/>
+  <path class="cord-shadow" d="${CORD}" transform="translate(1.6 1.6)"/>
+  <path class="cord" d="${CORD}"/>
+  <path class="body" fill="url(#${u}b)" d="M80 180 C84 146 96 116 112 106 H188 C204 116 216 146 220 180 Z"/>
+  <path class="body-hi" d="M92 172 C95 148 104 126 116 114"/>
+  <path class="body-lo" d="M210 172 C207 150 199 130 188 117"/>
+  <path class="post" fill="url(#${u}b)" d="M108 110 L112 66 Q112.5 61 117 61 H124 Q128.5 61 128.5 66 L127 110 Z"/>
+  <path class="post" fill="url(#${u}b)" d="M192 110 L188 66 Q187.5 61 183 61 H176 Q171.5 61 171.5 66 L173 110 Z"/>
+  <path class="post-hi" d="M114.5 68 L111.5 104 M178 68 L176 104"/>
+  <ellipse class="hs-shadow" cx="150" cy="70" rx="66" ry="5"/>
+  <circle class="bezel" cx="150" cy="150" r="36"/>
+  <circle class="ring" fill="url(#${u}r)" cx="150" cy="150" r="31"/>
+  <path class="ring-shine" d="M127 133 A28 28 0 0 1 148 122"/>
+  <g class="holes">${HOLES}</g>
+  <circle class="plate" cx="150" cy="150" r="11"/>
+  <path class="glyph" d="M143.6 152.8 C143.6 150.9 144.4 149.9 145.9 149.8 L146.7 149.8 C147.2 148.8 148.2 148.3 150 148.3 C151.8 148.3 152.8 148.8 153.3 149.8 L154.1 149.8 C155.6 149.9 156.4 150.9 156.4 152.8 C156.4 153.4 156.1 153.7 155.5 153.7 H153.8 C153.3 153.7 153 153.4 153 152.9 V151.7 C153 151.1 152.5 150.8 151.7 150.8 H148.3 C147.5 150.8 147 151.1 147 151.7 V152.9 C147 153.4 146.7 153.7 146.2 153.7 H144.5 C143.9 153.7 143.6 153.4 143.6 152.8Z"/>
+  <path class="stop" d="M171.5 173.5 L176.5 179"/>
+  <g class="handset">
+    <path class="hs" stroke="url(#${u}h)" d="M62 72 C102 44 198 44 238 72"/>
+    <path class="cup" fill="url(#${u}h)" d="M24 98 C24 76 38 64 60 64 C82 64 96 76 96 98 C96 105 82 109 60 109 C38 109 24 105 24 98Z"/>
+    <path class="cup" fill="url(#${u}h)" d="M204 98 C204 76 218 64 240 64 C262 64 276 76 276 98 C276 105 262 109 240 109 C218 109 204 105 204 98Z"/>
+    <ellipse class="cup-rim" cx="60" cy="102" rx="34" ry="6.5"/><ellipse class="cup-rim" cx="240" cy="102" rx="34" ry="6.5"/>
+    <path class="hs-gloss" d="M98 57 C128 47 172 47 202 57"/>
+    <path class="cup-gloss" d="M36 86 Q41 73 57 70 M216 86 Q221 73 237 70"/>
+  </g>
+  <g class="rings"><path d="M30 40 L20 31"/><path d="M150 34 V21"/><path d="M270 40 L280 31"/></g>
+  <g class="arcs"><path d="M12 58 q-9 16 0 32"/><path d="M288 58 q9 16 0 32"/></g>
+  <g class="burst"><polygon points="${burst}"/><text x="252" y="36">RING!</text></g>
+</svg>`;
+}
+
+const LOOKS = [["classic", "V1 \u00b7 Classic", "Glossy purple handset on a plum body, the purple glow behind it."], ["bakelite", "V2 \u00b7 Bakelite (picked)", "Black and glossy like your photo; the purple dial is the only colour."], ["spotlight", "V3 \u00b7 Spotlight", "A soft gold stage light from above, dust drifting in the beam."], ["burst", "V4 \u00b7 Ring burst", "A gold \"RING!\" burst pops in time with the ringing."], ["peek", "V5 \u00b7 Mascot peek", "The mascot hides behind the phone and pops up when it rings."]];
+let LOOK = 'bakelite';
+function fill() {
+  document.querySelectorAll('.hb-dev--desk [data-scene], .hb-dev--phone [data-scene]').forEach((el) => { el.innerHTML = heroScene(LOOK); });
+  document.querySelectorAll('#mk-look button').forEach((b) => b.classList.toggle('is-on', b.dataset.v === LOOK));
+  document.querySelectorAll('.mk-card').forEach((c) => c.classList.toggle('is-on', c.dataset.look === LOOK));
+}
+document.getElementById('mk-gal').innerHTML = LOOKS.map(([k, t, d]) => `<div class="bt-root hb-dev hbv mk-card" data-look="${k}"><button type="button" class="hb-stage" aria-pressed="false" aria-label="${t}: a ringing rotary phone. Tap to answer.">${heroScene(k)}<span class="hb-bubble" aria-hidden="true">Hotline <b>Boom</b>, what's it about?</span></button><b>${t}</b><p>${d}</p><div class="mk-card-acts"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-use="${k}">Use in the hero</button></div></div>`).join('');
+document.getElementById('mk-look').addEventListener('click', (e) => { const b = e.target.closest('button'); if (b) { LOOK = b.dataset.v; fill(); } });
+document.getElementById('mk-gal').addEventListener('click', (e) => { const b = e.target.closest('[data-use]'); if (b) { LOOK = b.dataset.use; fill(); document.querySelector('.hb-dev--desk').scrollIntoView({ behavior: 'smooth', block: 'start' }); } });
+fill();
 let __n = 0;
 function hbIcon() {
   const u = 'hbi' + (++__n);

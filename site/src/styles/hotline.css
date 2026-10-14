@@ -3,8 +3,17 @@
    card's layout, the Sent stamp layout. Components (.bt-section-head, .bt-field, .bt-chip, .bt-tag, .bt-btn, .bt-card--door, .bt-stamp, .bt-empty, .bt-reveal)
    come from shared/bt-ui.css, untouched. Feature colours are declared once here; everything else is a --bt-* token. Container queries only; reduced motion respected. */
 .bt-root:not(#_) {
-  --hb-body-0: #2e2632;        /* the desk phone's two-tone body */
-  --hb-body-1: #141015;
+  --hb-body-1: #141015;        /* dark fills: the W5 wordmark wheel's base and the big dial's base */
+  /* the /contact hero phone, V2 "Bakelite" (hotline-boom-hero.html): black glossy Bakelite with gold edges */
+  --hb-bk-hand-0: #4a4650;     /* the handset and its domed cups, top to bottom */
+  --hb-bk-hand-1: #08070a;
+  --hb-bk-rim: #1c1a20;        /* the cup rims */
+  --hb-bk-body-0: #2c2a2f;     /* the bell-shaped body and the cradle posts, top to bottom */
+  --hb-bk-body-1: #060507;
+  --hb-bk-plinth-0: #26242a;   /* the plinth's top (then the body's dark stop, then black) */
+  --hb-bk-foot: #3a2c22;       /* the two feet */
+  --hb-bk-cord: #3d3a40;       /* the coiled cord */
+  --hb-bk-bezel: #0c0a0d;      /* the ring round the dial */
   --hb-dial-plate: #0b090c;    /* the dial's centre plate */
   --hb-hole: #120e14;          /* the dial holes */
   --hb-hand-0: #b98aff;        /* the glossy purple handset (and the W5 wheel) */
@@ -12,7 +21,6 @@
   --hb-ring-1: #6a26d9;        /* the dial ring's lower stop */
   --hb-gold-hi: #ffd36b;       /* the gold highlight when the wordmark powers on */
   --hb-hole-lit: #3a2408;      /* the W5 holes when lit */
-  --hb-prong: #241e25;         /* the cradle prongs */
   --hb-key-0: #2b2529;         /* the keypad keys */
   --hb-key-1: #151214;
   --hb-key-floor: #070607;
@@ -81,45 +89,55 @@
 .bt-root:not(#_) .hb-mailcall { margin: 12px 0 0; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
 .bt-root:not(#_) .hb-stage { position: relative; display: grid; justify-items: center; cursor: pointer; -webkit-tap-highlight-color: transparent; border: 0; background: none; padding: 0; font: inherit; color: inherit; }
 .bt-root:not(#_) .hb-stage:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 6px; border-radius: 20px; }
+/* The hero phone: the classic rotary desk phone, V2 Bakelite (art.ts phoneScene(); hotline-boom-hero.html). Colours from the --hb-bk-* properties
+   above; highlights and shadows are the kit's sheen and ink at low opacity; gold edges and ring marks, purple arcs and the purple dial. */
 .bt-root:not(#_) .hb-scene { width: 100%; height: auto; overflow: visible; }
-.bt-root:not(#_) .hb-scene .g-glow0 { stop-color: var(--bt-primary); stop-opacity: 0.34; }
+.bt-root:not(#_) .hb-scene .g-glow0 { stop-color: var(--bt-primary); stop-opacity: 0.22; }
 .bt-root:not(#_) .hb-scene .g-glow1 { stop-color: var(--bt-primary); stop-opacity: 0; }
-.bt-root:not(#_) .hb-scene .g-body0 { stop-color: var(--hb-body-0); }
-.bt-root:not(#_) .hb-scene .g-body1 { stop-color: var(--hb-body-1); }
-.bt-root:not(#_) .hb-scene .g-hand0 { stop-color: var(--hb-hand-0); }
-.bt-root:not(#_) .hb-scene .g-hand1 { stop-color: var(--hb-hand-1); }
+.bt-root:not(#_) .hb-scene .g-body0 { stop-color: var(--hb-bk-body-0); }
+.bt-root:not(#_) .hb-scene .g-body1 { stop-color: var(--hb-bk-body-1); }
+.bt-root:not(#_) .hb-scene .g-plinth0 { stop-color: var(--hb-bk-plinth-0); }
+.bt-root:not(#_) .hb-scene .g-plinth2 { stop-color: rgb(var(--bt-ink-rgb)); }
+.bt-root:not(#_) .hb-scene .g-hand0 { stop-color: var(--hb-bk-hand-0); }
+.bt-root:not(#_) .hb-scene .g-hand1 { stop-color: var(--hb-bk-hand-1); }
+.bt-root:not(#_) .hb-scene .g-ring0 { stop-color: var(--hb-hand-0); }   /* the dial's purple ring, as before */
 .bt-root:not(#_) .hb-scene .g-ring1 { stop-color: var(--hb-ring-1); }
-.bt-root:not(#_) .hb-scene .floor { fill: var(--bt-bg); opacity: 0.55; }
-.bt-root:not(#_) .hb-scene .cord { fill: none; stroke: var(--bt-text-faint); stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; }
-.bt-root:not(#_) .hb-scene .base { stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.6; }
-.bt-root:not(#_) .hb-scene .rim { stroke: rgba(var(--bt-gold-rgb), 0.5); stroke-width: 1.5; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .sheen { stroke: rgba(var(--bt-sheen-rgb), 0.08); stroke-width: 5; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .bezel { fill: var(--hb-body-1); stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.4; }
+.bt-root:not(#_) .hb-scene .floor { fill: rgb(var(--bt-ink-rgb)); opacity: 0.6; }
+.bt-root:not(#_) .hb-scene .foot { fill: var(--hb-bk-foot); }
+.bt-root:not(#_) .hb-scene :is(.plinth, .body, .post) { stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.5; }
+.bt-root:not(#_) .hb-scene .plinth-hi { fill: none; stroke: rgba(var(--bt-gold-rgb), 0.45); stroke-width: 1.3; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .body-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.11); stroke-width: 7; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .body-lo { fill: none; stroke: rgba(var(--bt-ink-rgb), 0.4); stroke-width: 7; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .post-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.14); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .hs-shadow { fill: rgb(var(--bt-ink-rgb)); opacity: 0.4; }
+.bt-root:not(#_) .hb-scene .cord { fill: none; stroke: var(--hb-bk-cord); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .hb-scene .cord-shadow { fill: none; stroke: rgb(var(--bt-ink-rgb)); opacity: 0.45; stroke-width: 2.4; }
+.bt-root:not(#_) .hb-scene .bezel { fill: var(--hb-bk-bezel); stroke: rgba(var(--bt-gold-rgb), 0.6); stroke-width: 1.4; }
 .bt-root:not(#_) .hb-scene .ring { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
 .bt-root:not(#_) .hb-scene .ring-shine { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.5); stroke-width: 2; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .holes circle { fill: var(--hb-hole); stroke: rgba(var(--bt-sheen-rgb), 0.2); stroke-width: 1; }
 .bt-root:not(#_) .hb-scene .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), 0.85); stroke-width: 1.4; }
 .bt-root:not(#_) .hb-scene .glyph { fill: var(--bt-title); }
 .bt-root:not(#_) .hb-scene .stop { stroke: var(--bt-title); stroke-width: 3.4; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .prong { fill: var(--hb-prong); stroke: rgba(var(--bt-gold-rgb), 0.4); stroke-width: 1; }
-.bt-root:not(#_) .hb-scene .hs { fill: none; stroke-width: 15; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .cup { stroke: rgba(var(--bt-ink-rgb), 0.3); stroke-width: 1; }
-.bt-root:not(#_) .hb-scene .hs-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.55); stroke-width: 2; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .cup-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.35); stroke-width: 1.6; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .hs { fill: none; stroke-width: 20; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .cup { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
+.bt-root:not(#_) .hb-scene .cup-rim { fill: var(--hb-bk-rim); opacity: 0.85; }
+.bt-root:not(#_) .hb-scene .hs-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.6); stroke-width: 2.2; stroke-linecap: round; }
+.bt-root:not(#_) .hb-scene .cup-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.4); stroke-width: 1.8; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .rings path { fill: none; stroke: var(--bt-title); stroke-width: 3; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .arcs path { fill: none; stroke: var(--bt-primary-soft); stroke-width: 3; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .handset { transform-box: view-box; transform-origin: 150px 90px; animation: hb-rattle 6.5s ease-in-out 0.6s infinite; transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1); }
+.bt-root:not(#_) .hb-scene .handset { transform-box: view-box; transform-origin: 150px 76px; animation: hb-rattle 6.5s ease-in-out 0.6s infinite; transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1); }
 .bt-root:not(#_) .hb-scene :is(.rings, .arcs) { opacity: 0; animation: hb-ringfx 6.5s linear 0.6s infinite; }
 @keyframes hb-rattle { 0%, 20%, 100% { transform: none; } 1.5% { transform: translateY(-8px) rotate(-4deg); } 3% { transform: translateY(-3px) rotate(4deg); } 4.5% { transform: translateY(-8px) rotate(-3deg); } 6% { transform: translateY(-2px) rotate(3deg); } 7.5% { transform: translateY(-7px) rotate(-3deg); } 9% { transform: none; } 11% { transform: translateY(-8px) rotate(4deg); } 12.5% { transform: translateY(-3px) rotate(-4deg); } 14% { transform: translateY(-8px) rotate(3deg); } 15.5% { transform: translateY(-2px) rotate(-3deg); } 17% { transform: translateY(-6px) rotate(2deg); } 18.5% { transform: none; } }
 @keyframes hb-ringfx { 0% { opacity: 0; } 1%, 8% { opacity: 1; } 9.5% { opacity: 0; } 10.5%, 17.5% { opacity: 1; } 19%, 100% { opacity: 0; } }
 /* answered: the handset lifts off, the ringing stops, a bubble says hello */
 .bt-root:not(#_) .hb-bubble { position: absolute; top: -6px; left: 50%; transform: translate(-50%, 8px) scale(0.9); opacity: 0; padding: 9px 14px; border-radius: 16px 16px 16px 4px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); box-shadow: 0 10px 24px var(--bt-lift-shadow); font-size: var(--bt-text-md); font-weight: 700; color: var(--bt-text); white-space: nowrap; pointer-events: none; transition: opacity 0.25s, transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1); }
 .bt-root:not(#_) .hb-bubble b { color: var(--bt-primary-soft); }
-.bt-root:not(#_) .hb-stage[aria-pressed="true"] .hb-scene .handset { animation: none; transform: translate(-14px, -34px) rotate(-14deg); }
+.bt-root:not(#_) .hb-stage[aria-pressed="true"] .hb-scene .handset { animation: none; transform: translate(-14px, -36px) rotate(-12deg); }
 .bt-root:not(#_) .hb-stage[aria-pressed="true"] .hb-scene :is(.rings, .arcs) { animation: none; opacity: 0; }
 .bt-root:not(#_) .hb-stage[aria-pressed="true"] .hb-bubble { opacity: 1; transform: translate(-50%, 0) scale(1); }
 @media (hover: hover) and (pointer: fine) {
-  .bt-root:not(#_) .hb-stage:hover .hb-scene .handset { animation: none; transform: translate(-14px, -34px) rotate(-14deg); }
+  .bt-root:not(#_) .hb-stage:hover .hb-scene .handset { animation: none; transform: translate(-14px, -36px) rotate(-12deg); }
   .bt-root:not(#_) .hb-stage:hover .hb-scene :is(.rings, .arcs) { animation: none; opacity: 0; }
   .bt-root:not(#_) .hb-stage:hover .hb-bubble { opacity: 1; transform: translate(-50%, 0) scale(1); }
 }
