@@ -4,8 +4,10 @@
 // rests; on hover or focus it spins a combination and lights the lamp; touch screens play it
 // once as it scrolls into view). Right: a ghost How it works link (current on that page), Queue with
 // its count (staff, admin green) and Add a game (everyone; visitors get the Join dialog titled "Join to
-// add games"). Under 640px the words become icons (B1): ?, the queue icon with its count as a badge, +,
-// each a 40px target with an aria-label. Wired in scripts/vault/layout.ts.
+// add games"). Under 640px the words become icons (B1): a magnifier ("Search the Vault": on /games it scrolls to the filter bar's search
+// and focuses it, elsewhere it opens /games there; game-vault-tablet-phone-search.html P1), ?, the queue icon with its count as a badge,
+// +, each a 40px target with an aria-label; below 375px the gaps between them tighten so the wordmark stays whole. Wired in
+// scripts/vault/layout.ts.
 import { GV_ICON } from "../../scripts/vault/art";
 import { I } from "../../scripts/vault/art";
 interface Props { section?: string | null }
@@ -18,6 +20,7 @@ const { section = null } = Astro.props;
       <span class="bt-wordmark-text" aria-hidden="true">GAME<span class="bt-wordmark-accent">VAULT</span></span>
     </a>
     <div class="bt-topnav">
+      <a class="bt-btn bt-btn--ghost bt-btn--sm gv-act gv-how-link gv-search-link" href="/games#gv-search" aria-label="Search the Vault" data-gv-search><Fragment set:html={I.search} /><span class="bt-btn-label">Search</span></a>
       <a class="bt-btn bt-btn--ghost bt-btn--sm gv-act gv-how-link" href="/games/how-it-works" aria-label="How it works" aria-current={section === "how" ? "page" : undefined}><Fragment set:html={I.help} /><span class="bt-btn-label">How it works</span></a>
       <a class="bt-btn bt-btn--admin bt-btn--sm gv-act gv-queue" href="/games/queue" aria-label="Queue" data-gv-queue hidden><Fragment set:html={I.queue} /><span class="bt-btn-label">Queue</span> <span class="bt-chip-n" data-gv-queue-n></span><span class="gv-badge" data-gv-queue-badge aria-hidden="true"></span></a>
       <button type="button" class="bt-btn bt-btn--primary bt-btn--sm gv-act" data-gv-add aria-label="Add a game"><Fragment set:html={I.plusSm} /><span class="bt-btn-label">Add a game</span></button>

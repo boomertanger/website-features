@@ -33,6 +33,23 @@ onAuth((s) => {
   if (staff && !counted) { counted = true; refreshQueueCount(); }
 });
 
+// Phones: the bar's magnifier. On /games it focuses the filter bar's search (in the tap, so the keyboard opens) and scrolls the page so the
+// filter bar sits under the bar; anywhere else it is a link to /games#gv-search, which does the same once the Vault is drawn (page.ts).
+document.addEventListener("click", (e) => {
+  const a = (e.target as Element).closest?.("[data-gv-search]");
+  const input = document.querySelector<HTMLInputElement>("[data-compact-search]");
+  if (!a || !input) return;
+  e.preventDefault();
+  focusVaultSearch(input);
+});
+export function focusVaultSearch(input: HTMLInputElement) {
+  const fbar = input.closest<HTMLElement>("[data-fbar]"), hero = document.querySelector<HTMLElement>("[data-hero]");
+  input.focus({ preventScroll: true });
+  const top = hero ? hero.getBoundingClientRect().bottom + scrollY : (fbar?.getBoundingClientRect().top ?? 0) + scrollY;
+  const offset = parseFloat(getComputedStyle(document.body).getPropertyValue("--bt-sticky-h")) || 0;
+  scrollTo({ top: Math.max(0, top - offset), behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+}
+
 // Every Add a game button (the bar's, and the How it works page's) opens the same dialog.
 document.addEventListener("click", async (e) => {
   if (!(e.target as Element).closest?.("[data-gv-add]")) return;

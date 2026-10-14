@@ -630,3 +630,34 @@
 /* The Filters dialog (phones and tablets): the same Tags / Length / Community picks / Sort as the bar */
 .bt-portal[data-feature="game-vault"] .gv-fchecks { display: flex; flex-direction: column; gap: 8px; max-height: 220px; overflow-y: auto; }
 .bt-portal[data-feature="game-vault"] .gv-fchecks .bt-check > span:not(.bt-popover-n) { flex: 1; }
+
+/* ---- Phones (under 640px): P1 and M1 (game-vault-tablet-phone-search.html, game-vault-film-strip.html) ----
+   The hero has no search on phones: a magnifier in the B1 bar (Search the Vault) scrolls to the filter bar's search and focuses it, and
+   the "Try granny, vr" hint shows under that search while it is focused or has text. The wall still reacts to it (one search state).
+   The spotlight: the poster (164px) on the left, the 2 x 2 square (68px covers) on the right, the badge, title, votes and vote button
+   under both, so the vote button lands on the first screen of a 390 x 844 phone. Desktop and tablet keep the hero search. */
+.bt-root:not(#_) .gv-bar .gv-search-link { display: none; }
+.bt-root:not(#_) .gp-fhint { display: none; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .gv-bar .gv-search-link { display: inline-flex; }
+  .bt-root:not(#_) .gvh .bt-search, .bt-root:not(#_) .gvh .gvh-hint { display: none; }
+  .bt-root:not(#_) .gp-fbar .gp-fhint { display: block; flex: 1 1 100%; order: 1; margin: -2px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+  .bt-root:not(#_) .gp-fbar .gp-fhint b { color: var(--bt-text); }
+  .bt-root:not(#_) .gp-fbar:not(:focus-within):not(.has-search) .gp-fhint, .bt-root:not(#_) .gp-fbar .gp-fhint:empty { display: none; }
+  .bt-root:not(#_) .gp-fbar .gp-fsearch { order: 0; }
+  .bt-root:not(#_) .gp-fbar > :not(.gp-fsearch):not(.gp-fhint) { order: 2; }
+  .bt-root:not(#_) .gvs { --bt-stories-pick: 68px; grid-template-columns: 164px minmax(0, 1fr); column-gap: 22px; padding: 2px var(--bt-gutter) 18px; border: 0; border-radius: 0; background: none; }
+  .bt-root:not(#_) .gvs.bt-stories--single { grid-template-columns: 164px; }
+  .bt-root:not(#_) .gvs .bt-stories-picks { grid-template-columns: repeat(2, minmax(0, 68px)); justify-content: start; }
+  .bt-root:not(#_) .gvs .bt-stories-pick { width: auto; }
+  .bt-root:not(#_) .gvs .bt-stories-details { grid-column: 1 / -1; margin-top: 14px; }
+  .bt-root:not(#_) .gvs-title { font-size: var(--bt-text-lg); }
+  .bt-root:not(#_) .gvs-credit { display: none; }
+}
+/* The B1 bar below 375px wide (as staff, five things share it: the wordmark, the magnifier, ?, the queue and +): the gaps tighten so the
+   icons stay 40px and the wordmark stays whole. A container on the bar's dock; 375px and wider keep the usual gaps. */
+.bt-root:not(#_) .gv-dock { container: gvbar / inline-size; }
+@container gvbar (max-width: 374px) {
+  .bt-root:not(#_) .gv-dock > .gv-bar { gap: 6px; }
+  .bt-root:not(#_) .gv-dock .gv-bar .bt-topnav { gap: 4px; }
+}

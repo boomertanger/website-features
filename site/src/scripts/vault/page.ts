@@ -26,6 +26,7 @@ import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, I } from "./art";
 import { esc, badge, vcard, plural, votesText, STATUS, STATUS_KEYS, lenOf, LENGTHS, isPinned, pinnedFirst, UP_NEXT } from "./ui";
 import { wantButton, initWants } from "./wants";
+import { focusVaultSearch } from "./layout";
 import { saveCtx, loadCtx, takeRestore, byLastStreamed } from "./context";
 
 const root = document.querySelector<HTMLElement>("[data-vault]");
@@ -140,6 +141,7 @@ function renderHero() {
     const ex = (hint.dataset.examples || "").split("|").filter(Boolean);
     hint.innerHTML = ex.length ? `Try ${ex.join(", ")}.` : "Search by title, developer or tag.";
     box.querySelectorAll(".gvh-c.is-hit").forEach((c) => c.classList.remove("is-hit"));
+    mirrorHint(hint);
     return;
   }
   const hits = list();
@@ -148,6 +150,12 @@ function renderHero() {
   strip.innerHTML = hits.slice(0, 7).map((g, i) => `<a href="/games/${encodeURIComponent(g.slug)}" style="--i:${i}" title="${esc(g.title)}" aria-label="${esc(g.title)}">${coverHtml(g.cover, { alt: "", size: "sm" })}</a>`).join("");
   const visitor = getAuthState().status === "signedOut";
   hint.innerHTML = hits.length ? `<b>${hits.length}</b> ${hits.length === 1 ? "game" : "games"}. Press Enter to jump to ${hits.length === 1 ? "it" : "them"}.` : `Nothing for “${esc(q)}”. Press Enter to ${visitor ? "join free and add it" : "add it"}.`;
+  mirrorHint(hint);
+}
+/** Phones search from the filter bar (the hero has no search there), so its hint line says the same as the hero's. */
+function mirrorHint(hint: HTMLElement) {
+  const f = root?.querySelector<HTMLElement>("[data-fhint]");
+  if (f && f.innerHTML !== hint.innerHTML) f.innerHTML = hint.innerHTML;
 }
 
 function tools() {
@@ -157,7 +165,7 @@ function tools() {
 /** The sticky filter bar under the hero (the compact search only shows once the hero's has scrolled away). */
 function fbar() {
   const tabs = (["all", ...STATUS_KEYS] as State["status"][]).map((s) => `<a href="?status=${s}" data-status="${s}"${st.status === s ? ' aria-current="page"' : ""}>${s === "all" ? "All" : STATUS[s][0]}<span class="bt-chip-n">${count(s)}</span></a>`).join("");
-  return `<div class="gp-fbar" data-fbar><label class="bt-search gp-fsearch">${I.search}<input class="bt-input" type="search" data-q data-compact-search autocomplete="off" spellcheck="false" placeholder="Search the Vault…" aria-label="Search the Vault" value="${esc(st.q)}"></label>
+  return `<div class="gp-fbar" data-fbar><label class="bt-search gp-fsearch">${I.search}<input class="bt-input" type="search" id="gv-search" data-q data-compact-search autocomplete="off" spellcheck="false" placeholder="Search the Vault…" aria-label="Search the Vault" value="${esc(st.q)}"></label><p class="gp-fhint" data-fhint aria-live="polite"></p>
   <nav class="bt-seg-nav" aria-label="Status" data-seg>${tabs}</nav>
   <div class="gp-fmore"><div class="gv-menu" data-menu="tags"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="tags" aria-expanded="false" aria-haspopup="true">Tags<span class="bt-chip-n" data-tags-n></span></button></div>
   <div class="gv-menu" data-menu="len"><button type="button" class="bt-chip bt-chip--small bt-chip--menu" data-open="len" aria-expanded="false" aria-haspopup="true">Length</button></div>
@@ -525,6 +533,7 @@ async function boot() {
   renderHero();
   syncToplay();
   phone.addEventListener("change", syncToplay);
+  if (location.hash === "#gv-search") requestAnimationFrame(() => { const c = root!.querySelector<HTMLInputElement>("[data-compact-search]"); if (c) focusVaultSearch(c); });
   onAuth(() => { renderResults(); renderHero(); });   // the Add / Join wording and the vote buttons follow sign-in
   // Back to the Vault: the same URL, so scroll to where you left it.
   const ctx = loadCtx();
