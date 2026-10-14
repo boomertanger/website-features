@@ -25,7 +25,8 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, pe
 
   async function editBugReport(request) {
     const c = requireAdmin(await callerInfo(request));
-    const { id, changes = {}, before = {}, removeShot = false, reason = "" } = request.data || {};
+    const { id, changes = {}, before = {}, removeShot = false } = request.data || {};
+    const reason = request.data?.reason ?? "";   // the reason is optional: missing, null (the callable SDK sends undefined as null) or "" all mean none
     if (typeof id !== "string" || !id || id.includes("/")) throw fail("invalid-argument", "id is required.", "args");
     if (!changes || typeof changes !== "object" || Array.isArray(changes)) throw fail("invalid-argument", "changes must be an object.", "args");
     if (!Object.keys(changes).length && removeShot !== true) throw fail("invalid-argument", "changes or removeShot is required.", "args");

@@ -244,6 +244,20 @@ const idea = (o = {}) => ({ title: "Show the queue on stream", description: "A p
   assert.equal(t.title, "A clearer title"); assert.equal(t.area, "site"); assert.equal(t.editCount, 1); assert.ok(t.editedAt); assert.equal(t.status, "planned", "the status is not touched by an edit"); assert.deepEqual(t.by, second.by, "the author is never touched");
   const el = (await col("adminLog")).find((l) => l.action === "edit" && l.itemPath === `${BASE}/ideas/${second.id}`);
   assert.deepEqual(el.changes.title, { before: "Second idea here", after: "A clearer title" }); assert.equal(el.reason, "typo"); assert.equal(el.feature, "featureLab");
+  // the reason is optional (feature-lab.md §4, admin-editing.md): a rename saves with an empty reason, with none at all, and with null (what the
+  // callable SDK sends for undefined: the Oct 14, 2026 staging bug, "Reason can be at most 300 characters." on an empty reason); over 300 is refused
+  let title = "A clearer title";
+  for (const [label, extra] of [["empty", { reason: "" }], ["null", { reason: null }], ["missing", {}], ["blank", { reason: "   " }]]) {
+    const next = `Renamed with a ${label} reason`;
+    const res = await edit("adm1", { id: second.id, changes: { title: next }, before: { title }, ...extra });
+    assert.equal(res.changed, true, `a rename with a ${label} reason saves`);
+    title = next;
+    assert.equal((await get(`${BASE}/ideas/${second.id}`)).title, next);
+    const log = (await col("adminLog")).filter((l) => l.action === "edit" && l.itemPath === `${BASE}/ideas/${second.id}`).find((l) => l.changes.title.after === next);
+    assert.equal(log.reason, "", `the log keeps an empty reason for a ${label} one`);
+  }
+  assert.equal(await why(edit("adm1", { id: second.id, changes: { title: "Too long a reason" }, before: { title }, reason: "x".repeat(301) })), "invalid", "a reason over 300 characters is refused");
+  assert.equal((await edit("adm1", { id: second.id, changes: { title: "A clearer title" }, before: { title }, reason: "x".repeat(300) })).changed, true, "300 characters is fine");
 
   // ================================================================ delete
   assert.equal(await why(as("gbo", "labDelete", { id: r1.id })), "notAdmin");

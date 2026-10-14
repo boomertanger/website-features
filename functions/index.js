@@ -636,7 +636,8 @@ exports.adminEditItem = onCall({ secrets: CLOUDINARY_SECRETS }, async (request) 
   if (!(await isCallerAdmin(request.auth))) {
     throw new HttpsError("permission-denied", "Admins only.");
   }
-  const { feature, id, changes, before = {}, reason = "" } = request.data || {};
+  const { feature, id, changes, before = {} } = request.data || {};
+  const reason = request.data?.reason ?? "";   // the reason is optional: missing, null (the callable SDK sends undefined as null) or "" all mean none
   const cfg = EDITABLE[feature];
   if (!cfg) throw new HttpsError("invalid-argument", "Unknown feature.");
   if (typeof id !== "string" || !id) throw new HttpsError("invalid-argument", "id is required.");

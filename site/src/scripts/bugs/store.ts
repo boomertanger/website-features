@@ -195,7 +195,7 @@ export async function edit(id: string, changes: Record<string, string>, before: 
     if (removeShot && demo().info[id]) demo().info[id].shot = null;
     return;
   }
-  await call("adminEditItem", { feature: "bugReport", id, changes, before, removeShot: removeShot || undefined, reason: reason || undefined });
+  await call("adminEditItem", { feature: "bugReport", id, changes, before, removeShot: removeShot === true, reason: (reason || "").trim() });   // always a string ("" = none): the SDK sends undefined as null
   await freshReport(id);
 }
 

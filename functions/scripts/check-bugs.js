@@ -364,6 +364,15 @@ const outboxOf = async (type) => (await col(`${S}/notifyOutbox`)).filter((o) => 
   assert.equal((await edit("adm1", { id: r1.id, changes: { severity: "minor", title: "Remind me does nothing on stream pages" }, before: { severity: "critical", title: "Remind me does nothing" }, reason: "Overstated" })).changed, true);
   b = await get(`${REPORTS}/${r1.id}`); assert.equal(b.severity, "minor"); assert.equal(b.title, "Remind me does nothing on stream pages"); assert.equal(b.editCount, 1); assert.ok(b.editedAt); assert.equal(b.by.handle, "gbo", "the reporter is never touched");
   const el = (await col("adminLog")).filter((e) => e.feature === "bugZapper" && e.action === "edit").at(-1); assert.equal(el.reason, "Overstated"); assert.deepEqual(el.changes.severity, { before: "critical", after: "minor" });
+  // the reason is optional: empty, missing or null (the callable SDK sends undefined as null) all save; over 300 characters is refused
+  let btitle = "Remind me does nothing on stream pages";
+  for (const [label, extra] of [["empty", { reason: "" }], ["null", { reason: null, removeShot: null }], ["missing", {}]]) {
+    const next = `Remind me does nothing (${label} reason)`;
+    assert.equal((await edit("adm1", { id: r1.id, changes: { title: next }, before: { title: btitle }, ...extra })).changed, true, `a rename with a ${label} reason saves`);
+    btitle = next;
+  }
+  assert.equal(await why(edit("adm1", { id: r1.id, changes: { title: "Remind me is broken" }, before: { title: btitle }, reason: "x".repeat(301) })), "invalid", "a reason over 300 characters is refused");
+  assert.equal((await edit("adm1", { id: r1.id, changes: { title: "Remind me does nothing on stream pages" }, before: { title: btitle } })).changed, true);
   // removing the screenshot goes through the one delete path and clears shotRef
   assert.ok(await get(`${REPORTS}/${r1.id}`).then((x) => x.shotRef));
   assert.equal((await edit("adm1", { id: r1.id, removeShot: true, reason: "Showed a private email" })).removedShot, true);

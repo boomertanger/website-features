@@ -22,7 +22,8 @@ module.exports = function makeEditor({ db = admin.firestore(), adminLogEntry, li
 
   async function editLabIdea(request) {
     const c = requireAdmin(await callerInfo(request));
-    const { id, changes, before = {}, reason = "" } = request.data || {};
+    const { id, changes, before = {} } = request.data || {};
+    const reason = request.data?.reason ?? "";   // the reason is optional: missing, null (the callable SDK sends undefined as null) or "" all mean none
     if (typeof id !== "string" || !id || id.includes("/")) throw fail("invalid-argument", "id is required.", "args");
     if (!changes || typeof changes !== "object" || Array.isArray(changes) || !Object.keys(changes).length) throw fail("invalid-argument", "changes is required.", "args");
     if (!before || typeof before !== "object") throw fail("invalid-argument", "before is required.", "args");

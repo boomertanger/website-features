@@ -123,7 +123,8 @@ module.exports = function makeEditor({ store, deps }) {
 
   /** The edit itself, after the caller check: c is { uid, name } (a script passes uid null and its own name). */
   async function applyEdit(c, data) {
-    const { id, changes, before = {}, reason = "" } = data || {};
+    const { id, changes, before = {} } = data || {};
+    const reason = data?.reason ?? "";   // the reason is optional: missing, null (the callable SDK sends undefined as null) or "" all mean none
     if (typeof id !== "string" || !id) throw fail("invalid-argument", "id is required.", "args");
     if (!changes || typeof changes !== "object" || Array.isArray(changes) || !Object.keys(changes).length) throw fail("invalid-argument", "changes is required.", "args");
     if (!before || typeof before !== "object") throw fail("invalid-argument", "before is required.", "args");

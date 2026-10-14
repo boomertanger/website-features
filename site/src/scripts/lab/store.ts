@@ -141,7 +141,7 @@ export async function edit(id: string, changes: Record<string, string>, before: 
     (demo().log[id] ||= []).unshift({ id: `l${Date.now()}`, action: "edit", actorName: meOf().handle, reason, createdAt: Date.now(), changes: Object.fromEntries(Object.keys(changes).map((k) => [k, { before: before[k], after: changes[k] }])) });
     return;
   }
-  await call("adminEditItem", { feature: "labIdea", id, changes, before, reason: reason || undefined });
+  await call("adminEditItem", { feature: "labIdea", id, changes, before, reason: reason.trim() });   // always a string ("" = none): the SDK sends undefined as null
   await freshIdea(id);
 }
 
