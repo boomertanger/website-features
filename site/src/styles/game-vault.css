@@ -50,7 +50,9 @@
    purple and steps the spotlight back; the strip under the search shows up to 7 matches. Reduced
    motion: no drift, no scaling. ---- */
 .bt-root:not(#_) .gvh { position: relative; overflow: hidden; min-height: 440px; border-bottom: 1px solid var(--bt-border); background: radial-gradient(60% 90% at 15% 40%, color-mix(in srgb, var(--bt-primary) 12%, transparent), transparent 70%), var(--bt-bg); }
-.bt-root:not(#_) .gvh::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, var(--bt-bg) 0%, color-mix(in srgb, var(--bt-bg) 88%, transparent) 38%, color-mix(in srgb, var(--bt-bg) 30%, transparent) 70%, color-mix(in srgb, var(--bt-bg) 60%, transparent) 100%); }
+/* The overlay darkens only behind the left column (the text and the big search, at AA); from 70% the wall shows as brightly as the
+   How it works H2 wall (matched by measured luminance, Oct 2026). */
+.bt-root:not(#_) .gvh::before { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(90deg, var(--bt-bg) 0%, color-mix(in srgb, var(--bt-bg) 90%, transparent) 40%, color-mix(in srgb, var(--bt-bg) 55%, transparent) 56%, transparent 70%); }
 .bt-root:not(#_) .gvh-in { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 32px; align-items: center; min-height: 440px; padding: 48px var(--bt-gutter); }
 .bt-root:not(#_) .gvh--solo .gvh-in { grid-template-columns: minmax(0, 1fr); }
 .bt-root:not(#_) .gvh-copy { position: relative; z-index: 2; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -60,7 +62,7 @@
 .bt-root:not(#_) .gvh .bt-cover { border-radius: 8px; }
 
 /* The drifting wall: real covers, columns of tiles scrolling up and down */
-.bt-root:not(#_) .gvh-wall { position: absolute; z-index: 0; inset: -80px -60px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; opacity: 0.42; transform: rotate(-8deg); pointer-events: none; }
+.bt-root:not(#_) .gvh-wall { position: absolute; z-index: 0; inset: -80px -60px; display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; opacity: 0.5; transform: rotate(-8deg); pointer-events: none; }
 .bt-root:not(#_) .gvh-col { display: flex; flex-direction: column; gap: 12px; animation: vh-drift var(--d, 40s) linear infinite; }
 .bt-root:not(#_) .gvh-col:nth-child(even) { animation-direction: reverse; }
 .bt-root:not(#_) .gvh-c { display: block; transition: opacity 0.35s, filter 0.35s, transform 0.35s var(--bt-ease-glide), box-shadow 0.35s; }
@@ -109,9 +111,10 @@
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .gvh { min-height: 0; background: var(--bt-bg); }
   .bt-root:not(#_) .gvh-spot { display: none; }
-  .bt-root:not(#_) .gvh-wall { inset: -40px; grid-template-columns: repeat(5, 1fr); opacity: 0.45; }
+  .bt-root:not(#_) .gvh-wall { inset: -40px; grid-template-columns: repeat(5, 1fr); opacity: 0.48; }
   .bt-root:not(#_) .gvh-col:nth-child(n + 6) { display: none; }
-  .bt-root:not(#_) .gvh::before { background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 40%, transparent) 0%, color-mix(in srgb, var(--bt-bg) 88%, transparent) 45%, var(--bt-bg) 100%); }
+  /* the wall shows brightly in the band above the kicker (no text there) and the overlay is dark behind the text, kept at AA */
+  .bt-root:not(#_) .gvh::before { background: linear-gradient(180deg, transparent 0%, color-mix(in srgb, var(--bt-bg) 15%, transparent) 16%, color-mix(in srgb, var(--bt-bg) 90%, transparent) 26%, color-mix(in srgb, var(--bt-bg) 94%, transparent) 60%, var(--bt-bg) 100%); }
   .bt-root:not(#_) .gvh-in { grid-template-columns: minmax(0, 1fr); gap: 0; min-height: 0; padding: 0; }
   .bt-root:not(#_) .gvh-copy { gap: 12px; padding: 120px var(--bt-gutter) 20px; }
   .bt-root:not(#_) .gvh-copy > p { font-size: var(--bt-text-base); }
