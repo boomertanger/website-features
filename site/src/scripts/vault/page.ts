@@ -18,6 +18,8 @@ import { openModal, modalHeader } from "../../../../shared/ui/modal.js";
 import { initShelves } from "../../../../shared/ui/shelf.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { flipSwap } from "../../../../shared/ui/flip.js";
+import { initStories } from "../../../../shared/ui/stories.js";
+import { isProduction } from "../../lib/env.js";
 import { onAuth, getAuthState } from "../../lib/auth";
 import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, I } from "./art";
@@ -134,7 +136,7 @@ function hero() {
   const ex = EXAMPLES.filter((w) => search(index, w, { limit: 1 }).length);
   return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">Game Vault</span><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>
   <label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q data-hero-search autocomplete="off" spellcheck="false" placeholder="Search ${V.games.length} games…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label>
-  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}</div>${sp.html}</div></section>`;
+  <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}<div class="gvs" data-toplay hidden></div></div>${sp.html}</div></section>`;
 }
 /** Searching: the wall pauses, non-matches grey out, matches light up, the strip shows up to 7, the hint counts. */
 function renderHero() {
@@ -143,6 +145,7 @@ function renderHero() {
   const q = st.q.trim();
   const strip = box.querySelector<HTMLElement>("[data-strip]")!, hint = box.querySelector<HTMLElement>("[data-hint]")!;
   box.classList.toggle("is-searching", !!q);
+  toplaySearching(!!q);
   if (!q) {
     strip.innerHTML = "";
     const ex = (hint.dataset.examples || "").split("|").filter(Boolean);
@@ -206,6 +209,67 @@ function mostWantedGames() {
   if (wanted.length) return wanted;
   return [...wish].sort((a, b) => (b.added || 0) - (a.added || 0) || a.sortTitle.localeCompare(b.sortTitle)).slice(0, 5);
 }
+// ---------- the phone hero's story card (option 1C; M3 under 640px only, docs/design/mockups/game-vault-phone-hero-story.html) ----------
+// Up to 4 To play games: Boomer's pinned "Up next" games first (oldest pin first), then the most-voted ones not already shown, badged with
+// their rank on the Most wanted on stream shelf. The kit's .bt-stories runs it (shared/ui/stories.js); the card is drawn here.
+interface ToPlay { g: VCard; badge: string }
+const byVotes = (a: VCard, b: VCard) => b.wanted - a.wanted || (b.added || 0) - (a.added || 0);
+function toPlayList(): ToPlay[] {
+  const wish = V.games.filter((g) => g.status === "wishlist");
+  const shelfRank = mostWantedGames().filter((g) => g.wanted > 0);   // the shelf's own ranked order (it is unranked before anyone votes)
+  const pins = wish.filter(isPinned).sort((a, b) => (a.pinnedAt || 0) - (b.pinnedAt || 0)).map((g) => ({ g, badge: "Up next" }));
+  const rest = wish.filter((g) => !isPinned(g) && g.wanted > 0).sort(byVotes).map((g) => ({ g, badge: `Most wanted #${shelfRank.indexOf(g) + 1 || shelfRank.length + 1}` }));
+  const list = [...pins, ...rest].slice(0, 4);
+  // ?toplay=none|one|four: a preview on localhost and staging, never production
+  const pv = isProduction ? null : new URLSearchParams(location.search).get("toplay");
+  if (pv === "none") return [];
+  if (pv === "one") return (list.length ? list : wish.slice(0, 1).map((g) => ({ g, badge: "Up next" }))).slice(0, 1);
+  if (pv === "four") {
+    const more = wish.filter((g) => !list.some((x) => x.g === g)).sort(byVotes);
+    const four = [...list, ...more.map((g) => ({ g, badge: "" }))].slice(0, 4);
+    return four.map((x, i) => ({ g: x.g, badge: x.badge || (i === 0 ? "Up next" : `Most wanted #${i}`) }));
+  }
+  return list;
+}
+const votesHtml = (n: number) => `<b>${n}</b> ${n === 1 ? "vote" : "votes"}`;
+function toPlayCard({ g, badge }: ToPlay) {
+  const href = `/games/${encodeURIComponent(g.slug)}`;
+  return `<div class="gvs-card"><a class="gv-cover-tilt gvs-cover" href="${href}" tabindex="-1" aria-hidden="true">${coverHtml(g.cover, { tilt: true, alt: "" })}</a><div class="gvs-info"><span class="bt-badge bt-badge--gold">${esc(badge)}</span><a class="gvs-title" href="${href}">${esc(g.title)}</a><span class="gvs-votes" data-gvs-votes="${esc(g.slug)}">${votesHtml(g.wanted)}</span>${wantButton(g)}</div></div>`;
+}
+let toplay: ReturnType<typeof initStories> = null;
+/** A vote on the card or a shelf: the page's copy of the summary and the card's count follow it; voting on the card pops the button. */
+function voted(slug: string, n: number) {
+  const g = V.games.find((x) => x.slug === slug);
+  if (g) g.wanted = n;
+  root!.querySelectorAll<HTMLElement>(`[data-gvs-votes="${CSS.escape(slug)}"]`).forEach((el) => { el.innerHTML = votesHtml(n); });
+}
+function mountToplay() {
+  const host = root!.querySelector<HTMLElement>("[data-toplay]");
+  if (!host) return;
+  const items = toPlayList();
+  host.hidden = !items.length;
+  if (!items.length) { toplay?.destroy(); toplay = null; return; }
+  toplay = initStories(host, {
+    items, name: "To play games", label: (x: ToPlay) => x.g.title,
+    render: toPlayCard,
+    thumb: (x: ToPlay) => coverHtml(x.g.cover, { alt: "", size: "sm" }),
+    onShow: () => initWants(host, (slug: string, n: number) => {
+      voted(slug, n);
+      const b = host.querySelector<HTMLElement>(`[data-want="${CSS.escape(slug)}"]`);
+      if (b?.getAttribute("aria-pressed") === "true") { b.classList.remove("is-pop"); void b.offsetWidth; b.classList.add("is-pop"); }
+    }),
+  });
+  toplaySearching(!!st.q.trim());
+}
+function toplaySearching(on: boolean) {
+  const host = root?.querySelector<HTMLElement>("[data-toplay]");
+  if (!host) return;
+  host.inert = on;   // steps back: not clickable or focusable while searching
+  toplay?.pause("search", on);
+}
+// Phones only (the M3 hero; the page frame spans the screen, so a media query matches the kit's 640px container breakpoint)
+const phone = matchMedia("(max-width: 640px)");
+function syncToplay() { if (phone.matches) { if (!toplay) mountToplay(); } else { toplay?.destroy(); toplay = null; } }
 function mostWanted() {
   const games = mostWantedGames();
   if (games.some((g) => g.wanted > 0)) return shelf("Most wanted on stream", "What members want Boomer to play next.", games, { ranked: true, status: "wishlist" });
@@ -259,7 +323,7 @@ function renderResults() {
   else res.innerHTML = html;
   lastGrid = filtered && gs.length > 0;
   initShelves(res);
-  initWants(res);
+  initWants(res, voted);
 }
 function renderControls() {
   root!.querySelector<HTMLElement>("[data-tokens]")!.innerHTML = tokensHtml();
@@ -423,6 +487,8 @@ async function boot() {
   renderControls();
   renderResults();
   renderHero();
+  syncToplay();
+  phone.addEventListener("change", syncToplay);
   onAuth(() => { renderResults(); renderHero(); });   // the Add / Join wording and the vote buttons follow sign-in
   // Back to the Vault: the same URL, so scroll to where you left it.
   const ctx = loadCtx();

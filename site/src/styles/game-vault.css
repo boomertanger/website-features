@@ -103,6 +103,32 @@
   .bt-root:not(#_) .gvh-spot .gvh-also { right: 190px; width: 110px; }
   .bt-root:not(#_) .gvh-spot-tag { top: 246px; right: 40px; width: 170px; }
 }
+/* The phone hero's story card (option 1C, game-vault-phone-hero-story.html): under 640px only, below the M3 counts, the kit's .bt-stories
+   flips through the To play games (pinned Up next first, then the most-voted). Gold for the badge, bars and ring; purple only on the vote
+   button and focus. Searching: it steps back like the desktop spotlight (faded, inert). */
+.bt-root:not(#_) .gvs { display: none; }
+.bt-root:not(#_) .gvs-card { display: flex; gap: 14px; align-items: center; padding: 12px; border: 1px solid color-mix(in srgb, var(--bt-gold) 35%, transparent); border-radius: 14px; background: color-mix(in srgb, var(--bt-surface) 86%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); box-shadow: 0 10px 30px var(--bt-scrim-strong); }
+.bt-root:not(#_) .gvs-cover { flex: none; width: 88px; transform: rotate(-4deg); }
+.bt-root:not(#_) .gvs-cover .bt-cover { border-radius: 8px; box-shadow: 0 8px 20px var(--bt-scrim-strong), 0 0 0 2px color-mix(in srgb, var(--bt-gold) 50%, transparent); }
+.bt-root:not(#_) .gvs-info { display: flex; flex-direction: column; gap: 6px; align-items: flex-start; min-width: 0; }
+.bt-root:not(#_) .gvs-title { color: var(--bt-text); font-size: var(--bt-text-lg); font-weight: 900; line-height: 1.1; text-decoration: none; overflow-wrap: anywhere; }
+.bt-root:not(#_) .gvs-title:hover { text-decoration: underline; }
+.bt-root:not(#_) .gvs-title:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; border-radius: 4px; }
+.bt-root:not(#_) .gvs-votes { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .gvs-votes b { color: var(--bt-gold); }
+.bt-root:not(#_) .gvs .bt-btn.is-pop { animation: gvs-pop 0.5s ease; }   /* the vote moment */
+@keyframes gvs-pop { 40% { transform: scale(1.12); } 100% { transform: scale(1); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .gvs { display: block; margin-top: 18px; transition: opacity 0.3s; }
+  .bt-root:not(#_) .gvs[hidden] { display: none; }
+  .bt-root:not(#_) .gvh.is-searching .gvs { opacity: 0.25; pointer-events: none; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .gvs-cover { transform: none; }
+  .bt-root:not(#_) .gvs .bt-btn.is-pop { animation: none; }
+  .bt-root:not(#_) .gvs { transition: none; }
+}
+
 /* Phones (M3, game-vault-phone-heroes.html, approved): the cover wall (5 columns) fills the background behind the kicker,
    title, line, big search and counts and fades to the page colour toward the bottom; no spotlight and no poster
    band. Now playing is the first shelf instead (it hides when nothing is playing). Searching works as on desktop:
