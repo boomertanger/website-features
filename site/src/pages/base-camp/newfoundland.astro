@@ -11,7 +11,7 @@ import BaseCampLayout from "../../layouts/BaseCampLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
-import { THINGS, WORDS, ASK, WAR_STAMPS, FAMOUS, TIMELINE, MONTHS, SEASON, seasonLine, wordOfDay } from "../../scripts/base-camp/newfoundland-data";
+import { THINGS, WORDS, isPhrase, ASK, WAR_STAMPS, FAMOUS, TIMELINE, MONTHS, SEASON, seasonLine, wordOfDay } from "../../scripts/base-camp/newfoundland-data";
 import { heroScene, chartSvg, pangaeaSvg, bergSvg, vikingSvg, codSvg, citySvg, ganderSvg, ponySvg, dogSvg, stampFlip } from "../../scripts/base-camp/newfoundland-art";
 import "../../styles/base-camp-newfoundland.css";
 
@@ -22,7 +22,7 @@ const chapter = (n: number, id: string, title: string, lede: string) => {
 };
 const pin = (n: number) => { const t = THINGS[n - 1]; return `<span class="nl-pin-chip"><i>${n}</i>${t.where}</span>`; };
 const mo = new Date().getMonth();          // build-time guesses; newfoundland.ts sets today's in the browser
-const [word, meaning] = wordOfDay();
+const wotd = wordOfDay();
 ---
 <BaseCampLayout title="Newfoundland" section="newfoundland" description="Where Boomer grew up: ten things worth knowing about Newfoundland, the Rock. Stone older than the Atlantic, North America's first sunrise, Iceberg Alley, the Vikings, Gander and the way they talk.">
   <div data-nl-page>
@@ -143,10 +143,10 @@ const [word, meaning] = wordOfDay();
             <Fragment set:html={pin(9)} />
             <h3 class="nl-thing-title">The way we talk</h3>
             <p>Newfoundland English mixes Irish, West Country English, Scottish and French roots. It's one of the most distinctive ways of speaking English anywhere, and visitors love trying it out. Turn the cards over.</p>
-            <div class="nl-wotd"><div><div class="nl-wotd-k">Word of the day</div><div class="nl-wotd-w" data-nl-wotd-w>{word}</div><div class="nl-wotd-m" data-nl-wotd-m>{meaning}</div></div><span class="bt-badge bt-badge--gold">New one tomorrow</span></div>
+            <div class="nl-wotd"><div><div class="nl-wotd-k">Word of the day</div><div class="nl-wotd-w" data-nl-wotd-w>{wotd.word}</div><div class="nl-wotd-m" data-nl-wotd-m>{wotd.meaning}</div><div class="nl-wotd-x" data-nl-wotd-x>{wotd.example}</div></div><span class="bt-badge bt-badge--gold">New one tomorrow</span></div>
             <div class="bt-flip-grid nl-words">
-              {WORDS.map(([w, m]) => (
-                <button type="button" class={`bt-flip bt-flip--teal${w.length > 8 ? " is-phrase" : ""}`} aria-label={`${w}: ${m}`}><span class="bt-flip-in"><span class="bt-flip-face" aria-hidden="true"><span class="nl-word">{w}</span><span class="bt-flip-hint">What's it mean?</span></span><span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-v">{m}</span></span></span></button>
+              {WORDS.map((w) => (
+                <button type="button" class={`bt-flip bt-flip--teal${isPhrase(w) ? " is-phrase" : ""}`} aria-label={`${w.word}${/[.!?]$/.test(w.word) ? "" : "."} ${w.meaning} Example: ${w.example}`}><span class="bt-flip-in"><span class="bt-flip-face" aria-hidden="true"><span class="nl-word">{w.word}</span><span class="bt-flip-hint">What's it mean?</span></span><span class="bt-flip-face bt-flip-face--back" aria-hidden="true"><span class="bt-flip-v">{w.meaning}</span><span class="nl-word-ex">{w.example}</span></span></span></button>
               ))}
             </div>
           </article>

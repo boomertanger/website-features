@@ -2,6 +2,7 @@
 // approved mockup docs/design/mockups/base-camp-newfoundland.html, round 5, which already carries the fact corrections): the ten things and their
 // map pins, the words, the war and Famous Newfoundlands stamps, the timeline, Ask BOOMBOT, the iceberg season, and the time helpers for the live
 // clocks (real America/St_Johns time). Used at build time (newfoundland.astro) and in the browser (newfoundland.ts).
+import words from "../../data/base-camp/newfoundland-words.json";
 
 export const THINGS = [
   { n: 1, id: "rock", t: "Older than the Atlantic", where: "Gros Morne" },
@@ -18,16 +19,11 @@ export const THINGS = [
 /** Map pins: the true point (x, y) and the pin head (hx, hy), in the chart's 640 × 690 space. 9 and 10 are everywhere, so they have none. */
 export const PINS: Record<number, [number, number, number, number]> = { 1: [109, 253, 64, 205], 2: [461, 448, 530, 470], 3: [482, 240, 545, 205], 4: [269, 40, 330, 34], 5: [568, 640, 612, 596], 6: [455, 444, 505, 392], 7: [371, 470, 330, 590], 8: [330, 305, 392, 272] };
 
-export const WORDS: [string, string][] = [
-  ["b'y", "Boy, but for anyone at all. \"How's she going, b'y?\""],
-  ["scoff", "A big feed. A hearty meal."],
-  ["mauzy", "Damp, foggy and mild. A mauzy day."],
-  ["streel", "An untidy, scruffy person."],
-  ["sleveen", "A rascal. Someone sly."],
-  ["What are ya at?", "What are you up to? Also just: how are you?"],
-  ["Stay where you're to", "Stay where you are. (Till I comes where you're at.)"],
-  ["I'm after telling ya", "I just told you."],
-];
+/** The way we talk (chapter 05): word, meaning and example, in order. The list itself is site/src/data/base-camp/newfoundland-words.json. */
+export interface NlWord { word: string; meaning: string; example: string }
+export const WORDS: NlWord[] = words;
+/** The longer phrases get the smaller word size on the cards, so they stay on two lines at most. */
+export const isPhrase = (w: NlWord) => w.word.length > 10;
 /** The word of the day: one per calendar day (UTC), the same for everyone, round the list in order. */
 export const wordOfDay = (ms = Date.now()) => WORDS[Math.floor(ms / 86400000) % WORDS.length];
 

@@ -34,9 +34,10 @@ function init(root: HTMLElement) {
   setInterval(tick, 15000);
 
   // ---- the word of the day and the season's "Now" ----
-  const [w, meaning] = wordOfDay();
-  const ww = root.querySelector<HTMLElement>("[data-nl-wotd-w]"), wm = root.querySelector<HTMLElement>("[data-nl-wotd-m]");
-  if (ww && wm) { ww.textContent = w; wm.textContent = meaning; }
+  const wotd = wordOfDay();
+  const ww = root.querySelector<HTMLElement>("[data-nl-wotd-w]"), wm = root.querySelector<HTMLElement>("[data-nl-wotd-m]"), wx = root.querySelector<HTMLElement>("[data-nl-wotd-x]");
+  if (ww && wm) { ww.textContent = wotd.word; wm.textContent = wotd.meaning; }
+  if (wx) wx.textContent = wotd.example;
   const mo = new Date().getMonth();
   root.querySelectorAll<HTMLElement>(".nl-mo").forEach((e, i) => e.classList.toggle("is-now", i === mo));
   const sl = root.querySelector<HTMLElement>("[data-nl-season]");

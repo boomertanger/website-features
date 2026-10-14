@@ -306,12 +306,20 @@
 .bt-root:not(#_) .nl-wotd-w { margin: 4px 0; font-size: 44px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; font-style: italic; }
 .bt-root:not(#_) .nl-wotd-m { color: var(--bt-text-muted); line-height: 1.5; }
 .bt-root:not(#_) .nl-wotd-m b { color: var(--bt-text); }
+.bt-root:not(#_) .nl-wotd-x { margin-top: 6px; color: var(--bt-text); font-style: italic; line-height: 1.5; }
 .bt-root:not(#_) .nl-words { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
-.bt-root:not(#_) .nl-words .bt-flip { height: 150px; }
-.bt-root:not(#_) .nl-words .bt-flip-face { padding: 14px; }
+/* The cards fit their text at every width: both faces share one grid cell, so the card is as tall as the taller face (150px at least),
+   instead of the kit's fixed height with absolutely placed faces. */
+.bt-root:not(#_) .nl-words .bt-flip { display: grid; height: auto; }   /* a grid, so its inside fills the card (a button centres its content) */
+.bt-root:not(#_) .nl-words .bt-flip-in { display: grid; height: auto; min-height: 150px; }
+.bt-root:not(#_) .nl-words .bt-flip-face { position: relative; inset: auto; grid-area: 1 / 1; padding: 14px; }
+.bt-root:not(#_) .nl-words .bt-flip-v { line-height: 1.4; }
+.bt-root:not(#_) .nl-word-ex { display: block; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-style: italic; line-height: 1.45; }   /* the example, on its own line under the meaning */
 .bt-root:not(#_) .nl-word { font-size: 24px; font-weight: 900; letter-spacing: -0.01em; font-style: italic; line-height: 1.15; }
 .bt-root:not(#_) .nl-words .bt-flip.is-phrase .nl-word { font-size: 17px; }
 @container bt (max-width: 900px) { .bt-root:not(#_) .nl-words { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+/* Small phones: two cards a row leave ~100px for a word, so the words come down a size (one long word like "Crooked" can't wrap) */
+@container bt (max-width: 420px) { .bt-root:not(#_) .nl-word { font-size: 20px; } .bt-root:not(#_) .nl-words .bt-flip.is-phrase .nl-word { font-size: 16px; } .bt-root:not(#_) .nl-words .bt-flip-face { padding: 12px 10px; } }
 @container bt (max-width: 640px) { .bt-root:not(#_) .nl-wotd { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .nl-wotd-w { font-size: 34px; } }
 
 /* ---------- Timeline ---------- */
