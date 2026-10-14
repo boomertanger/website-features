@@ -65,7 +65,7 @@ export function initSegNav(nav) {
   };
   function show(force = false) {
     const a = current();
-    if (a && nav.scrollWidth > nav.clientWidth + 1) {
+    if (a && a.offsetWidth && nav.scrollWidth > nav.clientWidth + 1) {   // a hidden current link (a role link) scrolls nothing
       const left = a.offsetLeft, right = left + a.offsetWidth;
       const inView = left >= nav.scrollLeft && right <= nav.scrollLeft + nav.clientWidth;
       if (!inView || force) nav.scrollLeft = Math.max(0, left - (nav.clientWidth - a.offsetWidth) / 2);

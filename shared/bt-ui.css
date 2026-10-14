@@ -121,8 +121,16 @@
      the top of the screen when the header is scrolled away). */
   --bt-modal-gap: 32px;
 
-  --bt-font: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --bt-font: "Inter", "Inter Fallback", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
 }
+/* Inter's stand-in while the web font loads: a local Arial scaled to Inter's metrics, so text keeps (nearly) the same width and
+   line height when Inter swaps in. Without it every bar, tab and title jumped 12-29px about 600 ms after load (Oct 14, 2026). */
+/* Matched per weight (measured against Inter in Chromium, Oct 2026): regular text, then the semibold-and-up tabs and buttons, then the
+   uppercase wordmarks (.bt-wordmark-text), whose caps run wider. */
+@font-face { font-family: "Inter Fallback"; font-weight: 100 549; src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"); size-adjust: 107.4%; ascent-override: 90.2%; descent-override: 22.48%; line-gap-override: 0%; }
+@font-face { font-family: "Inter Fallback"; font-weight: 550 749; src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"); size-adjust: 109%; ascent-override: 88.9%; descent-override: 22.15%; line-gap-override: 0%; }
+@font-face { font-family: "Inter Fallback"; font-weight: 750 1000; src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"); size-adjust: 101%; ascent-override: 95.9%; descent-override: 23.9%; line-gap-override: 0%; }   /* the 800-900 titles, uppercase like the wordmarks */
+@font-face { font-family: "Inter Caps Fallback"; src: local("Arial"), local("ArialMT"), local("Helvetica"), local("Liberation Sans"); size-adjust: 101%; ascent-override: 95.9%; descent-override: 23.9%; line-gap-override: 0%; }
 
 /* ================= Base / Squarespace guard rails ================= */
 
@@ -217,7 +225,7 @@
 /* Only the text may truncate. The icon slot is a fixed box whose overflow is
    visible, so animated icons can burst past it without moving the layout.
    Put any icon wrapper OUTSIDE .bt-wordmark-text, never inside it. */
-.bt-root:not(#_) .bt-wordmark-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) .bt-wordmark-text { min-width: 0; overflow: hidden; text-overflow: ellipsis; font-family: "Inter", "Inter Caps Fallback", var(--bt-font); }   /* caps-matched stand-in: no jump when Inter loads */
 .bt-root:not(#_) .bt-wordmark-icon { position: relative; display: inline-flex; flex: none; overflow: visible; }
 .bt-root:not(#_) .bt-topbar > .bt-topnav { flex: none; }
 .bt-root:not(#_) .bt-wordmark-accent { color: var(--bt-primary); }
@@ -1613,6 +1621,20 @@
 /* A rule of its own: minifiers fold a timeline into the animation shorthand, which browsers reject. */
 .bt-root:not(#_) .bt-sticky-bar .bt-sticky-bar-progress.is-timeline { animation-duration: auto; animation-timeline: scroll(root); }
 @keyframes bt-read { from { transform: scaleX(0); } to { transform: scaleX(1); } }
+/* ---- Feature bar with a phone link row: .bt-topbar.bt-topbar--rows > .bt-wordmark + .bt-topnav > .bt-seg-nav.bt-seg-nav--scroll ----
+   Desktop and tablet: one row, the links on the right. Phones (640px and narrower): two rows of a fixed height, the wordmark on top
+   and ONE link row under it, full width, scrolling sideways. Put an inline bt-row-current script right after the nav (see
+   docs/design-system.md §5 "Feature bars") so the current link is in view before first paint: no animation, no reset to the start.
+   The links are always the same set for the same person (role links use .bt-when-crew / -overseer / -owner), so nothing in the bar
+   changes width after load. */
+.bt-root:not(#_) .bt-topbar--rows > .bt-topnav { flex: 0 1 auto; min-width: 0; }
+.bt-root:not(#_) .bt-topbar--rows > .bt-topnav > .bt-seg-nav { max-width: 100%; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-sticky-bar:has(> .bt-topbar--rows) { --bt-sticky-bar-rest: 112px; --bt-sticky-bar-h: 112px; }
+  .bt-root:not(#_) .bt-sticky-bar > .bt-topbar.bt-topbar--rows, .bt-root:not(#_) .bt-topbar.bt-topbar--rows { flex-wrap: wrap; align-content: center; justify-content: flex-start; row-gap: 6px; padding: 0 var(--bt-gutter); }
+  .bt-root:not(#_) .bt-topbar--rows > .bt-topnav { flex: 1 1 100%; }
+  .bt-root:not(#_) .bt-topbar--rows > .bt-topnav > .bt-seg-nav { display: flex; width: 100%; }
+}
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bt-sticky-bar { --bt-sticky-bar-rest: 62px; --bt-sticky-bar-h: 62px; }
   .bt-root:not(#_) .bt-sticky-bar > .bt-topbar { padding: 0 10px 0 16px; gap: 10px; }
@@ -2106,10 +2128,17 @@
 .bt-root:not(#_):is([data-live="backstage"], [data-live="backstage"] *) .bt-when-off,
 .bt-root:not(#_):not(:is([data-live="public"], [data-live="public"] *)) .bt-when-public,
 .bt-root:not(#_):not(:is([data-live="backstage"], [data-live="backstage"] *)) .bt-when-backstage,
-.bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-when-signed-in,
-.bt-root:not(#_):not(:is([data-auth="visitor"], [data-auth="visitor"] *)) .bt-when-visitor,
-.bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin,
-.bt-root:not(#_):not(:is([data-staff="on"], [data-staff="on"] *)) .bt-when-staff { display: none; }   /* staff = mods and admins */
+.bt-root:not(#_):is([data-auth="visitor"], [data-auth="visitor"] *) .bt-when-signed-in:not(#_),
+.bt-root:not(#_):not(:is([data-auth="visitor"], [data-auth="visitor"] *)) .bt-when-visitor:not(#_),
+.bt-root:not(#_):not(:is([data-auth="admin"], [data-auth="admin"] *)) .bt-when-admin:not(#_),
+.bt-root:not(#_):not(:is([data-staff="on"], [data-staff="on"] *)) .bt-when-staff:not(#_),
+.bt-root:not(#_):not(:is([data-crew="on"], [data-crew="on"] *)) .bt-when-crew:not(#_),
+.bt-root:not(#_):not(:is([data-overseer="on"], [data-overseer="on"] *)) .bt-when-overseer:not(#_),
+.bt-root:not(#_):not(:is([data-owner="on"], [data-owner="on"] *)) .bt-when-owner:not(#_) { display: none; }   /* the extra :not(#_) outranks any component's display (a link row's inline-flex) */
+/* staff = mods and admins (roles); crew = on the crew (any grade, not Paused or Alumni) or the owner; overseer = A2 Overseer and up, or
+   the owner; owner = the site owner. Set on <body> BEFORE first paint from the last known sign-in (BaseLayout's inline script reads
+   localStorage "bt.who", written by site/src/lib/auth.ts), then confirmed by the real sign-in. So role-only links are in the HTML from
+   the start and never pop in. Display only: the rules and the callables decide. */
 /* Auth state: data-auth-state on the page root (site/src/lib/auth.ts) =
    loading | signedOut | needsSignup | unverified | verified. While loading, the
    account area shows its skeleton; mid-signup, its Finish signup button. */

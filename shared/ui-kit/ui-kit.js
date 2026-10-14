@@ -47,6 +47,7 @@ import { chatTileHtml, chatPreviewHtml, initChatTiles } from "../ui/chat-tile.js
 import { initJourney } from "../ui/how-it-works.js";
 import { screamPlannerKitHtml, initScreamPlannerKit } from "./kit-scream-planner.js";
 import { controlRoomKitHtml, initControlRoomKit } from "./kit-control-room.js";
+import { crWordmarkHtml } from "../ui/control-room.js";
 import { modDeckKitHtml, initModDeckKit } from "./kit-mod-deck.js";
 import { revealKitHtml, initRevealKit } from "./kit-reveal.js";
 import { qcardKitHtml, initQcardKit } from "./kit-qcard.js";
@@ -58,6 +59,7 @@ import { galleryKitHtml, initGalleryKit } from "./kit-gallery.js";
 import { dropsKitHtml, initDropsKit } from "./kit-drops.js";
 import { servicesKitHtml, initServicesKit } from "./kit-services.js";
 import { initNavGroups, featureLoadingHtml, watchFeatureHtml, playFeatureHtml, communityFeatureHtml, initWatchTile } from "../ui/navgroup.js";
+const KIT_CR = ["Live", "Questions", "How it works", "Mod Deck", "Controls", "Checklist"];   // the CONTROLROOM bar's links, in order
 
 const KIT_VERSION = "dev";
 
@@ -969,6 +971,10 @@ function arcadeHtml() {
     <div class="kit-row"><div style="width:260px"><nav class="bt-seg-nav bt-seg-nav--scroll" data-kit-seg aria-label="Base Camp (demo)" style="display:flex;width:100%">${["The story", "Newfoundland", "Skipper", "Mail Call"].map((t, i) => `<a href="#"${i === 2 ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav></div></div>
     <p class="kit-sub">Sticky, after scroll: a 360px-wide filter bar (the Game Vault's, on phones) with the current tab off to the right. Scroll inside the box: the bar sticks, gets slimmer and the counts hide, so every tab shrinks under the lit tab. At rest the current tab is lit by CSS (never measured, so never stale); the gliding pill is only measured while you hover or focus another tab, and re-measured, without animating, whenever a tab changes size. The current tab is scrolled into view in the row.</p>
     <div class="kit-row"><div class="kit-stick" data-kit-stick><div class="kit-stick-hero">Scroll down in here</div><div class="kit-stick-bar"><nav class="bt-seg-nav" data-kit-seg aria-label="Status (sticky demo)">${[["All", 142], ["Playing", 0], ["Finished", 111], ["Abandoned", 1], ["To play", 30]].map(([t, n], i) => `<a href="#"${i === 4 ? ' aria-current="page"' : ""}>${t}<span class="bt-chip-n">${n}</span></a>`).join("")}</nav></div><div class="kit-stick-body"></div></div></div>
+    <p class="kit-sub">Feature bars (docs/design-system.md §5 "Feature bars"): the URL decides the bar, so every /live page shows CONTROLROOM and every /crew page MODMACHINA. .bt-sticky-bar &gt; .bt-topbar.bt-topbar--rows &gt; the wordmark + .bt-topnav &gt; one .bt-seg-nav--scroll. Role links are in the HTML with .bt-when-crew / .bt-when-overseer / .bt-when-owner (and .bt-when-staff), shown by flags BaseLayout sets on &lt;body&gt; before first paint, so they never pop in; the bar never changes size after load. The CONTROLROOM wordmark is not a link (Live already goes to /live: no two links in a bar go to the same page). Below, the same bar as a visitor, a crew member (a Warden), an A2 Overseer and the owner (each drawn with that person's links), then a 360px phone: the wordmark on top, one link row under it, the current link (Controls) scrolled into view before first paint.</p>
+    ${[["Visitor or member", 3], ["Crew (a Warden)", 4], ["A2 Overseer", 5], ["Owner", 6]].map(([who, n]) => `<p class="kit-sub">${who}</p><div class="kit-fbar"><div class="bt-topbar bt-topbar--rows">${crWordmarkHtml({ href: null })}<div class="bt-topnav"><nav class="bt-seg-nav bt-seg-nav--scroll" data-kit-seg aria-label="Control Room (${who}, demo)">${KIT_CR.slice(0, n).map((t, i) => `<a href="#"${i === Math.min(n - 1, 4) ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav></div></div></div>`).join("")}
+    <p class="kit-sub">Phone (360px wide, the owner on /live/control)</p>
+    <div class="kit-fbar kit-fbar--phone"><div class="bt-sticky-bar" style="position:relative"><div class="bt-topbar bt-topbar--rows">${crWordmarkHtml({ href: null })}<div class="bt-topnav"><nav class="bt-seg-nav bt-seg-nav--scroll" data-kit-seg data-kit-row aria-label="Control Room (phone demo)">${KIT_CR.map((t, i) => `<a href="#"${i === 4 ? ' aria-current="page"' : ""}>${t}</a>`).join("")}</nav></div></div></div></div>
     <p class="kit-sub">Game logo (.bt-game-logo--lg page title, --sm on cards) and page tabs (.bt-page-tabs)</p>
     <div class="kit-stack"><div>${ttsLogoHtml("lg")}</div><div>${ttsLogoHtml("sm")}</div>${tabs(0)}${tabs(1)}</div>
     <p class="kit-sub">Go button (.bt-btn--go: Play now and Play again, the §8f green exception)</p>
