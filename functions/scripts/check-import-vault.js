@@ -92,4 +92,10 @@ assert.deepEqual(hand.links, { itch: "https://mihappyl.itch.io/granny-vr-unoffic
 assert.deepEqual(hand.tags.boomer, ["VR"]);
 assert.deepEqual(byHandDraft({ tags: {} }, readRow({ title: "Granny Legacy", link: "https://gamejolt.com/games/grannylegacy/1011593" })).links, { official: "https://gamejolt.com/games/grannylegacy/1011593" });
 
+// a by-hand row's cover: the page's og:image (either attribute order, relative URLs made absolute, &amp; decoded)
+const { ogImageFromHtml } = require("./lib/vault-cover");
+assert.equal(ogImageFromHtml('<meta property="og:image" content="https://img.itch.zone/a.png">', "https://x.itch.io/g"), "https://img.itch.zone/a.png");
+assert.equal(ogImageFromHtml('<meta content="/c.png?a=1&amp;b=2" name="og:image" />', "https://x.example/g"), "https://x.example/c.png?a=1&b=2");
+assert.equal(ogImageFromHtml('<meta property="og:title" content="G"><title>G</title>', "https://x.example"), null, "no og:image: no cover");
+
 console.log("check-import-vault: ok");

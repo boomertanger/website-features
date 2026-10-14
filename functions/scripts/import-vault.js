@@ -27,8 +27,10 @@
 //                    the year comes from Steam)
 //   episode          yes: an IGDB DLC or expansion record (or a Steam DLC page) is added as its own entry
 //   owner_override   adult: lets this row past the adult-content check; recorded on the game's private source doc
-//   link, developer  add by hand (no IGDB or Steam record): title + https link (+ developer), no cover; an
-//                    itch.io link is stored as the itch link, any other as the official one
+//   link, developer  add by hand (no IGDB or Steam record): title + https link (+ developer); an itch.io link is
+//                    stored as the itch link, any other as the official one. Its cover is the page's og:image (Game
+//                    Jolt: the game's thumbnail), uploaded through the cover-override path (lib/vault-cover.js);
+//                    the dry run shows the image, and a page with none is reported and added without a cover
 // Never guesses: a title with more than one plausible IGDB game left after the hint, or none, is
 // skipped and reported (ambiguous: each candidate with its year and developer; not found: the
 // closest names). Editions, ports and versions of one game fold into its main record first. IGDB's
@@ -51,6 +53,7 @@
 const fs = require("fs");
 const path = require("path");
 const admin = require("firebase-admin");
+const VC = require("./lib/vault-cover");
 
 const SITE_ID = "boomertanger";
 const STATUSES = ["playing", "finished", "abandoned", "wishlist"];
@@ -316,6 +319,7 @@ async function main() {
   console.log(`${rows.length} row(s) in ${args.file}\n`);
   const tally = { added: 0, duplicate: 0, refused: 0, problem: 0, error: 0 };
   const report = { add: [], ambiguous: [], notFound: [], other: [] };   // the three lists, printed at the end
+  let cloudCreds = null;   // Cloudinary, read once from Secret Manager when a by-hand row gets its cover
   const taken = new Set();   // keys claimed by earlier rows of this file, so two rows for one game don't both write
 
   for (const raw of rows) {
@@ -332,13 +336,26 @@ async function main() {
         const draft = byHandDraft(h.game, row);
         const matched = `${draft.title} (by hand, ${draft.developers[0] || "no developer"}, ${row.link})`;
         report.add.push(`${raw.title} -> ${matched}`);
-        if (!args.apply) { tally.added++; h.keys.forEach((k) => taken.add(k)); console.log(`WOULD ADD ${label}\n          -> ${draft.slug}: ${matched} · status ${row.status} · no cover`); continue; }
+        // its cover: the store page's image (og:image; Game Jolt's thumbnail), uploaded through the cover-override path
+        const img = args.fixtures ? { url: null, why: "fixtures: not looked up" } : await VC.pageCoverImage(row.link);
+        const coverNote = img.url ? `cover from the page (${img.from}): ${img.url}` : `NO COVER IMAGE (${img.why})`;
+        if (!img.url) report.other.push(`${label}: added with no cover, ${img.why}`);
+        if (!args.apply) { tally.added++; h.keys.forEach((k) => taken.add(k)); console.log(`WOULD ADD ${label}\n          -> ${draft.slug}: ${matched} · status ${row.status} · ${coverNote}`); continue; }
         const made = await store.createGame({ draft, source: { ...h.source, addedBy: "hand" }, keys: h.keys, addedByUid: null, checks: h.checks, reason: "Imported by hand" });
         if (!made.ok) { tally.duplicate++; console.log(`SKIP      ${label}\n          already in the Vault as ${made.duplicateSlug}`); continue; }
         h.keys.forEach((k) => taken.add(k));
         await store.logAdmin({ action: "add", slug: made.slug, title: draft.title, actorUid: null, actorName: "Automatic", details: { via: "import-vault.js", byHand: true, status: row.status, line: raw.line } });
         tally.added++;
-        console.log(`ADDED     ${label}\n          -> ${made.slug}: ${matched}`);
+        let coverDone = "no cover";
+        if (img.url) {
+          try {
+            cloudCreds ||= await VC.cloudinaryCreds(projectId, { secretManager: true });
+            const g = { slug: made.slug, ...(await store.games.doc(made.slug).get()).data() };
+            const info = await VC.setCoverFromUrl({ store, creds: cloudCreds, g, imageUrl: img.url, publicId: `game-vault/covers/${made.slug}-page`, actor: "import-vault.js", reason: `Cover from its store page (${img.from})` });
+            coverDone = `cover ${info.public_id}`;
+          } catch (err) { coverDone = `COVER FAILED (${err.message}); run vault-link-covers.js`; report.other.push(`${label}: added, but the cover failed: ${err.message}`); }
+        }
+        console.log(`ADDED     ${label}\n          -> ${made.slug}: ${matched} · ${coverDone}`);
         continue;
       }
       const pick = await inputFor(row, sources, C.titleKey);
