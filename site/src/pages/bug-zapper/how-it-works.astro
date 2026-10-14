@@ -8,7 +8,7 @@ import BugLayout from "../../layouts/BugLayout.astro";
 import TocLayout from "../../components/TocLayout.astro";
 import Mascot from "../../components/Mascot.astro";
 import { boombotIcon } from "../../../../shared/ui/arcade.js";
-import { porchIcon, mothSvg, BITE, I } from "../../scripts/bugs/art";
+import { bzIcon, iconId, mothSvg, BITE, I } from "../../scripts/bugs/art";
 
 const JOIN_TITLE = "Join to report bugs";
 const NAV: [string, string][] = [["s-what", "What it's for"], ["s-journey", "A report's journey"], ["s-try", "Try it"], ["s-who", "Who does what"], ["s-rewards", "Rewards"], ["s-rules", "House rules"], ["s-faq", "Ask BOOMBOT"]];
@@ -19,7 +19,7 @@ const STAGES = [
   ["👀", "Spot it", "Something looks wrong, does nothing, or breaks. On the site or on stream.", `<div class="bzs-win"><div class="bzs-win-bar"><i></i><i></i><i></i></div><div class="bzs-win-body"><span class="bzs-line" style="width:80%"></span><span class="bzs-line" style="width:55%"></span><span class="bzs-btn"></span><span class="bz-moth">${mothSvg()}</span></div></div>`],
   ["📝", "Report it", "Say what happened, what you expected, and where. A screenshot helps.", `<div class="bzs-form"><span class="bzs-line"></span><span class="bzs-line"></span><span class="bzs-line"></span><span class="bzs-send">SEND</span></div>`],
   ["🦟", "Bit me too", "Happening to you as well? Add yours. The most-bit bugs get fixed first.", `<div class="bzs-bite"><span class="bt-tally is-active">${BITE}<span class="bt-tally-count">12</span><span class="bt-tally-label">bit me</span></span><span class="bzs-faces">${["hm", "jw", "ck", "rv"].map((x) => `<span class="bt-avatar">${x.toUpperCase()}</span>`).join("")}</span></div>`],
-  ["⚡", "Zapped", "The fix ships. You and everyone it bit get a heads-up.", `<div class="bzs-zap">${porchIcon()}${badge("lime", "Fixed")}</div>`],
+  ["⚡", "Zapped", "The fix ships. You and everyone it bit get a heads-up.", `<div class="bzs-zap"><span class="bz-icon-live">${bzIcon(iconId())}</span>${badge("lime", "Fixed")}</div>`],
 ] as const;
 const JOURNEY = [
   ["📮", "Open", "Your report lands on the board. Others can add a “bit me too”.", "blue"],

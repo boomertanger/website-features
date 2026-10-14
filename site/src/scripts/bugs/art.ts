@@ -1,5 +1,6 @@
 // Bug Zapper art (docs/specs/bug-zapper.md Appendix A; docs/design/mockups/bug-zapper-mockups.html, Icon I1 Porch zapper and Hero H1 Porch light): the
-// BUGZAPPER wordmark's porch-lamp icon (BZ_ICON: it rests; on hover or focus the tube lights and a moth flies in and is zapped, bug-zapper.css) and the hero's
+// BUGZAPPER wordmark's icon (BZ_ICON, bzIcon: M1 Hanging lantern with E4 Big zap, docs/specs/bug-zapper-icon.md; it rests, and on power-on the tube lights,
+// a moth flies in and a forked bolt bursts out, bug-zapper.css) and the hero's
 // hanging lamp (bzLamp: the L2 Porch lantern, drawn at full size with a UV violet tube, docs/specs/bug-zapper-lamp.md), plus the page's small icons.
 // Bug-Zapper-only, so it lives with the feature, not the kit. Each copy needs unique gradient ids.
 
@@ -9,25 +10,25 @@ const uid = (p: string) => `${p}${++n}`;
 const MOTH = `<path class="wing w1" d="M0 0C-2.8-2.6-4.6-.6-3.6 1.6C-2.4 2-1 1.2 0 0Z"/><path class="wing w2" d="M0 0C2.8-2.6 4.6-.6 3.6 1.6C2.4 2 1 1.2 0 0Z"/><ellipse class="body" cx="0" cy=".8" rx=".85" ry="2"/>`;
 export const mothSvg = () => `<svg viewBox="-5 -3.4 10 7" aria-hidden="true">${MOTH}</svg>`;
 
-export function porchIcon({ cls = "" }: { cls?: string } = {}) {
-  const u = uid("bzp");
-  return `<svg class="bz-icon bz-icon--porch${cls ? " " + cls : ""}" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><defs><linearGradient id="${u}t" x1="0" x2="1"><stop offset="0" class="t-lo"/><stop offset=".5" class="t-hi"/><stop offset="1" class="t-lo"/></linearGradient><radialGradient id="${u}h"><stop offset="0" class="h-in"/><stop offset="1" class="h-out"/></radialGradient></defs>
-<circle class="halo" cx="20" cy="19.5" r="15" fill="url(#${u}h)"/>
-<path class="hang" d="M20 4.2V7.4"/><circle class="ring" cx="20" cy="2.8" r="1.5"/>
-<path class="cap" d="M11.4 10.4C12.6 7.6 15.8 6.4 20 6.4S27.4 7.6 28.6 10.4Z"/>
-<rect class="frame" x="12.6" y="10.4" width="14.8" height="17.6" rx="1.4"/>
-<rect class="tube" x="17.5" y="12" width="5" height="14.4" rx="2.5" fill="url(#${u}t)"/>
-<path class="wire" d="M14.7 10.4V28M16.1 10.4V28M23.9 10.4V28M25.3 10.4V28"/>
-<path class="rung" d="M12.6 14.8H27.4M12.6 19.2H27.4M12.6 23.6H27.4"/>
-<rect class="frame-line" x="12.6" y="10.4" width="14.8" height="17.6" rx="1.4"/>
-<path class="base" d="M11.4 28H28.6C27.6 30.6 24.4 31.8 20 31.8S12.4 30.6 11.4 28Z"/>
-<g transform="translate(33.4 12.6)"><g class="moth">${MOTH}</g></g>
-<path class="zap" d="M28.2 14.6L30.6 16.4L28.9 17.6L31.4 19.6"/>
-<g class="sparks"><circle cx="29.6" cy="15.6" r=".75"/><circle cx="30.8" cy="18.2" r=".6"/><circle cx="28.4" cy="19.4" r=".55"/><circle cx="31.4" cy="16.4" r=".5"/></g>
-<circle class="ash" cx="28.9" cy="18.6" r=".75"/></svg>`;
-}
+/** The wordmark icon, M1 Hanging lantern with E4 Big zap (docs/specs/bug-zapper-icon.md); u keeps its gradient ids unique. */
+export const bzIcon = (u: string) => `<svg class="bz-icon bz-icon--lantern" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><defs><linearGradient id="${u}t" x1="0" x2="1"><stop offset="0" class="t-lo"/><stop offset=".5" class="t-hi"/><stop offset="1" class="t-lo"/></linearGradient><radialGradient id="${u}h"><stop offset="0" class="h-in"/><stop offset="1" class="h-out"/></radialGradient></defs>
+<circle class="halo" cx="20" cy="22" r="15" fill="url(#${u}h)"/>
+<circle class="ring" cx="20" cy="2.9" r="1.4"/><path class="hang" d="M20 4.3V6.4"/>
+<path class="cap" d="M20 6.4L29.6 13H10.4Z"/>
+<rect class="cap" x="9.4" y="12.8" width="21.2" height="2.2" rx=".8"/>
+<path class="frame" d="M11.6 15H28.4L27.2 31.2H12.8Z"/>
+<rect class="tube" x="17.6" y="17.2" width="4.8" height="11.8" rx="2.4" fill="url(#${u}t)"/>
+<path class="wire" d="M15.4 15L15.8 31.2M24.6 15L24.2 31.2"/><path class="rung" d="M12.2 23.1H27.8"/>
+<g class="arc a4"><path class="bg" d="M17.6 20.2L16.4 21.3L17.1 22.1L15.5 23.5"/><path class="bc" d="M17.6 20.2L16.4 21.3L17.1 22.1L15.5 23.5"/></g><path class="frame-line" d="M11.6 15H28.4L27.2 31.2H12.8Z"/>
+<rect class="base" x="11.4" y="31.2" width="17.2" height="2.2" rx=".8"/>
+<path class="base" d="M14 33.4H26L24 36.2H16Z"/><g transform="translate(33.4 15.2)"><g class="moth"><path class="wing w1" d="M0 0C-2.8-2.6-4.6-.6-3.6 1.6C-2.4 2-1 1.2 0 0Z"/><path class="wing w2" d="M0 0C2.8-2.6 4.6-.6 3.6 1.6C2.4 2 1 1.2 0 0Z"/><ellipse class="body" cx="0" cy=".8" rx=".85" ry="2"/></g></g>
+<path class="zap" d="M28.4 18.2L30.6 19.9L29 21.1L31.5 22.9"/>
+<g class="sparks"><circle cx="29.6" cy="19" r=".75"/><circle cx="30.8" cy="21.8" r=".6"/><circle cx="28.4" cy="22.6" r=".55"/><circle cx="31.4" cy="19.8" r=".5"/></g>
+<circle class="ash" cx="28.8" cy="21.4" r=".75"/><circle class="flashc" cx="28.6" cy="20.4" r="4.2"/><g class="fork f1"><path class="bg" d="M28.4 20.3L31.2 18.4L30.2 20.9L34.4 19.6"/><path class="bc" d="M28.4 20.3L31.2 18.4L30.2 20.9L34.4 19.6"/></g><g class="fork f2"><path class="bg" d="M30.6 19.6L32.6 23.4"/><path class="bc" d="M30.6 19.6L32.6 23.4"/></g><g class="fork f3"><path class="bg" d="M29.6 21.6L31.4 25.2L30.4 25.4L32.6 27.8"/><path class="bc" d="M29.6 21.6L31.4 25.2L30.4 25.4L32.6 27.8"/></g></svg>`;
+/** A unique id prefix for one bzIcon copy. */
+export const iconId = () => uid("bzi");
 /** The wordmark icon. */
-export const BZ_ICON = porchIcon();
+export const BZ_ICON = bzIcon(iconId());
 /** A unique id prefix for one bzLamp copy (its gradients). */
 export const lampId = () => uid("bzl");
 /** The hero's hanging lamp: L2 Porch lantern (docs/specs/bug-zapper-lamp.md, the mockup's "V1 UV violet"); u keeps its gradient ids unique. */

@@ -17,7 +17,8 @@ which on this site means clickable. The hero lamp is decoration, not a button.
    tube, the tube's glow, the halo behind the lamp, the floor pool, the hero's soft background tint, the wordmark icon's
    lit tube and halo, and the ZAPPED IN success glow. Never an outline, a border or a flat fill. The metal is iron
    (`--bt-wire` mixes), so purple keeps meaning clickable. The zap bolt stays `--bt-lamp`; moths unchanged.
-3. **Wordmark icon (I1 Porch zapper)** keeps its drawing and purple outline (it is a link), with the outline thinned
+3. **Superseded (Oct 2026) by `docs/specs/bug-zapper-icon.md`:** the wordmark icon is now M1 Hanging lantern with E4 Big zap.
+   As first written: **Wordmark icon (I1 Porch zapper)** keeps its drawing and purple outline (it is a link), with the outline thinned
    from 1.9 to 1.5 (`.frame`, `.cap`, `.base`, `.frame-line`; the ring 1.4 → 1.2). Its tube and halo use `--bz-uv`.
 4. Rename the feature glow properties `--bz-ice-glow` / `--bz-ice-faint` to `--bz-glow` / `--bz-glow-faint`, defined
    from `--bz-uv`. `--bt-ice` stays a kit token; Bug Zapper just stops using it for its light.

@@ -7,20 +7,23 @@
 /* <body> is the page root (.bt-root) and this file loads on the Bug Zapper pages only (BugLayout), so the bar and the modal portals see these too. */
 .bt-root:not(#_) { --bz-uv: #7c5cff; --bz-glow: color-mix(in srgb, var(--bz-uv) 45%, transparent); --bz-glow-faint: color-mix(in srgb, var(--bz-uv) 14%, transparent); --bz-core: color-mix(in srgb, var(--bz-uv) 25%, var(--bt-snow)); }
 
-/* ---------- Wordmark icon (I1 Porch zapper, spec Appendix A): rests; on hover / focus / .is-lit the tube lights, a moth flies in and is zapped ---------- */
+/* ---------- Wordmark icon: M1 Hanging lantern with E4 Big zap (docs/specs/bug-zapper-icon.md; mockups bug-zapper-icon.html, bug-zapper-icon-bolts.html) ----------
+   Rests with no bolts. On power-on (the wordmark's hover, focus or .is-lit; a .bz-icon-live wrapper's hover or focus; the How it works card
+   that holds one) the tube and halo light UV violet, the moth flies in on the 2.4s loop and a forked bolt (--bt-lamp, --bt-snow core) bursts
+   out with a white flash while a small violet arc crackles inside. The outline is --bt-primary (the wordmark is a link); --bz-uv is light only. */
 .bt-root:not(#_) .bz-icon { width: 36px; height: 36px; overflow: visible; }
 .bt-root:not(#_) .bz-wm .bt-wordmark-icon { padding-top: 2px; }
 .bt-root:not(#_) .bz-icon :is(.frame, .cap, .base) { fill: var(--bt-surface-2); stroke: var(--bt-primary); stroke-width: 1.5; stroke-linejoin: round; }
-.bt-root:not(#_) .bz-icon .frame { fill: color-mix(in srgb, var(--bt-ice) 7%, var(--bt-surface-2)); }
+.bt-root:not(#_) .bz-icon .frame { fill: color-mix(in srgb, var(--bz-uv) 10%, var(--bt-surface-2)); }
 .bt-root:not(#_) .bz-icon .frame-line { fill: none; stroke: var(--bt-primary); stroke-width: 1.5; stroke-linejoin: round; }
 .bt-root:not(#_) .bz-icon .hang { fill: none; stroke: var(--bt-text-faint); stroke-width: 1.3; stroke-linecap: round; }
 .bt-root:not(#_) .bz-icon .ring { fill: none; stroke: var(--bt-primary); stroke-width: 1.2; }
 .bt-root:not(#_) .bz-icon .wire { fill: none; stroke: var(--bt-wire); stroke-width: 0.9; opacity: 0.85; }
 .bt-root:not(#_) .bz-icon .rung { fill: none; stroke: var(--bt-wire); stroke-width: 0.8; opacity: 0.55; }
-.bt-root:not(#_) .bz-icon .t-lo { stop-color: var(--bz-uv); stop-opacity: 0.35; }
-.bt-root:not(#_) .bz-icon .t-hi { stop-color: var(--bt-snow); stop-opacity: 0.9; }
+.bt-root:not(#_) .bz-icon .t-lo { stop-color: var(--bz-uv); stop-opacity: .55; }
+.bt-root:not(#_) .bz-icon .t-hi { stop-color: var(--bz-core); stop-opacity: .95; }
 .bt-root:not(#_) .bz-icon .tube { opacity: 0.5; transition: opacity 0.3s, filter 0.3s; }
-.bt-root:not(#_) .bz-icon .h-in { stop-color: var(--bz-uv); stop-opacity: 0.5; }
+.bt-root:not(#_) .bz-icon .h-in { stop-color: var(--bz-uv); stop-opacity: .5; }
 .bt-root:not(#_) .bz-icon .h-out { stop-color: var(--bz-uv); stop-opacity: 0; }
 .bt-root:not(#_) .bz-icon .halo { opacity: 0; transition: opacity 0.35s; }
 .bt-root:not(#_) .bz-icon .moth .body { fill: var(--bt-wax); }
@@ -32,22 +35,40 @@
 .bt-root:not(#_) .bz-icon .sparks circle { fill: var(--bt-lamp); opacity: 0; transform-box: fill-box; transform-origin: center; }
 .bt-root:not(#_) .bz-icon .sparks circle:nth-child(even) { fill: var(--bt-title); }
 .bt-root:not(#_) .bz-icon .ash { fill: var(--bt-text-faint); opacity: 0; }
-
-/* Power on: hover, focus, or .is-lit (initPowerWordmarks on touch screens) */
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .tube { opacity: 1; filter: drop-shadow(0 0 3px var(--bz-glow)) drop-shadow(0 0 7px var(--bz-glow)); }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .halo { opacity: 1; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon--porch .moth { animation: bz-moth 2.4s ease-in-out infinite; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .moth .wing { animation: bz-flutter 0.16s ease-in-out infinite alternate; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon--porch .zap { animation: bz-flash 2.4s steps(1, end) infinite; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon--porch .sparks circle { animation: bz-spark 2.4s ease-out infinite; }
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon--porch .ash { animation: bz-ash 2.4s ease-in infinite; }
 .bt-root:not(#_) .bz-icon .sparks circle:nth-child(1) { --dx: 1.5px; --dy: -2px; } .bt-root:not(#_) .bz-icon .sparks circle:nth-child(2) { --dx: 2.5px; --dy: 1px; }
 .bt-root:not(#_) .bz-icon .sparks circle:nth-child(3) { --dx: -.5px; --dy: 2.5px; } .bt-root:not(#_) .bz-icon .sparks circle:nth-child(4) { --dx: 2px; --dy: -.5px; }
+/* E4 Big zap: the bolts, the violet arc and the flash rest hidden (from the E4 mockup, bug-zapper-icon-bolts.html) */
+.bt-root:not(#_) .bz-icon :is(.arc, .fork, .flashc) { opacity: 0; }
+.bt-root:not(#_) .bz-icon :is(.arc, .fork) path { fill: none; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .bz-icon .fork .bg { stroke: var(--bt-lamp); stroke-width: 1.9; filter: drop-shadow(0 0 1.6px rgba(var(--bt-lamp-rgb), .95)); }
+.bt-root:not(#_) .bz-icon .fork .bc { stroke: var(--bt-snow); stroke-width: .6; }
+.bt-root:not(#_) .bz-icon .arc .bg { stroke: var(--bz-uv); stroke-width: 1.5; filter: drop-shadow(0 0 1.4px var(--bz-uv)); }
+.bt-root:not(#_) .bz-icon .arc .bc { stroke: var(--bt-snow); stroke-width: .55; }
+.bt-root:not(#_) .bz-icon .flashc { fill: var(--bt-snow); transform-box: fill-box; transform-origin: center; filter: blur(1.2px); }
+/* Power on */
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .tube { opacity: 1; filter: drop-shadow(0 0 2px var(--bz-uv)) drop-shadow(0 0 6px var(--bz-glow)); }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .halo { opacity: 1; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .moth .wing { animation: bz-flutter .16s ease-in-out infinite alternate; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon--lantern .moth { animation: bz-moth 2.4s ease-in-out infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon--lantern .zap { animation: bz-flash 2.4s steps(1, end) infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon--lantern .sparks circle { animation: bz-spark 2.4s ease-out infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon--lantern .ash { animation: bz-ash 2.4s ease-in infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .fork { animation: bz-flash 2.4s steps(1, end) infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .f2 { animation-delay: .03s; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .a4 { animation: bz-flash 2.4s steps(1, end) .06s infinite; }
+.bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .flashc { animation: bz-pop 2.4s ease-out infinite; }
 @keyframes bz-moth { 0%, 100% { transform: translate(0, 0); opacity: 1; } 18% { transform: translate(-1.2px, 2.2px); } 32% { transform: translate(-.6px, 3.4px); } 48% { transform: translate(-4.6px, 4.6px) scale(1); opacity: 1; } 51% { transform: translate(-4.6px, 4.6px) scale(.3); opacity: 0; } 92% { transform: translate(1px, -1px); opacity: 0; } }
 @keyframes bz-flutter { from { transform: scaleX(1); } to { transform: scaleX(0.4); } }
 @keyframes bz-flash { 0%, 46% { opacity: 0; } 48% { opacity: 1; } 51% { opacity: .25; } 54% { opacity: 1; } 60%, 100% { opacity: 0; } }
 @keyframes bz-spark { 0%, 47% { opacity: 0; transform: translate(0, 0) scale(.4); } 50% { opacity: 1; transform: translate(0, 0) scale(1.2); } 66% { opacity: 0; transform: translate(var(--dx, 2px), var(--dy, -2px)) scale(.6); } 100% { opacity: 0; } }
 @keyframes bz-ash { 0%, 52% { opacity: 0; transform: translate(0, 0); } 56% { opacity: 1; } 88% { opacity: 0; transform: translate(-.6px, 11px); } 100% { opacity: 0; } }
+@keyframes bz-pop { 0%, 47% { opacity: 0; transform: scale(.3); } 49% { opacity: .9; transform: scale(1); } 60%, 100% { opacity: 0; transform: scale(1.6); } }
+@keyframes bz-flicker { 0% { opacity: .2; } 12% { opacity: 1; } 20% { opacity: .3; } 30%, 100% { opacity: 1; } }
+/* Reduced motion: nothing flashes or moves; lit, the tube glows and one bolt (f1) shows, still */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon :is(.arc, .fork, .flashc, .moth, .moth .wing, .zap, .sparks circle, .ash, .tube) { animation: none; }
+  .bt-root:not(#_) :is(.bt-wordmark--power:is(:hover, :focus-visible, .is-lit), .bz-icon-live:is(:hover, :focus-within), .ai-part:is(:hover, :focus-within, :focus) .bz-icon-live) .bz-icon .f1 { opacity: .9; }
+}
 @keyframes bz-flicker { 0% { opacity: .2; } 12% { opacity: 1; } 20% { opacity: .3; } 30%, 100% { opacity: 1; } }
 
 /* ---------- Tool page: hero header with a small scene ---------- */

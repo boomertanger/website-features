@@ -65,6 +65,8 @@ Squarespace Bug Zapper (`bugReports`, its rules, `recordBugScreenshot`, `deleteB
     `localStorage` `bt.bugs.view`, try/catch). Hero **H1 Porch light**. Wordmark icon **I1 Porch zapper** (Appendix A).
     **Hero lamp redrawn (Oct 2026):** the hero lamp is now **L2 Porch lantern** with **V1 UV violet** light (`--bz-uv`,
     light only), and the icon outline is thinner; see `docs/specs/bug-zapper-lamp.md`, which supersedes the hero-lamp parts here.
+    **Wordmark icon replaced (Oct 2026):** I1 Porch zapper is now **M1 Hanging lantern with E4 Big zap**; see
+    `docs/specs/bug-zapper-icon.md`, the source of truth for the icon.
 
 ## 3. Data model (`sites/boomertanger/bugs/main/…`; every client write `false`)
 
@@ -205,7 +207,9 @@ functions, then `seed-factory-types.js`, then `seed-cloud-stash.js` (the cleanup
 `BZ_ICON` in `site/src/scripts/bugs/art.ts`; each copy needs unique gradient ids. **Superseded in part by
 `docs/specs/bug-zapper-lamp.md` (Oct 2026):** the hero lamp is no longer this icon scaled up (`big`) but its own drawing,
 `bzLamp(uid)` (L2 Porch lantern); the icon's tube and halo use `--bz-uv` instead of `--bt-ice`, and its outline is 1.5
-(the ring 1.2). The addendum is the source of truth for both. Original source (JS, as in the first mockup):
+(the ring 1.2). The addendum is the source of truth for both. **Superseded (Oct 2026) by `docs/specs/bug-zapper-icon.md`:** the
+wordmark icon is now M1 Hanging lantern with E4 Big zap (`bzIcon(u)`); I1 below is kept for the record only. Original source
+(JS, as in the first mockup):
 
 ```js
 const MOTH = `<path class="wing w1" d="M0 0C-2.8-2.6-4.6-.6-3.6 1.6C-2.4 2-1 1.2 0 0Z"/><path class="wing w2" d="M0 0C2.8-2.6 4.6-.6 3.6 1.6C2.4 2 1 1.2 0 0Z"/><ellipse class="body" cx="0" cy=".8" rx=".85" ry="2"/>`;
