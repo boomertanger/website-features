@@ -23,11 +23,13 @@ interface Props {
   overlayHeader?: boolean;
   /** Keep this page out of search everywhere (auth callbacks, admin). */
   noindex?: boolean;
+  /** A page that stands on its own in link previews and search: "Title | Boomertanger" (the Game Vault's /games). */
+  fullTitle?: boolean;
 }
-const { title, description = site.tagline, overlayHeader = false, noindex = false } = Astro.props;
+const { title, description = site.tagline, overlayHeader = false, noindex = false, fullTitle = false } = Astro.props;
 // The page strip (Service Hub §8a): the service whose manifest claims this route, if any (its talkBack value decides; TalkBackNote.astro).
 const stripService = manifestFor(Astro.url.pathname);
-const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tagline}`;
+const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : `${site.name}: ${site.tagline}`;
 ---
 <!doctype html>
 <html lang="en">
@@ -37,6 +39,9 @@ const pageTitle = title ? `${title} · ${site.name}` : `${site.name}: ${site.tag
     <meta name="color-scheme" content="dark" />
     <title>{pageTitle}</title>
     <meta name="description" content={description} />
+    <meta property="og:title" content={pageTitle} />
+    <meta property="og:description" content={description} />
+    <meta property="og:site_name" content={site.name} />
     {(noindex || !isProduction) && <meta name="robots" content="noindex,nofollow" />}
     <link rel="icon" href="/favicon.svg?v=mascot" type="image/svg+xml" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

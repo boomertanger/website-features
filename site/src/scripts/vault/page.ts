@@ -20,6 +20,7 @@ import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { flipSwap } from "../../../../shared/ui/flip.js";
 import { initStories } from "../../../../shared/ui/stories.js";
 import { isProduction } from "../../lib/env.js";
+import site from "../../data/site.json";
 import { onAuth, getAuthState } from "../../lib/auth";
 import { loadVault, type VCard, type Status, type Vault } from "./data";
 import { vaultIcon, I } from "./art";
@@ -134,7 +135,7 @@ function heroCounts() {
 function hero() {
   const sp = spotlight();
   const ex = EXAMPLES.filter((w) => search(index, w, { limit: 1 }).length);
-  return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">Game Vault</span><h1 class="bt-title bt-title--hero">The Vault</h1><p>${SUB}</p>
+  return `<section class="gvh${sp.html ? ` gvh--${sp.kind}` : " gvh--solo"}" data-hero>${wallHtml()}<div class="gvh-in"><div class="gvh-copy"><span class="gvh-kicker">${esc(site.name)}</span><h1 class="bt-title bt-title--hero">Horror Game Vault</h1><p>${SUB}</p>
   <label class="bt-search bt-search--lg">${I.search}<input class="bt-input" type="search" data-q data-hero-search autocomplete="off" spellcheck="false" placeholder="Search ${V.games.length} games…" aria-label="Search the Vault" value="${esc(st.q)}"><span class="bt-search-key" aria-hidden="true">/</span></label>
   <div class="gvh-strip" data-strip></div><p class="gvh-hint" data-hint data-examples="${esc(ex.map((w) => `“${w}”`).join("|"))}" aria-live="polite"></p>${heroCounts()}<div class="gvs" data-toplay hidden></div></div>${sp.html}</div></section>`;
 }

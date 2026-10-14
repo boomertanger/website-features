@@ -257,6 +257,11 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   matches). The matches are the same list the grid shows, filters included. Reduced motion: no
   drift, no scaling. The search's command panel (suggested filters, Add row) is gone; the strip
   and hint replace it.
+- **Title (Oct 14, 2026, `game-vault-phone-hero-1c-title.html`).** The hero title is "Horror Game Vault" (the same
+  `.bt-title` gradient) with a small grey "Boomertanger" line above it (the site name from `site.json`, kit label style,
+  text-faint), on every screen; it replaces the "Game Vault" kicker and "The Vault" title. The page title and link preview
+  (`og:title`) read "Horror Game Vault | Boomertanger"; the description is the hero line. The URL stays /games, and the
+  GAMEVAULT bar, the nav label and the How it works title stay as they are.
 - **Sticky filter bar.** Under the hero, sticking under the GAMEVAULT bar (below the site header;
   on phones, where that bar hides while scrolling down, it moves to the top): status seg nav with
   counts, Tags and Length menus, Community picks, Sort. When the hero's search is out of view (or
