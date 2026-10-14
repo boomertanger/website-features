@@ -1,6 +1,7 @@
 // Bug Zapper art (docs/specs/bug-zapper.md Appendix A; docs/design/mockups/bug-zapper-mockups.html, Icon I1 Porch zapper and Hero H1 Porch light): the
-// BUGZAPPER wordmark's porch-lamp icon (BZ_ICON: it rests; on hover or focus the tube lights and a moth flies in and is zapped, bug-zapper.css) and the hero's large
-// hanging lamp (bzLamp), plus the page's small icons. Bug-Zapper-only, so it lives with the feature, not the kit. Each copy needs unique gradient ids.
+// BUGZAPPER wordmark's porch-lamp icon (BZ_ICON: it rests; on hover or focus the tube lights and a moth flies in and is zapped, bug-zapper.css) and the hero's
+// hanging lamp (bzLamp: the L2 Porch lantern, drawn at full size with a UV violet tube, docs/specs/bug-zapper-lamp.md), plus the page's small icons.
+// Bug-Zapper-only, so it lives with the feature, not the kit. Each copy needs unique gradient ids.
 
 let n = 0;
 const uid = (p: string) => `${p}${++n}`;
@@ -8,10 +9,10 @@ const uid = (p: string) => `${p}${++n}`;
 const MOTH = `<path class="wing w1" d="M0 0C-2.8-2.6-4.6-.6-3.6 1.6C-2.4 2-1 1.2 0 0Z"/><path class="wing w2" d="M0 0C2.8-2.6 4.6-.6 3.6 1.6C2.4 2 1 1.2 0 0Z"/><ellipse class="body" cx="0" cy=".8" rx=".85" ry="2"/>`;
 export const mothSvg = () => `<svg viewBox="-5 -3.4 10 7" aria-hidden="true">${MOTH}</svg>`;
 
-export function porchIcon({ big = false, cls = "" }: { big?: boolean; cls?: string } = {}) {
+export function porchIcon({ cls = "" }: { cls?: string } = {}) {
   const u = uid("bzp");
-  return `<svg class="bz-icon bz-icon--porch${big ? " bz-big bz-porch-svg" : ""}${cls ? " " + cls : ""}" viewBox="${big ? "9 -6 22 40" : "0 0 40 40"}" aria-hidden="true" focusable="false"><defs><linearGradient id="${u}t" x1="0" x2="1"><stop offset="0" class="t-lo"/><stop offset=".5" class="t-hi"/><stop offset="1" class="t-lo"/></linearGradient><radialGradient id="${u}h"><stop offset="0" class="h-in"/><stop offset="1" class="h-out"/></radialGradient></defs>
-<circle class="halo" cx="20" cy="19.5" r="15" fill="url(#${u}h)"/>${big ? `<path class="hang" d="M20 -6V1.3"/>` : ""}
+  return `<svg class="bz-icon bz-icon--porch${cls ? " " + cls : ""}" viewBox="0 0 40 40" aria-hidden="true" focusable="false"><defs><linearGradient id="${u}t" x1="0" x2="1"><stop offset="0" class="t-lo"/><stop offset=".5" class="t-hi"/><stop offset="1" class="t-lo"/></linearGradient><radialGradient id="${u}h"><stop offset="0" class="h-in"/><stop offset="1" class="h-out"/></radialGradient></defs>
+<circle class="halo" cx="20" cy="19.5" r="15" fill="url(#${u}h)"/>
 <path class="hang" d="M20 4.2V7.4"/><circle class="ring" cx="20" cy="2.8" r="1.5"/>
 <path class="cap" d="M11.4 10.4C12.6 7.6 15.8 6.4 20 6.4S27.4 7.6 28.6 10.4Z"/>
 <rect class="frame" x="12.6" y="10.4" width="14.8" height="17.6" rx="1.4"/>
@@ -20,15 +21,33 @@ export function porchIcon({ big = false, cls = "" }: { big?: boolean; cls?: stri
 <path class="rung" d="M12.6 14.8H27.4M12.6 19.2H27.4M12.6 23.6H27.4"/>
 <rect class="frame-line" x="12.6" y="10.4" width="14.8" height="17.6" rx="1.4"/>
 <path class="base" d="M11.4 28H28.6C27.6 30.6 24.4 31.8 20 31.8S12.4 30.6 11.4 28Z"/>
-${big ? "" : `<g transform="translate(33.4 12.6)"><g class="moth">${MOTH}</g></g>
+<g transform="translate(33.4 12.6)"><g class="moth">${MOTH}</g></g>
 <path class="zap" d="M28.2 14.6L30.6 16.4L28.9 17.6L31.4 19.6"/>
 <g class="sparks"><circle cx="29.6" cy="15.6" r=".75"/><circle cx="30.8" cy="18.2" r=".6"/><circle cx="28.4" cy="19.4" r=".55"/><circle cx="31.4" cy="16.4" r=".5"/></g>
-<circle class="ash" cx="28.9" cy="18.6" r=".75"/>`}</svg>`;
+<circle class="ash" cx="28.9" cy="18.6" r=".75"/></svg>`;
 }
 /** The wordmark icon. */
 export const BZ_ICON = porchIcon();
-/** The hero's large hanging lamp (no moth: the scene has its own). */
-export const bzLamp = () => porchIcon({ big: true });
+/** A unique id prefix for one bzLamp copy (its gradients). */
+export const lampId = () => uid("bzl");
+/** The hero's hanging lamp: L2 Porch lantern (docs/specs/bug-zapper-lamp.md, the mockup's "V1 UV violet"); u keeps its gradient ids unique. */
+export function bzLamp(u: string) {
+  return `<svg class="bz-lamp" viewBox="0 0 120 196" aria-hidden="true" focusable="false"><defs>
+<linearGradient id="${u}m" x1="0" x2="1"><stop offset="0" class="i0"/><stop offset=".45" class="i1"/><stop offset="1" class="i0"/></linearGradient>
+<linearGradient id="${u}t" x1="0" x2="1"><stop offset="0" class="t0"/><stop offset=".5" class="t1"/><stop offset="1" class="t0"/></linearGradient>
+<linearGradient id="${u}g" x1="0" x2="1"><stop offset="0" class="g0"/><stop offset=".5" class="g1"/><stop offset="1" class="g0"/></linearGradient></defs>
+<path class="cord" d="M60 0V16"/><circle class="ringo" cx="60" cy="20" r="4"/>
+<path d="M60 24L94 50H26Z" fill="url(#${u}m)" class="edge"/><path class="sheen" d="M58 28L36 46"/>
+<rect x="22" y="49" width="76" height="6" rx="2" fill="url(#${u}m)" class="edge"/>
+<path d="M30 55H90L86 146H34Z" fill="url(#${u}g)"/>
+<rect x="52" y="64" width="16" height="70" rx="8" fill="url(#${u}t)" class="tube"/>
+<path class="wire" d="M44 55L43 146M60 55V146M76 55L77 146"/>
+<path class="ring2" d="M31.2 80H88.8M32.4 105H87.6M33.5 128H86.5"/>
+<path d="M30 55H90L86 146H34Z" class="frame"/>
+<path class="glint" d="M35 60L38 140"/>
+<rect x="28" y="146" width="64" height="6" rx="2" fill="url(#${u}m)" class="edge"/>
+<path d="M36 152H84L76 162H44Z" fill="url(#${u}m)" class="edge"/><circle class="ringo" cx="60" cy="168" r="3"/></svg>`;
+}
 
 export const mascot = () => document.getElementById("bt-mascot-tpl")?.innerHTML ?? "";
 

@@ -1,25 +1,27 @@
 /* site/src/styles/bug-zapper.css — Bug Zapper's own look (docs/specs/bug-zapper.md §6-8; approved picks in docs/design/mockups/bug-zapper-mockups.html:
    Board B, Hero H1 Porch light, Icon I1 Porch zapper). Only what's unique to Bug Zapper: the wordmark icon, the porch-light scene and its counters, the board
    columns, the bite box, the severity picker, the device line, the success art and the How it works scenes and Try it. Components come from shared/bt-ui.css.
-   Tokens only: no raw colours (--bt-ice, --bt-lamp, --bt-wire, --bt-wax, --bt-snow; the bolt's yellow is --bt-lamp). Container queries (bt: 1024 / 640 / 420);
+   Tokens only (--bt-lamp, --bt-wire, --bt-wax, --bt-snow; the bolt's yellow is --bt-lamp), plus ONE feature colour, --bz-uv (UV violet, docs/specs/bug-zapper-lamp.md):
+   light only (the tubes, their glow, the halos, the floor pool, the hero tint, the ZAPPED IN glow), never an outline, a border or a flat fill. Container queries (bt: 1024 / 640 / 420);
    every animation has a reduced-motion end state (bottom). */
-.bt-root:not(#_) { --bz-ice-glow: color-mix(in srgb, var(--bt-ice) 38%, transparent); --bz-ice-faint: color-mix(in srgb, var(--bt-ice) 12%, transparent); }
+/* <body> is the page root (.bt-root) and this file loads on the Bug Zapper pages only (BugLayout), so the bar and the modal portals see these too. */
+.bt-root:not(#_) { --bz-uv: #7c5cff; --bz-glow: color-mix(in srgb, var(--bz-uv) 45%, transparent); --bz-glow-faint: color-mix(in srgb, var(--bz-uv) 14%, transparent); --bz-core: color-mix(in srgb, var(--bz-uv) 25%, var(--bt-snow)); }
 
 /* ---------- Wordmark icon (I1 Porch zapper, spec Appendix A): rests; on hover / focus / .is-lit the tube lights, a moth flies in and is zapped ---------- */
 .bt-root:not(#_) .bz-icon { width: 36px; height: 36px; overflow: visible; }
 .bt-root:not(#_) .bz-wm .bt-wordmark-icon { padding-top: 2px; }
-.bt-root:not(#_) .bz-icon :is(.frame, .cap, .base) { fill: var(--bt-surface-2); stroke: var(--bt-primary); stroke-width: 1.9; stroke-linejoin: round; }
+.bt-root:not(#_) .bz-icon :is(.frame, .cap, .base) { fill: var(--bt-surface-2); stroke: var(--bt-primary); stroke-width: 1.5; stroke-linejoin: round; }
 .bt-root:not(#_) .bz-icon .frame { fill: color-mix(in srgb, var(--bt-ice) 7%, var(--bt-surface-2)); }
-.bt-root:not(#_) .bz-icon .frame-line { fill: none; stroke: var(--bt-primary); stroke-width: 1.9; stroke-linejoin: round; }
+.bt-root:not(#_) .bz-icon .frame-line { fill: none; stroke: var(--bt-primary); stroke-width: 1.5; stroke-linejoin: round; }
 .bt-root:not(#_) .bz-icon .hang { fill: none; stroke: var(--bt-text-faint); stroke-width: 1.3; stroke-linecap: round; }
-.bt-root:not(#_) .bz-icon .ring { fill: none; stroke: var(--bt-primary); stroke-width: 1.4; }
+.bt-root:not(#_) .bz-icon .ring { fill: none; stroke: var(--bt-primary); stroke-width: 1.2; }
 .bt-root:not(#_) .bz-icon .wire { fill: none; stroke: var(--bt-wire); stroke-width: 0.9; opacity: 0.85; }
 .bt-root:not(#_) .bz-icon .rung { fill: none; stroke: var(--bt-wire); stroke-width: 0.8; opacity: 0.55; }
-.bt-root:not(#_) .bz-icon .t-lo { stop-color: var(--bt-ice); stop-opacity: 0.35; }
+.bt-root:not(#_) .bz-icon .t-lo { stop-color: var(--bz-uv); stop-opacity: 0.35; }
 .bt-root:not(#_) .bz-icon .t-hi { stop-color: var(--bt-snow); stop-opacity: 0.9; }
 .bt-root:not(#_) .bz-icon .tube { opacity: 0.5; transition: opacity 0.3s, filter 0.3s; }
-.bt-root:not(#_) .bz-icon .h-in { stop-color: var(--bt-ice); stop-opacity: 0.5; }
-.bt-root:not(#_) .bz-icon .h-out { stop-color: var(--bt-ice); stop-opacity: 0; }
+.bt-root:not(#_) .bz-icon .h-in { stop-color: var(--bz-uv); stop-opacity: 0.5; }
+.bt-root:not(#_) .bz-icon .h-out { stop-color: var(--bz-uv); stop-opacity: 0; }
 .bt-root:not(#_) .bz-icon .halo { opacity: 0; transition: opacity 0.35s; }
 .bt-root:not(#_) .bz-icon .moth .body { fill: var(--bt-wax); }
 .bt-root:not(#_) .bz-icon .moth .wing { fill: var(--bt-text-muted); opacity: 0.9; transform-box: fill-box; }
@@ -32,7 +34,7 @@
 .bt-root:not(#_) .bz-icon .ash { fill: var(--bt-text-faint); opacity: 0; }
 
 /* Power on: hover, focus, or .is-lit (initPowerWordmarks on touch screens) */
-.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .tube { opacity: 1; filter: drop-shadow(0 0 3px var(--bz-ice-glow)) drop-shadow(0 0 7px var(--bz-ice-glow)); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .tube { opacity: 1; filter: drop-shadow(0 0 3px var(--bz-glow)) drop-shadow(0 0 7px var(--bz-glow)); }
 .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .halo { opacity: 1; }
 .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon--porch .moth { animation: bz-moth 2.4s ease-in-out infinite; }
 .bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bz-icon .moth .wing { animation: bz-flutter 0.16s ease-in-out infinite alternate; }
@@ -51,7 +53,7 @@
 /* ---------- Tool page: hero header with a small scene ---------- */
 .bt-root:not(#_) .bz-page { display: flex; flex-direction: column; gap: 18px; padding: 0 0 40px; }
 .bt-root:not(#_) .bz-topbar .bt-topnav { gap: 8px; }
-.bt-root:not(#_) .bz-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: center; padding: 22px 26px; border: 1px solid var(--bt-border); border-radius: 22px; overflow: hidden; background: radial-gradient(60% 120% at 88% 30%, var(--bz-ice-faint), transparent 62%), radial-gradient(60% 80% at 0% 100%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
+.bt-root:not(#_) .bz-hero { position: relative; display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: center; padding: 22px 26px; border: 1px solid var(--bt-border); border-radius: 22px; overflow: hidden; background: radial-gradient(60% 120% at 88% 30%, var(--bz-glow-faint), transparent 62%), radial-gradient(60% 80% at 0% 100%, var(--bt-primary-bg), transparent 60%), var(--bt-surface); }
 .bt-root:not(#_) .bz-hero .bt-title { margin: 0 0 8px; }
 .bt-root:not(#_) .bz-hero-copy p { max-width: 50ch; margin: 0 0 16px; color: var(--bt-text-muted); line-height: var(--bt-leading-body); }
 .bt-root:not(#_) .bz-hero-acts { display: flex; flex-wrap: wrap; gap: 8px; }
@@ -72,8 +74,29 @@
 
 /* H1 Porch light */
 .bt-root:not(#_) .bz-porch { position: absolute; inset: 0 0 52px 0; }
-.bt-root:not(#_) .bz-porch-glow { position: absolute; left: 54%; top: 6px; width: 230px; height: 160px; margin-left: -115px; border-radius: 50%; background: radial-gradient(closest-side, var(--bz-ice-glow), transparent); opacity: .75; animation: bz-hum 3.2s ease-in-out infinite; }
-.bt-root:not(#_) .bz-porch-svg { position: absolute; left: 54%; top: 0; width: 100px; height: 162px; margin-left: -50px; }
+.bt-root:not(#_) .bz-porch-glow { position: absolute; left: 54%; top: 6px; width: 230px; height: 160px; margin-left: -115px; border-radius: 50%; background: radial-gradient(closest-side, var(--bz-glow), transparent); opacity: .75; animation: bz-hum 3.2s ease-in-out infinite; }
+/* The hero lamp: L2 Porch lantern (docs/specs/bug-zapper-lamp.md; mockup bug-zapper-lamp.html, "V1 UV violet"). Iron metal from --bt-wire; the violet is light only. */
+.bt-root:not(#_) .bz-lamp-wrap { position: absolute; left: 54%; top: 0; width: 86px; height: 152px; margin-left: -43px; }
+.bt-root:not(#_) .bz-lamp { display: block; width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bz-lamp-pool { position: absolute; left: 54%; bottom: -6px; width: 150px; height: 26px; margin-left: -75px; border-radius: 50%; background: radial-gradient(closest-side, color-mix(in srgb, var(--bz-uv) 30%, transparent), transparent); }
+.bt-root:not(#_) .bz-lamp .cord { fill: none; stroke: var(--bt-wire); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .bz-lamp .ringo { fill: none; stroke: var(--bt-wire); stroke-width: 1.8; }
+.bt-root:not(#_) .bz-lamp .edge { stroke: color-mix(in srgb, var(--bt-snow) 22%, transparent); stroke-width: .7; }
+.bt-root:not(#_) .bz-lamp .sheen { fill: none; stroke: color-mix(in srgb, var(--bt-snow) 55%, transparent); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .bz-lamp .i0 { stop-color: color-mix(in srgb, var(--bt-wire) 18%, var(--bt-bg)); }
+.bt-root:not(#_) .bz-lamp .i1 { stop-color: color-mix(in srgb, var(--bt-wire) 55%, var(--bt-bg)); }
+.bt-root:not(#_) .bz-lamp .g0 { stop-color: color-mix(in srgb, var(--bz-uv) 12%, var(--bt-bg)); }
+.bt-root:not(#_) .bz-lamp .g1 { stop-color: color-mix(in srgb, var(--bz-uv) 28%, var(--bt-bg)); }
+.bt-root:not(#_) .bz-lamp .t0 { stop-color: var(--bz-uv); }
+.bt-root:not(#_) .bz-lamp .t1 { stop-color: var(--bz-core); }
+.bt-root:not(#_) .bz-lamp .tube { filter: drop-shadow(0 0 3px var(--bz-uv)) drop-shadow(0 0 9px var(--bz-uv)); animation: bz-lamp-hum 3.2s ease-in-out infinite; }
+.bt-root:not(#_) .bz-lamp .wire { fill: none; stroke: var(--bt-wire); stroke-width: .55; opacity: .75; }
+.bt-root:not(#_) .bz-lamp .ring2 { fill: none; stroke: color-mix(in srgb, var(--bt-snow) 30%, var(--bt-wire)); stroke-width: 1.3; }
+.bt-root:not(#_) .bz-lamp .glint { fill: none; stroke: color-mix(in srgb, var(--bt-snow) 20%, transparent); stroke-width: 1.4; stroke-linecap: round; }
+.bt-root:not(#_) .bz-lamp .frame { fill: none; stroke: color-mix(in srgb, var(--bt-wire) 60%, var(--bt-bg)); stroke-width: 2.4; stroke-linejoin: round; }
+@keyframes bz-lamp-hum { 0%, 100% { opacity: .92; } 50% { opacity: 1; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bz-lamp-wrap { width: 66px; height: 116px; margin-left: -33px; } .bt-root:not(#_) .bz-lamp-pool { width: 110px; margin-left: -55px; } }
+@media (prefers-reduced-motion: reduce) { .bt-root:not(#_) .bz-lamp .tube { animation: none; } }
 .bt-root:not(#_) .bz-porch .bt-mascot { position: absolute; left: 4px; bottom: 0; width: 66px; filter: drop-shadow(0 0 12px rgba(var(--bt-gold-rgb), .25)); }
 .bt-root:not(#_) .bz-zapcount { position: absolute; right: 4px; bottom: 8px; display: flex; flex-direction: column; align-items: flex-end; line-height: 1; }
 .bt-root:not(#_) .bz-zapcount b { font-size: 30px; font-weight: 900; color: var(--bt-lime); text-shadow: 0 0 14px color-mix(in srgb, var(--bt-lime) 45%, transparent); font-variant-numeric: tabular-nums; }
@@ -92,8 +115,6 @@
 @keyframes bz-orbit { 0%, 100% { transform: translate(0, 0) rotate(0); } 25% { transform: translate(18px, -14px) rotate(12deg); } 50% { transform: translate(-10px, -24px) rotate(-8deg); } 75% { transform: translate(-22px, 6px) rotate(10deg); } }
 @keyframes bz-doom { 0% { transform: translate(40px, -20px); opacity: 0; } 10% { opacity: 1; } 46% { transform: translate(-6px, 4px); opacity: 1; } 48% { transform: translate(-8px, 6px) scale(.2); opacity: 0; } 100% { opacity: 0; } }
 @keyframes bz-hum { 0%, 100% { opacity: .65; } 50% { opacity: .9; } }
-.bt-root:not(#_) .bz-big .tube { opacity: 1; filter: drop-shadow(0 0 5px var(--bz-ice-glow)) drop-shadow(0 0 14px var(--bz-ice-glow)); }
-.bt-root:not(#_) .bz-big .halo { opacity: 1; }
 .bt-root:not(#_) .bz-scene.is-zapping .bz-zapfx { animation: bz-flash .7s steps(1, end) 1; }
 .bt-root:not(#_) .bz-scene.is-zapping .bz-porch-glow { animation: bz-surge .7s ease-out 1; }
 @keyframes bz-surge { 0% { opacity: .7; transform: scale(1); } 30% { opacity: 1; transform: scale(1.12); } 100% { opacity: .75; transform: scale(1); } }
@@ -171,7 +192,7 @@
 /* Success: the ZAPPED IN stamp under the zapper flash */
 .bt-root:not(#_) .bz-done { position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; padding: 10px 0 4px; text-align: center; }
 .bt-root:not(#_) .bz-done-art { position: relative; display: grid; place-items: center; width: 190px; height: 160px; }
-.bt-root:not(#_) .bz-done-art::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--bz-ice-glow), transparent); animation: bz-surge 1s ease-out 1; }
+.bt-root:not(#_) .bz-done-art::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: radial-gradient(closest-side, var(--bz-glow), transparent); animation: bz-surge 1s ease-out 1; }
 .bt-root:not(#_) .bz-done-art .bt-stamp { position: relative; }
 .bt-root:not(#_) .bz-done h3 { margin: 0; font-size: var(--bt-text-xl); }
 .bt-root:not(#_) .bz-done p { margin: 0; max-width: 40ch; color: var(--bt-text-muted); }
@@ -202,7 +223,8 @@
 .bt-root:not(#_) .bzh-hero { display: grid; grid-template-columns: minmax(0, 1fr) 330px; gap: 18px; align-items: center; }
 .bt-root:not(#_) .bzh-hero .bz-scene { height: 230px; }
 .bt-root:not(#_) .bzh-hero .bz-meters { display: none; }
-.bt-root:not(#_) .bzh-hero .bz-porch-svg { width: 120px; height: 200px; margin-left: -60px; }
+.bt-root:not(#_) .bzh-hero .bz-lamp-wrap { width: 104px; height: 184px; margin-left: -52px; }
+.bt-root:not(#_) .bzh-hero .bz-lamp-pool { width: 170px; margin-left: -85px; }
 .bt-root:not(#_) .bzh-hero .bz-porch .bt-mascot { width: 96px; }
 /* stage scenes */
 .bt-root:not(#_) .bzs-win { width: 150px; border: 1px solid var(--bt-border-2); border-radius: 8px; background: var(--bt-bg); overflow: hidden; }
@@ -231,7 +253,7 @@
 .bt-root:not(#_) .bzs-zap .bz-icon { width: 78px; height: 78px; }
 .bt-root:not(#_) .bzs-zap .bt-badge { position: absolute; right: -36px; bottom: 6px; opacity: 0; transform: translateY(-10px); transition: opacity .3s .55s, transform .3s .55s; }
 .bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .bt-badge { opacity: 1; transform: none; }
-.bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .tube { opacity: 1; filter: drop-shadow(0 0 4px var(--bz-ice-glow)); }
+.bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .tube { opacity: 1; filter: drop-shadow(0 0 4px var(--bz-glow)); }
 .bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .halo { opacity: 1; }
 .bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .moth { animation: bz-moth 2.4s ease-in-out 1 forwards; }
 .bt-root:not(#_) .ai-part:is(:hover, :focus-within, :focus) .bzs-zap .zap { animation: bz-flash 2.4s steps(1, end) 1; }
@@ -273,7 +295,6 @@
   .bt-root:not(#_) .bz-hero-copy p { margin: 0; font-size: var(--bt-text-md); }
   .bt-root:not(#_) .bz-meter span { display: none; }
   .bt-root:not(#_) .bz-meter { align-items: center; }
-  .bt-root:not(#_) .bz-porch-svg { width: 80px; height: 116px; margin-left: -40px; }
   .bt-root:not(#_) .bz-porch .bt-mascot { width: 54px; }
   .bt-root:not(#_) .bz-zapcount b { font-size: 24px; }
   .bt-root:not(#_) .bz-cols { grid-template-columns: repeat(4, 80%); }
