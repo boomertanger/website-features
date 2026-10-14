@@ -606,6 +606,13 @@ aria-checked>`. `.bt-items` > `.bt-item [--off]` > `.bt-item-head` (`.bt-item-ti
   optional `.bt-hero-media`. Stream: `.bt-hero-split`, `.bt-countdown`,
   `.bt-hero-player [--public|--backstage]` + `.bt-hero-viewers`. The segment bars
   (`.bt-hero-stories`) are built by `hero-carousel.js`.
+- **Stories:** `.bt-stories` (`shared/ui/stories.js`, Oct 14, 2026): `initStories(host, { items, render, thumb, label, name })`
+  draws `.bt-stories-bars` (gold, filling over 5 s), `.bt-stories-stage` (the caller's card for the current item; fades between
+  items) and `.bt-stories-picks` (`.bt-stories-pick` buttons, "Show <label>", the current one `.is-on`: raised with a gold ring),
+  plus a polite live region that announces manual changes only. A region with `aria-roledescription="carousel"`. Swipe on the
+  stage; pauses while touched, hovered or focused, while the tab is hidden, and for the caller's reasons (`s.pause("search", true)`
+  adds `.is-paused`). One item: `.bt-stories--single` (just the stage). Reduced motion: no auto-advance or fade, the bars show the
+  position. Unlike `.bt-hero` (full-width slides) it carries a small card and a picker. First used by the Game Vault's phone hero.
 - **Home zone and tiles:** `.bt-zone[data-view]` > `.bt-home-grid` > `.bt-home-left`
   (children `.bt-wide` span two columns) + `.bt-home-right` (sticky). Visitors get one
   column with three tiles in a row. `.bt-tile [--hot|--next|--board|--fuzz]` >
@@ -1576,6 +1583,10 @@ flashlight, dust and the GAMEVAULT icon), scripts in `site/src/scripts/vault/`.
   is the newest pinned game, then the top Most wanted on stream game; that shelf stays ranked by votes
   only. The pin is set with the green admin "Pin to top" / "Unpin" button on the game page (spec §9).
   The UI Kit shows it on a cover card.
+- **The phone hero's story card (1C, Oct 14, 2026) is the kit's `.bt-stories`.** Under 640px only, below the M3 counts: pinned
+  "Up next" games, then the most-voted To play games (max 4), the card drawn by `scripts/vault/page.ts` (`.gvs-*` in
+  `game-vault.css`). Gold for the badges, the story bars and the active small cover's ring; purple only on the vote button and
+  focus. It steps back while searching, like the desktop spotlight. Spec §9 (M3).
 
 ### 8j. Trophy Room
 

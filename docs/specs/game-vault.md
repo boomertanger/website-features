@@ -279,6 +279,17 @@ Page redesign (`docs/design/mockups/game-vault-page.html`; approved V3 SH3 B1, p
   as the other shelves) leads the page above Most wanted on stream and hides when nothing is playing. Searching
   works as on desktop: the wall pauses, non-matches fade, matches light up and the strip of matches shows
   under the search. Reduced motion: no drift.
+  **M3 now includes the story card (option 1C, `game-vault-phone-hero-story.html`, approved Oct 14, 2026).** Below the counts, the
+  kit's `.bt-stories` flips through up to 4 To play games on top of the wall: Boomer's pinned "Up next" games first (pinnedAt
+  order), then the most-voted To play games not already shown (only games with a vote), badged gold "Up next" or "Most wanted #N"
+  (N = the game's rank on the Most wanted on stream shelf). The card: the tilting cover (pointer devices only) and the title link to
+  the game page, "N votes" ("1 vote"), and the vote button (Play this, Boomer! / Voted: `vaultWant`, the same rules, the Join dialog
+  for visitors, a small pop when you vote). Story bars fill over 5 s and the next game fades in; the small covers underneath jump to
+  one; swipe left or right; it pauses while touched, hovered or focused and while the tab is hidden. One game: just the card; none:
+  hidden (the hero as before). Searching: the card steps back (faded, inert) and returns when the search clears. Reduced motion: no
+  auto-advance, fade or tilt; the bars show the position; small covers and swipe still work. Data: `public/vault` as read once per
+  visit; a vote on the card or a shelf updates the page's copy and the card's count (other people's votes show on the next visit, as
+  with the shelves). Preview off production: `?toplay=none|one|four`.
 - **G1 Game page section heads (part 9).** Boomer's review, Every stream (note: "6 streams, 14
   hours"), About the game, Details, Where to play, On stream and Up next each get the SH3 section head
   above their card (the kit's `.bt-section-head`, compact `--sm` size, `meta` note), replacing the
