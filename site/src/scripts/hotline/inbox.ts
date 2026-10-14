@@ -33,7 +33,7 @@ interface PreviewData { ownerUid: string; handles: Record<string, string>; staff
 interface Main { inboxGrades: string[]; replyTime: string; lines: Record<string, boolean>; nameCheck: boolean; emailOwner: { business: boolean; private: boolean } }
 
 const LINES: Record<string, [number, string, string, Lane, string]> = {   // id: [key, title, short, lane, reply-from]
-  hi: [1, "Say hi", "Say hi", "team", "fanmail"], feedback: [2, "Feedback", "Feedback", "team", "fanmail"], help: [3, "Account help", "Help", "team", "support"],
+  hi: [1, "Say hi", "Say hi", "team", "fanmail"], feedback: [2, "Feedback & questions", "Feedback & questions", "team", "fanmail"], help: [3, "Account help", "Help", "team", "support"],
   business: [4, "Business & collabs", "Business", "owner", "business"], private: [5, "Private matter", "Private", "owner", "fanmail"], report: [6, "Report a person", "Report", "owner", "support"],
 };
 const LINE_IDS = Object.keys(LINES);
@@ -321,7 +321,7 @@ function settingsHtml() {
   const chip = (on: boolean, label: string, attr: string) => `<button type="button" class="bt-chip bt-chip--small${on ? " is-active" : ""}" aria-pressed="${on}" ${attr}>${esc(label)}</button>`;
   return `<section class="hb-ib-hero hb-ib-hero--plain"><div><h1 class="bt-title">Settings</h1><p class="hb-ib-sub">Only you see this tab.</p></div></section>
   <div class="hb-ib-set"><div class="bt-admin-panel"><span class="bt-admin-tag"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z"/></svg>Owner only</span>
-    <div class="hb-ib-set-row"><b>Who helps with the inbox</b><span>They see the team lines (Say hi, Feedback, Account help). Never the gold ones.</span><div class="hb-ib-grades" role="group" aria-label="Admin grades with the inbox">${["A1", "A2", "A3"].map((g) => chip(d.inboxGrades.includes(g), GRADE_NAMES[g], `data-grade="${g}"`)).join("")}</div></div>
+    <div class="hb-ib-set-row"><b>Who helps with the inbox</b><span>They see the team lines (Say hi, Feedback & questions, Account help). Never the gold ones.</span><div class="hb-ib-grades" role="group" aria-label="Admin grades with the inbox">${["A1", "A2", "A3"].map((g) => chip(d.inboxGrades.includes(g), GRADE_NAMES[g], `data-grade="${g}"`)).join("")}</div></div>
     <div class="hb-ib-set-row"><b>Reply-time promise</b><span>Shown on the contact page and the Sent screen ("Replies in about …").</span><input class="bt-input" data-replytime maxlength="40" value="${esc(d.replyTime)}" aria-label="Reply-time promise"></div>
     <div class="hb-ib-set-row"><b>Name check</b><span>Moves any team-line message that mentions a crew handle or display name to Owner only.</span>${tg(d.nameCheck, "Name check", "nameCheck")}</div>
     <div class="hb-ib-set-row"><b>Email me Business messages</b><span>A copy to your own address as they arrive (once email is switched on).</span>${tg(d.emailOwner.business, "Email Business", "business")}</div>

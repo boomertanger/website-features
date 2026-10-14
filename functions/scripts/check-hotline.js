@@ -45,6 +45,16 @@ const member = (line, extra = {}) => ({ line, body: "Hello from a member.", turn
 async function main() {
   // ---------- pure ----------
   assert.deepEqual(L.LINES.map((l) => [l.key, l.id, l.lane]), [[1, "hi", "team"], [2, "feedback", "team"], [3, "help", "team"], [4, "business", "owner"], [5, "private", "owner"], [6, "report", "owner"]]);
+  assert.equal(L.lineById("feedback").title, "Feedback & questions", "line 2's new name (the id stays feedback)");
+  // Talk Back's fields, pure (talk-back.md §1, §6)
+  assert.deepEqual(L.talkBackFields({}), { kind: "feedback", context: null, boombotShown: null }, "kind defaults to feedback");
+  assert.equal(L.talkBackFields({ kind: "rant" }).kind, "feedback");
+  assert.equal(L.cleanPath("/games/x?as=member#top"), "/games/x", "query and hash dropped");
+  for (const bad of ["games", "//evil.com/x", "https://evil.com/", "/a b", "/" + "x".repeat(200)]) assert.equal(L.cleanPath(bad), null, `not a same-site path: ${bad.slice(0, 20)}`);
+  assert.equal(L.cleanTitle("<b>Hi</b>\n there"), "b Hi /b there"); assert.equal(L.cleanTitle("x".repeat(300)).length, 120);
+  assert.equal(L.cleanContext({ serviceId: "Bad.Id", path: "/x" }), null, "a bad service id drops the context");
+  assert.equal(L.cleanContext({ serviceId: "games", section: "a.b", path: "/x" }).section, null, "a bad section drops just the section");
+  assert.deepEqual(L.cleanShown(["a", "a", "B!", "b", "c", "d", "e"]), ["a", "b", "c", "d"], "up to 4 distinct ids");
   assert.equal(L.nameCheck("I think nightowl was rude", [{ uid: "u1", handle: "nightowl", name: "Night Owl", grade: 3 }]).uid, "u1");
   assert.equal(L.nameCheck("thanks @NightOwl!", [{ uid: "u1", handle: "nightowl" }]).uid, "u1", "case-insensitive, with @");
   assert.equal(L.nameCheck("the nightowls are out", [{ uid: "u1", handle: "nightowl" }]), null, "whole word only");
@@ -181,7 +191,7 @@ async function main() {
   // ---------- reply: email off -> the mailto fallback, then Mark as replied ----------
   const t1 = (await list(`${B}/teamMessages`)).find((x) => x.sender && x.sender.uid === "fan" && x.line === "feedback");
   r = await core.reply(req("a2", { lane: "team", id: t1.id, text: "Thanks for this!", from: "fanmail", markWaiting: true }, A2));
-  assert.equal(r.sent, false); assert.equal(r.reason, "email-off"); assert.equal(r.to, "fan@members.example"); assert.equal(r.subject, `Re: Feedback (BT-${t1.ref})`);
+  assert.equal(r.sent, false); assert.equal(r.reason, "email-off"); assert.equal(r.to, "fan@members.example"); assert.equal(r.subject, `Re: Feedback & questions (BT-${t1.ref})`);
   assert.ok(r.text.endsWith("the Boomertanger crew") && r.mailto.startsWith("mailto:"));
   assert.equal((await wdb.doc(`${B}/teamMessages/${t1.id}`).get()).get("firstReplyAt"), null, "nothing recorded until Mark as replied");
   r = await core.reply(req("a2", { lane: "team", id: t1.id, text: "Thanks for this!", from: "fanmail", markWaiting: true, manual: true }, A2));
@@ -204,6 +214,58 @@ async function main() {
   assert.equal(sent.length, 1); assert.equal(sent[0].to[0], "business@boomertanger.com");
   process.env.HOTLINE_EMAIL = "off"; resendKey = "";
 
+  // ---------- Talk Back on line 2 (talk-back.md §6) ----------
+  clock += DAY;
+  const tm = L.monthKey(clock);
+  const svcStats = async () => ((await wdb.doc(`${B}/serviceStats/${tm}`).get()).data() || {}).byService || {};
+  const ownStats = async () => ((await wdb.doc(`${B}/stats/${tm}`).get()).data() || {}).byService || {};
+  const ctx = { serviceId: "bug-zapper", section: "report", path: "/bug-zapper?as=member#form", title: "Bug Zapper · Boomertanger" };
+  // kind and context stored (path without the query), counted per service and section on the team lane
+  r = await core.send(req(null, visitor("feedback", { kind: "question", context: ctx, boombotShown: ["how-to-report", "screenshots"] }), { ip: "7.7.7.1" }));
+  assert.equal(r.lane, "team");
+  let q1 = (await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref);
+  assert.equal(q1.kind, "question"); assert.deepEqual(q1.context, { serviceId: "bug-zapper", section: "report", path: "/bug-zapper", title: "Bug Zapper · Boomertanger" });
+  assert.deepEqual(q1.boombotShown, ["how-to-report", "screenshots"]);
+  assert.equal((await svcStats())["bug-zapper"].questions, 1); assert.equal((await svcStats())["bug-zapper"].sections.report.questions, 1);
+  assert.equal((await ownStats())["bug-zapper"].questions, 1, "the owner's stats count it too");
+  assert.deepEqual((await list(`${S}/notifyOutbox`)).find((x) => x.payload && x.payload.ref === r.ref).payload, { ref: r.ref, line: "feedback" }, "contact-new stays { ref, line }");
+  // feedback (the default): counted as feedback, no section count
+  r = await core.send(req(null, visitor("feedback", { context: ctx }), { ip: "7.7.7.2" }));
+  assert.equal((await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref).kind, "feedback");
+  assert.equal((await svcStats())["bug-zapper"].feedback, 1); assert.equal((await svcStats())["bug-zapper"].sections.report.questions, 1, "sections count questions only");
+  // an invalid context is dropped, never a reason to refuse
+  r = await core.send(req(null, visitor("feedback", { kind: "question", context: { serviceId: "Bad.Id", path: "/x" }, boombotShown: "nope" }), { ip: "7.7.7.3" }));
+  q1 = (await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref);
+  assert.equal(q1.context, null); assert.equal(q1.boombotShown, null); assert.equal(q1.kind, "question");
+  r = await core.send(req(null, visitor("feedback", { context: { serviceId: "games", path: "https://evil.example/" } }), { ip: "7.7.7.4" }));
+  assert.equal((await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref).context, null, "an off-site path drops the context");
+  assert.equal((await svcStats()).games, undefined, "nothing counted without a context");
+  // owner-lane messages: in stats.byService, never in serviceStats (ticked, and a name-check hit)
+  const svcBefore = JSON.stringify(await svcStats());
+  r = await core.send(req(null, visitor("feedback", { kind: "question", context: { ...ctx, serviceId: "games" }, onlyOwner: true }), { ip: "7.7.7.5" }));
+  assert.equal(r.lane, "owner");
+  r = await core.send(req(null, visitor("feedback", { body: "I think @nightowl was rude in chat.", context: { ...ctx, serviceId: "games" } }), { ip: "7.7.7.6" }));
+  assert.equal(r.lane, "owner", "the name check still sends it to the owner");
+  assert.equal((await list(`${B}/ownerMessages`)).find((x) => x.ref === r.ref).context.serviceId, "games");
+  assert.equal(JSON.stringify(await svcStats()), svcBefore, "owner-lane messages never touch serviceStats");
+  assert.equal((await ownStats()).games.questions, 1); assert.equal((await ownStats()).games.feedback, 1, "both are in the owner's stats.byService");
+  // other lines ignore the new fields
+  r = await core.send(req(null, visitor("hi", { kind: "question", context: { ...ctx, serviceId: "arcade" }, boombotShown: ["x"] }), { ip: "7.7.7.7" }));
+  const hi1 = (await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref);
+  assert.ok(!("kind" in hi1) && !("context" in hi1) && !("boombotShown" in hi1), "Say hi stores none of them");
+  assert.equal((await svcStats()).arcade, undefined); assert.equal((await ownStats()).arcade, undefined);
+  // contactDeflect: visitors allowed, counts boombot, 30 an hour per ipHash, then quietly nothing; nothing else stored
+  assert.equal(await why(core.deflect(req(null, { serviceId: "Bad.Id", answerId: "a" }))), "bad-input");
+  assert.equal(await why(core.deflect(req(null, { serviceId: "bug-zapper", answerId: "" }))), "bad-input");
+  assert.deepEqual(await core.deflect(req(null, { serviceId: "bug-zapper", answerId: "how-to-report" }, { ip: "6.6.6.6" })), { ok: true });
+  assert.equal((await svcStats())["bug-zapper"].boombot, 1);
+  for (let i = 0; i < 35; i++) assert.deepEqual(await core.deflect(req("fan", { serviceId: "bug-zapper", answerId: "screenshots" }, { ip: "6.6.6.7" })), { ok: true }, "the same answer over the limit");
+  assert.equal((await svcStats())["bug-zapper"].boombot, 31, "30 an hour from one ipHash");
+  clock += H;
+  await core.deflect(req(null, { serviceId: "bug-zapper", answerId: "screenshots" }, { ip: "6.6.6.7" }));
+  assert.equal((await svcStats())["bug-zapper"].boombot, 32, "a new hour, counted again");
+  assert.ok(!JSON.stringify(await svcStats()).includes("screenshots") && !JSON.stringify(await svcStats()).includes("fan"), "no answer id or uid stored");
+
   // ---------- settings (owner only) ----------
   assert.equal(await why(core.settings(req("a2", { replyTime: "2 days" }, A2))), "not-allowed");
   r = await core.settings(req("boss", { replyTime: "2 days", inboxGrades: ["A1", "A2"], nameCheck: false, emailOwner: { private: false }, lines: { report: true } }));
@@ -217,10 +279,11 @@ async function main() {
   assert.match(rules, /match \/hotline\/main \{\s*allow read: if true;\s*allow write: if false;/);
   assert.match(rules, /match \/hotline\/main\/ownerMessages\/\{msgId\} \{\s*allow read: if isSiteOwner\(siteId\);/);
   assert.match(rules, /match \/hotline\/main\/limits\/\{key\} \{\s*allow read, write: if false;/);
+  assert.match(rules, /match \/hotline\/main\/serviceStats\/\{month\} \{\s*allow read: if isHotlineInbox\(siteId\) \|\| hasSiteRole\(siteId, 'admin'\);\s*allow write: if false;/, "serviceStats: owner, inbox admins and site admins read; nobody writes");
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "../../firestore.indexes.json"), "utf8"));
   for (const g of ["teamMessages", "ownerMessages", "hotlineNotes", "limits"]) assert.ok(idx.fieldOverrides.some((f) => f.collectionGroup === g && f.fieldPath === "expireAt" && f.ttl === true), `TTL on ${g}`);
   const fns = require("../lib/hotline")({ adminLogEntry });
-  assert.deepEqual(Object.keys(fns).sort(), ["contactAction", "contactNote", "contactReply", "contactSend", "contactSettings"]);
+  assert.deepEqual(Object.keys(fns).sort(), ["contactAction", "contactDeflect", "contactNote", "contactReply", "contactSend", "contactSettings"]);
 
   console.log("check-hotline: ok");
 }

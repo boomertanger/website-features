@@ -20,7 +20,7 @@ interface Line { key: number; id: string; title: string; line: string; lane: Lan
 // The six lines (functions/lib/hotline/logic.js LINES): key, id, lane and reply address match the server; the copy is the mockup's.
 const LINES: Line[] = [
   { key: 1, id: "hi", title: "Say hi", line: "Fan mail, a favourite moment, or just hello.", lane: "team", from: "fanmail", ph: "Say hello, share a favourite moment, or tell Boomertanger what got you watching." },
-  { key: 2, id: "feedback", title: "Feedback", line: "Streams, the website, games, anything.", lane: "team", from: "fanmail", ph: "What worked, what didn't, and what you'd change." },
+  { key: 2, id: "feedback", title: "Feedback & questions", line: "Streams, the website, games, anything.", lane: "team", from: "fanmail", ph: "What worked, what didn't, and what you'd change." },
   { key: 3, id: "help", title: "Account help", line: "Signing in, your handle, your data.", lane: "team", from: "support", ph: "What happened, and what you expected to happen." },
   { key: 4, id: "business", title: "Business & collabs", line: "Sponsorships, collabs, press.", lane: "owner", from: "business", ph: "Tell Boomertanger about your brand and what you have in mind." },
   { key: 5, id: "private", title: "Private matter", line: "Something only Boomertanger should see.", lane: "owner", from: "fanmail", ph: "Take your time. This stays between you and Boomertanger." },

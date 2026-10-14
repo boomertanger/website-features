@@ -908,7 +908,7 @@ Object.assign(exports, bugsModule.functions);
 Object.assign(exports, require("./lib/live")({ adminLogEntry, youtube: youtubeModule.hooks }));
 
 // Hotline Boom (docs/specs/hotline-boom.md): the contact service's callables (contactSend, contactAction, contactNote, contactReply,
-// contactSettings). Lives in lib/hotline/; the Turnstile check is lib/security/turnstile.js.
+// contactSettings, and Talk Back's contactDeflect, docs/specs/talk-back.md). Lives in lib/hotline/; the Turnstile check is lib/security/turnstile.js.
 Object.assign(exports, require("./lib/hotline")({ adminLogEntry }));
 
 // Broken links (docs/specs/not-found.md "Data"): the 404 page's reportBrokenLink (visitors and members, rate-limited like the Arcade)

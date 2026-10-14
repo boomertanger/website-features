@@ -766,6 +766,8 @@ service cloud.firestore {
       // The settings doc is public (reply time and which lines are open; nothing private). Team-lane messages and their notes: the owner, or a
       // signed-in caller whose crewGrade claim is in hotline/main.inboxGrades (default A2, A3; mods never). Owner-lane messages and notes: the
       // owner only. stats: the owner; statsTeam: the owner and inbox admins. limits: nobody. Only functions write any of it.
+      // serviceStats (Talk Back, docs/specs/talk-back.md §6): team-lane counts per service, read by the owner, inbox admins and site admins (the
+      // Service Hub readers); owner-lane counts never leave stats.
       function isHotlineInbox(siteId) {
         return isSiteOwner(siteId)
           || (request.auth != null && request.auth.token.get('crewGrade', '') is string
@@ -797,6 +799,10 @@ service cloud.firestore {
       }
       match /hotline/main/statsTeam/{month} {
         allow read: if isHotlineInbox(siteId);
+        allow write: if false;
+      }
+      match /hotline/main/serviceStats/{month} {
+        allow read: if isHotlineInbox(siteId) || hasSiteRole(siteId, 'admin');
         allow write: if false;
       }
       match /hotline/main/limits/{key} {

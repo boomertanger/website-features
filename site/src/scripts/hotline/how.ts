@@ -13,7 +13,7 @@ import { HOLE_A, DIAL_STOP, icon } from "./art";
 type Lane = "team" | "owner";
 const LINES: { id: string; n: number; title: string; lane: Lane; text: string }[] = [
   { id: "hi", n: 1, title: "Say hi", lane: "team", text: "Fan mail, a favourite moment, or just hello." },
-  { id: "feedback", n: 2, title: "Feedback", lane: "team", text: "Streams, the website, games, anything. Pick a stream from the list so we know which night." },
+  { id: "feedback", n: 2, title: "Feedback & questions", lane: "team", text: "Streams, the website, games, anything. Pick a stream from the list so we know which night." },
   { id: "help", n: 3, title: "Account help", lane: "team", text: "Signing in, your handle, your data. Quick answers show first, so you may not need to send at all." },
   { id: "business", n: 4, title: "Business & collabs", lane: "owner", text: "Sponsorships, collabs, game keys, press. A few short fields help Boomertanger reply fast." },
   { id: "private", n: 5, title: "Private matter", lane: "owner", text: "Anything only Boomertanger should see. Not the crew, not the admins." },

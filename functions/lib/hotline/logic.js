@@ -6,9 +6,11 @@
 //   nameCheck(text, crew)            -> { uid, handle, grade } | null (whole word, case-insensitive, 3+ chars; the owner never in `crew`)
 //   pickLane(line, { onlyOwner, namecheck })   -> "team" | "owner"
 //   countLinks(text), cleanVia(v), monthKey(ms), audienceFor(lane, ownerUid, inboxAdmins)
+//   talkBackFields(input)            Talk Back on line 2 (docs/specs/talk-back.md §6): -> { kind, context, boombotShown }; an invalid context or id is
+//                                    dropped, never a reason to refuse. SERVICE_ID, SECTION_KEY, ANSWER_ID, TB_KINDS, cleanPath, cleanTitle
 const LINES = [
   { key: 1, id: "hi", title: "Say hi", lane: "team", from: "fanmail" },
-  { key: 2, id: "feedback", title: "Feedback", lane: "team", from: "fanmail" },
+  { key: 2, id: "feedback", title: "Feedback & questions", lane: "team", from: "fanmail" },   // the id stays "feedback" (talk-back.md §3)
   { key: 3, id: "help", title: "Account help", lane: "team", from: "support" },
   { key: 4, id: "business", title: "Business & collabs", lane: "owner", from: "business" },
   { key: 5, id: "private", title: "Private matter", lane: "owner", from: "fanmail" },
@@ -121,7 +123,42 @@ const monthKey = (ms) => new Date(ms).toISOString().slice(0, 7);
 const audienceFor = (lane, ownerUid, inboxAdmins = []) => [...new Set([ownerUid, ...(lane === "team" ? inboxAdmins : [])].filter(Boolean))];
 const refLabel = (ref) => `BT-${ref}`;
 
+// ---------- Talk Back (docs/specs/talk-back.md §1, §6): line 2 only ----------
+const TB_KINDS = ["question", "feedback"];
+const SERVICE_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;   // a Service Hub id: a Firestore map key, so no dots or slashes
+const SECTION_KEY = /^[a-z0-9-]{1,40}$/;
+const ANSWER_ID = /^[a-z0-9][a-z0-9-]{0,63}$/;    // a help file entry's id
+/** A same-site pathname: starts with one "/", the query and hash dropped, 200 characters at most; anything else is null. */
+function cleanPath(v) {
+  if (typeof v !== "string") return null;
+  const p = v.trim().split(/[?#]/)[0];
+  if (!p.startsWith("/") || p.startsWith("//") || p.length > 200 || /[\s\\<>"]/.test(p)) return null;
+  return p;
+}
+/** The page title as plain text: no control characters or angle brackets, spaces collapsed, 120 characters at most. */
+const cleanTitle = (v) => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) : "");
+/** { serviceId, section, path, title } or null: a bad serviceId or path drops the context; a bad section drops just the section. */
+function cleanContext(c) {
+  if (!c || typeof c !== "object" || Array.isArray(c)) return null;
+  if (typeof c.serviceId !== "string" || !SERVICE_ID.test(c.serviceId)) return null;
+  const path = cleanPath(c.path);
+  if (!path) return null;
+  return { serviceId: c.serviceId, section: typeof c.section === "string" && SECTION_KEY.test(c.section) ? c.section : null, path, title: cleanTitle(c.title) };
+}
+/** Up to 4 distinct help answer ids BOOMBOT showed before they sent it anyway, or null. */
+function cleanShown(v) {
+  if (!Array.isArray(v)) return null;
+  const ids = [...new Set(v.filter((x) => typeof x === "string" && ANSWER_ID.test(x)))].slice(0, 4);
+  return ids.length ? ids : null;
+}
+/** Talk Back's fields on a line 2 message: kind (question | feedback, default feedback), context, boombotShown. */
+const talkBackFields = (input) => {
+  const i = input || {};
+  return { kind: TB_KINDS.includes(i.kind) ? i.kind : "feedback", context: cleanContext(i.context), boombotShown: cleanShown(i.boombotShown) };
+};
+
 module.exports = {
   LINES, LINE_IDS, lineById, FROM, STATUSES, ABOUT, MOODS, KINDS, TIMELINES, SOURCES, GRADES, MAX_BODY, MAX_LINKS, REF_START, DAY_MS, KEEP_MS, SPAM_KEEP_MS,
   DEFAULT_MAIN, mergeMain, validateSend, nameCheck, pickLane, countLinks, cleanVia, monthKey, audienceFor, refLabel,
+  TB_KINDS, SERVICE_ID, SECTION_KEY, ANSWER_ID, cleanPath, cleanTitle, cleanContext, cleanShown, talkBackFields,
 };

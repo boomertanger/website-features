@@ -9,6 +9,10 @@
 //   contactNote      owner + inbox admins    { lane, id, text } an internal note
 //   contactReply     owner + inbox admins    { lane, id, text, from, markWaiting, manual } -> { sent: true } | { sent: false, reason: "email-off", to, subject, text, mailto }
 //   contactSettings  owner                   updates hotline/main
+//   contactDeflect   anyone (visitors too)   Talk Back's "That answers it" (docs/specs/talk-back.md §5, §6): { serviceId, answerId } ->
+//                                            serviceStats/{yyyy-mm}.byService.{id}.boombot += 1, nothing else stored; 30 an hour per ipHash, then it quietly does nothing
+// Line 2 (Feedback & questions) also takes Talk Back's kind, context and boombotShown (talk-back.md §6), stored on the message and counted in
+// stats/{yyyy-mm}.byService (every lane, owner only) and serviceStats/{yyyy-mm}.byService (team lane only; never an owner-lane message).
 // Inbox admins = signed in with a crewGrade claim in hotline/main.inboxGrades (default A2, A3). Owner-lane messages: the owner only.
 // Errors carry details.reason (rate-limited + retryAt, bad-input + field, check-failed, line-off, not-allowed, gone).
 //
@@ -27,6 +31,7 @@ const SITE = `sites/${SITE_ID}`;
 const BASE = `${SITE}/hotline/main`;
 const HOUR_MS = 3600000;
 const LIMIT_VISITOR = 3, LIMIT_MEMBER = 5;
+const LIMIT_DEFLECT = 30;   // contactDeflect, an hour per ipHash
 const ID_SAFE = /^[A-Za-z0-9_-]{1,100}$/;
 const fail = (code, message, reason, extra = {}) => new HttpsError(code, message, { reason, ...extra });
 const ms = (t) => (t == null ? null : typeof t === "number" ? t : typeof t.toMillis === "function" ? t.toMillis() : null);
@@ -137,6 +142,8 @@ function build(deps = {}) {
     const lane = L.pickLane(v.value.line, { onlyOwner: v.value.onlyOwner, namecheck });
     const status = L.countLinks(v.value.body) > L.MAX_LINKS ? "spam" : "new";
     const via = L.cleanVia(d.via);
+    // Talk Back (line 2 only; other lines ignore these fields): kind, context, boombotShown
+    const tb = v.value.line.id === "feedback" ? L.talkBackFields(d) : null;
     const ref0 = col(lane).doc();
     let out = null;
     await db.runTransaction(async (tx) => {
@@ -150,6 +157,7 @@ function build(deps = {}) {
         sender: member ? { uid, handle } : v.value.sender, fields: v.value.fields, body: v.value.body,
         source: v.value.source, via, onlyOwner: v.value.onlyOwner, namecheck, escalatedBy: null, ipHash,
         createdAt: TS(at), updatedAt: TS(at), firstReplyAt: null, expireAt: TS(at + (status === "spam" ? L.SPAM_KEEP_MS : L.KEEP_MS)),
+        ...(tb ? { kind: tb.kind, context: tb.context, boombotShown: tb.boombotShown } : {}),
       };
       const result = { ref: nextRef, lane, replyTime: main.replyTime, id: ref0.id };
       tx.set(mainRef, { nextRef: nextRef + 1 }, { merge: true });
@@ -159,8 +167,14 @@ function build(deps = {}) {
       tx.set(idemRef, { result, expireAt: TS(at + 2 * L.DAY_MS) });
       const inc = FieldValue.increment(1);
       const stat = { total: inc, lines: { [msg.line]: inc }, ...(msg.source ? { source: { [msg.source]: inc } } : {}), ...(via ? { via: { [via.replace(/\./g, "_")]: inc } } : {}) };
-      tx.set(db.doc(`${BASE}/stats/${L.monthKey(at)}`), stat, { merge: true });
+      // per service (Talk Back): every lane in the owner's stats; the team lane only in serviceStats (an owner-lane message never touches it)
+      const svc = tb && tb.context ? tb.context.serviceId : null, bucket = tb && tb.kind === "question" ? "questions" : "feedback";
+      tx.set(db.doc(`${BASE}/stats/${L.monthKey(at)}`), svc ? { ...stat, byService: { [svc]: { [bucket]: inc } } } : stat, { merge: true });
       if (lane === "team") tx.set(db.doc(`${BASE}/statsTeam/${L.monthKey(at)}`), stat, { merge: true });
+      if (lane === "team" && svc) {
+        const sec = bucket === "questions" && tb.context.section ? { sections: { [tb.context.section]: { questions: inc } } } : {};
+        tx.set(db.doc(`${BASE}/serviceStats/${L.monthKey(at)}`), { byService: { [svc]: { [bucket]: inc, ...sec } } }, { merge: true });
+      }
       out = result;
     });
     if (out.repeat) return { ref: out.ref, lane: out.lane, replyTime: out.replyTime };
@@ -297,7 +311,27 @@ function build(deps = {}) {
     return { ok: true, settings: L.mergeMain((await mainRef.get()).data()) };
   }
 
-  return { loadMain, send, action, note, reply, settings };
+  // ---------- contactDeflect (Talk Back's "That answers it") ----------
+  async function deflect(request) {
+    const d = request.data || {};
+    if (typeof d.serviceId !== "string" || !L.SERVICE_ID.test(d.serviceId)) throw fail("invalid-argument", "Which service?", "bad-input", { field: "serviceId" });
+    if (typeof d.answerId !== "string" || !L.ANSWER_ID.test(d.answerId)) throw fail("invalid-argument", "Which answer?", "bad-input", { field: "answerId" });
+    const salt = secrets.salt ? secrets.salt() : "";
+    if (!salt) return { ok: true };
+    const at = now();
+    const ipHash = crypto.createHmac("sha256", salt).update(ipOf(request)).digest("hex");
+    const rlRef = limitRef(`dfl_${sha(`${ipHash}|${Math.floor(at / HOUR_MS)}`).slice(0, 40)}`);
+    await db.runTransaction(async (tx) => {
+      const rl = await tx.get(rlRef);
+      const count = rl.exists ? rl.get("count") || 0 : 0;
+      if (count >= LIMIT_DEFLECT) return;   // over the limit: quietly nothing
+      tx.set(rlRef, { count: count + 1, expireAt: TS(at + 2 * L.DAY_MS) });
+      tx.set(db.doc(`${BASE}/serviceStats/${L.monthKey(at)}`), { byService: { [d.serviceId]: { boombot: FieldValue.increment(1) } } }, { merge: true });
+    });
+    return { ok: true };   // the same answer counted or not, so the limit tells nobody anything
+  }
+
+  return { loadMain, send, action, note, reply, settings, deflect };
 }
 
 // The deployed callables. RESEND_API_KEY is bound only when functions/.env says HOTLINE_EMAIL=on (a secret that doesn't exist yet would stop the
@@ -317,6 +351,7 @@ module.exports = function hotline({ adminLogEntry }) {
     contactNote: onCall((request) => H().note(request)),
     contactReply: onCall({ secrets: mail }, (request) => H().reply(request)),
     contactSettings: onCall((request) => H().settings(request)),
+    contactDeflect: onCall({ secrets: [SALT] }, (request) => H().deflect(request)),
   };
 };
 module.exports.build = build;
