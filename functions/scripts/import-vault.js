@@ -20,6 +20,15 @@
 //   hint             a developer or a release year, used ONLY to choose between several IGDB games
 //                    with the same title (optional; it never picks when there's just one)
 //   note             ignored (yours, for the list)
+// Import-only columns (Boomer's own list; the member Add dialog keeps every rule):
+//   title_as         store the game under this title (slug and sort title follow); the source's spelling is kept
+//                    as an alternative name, e.g. a Latin "Cafe" for Steam's Cyrillic "Сafe"
+//   steam_only       yes: build it from the Steam page alone (needs steam; IGDB isn't used, cover is Steam's capsule,
+//                    the year comes from Steam)
+//   episode          yes: an IGDB DLC or expansion record (or a Steam DLC page) is added as its own entry
+//   owner_override   adult: lets this row past the adult-content check; recorded on the game's private source doc
+//   link, developer  add by hand (no IGDB or Steam record): title + https link (+ developer), no cover; an
+//                    itch.io link is stored as the itch link, any other as the official one
 // Never guesses: a title with more than one plausible IGDB game left after the hint, or none, is
 // skipped and reported (ambiguous: each candidate with its year and developer; not found: the
 // closest names). Editions, ports and versions of one game fold into its main record first. IGDB's
@@ -101,7 +110,50 @@ function readRow(r) {
   const long = boomerTags.find((t) => t.length > 30);
   if (long) return { error: `boomerTag "${long}" is longer than 30 characters` };
   const hint = (r.hint || "").replace(/\s+/g, " ").trim();
-  return { status, score, verdict, legacy, title: r.title, steam: r.steam, boomerTags, hint };
+  // import-only extras (the member Add dialog has none of these)
+  const yes = (v) => /^(yes|y|true|1)$/i.test(String(v || "").trim());
+  const titleAs = (r.title_as || "").replace(/\s+/g, " ").trim();
+  if (titleAs && (titleAs.length < 2 || titleAs.length > 100)) return { error: "title_as must be 2 to 100 characters" };
+  const steamOnly = yes(r.steam_only);
+  if (steamOnly && !r.steam) return { error: "steam_only needs a steam link or app id" };
+  const override = (r.owner_override || "").trim().toLowerCase();
+  if (override && override !== "adult") return { error: `owner_override "${r.owner_override}" isn't adult` };
+  const link = (r.link || "").trim(), developer = (r.developer || "").replace(/\s+/g, " ").trim();
+  if (link) {
+    let u = null;
+    try { u = new URL(link); } catch { /* not a link */ }
+    if (!u || u.protocol !== "https:") return { error: `link "${link}" isn't an https link` };
+    if (!r.title || r.steam) return { error: "a by-hand row (link) needs a title and no steam" };
+  }
+  if (developer.length > 100) return { error: "developer is longer than 100 characters" };
+  return {
+    status, score, verdict, legacy, title: r.title, steam: r.steam, boomerTags, hint,
+    titleAs: titleAs || null, steamOnly, episode: yes(r.episode), allowAdult: override === "adult", link: link || null, developer: developer || null,
+  };
+}
+
+/**
+ * title_as: the draft is stored under this title instead of the source's (and gets its slug and sort title); the
+ * source's own spelling is kept as an alternative name so search still finds it, and its title key stays claimed.
+ */
+function applyTitleAs(draft, keys, titleAs, C) {
+  if (!titleAs || titleAs === draft.title) return { draft, keys };
+  const altNames = [...new Set([draft.title, ...(draft.altNames || [])].filter((a) => a && a !== titleAs))];
+  return {
+    draft: { ...draft, title: titleAs, sortTitle: C.sortTitle(titleAs), slug: C.slugify(titleAs), altNames },
+    keys: [...new Set([...keys, `title_${C.titleKey(titleAs)}`])],
+  };
+}
+
+/** A by-hand row (link + developer): Boomer's own pick, straight into the Vault, no cover. */
+function byHandDraft(game, row) {
+  const itch = /(^|\.)itch\.io$/i.test(new URL(row.link).hostname);
+  return {
+    ...game, origin: "boomer", addedBy: null, status: row.status, cover: null,
+    developers: row.developer ? [row.developer] : [],
+    links: itch ? { itch: row.link } : { official: row.link },
+    tags: { ...game.tags, boomer: row.boomerTags },
+  };
 }
 
 const yearOf = (h) => (h.releaseDate ? new Date(h.releaseDate).getUTCFullYear() : null);
@@ -271,6 +323,24 @@ async function main() {
     const row = readRow(raw);
     if (row.error) { tally.problem++; report.other.push(`${label}: ${row.error}`); console.log(`PROBLEM   ${label}\n          ${row.error}`); continue; }
     try {
+      const lookupKey = async (key) => (taken.has(key) ? "an earlier row of this file" : store.lookupKey(key));
+      // by hand: a name and a link, no IGDB or Steam record
+      if (row.link) {
+        const h = await C.runByHandChecks({ name: row.title, link: row.link, lookupKey });
+        if (h.decision === "duplicate") { tally.duplicate++; report.other.push(`${label}: already in the Vault as ${h.duplicateSlug}`); console.log(`SKIP      ${label}\n          already in the Vault as ${h.duplicateSlug}`); continue; }
+        if (h.decision === "refused") { tally.refused++; report.other.push(`${label}: refused, ${h.code}`); console.log(`REFUSED   ${label}\n          ${h.code}`); continue; }
+        const draft = byHandDraft(h.game, row);
+        const matched = `${draft.title} (by hand, ${draft.developers[0] || "no developer"}, ${row.link})`;
+        report.add.push(`${raw.title} -> ${matched}`);
+        if (!args.apply) { tally.added++; h.keys.forEach((k) => taken.add(k)); console.log(`WOULD ADD ${label}\n          -> ${draft.slug}: ${matched} · status ${row.status} · no cover`); continue; }
+        const made = await store.createGame({ draft, source: { ...h.source, addedBy: "hand" }, keys: h.keys, addedByUid: null, checks: h.checks, reason: "Imported by hand" });
+        if (!made.ok) { tally.duplicate++; console.log(`SKIP      ${label}\n          already in the Vault as ${made.duplicateSlug}`); continue; }
+        h.keys.forEach((k) => taken.add(k));
+        await store.logAdmin({ action: "add", slug: made.slug, title: draft.title, actorUid: null, actorName: "Automatic", details: { via: "import-vault.js", byHand: true, status: row.status, line: raw.line } });
+        tally.added++;
+        console.log(`ADDED     ${label}\n          -> ${made.slug}: ${matched}`);
+        continue;
+      }
       const pick = await inputFor(row, sources, C.titleKey);
       if (pick.ambiguous) {
         tally.problem++;
@@ -285,14 +355,18 @@ async function main() {
         continue;
       }
       const r = await C.runChecks({
-        input: pick.input, sources, isStaff: true, origin: "boomer", handle: null,
-        lookupKey: async (key) => (taken.has(key) ? "an earlier row of this file" : store.lookupKey(key)),
+        input: pick.input, sources, isStaff: true, origin: "boomer", handle: null, lookupKey,
+        importOptions: { steamOnly: row.steamOnly, allowEpisode: row.episode, allowAdult: row.allowAdult },
       });
       if (r.decision === "duplicate") { tally.duplicate++; report.other.push(`${label}: already in the Vault as ${r.duplicateSlug}`); console.log(`SKIP      ${label}\n          already in the Vault as ${r.duplicateSlug}`); continue; }
       if (r.decision === "refused" || r.decision === "error") { tally.refused++; report.other.push(`${label}: refused, ${r.code}: ${r.message}`); console.log(`REFUSED   ${label}\n          ${r.code}: ${r.message}`); continue; }
 
-      const draft = { ...r.game, status: row.status, tags: { ...r.game.tags, boomer: row.boomerTags } };
-      const extras = [`status ${row.status}`, row.boomerTags.length ? `tags ${row.boomerTags.join(", ")}` : null, row.score ? `score ${row.score}/10` : null, row.legacy.streamCount || row.legacy.minutes ? `legacy ${row.legacy.streamCount} streams, ${row.legacy.minutes} min` : null, pick.byHint ? `chosen by the hint "${row.hint}"` : null].filter(Boolean).join(" · ");
+      const named = applyTitleAs({ ...r.game, status: row.status, tags: { ...r.game.tags, boomer: row.boomerTags } }, r.keys, row.titleAs, C);
+      const draft = named.draft;
+      r.keys = named.keys;
+      if (row.titleAs && (await lookupKey(`title_${C.titleKey(row.titleAs)}`))) { tally.duplicate++; report.other.push(`${label}: "${row.titleAs}" is already in the Vault`); console.log(`SKIP      ${label}\n          "${row.titleAs}" is already in the Vault`); continue; }
+      const how = [row.steamOnly ? "Steam only" : null, r.source.importedAs === "episode" ? "as an episode" : null, r.source.ownerOverride ? `owner override: ${r.source.ownerOverride}` : null, row.titleAs ? `title_as` : null, draft.cover ? `cover ${draft.cover.source}` : "no cover"].filter(Boolean).join(", ");
+      const extras = [`status ${row.status}`, row.boomerTags.length ? `tags ${row.boomerTags.join(", ")}` : null, row.score ? `score ${row.score}/10` : null, row.legacy.streamCount || row.legacy.minutes ? `legacy ${row.legacy.streamCount} streams, ${row.legacy.minutes} min` : null, pick.byHint ? `chosen by the hint "${row.hint}"` : null, how].filter(Boolean).join(" · ");
       const matched = `${draft.title} (${[draft.releaseDate ? new Date(draft.releaseDate).getUTCFullYear() : "no date", draft.developers[0] || "no developer"].join(", ")})`;
       report.add.push(`${raw.title || raw.steam} -> ${matched}${extras.includes("tags") ? ` [${row.boomerTags.join(", ")}]` : ""}${pick.byHint ? ` [hint "${row.hint}"]` : ""}`);
       if (!args.apply) { tally.added++; r.keys.forEach((k) => taken.add(k)); console.log(`WOULD ADD ${label}\n          -> ${draft.slug}: ${matched} · ${extras}`); continue; }
@@ -324,7 +398,7 @@ async function main() {
   if (!args.apply) console.log("Dry run: nothing written. Add --apply to write it.");
 }
 
-module.exports = { parseCsv, readRow, matchTitle, adminLogEntry };
+module.exports = { parseCsv, readRow, matchTitle, adminLogEntry, applyTitleAs, byHandDraft };
 
 if (require.main === module) {
   main().catch((err) => {

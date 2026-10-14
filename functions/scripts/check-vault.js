@@ -158,7 +158,7 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
   // ---------- runChecks: the section 3 rules ----------
   const run = async (input, opts = {}, envOpts = {}) => {
     const env = fakeEnv(envOpts);
-    return C.runChecks({ input, sources: env.sources, lookupKey: opts.keys ? vaultKeys(opts.keys) : vaultKeys(), isStaff: !!opts.staff, origin: opts.origin || "community", handle: opts.handle || "viewer1", now: Date.UTC(2026, 9, 2) });
+    return C.runChecks({ input, sources: env.sources, lookupKey: opts.keys ? vaultKeys(opts.keys) : vaultKeys(), isStaff: !!opts.staff, origin: opts.origin || "community", handle: opts.handle || "viewer1", now: Date.UTC(2026, 9, 2), importOptions: opts.importOptions });
   };
   const states = (r) => Object.fromEntries(r.checks.map((c) => [c.id, c.state]));
 
@@ -314,6 +314,32 @@ const vaultKeys = (map = {}) => async (key) => map[key] || null;
     assert.equal(r.decision, "refused", `steam descriptors ${ids}`);
     assert.equal(r.code, "adult");
   }
+  // import-only options (import-vault.js; the callables never pass importOptions, so members keep every rule)
+  const boomer = { staff: true, origin: "boomer" };
+  //   allowEpisode: an IGDB DLC or expansion (and its Steam DLC page) goes in as its own entry, marked on the source doc
+  r = await run({ igdbId: 2003 }, { ...boomer, importOptions: { allowEpisode: true } });
+  assert.equal(r.decision, "added", "an expansion as an episode");
+  assert.equal(r.source.importedAs, "episode");
+  r = await run("1456361", { ...boomer, importOptions: { allowEpisode: true } });
+  assert.equal(r.decision, "added", "a DLC (IGDB and Steam) as an episode");
+  r = await run({ igdbId: 2002 }, { ...boomer, importOptions: { allowEpisode: true } });
+  assert.equal(r.code, "notAGame", "a bundle is still refused");
+  r = await run({ igdbId: 2003 }, boomer);
+  assert.equal(r.code, "notAGame", "without the option an expansion is refused, for Boomer too");
+  //   allowAdult: the owner override lets one row past the adult check and is recorded; without it, refused (above)
+  r = await run({ igdbId: 3001 }, { ...boomer, importOptions: { allowAdult: true } });
+  assert.equal(r.decision, "added");
+  assert.equal(r.source.ownerOverride, "adult");
+  r = await run({ igdbId: 1001 }, { ...boomer, importOptions: { allowAdult: true } });
+  assert.equal(r.source.ownerOverride, undefined, "nothing is recorded when there was nothing to override");
+  //   steamOnly: built from the Steam page alone (IGDB not used), the year from Steam
+  r = await run("1205040", { ...boomer, importOptions: { steamOnly: true } }, { steam: { 1205040: steamEntry(1205040, { name: "Granny Steam Name", release_date: { coming_soon: false, date: "Aug 31, 2020" } }) } });
+  assert.equal(r.decision, "added");
+  assert.equal(r.game.title, "Granny Steam Name");
+  assert.equal(r.game.ids.igdb, null);
+  assert.equal(new Date(r.game.releaseDate).getUTCFullYear(), 2020);
+  assert.ok(!r.game.cover || r.game.cover.source === "steam", "never an IGDB cover");
+
   for (const ids of [[], [1], [2], [2, 5]]) {   // some nudity, violence, general mature: allowed
     r = await run("1205040", {}, { steam: { 1205040: steamEntry(1205040, { content_descriptors: { ids } }) } });
     assert.equal(r.decision, "added", `steam descriptors ${ids}`);

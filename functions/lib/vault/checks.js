@@ -47,6 +47,8 @@ const MESSAGES = {
 // (dlc, expansion, bundle, mod, fork, pack, update) is refused. A port folds into its parent
 // game in resolve(), like an edition; one IGDB gives no parent for stays as a game.
 const ACCEPTED_TYPES = new Set(["main_game", "remake", "remaster", "expanded_game", "standalone_expansion", "episode", "season", "port"]);
+// An import may add these as an episode of their own (importOptions.allowEpisode), e.g. Poppy Playtime's chapters.
+const EPISODE_TYPES = new Set(["dlc", "expansion"]);
 const REFUSED_STATUSES = new Set(["cancelled", "rumored"]);
 const STEAM_ADULT_DESCRIPTORS = [3, 4];   // adult-only sexual content; frequent nudity or sexual content
 // IGDB age-rating descriptors for strong or explicit sexual content. Plain "Sexual Content"
@@ -188,10 +190,15 @@ function buildDrafts({ igdb, steam, cover, origin, handle, now, inputSteamAppId 
 }
 
 /** Looks the game up, folding an edition or a port into its main game. Throws SourceError. */
-async function resolve(parsed, sources) {
+async function resolve(parsed, sources, { steamOnly = false } = {}) {
   let igdb = null, steam = null, igdbFailed = null, steamFailed = null;
   const safe = async (fn, onErr) => { try { return await fn(); } catch (err) { if (err instanceof SourceError && err.kind !== "bad") { onErr(err); return null; } throw err; } };
 
+  // Steam only (import-vault.js steam_only): the Steam page alone; IGDB isn't asked at all
+  if (steamOnly) {
+    if (parsed.steamAppId) steam = await safe(() => sources.steamGet(parsed.steamAppId), (e) => { steamFailed = e; });
+    return { igdb, steam, igdbFailed, steamFailed };
+  }
   if (parsed.steamAppId) {
     steam = await safe(() => sources.steamGet(parsed.steamAppId), (e) => { steamFailed = e; });
     igdb = await safe(() => sources.igdbFindBySteam(parsed.steamAppId), (e) => { igdbFailed = e; });
@@ -217,14 +224,22 @@ async function resolve(parsed, sources) {
   return { igdb, steam, igdbFailed, steamFailed };
 }
 
-async function runChecks({ input, sources, lookupKey, isStaff = false, origin = "community", handle = null, now = Date.now() }) {
+/**
+ * importOptions is for import-vault.js only (Boomer's own list); the callables never pass it, so the member
+ * Add dialog keeps every rule:
+ *   steamOnly     build the game from its Steam page alone (IGDB isn't asked; the cover is Steam's capsule)
+ *   allowEpisode  an IGDB dlc or expansion record (or a Steam DLC page) is added as its own entry, an episode
+ *   allowAdult    the owner lets this one row past the adult-content check (recorded on the private source doc)
+ */
+async function runChecks({ input, sources, lookupKey, isStaff = false, origin = "community", handle = null, now = Date.now(), importOptions = {} }) {
+  const { steamOnly = false, allowEpisode = false, allowAdult = false } = importOptions || {};
   const checks = makeChecks();
   const parsed = parseInput(input);
   if (!parsed) { setState(checks, "found", "fail"); return result("refused", "notFound", checks); }
   if (parsed.name) { setState(checks, "found", "fail"); return result("refused", "pickFromList", checks); }
 
   // 1. Resolve.
-  const { igdb, steam, igdbFailed, steamFailed } = await resolve(parsed, sources);
+  const { igdb, steam, igdbFailed, steamFailed } = await resolve(parsed, sources, { steamOnly });
   if (!igdb && !steam) {
     setState(checks, "found", "fail");
     if (igdbFailed && (parsed.igdbId || parsed.igdbSlug)) return result("error", steamFailed ? "allDown" : "igdbDown", checks);
@@ -248,7 +263,10 @@ async function runChecks({ input, sources, lookupKey, isStaff = false, origin = 
   setState(checks, "notDuplicate", "pass");
 
   // 3. Not a game: DLC, expansion, bundle, pack, update, mod, fork, or a Steam type other than game.
-  if ((igdb?.gameType && !ACCEPTED_TYPES.has(igdb.gameType)) || (steam?.type && steam.type !== "game")) {
+  const notAGame = (igdb?.gameType && !ACCEPTED_TYPES.has(igdb.gameType)) || (steam?.type && steam.type !== "game");
+  // an import may let a DLC or expansion in as its own entry (an episode): only when that is all that stands in the way
+  const episode = notAGame && allowEpisode && (EPISODE_TYPES.has(igdb?.gameType) || ACCEPTED_TYPES.has(igdb?.gameType) || !igdb) && (!steam?.type || ["game", "dlc"].includes(steam.type));
+  if (notAGame && !episode) {
     setState(checks, "fullGame", "fail");
     return result("refused", "notAGame", checks);
   }
@@ -260,7 +278,8 @@ async function runChecks({ input, sources, lookupKey, isStaff = false, origin = 
   setState(checks, "fullGame", "pass");
 
   // 5. Adult content (violence and gore never block) and 6. profanity in the title.
-  if (hasErotic(igdb) || strongSexDescriptor(igdb) || steamAdult(steam)) {
+  const adult = hasErotic(igdb) || strongSexDescriptor(igdb) || steamAdult(steam);
+  if (adult && !allowAdult) {
     setState(checks, "safe", "fail");
     return result("refused", "adult", checks);
   }
@@ -282,6 +301,14 @@ async function runChecks({ input, sources, lookupKey, isStaff = false, origin = 
   }
   const drafts = buildDrafts({ igdb, steam, cover, origin, handle, now, inputSteamAppId });
   drafts.keys = [...new Set([...drafts.keys, ...keys.filter((k) => k.startsWith("steam_"))])];
+  // a Steam-only import takes its release date from the Steam page ("Aug 31, 2020")
+  if (steamOnly && steam?.releaseText && !steam.comingSoon && !drafts.game.releaseDate) {
+    const t = Date.parse(`${steam.releaseText} 12:00 UTC`);
+    if (Number.isFinite(t)) drafts.game.releaseDate = t;
+  }
+  // what an import let through, kept on the private source doc
+  if (episode) drafts.source.importedAs = "episode";
+  if (adult) drafts.source.ownerOverride = "adult";
 
   if (autoAdd) return result("added", "added", checks, drafts);
   const code = !igdb ? "queuedSteamOnly" : "queuedNoHorror";

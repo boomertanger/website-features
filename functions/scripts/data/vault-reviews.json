@@ -83,7 +83,8 @@
         "Short",
         "VHS",
         "Night shift"
-      ]
+      ],
+      "hint": "Steam app 3076240 by Frost Fox Studios (2025). Steam/IGDB spell it with a Cyrillic 'С' in 'Сafe'; store it with the Latin title 'True Nightmare: Roadside Cafe'."
     },
     {
       "title": "9 Childs Street",
@@ -651,7 +652,8 @@
         "Escape",
         "Stealth",
         "Puzzle"
-      ]
+      ],
+      "hint": "Steam app 1357870 'Metel - Horror Escape' by Linked Squad (Aug 2020). Do not use IGDB's 'Metel' (2024, Anton Shuligin)."
     },
     {
       "title": "Metro 2033 Redux",
@@ -1224,6 +1226,368 @@
       "pinned": true,
       "note": "Boomer's own wishlist pick, pinned to the top of the Wishlist (Boomer's 'Up next'). No score or review.",
       "hint": "By Comp-3 Interactive, published by Torture Star Video (Apr 2023), Steam app 2329130; not the Rewind or Die demo by Overwrite Game Studios; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Ramona",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Follow the rules. Don't touch the radio. Don't wake Ramona.",
+      "review": "A tense, rules-based haunting where the camera flash is your only friend.",
+      "tags": [
+        "Psychological",
+        "Camera",
+        "Rules horror"
+      ],
+      "hint": "The 1970s psychological horror game, Steam app 3863340; not the Roblox game; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Deadcam",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Trust the raccoon. Never trust Margo.",
+      "review": "A clever, creepy hide-and-seek with an unforgettable gimmick, though it's short and simple.",
+      "tags": [
+        "Hide and seek",
+        "Found footage",
+        "Stealth"
+      ],
+      "hint": "By Alien Big Cat (Nov 2025), Steam app 3865340; NOT 'DEADCAM | ANALOG • SURVIVAL • HORROR' by Joure Visser; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Christmas Mutilator",
+      "status": "finished",
+      "score": 8,
+      "verdict": "He knows if you've been naughty. He knows where you're hiding.",
+      "review": "A tense, festive home-invasion slasher that turns a cozy cabin Christmas into a nightmare.",
+      "tags": [
+        "Holiday horror",
+        "Slasher",
+        "Home invasion"
+      ],
+      "hint": "By Galactic Crows / Tarba Paul Cornel (Dec 2024); NOT Puppet Combo's Christmas Massacre; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Christmas Story",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Cozy lights, warm cocoa, and something waiting under the tree.",
+      "review": "A festive, unsettling little holiday horror where the comfort slowly curdles into dread.",
+      "tags": [
+        "Holiday horror",
+        "Short",
+        "Cozy horror"
+      ],
+      "hint": "The Christmas horror game released Nov 19, 2025, Steam app 3447620; NOT The Holiday Story, A Bad Christmas Story or Christmas Stories; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Closing Shift",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The coffee's cold, the night's long, and someone's watching.",
+      "review": "One of Chilla's creepiest shifts: a snowy, slow-burn J-horror with a sting at the end.",
+      "tags": [
+        "Night shift",
+        "J-horror",
+        "VHS"
+      ],
+      "hint": "[Chilla's Art] The Closing Shift (2022), Steam app 1843090; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "CoRoT",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Headphones on, lights off, sanity optional.",
+      "review": "Atmospheric and weird in the best P.T. way, though it's short and very slow.",
+      "tags": [
+        "Meta-horror",
+        "Psychological",
+        "Short"
+      ],
+      "hint": "By Azteck Game Studios (Nov 2025), Steam app 3527920; not COR by Dark End Studios; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Dark Deception",
+      "status": "finished",
+      "score": 7,
+      "verdict": "Grab the shards. Don't look back. Seriously, don't.",
+      "review": "A tense arcade-horror sprint with brilliant monsters, though the chapter grind can wear you down.",
+      "tags": [
+        "Arcade horror",
+        "Maze",
+        "Chase"
+      ],
+      "hint": "By Glowstick Entertainment (2018); the main game, NOT Super Dark Deception or Monsters & Mortals; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Escape the Ayurok",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Hee-hee. He heard that.",
+      "review": "A goofy meme turned genuinely tense stealth horror, especially when your own mic gives you away.",
+      "tags": [
+        "Stealth",
+        "Microphone",
+        "Meme horror"
+      ],
+      "hint": "By DeadlyCrow Games (2019), Steam app 1177660; formerly 'Escape the Ayuwoki'; the main game, not The Summoning DLC, the DEMAKE or Horror Night; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Hello Neighbor",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The neighbor from hell, and the game that started a franchise.",
+      "review": "Iconic, chaotic and creepy: the basement mystery that launched a thousand let's plays.",
+      "tags": [
+        "Stealth",
+        "Neighbor",
+        "Puzzle"
+      ],
+      "hint": "The original by Dynamic Pixels / tinyBuild (2017), Steam app 521890; not Hello Neighbor 2, Hide and Seek or the VR games; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Jeff The Killer: Horror Game",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The Jeff the Killer game the creepypasta always deserved.",
+      "review": "Atmospheric, nasty and full of secrets: classic internet horror brought properly to life.",
+      "tags": [
+        "Creepypasta",
+        "Stealth",
+        "Multiple endings"
+      ],
+      "hint": "By SU Company Games (Oct 2025, Early Access), Steam app 3774300; not Urban Legends or the itch.io fan games; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Jeff the Skinner",
+      "status": "finished",
+      "score": 6,
+      "verdict": "Granny moved out. Jeff moved in.",
+      "review": "A familiar escape-the-house formula with a nasty new landlord, rough but fun.",
+      "tags": [
+        "Escape house",
+        "Creepypasta",
+        "Granny-like"
+      ],
+      "hint": "By Puppet House Games (Feb 2026), Steam app 3145930; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Krampus is Home",
+      "status": "finished",
+      "score": 6,
+      "verdict": "He's making a list. You're on the wrong one.",
+      "review": "A wild Christmas survival ride: killer elves, a terrifying deer and a Krampus who means business.",
+      "tags": [
+        "Holiday horror",
+        "Folklore",
+        "Survival horror"
+      ],
+      "hint": "By Regl Studios (2019), Steam app 839420; not 'Krampus' by Peace or Krampus Quest; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Little Nightmares",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Be small. Be quiet. Don't get eaten.",
+      "review": "A gorgeous, grotesque fairy tale where every room is a nightmare and every adult wants you for dinner.",
+      "tags": [
+        "Puzzle platformer",
+        "Dark fairy tale",
+        "Chase"
+      ],
+      "hint": "The first game by Tarsier Studios (2017), Steam app 424840; not II, III or the VR spin-off; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Poppy Playtime: Chapter 3 – Deep Sleep",
+      "status": "finished",
+      "score": 8,
+      "verdict": "The Smiling Critters stopped smiling.",
+      "review": "Bigger, darker and scarier than ever, though CatNap deserved even more screen time.",
+      "tags": [
+        "Mascot horror",
+        "Episodic",
+        "Chase"
+      ],
+      "hint": "By Mob Entertainment (Jan 2024), Steam app 2555190. On Steam it's DLC for Poppy Playtime, but IGDB and consoles list it as its own game: add it as its own Vault entry (an episode, not refused as DLC). The existing 'Poppy Playtime' entry stays as Chapter 1."
+    },
+    {
+      "title": "Poppy Playtime: Chapter 4 – Safe Haven",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Safe Haven? Not for long.",
+      "review": "The darkest chapter yet: Doey steals the show, and the story twists keep you hooked to the very end.",
+      "tags": [
+        "Mascot horror",
+        "Episodic",
+        "Story rich"
+      ],
+      "hint": "By Mob Entertainment (Jan 2025). On Steam it's DLC for Poppy Playtime, but IGDB and consoles list it as its own game: add it as its own Vault entry (an episode, not refused as DLC)."
+    },
+    {
+      "title": "Poppy Playtime: Chapter 5 – Broken Things",
+      "status": "finished",
+      "score": 9,
+      "verdict": "Huggy's back, and he brought the Prototype's whole family.",
+      "review": "The biggest, wildest chapter yet: nonstop chases, huge lore reveals and an ending that left chat screaming.",
+      "tags": [
+        "Mascot horror",
+        "Episodic",
+        "Chase"
+      ],
+      "hint": "By Mob Entertainment (Feb 2026 on PC). On Steam it's DLC for Poppy Playtime, but IGDB and consoles list it as its own game: add it as its own Vault entry (an episode, not refused as DLC)."
+    },
+    {
+      "title": "Poppy Playtime: Chapter 2 – Fly in a Web",
+      "status": "finished",
+      "score": 8,
+      "verdict": "Mommy wants to play. You don't get to say no.",
+      "review": "Bigger, meaner and better than Chapter 1: Mommy Long Legs is the perfect psycho game-show host.",
+      "tags": [
+        "Mascot horror",
+        "Episodic",
+        "Chase"
+      ],
+      "hint": "By Mob Entertainment (May 2022), Steam app 1817490. On Steam it's DLC for Poppy Playtime, but IGDB and consoles list it as its own game: add it as its own Vault entry (an episode, not refused as DLC)."
+    },
+    {
+      "title": "Kiosk",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Steam; sold in a bundle with The Skin Stapler by Assemble Entertainment; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Bonanit - A Menorcan Horror Story",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Well Is Not Empty",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Ghost Buster: Village",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Fears to Fathom - Scratch Creek",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Fears to Fathom episode by Rayll Studios; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Tales Beyond the Tomb - White Silence",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Tales Beyond the Tomb episode by 616 GAMES; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Tales Beyond the Tomb - No Witnesses",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Tales Beyond the Tomb episode by 616 GAMES; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Dead Stop - No Vacancy",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Death Park",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "The first game, not Death Park 2; exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Death Park 2",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "911: Cannibal",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "911: Prey",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Antarctica 88",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Listed by Boomer as 'Antartica 88'; exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Amanda the Adventurer 2",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By MANGLEDmaw Games, sequel to Amanda the Adventurer; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Bathhouse",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Chilla's Art; exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "BLOOD MALL: RETAPED",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Christmas Massacre",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By Puppet Combo (2021); NOT Christmas Mutilator; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Cursed Digicam",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Chilla's Art; exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Dead Format",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Duck Season",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "By Stress Level Zero; Boomer wants the VR version (Duck Season); tag VR; probably not in the Vault yet, so add it if missing",
+      "boomerTags": [
+        "VR"
+      ]
+    },
+    {
+      "title": "House of Empty Names",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "The Karaoke",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "Chilla's Art; exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
+    },
+    {
+      "title": "Night at the Gates of Hell",
+      "status": "wishlist",
+      "note": "Boomer's own wishlist pick: add with no score or review.",
+      "hint": "exact title on Steam/IGDB; if more than one match, report it rather than guessing; probably not in the Vault yet, so add it if missing"
     }
   ],
   "pending": [
