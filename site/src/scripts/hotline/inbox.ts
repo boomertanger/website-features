@@ -33,12 +33,20 @@ interface Msg {
   source: string | null; via: string | null; onlyOwner: boolean; namecheck: { uid: string; handle: string | null; grade: string | null } | null;
   escalatedBy: string | null; createdAt: number; firstReplyAt: number | null;
   kind: "question" | "feedback" | null; context: { serviceId: string; section: string | null; path: string | null; title: string | null } | null; boombotShown: string[] | null;   // Talk Back, line 2 only
+  // Talk Back Part B (talk-back.md §9): who replied first, who picked it up, what was paid, the spam mark
+  firstReplyBy: string | null; pickedUpAt: number | null; spamBy: string | null; spamHeld: { paid?: boolean } | null;
+  gearsPaid: { amount: number; uids: string[]; ledgerIds: string[]; reversed?: boolean } | null;
 }
+/** A credit line in the history (kind "credit"): paid, capped, a spam Gear pending, or a reversal. */
+interface Credit { amount?: number; parts?: Record<string, number>; capped?: boolean; cap?: number; pending?: string; reversed?: number; ledgerIds?: string[]; uids?: string[] }
+/** inboxStats/{yyyy-mm} (Chicago months): per staff member, and the Clear desk run. */
+interface StaffMonth { replies?: number; fast?: number; oldest?: number; minutes?: Record<string, number>; spamMarks?: number; spamHeld?: number; spamOverturned?: number; closed?: number }
+interface Desk { streak?: number; lastDay?: string; lastClear?: boolean; clearDays?: string[] }
 interface Svc { id: string; name: string; area: string; routes?: string[]; sections?: Record<string, string> }
 const SERVICES = new Map((Object.values(import.meta.glob("../../../../services/*.json", { eager: true, import: "default" })) as Svc[]).map((m) => [m.id, m]));
 interface SvcCount { questions: number; feedback: number; boombot: number; sections: Record<string, number> }
-interface Note { id: string; kind: "reply" | "note" | "event"; by: string | null; from?: string; text: string; at: number; event?: string; value?: string | null; manual?: boolean }
-interface PreviewData { ownerUid: string; handles: Record<string, string>; staff: string[]; messages: any[] }
+interface Note { id: string; kind: "reply" | "note" | "event" | "credit"; by: string | null; from?: string; text: string; at: number; event?: string; value?: string | null; manual?: boolean; credit?: Credit }
+interface PreviewData { ownerUid: string; handles: Record<string, string>; staff: string[]; messages: any[]; grades?: Record<string, string>; inboxStats?: { perStaff: Record<string, StaffMonth>; desk: Desk } }
 interface Main { inboxGrades: string[]; replyTime: string; lines: Record<string, boolean>; nameCheck: boolean; emailOwner: { business: boolean; private: boolean } }
 
 const LINES: Record<string, [number, string, string, Lane, string]> = {   // id: [key, title, short, lane, reply-from]
@@ -58,6 +66,10 @@ const VALUE_LABELS: Record<string, string> = {
 };
 const SOURCE_LABELS: Record<string, string> = { twitch: "Twitch", youtube: "YouTube", tiktok: "TikTok", instagram: "Instagram", search: "Google or search", friend: "A friend", streamer: "Another streamer", community: "Reddit or Discord", other: "Something else" };
 const DEFAULT_MAIN: Main = { inboxGrades: ["A2", "A3"], replyTime: "3 days", lines: {}, nameCheck: true, emailOwner: { business: true, private: true } };
+/** crew/main.inbox (the crew settings; staff read it): the values the credit lines and the strip quote. */
+const DEFAULT_VALS = { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, dailyCap: 30, operatorAccuracy: 0.9 };
+const PART_WORDS: Record<string, string> = { inboxReply: "reply", inboxFast: "fast", inboxOldest: "oldest first", inboxSpam: "spam cleared", inboxDesk: "clear desk", inboxBoombot: "added to BOOMBOT" };
+const HOW = "/admin/inbox/how-it-works#gears";   // Part C, the staff guide
 const PAGE = 200;
 const H = 3600e3;
 let P: PreviewData | null = null;   // preview data (signed out, ?as=admin, non-production)
@@ -83,6 +95,10 @@ const S = {
   period: "90" as "30" | "90" | "all", stats: null as null | Record<string, any>, busy: false, stamp: false,
   svcMonths: null as null | Record<string, Record<string, any>>,   // serviceStats/{yyyy-mm}.byService (team lane counts and BOOMBOT), read once
   draft: null as null | Main,
+  // Talk Back Part B: the This month strip, the crew inbox values, grades for the cards, and the moments
+  month: null as null | { perStaff: Record<string, StaffMonth>; desk: Desk | null; prevDesk: Desk | null },
+  vals: { ...DEFAULT_VALS }, grades: new Map<string, string>(),
+  deskClear: false, spamStamp: false,
 };
 
 /* ---------- small pieces ---------- */
@@ -91,7 +107,8 @@ const extra: Record<string, string> = {
   flag: '<path d="M5 21V4h11l-1.5 4L16 12H5"/>', reply: '<path d="M9 14L4 9l5-5"/><path d="M4 9h10a6 6 0 0 1 6 6v4"/>',
   note: '<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h5"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
-  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
+  chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  hand: '<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V11M16 11V8a1.5 1.5 0 0 1 3 0v6a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.5 13.5a1.5 1.5 0 0 1 2.5-1.7L7 12"/>', link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
 };
 const ic = (k: string, cls = "") => (extra[k] ? `<svg width="16" height="16"${cls ? ` class="${cls}"` : ""} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${extra[k]}</svg>` : svg(k, cls));
 const badge = (s: Status) => `<span class="bt-badge bt-badge--${ST[s][1]}"><span class="bt-badge-dot"></span>${ST[s][0]}</span>`;
@@ -130,6 +147,8 @@ function toMsg(id: string, lane: Lane, d: any): Msg {
     kind: d.line === "feedback" ? (d.kind === "question" ? "question" : "feedback") : null,
     context: d.line === "feedback" && d.context && typeof d.context.serviceId === "string" ? { serviceId: d.context.serviceId, section: d.context.section || null, path: typeof d.context.path === "string" && d.context.path ? d.context.path : null, title: d.context.title || null } : null,
     boombotShown: Array.isArray(d.boombotShown) && d.boombotShown.length ? d.boombotShown.map(String) : null,
+    firstReplyBy: d.firstReplyBy || null, pickedUpAt: ms(d.pickedUpAt), spamBy: d.spamBy || null, spamHeld: d.spamHeld || null,
+    gearsPaid: d.gearsPaid && typeof d.gearsPaid.amount === "number" ? { amount: d.gearsPaid.amount, uids: d.gearsPaid.uids || [], ledgerIds: d.gearsPaid.ledgerIds || [], reversed: d.gearsPaid.reversed === true } : null,
   };
 }
 async function loadLane(lane: Lane): Promise<Msg[]> {
@@ -159,7 +178,11 @@ async function loadNotes(m: Msg) {
     return;
   }
   const snap = await getDocs(query(collection(db, ...base(), `${m.lane}Messages`, m.id, "hotlineNotes"), orderBy("at", "asc")));
-  const notes = snap.docs.map((d) => { const x = d.data() as any; return { id: d.id, kind: x.kind, by: x.by || null, from: x.from, text: String(x.text || ""), at: ms(x.at) ?? 0, event: x.event, value: x.value ?? null, manual: x.manual === true } as Note; });
+  const notes = snap.docs.map((d) => {
+    const x = d.data() as any;
+    const credit = x.kind === "credit" ? { amount: x.amount, parts: x.parts, capped: x.capped === true, cap: x.cap, pending: x.pending, reversed: x.reversed, ledgerIds: x.ledgerIds, uids: x.uids } as Credit : undefined;
+    return { id: d.id, kind: x.kind, by: x.by || null, from: x.from, text: String(x.text || ""), at: ms(x.at) ?? 0, event: x.event, value: x.value ?? null, manual: x.manual === true, credit } as Note;
+  });
   S.notes.set(m.id, notes);
   await names(notes.map((n) => n.by).concat(m.assignee, m.escalatedBy));
   const sid = m.fields.stream;
@@ -173,9 +196,10 @@ async function names(uids: (string | null | undefined)[]) {
 }
 /** Who a team message can be assigned to: the owner and the admins whose grade has the inbox. */
 async function loadStaff() {
-  if (P) { S.staff = P.staff.map((uid) => ({ uid, handle: P!.handles[uid] || uid })); return; }
+  if (P) { S.staff = P.staff.map((uid) => ({ uid, handle: P!.handles[uid] || uid })); for (const [u, g] of Object.entries(P.grades || {})) S.grades.set(u, g); return; }
   try {
     const snap = await getDocs(query(collection(db, "sites", SITE_ID, "crew", "main", "roster"), where("track", "==", "admin")));
+    for (const d of snap.docs) S.grades.set(d.id, `A${d.get("grade")}`);
     const uids = snap.docs.filter((d) => S.main.inboxGrades.includes(`A${d.get("grade")}`) && !["alumni", "paused"].includes(String(d.get("status")))).map((d) => d.id);
     const all = [...new Set([S.ownerUid, ...uids].filter(Boolean))];
     await names(all);
@@ -193,6 +217,84 @@ async function loadStats() {
     if (S.owner) for (const [id, v] of Object.entries((x.byService || {}) as Record<string, any>)) { const t = (sum.byService[id] ??= { questions: 0, feedback: 0 }); t.questions += Number(v?.questions) || 0; t.feedback += Number(v?.feedback) || 0; }
   }
   S.stats = sum;
+}
+
+/* ---------- Talk Back Part B: the This month strip (S1), credit lines (K1), moments ---------- */
+const chicagoDay = (t: number) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date(t));
+const dayShift = (day: string, n: number) => new Date(Date.parse(`${day}T12:00:00Z`) + n * 864e5).toISOString().slice(0, 10);
+const prevYm = (ym: string) => { const [y, m] = ym.split("-").map(Number); return m === 1 ? `${y - 1}-12` : `${y}-${String(m - 1).padStart(2, "0")}`; };
+function median(a: number[]) { const s = a.filter((x) => Number.isFinite(x)).sort((x, y) => x - y); if (!s.length) return null; const k = s.length >> 1; return s.length % 2 ? s[k] : (s[k - 1] + s[k]) / 2; }
+const fmtMins = (m: number | null) => (m == null ? "n/a" : m < 60 ? `${Math.max(1, Math.round(m))}m` : m < 48 * 60 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`);
+/** Accuracy: the share of their spam marks that held (the owner overturning one counts against it); null with no marks settled. */
+const accuracyOf = (s: StaffMonth) => { const n = (s.spamHeld || 0) + (s.spamOverturned || 0); return n ? (s.spamHeld || 0) / n : null; };
+const waitingCount = () => S.msgs.filter((m) => m.lane === "team" && (m.status === "new" || m.status === "open")).length;
+async function loadMonth() {
+  const ym = chicagoDay(Date.now()).slice(0, 7);
+  if (P) { S.month = { perStaff: P.inboxStats?.perStaff || {}, desk: P.inboxStats?.desk || null, prevDesk: null }; return; }
+  try {
+    const [cur, prev] = await Promise.all([getDoc(doc(db, ...base(), "inboxStats", ym)), getDoc(doc(db, ...base(), "inboxStats", prevYm(ym)))]);
+    S.month = { perStaff: (cur.exists() && (cur.get("perStaff") as Record<string, StaffMonth>)) || {}, desk: (cur.exists() && (cur.get("desk") as Desk)) || null, prevDesk: (prev.exists() && (prev.get("desk") as Desk)) || null };
+  } catch { S.month = { perStaff: {}, desk: null, prevDesk: null }; }
+}
+async function loadVals() {
+  if (P) return;
+  try { const c = await getDoc(doc(db, "sites", SITE_ID, "crew", "main")); S.vals = { ...DEFAULT_VALS, ...((c.exists() && (c.get("inbox") as Partial<typeof DEFAULT_VALS>)) || {}) }; } catch { /* the defaults */ }
+}
+/** The Clear desk run: the streak and seven pips (the last 7 checked days; lime = clear). */
+function deskOf() {
+  const d = S.month?.desk || S.month?.prevDesk || null;
+  const clear = new Set([...(S.month?.desk?.clearDays || []), ...(S.month?.prevDesk?.clearDays || [])]);
+  const last = d?.lastDay || chicagoDay(Date.now() - 864e5);
+  const days = Array.from({ length: 7 }, (_, i) => dayShift(last, i - 6));
+  return { streak: d?.streak || 0, pips: days.map((x) => clear.has(x)), clearN: days.filter((x) => clear.has(x)).length };
+}
+function stripHtml() {
+  if (!S.month) { void loadMonth().then(paint, () => {}); return `<section class="hb-ib-panel hb-month" aria-label="This month"><div class="bt-skeleton" style="height:120px" aria-hidden="true"></div></section>`; }
+  const per = S.month.perStaff;
+  const uids = [...new Set([...S.staff.map((p) => p.uid), ...Object.keys(per)])].filter((u) => u && u !== S.ownerUid);
+  const all = uids.map((uid) => ({ uid, s: per[uid] || {} }));
+  const team = median(all.flatMap((x) => Object.values(x.s.minutes || {})));
+  const k = deskOf();
+  const pips = k.pips.map((on) => `<i class="${on ? "on" : ""}"></i>`).join("");
+  const top = `<div class="hb-month-top"><h2 class="bt-heading">This month</h2><span class="hb-team">Team median reply: <b>${fmtMins(team)}</b></span><span class="hb-sp"></span><span class="hb-desk"><span class="hb-pips" role="img" aria-label="Last 7 days: ${k.clearN} clear">${pips}</span>Clear desk: <b>${k.streak} day${k.streak === 1 ? "" : "s"}</b> in a row</span></div>`;
+  const any = all.some((x) => (x.s.replies || 0) + (x.s.closed || 0) + (x.s.spamHeld || 0) > 0);
+  if (!any) return `<section class="hb-ib-panel hb-month" aria-label="This month">${top}<div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">No replies yet this month.</span><span>First replies, fast replies and tidying show here.</span></div></section>`;
+  const card = ({ uid, s }: { uid: string; s: StaffMonth }) => {
+    const h = handleOf(uid), acc = accuracyOf(s), low = acc != null && acc < S.vals.operatorAccuracy;
+    const g = S.grades.get(uid);
+    return `<div class="hb-sc" tabindex="0"><div class="hb-sc-who"><span class="bt-avatar-sm" aria-hidden="true">${esc(h.replace("@", "").slice(0, 2).toUpperCase())}</span><span><b>${esc(h)}</b><small>${esc(g ? GRADE_NAMES[g] || g : "Inbox team")}</small></span></div>
+      <div class="hb-sc-nums"><div><b>${s.replies || 0}</b><span>first replies</span></div><div><b>${s.fast || 0}</b><span>within ${S.vals.fastHours} h</span></div><div><b>${fmtMins(median(Object.values(s.minutes || {})))}</b><span>median</span></div></div>
+      <div class="hb-sc-foot"><span class="bt-tag">Tidied ${(s.spamHeld || 0) + (s.closed || 0)}</span><span class="bt-tag${low ? " is-low" : ""}"${low ? ` title="Under ${Math.round(S.vals.operatorAccuracy * 100)}%: not in the running for Operator of the Month"` : ""}>${acc == null ? "No spam marks" : `Accuracy ${Math.round(acc * 100)}%`}</span></div></div>`;
+  };
+  all.sort((a, b) => (b.s.replies || 0) - (a.s.replies || 0) || handleOf(a.uid).localeCompare(handleOf(b.uid)));
+  return `<section class="hb-ib-panel hb-month" aria-label="This month">${top}<div class="hb-staff">${all.map(card).join("")}</div></section>`;
+}
+/** Clearing the last waiting team message: the mascot at an empty desk and a lime Desk / Clear stamp (plays once). */
+function clearHtml() {
+  const k = deskOf();
+  const left = Math.max(0, 7 - k.streak);
+  return `<div class="hb-clear" role="status"><div class="hb-clear-art">${mascot()}${stampHtml({ kicker: "Desk", label: "Clear", tone: "lime", size: "sm" })}</div><div class="hb-desk-line" aria-hidden="true"></div><h2 class="bt-modal-title">Desk clear</h2><p>Nothing waiting in the team lane. Clear desk streak: <b>${k.streak} day${k.streak === 1 ? "" : "s"}</b>.${left && left < 7 ? ` ${left} more and everyone who handled 3 this week gets the team bonus.` : ""}</p></div>`;
+}
+const partsText = (parts?: Record<string, number>) => Object.entries(parts || {}).filter(([, n]) => n > 0).map(([k, n]) => `${n} ${PART_WORDS[k] || k}`).join(" + ");
+const gearsWord = (n: number) => `${n} Gear${n === 1 ? "" : "s"}`;
+/** The owner's Remove credit: the /admin/crew adjustment, filled in (person, amount, ledger ids); the reason is theirs to write. */
+function removeHref(m: Msg, c: Credit, uid: string) {
+  const u = new URLSearchParams({ adjust: uid, amount: String(-(c.amount || 0)), reverses: (c.ledgerIds || []).join(","), note: `BT-${m.ref}` });
+  return `/admin/crew?${u}#adjust`;
+}
+function creditItem(m: Msg, n: Note): [string, string] {
+  const c = n.credit || {}, who = esc(handleOf(n.by));
+  const how = `<small><a class="hb-ib-linkish" href="${HOW}">How Gears work here</a></small>`;
+  if (c.reversed) return ["gray", `<b>${gearsWord(c.reversed)} reversed</b> from ${(c.uids || []).map((u) => esc(handleOf(u))).join(", ") || who}: marked as spam.`];
+  if (c.pending === "spam") {
+    if (m.spamHeld?.paid) return ["gold", `<b>Spam held.</b> ${gearsWord(S.vals.spam)} paid to ${who}. ${how}`];
+    if (m.status !== "spam") return ["gray", `<b>No Gear pending:</b> it isn't spam any more.`];
+    return ["gray", `<b>${gearsWord(S.vals.spam)} pending:</b> it pays in ${S.vals.spamHoldDays} days if it stays spam. ${how}`];
+  }
+  if (!c.amount && c.capped) return ["gray", `<b>No Gears for this reply.</b> ${who} reached today's inbox cap (${c.cap ?? S.vals.dailyCap}). <small>Resets at midnight Central. <a class="hb-ib-linkish" href="${HOW}">How Gears work here</a></small>`];
+  const removed = m.gearsPaid?.reversed;
+  const remove = S.owner && !removed && n.by ? ` · <a class="hb-ib-linkish" href="${esc(removeHref(m, c, n.by))}">Remove credit</a>` : "";
+  return ["gold", `<b>Paid ${gearsWord(c.amount || 0)} to ${who}</b>${partsText(c.parts) ? ` (${esc(partsText(c.parts))})` : ""}${c.capped ? `. Today's cap (${c.cap ?? S.vals.dailyCap}) stopped the rest` : ""}${remove} ${how}`];
 }
 
 /** serviceStats, every month (a few small docs): BOOMBOT's count and the per-section questions. Preview: the sample's boombot number. */
@@ -293,9 +395,14 @@ function toolsHtml() {
   return `<div class="hb-ib-tools"><div class="bt-sortbar" role="group" aria-label="Filter by status">${chips}</div><label class="bt-search">${ic("search")}<input class="bt-input" type="search" data-q placeholder="Search name, email or words" value="${esc(S.q)}" aria-label="Search messages"><span class="bt-search-key" aria-hidden="true">/</span></label></div>
     ${S.line ? `<div class="hb-ib-note">Showing line ${LINES[S.line][0]}, ${esc(LINES[S.line][1])} only. <button type="button" data-lamp="${S.line}">Show all lines</button></div>` : ""}`;
 }
+/** Pick up (P1): an unassigned team-lane message still waiting. */
+const pickable = (m: Msg) => m.lane === "team" && !m.assignee && (m.status === "new" || m.status === "open");
 function rowHtml(m: Msg) {
-  const own = m.lane === "owner";
-  return `<button type="button" class="bt-row bt-row--clickable hb-ib-item${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}" data-open="${m.id}" aria-current="${S.sel === m.id && (!narrow() || S.reading)}">${key(m)}<span class="hb-ib-who"><span>${esc(nameOf(m))}</span>${own ? ic("private", "is-lock") : ""}${m.namecheck && S.owner ? ic("flag", "is-flag") : ""}</span><span class="hb-ib-snip"><b>${esc(rowLabel(m))}:</b> ${esc(snippet(m))}</span><span class="hb-ib-side"><span class="hb-ib-when">${esc(ago(m.createdAt))}</span><span class="hb-ib-side-row">${m.assignee ? `<span class="hb-ib-av" title="${esc(handleOf(m.assignee))}">${esc(handleOf(m.assignee).replace("@", "").slice(0, 2).toUpperCase())}</span>` : ""}${badge(m.status)}</span></span></button>`;
+  const own = m.lane === "owner", pick = pickable(m);
+  const picked = m.assignee && m.pickedUpAt ? `<span class="hb-ib-pickedby">Picked up by ${esc(handleOf(m.assignee))}</span>` : "";
+  const row = `<button type="button" class="bt-row bt-row--clickable hb-ib-item${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}${pick ? " has-pick" : ""}" data-open="${m.id}" aria-current="${S.sel === m.id && (!narrow() || S.reading)}">${key(m)}<span class="hb-ib-who"><span>${esc(nameOf(m))}</span>${own ? ic("private", "is-lock") : ""}${m.namecheck && S.owner ? ic("flag", "is-flag") : ""}</span><span class="hb-ib-snip"><b>${esc(rowLabel(m))}:</b> ${esc(snippet(m))}</span><span class="hb-ib-side"><span class="hb-ib-when">${esc(ago(m.createdAt))}</span><span class="hb-ib-side-row">${picked || (m.assignee ? `<span class="hb-ib-av" title="${esc(handleOf(m.assignee))}">${esc(handleOf(m.assignee).replace("@", "").slice(0, 2).toUpperCase())}</span>` : "")}${badge(m.status)}</span></span></button>`;
+  // the row's Pick up sits beside the row button (a button can't hold a button); it hides on phones, where the message header has it
+  return pick ? `<div class="hb-ib-itemwrap">${row}<button type="button" class="bt-btn bt-btn--admin bt-btn--sm hb-ib-rowpick" data-pickup="${m.id}" aria-label="Pick up BT-${m.ref}">Pick up</button></div>` : row;
 }
 function historyHtml(m: Msg) {
   const notes = S.notes.get(m.id);
@@ -303,6 +410,9 @@ function historyHtml(m: Msg) {
   const items = notes.map((n): [string, string, number] => {
     if (n.kind === "reply") return ["lime", `<b>${n.manual ? "Replied from email" : "Reply sent"}</b> from ${esc(n.from || "")} by ${esc(handleOf(n.by))}<div class="hb-ib-bubble">${esc(n.text)}${n.manual ? "" : "<br><small>the Boomertanger crew</small>"}</div>`, n.at];
     if (n.kind === "note") return ["gray", `<b>Note</b> from ${esc(handleOf(n.by))}<div class="hb-ib-bubble">${esc(n.text)}</div>`, n.at];
+    if (n.kind === "credit") { const [c, t] = creditItem(m, n); return [c, t, n.at]; }
+    if (n.event === "pickUp") return ["gray", `<b>Picked up</b> by ${esc(handleOf(n.by))}`, n.at];
+    if (n.event === "release") return ["gray", `<b>Let go</b> by ${esc(handleOf(n.by))}`, n.at];
     if (n.event === "namecheck" || (n.text === "received" && n.event === "namecheck")) return ["gold", `<b>Received</b> and moved to Owner only by the name check`, n.at];
     if (n.text === "received") return ["blue", `<b>Received</b> on line ${LINES[m.line]?.[0] ?? "?"}, ${esc(title(m))}`, n.at];
     if (n.event === "status") return ["teal", `<b>Marked ${esc(ST[n.value as Status]?.[0] ?? String(n.value))}</b> by ${esc(handleOf(n.by))}`, n.at];
@@ -346,6 +456,12 @@ function contextHtml(m: Msg) {
   const href = c.path || SERVICES.get(c.serviceId)?.routes?.find((r) => !r.includes("[")) || null;
   return `<div class="hb-ib-ctx"><span>From</span><span class="bt-tag">${ic("pin")}${esc(whereOf(c))}</span>${href ? `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(href)}" target="_blank" rel="noopener">${ic("ext")}Open the page</a>` : ""}${SERVICES.has(c.serviceId) || !c.path ? "" : `<span class="hb-ib-ctx-path">${esc(c.path)}</span>`}${n ? `<span class="hb-ib-ctx-bb">${boombotIcon(`hb-ib-bb-${m.id}`)}BOOMBOT showed ${n === 1 ? "1 answer" : `${n} answers`}; they sent it anyway.</span>` : ""}</div>`;
 }
+/** The detail's Pick up, or "Picked up by @handle" (with Let it go for the person who picked it up). */
+function pickHtml(m: Msg) {
+  if (pickable(m)) return `<button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-pickup="${m.id}">${ic("hand")}Pick up</button>`;
+  if (m.lane !== "team" || !m.assignee || !m.pickedUpAt) return "";
+  return `<span class="hb-ib-picked">Picked up by <b>${esc(handleOf(m.assignee))}</b>${m.assignee === S.uid ? ` · <button type="button" class="hb-ib-linkish" data-letgo>Let it go</button>` : ""}</span>`;
+}
 function detailHtml(m: Msg | null) {
   if (!m) return `<div class="hb-ib-detail"><div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">Pick a message</span><span>It opens here.</span></div></div>`;
   const own = m.lane === "owner", member = !!m.sender.uid;
@@ -355,12 +471,13 @@ function detailHtml(m: Msg | null) {
   return `<article class="hb-ib-detail" data-msg="${m.id}" aria-label="Message BT-${m.ref}">
     <div class="hb-ib-backrow"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-close>${ic("back")}Back to the inbox</button></div>
     ${S.stamp ? `<span class="hb-ib-stampfx">${stampHtml({ kicker: "Hotline", label: "Replied", tone: "lime", size: "sm" })}</span>` : ""}
+    ${S.spamStamp ? `<span class="hb-ib-stampfx">${stampHtml({ kicker: "Marked", label: "Spam", tone: "gray", size: "sm" })}</span>` : ""}
     <div class="hb-ib-d-head${m.status === "new" ? " is-new" : ""}${own ? " is-owner" : ""}">${key(m)}<div><h2 class="bt-heading">${esc(title(m))}</h2><div class="hb-ib-d-meta"><span class="hb-ib-ref">BT-${m.ref}</span><span>${esc(ago(m.createdAt, " ago"))}</span>${laneTag(m.lane)}${badge(m.status)}</div></div></div>
     ${contextHtml(m)}
     ${m.namecheck && S.owner ? `<p class="bt-notice bt-notice--warn">${ic("flag")} <b>Moved to Owner only by the name check.</b> It mentions ${m.namecheck.handle ? `@${esc(m.namecheck.handle)}` : "someone on the crew"}${m.namecheck.grade != null ? `, ${/^A/.test(String(m.namecheck.grade)) ? "an" : "a"} ${esc(GRADE_NAMES[String(m.namecheck.grade)] || `grade ${m.namecheck.grade}`)} on the crew` : ""}, so the inbox team never saw it.</p>` : ""}
     ${m.escalatedBy && S.owner ? `<p class="bt-notice">Moved to Owner only by ${esc(handleOf(m.escalatedBy))}.</p>` : ""}
     ${m.onlyOwner ? `<p class="bt-notice">The sender ticked "Only Boomertanger should read this".</p>` : ""}
-    <div class="hb-ib-actions"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-focus-reply>${ic("reply")}Reply</button><select class="bt-select" data-setstatus aria-label="Status">${(Object.keys(ST) as Status[]).map((s) => `<option value="${s}"${m.status === s ? " selected" : ""}>${ST[s][0]}</option>`).join("")}</select>${assign}<span class="hb-ib-sp"></span>${own ? "" : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-escalate>${ic("private")}Owner only</button>`}</div>
+    <div class="hb-ib-actions"><button type="button" class="bt-btn bt-btn--primary bt-btn--sm" data-focus-reply>${ic("reply")}Reply</button>${pickHtml(m)}<select class="bt-select" data-setstatus aria-label="Status">${(Object.keys(ST) as Status[]).map((s) => `<option value="${s}"${m.status === s ? " selected" : ""}>${ST[s][0]}</option>`).join("")}</select>${assign}<span class="hb-ib-sp"></span>${own ? "" : `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-escalate>${ic("private")}Owner only</button>`}</div>
     <div class="hb-ib-sender"><span class="hb-ib-av hb-ib-av--lg${member ? "" : " hb-ib-av--visitor"}" aria-hidden="true">${esc(initialsOf(m))}</span><b>${esc(nameOf(m))}</b><span>${member ? (m.sender.handle ? `Member. <a href="/u/${encodeURIComponent(m.sender.handle)}">Profile</a>` : "Their account was deleted.") : `${esc(m.sender.email || "")} (visitor)`}</span></div>
     ${facts ? `<div class="hb-ib-facts">${facts}</div>` : ""}
     <div class="hb-ib-msg">${esc(m.body)}</div>
@@ -371,14 +488,15 @@ function detailHtml(m: Msg | null) {
   </article>`;
 }
 function inboxHtml() {
-  if (!S.msgs.length) return heroHtml() + `<div class="bt-empty hb-ib-zero">${mascot()}<span class="bt-empty-title">Inbox zero</span><span>Every line is quiet. New messages light up the lamps above.</span></div>`;
+  if (!S.msgs.length) return heroHtml() + stripHtml() + `<div class="bt-empty hb-ib-zero">${mascot()}<span class="bt-empty-title">Inbox zero</span><span>Every line is quiet. New messages light up the lamps above.</span></div>`;
   const L = list();
-  let m = L.find((x) => x.id === S.sel) || null;
+  // just marked spam: it leaves the list, but stays open for its stamp and the Undo toast
+  let m = L.find((x) => x.id === S.sel) || (S.spamStamp ? S.msgs.find((x) => x.id === S.sel) : null) || null;
   if (!m && !narrow()) m = L[0] || null;
   S.sel = m?.id ?? null;
   if (m && !S.notes.has(m.id)) void loadNotes(m).then(() => { if (S.sel === m!.id) paintDetail(); });
   const rows = L.length ? L.map(rowHtml).join("") : `<div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">Nothing here</span><span>Try another filter.</span></div>`;
-  return heroHtml() + toolsHtml() + `<div class="hb-ib-split"><div class="hb-ib-list">${rows}${S.msgs.length >= PAGE ? `<p class="bt-fine hb-ib-more">Showing the latest ${PAGE} per lane.</p>` : ""}</div>${L.length ? detailHtml(m) : ""}</div>`;
+  return heroHtml() + stripHtml() + toolsHtml() + `<div class="hb-ib-split"><div class="hb-ib-list">${S.deskClear ? clearHtml() : ""}${rows}${S.msgs.length >= PAGE ? `<p class="bt-fine hb-ib-more">Showing the latest ${PAGE} per lane.</p>` : ""}</div>${L.length ? detailHtml(m) : ""}</div>`;
 }
 
 /* ---------- sources tab ---------- */
@@ -449,7 +567,7 @@ function paint() {
   root.innerHTML = S.error ? `<div class="bt-empty">${mascot()}<span class="bt-empty-title">Couldn't load the inbox</span><span>${esc(S.error)}</span><button type="button" class="bt-btn bt-btn--secondary" data-retry>Try again</button></div>`
     : S.tab === "sources" ? sourcesHtml() : S.tab === "settings" ? settingsHtml() : inboxHtml();
   if (focusQ != null) { const q = root.querySelector<HTMLInputElement>("[data-q]"); q?.focus(); q?.setSelectionRange(focusQ, focusQ); }
-  S.stamp = false;
+  S.stamp = false; S.spamStamp = false; S.deskClear = false;
 }
 /** Redraw only the detail (notes arrived), keeping a draft. */
 function paintDetail() {
@@ -486,7 +604,14 @@ async function rpc<T = any>(name: string, data: any): Promise<T> {
   const m = S.msgs.find((x) => x.id === data.id);
   const add = (n: Partial<Note>) => { const list = previewNotes.get(data.id) || []; list.push({ id: String(Math.random()), by: S.uid, text: "", at: Date.now(), kind: "event", ...n } as Note); previewNotes.set(data.id, list); };
   if (name === "contactAction" && m) {
-    if (data.action === "status" || data.action === "spam") { m.status = data.value; add({ event: "status", value: data.value, text: `status ${data.value}` }); }
+    if (data.action === "status" || data.action === "spam") {
+      const v = data.action === "spam" ? "spam" : data.value;
+      if (v === "spam" && m.status !== "spam") { m.spamBy = S.uid; if (m.gearsPaid && !m.gearsPaid.reversed) { add({ kind: "credit", credit: { reversed: m.gearsPaid.amount, uids: m.gearsPaid.uids } }); m.gearsPaid = { ...m.gearsPaid, reversed: true }; } }
+      m.status = v; add({ event: "status", value: v, text: `status ${v}` });
+      if (v === "spam" && !S.owner) add({ kind: "credit", credit: { pending: "spam" } });
+    }
+    if (data.action === "pickUp") { m.assignee = S.uid; m.pickedUpAt = Date.now(); add({ event: "pickUp", value: S.uid, text: "picked up" }); }
+    if (data.action === "release") { m.assignee = null; m.pickedUpAt = null; add({ event: "release", value: null, text: "let go" }); }
     if (data.action === "assign") { m.assignee = data.value; add({ event: "assign", value: data.value, text: data.value ? "assigned" : "unassigned" }); }
     if (data.action === "escalate") { m.lane = "owner"; m.assignee = null; m.escalatedBy = S.uid; add({ event: "escalate", text: "escalated to owner only" }); if (!S.owner) S.msgs = S.msgs.filter((x) => x.id !== m.id); }
   }
@@ -494,24 +619,56 @@ async function rpc<T = any>(name: string, data: any): Promise<T> {
   if (name === "contactReply" && m) {
     if (!data.manual) return { sent: false, reason: "email-off", to: m.sender.email || "member@example.com", mailto: `mailto:${encodeURIComponent(m.sender.email || "")}?subject=${encodeURIComponent(`Re: ${title(m)} (BT-${m.ref})`)}&body=${encodeURIComponent(data.text)}` } as T;
     add({ kind: "reply", from: `${data.from}@${DOMAIN}`, text: data.text, manual: true });
-    m.status = data.markWaiting ? "waiting" : "open"; m.firstReplyAt ??= Date.now();
-    return { sent: true, manual: true } as T;
+    m.status = data.markWaiting ? "waiting" : "open";
+    if (m.firstReplyAt == null && m.lane === "team" && !S.owner) {   // the preview pays like the server would: 4 reply + 2 fast (+1 oldest first)
+      const oldest = !S.msgs.some((x) => x.lane === "team" && x.firstReplyAt == null && (x.status === "new" || x.status === "open") && x.createdAt < m.createdAt && x.id !== m.id);
+      const parts: Record<string, number> = { inboxReply: 4, ...(Date.now() - m.createdAt <= 24 * H ? { inboxFast: 2 } : {}), ...(oldest ? { inboxOldest: 1 } : {}) };
+      const amount = Object.values(parts).reduce((a, b) => a + b, 0);
+      add({ kind: "credit", credit: { amount, parts, ledgerIds: Object.keys(parts).map((k) => `${k}:${m.id}:${S.uid}`) } });
+      m.gearsPaid = { amount, uids: [S.uid], ledgerIds: [] }; m.firstReplyAt = Date.now(); m.firstReplyBy = S.uid;
+      return { sent: true, manual: true, gears: amount, parts } as T;
+    }
+    m.firstReplyAt ??= Date.now();
+    return { sent: true, manual: true, gears: 0 } as T;
   }
   if (name === "contactSettings") { const { lines, emailOwner, ...rest } = data; return { settings: { ...S.main, ...rest, lines: { ...S.main.lines, ...lines }, emailOwner: { ...S.main.emailOwner, ...emailOwner } } } as T; }
   return { ok: true } as T;
 }
-async function refresh(keepSel = true) {
+async function refresh(keepSel = true, waitingBefore = 0) {
   const sel = S.sel;
   await loadMessages();
+  // clearing the last waiting team message plays Desk clear once (not when an empty inbox is opened later)
+  if (waitingBefore > 0 && waitingCount() === 0) S.deskClear = true;
+  if (S.month) await loadMonth();   // the strip's numbers move with the work
   if (keepSel && sel && !S.msgs.some((m) => m.id === sel)) { S.sel = null; S.reading = false; }
   if (sel) { const m = S.msgs.find((x) => x.id === sel); if (m) { S.notes.delete(m.id); await loadNotes(m).catch(() => {}); } }
   paint();
 }
+/** Gears named in a toast: " +7 Gears (4 reply + 2 fast + 1 oldest first)." */
+const gearsToast = (r: { gears?: number; parts?: Record<string, number> | null; capped?: boolean } | null) =>
+  r && r.gears ? ` +${gearsWord(r.gears)} (${partsText(r.parts || undefined)}).` : r && r.capped ? " Today's inbox cap is reached, so no Gears." : "";
 async function act(m: Msg, body: Record<string, unknown>, ok: string) {
   if (S.busy) return;
   S.busy = true;
-  try { await rpc("contactAction", { lane: m.lane, id: m.id, ...body }); toast(ok); await refresh(); }
+  const before = waitingCount();
+  try { const r = await rpc<any>("contactAction", { lane: m.lane, id: m.id, ...body }); toast(ok + gearsToast(r)); await refresh(true, before); }
   catch (err) { toast(messageFor(err, "That didn't save. Try again."), { kind: "error" }); paint(); }
+  finally { S.busy = false; }
+}
+/** Mark spam: the gray Marked / Spam stamp, and Undo in the toast for 5 seconds (back to the status it had). */
+async function markSpam(m: Msg) {
+  if (S.busy) return;
+  S.busy = true;
+  const prev = m.status, before = waitingCount();
+  try {
+    await rpc("contactAction", { lane: m.lane, id: m.id, action: "spam" });
+    S.spamStamp = true;
+    const pending = m.lane === "team" && !S.owner && m.sender.uid !== S.uid;
+    toast(pending ? `Marked as spam. ${gearsWord(S.vals.spam)} pending for ${S.vals.spamHoldDays} days.` : "Marked as spam.", {
+      ms: 5000, action: { label: "Undo", onClick: () => void act(m, { action: "status", value: prev }, "Back in the inbox. No Gear pending.") },
+    } as any);
+    await refresh(true, before);
+  } catch (err) { toast(messageFor(err, "That didn't save. Try again."), { kind: "error" }); paint(); }
   finally { S.busy = false; }
 }
 async function sendCompose(m: Msg, box: HTMLElement) {
@@ -527,15 +684,16 @@ async function sendCompose(m: Msg, box: HTMLElement) {
       return;
     }
     const from = box.querySelector<HTMLSelectElement>("[data-from]")!.value, markWaiting = !!box.querySelector<HTMLInputElement>("[data-waiting]")?.checked;
-    const r = await rpc<{ sent: boolean; reason?: string; mailto?: string; to?: string | null; manual?: boolean }>("contactReply", { lane: m.lane, id: m.id, text, from, markWaiting });
+    const before = waitingCount();
+    const r = await rpc<{ sent: boolean; reason?: string; mailto?: string; to?: string | null; manual?: boolean; gears?: number; parts?: Record<string, number> | null; capped?: boolean }>("contactReply", { lane: m.lane, id: m.id, text, from, markWaiting });
     if (!r.sent && r.reason === "email-off") {
       S.manual = { id: m.id, mailto: r.mailto || "", to: r.to ?? null, text, from, markWaiting };
       paintDetail();
       return;
     }
     S.stamp = true;
-    toast("Reply sent");
-    await refresh();
+    toast(`Reply sent.${gearsToast(r as any)}`);
+    await refresh(true, before);
   } catch (err) {
     toast(messageFor(err, "That didn't send. Your text is still there: try again."), { kind: "error" });
     btn.disabled = false; btn.textContent = S.ctab === "reply" ? "Send reply" : "Save note";
@@ -544,10 +702,11 @@ async function sendCompose(m: Msg, box: HTMLElement) {
 async function markReplied(m: Msg) {
   const x = S.manual; if (!x) return;
   try {
-    await rpc("contactReply", { lane: m.lane, id: m.id, text: x.text, from: x.from, markWaiting: x.markWaiting, manual: true });
+    const before = waitingCount();
+    const r = await rpc<any>("contactReply", { lane: m.lane, id: m.id, text: x.text, from: x.from, markWaiting: x.markWaiting, manual: true });
     S.manual = null; S.stamp = true;
-    toast("Marked as replied");
-    await refresh();
+    toast(`Marked as replied.${gearsToast(r)}`);
+    await refresh(true, before);
   } catch (err) { toast(messageFor(err, "That didn't save. Try again."), { kind: "error" }); }
 }
 async function saveSettings() {
@@ -587,6 +746,9 @@ function wire() {
     if (t.closest("[data-send]") && m) { void sendCompose(m, t.closest<HTMLElement>(".hb-ib-compose")!); return; }
     if (t.closest("[data-manual-done]") && m) { void markReplied(m); return; }
     if (t.closest("[data-manual-cancel]")) { S.manual = null; paintDetail(); return; }
+    const pu = t.closest<HTMLElement>("[data-pickup]");
+    if (pu) { const pm = S.msgs.find((x) => x.id === pu.dataset.pickup); if (pm) void act(pm, { action: "pickUp" }, "Picked up. It shows as yours on the row."); return; }
+    if (t.closest("[data-letgo]") && m) { void act(m, { action: "release" }, "Let go. Anyone can pick it up."); return; }
     if (t.closest("[data-escalate]") && m) {
       void confirmAction({
         title: "Make it Owner only?", message: "Only Boomertanger will see this message and its notes. It leaves the team inbox at once, and it can't be moved back.",
@@ -617,7 +779,7 @@ function wire() {
     const t = e.target as HTMLElement;
     const m = S.msgs.find((x) => x.id === S.sel);
     if (!m) return;
-    if (t.matches("[data-setstatus]")) { const v = (t as HTMLSelectElement).value; void act(m, { action: v === "spam" ? "spam" : "status", value: v }, `Marked ${ST[v as Status][0]}`); }
+    if (t.matches("[data-setstatus]")) { const v = (t as HTMLSelectElement).value; if (v === "spam") void markSpam(m); else void act(m, { action: "status", value: v }, `Marked ${ST[v as Status][0]}.`); }
     if (t.matches("[data-assign]")) { const v = (t as HTMLSelectElement).value || null; void act(m, { action: "assign", value: v }, v ? `Assigned to ${handleOf(v)}` : "Unassigned"); }
   });
   root.addEventListener("input", (e) => { const t = e.target as HTMLInputElement; if (t.matches("[data-q]")) { S.q = t.value; paint(); } });
@@ -636,6 +798,7 @@ async function start() {
     await loadMessages();
     await names(S.msgs.map((m) => m.assignee));
     void loadStaff();
+    void loadVals();
     const want = qs().get("id");
     if (want && S.msgs.some((m) => m.id === want)) { S.sel = want; S.reading = true; }
     const t = qs().get("tab");

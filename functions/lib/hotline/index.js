@@ -250,7 +250,7 @@ function build(deps = {}) {
       if (value === "spam" && msg.status !== "spam" && lane === "team" && (await C.earns(w.uid, lane, msg))) await credit(lane, id, { expireAt }, { by: w.uid, pending: "spam" });
       if (patch.gearsPaid && patch.gearsPaid.reversed) await credit(lane, id, { expireAt }, { by: w.uid, reversed: patch.gearsPaid.amount, uids: patch.gearsPaid.uids });
       await log(w, "status", { lane, id, ref: msg.ref, details: { from: msg.status, to: value } });
-      return { ok: true, status: value, gears: paid ? paid.amount : 0 };
+      return { ok: true, status: value, gears: paid ? paid.amount : 0, parts: paid ? paid.parts : null };
     }
     if (d.action === "pickUp" || d.action === "release") {
       if (lane !== "team") throw fail("failed-precondition", "Owner-only messages can't be picked up.", "not-allowed");
@@ -336,7 +336,7 @@ function build(deps = {}) {
       first = cur.get("firstReplyAt") == null;
       tx.update(msgRef(d.lane, d.id), { status: d.markWaiting === true ? "waiting" : "open", updatedAt: TS(at), ...(first ? { firstReplyAt: TS(at), firstReplyBy: w.uid } : {}) });
     });
-    let gearsEarned = 0;
+    let gearsEarned = 0, paidRec = null;
     if (first) {
       const k = L.monthKey(ms(msg.createdAt) || at);
       await db.doc(`${BASE}/stats/${k}`).set({ answered: FieldValue.increment(1) }, { merge: true });
@@ -344,11 +344,11 @@ function build(deps = {}) {
       const c = await C.onFirstReply({ lane: d.lane, id: d.id, msg, uid: w.uid, at, oldest });
       await msgRef(d.lane, d.id).update({ firstReplyMeta: c.meta, ...(c.gearsPaid && (c.gearsPaid.amount || c.gearsPaid.capped) ? { gearsPaid: c.gearsPaid } : {}) });
       if (c.gearsPaid && (c.gearsPaid.amount || c.gearsPaid.capped)) await credit(d.lane, d.id, msg, { by: w.uid, amount: c.gearsPaid.amount, parts: c.gearsPaid.parts, capped: c.gearsPaid.capped, cap: c.gearsPaid.cap, ledgerIds: c.gearsPaid.ledgerIds });
-      gearsEarned = c.gearsPaid ? c.gearsPaid.amount : 0;
+      gearsEarned = c.gearsPaid ? c.gearsPaid.amount : 0; paidRec = c.gearsPaid;
     }
     if (msg.sender && msg.sender.uid) await outbox(`hotline-reply-${d.id}-${at}`, { type: "contact-reply", audience: "uids", uids: [msg.sender.uid], subject: { kind: "hotline", id: d.id, lane: d.lane }, payload: { ref: msg.ref }, streamId: null, week: null });
     await log(w, "reply", { lane: d.lane, id: d.id, ref: msg.ref, details: { from: d.from, manual: d.manual === true } });
-    return { sent: true, manual: d.manual === true, gears: gearsEarned };
+    return { sent: true, manual: d.manual === true, gears: gearsEarned, parts: paidRec ? paidRec.parts : null, capped: !!(paidRec && paidRec.capped) };
   }
 
   async function settings(request) {

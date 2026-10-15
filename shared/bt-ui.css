@@ -3869,10 +3869,11 @@
    .bt-chat-tile   a chat card: icon + name, a mini chat preview, a four-way choice (shared/ui/chat-tile.js)
    (The four-step journey .ai-jr--4 lives in site/src/styles/how-it-works.css with the other journeys.) */
 
-/* Stamp: --st is the tone (gold by default); .bt-stamp--lime, --primary; --sm is 96px. */
+/* Stamp: --st is the tone (gold by default); .bt-stamp--lime, --primary, --gray; --sm is 96px. */
 .bt-root:not(#_) .bt-stamp { --st: var(--bt-title); display: inline-grid; place-items: center; flex: none; width: 130px; height: 130px; border: 3px solid var(--st); border-radius: 50%; color: var(--st); text-align: center; transform: rotate(-10deg); font-size: 15px; font-weight: 900; letter-spacing: 0.1em; line-height: 1.15; text-transform: uppercase; box-shadow: 0 0 30px color-mix(in srgb, var(--st) 30%, transparent), inset 0 0 0 6px color-mix(in srgb, var(--st) 15%, transparent); animation: bt-stamp-slam 0.5s cubic-bezier(0.3, 1.6, 0.4, 1); }
 .bt-root:not(#_) .bt-stamp--lime { --st: var(--bt-lime); }
 .bt-root:not(#_) .bt-stamp--primary { --st: var(--bt-primary); }
+.bt-root:not(#_) .bt-stamp--gray { --st: var(--bt-gray); }   /* a quiet moment (Hotline Boom's Marked / Spam) */
 .bt-root:not(#_) .bt-stamp--sm { width: 96px; height: 96px; font-size: 12px; }
 .bt-root:not(#_) .bt-stamp small { display: block; font-size: 10px; letter-spacing: 0.14em; color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-stamp b { display: block; font-size: 28px; color: var(--bt-text); }

@@ -6,12 +6,12 @@
 //     label   the big word ("In", "Done")
 //     kicker  small line above it ("Application"); optional
 //     sub     small line below it ("Oct 7"); optional
-//     tone    "" (gold, the default) | "lime" | "primary"
+//     tone    "" (gold, the default) | "lime" | "primary" | "gray"
 //     size    "" (130px) | "sm" (96px)
 // Text is escaped. Put it where it should land (a card's corner); re-render the node to replay the slam.
 import { escapeHtml as esc } from "./dom.js";
 
-const TONES = ["lime", "primary"];
+const TONES = ["lime", "primary", "gray"];
 
 export function stampHtml({ label = "", sub = "", kicker = "", tone = "", size = "" } = {}) {
   const cls = `bt-stamp${TONES.includes(tone) ? ` bt-stamp--${tone}` : ""}${size === "sm" ? " bt-stamp--sm" : ""}`;

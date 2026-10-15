@@ -255,3 +255,59 @@
   .bt-root:not(#_) .hb-ib-bulb, .bt-root:not(#_) .hb-ib-toggle::after { transition: none; }
   .bt-root:not(#_) .hb-ib-stampfx { opacity: 0; }
 }
+
+/* ---------- Talk Back Part B (talk-back.md §9; mockup talk-back-recognition.html P1, K1, S1) ---------- */
+/* Pick up on the row (P1): beside the row button, over its right edge; the row keeps room for it. Hidden on phones (the header has it). */
+.bt-root:not(#_) .hb-ib-itemwrap { position: relative; display: grid; }
+.bt-root:not(#_) .hb-ib-item.has-pick { padding-right: 104px; }
+.bt-root:not(#_) .hb-ib-rowpick { position: absolute; right: 12px; bottom: 10px; padding: 5px 10px; font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .hb-ib-pickedby { font-size: var(--bt-text-xs); color: var(--bt-text-muted); white-space: nowrap; }
+.bt-root:not(#_) .hb-ib-picked { display: inline-flex; align-items: center; gap: 6px; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) .hb-ib-picked b { color: var(--bt-text); }
+.bt-root:not(#_) .hb-ib-linkish { color: var(--bt-primary-soft); background: none; border: 0; padding: 0; font: inherit; font-weight: 700; cursor: pointer; text-decoration: underline; text-underline-offset: 2px; }
+.bt-root:not(#_) .bt-history-body small .hb-ib-linkish { font-weight: 600; }
+/* This month strip (S1): staff cards; a swipe row on phones */
+.bt-root:not(#_) .hb-month { display: grid; gap: 12px; margin-top: 18px; }
+.bt-root:not(#_) .hb-month-top { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 16px; }
+.bt-root:not(#_) .hb-month-top .bt-heading { margin: 0; }
+.bt-root:not(#_) .hb-month-top .hb-sp { flex: 1; }
+.bt-root:not(#_) :is(.hb-team, .hb-desk) { font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+.bt-root:not(#_) :is(.hb-team, .hb-desk) b { color: var(--bt-text); }
+.bt-root:not(#_) .hb-desk { display: inline-flex; align-items: center; gap: 8px; }
+.bt-root:not(#_) .hb-pips { display: inline-flex; gap: 3px; }
+.bt-root:not(#_) .hb-pips i { width: 12px; height: 12px; border-radius: 3px; border: 1px solid var(--bt-border-2); background: var(--bt-bg); }
+.bt-root:not(#_) .hb-pips i.on { background: var(--bt-lime); border-color: var(--bt-lime); }
+.bt-root:not(#_) .hb-staff { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 10px; }
+.bt-root:not(#_) .hb-sc { display: grid; gap: 10px; padding: 12px 14px; border-radius: var(--bt-radius-lg); border: 1px solid var(--bt-border); background: var(--bt-surface); transition: border-color 0.15s, transform 0.15s; }
+.bt-root:not(#_) .hb-sc:is(:hover, :focus-visible) { border-color: var(--bt-border-2); transform: translateY(-1px); }
+.bt-root:not(#_) .hb-sc-who { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bt-root:not(#_) .hb-sc-who b { display: block; color: var(--bt-text); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .hb-sc-who small { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .hb-sc-nums { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.bt-root:not(#_) .hb-sc-nums div { display: grid; gap: 1px; }
+.bt-root:not(#_) .hb-sc-nums b { font-size: var(--bt-text-2xl); font-weight: 900; color: var(--bt-text); font-variant-numeric: tabular-nums; line-height: 1.1; }
+.bt-root:not(#_) .hb-sc-nums span { font-size: var(--bt-text-xs); color: var(--bt-text-faint); }
+.bt-root:not(#_) .hb-sc-foot { display: flex; flex-wrap: wrap; gap: 6px; }
+.bt-root:not(#_) .hb-sc-foot .bt-tag { font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .hb-sc-foot .is-low { border-color: rgba(var(--bt-gold-rgb), 0.6); color: var(--bt-text); }
+/* Desk clear: the inbox-zero moment (plays once, when you clear the last waiting message) */
+.bt-root:not(#_) .hb-clear { display: grid; justify-items: center; text-align: center; gap: 12px; padding: 28px 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .hb-clear-art { position: relative; display: grid; place-items: center; }
+.bt-root:not(#_) .hb-clear-art .bt-mascot, .bt-root:not(#_) .hb-clear-art > svg { width: 92px; height: auto; }
+.bt-root:not(#_) .hb-clear-art .bt-stamp { position: absolute; right: -88px; top: -14px; }
+.bt-root:not(#_) .hb-desk-line { width: 200px; height: 10px; margin-top: -6px; border-radius: 6px; border: 1px solid var(--bt-border-2); background: linear-gradient(180deg, var(--bt-surface-2), var(--bt-bg)); }
+.bt-root:not(#_) .hb-clear .bt-modal-title { margin: 6px 0 0; }
+.bt-root:not(#_) .hb-clear p { margin: 0; max-width: 40ch; color: var(--bt-text-muted); line-height: 1.5; }
+.bt-root:not(#_) .hb-clear p b { color: var(--bt-text); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .hb-ib-rowpick { display: none; }
+  .bt-root:not(#_) .hb-ib-item.has-pick { padding-right: 14px; }
+  .bt-root:not(#_) .hb-month-top .hb-sp { display: none; }
+  .bt-root:not(#_) .hb-staff { grid-template-columns: none; grid-auto-flow: column; grid-auto-columns: 82%; overflow-x: auto; scroll-snap-type: x mandatory; padding-bottom: 4px; }
+  .bt-root:not(#_) .hb-sc { scroll-snap-align: start; }
+  .bt-root:not(#_) .hb-clear-art .bt-stamp { right: -60px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .hb-sc { transition: none; }
+  .bt-root:not(#_) .hb-sc:is(:hover, :focus-visible) { transform: none; }
+}
