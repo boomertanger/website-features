@@ -15,6 +15,10 @@ const FOCUSABLE =
   'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 const stack = [];
+// The page's scroll position while a dialog is open. Locking only sets overflow:hidden on <html>, and some browsers (iOS Safari, focusing a text
+// box in the dialog) still scroll the page underneath; unlocking then left the page wherever they put it, often the top. The lock records where
+// the page was and puts it back when the last dialog closes.
+let lockedAt = null;
 
 // Squarespace 7.1's site header. Its height depends on the logo, the header
 // padding setting (vw-based), the announcement bar, and whether scroll-back
@@ -122,6 +126,7 @@ export function openModal({ content = "", title = "Dialog", wide = false, varian
   // mid-slide, measure once more after it settles.
   setTimeout(() => { if (backdrop.isConnected) placeBackdrop(backdrop); }, 400);
   if (stack.length === 0) {
+    lockedAt = { x: window.scrollX, y: window.scrollY };
     document.documentElement.style.overflow = "hidden";
     document.addEventListener("keydown", onKeydown);
     window.addEventListener("resize", onResize);
@@ -155,15 +160,25 @@ export function openModal({ content = "", title = "Dialog", wide = false, varian
         document.documentElement.style.overflow = prevOverflow;
         document.removeEventListener("keydown", onKeydown);
         window.removeEventListener("resize", onResize);
+        if (lockedAt && (Math.abs(window.scrollX - lockedAt.x) > 1 || Math.abs(window.scrollY - lockedAt.y) > 1)) window.scrollTo({ left: lockedAt.x, top: lockedAt.y, behavior: "instant" });
+        lockedAt = null;
       }
-      if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus();
+      // back to the button that opened it, without scrolling the page to it
+      if (opener && typeof opener.focus === "function" && document.contains(opener)) opener.focus({ preventScroll: true });
       if (onClose) onClose();
     },
   };
   stack.push(entry);
 
-  backdrop.addEventListener("mousedown", (e) => {
-    if (e.target === backdrop && entry.dismissible) entry.requestClose();
+  // Outside the dialog: a press that starts and ends on the backdrop closes it. Closing on the click (not on mousedown) means the click can't fall
+  // through to whatever was under the dialog (a link, or the page body taking focus), and a text selection dragged out of the dialog doesn't close it.
+  let downOnBackdrop = false;
+  backdrop.addEventListener("pointerdown", (e) => { downOnBackdrop = e.target === backdrop; });
+  backdrop.addEventListener("mousedown", (e) => { if (e.target === backdrop) e.preventDefault(); });
+  backdrop.addEventListener("click", (e) => {
+    const ok = downOnBackdrop && e.target === backdrop;
+    downOnBackdrop = false;
+    if (ok && entry.dismissible) entry.requestClose();
   });
   modal.addEventListener("click", (e) => {
     if (e.target.closest("[data-bt-close]") && entry.dismissible) entry.requestClose();
