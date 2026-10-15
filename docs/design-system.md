@@ -1113,7 +1113,7 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 - `chart(el, { series, t0, t1, eras, gaps, zero, mini, monthly, empty, label, notes })` draws an SVG into the element; it redraws on resize.
   - `series`: `[{ key, label, points: [{ t, v, src }], color, width, dash, icon }]`.
   - Line colours come from the page as `--c` (a feature colour such as `var(--cc-twitch)`): the kit has no feature colours. The icon at a line's end carries the meaning.
-- **Era bands** (`.bt-chart-era` with labels) and **hatched gaps** (`.bt-chart-gap`, "Not tracked month by month"): a line never crosses a gap longer than 20 days.
+- **Era bands** (`.bt-chart-era` with labels) and optional **hatched gaps** (`.bt-chart-gap`, "Not tracked month by month"): a line never crosses a gap longer than 20 days. Without `gaps`, lines connect across stretches without readings (Creator Climb passes none, §8ae).
 - **Crosshair tooltip:** the date, each value and its change since the previous reading. Imported points say "From the old growth pages" and sample points say "Sample".
 - **Keyboard:** arrows, Home, End and Esc.
 - `focusSeries(el, key | null)` dims every line but one.
@@ -1927,17 +1927,22 @@ Spec `docs/specs/creator-climb.md`; mockup `docs/design/mockups/creator-climb.ht
 - **Scrub the climb.** Drag along the ridge, or use the arrow keys, Home and Esc, to read the total at the end of any month.
 - **P1 Night lamps colours,** declared once in `creator-climb.css`:
   - Combined: title.
-  - Twitch: ice.
+  - Twitch: its brand purple, #9146ff (data marks only, §8ae; was ice).
   - TikTok: pink.
-  - YouTube: fuse.
+  - YouTube: its brand red, #ff0000 (data marks only, §8ae; was fuse).
   - Members: teal.
-  - Never purple (it means clickable) and never red (it means danger). The official platform icon at each line's end carries the meaning.
+  - The brand purple and red stay on data marks; nothing clickable takes them (§8ae). The official platform icon at each line's end carries the meaning.
 - **Members as their own climb.** Site members are a separate line, a separate total and separate milestones. They are never added into the combined follower total.
 - **Crossover.** It shows how much of the TikTok crowd follows on to Twitch, YouTube and the site (per 1,000, by era). Crowd crossover is a later item.
-- **Peak viewers.** The flip card shows the best Control Room stream as "N viewers, all platforms". The back always keeps the imported "577 on TikTok, September 2025". A combined peak never "beats" 577.
+- **Peak viewers.** The record tile shows the best Control Room stream as "N viewers, all platforms" once one exists, its note keeping "Before the site: 577 on TikTok, September 2025"; until then the imported 577 on TikTok with "Before the site." A combined peak never "beats" 577.
 - **The /admin card** is a tool page:
   - A small ridge scene.
   - Green admin panels: Readings with Automatic / By hand tags, Month notes, Eras, Goals, Left out of member counts, and Corrections.
   - Nothing red: removing a correction uses a green confirm.
   - Every change goes through `climbAdmin` and is logged.
 
+### 8ae. Platform brand colors and records
+Recorded Oct 15, 2026 (Creator Climb round 2):
+- Platform brand colors (Twitch #9146FF, YouTube #FF0000) may color data marks only (lines, bars, dots, meter fills, legend swatches). Never anything clickable: elsewhere purple still means clickable and red still means it destroys data.
+- Records and stats never use medal or badge visuals. Medal-style visuals are reserved for badges people can earn.
+- Creator Climb declares them once as `--cc-twitch-brand` / `--cc-youtube-brand` in `site/src/styles/creator-climb.css`; its records are R2 tiles (plain stats as buttons, a small chart, purple border on hover and focus), not `.bt-flip` medals.

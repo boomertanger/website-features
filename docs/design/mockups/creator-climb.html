@@ -4922,7 +4922,9 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 /* ===== Creator Climb feature CSS (cc-, tokens only) =====
    Line colors: never purple (clickable) or red (danger). One declared property per palette
    slot; the platform icon at each line's end carries the meaning, not the color. */
-#cc { --cc-members: var(--bt-teal); --cc-all: var(--bt-title); --cc-twitch: var(--bt-ice); --cc-tiktok: var(--bt-pink); --cc-youtube: var(--bt-fuse); --cc-dash-twitch: none; --cc-dash-tiktok: none; --cc-dash-youtube: none; }
+/* Platform brand colors: data marks only (lines, bars, dots), never on anything clickable (design-system §8 exception) */
+#cc { --cc-twitch-brand: #9146ff; --cc-youtube-brand: #ff0000; }
+#cc { --cc-members: var(--bt-teal); --cc-all: var(--bt-title); --cc-twitch: var(--cc-twitch-brand); --cc-tiktok: var(--bt-pink); --cc-youtube: var(--cc-youtube-brand); --cc-dash-twitch: none; --cc-dash-tiktok: none; --cc-dash-youtube: none; }
 #cc[data-palette="p2"] { --cc-all: var(--bt-text); --cc-twitch: var(--bt-blue); --cc-tiktok: var(--bt-follow-tiktok); --cc-youtube: var(--bt-pink); }
 #cc[data-palette="p3"] { --cc-all: var(--bt-title); --cc-twitch: var(--bt-text-muted); --cc-tiktok: var(--bt-text-muted); --cc-youtube: var(--bt-text-muted); --cc-dash-tiktok: 7 5; --cc-dash-youtube: 2 4; }
 #cc[data-palette="p3"] .bt-chart.has-focus .bt-chart-line.is-focus { stroke: var(--bt-lamp); }
@@ -5190,6 +5192,69 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 #cc .cc-pace .bt-mascot { width: 54px; }
 #cc .cc-pace p { margin: 4px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.55; max-width: 60ch; }
 
+/* --- Records (no medals: data, not badges) --- */
+#cc .cc-records--r2 { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+#cc .cc-rec { all: unset; box-sizing: border-box; display: flex; flex-direction: column; gap: 6px; padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); cursor: pointer; min-width: 0; transition: border-color 0.2s, transform 0.2s; }
+#cc .cc-rec:is(:hover, :focus-visible) { border-color: var(--bt-primary); transform: translateY(-2px); }
+#cc .cc-rec:focus-visible { box-shadow: 0 0 0 2px var(--bt-primary); }
+#cc .cc-rec .bt-label { margin: 0; }
+#cc .cc-rec-n { font-size: 34px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; color: var(--bt-text); }
+#cc .cc-rec-n small, #cc .cc-board-v small { display: block; margin-top: 4px; font-size: var(--bt-text-sm); font-weight: 500; letter-spacing: 0; color: var(--bt-text-muted); }
+#cc .cc-rec-when { font-size: var(--bt-text-md); font-weight: 700; color: var(--bt-title); }
+#cc .cc-rec-viz { width: 100%; aspect-ratio: 200 / 46; display: block; margin: 4px 0; overflow: visible; }
+#cc .cc-rec-bar { fill: var(--bt-border-2); }
+#cc .cc-rec-bar.is-hi { fill: var(--bt-title); filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.6)); }
+#cc .cc-rec-line { fill: none; stroke-width: 2; opacity: 0.55; }
+#cc .cc-rec-jump { stroke: var(--bt-title); stroke-width: 3.5; stroke-linecap: round; }
+#cc .cc-rec-dot { fill: var(--bt-title); }
+#cc .cc-rec-base { stroke: var(--bt-border-2); }
+#cc .cc-rec-vk { fill: var(--bt-text-faint); font-size: 11px; font-family: var(--bt-font); }
+#cc .cc-rec-note { font-size: var(--bt-text-sm); color: var(--bt-text-faint); line-height: 1.45; flex: 1; }
+#cc .cc-rec-go { font-size: var(--bt-text-sm); font-weight: 700; color: var(--bt-primary-soft); }
+#cc .cc-board { gap: 0; padding: 0; overflow: hidden; }
+#cc .cc-board-h, #cc .cc-log-h { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 16px 18px 12px; border-bottom: 2px solid rgba(var(--bt-gold-rgb), 0.5); }
+#cc .cc-board-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr) minmax(0, 0.9fr) 16px; gap: 14px; align-items: center; width: 100%; padding: 14px 18px; border-bottom: 1px solid var(--bt-border); cursor: pointer; transition: background 0.15s; }
+#cc .cc-board-row:last-child { border-bottom: 0; }
+#cc .cc-board-row:is(:hover, :focus-visible) { background: var(--bt-surface-2); }
+#cc .cc-board-l { font-weight: 700; font-size: var(--bt-text-base); }
+#cc .cc-board-l small, #cc .cc-log-t small { display: block; font-weight: 400; font-size: var(--bt-text-sm); color: var(--bt-text-faint); margin-top: 2px; }
+#cc .cc-board-v { font-size: 28px; font-weight: 900; text-align: right; font-variant-numeric: tabular-nums; line-height: 1; }
+#cc .cc-board-w { color: var(--bt-title); font-weight: 700; font-size: var(--bt-text-md); }
+#cc .cc-board-go { color: var(--bt-primary-soft); font-size: 22px; line-height: 1; }
+#cc .cc-log { padding: 0; gap: 0; overflow: hidden; }
+#cc .cc-log-list { list-style: none; margin: 0; padding: 4px 0; background: repeating-linear-gradient(180deg, transparent 0 55px, var(--bt-border) 55px 56px); }
+#cc .cc-log-row { all: unset; box-sizing: border-box; display: grid; grid-template-columns: 130px minmax(0, 1fr) 16px; gap: 14px; align-items: center; width: 100%; min-height: 56px; padding: 8px 18px; cursor: pointer; }
+#cc .cc-log-row:is(:hover, :focus-visible) { background: var(--bt-surface-2); }
+#cc .cc-log-d { color: var(--bt-title); font-weight: 700; font-size: var(--bt-text-sm); font-variant-numeric: tabular-nums; border-right: 2px solid rgba(var(--bt-gold-rgb), 0.4); }
+#cc .cc-log-t { font-size: var(--bt-text-base); color: var(--bt-text-muted); }
+#cc .cc-log-t b { color: var(--bt-text); font-size: var(--bt-text-lg); }
+/* --- At this pace --- */
+#cc .bt-card.cc-pace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: center; flex-direction: unset; }
+#cc .cc-pace-txt .bt-label { margin: 0; }
+#cc .cc-pace-big { display: block; margin: 6px 0 10px; font-size: var(--bt-text-2xl); line-height: 1.25; }
+#cc .cc-pace-txt p { margin: 8px 0 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); line-height: 1.5; }
+#cc .cc-pace-rows { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; }
+#cc .cc-pace-rows li { display: flex; align-items: center; gap: 8px; font-size: var(--bt-text-md); }
+#cc .cc-pace-rows li span:not(.cc-pi) { color: var(--bt-text-muted); }
+#cc .cc-pace-rows b { margin-left: auto; font-variant-numeric: tabular-nums; }
+#cc .cc-pace-rows small { color: var(--bt-text-faint); }
+#cc .cc-pace-viz svg { width: 100%; height: auto; display: block; overflow: visible; }
+#cc .cc-pace-goal { stroke: var(--bt-title); stroke-dasharray: 4 4; opacity: 0.7; }
+#cc .cc-pace-line { fill: none; stroke: var(--cc-youtube); stroke-width: 2.5; stroke-linejoin: round; }
+#cc .cc-pace-proj { fill: none; stroke: var(--cc-youtube); stroke-width: 2; stroke-dasharray: 2 6; stroke-linecap: round; opacity: 0.8; }
+#cc .cc-pace-eta { fill: var(--bt-bg); stroke: var(--bt-title); stroke-width: 2.5; }
+#cc .cc-pace-k { fill: var(--bt-text-faint); font-size: 11px; font-weight: 600; font-family: var(--bt-font); }
+#cc .cc-pace-viz.is-off { opacity: 0.45; }
+#cc .cc-pace-viz.is-off .cc-pace-proj { stroke: var(--bt-text-faint); }
+@container bt (max-width: 1024px) { #cc .cc-records--r2 { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bt (max-width: 640px) {
+  #cc .cc-records--r2 { grid-template-columns: minmax(0, 1fr); }
+  #cc .cc-board-row { grid-template-columns: minmax(0, 1fr) auto 16px; }
+  #cc .cc-board-w { grid-column: 1; grid-row: 2; }
+  #cc .cc-log-row { grid-template-columns: 92px minmax(0, 1fr) 16px; }
+  #cc .bt-card.cc-pace { grid-template-columns: minmax(0, 1fr); }
+}
+
 /* --- How the numbers work: flow --- */
 #cc .cc-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 0; margin: 0; padding: 0; list-style: none; }
 #cc .cc-flow li { position: relative; display: flex; flex-direction: column; gap: 6px; padding: 14px 18px 14px 0; }
@@ -5287,19 +5352,21 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
   <h1>Creator Climb <small>Mockups, Oct 15, 2026</small></h1>
   <div class="mk-grp"><span>Screen</span><button class="bt-chip is-active" data-set="screen" data-v="climb">/climb</button><button class="bt-chip" data-set="screen" data-v="admin">/admin card</button></div>
   <div class="mk-grp"><span>Viewer</span><button class="bt-chip is-active" data-set="viewer" data-v="visitor">Visitor</button><button class="bt-chip" data-set="viewer" data-v="member">Member</button></div>
+  <div class="mk-grp"><span>Records</span><button class="bt-chip" data-set="rec" data-v="r1">R1</button><button class="bt-chip is-active" data-set="rec" data-v="r2">R2</button><button class="bt-chip" data-set="rec" data-v="r3">R3</button></div>
   <div class="mk-grp"><span>Moment</span><button class="bt-chip is-active" data-set="moment" data-v="today">Today</button><button class="bt-chip" data-set="moment" data-v="launch">After launch (sample)</button></div>
   
   <div class="mk-grp"><span>View</span><button class="bt-chip is-active" data-set="view" data-v="desktop">Desktop</button><button class="bt-chip" data-set="view" data-v="phone">Phone</button></div>
   <div class="mk-grp"><button class="bt-btn bt-btn--secondary bt-btn--sm mk-logo-btn">Use my logo files<input type="file" accept="image/*" multiple id="mkLogos" aria-label="Use my logo files (file names containing twitch, tiktok or youtube)"></button></div>
 </div>
 
-<div class="mk-intro mk-intro--3">
-  <div class="mk-opt" style="cursor:default"><b>Picked: H1-D Summit camp + P1 Night lamps</b>Scrub the climb on the hero: hover, drag or use the arrow keys.</div>
-  <div class="mk-opt" style="cursor:default"><b>New: Members</b>Site members are their own climb, never added to the follower total (most members also follow on a platform). Hero, a Members chart, member milestones and month reports. Switch Moment to "After launch (sample)" to see it with made-up numbers: the cabin is finished, a Back on air camp appears and a teal members hill rises beside it.</div>
-  <div class="mk-rec"><b>New: Crossover (chapter 04), real numbers</b>For every 100 new TikTok followers since August 2025, about 4 new Twitch followers and 6 new YouTube subscribers came with them. Twitch's share fell from 5.3 to 1.8 while scheduled streams paused, which makes it the relaunch number to watch. After launch the same chapter adds members per 100 new followers.</div>
+<div class="mk-intro">
+  <button class="mk-opt" data-pick="rec" data-v="r1"><b>R1 · Record board</b>One card, one row per record: the record, its big number, when it happened. Reads like a stadium record board. Tap a row to open that month.</button>
+  <button class="mk-opt is-on" data-pick="rec" data-v="r2"><b>R2 · Record tiles with context</b>Four tiles, each with its number and a tiny chart showing where it happened: the biggest month lit gold among all months, the best jump on its platform's line. Tap a tile to open that month.</button>
+  <button class="mk-opt" data-pick="rec" data-v="r3"><b>R3 · Summit log</b>A trail-register list, dated entries written in like a climber's logbook. Fits the Summit camp theme, plainest of the three.</button>
+  <div class="mk-rec"><b>Recommendation: R2</b>Each record shows why it matters (June's bar towering over every other month says more than "+2,377"), uses the same chart language as the rest of the page, and nothing in it looks like something you could earn. Also new: Twitch purple and YouTube red on data only (lines, bars, dots), no gap band (lines just connect), and "At this pace" redrawn as a projection chart. Switch Moment to After launch to see it working with sample data.</div>
 </div>
 <div class="mk-stage">
-<div id="cc" class="bt-root cc-device" data-view="desktop" data-viewer="visitor" data-hero="h1" data-h1v="d" data-moment="today" data-palette="p1" data-screen="climb">
+<div id="cc" class="bt-root cc-device" data-view="desktop" data-viewer="visitor" data-hero="h1" data-h1v="d" data-moment="today" data-rec="r2" data-palette="p1" data-screen="climb">
   <svg width="0" height="0" style="position:absolute" aria-hidden="true"><defs>
     <linearGradient id="ccRock" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--bt-surface-2)"/><stop offset="1" style="stop-color:var(--bt-bg)"/></linearGradient>
     <pattern id="ccHatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" style="fill:var(--bt-bg)"/><line x1="0" y1="0" x2="0" y2="8" style="stroke:var(--bt-border-2);stroke-width:2"/></pattern>
@@ -5438,8 +5505,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
           </div>
           <div class="bt-lock-card cc-only-visitor"><span class="bt-lock-card-ic" aria-hidden="true">🏆</span><div><b>Records and forecasts are for members</b><p>Join free to see the biggest month, the best stream day and where the climb is heading.</p></div><button class="bt-btn bt-btn--primary">Join free</button></div>
           <div class="cc-only-member" style="display:flex;flex-direction:column;gap:16px">
-            <div class="bt-flip-grid" id="ccFlips"></div>
-            <div class="bt-card cc-pace"><svg class="bt-mascot" viewBox="30 92 145 162" aria-hidden="true" data-mascot></svg><div><b class="bt-card-title">At this pace: paused</b><p>Forecasts need at least 14 readings in the last 60 days, and the last reading was Sep 7, 2026. They come back on their own about two weeks after the morning collector starts on the live site.</p></div></div>
+            <div id="ccRecords"></div>
+            <div class="bt-card cc-pace" id="ccPace"></div>
           </div>
         </section>
 
@@ -5454,7 +5521,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
           </ol>
           <div class="cc-notes">
             <div class="cc-note"><b>2025 and 2026 so far are imported</b>From the old growth pages and Boomer's stream sheet, checked and tidied: totals are always the platforms added up.</div>
-            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams still count (from Boomer's own sheet up to Sep 7), and nothing after that is guessed.</div>
+            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams kept going and are all counted, from Boomer's own stream log.</div>
             <div class="cc-note"><b>YouTube rounds</b>Above 1,000 YouTube only shares rounded subscriber counts, so its line moves in small steps.</div>
             <div class="cc-note"><b>Streams count the next morning</b>A stream joins its month once it has ended. After-shows aren't counted.</div>
             <div class="cc-note"><b>Members are their own number</b>Site members are counted from launch and never added to the follower total, because most members also follow on a platform. The owner and test accounts are left out.</div>
@@ -5533,7 +5600,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 </div>
 </div>
 
-<p class="mk-note"><b>Repo copy:</b> per-day points, streams, hours and likes are removed (members-only detail; the stream sheet was never public). Charts show month-end totals only. The full version is the published mockup. Real numbers from boomertanger.com/growth-2025, /growth-2026 and Boomer's stream sheet (May 13 to Sep 7, 2026), with the confirmed fixes: November 2025 is 6,615 (the platforms added up), August 2025 counts YouTube's 443 as a starting balance, and July 2025 Twitch has its month-end only. Times marked "sample" on the admin screen are placeholders. Platform icons are stand-ins; the build uses the official icons from site/src/data/footer-icons.js. BOOMBOT here is drawn from the kit's classes; the build uses shared/ui/arcade.js. Ranges count back from today, so on this mockup "30 days" shows the empty state (the last imported reading is Sep 7, 2026). May to September 2026 come from Boomer's stream sheet.</p>
+<p class="mk-note"><b>Repo copy:</b> per-day points, streams, hours and likes are removed (members-only detail; the stream sheet was never public). Charts and record tiles show month-end data only. The full version is the published mockup. Real numbers from boomertanger.com/growth-2025, /growth-2026 and Boomer's stream sheet (May 13 to Sep 7, 2026), with the confirmed fixes: November 2025 is 6,615 (the platforms added up), August 2025 counts YouTube's 443 as a starting balance, and July 2025 Twitch has its month-end only. Times marked "sample" on the admin screen are placeholders. Platform icons are stand-ins; the build uses the official icons from site/src/data/footer-icons.js. BOOMBOT here is drawn from the kit's classes; the build uses shared/ui/arcade.js. Ranges count back from today, so on this mockup "30 days" shows the empty state (the last imported reading is Sep 7, 2026). May to September 2026 come from Boomer's stream sheet.</p>
 <script>
 (() => {
 'use strict';
@@ -5745,7 +5812,7 @@ function bigOpts() {
   const monthly = !member || state.range === 'all' && false;
   const src = member ? { all: MEND.all.filter((p) => p.t < t('2025-06-01')).concat(dailyCombined()), ...DAILY } : MEND;
   const series = ['all', ...P].filter((k) => state.on.has(k)).map((k) => ({ k, pts: src[k] }));
-  return { series, t0, t1, eras: ERAS, gap: [LAST, GAP_END], bridge: state.on.has('all') ? { t: LAST, v: TOT } : null, zero: true, monthly: !member,
+  return { series, t0, t1, eras: ERAS, gap: null, bridge: state.on.has('all') ? { t: LAST, v: TOT } : null, zero: true, monthly: !member,
     empty: 'No readings in the last ' + (r[2] || '') + ' days on this mockup. On the live site the morning collector adds one every day.' };
 }
 let _dc; function dailyCombined() { if (_dc) return _dc; const out = []; const all = [...new Set(P.flatMap((p) => DAILY[p].map((x) => x.t)))].sort((a, b) => a - b);
@@ -5894,7 +5961,7 @@ let curMonth = LASTK;
 function months() {
   const chips = mKeys.map((k) => `<button class="bt-chip bt-chip--small ${k === curMonth ? 'is-active' : ''}" aria-pressed="${k === curMonth}" data-month="${k}">${mLabel(k)}${MONTHS[k].sample ? ' (sample)' : ''}</button>`);
   const gapChip = `<button class="bt-chip bt-chip--small" disabled>${MOMENT === 'launch' ? 'Sep 8 – Nov 30, 2026' : 'Since Sep 8, 2026'}: not tracked</button>`;
-  const ix = mKeys.indexOf('2026-09') + 1; chips.splice(ix, 0, gapChip);
+
   $('#ccMonths').innerHTML = chips.reverse().join('');
   const M = MONTHS[curMonth]; const S = monthStats(curMonth); const pk = prevKey(curMonth); const PS = pk ? monthStats(pk) : null;
   const era = ERAS.find((e) => t(curMonth + '-01') >= t(e.from) && t(curMonth + '-01') <= t(e.to));
@@ -5936,24 +6003,59 @@ function membersChart() {
 }
 
 /* ================= Records (flip medals) ================= */
-function flips() {
-  const best = mKeys.map((k) => [k, monthStats(k).gain]).sort((a, b) => b[1] - a[1])[0];
+function recordsData() {
+  const gains = mKeys.map((k) => [k, monthStats(k).gain]);
+  const best = [...gains].sort((a, b) => b[1] - a[1])[0];
   let jump = { v: 0 }; P.forEach((p) => { const s = DAILY[p]; for (let i = 1; i < s.length; i++) { const d = s[i].v - s[i - 1].v; if (d > jump.v) jump = { v: d, p, t: s[i].t, from: s[i - 1].t }; } });
-  const most = mKeys.map((k) => [k, MONTHS[k].streams]).sort((a, b) => b[1] - a[1])[0];
-  const card = (tone, medal, title, sub, kv, tag) => `<button class="bt-flip bt-flip--${tone}"><span class="bt-flip-in"><span class="bt-flip-face"><span class="bt-flip-medal" aria-hidden="true">${medal}</span><b>${title}</b><span class="bt-flip-sub">${sub}</span><span class="bt-flip-hint">Turn over</span></span><span class="bt-flip-face bt-flip-face--back">${kv.map(([k, v]) => `<span class="bt-flip-k">${k}</span><span class="bt-flip-v">${v}</span>`).join('')}${tag ? `<span class="bt-flip-tag">${tag}</span>` : ''}</span></span></button>`;
-  $('#ccFlips').innerHTML = [
-    card('gold', '🏔️', 'Biggest month', mLabel(best[0], true), [['New followers', '+' + fmt(best[1])], ['Streams', MONTHS[best[0]].streams]], 'The Granny Gauntlet month'),
-    card('teal', '⚡', 'Best jump', NAME[jump.p], [['Between stream days', '+' + fmt(jump.v)], ['When', dLabel(jump.from).replace(', 2025', '') + ' to ' + dLabel(jump.t)]], 'Calculated'),
-    card('primary', '👁️', 'Peak viewers', '577 on TikTok', [['When', 'September 2025']], 'From the old growth page'),
-    card('gold', '🎥', 'Most streams', mLabel(most[0], true), [['Streams', most[1]], ['Hours live', MONTHS[most[0]].hours]], 'Calculated'),
-  ].join('');
-  $$('.bt-flip', $('#ccFlips')).forEach((b) => b.addEventListener('click', () => b.classList.toggle('is-flipped')));
+  const streams = mKeys.map((k) => [k, Number(MONTHS[k].streams) || 0]);
+  const most = [...streams].sort((a, b) => b[1] - a[1])[0];
+  const mk = (t) => new Date(t).toISOString().slice(0, 7);
+  return [
+    { id: 'best', label: 'Biggest month', value: '+' + fmt(best[1]), unit: 'new followers', when: mLabel(best[0], true), note: 'The Granny Gauntlet month', month: best[0], viz: { kind: 'bars', data: gains, hi: best[0] } },
+    { id: 'jump', label: 'Best jump between streams', value: '+' + fmt(jump.v), unit: NAME[jump.p] + ' followers', when: dLabel(jump.from).replace(/, \d{4}/, '') + ' to ' + dLabel(jump.t), note: 'Between two stream days in a row', month: mk(jump.t), viz: { kind: 'line', p: jump.p, from: jump.from, to: jump.t } },
+    { id: 'peak', label: 'Peak viewers', value: '577', unit: 'on TikTok', when: 'September 2025', note: 'Before the site. After launch, the best stream across all platforms shows here.', month: '2025-09', viz: null },
+    { id: 'most', label: 'Most streams in a month', value: String(most[1]), unit: 'streams', when: mLabel(most[0], true), note: (MONTHS[most[0]].hours || '—') + ' hours live', month: most[0], viz: { kind: 'bars', data: streams, hi: most[0] } },
+  ];
+}
+function recViz(v, w, h) {
+  if (!v) return `<svg class="cc-rec-viz" viewBox="0 0 ${w} ${h}" aria-hidden="true"><line x1="0" x2="${w}" y1="${h - 1}" y2="${h - 1}" class="cc-rec-base"/><text x="0" y="${h - 8}" class="cc-rec-vk">TikTok only</text></svg>`;
+  if (v.kind === 'bars') { const max = Math.max(...v.data.map((d) => d[1])) || 1; const bw = w / v.data.length;
+    return `<svg class="cc-rec-viz" viewBox="0 0 ${w} ${h}" aria-hidden="true">${v.data.map(([k, n], i) => `<rect class="cc-rec-bar${k === v.hi ? ' is-hi' : ''}" x="${i * bw + 1}" y="${h - Math.max(2, n / max * (h - 4))}" width="${Math.max(1, bw - 2)}" height="${Math.max(2, n / max * (h - 4))}" rx="1.5"/>`).join('')}</svg>`; }
+  const s = DAILY[v.p].filter((x) => x.t >= v.from - 25 * 864e5 && x.t <= v.to + 25 * 864e5); const lo = Math.min(...s.map((x) => x.v)), hi = Math.max(...s.map((x) => x.v)); const t0 = s[0].t, t1 = s[s.length - 1].t;
+  const X = (t) => (t - t0) / (t1 - t0 || 1) * w, Y = (n) => h - 3 - (n - lo) / (hi - lo || 1) * (h - 6);
+  const d = s.map((x, i) => (i ? 'L' : 'M') + X(x.t).toFixed(1) + ' ' + Y(x.v).toFixed(1)).join('');
+  const a = s.find((x) => x.t === v.from), b = s.find((x) => x.t === v.to);
+  return `<svg class="cc-rec-viz" viewBox="0 0 ${w} ${h}" aria-hidden="true"><path class="cc-rec-line" style="stroke:var(--cc-${v.p})" d="${d}"/><path class="cc-rec-jump" d="M${X(a.t)} ${Y(a.v)}L${X(b.t)} ${Y(b.v)}"/><circle class="cc-rec-dot" cx="${X(b.t)}" cy="${Y(b.v)}" r="3.5"/></svg>`;
+}
+function records() {
+  const R = recordsData(); const host = $('#ccRecords');
+  host.className = 'cc-records cc-records--' + (root.dataset.rec || 'r2');
+  const v = root.dataset.rec || 'r2';
+  if (v === 'r1') host.innerHTML = `<div class="bt-card cc-board"><div class="cc-board-h"><b class="bt-card-title" style="margin:0">Record board</b><span class="bt-card-meta">Tap a record to open its month</span></div>${R.map((r) => `<button class="cc-board-row" data-goto="${r.month}"><span class="cc-board-l">${r.label}<small>${r.note}</small></span><span class="cc-board-v">${r.value}<small>${r.unit}</small></span><span class="cc-board-w">${r.when}</span><span class="cc-board-go" aria-hidden="true">›</span></button>`).join('')}</div>`;
+  if (v === 'r2') host.innerHTML = R.map((r) => `<button class="bt-card cc-rec" data-goto="${r.month}"><span class="bt-label">${r.label}</span><span class="cc-rec-n">${r.value}<small>${r.unit}</small></span><span class="cc-rec-when">${r.when}</span>${recViz(r.viz, 200, 46)}<span class="cc-rec-note">${r.note}</span><span class="cc-rec-go">Open ${r.month ? mLabel(r.month) : ''} <span aria-hidden="true">›</span></span></button>`).join('');
+  if (v === 'r3') host.innerHTML = `<div class="bt-card cc-log"><div class="cc-log-h"><b class="bt-card-title" style="margin:0">Summit log</b><span class="bt-card-meta">The best of the climb, written in as it happens</span></div><ol class="cc-log-list">${R.map((r) => `<li><button class="cc-log-row" data-goto="${r.month}"><span class="cc-log-d">${r.when}</span><span class="cc-log-t">${r.label}: <b>${r.value}</b> ${r.unit}<small>${r.note}</small></span><span class="cc-board-go" aria-hidden="true">›</span></button></li>`).join('')}</ol></div>`;
+  $$('[data-goto]', host).forEach((b) => b.addEventListener('click', () => { const k = b.dataset.goto; if (!MONTHS[k]) return; curMonth = k; months(); $('#ch-months').scrollIntoView({ behavior: reduce ? 'auto' : 'smooth', block: 'start' }); }));
+}
+function pace() {
+  const host = $('#ccPace'); const from = NOW - 60 * 864e5;
+  const fit = (pts) => { const p = pts.filter((x) => x.t >= from); if (p.length < 14) return null; const n = p.length, mx = p.reduce((a, x) => a + x.t, 0) / n, my = p.reduce((a, x) => a + x.v, 0) / n; let num = 0, den = 0; p.forEach((x) => { num += (x.t - mx) * (x.v - my); den += (x.t - mx) ** 2; }); const b = num / den; return { slope: b * 864e5, at: (t) => my + b * (t - mx), pts: p }; };
+  const yt = fit(DAILY.youtube); const goal = 1000;
+  if (!yt) { const last = Math.max(...P.map((p) => DAILY[p][DAILY[p].length - 1].t)); const n = DAILY.youtube.filter((x) => x.t >= from).length;
+    host.innerHTML = `<div class="cc-pace-txt"><span class="bt-label">At this pace</span><b class="cc-pace-big">Paused for now</b><p>Forecasts need at least 14 readings in the last 60 days. This copy has ${n}; the last one is ${dLabel(last)}. On the live site the morning readings bring them back in about two weeks.</p></div><div class="cc-pace-viz is-off"><svg viewBox="0 0 320 150" aria-hidden="true"><line class="cc-pace-goal" x1="0" x2="320" y1="24" y2="24"/><text class="cc-pace-k" x="0" y="16">YouTube goal 1,000</text><text class="cc-pace-k" x="160" y="90" text-anchor="middle">waiting for readings</text></svg></div>`; return; }
+  const cur = yt.pts[yt.pts.length - 1].v; const days = (goal - cur) / yt.slope; const eta = NOW + days * 864e5;
+  const per = (p) => { const f = fit(DAILY[p]); return f ? Math.round(f.slope * 30) : null; };
+  const mf = MEMBERS.length ? fit(MEMBERS) : null;
+  const rows = [['twitch', per('twitch')], ['tiktok', per('tiktok')], ['youtube', per('youtube')]].concat(mf ? [['members', Math.round(mf.slope * 30)]] : []);
+  const W = 320, H = 150; const t0 = from, t1 = Math.max(eta, NOW) + 10 * 864e5; const lo = Math.min(...yt.pts.map((x) => x.v)) - 5, hi = goal + 10;
+  const X = (t) => (t - t0) / (t1 - t0) * W, Y = (v) => H - 18 - (v - lo) / (hi - lo) * (H - 40);
+  const d = yt.pts.map((x, i) => (i ? 'L' : 'M') + X(x.t).toFixed(1) + ' ' + Y(x.v).toFixed(1)).join('');
+  host.innerHTML = `<div class="cc-pace-txt"><span class="bt-label">At this pace${MOMENT === 'launch' ? ' (sample)' : ''}</span><b class="cc-pace-big">YouTube reaches 1,000 around ${new Date(eta).toLocaleDateString('en-US', { month: 'long', year: 'numeric', timeZone: 'UTC' })}</b><ul class="cc-pace-rows">${rows.map(([p, n]) => `<li>${piHtml(p)}<span>${NAME[p]}</span><b>${n >= 0 ? '+' : ''}${fmt(n)}</b><small>a month</small></li>`).join('')}</ul><p>A straight line through the last 60 days of readings. It's a pace, not a promise.</p></div><div class="cc-pace-viz"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="YouTube subscribers over the last 60 days with the projection to 1,000"><line class="cc-pace-goal" x1="0" x2="${W}" y1="${Y(goal)}" y2="${Y(goal)}"/><text class="cc-pace-k" x="0" y="${Y(goal) - 6}">Goal 1,000</text><path class="cc-pace-line" d="${d}"/><path class="cc-pace-proj" d="M${X(NOW)} ${Y(yt.at(NOW))} L${X(eta)} ${Y(goal)}"/><circle class="cc-pace-eta" cx="${X(eta)}" cy="${Y(goal)}" r="5"/><text class="cc-pace-k" x="${Math.min(X(eta), W - 4)}" y="${Y(goal) + 20}" text-anchor="end">${new Date(eta).toLocaleDateString('en-US', { month: 'short', year: 'numeric', timeZone: 'UTC' })}</text><text class="cc-pace-k" x="${X(NOW)}" y="${H - 2}" text-anchor="middle">today</text></svg></div>`;
 }
 
 /* ================= Ask BOOMBOT ================= */
 const BB = `<svg class="bt-boombot" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="bbh" x1="0" y1="0" x2="0" y2="1"><stop class="h0" offset="0"/><stop class="h1" offset="1"/></linearGradient></defs><line class="b-ant" x1="20" y1="9" x2="20" y2="4"/><circle class="b-knob" cx="20" cy="3.5" r="2.2"/><rect class="b-ear" x="3.5" y="17" width="4" height="9" rx="1.6"/><rect class="b-ear" x="32.5" y="17" width="4" height="9" rx="1.6"/><rect class="b-head" x="7" y="9" width="26" height="25" rx="8" fill="url(#bbh)"/><rect class="b-visor" x="10.5" y="15" width="19" height="10" rx="5"/><g class="b-eyes"><rect class="b-eye" x="14" y="17.5" width="3.2" height="4.6" rx="1.4"/><rect class="b-eye" x="22.8" y="17.5" width="3.2" height="4.6" rx="1.4"/></g><path class="b-mouth" d="M16 29h8"/></svg>`;
 const QA = [
-  ['Why is there a gap in 2026?', 'Boomer paused scheduled streams in early 2026 to build this website. Surprise streams still happened and are counted. Boomer’s own sheet covers the surprise streams up to September 7. Nothing was recorded after that until the site started counting on its own, so the chart shades that stretch instead of guessing.'],
+  ['What happened in 2026?', 'Boomer paused scheduled streams in February 2026 to build this website. Surprise streams kept going and are all counted, and the channel still passed 10,000 followers on July 19, 2026.'],
   ['Are these numbers live?', 'Close to it. Every morning at 5 am Pacific the site reads Twitch, YouTube and TikTok and updates this page. TikTok is typed in by hand until TikTok approves the site\'s app.'],
   ['What counts as a new follower?', 'The change in a platform\'s total during the month, added up across platforms. When a platform is added (YouTube in August 2025), its existing followers are a starting balance, not new ones.'],
   ['Why does YouTube move in steps?', 'Above 1,000 subscribers YouTube only shares rounded counts, so its line climbs in small steps.'],
@@ -5980,7 +6082,8 @@ const io = new IntersectionObserver((ents) => { ents.forEach((en) => { if (en.is
 $$('.cc-ch').forEach((s) => io.observe(s));
 
 /* ================= Mockup controls ================= */
-function drawAll() { buildControls(); drawBig(); stages(); months(); flips(); milestones(); crossover(); membersChart(); }
+function goalMeter() { const v = latest('youtube'); const m = $('#ch-records .bt-meter'); m.querySelector('.bt-meter-legend span').textContent = fmt(v) + ' / 1,000'; const tr = m.querySelector('.bt-meter-track'); tr.setAttribute('aria-valuenow', v); m.querySelector('.bt-meter-fill').style.width = Math.min(100, v / 10) + '%'; }
+function drawAll() { goalMeter(); buildControls(); drawBig(); stages(); months(); records(); pace(); milestones(); crossover(); membersChart(); }
 function set(k, v) {
   if (k === 'moment') { if (v === MOMENT) return; const q = new URLSearchParams(); ['screen', 'viewer', 'view'].forEach((x) => q.set(x, root.dataset[x])); q.set('moment', v); location.search = q.toString(); return; }
   root.dataset[k] = v;
@@ -5989,6 +6092,7 @@ function set(k, v) {
   if (k === 'viewer') { if (v === 'visitor') state.range = 'all'; drawAll(); }
   if (k === 'view' || k === 'screen') requestAnimationFrame(drawAll);
   if (k === 'h1v') heroRidge();
+  if (k === 'rec') records();
 }
 $$('[data-set]').forEach((b) => b.addEventListener('click', () => set(b.dataset.set, b.dataset.v)));
 $$('[data-pick]').forEach((b) => b.addEventListener('click', () => set(b.dataset.pick, b.dataset.v)));

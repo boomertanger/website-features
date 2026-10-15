@@ -70,19 +70,20 @@ every month's platforms sum to its combined total; points are in date order insi
 no point after `lastReadingDay`. Imported points carry `src: "import"`. Re-running replaces
 imported points only (never collector or manual points) and then runs the full rebuild.
 
-## 4. Eras and the gap
+## 4. Eras, and stretches without readings
 
 Eras (editable on /admin): Before the push (Jan–May 2025), The grind (Jun 2025 – Jan 2026), The
 build (Feb 2026 – launch, "Streaming paused to build boomertanger.com; surprise streams only"),
 Back on air (from launch; its start date is set on /admin at launch and is also the members
 start date).
 
-**The gap:** between the last imported reading (Sep 7, 2026 today; the last sheet row at launch)
-and the first collector reading in that project, charts draw a hatched band "Not tracked month by
-month". No line crosses it and no
-value is invented; lines break at the gap and resume at the first automatic reading. On staging the gap ends at the
-first staging collector reading (late September 2026), on production at launch. Ranges count back from today, so a range that falls
-entirely in the gap shows the empty state.
+**Stretches without readings** (between the last imported reading, Sep 7, 2026 today or the last
+sheet row at launch, and the first collector reading; or any time Boomer didn't stream): no band
+and no break. Lines simply connect from one reading to the next, like any other time without a
+stream, and no value is invented in between. public/climb still records the stretch as `gaps`
+(the hero scene draws a long one short, and the import / live split reads it); /climb draws no
+hatched band, no line break and no "not tracked" month chip. Ranges count back from today, so a
+range with no readings in it shows the empty state.
 
 ## 5. Who sees what
 
@@ -127,7 +128,7 @@ letting go (1.4 s on touch) returns it to the summit. Phones: the scene sits und
 width, labels larger, tent labels hidden. Reduced motion: no movement, values still change.
 
 1. **The climb so far:** `.bt-chart`, series chips (Combined, Twitch, TikTok, YouTube; at least one
-   stays on; hovering a chip highlights its line), range chips (§5), era bands, the gap, line-end
+   stays on; hovering a chip highlights its line), range chips (§5), era bands, lines that connect across stretches without readings (§4), line-end
    platform icons (collisions nudged apart), "Show as table". Below it, a second card
    **Members on boomertanger.com**: a `.bt-chart` of the members total since launch (own scale),
    meta "N members, N per 1,000 followers"; before launch the mascot empty state "Members are
@@ -148,25 +149,45 @@ width, labels larger, tent labels hidden. Reduced motion: no movement, values st
    a "Small month" tag when TikTok gained under 200). Closing note "Moving together isn't proof":
    correlation only; Crowd crossover (§16) will show real movement for members. Phones: rows
    stack with the platform name beside each bar.
-5. **Month by month** (members): month chips newest first, plus a disabled "May–Oct 2026: not
-   tracked" chip (generated from the gap). Report card: month, era tag, "N more/fewer new followers
+5. **Month by month** (members): month chips newest first (no "not tracked" chip). Report card: month, era tag, "N more/fewer new followers
    than <previous month>", stat boxes (Streams, Hours live, New followers with growth %, Total at
    month end, New members from launch, Live likes or "not recorded"), three mini charts (stream-day points, own scale;
    "Not streaming here yet" or the month's note when there are none), Highlights (typed
    highlights + the month's milestones + records).
-6. **Records and pace:** goal meters (public, one per goal set); members: `.bt-flip-grid` with
-   Biggest month (gold), Best jump between consecutive readings (teal), Peak viewers (primary:
-   the best Control Room stream as "N viewers, all platforms" with its date once one exists,
-   otherwise the imported record; the back always keeps "Before the site: 577 on TikTok,
-   September 2025"; the two are never compared), Most streams in a month (gold);
-   and "At this pace" (§9) or its paused state with the mascot.
+6. **Records and pace:** goal meters (public, one per goal set). Members: **R2 record tiles**, plain
+   stats with no medals, icons or flips (nothing that looks earnable; design-system §8ae), in a
+   grid of 4 / 2 / 1 columns (container queries). Each tile is a button: the name (`.bt-label`),
+   the big number with its unit, the date in gold, a small context chart drawn from the data
+   (`aspect-ratio`), a short note and "Open <Mon YYYY> ›"; hover and focus give it the purple
+   border (it's clickable), and a tap opens that month in Month by month and scrolls to it.
+   - Biggest month: every month's new followers as bars, the record bar gold.
+   - Best jump between streams: that platform's line about ±25 days around it, the jump segment
+     and its end dot gold.
+   - Peak viewers: the best Control Room stream as "N viewers, all platforms" with its date once
+     one exists (note "Before the site: 577 on TikTok, September 2025."), otherwise the imported
+     577 on TikTok with the note "Before the site."; never compared, no chart.
+   - Most streams in a month: streams per month as bars, the record bar gold; the note gives the
+     hours live.
+
+   **At this pace** (§9), two columns (one on phones): the text (label, the headline "YouTube
+   reaches 1,000 around <Month YYYY>" for the goal platform, the first goal not yet reached, in
+   the order YouTube, Twitch, TikTok, Combined, Members; "+N a month" rows for Twitch, TikTok,
+   YouTube and Members once counted; "A straight line through the last 60 days of readings. It's a
+   pace, not a promise.") beside a projection chart (the goal platform's last 60 days solid, a
+   dashed projection to the dashed gold goal line, an open gold circle at the arrival point with
+   its month, "today" under the line). Paused: "Paused for now" with the reason (the reading count
+   and the last reading date), the chart dimmed with only the goal line and "waiting for
+   readings". No goal set: the monthly rows only, headline "+N followers a month across all
+   three". Slope at or below 0: "Holding steady".
 7. **How the numbers work:** four-step flow (The platforms → Every morning → The climb updates →
    You see it here) and notes: imported history, The build, YouTube rounding above 1,000, streams
    count the next morning (after-shows not counted), members are their own number (owner and test
    accounts left out).
-8. **Ask BOOMBOT** (`.bt-chat`): Why is there a gap in 2026? / Are these numbers live? / What
+8. **Ask BOOMBOT** (`.bt-chat`): What happened in 2026? / Are these numbers live? / What
    counts as a new follower? / Why does YouTube move in steps? Answers in
-   `site/src/data/help/creator-climb.json`.
+   `site/src/data/help/creator-climb.json`. An answer may carry a `live` version with
+   `{milestone:<id>}`, which /climb fills with that milestone's date from public/climb (the 10,000
+   date in "What happened in 2026?"); Talk Back shows the plain `a`.
 9. **Closing call to action** with the mascot: visitors "Climb with us" + Join free; members "Help
    with the next thousand" + See the schedule.
 
@@ -273,10 +294,11 @@ no access; no client writes anywhere under `climb`.
 ## 12. Kit: `.bt-chart` (new, `shared/ui/chart.js` + `shared/bt-ui.css`, on the UI kit page)
 
 `chart(el, { series: [{ key, label, points: [{ t, v, src }] }], t0, t1, eras?, gaps?, zero?,
-mini?, monthly?, empty? })`. SVG line chart: grid and nice ticks, era bands with labels, hatched
-gaps, lines by `data-k` (colors from the feature's tokens), line-end icon slot, crosshair with
+mini?, monthly?, empty? })`. SVG line chart: grid and nice ticks, era bands with labels, optional
+hatched gaps, lines by `data-k` (colors from the feature's tokens), line-end icon slot, crosshair with
 tooltip (date, each value, change since the previous reading, "From the old growth pages" for
-imports, "Sample" for sample data), lines break across a gap longer than 20 days, pointer and
+imports, "Sample" for sample data), optional `gaps` (hatched, and lines break across one longer
+than 20 days; without `gaps` lines connect; Creator Climb passes none), pointer and
 keyboard (arrows, Home, End, Esc), `has-focus` to highlight one series, an
 empty state with the mascot, `--mini` small multiples, and `chartTable()` for "Show as table".
 Redraws on resize (ResizeObserver). `aspect-ratio` 16 / 7 (4 / 3.4 at ≤ 640px), mini 4 / 3.
@@ -285,9 +307,15 @@ with eras and a gap, focused series, and the table.
 
 ## 13. Colors (P1 Night lamps, `site/src/styles/creator-climb.css`, `cc-` prefix)
 
-`--cc-all: var(--bt-title)`, `--cc-twitch: var(--bt-ice)`, `--cc-tiktok: var(--bt-pink)`,
-`--cc-youtube: var(--bt-fuse)`, `--cc-members: var(--bt-teal)`. No purple (clickable) or red (danger) lines; the platform icon at a
-line's end carries the meaning. Scene pieces use existing tokens (`--bt-lamp`, `--bt-wire`,
+`--cc-all: var(--bt-title)`, `--cc-twitch: var(--cc-twitch-brand)` (#9146ff), `--cc-tiktok:
+var(--bt-pink)`, `--cc-youtube: var(--cc-youtube-brand)` (#ff0000), `--cc-members: var(--bt-teal)`.
+The two brand colors are declared once at the top of the feature CSS and color **data marks
+only**: chart lines and dots, legend swatches, the goal meter fill, crossover bands and bars,
+record mini charts, the pace chart and stage-card sparklines (design-system §8ae). Never a button,
+link, chip background, border or focus ring: elsewhere purple still means clickable and red means
+it destroys data. Hover and focus borders on Creator Climb cards are neutral (stage cards) or the
+kit's purple (record tiles, which are clickable). The platform icon at a line's end carries the
+meaning. Scene pieces use existing tokens (`--bt-lamp`, `--bt-wire`,
 `--bt-bulb`, `--bt-fuse`, `--bt-wax`, `--bt-surface*`). Platform icons: official icons from
 `site/src/data/footer-icons.js`.
 
