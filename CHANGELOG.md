@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- fix(nav): Creator Climb shows in the Community menu on desktop and in the phone More sheet: "climb" was in nav.js's Community group but not in site.json's modules, and nav.js only shows pages whose module is on (or ALWAYS_ON); both menus read the same filtered list
 - feat(site): the PREVIEW bar (staging and localhost only, never production) ends with the short commit SHA of the build, "build 77271e3" (CF_PAGES_COMMIT_SHA on Cloudflare Pages, git locally)
 - fix(climb): /climb sorts public/climb's month-ends by month (January to May 2025 arrived out of order, so the combined line and the hero ridge zig-zagged there)
 - docs: ROADMAP: Base Camp notes Addendum 3 (stage 5, The rise, replayed) and its dependency on Creator Climb; the production checklist re-runs seed-base-camp.js after the member file change, needs Creator Climb on production first, and adds the Back on air era in Creator Climb at relaunch

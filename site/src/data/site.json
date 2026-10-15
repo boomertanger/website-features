@@ -49,7 +49,7 @@
     { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
   ],
   "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
-  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "streams", "shop", "club", "featurelab", "bugzapper", "techStack", "services", "baseCamp", "talkBack"],
+  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "climb", "streams", "shop", "club", "featurelab", "bugzapper", "techStack", "services", "baseCamp", "talkBack"],
   "_aboutServiceModules": "Service Hub (docs/specs/service-hub.md §8a): services turns on /services in the Community menu and the Rate half of the page strip. talkBack (Talk Back, docs/specs/talk-back.md; on since Oct 14, 2026, Part A on staging) turns on the strip's Talk back half, the Ask pins and window.btTalkBack (scripts/hotline/talkback-loader.ts); off, open() resolves { result: \"off\" }. Keep it on for production. Both off: no strip.",
   "techStack": { "referrals": false },
   "_aboutTechStack": "Tech Stack (docs/specs/tech-stack.md): referrals true shows the Amazon links and the Associates disclosure on /tech-stack.",
