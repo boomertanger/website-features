@@ -78,6 +78,7 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 
 ## New feature checklist
 - **Service Hub manifest:** every new feature or page adds or updates its Service Hub manifest in `services/` (type, area, routes, version bump when it changes, talkBack `note` / `pins` (sections) / `rate` / `skip`). `npm run check` (in `site/`) warns about pages no manifest claims. Fields: `services/README.md`; spec `docs/specs/service-hub.md` §3, §8a.
+- **Traffic Pulse:** add `data-pulse="<id>"` ids (kebab-case, e.g. `play-now`) to the feature's key buttons, so /admin/pulse can count them (`docs/specs/traffic-pulse.md` §3A); a new page also needs its manifest route so `<body data-service>` names it.
 
 ## Other conventions
 - MemberSpace (legacy Squarespace Code Blocks only; **cancelled Oct 9, 2026, no longer applicable to new work**: the new site never uses it): where old code still does, use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.

@@ -1129,6 +1129,16 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 - The content is inset 14px from the track's ends so end dots and the thumb are never clipped; bands touching an end run on to the edge.
 - Container queries: 76px tall at 640px. Reduced motion: no transitions.
 
+**Numbers that move: `.bt-delta`, `.bt-spark`, `.bt-kpi`** (`shared/ui/kpi.js`; spec `docs/specs/traffic-pulse.md` §8; UI Kit section "Numbers that move").
+- `deltaHtml(change, { label, lowerIsBetter, unit })`: a change chip. The **arrow** shows the direction (▲ ▼ ■); the **colour** says whether that's good: `--better` lime, `--worse` gold, `--flat` gray. `lowerIsBetter` flips the colour, never the arrow (rising errors are ▲ in gold). Screen readers hear "up, worse" / "down, better" / "no change"; never colour alone.
+- `sparkHtml(values, { prev, label })`: `.bt-spark`, a tiny gold trend with a soft area and the previous period as a gray dashed line.
+- `kpiHtml({ label, value, unit, delta, spark, prev, empty, id })`: `.bt-kpi`, built on `.bt-stat` (the label with its delta, the big number, the spark). `.is-empty` shows a dash; `tick(el)` flashes the value gold once (a record, a goal hit). Reduced motion: no lift, no flash.
+
+**Focus map `.bt-quadrant`** (`shared/ui/quadrant.js` `focusMapHtml({ items, split, label })`, `initFocusMap(root, onOpen)`, `groupOf`, `GROUPS`): items by reach (across, log scale) and engagement (up), split at the reach median and 50%, in four groups by `data-q`: expand lime, fix gold, spotlight blue, rethink gray ("fine for a utility" for a utility item). Bubbles (`.bt-quadrant-dot`) are keyboard-focusable buttons; size is reach. Under 640px `.bt-quadrant-wrap` shows `.bt-quadrant-lanes` instead (the four groups as lanes of buttons). Not `.bt-lanes`: that name is the week-lanes timeline. Empty: "Not enough visits to judge yet."
+
+**`.bt-chart` additions (Traffic Pulse):** `compare` (the previous period moved onto this period's dates: a gray dashed line behind the series, in the scale, the tooltip and "Show as table"), `series[].area` (a soft fill in the series colour), `eras[].tone: "live"` (a red on-air tint, usually without a label: stream days) and `pins` (blue numbered note pins: buttons; hover, focus or a tap shows the note; `onPin`). Gaps are optional; without them lines connect.
+
+**`.bt-notice--warn`**: something is out of date or needs a look (gold edge on the gold tint), beside `--error` and `--ok`.
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -1153,6 +1163,8 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 | `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
 | `road.js` · `tree.js` | `roadHtml({ levels, selected, label, mascot, panelHtml })`, `initRoad(host, { renderPanel, onSelect })` · `initTree(root, { collapsed, onChange })` |
 | `season.js` · `countdown.js` | `taskRowHtml`, `lockCardHtml`, `clockHtml`, `pathHtml` · `timerHtml`, `initTimers(root)`, `fmtLeft(ms)` |
+| `kpi.js` | `deltaHtml(change, opts)`, `sparkHtml(values, opts)`, `kpiHtml(opts)`, `tick(el)`: `.bt-delta`, `.bt-spark`, `.bt-kpi` (§5) |
+| `quadrant.js` | `focusMapHtml(opts)`, `initFocusMap(root, onOpen)`, `groupOf`, `GROUPS`: the `.bt-quadrant` focus map with its lanes (§5) |
 | `scrubber.js` | `scrubber(el, opts)`: the `.bt-scrubber` timeline (§5) |
 | `chart.js` | `chart(el, opts)`, `focusSeries(el, key)`, `chartTable(opts)`: the `.bt-chart` line chart over time (§5) |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
@@ -1954,3 +1966,12 @@ Recorded Oct 15, 2026 (Creator Climb round 2):
 - Platform brand colors (Twitch #9146FF, YouTube #FF0033) may color data marks only (lines, bars, dots, meter fills, legend swatches). Never anything clickable: elsewhere purple still means clickable and red still means it destroys data.
 - Records and stats never use medal or badge visuals. Medal-style visuals are reserved for badges people can earn.
 - Creator Climb points `--cc-twitch-brand` / `--cc-youtube-brand` (in `site/src/styles/creator-climb.css`) at the kit tokens `--bt-brand-twitch` / `--bt-brand-youtube`, never new hex values; its records are R2 tiles (plain stats as buttons, a small chart, purple border on hover and focus), not `.bt-flip` medals.
+
+### 8af. Traffic Pulse
+Spec `docs/specs/traffic-pulse.md` (confirmed Oct 15, 2026); mockup `docs/design/mockups/traffic-pulse.html`. **Picks:** H1 Monitor hero, L1 Triage overview, F1 Scatter focus map (lanes under 640px).
+- **New kit pieces:** `.bt-kpi` (built on `.bt-stat`), `.bt-spark`, `.bt-delta`, `.bt-quadrant` with `.bt-quadrant-lanes`, `.bt-notice--warn` (§5). The Visits chart **extends `.bt-chart`** (compare series, note pins, an area, `tone: "live"` bands for stream days) instead of a new chart; the mockup's `.bt-trend` was a stand-in.
+- **Better and worse:** a `.bt-delta` is **lime when better, gold when worse, gray when flat**, whatever the direction. The arrow always shows the direction, so a rising error count is ▲ in gold (`lowerIsBetter`). Screen readers hear "up, worse". Never colour alone.
+- **`--tp-phosphor` (#34e21c) is a monitor light**, like the firefly's lamp: the neon green of the H1 monitor's trace on its near-black glass (#020903), declared once in `site/src/styles/traffic-pulse.css`. Only for scenes drawn as screens (the monitor, the slim header's pulse, the /admin card's mini monitor); **never for buttons, badges or text that means something**. It is not admin green and not `--bt-green`.
+- **Charts in Pulse:** gold = this period, gray dashed = the previous period, blue = note pins, a red tint = on air (the live colour). No purple in charts (purple means clickable).
+- **The page:** a tool page (§8m): the hero with the monitor only on Overview; a slim header with a live pulse on every other tab; writes are admin green (Mark done, Acknowledge, Add goal, New tag, Add note, Try again), everything else secondary. Settings change for the owner and Overseers; Stewards see them read-only with the notice. The service dialog renders in the portal (`.bt-portal[data-feature="traffic-pulse"]`, `?service=`).
+- **Counting:** no cookies, no stored IPs or user agents, no individual trails; staff, previews, bots, GPC/DNT and members who switch on "Don't count my visits" aren't counted. Every key button gets a `data-pulse="<id>"` (CLAUDE.md checklist).
