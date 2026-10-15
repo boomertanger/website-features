@@ -64,7 +64,8 @@ export const previewMember = () => !isProduction && new URLSearchParams(location
 
 // ---------------------------------------------------------------------------------------------- listeners
 export function watchPublic(onData: (p: Public | null) => void) {
-  return watchDoc(["public", "climb"], (d) => onData(d ? (d as Public) : null), () => onData(null));
+  // month-ends in date order (the combined-only months can arrive out of order from Firestore)
+  return watchDoc(["public", "climb"], (d) => onData(d ? ({ ...(d as Public), monthEnd: [...((d as Public).monthEnd || [])].sort((x, y) => (x.month < y.month ? -1 : 1)) }) : null), () => onData(null));
 }
 /** Members: every month doc. onErr when the rules say no (no members doc). */
 export function watchMonths(onData: (m: Map<string, MonthDoc>) => void, onErr: () => void) {
