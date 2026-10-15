@@ -11,7 +11,7 @@
     "/admin/playbook"
   ],
   "nav": null,
-  "testPlan": null,
+  "testPlan": "docs/testing/playbook-test-plan.md",
   "checks": [],
   "videoTag": "#bt-playbook",
   "sections": {},
