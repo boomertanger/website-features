@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Creator Climb spec §8, §10, §11 match the repo: the settings live on the climb/main doc itself (admins read it, no client writes; it holds the left-out accounts, the import and lastRebuild), points are stored as { d, v, s }
 docs: the Creator Climb mockup is now the repo-safe copy (month-end totals only; no per-day points, streams, hours or likes from Boomer's stream sheet, which is members-only detail)
 fix(climb): find the latest growthDaily reading without a descending document-id query (it needs a composite index and failed the seed's rebuild on staging): climbRebuild/climbAdmin list the day ids, the /admin card reads the last 31 days
 feat(climb): the seed reads Boomer's stream sheet (functions/scripts/data/climb-sheet.csv, gitignored; lib/climb/sheet.js): exact headers, each row's follower counts become that day's imported points, streams, hours and likes summed per month for days before Back on air, rows on or before the history's last reading ignored, an unknown header or a bad row stops with the row number; check-climb adds the sheet's §10 numbers; fix: a month's imported month-end is no longer re-added on a later collector day (the sheet's last month keeps its collector readings as its month end); /climb's notes and BOOMBOT mention the sheet

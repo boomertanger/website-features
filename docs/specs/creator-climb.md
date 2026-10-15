@@ -196,12 +196,12 @@ Admin controls are green; nothing here is red.
 | --- | --- | --- |
 | `growthDaily/{day}.site` | `{ members, joined, left, fanClub, subClub, byMethod { google, email, twitch, unknown } }` (added by the collector from launch; `null` before) | site admins |
 | `public/climb` | `updatedAt`, `lastReading { day, at }`, `totals { all, twitch, tiktok, youtube }`, `members { total, perThousand, start, monthEnd[] { month, day, total }, milestones[] }`, `crossover { span, tiktok, twitch, youtube, members?, eras[] { era, twitch, youtube } }`, `monthEnd[] { month, day, all, twitch?, tiktok?, youtube? }` (from Jan 2025), `gaps[] { from, to }`, `eras[]`, `milestones[] { id, platform, value, day }`, `goals { twitch?, tiktok?, youtube?, all? }`, `counts { months, milestones }` | everyone (existing `public/*` rule) |
-| `climb/main/months/{YYYY-MM}` | `points { twitch, tiktok, youtube: [[day, n, src]] }`, `monthEnd`, `startingBalance`, `gain`, `rate`, `streams`, `minutes`, `peak { value, day, streamId }` (the combined `stats.peak`, all platforms), `likes`, `highlights[]`, `records[]`, `notes { platform: text }`, `members { points, start, end, joined, left, fanClub, subClub, byMethod }` (groups under 5 stored as `"<5"`), `crossover { tiktok, twitchPer100, youtubePer100, membersPer100?, small }`, `updatedAt` | signed in with a `members/{uid}` doc |
-| `climb/main/settings` | `eras[]`, `goals`, `likes { month: n }`, `highlights { month: [] }`, `excludeUids[]` (left out of member counts; the owner is always left out) | site admins |
+| `climb/main/months/{YYYY-MM}` | `points { twitch, tiktok, youtube: [{ d, v, s }] }` (day, value, source: `import` | `collector` | `manual` | `correction`; Firestore can't nest arrays), `monthEnd`, `startingBalance`, `gain`, `rate`, `streams`, `minutes`, `peak { value, day, streamId }` (the combined `stats.peak`, all platforms), `likes`, `highlights[]`, `records[]`, `notes { platform: text }`, `members { points [{ d, v }], start, end, joined, left, fanClub, subClub, byMethod }` (groups under 5 stored as `"<5"`), `crossover { tiktok, twitchPer100, youtubePer100, membersPer100?, small }`, `updatedAt` | signed in with a `members/{uid}` doc |
+| `climb/main` | the settings, on the doc itself (a path can't end in a collection, so there is no `settings` doc): `eras[]`, `goals`, `likes { month: n }`, `highlights { month: [] }`, `excludeUids[]` and `excludeHandles[] { uid, handle }` (left out of member counts; the owner is always left out); `import { combinedOnly, records, eras }` (from the seed); `lastRebuild { at, months, milestones }`. The doc's own rule: read by site admins, no client writes | site admins |
 | `climb/main/corrections/{id}` | `{ day, platform, value, before, reason, by, at, removedAt? }` | site admins |
 | `climb/main/private/state` | `lastBuildHash`, `announced[]` milestone ids | nobody |
 
-Months use the Los Angeles date (same as `growthDaily`). Points: one per day per platform; source
+Months use the Los Angeles date (same as `growthDaily`). Points: `{ d, v, s }`, one per day per platform; source
 order collector/manual > import for the same day; a correction replaces that day's value.
 
 ## 9. Calculations
@@ -261,12 +261,12 @@ order collector/manual > import for the same day; a correction replaces that day
   marks the members line "Staging".
 - `seed-climb-history.js` (§3).
 - Goals: YouTube's goal is shared with the footer. If the collector writes `youtubeGoal` as a
-  constant, it reads `climb/main/settings.goals.youtube` instead (fallback 1000).
+  constant, it reads `climb/main.goals.youtube` instead (fallback 1000).
 
 ## 11. Rules
 
 Inside `match /sites/{siteId}`: `climb/main/months/{m}` read if signed in and a
-`members/{request.auth.uid}` doc exists (same condition as `memberContent`); `climb/main/settings`
+`members/{request.auth.uid}` doc exists (same condition as `memberContent`); `climb/main` (the doc itself)
 and `climb/main/corrections/{id}` read if `hasSiteRole(siteId, 'admin')`; `climb/main/private/{d}`
 no access; no client writes anywhere under `climb`.
 
