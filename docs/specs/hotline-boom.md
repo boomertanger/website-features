@@ -113,7 +113,7 @@ Full spec: `docs/specs/talk-back.md`. Built after this spec passes its first sta
 - **Page side is Service Hub's:** the page strip (Rate it + Talk back) and Ask pins call `window.btTalkBack` or use `data-talkback` buttons; the registry is the Service Hub manifests (`services/<id>.json`).
 - **This feature adds:** the Talk Back dialog (openModal sheet, BOOMBOT answers from the service's help file, Something's broken → Bug Zapper, Sent with the visitor Join free nudge), line 2 renamed "Feedback & questions" with a Question / Feedback switch, `contactSend` `kind` / `context` / `boombotShown`, `contactDeflect`, `serviceStats` and `stats.byService`, the inbox context bar and Sources › By service.
 - **Inbox recognition:** Gears for first replies, fast replies, oldest first, spam that held and the Clear desk team bonus; nothing for assigning, statuses, notes, closes or escalation (always neutral); daily cap; values in /admin/crew; Pick up; the This month strip; the Inbox column on /crew/board; Operator of the Month.
-- **Staff guide:** `/admin/inbox/how-it-works`.
+- **Staff guide:** `/admin/inbox/how-it-works` (Talk Back Part C, built on staging Oct 15, 2026; talk-back.md §10). It is gated like the inbox (owner and inbox admins), in the `hotline-inbox` Service Hub manifest, and linked from the inbox hero, the /admin Hotline card, the credit line and /admin/crew. The public `/contact/how-it-works` says Talk back on feature pages also reaches line 2.
 - **Part B built on staging (Oct 15, 2026):**
   - The logic is `functions/lib/hotline/credit.js`: who earns, the keyed Gears, the daily cap, the spam reversal, the spam hold, the Clear desk check and Operator of the Month.
   - The first reply is decided in a transaction (`firstReplyBy`).

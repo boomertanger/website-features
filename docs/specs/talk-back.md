@@ -172,6 +172,12 @@ Picking up, assigning, status changes, notes, closing without a reply, the spam 
 
 ## 10. /admin/inbox/how-it-works
 
+**Built on staging (Oct 15, 2026).** The page is `site/src/pages/admin/inbox/how-it-works.astro`:
+- **Data and art:** the page's data is in `scripts/hotline/staff-how-page.ts`; the art is `scripts/hotline/staff-art.ts` (the desk reuses the /contact phone through `art.ts phoneGroup()`).
+- **Behaviour:** `scripts/hotline/staff-how.ts` handles the gate, the live values from crew/main.inbox, the counts from inboxStats, the journey's envelope and the jump to a #chapter. `scripts/hotline/staff-try.ts` is the pretend desk.
+- **Styles and help:** `styles/hotline-staff-how.css`; Ask BOOMBOT reads `data/help/hotline-inbox.json`.
+- **Ways in:** the inbox hero's ghost How it works, the /admin Hotline card, the credit line's "How Gears work here" (lands on #s-gears), and /admin/crew's inbox values.
+
 Built last, after Part B passes staging tests. Owner and inbox admins (the /admin gate). Static HTML, so nothing secret on it (the name check is explained without its rules). The public `/contact/how-it-works` stays the visitor page and gains one line about Talk back on feature pages.
 
 **Ways in:** a ghost **How it works** link in the inbox hero (icon on phones), the /admin Hotline card, the credit line, and beside the inbox values in /admin/crew. /crew/how-it-works gets the inbox rows in its Gears chapter.

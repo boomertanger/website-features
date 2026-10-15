@@ -1,4 +1,4 @@
-# Talk Back test plan (Parts A and B)
+# Talk Back test plan (Parts A, B and C)
 
 Hand-run checks for Talk Back Part A on staging: the dialog, BOOMBOT, the inbox context bar and Sources › By service. Spec: `docs/specs/talk-back.md` §0-§7. The automated checks cover the backend (`npm run check` in `functions/`: kind, context and boombotShown stored, invalid context dropped, team-lane counts in serviceStats, owner-lane messages kept out of it, contactDeflect's limit) and the manifests and help files (`npm run check` in `site/`).
 
@@ -126,3 +126,16 @@ Run on staging by the owner with @gbo (the inbox admin), after the sample data f
   - The spam toast's Undo lasts 10 seconds (was 5).
   - Medal backs fit their card: the kit's flip back is tighter and centres safely, and flip cards are taller on phones. Checked on /crew, the Trophy Room and every page with flip medals at 1280, 1024, 390 and 320.
 - **Note:** while email is off, the reply box shows **Send reply** first. It switches to **Open in my email** and **Mark as replied** after a try (F30).
+
+# Part C: the staff guide
+
+Hand-run checks for /admin/inbox/how-it-works on staging (talk-back.md §10). Accounts: the **owner**, **@gbo** (the inbox admin), a **member** with no crew grade, and signed out. Preview without signing in: `/admin/inbox/how-it-works?as=admin` (sample counts and the default values).
+
+53. **Gate.** Signed out: "Staff only" and Sign in. A member or a mod: "Staff only" with Send a message. The owner and @gbo: the page. It's not indexed (noindex).
+54. **Hero.** "Working the inbox", Open the inbox (goes to /admin/inbox), and a ghost "Try a pretend desk" that jumps to chapter 09. Two tags: "Team first replies this month N" and "Clear desk N days", matching the This month strip in the inbox. The scene keeps its shape at every width and loops every 12 s: three envelopes fly from New past the phone, the handset lifts as each passes, the Done tray glows lime and Desk / Clear slams in. With reduced motion on, it shows the finished state, still.
+55. **Chapters 01-08.** Hover or tap each lane card in 01: the team lamps light, the top message flies to an avatar and "Picked up" shows; the safe's dial spins, the padlock rattles and an envelope drops in. In 02 an envelope travels the five stops once as it scrolls into view (vertical on phones). 03 says Send reply first, then Open in my email and Mark as replied. 05 says Undo lasts 10 seconds.
+56. **Live values.** As the owner, change First reply to 5 on /admin/crew (Hotline Boom inbox), reload the guide: chapter 06's table, the flow, the medal backs and the pretend desk all say 5. Put it back to 4.
+57. **Medals (07).** Four flip medals: Operator of the Month gold, Clear desk teal, Inbox column purple, Top Gear blue. Every back fits its card at 1280, 1024, 390 and 320.
+58. **Try it (09).** Reply to the personal message: the card shakes (not under reduced motion) and a hint says to use Owner only. Handle all four the right way: stamps (Replied, Replied, Spam, Owner), the progress bar fills, the tally counts up to 11 with "+1 pending" and a receipt (+6, +5, pending, ±0), then Desk clear with the mascot. Start over clears it. Nothing appears in the real inbox.
+59. **Ask BOOMBOT (10).** Twelve questions; the first is open; opening another closes it, after a moment of typing dots.
+60. **Ways in.** The /admin/inbox hero has a ghost How it works (just the icon on phones). The /admin Hotline card has How it works. A credit line's "How Gears work here" lands on chapter 06, below the sticky bar. /admin/crew's inbox values link there too. /crew/how-it-works lists the two inbox rows in its Gears chapter. /contact/how-it-works says the Talk button on feature pages reaches line 2.

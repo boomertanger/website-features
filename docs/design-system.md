@@ -1939,6 +1939,13 @@ Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 1
   - **The credit line** is a `.bt-history` entry: gold dot when paid, gray when capped, pending or reversed. Links on it use `.hb-ib-linkish`, and Remove credit is the owner's only.
   - **The This month strip** is `.hb-sc` staff cards (a swipe row on phones) with seven `.hb-pips`. Accuracy under 90% gets a gold outline, never red.
   - **The crew awards row** holds five flip medals on wide screens (`.bt-flip-grid.cs-awards`). Operator of the Month is the gold ☎️ coin between Top Gear and Fan Favourite.
+- **Part C as built (Oct 15, 2026), /admin/inbox/how-it-works:**
+  - **Kit additions:** `.bt-flip--blue` and `.bt-flip--pink` (the Top Gear medal here; /contact/how-it-works already asked for both, so its Privacy and Fan mail medals now show their intended colours). In `styles/how-it-works.css`, `.ai-jr--5` is a five-step journey: five columns above 900px, the base three to 641px, the vertical path on phones.
+  - **The /contact hero's Bakelite phone is one drawing:** `art.ts phoneGroup()` places the same phone in another scene. Its colour rules in hotline.css cover both scenes (`:is(.hb-scene, .hb-phone)`), so never copy the phone.
+  - **Medal colours in chapter 07:** Operator of the Month gold, Clear desk teal, Inbox column purple, Top Gear blue, never red.
+  - **The pretend desk** (chapter 09) uses the kit's `.bt-meter` for progress, `stampHtml()` for the stamps (`gray` for spam) and the live inbox values. A wrong choice shakes the card (not under reduced motion) and shows a `.bt-notice--warn` hint.
+  - **Jumping to a chapter:** a staff page behind a gate scrolls to `location.hash` itself once it shows (the browser's own jump happens while the content is hidden). /admin/crew's Adjust Gears does the same.
+  - **Astro gotcha:** a page frontmatter that mixes regex literals or template strings full of markup with strings containing apostrophes can fail to compile ("Expected } but found :"). Keep such data and builders in a .ts module, as `staff-how-page.ts` does.
 - **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero in its picked V2 Bakelite look (`hotline-boom-hero.html`), and a mug with the mascot logo; the mascot stays in the Desk clear moment and the closing call.
 
 ### 8ac. Game page votes and ratings

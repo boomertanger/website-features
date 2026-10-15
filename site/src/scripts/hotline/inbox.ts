@@ -69,7 +69,7 @@ const DEFAULT_MAIN: Main = { inboxGrades: ["A2", "A3"], replyTime: "3 days", lin
 /** crew/main.inbox (the crew settings; staff read it): the values the credit lines and the strip quote. */
 const DEFAULT_VALS = { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, dailyCap: 30, operatorAccuracy: 0.9 };
 const PART_WORDS: Record<string, string> = { inboxReply: "reply", inboxFast: "fast", inboxOldest: "oldest first", inboxSpam: "spam cleared", inboxDesk: "clear desk", inboxBoombot: "added to BOOMBOT" };
-const HOW = "/admin/inbox/how-it-works#gears";   // Part C, the staff guide
+const HOW = "/admin/inbox/how-it-works#s-gears";   // Part C, the staff guide: chapter 06, Gears for inbox work
 const PAGE = 200;
 const H = 3600e3;
 let P: PreviewData | null = null;   // preview data (signed out, ?as=admin, non-production)
@@ -108,6 +108,7 @@ const extra: Record<string, string> = {
   note: '<path d="M5 4h10l4 4v12H5z"/><path d="M15 4v4h4M8 12h8M8 16h5"/>', search: '<circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/>',
   ext: '<path d="M14 4h6v6M20 4l-9 9"/><path d="M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/>',
   chart: '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  help: '<circle cx="12" cy="12" r="9"/><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .8-1 1.5V14M12 17h.01"/>',
   hand: '<path d="M7 11V6a1.5 1.5 0 0 1 3 0v4M10 10V4.5a1.5 1.5 0 0 1 3 0V10M13 10V5.5a1.5 1.5 0 0 1 3 0V11M16 11V8a1.5 1.5 0 0 1 3 0v6a6 6 0 0 1-6 6h-1a6 6 0 0 1-5-2.7L4.5 13.5a1.5 1.5 0 0 1 2.5-1.7L7 12"/>', link: '<path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/>',
 };
 const ic = (k: string, cls = "") => (extra[k] ? `<svg width="16" height="16"${cls ? ` class="${cls}"` : ""} viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${extra[k]}</svg>` : svg(k, cls));
@@ -385,7 +386,7 @@ function heroHtml() {
     const c = S.msgs.filter((m) => m.line === l && m.status === "new").length, own = LINES[l][3] === "owner";
     return `<button type="button" class="hb-ib-lamp${c ? " is-lit" : ""}${own ? " is-owner" : ""}" aria-pressed="${S.line === l}" data-lamp="${l}" aria-label="Line ${LINES[l][0]}, ${esc(LINES[l][1])}: ${c} new"><span class="hb-ib-bulb">${LINES[l][0]}${c ? `<span class="hb-ib-lamp-n">${c}</span>` : ""}</span><span class="hb-ib-lamp-l">${own ? `${ic("private")} ` : ""}${esc(LINES[l][2])}</span></button>`;
   }).join("");
-  return `<section class="hb-ib-hero"><div><h1 class="bt-title">Inbox</h1><p class="hb-ib-sub">${S.owner ? "Everything sent to Hotline Boom. The gold lines are yours alone." : "Fan mail, feedback and account help. Thanks for helping!"}</p>
+  return `<section class="hb-ib-hero"><div><div class="hb-ib-titlerow"><h1 class="bt-title">Inbox</h1><a class="bt-btn bt-btn--ghost bt-btn--sm hb-ib-how" href="/admin/inbox/how-it-works" aria-label="How it works">${ic("help")}<span class="bt-btn-label">How it works</span></a></div><p class="hb-ib-sub">${S.owner ? "Everything sent to Hotline Boom. The gold lines are yours alone." : "Fan mail, feedback and account help. Thanks for helping!"}</p>
     ${readoutsHtml([{ value: count("new"), label: "New" }, { value: count("open"), label: "Open" }, { value: count("waiting"), label: "Waiting" }, { value: medianFirstReply(), label: "First reply, median" }], { cols: 4 })}</div>
     <div class="hb-ib-lamps" role="group" aria-label="Filter by line">${lamps}</div></section>`;
 }

@@ -108,7 +108,17 @@ function wire() {
 
 /* ---------- access and start ---------- */
 let started = false;
-async function start() { setAccess("page"); wire(); await Promise.all([loadValues(), loadCounts(), loadReplyTime()]); }
+/** A link with a #chapter (the credit line's "How Gears work here" lands on #s-gears): the page was hidden behind the gate when the browser tried, so go now. */
+function toHash() {
+  const id = decodeURIComponent(location.hash.slice(1));
+  const el = id ? document.getElementById(id) : null;
+  if (!el) return;
+  requestAnimationFrame(() => {
+    el.scrollIntoView({ block: "start" });
+    setTimeout(() => { if (Math.abs(el.getBoundingClientRect().top - (parseFloat(getComputedStyle(el).scrollMarginTop) || 0)) > 8) el.scrollIntoView({ block: "start" }); }, 600);   // once more after late content settles
+  });
+}
+async function start() { setAccess("page"); wire(); toHash(); await Promise.all([loadValues(), loadCounts(), loadReplyTime()]); }
 onAuth(async (s: AuthState) => {
   if (s.status === "loading" || started) return;
   if (!s.user && !isProduction && qs().get("as") === "admin") { started = true; preview = true; await start(); return; }

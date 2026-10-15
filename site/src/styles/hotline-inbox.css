@@ -311,3 +311,8 @@
   .bt-root:not(#_) .hb-sc { transition: none; }
   .bt-root:not(#_) .hb-sc:is(:hover, :focus-visible) { transform: none; }
 }
+/* the hero's ghost How it works link (the staff guide, Part C): the label hides on phones, the icon stays (a 40px target) */
+.bt-root:not(#_) .hb-ib-titlerow { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; }
+.bt-root:not(#_) .hb-ib-titlerow .bt-title { margin: 0; }
+.bt-root:not(#_) .hb-ib-how svg { width: 16px; height: 16px; }
+@container bt (max-width: 640px) { .bt-root:not(#_) .hb-ib-how { min-width: 40px; min-height: 40px; } .bt-root:not(#_) .hb-ib-how .bt-btn-label { display: none; } }

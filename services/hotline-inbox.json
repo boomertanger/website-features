@@ -4,11 +4,12 @@
   "type": "adminTool",
   "area": "Admin",
   "blurb": "The private inbox for the team lines: reply, assign and close.",
-  "version": "1.1",
+  "version": "1.2",
   "status": "building",
   "audience": "admins",
   "routes": [
-    "/admin/inbox"
+    "/admin/inbox",
+    "/admin/inbox/how-it-works"
   ],
   "nav": null,
   "testPlan": "docs/testing/hotline-boom-test-plan.md",
