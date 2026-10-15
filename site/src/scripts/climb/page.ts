@@ -9,7 +9,7 @@ import { drawScene } from "./scene";
 import {
   PLATFORMS, NAME, COLOR, type Platform, type Key, type Public, type MonthDoc, type SPoint,
   ms, fmt, monthLabel, dayLabel, todayMs, escapeHtml as esc, previewMember, watchPublic, watchMonths, previewMonths,
-  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, erasOf, eraOf, allMilestones, records, pace,
+  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, erasOf, eraOf, allMilestones, records, fit, type Fit,
 } from "./data";
 
 const root = document.querySelector<HTMLElement>("[data-cc]");
@@ -288,25 +288,59 @@ function recordsGrid() {
   const has = (k: string | null) => !!k && S.months!.has(k);
   $("[data-cc-recs]")!.innerHTML = recordTiles().map((t) => `<button type="button" class="bt-card cc-rec"${has(t.month) ? ` data-goto="${t.month}"` : " disabled"}><span class="bt-label">${esc(t.label)}</span><span class="cc-rec-n">${t.value}<small>${esc(t.unit)}</small></span><span class="cc-rec-when">${esc(t.when)}</span>${recViz(t.viz)}<span class="cc-rec-note">${esc(t.note)}</span>${has(t.month) ? `<span class="cc-rec-go">Open ${monthLabel(t.month!)} <span aria-hidden="true">›</span></span>` : ""}</button>`).join("");
 }
+// At this pace (§9; mockup pace()): the text (the goal headline, "+N a month" per platform and members once counted) beside a projection
+// chart of the goal platform: its last 60 days solid, a dashed line on to the dashed gold goal line, an open gold circle where it arrives.
+// Paused (fewer than 14 readings in 60 days): the reason, and the chart dimmed with only the goal line. No goal: the monthly rows only.
+const monthYear = (t: number, long = true) => new Date(t).toLocaleDateString("en-US", { month: long ? "long" : "short", year: "numeric", timeZone: "UTC" });
 function paceCard() {
   if (!S.member || !S.months) return;
-  const p = S.pub!, rd = readingSeries(S.months);
-  // At this pace (§9): combined and per platform over the last 60 days
-  const comb = combinedSeries(p, rd);
-  const tpl = document.getElementById("bt-mascot-tpl")?.innerHTML || "";
-  const lines: string[] = [];
-  for (const k of ["all", ...PLATFORMS] as (Platform | "all")[]) {
-    const pts = k === "all" ? comb : toS(rd[k]);
-    const goal = (p.goals || {})[k] || null;
-    const f = pace(pts, goal);
-    if (f.state === "paused") continue;
-    if (f.state === "goal") lines.push(`At this pace, ${NAME[k] === "Combined" ? "the combined total" : NAME[k]} reaches ${fmt(goal)} around <b>${new Date(f.at).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" })}</b>.`);
-    else if (f.state === "steady") lines.push(`${NAME[k]}: holding steady.`);
-    else lines.push(`${NAME[k]}: about <b>+${f.perDay < 10 ? f.perDay.toFixed(1) : fmt(f.perDay)}</b> a day.`);
+  const p = S.pub!, rd = readingSeries(S.months), host = $("[data-cc-pace]")!;
+  const memberPts: SPoint[] = [...S.months.values()].sort((x, y) => (x.key < y.key ? -1 : 1)).flatMap((m) => (m.members ? m.members.points.map((q) => ({ t: ms(q.d), v: q.v })) : []));
+  const series: Record<Platform | "all" | "members", SPoint[]> = { all: combinedSeries(p, rd), twitch: toS(rd.twitch), tiktok: toS(rd.tiktok), youtube: toS(rd.youtube), members: memberPts };
+  const now = (k: Platform | "all" | "members") => (k === "members" ? p.members?.total ?? null : p.totals[k] ?? null);
+  // the goal platform: the first goal not reached yet
+  const order: (Platform | "all" | "members")[] = ["youtube", "twitch", "tiktok", "all", "members"];
+  const gk = order.find((k) => (p.goals || {})[k] && (now(k) ?? 0) < (p.goals[k] as number)) || null;
+  const goal = gk ? (p.goals[gk] as number) : null;
+  const unit = (k: Platform | "all" | "members") => (k === "members" ? "members" : k === "youtube" ? "subscribers" : "followers");
+  const who = (k: Platform | "all" | "members") => (k === "all" ? "The combined total" : k === "members" ? "Members" : NAME[k]);
+  const monthly = (f: Fit | null) => (f ? Math.round(f.slope * 30) : null);
+  const rows: [Key, number | null][] = [["twitch", monthly(fit(series.twitch).fit)], ["tiktok", monthly(fit(series.tiktok).fit)], ["youtube", monthly(fit(series.youtube).fit)]];
+  const mf = memberPts.length ? fit(memberPts).fit : null;
+  if (mf) rows.push(["members", monthly(mf)]);
+  const rowsHtml = `<ul class="cc-pace-rows">${rows.map(([k, n]) => `<li>${iconHtml(k)}<span>${NAME[k]}</span><b>${n == null ? "—" : `${n >= 0 ? "+" : "−"}${fmt(Math.abs(n))}`}</b><small>a month</small></li>`).join("")}</ul>`;
+  const foot = `<p>A straight line through the last 60 days of readings. It's a pace, not a promise.</p>`;
+  const label = `<span class="bt-label">At this pace</span>`;
+  const W = 320, H = 150, NOW = todayMs();
+  const goalName = gk ? `${gk === "all" ? "Combined" : NAME[gk]} goal ${fmt(goal)}` : "";
+  // no goal set: the monthly rows only
+  if (!gk) {
+    const cf = fit(series.all);
+    if (!cf.fit) { paused(cf.readings); return; }
+    const n = Math.round(cf.fit.slope * 30);
+    host.classList.add("cc-pace--solo");
+    host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">${n > 0 ? `+${fmt(n)} followers a month across all three` : "Holding steady"}</b>${rowsHtml}${foot}</div>`;
+    return;
   }
-  $("[data-cc-pace]")!.innerHTML = lines.length
-    ? `<div aria-hidden="true">${tpl}</div><div><b class="bt-card-title cc-card-t">At this pace</b><ul class="cc-hl">${lines.map((l) => `<li>${l}</li>`).join("")}</ul></div>`
-    : `<div aria-hidden="true">${tpl}</div><div><b class="bt-card-title cc-card-t">At this pace: paused</b><p>Forecasts need at least 14 readings in the last 60 days${p.lastReading ? `, and the last reading was ${dayLabel(p.lastReading.day)}` : ""}. They come back on their own about two weeks after the morning readings start.</p></div>`;
+  host.classList.remove("cc-pace--solo");
+  const gf = fit(series[gk]);
+  if (!gf.fit) { paused(gf.readings); return; }
+  const f = gf.fit, cur = f.last.v;
+  const steady = f.slope <= 0;
+  const eta = steady ? null : NOW + ((goal! - cur) / f.slope) * DAY;
+  const t0 = NOW - 60 * DAY, t1 = Math.max(eta ?? NOW, NOW) + 10 * DAY;
+  const lo = Math.min(...f.pts.map((x) => x.v)) - Math.max(5, (goal! - Math.min(...f.pts.map((x) => x.v))) * 0.05), hi = goal! + Math.max(10, (goal! - lo) * 0.04);
+  const X = (t: number) => ((t - t0) / (t1 - t0)) * W, Y = (v: number) => H - 18 - ((v - lo) / (hi - lo)) * (H - 40);
+  const d = f.pts.map((x, i) => `${i ? "L" : "M"}${X(x.t).toFixed(1)} ${Y(x.v).toFixed(1)}`).join("");
+  const head = steady ? "Holding steady" : `${who(gk)} reaches ${fmt(goal)} around ${monthYear(eta!)}`;
+  const aria = `${NAME[gk]} ${unit(gk)} over the last 60 days${steady ? ", holding steady" : ` with the projection to ${fmt(goal)} around ${monthYear(eta!)}`}`;
+  host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">${head}</b>${rowsHtml}${foot}</div><div class="cc-pace-viz"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}"><line class="cc-pace-goal" x1="0" x2="${W}" y1="${Y(goal!).toFixed(1)}" y2="${Y(goal!).toFixed(1)}"/><text class="cc-pace-k" x="0" y="${(Y(goal!) - 6).toFixed(1)}">${esc(goalName)}</text><path class="cc-pace-line" style="stroke:${COLOR[gk]}" d="${d}"/>${eta != null ? `<path class="cc-pace-proj" style="stroke:${COLOR[gk]}" d="M${X(NOW).toFixed(1)} ${Y(f.at(NOW)).toFixed(1)} L${X(eta).toFixed(1)} ${Y(goal!).toFixed(1)}"/><circle class="cc-pace-eta" cx="${X(eta).toFixed(1)}" cy="${Y(goal!).toFixed(1)}" r="5"/><text class="cc-pace-k" x="${Math.min(X(eta), W - 4).toFixed(1)}" y="${(Y(goal!) + 20).toFixed(1)}" text-anchor="end">${monthYear(eta, false)}</text>` : ""}<text class="cc-pace-k" x="${X(NOW).toFixed(1)}" y="${H - 2}" text-anchor="middle">today</text></svg></div>`;
+
+  function paused(n: number) {
+    host.classList.remove("cc-pace--solo");
+    const last = p.lastReading ? ` and the last one is ${dayLabel(p.lastReading.day)}` : "";
+    host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">Paused for now</b><p class="cc-pace-why">Forecasts need at least 14 readings in the last 60 days. There ${n === 1 ? "is 1" : `are ${n}`}${last}. The morning readings bring them back in about two weeks.</p></div><div class="cc-pace-viz is-off"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false">${gk ? `<line class="cc-pace-goal" x1="0" x2="${W}" y1="24" y2="24"/><text class="cc-pace-k" x="0" y="16">${esc(goalName)}</text>` : ""}<text class="cc-pace-k" x="${W / 2}" y="90" text-anchor="middle">waiting for readings</text></svg></div>`;
+  }
 }
 
 // ---------------------------------------------------------------------------------------------- drawing

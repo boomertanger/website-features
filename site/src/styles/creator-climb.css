@@ -205,9 +205,25 @@
 .bt-root:not(#_) .cc-rec-dot { fill: var(--bt-title); }
 .bt-root:not(#_) .cc-rec-note { flex: 1; font-size: var(--bt-text-sm); line-height: 1.45; color: var(--bt-text-faint); }
 .bt-root:not(#_) .cc-rec-go { font-size: var(--bt-text-sm); font-weight: 700; color: var(--bt-primary-soft); }
-.bt-root:not(#_) .cc-pace { flex-direction: row; align-items: center; gap: 16px; }
-.bt-root:not(#_) .cc-pace .bt-mascot { width: 54px; }
-.bt-root:not(#_) .cc-pace p { max-width: 60ch; margin: 4px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.55; }
+/* At this pace: the text beside the projection chart (one column on phones, and when there is no goal) */
+.bt-root:not(#_) .cc-pace { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: center; }
+.bt-root:not(#_) .cc-pace.cc-pace--solo { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .cc-pace-txt .bt-label { margin: 0; }
+.bt-root:not(#_) .cc-pace-big { display: block; margin: 6px 0 10px; font-size: var(--bt-text-2xl); line-height: 1.25; color: var(--bt-text); }
+.bt-root:not(#_) .cc-pace-txt p { max-width: 60ch; margin: 8px 0 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); line-height: 1.5; }
+.bt-root:not(#_) .cc-pace-txt p.cc-pace-why { color: var(--bt-text-muted); font-size: var(--bt-text-base); }
+.bt-root:not(#_) .cc-pace-rows { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px 16px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .cc-pace-rows li { display: flex; align-items: center; gap: 8px; min-width: 0; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cc-pace-rows li span:not(.cc-pi) { color: var(--bt-text-muted); }
+.bt-root:not(#_) .cc-pace-rows b { margin-left: auto; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .cc-pace-rows small { color: var(--bt-text-faint); white-space: nowrap; }
+.bt-root:not(#_) .cc-pace-viz svg { display: block; width: 100%; height: auto; overflow: visible; }
+.bt-root:not(#_) .cc-pace-goal { stroke: var(--bt-title); stroke-dasharray: 4 4; opacity: 0.7; }
+.bt-root:not(#_) .cc-pace-line { fill: none; stroke-width: 2.5; stroke-linejoin: round; }
+.bt-root:not(#_) .cc-pace-proj { fill: none; stroke-width: 2; stroke-dasharray: 2 6; stroke-linecap: round; opacity: 0.8; }
+.bt-root:not(#_) .cc-pace-eta { fill: var(--bt-bg); stroke: var(--bt-title); stroke-width: 2.5; }
+.bt-root:not(#_) .cc-pace-k { fill: var(--bt-text-faint); font-family: var(--bt-font); font-size: 11px; font-weight: 600; }
+.bt-root:not(#_) .cc-pace-viz.is-off { opacity: 0.45; }
 
 /* how the numbers work */
 .bt-root:not(#_) .cc-flow { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); margin: 0; padding: 0; list-style: none; }
@@ -311,12 +327,13 @@
   .bt-root:not(#_) .cc-flow { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .cc-flow li { flex-direction: row; align-items: flex-start; gap: 12px; padding: 0 0 18px; }
   .bt-root:not(#_) .cc-flow li::after { left: 19px; right: auto; top: 44px; bottom: 2px; width: 2px; height: auto; background: repeating-linear-gradient(180deg, var(--bt-border-2) 0 6px, transparent 6px 11px); }
-  .bt-root:not(#_) .cc-pace { flex-direction: column; align-items: flex-start; }
+  .bt-root:not(#_) .cc-pace { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .cc-cta { flex-direction: column; align-items: flex-start; padding: 20px; }
   .bt-root:not(#_) .cc-cta .cc-hero-cta { width: 100%; margin: 0; }
   .bt-root:not(#_) .cc-path { grid-template-columns: repeat(var(--n), 92px); }
 }
 @container bt (max-width: 420px) {
+  .bt-root:not(#_) .cc-pace-rows { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .cc-fields { grid-template-columns: minmax(0, 1fr); }
   .bt-root:not(#_) .cc-era-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
   .bt-root:not(#_) .cc-era-row > :first-child { grid-column: 1 / 3; }

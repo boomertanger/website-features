@@ -157,18 +157,15 @@ export function records(months: Map<string, MonthDoc>, per: Record<Platform, Poi
   const peak = list.map((m) => m.peak).filter(Boolean).sort((a, b) => b!.value - a!.value)[0] || null;
   return { best, most, jump, peak };
 }
-/** "At this pace" (§9): least squares over the last 60 days with at least 14 readings. */
-export function pace(points: SPoint[], goal: number | null) {
+/** "At this pace" (§9): a least-squares line through the last 60 days of readings, only with at least 14 of them (null: paused, with the count). */
+export interface Fit { slope: number; at: (t: number) => number; pts: SPoint[]; last: SPoint }
+export function fit(points: SPoint[]): { fit: Fit | null; readings: number } {
   const cut = todayMs() - 60 * DAY;
   const r = points.filter((p) => p.t >= cut);
-  if (r.length < 14) return { state: "paused" as const, readings: r.length };
+  if (r.length < 14) return { fit: null, readings: r.length };
   const n = r.length, mx = r.reduce((a, p) => a + p.t, 0) / n, my = r.reduce((a, p) => a + p.v, 0) / n;
   let num = 0, den = 0;
   r.forEach((p) => { num += (p.t - mx) * (p.v - my); den += (p.t - mx) ** 2; });
-  const slope = den ? num / den : 0;   // per ms
-  const last = r[r.length - 1];
-  if (slope <= 0) return { state: "steady" as const, perDay: 0 };
-  if (!goal || last.v >= goal) return { state: "climbing" as const, perDay: slope * DAY };
-  const at = last.t + (goal - last.v) / slope;
-  return { state: "goal" as const, perDay: slope * DAY, at };
+  const b = den ? num / den : 0;   // per ms
+  return { fit: { slope: b * DAY, at: (t: number) => my + b * (t - mx), pts: r, last: r[r.length - 1] }, readings: n };
 }
