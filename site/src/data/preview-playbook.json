@@ -1,0 +1,27 @@
+{
+  "_about": "PREVIEW DATA for /admin/playbook?as=owner (non-production, signed out). Every word here is made up to exercise the page; the real Playbook lives only in Firestore. Times are hours before now.",
+  "main": { "firstReadDone": false, "reviewDay": 1, "seedVersion": "preview" },
+  "state": { "dueCount": 0, "duePages": [], "dueSince": null },
+  "pages": [
+    { "id": "overview", "order": 1, "nav": "Overview", "icon": "📖", "title": "The Playbook", "status": null, "service": null, "lede": "A sample plan to show how the Playbook looks: chapters, blocks and flags.", "version": 1, "reviewedH": null, "editedOnSite": false,
+      "body": "Sample intro paragraph with **bold** text and a [link to the admin page](/admin).\n\n## How it fits together\nOne sample loop, drawn by the flow block.\n\n```flow\n🌱 | Seed | Plant an idea\n🔁 | Loop | Try it every week\n📣 | Share | Tell people\n🏁 | Goal | The sample finish line | goal\n```\n\n## The parts\n```cards\n🧪 | Part one | A sample card with *italic* text.\n🧭 | Part two | Another sample card.\n🧰 | Part three | A third one.\n```\n\n| Part | Status |\n|---|---|\n| One | Building |\n| Two | Planned |\n\n## How we keep it alive\n```rules\nReview monthly | A sample house rule.\nWrite it down | Another sample rule.\n```" },
+    { "id": "sample-plan", "order": 2, "nav": "Sample plan", "icon": "🧪", "title": "A sample plan", "status": "planned", "service": "sample", "lede": "Steps, tiers and a ladder, all made up.", "version": 2, "reviewedH": 30, "editedOnSite": false, "mockupUrl": "https://example.com/mockup",
+      "body": "## The steps\n```steps\n1️⃣ | Start | Do the first thing\n2️⃣ | Middle | Keep going\n3️⃣ | Finish | Wrap it up\n4️⃣ | Again | Repeat next month\n```\n\n## The tiers\n```tiers\n## Small\n- one sample item\n- two\n## Medium\n- three\n## Large\n- four\n- five\n```\n\n## The ladder\n```ladder\n1 | First rung | Where it starts\n2 | Second rung | Where it is | now\n3 | Third rung | Where it goes\n```" },
+    { "id": "sample-idea", "order": 3, "nav": "Sample idea", "icon": "💡", "title": "A sample idea", "status": "idea", "service": null, "lede": "A short page with one open question.", "version": 1, "reviewedH": null, "editedOnSite": false,
+      "body": "## What it is\nJust a sample paragraph.\n\n### A sub-heading\n- a list item\n- another" },
+    { "id": "flags", "order": 99, "nav": "Assumptions and questions", "icon": "🚩", "title": "Assumptions and questions", "status": null, "service": null, "lede": "Every flag, with filters, and the decisions log.", "version": 1, "reviewedH": null, "editedOnSite": false,
+      "body": "Every assumption and open question on every page, in one list." }
+  ],
+  "flags": [
+    { "id": "f-overview-01", "pageId": "overview", "status": "assumed", "text": "A sample assumption about the **loop**.", "order": 1 },
+    { "id": "f-overview-02", "pageId": "overview", "status": "open", "text": "A sample open question?", "order": 2 },
+    { "id": "f-sample-plan-01", "pageId": "sample-plan", "status": "confirmed", "text": "A sample settled item.", "answer": "Yes, a sample answer.", "order": 3 },
+    { "id": "f-sample-plan-02", "pageId": "sample-plan", "status": "assumed", "text": "Another sample assumption.", "order": 4 },
+    { "id": "f-sample-idea-01", "pageId": "sample-idea", "status": "open", "text": "Is this sample idea worth it?", "order": 5 }
+  ],
+  "decisions": [
+    { "id": "d-sample-1", "date": "2026-10-01", "text": "A sample decision.", "pageId": "overview", "order": 1 },
+    { "id": "d-sample-2", "date": "2026-10-10", "text": "Another sample decision.", "pageId": "sample-plan", "order": 2 }
+  ],
+  "versions": { "sample-plan": [{ "n": 1, "title": "A sample plan", "lede": "An older lede.", "body": "## The steps\nAn older version of this sample page.", "source": "seed", "savedH": 60 }] }
+}
