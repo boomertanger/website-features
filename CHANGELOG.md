@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(climb): /climb falls back to a YouTube goal of 1,000 when none is set (the same fallback as the footer and the collector), so the goal meter and At this pace work without a setting; other platforms still have no goal unless one is set
 feat(climb): the Twitch and YouTube brand colours come from the kit tokens (--bt-brand-twitch #9146ff, --bt-brand-youtube #ff0033, YouTube's current red) instead of new hex values; design-system §8ae and spec §13 updated
 docs: Creator Climb round 2: the repo-safe mockup with Boomer's approved changes; spec §4 (no gap band, lines connect), §6 chapters 1, 5, 6 (R2 record tiles, the At this pace layout) and 8 (What happened in 2026?, live answers), §12 (gaps optional, unused by Climb), §13 (brand colors on data marks only); design-system §8ae (platform brand colors on data marks only; records never use medal or badge visuals) and §8ad updated
 feat(climb): "At this pace" redesign: the goal headline ("YouTube reaches 1,000 around <Month YYYY>"), "+N a month" for Twitch, TikTok, YouTube and members once counted, beside a projection chart (the last 60 days solid, a dashed line on to the dashed gold goal line, an open gold circle at the arrival month, "today"); paused shows the reason with the reading count and the last reading, the chart dimmed with only the goal line; no goal: the monthly rows only ("+N followers a month across all three"); slope at or below 0: "Holding steady"; same least-squares rule (§9)

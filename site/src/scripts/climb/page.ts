@@ -9,7 +9,7 @@ import { drawScene } from "./scene";
 import {
   PLATFORMS, NAME, COLOR, type Platform, type Key, type Public, type MonthDoc, type SPoint,
   ms, fmt, monthLabel, dayLabel, todayMs, escapeHtml as esc, previewMember, watchPublic, watchMonths, previewMonths,
-  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, erasOf, eraOf, allMilestones, records, fit, type Fit,
+  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, erasOf, eraOf, allMilestones, records, fit, goalsOf, type Fit,
 } from "./data";
 
 const root = document.querySelector<HTMLElement>("[data-cc]");
@@ -231,7 +231,7 @@ function months() {
 // ---------------------------------------------------------------------------------------------- 06 records and pace
 function goals() {
   const p = S.pub!, el = $("[data-cc-goals]")!;
-  const list = (Object.entries(p.goals || {}) as [Platform | "all" | "members", number][]).filter(([, v]) => v > 0);
+  const list = (Object.entries(goalsOf(p)) as [Platform | "all" | "members", number][]).filter(([, v]) => v > 0);
   if (!list.length) { el.hidden = true; return; }
   el.hidden = false;
   el.innerHTML = list.map(([k, goal]) => {
@@ -300,8 +300,9 @@ function paceCard() {
   const now = (k: Platform | "all" | "members") => (k === "members" ? p.members?.total ?? null : p.totals[k] ?? null);
   // the goal platform: the first goal not reached yet
   const order: (Platform | "all" | "members")[] = ["youtube", "twitch", "tiktok", "all", "members"];
-  const gk = order.find((k) => (p.goals || {})[k] && (now(k) ?? 0) < (p.goals[k] as number)) || null;
-  const goal = gk ? (p.goals[gk] as number) : null;
+  const goals = goalsOf(p);
+  const gk = order.find((k) => goals[k] && (now(k) ?? 0) < (goals[k] as number)) || null;
+  const goal = gk ? (goals[gk] as number) : null;
   const unit = (k: Platform | "all" | "members") => (k === "members" ? "members" : k === "youtube" ? "subscribers" : "followers");
   const who = (k: Platform | "all" | "members") => (k === "all" ? "The combined total" : k === "members" ? "Members" : NAME[k]);
   const monthly = (f: Fit | null) => (f ? Math.round(f.slope * 30) : null);

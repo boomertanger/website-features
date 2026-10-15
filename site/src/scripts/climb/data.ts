@@ -51,6 +51,14 @@ export function iconHtml(k: Key) {
   const inner = path ? `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}"/></svg>` : k === "members" ? "★" : "∑";
   return `<span class="cc-pi" data-p="${k}" aria-hidden="true">${inner}</span>`;
 }
+/** The goals /climb shows: the ones set on /admin, and YouTube 1,000 when none is set for it (the same fallback as the footer and the collector,
+ *  functions/lib/growth/collect.js YOUTUBE_GOAL). Other platforms have no goal unless one is set. */
+export const YOUTUBE_GOAL_FALLBACK = 1000;
+export function goalsOf(p: Public): Public["goals"] {
+  const g = { ...(p.goals || {}) };
+  if (!(Number(g.youtube) > 0)) g.youtube = YOUTUBE_GOAL_FALLBACK;
+  return g;
+}
 /** ?as=member: localhost and staging only. */
 export const previewMember = () => !isProduction && new URLSearchParams(location.search).get("as") === "member";
 

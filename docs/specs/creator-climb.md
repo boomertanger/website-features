@@ -154,7 +154,9 @@ width, labels larger, tent labels hidden. Reduced motion: no movement, values st
    month end, New members from launch, Live likes or "not recorded"), three mini charts (stream-day points, own scale;
    "Not streaming here yet" or the month's note when there are none), Highlights (typed
    highlights + the month's milestones + records).
-6. **Records and pace:** goal meters (public, one per goal set). Members: **R2 record tiles**, plain
+6. **Records and pace:** goal meters (public, one per goal set; YouTube falls back to 1,000 when
+   none is set, the same fallback as the footer and the collector, so its meter and At this pace
+   work without a setting; other platforms have no goal unless one is set). Members: **R2 record tiles**, plain
    stats with no medals, icons or flips (nothing that looks earnable; design-system §8ae), in a
    grid of 4 / 2 / 1 columns (container queries). Each tile is a button: the name (`.bt-label`),
    the big number with its unit, the date in gold, a small context chart drawn from the data
