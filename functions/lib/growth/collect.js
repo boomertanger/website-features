@@ -110,9 +110,11 @@ async function tiktok({ fetchFn, cfg, authRef, auth }) {
  * public summary. A failing platform keeps its last good value in the summary and
  * adds an entry to the day's errors.
  * cfg: { twitchClientId, twitchClientSecret, twitchLogin, youtubeApiKey, youtubeChannelId, tiktokClientKey, tiktokClientSecret }
+ * Creator Climb (docs/specs/creator-climb.md §10): siteMembers is the day's site-members block (lib/climb/site.js; null before Back on air) and
+ * youtubeGoal the goal shared with the footer (climb/main.goals.youtube); both come from the caller, so this file reads no climb settings.
  * Returns { day, daily, summary } (no secrets).
  */
-async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now = Date.now(), Timestamp }) {
+async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now = Date.now(), Timestamp, siteMembers = null, youtubeGoal = YOUTUBE_GOAL }) {
   const site = db.doc(`sites/${siteId}`);
   const configRef = site.collection("private").doc("growthConfig");
   const authRef = site.collection("private").doc("tiktokAuth");
@@ -143,6 +145,7 @@ async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now =
       : manual ? { followers: manual.followers, source: "manual" } : null,
     collectedAt: at,
     errors,
+    site: siteMembers || null,
   };
   // Public summary: only platforms that succeeded move; the rest keep their last good value.
   const summary = {
@@ -150,7 +153,7 @@ async function collect({ db, siteId, cfg, dryRun = false, fetchFn = fetch, now =
     youtube: yt ? { subscribers: yt.subscribers, views: yt.views, videos: yt.videos, updatedAt: at } : prev.youtube ?? null,
     tiktok: tt && !tt.skipped ? { followers: tt.followers, latestVideoAt: tt.latestVideoAt, source: "api", updatedAt: at } : prev.tiktok ?? null,
     instagram: prev.instagram ?? { followers: null, updatedAt: null },
-    youtubeGoal: YOUTUBE_GOAL,
+    youtubeGoal: Number(youtubeGoal) > 0 ? Number(youtubeGoal) : YOUTUBE_GOAL,
   };
   if (!dryRun) {
     await Promise.all([site.collection("growthDaily").doc(day).set(daily), summaryRef.set(summary)]);

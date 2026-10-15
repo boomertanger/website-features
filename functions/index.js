@@ -874,6 +874,11 @@ Object.assign(exports, require("./lib/factory")({
 // (rebuilds public/goalTracker and the teaser) and the 05:30 Los Angeles daily counts. Lives in lib/goalTracker/.
 Object.assign(exports, require("./lib/goalTracker")({ adminLogEntry }));
 
+// ---------- Creator Climb (docs/specs/creator-climb.md) ----------
+// Follower growth across every platform: climbRebuild (on growthDaily/{day} writes) rebuilds the month and public/climb and announces new
+// milestones; climbAdmin (owner or site admin) edits notes, eras, goals, left-out accounts and corrections. Lives in lib/climb/.
+Object.assign(exports, require("./lib/climb").build({ adminLogEntry }).functions);
+
 // Mod Machina (docs/specs/mod-machina.md): the crew's roster, queue, Gears, tasks, Academy and awards.
 Object.assign(exports, require("./lib/crew")({ adminLogEntry }));
 

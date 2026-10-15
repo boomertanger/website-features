@@ -548,6 +548,28 @@ service cloud.firestore {
       // mixer routing and setup history; and Base Camp's (docs/specs/base-camp.md): base-camp (card backs, stop stories, chapter 5) and mail
       // (the Pup Post address). Any signed-in member (a members/{uid} doc) may read the listed docs, nothing else under memberContent; written
       // only by functions/scripts/seed-tech-stack.js and seed-base-camp.js (Admin SDK). When billing exists this becomes the Fan Club plan check.
+      // ---------- Creator Climb (docs/specs/creator-climb.md §8, §11) ----------
+      // Written ONLY by Cloud Functions (lib/climb, the growth collector, scripts/seed-climb-history.js). public/climb is read through the
+      // public/{docId} rule below. The months (every stream day, month reports) are for members: signed in with a members/{uid} doc, the
+      // same condition as memberContent. The main doc (settings: eras, goals, notes, left-out accounts) and the corrections are for site
+      // admins. climb/main/private/* (build state, rate limits): no client access at all.
+      match /climb/main {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /climb/main/months/{month} {
+        allow read: if siteId == 'boomertanger' && request.auth != null
+          && exists(/databases/$(database)/documents/sites/boomertanger/members/$(request.auth.uid));
+        allow write: if false;
+      }
+      match /climb/main/corrections/{id} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /climb/main/private/{doc} {
+        allow read, write: if false;
+      }
+
       match /memberContent/{docId} {
         allow read: if siteId == 'boomertanger' && docId in ['tech-stack', 'base-camp', 'mail'] && request.auth != null
           && exists(/databases/$(database)/documents/sites/boomertanger/members/$(request.auth.uid));

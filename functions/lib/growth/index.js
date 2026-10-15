@@ -15,6 +15,7 @@ const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { collect, tiktokToken, dayKey, validManualFollowers, TZ } = require("./collect");
+const climbSite = require("../climb/site");
 
 const SITE_ID = "boomertanger";
 const TWITCH_CLIENT_ID = defineString("TWITCH_CLIENT_ID");
@@ -78,7 +79,14 @@ module.exports = function growth({ adminLogEntry }) {
   }
 
   const run = async (label) => {
-    const out = await collect({ db, siteId: SITE_ID, cfg: config(), Timestamp });
+    // Creator Climb (docs/specs/creator-climb.md §9b, §10): the site-members block from Back on air on, and the shared YouTube goal.
+    // A problem here never stops the morning counts.
+    let site = null, youtubeGoal;
+    try {
+      youtubeGoal = (await climbSite.climbSettings(db, SITE_ID)).youtubeGoal;
+      site = await climbSite.siteBlock({ db, siteId: SITE_ID, day: dayKey(Date.now()), Timestamp });
+    } catch (err) { console.error(`${label}: site members not counted`, err); }
+    const out = await collect({ db, siteId: SITE_ID, cfg: config(), Timestamp, siteMembers: site, youtubeGoal });
     if (out.daily.errors.length) console.warn(`${label}: some platforms failed`, JSON.stringify(out.daily.errors));
     else console.log(`${label}: collected`, out.day);
     return out;

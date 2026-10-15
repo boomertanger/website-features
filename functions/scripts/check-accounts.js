@@ -5,6 +5,9 @@
 //   npm run check      (or node scripts/check-accounts.js)
 const assert = require("assert/strict");
 const v = require("../lib/accounts/validate");
+// Creator Climb: the sign-in method comes from the verified token only
+for (const [p, want] of [["google.com", "google"], ["password", "email"], ["emailLink", "email"], ["custom", "twitch"], ["anonymous", "unknown"], [undefined, "unknown"]]) assert.equal(v.signInMethodOf({ firebase: { sign_in_provider: p } }), want, `sign_in_provider ${p}`);
+assert.equal(v.signInMethodOf(undefined), "unknown");
 
 const shape = (h) => v.handleShape(v.normalizeHandle(h));
 assert.equal(shape("NightOwl"), "ok");

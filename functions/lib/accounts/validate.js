@@ -79,4 +79,14 @@ function roleTagFor(roles, { isOwner = false } = {}) {
   return ROLE_TAGS.find((t) => t !== "fan" && r.includes(t)) || "fan";
 }
 
-module.exports = { ROLE_TAGS, roleTagFor, HANDLE_RE, normalizeHandle, handleShape, isProfane, cleanDisplayName, conservativeAge, adultAtMs, ageBand, validBirth, initialsOf };
+/** How an account signed in, from its verified ID token (docs/specs/creator-climb.md §9b): google.com -> google; password or emailLink ->
+ *  email; custom -> twitch (only twitchAuth mints custom tokens); anything else or nothing -> unknown. */
+function signInMethodOf(token) {
+  const p = token && token.firebase && token.firebase.sign_in_provider;
+  if (p === "google.com") return "google";
+  if (p === "password" || p === "emailLink") return "email";
+  if (p === "custom") return "twitch";
+  return "unknown";
+}
+
+module.exports = { signInMethodOf, ROLE_TAGS, roleTagFor, HANDLE_RE, normalizeHandle, handleShape, isProfane, cleanDisplayName, conservativeAge, adultAtMs, ageBand, validBirth, initialsOf };

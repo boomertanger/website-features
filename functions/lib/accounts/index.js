@@ -5,7 +5,8 @@
 //   users/{uid}                       account: signedUpAt, ageBand, terms, prefs, handleChangedAt, linked
 //   users/{uid}/private/age           birthYear, birthMonth, adultAt (no client access at all)
 //   handles/{handle}                  { uid }: handles are unique across the platform
-//   sites/{siteId}/members/{uid}      roles, joinedAt, rolesChangedBy
+//   sites/{siteId}/members/{uid}      roles, joinedAt, rolesChangedBy, signInMethod (google | email | twitch | unknown: how the account
+//                                     signed up, from the ID token on the server; Creator Climb counts members by it, docs/specs/creator-climb.md §9b)
 //   (profiles/{uid}.roleTag is the public copy of the highest role: fan, sub, mod, admin)
 //   sites/{siteId}/profiles/{uid}     public: handle, displayName, avatar, badges, platforms
 //   platformLinks/twitch_{id}         { uid, login }: one Twitch account links to one site account
@@ -153,7 +154,8 @@ module.exports = function accounts({ adminLogEntry }) {
         handleChangedAt: stamp,
       }, { merge: true });
       tx.set(r.age, { birthYear, birthMonth, adultAt: Timestamp.fromMillis(v.adultAtMs(birthYear, birthMonth)) });
-      tx.set(r.member, member.exists ? { joinedAt: member.get("joinedAt") || stamp } : { roles: [], joinedAt: stamp }, { merge: true });
+      const signInMethod = v.signInMethodOf(request.auth.token);   // from the verified ID token, never from the client
+      tx.set(r.member, member.exists ? { joinedAt: member.get("joinedAt") || stamp, signInMethod } : { roles: [], joinedAt: stamp, signInMethod }, { merge: true });
       tx.set(r.profile, {
         handle, displayName,
         avatar: { type: "initials", initials: v.initialsOf(displayName) },
