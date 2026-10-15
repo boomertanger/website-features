@@ -328,19 +328,22 @@ function paceCard() {
   if (!gf.fit) { paused(gf.readings); return; }
   const f = gf.fit, cur = f.last.v;
   const steady = f.slope <= 0;
-  const eta = steady ? null : NOW + ((goal! - cur) / f.slope) * DAY;
+  const arrive = steady ? null : NOW + ((goal! - cur) / f.slope) * DAY;
+  // more than 24 months away: no date, no projection or arrival dot (a straight line that far out says nothing useful)
+  const far = arrive != null && arrive > Date.UTC(new Date(NOW).getUTCFullYear() + 2, new Date(NOW).getUTCMonth(), new Date(NOW).getUTCDate());
+  const eta = far ? null : arrive;
   const t0 = NOW - 60 * DAY, t1 = Math.max(eta ?? NOW, NOW) + 10 * DAY;
   const lo = Math.min(...f.pts.map((x) => x.v)) - Math.max(5, (goal! - Math.min(...f.pts.map((x) => x.v))) * 0.05), hi = goal! + Math.max(10, (goal! - lo) * 0.04);
   const X = (t: number) => ((t - t0) / (t1 - t0)) * W, Y = (v: number) => H - 18 - ((v - lo) / (hi - lo)) * (H - 40);
   const d = f.pts.map((x, i) => `${i ? "L" : "M"}${X(x.t).toFixed(1)} ${Y(x.v).toFixed(1)}`).join("");
-  const head = steady ? "Holding steady" : `${who(gk)} reaches ${fmt(goal)} around ${monthYear(eta!)}`;
-  const aria = `${NAME[gk]} ${unit(gk)} over the last 60 days${steady ? ", holding steady" : ` with the projection to ${fmt(goal)} around ${monthYear(eta!)}`}`;
+  const head = steady ? "Holding steady" : far ? `${gk === "all" ? "Combined" : NAME[gk]} goal: more than two years away at this pace` : `${who(gk)} reaches ${fmt(goal)} around ${monthYear(eta!)}`;
+  const aria = `${NAME[gk]} ${unit(gk)} over the last 60 days${steady ? ", holding steady" : far ? `; ${fmt(goal)} is more than two years away at this pace` : ` with the projection to ${fmt(goal)} around ${monthYear(eta!)}`}`;
   host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">${head}</b>${rowsHtml}${foot}</div><div class="cc-pace-viz"><svg viewBox="0 0 ${W} ${H}" role="img" aria-label="${esc(aria)}"><line class="cc-pace-goal" x1="0" x2="${W}" y1="${Y(goal!).toFixed(1)}" y2="${Y(goal!).toFixed(1)}"/><text class="cc-pace-k" x="0" y="${(Y(goal!) - 6).toFixed(1)}">${esc(goalName)}</text><path class="cc-pace-line" style="stroke:${COLOR[gk]}" d="${d}"/>${eta != null ? `<path class="cc-pace-proj" style="stroke:${COLOR[gk]}" d="M${X(NOW).toFixed(1)} ${Y(f.at(NOW)).toFixed(1)} L${X(eta).toFixed(1)} ${Y(goal!).toFixed(1)}"/><circle class="cc-pace-eta" cx="${X(eta).toFixed(1)}" cy="${Y(goal!).toFixed(1)}" r="5"/><text class="cc-pace-k" x="${Math.min(X(eta), W - 4).toFixed(1)}" y="${(Y(goal!) + 20).toFixed(1)}" text-anchor="end">${monthYear(eta, false)}</text>` : ""}<text class="cc-pace-k" x="${X(NOW).toFixed(1)}" y="${H - 2}" text-anchor="middle">today</text></svg></div>`;
 
   function paused(n: number) {
     host.classList.remove("cc-pace--solo");
     const last = p.lastReading ? ` and the last one is ${dayLabel(p.lastReading.day)}` : "";
-    host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">Paused for now</b><p class="cc-pace-why">Forecasts need at least 14 readings in the last 60 days. There ${n === 1 ? "is 1" : `are ${n}`}${last}. The morning readings bring them back in about two weeks.</p></div><div class="cc-pace-viz is-off"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false">${gk ? `<line class="cc-pace-goal" x1="0" x2="${W}" y1="24" y2="24"/><text class="cc-pace-k" x="0" y="16">${esc(goalName)}</text>` : ""}<text class="cc-pace-k" x="${W / 2}" y="90" text-anchor="middle">waiting for readings</text></svg></div>`;
+    host.innerHTML = `<div class="cc-pace-txt">${label}<b class="cc-pace-big">Paused for now</b><p class="cc-pace-why">Forecasts need at least 14 readings in the last 60 days. There ${n === 1 ? "is 1" : `are ${n}`}${last ? `,${last}` : ""}. The morning readings bring them back in about two weeks.</p></div><div class="cc-pace-viz is-off"><svg viewBox="0 0 ${W} ${H}" aria-hidden="true" focusable="false">${gk ? `<line class="cc-pace-goal" x1="0" x2="${W}" y1="24" y2="24"/><text class="cc-pace-k" x="0" y="16">${esc(goalName)}</text>` : ""}<text class="cc-pace-k" x="${W / 2}" y="90" text-anchor="middle">waiting for readings</text></svg></div>`;
   }
 }
 

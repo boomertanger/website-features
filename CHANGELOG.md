@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(climb): At this pace shows no date when the goal is more than 24 months away ("YouTube goal: more than two years away at this pace"; the rows stay; the chart keeps the solid line and the goal line, no projection or arrival dot); the paused text gets its comma ("There are 3, and the last one is …")
 feat(climb): /climb falls back to a YouTube goal of 1,000 when none is set (the same fallback as the footer and the collector), so the goal meter and At this pace work without a setting; other platforms still have no goal unless one is set
 feat(climb): the Twitch and YouTube brand colours come from the kit tokens (--bt-brand-twitch #9146ff, --bt-brand-youtube #ff0033, YouTube's current red) instead of new hex values; design-system §8ae and spec §13 updated
 docs: Creator Climb round 2: the repo-safe mockup with Boomer's approved changes; spec §4 (no gap band, lines connect), §6 chapters 1, 5, 6 (R2 record tiles, the At this pace layout) and 8 (What happened in 2026?, live answers), §12 (gaps optional, unused by Climb), §13 (brand colors on data marks only); design-system §8ae (platform brand colors on data marks only; records never use medal or badge visuals) and §8ad updated

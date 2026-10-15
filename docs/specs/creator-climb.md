@@ -180,7 +180,9 @@ width, labels larger, tent labels hidden. Reduced motion: no movement, values st
    its month, "today" under the line). Paused: "Paused for now" with the reason (the reading count
    and the last reading date), the chart dimmed with only the goal line and "waiting for
    readings". No goal set: the monthly rows only, headline "+N followers a month across all
-   three". Slope at or below 0: "Holding steady".
+   three". Slope at or below 0: "Holding steady". An arrival more than 24 months away shows no date:
+   "<Platform> goal: more than two years away at this pace", the rows stay, and the chart keeps the
+   solid line and the goal line without the projection or the arrival dot.
 7. **How the numbers work:** four-step flow (The platforms → Every morning → The climb updates →
    You see it here) and notes: imported history, The build, YouTube rounding above 1,000, streams
    count the next morning (after-shows not counted), members are their own number (owner and test
