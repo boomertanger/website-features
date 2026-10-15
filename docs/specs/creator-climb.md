@@ -1,7 +1,7 @@
 # Creator Climb — follower growth across every platform
 
 Status: confirmed Oct 15, 2026, including Addendum A (site members) and the Crossover chapter. Updated Oct 15, 2026
-to match the repo: peak viewers (§6, §9), the sign-in method and `joinedAt` (§9b), the `completeSignup` change (§10).
+to match the repo: peak viewers (§6, §9), the sign-in method and `joinedAt` (§9b), the `completeSignup` change (§10), and Boomer's stream sheet (§3).
 Picks: hero **H1-D Summit camp**, line colors **P1 Night lamps**.
 Mockup: `docs/design/mockups/creator-climb.html` (its "After launch" moment uses made-up SAMPLE
 numbers to show the relaunch; H1-A/B/C and P2/P3 were not picked and are not built).
@@ -19,7 +19,7 @@ chapter shows how new TikTok followers come with new Twitch, YouTube and site gr
 one card on /admin. It replaces the
 Squarespace pages /growth-2025 and /growth-2026, which redirect to /climb at launch.
 
-Nav: Community group, blurb "Follower growth across every platform".
+Nav: Community group, blurb "Follower growth across every platform", with its own summit icon (`i-climb` in the nav sprite).
 
 ## 2. Where the numbers come from
 
@@ -33,7 +33,7 @@ Nav: Community group, blurb "Follower growth across every platform".
 | Site members | count queries in the same morning run (§9b), from launch | none |
 | Live likes | optional number per month (no platform API offers TikTok LIVE likes; Twitch has none) | optional |
 | Highlights | optional lines per month | optional |
-| History Jan 2025 – Apr 20, 2026 | one-time import (§3) | none |
+| History Jan 2025 – Sep 7, 2026 | one-time import (§3): the old pages + Boomer's stream sheet | none |
 
 ## 3. History import
 
@@ -44,6 +44,18 @@ members-only and the repo is public). 11 months, 330 points, read from both Squa
 twitch|tiktok|youtube: { monthEnd, startingBalance?, points: [["YYYY-MM-DD", n]], note? } } }`,
 `records[]`, `eras[]`.
 
+**Stream sheet (May 13, 2026 onward):** `functions/scripts/data/climb-sheet.csv` (**gitignored**),
+a CSV export of Boomer's stream log with these exact headers: `Enter Stream Date` (M/D/YYYY),
+`How many streams?`, `Enter Total Likes`, `Enter Total Hours Streamed`, `Enter Twitch Follower
+Count`, `Enter TikTok Follower Count`, `Enter YouTube Follower Count`. One row per stream day:
+the follower counts become that day's points (`src: "import"`), and streams, hours and likes are
+summed per month. The current file has 20 rows (May 13 – Sep 7, 2026). Boomer keeps logging
+stream days in the sheet until launch and exports a fresh CSV right before the production seed,
+so the production gap is only the days between the last row and launch. Sheet streams, hours and
+likes count only for days before the Back on air date (after that, streams come from the Control
+Room). Rows dated before the last JSON reading (Apr 20, 2026) are ignored; an unknown header or
+an unparseable row stops the seed with the row number.
+
 Confirmed decisions:
 - **D1** July 2025 Twitch: month-end only (412); the old graph was a copy of August's.
 - **D2** Totals are always the platforms added up, never typed. November 2025 = 6,615.
@@ -52,7 +64,8 @@ Confirmed decisions:
 - **D4** Likes kept as recorded; `null` where none (June, July 2025).
 
 `functions/scripts/seed-climb-history.js --project <alias>`: dry run by default (prints what it
-would write and the checks below), `--apply` writes. Staging first. It validates before writing:
+would write and the checks below), `--apply` writes. Staging first. It reads the JSON and, if present, the sheet CSV, and validates
+before writing:
 every month's platforms sum to its combined total; points are in date order inside their month;
 no point after `lastReadingDay`. Imported points carry `src: "import"`. Re-running replaces
 imported points only (never collector or manual points) and then runs the full rebuild.
@@ -64,10 +77,11 @@ build (Feb 2026 – launch, "Streaming paused to build boomertanger.com; surpris
 Back on air (from launch; its start date is set on /admin at launch and is also the members
 start date).
 
-**The gap:** between the last imported reading (Apr 20, 2026) and the first collector reading in
-that project, charts draw a hatched band "Not tracked month by month". No line crosses it and no
-value is invented; lines break at the gap and resume at the first automatic reading. On staging the gap ends in
-late September 2026, on production at launch. Ranges count back from today, so a range that falls
+**The gap:** between the last imported reading (Sep 7, 2026 today; the last sheet row at launch)
+and the first collector reading in that project, charts draw a hatched band "Not tracked month by
+month". No line crosses it and no
+value is invented; lines break at the gap and resume at the first automatic reading. On staging the gap ends at the
+first staging collector reading (late September 2026), on production at launch. Ranges count back from today, so a range that falls
 entirely in the gap shows the empty state.
 
 ## 5. Who sees what
@@ -128,7 +142,7 @@ width, labels larger, tent labels hidden. Reduced motion: no movement, values st
 4. **Crossover** (real numbers): "For every 100 new TikTok followers" flow (a TikTok 100 block with
    bands to Twitch, YouTube and Members; band width by ratio, capped; the members band is dashed
    with "counted from launch" until launch, then "members per 100 new followers"), the span line
-   ("August 2025 to April 2026, 4,609 new TikTok followers"). **Streaming on schedule vs paused**:
+   ("August 2025 to September 2026, 6,167 new TikTok followers"). **Streaming on schedule vs paused**:
    per era, Twitch and YouTube per 100 TikTok as bars, with the note that Twitch rewards a regular
    schedule. Members: **Each month** rows (month, new on TikTok, Twitch per 100, YouTube per 100;
    a "Small month" tag when TikTok gained under 200). Closing note "Moving together isn't proof":
@@ -141,10 +155,10 @@ width, labels larger, tent labels hidden. Reduced motion: no movement, values st
    "Not streaming here yet" or the month's note when there are none), Highlights (typed
    highlights + the month's milestones + records).
 6. **Records and pace:** goal meters (public, one per goal set); members: `.bt-flip-grid` with
-   Biggest month (gold), Best jump between consecutive readings (teal), Peak viewers (primary: the
-   best Control Room stream as "N viewers, all platforms" with its date once one exists, until then
-   the imported record; the back of the card always keeps "Before the site: 577 on TikTok, September
-   2025"), Most streams in a month (gold);
+   Biggest month (gold), Best jump between consecutive readings (teal), Peak viewers (primary:
+   the best Control Room stream as "N viewers, all platforms" with its date once one exists,
+   otherwise the imported record; the back always keeps "Before the site: 577 on TikTok,
+   September 2025"; the two are never compared), Most streams in a month (gold);
    and "At this pace" (§9) or its paused state with the mascot.
 7. **How the numbers work:** four-step flow (The platforms → Every morning → The climb updates →
    You see it here) and notes: imported history, The build, YouTube rounding above 1,000, streams
@@ -168,7 +182,7 @@ logged."
   `.bt-tag`), last rebuild,
   **Rebuild now** (toast "Rebuilt: N months, N milestones").
 - **Month notes:** month select, Live likes (optional), Highlights (one per line), Save notes.
-- **Eras:** name, start, end ("Until launch" / "Now"), Save eras.
+- **Eras:** name, start, end ("Until launch" / "Now"), a remove button on each era, Add an era (8 at most), Save eras.
 - **Goals:** YouTube subscribers, Twitch, TikTok, Combined, Members (empty = no goal), Save goals.
 - **Left out of member counts:** the owner always; add or remove accounts by handle (the test
   member @gbo by default). Changes apply from the next reading.
@@ -207,26 +221,20 @@ order collector/manual > import for the same day; a correction replaces that day
   per 100 new followers = new members ÷ all new followers × 100, from launch. Never shown as
   people moving between platforms.
 - **Records:** biggest month (new followers), best jump (largest rise between consecutive
-  readings of one platform, with both dates), peak viewers, most streams in a month.
-- **Peak viewers:** the stream doc stores one combined peak, `stats.peak` (every platform's live
-  viewers added up, written at Stop; there is no per-platform peak). The record is the highest
-  `stats.peak` of a counted stream, shown as "N viewers, all platforms" with its date. It never
-  "beats" the imported 577, which was one platform (TikTok); they measure different things, so the
-  imported record is shown only until a Control Room stream exists, and always on the card's back.
+  readings of one platform, with both dates), peak viewers (the Control Room's combined
+  `stats.peak`, all platforms; the imported TikTok-only 577 is kept as its own fact, never
+  compared), most streams in a month.
 - **At this pace** (members): per platform and combined, a least-squares line over the last 60
   days, shown only with at least 14 readings; with a goal: "At this pace, YouTube reaches 1,000
   around <Month YYYY>"; slope ≤ 0: "Holding steady"; otherwise paused with the reason.
 - **Site members (§9b):** in the same morning run after launch, count queries (no full reads) on
-  `members`: total, minus left-out accounts that still exist; joined = members whose `joinedAt`
-  (the members doc's creation time, set by `completeSignup`) falls on that LA day; left =
-  yesterday's total + joined − today's total (never negative; deleted accounts drop out of the
-  total by themselves); Fan Club / Sub Club from plans once billing exists (all Fan Club until
-  then); byMethod from `members/{uid}.signInMethod` (`google`, `email`, `twitch`, `unknown`), one
-  count query per method. `completeSignup` sets it on the server from the ID token's
-  `firebase.sign_in_provider` (google.com → google; password or emailLink → email; custom → twitch,
-  since only `twitchAuth` mints custom tokens; anything else or missing → unknown), never from
-  the client. Members who signed up before that count as unknown (no backfill: production has no
-  members until launch). Members milestones: every 10 up to
+  `members`: total, minus left-out accounts that still exist; joined = members created that LA
+  day (`members/{uid}.joinedAt`); left = yesterday's total + joined − today's total (never
+  negative; deleted accounts drop out of the total by themselves); Fan Club / Sub Club from plans
+  once billing exists (all Fan Club until then); byMethod by count queries on
+  `members/{uid}.signInMethod` (google, email, twitch; missing = unknown), which `completeSignup`
+  sets on the server from the ID token's `firebase.sign_in_provider` (google.com → google;
+  password or emailLink → email; custom → twitch, only minted by twitchAuth; else unknown). Members milestones: every 10 up to
   100, every 100 up to 1,000, then every 1,000; announced to the feed like the others.
   Members per 1,000 followers = members ÷ follower total × 1,000.
 - **Streams in a month:** streams whose end beat ended in the month (LA), not after-shows; hours =
@@ -241,14 +249,16 @@ order collector/manual > import for the same day; a correction replaces that day
   `adminLog` (feature `creatorClimb`, `changes { before, after }`).
 - Core in `lib/climb/build.js` (pure functions, unit-tested by `scripts/check-climb.js` against
   the confirmed numbers: Nov 2025 = 6,615, Aug 2025 new = 645, 2026 Apr total = 9,234, 31
-  imported milestones, newest 9,000 combined on Apr 20, 2026; crossover Aug 2025 – Apr 2026:
-  Twitch 4.2 and YouTube 6.4 per 100 TikTok (4,609 TikTok); The grind 5.3 / 6.9; The build
-  1.8 / 5.3; Nov 2025 is a small month).
+  milestones from the JSON alone, newest 9,000 combined on Apr 20, 2026. With the sheet: Sep 2026
+  month end 10,924 (Twitch 653, TikTok 9,450, YouTube 821); 10,000 combined on Jul 19, 2026;
+  35 imported milestones; Jul 2026: 11 streams, 38.5 hours, 1,478,000 likes; crossover Aug 2025 –
+  Sep 2026: Twitch 3.9 and YouTube 6.1 per 100 TikTok (6,167 TikTok); The grind 5.3 / 6.9; The
+  build (Feb – Sep 2026) 2.4 / 5.4; Nov 2025 is a small month).
+- `completeSignup` (accounts) writes `signInMethod` as above; deployed on its own, after the climb
+  functions. No backfill (production has no members until launch).
 - Collector (`lib/growth/collect.js`): adds the `site` block (§9b) once the Back on air start
   date is set (before that: `null`, no queries). Staging counts its test accounts and the page
   marks the members line "Staging".
-- `completeSignup` (`lib/accounts`): writes `members/{uid}.signInMethod` (§9b). Deployed to staging on
-  its own, after the climb functions.
 - `seed-climb-history.js` (§3).
 - Goals: YouTube's goal is shared with the footer. If the collector writes `youtubeGoal` as a
   constant, it reads `climb/main/settings.goals.youtube` instead (fallback 1000).
@@ -295,7 +305,8 @@ line's end carries the meaning. Scene pieces use existing tokens (`--bt-lamp`, `
 ## 15. Launch checklist
 
 1. Deploy the `climb` rules and `climbRebuild`, `climbAdmin` to production.
-2. Copy `climb-history.json` to the production machine path; run `seed-climb-history.js --project
+2. Export the stream sheet to `functions/scripts/data/climb-sheet.csv` (fresh, up to the last
+   stream before launch); `climb-history.json` stays as is. Run `seed-climb-history.js --project
    prod` dry run, then `--apply`.
 3. On /admin set the **Back on air** start date (the cabin is drawn finished from then, and
    member counting starts). Check "Left out of member counts" (owner always; remove @gbo only if
@@ -311,8 +322,9 @@ now.
 
 ## 17. Testing on staging
 
-- Seed (dry run, then apply), then Rebuild now: 11 imported months, 31 milestones, total 9,234
-  until the collector's first staging reading; after that the gap ends in late September 2026.
+- Seed (dry run, then apply), then Rebuild now: 16 imported months (11 from the JSON, 5 from the
+  sheet), 35 milestones, total 10,924 at Sep 7, 2026; the gap ends at the first staging
+  collector reading.
 - Visitor, `?as=member` and admin views; scrub with mouse, touch and keys; Show as table; deep
   links; phone width; reduced motion.
 - Manual TikTok save → a rebuild within a minute; a correction → the month and the chart change.

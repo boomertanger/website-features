@@ -5331,7 +5331,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
               <span class="cc-total-l">members on boomertanger.com</span>
             </div>
           </div>
-          <span class="cc-total-asof">Last reading Apr 20, 2026. After launch this is this morning's count.</span>
+          <span class="cc-total-asof">Last reading Sep 7, 2026. After launch this is this morning's count.</span>
           <div class="cc-plats" id="ccPlats"></div>
           <div class="cc-hero-cta">
             <button class="bt-btn bt-btn--primary cc-only-visitor">Join free to see every stream day</button>
@@ -5439,7 +5439,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
           <div class="bt-lock-card cc-only-visitor"><span class="bt-lock-card-ic" aria-hidden="true">🏆</span><div><b>Records and forecasts are for members</b><p>Join free to see the biggest month, the best stream day and where the climb is heading.</p></div><button class="bt-btn bt-btn--primary">Join free</button></div>
           <div class="cc-only-member" style="display:flex;flex-direction:column;gap:16px">
             <div class="bt-flip-grid" id="ccFlips"></div>
-            <div class="bt-card cc-pace"><svg class="bt-mascot" viewBox="30 92 145 162" aria-hidden="true" data-mascot></svg><div><b class="bt-card-title">At this pace: paused</b><p>Forecasts need at least 14 readings in the last 60 days, and the last reading was Apr 20, 2026. They come back on their own about two weeks after the morning collector starts on the live site.</p></div></div>
+            <div class="bt-card cc-pace"><svg class="bt-mascot" viewBox="30 92 145 162" aria-hidden="true" data-mascot></svg><div><b class="bt-card-title">At this pace: paused</b><p>Forecasts need at least 14 readings in the last 60 days, and the last reading was Sep 7, 2026. They come back on their own about two weeks after the morning collector starts on the live site.</p></div></div>
           </div>
         </section>
 
@@ -5453,8 +5453,8 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
             <li><span class="cc-flow-ic" aria-hidden="true">👀</span><div><b>You see it here</b><span>The page shows the newest numbers as soon as they're saved.</span></div></li>
           </ol>
           <div class="cc-notes">
-            <div class="cc-note"><b>2025 and early 2026 are imported</b>They come from the old growth pages, checked and tidied: totals are always the platforms added up.</div>
-            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams still count, and nothing between Apr 20 and launch is guessed.</div>
+            <div class="cc-note"><b>2025 and 2026 so far are imported</b>From the old growth pages and Boomer's stream sheet, checked and tidied: totals are always the platforms added up.</div>
+            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams still count (from Boomer's own sheet up to Sep 7), and nothing after that is guessed.</div>
             <div class="cc-note"><b>YouTube rounds</b>Above 1,000 YouTube only shares rounded subscriber counts, so its line moves in small steps.</div>
             <div class="cc-note"><b>Streams count the next morning</b>A stream joins its month once it has ended. After-shows aren't counted.</div>
             <div class="cc-note"><b>Members are their own number</b>Site members are counted from launch and never added to the follower total, because most members also follow on a platform. The owner and test accounts are left out.</div>
@@ -5533,7 +5533,7 @@ body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-a
 </div>
 </div>
 
-<p class="mk-note">Real numbers from boomertanger.com/growth-2025 and /growth-2026, with the confirmed fixes: November 2025 is 6,615 (the platforms added up), August 2025 counts YouTube's 443 as a starting balance, and July 2025 Twitch has its month-end only. Times marked "sample" on the admin screen are placeholders. Platform icons are stand-ins; the build uses the official icons from site/src/data/footer-icons.js. BOOMBOT here is drawn from the kit's classes; the build uses shared/ui/arcade.js. Ranges on the live site count back from today, so on this mockup "30 days" and "90 days" show the empty state.</p>
+<p class="mk-note">Real numbers from boomertanger.com/growth-2025, /growth-2026 and Boomer's stream sheet (May 13 to Sep 7, 2026), with the confirmed fixes: November 2025 is 6,615 (the platforms added up), August 2025 counts YouTube's 443 as a starting balance, and July 2025 Twitch has its month-end only. Times marked "sample" on the admin screen are placeholders. Platform icons are stand-ins; the build uses the official icons from site/src/data/footer-icons.js. BOOMBOT here is drawn from the kit's classes; the build uses shared/ui/arcade.js. Ranges count back from today, so on this mockup "30 days" shows the empty state (the last imported reading is Sep 7, 2026). May to September 2026 come from Boomer's stream sheet.</p>
 <script>
 (() => {
 'use strict';
@@ -5562,15 +5562,20 @@ const MONTHS = {
   '2026-02': { streams: 4, hours: 17.5, likes: 397000, notes: ['Surprise streams only while the website is built'], twitch: { end: 590, pts: '15:582 18:590 26:590' }, tiktok: { end: 7010, pts: '15:6508 18:6891 26:7010' }, youtube: { end: 690, pts: '15:663 18:689 26:690' } },
   '2026-03': { streams: 11, hours: 40.5, likes: 760000, notes: [], twitch: { end: 598, pts: '5:590 7:590 9:590 17:591 18:592 19:593 20:594 21:595 24:597 25:598' }, tiktok: { end: 7380, pts: '5:7050 7:7080 9:7090 17:7130 18:7160 19:7180 20:7200 21:7250 24:7300 25:7380' }, youtube: { end: 715, pts: '5:690 7:690 9:690 17:695 18:697 19:698 20:699 21:700 24:710 25:715' } },
   '2026-04': { streams: 8, hours: 27, likes: 1088000, notes: [], endDay: 20, twitch: { end: 606, pts: '8:598 12:599 13:600 15:601 16:603 17:604 20:606' }, tiktok: { end: 7892, pts: '8:7390 12:7447 13:7500 15:7560 16:7680 17:7800 20:7892' }, youtube: { end: 736, pts: '8:717 12:720 13:724 15:726 16:729 17:733 20:736' } },
+  '2026-05': { streams: 1, hours: 3, likes: 200000, notes: [], src: 'sheet', twitch: { end: 615, pts: '13:615' }, tiktok: { end: 8120, pts: '13:8120' }, youtube: { end: 763, pts: '13:763' } },
+  '2026-06': { streams: 3, hours: 11.5, likes: 417000, notes: [], src: 'sheet', twitch: { end: 623, pts: '12:617 19:620 20:623' }, tiktok: { end: 8290, pts: '12:8224 19:8240 20:8290' }, youtube: { end: 778, pts: '12:770 19:775 20:778' } },
+  '2026-07': { streams: 11, hours: 38.5, likes: 1478000, notes: [], src: 'sheet', twitch: { end: 636, pts: '3:624 6:625 8:628 9:629 14:630 16:631 17:632 19:634 28:636' }, tiktok: { end: 8826, pts: '3:8320 6:8350 8:8375 9:8400 14:8430 16:8480 17:8500 19:8750 28:8826' }, youtube: { end: 804, pts: '3:783 6:786 8:790 9:792 14:795 16:798 17:800 19:802 28:804' } },
+  '2026-08': { streams: 4, hours: 13, likes: 407000, notes: [], src: 'sheet', twitch: { end: 642, pts: '7:638 10:640 15:641 17:642' }, tiktok: { end: 9233, pts: '7:8876 10:8956 15:9200 17:9233' }, youtube: { end: 810, pts: '7:806 10:808 15:810 17:810' } },
+  '2026-09': { streams: 3, hours: 10, likes: 357000, notes: [], src: 'sheet', endDay: 7, twitch: { end: 653, pts: '2:645 6:649 7:653' }, tiktok: { end: 9450, pts: '2:9300 6:9370 7:9450' }, youtube: { end: 821, pts: '2:814 6:818 7:821' } },
 };
 const MOMENT = new URLSearchParams(location.search).get('moment') === 'launch' ? 'launch' : 'today';
 const LAUNCH = Date.UTC(2026, 11, 1);
-const LAUNCH_FIRST = { twitch: 612, tiktok: 8010, youtube: 745 };   // SAMPLE: first readings on launch day
+const LAUNCH_FIRST = { twitch: 662, tiktok: 9700, youtube: 832 };   // SAMPLE: first readings on launch day
 const SAMPLE_MONTHS = {   // SAMPLE ONLY: made-up numbers to show the after-launch design
-  '2026-12': { streams: 14, hours: 52, likes: null, notes: ['boomertanger.com is live (sample)'], twitch: 621, tiktok: 8260, youtube: 760, members: 128 },
-  '2027-01': { streams: 16, hours: 61, likes: null, notes: [], twitch: 640, tiktok: 8700, youtube: 792, members: 197 },
-  '2027-02': { streams: 15, hours: 58, likes: null, notes: [], twitch: 662, tiktok: 9150, youtube: 828, members: 254 },
-  '2027-03': { streams: 17, hours: 64, likes: null, notes: [], twitch: 690, tiktok: 9620, youtube: 865, members: 312 },
+  '2026-12': { streams: 14, hours: 52, likes: null, notes: ['boomertanger.com is live (sample)'], twitch: 674, tiktok: 9960, youtube: 848, members: 128 },
+  '2027-01': { streams: 16, hours: 61, likes: null, notes: [], twitch: 693, tiktok: 10400, youtube: 874, members: 197 },
+  '2027-02': { streams: 15, hours: 58, likes: null, notes: [], twitch: 715, tiktok: 10850, youtube: 902, members: 254 },
+  '2027-03': { streams: 17, hours: 64, likes: null, notes: [], twitch: 743, tiktok: 11320, youtube: 935, members: 312 },
 };
 const MEMBERS = [];
 if (MOMENT === 'launch') {
@@ -5593,7 +5598,7 @@ const ERAS = [
 ].concat(MOMENT === 'launch' ? [{ from: '2026-12-01', to: '2027-03-31', label: 'Back on air' }] : []);
 const NOW = MOMENT === 'launch' ? Date.UTC(2027, 2, 31) : Date.UTC(2026, 9, 15);
 const GAP_END = MOMENT === 'launch' ? LAUNCH : NOW;
-const LAST = Date.UTC(2026, 3, 20);
+const LAST = Date.UTC(2026, 8, 7);
 const t = (s) => { const [y, m, d] = s.split('-').map(Number); return Date.UTC(y, m - 1, d || 1); };
 const mKeys = Object.keys(MONTHS);
 const lastDay = (key) => { const [y, m] = key.split('-').map(Number); return new Date(Date.UTC(y, m, 0)).getUTCDate(); };
@@ -5707,7 +5712,7 @@ function chart(el, o) {
       gh += `<circle class="bt-chart-dot" data-k="${s.k}" cx="${x}" cy="${Y(p.v)}" r="${s.k === 'all' ? 5 : 4}"/>`;
       rows += `<div class="bt-chart-tip-r" style="--c:var(--cc-${s.k})"><i></i><span>${NAME[s.k]}</span><b style="display:inline;margin:0">${fmt(p.v)}</b>${ch ? `<em>${ch > 0 ? '+' : '−'}${fmt(Math.abs(ch))}</em>` : ''}</div>`; });
     g.innerHTML = gh;
-    tip.innerHTML = `<b>${o.monthly ? mLabel(new Date(tt).toISOString().slice(0, 7), true) : dLabel(tt)}</b>${rows}${imp ? '<small>From the old growth pages</small>' : ''}${smp ? '<small>Sample data (after launch)</small>' : ''}`;
+    tip.innerHTML = `<b>${o.monthly ? mLabel(new Date(tt).toISOString().slice(0, 7), true) : dLabel(tt)}</b>${rows}${imp ? '<small>Imported history</small>' : ''}${smp ? '<small>Sample data (after launch)</small>' : ''}`;
     tip.classList.add('is-on'); const tw = tip.offsetWidth; let left = x + 14; if (left + tw > W) left = x - tw - 14; tip.style.left = Math.max(0, left) + 'px'; tip.style.top = Math.max(0, pad.t) + 'px';
   };
   const hide = () => { g.innerHTML = ''; tip.classList.remove('is-on'); idx = -1; };
@@ -5769,12 +5774,12 @@ const RW = 760, RH = 420, RT0 = t('2025-01-01'), RT1 = NOW;
 const RGAPW = 45 * 864e5;   // the hero is an illustration: the untracked gap is drawn short after launch
 const radj = (tt) => MOMENT !== 'launch' || tt <= LAST ? tt : tt < LAUNCH ? LAST + (tt - LAST) * RGAPW / (LAUNCH - LAST) : tt - (LAUNCH - LAST - RGAPW);
 const rx = (tt) => 40 + (radj(tt) - RT0) / (radj(RT1) - RT0) * (RW - 80);
-const RSCALE = MOMENT === 'launch' ? 12000 : 10000;
+const RSCALE = Math.ceil(Math.max(...MEND.all.map((p) => p.v)) * 1.1 / 1000) * 1000;
 const ry = (v) => RH - 70 - v / RSCALE * 270;
 const RPTS = MEND.all.map((p) => ({ x: rx(p.t), y: ry(p.v), v: p.v, key: p.key }));
 const RLAST = RPTS[RPTS.length - 1];
 const pathOf = (a) => a.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join('');
-const RAPR = RPTS.findIndex((p) => p.key === '2026-04');
+const RAPR = RPTS.findIndex((p) => p.key === '2026-09');
 const RLX = rx(LAUNCH), RLY = ry(LAUNCH_FIRST.twitch + LAUNCH_FIRST.tiktok + LAUNCH_FIRST.youtube);
 const ridgePts = MOMENT === 'launch' ? [...RPTS.slice(0, RAPR + 1).map((p) => [p.x, p.y]), [RPTS[RAPR].x + 18, RPTS[RAPR].y + 6], [RLX - 14, RPTS[RAPR].y + 4], [RLX - 6, RLY + 6], [RLX, RLY], ...RPTS.slice(RAPR + 1).map((p) => [p.x, p.y])] : RPTS.map((p) => [p.x, p.y]);
 const RTOP = pathOf([[-10, RH - 60], [40, RPTS[0].y + 8], ...ridgePts]) + (MOMENT === 'launch' ? ` L${RW + 10} ${RLAST.y - 4}` : ` L${RLAST.x + 18} ${RLAST.y + 6} L${RLAST.x + 60} ${RLAST.y + 4} L${RW + 10} ${RLAST.y + 10}`);
@@ -5843,7 +5848,7 @@ function heroRidge() {
   const k = $('.cc-scrub-k', host); const tot = $('#ccTotal'); const asof = $('.cc-total-asof');
   const AS = asof.textContent;
   let cur = RPTS.length - 1; let scrubbing = false;
-  const scrub = (i) => { cur = Math.max(0, Math.min(RPTS.length - 1, i)); scrubbing = true; host.classList.add('is-scrub'); place(cur); const p = RPTS[cur]; tot.textContent = fmt(p.v); asof.textContent = 'End of ' + mLabel(p.key, true) + (cur === RPTS.length - 1 ? ' (last reading Apr 20)' : ''); k.textContent = mLabel(p.key); k.style.left = (p.x / RW * 100) + '%'; k.style.top = (p.y / RH * 100) + '%'; };
+  const scrub = (i) => { cur = Math.max(0, Math.min(RPTS.length - 1, i)); scrubbing = true; host.classList.add('is-scrub'); place(cur); const p = RPTS[cur]; tot.textContent = fmt(p.v); asof.textContent = 'End of ' + mLabel(p.key, true) + (cur === RPTS.length - 1 && MOMENT !== 'launch' ? ' (last reading Sep 7)' : ''); k.textContent = mLabel(p.key); k.style.left = (p.x / RW * 100) + '%'; k.style.top = (p.y / RH * 100) + '%'; };
   const rest = () => { if (!scrubbing) return; scrubbing = false; host.classList.remove('is-scrub'); cur = RPTS.length - 1; place(cur); tot.textContent = fmt(TOT); asof.textContent = AS; };
   host.onpointermove = (e) => { if (e.pointerType !== 'mouse' && !e.buttons) return; const r = host.getBoundingClientRect(); const x = (e.clientX - r.left) / r.width * RW; let best = 0; RPTS.forEach((p, i) => { if (Math.abs(p.x - x) < Math.abs(RPTS[best].x - x)) best = i; }); scrub(best); };
   host.onpointerdown = (e) => { host.setPointerCapture?.(e.pointerId); host.onpointermove(Object.assign({}, e, { buttons: 1, pointerType: e.pointerType, clientX: e.clientX })); };
@@ -5888,8 +5893,8 @@ function stages() {
 let curMonth = LASTK;
 function months() {
   const chips = mKeys.map((k) => `<button class="bt-chip bt-chip--small ${k === curMonth ? 'is-active' : ''}" aria-pressed="${k === curMonth}" data-month="${k}">${mLabel(k)}${MONTHS[k].sample ? ' (sample)' : ''}</button>`);
-  const gapChip = `<button class="bt-chip bt-chip--small" disabled>${MOMENT === 'launch' ? 'May–Nov 2026' : 'May–Oct 2026'}: not tracked</button>`;
-  const ix = mKeys.indexOf('2026-04') + 1; chips.splice(ix, 0, gapChip);
+  const gapChip = `<button class="bt-chip bt-chip--small" disabled>${MOMENT === 'launch' ? 'Sep 8 – Nov 30, 2026' : 'Since Sep 8, 2026'}: not tracked</button>`;
+  const ix = mKeys.indexOf('2026-09') + 1; chips.splice(ix, 0, gapChip);
   $('#ccMonths').innerHTML = chips.reverse().join('');
   const M = MONTHS[curMonth]; const S = monthStats(curMonth); const pk = prevKey(curMonth); const PS = pk ? monthStats(pk) : null;
   const era = ERAS.find((e) => t(curMonth + '-01') >= t(e.from) && t(curMonth + '-01') <= t(e.to));
@@ -5913,11 +5918,11 @@ function crossover() {
   const real = XKEYS.filter((k) => !MONTHS[k].sample); const all = xOf(real);
   const L = MOMENT === 'launch'; const sm = mKeys.filter((k) => MONTHS[k].sample);
   let mem = null; if (L) { let nf = 0, nm = 0; sm.forEach((k) => { nf += monthStats(k).gain; nm += MONTHS[k].members.end - MONTHS[k].members.start; }); mem = nm / nf * 100; }
-  $('#ccCrossSpan').textContent = `August 2025 to April 2026, ${fmt(all.tt)} new TikTok followers`;
+  $('#ccCrossSpan').textContent = `August 2025 to September 2026, ${fmt(all.tt)} new TikTok followers`;
   const N = $('#ccFlowViz').clientWidth < 520; const W = N ? 430 : 760, H = 250, sx = N ? 96 : 150, tx = N ? 236 : 470; $('#ccFlowViz').style.aspectRatio = W + ' / ' + H; const tg = [['twitch', 44, all.tw, 'new Twitch followers'], ['youtube', 122, all.yt, 'new YouTube subscribers'], ['members', 200, mem, L ? 'per 100 new followers (sample)' : 'members: counted from launch']];
   const band = (y, w, k, wait) => `<path class="cc-fv-band${wait ? ' is-wait' : ''}" data-k="${k}" d="M${sx} 125 C ${sx + 160} 125, ${tx - 170} ${y}, ${tx - 10} ${y}" style="stroke-width:${w}"/>` + (wait ? '' : `<path class="cc-fv-flow" d="M${sx} 125 C ${sx + 160} 125, ${tx - 170} ${y}, ${tx - 10} ${y}"/>`);
   $('#ccFlowViz').innerHTML = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="For every 100 new TikTok followers, about ${all.tw.toFixed(1)} new Twitch followers and ${all.yt.toFixed(1)} new YouTube subscribers."><rect class="cc-fv-src" x="${N ? 6 : 20}" y="60" width="${sx - (N ? 6 : 20)}" height="130" rx="14"/><text class="cc-fv-n" x="${((N ? 6 : 20) + sx) / 2}" y="128" text-anchor="middle">100</text><text class="cc-fv-src-k" x="${((N ? 6 : 20) + sx) / 2}" y="154" text-anchor="middle">TikTok</text>${tg.map(([k, y, v]) => band(y, v == null ? 2 : Math.min(26, Math.max(3, v * 2.6)), k, v == null)).join('')}${tg.map(([k, y, v, l]) => `<foreignObject x="${tx}" y="${y - 17}" width="36" height="36"><div xmlns="http://www.w3.org/1999/xhtml">${piHtml(k)}</div></foreignObject><text class="cc-fv-n" x="${tx + 44}" y="${y + 4}" ${v == null ? 'style="fill:var(--bt-text-faint)"' : ''}>${v == null ? '—' : '+' + v.toFixed(1)}</text><text class="cc-fv-l" x="${tx + 44}" y="${y + 24}">${N ? { twitch: 'Twitch', youtube: 'YouTube', members: L ? 'members (sample)' : 'from launch' }[k] : l}</text>`).join('')}</svg>`;
-  const eras = [['The grind', 'Aug 2025 – Jan 2026, on schedule', XKEYS.filter((k) => k <= '2026-01')], ['The build', 'Feb – Apr 2026, surprise streams', XKEYS.filter((k) => k >= '2026-02' && !MONTHS[k].sample)]];
+  const eras = [['The grind', 'Aug 2025 – Jan 2026, on schedule', XKEYS.filter((k) => k <= '2026-01')], ['The build', 'Feb – Sep 2026, surprise streams', XKEYS.filter((k) => k >= '2026-02' && !MONTHS[k].sample)]];
   if (L) eras.push(['Back on air', 'Dec 2026 – Mar 2027, sample', sm]);
   const bar = (v, k) => `<span class="cc-xbar" style="--c:var(--cc-${k});--w:${v * 7}%"><em>${NAME[k]}</em><i></i><b>${v.toFixed(1)}</b></span>`;
   $('#ccEraCmp').innerHTML = `<span></span><span class="cc-h">Twitch per 100 TikTok</span><span class="cc-h">YouTube per 100 TikTok</span>` + eras.map(([n, sub, ks]) => { const x = xOf(ks); return `<span><b>${n}</b><br><small style="color:var(--bt-text-faint)">${sub}</small></span>${bar(x.tw, 'twitch')}${bar(x.yt, 'youtube')}`; }).join('');
@@ -5948,7 +5953,7 @@ function flips() {
 /* ================= Ask BOOMBOT ================= */
 const BB = `<svg class="bt-boombot" viewBox="0 0 40 40" aria-hidden="true"><defs><linearGradient id="bbh" x1="0" y1="0" x2="0" y2="1"><stop class="h0" offset="0"/><stop class="h1" offset="1"/></linearGradient></defs><line class="b-ant" x1="20" y1="9" x2="20" y2="4"/><circle class="b-knob" cx="20" cy="3.5" r="2.2"/><rect class="b-ear" x="3.5" y="17" width="4" height="9" rx="1.6"/><rect class="b-ear" x="32.5" y="17" width="4" height="9" rx="1.6"/><rect class="b-head" x="7" y="9" width="26" height="25" rx="8" fill="url(#bbh)"/><rect class="b-visor" x="10.5" y="15" width="19" height="10" rx="5"/><g class="b-eyes"><rect class="b-eye" x="14" y="17.5" width="3.2" height="4.6" rx="1.4"/><rect class="b-eye" x="22.8" y="17.5" width="3.2" height="4.6" rx="1.4"/></g><path class="b-mouth" d="M16 29h8"/></svg>`;
 const QA = [
-  ['Why is there a gap in 2026?', 'Boomer paused scheduled streams in early 2026 to build this website. Surprise streams still happened and are counted. Nothing was recorded between April 20 and launch, so the chart shades that stretch instead of guessing.'],
+  ['Why is there a gap in 2026?', 'Boomer paused scheduled streams in early 2026 to build this website. Surprise streams still happened and are counted. Boomer’s own sheet covers the surprise streams up to September 7. Nothing was recorded after that until the site started counting on its own, so the chart shades that stretch instead of guessing.'],
   ['Are these numbers live?', 'Close to it. Every morning at 5 am Pacific the site reads Twitch, YouTube and TikTok and updates this page. TikTok is typed in by hand until TikTok approves the site\'s app.'],
   ['What counts as a new follower?', 'The change in a platform\'s total during the month, added up across platforms. When a platform is added (YouTube in August 2025), its existing followers are a starting balance, not new ones.'],
   ['Why does YouTube move in steps?', 'Above 1,000 subscribers YouTube only shares rounded counts, so its line climbs in small steps.'],

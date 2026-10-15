@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+docs: Creator Climb spec and mockup take Boomer's stream sheet (May 13 – Sep 7, 2026): the sheet CSV's headers and rules (§3), the gap now Sep 7 – Sep 29 on staging, the new check numbers (§10) and the production seed step (§15); keeps the repo's unknown sign-in group, the month peak shape, the Add an era button and the summit icon
 chore: ignore functions/scripts/data/climb-sheet.csv (Creator Climb's private stream sheet stays local)
 feat(climb): Creator Climb in the Community nav (a summit icon, "Follower growth across every platform"), services/creator-climb.json (Ask pins on The climb so far, Crossover, Month by month; BOOMBOT help), 301 redirects /growth-2025 and /growth-2026 → /climb, design-system §5 .bt-chart and §8ad, ROADMAP workstream 20 and Creator Climb in production
 feat(climb): the Creator Climb card on /admin (a small ridge scene, green admin panels): readings per platform and for site members with Automatic / By hand tags, last rebuild and Rebuild now, month notes, eras, goals (Members included), accounts left out of member counts, and corrections with the mascot empty state; every change goes through climbAdmin
