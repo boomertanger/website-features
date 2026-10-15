@@ -215,8 +215,17 @@ function suggest(g: any) {
   return `<div class="gv-suggest"><span>No cover yet.</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-suggest>${I.image}Suggest a cover</button></div>`;
 }
 
+/** The page strip rates this game (vault-<slug>; docs/specs/game-page-votes.md §2): game pages share one route, so the strip learns
+ *  the game here (scripts/services/strip.ts). A hidden game isn't rateable; the Talk pill stays on Game Vault. */
+function stripTarget(g: any) {
+  const t = { id: `vault-${g.slug}`, name: g.title, version: "", rate: !g.hidden };
+  (window as any).svStripTarget = t;
+  document.dispatchEvent(new CustomEvent("sv:strip-target", { detail: t }));
+}
+
 function render() {
   const g = G;
+  stripTarget(g);
   document.title = `${g.title} · Game Vault · Boomertanger`;
   const hiddenNote = g.hidden ? '<p class="gv-hidden-note">Hidden from the Vault. Only staff can see this page.</p>' : "";
   const top = [hiddenNote, pickBanner(g), suggest(g)].filter(Boolean).join("");

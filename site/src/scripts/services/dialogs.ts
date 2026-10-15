@@ -107,7 +107,8 @@ export async function openRate({ serviceId, start, onSaved, thanks = false }: { 
     keep.focus();
   };
   const showForm = (pick: Pick | "") => {
-    body.innerHTML = rateHtml({ value: pick, commentText: prev?.comment || "", id: "sv-rate" })
+    // a Vault game is rated as a game (docs/specs/game-page-votes.md §2), here and from /services
+    body.innerHTML = rateHtml({ value: pick, commentText: prev?.comment || "", id: "sv-rate", label: s.type === "vaultGame" ? "How do you rate this game?" : "Your rating" })
       + `<p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-sv-save>Save rating</button></div>`;
     const ctl = initRate(body);
     const btn = body.querySelector<HTMLButtonElement>("[data-sv-save]")!;
