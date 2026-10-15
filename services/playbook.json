@@ -1,0 +1,20 @@
+{
+  "id": "playbook",
+  "name": "The Playbook",
+  "type": "adminTool",
+  "area": "Admin",
+  "blurb": "The owner's private living plan, reviewed each month.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "owner",
+  "routes": [
+    "/admin/playbook"
+  ],
+  "nav": null,
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-playbook",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}
