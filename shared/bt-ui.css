@@ -3451,6 +3451,56 @@
 .bt-root:not(#_) .bt-dial--verdict.bt-dial--sm .bt-dial-c b { font-size: 28px; }
 .bt-root:not(#_) .bt-dial--few .few { fill: none; stroke: var(--bt-border-2); stroke-width: 3; stroke-dasharray: 5 7; }
 
+/* ---- .bt-chart: a line chart over time (shared/ui/chart.js; docs/specs/creator-climb.md §12) ----
+   chart(el, opts) draws an SVG into the element: .bt-chart-grid / -yk / -xk ticks, .bt-chart-era bands (+ -era-k labels), .bt-chart-gap hatched
+   untracked time (+ -gap-k), .bt-chart-line[data-k] per series (its colour, width and dash come from the page as --c, --w, --dash: the kit has
+   no feature colours), .bt-chart-end icon slots, the .bt-chart-cross crosshair with .bt-chart-dot, the .bt-chart-tip tooltip (.bt-chart-tip-r rows,
+   small notes for imported or sample points). .has-focus + .is-focus dims every line but one. --mini small multiples. .bt-chart-empty: the
+   mascot. .bt-chart-table: "Show as table" (chartTable()). 16 / 7 (4 / 3.4 at 640), mini 4 / 3. No transitions under reduced motion. */
+.bt-root:not(#_) .bt-chart { position: relative; display: block; width: 100%; aspect-ratio: 16 / 7; outline: none; border-radius: var(--bt-radius-md); touch-action: pan-y; }
+.bt-root:not(#_) .bt-chart--mini { aspect-ratio: 4 / 3; }
+.bt-root:not(#_) .bt-chart:focus-visible { box-shadow: 0 0 0 2px var(--bt-primary); }
+.bt-root:not(#_) .bt-chart > svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bt-chart-grid { stroke: var(--bt-border); stroke-width: 1; }
+.bt-root:not(#_) :is(.bt-chart-yk, .bt-chart-xk) { fill: var(--bt-text-faint); font-family: var(--bt-font); font-size: 11px; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-chart-era { fill: var(--bt-surface); }
+.bt-root:not(#_) .bt-chart-era:nth-of-type(even) { fill: var(--bt-surface-2); opacity: 0.6; }
+.bt-root:not(#_) .bt-chart-era-k { fill: var(--bt-text-faint); font-family: var(--bt-font); font-size: 11px; font-weight: 700; }
+.bt-root:not(#_) .bt-chart-hatch-bg { fill: var(--bt-bg); }
+.bt-root:not(#_) .bt-chart-hatch { stroke: var(--bt-border-2); stroke-width: 3; }
+.bt-root:not(#_) .bt-chart-gap { opacity: 0.7; }
+.bt-root:not(#_) .bt-chart-gap-k { fill: var(--bt-text-muted); font-family: var(--bt-font); font-size: 11px; font-weight: 600; }
+.bt-root:not(#_) .bt-chart-line { fill: none; stroke: var(--c, var(--bt-text-muted)); stroke-width: var(--w, 2.25); stroke-dasharray: var(--dash, none); stroke-linejoin: round; stroke-linecap: round; transition: opacity 0.2s; }
+.bt-root:not(#_) .bt-chart.has-focus .bt-chart-line:not(.is-focus) { opacity: 0.25; }
+.bt-root:not(#_) .bt-chart-dot { fill: var(--c, var(--bt-text-muted)); stroke: var(--bt-bg); stroke-width: 1.5; }
+.bt-root:not(#_) .bt-chart-cross { stroke: var(--bt-text-muted); stroke-width: 1; stroke-dasharray: 3 3; }
+.bt-root:not(#_) .bt-chart-end { pointer-events: none; overflow: visible; }
+.bt-root:not(#_) .bt-chart-end-i { display: grid; place-items: center; width: 22px; height: 22px; border: 1.5px solid var(--c, var(--bt-border-2)); border-radius: 50%; background: var(--bt-bg); color: var(--c, var(--bt-text)); font-size: 9px; font-weight: 800; overflow: hidden; }
+.bt-root:not(#_) .bt-chart-end-i :is(img, svg) { width: 14px; height: 14px; }
+.bt-root:not(#_) .bt-chart-tip { position: absolute; z-index: 3; min-width: 168px; padding: 10px 12px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-md); background: var(--bt-surface-2); box-shadow: var(--bt-shadow-dropdown); font-size: var(--bt-text-sm); opacity: 0; pointer-events: none; transition: opacity 0.12s; }
+.bt-root:not(#_) .bt-chart-tip.is-on { opacity: 1; }
+.bt-root:not(#_) .bt-chart-tip > b { display: block; margin-bottom: 6px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .bt-chart-tip-r { display: flex; align-items: center; gap: 8px; line-height: 1.7; font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-chart-tip-r i { flex: none; width: 10px; height: 3px; border-radius: 2px; background: var(--c, var(--bt-text-muted)); }
+.bt-root:not(#_) .bt-chart-tip-r span { flex: 1; color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-chart-tip-r em { color: var(--bt-lime); font-size: var(--bt-text-xs); font-style: normal; }
+.bt-root:not(#_) .bt-chart-tip-r em[data-up="false"] { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-chart-tip small { display: block; margin-top: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .bt-chart-empty { position: absolute; inset: 0; display: grid; grid-auto-flow: row; justify-items: center; align-content: center; gap: 10px; padding: 20px; text-align: center; }
+.bt-root:not(#_) .bt-chart-empty .bt-mascot { display: block; width: 56px; height: auto; }
+.bt-root:not(#_) .bt-chart-empty p { max-width: 40ch; margin: 0 auto; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.5; }
+.bt-root:not(#_) .bt-chart-table { overflow-x: auto; }
+.bt-root:not(#_) .bt-chart-table[hidden] { display: none; }
+.bt-root:not(#_) .bt-chart-table .bt-table { min-width: 0; }
+.bt-root:not(#_) .bt-chart-num { text-align: right; font-variant-numeric: tabular-nums; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-chart { aspect-ratio: 4 / 3.4; }
+  .bt-root:not(#_) .bt-chart--mini { aspect-ratio: 4 / 3; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-chart-line, .bt-chart-tip) { transition: none; }
+}
+
 /* Command panel */
 .bt-root:not(#_) .bt-cmd { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: var(--bt-z-dropdown); display: flex; flex-direction: column; gap: 2px; max-height: 440px; overflow-y: auto; padding: 8px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface); box-shadow: var(--bt-shadow-dropdown); animation: bt-pop 0.16s var(--bt-ease-glide); }
 @keyframes bt-pop { from { opacity: 0; transform: translateY(-4px); } }
