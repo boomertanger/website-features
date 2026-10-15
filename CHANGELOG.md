@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- chore(service-hub): functions/scripts/verdict-sample.js gives a Vault game a sample members' verdict on staging (three sample-member ratings through the rating trigger; --clean removes them)
 - feat(vault): C1 twin dials on game pages: Boomer's score ("Not played yet" before he scores it) beside the members' verdict from public/serviceVerdicts (dashed below 3 ratings), Rate it scrolls to the strip; on phones the poster is exactly as tall as the two stacked dials
 - feat(service-hub): functions/scripts/backfill-service-verdicts.js fills public/serviceVerdicts once from the Vault game items' totals (dry run by default, staging only)
 - feat(service-hub): public/serviceVerdicts: onServiceRatingWritten keeps each Vault game's members' verdict (love, like, nope) public at 3+ member ratings and removes it below
