@@ -1,0 +1,108 @@
+/* The Playbook, feature CSS (docs/specs/playbook.md §3, §8). Scope pb-. Only the Playbook's own pieces: the hanging-light hero, the review bar, the page
+   chips' dot, the six fenced blocks' layouts (cards, steps, tiers, ladder, flow; rules is the kit's .bt-placard), the prose rhythm, and the flag rows.
+   Everything else is the kit (TocLayout's .bt-toc, .bt-chapter--ghost, .bt-placard, .bt-meter, .bt-badge, .bt-chip, .bt-table, .bt-empty, openModal, toasts)
+   and styles/how-it-works.css (.ai-jr, .ai-sec). One feature colour, declared once: --pb-lamp, the hanging lamp's light (a lamp light, like the firefly:
+   the hero only, never buttons, badges or text). Container queries only; reduced motion stops the lamp's swing and flicker. */
+.bt-root:not(#_) {
+  --pb-lamp: #ffcb78;          /* the hanging lamp's warm light (hero only) */
+}
+
+/* ---------- prose ---------- */
+.bt-root:not(#_) .pb-prose { color: var(--bt-text-muted); font-size: var(--bt-text-lg); line-height: var(--bt-leading-body); max-width: 78ch; }
+.bt-root:not(#_) .pb-prose > * + * { margin-top: 14px; }
+.bt-root:not(#_) .pb-prose :is(p, ul, ol) { margin: 0; }
+.bt-root:not(#_) .pb-prose :is(ul, ol) { padding-left: 22px; }
+.bt-root:not(#_) .pb-prose li + li { margin-top: 6px; }
+.bt-root:not(#_) .pb-prose strong { color: var(--bt-text); }
+.bt-root:not(#_) .pb-prose a { text-decoration: underline; text-underline-offset: 3px; }
+.bt-root:not(#_) .pb-prose :is(.pb-h3, .pb-h4) { margin: 22px 0 0; color: var(--bt-text); font-size: var(--bt-text-xl); font-weight: 800; line-height: 1.3; }
+.bt-root:not(#_) .pb-prose .pb-h4 { font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .pb-prose blockquote { margin: 0; padding: 10px 16px; border-left: 3px solid var(--bt-border-2); color: var(--bt-text-muted); }
+.bt-root:not(#_) .pb-prose code { padding: 1px 6px; border-radius: 6px; background: var(--bt-surface-2); font-size: 0.9em; }
+.bt-root:not(#_) .pb-pre { margin: 0; padding: 14px 16px; overflow-x: auto; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .pb-pre code { padding: 0; background: none; }
+.bt-root:not(#_) .pb-prose > :is(.pb-cards, .pb-tiers, .pb-ladder, .pb-flow, .bt-placard, .ai-jr, .bt-table-wrap) { max-width: none; }
+.bt-root:not(#_) .pb-prose:has(> :is(.pb-cards, .pb-tiers, .pb-flow, .ai-jr, .bt-placard)) { max-width: none; }
+.bt-root:not(#_) .pb-intro { margin-bottom: 8px; }
+
+/* ---------- cards ---------- */
+.bt-root:not(#_) .pb-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+.bt-root:not(#_) .pb-card { display: grid; align-content: start; gap: 6px; padding: 16px; transition: transform 0.2s ease, border-color 0.2s; }
+.bt-root:not(#_) .pb-card:hover { transform: translateY(-2px); border-color: var(--bt-border-2); }
+.bt-root:not(#_) .pb-card-ic { font-size: 26px; line-height: 1; }
+.bt-root:not(#_) .pb-card b { color: var(--bt-text); font-size: var(--bt-text-lg); }
+.bt-root:not(#_) .pb-card p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+
+/* ---------- steps: the shared journey line, sized to its number of steps (--pb-n) ---------- */
+@container bt (min-width: 901px) {
+  .bt-root:not(#_) .ai-jr.pb-steps { grid-template-columns: repeat(var(--pb-n), minmax(0, 1fr)); }
+  .bt-root:not(#_) .ai-jr.pb-steps::before { right: calc((100% - (var(--pb-n) - 1) * 10px) / var(--pb-n) - 29px); }
+  .bt-root:not(#_) .ai-jr.pb-steps::after { width: calc(var(--p) * ((100% - (var(--pb-n) - 1) * 10px) / var(--pb-n) + 10px)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-jr.pb-steps::after { height: calc(var(--p) * (100% - 40px) / max(1, var(--pb-n) - 1)); }
+}
+
+/* ---------- tiers ---------- */
+.bt-root:not(#_) .pb-tiers { display: grid; grid-template-columns: repeat(min(var(--pb-n), 4), minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .pb-tier { position: relative; display: grid; align-content: start; gap: 8px; padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .pb-tier:nth-child(2) { border-color: color-mix(in srgb, var(--bt-blue) 35%, var(--bt-border)); }
+.bt-root:not(#_) .pb-tier:nth-child(3) { border-color: color-mix(in srgb, var(--bt-gold) 35%, var(--bt-border)); }
+.bt-root:not(#_) .pb-tier:nth-child(4) { border-color: color-mix(in srgb, var(--bt-pink) 35%, var(--bt-border)); }
+.bt-root:not(#_) .pb-tier-n { position: absolute; top: 12px; right: 14px; color: var(--bt-text-faint); font-weight: 900; }
+.bt-root:not(#_) .pb-tier h4 { margin: 0; color: var(--bt-text); font-size: var(--bt-text-lg); font-weight: 800; }
+.bt-root:not(#_) .pb-tier ul { margin: 0; padding-left: 18px; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+
+/* ---------- ladder ---------- */
+.bt-root:not(#_) .pb-ladder { position: relative; display: grid; gap: 8px; margin: 0; padding: 0 0 0 22px; list-style: none; }
+.bt-root:not(#_) .pb-ladder::before { content: ""; position: absolute; left: 7px; top: 12px; bottom: 12px; width: 2px; background: var(--bt-border-2); }
+.bt-root:not(#_) .pb-rung { position: relative; display: grid; grid-template-columns: 36px minmax(0, 1fr) auto; align-items: center; gap: 12px; padding: 12px 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-surface); }
+.bt-root:not(#_) .pb-rung::before { content: ""; position: absolute; left: -20px; top: 50%; width: 10px; height: 10px; margin-top: -5px; border-radius: 50%; background: var(--bt-border-2); box-shadow: 0 0 0 3px var(--bt-bg); }
+.bt-root:not(#_) .pb-rung.is-now { border-color: rgba(var(--bt-gold-rgb), 0.6); background: radial-gradient(90% 100% at 0% 50%, rgba(var(--bt-gold-rgb), 0.1), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .pb-rung.is-now::before { background: var(--bt-title); }
+.bt-root:not(#_) .pb-rung-n { display: grid; place-items: center; width: 32px; height: 32px; border-radius: 50%; background: var(--bt-surface-2); color: var(--bt-text); font-weight: 900; }
+.bt-root:not(#_) .pb-rung-t { display: grid; gap: 2px; min-width: 0; }
+.bt-root:not(#_) .pb-rung-t b { color: var(--bt-text); }
+.bt-root:not(#_) .pb-rung-t span { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.45; }
+
+/* ---------- flow: the "how it fits" diagram ---------- */
+.bt-root:not(#_) .pb-flow { display: flex; flex-wrap: wrap; align-items: stretch; gap: 8px; }
+.bt-root:not(#_) .pb-flow-node { flex: 1 1 160px; display: grid; align-content: start; gap: 4px; padding: 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .pb-flow-node.is-goal { border-color: rgba(var(--bt-gold-rgb), 0.6); background: radial-gradient(90% 80% at 50% 0%, rgba(var(--bt-gold-rgb), 0.12), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .pb-flow-ic { font-size: 22px; line-height: 1; }
+.bt-root:not(#_) .pb-flow-node b { color: var(--bt-text); }
+.bt-root:not(#_) .pb-flow-node span:last-child { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .pb-flow-arr { flex: 0 0 18px; align-self: center; height: 2px; position: relative; background: var(--bt-border-2); }
+.bt-root:not(#_) .pb-flow-arr::after { content: ""; position: absolute; right: -1px; top: -4px; width: 8px; height: 8px; border-top: 2px solid var(--bt-border-2); border-right: 2px solid var(--bt-border-2); transform: rotate(45deg); }
+
+/* ---------- flags (the "What we assumed" chapter, the flags page) ---------- */
+.bt-root:not(#_) .pb-flags { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .pb-flag { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: start; gap: 12px; padding: 12px 14px; border: 1px solid var(--bt-border); border-left-width: 3px; border-radius: var(--bt-radius-md); background: var(--bt-surface); }
+.bt-root:not(#_) .pb-flag--open { border-left-color: var(--bt-blue); }
+.bt-root:not(#_) .pb-flag--assumed { border-left-color: var(--bt-gold); }
+.bt-root:not(#_) .pb-flag--confirmed { border-left-color: var(--bt-lime); opacity: 0.85; }
+.bt-root:not(#_) .pb-flag-body { display: grid; gap: 6px; min-width: 0; }
+.bt-root:not(#_) .pb-flag-body p { margin: 0; color: var(--bt-text); line-height: 1.5; }
+.bt-root:not(#_) .pb-flag-answer { color: var(--bt-text-muted); }
+.bt-root:not(#_) .pb-flag-page { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .pb-flag-acts { display: flex; gap: 6px; }
+.bt-root:not(#_) .pb-assumed-sum { margin: 0 0 12px; color: var(--bt-text-muted); }
+
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .pb-tiers { grid-template-columns: repeat(min(var(--pb-n), 2), minmax(0, 1fr)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pb-tiers { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .pb-flow { flex-direction: column; }
+  .bt-root:not(#_) .pb-flow-node { flex: none; }
+  .bt-root:not(#_) .pb-flow-arr { flex: 0 0 14px; width: 2px; height: 14px; align-self: center; }
+  .bt-root:not(#_) .pb-flow-arr::after { right: -4px; top: auto; bottom: -1px; transform: rotate(135deg); }
+  .bt-root:not(#_) .pb-flag { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .pb-flag-st { justify-self: start; }
+  .bt-root:not(#_) .pb-rung { grid-template-columns: 32px minmax(0, 1fr); }
+  .bt-root:not(#_) .pb-rung > .bt-badge { grid-column: 2; justify-self: start; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .pb-card { transition: none; }
+  .bt-root:not(#_) .pb-card:hover { transform: none; }
+}

@@ -18,7 +18,9 @@
   },
   "dependencies": {
     "astro": "^7.3.5",
-    "firebase": "^12.19.0"
+    "dompurify": "3.4.16",
+    "firebase": "^12.19.0",
+    "marked": "18.0.14"
   },
   "devDependencies": {
     "playwright-core": "^1.57.0"
