@@ -5486,7 +5486,8 @@
 /* ================= Service Hub pieces (docs/specs/service-hub.md §12; design-system.md §5 "Service Hub pieces"; mockups service-hub-round-1.html, service-hub-how-it-works.html) =================
    .bt-rate            the three-button rating control (R1): .bt-rate-btn[data-v=nope|like|love][aria-checked] with a one-line hint (small); the comment field under it
                        (.bt-rate-field) turns required in place for Not for me ([data-required="true"] shows .bt-rate-req), .is-error marks it. shared/ui/rate.js.
-   .bt-talkback        the page strip, compact (V5 "Talk word pill" + S1, Oct 14, 2026): one row, about 56px on a phone. .bt-talkback-q ("Rate it"),
+   .bt-talkback        the page strip, compact (V5 "Talk word pill" + S1, Oct 14, 2026): one row, about 56px on a phone. .bt-talkback-q, the label, by the
+                       bt container's width: .bt-talkback-q-l "Rate this page" (420px and up), -q-m "Rate page" (340-419px), -q-s "Rate it" (below 340px);
                        .bt-talkback-rates (role=group "Rate {name}") of three icon-only .bt-talkback-rb[data-v][aria-pressed] (gold, blue, pink), and the purple
                        .bt-talkback-talk pill (S1 icon + "Talk"). data-rate="off" leaves out the buttons; no pill for talkBack "rate". At 345px and below the
                        buttons go 40 -> 36px and the gaps tighten (fits 320). shared/ui/talkback.js.
@@ -5524,6 +5525,7 @@
 /* .bt-talkback: the page strip, compact (V5 + S1; docs/design/mockups/page-strip-compact.html) */
 .bt-root:not(#_) .bt-talkback { display: flex; align-items: center; gap: 8px; padding: 7px 8px 7px 14px; border-radius: 16px; border: 1px solid var(--bt-border); background: var(--bt-surface); }
 .bt-root:not(#_) .bt-talkback-q { flex: 1; min-width: 0; font-weight: 800; font-size: 15px; color: var(--bt-text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bt-root:not(#_) :is(.bt-talkback-q-m, .bt-talkback-q-s) { display: none; }   /* one label at a time, by width (below) */
 .bt-root:not(#_) .bt-talkback-rates { display: inline-flex; gap: 6px; flex: none; }
 .bt-root:not(#_) .bt-talkback-rb { --rt: var(--bt-text-muted); width: 40px; height: 40px; flex: none; display: grid; place-items: center; padding: 0; border-radius: 50%; border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--rt); cursor: pointer; transition: transform 0.15s, background 0.15s, border-color 0.15s; }
 .bt-root:not(#_) .bt-talkback-rb svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.2s cubic-bezier(0.3, 1.6, 0.4, 1); }
@@ -5535,6 +5537,14 @@
 .bt-root:not(#_) .bt-talkback-talk svg { width: 18px; height: 18px; flex: none; }
 .bt-root:not(#_) .bt-talkback-talk:hover { border-color: var(--bt-primary); background: color-mix(in srgb, var(--bt-primary) 26%, var(--bt-bg)); color: var(--bt-text); }
 .bt-root:not(#_) :is(.bt-talkback-rb, .bt-talkback-talk):focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+@container bt (max-width: 419px) {
+  .bt-root:not(#_) .bt-talkback-q-l { display: none; }
+  .bt-root:not(#_) .bt-talkback-q-m { display: inline; }
+}
+@container bt (max-width: 339px) {
+  .bt-root:not(#_) .bt-talkback-q-m { display: none; }
+  .bt-root:not(#_) .bt-talkback-q-s { display: inline; }
+}
 @container bt (max-width: 345px) {
   .bt-root:not(#_) .bt-talkback { gap: 6px; padding-left: 12px; }
   .bt-root:not(#_) .bt-talkback-rates { gap: 4px; }

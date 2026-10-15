@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(service-hub): the page strip's label is "Rate this page" (420px and up), "Rate page" (340-419px) or "Rate it" (below 340px), by container width
 - fix(kit): closing a dialog puts the page back where it was (openModal's scroll lock saves and restores the scroll position, focus returns without scrolling) and tapping outside closes on the click, so it no longer falls through to the page
 - feat(service-hub): compact page strip (V5 "Talk word pill" + S1): one row with "Rate it", three icon-only rating buttons and the purple Talk pill (opens Talk Back in Question mode); the thanks toast after a rating; 36px buttons at 345px and below
 - feat(hotline): Talk Back switched on for staging (talkBack in site.json modules); docs/testing/talk-back-test-plan.md; talk-back.md §1 as built; ROADMAP (Part A built, B and C next) and the production launch items

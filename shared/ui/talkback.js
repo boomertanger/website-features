@@ -1,6 +1,6 @@
 // shared/ui/talkback.js — .bt-talkback, the page strip, and .bt-ask-pin (docs/specs/service-hub.md §8a, §12; design-system.md §5 "Service Hub pieces", §8aa).
 // The compact strip (V5 "Talk word pill" + S1 symbol, docs/design/mockups/page-strip-compact.html, Oct 14, 2026): one row at the end of an included
-// feature page: "Rate it", three icon-only rating buttons (Not for me, Like it, Love it) in a role="group" named "Rate {name}", and on the right the
+// feature page: the label ("Rate this page", "Rate page" or "Rate it" by width: three spans, one shown), three icon-only rating buttons (Not for me, Like it, Love it) in a role="group" named "Rate {name}", and on the right the
 // purple "Talk" pill (speech bubble with dots) that opens Talk Back in Question mode (Feedback is a switch inside the dialog).
 //
 //   talkbackHtml({ service, name, state, rating, talk, rate })
@@ -26,7 +26,7 @@ export function talkbackHtml({ service = "", name = "this page", state = "new", 
     const act = visitor ? 'data-signin="join" data-signin-title="Join free to rate"' : `data-rate-v="${v}" aria-pressed="${mine === v}"`;
     return `<button type="button" class="bt-talkback-rb" data-v="${v}" ${act} aria-label="${esc(label)}" title="${esc(tip)}">${RATE_ICON[v]}</button>`;
   };
-  const rateRow = rate ? `<span class="bt-talkback-q">Rate it</span><span class="bt-talkback-rates" role="group" aria-label="${esc(`Rate ${name}`)}">${RATE_VALUES.map(btn).join("")}</span>` : `<span class="bt-talkback-q">Questions or feedback?</span>`;
+  const rateRow = rate ? `<span class="bt-talkback-q"><span class="bt-talkback-q-l">Rate this page</span><span class="bt-talkback-q-m">Rate page</span><span class="bt-talkback-q-s">Rate it</span></span><span class="bt-talkback-rates" role="group" aria-label="${esc(`Rate ${name}`)}">${RATE_VALUES.map(btn).join("")}</span>` : `<span class="bt-talkback-q">Questions or feedback?</span>`;
   const pill = talk ? `<button type="button" class="bt-talkback-talk" data-talk="question" aria-label="Talk back: ask a question or give feedback" title="Talk back">${TALK_ICON}Talk</button>` : "";
   return `<section class="bt-talkback" role="region" aria-label="${esc(`Rate or talk about ${name}`)}" data-service="${esc(service)}"${rate ? "" : ' data-rate="off"'}>${rateRow}${pill}</section>`;
 }

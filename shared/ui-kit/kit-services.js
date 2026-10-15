@@ -41,7 +41,7 @@ export function servicesKitHtml({ mascotHtml = "" } = {}) {
         </div>
 
         <h3 class="kit-sub">The page strip (.bt-talkback)</h3>
-        <p class="kit-p">Compact (V5 "Talk word pill" + S1, Oct 14, 2026; <span class="kit-code">docs/design/mockups/page-strip-compact.html</span>): one row, "Rate it", three icon-only buttons in a group named "Rate {name}" (each with an aria-label and title), and the purple Talk pill that opens Talk Back in Question mode. After a rating the toast says "Thanks! Only Boomer and the admins see ratings." Narrow the frame to Phone: at 345px and below the buttons shrink to 36px. Tap the buttons to see the pressed state.</p>
+        <p class="kit-p">Compact (V5 "Talk word pill" + S1, Oct 14, 2026; <span class="kit-code">docs/design/mockups/page-strip-compact.html</span>): one row, the label ("Rate this page" at 420px and up, "Rate page" from 340px, "Rate it" below 340px: switch the frame to Phone to see "Rate page"), three icon-only buttons in a group named "Rate {name}" (each with an aria-label and title), and the purple Talk pill that opens Talk Back in Question mode. After a rating the toast says "Thanks! Only Boomer and the admins see ratings." Narrow the frame to Phone: at 345px and below the buttons shrink to 36px. Tap the buttons to see the pressed state.</p>
         ${sub("Note (talkBack \"note\"): member, not rated yet")}${tb({ state: "new" })}
         ${sub("Pins (talkBack \"pins\"): the same strip; the Ask pins sit on the page's section heads (below)")}${tb({ state: "new" })}
         ${sub("Rate (talkBack \"rate\", /contact): no Talk pill")}${tb({ state: "new", talk: false })}
