@@ -2,7 +2,7 @@
 // /base-camp: the story of Boomertanger (docs/specs/base-camp.md "Page 1"; mockup docs/design/mockups/base-camp.html, round 4: W1, H1 The climb,
 // playing cards, E1 stage cards). A story page in the full frame: the BASECAMP bar, TocLayout rail, the hero (the climb: five waypoints link to the
 // chapters, the mascot and the painted sleeping Skipper by the fire), then five ghost-numbered chapters: 01 The personality behind the pixels,
-// 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (four stops, the story panel, Then and now), 04 His
+// 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (five stops, the story panel, Then and now), 04 His
 // edge (Top 5 as E1 stage cards), 05 Base Camp and beyond (trails, the Mail Call teaser, Ask BOOMBOT), and the closing call.
 // Public text: src/data/base-camp.json. The Fan Club text (card backs, stop stories, chapter 5's paragraph) loads in the browser from
 // sites/boomertanger/memberContent/base-camp for members only (scripts/base-camp/story.ts); the page HTML carries none of it.
@@ -24,6 +24,7 @@ const chapter = (i: number) => {
 const fmt = (n: number) => n.toLocaleString("en-US");
 const then = data.then;
 const PLATS = [["twitch", "Twitch"], ["tiktok", "TikTok"], ["youtube", "YouTube"]] as const;
+const CRANE = `<svg class="bc-crane" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 15 V3 H14 M3 3 L7 7 M10 3 V8"/><path d="M8.5 8 h3 v2 h-3 Z"/><line x1="1" y1="15" x2="6" y2="15"/></svg>`;
 const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 ---
 <BaseCampLayout title="Base Camp" section="story" description="Who Boomer is and how it all started: the personality behind the pixels, the climb from an island to three platforms, and why his horror streams work.">
@@ -73,14 +74,20 @@ const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true
 
         <section class="bc-ch" id={CH[2].id} aria-labelledby={`h-${CH[2].id}`}>
           <Fragment set:html={chapter(2)} />
-          <ol class="ai-jr ai-jr--4 bc-jr" data-journey>
-            {data.stops.map((s, i) => (
-              <li tabindex="0" class={i === 0 ? "is-sel" : ""} aria-label={`${s.title}, ${s.yr}. ${s.tease}`}>
-                <span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{s.ic}</span>
-                <span class="bc-yr">{s.yr}</span><b>{s.title}</b><span class="ai-jr-t">{s.tease}</span>
-              </li>
-            ))}
-          </ol>
+          <div class="bc-jrwrap" data-bc-jrwrap>
+            <ol class="ai-jr bc-jr bc-jr5" data-journey>
+              {data.stops.map((s, i) => {
+                const tease = "teaseNoData" in s ? s.teaseNoData : s.tease;
+                return (
+                  <li tabindex="0" class={i === 0 ? "is-sel" : ""} data-stop={s.key} aria-label={`${s.title}, ${s.yr}. ${tease}`}>
+                    <span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{s.ic}</span>
+                    <span class="bc-yr">{s.yr}</span><b>{s.title}</b><span class="ai-jr-t" data-bc-tease>{tease}</span>
+                    {"tag" in s && s.tag && <span class="bt-badge bt-badge--gold bc-s5-tag" data-bc-s5-tag><Fragment set:html={CRANE} />{s.tag.building}</span>}
+                  </li>
+                );
+              })}
+            </ol>
+          </div>
           <div data-bc-stop aria-live="polite"></div>
           <h3 class="bt-heading bc-sub">Then and now</h3>
           <div class="bc-then" data-bc-then>

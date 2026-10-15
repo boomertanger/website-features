@@ -5,7 +5,7 @@
 //
 // Reads functions/scripts/data/base-camp-member.json (gitignored while the repo is public; start from base-camp-member.sample.json) and writes
 // up to TWO docs, each replaced as a whole (the file is the source):
-//   sites/boomertanger/memberContent/base-camp   sides { character, streamer, professional }, stops { island, engineering, gaming, rise }, beyond,
+//   sites/boomertanger/memberContent/base-camp   sides { character, streamer, professional }, stops { island, engineering, gaming, rise, build }, beyond,
 //                                                updatedAt
 //   sites/boomertanger/memberContent/mail        to, lines[], updatedAt, from the file's "mail" block. Refused (and the rest still written) while
 //                                                "to" or any line still contains REPLACE_ME: the owner types the address into the file himself.
@@ -21,7 +21,7 @@ const path = require("path");
 
 const BASE = "sites/boomertanger/memberContent";
 const SIDES = ["character", "streamer", "professional"];
-const STOPS = ["island", "engineering", "gaming", "rise"];
+const STOPS = ["island", "engineering", "gaming", "rise", "build"];   // build: stage 5 (Addendum 3); its {all-10000.value} / {all-10000.day} are filled on the page from public/climb
 const MAX_TEXT = 4000, MAX_LINES = 6, MAX_LINE = 120;
 
 function parseArgs(argv) {

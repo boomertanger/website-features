@@ -29,9 +29,10 @@
     { "key": "island", "ic": "🏝", "title": "Island beginnings", "yr": "Newfoundland", "tease": "A close family, an RV and a swimming pool.", "link": { "label": "Visit Newfoundland", "href": "/base-camp/newfoundland" } },
     { "key": "engineering", "ic": "🎓", "title": "Engineering the future", "yr": "1996 to 2000", "tease": "Computer science, then Minnesota." },
     { "key": "gaming", "ic": "🕹", "title": "Gaming roots", "yr": "ColecoVision to 2023", "tease": "From a ColecoVision to a first stream." },
-    { "key": "rise", "ic": "📈", "title": "The rise", "yr": "2024 to 2025", "tease": "Granny, a son in chat, and three platforms." }
+    { "key": "rise", "ic": "📈", "title": "The rise", "yr": "2024 to 2025", "tease": "Granny, a son in chat, and three platforms." },
+    { "key": "build", "ic": "🏗", "title": "The build", "yr": "2026", "tease": "Stream schedule paused, a website took shape, and {all-10000.value} anyway.", "teaseNoData": "Stream schedule paused, and a website took shape.", "tag": { "building": "Under construction", "back": "Back on air" } }
   ],
-  "stopsLock": { "title": "Read the whole climb", "text": "Every stop on the trail, from Newfoundland to the Granny Gauntlet, is in the Fan Club. It's free." },
+  "stopsLock": { "title": "Read the whole climb", "text": "Every stop on the trail, from Newfoundland to the build, is in the Fan Club. It's free." },
   "then": { "date": "September 30, 2025", "total": 5753, "twitch": 514, "tiktok": 4688, "youtube": 552 },
   "edge": [
     { "title": "He loves horror. It gets him every time.", "text": "Games, movies, the slow build and the jump. He's a lifelong fan and he still screams. That's the fun of it.", "scene": "scream", "tone": "blood" },

@@ -9,7 +9,8 @@
     "island": "Sample text. The full story of the first stop on the trail. The real text is in the member file.",
     "engineering": "Sample text. The full story of the second stop on the trail. The real text is in the member file.",
     "gaming": "Sample text. The full story of the third stop on the trail. The real text is in the member file.",
-    "rise": "Sample text. The full story of the fourth stop on the trail. The real text is in the member file."
+    "rise": "Sample text. The full story of the fourth stop on the trail. The real text is in the member file.",
+    "build": "Sample text. The full story of the fifth stop, The build. On {all-10000.day} the channel passed {all-10000.value} followers. The real text is in the member file."
   },
   "beyond": "Sample text. Chapter 5's full paragraph about what's next. The real text is in the member file.",
   "mail": {

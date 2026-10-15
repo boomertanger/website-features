@@ -1,6 +1,8 @@
 // site/src/scripts/base-camp/story.ts — /base-camp (docs/specs/base-camp.md "Page 1"). Wires the built page: the How it works behaviour (the
-// journey's line, BOOMBOT's chat), the playing cards (tap turns one over; a holo sheen follows the pointer), the four stops (hover lights the line,
-// a click or Enter picks the stop the story panel tells), Then and now (September 30, 2025 rolls up to today's live total from
+// journey's line, BOOMBOT's chat), the playing cards (tap turns one over; a holo sheen follows the pointer), the five stops (hover lights the line,
+// a click or Enter picks the stop the story panel tells; at 900px and narrower the row scrolls sideways and the picked stop is scrolled into
+// view; stage 5 "The build" fills its line and its Fan Club panel from public/climb's all-10000 milestone, and its tag turns from "Under
+// construction" to "Back on air" once Creator Climb's Back on air era has started: climb.ts), Then and now (September 30, 2025 rolls up to today's live total from
 // sites/boomertanger/public/socials when it's seen; a platform with no count is hidden; none at all leaves the 2025 total alone, with its date),
 // the E1 stage cards (stage.ts), and the Fan Club parts from memberContent/base-camp (member.ts): card backs, the full stop stories and chapter
 // 5's paragraph for members, lock cards for everyone else. Member text is escaped and never written into the page HTML at build time.
@@ -10,6 +12,7 @@ import { onMemberDoc, type StoryDoc, type MemberState } from "./member";
 import { initStageCards } from "./stage";
 import { esc, lockCard, RM } from "./ui";
 import { suitSvg } from "./story-art";
+import { loadClimb, fill, dropUnfilled, backOnAir, type Climb } from "./climb";
 import data from "../../data/base-camp.json";
 
 const page = document.querySelector<HTMLElement>("[data-bc-story]");
@@ -31,17 +34,27 @@ function init(root: HTMLElement) {
   const stops = jr ? [...jr.querySelectorAll<HTMLElement>("li")] : [];
   let sel = 0;
   let member: MemberState<StoryDoc> = { status: "loading", doc: null, preview: false };
+  let climb: Climb | null = null;
+  const wrap = root.querySelector<HTMLElement>("[data-bc-jrwrap]");
+  /** At 900px and narrower the row scrolls sideways: bring the picked stop into view (only when the row actually scrolls). */
+  const reveal = (li: HTMLElement) => {
+    if (!wrap || wrap.scrollWidth <= wrap.clientWidth + 1) return;
+    const left = li.offsetLeft - parseFloat(getComputedStyle(wrap).paddingLeft || "0");
+    wrap.scrollTo({ left: Math.max(0, left), behavior: RM() ? "auto" : "smooth" });
+  };
   const showStop = () => {
     stops.forEach((li, i) => li.classList.toggle("is-sel", i === sel));
     const panel = root.querySelector<HTMLElement>("[data-bc-stop]");
     if (!panel) return;
     const st = data.stops[sel];
     if (member.status !== "member") { panel.innerHTML = lockCard(member, data.stopsLock.title, data.stopsLock.text, "#bc-ch3"); return; }
-    const text = member.doc?.stops?.[st.key];
+    const raw = member.doc?.stops?.[st.key];
+    // stage 5's numbers and date come from public/climb; a sentence it can't fill is left out, never shown with a gap or a guess
+    const text = raw ? dropUnfilled(raw, climb) : raw;
     panel.innerHTML = `<div class="bc-story"><div><h3>${esc(st.title)}</h3><p>${text ? esc(text) : "Boomer's telling of this stop is on the way."}</p></div><div class="bc-story-side"><span class="bt-badge bt-badge--gold">${esc(st.yr)}</span>${st.link ? `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(st.link.href)}">${esc(st.link.label)}</a>` : ""}${member.preview ? `<span class="bt-badge bt-badge--gray">Sample text</span>` : ""}</div></div>`;
   };
   stops.forEach((li, i) => {
-    const pick = () => { sel = i; showStop(); };
+    const pick = () => { sel = i; showStop(); reveal(li); };
     li.addEventListener("click", pick);
     li.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); pick(); } });
   });
@@ -76,6 +89,19 @@ function init(root: HTMLElement) {
         ? `<p>${m.doc?.beyond ? esc(m.doc.beyond) : esc(data.beyond.opener)}</p>${m.preview ? `<span class="bt-badge bt-badge--gray">Sample text</span>` : ""}`
         : `<p>${esc(data.beyond.opener)}</p>${lockCard(m, data.beyond.lock.title, data.beyond.lock.text, "#bc-ch5")}`;
     }
+  });
+
+  // ---- stage 5: its line and its tag from public/climb ----
+  void loadClimb().then((c) => {
+    climb = c;
+    const st = data.stops.find((x) => x.key === "build") as (typeof data.stops)[number] & { tag?: { building: string; back: string } };
+    const li = root.querySelector<HTMLElement>('[data-stop="build"]');
+    if (!st || !li) return;
+    const line = c ? fill(st.tease, c) : null;
+    if (line) { li.querySelector<HTMLElement>("[data-bc-tease]")!.textContent = line; li.setAttribute("aria-label", `${st.title}, ${st.yr}. ${line}`); }
+    const tag = li.querySelector<HTMLElement>("[data-bc-s5-tag]");
+    if (tag && st.tag && backOnAir(c)) { tag.className = "bt-badge bt-badge--lime bc-s5-tag"; tag.textContent = st.tag.back; }
+    if (sel === stops.indexOf(li)) showStop();
   });
 
   // ---- Then and now ----

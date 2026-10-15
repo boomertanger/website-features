@@ -77,7 +77,30 @@
   .bt-root:not(#_) .bc-hand .bc-pcard:nth-child(n) { transform: none; }
 }
 
-/* ---------- Chapter 3: the four stops (the kit's .ai-jr--4) + the story panel ---------- */
+/* ---------- Chapter 3: the five stops (option B, Addendum 3) + the story panel ----------
+   One row on desktop (the line and numbers of the kit's .ai-jr, five columns); at 900px and narrower the row scrolls sideways
+   (scroll-snap, the picked stop scrolled into view by story.ts) and keeps the horizontal line and the numbers. */
+.bt-root:not(#_) .ai-jr.bc-jr5 { grid-template-columns: repeat(5, minmax(0, 1fr)); row-gap: 10px; }
+.bt-root:not(#_) .ai-jr.bc-jr5::before, .bt-root:not(#_) .ai-jr.bc-jr5::after { display: block; }
+.bt-root:not(#_) .ai-jr.bc-jr5::before { right: calc((100% - 40px) / 5 - 29px); }
+.bt-root:not(#_) .ai-jr.bc-jr5::after { width: calc(var(--p) * ((100% - 40px) / 5 + 10px)); }
+.bt-root:not(#_) .bc-s5-tag { display: inline-flex; align-items: center; gap: 5px; width: fit-content; max-width: 100%; margin-top: 6px; white-space: normal; line-height: 1.25; text-align: left; }
+.bt-root:not(#_) .ai-jr.bc-jr5 li { min-width: 0; }
+.bt-root:not(#_) .bc-crane { width: 14px; height: 14px; flex: none; }
+.bt-root:not(#_) .bc-crane :is(path, line) { fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .bc-jr5 li.is-glow { box-shadow: 0 0 0 3px var(--bt-lime), 0 0 30px color-mix(in srgb, var(--bt-lime) 70%, transparent); transition: box-shadow 0.4s; }
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .bc-jrwrap { overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; margin: 0 calc(var(--bt-gutter) * -1); padding: 0 var(--bt-gutter) 10px; mask-image: linear-gradient(90deg, var(--bt-bg) 82%, transparent); }
+  .bt-root:not(#_) .bc-jrwrap::-webkit-scrollbar { display: none; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 { width: 930px; grid-template-columns: repeat(5, 178px); gap: 10px; margin: 58px 0 0; padding: 0; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5::before, .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5::after { display: block; top: -29px; left: 29px; bottom: auto; height: 2px; margin-top: -1px; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5::before { right: 160px; width: auto; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5::after { width: calc(var(--p) * 188px); transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 li { padding: 16px 14px 14px; scroll-snap-align: start; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 li::before { display: block; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 .ai-jr-num { top: -44px; left: 14px; margin-top: 0; }
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 li.is-on { transform: translateY(-4px); }
+}
 .bt-root:not(#_) .bc-jr li { cursor: pointer; }
 .bt-root:not(#_) .bc-jr li.is-sel { border-color: rgba(var(--bt-gold-rgb), 0.55); }
 .bt-root:not(#_) .bc-jr .bc-yr { color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 800; }
@@ -223,6 +246,8 @@
 @keyframes bc-dash { to { stroke-dashoffset: 0; } }
 
 @media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 li.is-on { transform: none; }
+  .bt-root:not(#_) :is(.bc-jrwrap .ai-jr.bc-jr5::after, .bc-jr5 li.is-glow) { transition: none; }
   .bt-root:not(#_) :is(.bc-pcard, .bc-pcard *, .bc-plat-bar i, .bc-mascot-card .bt-mascot, .s-wp circle) { animation: none !important; transition: none !important; }
   .bt-root:not(#_) .bc-hand .bc-pcard:nth-child(n) { transform: none; }
 }

@@ -12,7 +12,7 @@ import { isProduction } from "../../lib/env.js";
 export type MemberDocId = "base-camp" | "mail";
 export interface StoryDoc {
   sides?: Record<string, string>;      // character, streamer, professional: the backs of the three cards
-  stops?: Record<string, string>;      // island, engineering, gaming, rise: the full stop stories
+  stops?: Record<string, string>;      // island, engineering, gaming, rise, build: the full stop stories (build has {all-10000.*} placeholders)
   beyond?: string;                     // chapter 5's full paragraph
 }
 export interface MailDoc { to?: string; lines?: string[] }
