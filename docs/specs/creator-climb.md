@@ -307,9 +307,9 @@ with eras and a gap, focused series, and the table.
 
 ## 13. Colors (P1 Night lamps, `site/src/styles/creator-climb.css`, `cc-` prefix)
 
-`--cc-all: var(--bt-title)`, `--cc-twitch: var(--cc-twitch-brand)` (#9146ff), `--cc-tiktok:
-var(--bt-pink)`, `--cc-youtube: var(--cc-youtube-brand)` (#ff0000), `--cc-members: var(--bt-teal)`.
-The two brand colors are declared once at the top of the feature CSS and color **data marks
+`--cc-all: var(--bt-title)`, `--cc-twitch: var(--cc-twitch-brand)` (the kit's `--bt-brand-twitch`, #9146FF), `--cc-tiktok:
+var(--bt-pink)`, `--cc-youtube: var(--cc-youtube-brand)` (the kit's `--bt-brand-youtube`, #FF0033), `--cc-members: var(--bt-teal)`.
+The two brand colors point at the kit tokens (no new hex values) and color **data marks
 only**: chart lines and dots, legend swatches, the goal meter fill, crossover bands and bars,
 record mini charts, the pace chart and stage-card sparklines (design-system §8ae). Never a button,
 link, chip background, border or focus ring: elsewhere purple still means clickable and red means

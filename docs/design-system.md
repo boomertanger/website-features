@@ -1927,9 +1927,9 @@ Spec `docs/specs/creator-climb.md`; mockup `docs/design/mockups/creator-climb.ht
 - **Scrub the climb.** Drag along the ridge, or use the arrow keys, Home and Esc, to read the total at the end of any month.
 - **P1 Night lamps colours,** declared once in `creator-climb.css`:
   - Combined: title.
-  - Twitch: its brand purple, #9146ff (data marks only, §8ae; was ice).
+  - Twitch: its brand purple, `--bt-brand-twitch` #9146ff (data marks only, §8ae; was ice).
   - TikTok: pink.
-  - YouTube: its brand red, #ff0000 (data marks only, §8ae; was fuse).
+  - YouTube: its brand red, `--bt-brand-youtube` #ff0033 (data marks only, §8ae; was fuse).
   - Members: teal.
   - The brand purple and red stay on data marks; nothing clickable takes them (§8ae). The official platform icon at each line's end carries the meaning.
 - **Members as their own climb.** Site members are a separate line, a separate total and separate milestones. They are never added into the combined follower total.
@@ -1943,6 +1943,6 @@ Spec `docs/specs/creator-climb.md`; mockup `docs/design/mockups/creator-climb.ht
 
 ### 8ae. Platform brand colors and records
 Recorded Oct 15, 2026 (Creator Climb round 2):
-- Platform brand colors (Twitch #9146FF, YouTube #FF0000) may color data marks only (lines, bars, dots, meter fills, legend swatches). Never anything clickable: elsewhere purple still means clickable and red still means it destroys data.
+- Platform brand colors (Twitch #9146FF, YouTube #FF0033) may color data marks only (lines, bars, dots, meter fills, legend swatches). Never anything clickable: elsewhere purple still means clickable and red still means it destroys data.
 - Records and stats never use medal or badge visuals. Medal-style visuals are reserved for badges people can earn.
-- Creator Climb declares them once as `--cc-twitch-brand` / `--cc-youtube-brand` in `site/src/styles/creator-climb.css`; its records are R2 tiles (plain stats as buttons, a small chart, purple border on hover and focus), not `.bt-flip` medals.
+- Creator Climb points `--cc-twitch-brand` / `--cc-youtube-brand` (in `site/src/styles/creator-climb.css`) at the kit tokens `--bt-brand-twitch` / `--bt-brand-youtube`, never new hex values; its records are R2 tiles (plain stats as buttons, a small chart, purple border on hover and focus), not `.bt-flip` medals.

@@ -1,13 +1,13 @@
 /* Creator Climb (docs/specs/creator-climb.md §6, §13; mockup docs/design/mockups/creator-climb.html: hero H1-D Summit camp, colours P1 Night
-   lamps). Feature CSS, cc- prefix, tokens only. The line colours are declared once here. Twitch and YouTube use their brand colours
+   lamps). Feature CSS, cc- prefix, tokens only. The line colours are declared once here. Twitch and YouTube use their brand colours from the kit (--bt-brand-twitch, --bt-brand-youtube)
    (design-system §8ae): on data marks ONLY (chart lines and dots, legend swatches, the goal meter fill, crossover bands and bars, record and
    pace charts, stage sparklines), never on anything clickable (a button, link, chip background, border or focus ring), where purple still
    means clickable and red means it destroys data. The platform icon at a line's end carries the meaning. Components (.bt-chart, .bt-path, .bt-lock-card, .bt-meter,
    .bt-chat, .bt-card, .bt-chip, .bt-tag) come from shared/bt-ui.css untouched. Container queries only; reduced motion respected. */
 .bt-root:not(#_) :is(.cc, .cc-admin) {
   --cc-all: var(--bt-title);
-  --cc-twitch-brand: #9146ff;
-  --cc-youtube-brand: #ff0000;
+  --cc-twitch-brand: var(--bt-brand-twitch);
+  --cc-youtube-brand: var(--bt-brand-youtube);
   --cc-twitch: var(--cc-twitch-brand);
   --cc-tiktok: var(--bt-pink);
   --cc-youtube: var(--cc-youtube-brand);
