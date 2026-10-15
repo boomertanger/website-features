@@ -1109,6 +1109,19 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 - **Board `.bt-kanban`**: `.bt-kanban-col` (`--tone` for the header dot) with `.bt-kanban-h`; any cards inside. Columns scroll sideways with snap; 82% wide each at 640. Bug Zapper's Board (`.bz-cols`) is close but not identical (surface background, 10 px padding, a rule under the header, the Fixed column's glow, 80% phone columns), so it keeps its own CSS for now.
 - **Map `.bt-map-zone` / `.bt-map-node`**: zones (`.bt-map-zones` grid, `.bt-map-zone--wide`, `.bt-map-zone-h`, `.bt-map-nodes`) and nodes `.bt-map-node[data-c="love|mid|nope|none|plan"]` (`plan` is dashed), `.is-sel` for the selected one. HTML, laid out inside a `.bt-zoomframe` (a foreignObject) or on their own.
 
+**Chart `.bt-chart`** (`shared/ui/chart.js`; spec `docs/specs/creator-climb.md` §12; UI Kit section "Chart"): a line chart over time, built for Creator Climb.
+- `chart(el, { series, t0, t1, eras, gaps, zero, mini, monthly, empty, label, notes })` draws an SVG into the element; it redraws on resize.
+  - `series`: `[{ key, label, points: [{ t, v, src }], color, width, dash, icon }]`.
+  - Line colours come from the page as `--c` (a feature colour such as `var(--cc-twitch)`): the kit has no feature colours. The icon at a line's end carries the meaning.
+- **Era bands** (`.bt-chart-era` with labels) and **hatched gaps** (`.bt-chart-gap`, "Not tracked month by month"): a line never crosses a gap longer than 20 days.
+- **Crosshair tooltip:** the date, each value and its change since the previous reading. Imported points say "From the old growth pages" and sample points say "Sample".
+- **Keyboard:** arrows, Home, End and Esc.
+- `focusSeries(el, key | null)` dims every line but one.
+- `--mini` gives small multiples (no icons, fewer ticks), and `monthly` makes the labels read "September 2025".
+- Empty state: the mascot with the `empty` sentence.
+- `chartTable(opts)` is "Show as table": a `.bt-table`, newest first.
+- Reduced motion: nothing animates.
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -1133,6 +1146,7 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 | `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
 | `road.js` · `tree.js` | `roadHtml({ levels, selected, label, mascot, panelHtml })`, `initRoad(host, { renderPanel, onSelect })` · `initTree(root, { collapsed, onChange })` |
 | `season.js` · `countdown.js` | `taskRowHtml`, `lockCardHtml`, `clockHtml`, `pathHtml` · `timerHtml`, `initTimers(root)`, `fmtLeft(ms)` |
+| `chart.js` | `chart(el, opts)`, `focusSeries(el, key)`, `chartTable(opts)`: the `.bt-chart` line chart over time (§5) |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |
 | `cycle-wheel.js` | `cycleWheelHtml({ id, label, title, badge, stages, current, play, note })` (markup string), `initCycleWheels(root)` → `[{ show, stop }]`. The `.bt-cycle-wheel` tablist, prev / next, Play every 2.6 s (§5). |
@@ -1906,4 +1920,24 @@ Game Vault + Service Hub addendum. Spec `docs/specs/game-page-votes.md` (confirm
 - **V3 Ballot** for the vote: a dashed gold callout under the title on every To play game, whoever added it: "Want Boomer to stream this?", "<n> votes · #<rank> on Most wanted" (the Most wanted shelf's order) and the vote button; the owner sees "Members want you to play this" with no button. The Community pick banner keeps its credit and loses its button (never two vote buttons).
 - **C1 Twin dials** for the verdict: the members' dial beside Boomer's score dial in the hero, same size and family: the ring split Love (pink) / Like (blue) / Not for me (gold), % liked in the middle, "<n> ratings · Rate it"; a dashed "Not enough ratings yet" dial below 3 member ratings; Boomer's dial shows "Not played yet" on an unplayed game. Owner and admin ratings stay out. Phone: the poster on the left exactly as tall as the two stacked dials on the right (3:4, width follows).
 - **Rating a game** uses the compact page strip wired to `vault-<slug>` (the rating is about the game itself); the prompt is "How do you rate this game?", also in the /services Vault games dialog.
+
+### 8ad. Creator Climb
+Spec `docs/specs/creator-climb.md`; mockup `docs/design/mockups/creator-climb.html`. **Picks (Oct 15, 2026):**
+- **H1-D Summit camp hero.** The ridge is the combined month-end line, with the moon, camps at each era and flags at the crossings.
+- **Scrub the climb.** Drag along the ridge, or use the arrow keys, Home and Esc, to read the total at the end of any month.
+- **P1 Night lamps colours,** declared once in `creator-climb.css`:
+  - Combined: title.
+  - Twitch: ice.
+  - TikTok: pink.
+  - YouTube: fuse.
+  - Members: teal.
+  - Never purple (it means clickable) and never red (it means danger). The official platform icon at each line's end carries the meaning.
+- **Members as their own climb.** Site members are a separate line, a separate total and separate milestones. They are never added into the combined follower total.
+- **Crossover.** It shows how much of the TikTok crowd follows on to Twitch, YouTube and the site (per 1,000, by era). Crowd crossover is a later item.
+- **Peak viewers.** The flip card shows the best Control Room stream as "N viewers, all platforms". The back always keeps the imported "577 on TikTok, September 2025". A combined peak never "beats" 577.
+- **The /admin card** is a tool page:
+  - A small ridge scene.
+  - Green admin panels: Readings with Automatic / By hand tags, Month notes, Eras, Goals, Left out of member counts, and Corrections.
+  - Nothing red: removing a correction uses a green confirm.
+  - Every change goes through `climbAdmin` and is logged.
 

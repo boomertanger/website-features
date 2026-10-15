@@ -28,6 +28,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
 | 18 | Service Hub | In progress (docs and manifests) | Service Hub |
 | 19 | Base Camp (/base-camp, /base-camp/newfoundland, /base-camp/skipper, /base-camp/mail-call; Kind Words and the Skipper Cam; spec [docs/specs/base-camp.md](specs/base-camp.md)) | Built on staging (Oct 11, 2026); tests pending | Community services |
+| 20 | Creator Climb (/climb: follower growth across every platform, members as their own climb; spec [docs/specs/creator-climb.md](specs/creator-climb.md)) | Built (Oct 15, 2026); staging deploy and history import in progress | Community services |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -259,6 +260,28 @@ Later (spec): an admin editor for Base Camp text; real photos for Newfoundland; 
 
 **Base Camp notes: on-stream mail rules (for Boomer).** Open envelopes off camera and set the envelope aside before showing the letter. Read first names or handles only; skip last names, streets, schools and phone numbers written in letters. Kids' mail: first name only, and no photos of children without a parent's clear OK. "Just for Boomer" letters are read off stream.
 
+### 20. Creator Climb
+Goal: one page for the whole climb:
+- Follower growth on Twitch, TikTok and YouTube since January 2025, from the old /growth-2025 and /growth-2026 pages plus the daily collector.
+- Site members as their own climb.
+- Milestones, crossover, month reports, records and pace.
+
+Spec: [docs/specs/creator-climb.md](specs/creator-climb.md) (confirmed Oct 15, 2026). Mockup: `docs/design/mockups/creator-climb.html` (H1-D Summit camp, P1 Night lamps).
+
+Status: **Built (Oct 15, 2026); staging deploy and history import in progress.** Parts:
+1. Docs.
+2. The kit's `.bt-chart`.
+3. The backend: lib/climb, climbRebuild, climbAdmin, the climb rules, and the collector's site-members block. completeSignup records signInMethod. seed-climb-history.js and check-climb.js.
+4. The /climb page.
+5. The /admin card.
+6. The nav entry, manifest, redirects, docs and this entry.
+
+The private history file (`functions/scripts/data/climb-history.json`) is gitignored.
+
+Later:
+- **Crowd crossover** (spec §16).
+- A per-platform peak once the Control Room records one.
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -338,6 +361,14 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] grant.js changed (the quiet flag), so the production deploy is the full batched one: all lib/live functions together first, then the rest in batches of about 15 with 3-minute pauses; confirm each function's served revision (Cloud Run latestReadyRevision = latestCreatedRevision, created by this deploy), not just ACTIVE.
 - [ ] Confirm the dropSweep Cloud Scheduler job exists and is ENABLED on production.
 - [ ] Walk through docs/testing/live-drops-test-plan.md on staging first.
+
+### Creator Climb in production
+- [ ] Deploy the climb rules to production (rules first, separately), then climbRebuild, climbAdmin and the growth functions; then completeSignup on its own.
+- [ ] Copy climb-history.json to the production machine path. Run `seed-climb-history.js --project prod` as a dry run, then with `--apply`.
+- [ ] On /admin, set the **Back on air** start date: the cabin is drawn finished from then, and member counting starts.
+- [ ] Check "Left out of member counts": the owner is always left out. Remove @gbo only if it's a real member on production. Production members start at 0.
+- [ ] The 301 redirects /growth-2025 and /growth-2026 → /climb go live with the domain switch.
+- [ ] After the first production collector run, confirm `public/climb.lastReading` and the gap.
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.

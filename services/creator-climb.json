@@ -1,0 +1,24 @@
+{
+  "id": "creator-climb",
+  "name": "Creator Climb",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Follower growth across every platform, month by month.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/climb"
+  ],
+  "nav": "climb",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-creator-climb",
+  "sections": {
+    "ch-climb": "The climb so far",
+    "ch-cross": "Crossover",
+    "ch-months": "Month by month"
+  },
+  "talkBack": "pins",
+  "help": "site/src/data/help/creator-climb.json"
+}

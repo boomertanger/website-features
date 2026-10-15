@@ -13,6 +13,7 @@ const MODULE_PAGES = {
   trophies: { label: "Trophy Room", href: "/trophies", icon: "trophy", blurb: "Every badge and trophy you've earned." },
   crew: { label: "Crew", href: "/crew", icon: "eye", blurb: "Meet the mods who keep the chats fun, or join them." },
   goals: { label: "Goals", href: "/goals", icon: "target", blurb: "What we're working toward together." },
+  climb: { label: "Creator Climb", href: "/climb", icon: "climb", blurb: "Follower growth across every platform" },
   streams: { label: "Streams", href: "/streams", icon: "film", blurb: "Past streams, highlights and clips." },
   shop: { label: "Shop", href: "/shop", icon: "bag", blurb: "Merch and crew drops." },
   club: { label: "Club", href: "/club", icon: "club", blurb: "Fan Club is free. Sub Club adds the extras." },
@@ -41,7 +42,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "chatgames", "factory", "trophies"] },
-  { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
+  { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "climb", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];
 
