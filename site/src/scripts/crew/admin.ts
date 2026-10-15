@@ -381,8 +381,15 @@ async function prefillAdjust() {
   if (handle) el("handle").value = `@${handle}`;
   const rv = $("[data-adj-reverses]");
   if (adjustReverses.length) { rv.innerHTML = `Reverses ${adjustReverses.length === 1 ? "1 payment" : `${adjustReverses.length} payments`}${note ? ` on ${esc(note)}` : ""}: <code>${adjustReverses.map(esc).join("</code>, <code>")}</code>`; rv.hidden = false; }
-  document.getElementById("adjust")?.scrollIntoView({ block: "start" });
-  el("reason").focus({ preventScroll: true });
+  // the section only exists after auth and the first render, so the browser's own #adjust jump has already missed it
+  requestAnimationFrame(() => {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const sec = document.getElementById("adjust");
+    sec?.scrollIntoView({ block: "start", behavior: reduced ? "auto" : "smooth" });
+    el("reason").focus({ preventScroll: true });
+    // cards above can still grow as they finish loading: once it settles, land again if the section moved off its mark
+    setTimeout(() => { if (sec && Math.abs(sec.getBoundingClientRect().top - parseFloat(getComputedStyle(sec).scrollMarginTop)) > 8) sec.scrollIntoView({ block: "start" }); }, reduced ? 400 : 900);
+  });
 }
 function wireAdjust() {
   const form = $<HTMLFormElement>("[data-ca-adjust]");
@@ -704,8 +711,11 @@ async function start() {
   try {
     await loadAll();
     renderAll();
-    if (!wired) { wired = true; wire(); void prefillAdjust(); }
+    const first = !wired;
+    if (!wired) { wired = true; wire(); }
     body.hidden = false;
+    // the Adjust Gears link (?adjust=…#adjust, Remove credit on /admin/inbox): fill it in once the page is visible, then go there
+    if (first) void prefillAdjust();
   } catch (err) {
     $("[data-ca-error-text]").textContent = messageFor(err, "Check your connection and try again.");
     error.hidden = false;
