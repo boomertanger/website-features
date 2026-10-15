@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(kit): .bt-scrubber, a timeline you scrub one step at a time (shared/ui/scrubber.js): an optional gold curve, era bands with names (gray, gold, plain, lime), milestone dots (a big lime one, a Today point), the purple thumb, ticks that never overlap; role=slider with aria-valuetext, pointer drag and tap, arrow keys, Page Up / Down, Home, End; reduced motion: no transitions; on the UI kit page in every state; design-system §5 and §6
 - docs: Base Camp Addendum 3, "The rise" and "The rise, replayed" (option B): stage 5 "The build", the replay from public/climb replacing "Then and now", the .bt-scrubber kit piece; mockup base-camp-rise.html (Fan Club text removed)
 - feat(climb): At this pace shows no date when the goal is more than 24 months away ("YouTube goal: more than two years away at this pace"; the rows stay; the chart keeps the solid line and the goal line, no projection or arrival dot); the paused text gets its comma ("There are 3, and the last one is …")
 - feat(climb): /climb falls back to a YouTube goal of 1,000 when none is set (the same fallback as the footer and the collector), so the goal meter and At this pace work without a setting; other platforms still have no goal unless one is set

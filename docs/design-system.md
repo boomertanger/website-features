@@ -1122,6 +1122,13 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 - `chartTable(opts)` is "Show as table": a `.bt-table`, newest first.
 - Reduced motion: nothing animates.
 
+**Scrubber `.bt-scrubber`** (`shared/ui/scrubber.js`; spec `docs/specs/base-camp.md` Addendum 3; UI Kit section "Timeline scrubber"): a timeline you scrub through one step at a time.
+- `scrubber(el, { steps, index, label, curve, bands, dots, ticks, onInput })` → `{ set(i), index(), update(opts), destroy() }`. `steps` are `{ text, x? }` (`text` is the aria-valuetext, e.g. "June 2025: 2,584 followers"; `x` 0–1, evenly spread by default).
+- The track is the slider (`role="slider"`, tabindex 0): pointer drag or tap, arrow keys (Shift + arrow: 3 steps), Page Up / Down, Home, End. `onInput(i, how)` with how `drag` | `tap` | `key`.
+- Drawn in it: an optional gold curve with the area under it; era bands `bt-scrubber-band--gray | --gold | --plain | --lime` with their names; milestone dots (`big`: larger and lime; `today`: the end point); the part already passed, faintly lit; the purple thumb (it's the thing you move). Tick labels under the track; labels that would overlap hide (the last always shows).
+- The content is inset 14px from the track's ends so end dots and the thumb are never clipped; bands touching an end run on to the edge.
+- Container queries: 76px tall at 640px. Reduced motion: no transitions.
+
 ## 6. JS modules (`shared/ui/`)
 | Module | Exports |
 |---|---|
@@ -1146,6 +1153,7 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
 | `stepper.js` · `lanes.js` | `stepperHtml({ steps, open, crate, rail })`, `keepOpenInView(el)` · `lanesHtml({ weeks, rows })` |
 | `road.js` · `tree.js` | `roadHtml({ levels, selected, label, mascot, panelHtml })`, `initRoad(host, { renderPanel, onSelect })` · `initTree(root, { collapsed, onChange })` |
 | `season.js` · `countdown.js` | `taskRowHtml`, `lockCardHtml`, `clockHtml`, `pathHtml` · `timerHtml`, `initTimers(root)`, `fmtLeft(ms)` |
+| `scrubber.js` | `scrubber(el, opts)`: the `.bt-scrubber` timeline (§5) |
 | `chart.js` | `chart(el, opts)`, `focusSeries(el, key)`, `chartTable(opts)`: the `.bt-chart` line chart over time (§5) |
 | `toast.js` | `toast(message, { kind, ms })`: a floating confirmation (ok, error, info); returns dismiss |
 | `brand-icons.js` | `brandIcon(key, size)`, `BRANDS` (steam, gog, itch, epic) |

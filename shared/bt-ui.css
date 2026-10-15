@@ -5733,3 +5733,44 @@
   .bt-root:not(#_) :is(.bt-rate-btn:hover svg, .bt-talkback-rb:hover svg, .bt-filter-tile:hover, .bt-wall-tile:hover) { transform: none; }
 }
 /* ================= END Service Hub pieces ================= */
+/* ================= .bt-scrubber: a timeline you scrub through (shared/ui/scrubber.js; docs/specs/base-camp.md Addendum 3) =================
+   .bt-scrubber-track   the slider (role="slider", aria-valuetext per step), tabindex 0; pointer drag or tap, arrow keys, Home, End.
+   SVG (0–1000 × 0–100, stretched): .bt-scrubber-band--gray | --gold | --plain | --lime (era bands), .bt-scrubber-played (the part already
+   passed, faintly lit), .bt-scrubber-area + .bt-scrubber-line (the gold curve). HTML over it: .bt-scrubber-bandk (band names),
+   .bt-scrubber-dot (.is-big lime, .is-today), .bt-scrubber-thumb (purple: it's the thing you move). .bt-scrubber-ticks under the track.
+   Reduced motion: no transitions. */
+.bt-root:not(#_) .bt-scrubber { position: relative; min-width: 0; }
+.bt-root:not(#_) .bt-scrubber-track { position: relative; height: 92px; border: 1px solid var(--bt-border); border-radius: 14px; background: color-mix(in srgb, var(--bt-bg) 50%, var(--bt-surface)); overflow: hidden; touch-action: none; cursor: pointer; outline: none; user-select: none; }
+.bt-root:not(#_) .bt-scrubber-track:focus-visible { box-shadow: 0 0 0 2px var(--bt-primary); }
+.bt-root:not(#_) .bt-scrubber-track.is-dragging { cursor: grabbing; }
+.bt-root:not(#_) .bt-scrubber-in { position: absolute; inset: 0 14px; }
+.bt-root:not(#_) .bt-scrubber-track svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bt-scrubber-band { opacity: 0.55; }
+.bt-root:not(#_) .bt-scrubber-band--gray { fill: color-mix(in srgb, var(--bt-gray) 18%, transparent); }
+.bt-root:not(#_) .bt-scrubber-band--gold { fill: color-mix(in srgb, var(--bt-title) 14%, transparent); }
+.bt-root:not(#_) .bt-scrubber-band--plain { fill: color-mix(in srgb, var(--bt-text) 7%, transparent); }
+.bt-root:not(#_) .bt-scrubber-band--lime { fill: color-mix(in srgb, var(--bt-lime) 16%, transparent); }
+.bt-root:not(#_) .bt-scrubber-played { fill: color-mix(in srgb, var(--bt-text) 5%, transparent); }
+.bt-root:not(#_) .bt-scrubber-area { fill: color-mix(in srgb, var(--bt-title) 18%, transparent); }
+.bt-root:not(#_) .bt-scrubber-line { fill: none; stroke: var(--bt-title); stroke-width: 2; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.bt-root:not(#_) .bt-scrubber-labels { position: absolute; inset: 0; pointer-events: none; }
+.bt-root:not(#_) .bt-scrubber-bandk { position: absolute; top: 6px; padding-left: 8px; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; color: var(--bt-text-muted); font-size: 10px; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-scrubber-dot { position: absolute; width: 9px; height: 9px; margin: -4.5px 0 0 -4.5px; border: 2px solid var(--bt-title); border-radius: 50%; background: var(--bt-bg); box-sizing: border-box; }
+.bt-root:not(#_) .bt-scrubber-dot.is-big { width: 14px; height: 14px; margin: -7px 0 0 -7px; border-color: var(--bt-lime); border-width: 2.5px; box-shadow: 0 0 8px color-mix(in srgb, var(--bt-lime) 55%, transparent); }
+.bt-root:not(#_) .bt-scrubber-dot.is-today { width: 11px; height: 11px; margin: -5.5px 0 0 -5.5px; background: var(--bt-title); }
+.bt-root:not(#_) .bt-scrubber-thumb { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: var(--bt-primary); pointer-events: none; transition: left 0.25s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .bt-scrubber-thumb::after { content: ""; position: absolute; left: 50%; bottom: -1px; width: 22px; height: 22px; margin-left: -11px; border-radius: 50%; background: var(--bt-primary); box-shadow: 0 0 0 4px color-mix(in srgb, var(--bt-primary) 30%, transparent), 0 4px 10px -2px var(--bt-bg); }
+.bt-root:not(#_) .bt-scrubber-track.is-dragging .bt-scrubber-thumb { transition: none; }
+.bt-root:not(#_) .bt-scrubber-ticks { position: relative; height: 1.4em; margin: 8px 14px 0; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .bt-scrubber-ticks span { position: absolute; top: 0; transform: translateX(-50%); white-space: nowrap; }
+.bt-root:not(#_) .bt-scrubber-ticks span.is-start { transform: translateX(-14px); }
+.bt-root:not(#_) .bt-scrubber-ticks span.is-end { transform: translateX(calc(-100% + 14px)); }
+.bt-root:not(#_) .bt-scrubber-ticks span[hidden] { display: none; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-scrubber-track { height: 76px; }
+  .bt-root:not(#_) .bt-scrubber-bandk { font-size: 9px; letter-spacing: 0.03em; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-scrubber-thumb { transition: none; }
+}
+/* ================= END .bt-scrubber ================= */
