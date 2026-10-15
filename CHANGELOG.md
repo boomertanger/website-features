@@ -3,6 +3,8 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(kit): the members' verdict dial (verdictDialHtml: Love / Like / Not for me ring, % liked, "<n> ratings · Rate it", dashed below 3 ratings) and the score dial's "Not played yet" state, on the UI kit page
+- docs: game page voting and rating spec and mockup (V3 + C1), pointer in game-vault.md, design-system §8ac
 - docs: launch checklist: deploy onVaultGameService before the production Vault import, or run reconcile-vault-services.js --apply once after it
 - feat(service-hub): serviceSyncTick's Vault guard: visible Vault games vs live vaultGame items (count queries only); when the gap moves it reconciles once and logs a warning
 - fix(service-hub): onVaultGameService creates a missing Vault game item on any edit (games added before the trigger heal) and never undoes an admin's retire or hide

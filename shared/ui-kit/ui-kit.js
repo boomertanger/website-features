@@ -17,7 +17,7 @@ import { cycleWheelHtml, initCycleWheels } from "../ui/cycle-wheel.js";
 import { coverHtml, initCoverFallbacks } from "../ui/cover.js";
 import { initTilt } from "../ui/tilt.js";
 import { initCountUp } from "../ui/count-up.js";
-import { dialHtml, initDials } from "../ui/dial.js";
+import { dialHtml, verdictDialHtml, initDials } from "../ui/dial.js";
 import { initCmd, litText } from "../ui/cmd.js";
 import { initShelves } from "../ui/shelf.js";
 import { sectionHeadHtml } from "../ui/section-head.js";
@@ -1421,6 +1421,8 @@ function vaultKitHtml() {
 
     <p class="kit-sub">Score: .bt-score, --lg, .bt-score-pips, .bt-score-none · Score dial: .bt-dial (shared/ui/dial.js), ten segments lighting in Boomer's gold as it scrolls in; --sm</p>
     <div class="kit-row" style="align-items:center;gap:24px">${score(8)}<span class="bt-score bt-score--lg"><b>9</b><small>/10</small></span><span class="bt-score-pips" aria-hidden="true">${Array.from({ length: 10 }, (_, i) => `<i${i < 7 ? ' class="is-on"' : ""}></i>`).join("")}</span>${score(null)}${dialHtml(9)}${dialHtml(4, { size: "sm", caption: "" })}</div>
+    <p class="kit-p">Twin dials on a game page (<span class="kit-code">docs/specs/game-page-votes.md</span>, C1): Boomer's score dial and the members' verdict (<span class="kit-code">verdictDialHtml({ love, like, nope })</span>), same size and family. The verdict shows at 3+ member ratings (owner and admin ratings left out); below that, the dashed dial. An unplayed game's score dial says Not played yet.</p>
+    <div class="kit-row" style="align-items:flex-start;gap:28px;flex-wrap:wrap">${dialHtml(8, { kicker: "Boomer" })}${verdictDialHtml({ love: 11, like: 9, nope: 3, rateAttrs: 'href="#"' })}${dialHtml(null, { kicker: "Boomer" })}${verdictDialHtml({ love: 1, like: 1, nope: 0, rateAttrs: 'href="#"' })}${verdictDialHtml({ love: 0, like: 2, nope: 5, size: "sm", kicker: "", rateAttrs: 'href="#"' })}</div>
 
     <p class="kit-sub">Tags: .bt-tag in .bt-tags (a/button.bt-tag is clickable) · Tokens: .bt-token, a removable active filter · Chip count .bt-chip-n and .bt-chip--menu (closed, open)</p>
     <div class="kit-row"><span class="bt-tag">First person</span><a class="bt-tag" href="#" onclick="return false">Co-op</a><span class="bt-tag">${VK_IC.people}Community pick</span><button type="button" class="bt-token">Co-op<i aria-hidden="true">×</i></button><button type="button" class="bt-token">Community picks<i aria-hidden="true">×</i></button></div>

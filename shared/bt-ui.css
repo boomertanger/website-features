@@ -3316,7 +3316,9 @@
    [data-tilt]      pointer tilt with a light glare (.bt-glare inside); shared/ui/tilt.js; pointer
                     devices only, still under reduced motion
    [data-count-to]  numbers that count up once in view: shared/ui/count-up.js (no CSS)
-   .bt-dial         a 10-segment score dial in Boomer's gold: shared/ui/dial.js (dialHtml, initDials)
+   .bt-dial         a 10-segment score dial in Boomer's gold: shared/ui/dial.js (dialHtml, initDials); --none "Not played yet" (no score);
+                    --verdict the members' verdict (verdictDialHtml): the ring split Love / Like / Not for me in the rating tones, % liked
+                    in the middle; --few the dashed "Not enough ratings yet". .bt-dial-k is a small name over a dial ("Boomer", "Members")
    .bt-cmd          a search command panel under a field: .bt-label groups, button.bt-cmd-item
                     (aria-selected), .bt-cmd-ic, .bt-cmd-foot with kbd; shared/ui/cmd.js
    .bt-token        a removable active-filter pill (purple: it's clickable)
@@ -3435,6 +3437,19 @@
 .bt-root:not(#_) .bt-dial-cap { margin-top: 8px; color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; text-align: center; }
 .bt-root:not(#_) .bt-dial--sm { width: 112px; height: 112px; }
 .bt-root:not(#_) .bt-dial--sm .bt-dial-c b { font-size: 34px; }
+.bt-root:not(#_) .bt-dialbox { display: flex; flex-direction: column; align-items: center; }
+.bt-root:not(#_) .bt-dial-k { margin-bottom: 6px; color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-dial-cap a { color: var(--bt-primary-soft); font-weight: 800; }
+.bt-root:not(#_) .bt-dial-none { color: var(--bt-text-faint); font-size: var(--bt-text-sm); font-weight: 800; line-height: 1.25; text-align: center; }
+/* the members' verdict (C1): the ring in the rating tones, drawn in once in view */
+.bt-root:not(#_) .bt-dial--verdict .arc { fill: none; stroke-width: 10; stroke: var(--rt); opacity: 0.35; transition: opacity 0.4s 0.2s, filter 0.4s 0.2s; }
+.bt-root:not(#_) .bt-dial--verdict .arc[data-v="love"] { --rt: var(--bt-rate-love); }
+.bt-root:not(#_) .bt-dial--verdict .arc[data-v="like"] { --rt: var(--bt-rate-like); }
+.bt-root:not(#_) .bt-dial--verdict .arc[data-v="nope"] { --rt: var(--bt-rate-nope); }
+.bt-root:not(#_) .bt-dial--verdict.is-in .arc { opacity: 1; filter: drop-shadow(0 0 4px color-mix(in srgb, var(--rt) 55%, transparent)); }
+.bt-root:not(#_) .bt-dial--verdict .bt-dial-c b { font-size: 38px; }
+.bt-root:not(#_) .bt-dial--verdict.bt-dial--sm .bt-dial-c b { font-size: 28px; }
+.bt-root:not(#_) .bt-dial--few .few { fill: none; stroke: var(--bt-border-2); stroke-width: 3; stroke-dasharray: 5 7; }
 
 /* Command panel */
 .bt-root:not(#_) .bt-cmd { position: absolute; top: calc(100% + 8px); left: 0; right: 0; z-index: var(--bt-z-dropdown); display: flex; flex-direction: column; gap: 2px; max-height: 440px; overflow-y: auto; padding: 8px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface); box-shadow: var(--bt-shadow-dropdown); animation: bt-pop 0.16s var(--bt-ease-glide); }
@@ -3541,6 +3556,8 @@
   .bt-root:not(#_) .bt-score--lg b { font-size: 36px; }
   .bt-root:not(#_) .bt-dial { width: 112px; height: 112px; }
   .bt-root:not(#_) .bt-dial-c b { font-size: 34px; }
+  .bt-root:not(#_) .bt-dial--verdict .bt-dial-c b { font-size: 28px; }
+  .bt-root:not(#_) .bt-dial-none { font-size: var(--bt-text-xs); }
   .bt-root:not(#_) .bt-cmd-foot { display: none; }
   .bt-root:not(#_) .bt-shelf-arrows { display: none; }
   .bt-root:not(#_) .bt-section-head-title { font-size: var(--bt-text-xl); }
@@ -3561,7 +3578,7 @@
   .bt-root:not(#_) .bt-cover { transition: none; }
   .bt-root:not(#_) [data-tilt] { transform: none; transition: none; }
   .bt-root:not(#_) .bt-glare { display: none; }
-  .bt-root:not(#_) .bt-dial .seg { transition: none; }
+  .bt-root:not(#_) :is(.bt-dial .seg, .bt-dial--verdict .arc) { transition: none; }
   .bt-root:not(#_) :is(.bt-cmd, .bt-token, .bt-timeline-tip, .bt-deck-card.is-in) { animation: none; }
   .bt-root:not(#_) .bt-timeline-dot { transition: none; }
   .bt-root:not(#_) .bt-timeline-dot:is(:hover, :focus-visible) { transform: none; }
