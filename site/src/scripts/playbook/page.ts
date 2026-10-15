@@ -244,13 +244,13 @@ async function copyReviewPrompt() {
   const pulse = await pulseSummary(since);
   if (btn) btn.disabled = false;
   const decisions = S.decisions.filter((d) => !since || d.date > since).sort((a, b) => a.date.localeCompare(b.date));
-  const text = reviewPrompt({ date: dayOf(Date.now()), due, dueLabel: label, since, pulse, decisions, flags: S.flags, pagesById: pm });
+  const text = reviewPrompt({ firstRead: !S.main.firstReadDone, date: dayOf(Date.now()), due, dueLabel: label, since, pulse, decisions, flags: S.flags, pagesById: pm });
   try { localStorage.setItem(PROMPT_KEY, JSON.stringify({ at: Date.now(), versions: Object.fromEntries(S.pages.map((p) => [p.id, p.version])) })); } catch { /* fine */ }
   await copyText(text, `Review prompt copied (${due.length} page${due.length === 1 ? "" : "s"}). Paste it into a Claude chat.`);
 }
 function copyPage(p: Page) {
   try { const prev = JSON.parse(localStorage.getItem(PROMPT_KEY) || "{}"); localStorage.setItem(PROMPT_KEY, JSON.stringify({ at: Date.now(), versions: { ...(prev.versions || {}), [p.id]: p.version } })); } catch { /* fine */ }
-  void copyText(pagePrompt(p, S.flags), "Page copied for Claude.");
+  void copyText(pagePrompt(p, S.flags, !S.main.firstReadDone), "Page copied for Claude.");
 }
 
 /* ---------- dialogs ---------- */
@@ -334,7 +334,7 @@ function applyDialog() {
   const check = () => {
     update = null; force = false; save.disabled = true; save.textContent = "Save";
     const found = findUpdate(modal.querySelector<HTMLTextAreaElement>("[data-reply]")!.value);
-    if (!found) return say(`<p class="bt-notice bt-notice--error">No update block in that reply. Look for a block that starts with <code>\`\`\`playbook-update</code> and paste the whole reply again.</p>`);
+    if (!found) return say(`<p class="bt-notice bt-notice--error">No playbook-update found. Paste Claude's whole reply, or just the code block.</p>`);
     if ("error" in found) return say(`<p class="bt-notice bt-notice--error">${esc(found.error)} Nothing was saved.</p>`);
     const v = checkUpdate(found.json, { pageIds: new Set(S.pages.map((p) => p.id)), flagIds: new Set(S.flags.map((f) => f.id)) });
     if (v.ok === false) return say(`<p class="bt-notice bt-notice--error">${esc(v.message)} Nothing was saved.</p>`);
@@ -353,8 +353,13 @@ function applyDialog() {
     const OPW: Record<string, string> = { confirm: "Confirm", answer: "Answer", edit: "Edit", add: "Add", remove: "Remove" };
     const flagsHtml = (update.flags || []).map((f) => `<li><span class="bt-badge bt-badge--${f.op === "remove" ? "red" : f.op === "add" ? "blue" : "lime"}">${OPW[f.op]}</span><span>${f.op === "add" ? `${esc(pm.get(f.pageId!)?.nav || "")}: ${renderInline(f.text || "")}` : `${renderInline(fm.get(f.id!)?.text || "")}${f.op === "answer" ? `<br><b>Answer:</b> ${renderInline(f.answer || "")}` : f.op === "edit" ? `<br><b>Becomes:</b> ${renderInline(f.text || "")}` : ""}`}</span></li>`).join("");
     const decHtml = (update.decisions || []).map((d) => `<li>${renderInline(d.text)}${d.pageId ? ` <span class="pb-flag-page">${esc(pm.get(d.pageId)?.nav || "")}</span>` : ""}</li>`).join("");
+    const marked = (update.pages || []).filter((p) => p.markReviewed).map((p) => pm.get(p.id)!).filter((p) => p.id !== "flags");
+    const R2 = reviewable(), already = new Set(R2.filter((p) => p.lastReviewedAt).map((p) => p.id));
+    const finishes = !S.main.firstReadDone && marked.length > 0 && R2.length > 0 && R2.every((p) => already.has(p.id) || marked.some((m) => m.id === p.id)) && R2.some((p) => !already.has(p.id));
+    const reviewedHtml = marked.length ? `<h3 class="bt-label pb-apply-h">Marks reviewed</h3><p class="pb-apply-marked">${marked.map((p) => esc(p.nav)).join(", ")}</p>` : "";
+    const finishHtml = finishes ? `<p class="bt-notice bt-notice--warn pb-apply-finish" role="alert"><b>This marks ${marked.length} page${marked.length === 1 ? "" : "s"} reviewed and finishes your first read-through.</b> Save only if you went through ${marked.length === 1 ? "it" : "them"} in that chat.</p>` : "";
     say(`${stale.length ? `<p class="bt-notice bt-notice--warn"><b>Changed since you copied the prompt:</b> ${esc(stale.join(", "))}. Saving replaces those edits (they stay in History).</p>` : ""}
-      ${pagesHtml ? `<h3 class="bt-label pb-apply-h">Pages</h3>${pagesHtml}` : ""}${flagsHtml ? `<h3 class="bt-label pb-apply-h">Flags</h3><ul class="pb-ops">${flagsHtml}</ul>` : ""}${decHtml ? `<h3 class="bt-label pb-apply-h">New decisions</h3><ul class="pb-ops">${decHtml}</ul>` : ""}`);
+      ${pagesHtml ? `<h3 class="bt-label pb-apply-h">Pages</h3>${pagesHtml}` : ""}${flagsHtml ? `<h3 class="bt-label pb-apply-h">Flags</h3><ul class="pb-ops">${flagsHtml}</ul>` : ""}${decHtml ? `<h3 class="bt-label pb-apply-h">New decisions</h3><ul class="pb-ops">${decHtml}</ul>` : ""}${reviewedHtml}${finishHtml}`);
     force = stale.length > 0; save.textContent = force ? "Save anyway" : "Save"; save.disabled = false;
   };
   modal.querySelector("[data-check]")!.addEventListener("click", check);

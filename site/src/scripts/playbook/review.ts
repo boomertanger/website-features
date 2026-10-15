@@ -3,7 +3,8 @@
 //                           rollups and the decisions added since), every open or assumed flag on those pages, each page's Markdown, and how to reply
 //                           (ask about open items one at a time, then one `playbook-update` block; a Claude Code prompt only if something built has to change)
 //   pagePrompt(page, flags) Copy for Claude: one page the same way
-//   findUpdate(reply)       the ```playbook-update JSON block in a pasted reply (or null: say so)
+//   findUpdate(reply)       the update in a pasted reply: a ```playbook-update block, a ```json block with "playbookUpdate", or bare JSON with
+//                           "playbookUpdate" at its top level (just the code box's contents); null when there's none
 //   checkUpdate(u, ctx)     the same checks the server makes (functions/lib/playbook/logic.js validateUpdate), so the preview can explain a refusal in plain words
 // Nothing here writes; applying goes through playbookAdmin applyUpdate.
 import type { Flag } from "./render";
@@ -26,14 +27,15 @@ const SCHEMA = `\`\`\`playbook-update
             { "op": "add", "pageId": "<page id>", "status": "open", "text": "…" }],
   "decisions": [{ "text": "…", "pageId": "<page id>" }] }
 \`\`\``;
-const RULES = `How to reply:
+const FIRST_READ = " This is my first read-through: set \"markReviewed\" only for pages we actually went through in this chat, never for the others.";
+const rules = (firstRead: boolean) => { const FIRST = firstRead ? FIRST_READ : ""; return `How to reply:
 1. Ask me about the open items one at a time, and wait for each answer. Assumptions can be confirmed or corrected together at the end.
-2. When we're done, reply with exactly one block in the format below. Leave out anything that doesn't change. A page's "body" is the full new Markdown (keep its \`## \` chapters and its fenced blocks: cards, steps, tiers, ladder, rules, flow). Use only the page and flag ids above. A flag's text is one paragraph. Mark each page we went through with "markReviewed": true.
+2. When we're done, reply with exactly one block in the format below. Leave out anything that doesn't change. A page's "body" is the full new Markdown (keep its \`## \` chapters and its fenced blocks: cards, steps, tiers, ladder, rules, flow). Use only the page and flag ids above. A flag's text is one paragraph. Mark each page we went through with "markReviewed": true.${FIRST}
 3. Only if something already built on the site has to change, add a short prompt for Claude Code after the block. Otherwise don't.
 
-${SCHEMA}`;
+${SCHEMA}`; };
 
-export function reviewPrompt(i: { date: string; due: Page[]; dueLabel: string; since: string | null; pulse: PulseSummary | null; decisions: Decision[]; flags: Flag[]; pagesById: Map<string, Page> }) {
+export function reviewPrompt(i: { firstRead?: boolean; date: string; due: Page[]; dueLabel: string; since: string | null; pulse: PulseSummary | null; decisions: Decision[]; flags: Flag[]; pagesById: Map<string, Page> }) {
   const open = i.flags.filter((f) => f.status !== "confirmed" && i.due.some((p) => p.id === f.pageId));
   const byPage = i.due.map((p) => [p, open.filter((f) => f.pageId === p.id).sort((a, b) => a.order - b.order)] as const).filter(([, l]) => l.length);
   const pulse = i.pulse
@@ -59,11 +61,11 @@ ${byPage.length ? byPage.map(([p, l]) => `### ${p.title}\n${l.map(flagLine).join
 ## The pages
 ${i.due.map(pageBlock).join("\n\n")}
 
-${RULES}
+${rules(!!i.firstRead)}
 `;
 }
 
-export function pagePrompt(p: Page, flags: Flag[]) {
+export function pagePrompt(p: Page, flags: Flag[], firstRead = false) {
   const l = flags.filter((f) => f.pageId === p.id).sort((a, b) => a.order - b.order);
   return `# One page of my Playbook: ${p.title}
 
@@ -75,15 +77,30 @@ ${l.length ? l.map(flagLine).join("\n") : "None."}
 ## The page
 ${pageBlock(p)}
 
-${RULES}
+${rules(firstRead)}
 `;
 }
 
-/** The ```playbook-update block's JSON in a pasted reply: { json } , { error } when it's there but isn't JSON, or null when there's none. */
+/**
+ * The update in a pasted reply, in this order: a ```playbook-update block; a ```json (or unlabelled) block whose JSON has "playbookUpdate" at its top
+ * level; or the whole paste as bare JSON with "playbookUpdate" at its top level (just the contents of Claude's code box). { json } when found,
+ * { error } when a playbook-update block (or a bare JSON paste) is there but isn't valid JSON, null when there's none. Everything else is refused, and
+ * what's found still goes through checkUpdate.
+ */
 export function findUpdate(reply: string): { json: unknown } | { error: string } | null {
-  const m = String(reply || "").match(/```playbook-update[^\n]*\n([\s\S]*?)\n```[ \t]*(?:\n|$)/);
-  if (!m) return null;
-  try { return { json: JSON.parse(m[1]) }; } catch (e) { return { error: `The update block isn't valid JSON (${String((e as Error).message).slice(0, 80)}).` }; }
+  const text = String(reply || "");
+  const bad = (what: string, e: unknown) => ({ error: `${what} isn't valid JSON (${String((e as Error).message).slice(0, 80)}).` });
+  const isUpdate = (j: unknown) => !!j && typeof j === "object" && !Array.isArray(j) && Object.prototype.hasOwnProperty.call(j, "playbookUpdate");
+  const fenced = text.match(/```playbook-update[^\n]*\n([\s\S]*?)\n```[ \t]*(?:\n|$)/);
+  if (fenced) { try { return { json: JSON.parse(fenced[1]) }; } catch (e) { return bad("The update block", e); } }
+  for (const m of text.matchAll(/```(json|JSON)?[ \t]*\n([\s\S]*?)\n```[ \t]*(?:\n|$)/g)) {
+    try { const j = JSON.parse(m[2]); if (isUpdate(j)) return { json: j }; } catch { /* not this block */ }
+  }
+  const bare = text.trim();
+  if (bare.startsWith("{") && bare.endsWith("}") && /"playbookUpdate"\s*:/.test(bare)) {
+    try { const j = JSON.parse(bare); if (isUpdate(j)) return { json: j }; } catch (e) { return bad("The pasted update", e); }
+  }
+  return null;
 }
 
 const one = (s: unknown, max: number) => typeof s === "string" && s.trim().length > 0 && s.length <= max && !/\n\s*\n/.test(s.trim());
