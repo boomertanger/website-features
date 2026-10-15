@@ -17,14 +17,14 @@
   ],
   "board": {
     "rows": [
-      { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "gears": 412, "duties": 0, "hours": 0, "rooms": ["ytLandscape", "ytVertical", "twitch"], "recruits": 3, "staff": false },
-      { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "gears": 377, "duties": 0, "hours": 0, "rooms": ["twitch", "ytLandscape"], "recruits": 1, "staff": false },
-      { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "gears": 298, "duties": 0, "hours": 0, "rooms": ["ytVertical", "ytLandscape"], "recruits": 4, "staff": false },
-      { "uid": "p-raven", "handle": "ravenrx", "track": "admin", "grade": 2, "gears": 251, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "staff": true },
-      { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "gears": 233, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 2, "staff": false },
-      { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "gears": 164, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 0, "staff": false },
-      { "uid": "p-moss", "handle": "mossy", "track": "admin", "grade": 1, "gears": 150, "duties": 0, "hours": 0, "rooms": ["ytLandscape"], "recruits": 1, "staff": true },
-      { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "gears": 58, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "staff": false }
+      { "uid": "p-jay", "handle": "cryptjay", "track": "mod", "grade": 3, "gears": 412, "duties": 0, "hours": 0, "rooms": ["ytLandscape", "ytVertical", "twitch"], "recruits": 3, "inboxReplies": null, "staff": false },
+      { "uid": "p-kat", "handle": "nightowlkat", "track": "mod", "grade": 4, "gears": 377, "duties": 0, "hours": 0, "rooms": ["twitch", "ytLandscape"], "recruits": 1, "inboxReplies": null, "staff": false },
+      { "uid": "p-mike", "handle": "mothmanmike", "track": "mod", "grade": 2, "gears": 298, "duties": 0, "hours": 0, "rooms": ["ytVertical", "ytLandscape"], "recruits": 4, "inboxReplies": null, "staff": false },
+      { "uid": "p-raven", "handle": "ravenrx", "track": "admin", "grade": 2, "gears": 251, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "inboxReplies": 14, "staff": true },
+      { "uid": "p-salem", "handle": "salemspooks", "track": "mod", "grade": 3, "gears": 233, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 2, "inboxReplies": null, "staff": false },
+      { "uid": "p-vex", "handle": "vex", "track": "mod", "grade": 2, "gears": 164, "duties": 0, "hours": 0, "rooms": ["twitch", "tiktok"], "recruits": 0, "inboxReplies": null, "staff": false },
+      { "uid": "p-moss", "handle": "mossy", "track": "admin", "grade": 1, "gears": 150, "duties": 0, "hours": 0, "rooms": ["ytLandscape"], "recruits": 1, "inboxReplies": 0, "staff": true },
+      { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "gears": 58, "duties": 0, "hours": 0, "rooms": ["twitch"], "recruits": 0, "inboxReplies": null, "staff": false }
     ]
   },
   "me": { "uid": "p-lou", "handle": "lanternlou" },

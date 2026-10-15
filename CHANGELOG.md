@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Talk Back Part B on the crew pages: /crew/board Inbox column (first replies, a dash for crew who don't work the inbox); /admin/crew Hotline Boom inbox values (owner and Overseers and up) and the Adjust Gears form (gearsAdjust; Remove credit opens it filled in)
 - Talk Back Part B on /admin/inbox: Pick up on rows and in the action row (Picked up by, Let it go), the credit line in the history (paid, capped, spam pending, reversed; Remove credit for the owner; How Gears work here), the This month staff cards with Clear desk pips, the Desk clear moment, the gray Marked / Spam stamp with Undo, Gears named in the reply toast; kit: .bt-stamp--gray
 - Talk Back Part B backend: inbox Gears (first reply, fast, oldest first, spam that held, Clear desk; daily cap 30), first reply decided in a transaction, spam reversal, Pick up / Let it go, gearsAdjust, crew inbox settings, the board's inboxReplies, inboxStats, inboxSpamHold and inboxDeskCheck, inbox-sample.js
 - chore(pulse): the Cloudflare account id in functions/.env (the Web Analytics site tag comes later, looked up through the API once CLOUDFLARE_ANALYTICS_TOKEN exists)

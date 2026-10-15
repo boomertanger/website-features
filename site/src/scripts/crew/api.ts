@@ -31,7 +31,7 @@ export interface Me {
   application: { appId: string; status: string; band: string | null; note: string | null; createdAt: number; expiresAt: number | null; reapplyAt: number | null } | null;
 }
 export interface PublicMember { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; status: string; favourites: Chat[]; /** Optional one-line "in their own words" (plain text, max 90 chars), published only when the member set one. */ quote?: string }
-export interface BoardRow { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; gears: number; duties: number; hours: number; rooms: string[]; recruits: number; staff: boolean; place: number }
+export interface BoardRow { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; gears: number; duties: number; hours: number; rooms: string[]; recruits: number; inboxReplies?: number | null; staff: boolean; place: number }
 export interface Board { period: string | null; rows: BoardRow[] }
 export interface Award { month: string; topGear: { uid: string; handle: string | null; gears?: number } | null; fanFavourite: { uid: string; handle: string | null; votes?: number } | null }
 

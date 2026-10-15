@@ -1,7 +1,8 @@
 // /admin/crew (docs/specs/mod-machina.md §3, §7, §12): the roster, coverage map, promotions, queue decisions,
 // strikes, platform to-do list and settings. Display only: owner-only controls are hidden for everyone else and
 // the callables check on the server (crewPromote, crewSetStatus, crewStrike, crewExcuse, crewDecide, crewWaive,
-// crewSaveSettings, crewTodoDone). Preview (non-production, signed out, ?as=admin) reads
+// crewSaveSettings, crewTodoDone, gearsAdjust). Talk Back Part B: the Hotline Boom inbox values (owner and A2+, crewSaveSettings { inbox })
+// and Adjust Gears (owner and A2+; Remove credit on /admin/inbox opens it filled in: ?adjust={uid}&amount&reverses&note#adjust). Preview (non-production, signed out, ?as=admin) reads
 // src/data/preview-crew-admin.json and actions only toast "Preview: nothing saved".
 import { onAccess, previewAs } from "./layout";
 import { crewCall, crewMe, CHATS, CHAT_NAME, type Chat } from "./api";
@@ -18,7 +19,7 @@ import { rulesHtml, rulesOn, rulesOff, previewActivity, type Activity, type Lock
 type Track = "mod" | "admin";
 type Pref = "favourite" | "happy" | "ifNeeded" | "no";
 interface Row { uid: string; handle: string | null; track: Track; grade: number; name: string; status: string; since: number | null; platforms: Partial<Record<Chat, Pref>>; device: string | null; ready: { to: number; since: number } | null; activeStrikes: number; ownerReview: boolean }
-interface Settings { gearsValues: Record<string, number>; youtubeBoost: number; activityRules: boolean; checkinFallback: boolean; recruitCapPerMonth: number; vouchCap: number; appExpiryDays: number; reapplyDays: number; twitchSync: boolean }
+interface Settings { inbox?: Record<string, number | boolean>; gearsValues: Record<string, number>; youtubeBoost: number; activityRules: boolean; checkinFallback: boolean; recruitCapPerMonth: number; vouchCap: number; appExpiryDays: number; reapplyDays: number; twitchSync: boolean }
 interface App { appId: string; uid: string; handle: string | null; createdAt: number; expiresAt: number | null; band: string | null; rank: number | null; score: number; prefs: Partial<Record<Chat, Pref>>; availability: { days: string[]; note: string }; device: string; answers: { why?: string; experience?: string }; vouches: { uid: string; handle: string | null; grade: number }[]; concerns?: { byHandle: string | null; note: string }[] }
 interface Todo { id: string; platform: string; action: "add" | "remove"; uid: string; text: string; why: string | null; status: "open" | "done"; createdAt: number | null }
 
@@ -303,7 +304,124 @@ function renderRules() {
   const behind = activity && (activity.rules === "grace" || activity.rules === "on") ? activity.behind.length : 0;
   const e = $(`[data-count="rules"]`); e.textContent = String(behind); e.hidden = behind === 0;
 }
-function renderAll() { renderCounts(); renderRules(); renderRoster(); renderCoverage(); renderReady(); renderQueue(); renderStrikes(); renderTodos(); renderSettings(); }
+function renderAll() { renderCounts(); renderRules(); renderRoster(); renderCoverage(); renderReady(); renderQueue(); renderStrikes(); renderTodos(); renderSettings(); renderInbox(); document.querySelectorAll<HTMLElement>("[data-ca-a2]").forEach((e) => { e.hidden = !isA2(); }); }
+// ---- Hotline Boom inbox values (talk-back.md §9g): owner and A2+ save them on their own (crewSaveSettings { inbox }) ----
+const INBOX_FIELDS: [string, string, number, number, string][] = [
+  ["reply", "First reply", 0, 100, "The first staff reply on a team-lane message."],
+  ["fast", "Fast reply bonus", 0, 100, "On top, when the first reply is quick."],
+  ["fastHours", "Fast means within (hours)", 1, 168, "From when the message arrived."],
+  ["oldest", "Oldest first bonus", 0, 100, "The oldest waiting message, answered or closed."],
+  ["spam", "Spam that held", 0, 100, "Paid when a spam mark still stands after the hold."],
+  ["spamHoldDays", "Spam hold (days)", 1, 30, "How long a spam mark must stand."],
+  ["spamDailyCap", "Spam Gears a day", 0, 50, "Per person."],
+  ["desk", "Clear desk bonus", 0, 100, "7 clear days in a row, to everyone who helped."],
+  ["deskMinHandled", "Clear desk: handled at least", 1, 50, "Messages that week to share the bonus."],
+  ["deskStaleHours", "Waiting counts after (hours)", 1, 168, "A message older than this breaks a clear day."],
+  ["boombot", "Added to BOOMBOT", 0, 100, "Later: a reply added to a service's help."],
+  ["dailyCap", "Inbox Gears a day", 0, 500, "Per person, America/Chicago days."],
+  ["operatorMin", "Operator: first replies at least", 1, 100, "To be in the running that month."],
+];
+const INBOX_DEFAULTS: Record<string, number | boolean> = { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48, boombot: 3, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9, operatorAward: true };
+const inboxOf = () => ({ ...INBOX_DEFAULTS, ...(settings.inbox || {}) }) as Record<string, any>;
+function renderInbox() {
+  const form = $<HTMLFormElement>("[data-ca-inbox]");
+  const v = inboxOf(), ro = !isA2();
+  $("[data-ca-inbox-fields]").innerHTML = INBOX_FIELDS.map(([k, label, min, max, hint]) => `<div class="bt-field"><label class="bt-label" for="ca-ib-${k}">${esc(label)}</label><input class="bt-input" id="ca-ib-${k}" name="ib:${k}" type="number" inputmode="numeric" min="${min}" max="${max}" step="1" value="${Number(v[k])}"><span class="bt-hint">${esc(hint)}</span><span class="bt-hint ca-err" data-ib-err="${k}" role="alert" hidden></span></div>`).join("")
+    + `<div class="bt-field"><label class="bt-label" for="ca-ib-acc">Operator: spam accuracy at least (%)</label><input class="bt-input" id="ca-ib-acc" name="ib:operatorAccuracy" type="number" inputmode="numeric" min="0" max="100" step="1" value="${Math.round(Number(v.operatorAccuracy) * 100)}"><span class="bt-hint">The share of their spam marks that held.</span><span class="bt-hint ca-err" data-ib-err="operatorAccuracy" role="alert" hidden></span></div>`;
+  const sw = form.querySelector<HTMLButtonElement>('[data-inbox-sw="operatorAward"]')!;
+  sw.setAttribute("aria-checked", String(v.operatorAward !== false)); sw.disabled = ro;
+  form.querySelectorAll<HTMLInputElement>("input").forEach((i) => { i.disabled = ro; });
+  $("[data-ca-inbox-note]").hidden = !ro;
+  $("[data-ca-inbox-acts]").hidden = ro;
+}
+function wireInbox() {
+  const form = $<HTMLFormElement>("[data-ca-inbox]");
+  const errBox = $("[data-ca-inbox-err]");
+  const sw = form.querySelector<HTMLButtonElement>('[data-inbox-sw="operatorAward"]')!;
+  sw.addEventListener("click", () => sw.setAttribute("aria-checked", String(sw.getAttribute("aria-checked") !== "true")));
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isA2()) return;
+    errBox.hidden = true; form.querySelectorAll<HTMLElement>("[data-ib-err]").forEach((x) => (x.hidden = true));
+    const inbox: Record<string, number | boolean> = {};
+    for (const [k] of INBOX_FIELDS) inbox[k] = Number((form.elements.namedItem(`ib:${k}`) as HTMLInputElement).value);
+    inbox.operatorAccuracy = Number((form.elements.namedItem("ib:operatorAccuracy") as HTMLInputElement).value) / 100;
+    inbox.operatorAward = sw.getAttribute("aria-checked") === "true";
+    const btn = $<HTMLButtonElement>("[data-ca-inbox-save]");
+    btn.disabled = true;
+    try {
+      const res = await act<{ settings: Settings }>("crewSaveSettings", { inbox });
+      if (res) { settings = res.settings; renderInbox(); renderSettings(); toast("Inbox values saved."); }
+    } catch (ex) {
+      const field = (ex as { details?: { field?: string } })?.details?.field;
+      const hint = field ? form.querySelector<HTMLElement>(`[data-ib-err="${field}"]`) : null;
+      if (reasonOf(ex) === "field" && hint) { hint.textContent = messageFor(ex); hint.hidden = false; hint.closest(".bt-field")?.querySelector("input")?.focus(); }
+      else { errBox.textContent = messageFor(ex, "Couldn't save the inbox values. Try again."); errBox.hidden = false; }
+    } finally { btn.disabled = false; }
+  });
+}
+
+// ---- Adjust Gears (gearsAdjust, owner and A2+): a correction with a reason; Remove credit on /admin/inbox fills it in ----
+//   /admin/crew?adjust={uid}&amount=-7&reverses={ledger ids, comma separated}&note=BT-4819#adjust
+let adjustUid: string | null = null, adjustReverses: string[] = [];
+async function prefillAdjust() {
+  const q = new URLSearchParams(location.search);
+  const uid = q.get("adjust");
+  if (!uid || !isA2()) return;
+  const form = $<HTMLFormElement>("[data-ca-adjust]");
+  const el = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+  adjustUid = uid;
+  adjustReverses = (q.get("reverses") || "").split(",").map((x) => x.trim()).filter((x) => /^[A-Za-z0-9_:-]{1,200}$/.test(x)).slice(0, 10);
+  const n = Number(q.get("amount"));
+  if (Number.isInteger(n) && n !== 0) el("amount").value = String(n);
+  const note = (q.get("note") || "").replace(/[^A-Za-z0-9 #-]/g, "").slice(0, 40);
+  if (note && !el("reason").value) el("reason").placeholder = `Why the credit on ${note} is removed`;
+  let handle = rows.find((r) => r.uid === uid)?.handle || null;
+  if (!handle && !preview) { try { const { db, doc, getDoc } = await import("../../lib/db"); const p = await getDoc(doc(db, "sites", SITE, "profiles", uid)); handle = p.exists() ? String(p.get("handle") || "") || null : null; } catch { /* typed by hand */ } }
+  if (handle) el("handle").value = `@${handle}`;
+  const rv = $("[data-adj-reverses]");
+  if (adjustReverses.length) { rv.innerHTML = `Reverses ${adjustReverses.length === 1 ? "1 payment" : `${adjustReverses.length} payments`}${note ? ` on ${esc(note)}` : ""}: <code>${adjustReverses.map(esc).join("</code>, <code>")}</code>`; rv.hidden = false; }
+  document.getElementById("adjust")?.scrollIntoView({ block: "start" });
+  el("reason").focus({ preventScroll: true });
+}
+function wireAdjust() {
+  const form = $<HTMLFormElement>("[data-ca-adjust]");
+  const el = (n: string) => form.elements.namedItem(n) as HTMLInputElement;
+  // typing another handle drops the prefilled person (and the ledger ids that went with them)
+  el("handle").addEventListener("input", () => { adjustUid = null; adjustReverses = []; $("[data-adj-reverses]").hidden = true; });
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault();
+    if (!isA2()) return;
+    form.querySelectorAll<HTMLElement>("[data-adj-err]").forEach((x) => (x.hidden = true));
+    const fail = (k: string, m: string) => { const h = form.querySelector<HTMLElement>(`[data-adj-err="${k}"]`)!; h.textContent = m; h.hidden = false; if (k !== "form") el(k).focus(); };
+    const handle = el("handle").value.trim().replace(/^@/, "").toLowerCase();
+    const amount = Number(el("amount").value), reason = el("reason").value.trim();
+    if (!/^[a-z0-9_]{3,20}$/.test(handle)) return fail("handle", "Enter a handle: 3 to 20 letters, numbers or underscores.");
+    if (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 1000) return fail("amount", "A whole number, not 0, up to 1,000 either way.");
+    if (reason.length < 3) return fail("reason", "Write a reason (3 to 200 characters).");
+    let uid = adjustUid;
+    if (!uid) {
+      if (preview) uid = "preview";
+      else { try { uid = await uidForHandle(handle); } catch { return fail("form", "Couldn't look that handle up. Try again."); } }
+      if (!uid) return fail("handle", `No member called @${handle}.`);
+    }
+    void confirmAction({
+      title: amount < 0 ? `Take ${-amount} Gears from @${handle}?` : `Give @${handle} ${amount} Gears?`,
+      message: `It goes on their Gears as an adjustment and in the admin log with your reason: "${reason}".`,
+      confirmLabel: "Adjust Gears", busyLabel: "Saving…", danger: false, feature: "crew",
+      onConfirm: async () => {
+        try {
+          const res = await act<{ total: number }>("gearsAdjust", { uid, amount, reason, reverses: adjustReverses });
+          if (res) {
+            toast(`Adjusted. @${handle} now has ${res.total} Gears.`);
+            form.reset(); adjustUid = null; adjustReverses = []; $("[data-adj-reverses]").hidden = true;
+            history.replaceState(null, "", `${location.pathname}#adjust`);
+          }
+        } catch (x) { throw new Error(messageFor(x, "Couldn't save. Try again.")); }
+      },
+    });
+  });
+}
 
 async function refresh() {
   try { await loadAll(); renderAll(); } catch (err) { toast(messageFor(err, "Couldn't refresh the page."), { kind: "error" }); }
@@ -530,6 +648,8 @@ function wireSettings() {
 function wire() {
   wireSettings();
   wireWaive();
+  wireInbox();
+  wireAdjust();
   $("[data-ca-filters]").addEventListener("click", (e) => {
     const b = (e.target as HTMLElement).closest<HTMLButtonElement>("[data-f]");
     if (!b) return;
@@ -584,7 +704,7 @@ async function start() {
   try {
     await loadAll();
     renderAll();
-    if (!wired) { wired = true; wire(); }
+    if (!wired) { wired = true; wire(); void prefillAdjust(); }
     body.hidden = false;
   } catch (err) {
     $("[data-ca-error-text]").textContent = messageFor(err, "Check your connection and try again.");

@@ -1,7 +1,8 @@
 // /crew/board: the crew leaderboard (docs/specs/mod-machina.md §4b). Reads crew/main/boards/{month|season|all}
 // (public, written by the crew functions). Podium for the top three, then the table; your row is highlighted and,
 // when it is past the first rows, pinned under a gap. Admins carry a Staff tag and their real place. Duties and
-// hours come from confirmed duty records (a dash when none). Sample data under ?as= (non-production).
+// hours come from confirmed duty records (a dash when none). Inbox: Hotline Boom first replies (talk-back.md §9e; admins only, a dash for
+// crew who don't work the inbox); inbox Gears are already in each Gears total. Sample data under ?as= (non-production).
 import { onAccess } from "./layout";
 import { esc, num, loadBoard, who, monthName } from "./public";
 import type { Board, BoardRow } from "./api";
@@ -31,7 +32,7 @@ function rowHtml(r: BoardRow, you: boolean, place = r.place) {
     <td class="bt-board-rank">${place}</td>
     <td><span class="bt-board-who"><span class="bt-avatar-sm" aria-hidden="true">${esc(initials(w.name))}</span><span><b>${name}</b>${w.gradeHtml}${r.staff ? STAFF : ""}${you ? `<span class="bt-sr-only"> (you)</span>` : ""}</span></span></td>
     <td class="bt-board-rooms">${rooms(r)}</td>
-    <td class="bt-board-n bt-board-hide">${num(r.duties)}</td><td class="bt-board-n bt-board-hide">${hours(r.hours)}</td><td class="bt-board-n bt-board-hide">${num(r.recruits)}</td>
+    <td class="bt-board-n bt-board-hide">${num(r.duties)}</td><td class="bt-board-n bt-board-hide">${hours(r.hours)}</td><td class="bt-board-n bt-board-hide">${num(r.recruits)}</td><td class="bt-board-n bt-board-hide">${r.inboxReplies == null ? `<span class="bt-board-dash" aria-label="Doesn't work the inbox">—</span>` : num(r.inboxReplies)}</td>
     <td class="bt-board-time">${num(r.gears)}</td></tr>`;
 }
 
@@ -43,7 +44,7 @@ function render() {
   const uid = me.user?.uid;
   const mine = uid ? rows.find((r) => r.uid === uid) : undefined;
   const label = tab === "month" ? (b.period && /^\d{4}-\d{2}$/.test(b.period) ? `${monthName(b.period)} so far` : "This month so far") : tab === "season" ? "This season" : "All time";
-  sub.textContent = `Gears count help: time on duty, hosting Chat Games, recruiting and crew tasks. ${label}.`;
+  sub.textContent = `Gears count help: time on duty, hosting Chat Games, recruiting, crew tasks and answering the Hotline Boom inbox. ${label}.`;
   if (!rows.length) {
     body.innerHTML = `<div class="bt-tile bt-board-card"><div class="bt-board-empty"><span class="cp-art" aria-hidden="true">${MM_ICON}</span><b>No Gears yet</b><span>${tab === "month" ? "The board fills as the crew starts earning Gears this month." : "Nobody has earned Gears in this period yet."} <a href="/crew/how-it-works">How Gears work</a></span></div></div>`;
     return;
@@ -55,9 +56,9 @@ function render() {
   const vis = all ? rows : rows.slice(0, SHOWN);
   const pinned = mine && !vis.includes(mine);
   const trs = vis.map((r) => rowHtml(r, r === mine)).join("")
-    + (pinned ? `<tr class="bt-board-gap" aria-hidden="true"><td colspan="7">···</td></tr>${rowHtml(mine!, true)}` : "");
+    + (pinned ? `<tr class="bt-board-gap" aria-hidden="true"><td colspan="8">···</td></tr>${rowHtml(mine!, true)}` : "");
   const you = mine ? `<span>You're <b>#${mine.place}</b> with <b>${num(mine.gears)}</b> Gears${mine.staff ? ". Staff race with a green tag but never win crew awards" : ""}.</span>` : `<span>Staff race with a green tag but never win crew awards.</span>`;
-  body.innerHTML = `${pod}<div class="bt-tile bt-board-card"><div class="cp-scroll"><table class="bt-board bt-board--crew"><thead><tr><th scope="col">#</th><th scope="col">Crew</th><th scope="col" class="bt-board-rooms">Chats</th><th scope="col" class="bt-board-n bt-board-hide">Duties</th><th scope="col" class="bt-board-n bt-board-hide">Hours</th><th scope="col" class="bt-board-n bt-board-hide">Recruits</th><th scope="col">Gears</th></tr></thead><tbody>${trs}</tbody></table></div>
+  body.innerHTML = `${pod}<div class="bt-tile bt-board-card"><div class="cp-scroll"><table class="bt-board bt-board--crew"><thead><tr><th scope="col">#</th><th scope="col">Crew</th><th scope="col" class="bt-board-rooms">Chats</th><th scope="col" class="bt-board-n bt-board-hide">Duties</th><th scope="col" class="bt-board-n bt-board-hide">Hours</th><th scope="col" class="bt-board-n bt-board-hide">Recruits</th><th scope="col" class="bt-board-n bt-board-hide" title="Hotline Boom first replies">Inbox</th><th scope="col">Gears</th></tr></thead><tbody>${trs}</tbody></table></div>
     <div class="bt-board-foot">${you}${!all && rows.length > SHOWN ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-more>Show all ${rows.length}</button>` : `<a href="/crew/how-it-works">How Gears work</a>`}</div></div>`;
 }
 

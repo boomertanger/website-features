@@ -38,6 +38,7 @@ import "../../styles/crew-admin.css";
         <a href="#waive" data-nav="waive" data-ca-owner hidden>Waive</a>
         <a href="#strikes" data-nav="strikes">Strikes</a>
         <a href="#todos" data-nav="todos">To-do <span class="bt-badge bt-badge--admin" data-count="todos" hidden></span></a>
+        <a href="#adjust" data-nav="adjust" data-ca-a2 hidden>Adjust Gears</a>
         <a href="#settings" data-nav="settings">Settings</a>
       </nav>
 
@@ -100,8 +101,37 @@ import "../../styles/crew-admin.css";
         <div data-ca-todos></div>
       </section>
 
+      <section class="ca-sec" id="adjust" aria-labelledby="ca-h-adjust" data-ca-a2 hidden>
+        <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-adjust">Adjust Gears</h2></div>
+        <p class="ca-sub">Owner and Overseers and up. A correction to someone's Gears: a minus amount takes Gears away, a plus amount adds them. Logged with your reason. Only the owner can adjust their own. Remove credit on a Hotline Boom message opens this filled in.</p>
+        <form class="bt-card ca-card ca-adjust" data-ca-adjust novalidate>
+          <div class="bt-form-grid">
+            <div class="bt-field"><label class="bt-label" for="ca-adj-h">Crew member's handle</label><input class="bt-input" id="ca-adj-h" name="handle" type="text" autocomplete="off" autocapitalize="none" spellcheck="false" placeholder="@handle" maxlength="21"><span class="bt-hint ca-err" data-adj-err="handle" role="alert" hidden></span></div>
+            <div class="bt-field"><label class="bt-label" for="ca-adj-n">Amount</label><input class="bt-input" id="ca-adj-n" name="amount" type="number" inputmode="numeric" min="-1000" max="1000" step="1" placeholder="-7"><span class="bt-hint">A whole number, not 0, up to 1,000 either way.</span><span class="bt-hint ca-err" data-adj-err="amount" role="alert" hidden></span></div>
+          </div>
+          <div class="bt-field"><label class="bt-label" for="ca-adj-r">Reason</label><input class="bt-input" id="ca-adj-r" name="reason" type="text" maxlength="200" placeholder="What happened"><span class="bt-hint">3 to 200 characters. It goes in the admin log.</span><span class="bt-hint ca-err" data-adj-err="reason" role="alert" hidden></span></div>
+          <p class="bt-notice" data-adj-reverses hidden></p>
+          <p class="bt-notice bt-notice--error" data-adj-err="form" role="alert" hidden></p>
+          <div class="bt-form-actions"><button type="submit" class="bt-btn bt-btn--admin" data-adj-save>Adjust Gears</button></div>
+        </form>
+      </section>
+
       <section class="ca-sec" id="settings" aria-labelledby="ca-h-settings">
         <div class="ca-sec-head"><h2 class="ca-h" id="ca-h-settings">Crew settings</h2></div>
+        <form class="bt-card ca-card ca-inbox" data-ca-inbox novalidate>
+          <p class="bt-notice" data-ca-inbox-note hidden>Only the owner and Overseers and up change these. You can see the current values.</p>
+          <fieldset class="ca-fs">
+            <legend class="bt-label">Hotline Boom inbox</legend>
+            <p class="bt-hint">What answering the inbox earns, the daily cap and Operator of the Month. Owner and Overseers and up. <a href="/admin/inbox/how-it-works#gears">How Gears work here</a></p>
+            <div class="ca-gears" data-ca-inbox-fields></div>
+            <div class="ca-sw">
+              <button type="button" class="bt-switch" role="switch" aria-checked="true" aria-labelledby="ca-sw-op-l" aria-describedby="ca-sw-op-d" data-inbox-sw="operatorAward"></button>
+              <div><span class="ca-sw-l" id="ca-sw-op-l">Operator of the Month</span><p class="bt-hint" id="ca-sw-op-d">The staff award, chosen on the 1st from the inbox numbers. Off: no award.</p></div>
+            </div>
+          </fieldset>
+          <p class="bt-notice bt-notice--error" data-ca-inbox-err role="alert" hidden></p>
+          <div class="bt-form-actions" data-ca-inbox-acts><button type="submit" class="bt-btn bt-btn--admin" data-ca-inbox-save>Save inbox values</button></div>
+        </form>
         <form class="bt-card ca-card" data-ca-settings novalidate>
           <p class="bt-notice" data-ca-settings-note hidden>Only the owner can change these. You can see the current values.</p>
           <div class="bt-form ca-form">
