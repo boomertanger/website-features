@@ -1901,3 +1901,9 @@ Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 1
 - **Colors:** By service bars are blue (questions) and teal (feedback), never purple; Gears credit is gold; Pick up is admin green (`.bt-btn--admin`, staff-only page); Desk clear uses the lime stamp; spam marks use a gray stamp; the Top Gear flip medal is blue, never red (red stays for destroying data).
 - **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero in its picked V2 Bakelite look (`hotline-boom-hero.html`), and a mug with the mascot logo; the mascot stays in the Desk clear moment and the closing call.
 
+### 8ac. Game page votes and ratings
+Game Vault + Service Hub addendum. Spec `docs/specs/game-page-votes.md` (confirmed Oct 15, 2026); mockup `docs/design/mockups/game-page-votes.html`. **Picks V3 + C1** (Oct 15, 2026):
+- **V3 Ballot** for the vote: a dashed gold callout under the title on every To play game, whoever added it: "Want Boomer to stream this?", "<n> votes · #<rank> on Most wanted" (the Most wanted shelf's order) and the vote button; the owner sees "Members want you to play this" with no button. The Community pick banner keeps its credit and loses its button (never two vote buttons).
+- **C1 Twin dials** for the verdict: the members' dial beside Boomer's score dial in the hero, same size and family: the ring split Love (pink) / Like (blue) / Not for me (gold), % liked in the middle, "<n> ratings · Rate it"; a dashed "Not enough ratings yet" dial below 3 member ratings; Boomer's dial shows "Not played yet" on an unplayed game. Owner and admin ratings stay out. Phone: the poster on the left exactly as tall as the two stacked dials on the right (3:4, width follows).
+- **Rating a game** uses the compact page strip wired to `vault-<slug>` (the rating is about the game itself); the prompt is "How do you rate this game?", also in the /services Vault games dialog.
+

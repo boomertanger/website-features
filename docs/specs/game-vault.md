@@ -8,6 +8,8 @@ approved) and `docs/design/mockups/game-vault-round-2.html` (round 2, the "next 
 versions of the same picks; recommended set `A65 C56 B34 D34 E4 F3 G34`, to be confirmed
 before the UI parts are built).
 
+**Addendum (Oct 15, 2026): game page voting and rating** in `docs/specs/game-page-votes.md` (mockup `docs/design/mockups/game-page-votes.html`, picks V3 + C1): the V3 ballot ("Play this, Boomer!") on every To play game page whoever added it, the compact page strip rating every non-hidden game as `vault-<slug>`, and the C1 twin dials (Boomer's score and the members' verdict). It replaces §9's vote button in the Community pick banner.
+
 ## 1. Summary
 
 **Game Vault** (`/games`; boomertanger.games redirects here) lists every horror game
