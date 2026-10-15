@@ -22,7 +22,7 @@ const state = {
 devicePick.innerHTML = [mine, mine === "desktop" ? "mobile" : "desktop"].map((d) => `<button type="button" data-val="${d}">${DEVICE_LABEL[d as Device]}</button>`).join("");
 
 const skeleton = () => `<div class="ar-board-rows" aria-busy="true">${'<div class="bt-skeleton-row"><span class="bt-skeleton ar-skel-av"></span><span class="bt-skeleton-lines"><span class="bt-skeleton ar-skel-line"></span></span></div>'.repeat(6)}</div>`;
-const playBtn = (sm = false) => `<button type="button" class="bt-btn bt-btn--go${sm ? " bt-btn--sm" : ""}" data-play-now>Play now</button>`;
+const playBtn = (sm = false) => `<button type="button" class="bt-btn bt-btn--go${sm ? " bt-btn--sm" : ""}" data-play-now data-pulse="play-now">Play now</button>`;
 const where = (d: Device) => (d === "mobile" ? "your phone" : "a computer");
 
 function syncPills() {

@@ -25,7 +25,7 @@ export function talkbackHtml({ service = "", name = "this page", state = "new", 
     const label = RATE_LABEL[v];
     const tip = mine === v && rating?.version ? `${label} (your rating, v${rating.version}${rating.date ? `, ${rating.date}` : ""})` : label;
     const act = visitor ? 'data-signin="join" data-signin-title="Join free to rate"' : `data-rate-v="${v}" aria-pressed="${mine === v}"`;
-    return `<button type="button" class="bt-talkback-rb" data-v="${v}" ${act} aria-label="${esc(label)}" title="${esc(tip)}">${RATE_ICON[v]}</button>`;
+    return `<button type="button" class="bt-talkback-rb" data-v="${v}"${v === "love" ? ' data-pulse="rate-love"' : ""} ${act} aria-label="${esc(label)}" title="${esc(tip)}">${RATE_ICON[v]}</button>`;
   };
   const rateRow = rate ? `<span class="bt-talkback-q"><span class="bt-talkback-q-l">${esc(`Rate ${name}`)}</span><span class="bt-talkback-q-s">Rate it</span></span><span class="bt-talkback-rates" role="group" aria-label="${esc(`Rate ${name}`)}">${RATE_VALUES.map(btn).join("")}</span>` : `<span class="bt-talkback-q">Questions or feedback?</span>`;
   const pill = talk ? `<button type="button" class="bt-talkback-talk" data-talk="question" aria-label="Talk back: ask a question or give feedback" title="Talk back">${TALK_ICON}Talk</button>` : "";

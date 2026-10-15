@@ -30,13 +30,13 @@ function remember(slug: string, on: boolean) {
 }
 
 /** big: the full-size primary button; primary: a small primary one (the game page's ballot). */
-export function wantButton(g: Pick<VCard, "slug" | "wanted" | "status" | "title">, { big = false, primary = big } = {}) {
+export function wantButton(g: Pick<VCard, "slug" | "wanted" | "status" | "title">, { big = false, primary = big, pulse = "" } = {}) {
   if (g.status !== "wishlist") return "";
   const on = mine().has(g.slug);
   const visitor = getAuthState().status === "signedOut";
   const label = visitor ? LABEL.visitor : on ? LABEL.on : LABEL.off;
   const aria = on && !visitor ? ` aria-label="Remove your vote for ${esc(g.title)}"` : "";
-  return `<button type="button" class="bt-btn ${on ? "bt-btn--secondary" : primary ? "bt-btn--primary" : "bt-btn--secondary"}${big ? "" : " bt-btn--sm"}" data-want="${g.slug}" data-title="${esc(g.title)}" aria-pressed="${on}"${aria}>${I.heart}${label}</button>`;
+  return `<button type="button" class="bt-btn ${on ? "bt-btn--secondary" : primary ? "bt-btn--primary" : "bt-btn--secondary"}${big ? "" : " bt-btn--sm"}" data-want="${g.slug}" data-title="${esc(g.title)}" aria-pressed="${on}"${aria}${pulse ? ` data-pulse="${pulse}"` : ""}>${I.heart}${label}</button>`;
 }
 
 /** Wires every [data-want] under root. onCount(slug, wantedCount) lets the page update its numbers. */

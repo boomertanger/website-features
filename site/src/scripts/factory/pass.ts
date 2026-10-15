@@ -145,7 +145,7 @@ function heroHtml() {
       <div class="ff-chaps" role="img" aria-label="Chapter ${curIdx + 1} of ${M.total}">${bars}</div>
       <div class="ff-hero-stats"><div><b>${xp.toLocaleString("en-US")}</b><span>season XP</span></div>${rankStat}${daysLeft != null ? `<div><b>${daysLeft}</b><span>day${daysLeft === 1 ? "" : "s"} left</span></div>` : ""}${timer}</div>
     </div>
-    <div class="ff-hero-clock" data-clock-wrap>${clockHtml({ streak: M.streak.current, savers: Math.min(M.streak.savers, M.streak.saversCap), cap: M.streak.saversCap, done, disabled: !!M.preview })}</div>`;
+    <div class="ff-hero-clock" data-clock-wrap>${clockHtml({ streak: M.streak.current, savers: Math.min(M.streak.savers, M.streak.saversCap), cap: M.streak.saversCap, done, disabled: !!M.preview, pulse: "punch-the-clock" })}</div>`;
 }
 
 // ---------- chapter chips ----------
@@ -299,7 +299,7 @@ async function clockIn(btn: HTMLButtonElement) {
     if (r.streak.earnedSaver) toast("7 days in a row: you earned a streak saver.");
     if (!r.streak.already) toast(`Punched in. ${plural(r.streak.current, "day")} in a row.`);
     if (M.summary?.liveSeasonId) M.progress = await D.loadProgress(M.summary.liveSeasonId, me.user!.uid);
-    root.querySelector("[data-clock-wrap]")!.innerHTML = clockHtml({ streak: M.streak.current, savers: Math.min(M.streak.savers, M.streak.saversCap), cap: M.streak.saversCap, done: true });
+    root.querySelector("[data-clock-wrap]")!.innerHTML = clockHtml({ streak: M.streak.current, savers: Math.min(M.streak.savers, M.streak.saversCap), cap: M.streak.saversCap, done: true, pulse: "punch-the-clock" });
     root.querySelector("[data-main]")!.innerHTML = mainHtml();
     root.querySelector("[data-side]")!.innerHTML = sideHtml();
     initTimers(root);

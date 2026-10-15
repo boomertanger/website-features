@@ -17,4 +17,11 @@ export function manifestFor(pathname: string): Manifest | null {
     || all.find((m) => (m.routes || []).some((r) => r.includes("[") && pattern(r).test(p)))
     || null;
 }
+/** Traffic Pulse (docs/specs/traffic-pulse.md §3A): the service id every page counts under, written on <body data-service> at build. Unlike
+ *  manifestFor it skips nothing (admin pages count too); a page no manifest claims is "unassigned" (flagged on /admin/pulse). */
+export function serviceIdFor(pathname: string): string {
+  const p = clean(pathname.replace(/\/index\.html$/, "").replace(/\.html$/, ""));
+  const m = all.find((x) => (x.routes || []).some((r) => clean(r) === p)) || all.find((x) => (x.routes || []).some((r) => r.includes("[") && pattern(r).test(p)));
+  return m ? m.id : "unassigned";
+}
 export const manifestById = (id: string): Manifest | null => all.find((m) => m.id === id) || null;

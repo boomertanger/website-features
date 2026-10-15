@@ -36,7 +36,7 @@ export const earnedLine = (h: Held) => [h.earnedAt && `Earned ${fmtDay(h.earnedA
 /** "4%", "0.6%", "<0.1%". */
 export const fmtPct = (p: number) => (p < 0.1 ? "<0.1%" : p < 10 ? `${Math.round(p * 10) / 10}%` : `${Math.round(p)}%`);
 
-export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Held | null; member?: boolean; comingSoon?: boolean; hidden?: boolean; times?: number } = {}) {
+export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Held | null; member?: boolean; comingSoon?: boolean; hidden?: boolean; times?: number; pulse?: string } = {}) {
   const { collName = "", held = null, member = false, comingSoon = false, hidden = false, times = 0 } = opts;
   const ntimes = held && times > 1 ? ` ×${times}` : "";   // a badge earned in several seasons (Beat the Boss)
   const s = SOURCES[b.source] ?? SOURCES.auto, r = Math.max(1, Math.min(5, b.rarity || 1)), tone = RARITY[r].tone;
@@ -58,7 +58,7 @@ export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Hel
     ? `Secret ${RARITY[r].name} badge. Hint: ${hint}`
     : `${b.name}${ntimes}, ${RARITY[r].name}${held ? `. ${earnedLine(held)}` : member ? ". Not earned yet" : ""}. How to earn: ${b.how} Earned by: ${s.t}.${comingSoon && !held ? " Coming soon." : ""}${pct ? ` Held by ${pct} of members.` : ""}`;
   const cls = ["bt-flip", "tr-card", member && !held && "is-locked", held && "is-held"].filter(Boolean).join(" ");
-  return `<button type="button" class="${cls}" style="--c:var(--bt-${tone})" data-id="${esc(b.id)}" data-coll="${esc(b.collection)}" data-rar="${r}"${hidden ? " hidden" : ""} aria-label="${esc(label)}"><span class="bt-flip-in">
+  return `<button type="button" class="${cls}" style="--c:var(--bt-${tone})" data-id="${esc(b.id)}" data-coll="${esc(b.collection)}" data-rar="${r}"${opts.pulse ? ` data-pulse="${esc(opts.pulse)}"` : ""}${hidden ? " hidden" : ""} aria-label="${esc(label)}"><span class="bt-flip-in">
     <span class="bt-flip-face" aria-hidden="true"><span class="tr-src" title="${s.t}">${s.ic}</span><span class="tr-flags">${flags}</span>${front}</span>
     <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">
       <span class="bt-flip-k">${secret ? "Secret badge" : "How to earn"}</span><span class="bt-flip-v">${secret ? "The name and how to earn it stay hidden until it's yours. Follow the hint." : esc(b.how)}</span>

@@ -122,7 +122,7 @@ function hero(g: any) {
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
   // C1: Boomer's dial and the members' (a hidden game isn't rated, so it has Boomer's only)
   const scoreDial = g.review?.score ? dialHtml(g.review.score, { kicker: "Boomer" }) : dialHtml(null, { kicker: "Boomer", caption: g.status === "wishlist" ? "Not played yet" : "Not scored yet" });
-  const members = g.hidden ? "" : verdictDialHtml({ ...(verdicts[`vault-${g.slug}`] || {}), kicker: "Members" });
+  const members = g.hidden ? "" : verdictDialHtml({ ...(verdicts[`vault-${g.slug}`] || {}), kicker: "Members", rateAttrs: 'href="#rate" data-goto-rate data-pulse="rate-game"' });
   const dials = `<div class="gv-dials${members ? "" : " gv-dials--one"}">${scoreDial}${members}</div>`;
   return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}${ballot(g)}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dials}</div></section>`;
 }
@@ -147,7 +147,7 @@ const ballotLine = (g: any, n: number) => { const r = wantedRank(g, n); return `
 function ballot(g: any) {
   if (g.status !== "wishlist" || g.hidden) return "";
   const n = g.wantedCount || 0, owner = !!getAuthState().isOwner;
-  const btn = owner ? "" : wantButton({ slug: g.slug, title: g.title, wanted: n, status: g.status }, { primary: true });
+  const btn = owner ? "" : wantButton({ slug: g.slug, title: g.title, wanted: n, status: g.status }, { primary: true, pulse: "vote-play-this" });
   return `<div class="gv-ballot"><span class="gv-ballot-ic" aria-hidden="true">${I.ticket}</span><span class="gv-ballot-t"><b>${owner ? "Members want you to play this" : "Want Boomer to stream this?"}</b><span data-ballot-line>${ballotLine(g, n)}</span></span>${btn}</div>`;
 }
 

@@ -1159,7 +1159,12 @@ service cloud.firestore {
     // year live in private/age, which no client can read or write.
     match /users/{uid} {
       allow read: if request.auth != null && request.auth.uid == uid;
-      allow write: if false;
+      // Traffic Pulse (docs/specs/traffic-pulse.md §3A): "Don't count my visits". The member may change ONE field of their own existing doc,
+      // pulseOptOut, to a boolean; nothing else (every other users field is written only by Cloud Functions).
+      allow update: if request.auth != null && request.auth.uid == uid
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(["pulseOptOut"])
+        && request.resource.data.pulseOptOut is bool;
+      allow create, delete: if false;
 
       match /private/{docId} {
         allow read, write: if false;

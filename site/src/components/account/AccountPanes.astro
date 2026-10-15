@@ -184,6 +184,10 @@ const PRIVACY = [
             <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby={`pref-${key}`} data-pref={key}></button>
           </div>
         ))}
+        <div class="bt-set-row">
+          <div class="bt-set-row-main"><b id="pref-pulseOptOut">Don&#39;t count my visits</b><small>The site counts visits as anonymous numbers, with no cookies. Turn this on and your visits aren&#39;t counted at all. <span data-pulse-optout-note role="status"></span></small></div>
+          <button type="button" class="bt-switch" role="switch" aria-checked="false" aria-labelledby="pref-pulseOptOut" data-pulse-optout></button>
+        </div>
       </div>
     </section>
 
@@ -210,3 +214,6 @@ const PRIVACY = [
     </section>
   </div>
 </div>
+<script>
+  import "../../scripts/account/pulse-optout";
+</script>

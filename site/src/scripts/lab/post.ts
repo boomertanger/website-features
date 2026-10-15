@@ -28,7 +28,7 @@ export async function openPost(onPosted: (id: string) => void, openIdea: (id: st
       <div class="bt-field"><label class="bt-label" for="fl-d">What should it do?</label><textarea id="fl-d" class="bt-textarea" rows="4" maxlength="2000">${esc(keep.description)}</textarea><span class="bt-hint">10–2,000 characters. A new game idea? Pitch it in the Arcade Studio instead.</span></div>
       <div data-svc-slot></div>
       <p class="bt-error" hidden data-err role="alert"></p>
-      <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-go>Post idea</button></div>`;
+      <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-go data-pulse="submit-idea">Post idea</button></div>`;
     // About (optional): filled once the list is in, keeping the member's pick across redraws
     void loadServices({ preview: isPreview() }).then((list) => { const slot = modal.querySelector<HTMLElement>("[data-svc-slot]"); if (slot && list.length) slot.innerHTML = serviceSelectHtml({ id: "fl-svc", label: "About (optional)", list, value: service, none: "Not about one thing" }); });
     modal.querySelector<HTMLInputElement>("#fl-t")?.focus();

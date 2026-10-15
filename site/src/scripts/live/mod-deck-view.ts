@@ -126,7 +126,7 @@ export function clockInHtml(m: Model, d: Derived): string {
   const seatLine = d.seat.length ? roleLine(d.seat) : "";
   const rooms = d.streamRooms;
   const drop = !d.seat.length ? `<div class="md-drop" role="group" aria-label="Drop in to a room">${rooms.map((r) => `<button type="button" class="bt-chip bt-chip--small${(m.dropRoom || defaultDrop(d)) === r ? " is-active" : ""}" data-drop-room="${esc(r)}" aria-pressed="${(m.dropRoom || defaultDrop(d)) === r}">${esc(ROOM_SHORT[r])}${d.rooms.find((x) => x.room === r)?.state === "needed" ? " · needed" : ""}</button>`).join("")}</div>` : "";
-  return `<div class="md-clockin"><span class="md-clockin-txt"><small>${seatLine ? "Your seat tonight" : d.after ? "The after-show has no seats" : "No seat tonight"}</small><b>${esc(seatLine || "Drop in as a Deckhand")}</b>${drop}</span><button type="button" class="bt-btn bt-btn--primary" data-act="clockin">Clock in</button></div>`;
+  return `<div class="md-clockin"><span class="md-clockin-txt"><small>${seatLine ? "Your seat tonight" : d.after ? "The after-show has no seats" : "No seat tonight"}</small><b>${esc(seatLine || "Drop in as a Deckhand")}</b>${drop}</span><button type="button" class="bt-btn bt-btn--primary" data-act="clockin" data-pulse="clock-in">Clock in</button></div>`;
 }
 export const defaultDrop = (d: Derived): Room | null => (d.rooms.find((r) => r.state === "needed" && r.room !== "tiktok") || d.rooms.find((r) => r.state !== "off") || d.rooms[0])?.room ?? null;
 export const awayPopHtml = (d: Derived) => awayPopoverHtml({ lead: d.isLead || d.isCaptain });

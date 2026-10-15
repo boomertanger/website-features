@@ -52,7 +52,7 @@ export async function openForm({ page = "", onSent, openReport }: { page?: strin
     <label class="bt-check bz-private"><input type="checkbox" data-priv ${st.priv ? "checked" : ""}><span><b>This is a security or privacy problem.</b> Only you and the team will see this report, and it won't go on the public board.</span></label>
     <p class="bt-error" hidden data-err role="alert"></p>
     </div>
-    <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-send>Send report</button></div>`;
+    <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="button" class="bt-btn bt-btn--primary" data-send data-pulse="report-bug">Send report</button></div>`;
     drawShot();
     void drawService(keep.page ?? page);
     modal.querySelector<HTMLInputElement>("#bz-f-title")?.focus();

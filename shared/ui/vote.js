@@ -32,7 +32,7 @@ export function tokensHtml({ used = 0, total = 3, visitor = false } = {}) {
 export function voteBtnHtml({ slug = "", voted = false, full = false, visitor = false } = {}) {
   if (visitor) return `<button type="button" class="bt-vote-btn" data-join>Join to vote</button>`;
   const off = full && !voted;
-  return `<button type="button" class="bt-vote-btn${voted ? " is-on" : ""}" data-vote="${esc(slug)}" aria-pressed="${voted}"${off ? " disabled" : ""}${voted ? ' title="Tap to take your vote back"' : ""}>${voted ? `${dropHtml()} Voted ✓` : off ? "No votes left" : `${dropHtml()} Vote`}</button>`;
+  return `<button type="button" class="bt-vote-btn${voted ? " is-on" : ""}" data-vote="${esc(slug)}" data-pulse="ballot-vote" aria-pressed="${voted}"${off ? " disabled" : ""}${voted ? ' title="Tap to take your vote back"' : ""}>${voted ? `${dropHtml()} Voted ✓` : off ? "No votes left" : `${dropHtml()} Vote`}</button>`;
 }
 
 export function voteCardHtml({ slug = "", title = "", coverHtml = "", rank = 0, votes = 0, pct = 0, mine = false, tagHtml = "", ...btn } = {}) {

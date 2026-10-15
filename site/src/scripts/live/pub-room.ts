@@ -63,7 +63,7 @@ export function ticketMarkup(ctx: PubCtx): string {
   });
   const games = n.games.length ? `<p class="lp-games"><b>Tonight's games</b> ${n.games.map((g) => esc(g.title)).join(" · ")}${more ? ` · +${more} picked on stream` : ""}</p>` : "";
   const remind = ctx.member
-    ? `<button type="button" class="bt-btn bt-btn--primary" data-lp-remind aria-pressed="${reminded === n.id}">${reminded === n.id ? "Reminder set" : "Remind me"}</button>`
+    ? `<button type="button" class="bt-btn bt-btn--primary" data-lp-remind data-pulse="remind-me" aria-pressed="${reminded === n.id}">${reminded === n.id ? "Reminder set" : "Remind me"}</button>`
     : `<a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="Join to get go-live alerts">Get go-live alerts</a>`;
   return `<div class="lp-ticket">${ticket}<div class="lp-ticket-side">${games}<div class="lp-ticket-acts">${remind}<button type="button" class="bt-btn bt-btn--secondary" data-lp-cal>Add to calendar</button><a class="bt-link-btn" href="/schedule">Full schedule</a></div></div></div>`;
 }

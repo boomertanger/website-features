@@ -21,7 +21,7 @@ function cardHtml(g: Game, bests: Record<Device, Best | null> | null, compact: b
     return `<article class="bt-tile bt-game-card bt-game-card--compact is-soon"><div class="bt-game-art"><span class="bt-game-art-soon" aria-hidden="true">🔒</span></div><div class="bt-game-body"><div class="ar-meta"><span class="bt-badge bt-badge--gold"><span class="bt-badge-dot"></span>Soon</span></div><h2 class="bt-game-name">${esc(g.title)}</h2>${g.tagline ? `<p class="bt-game-tag">${esc(g.tagline)}</p>` : ""}</div></article>`;
   }
   const badges = `${isNew(g) ? `<span class="bt-badge bt-badge--lime"><span class="bt-badge-dot"></span>New</span>` : ""}<span class="bt-badge bt-badge--gray">${esc(g.currentVersion)}</span>`;
-  const acts = `<div class="bt-game-acts"><a class="bt-btn bt-btn--go" href="${gameHref(g)}" ${g.id === "tapTheSplat" ? "data-play-now" : ""}>Play now</a><a class="bt-btn bt-btn--secondary" href="${gameHref(g, "leaderboards")}">Leaderboards</a></div>`;
+  const acts = `<div class="bt-game-acts"><a class="bt-btn bt-btn--go" href="${gameHref(g)}" ${g.id === "tapTheSplat" ? "data-play-now" : ""} data-pulse="play-now">Play now</a><a class="bt-btn bt-btn--secondary" href="${gameHref(g, "leaderboards")}">Leaderboards</a></div>`;
   return `<article class="bt-tile bt-game-card${compact ? " bt-game-card--compact" : ""}">${artHtml()}<div class="bt-game-body"><div class="ar-meta">${badges}</div><h2 class="bt-game-name"><a href="${gameHref(g)}">${logoHtml(g, "sm")}</a></h2>${!compact && g.tagline ? `<p class="bt-game-tag">${esc(g.tagline)}</p>` : ""}${statsHtml(g.stats)}${bests ? meHtml(bests) : ""}${acts}</div></article>`;
 }
 

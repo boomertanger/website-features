@@ -41,7 +41,7 @@ function inner(v: DropView, p: number): string {
   };
   const b = buttonOf(v);
   return `${dropFuseHtml(dropFace(d), { p: f.p, state: f.state, flip: v.flip && !reduced() })}<span class="bt-live-banner-txt">${txt[v.kind]}</span>${cd}<span class="bt-live-banner-sp"></span>`
-    + (b ? `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" ${b.attrs}>${esc(b.label)}</button>` : "")
+    + (b ? `<button type="button" class="bt-btn bt-btn--primary bt-btn--sm" ${b.attrs}${b.attrs.startsWith("data-drop-claim") ? ' data-pulse="claim-drop"' : ""}>${esc(b.label)}</button>` : "")
     + `<button type="button" class="bt-live-banner-x" data-drop-x aria-label="Hide the drop banner">✕</button>`;
 }
 /** The kit's data-state for a view ("signup" draws as the visitor strip). */

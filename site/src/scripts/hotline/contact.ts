@@ -143,7 +143,7 @@ function lcdHtml(list: Line[], i: number) {
 }
 function rowHtml(l: Line, n: number) {
   const who = l.lane === "owner" ? "Only Boomertanger reads it." : "Read by Boomertanger and the inbox team.";
-  return `<button type="button" class="hb-row" aria-pressed="${M.pick === l.id}" data-line="${l.id}" aria-label="${n + 1}: ${esc(l.title)}. ${esc(l.line)} ${who}"><span class="hb-key" aria-hidden="true">${n + 1}</span><b>${esc(l.title)}</b><span class="hb-line">${esc(l.line)}</span><span class="hb-lane-ic${l.lane === "owner" ? " hb-lane-ic--owner" : ""}" aria-hidden="true">${icon(l.lane === "owner" ? "private" : "team")}</span></button>`;
+  return `<button type="button" class="hb-row" aria-pressed="${M.pick === l.id}" data-line="${l.id}" data-pulse="dial-line" aria-label="${n + 1}: ${esc(l.title)}. ${esc(l.line)} ${who}"><span class="hb-key" aria-hidden="true">${n + 1}</span><b>${esc(l.title)}</b><span class="hb-line">${esc(l.line)}</span><span class="hb-lane-ic${l.lane === "owner" ? " hb-lane-ic--owner" : ""}" aria-hidden="true">${icon(l.lane === "owner" ? "private" : "team")}</span></button>`;
 }
 
 function menuHtml() {

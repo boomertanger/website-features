@@ -21,7 +21,7 @@ export function dutyBarHtml({ state = "on", handle = "", grade = null, avatarNam
   const m = Math.max(0, Math.floor(Number(minutes) || 0)), counted = m >= COUNT_AT;
   const who = `<span class="bt-duty-who"><b>${esc(handle)}${grade ? ` ${gradeChipHtml(grade)}` : ""}</b><small>${esc(st === "away" ? awayText || "Stepped away" : st === "off" ? line || "Not on duty yet" : line)}</small></span>`;
   const ring = st === "on" ? `<span class="bt-duty-min${counted ? " is-counted" : ""}"><span class="bt-duty-ring${counted ? " is-counted" : ""}" style="--v:${Math.min(100, (m / COUNT_AT) * 100)}" role="img" aria-label="${counted ? "Duty counted" : `${m} of ${COUNT_AT} minutes`}"></span><span><b>${esc(minText(m))}</b><small>${counted ? "Duty counted" : `${COUNT_AT - m} min to count`}</small></span></span>` : "";
-  const act = st === "off" ? `<button type="button" class="bt-btn bt-btn--primary" data-duty="clockin">Clock in</button>`
+  const act = st === "off" ? `<button type="button" class="bt-btn bt-btn--primary" data-duty="clockin" data-pulse="clock-in">Clock in</button>`
     : st === "away" ? `<button type="button" class="bt-btn bt-btn--primary" data-duty="back">I'm back</button>`
       : `<button type="button" class="bt-btn bt-btn--secondary" data-duty="away" aria-expanded="false" aria-haspopup="dialog">Step away</button>`;
   const flag = canFlag && st !== "off" ? `<button type="button" class="bt-duty-flag" data-duty="flag" title="Flag to Boomer" aria-label="Flag to Boomer">⚑</button>` : "";

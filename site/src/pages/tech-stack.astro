@@ -56,7 +56,7 @@ const MIX_PANEL = (() => {
               <h1 class="bt-title bt-title--hero" id="h-hero">Tech stack</h1>
               <p>Two PCs, {cams} cameras, one mixer and a {TS.internet.speed} line. Here's everything that runs the stream, and exactly how it's wired.</p>
               <ul class="ts-hero-stats"><li><b>2</b> PCs</li><li><b>{cams}</b> cameras</li><li><b>{deviceCount}</b> devices</li><li><b>3</b> platforms at once</li></ul>
-              <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#ts-rig">Explore the setup</a><button type="button" class="bt-btn bt-btn--secondary" data-tourjump="gameplay">Follow a signal</button></div>
+              <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="#ts-rig" data-pulse="diagram-view">Explore the setup</a><button type="button" class="bt-btn bt-btn--secondary" data-tourjump="gameplay" data-pulse="tour-start">Follow a signal</button></div>
             </div>
             <div class="ts-hero-scene"><Fragment set:html={heroScene()} /><Mascot aware decorative /></div>
           </div>
@@ -87,7 +87,7 @@ const MIX_PANEL = (() => {
               <div class="bt-search"><Fragment set:html={SEARCH_IC} /><input class="bt-input ts-find" type="search" placeholder="Find a device" aria-label="Find a device" /></div><span class="ts-find-n" aria-live="polite"></span>
               <div class="bt-view-switch ts-views" role="radiogroup" aria-label="View">{VIEWS.map(([k, l]) => <button type="button" role="radio" aria-checked={k === "photo" ? "true" : "false"} data-view={k}>{l}</button>)}</div>
             </div>
-            <div class="ts-tours" role="group" aria-label="Follow the signal"><span class="bt-label">Follow the signal</span>{TOURS.map((t) => <button type="button" class="bt-chip bt-chip--small ts-tour" data-tour={t.id} aria-pressed="false"><Fragment set:html={LOCK_SVG} />{t.title}</button>)}</div>
+            <div class="ts-tours" role="group" aria-label="Follow the signal"><span class="bt-label">Follow the signal</span>{TOURS.map((t) => <button type="button" class="bt-chip bt-chip--small ts-tour" data-tour={t.id} data-pulse="tour-start" aria-pressed="false"><Fragment set:html={LOCK_SVG} />{t.title}</button>)}</div>
             <div class="ts-stage">
               <div class="ts-readout" role="status"></div>
               <Fragment set:html={zoomFrameHtml({ width: VB_W, height: VB_H, label: "Wiring diagram", svgClass: "ts-svg" })} />
@@ -178,7 +178,7 @@ const MIX_PANEL = (() => {
           <div class="bt-chat">
             {TS.askBoombot.map(({ q, a }, i) => (
               <>
-                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ts-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
+                <button type="button" class="bt-chat-q" data-pulse="ask-boombot" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`ts-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{q}</button>
                 <div class="bt-chat-a" id={`ts-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
                   <span class="bt-chat-av" set:html={boombotIcon(`ts-bb-${i}`)} />
                   <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>

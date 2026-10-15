@@ -12,7 +12,7 @@ import PreviewChip from "../components/PreviewChip.astro";
 import AccountBanners from "../components/account/AccountBanners.astro";
 import Mascot from "../components/Mascot.astro";
 import TalkBackNote from "../components/services/TalkBackNote.astro";
-import { manifestFor } from "../lib/service-manifests";
+import { manifestFor, serviceIdFor } from "../lib/service-manifests";
 import site from "../data/site.json";
 import { isProduction, firebaseEnv } from "../lib/env.js";
 
@@ -29,6 +29,8 @@ interface Props {
 const { title, description = site.tagline, overlayHeader = false, noindex = false, fullTitle = false } = Astro.props;
 // The page strip (Service Hub §8a): the service whose manifest claims this route, if any (its talkBack value decides; TalkBackNote.astro).
 const stripService = manifestFor(Astro.url.pathname);
+// Traffic Pulse (docs/specs/traffic-pulse.md §3A): the service this page counts under, from the manifests ("unassigned" when none claims it).
+const pulseService = serviceIdFor(Astro.url.pathname);
 const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : `${site.name}: ${site.tagline}`;
 ---
 <!doctype html>
@@ -48,7 +50,7 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
   </head>
-  <body class="bt-root bt-site" data-live={site.liveState} data-auth="visitor" data-staff="off" data-crew="off" data-overseer="off" data-owner="off" data-auth-state="loading" data-env={firebaseEnv}>
+  <body class="bt-root bt-site" data-service={pulseService} data-live={site.liveState} data-auth="visitor" data-staff="off" data-crew="off" data-overseer="off" data-owner="off" data-auth-state="loading" data-env={firebaseEnv}>
     <script is:inline>
       // The last known sign-in (localStorage "bt.who", written by lib/auth.ts), on <body> before first paint: data-auth, data-staff and
       // the role flags data-crew / data-overseer / data-owner (.bt-when-* in bt-ui.css). Role-only links are in the HTML and show from the
@@ -145,6 +147,9 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
       else setTimeout(() => onLive((p) => { if (p.drop) void startDrop(); }), 1500);
       import { paintNextLabels } from "../lib/offline-next";
       if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
+      // Traffic Pulse: the cookieless beacon (counts only), loaded once the page is idle; it skips previews, bots, GPC/DNT and opted-out members.
+      const startPulse = () => import("../scripts/pulse/beacon").then((m) => m.startPulse());
+      if ("requestIdleCallback" in window) requestIdleCallback(() => void startPulse(), { timeout: 4000 }); else setTimeout(() => void startPulse(), 1500);
       import "../scripts/account/ui";
       import "../scripts/factory/site-wide";
       // Talk Back (Hotline Boom part 2): window.btTalkBack and the [data-talkback] / Ask pin clicks; the dialog loads on first use.

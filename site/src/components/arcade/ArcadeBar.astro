@@ -27,12 +27,12 @@ const links = [
     </a>
     <nav class="bt-seg-nav ar-barlinks" aria-label="Arcade">
       {links.map((l) => (
-        <a href={l.href} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
+        <a href={l.href} data-pulse={l.id === "lb" ? "leaderboard" : undefined} aria-current={section === l.id ? "page" : undefined}>{l.label}</a>
       ))}
     </nav>
     <nav class="bt-seg-nav bt-seg-nav--icons ar-barico" aria-label="Arcade">
       {links.map((l) => (
-        <a href={l.href} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>
+        <a href={l.href} data-pulse={l.id === "lb" ? "leaderboard" : undefined} aria-label={l.label} title={l.label} aria-current={section === l.id ? "page" : undefined}><svg aria-hidden="true"><use href={`#i-${l.icon}`} /></svg></a>
       ))}
     </nav>
   </div>
