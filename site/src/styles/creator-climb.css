@@ -1,12 +1,16 @@
 /* Creator Climb (docs/specs/creator-climb.md §6, §13; mockup docs/design/mockups/creator-climb.html: hero H1-D Summit camp, colours P1 Night
-   lamps). Feature CSS, cc- prefix, tokens only. The line colours are declared once here (never purple, which means clickable, or red, which
-   means danger): the platform icon at a line's end carries the meaning. Components (.bt-chart, .bt-path, .bt-flip, .bt-lock-card, .bt-meter,
+   lamps). Feature CSS, cc- prefix, tokens only. The line colours are declared once here. Twitch and YouTube use their brand colours
+   (design-system §8ae): on data marks ONLY (chart lines and dots, legend swatches, the goal meter fill, crossover bands and bars, record and
+   pace charts, stage sparklines), never on anything clickable (a button, link, chip background, border or focus ring), where purple still
+   means clickable and red means it destroys data. The platform icon at a line's end carries the meaning. Components (.bt-chart, .bt-path, .bt-flip, .bt-lock-card, .bt-meter,
    .bt-chat, .bt-card, .bt-chip, .bt-tag) come from shared/bt-ui.css untouched. Container queries only; reduced motion respected. */
 .bt-root:not(#_) :is(.cc, .cc-admin) {
   --cc-all: var(--bt-title);
-  --cc-twitch: var(--bt-ice);
+  --cc-twitch-brand: #9146ff;
+  --cc-youtube-brand: #ff0000;
+  --cc-twitch: var(--cc-twitch-brand);
   --cc-tiktok: var(--bt-pink);
-  --cc-youtube: var(--bt-fuse);
+  --cc-youtube: var(--cc-youtube-brand);
   --cc-members: var(--bt-teal);
 }
 
@@ -100,7 +104,7 @@
 .bt-root:not(#_) .cc-stage[data-p="twitch"] { --c: var(--cc-twitch); }
 .bt-root:not(#_) .cc-stage[data-p="tiktok"] { --c: var(--cc-tiktok); }
 .bt-root:not(#_) .cc-stage[data-p="youtube"] { --c: var(--cc-youtube); }
-.bt-root:not(#_) .cc-stage:is(:hover, :focus-visible, .is-on) { border-color: color-mix(in srgb, var(--c) 60%, var(--bt-border)); transform: translateY(-2px); }
+.bt-root:not(#_) .cc-stage:is(:hover, :focus-visible, .is-on) { border-color: var(--bt-border-2); transform: translateY(-2px); }
 .bt-root:not(#_) .cc-stage-head { display: flex; align-items: center; gap: 10px; }
 .bt-root:not(#_) .cc-stage-head .cc-pi { width: 34px; height: 34px; }
 .bt-root:not(#_) .cc-stage-n { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; font-variant-numeric: tabular-nums; }
