@@ -2,8 +2,10 @@
 // game's own cover (it drifts behind film grain and flickers once), the cover tilting toward the
 // pointer, the score dial in Boomer's gold, the review, Every stream (a dot per stream sized by
 // its length; history from before the site as one hollow dot), about + the IGDB credit, facts,
-// where to play (the stores' own marks), and the stats. Community picks get the banner with
-// Play this, Boomer! and, for staff, Hide; admins get Edit; a game with no cover offers
+// where to play (the stores' own marks), and the stats. Every To play game gets the V3 ballot under the title
+// (docs/specs/game-page-votes.md §1): "Want Boomer to stream this?", its votes and rank on Most wanted, and Play this, Boomer!
+// (the owner: "Members want you to play this", no button). Community picks keep the credit banner (no button) and, for staff,
+// Hide; admins get Edit; a game with no cover offers
 // "Suggest a cover". Round 3 N1 + P12: the banner's top bar has Back to the Vault (with a reminder of
 // the list you came from; it returns to that /games URL and scroll position) and the pager ("3 of 14",
 // ‹ › with a cover preview, the ← → keys), stepping through that same list in place: the banner
@@ -20,7 +22,7 @@ import { timelineHtml, initTimelines } from "../../../../shared/ui/timeline.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { brandIcon, BRANDS } from "../../../../shared/ui/brand-icons.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
-import { onAuth } from "../../lib/auth";
+import { onAuth, getAuthState } from "../../lib/auth";
 import { call } from "../../lib/call";
 import { messageFor } from "../../lib/errors";
 import { loadGame, loadStreamsFor, loadVault, type StreamRow, type VCard, type Vault } from "./data";
@@ -111,14 +113,31 @@ function hero(g: any) {
   const by = [g.developers?.[0], year(g.releaseDate)].filter(Boolean).join(", ");
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
   const dial = g.review?.score ? dialHtml(g.review.score) : "";
-  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial || (g.status === "wishlist" ? "" : '<span class="bt-score-none gv-norate">Not rated</span>')}</div></section>`;
+  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}${ballot(g)}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial || (g.status === "wishlist" ? "" : '<span class="bt-score-none gv-norate">Not rated</span>')}</div></section>`;
 }
 
+/** The Community pick's credit (the vote is the ballot's job now: never two vote buttons). */
 function pickBanner(g: any) {
   if (g.origin !== "community") return "";
   const when = g.createdAt ? ` on ${shortDate(g.createdAt)}` : "";
-  const wanted = g.status === "wishlist" ? ` <b data-wanted>${votesText(g.wantedCount || 0)}</b> for Boomer to play it.` : "";
-  return `<div class="gv-pick-banner">${I.people}<span><b>Community pick</b> added by <b>@${esc(g.addedBy?.handle || "a member")}</b>${when}.${wanted}</span>${wantButton({ slug: g.slug, title: g.title, wanted: g.wantedCount || 0, status: g.status }, { big: true })}</div>`;
+  return `<div class="gv-pick-banner">${I.people}<span><b>Community pick</b> added by <b>@${esc(g.addedBy?.handle || "a member")}</b>${when}.</span></div>`;
+}
+
+/** This game's place on Most wanted: the shelf's own order (votes, most first; then the newest added), counting this game's live count. */
+function wantedRank(g: any, n: number): number {
+  if (!(n > 0)) return 0;
+  const added = (c: any) => c.added || 0;
+  const list = [...nav.cards.values()].filter((c) => c.status === "wishlist" && c.slug !== g.slug && c.wanted > 0).map((c) => ({ w: c.wanted, a: added(c) }));
+  const me = { w: n, a: nav.cards.get(g.slug)?.added || 0 };
+  return list.filter((c) => c.w > me.w || (c.w === me.w && c.a > me.a)).length + 1;
+}
+const ballotLine = (g: any, n: number) => { const r = wantedRank(g, n); return `<em>${votesText(n)}</em>${r ? ` · #${r} on Most wanted` : getAuthState().isOwner ? "" : " · Be the first to vote"}`; };
+/** V3 Ballot: on every To play game, whoever added it. The owner sees the count and rank, no button. */
+function ballot(g: any) {
+  if (g.status !== "wishlist" || g.hidden) return "";
+  const n = g.wantedCount || 0, owner = !!getAuthState().isOwner;
+  const btn = owner ? "" : wantButton({ slug: g.slug, title: g.title, wanted: n, status: g.status }, { primary: true });
+  return `<div class="gv-ballot"><span class="gv-ballot-ic" aria-hidden="true">${I.ticket}</span><span class="gv-ballot-t"><b>${owner ? "Members want you to play this" : "Want Boomer to stream this?"}</b><span data-ballot-line>${ballotLine(g, n)}</span></span>${btn}</div>`;
 }
 
 function review(g: any) {
@@ -208,8 +227,9 @@ function render() {
   initSpotlights(root!);
   initWants(root!, (_slug, n) => {
     G.wantedCount = n;
-    const el = root!.querySelector("[data-wanted]");
-    if (el) el.textContent = votesText(n);
+    const card = nav.cards.get(G.slug); if (card) card.wanted = n;
+    const el = root!.querySelector("[data-ballot-line]");
+    if (el) el.innerHTML = ballotLine(G, n);
   });
 }
 
