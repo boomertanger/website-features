@@ -27,3 +27,4 @@ functions/scripts/data/skipper-media/
 
 # Creator Climb (docs/specs/creator-climb.md): the private follower history stays local while the repo is public
 functions/scripts/data/climb-history.json
+functions/scripts/data/climb-sheet.csv

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+chore: ignore functions/scripts/data/climb-sheet.csv (Creator Climb's private stream sheet stays local)
 feat(climb): Creator Climb in the Community nav (a summit icon, "Follower growth across every platform"), services/creator-climb.json (Ask pins on The climb so far, Crossover, Month by month; BOOMBOT help), 301 redirects /growth-2025 and /growth-2026 → /climb, design-system §5 .bt-chart and §8ad, ROADMAP workstream 20 and Creator Climb in production
 feat(climb): the Creator Climb card on /admin (a small ridge scene, green admin panels): readings per platform and for site members with Automatic / By hand tags, last rebuild and Rebuild now, month notes, eras, goals (Members included), accounts left out of member counts, and corrections with the mascot empty state; every change goes through climbAdmin
 feat(climb): the /climb page (H1-D Summit camp, P1 Night lamps): a hero scene you can scrub through the climb, the combined .bt-chart with eras and the crossover, month cards with notes, milestone flip medals, peak viewers beside the imported 577, pace to the next goal, members as their own climb (preview data for ?as=member), live listeners on public/climb, BOOMBOT help, reduced motion respected
