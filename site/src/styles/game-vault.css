@@ -283,7 +283,8 @@
 }
 .bt-root:not(#_) .gv-badges { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
 .bt-root:not(#_) .gv-hero-tags { display: contents; }
-.bt-root:not(#_) .gv-norate { display: none; }
+/* C1 twin dials (docs/specs/game-page-votes.md §3): Boomer's score and the members' verdict side by side at the end of the hero */
+.bt-root:not(#_) .gv-dials { display: flex; align-items: flex-end; gap: 22px; }
 .bt-root:not(#_) .gv-byline { color: var(--bt-text-muted); font-size: var(--bt-text-base); }
 .bt-root:not(#_) .gv-page-tools { display: flex; flex-wrap: wrap; gap: 8px; }
 .bt-root:not(#_) .gv-page-tools .bt-btn svg { width: 15px; height: 15px; }
@@ -397,7 +398,7 @@
 /* ---- Container breakpoints ---- */
 @container bt (max-width: 1024px) {
   .bt-root:not(#_) .gv-hero-inner { grid-template-columns: 180px minmax(0, 1fr); }
-  .bt-root:not(#_) .gv-hero-inner .bt-dialbox { grid-column: 2; }
+  .bt-root:not(#_) .gv-hero-inner > .gv-dials { grid-column: 2; }
   .bt-root:not(#_) .gv-cols { grid-template-columns: minmax(0, 1fr) 280px; }
 }
 @container bt (max-width: 900px) {
@@ -405,20 +406,28 @@
 }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .gv-body { padding-top: 18px; }
-  /* P3 (game-vault-phone-game-page.html): the cover (58%) on the left; badge, tags (one per line) and the
-     score dial stacked on the right; title, byline and the stream line (with Edit) full width underneath */
-  .bt-root:not(#_) .gv-hero-inner { grid-template-columns: 58% minmax(0, 1fr); grid-template-rows: auto 1fr auto; gap: 8px 12px; align-items: start; padding: 18px var(--bt-gutter) 22px; }
-  .bt-root:not(#_) .gv-hero-inner > .gv-cover-tilt { grid-column: 1; grid-row: 1 / span 3; box-shadow: 0 24px 44px var(--bt-scrim-strong); }
-  .bt-root:not(#_) :is(.gv-hero-text, .gv-badges) { display: contents; }
-  .bt-root:not(#_) .gv-badges > .bt-badge { grid-column: 2; grid-row: 1; justify-self: start; }
-  .bt-root:not(#_) .gv-hero-tags { grid-column: 2; grid-row: 2; display: flex; flex-direction: column; align-items: flex-start; gap: 8px; min-width: 0; }
-  .bt-root:not(#_) .gv-hero-inner > .bt-dialbox { grid-column: 2; grid-row: 3; justify-self: start; align-self: end; display: flex; flex-direction: column; align-items: flex-start; }
-  .bt-root:not(#_) .gv-hero-inner > .gv-norate { display: block; grid-column: 2; grid-row: 3; align-self: end; }
+  /* V3 + C1 (game-page-votes.html): the poster on the left exactly as tall as the two dials stacked on the right (3:4, width follows, no gap
+     under it); then the badge and tags, the title, byline, the ballot and the stream line (with Edit) full width underneath. The dial size
+     follows the width so the poster and the stack always fit: D = (width - 96px) / 2.5, between 64 and 104px; each dial's box is D + 56px
+     (its name above, a caption of up to two lines below), so the stack is 2D + 112px. */
+  .bt-root:not(#_) .gv-hero-inner { --gv-dial: clamp(64px, calc((100cqi - 2 * var(--bt-gutter) - 96px) / 2.5), 104px); --gv-stack: calc(2 * var(--gv-dial) + 112px);
+    grid-template-columns: auto minmax(0, 1fr); gap: 10px 12px; align-items: start; padding: 18px var(--bt-gutter) 22px; }
+  .bt-root:not(#_) .gv-hero-inner > .gv-cover-tilt { grid-column: 1; grid-row: 1; height: var(--gv-stack); aspect-ratio: 3 / 4; width: auto; box-shadow: 0 24px 44px var(--bt-scrim-strong); }
+  .bt-root:not(#_) .gv-hero-inner > .gv-cover-tilt > * { width: 100%; height: 100%; }
+  .bt-root:not(#_) .gv-hero-inner > .gv-dials { grid-column: 2; grid-row: 1; height: var(--gv-stack); flex-direction: column; align-items: center; justify-content: space-between; gap: 0; min-width: 0; }
+  .bt-root:not(#_) .gv-hero-inner > .gv-dials--one { justify-content: flex-start; }
+  .bt-root:not(#_) .gv-dials .bt-dialbox { height: calc(var(--gv-dial) + 56px); }
+  .bt-root:not(#_) .gv-dials .bt-dial-k { margin-bottom: 4px; line-height: 14px; }
+  .bt-root:not(#_) .gv-dials .bt-dial { width: var(--gv-dial); height: var(--gv-dial); }
+  .bt-root:not(#_) .gv-dials .bt-dial-c b { font-size: calc(var(--gv-dial) * 0.3); }
+  .bt-root:not(#_) .gv-dials .bt-dial-cap { margin-top: 6px; max-width: calc(var(--gv-dial) + 30px); font-size: var(--bt-text-xs); line-height: 1.3; }
+  .bt-root:not(#_) .gv-hero-text { display: contents; }
+  .bt-root:not(#_) .gv-badges { grid-column: 1 / -1; grid-row: 2; margin-top: 4px; }
   .bt-root:not(#_) .gv-hero-text > :is(.bt-title, .gv-byline, .gv-hero-foot) { grid-column: 1 / -1; }
-  .bt-root:not(#_) .gv-hero-text > .bt-title { grid-row: 4; margin-top: 6px; font-size: 30px; }
-  .bt-root:not(#_) .gv-hero-text > .gv-byline { grid-row: 5; }
-  .bt-root:not(#_) .gv-hero-text > .gv-ballot { grid-column: 1 / -1; grid-row: 6; max-width: none; }   /* the ballot spans the page width, under the byline */
-  .bt-root:not(#_) .gv-hero-text > .gv-hero-foot { grid-row: 7; flex-wrap: nowrap; justify-content: space-between; gap: 12px; }
+  .bt-root:not(#_) .gv-hero-text > .bt-title { grid-row: 3; font-size: 30px; }
+  .bt-root:not(#_) .gv-hero-text > .gv-byline { grid-row: 4; }
+  .bt-root:not(#_) .gv-hero-text > .gv-ballot { grid-column: 1 / -1; grid-row: 5; max-width: none; }   /* the ballot spans the page width, under the byline */
+  .bt-root:not(#_) .gv-hero-text > .gv-hero-foot { grid-row: 6; flex-wrap: nowrap; justify-content: space-between; gap: 12px; }
   .bt-root:not(#_) .gv-hero-foot .gv-page-tools { flex-wrap: nowrap; margin-left: auto; }
   .bt-root:not(#_) .gv-pick-banner .bt-btn { width: 100%; }
   .bt-root:not(#_) .gv-pagebar { padding-top: 14px; }

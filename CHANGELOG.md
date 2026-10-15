@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(vault): C1 twin dials on game pages: Boomer's score ("Not played yet" before he scores it) beside the members' verdict from public/serviceVerdicts (dashed below 3 ratings), Rate it scrolls to the strip; on phones the poster is exactly as tall as the two stacked dials
 - feat(service-hub): functions/scripts/backfill-service-verdicts.js fills public/serviceVerdicts once from the Vault game items' totals (dry run by default, staging only)
 - feat(service-hub): public/serviceVerdicts: onServiceRatingWritten keeps each Vault game's members' verdict (love, like, nope) public at 3+ member ratings and removes it below
 - feat(vault): every non-hidden game page rates the game itself: the compact strip is wired to vault-<slug> when the page loads (and follows the pager); the rating dialog asks "How do you rate this game?" here and on /services

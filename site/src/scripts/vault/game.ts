@@ -1,6 +1,8 @@
 // /games/{slug}, one game (docs/specs/game-vault.md §9; round 2 E4): an ambient banner from the
 // game's own cover (it drifts behind film grain and flickers once), the cover tilting toward the
-// pointer, the score dial in Boomer's gold, the review, Every stream (a dot per stream sized by
+// pointer, the C1 twin dials (Boomer's score dial in gold, "Not played yet" before he scores it, and the members' verdict from
+// public/serviceVerdicts: Love / Like / Not for me at 3+ member ratings, the dashed "Not enough ratings yet" below; Rate it scrolls to the
+// page strip, which rates this game: docs/specs/game-page-votes.md §2-§3), the review, Every stream (a dot per stream sized by
 // its length; history from before the site as one hollow dot), about + the IGDB credit, facts,
 // where to play (the stores' own marks), and the stats. Every To play game gets the V3 ballot under the title
 // (docs/specs/game-page-votes.md §1): "Want Boomer to stream this?", its votes and rank on Most wanted, and Play this, Boomer!
@@ -17,12 +19,13 @@ import { mergeTags } from "../../../../shared/vault-search.js";
 import { backHtml, pagerHtml } from "../../../../shared/ui/pager.js";
 import { sectionHeadHtml } from "../../../../shared/ui/section-head.js";
 import { initSpotlights } from "../../../../shared/ui/spotlight.js";
-import { dialHtml, initDials } from "../../../../shared/ui/dial.js";
+import { dialHtml, verdictDialHtml, initDials } from "../../../../shared/ui/dial.js";
 import { timelineHtml, initTimelines } from "../../../../shared/ui/timeline.js";
 import { initCountUp } from "../../../../shared/ui/count-up.js";
 import { brandIcon, BRANDS } from "../../../../shared/ui/brand-icons.js";
 import { confirmAction } from "../../../../shared/ui/confirm.js";
 import { onAuth, getAuthState } from "../../lib/auth";
+import { db, doc, getDoc, SITE_ID } from "../../lib/db";
 import { call } from "../../lib/call";
 import { messageFor } from "../../lib/errors";
 import { loadGame, loadStreamsFor, loadVault, type StreamRow, type VCard, type Vault } from "./data";
@@ -41,6 +44,11 @@ function slugFromUrl() {
 }
 
 let G: any = null;
+/** public/serviceVerdicts (one read per visit): "vault-<slug>" → { love, like, nope }, only for games with 3+ member ratings. */
+let verdicts: Record<string, { love: number; like: number; nope: number }> = {};
+async function loadVerdicts() {
+  try { const s = await getDoc(doc(db, "sites", SITE_ID, "public", "serviceVerdicts")); verdicts = s.exists() ? (s.data() as any) : {}; } catch { verdicts = {}; }
+}
 let streams: StreamRow[] = [];
 /** The list this game sits in (round 3 N1 + P12) and the Vault's cards for previews. */
 const nav = { slugs: [] as string[], back: "/games", label: DEFAULT_LABEL, cards: new Map<string, VCard>() };
@@ -112,8 +120,11 @@ function hero(g: any) {
   const tags = mergeTags(boomer, g.tags?.auto).slice(0, Math.max(4, boomer.length)).map((x: string) => tag(x)).join("");
   const by = [g.developers?.[0], year(g.releaseDate)].filter(Boolean).join(", ");
   const ttb = g.timeToBeat?.normally ? ` About ${g.timeToBeat.normally} hours to beat.` : "";
-  const dial = g.review?.score ? dialHtml(g.review.score) : "";
-  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}${ballot(g)}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dial || (g.status === "wishlist" ? "" : '<span class="bt-score-none gv-norate">Not rated</span>')}</div></section>`;
+  // C1: Boomer's dial and the members' (a hidden game isn't rated, so it has Boomer's only)
+  const scoreDial = g.review?.score ? dialHtml(g.review.score, { kicker: "Boomer" }) : dialHtml(null, { kicker: "Boomer", caption: g.status === "wishlist" ? "Not played yet" : "Not scored yet" });
+  const members = g.hidden ? "" : verdictDialHtml({ ...(verdicts[`vault-${g.slug}`] || {}), kicker: "Members" });
+  const dials = `<div class="gv-dials${members ? "" : " gv-dials--one"}">${scoreDial}${members}</div>`;
+  return `<section class="gv-hero gv-hero--ambient gv-hero--bar${dir ? ` ${dir}` : ""}"><div class="gv-hero-art" aria-hidden="true">${art ? `<img src="${esc(art)}" alt="" referrerpolicy="no-referrer">` : ""}</div><span class="gv-grain" aria-hidden="true"></span>${pagebar(g)}<div class="gv-hero-inner"><span class="gv-cover-tilt">${coverHtml(g.cover, { tilt: true, alt: `${g.title} cover`, eager: true })}</span><div class="gv-hero-text"><div class="gv-badges">${badge(g.status)}${isPinned(g) ? UP_NEXT : ""}<div class="gv-hero-tags">${g.origin === "community" ? tag("Community pick", I.people) : ""}${isEarly(g) ? tag("Early access") : ""}${tags}</div></div><h1 class="bt-title bt-title--hero" tabindex="-1">${esc(g.title)}</h1>${by || ttb ? `<p class="gv-byline">${esc(by)}${by ? "." : ""}${ttb}</p>` : ""}${ballot(g)}<div class="gv-hero-foot">${t.count ? `<span class="bt-cover-card-meta"><b data-count-to="${t.count}">${t.count}</b> ${t.count === 1 ? "stream" : "streams"}, <b data-count-to="${hours(t.minutes)}">${hours(t.minutes)}</b> hours on stream</span>` : `<span class="bt-cover-card-meta">${g.status === "wishlist" ? "Not streamed yet" : "No streams on record yet"}</span>`}${tools(g)}</div></div>${dials}</div></section>`;
 }
 
 /** The Community pick's credit (the vote is the ballot's job now: never two vote buttons). */
@@ -284,7 +295,7 @@ async function boot() {
   if (!slug) return notFound();
   let vault: Vault | null = null;
   try {
-    [G, vault] = await Promise.all([loadGame(slug), loadVault().catch(() => null)]);
+    [G, vault] = await Promise.all([loadGame(slug), loadVault().catch(() => null), loadVerdicts()]);
   } catch (err: any) {
     if (err?.code === "permission-denied") return notFound();   // a hidden game, for someone who isn't staff
     root!.innerHTML = `<div class="gv-body"><div class="bt-empty gv-state">${vaultIcon({ size: 56, lamp: "gv-deadlamp" })}<p class="bt-empty-title">This game didn't load</p><span>Check your connection and try again.</span><button type="button" class="bt-btn bt-btn--secondary" data-retry>Try again</button></div></div>`;
@@ -306,6 +317,17 @@ addEventListener("popstate", async () => {
   G = g; streams = [];
   render();
   void loadStreams(slug);
+});
+
+// Rate it (under the members' dial): to the page strip, which rates this game; focus its first rating button
+document.addEventListener("click", (e) => {
+  const a = (e.target as Element | null)?.closest?.("[data-goto-rate]");
+  if (!a) return;
+  e.preventDefault();
+  const zone = document.querySelector<HTMLElement>("[data-sv-strip]");
+  if (!zone) return;
+  zone.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: "center" });
+  zone.querySelector<HTMLElement>(".bt-talkback-rb, .bt-talkback-talk")?.focus({ preventScroll: true });
 });
 
 // ← → step through the list, unless you're typing, a dialog is open, or a dot on the timeline has focus.
