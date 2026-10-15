@@ -133,7 +133,7 @@ Staff who answer people and keep the desk clear earn Gears on Mod Machina's ledg
 
 ### 9c. What never pays
 
-Picking up, assigning, status changes, notes, closing without a reply, the spam click itself, escalating (Owner only).
+Picking up, assigning, status changes, notes, closing without a reply (except the oldest-first Gear, §9b), the spam click itself, escalating (Owner only).
 
 - **Escalation is neutral.** It neither pays nor costs. A reply paid before it stays paid (`gearsPaid` is copied with the message to the owner lane). An escalated message drops out of the escalating admin's reply-time numbers and never counts against a clear day.
 - **Spam after a paid reply:** the reply credit is reversed automatically through the existing Gears adjustment (`gearsAdjust`, reason "Marked as spam").

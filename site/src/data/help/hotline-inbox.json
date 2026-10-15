@@ -2,7 +2,7 @@
   {
     "id": "why-no-pay",
     "q": "Why didn't my reply pay?",
-    "a": "Only the first staff reply on a team-lane message pays. Nothing pays on a message you sent yourself, on an owner-lane message, or once you've reached today's 30-Gear inbox cap. Boomertanger never earns inbox Gears. The message's history always says what was paid, or why not.",
+    "a": "Only the first staff reply on a team-lane message pays. Nothing pays on a message you sent yourself, on an owner-lane message, or once you've reached today's 30-Gear inbox cap. Boomertanger never earns inbox Gears. The message's history always says what was paid, or why not. Those are starting values; the guide shows the current ones.",
     "keys": ["didn't pay", "no gears", "not paid", "why no", "reply pay", "credit", "nothing paid", "earn"]
   },
   {
@@ -30,6 +30,12 @@
     "keys": ["escalate", "owner only", "move to owner", "hurt", "lose gears", "boomertanger only"]
   },
   {
+    "id": "when-escalate",
+    "q": "When should I escalate?",
+    "a": "Use Owner only for personal matters (someone going through something hard, or sharing private details), reports about how someone behaved, anything about a mod or an admin, and safety: threats, or anyone who might be at risk. It moves the message to Boomertanger, one way, and it's always neutral for your Gears. When in doubt, escalate.",
+    "keys": ["when should i escalate", "escalate", "owner only", "personal", "report someone", "about a mod", "safety", "threat", "at risk"]
+  },
+  {
     "id": "hidden",
     "q": "Why can't I see some messages?",
     "a": "Lines 4 to 6 (Business, Private matter, Report a person), anything ticked \"Only Boomertanger should read this\", and team-line messages that name someone on the crew go to Boomertanger only. The site's rules keep them from everyone else, not even as a count.",
@@ -38,8 +44,20 @@
   {
     "id": "spam-pending",
     "q": "Why is my spam Gear pending?",
-    "a": "A spam mark pays after 7 days if it still holds, up to 5 a day. If the mark is undone in that time, nothing is paid; if Boomertanger un-spams it, it also counts against your Accuracy. Messages the site marks spam by itself never pay anyone.",
+    "a": "A spam mark pays after 7 days if it still holds, up to 5 a day. If the mark is undone in that time, nothing is paid; if Boomertanger un-spams it, it also counts against your Accuracy. Messages the site marks spam by itself never pay anyone. Those are starting values; the guide shows the current ones.",
     "keys": ["spam", "pending", "7 days", "spam gear", "held", "accuracy", "undo"]
+  },
+  {
+    "id": "spam-or-rude",
+    "q": "Is this spam or just rude?",
+    "a": "Spam is ads and links selling something, crypto offers, scams and \"you won\" messages, and bot gibberish or copy-paste floods. An angry or blunt complaint, a confused question full of typos, or a one-word \"hi\" is real, even if it's rude: answer it. Never mark a real message as spam.",
+    "keys": ["spam or", "rude", "is this spam", "angry", "blunt", "complaint", "ads", "scam", "bot", "real message"]
+  },
+  {
+    "id": "accuracy",
+    "q": "What does Accuracy mean?",
+    "a": "The share of your spam marks that held. If Boomertanger un-spams one of your marks, it pays nothing and counts against you. Accuracy shows on your card in the inbox's This month strip, and Operator of the Month needs at least 90%. Those are starting values; the guide shows the current ones.",
+    "keys": ["accuracy", "spam marks", "held", "un-spam", "unspam", "overturned", "percent", "90"]
   },
   {
     "id": "close-pay",
@@ -50,19 +68,19 @@
   {
     "id": "daily-cap",
     "q": "What's the daily cap?",
-    "a": "30 inbox Gears per person per day, reset at midnight Central. Over the cap your replies still send; they just don't pay, and the history says the cap was reached.",
+    "a": "30 inbox Gears per person per day, reset at midnight Central. Over the cap your replies still send; they just don't pay, and the history says the cap was reached. Those are starting values; the guide shows the current ones.",
     "keys": ["cap", "daily", "limit", "30", "max", "midnight", "too many"]
   },
   {
     "id": "clear-desk",
     "q": "How does Clear desk work?",
-    "a": "Every day at 9 PM Central the inbox checks for team-lane messages waiting more than 48 hours without a reply. None means a clear day. 7 clear days in a row pay +5 Gears to everyone who handled at least 3 messages that week, then a new count starts.",
+    "a": "Every day at 9 PM Central the inbox checks for team-lane messages waiting more than 48 hours without a reply. None means a clear day. 7 clear days in a row pay +5 Gears to everyone who handled at least 3 messages that week, then a new count starts. Those are starting values; the guide shows the current ones.",
     "keys": ["clear desk", "streak", "clear day", "team bonus", "pips", "9 pm", "48 hours"]
   },
   {
     "id": "operator",
     "q": "How is Operator of the Month chosen?",
-    "a": "On the 1st, from the month just ended: first replies, plus half a point per spam mark that held and one per oldest-first pick. You need at least 5 first replies and 90% spam accuracy. A tie goes to the faster median reply. The winner gets a trophy and a card on /crew.",
+    "a": "On the 1st, from the month just ended: first replies, plus half a point per spam mark that held and one per oldest-first pick. You need at least 5 first replies and 90% spam accuracy. A tie goes to the faster median reply. The winner gets a trophy and a card on /crew. Those are starting values; the guide shows the current ones.",
     "keys": ["operator", "award", "month", "trophy", "winner", "chosen", "qualify"]
   },
   {
