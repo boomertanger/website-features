@@ -1,7 +1,7 @@
 // The page strip's wiring (docs/specs/service-hub.md §8a; TalkBackNote.astro; the compact strip, V5 + S1, Oct 14, 2026): once auth is known, the
 // three rating buttons become the visitor's Join free buttons (data-signin="join"), or the member's buttons with their rating pressed. Like it and
-// Love it save in one tap; Not for me opens the rating dialog for its required comment; either way the toast says "Thanks! Only Boomer and the admins
-// see ratings." Tapping the rating you already gave opens the rating dialog (Keep or change on a newer version). The member's rating is read from
+// Love it save in one tap; Not for me opens the rating dialog for its required comment; either way the toast names the service ("Thanks! That's your rating for all of {name}. Only Boomer and the admins
+// see ratings."). Tapping the rating you already gave opens the rating dialog (Keep or change on a newer version). The member's rating is read from
 // my/{uid} after sign-in; visitors cost no read. The Talk pill ([data-talk="question"]) calls window.btTalkBack.open (Hotline Boom part 2).
 // Light on purpose: everything else loads only on a page that has a strip.
 import { whenReady } from "../../lib/auth";

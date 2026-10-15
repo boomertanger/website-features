@@ -14,8 +14,8 @@ import { badgeAlertButtons } from "../trophies/links";
 
 const FEATURE = "services";
 const JOIN = "Join free to rate";
-/** The strip's toast after a rating (the compact strip has no privacy line of its own). */
-const THANKS = "Thanks! Only Boomer and the admins see ratings.";
+/** The strip's toast after a rating (the compact strip has no privacy line of its own). Ratings are per service, so it names the service. */
+const thanksLine = (name: string) => `Thanks! That's your rating for all of ${name}. Only Boomer and the admins see ratings.`;
 const saidLine = (p: Pick, name: string) => (p === "love" ? `Saved: you love ${name}.` : p === "like" ? `Saved: you like ${name}.` : `Saved: ${name} isn't for you. Thanks for saying why.`);
 
 /** A server refusal about the member themselves gets the right step (the gate already checked, but a session can go stale). */
@@ -62,7 +62,7 @@ export async function quickRate(serviceId: string, pick: Pick): Promise<boolean>
   try {
     const keep = prev && toPick(prev.value) === pick ? prev.comment : "";
     await saving(() => rate(serviceId, toValue(pick), keep));
-    toast(THANKS, { ms: 7000, action: { label: keep ? "Edit your comment" : "Add a comment", onClick: () => void openRate({ serviceId, start: pick }) } });
+    toast(thanksLine(s.name), { ms: 7000, action: { label: keep ? "Edit your comment" : "Add a comment", onClick: () => void openRate({ serviceId, start: pick }) } });
     return true;
   } catch (err) {
     if (!(await handled(err))) toast(messageFor(err, "Couldn't save your rating. Try again."), { kind: "error" });
@@ -71,7 +71,7 @@ export async function quickRate(serviceId: string, pick: Pick): Promise<boolean>
 }
 
 // ---------------------------------------------------------------------------------------------- the rating dialog (R1)
-/** thanks: opened from the page strip, so the toast after the save is the strip's THANKS line. */
+/** thanks: opened from the page strip, so the toast after the save is the strip's thanks line. */
 export async function openRate({ serviceId, start, onSaved, thanks = false }: { serviceId: string; start?: Pick; onSaved?: (p: Pick) => void; thanks?: boolean }) {
   if (!(await gate.requireVerified(JOIN))) return;
   const s = await serviceOf(serviceId);
@@ -88,7 +88,7 @@ export async function openRate({ serviceId, start, onSaved, thanks = false }: { 
     try {
       await saving(() => rate(serviceId, toValue(pick), comment));
       close();
-      toast(thanks ? THANKS : saidLine(pick, s.name));
+      toast(thanks ? thanksLine(s.name) : saidLine(pick, s.name));
       onSaved?.(pick);
     } catch (e) {
       btn.disabled = false; btn.classList.remove("is-loading");
