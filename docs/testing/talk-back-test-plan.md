@@ -113,3 +113,16 @@ Hand-run checks for Talk Back Part B on staging: Pick up, the credit line, the T
 50. `hotline/main/inboxStats/<yyyy-mm>`: `perStaff.<uid>` (replies, fast, oldest, minutes by message id, spamMarks, spamHeld, spamOverturned, closed) and `desk` (streak, lastDay, lastClear, clearDays). A team message @gbo replied to has `firstReplyBy`, `firstReplyMeta` and `gearsPaid { amount, uids, ledgerIds, parts }`. A spam mark has `spamBy` and `spamAt`; a pick up has `pickedUpAt`.
 51. From the console, as a member or a mod, reading `inboxStats` is denied; as @gbo or the owner it's allowed. Nobody can write it.
 52. Cloud Scheduler has `inboxSpamHold` (04:15 America/Chicago) and `inboxDeskCheck` (21:00 America/Chicago); their logs print what they did.
+
+## Part B results (Oct 15, 2026)
+
+Run on staging by the owner with @gbo (the inbox admin), after the sample data from `inbox-sample.js`.
+
+- **Passed on staging:** E26, E28, F30, F32, F36, G38-G39, G40, H42, H43, J48. The full 172-function batched deploy (lib/live first, then nine batches with 3-minute pauses) ran with no retries.
+- **Not run by hand** (covered by `scripts/check-hotline.js` and `scripts/check-crew.js`, or needs time to pass): E27, E29, F31, F33-F35, F37, G41, H44-H45, I46-I47, J49, K50-K52.
+- **Fixed:**
+  - `390c450`: a replied message left Open no longer counts as waiting (Desk clear, Pick up).
+  - Remove credit lands on Adjust Gears: the section renders after sign-in, so /admin/crew now scrolls to it (no smooth scroll under reduced motion) and focuses the reason once it's filled in.
+  - The spam toast's Undo lasts 10 seconds (was 5).
+  - Medal backs fit their card: the kit's flip back is tighter and centres safely, and flip cards are taller on phones. Checked on /crew, the Trophy Room and every page with flip medals at 1280, 1024, 390 and 320.
+- **Note:** while email is off, the reply box shows **Send reply** first. It switches to **Open in my email** and **Mark as replied** after a try (F30).

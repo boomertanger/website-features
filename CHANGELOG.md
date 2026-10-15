@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Talk Back Part B staging results (test plan Part B results; ROADMAP: Part B tested on staging, Part C next)
 - Fix: medal backs fit their card: the kit's .bt-flip back face is tighter (gap, padding, value spacing) and centres safely, so a long back can never clip its first label, and flip cards are 260px at 420px and below; the /crew awards row is five across only above 1024px (three to 901px); Newfoundland's and the Trophy Room's own cards grow on phones, the Trophy Room's back spacing is tighter there and its secret-badge line is shorter. Checked on /crew, the Trophy Room, every How it works page, Base Camp, Chat Games and Services at 1280, 1024, 390 and 320
 - Inbox: spam Undo lasts 10 seconds (was 5); talk-back.md §9f and the test plan (G38-G39) updated
 - Fix: Remove credit lands on Adjust Gears: /admin/crew?adjust=…#adjust fills the form in once the page is shown, scrolls the section into view below the sticky tabs (no smooth scroll under reduced motion; once more after late content settles) and focuses the reason

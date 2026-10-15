@@ -22,7 +22,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
-| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back Part A tested on staging (Oct 14, 2026); Part B built on staging (Oct 15, 2026); Part C next | Community services |
+| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back Part A tested on staging (Oct 14, 2026); Part B tested on staging (Oct 15, 2026); Part C next | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
@@ -223,7 +223,7 @@ Status: **Built on staging (parts 0-6); real tests pending (docs/testing/hotline
 5. `/contact/how-it-works` (H1, the dial).
 6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
 Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups approved Oct 11, 2026: [docs/specs/talk-back.md](specs/talk-back.md), `docs/design/mockups/talk-back-*.html`. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
-**Talk Back Part A: tested on staging (Oct 14, 2026); results in docs/testing/talk-back-test-plan.md.** Four commits: (1) backend: line 2 "Feedback & questions", contactSend kind / context / boombotShown, stats.byService and serviceStats, contactDeflect, the serviceStats rule; (2) the dialog, the loader, `.bt-pills[data-n="3"]`, Bug Zapper's help file; (3) the inbox context bar, Question:/Feedback: rows, Sources › By service, /contact's Question / Feedback switch; (4) `talkBack` on in site.json, the test plan, docs. **Talk Back Part B: built on staging (Oct 15, 2026); test plan Part B in docs/testing/talk-back-test-plan.md.** Five commits:
+**Talk Back Part A: tested on staging (Oct 14, 2026); results in docs/testing/talk-back-test-plan.md.** Four commits: (1) backend: line 2 "Feedback & questions", contactSend kind / context / boombotShown, stats.byService and serviceStats, contactDeflect, the serviceStats rule; (2) the dialog, the loader, `.bt-pills[data-n="3"]`, Bug Zapper's help file; (3) the inbox context bar, Question:/Feedback: rows, Sources › By service, /contact's Question / Feedback switch; (4) `talkBack` on in site.json, the test plan, docs. **Talk Back Part B: tested on staging (Oct 15, 2026); results in docs/testing/talk-back-test-plan.md (Part B results).** Five commits:
 1. Backend: inbox Gears through `lib/hotline/credit.js`, the first reply in a transaction, the spam reversal, Pick up / Let it go, `gearsAdjust`, `crew/main.inbox`, `inboxReplies` on the boards, `inboxStats` and its rule, `inboxSpamHold` and `inboxDeskCheck`, `inbox-sample.js`.
 2. /admin/inbox: Pick up, the credit line, the This month strip, Desk clear, the spam stamp with Undo, Gears in the toast; kit `.bt-stamp--gray`.
 3. /crew/board's Inbox column; the inbox values and Adjust Gears on /admin/crew.
