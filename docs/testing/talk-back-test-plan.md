@@ -1,4 +1,4 @@
-# Talk Back test plan (Part A)
+# Talk Back test plan (Parts A and B)
 
 Hand-run checks for Talk Back Part A on staging: the dialog, BOOMBOT, the inbox context bar and Sources › By service. Spec: `docs/specs/talk-back.md` §0-§7. The automated checks cover the backend (`npm run check` in `functions/`: kind, context and boombotShown stored, invalid context dropped, team-lane counts in serviceStats, owner-lane messages kept out of it, contactDeflect's limit) and the manifests and help files (`npm run check` in `site/`).
 
@@ -57,3 +57,59 @@ Run on staging by the owner, with @gbo (inbox admin) and a visitor.
   - the rating toast names the service: "Thanks! That's your rating for all of {service}. Only Boomer and the admins see ratings." (`5becc34`);
   - dialogs no longer jump to the top on close: openModal's scroll lock saves and restores the scroll position, and tapping outside no longer falls through to the page (`6b3611a`).
 - In A1, A6 and A11 the strip now has one **Talk** pill instead of Ask a question and Give feedback; Feedback is chosen inside the dialog.
+
+# Part B: inbox recognition
+
+Hand-run checks for Talk Back Part B on staging: Pick up, the credit line, the This month strip, Desk clear, the spam stamp, the crew board's Inbox column, the inbox values and Adjust Gears on /admin/crew, and Operator of the Month. Spec: `docs/specs/talk-back.md` §9; mockup `docs/design/mockups/talk-back-recognition.html` (P1, K1, S1, O1). The automated checks cover the rules for paying Gears (`npm run check` in `functions/`, `scripts/check-hotline.js` and `scripts/check-crew.js`): two replies at once pay once, the daily cap, the owner, owner-lane and self-sent messages pay nothing, escalation keeps the payment and doesn't break a clear day, the spam reversal, the spam hold and its daily max, a clear-desk week, the Pick up and Let it go permissions, gearsAdjust, and the award.
+
+**Accounts.** The **inbox admin is @gbo** (uid `uoTkquoPL9abAJMKsiAuSi7D20R2`). Checked on Oct 15, 2026: the `crewGrade` claim is `A2`, the crew roster has an active admin at grade 2, and `hotline/main.inboxGrades` is `["A2", "A3"]`. @gbo is the only inbox admin on staging, so it is the only account that earns inbox Gears. The **owner** works the inbox too but never earns. Use a **visitor** (a private window) to send messages. Hard-refresh with **Ctrl+Shift+R** after a deploy.
+
+**Sample data (optional).** `node functions/scripts/inbox-sample.js --apply` writes two weeks of sample inbox work. It runs the real code as @gbo: replies (fast and slow), spam that held, a reversed reply, a close, an escalation and a 7-day Clear desk run. It ends with three waiting messages, one of them picked up. It pays real staging Gears. `--as-of 2026-10-31` moves the two weeks; `--clean --apply` removes everything it made (messages, Gears rows, the inboxStats months it touched, its adminLog entries) and rebuilds the boards. It refuses production. Use it to see the strip, the pips and the board column straight away. The steps below also work without it.
+
+## E. Pick up
+
+26. **Row button.** @gbo, /admin/inbox. Each unassigned New or Open team-lane row has a green **Pick up** at its right edge. Tap one. Expect the toast "Picked up. It shows as yours on the row.", and the row now reads "Picked up by @gbo" instead of the button. On a phone (390 px) the row button is hidden and the message's action row has it.
+27. **Detail.** Open an unassigned message: **Pick up** (green, hand icon) is beside **Reply**. Tap it. Expect "Picked up by **@gbo** · Let it go", and the history gains "Picked up by @gbo".
+28. **Let it go.** Tap **Let it go**. Expect "Let go. Anyone can pick it up.", the Pick up button back, and "Let go by @gbo" in the history. As the owner, a message @gbo picked up shows "Picked up by @gbo" with **no** Let it go. The assign select still works for everyone, and reassigning clears the "Picked up by" line.
+29. **Not for owner-only.** Owner, an Owner only message: no Pick up anywhere.
+
+## F. Credit line and Gears
+
+30. **First reply, paid.** Visitor sends a Say hi. @gbo opens it (it is the oldest waiting team message if nothing older is waiting) and replies (email is off, so **Open in my email**, then **Mark as replied**). Expect the lime **Hotline / Replied** stamp, the toast "Marked as replied. +7 Gears (4 reply + 2 fast + 1 oldest first).", and in History, under the reply, a gold line "**Paid 7 Gears to @gbo** (4 reply + 2 fast + 1 oldest first)" and **How Gears work here**. That link goes to /admin/inbox/how-it-works (Part C, not built yet: a 404 for now). If an older message was waiting, it's +6 with no oldest first.
+31. **Second reply.** The owner replies to the same message. Expect no new credit line and no Gears; the first reply is decided once.
+32. **Owner pays nothing.** The owner replies first to a new message. Expect no credit line. The owner never earns.
+33. **Self-sent.** @gbo, signed in as a member on /contact, sends a Say hi, then replies to it from the inbox. Expect no credit line.
+34. **Owner only.** A visitor message with **Only Boomertanger should read this** ticked: the owner replies and gets no credit line (owner-lane messages never pay).
+35. **The board.** /crew/board: a new **Inbox** column (desktop; hidden on phones like Duties, Hours and Recruits). @gbo shows their first replies this month; mods show "—". @gbo's Gears total includes the inbox Gears.
+36. **Remove credit.** Owner, the message from F30: the credit line has **Remove credit**. It opens /admin/crew at **Adjust Gears** with @gbo, the amount -7 and "Reverses 3 payments on BT-…". Write a reason and tap **Adjust Gears**, then confirm. Expect "Adjusted. @gbo now has N Gears.". In Firestore, `crew/main/gears/adjust:…:<uid>` has amount -7, the reason and `reverses`, and adminLog `crew / gearsAdjust` has the reason and before / after.
+37. **Daily cap** (needs volume: the sample script, or about five fresh replies in one Chicago day). Past 30 inbox Gears in a day, the credit line is gray: "No Gears for this reply. @gbo reached today's inbox cap (30). Resets at midnight Central." If only part of a reply fits under the cap, the gold line ends "Today's cap (30) stopped the rest".
+
+## G. Spam
+
+38. **Mark spam.** @gbo opens a fresh visitor message and sets the status to **Spam**. Expect the gray **Marked / Spam** stamp, and the toast "Marked as spam. 1 Gear pending for 7 days." with **Undo** for 5 seconds. History: "1 Gear pending: it pays in 7 days if it stays spam."
+39. **Undo.** Tap **Undo** within 5 s. Expect "Back in the inbox. No Gear pending.", the message back in its old status, and the pending line now reads "No Gear pending: it isn't spam any more."
+40. **Spam after a paid reply.** Mark the F30 message spam. Expect a gray history line "**7 Gears reversed** from @gbo: marked as spam." (an `adjust` row with reason "Marked as spam"), and @gbo's total on /crew/board drops by 7.
+41. **Spam that held** (the sample script, or wait 7 days). `inboxSpamHold` runs daily at 04:15 Central and pays 1 Gear for each mark that has stood for 7 days, at most 5 a day per person. The pending line then reads "Spam held. 1 Gear paid to @gbo." The owner un-spamming someone's mark before then pays nothing and counts against their Accuracy.
+
+## H. This month strip and Desk clear
+
+42. **Strip.** Top of the Inbox tab, for the owner and @gbo: **This month** with "Team median reply", seven Clear desk pips (lime = a clear day) and "Clear desk: N days in a row", then one card per inbox admin. Each card shows first replies, within 24 h, median, Tidied (spam that held + closed with no reply), and Accuracy (or "No spam marks"). Accuracy under 90% has a gold outline. Before any work this month: the mascot and "No replies yet this month." On a phone the cards are a swipe row.
+43. **Desk clear.** With one waiting (New or Open) team message left, reply to it, close it or mark it spam. Expect the mascot at an empty desk with the lime **Desk / Clear** stamp, "DESK CLEAR", and the streak line above the list, once. Reload: it's gone. Under reduced motion the stamp appears still.
+44. **Close with no reply.** Set a waiting message to Done without replying. Expect "Marked Done.", plus "+1 Gear (1 oldest first)" when it was the oldest waiting. Tidied goes up by 1 on the card.
+45. **Escalation is neutral.** Reply to a message (paid), then **Owner only**. Expect the Gears stay (the owner sees the credit line on the moved message), and @gbo's first replies on the card drop by 1.
+
+## I. /admin/crew
+
+46. **Inbox values.** @gbo (A2), /admin/crew › Settings: **Hotline Boom inbox** has 14 numbers and the Operator of the Month switch, all editable, with **Save inbox values**. The other crew settings stay read-only for @gbo. Change First reply to 5 and save: the next paid reply's credit line says "5 reply". Put it back to 4. A Steward (A1) or a mod sees the values read-only.
+47. **Adjust Gears by hand.** /admin/crew › Adjust Gears: a handle, an amount (not 0, ±1000), a reason (3 to 200 characters). @gbo can't adjust their own Gears ("Ask the owner to adjust your own Gears."); the owner can adjust anyone's.
+
+## J. Operator of the Month
+
+48. **The card.** /crew: the awards row has five medals. **Operator of the Month** (a gold coin with ☎️) sits between Top Gear and Fan Favourite. Flip it: the winner and a plain line like "14 first replies, 6 tidied, 5 oldest first. Median reply 5 h.", or "No Operator this month (nobody reached 5 first replies)". Preview: /crew?as=crew.
+49. **The run.** `crewMonthlyAwards` (the 1st, 00:05 Central) picks it for the month just ended, from `hotline/main/inboxStats/{yyyy-mm}`. The score is first replies + 0.5 per spam mark that held + 1 per oldest first, among staff with at least 5 first replies and 90%+ accuracy. Ties go to the lower median reply time. The run writes `awards/{yyyy-mm}.operator`, grants a `crew-operator` trophy (in the Trophy Room) and posts a `crew-award` activity event. The first real run is Nov 1 for October.
+
+## K. Data and rules
+
+50. `hotline/main/inboxStats/<yyyy-mm>`: `perStaff.<uid>` (replies, fast, oldest, minutes by message id, spamMarks, spamHeld, spamOverturned, closed) and `desk` (streak, lastDay, lastClear, clearDays). A team message @gbo replied to has `firstReplyBy`, `firstReplyMeta` and `gearsPaid { amount, uids, ledgerIds, parts }`. A spam mark has `spamBy` and `spamAt`; a pick up has `pickedUpAt`.
+51. From the console, as a member or a mod, reading `inboxStats` is denied; as @gbo or the owner it's allowed. Nobody can write it.
+52. Cloud Scheduler has `inboxSpamHold` (04:15 America/Chicago) and `inboxDeskCheck` (21:00 America/Chicago); their logs print what they did.

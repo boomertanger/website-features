@@ -1933,6 +1933,12 @@ Talk Back (Hotline Boom part 2). Spec `docs/specs/talk-back.md` (confirmed Oct 1
 - **Kit addition: `.bt-pills[data-n="3"]`** (built with Talk Back Part A, Oct 14, 2026), a three-way pill (Question / Feedback / Something's broken), in `bt-ui.css` and the UI kit page (section "Talk Back dialog"). Use it only for a three-way mode switch in a dialog; three or more filter options stay `.bt-chip`s.
 - **BOOMBOT answers in the dialog use the kit chat** (`.bt-chat-a` bubbles), never a new answer-card style.
 - **Colors:** By service bars are blue (questions) and teal (feedback), never purple; Gears credit is gold; Pick up is admin green (`.bt-btn--admin`, staff-only page); Desk clear uses the lime stamp; spam marks use a gray stamp; the Top Gear flip medal is blue, never red (red stays for destroying data).
+- **Part B as built (Oct 15, 2026):**
+  - **Kit addition: `.bt-stamp--gray`** (`stampHtml({ tone: "gray" })`) for a quiet moment. It is the "Marked / Spam" stamp; use it only where lime or gold would cheer something that isn't a win.
+  - **Pick up on a row** sits beside the row button (`.hb-ib-itemwrap`), never inside it: a button can't hold a button. It hides under 640px, where the message's action row has it.
+  - **The credit line** is a `.bt-history` entry: gold dot when paid, gray when capped, pending or reversed. Links on it use `.hb-ib-linkish`, and Remove credit is the owner's only.
+  - **The This month strip** is `.hb-sc` staff cards (a swipe row on phones) with seven `.hb-pips`. Accuracy under 90% gets a gold outline, never red.
+  - **The crew awards row** holds five flip medals on wide screens (`.bt-flip-grid.cs-awards`). Operator of the Month is the gold ☎️ coin between Top Gear and Fan Favourite.
 - **Staff How it works hero:** a silhouette in headphones instead of the mascot, and the desk phone from the /contact hero in its picked V2 Bakelite look (`hotline-boom-hero.html`), and a mug with the mascot logo; the mascot stays in the Desk clear moment and the closing call.
 
 ### 8ac. Game page votes and ratings

@@ -120,14 +120,24 @@ Gears count help. They are crew-only, separate from Trophy Room XP (mods still e
 | Queue review (vouch or note) | + 2, max 10 a month | Server |
 | Academy module passed | + 5 once | Server |
 | Bug Zapper triage confirmed / Feature Lab review | + 3 | Server (after the ports) |
-| Hotline inbox work (first reply, fast reply, oldest first, spam that held, Clear desk; see docs/specs/talk-back.md §9) | talk-back.md §9b | Server |
+| Hotline inbox work (first reply, fast reply, oldest first, spam that held, Clear desk; see docs/specs/talk-back.md §9) | talk-back.md §9b; values in `crew/main.inbox`, set on /admin/crew by the owner and Overseers and up | Server (`lib/hotline/credit.js`; ledger sources `inboxReply`, `inboxFast`, `inboxOldest`, `inboxSpam`, `inboxDesk`, `inboxBoombot`; 30 a day, Chicago) |
 
 Not counted: timeouts, bans, deleted messages (tracked for safety stats only), raw message counts (would reward spam).
-Caps: duty Gears stop at 6 hours a stream; recruits credited up to 10 a month.
+Caps: duty Gears stop at 6 hours a stream; recruits credited up to 10 a month; inbox Gears 30 a day.
+
+**Adjustments (built with Talk Back Part B, Oct 15, 2026):**
+- `gearsAdjust` (callable; owner and A2+; non-owners can't adjust themselves) writes one ledger row:
+  - source `adjust`, label "Adjustment", amount from -1000 to 1000 (never 0);
+  - the reason (3 to 200 characters), who made it, and the ledger ids it `reverses`;
+  - keyed `adjust:{ref}:{uid}`, so it can't land twice.
+- It logs adminLog crew `gearsAdjust` with the before and after totals.
+- The form is **Adjust Gears** on /admin/crew. Remove credit on /admin/inbox opens it filled in.
+- A spam mark after a paid inbox reply reverses it the same way (reason "Marked as spam").
+- The boards net adjustments out. A reversed inbox reply drops out of the Inbox column.
 
 ### 4b. Boards
 - `/crew/board`: **This month** (default), **This season** (matches Night Shift), **All time**. Columns: Gears, duties, hours, rooms covered (platform icons), recruits.
-- Inbox column (talk-back.md §9e).
+- Inbox column (talk-back.md §9e): `inboxReplies` on each board row, first replies in the period; admins only, `null` (a dash) for mods.
 - Your own row pinned; tap a mod to see their breakdown.
 - Visible to all members (you want people to see who helps), so it doubles as recruiting.
 - Admins appear with a green Staff tag and their real place, but never win crew awards (same rule as the season race).
@@ -138,7 +148,7 @@ Caps: duty Gears stop at 6 hours a stream; recruits credited up to 10 a month.
 | **Top Gear** | Monthly | Most Gears that month (automatic; ties → more duty hours) | Trophy (150 XP) · on-stream shout-out · **Mod's Pick**: chooses a game from the Game Vault shortlist for one stream next month |
 | **Fan Favourite** | Monthly | Member vote, last 5 days of the month | Trophy (150 XP) · on-stream shout-out · featured on /crew for the month |
 | **Boomer's Blessing** | Any time | Owner only (existing Legendary badge) | Badge + personal thank-you |
-| **Operator of the Month** | Monthly | Staff award (talk-back.md §9e) | See talk-back.md §9e |
+| **Operator of the Month** | Monthly | Staff award (talk-back.md §9e), in the same 1st-of-the-month run (`runAwards`): first replies + 0.5 per spam mark that held + 1 per oldest first; at least `operatorMin` replies and `operatorAccuracy`; ties to the lower median reply time; `operatorAward: false` switches it off | Trophy (`crew-operator`, 150 XP) · `awards/{ym}.operator` · a `crew-award` event · on-stream shout-out · the ☎️ card on /crew |
 | **Crew of the Year** | December | Owner picks from the 12 monthly winners | Legendary trophy + physical merch |
 
 Fan Favourite vote: ballot = mods with at least 2 duties that month; voters = members with accounts at least 14 days old and at least one stream check-in that month; one vote each; results hidden until the vote closes; crew can't vote. Replaces the owner-picked "Mod MVP" in rewards.md (the owner keeps Boomer's Blessing for that).

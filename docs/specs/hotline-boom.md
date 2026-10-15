@@ -57,12 +57,12 @@ All under `sites/boomertanger/hotline/main` (the settings doc). Server writes on
 - `hotline/main/stats/{yyyy-mm}` (every line) and `hotline/main/statsTeam/{yyyy-mm}` (team lines only): `{ total, answered, source: {…}, via: {…}, lines: {…} }`, both incremented by `contactSend`. The owner's Sources tab reads `stats`, admins read `statsTeam`. Part 2 adds `stats.byService` (all lanes), `hotline/main/serviceStats/{yyyy-mm}` (team lane per service plus BOOMBOT answers; also read by Service Hub) and `hotline/main/inboxStats/{yyyy-mm}` (per-staff reply numbers and the Clear desk streak).
 - Members: `users/{uid}.hotlineAskedSource` (server-set) so the "How did you find" question shows once. Visitors: localStorage `bt.hotline.asked` (per-browser convenience).
 - TTL policies on collection groups `teamMessages`, `ownerMessages`, `hotlineNotes`, `limits` (field `expireAt`).
-- `adminLog`, feature key `hotline` (every staff action: status, assign, note, reply, escalate, settings). No `activityLog` (nothing public).
+- `adminLog`, feature key `hotline` (every staff action: status, assign, note, reply, escalate, settings, pickUp, release). Gears removals and spam reversals log as crew `gearsAdjust`. No `activityLog` (nothing public).
 
 ## 6. Functions (functions/lib/hotline/*.js; JavaScript)
 
 - `contactSend` (callable, visitors allowed): validates line, fields and lengths; Turnstile token (shared helper `functions/lib/security/turnstile.js`, secret `TURNSTILE_SECRET_KEY`); honeypot; idempotency key (`clientRef`); rate limits (visitors 3 per hour per `ipHash`, members 5 per day per uid; `ipHash` = HMAC-SHA256 of the IP with secret `CONTACT_HASH_SALT`); minors and Business; line switched on; name check; picks the lane; assigns `ref` from `nextRef` in a transaction; writes the message and a `received` event; updates stats; sets `users/{uid}.hotlineAskedSource`; drops one `notifyOutbox` event (§8); emails the owner a copy for Business/Private when `emailOwner` says so and email is configured. Returns `{ ref, lane, replyTime }`. Errors: `rate-limited` (with `retryAt`), `bad-input`, `check-failed`, `line-off`.
-- `contactAction` (callable, staff): `{ lane, id, action: status | assign | spam | escalate, value }`. Escalate copies the message and its notes to the owner lane and deletes the team copy in one batch. Owner-lane messages can't be assigned.
+- `contactAction` (callable, staff): `{ lane, id, action: status | assign | spam | escalate | pickUp | release, value }`. Escalate copies the message and its notes to the owner lane and deletes the team copy in one batch. Owner-lane messages can't be assigned. **pickUp** (Part B) assigns an unassigned team-lane message to yourself and sets `pickedUpAt`; **release** puts it back, only for the person who picked it up (adminLog `pickUp`, `release`).
 - `contactNote` (callable, staff): adds a `note`.
 - `contactReply` (callable, staff): `{ lane, id, text, from, markWaiting }`. Sends through `functions/lib/hotline/mail.js` (Resend REST API, secret `RESEND_API_KEY`, the same key Boom Alerts will use): From `"Boomertanger" <hotline@mail.boomertanger.com>`, **Reply-To `<from>@boomertanger.com`**, subject `Re: <line title> (BT-<ref>)`, signed "the Boomertanger crew". Members are also notified through Boom Alerts (`contact-reply` event, §8). Sets `firstReplyAt`, status waiting (if `markWaiting`) or open. **If email isn't configured** (no key or the domain isn't verified yet) it returns `{ sent: false, reason: "email-off" }` and the composer offers "Open in my email" (a `mailto:` with To, subject and text) plus "Mark as replied", which records the reply as sent by hand.
 - `contactSettings` (callable, owner): updates `hotline/main`.
@@ -114,4 +114,12 @@ Full spec: `docs/specs/talk-back.md`. Built after this spec passes its first sta
 - **This feature adds:** the Talk Back dialog (openModal sheet, BOOMBOT answers from the service's help file, Something's broken → Bug Zapper, Sent with the visitor Join free nudge), line 2 renamed "Feedback & questions" with a Question / Feedback switch, `contactSend` `kind` / `context` / `boombotShown`, `contactDeflect`, `serviceStats` and `stats.byService`, the inbox context bar and Sources › By service.
 - **Inbox recognition:** Gears for first replies, fast replies, oldest first, spam that held and the Clear desk team bonus; nothing for assigning, statuses, notes, closes or escalation (always neutral); daily cap; values in /admin/crew; Pick up; the This month strip; the Inbox column on /crew/board; Operator of the Month.
 - **Staff guide:** `/admin/inbox/how-it-works`.
+- **Part B built on staging (Oct 15, 2026):**
+  - The logic is `functions/lib/hotline/credit.js`: who earns, the keyed Gears, the daily cap, the spam reversal, the spam hold, the Clear desk check and Operator of the Month.
+  - The first reply is decided in a transaction (`firstReplyBy`).
+  - History entries of kind `credit` are the credit line (paid, capped, a pending spam Gear, a reversal).
+  - `contactReply` returns `{ gears, parts, capped }` for the toast.
+  - Scheduled: `inboxSpamHold` (04:15 Central) and `inboxDeskCheck` (21:00 Central).
+  - Sample data: `functions/scripts/inbox-sample.js` (staging only).
+  - Test plan: `docs/testing/talk-back-test-plan.md` Part B.
 

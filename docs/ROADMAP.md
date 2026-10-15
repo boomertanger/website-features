@@ -22,7 +22,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
-| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back Part A tested on staging (Oct 14, 2026); Parts B and C next | Community services |
+| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back Part A tested on staging (Oct 14, 2026); Part B built on staging (Oct 15, 2026); Part C next | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
@@ -223,7 +223,14 @@ Status: **Built on staging (parts 0-6); real tests pending (docs/testing/hotline
 5. `/contact/how-it-works` (H1, the dial).
 6. Test plan (`docs/testing/hotline-boom-test-plan.md`).
 Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups approved Oct 11, 2026: [docs/specs/talk-back.md](specs/talk-back.md), `docs/design/mockups/talk-back-*.html`. The page strip, Ask pins and registry move to Service Hub (placement values note, pins, rate, skip; /contact uses rate).
-**Talk Back Part A: tested on staging (Oct 14, 2026); results in docs/testing/talk-back-test-plan.md.** Four commits: (1) backend: line 2 "Feedback & questions", contactSend kind / context / boombotShown, stats.byService and serviceStats, contactDeflect, the serviceStats rule; (2) the dialog, the loader, `.bt-pills[data-n="3"]`, Bug Zapper's help file; (3) the inbox context bar, Question:/Feedback: rows, Sources › By service, /contact's Question / Feedback switch; (4) `talkBack` on in site.json, the test plan, docs. **Next: Part B** (inbox Gears: recognition, Pick up, tidying, Clear desk, Operator of the Month) **and Part C** (the staff inbox How it works page). Service Hub part 10's questions column and the first Ask pins on pages follow.
+**Talk Back Part A: tested on staging (Oct 14, 2026); results in docs/testing/talk-back-test-plan.md.** Four commits: (1) backend: line 2 "Feedback & questions", contactSend kind / context / boombotShown, stats.byService and serviceStats, contactDeflect, the serviceStats rule; (2) the dialog, the loader, `.bt-pills[data-n="3"]`, Bug Zapper's help file; (3) the inbox context bar, Question:/Feedback: rows, Sources › By service, /contact's Question / Feedback switch; (4) `talkBack` on in site.json, the test plan, docs. **Talk Back Part B: built on staging (Oct 15, 2026); test plan Part B in docs/testing/talk-back-test-plan.md.** Five commits:
+1. Backend: inbox Gears through `lib/hotline/credit.js`, the first reply in a transaction, the spam reversal, Pick up / Let it go, `gearsAdjust`, `crew/main.inbox`, `inboxReplies` on the boards, `inboxStats` and its rule, `inboxSpamHold` and `inboxDeskCheck`, `inbox-sample.js`.
+2. /admin/inbox: Pick up, the credit line, the This month strip, Desk clear, the spam stamp with Undo, Gears in the toast; kit `.bt-stamp--gray`.
+3. /crew/board's Inbox column; the inbox values and Adjust Gears on /admin/crew.
+4. Operator of the Month (the award run, the trophy, the ☎️ card on /crew).
+5. Docs.
+
+**Next: Part C** (the staff inbox How it works page, `/admin/inbox/how-it-works`, which the credit line already links to). Service Hub part 10's questions column and the first Ask pins on pages follow.
 Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
 
 ### 16. Tech Stack
@@ -405,6 +412,18 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
 - [ ] The Squarespace contact page switched off.
 - [ ] Talk Back: deploy `contactDeflect` (with the other contact functions) and the `serviceStats` rule to production (rules first, separately); keep `"talkBack"` in site.json modules; production Turnstile hostnames cover every page with a strip, not just /contact.
+- [ ] Talk Back Part B in production:
+  - Rules first, on their own: the `hotline/main/inboxStats/{month}` rule.
+  - Then the functions, batched:
+    - Every function that loads `lib/crew/gears.js`, since inbox Gears and `gearsAdjust` rebuild the crew boards with the new `inboxReplies` shape.
+    - Every function that loads `lib/hotline`.
+    - The new scheduled `inboxSpamHold` and `inboxDeskCheck`.
+    - The new callable `gearsAdjust`.
+    - `crewMonthlyAwards` (Operator of the Month).
+    - Order: `lib/live` first, then batches of about 15 with 3-minute pauses, confirming the served revisions.
+  - Check that Cloud Scheduler has both inbox jobs.
+  - No seeds: `crew/main.inbox` falls back to the defaults, and trophies describe themselves (no catalog entry for `crew-operator`).
+  - Never run `inbox-sample.js` on production (it refuses).
 
 ### 404 page in production
 - [ ] 404 page: confirm it works on production after the first production deploy (rules + reportBrokenLink + brokenLinkFix deployed to prod).
