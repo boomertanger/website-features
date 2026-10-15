@@ -4,7 +4,6 @@
 // scrolls to Month by month), ?platform=twitch|tiktok|youtube (only that line on), ?range=30d|90d|1y|all (visitors fall back to All).
 import { chart, chartTable, focusSeries } from "../../../../shared/ui/chart.js";
 import { initChat } from "../../../../shared/ui/chat.js";
-import { initFlipCards } from "../../../../shared/ui/flip-card.js";
 import { onAuth, getAuthState, type AuthState } from "../../lib/auth";
 import { drawScene } from "./scene";
 import {
@@ -241,22 +240,57 @@ function goals() {
     return `<div class="cc-goal">${iconHtml(k)}<div class="bt-meter" style="--bt-meter-color:${COLOR[k]}"><div class="bt-meter-legend cc-goal-legend"><b>${NAME[k]}: ${fmt(goal)} ${per(k)}</b><span>${fmt(now)} / ${fmt(goal)}</span></div><div class="bt-meter-track" role="meter" aria-valuemin="0" aria-valuemax="${goal}" aria-valuenow="${now}" aria-label="${esc(NAME[k])} goal"><div class="bt-meter-fill" style="width:${pct.toFixed(1)}%"></div></div></div></div>`;
   }).join("");
 }
-function flips() {
-  if (!S.member || !S.months) return;
-  const p = S.pub!, rd = readingSeries(S.months), r = records(S.months, rd);
+// R2 record tiles (spec §6 chapter 6; mockup records() and recViz()): plain stats, never medals or badges. Each tile is a button that opens its
+// month in Month by month: the name, the big number and its unit, the date in gold, a small context chart drawn from the data, a note.
+type RecViz = { kind: "bars"; data: [string, number][]; hi: string } | { kind: "line"; p: Platform; pts: SPoint[]; from: number; to: number } | null;
+interface RecTile { label: string; value: string; unit: string; when: string; note: string; month: string | null; viz: RecViz }
+const shortDay = (d: string) => new Date(ms(d)).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+function recViz(v: RecViz, w = 200, h = 46) {
+  if (!v) return "";
+  if (v.kind === "bars") {
+    const max = Math.max(1, ...v.data.map((d) => d[1])), bw = w / v.data.length;
+    return `<svg class="cc-rec-viz" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false">${v.data.map(([k, n], i) => { const bh = Math.max(2, (Math.max(0, n) / max) * (h - 4)); return `<rect class="cc-rec-bar${k === v.hi ? " is-hi" : ""}" x="${(i * bw + 1).toFixed(1)}" y="${(h - bh).toFixed(1)}" width="${Math.max(1, bw - 2).toFixed(1)}" height="${bh.toFixed(1)}" rx="1.5"/>`; }).join("")}</svg>`;
+  }
+  const s = v.pts.filter((x) => x.t >= v.from - 25 * DAY && x.t <= v.to + 25 * DAY);
+  if (s.length < 2) return "";
+  const lo = Math.min(...s.map((x) => x.v)), hi = Math.max(...s.map((x) => x.v)), t0 = s[0].t, t1 = s[s.length - 1].t;
+  const X = (t: number) => ((t - t0) / (t1 - t0 || 1)) * w, Y = (n: number) => h - 3 - ((n - lo) / (hi - lo || 1)) * (h - 6);
+  const d = s.map((x, i) => `${i ? "L" : "M"}${X(x.t).toFixed(1)} ${Y(x.v).toFixed(1)}`).join("");
+  const a = s.find((x) => x.t === v.from), b = s.find((x) => x.t === v.to);
+  return `<svg class="cc-rec-viz" viewBox="0 0 ${w} ${h}" aria-hidden="true" focusable="false"><path class="cc-rec-line" style="stroke:${COLOR[v.p]}" d="${d}"/>${a && b ? `<path class="cc-rec-jump" d="M${X(a.t).toFixed(1)} ${Y(a.v).toFixed(1)}L${X(b.t).toFixed(1)} ${Y(b.v).toFixed(1)}"/><circle class="cc-rec-dot" cx="${X(b.t).toFixed(1)}" cy="${Y(b.v).toFixed(1)}" r="3.5"/>` : ""}</svg>`;
+}
+function recordTiles(): RecTile[] {
+  const p = S.pub!, rd = readingSeries(S.months!), r = records(S.months!, rd);
+  const list = [...S.months!.values()].filter((m) => !m.preview || m.gain?.all != null).sort((a, b) => (a.key < b.key ? -1 : 1));
+  const out: RecTile[] = [];
+  if (r.best) {
+    const gains = list.filter((m) => m.gain?.all != null).map((m) => [m.key, m.gain.all as number] as [string, number]);
+    out.push({ label: "Biggest month", value: `+${fmt(r.best.gain.all)}`, unit: "new followers", when: monthLabel(r.best.key, true), note: r.best.highlights?.[0] || "Across every platform", month: r.best.key, viz: { kind: "bars", data: gains, hi: r.best.key } });
+  }
+  if (r.jump) {
+    const j = r.jump;
+    out.push({ label: "Best jump between streams", value: `+${fmt(j.value)}`, unit: `${NAME[j.platform]} ${per(j.platform)}`, when: `${shortDay(j.from)} to ${dayLabel(j.to)}`, note: "Between two readings in a row", month: j.to.slice(0, 7), viz: { kind: "line", p: j.platform, pts: toS(rd[j.platform]), from: ms(j.from), to: ms(j.to) } });
+  }
+  // Peak viewers: the best Control Room stream (every platform added up) once one exists, otherwise the imported TikTok record; never compared
   const imported = (p.records || []).find((x) => x.id && x.platform && x.value);
-  const card = (tone: string, medal: string, title: string, sub: string, kv: [string, string][], tag: string) => `<button type="button" class="bt-flip bt-flip--${tone}"><span class="bt-flip-in"><span class="bt-flip-face"><span class="bt-flip-medal" aria-hidden="true">${medal}</span><b>${title}</b><span class="bt-flip-sub">${sub}</span><span class="bt-flip-hint">Turn over</span></span><span class="bt-flip-face bt-flip-face--back">${kv.map(([k, v]) => `<span class="bt-flip-k">${k}</span><span class="bt-flip-v">${v}</span>`).join("")}${tag ? `<span class="bt-flip-tag">${tag}</span>` : ""}</span></span></button>`;
   const before = imported ? `${fmt(imported.value)} on ${NAME[imported.platform as Key] || imported.platform}, ${monthLabel(imported.month, true)}` : null;
-  const cards: string[] = [];
-  if (r.best) cards.push(card("gold", "🏔️", "Biggest month", monthLabel(r.best.key, true), [["New followers", `+${fmt(r.best.gain.all)}`], ["Streams", r.best.streams != null ? fmt(r.best.streams) : "—"]], "Calculated"));
-  if (r.jump) cards.push(card("teal", "⚡", "Best jump", NAME[r.jump.platform], [["Between readings", `+${fmt(r.jump.value)}`], ["When", `${dayLabel(r.jump.from)} to ${dayLabel(r.jump.to)}`]], "Calculated"));
-  // Peak viewers: the best Control Room stream (all platforms added up) once one exists; it never "beats" the imported TikTok record
-  if (r.peak) cards.push(card("primary", "👁️", "Peak viewers", `${fmt(r.peak.value)} viewers, all platforms`, [["When", dayLabel(r.peak.day)], ...(before ? [["Before the site", before] as [string, string]] : [])], "Control Room"));
-  else if (before) cards.push(card("primary", "👁️", "Peak viewers", `${fmt(imported!.value)} on ${NAME[imported!.platform as Key] || imported!.platform}`, [["Before the site", before]], "From the old growth page"));
-  if (r.most) cards.push(card("gold", "🎥", "Most streams", monthLabel(r.most.key, true), [["Streams", fmt(r.most.streams)], ["Hours live", r.most.minutes != null ? (r.most.minutes / 60).toFixed(1).replace(/\.0$/, "") : "—"]], "Calculated"));
-  const grid = $("[data-cc-flips]")!;
-  grid.innerHTML = cards.join("");
-  initFlipCards(grid as unknown as Document);
+  if (r.peak) out.push({ label: "Peak viewers", value: fmt(r.peak.value), unit: "viewers, all platforms", when: dayLabel(r.peak.day), note: before ? `Before the site: ${before}.` : "The best stream across every platform.", month: r.peak.day.slice(0, 7), viz: null });
+  else if (imported) out.push({ label: "Peak viewers", value: fmt(imported.value), unit: `on ${NAME[imported.platform as Key] || imported.platform}`, when: monthLabel(imported.month, true), note: "Before the site.", month: imported.month, viz: null });
+  if (r.most) {
+    const streams = list.filter((m) => m.streams != null).map((m) => [m.key, m.streams as number] as [string, number]);
+    const h = r.most.minutes != null ? r.most.minutes / 60 : null;
+    out.push({ label: "Most streams in a month", value: fmt(r.most.streams), unit: "streams", when: monthLabel(r.most.key, true), note: h != null ? `${h % 1 ? h.toFixed(1) : fmt(h)} hours live` : "Hours not recorded", month: r.most.key, viz: { kind: "bars", data: streams, hi: r.most.key } });
+  }
+  return out;
+}
+function recordsGrid() {
+  if (!S.member || !S.months) return;
+  const has = (k: string | null) => !!k && S.months!.has(k);
+  $("[data-cc-recs]")!.innerHTML = recordTiles().map((t) => `<button type="button" class="bt-card cc-rec"${has(t.month) ? ` data-goto="${t.month}"` : " disabled"}><span class="bt-label">${esc(t.label)}</span><span class="cc-rec-n">${t.value}<small>${esc(t.unit)}</small></span><span class="cc-rec-when">${esc(t.when)}</span>${recViz(t.viz)}<span class="cc-rec-note">${esc(t.note)}</span>${has(t.month) ? `<span class="cc-rec-go">Open ${monthLabel(t.month!)} <span aria-hidden="true">›</span></span>` : ""}</button>`).join("");
+}
+function paceCard() {
+  if (!S.member || !S.months) return;
+  const p = S.pub!, rd = readingSeries(S.months);
   // At this pace (§9): combined and per platform over the last 60 days
   const comb = combinedSeries(p, rd);
   const tpl = document.getElementById("bt-mascot-tpl")?.innerHTML || "";
@@ -300,7 +334,7 @@ function draw() {
   if (!S.member && S.range !== "all") S.range = "all";
   hero(p);
   drawScene($("[data-cc-scene]")!, p, { onScrub: (q) => { S.scrub = q; hero(p); } });
-  liveAnswers(p); controls(); drawBig(); membersChart(); memberBreakdown(); milestones(); stages(); crossover(); months(); goals(); flips();
+  liveAnswers(p); controls(); drawBig(); membersChart(); memberBreakdown(); milestones(); stages(); crossover(); months(); goals(); recordsGrid(); paceCard();
 }
 
 let stopMonths: (() => void) | null = null;
@@ -334,6 +368,8 @@ if (root) {
     if (ser) { const k = ser.dataset.series as Key; if (S.on.has(k) && S.on.size > 1) S.on.delete(k); else S.on.add(k); controls(); drawBig(); return; }
     const rng = t.closest<HTMLElement>("[data-range]");
     if (rng) { S.range = rng.dataset.range!; controls(); drawBig(); return; }
+    const go = t.closest<HTMLElement>("[data-goto]");
+    if (go && S.months?.has(go.dataset.goto!)) { S.month = go.dataset.goto!; months(); document.getElementById("ch-months")?.scrollIntoView({ behavior: reduce() ? "auto" : "smooth", block: "start" }); return; }
     const mon = t.closest<HTMLElement>("[data-month]");
     if (mon) { S.month = mon.dataset.month!; months(); return; }
     if (t.closest("[data-cc-table]")) {

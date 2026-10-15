@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(climb): R2 record tiles replace the flip medals in Records and pace (no medals, icons or flips): Biggest month, Best jump between streams, Peak viewers, Most streams in a month as buttons with the number, the date in gold, a small chart drawn from the data (gold record bar or jump), a note and "Open <month> ›", which opens that month in Month by month; 4 / 2 / 1 columns; the members' lock card shows a chart, not a trophy
 feat(climb): no gap band on /climb: the lines connect across stretches without readings (no hatched band, no line breaks, no "not tracked" month chip; public/climb.gaps and the kit's optional gaps stay); "The build" note and BOOMBOT's "What happened in 2026?" (the 10,000 date filled from public/climb, plain answer for Talk Back); fix: the members' reading line no longer re-adds an imported month-end on a later collector day
 feat(climb): Twitch and YouTube lines use their brand colours (--cc-twitch-brand #9146ff, --cc-youtube-brand #ff0000), on data marks only; the stage cards' hover and focus border is neutral, never a platform colour
 docs: Creator Climb spec §8, §10, §11 match the repo: the settings live on the climb/main doc itself (admins read it, no client writes; it holds the left-out accounts, the import and lastRebuild), points are stored as { d, v, s }

@@ -108,9 +108,9 @@ const lock = (ic: string, t: string, p: string) => `<div class="bt-lock-card cc-
         <section class="cc-ch" id="ch-records" aria-labelledby="h-ch-records">
           <Fragment set:html={chapter(6, "ch-records", "Records and pace", "The best of the climb so far, and where it's heading.")} />
           <div class="bt-card cc-card" data-cc-goals></div>
-          <Fragment set:html={lock("🏆", "Records and forecasts are for members", "Join free to see the biggest month, the best stream day and where the climb is heading.")} />
+          <Fragment set:html={lock("📊", "Records and forecasts are for members", "Join free to see the biggest month, the best stream day and where the climb is heading.")} />
           <div class="cc-only-member cc-recs">
-            <div class="bt-flip-grid" data-cc-flips></div>
+            <div class="cc-records" data-cc-recs></div>
             <div class="bt-card cc-card cc-pace" data-cc-pace></div>
           </div>
         </section>
