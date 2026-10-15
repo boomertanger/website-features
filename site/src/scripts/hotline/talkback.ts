@@ -50,8 +50,8 @@ const SVG = {
 };
 const MODES: [string, string, string][] = [["question", "help2", "Question"], ["feedback", "feedback", "Feedback"], ["broken", "bug", "Something's broken"]];
 
-/** The page this was opened from: the path without the query or hash, and the tab's title. */
-const pagePath = () => location.pathname || "/";
+/** The page this was opened from: the path without the query, hash or trailing slash ("/" stays "/"), as contactSend stores it. */
+const pagePath = () => { const p = location.pathname || "/"; return p.length > 1 ? p.replace(/\/+$/, "") || "/" : p; };
 
 /** The help entries whose keys appear in the text (from 6 typed characters), up to 2. */
 export function matchHelp(help: Help[] | null, text: string): Help[] {

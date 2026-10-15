@@ -50,6 +50,9 @@ async function main() {
   assert.deepEqual(L.talkBackFields({}), { kind: "feedback", context: null, boombotShown: null }, "kind defaults to feedback");
   assert.equal(L.talkBackFields({ kind: "rant" }).kind, "feedback");
   assert.equal(L.cleanPath("/games/x?as=member#top"), "/games/x", "query and hash dropped");
+  assert.equal(L.cleanPath("/bug-zapper/how-it-works"), "/bug-zapper/how-it-works", "a sub-page path is kept exactly");
+  assert.equal(L.cleanPath("/bug-zapper/how-it-works/?x=1#y"), "/bug-zapper/how-it-works", "no trailing slash");
+  assert.equal(L.cleanPath("/bug-zapper//"), "/bug-zapper"); assert.equal(L.cleanPath("/"), "/", "the home page stays /");
   for (const bad of ["games", "//evil.com/x", "https://evil.com/", "/a b", "/" + "x".repeat(200)]) assert.equal(L.cleanPath(bad), null, `not a same-site path: ${bad.slice(0, 20)}`);
   assert.equal(L.cleanTitle("<b>Hi</b>\n there"), "b Hi /b there"); assert.equal(L.cleanTitle("x".repeat(300)).length, 120);
   assert.equal(L.cleanContext({ serviceId: "Bad.Id", path: "/x" }), null, "a bad service id drops the context");
@@ -265,6 +268,10 @@ async function main() {
   await core.deflect(req(null, { serviceId: "bug-zapper", answerId: "screenshots" }, { ip: "6.6.6.7" }));
   assert.equal((await svcStats())["bug-zapper"].boombot, 32, "a new hour, counted again");
   assert.ok(!JSON.stringify(await svcStats()).includes("screenshots") && !JSON.stringify(await svcStats()).includes("fan"), "no answer id or uid stored");
+
+  // a sub-page path is stored and returned unchanged (only a trailing slash goes)
+  r = await core.send(req(null, visitor("feedback", { kind: "question", context: { ...ctx, path: "/bug-zapper/how-it-works/" } }), { ip: "7.7.7.11" }));
+  assert.equal((await list(`${B}/teamMessages`)).find((x) => x.ref === r.ref).context.path, "/bug-zapper/how-it-works", "the sub-page, not the service's first page");
 
   // ---------- settings (owner only) ----------
   assert.equal(await why(core.settings(req("a2", { replyTime: "2 days" }, A2))), "not-allowed");

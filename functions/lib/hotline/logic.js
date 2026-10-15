@@ -133,7 +133,8 @@ function cleanPath(v) {
   if (typeof v !== "string") return null;
   const p = v.trim().split(/[?#]/)[0];
   if (!p.startsWith("/") || p.startsWith("//") || p.length > 200 || /[\s\\<>"]/.test(p)) return null;
-  return p;
+  // one form for every path: no trailing slash (Cloudflare serves /bug-zapper/ and /bug-zapper alike; the manifests' routes have none); "/" stays "/"
+  return p.length > 1 ? p.replace(/\/+$/, "") || "/" : p;
 }
 /** The page title as plain text: no control characters or angle brackets, spaces collapsed, 120 characters at most. */
 const cleanTitle = (v) => (typeof v === "string" ? v.replace(/[\u0000-\u001f\u007f<>]/g, " ").replace(/\s+/g, " ").trim().slice(0, 120) : "");

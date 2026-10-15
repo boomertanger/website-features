@@ -32,9 +32,9 @@ interface Msg {
   sender: { uid?: string; handle?: string; name?: string; email?: string }; fields: Record<string, string>; body: string;
   source: string | null; via: string | null; onlyOwner: boolean; namecheck: { uid: string; handle: string | null; grade: string | null } | null;
   escalatedBy: string | null; createdAt: number; firstReplyAt: number | null;
-  kind: "question" | "feedback" | null; context: { serviceId: string; section: string | null; path: string; title: string | null } | null; boombotShown: string[] | null;   // Talk Back, line 2 only
+  kind: "question" | "feedback" | null; context: { serviceId: string; section: string | null; path: string | null; title: string | null } | null; boombotShown: string[] | null;   // Talk Back, line 2 only
 }
-interface Svc { id: string; name: string; area: string; sections?: Record<string, string> }
+interface Svc { id: string; name: string; area: string; routes?: string[]; sections?: Record<string, string> }
 const SERVICES = new Map((Object.values(import.meta.glob("../../../../services/*.json", { eager: true, import: "default" })) as Svc[]).map((m) => [m.id, m]));
 interface SvcCount { questions: number; feedback: number; boombot: number; sections: Record<string, number> }
 interface Note { id: string; kind: "reply" | "note" | "event"; by: string | null; from?: string; text: string; at: number; event?: string; value?: string | null; manual?: boolean }
@@ -102,7 +102,7 @@ const rowLabel = (m: Msg) => (m.line === "feedback" ? (m.kind === "question" ? "
 /** "{Area} › {Service} › {Section}" for a Talk Back context; an unknown service shows the stored title (or path). */
 function whereOf(c: NonNullable<Msg["context"]>, withArea = true) {
   const s = SERVICES.get(c.serviceId);
-  if (!s) return c.title || c.path;
+  if (!s) return c.title || c.path || c.serviceId;
   return [withArea ? s.area : null, s.name, c.section ? s.sections?.[c.section] || null : null].filter(Boolean).join(" › ");
 }
 const laneTag = (lane: Lane) => (lane === "owner" ? `<span class="bt-tag hb-lane hb-lane--owner">${ic("private")}Only Boomertanger</span>` : `<span class="bt-tag hb-lane">${ic("team")}Inbox team</span>`);
@@ -128,7 +128,7 @@ function toMsg(id: string, lane: Lane, d: any): Msg {
     sender: d.sender || {}, fields: d.fields || {}, body: String(d.body || ""), source: d.source || null, via: d.via || null, onlyOwner: d.onlyOwner === true,
     namecheck: d.namecheck || null, escalatedBy: d.escalatedBy || null, createdAt: ms(d.createdAt) ?? 0, firstReplyAt: ms(d.firstReplyAt),
     kind: d.line === "feedback" ? (d.kind === "question" ? "question" : "feedback") : null,
-    context: d.line === "feedback" && d.context && typeof d.context.serviceId === "string" ? { serviceId: d.context.serviceId, section: d.context.section || null, path: String(d.context.path || "/"), title: d.context.title || null } : null,
+    context: d.line === "feedback" && d.context && typeof d.context.serviceId === "string" ? { serviceId: d.context.serviceId, section: d.context.section || null, path: typeof d.context.path === "string" && d.context.path ? d.context.path : null, title: d.context.title || null } : null,
     boombotShown: Array.isArray(d.boombotShown) && d.boombotShown.length ? d.boombotShown.map(String) : null,
   };
 }
@@ -342,7 +342,9 @@ function contextHtml(m: Msg) {
   const c = m.context;
   if (!c) return "";
   const n = m.boombotShown?.length || 0;
-  return `<div class="hb-ib-ctx"><span>From</span><span class="bt-tag">${ic("pin")}${esc(whereOf(c))}</span><a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(c.path)}" target="_blank" rel="noopener">${ic("ext")}Open the page</a>${SERVICES.has(c.serviceId) ? "" : `<span class="hb-ib-ctx-path">${esc(c.path)}</span>`}${n ? `<span class="hb-ib-ctx-bb">${boombotIcon(`hb-ib-bb-${m.id}`)}BOOMBOT showed ${n === 1 ? "1 answer" : `${n} answers`}; they sent it anyway.</span>` : ""}</div>`;
+  // the stored path; if a message ever has none, the service's first route (no button when neither is known)
+  const href = c.path || SERVICES.get(c.serviceId)?.routes?.find((r) => !r.includes("[")) || null;
+  return `<div class="hb-ib-ctx"><span>From</span><span class="bt-tag">${ic("pin")}${esc(whereOf(c))}</span>${href ? `<a class="bt-btn bt-btn--secondary bt-btn--sm" href="${esc(href)}" target="_blank" rel="noopener">${ic("ext")}Open the page</a>` : ""}${SERVICES.has(c.serviceId) || !c.path ? "" : `<span class="hb-ib-ctx-path">${esc(c.path)}</span>`}${n ? `<span class="hb-ib-ctx-bb">${boombotIcon(`hb-ib-bb-${m.id}`)}BOOMBOT showed ${n === 1 ? "1 answer" : `${n} answers`}; they sent it anyway.</span>` : ""}</div>`;
 }
 function detailHtml(m: Msg | null) {
   if (!m) return `<div class="hb-ib-detail"><div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">Pick a message</span><span>It opens here.</span></div></div>`;
