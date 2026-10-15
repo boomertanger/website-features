@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(site): the PREVIEW bar (staging and localhost only, never production) ends with the short commit SHA of the build, "build 77271e3" (CF_PAGES_COMMIT_SHA on Cloudflare Pages, git locally)
 - fix(climb): /climb sorts public/climb's month-ends by month (January to May 2025 arrived out of order, so the combined line and the hero ridge zig-zagged there)
 - docs: ROADMAP: Base Camp notes Addendum 3 (stage 5, The rise, replayed) and its dependency on Creator Climb; the production checklist re-runs seed-base-camp.js after the member file change, needs Creator Climb on production first, and adds the Back on air era in Creator Climb at relaunch
 - feat(base-camp): "The rise, replayed" replaces "Then and now" (its Sept 30, 2025 numbers and the public/socials fallback are gone): a .bt-scrubber through every month-end from January 2025 to Today, read only from public/climb (no gap step; months without a reading skipped; nothing invented), the rolling total with the month's last reading, three platform bars (a dash with no value), the era and its tint, the story lines from base-camp.json filled from public/climb (calculated "more than N times" and "N days"), Play the climb (about 10 s, stops on a touch), gold flares for TikTok 1,000 and 5,000 combined and the big lime 10,000 flare that lights stage 5, the Creator Climb link; hidden without public/climb; reduced motion: no rolling or flares; scrubber pointer capture never throws; Base Camp manifest 1.1

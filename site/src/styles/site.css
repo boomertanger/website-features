@@ -66,6 +66,7 @@
 .bt-root:not(#_) .bt-preview-chip a { color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-preview-chip a.is-on { color: var(--bt-text); font-weight: 700; text-decoration: underline; }
 .bt-root:not(#_) .bt-preview-note { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-preview-build { color: var(--bt-text-muted); font-family: ui-monospace, Menlo, Consolas, monospace; letter-spacing: 0.02em; }
 @media (max-width: 640px) {
   .bt-root:not(#_) .bt-preview-chip { bottom: calc(84px + env(safe-area-inset-bottom, 0px)); }
   .bt-root:not(#_) .bt-preview-note { display: none; }

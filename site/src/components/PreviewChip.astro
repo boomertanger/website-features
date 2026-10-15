@@ -1,12 +1,20 @@
 ---
 // Staging / preview only (never rendered in production): a small fixed chip
-// showing the current ?as= and ?live= preview values, with links to flip them.
+// showing the current ?as= and ?live= preview values, with links to flip them, and at its end the short commit SHA this
+// build came from ("build 77271e3"): Cloudflare Pages sets CF_PAGES_COMMIT_SHA at build time; a local build asks git. Read at build time only.
+import { execSync } from "node:child_process";
+const sha = (() => {
+  const cf = process.env.CF_PAGES_COMMIT_SHA;
+  if (cf) return cf.slice(0, 7);
+  try { return execSync("git rev-parse --short=7 HEAD", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim() || null; } catch { return null; }
+})();
 ---
 <aside class="bt-preview-chip" aria-label="Preview controls" data-preview-chip>
   <b>Preview</b>
   <span class="bt-preview-group" data-param="as" data-values="visitor,member,admin">as</span>
   <span class="bt-preview-group" data-param="live" data-values="off,public,backstage">live</span>
   <span class="bt-preview-note">Member content is preview data</span>
+  {sha && <span class="bt-preview-build" title="The commit this build came from">build {sha}</span>}
 </aside>
 
 <script is:inline>
