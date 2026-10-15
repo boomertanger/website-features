@@ -56,7 +56,7 @@ mockup" link. Illustrated mockups are not rebuilt inside the Playbook.
 | `pages/{pageId}/versions/{n}` | Earlier `title`, `lede`, `body`, with `savedAt` and `source` (edit, update, seed, restore) |
 | `flags/{flagId}` | `pageId`, `status` (assumed, open, confirmed), `text` (Markdown, one paragraph), `answer?`, `order`, `createdAt`, `settledAt?` |
 | `decisions/{id}` | `date` (YYYY-MM-DD), `text`, `pageId?`, `flagId?`, `order` |
-| `state` (doc) | `dueCount`, `duePages[]`, `dueSince` (scheduler) |
+| `state/current` (doc) | `dueCount`, `duePages[]`, `dueSince` (scheduler) |
 
 - Rules: owner reads everything; no client writes.
 - Callable `playbookAdmin` (owner only): `savePage` (pinned to `version`; stale edits refused),

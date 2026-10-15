@@ -940,3 +940,7 @@ Object.assign(exports, require("./lib/kindWords").build({ adminLogEntry }).funct
 // skipperCamWatch (members, only while live; the video id is never logged) and skipperCamSweep (every 15 minutes: off after 12 hours).
 // Lives in lib/skipperCam/; not in lib/live.
 Object.assign(exports, require("./lib/skipperCam").build({ adminLogEntry }).functions);
+
+// The Playbook (docs/specs/playbook.md): playbookAdmin (owner only: savePage, flagAction, markReviewed, applyUpdate, restoreVersion; adminLog feature playbook,
+// ids only) and playbookReviewTick (the 1st, 06:00 America/Los_Angeles). Lives in lib/playbook/; loads nothing from rewards.
+Object.assign(exports, require("./lib/playbook").functions(adminLogEntry));

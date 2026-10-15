@@ -556,6 +556,11 @@ service cloud.firestore {
       // ---------- Traffic Pulse (docs/specs/traffic-pulse.md §2, §9) ----------
       // Counts only (no IP, no uid, no user agent stored). Site admins read everything under pulse/main; every write goes through the lib/pulse
       // Cloud Functions (and scripts/pulse-sample.js on staging). pulse/main/private/* (the daily salt, engine state): no client access at all.
+      // The Playbook (docs/specs/playbook.md §4): the owner's private plan. The owner reads everything; nobody writes (playbookAdmin and the seed script do).
+      match /playbook/{document=**} {
+        allow read: if isSiteOwner(siteId);
+        allow write: if false;
+      }
       match /pulse/{document=**} {
         allow read: if hasSiteRole(siteId, 'admin');
         allow write: if false;
