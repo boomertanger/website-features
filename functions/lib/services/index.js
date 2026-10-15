@@ -15,12 +15,15 @@
 //                                      version, date, hidden, the member's @handle from their profile, and a commentId: never an email or a uid)
 //   Triggers: an Arcade game (games/{id}) → an arcadeGame item; a Vault game (vaultGames/{slug}) → a vaultGame item (retired while hidden; any write creates
 //   a missing item, so a game added before the trigger existed heals on its next edit; an admin's manual retire or hide is never undone); a stream
-//   reaching Ended → a stream item rateable for 14 days; a rating or a test → the item's totals, my/{uid} and the summary row.
+//   reaching Ended → a stream item rateable for 14 days; a rating or a test → the item's totals, my/{uid} and the summary row; a rating on a
+//   Vault game also sets that game's key in public/serviceVerdicts (docs/specs/game-page-votes.md §3).
 //   §3a: a Bug Zapper report or a Feature Lab idea with a serviceId → the service's bugs.open / ideas.open (old and new service recounted when the serviceId
 //   or the status changes; hidden reports still count, only staff see the number).
 //
 // Data (sites/boomertanger/services/main/…): the main doc { buildHash, syncedAt, count }; items/{serviceId}; ratings/{serviceId}__{uid};
-// tests/{serviceId}__{uid}__{version}; my/{uid}; summary/main { rows: { id: row } } (admin views); and public/services { services: [member-safe rows] }.
+// tests/{serviceId}__{uid}__{version}; my/{uid}; summary/main { rows: { id: row } } (admin views); public/services { services: [member-safe rows] };
+// and public/serviceVerdicts { "<serviceId>": { love, like, nope } } (anyone reads it; only vaultGame items so far, and only at 3+ counted ratings:
+// owner and admin ratings are left out, as in the item totals; below 3 the key is removed).
 // Item ids: the manifest id; an Arcade game's slug (so it meets its manifest, tap-the-splat); vault-<slug>; stream-<streamId>.
 // build(deps) is what scripts/check-services-fn.js runs against the in-memory Firestore. deps: db, now(), adminLogEntry, factory, grant, tasks, hooks.
 const { onCall } = require("firebase-functions/v2/https");
@@ -67,6 +70,7 @@ function build(deps = {}) {
     my: (uid) => db.doc(`${base}/my/${uid}`),
     summary: db.doc(`${base}/summary/main`),
     public: db.doc(`sites/${SITE_ID}/public/services`),
+    verdicts: db.doc(`sites/${SITE_ID}/public/serviceVerdicts`),
     site: db.doc(`sites/${SITE_ID}`),
     member: (uid) => db.doc(`sites/${SITE_ID}/members/${uid}`),
   };
@@ -314,7 +318,39 @@ function build(deps = {}) {
     const coreRated = coreIds.filter((id) => rated[id]).length;
     await R.my(uid).set({ rated, coreRated, coreTotal: coreIds.length, updatedAt: ts(at) }, { merge: true });
     await refreshRow(sid);
-    return { rated, coreIds, item: itemsById[sid] || null, who: w };
+    return { rated, coreIds, item: itemsById[sid] || null, who: w, totals };
+  }
+  // ---------------------------------------------------------------------------------------------- public/serviceVerdicts (game page C1)
+  /** The public verdict for an item's totals: { love, like, nope } at VERDICT_MIN+ counted ratings, else null. Only vaultGame items so far. */
+  function verdictOf(item, totals) {
+    if (!item || item.type !== "vaultGame" || !totals) return null;
+    const v = { love: Number(totals.love) || 0, like: Number(totals.like) || 0, nope: Number(totals.dislike) || 0 };
+    return v.love + v.like + v.nope >= L.VERDICT_MIN ? v : null;
+  }
+  /** Sets (or removes) this one item's key; nothing else in the doc is touched. */
+  async function writeVerdict(sid, item, totals) {
+    if (!item || item.type !== "vaultGame") return null;
+    const v = verdictOf(item, totals);
+    if (v) await R.verdicts.set({ [sid]: v, updatedAt: ts(now()) }, { merge: true });
+    else {
+      const cur = await R.verdicts.get();
+      // service ids are kebab-case (no dots), so the key is a top-level field
+      if (cur.exists && (cur.data() || {})[sid] !== undefined) await R.verdicts.update({ [sid]: FieldValue.delete(), updatedAt: ts(now()) });
+    }
+    return v;
+  }
+  /** The one-time backfill (scripts/backfill-service-verdicts.js): every vaultGame item's totals against the doc. apply writes the whole doc. */
+  async function backfillVerdicts({ apply = false } = {}) {
+    const [items, cur] = await Promise.all([R.items.where("type", "==", "vaultGame").get(), R.verdicts.get()]);
+    const have = cur.exists ? Object.fromEntries(Object.entries(cur.data()).filter(([k]) => k !== "updatedAt")) : {};
+    const want = {};
+    for (const d of items.docs) { const v = verdictOf(d.data(), d.data().ratings); if (v) want[d.id] = v; }
+    const same = (a, b) => !!a && !!b && a.love === b.love && a.like === b.like && a.nope === b.nope;
+    const add = Object.keys(want).filter((k) => !have[k]).sort();
+    const update = Object.keys(want).filter((k) => have[k] && !same(have[k], want[k])).sort();
+    const remove = Object.keys(have).filter((k) => !want[k]).sort();
+    if (apply && (add.length || update.length || remove.length)) await R.verdicts.set({ ...want, updatedAt: ts(now()) });
+    return { items: items.size, entries: want, add, update, remove, applied: apply && (add.length + update.length + remove.length) > 0 };
   }
   async function afterTest(sid, uid) {
     const at = now();
@@ -469,6 +505,7 @@ function build(deps = {}) {
     const r = after || before;
     if (!r || !r.serviceId || !r.uid) return null;
     const res = await afterRating(r.serviceId, r.uid);
+    try { await writeVerdict(r.serviceId, res.item, res.totals); } catch (err) { console.error("services: verdict not written", r.serviceId, text(err)); }
     if (hooks && hooks.afterRating) {
       const first = !before, changedValue = !!before && !!after && before.value !== after.value;
       try { await hooks.afterRating({ rating: after, first, changedValue, ...res }); } catch (err) { console.error("services: rating hooks failed", text(err)); }
@@ -521,7 +558,7 @@ function build(deps = {}) {
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, reconcileVault, vaultGuard, onStreamEnded, recountLinks, refs: R };
+  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, reconcileVault, vaultGuard, backfillVerdicts, onStreamEnded, recountLinks, refs: R };
 }
 
 module.exports = { build, accessHeaders, realSecret };

@@ -332,6 +332,27 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.deepEqual((await hub.reconcileVault()).changes, [], "a second run has nothing to do");
   const { projectAllowed } = require("./reconcile-vault-services");
   assert.ok(projectAllowed("boomertanger-staging") && !projectAllowed("boomertanger-prod") && projectAllowed("boomertanger-prod", "boomertanger-prod"), "staging, or a project allowed on purpose");
+  // public/serviceVerdicts (game-page-votes.md §3): a Vault game's key appears at 3+ member ratings (owner and admin left out) and goes below
+  await wdb.doc(`${SITE}/members/fan3`).set({ roles: [] }); await wdb.doc(`${SITE}/profiles/fan3`).set({ handle: "fan3", displayName: "fan3" });
+  const VD = `${SITE}/public/serviceVerdicts`, vd = async () => (await get(VD)) || {};
+  await rateAs("boss", { serviceId: "vault-old-one", value: "love" }); await rateAs("adm", { serviceId: "vault-old-one", value: "like" });
+  await rateAs("fan", { serviceId: "vault-old-one", value: "love" }); await rateAs("fan2", { serviceId: "vault-old-one", value: "like" });
+  assert.equal((await vd())["vault-old-one"], undefined, "two member ratings (the owner's and an admin's don't count): no entry");
+  await rateAs("fan3", { serviceId: "vault-old-one", value: "dislike", comment: "Too dark for me, honestly." });
+  assert.deepEqual((await vd())["vault-old-one"], { love: 1, like: 1, nope: 1 }, "three member ratings: the entry");
+  await rateAs("fan2", { serviceId: "vault-old-one", value: "love" });
+  assert.deepEqual((await vd())["vault-old-one"], { love: 2, like: 0, nope: 1 }, "a changed rating updates the key");
+  const r3 = await get(`${BASE}/ratings/vault-old-one__fan3`); await wdb.doc(`${BASE}/ratings/vault-old-one__fan3`).delete(); await hub.ratingWritten(r3, null);
+  assert.equal((await vd())["vault-old-one"], undefined, "below 3 the entry is removed");
+  // the one-time backfill (scripts/backfill-service-verdicts.js): from the item totals; a dry run writes nothing
+  await wdb.doc(`${BASE}/items/vault-silent-hill-2`).update({ ratings: { love: 4, like: 2, dislike: 1 } });
+  await wdb.doc(VD).set({ "vault-stale": { love: 1, like: 1, nope: 1 } }, { merge: true });
+  let bf = await hub.backfillVerdicts();
+  assert.deepEqual([bf.add, bf.update, bf.remove, bf.applied], [["vault-silent-hill-2"], [], ["vault-stale"], false]); assert.equal((await vd())["vault-silent-hill-2"], undefined);
+  bf = await hub.backfillVerdicts({ apply: true });
+  assert.deepEqual((await vd())["vault-silent-hill-2"], { love: 4, like: 2, nope: 1 }); assert.equal((await vd())["vault-stale"], undefined);
+  assert.equal((await hub.backfillVerdicts()).add.length + (await hub.backfillVerdicts()).remove.length, 0, "a second run has nothing to do");
+  assert.ok(Object.keys(await vd()).every((k) => k === "updatedAt" || k.startsWith("vault-")), "only Vault games so far");
   // a stream reaching Ended: rateable for 14 days
   const ended = clock - 1000;
   await hub.onStreamEnded("dry-run", { state: "live" }, { state: "ended", title: "Dry run", actualEnd: realFs.Timestamp.fromMillis(ended) });

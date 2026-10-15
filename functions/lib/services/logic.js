@@ -141,6 +141,8 @@ const msOf = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toM
  * dislike7d: the Not for me ratings set in the 7 days before now (the "New Not for me" tile and Needs attention); lastDislikeAt: the newest one (ms), or null.
  * dislike7d is as of the last rating: the admin page also checks lastDislikeAt, so an old count fades without a write.
  */
+/** The members' verdict on a game page shows (and public/serviceVerdicts holds an entry) from this many counted ratings. */
+const VERDICT_MIN = 3;
 function totalsOf(ratings, now = Date.now()) {
   const t = { love: 0, like: 0, dislike: 0, comments: 0, byVersion: {}, dislike7d: 0, lastDislikeAt: null };
   for (const r of ratings) {
@@ -296,6 +298,7 @@ const openBugs = (reports) => reports.filter((r) => !BUG_CLOSED.includes(r.statu
 const openIdeas = (ideas) => ideas.filter((i) => !IDEA_CLOSED.includes(i.status)).length;
 
 module.exports = {
+  VERDICT_MIN,
   VALUES, TYPES, MANIFEST_TYPES, CORE_TYPES, STATUS, AUDIENCE, TALKBACK, DEVICES, ENVS, DAY, STREAM_RATE_DAYS, HISTORY_MAX, COMMENT_MAX, DISLIKE_MIN, LIMITS, SUMMARY_WARN_BYTES,
   popularity, audienceOpen, isCore, canRate, compareVersions, normalizeVersion, videoState, testState, ratedEveryCore, coverageCells, coverage,
   validateRating, validateTest, pushHistory, totalsOf, normalizeManifest, needsSetup, planSync, MANIFEST_FIELDS, summaryRow, publicRow,
