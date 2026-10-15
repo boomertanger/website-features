@@ -32,7 +32,7 @@ function when(t: number | null) {
 
 // ---------------------------------------------------------------------------------------------- reads
 async function read(): Promise<{ main: Main; corrections: Correction[]; reading: Reading | null; pub: Public | null; tiktokAt: number | null }> {
-  const { db, doc, getDoc, collection, getDocs, query, orderBy, limit, SITE_ID } = await import("../../lib/db");
+  const { db, doc, getDoc, collection, getDocs, query, where, orderBy, limit, SITE_ID } = await import("../../lib/db");
   const pubSnap = await getDoc(doc(db, "sites", SITE_ID, "public", "climb")).catch(() => null);
   const pub = pubSnap?.exists() ? (pubSnap.data() as Public) : null;
   const socials = await getDoc(doc(db, "sites", SITE_ID, "public", "socials")).catch(() => null);
@@ -50,14 +50,15 @@ async function read(): Promise<{ main: Main; corrections: Correction[]; reading:
   const [mainSnap, corrSnap, dailySnap] = await Promise.all([
     getDoc(doc(db, "sites", SITE_ID, "climb", "main")),
     getDocs(query(collection(db, "sites", SITE_ID, "climb", "main", "corrections"), orderBy("at", "desc"), limit(60))),
-    getDocs(query(collection(db, "sites", SITE_ID, "growthDaily"), orderBy(documentId(), "desc"), limit(1))),
+    // the last 31 days, ascending (a descending document-id query would need a composite index); the last one is the latest reading
+    getDocs(query(collection(db, "sites", SITE_ID, "growthDaily"), where(documentId(), ">=", laDay(Date.now() - 31 * 864e5)))),
   ]);
   const m: any = mainSnap.exists() ? mainSnap.data() : {};
   const main: Main = { ...m, lastRebuild: m.lastRebuild ? { ...m.lastRebuild, at: msOf(m.lastRebuild.at) } : null };
   const corrections = corrSnap.docs.filter((d) => !d.get("removedAt")).map((d) => ({
     id: d.id, day: d.get("day"), platform: d.get("platform"), value: d.get("value"), before: d.get("before") ?? null, reason: d.get("reason") || "", by: d.get("by.name") || "", at: msOf(d.get("at")),
   }));
-  const dd = dailySnap.docs[0];
+  const dd = dailySnap.docs.filter((d) => /^\d{4}-\d{2}-\d{2}$/.test(d.id)).pop();
   const num = (v: unknown) => (typeof v === "number" ? v : null);
   const reading = dd ? {
     day: dd.id, at: msOf(dd.get("collectedAt")), twitch: num(dd.get("twitch.followers")), youtube: num(dd.get("youtube.subscribers")),

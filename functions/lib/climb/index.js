@@ -122,8 +122,10 @@ function build(deps = {}) {
     return publish(months, settings, { announce });
   }
   async function publish(months, settings, { announce = true } = {}) {
-    const latestDaily = (await R.daily.orderBy(admin.firestore.FieldPath.documentId(), "desc").limit(1).get()).docs[0];
-    const lastReadingAt = latestDaily ? msOf(latestDaily.get("collectedAt")) : null;
+    // the latest reading by its day id (a descending document-id query would need a composite index)
+    const dayRefs = (await R.daily.listDocuments()).filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(r.id)).sort((x, y) => (x.id < y.id ? -1 : 1));
+    const latestDaily = dayRefs.length ? await dayRefs[dayRefs.length - 1].get() : null;
+    const lastReadingAt = latestDaily && latestDaily.exists ? msOf(latestDaily.get("collectedAt")) : null;
     const built = B.buildPublic({ months, combinedOnly: settings.import.combinedOnly || {}, records: settings.import.records || [], settings, now: now(), staging, lastReadingAt });
     const pub = clean(built.public);
     const stateSnap = await R.state.get();
