@@ -301,6 +301,7 @@ Every feature is built to stay fast and affordable as the community grows, and t
 - A shared `trackEvent(feature, action)` helper counts views and actions per feature per day into small rollup documents. Counts only, no per-person tracking, which suits the privacy defaults.
 - Also counted: daily unique members per feature, and click-through on each hero slide and bento tile, so their order can be set from real data.
 - Shown in Night Watch as a Feature Pulse view (most and least used, trends) and fed into the growth dashboard.
+- **Replaced by Traffic Pulse (Oct 15, 2026):** the private analytics service at /admin/pulse ([traffic-pulse.md](traffic-pulse.md)) takes the place of the `trackEvent` helper and the Feature Pulse view above: a cookieless first-party beacon per Service Hub service, Cloudflare Web Analytics, and the site data that already exists, stored as counts only. Night Watch can embed its /admin card later.
 
 ## Parked ideas
 

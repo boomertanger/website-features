@@ -29,6 +29,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 18 | Service Hub | In progress (docs and manifests) | Service Hub |
 | 19 | Base Camp (/base-camp, /base-camp/newfoundland, /base-camp/skipper, /base-camp/mail-call; Kind Words and the Skipper Cam; spec [docs/specs/base-camp.md](specs/base-camp.md)) | Built on staging (Oct 11, 2026); tests pending | Community services |
 | 20 | Creator Climb (/climb: follower growth across every platform, members as their own climb; spec [docs/specs/creator-climb.md](specs/creator-climb.md)) | Built (Oct 15, 2026); staging deploy and history import in progress | Community services |
+| 21 | Traffic Pulse (/admin/pulse: the site's private, cookieless analytics per service; spec [docs/specs/traffic-pulse.md](specs/traffic-pulse.md)) | In progress (Oct 15, 2026) | Admin tools |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -283,6 +284,17 @@ Later:
 - **Crowd crossover** (spec §16).
 - A per-platform peak once the Control Room records one.
 
+### 21. Traffic Pulse
+Goal: the site's private analytics service. Each week it answers what's working (expand it), what's leaking (fix it), what's hidden (promote it) and whether the goals are on pace, per Service Hub service with drill-down to pages. No cookies, no cross-site tracking, no individual visitor trails: counts only. It replaces foundation.md's `trackEvent` helper and the Night Watch "Feature Pulse" view.
+
+Spec: [docs/specs/traffic-pulse.md](specs/traffic-pulse.md) (confirmed Oct 15, 2026). Mockup: `docs/design/mockups/traffic-pulse.html` (H1 Monitor hero, L1 Triage overview, F1 Scatter focus map with lanes under 640px).
+
+Status: **In progress (Oct 15, 2026).** Parts: 1 docs; 2 the kit (`.bt-kpi`, `.bt-spark`, `.bt-delta`, `.bt-quadrant` + `.bt-lanes`, `.bt-chart` compare series and note pins); 3 the beacon, `data-service` on `<body>`, the `/p` proxy (a Cloudflare Pages Function) and "Don't count my visits"; 4 the `lib/pulse` functions, rules, indexes and TTL; 5 /admin/pulse and the /admin card; 6 the Service Hub manifest, `pulse-sample.js` and the test plan; 7 design-system §8 and CLAUDE.md.
+
+Boom Alerts isn't built yet: alerts are written to `notifyOutbox` as `pulse-alert` (audience admins, no message text, a dedupeKey). When Boom Alerts ships, add the topic `pulse-alert` (audience admins, inbox only).
+
+Later (spec §1): the weekly email report (after Resend), A/B experiments, BOOMBOT insights, a custom funnel builder, a traffic panel inside Service Hub's detail dialog, a Night Watch embed of the /admin card, site search terms.
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -370,6 +382,16 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Check "Left out of member counts": the owner is always left out. Remove @gbo only if it's a real member on production. Production members start at 0.
 - [ ] The 301 redirects /growth-2025 and /growth-2026 → /climb go live with the domain switch.
 - [ ] After the first production collector run, confirm `public/climb.lastReading` and the gap.
+
+### Traffic Pulse in production
+- [ ] Privacy policy paragraph: cookieless counts, a daily-rotating hash, no stored IP, Global Privacy Control / Do Not Track and "Don't count my visits" (part of the pre-launch policy review).
+- [ ] Deploy firestore.rules and the indexes to production (rules first, separately), then the `pulse` functions only (pulseBeacon, pulseRollup, pulseDaily, pulseCfPull, pulseReport, pulseAdmin); confirm each served revision.
+- [ ] Set the Firestore TTL policies (field `expireAt`) on `buffer`, `uniq` and `uniqMembers` on production and confirm they're active.
+- [ ] `PULSE_PROXY_KEY` on both sides: Firebase production secret and the Cloudflare Pages production environment (same value).
+- [ ] `CLOUDFLARE_ANALYTICS_TOKEN` (read-only analytics) as a Firebase production secret; the Cloudflare account id and the Web Analytics site tag in functions/.env.
+- [ ] Confirm the four Cloud Scheduler jobs exist and are ENABLED (pulseRollup every 15 min, pulseDaily 00:30, pulseCfPull hourly, pulseReport Monday 06:00 and the 1st 06:30, America/Los_Angeles).
+- [ ] Each redirect domain adds its own `ref` tag (e.g. boomertanger.live → `ref=dom-live`).
+- [ ] **Export Squarespace visit history before cancelling** (monthly visit totals for the optional "old site" baseline; deadline Jul 1, 2027).
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
