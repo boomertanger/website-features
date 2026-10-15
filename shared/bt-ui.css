@@ -3006,6 +3006,7 @@
 .bt-root:not(#_) .bt-notice { padding: 10px 12px; border-radius: var(--bt-radius-md); font-size: var(--bt-text-md); line-height: 1.45; border: 1px solid var(--bt-border-2); background: var(--bt-bg); color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-notice--error { border-color: color-mix(in srgb, var(--bt-danger) 55%, transparent); background: var(--bt-danger-bg); color: var(--bt-danger-text); }
 .bt-root:not(#_) .bt-notice--ok { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); background: var(--bt-lime-bg); color: var(--bt-text); }
+.bt-root:not(#_) .bt-notice--warn { border-color: color-mix(in srgb, var(--bt-gold) 50%, transparent); background: var(--bt-gold-bg); color: var(--bt-text); }   /* something is out of date or needs a look (Traffic Pulse: stale Cloudflare numbers) */
 .bt-root:not(#_) .bt-notice .bt-btn { margin-top: 8px; }
 /* Cloud Stash additions (docs/specs/cloud-stash.md §10): the gold notice ("Uploads paused") next to --error and --ok, and --row, a notice laid out on one row:
    <div class="bt-notice bt-notice--warn bt-notice--row"><b>Uploads paused</b><span>why</span><button class="bt-btn bt-btn--sm">Action</button></div> */

@@ -264,13 +264,16 @@ function build(deps = {}) {
   /** Sums a service's daily docs between two days (inclusive). */
   async function serviceSums(id, from, to) {
     const snap = await R.serviceDays(id).where(FieldPath.documentId(), ">=", from).where(FieldPath.documentId(), "<=", to).get();
-    const s = { views: 0, uniques: 0, engaged: 0, scroll75: 0, ctaClicks: 0, errors: 0, lcp: [], days: snap.size };
+    const s = { views: 0, uniques: 0, engaged: 0, scroll75: 0, ctaClicks: 0, errors: 0, lcp: [], inp: [], cls: [], errMsgs: {}, days: snap.size };
     for (const d of snap.docs) {
       const x = d.data();
       s.views += x.views || 0; s.uniques += x.uniques || 0; s.engaged += x.engaged || 0; s.errors += x.errors || 0;
       s.scroll75 += (x.scroll || {})["75"] || 0;
       s.ctaClicks += Object.values(x.ctas || {}).reduce((a, b) => a + (Number(b) || 0), 0);
       if (x.vitals && typeof x.vitals.lcp === "number") s.lcp.push(x.vitals.lcp);
+      if (x.vitals && typeof x.vitals.inp === "number") s.inp.push(x.vitals.inp);
+      if (x.vitals && typeof x.vitals.cls === "number") s.cls.push(x.vitals.cls);
+      for (const [k, v] of Object.entries(x.errMsgs || {})) { const e = (s.errMsgs[k] ||= { m: v.m, n: 0 }); e.n += v.n || 0; }
     }
     s.lcpPass = s.lcp.length ? s.lcp.filter((v) => v <= 2.5).length / s.lcp.length : null;
     return s;
@@ -318,7 +321,8 @@ function build(deps = {}) {
       const [cur, prev] = await Promise.all([serviceSums(id, from, y), serviceSums(id, prevFrom, prevTo)]);
       sums[id] = { ...cur, prevViews: prev.views, loveScore: meta.love[id] ? meta.love[id].score : null, loveCount: meta.love[id] ? meta.love[id].n : 0 };
     }
-    const scored = C.vitals(sums, { names: meta.names, utility: meta.utility });
+    const scored = C.vitals(sums, { names: meta.names, utility: meta.utility }).map((x) => ({ ...x, vit: { lcp: C.median(sums[x.id].lcp) || null, inp: C.median(sums[x.id].inp) || null, cls: C.median(sums[x.id].cls) || null } }));
+    const topErrors = Object.entries(sums).flatMap(([id, x]) => Object.values(x.errMsgs || {}).map((e) => ({ service: id, m: e.m, n: e.n }))).sort((a, b) => b.n - a.n).slice(0, 10);
     const site = await siteSums(from, y);
     const accounts = await countMembers(laMidnight(from), yTo);
     const started = site.days.reduce((a, x) => a + (((x.ctas || {})["signup-started"]) || 0), 0);   // the beacon sends it once per session while signup is unfinished
@@ -327,7 +331,7 @@ function build(deps = {}) {
     const doneSnap = await R.moves.get();
     const done = (doneSnap.exists && doneSnap.get("done")) || {};
     const week = isoWeek(y);
-    await R.scores.set({ day: y, from, services: scored, site: { views: site.views, uniques: site.uniques, engaged: site.engaged, newMembers: site.newMembers }, join, updatedAt: FieldValue.serverTimestamp() });
+    await R.scores.set({ day: y, from, services: scored, topErrors, site: { views: site.views, uniques: site.uniques, engaged: site.engaged, newMembers: site.newMembers }, join, updatedAt: FieldValue.serverTimestamp() });
     await R.moves.set({ day: y, list: mv.map((m) => ({ ...m, done: done[m.id] === week })), done, updatedAt: FieldValue.serverTimestamp() });
     await slowAlerts(y, st, scored);
     await autoNotes(y, yFrom, yTo, meta);

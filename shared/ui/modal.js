@@ -90,7 +90,7 @@ function onKeydown(e) {
  */
 // variant: an extra kit layout, added as bt-modal--<variant> (e.g. "split", the
 // sign-in dialog with an art panel beside the form).
-export function openModal({ content = "", title = "Dialog", wide = false, variant = "", feature = "", onClose } = {}) {
+export function openModal({ content = "", title = "Dialog", wide = false, variant = "", feature = "", onClose = /** @type {(() => void) | undefined} */ (undefined) } = {}) {
   const opener = document.activeElement;
 
   const portal = document.createElement("div");

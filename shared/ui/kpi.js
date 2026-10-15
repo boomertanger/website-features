@@ -34,7 +34,7 @@ export function sparkHtml(values, { prev = null, label = null } = {}) {
   return `<svg class="bt-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" ${a11y} focusable="false"><path class="bt-spark-area" d="M${line} L${w} ${h} L0 ${h}Z"/>${p}<path class="bt-spark-line" d="M${line}"/></svg>`;
 }
 
-export function kpiHtml({ label, value, unit = "", delta = "", spark = null, prev = null, empty = false, id = "" } = {}) {
+export function kpiHtml({ label = "", value = "", unit = "", delta = "", spark = null, prev = null, empty = false, id = "" } = {}) {
   const v = empty ? "–" : esc(typeof value === "number" ? value.toLocaleString("en-US") : value);
   return `<div class="bt-kpi${empty ? " is-empty" : ""}"${id ? ` data-kpi="${esc(id)}"` : ""}><div class="bt-kpi-top"><span class="bt-kpi-label">${esc(label)}</span>${empty ? "" : delta}</div><div class="bt-stat"><span class="bt-stat-value">${v}</span>${unit && !empty ? `<span class="bt-stat-unit">${esc(unit)}</span>` : ""}</div>${sparkHtml(empty ? [] : spark, { prev })}</div>`;
 }

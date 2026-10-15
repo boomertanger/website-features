@@ -1,0 +1,17 @@
+---
+// /admin/pulse: Traffic Pulse, the site's private analytics (docs/specs/traffic-pulse.md §8; approved mockup docs/design/mockups/traffic-pulse.html:
+// H1 Monitor hero, L1 Triage overview, F1 Scatter focus map with lanes under 640px). A tool page for the owner and admins (Steward and up);
+// Settings change for the owner and Overseers only. Tabs in ?tab=, the range in ?range=, a service's detail in ?service=. All reads and
+// renders are in scripts/pulse/ (data.ts, page.ts); every write goes through pulseAdmin. Not in the header nav (the /admin card links here).
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import "../../styles/traffic-pulse.css";
+---
+<BaseLayout title="Traffic Pulse" noindex>
+  <div id="tp-root" data-tp>
+    <div class="tp-skel" style="padding-top:20px" aria-hidden="true"><div class="bt-skeleton" style="height:44px"></div><div class="bt-skeleton" style="height:220px"></div><div class="bt-skeleton" style="height:320px"></div></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/pulse/page";
+</script>

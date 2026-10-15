@@ -11,7 +11,8 @@ import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
 import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
 import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
 import "../styles/broken-links.css";  // the Broken links card (.bl-admin-card; docs/specs/not-found.md)
-import "../styles/creator-climb.css"; // the Creator Climb card (.cc-admin; docs/specs/creator-climb.md §7)
+import "../styles/creator-climb.css";
+import "../styles/traffic-pulse.css";  // the Traffic Pulse card (.tp-acard; docs/specs/traffic-pulse.md §2) // the Creator Climb card (.cc-admin; docs/specs/creator-climb.md §7)
 import Mascot from "../components/Mascot.astro";
 import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
 ---
@@ -30,6 +31,13 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
       <div class="bt-card-head"><h2 class="bt-card-title">Crew</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
       <p class="bt-section-text">The Mod Machina roster, coverage map, promotions, queue decisions, to-do list and crew settings.</p>
     </a>
+  </div>
+  <div class="bt-zone" data-pulse-card hidden>
+    <div class="bt-card tp-acard">
+      <div class="bt-card-head"><h2 class="bt-card-title">Traffic Pulse</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
+      <div data-pulse-body><div class="bt-skeleton" style="height:44px"></div></div>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/pulse">Open Traffic Pulse</a></div>
+    </div>
   </div>
   <div class="bt-zone" data-climb-card hidden>
     <div class="cc-admin">
@@ -286,6 +294,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
   import "../scripts/admin/services-card";
   import "../scripts/admin/broken-links-card";
   import "../scripts/admin/climb-card";
+  import "../scripts/admin/pulse-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
