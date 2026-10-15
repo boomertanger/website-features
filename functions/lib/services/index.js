@@ -8,6 +8,7 @@
 //                                      a manifest that disappeared retires its item (never deleted). scripts/sync-services.js runs the same code.
 //   serviceSyncTick  every 15 minutes  fetches <site>/services.json (CF Access headers on staging) and syncs when its hash changed; never retires
 //                                      (a missing service goes to missingFromBuild); skips a login page or a >20% drop (lib/services/sync.js).
+//                                      Then the Vault guard: visible Vault games vs live vaultGame items (counts only); a moved gap runs reconcileVault.
 //   serviceAdmin   admins              { action, serviceId, ... }: markTested, linkVideo, setCoversVersion, hideComment (commentId or uid), retire, restore, hide
 //                                      (adminLog "serviceHub"); and setTaskGears { test, problems } (owner and A2+ only) for crew/main.serviceTaskGears
 //   serviceDetail  admins              { serviceId }: the item, its version history, ratings by version and up to 100 comments, newest first (value, comment,
@@ -173,6 +174,8 @@ function build(deps = {}) {
     const out = await S.tick({ siteUrl, headers: accessHeaders(cfId, cfSecret) });
     if (out.result === "skipped") console.warn("serviceSyncTick: skipped", out.reason, out.message);
     else if (out.result === "synced") console.log("serviceSyncTick: synced", out.hash, JSON.stringify({ create: out.create, update: out.update, bump: out.bump, missing: out.missing }));
+    // the Vault drift guard, on every tick whatever the manifests did
+    try { out.vault = await vaultGuard(); } catch (err) { console.error("serviceSyncTick: Vault check failed", (err && err.message) || err); }
     return out;
   }
   async function sync(request) {
@@ -400,6 +403,25 @@ function build(deps = {}) {
     const visible = [...games.values()].filter(vaultVisible).length;
     return { applied: apply && changes.length > 0, games: games.size, visible, items: items.size, changes: changes.map(({ plan, ...c }) => c), kept };
   }
+  /** serviceSyncTick's cheap guard: visible Vault games against live vaultGame items (three count queries and the main doc). Only when the gap
+   *  moved since the last check does it reconcile; it then remembers the gap that's left (admin-retired items of visible games), so that stays
+   *  quiet. A drift is a console warning. */
+  async function vaultGuard() {
+    const n = async (q) => (await q.count().get()).data().count;
+    const liveItems = () => n(R.items.where("type", "==", "vaultGame").where("status", "==", "live"));
+    const [all, hidden, live] = await Promise.all([n(vaultGames), n(vaultGames.where("hidden", "==", true)), liveItems()]);
+    const gap = all - hidden - live;
+    const main = await R.main.get();
+    const known = Number((main.exists && main.get("vaultGap")) || 0);
+    if (gap === known) return { result: "same", gap };
+    const out = await reconcileVault({ apply: true });
+    const left = all - hidden - (await liveItems());
+    await R.main.set({ vaultGap: left }, { merge: true });
+    const tally = out.changes.reduce((m, c) => ((m[c.change] = (m[c.change] || 0) + 1), m), {});
+    if (out.changes.length) console.warn("serviceSyncTick: Vault games and Service Hub drifted; reconciled", JSON.stringify({ gapBefore: gap, gapAfter: left, ...tally, ids: out.changes.slice(0, 20).map((c) => `${c.change}:${c.id}`) }));
+    else console.log("serviceSyncTick: the Vault gap is admin-retired items only", JSON.stringify({ gap: left, kept: out.kept.length }));
+    return { result: "reconciled", gapBefore: gap, gapAfter: left, changes: out.changes.length };
+  }
   async function onVaultGame(slug, before, after) {
     const id = `vault-${slug}`;
     const snap = await R.item(id).get();
@@ -499,7 +521,7 @@ function build(deps = {}) {
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, reconcileVault, onStreamEnded, recountLinks, refs: R };
+  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, reconcileVault, vaultGuard, onStreamEnded, recountLinks, refs: R };
 }
 
 module.exports = { build, accessHeaders, realSecret };

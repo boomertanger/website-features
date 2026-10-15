@@ -682,6 +682,22 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
     assert.equal((await g2(`${BASE}/items/home`)).status, "retired", "Sync now keeps retiring a missing service");
     assert.deepEqual((await g2(BASE)).missingFromBuild, [], "and clears the Needs attention list");
     assert.equal((await g2(BASE)).syncedBy, "manual");
+    // the Vault guard on every tick: counts only; a gap that moved runs the reconcile once and is remembered
+    reply = json({ hash, services: list });
+    await db2.doc(`${SITE}/vaultGames/drifted`).set({ title: "Drifted", status: "finished" });
+    await db2.doc(`${SITE}/vaultGames/kept-out`).set({ title: "Kept Out" });
+    await db2.doc(`${BASE}/items/vault-kept-out`).set({ id: "vault-kept-out", type: "vaultGame", name: "Kept Out", status: "retired", retiredFrom: "live" });
+    const warns = []; const warn0 = console.warn; console.warn = (...a) => warns.push(a.join(" "));
+    r = await hub2.syncTick({});
+    console.warn = warn0;
+    assert.equal(r.vault.result, "reconciled"); assert.equal(r.vault.gapBefore, 2); assert.equal(r.vault.gapAfter, 1, "the admin-retired game is the gap that's left");
+    assert.equal((await g2(`${BASE}/items/vault-drifted`)).status, "live", "the missing item is created");
+    assert.equal((await g2(`${BASE}/items/vault-kept-out`)).status, "retired", "an admin's retire is kept");
+    assert.ok(warns.some((w) => w.includes("Vault games and Service Hub drifted")), "a drift is a warning");
+    assert.equal((await g2(BASE)).vaultGap, 1);
+    before = dump();
+    r = await hub2.syncTick({});
+    assert.equal(r.vault.result, "same"); assert.equal(dump(), before, "the same gap: not one write");
     console.log("check-services-fn: automatic sync ok");
   }
 })().catch((err) => { console.error(err); process.exit(1); });
