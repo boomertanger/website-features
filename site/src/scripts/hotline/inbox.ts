@@ -227,7 +227,7 @@ function median(a: number[]) { const s = a.filter((x) => Number.isFinite(x)).sor
 const fmtMins = (m: number | null) => (m == null ? "n/a" : m < 60 ? `${Math.max(1, Math.round(m))}m` : m < 48 * 60 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} d`);
 /** Accuracy: the share of their spam marks that held (the owner overturning one counts against it); null with no marks settled. */
 const accuracyOf = (s: StaffMonth) => { const n = (s.spamHeld || 0) + (s.spamOverturned || 0); return n ? (s.spamHeld || 0) / n : null; };
-const waitingCount = () => S.msgs.filter((m) => m.lane === "team" && (m.status === "new" || m.status === "open")).length;
+const waitingCount = () => S.msgs.filter((m) => m.lane === "team" && (m.status === "new" || m.status === "open") && m.firstReplyAt == null).length;   // as the 21:00 desk check: no reply yet
 async function loadMonth() {
   const ym = chicagoDay(Date.now()).slice(0, 7);
   if (P) { S.month = { perStaff: P.inboxStats?.perStaff || {}, desk: P.inboxStats?.desk || null, prevDesk: null }; return; }
@@ -396,7 +396,7 @@ function toolsHtml() {
     ${S.line ? `<div class="hb-ib-note">Showing line ${LINES[S.line][0]}, ${esc(LINES[S.line][1])} only. <button type="button" data-lamp="${S.line}">Show all lines</button></div>` : ""}`;
 }
 /** Pick up (P1): an unassigned team-lane message still waiting. */
-const pickable = (m: Msg) => m.lane === "team" && !m.assignee && (m.status === "new" || m.status === "open");
+const pickable = (m: Msg) => m.lane === "team" && !m.assignee && (m.status === "new" || m.status === "open") && m.firstReplyAt == null;
 function rowHtml(m: Msg) {
   const own = m.lane === "owner", pick = pickable(m);
   const picked = m.assignee && m.pickedUpAt ? `<span class="hb-ib-pickedby">Picked up by ${esc(handleOf(m.assignee))}</span>` : "";

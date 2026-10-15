@@ -95,6 +95,10 @@ async function main() {
     for (const lane of ["teamMessages", "ownerMessages"]) for (const d of (await db.collection(`${B}/${lane}`).where("sample", "==", true).get()).docs) {
       refs.push(...(await d.ref.collection("hotlineNotes").listDocuments()), d.ref);
     }
+    if (!rec.ledgerIds && rec.ledgerBefore) {
+      const before = new Set(rec.ledgerBefore), { INBOX_SOURCES } = require("../lib/crew/gears");
+      rec.ledgerIds = (await db.collection(`${SITE}/crew/main/gears`).get()).docs.filter((d) => !before.has(d.id) && (INBOX_SOURCES.includes(d.get("source")) || (d.get("source") === "adjust" && d.get("reason") === "Marked as spam"))).map((d) => d.id);
+    }
     for (const id of rec.ledgerIds || []) refs.push(db.doc(`${SITE}/crew/main/gears/${id}`));
     for (const m of rec.months || []) { const r = db.doc(`${B}/inboxStats/${m}`), s = await r.get(); if (s.exists && s.get("sample")) refs.push(r); }
     refs.push(...(await db.collection("adminLog").where("sample", "==", true).get()).docs.filter((d) => d.get("feature") === "hotline").map((d) => d.ref));
@@ -128,12 +132,16 @@ async function main() {
 
   let clock = ev[0].at;
   const core = require("../lib/hotline").build({ db, now: () => clock, secrets: {}, getUserEmail: async () => null,
-    adminLogEntry: async (_d, f) => ({ ...f, sample: true, createdAt: Timestamp.fromMillis(clock) }) });
+    adminLogEntry: async (_d, f) => ({ ...Object.fromEntries(Object.entries(f).filter(([, v]) => v !== undefined)), sample: true, createdAt: Timestamp.fromMillis(clock) }) });
   const gradeOf = new Map(staff.map((s) => [s.uid, s.grade]));
   const req = (uid, data) => ({ auth: { uid, token: uid === owner ? {} : { crewGrade: gradeOf.get(uid) } }, data, rawRequest: { ip: "sample" } });
   const ledgerBefore = new Set((await db.collection(`${SITE}/crew/main/gears`).listDocuments()).map((r) => r.id));
+  const planMonths = [...new Set(ev.map((e) => chicagoDay(e.at).slice(0, 7)))];
+  await sampleRef.set({ sample: true, partial: true, asOf: today, ledgerBefore: [...ledgerBefore], months: planMonths, at: FieldValue.serverTimestamp() });
+  for (const m of planMonths) await db.doc(`${B}/inboxStats/${m}`).set({ sample: true }, { merge: true });
   const ids = new Map(), months = new Set();
   let nextRef = Number.isInteger(main0.nextRef) ? main0.nextRef : 4800;
+  await db.doc(B).set({ nextRef: nextRef + msgs.length }, { merge: true });   // reserved, so real messages never reuse a sample ref
   for (const e of ev) {
     clock = e.at;
     months.add(chicagoDay(clock).slice(0, 7));
@@ -146,7 +154,7 @@ async function main() {
         ...(m.line === "feedback" ? { kind: "feedback", context: null, boombotShown: null } : {}) });
       await ref.collection("hotlineNotes").add({ kind: "event", by: null, text: "received", at: Timestamp.fromMillis(m.at), expireAt });
       ids.set(e.k, ref.id);
-    } else if (e.kind === "reply") await core.reply(req(e.by, { lane: "team", id: ids.get(e.k), text: "Thanks for writing in! (sample reply)", from: "fanmail", manual: true }));
+    } else if (e.kind === "reply") await core.reply(req(e.by, { lane: "team", id: ids.get(e.k), text: "Thanks for writing in! (sample reply)", from: "fanmail", markWaiting: true, manual: true }));
     else if (e.kind === "spam") await core.action(req(e.by, { lane: "team", id: ids.get(e.k), action: "spam" }));
     else if (e.kind === "close") await core.action(req(e.by, { lane: "team", id: ids.get(e.k), action: "status", value: "done" }));
     else if (e.kind === "escalate") await core.action(req(e.by, { lane: "team", id: ids.get(e.k), action: "escalate" }));
@@ -154,10 +162,9 @@ async function main() {
     else if (e.kind === "spamHold") { const r = await core.credit.spamHold(clock); if (r.paid) console.log(`  ${chicagoDay(clock)} spam hold: ${r.paid} paid`); }
     else if (e.kind === "deskCheck") { const r = await core.credit.deskCheck(clock); console.log(`  ${r.day} desk: ${r.clear ? "clear" : `${r.waiting} waiting`}, streak ${r.streak}${r.bonus ? `, Clear desk paid to ${r.bonus.paid.length}` : ""}`); }
   }
-  await db.doc(B).set({ nextRef }, { merge: true });
   for (const m of months) await db.doc(`${B}/inboxStats/${m}`).set({ sample: true }, { merge: true });
   const ledgerIds = (await db.collection(`${SITE}/crew/main/gears`).listDocuments()).map((r) => r.id).filter((id) => !ledgerBefore.has(id));
-  await sampleRef.set({ sample: true, asOf: today, ledgerIds, months: [...months], messageIds: [...ids.values()], at: FieldValue.serverTimestamp() });
+  await sampleRef.set({ sample: true, asOf: today, ledgerIds, months: [...new Set([...planMonths, ...months])], messageIds: [...ids.values()], at: FieldValue.serverTimestamp() });
   await gears.rebuildBoards();
   const paid = (await Promise.all(ledgerIds.map((id) => db.doc(`${SITE}/crew/main/gears/${id}`).get()))).reduce((t, s) => t + (s.get("amount") || 0), 0);
   console.log(`  wrote ${msgs.length} messages; ${ledgerIds.length} Gears rows (net ${paid}); months ${[...months].join(", ")}; boards rebuilt.`);

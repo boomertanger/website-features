@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Talk Back Part B fixes from the staging run: /admin/inbox counts a message as waiting (Desk clear, Pick up) only until its first reply, like the 21:00 desk check; inbox-sample.js writes its cleanup record and reserves its refs before it starts (a run that stops halfway can be cleaned), drops undefined adminLog fields, and marks its replies Waiting
 - Docs: Talk Back test plan Part B (@gbo is the inbox admin), Part B in hotline-boom.md, mod-machina.md (inbox Gears sources, gearsAdjust, Operator of the Month), design system 8ab, Hotline Boom 1.2, ROADMAP (Part B built on staging; Part C next) and the production checklist
 - Operator of the Month: the staff award in the 1st-of-the-month run (score = first replies + 0.5 per spam mark that held + oldest first; the minimum, 90% accuracy, ties to the lower median reply), awards/{ym}.operator, a crew-operator trophy and a crew-award event; a gold ☎️ medal on /crew between Top Gear and Fan Favourite, and in the Hall of Fame
 - Talk Back Part B on the crew pages: /crew/board Inbox column (first replies, a dash for crew who don't work the inbox); /admin/crew Hotline Boom inbox values (owner and Overseers and up) and the Adjust Gears form (gearsAdjust; Remove credit opens it filled in)
