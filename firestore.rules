@@ -838,6 +838,11 @@ service cloud.firestore {
         allow read: if isHotlineInbox(siteId) || hasSiteRole(siteId, 'admin');
         allow write: if false;
       }
+      // Talk Back Part B (talk-back.md §9e, §9g): the inbox recognition numbers (per staff, Clear desk). Owner and inbox admins read; functions write.
+      match /hotline/main/inboxStats/{month} {
+        allow read: if isHotlineInbox(siteId);
+        allow write: if false;
+      }
       match /hotline/main/limits/{key} {
         allow read, write: if false;
       }

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Talk Back Part B backend: inbox Gears (first reply, fast, oldest first, spam that held, Clear desk; daily cap 30), first reply decided in a transaction, spam reversal, Pick up / Let it go, gearsAdjust, crew inbox settings, the board's inboxReplies, inboxStats, inboxSpamHold and inboxDeskCheck, inbox-sample.js
 - chore(pulse): the Cloudflare account id in functions/.env (the Web Analytics site tag comes later, looked up through the API once CLOUDFLARE_ANALYTICS_TOKEN exists)
 - docs: design-system §5, §6 and §8af for Traffic Pulse (the new kit pieces, the better-lime / worse-gold delta rule, --tp-phosphor as a monitor light like the firefly lamp and never for buttons or badges, the .bt-chart extension); CLAUDE.md new-feature checklist: add data-pulse ids to the feature's key buttons
 - feat(pulse): the Service Hub manifest services/traffic-pulse.json (feature, area Admin, admins, talkBack skip); functions/scripts/pulse-sample.js (staging only, refuses production; 90 days of sample counts marked sample, then the real nightly close and a weekly report; --clean removes only sample docs); docs/testing/traffic-pulse-test-plan.md

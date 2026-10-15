@@ -14,6 +14,10 @@ const DEFAULT_SETTINGS = {
     academyModule: 5, triage: 3, dutyHoursCapPerStream: 6,
   },
   youtubeBoost: 1.5,
+  inbox: {                     // Talk Back Part B (docs/specs/talk-back.md §9b, §9g): Hotline Boom inbox Gears, the awards' Operator of the Month
+    reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48,
+    boombot: 3, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9, operatorAward: true,
+  },
   activityRules: false,        // the monthly minimums: only crewSetRules turns them on (phase 3 part 7)
   rulesSince: null,            // "YYYY-MM": the first month the rules count (its 1st)
   graceMonth: null,            // "YYYY-MM": the practice month (nobody moves down)
@@ -28,7 +32,7 @@ const DEFAULT_SETTINGS = {
 
 function mergeSettings(doc) {
   const d = doc || {};
-  const out = { ...DEFAULT_SETTINGS, ...d, gearsValues: { ...DEFAULT_SETTINGS.gearsValues, ...(d.gearsValues || {}) } };
+  const out = { ...DEFAULT_SETTINGS, ...d, gearsValues: { ...DEFAULT_SETTINGS.gearsValues, ...(d.gearsValues || {}) }, inbox: { ...DEFAULT_SETTINGS.inbox, ...(d.inbox || {}) } };
   return out;
 }
 

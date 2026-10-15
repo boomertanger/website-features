@@ -281,6 +281,186 @@ async function main() {
   assert.equal(await why(core.settings(req("boss", { inboxGrades: ["A9"] }))), "bad-input");
   assert.ok(logs.some((l) => l.action === "settings"));
 
+
+  // ---------- Talk Back Part B: inbox recognition (talk-back.md §9), on a fresh database ----------
+  {
+    const db2 = makeDb();
+    // real Firestore retries conflicting transactions; the fake runs them straight through, so serialise them here
+    let chain = Promise.resolve();
+    const rt = db2.runTransaction.bind(db2);
+    db2.runTransaction = (fn) => { const p = chain.then(() => rt(fn)); chain = p.catch(() => {}); return p; };
+    let t = Date.UTC(2026, 9, 20, 15, 0);   // Tue Oct 20, 10:00 Chicago
+    const c2 = require("../lib/hotline").build({ db: db2, adminLogEntry, now: () => t, fetchFn: fakeFetch,
+      secrets: { turnstile: () => "TS-SECRET", salt: () => "SALT-123", resend: () => "" }, getUserEmail: async (uid) => uid + "@members.example" });
+    await db2.doc(S).set({ ownerUid: "boss" });
+    for (const [uid, track, grade] of [["boss", "admin", 3], ["a2", "admin", 2], ["b2", "admin", 2], ["a1", "admin", 1], ["mod", "mod", 3], ["fan", null, null]]) {
+      await db2.doc(S + "/profiles/" + uid).set({ handle: uid + "_h", displayName: uid });
+      await db2.doc("users/" + uid).set({ signedUpAt: realFs.Timestamp.fromMillis(t - 90 * DAY), ageBand: "18+" });
+      if (track) await db2.doc(S + "/crew/main/roster/" + uid).set({ handle: uid + "_h", track, grade, status: "active" });
+    }
+    const B2 = { claims: { crewGrade: "A2" } };
+    const L2 = (p) => db2.collection(p).get().then((q) => q.docs.map((d) => ({ id: d.id, ...d.data() })));
+    const msgOf = async (ref) => (await L2(B + "/teamMessages")).find((x) => x.ref === ref);
+    const ledger = async (uid) => (await L2(S + "/crew/main/gears")).filter((g) => g.uid === uid);
+    const total = async (uid) => (await ledger(uid)).reduce((a, g) => a + g.amount, 0);
+    const stats2 = async () => ((await db2.doc(B + "/inboxStats/2026-10").get()).data() || {});
+    let ip = 0;
+    const vsend = async (extra = {}) => (await c2.send(req(null, visitor("hi", extra), { ip: "5.5.5." + (++ip) }))).ref;
+    const why2 = async (p) => { try { await p; return "ok"; } catch (e) { return e.details?.reason || e.message; } };
+
+    // two replies at once: one first reply, paid once (reply 4 + fast 2 + oldest 1, it was the only waiting message)
+    const r1 = await vsend();
+    t += H;
+    const m1 = await msgOf(r1);
+    const [x1, x2] = await Promise.all([c2.reply(req("a2", { lane: "team", id: m1.id, text: "Hi!", from: "fanmail", manual: true }, A2)), c2.reply(req("b2", { lane: "team", id: m1.id, text: "Hello!", from: "fanmail", manual: true }, B2))]);
+    assert.equal(x1.gears + x2.gears, 7, "one payment: 4 + 2 fast + 1 oldest");
+    let m1b = await msgOf(r1);
+    assert.equal(m1b.firstReplyBy, "a2"); assert.deepEqual(m1b.gearsPaid.parts, { inboxReply: 4, inboxFast: 2, inboxOldest: 1 });
+    assert.deepEqual(m1b.firstReplyMeta, { fast: true, oldest: true, minutes: 60 });
+    assert.equal(await total("a2"), 7); assert.equal(await total("b2"), 0);
+    assert.deepEqual((await ledger("a2")).map((g) => g.id).sort(), ["inboxFast:" + m1.id + ":a2", "inboxOldest:" + m1.id + ":a2", "inboxReply:" + m1.id + ":a2"]);
+    assert.equal((await ledger("a2")).find((g) => g.source === "inboxReply").label, "Hotline reply");
+    assert.ok((await L2(B + "/teamMessages/" + m1.id + "/hotlineNotes")).some((n) => n.kind === "credit" && n.amount === 7 && n.by === "a2"), "the credit line");
+    assert.equal((await stats2()).perStaff.a2.replies, 1); assert.equal((await stats2()).perStaff.a2.minutes[m1.id], 60);
+    // the board counts the reply (admins only)
+    const board = (await db2.doc(S + "/crew/main/boards/month").get()).data();
+    assert.equal(board.rows.find((r) => r.uid === "a2").inboxReplies, 1, "the board's Inbox column");
+
+    // not oldest, not fast: a newer message answered while an older one waits
+    const rOld = await vsend(); t += 10 * 60000; const rNew = await vsend();
+    t += 30 * H;
+    const mNew = await msgOf(rNew);
+    let x = await c2.reply(req("a2", { lane: "team", id: mNew.id, text: "Late hello", from: "fanmail", manual: true }, A2));
+    assert.equal(x.gears, 4, "4 for the reply, not fast (over 24 h), not the oldest");
+
+    // owner, owner-lane and self-sent pay nothing
+    const mOld = await msgOf(rOld);
+    x = await c2.reply(req("boss", { lane: "team", id: mOld.id, text: "From the boss", from: "fanmail", manual: true }));
+    assert.equal(x.gears, 0, "the owner never earns"); assert.equal(await total("boss"), 0);
+    t += DAY;
+    const own = await c2.send(req("fan", member("private", { body: "Private thing." })));
+    assert.equal(own.lane, "owner");
+    const mine = await c2.send(req("a2", member("hi", { body: "Sent by an admin." })));
+    const mMine = await msgOf(mine.ref);
+    x = await c2.reply(req("a2", { lane: "team", id: mMine.id, text: "Replying to myself", from: "fanmail", manual: true }, A2));
+    assert.equal(x.gears, 0, "self-sent pays nothing");
+    x = await c2.reply(req("b2", { lane: "team", id: mMine.id, text: "Second reply", from: "fanmail", manual: true }, B2));
+    assert.equal(x.gears, 0, "a second reply is never first");
+    // mods never act; A1 isn't an inbox grade
+    assert.equal(await why2(c2.reply(req("a1", { lane: "team", id: mMine.id, text: "x", from: "fanmail", manual: true }, A1))), "not-allowed");
+
+    // escalation keeps the payment and leaves the reply numbers
+    const before = await total("a2");
+    const rEsc = await vsend(); t += H;
+    const mEsc = await msgOf(rEsc);
+    x = await c2.reply(req("a2", { lane: "team", id: mEsc.id, text: "Let me check", from: "fanmail", manual: true }, A2));
+    assert.ok(x.gears >= 4);
+    const repliesBefore = (await stats2()).perStaff.a2.replies;
+    await c2.action(req("a2", { lane: "team", id: mEsc.id, action: "escalate" }, A2));
+    assert.equal(await total("a2"), before + x.gears, "escalation is neutral for Gears");
+    assert.equal((await db2.doc(B + "/ownerMessages/" + mEsc.id).get()).get("gearsPaid").amount, x.gears, "gearsPaid moves with the message");
+    assert.equal((await stats2()).perStaff.a2.replies, repliesBefore - 1, "but the reply leaves the strip numbers");
+    assert.equal((await stats2()).perStaff.a2.minutes[mEsc.id], undefined);
+
+    // spam after a paid reply: reversed with an adjustment; the credit line says so; then the spam mark is pending
+    const rSp = await vsend(); t += H;
+    const mSp = await msgOf(rSp);
+    x = await c2.reply(req("b2", { lane: "team", id: mSp.id, text: "Hi", from: "fanmail", manual: true }, B2));
+    const paidB2 = x.gears; assert.ok(paidB2 >= 4);
+    await c2.action(req("b2", { lane: "team", id: mSp.id, action: "spam" }, B2));
+    assert.equal(await total("b2"), 0, "the reply is reversed");
+    const adj = (await ledger("b2")).find((g) => g.source === "adjust");
+    assert.equal(adj.amount, -paidB2); assert.equal(adj.reason, "Marked as spam"); assert.ok(adj.reverses.includes("inboxReply:" + mSp.id + ":b2"));
+    let mSpb = await msgOf(rSp);
+    assert.equal(mSpb.spamBy, "b2"); assert.ok(mSpb.spamAt); assert.equal(mSpb.gearsPaid.reversed, true);
+    const spNotes = await L2(B + "/teamMessages/" + mSp.id + "/hotlineNotes");
+    assert.ok(spNotes.some((n) => n.kind === "credit" && n.reversed === paidB2) && spNotes.some((n) => n.kind === "credit" && n.pending === "spam"));
+    // a second spam mark on the same message never reverses twice
+    await c2.action(req("b2", { lane: "team", id: mSp.id, action: "status", value: "open" }, B2));
+    await c2.action(req("b2", { lane: "team", id: mSp.id, action: "spam" }, B2));
+    assert.equal(await total("b2"), 0);
+
+    // the daily cap (30, Chicago day): a busy admin stops being paid and the credit line says capped
+    t = Date.UTC(2026, 9, 26, 14, 0);   // Mon Oct 26
+    for (let i = 0; i < 8; i++) await vsend();
+    t += H;
+    const waiting = (await L2(B + "/teamMessages")).filter((m) => m.firstReplyAt == null && ["new", "open"].includes(m.status)).sort((a, b) => a.createdAt.toMillis() - b.createdAt.toMillis());
+    let day = 0, capped = null;
+    for (const m of waiting) { const y = await c2.reply(req("a2", { lane: "team", id: m.id, text: "Got it", from: "fanmail", manual: true }, A2)); day += y.gears; const mm = await msgOf(m.ref); if (mm.gearsPaid && mm.gearsPaid.capped) capped = mm; }
+    assert.ok(day <= 30, "never over 30 a day: " + day); assert.ok(capped, "a capped credit line");
+    assert.ok((await L2(B + "/teamMessages/" + capped.id + "/hotlineNotes")).some((n) => n.kind === "credit" && n.capped === true && n.cap === 30));
+    t += DAY;   // a new Chicago day: paid again
+    const rNext = await vsend(); t += H;
+    x = await c2.reply(req("a2", { lane: "team", id: (await msgOf(rNext)).id, text: "Hi", from: "fanmail", manual: true }, A2));
+    assert.ok(x.gears >= 4, "a new day, a new cap");
+
+    // a close with no reply needed: closedBy, Tidied, Oldest first when it was the oldest
+    const rCl = await vsend(); t += H;
+    const mCl = await msgOf(rCl);
+    x = await c2.action(req("b2", { lane: "team", id: mCl.id, action: "status", value: "done" }, B2));
+    const mClb = await msgOf(rCl);
+    assert.equal(mClb.closedBy, "b2"); assert.equal(x.gears, 1, "oldest first for the close");
+    assert.equal((await stats2()).perStaff.b2.closed, 1);
+
+    // spam hold: after 7 days, 1 Gear, max 5 a day per person; un-spammed marks never pay
+    t = Date.UTC(2026, 9, 27, 14, 0);
+    const spamIds = [];
+    for (let i = 0; i < 7; i++) { const r = await vsend(); const m = await msgOf(r); spamIds.push(m.id); await c2.action(req("b2", { lane: "team", id: m.id, action: "spam" }, B2)); }
+    // one mark is overturned by the owner: it never pays and counts against b2's Accuracy
+    await c2.action(req("boss", { lane: "team", id: spamIds[6], action: "status", value: "open" }));
+    assert.equal((await db2.doc(B + "/teamMessages/" + spamIds[6]).get()).get("spamBy"), undefined);
+    assert.equal((await db2.doc(B + "/inboxStats/2026-10").get()).data().perStaff.b2.spamOverturned, 1);
+    let h = await c2.credit.spamHold(t + 6 * DAY);
+    assert.equal(h.due, 1, "only the earlier mark (mSp) is due; the new ones wait 7 days");
+    const b2Before = await total("b2");
+    h = await c2.credit.spamHold(t + 7 * DAY + H);
+    assert.equal(h.paid, 5, "the daily max"); assert.equal(await total("b2"), b2Before + 5);
+    h = await c2.credit.spamHold(t + 8 * DAY + H);
+    assert.ok(h.paid >= 1, "the rest the next day"); assert.equal(await c2.credit.spamHold(t + 8 * DAY + 2 * H).then((r) => r.paid), 0, "never twice");
+    assert.equal((await db2.doc(B + "/teamMessages/" + spamIds[0]).get()).get("spamHeld").paid, true);
+
+    // pick up and let go (team lane; release only by the person who picked it up)
+    t = Date.UTC(2026, 10, 2, 15, 0);
+    const rPu = await vsend(); const mPu = await msgOf(rPu);
+    assert.equal(await why2(c2.action(req("mod", { lane: "team", id: mPu.id, action: "pickUp" }, MODC))), "not-allowed", "mods never");
+    assert.equal(await why2(c2.action(req("a2", { lane: "team", id: mPu.id, action: "pickUp" }, A2))), "ok");
+    let pu = await msgOf(rPu);
+    assert.equal(pu.assignee, "a2"); assert.ok(pu.pickedUpAt);
+    assert.equal(await why2(c2.action(req("b2", { lane: "team", id: mPu.id, action: "pickUp" }, B2))), "taken");
+    assert.equal(await why2(c2.action(req("b2", { lane: "team", id: mPu.id, action: "release" }, B2))), "not-allowed", "only the one who picked it up");
+    assert.equal(await why2(c2.action(req("a2", { lane: "team", id: mPu.id, action: "release" }, A2))), "ok");
+    pu = await msgOf(rPu);
+    assert.equal(pu.assignee, null); assert.equal(pu.pickedUpAt, undefined);
+    assert.ok(logs.some((l) => l.action === "pickUp") && logs.some((l) => l.action === "release"));
+    const ownMsg = (await L2(B + "/ownerMessages"))[0];
+    assert.equal(await why2(c2.action(req("boss", { lane: "owner", id: ownMsg.id, action: "pickUp" }))), "not-allowed", "owner-lane messages can't be picked up");
+
+    // Clear desk: 7 clear days in a row pay everyone who handled 3+ that week; a stale message breaks the run
+    for (const m of await L2(B + "/teamMessages")) if (m.firstReplyAt == null && ["new", "open"].includes(m.status)) await db2.doc(B + "/teamMessages/" + m.id).update({ status: "done" });
+    t = Date.UTC(2026, 10, 3, 15, 0);
+    for (let i = 0; i < 3; i++) { const r = await vsend(); t += 10 * 60000; await c2.reply(req("b2", { lane: "team", id: (await msgOf(r)).id, text: "Hi", from: "fanmail", manual: true }, B2)); }
+    const rEsc2 = await vsend(); t += H; const mEsc2 = await msgOf(rEsc2);
+    await c2.reply(req("a2", { lane: "team", id: mEsc2.id, text: "Hi", from: "fanmail", manual: true }, A2));
+    await c2.action(req("a2", { lane: "team", id: mEsc2.id, action: "escalate" }, A2));   // escalation doesn't break a clear day
+    const b2Desk = await total("b2");
+    let dk;
+    for (let i = 0; i < 7; i++) dk = await c2.credit.deskCheck(Date.UTC(2026, 10, 3 + i, 3 + 24, 0));   // 21:00 Chicago each day
+    assert.equal(dk.clear, true); assert.ok(dk.bonus && dk.bonus.paid.includes("b2") && !dk.bonus.paid.includes("a2"), "b2 handled 3, a2 only 1");
+    assert.equal(await total("b2"), b2Desk + 5);
+    assert.equal((await c2.credit.deskCheck(Date.UTC(2026, 10, 9, 27, 0))).already, true, "once a day");
+    // a message waiting over 48 hours makes the day not clear
+    const rStale = await vsend();
+    dk = await c2.credit.deskCheck(t + 3 * DAY);
+    assert.equal(dk.clear, false); assert.equal(dk.streak, 0);
+
+    // Operator of the Month: the minimum, accuracy and the switch
+    const op = await c2.credit.operatorFor("2026-10");
+    assert.ok(op.winner && op.winner.uid === "a2", "a2 has the most replies; b2 has an overturned mark and no held spam in October");
+    await db2.doc(S + "/crew/main").set({ inbox: { operatorAward: false } }, { merge: true });
+    assert.equal((await c2.credit.operatorFor("2026-10")).off, true);
+    void rStale;
+  }
+
   // ---------- rules, indexes, exports ----------
   const rules = fs.readFileSync(path.join(__dirname, "../../firestore.rules"), "utf8");
   assert.match(rules, /match \/hotline\/main \{\s*allow read: if true;\s*allow write: if false;/);
@@ -290,7 +470,8 @@ async function main() {
   const idx = JSON.parse(fs.readFileSync(path.join(__dirname, "../../firestore.indexes.json"), "utf8"));
   for (const g of ["teamMessages", "ownerMessages", "hotlineNotes", "limits"]) assert.ok(idx.fieldOverrides.some((f) => f.collectionGroup === g && f.fieldPath === "expireAt" && f.ttl === true), `TTL on ${g}`);
   const fns = require("../lib/hotline")({ adminLogEntry });
-  assert.deepEqual(Object.keys(fns).sort(), ["contactAction", "contactDeflect", "contactNote", "contactReply", "contactSend", "contactSettings"]);
+  assert.deepEqual(Object.keys(fns).sort(), ["contactAction", "contactDeflect", "contactNote", "contactReply", "contactSend", "contactSettings", "inboxDeskCheck", "inboxSpamHold"]);
+  assert.match(rules, /match \/hotline\/main\/inboxStats\/\{month\} \{\s*allow read: if isHotlineInbox\(siteId\);\s*allow write: if false;/, "inboxStats: owner and inbox admins read; nobody writes");
 
   console.log("check-hotline: ok");
 }

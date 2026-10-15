@@ -5,7 +5,9 @@
 //                                            per ipHash, members 5 a day), minors and Business, lines on/off, the name check, the lane, ref BT-<n>, stats,
 //                                            one notifyOutbox contact-new (no message text, no sender name), the owner's email copy (Business/Private,
 //                                            only when email is on). -> { ref, lane, replyTime }
-//   contactAction    owner + inbox admins    { lane, id, action: status | assign | spam | escalate, value }
+//   contactAction    owner + inbox admins    { lane, id, action: status | assign | spam | escalate | pickUp | release, value }
+//                                            pickUp (talk-back.md §9d): an unassigned team-lane message assigned to yourself (pickedUpAt);
+//                                            release: back to unassigned, only by the person who picked it up. adminLog pickUp / release.
 //   contactNote      owner + inbox admins    { lane, id, text } an internal note
 //   contactReply     owner + inbox admins    { lane, id, text, from, markWaiting, manual } -> { sent: true } | { sent: false, reason: "email-off", to, subject, text, mailto }
 //   contactSettings  owner                   updates hotline/main
@@ -14,17 +16,23 @@
 // Line 2 (Feedback & questions) also takes Talk Back's kind, context and boombotShown (talk-back.md §6), stored on the message and counted in
 // stats/{yyyy-mm}.byService (every lane, owner only) and serviceStats/{yyyy-mm}.byService (team lane only; never an owner-lane message).
 // Inbox admins = signed in with a crewGrade claim in hotline/main.inboxGrades (default A2, A3). Owner-lane messages: the owner only.
+// Talk Back Part B (docs/specs/talk-back.md §9; lib/hotline/credit.js): the first reply (or Mark as replied) is decided once, in a transaction
+// that sets firstReplyAt and firstReplyBy only while firstReplyAt is empty, then pays Gears (gearsPaid on the message, a "credit" entry in its
+// history); a close with no reply needed records closedBy / closedAt; a spam mark records spamBy / spamAt and reverses a paid reply; the
+// scheduled inboxSpamHold (daily 04:15 Central) and inboxDeskCheck (21:00 Central) pay spam that held and Clear desk.
 // Errors carry details.reason (rate-limited + retryAt, bad-input + field, check-failed, line-off, not-allowed, gone).
 //
 // build(deps) is what scripts/check-hotline.js runs against the in-memory Firestore: { db, adminLogEntry, now, fetchFn, secrets: { turnstile(), salt(),
 // resend() }, getUserEmail(uid) }.
 const crypto = require("crypto");
 const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineSecret } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const L = require("./logic");
 const M = require("./mail");
 const { verifyTurnstile } = require("../security/turnstile");
+const { makeCredit } = require("./credit");
 
 const SITE_ID = "boomertanger";
 const SITE = `sites/${SITE_ID}`;
@@ -100,6 +108,9 @@ function build(deps = {}) {
     try { await db.doc(`${SITE}/notifyOutbox/${id}`).create({ ...doc, status: "pending", createdAt: FieldValue.serverTimestamp(), expireAt: TS(now() + 30 * L.DAY_MS) }); }
     catch (err) { if (!(err.code === 6 || /ALREADY_EXISTS/.test(String(err.message)))) console.error("hotline: outbox failed", String(err.message).slice(0, 120)); }
   }
+  const C = makeCredit({ db, now, gears: deps.gears || require("../crew/gears").makeGears({ db, now }), base: BASE, ownerUid: () => ownerUid(), inboxAdmins, loadMain });
+  /** The credit line in a message's history (kind "credit"): what was paid, the cap, a pending spam Gear, a reversal. */
+  const credit = (lane, id, msg, entry) => notesOf(lane, id).add({ kind: "credit", at: TS(now()), expireAt: msg.expireAt, ...entry });
   const ipOf = (request) => (request.rawRequest && (request.rawRequest.ip || (request.rawRequest.headers && String(request.rawRequest.headers["x-forwarded-for"] || "").split(",")[0].trim()))) || "unknown";
 
   // ---------- contactSend ----------
@@ -211,10 +222,49 @@ function build(deps = {}) {
       const value = d.action === "spam" ? "spam" : d.value;
       if (!L.STATUSES.includes(value)) throw fail("invalid-argument", "Pick a status.", "bad-input", { field: "value" });
       const expireAt = TS(value === "spam" ? at + L.SPAM_KEEP_MS : ms(msg.createdAt) + L.KEEP_MS);
-      await msgRef(lane, id).update({ status: value, updatedAt: TS(at), expireAt });
+      const patch = { status: value, updatedAt: TS(at), expireAt };
+      let paid = null;
+      // a close with no reply needed (talk-back.md §9b, §9e Tidied): who and when, and Oldest first when it was the oldest waiting
+      if (lane === "team" && value === "done" && msg.firstReplyAt == null && msg.status !== "done" && !msg.closedBy) {
+        const oldest = (await C.oldestWaiting()) === id;
+        patch.closedBy = w.uid; patch.closedAt = TS(at);
+        paid = await C.onClose({ lane, id, msg, uid: w.uid, at, oldest });
+        if (paid && paid.amount) patch.gearsPaid = paid;
+      }
+      // a spam mark by a person: who and when (it pays only if it holds); a paid reply is reversed (§9c)
+      if (value === "spam" && msg.status !== "spam") {
+        patch.spamBy = w.uid; patch.spamAt = TS(at);
+        if (msg.firstReplyAt) await C.dropReply(id, msg);
+        const rev = await C.reverse(id, msg, { uid: w.uid, name: w.name });
+        if (rev) patch.gearsPaid = rev;
+        await C.onSpamMark(w.uid, lane, msg, at);
+      }
+      // un-spammed: nothing is paid; the owner overturning someone else's mark counts against their Accuracy
+      if (msg.status === "spam" && value !== "spam") {
+        if (!msg.spamHeld) { patch.spamBy = FieldValue.delete(); patch.spamAt = FieldValue.delete(); }
+        if (w.owner && msg.spamBy && msg.spamBy !== w.uid) await C.onSpamOverturned(msg.spamBy, at);
+      }
+      await msgRef(lane, id).update(patch);
       await event(lane, id, w.uid, `status ${value}`, { event: "status", value }, { expireAt });
+      if (paid && (paid.amount || paid.capped)) await credit(lane, id, { expireAt }, { by: paid.by, amount: paid.amount, parts: paid.parts, capped: paid.capped, cap: paid.cap, ledgerIds: paid.ledgerIds });
+      if (value === "spam" && msg.status !== "spam" && lane === "team" && (await C.earns(w.uid, lane, msg))) await credit(lane, id, { expireAt }, { by: w.uid, pending: "spam" });
+      if (patch.gearsPaid && patch.gearsPaid.reversed) await credit(lane, id, { expireAt }, { by: w.uid, reversed: patch.gearsPaid.amount, uids: patch.gearsPaid.uids });
       await log(w, "status", { lane, id, ref: msg.ref, details: { from: msg.status, to: value } });
-      return { ok: true, status: value };
+      return { ok: true, status: value, gears: paid ? paid.amount : 0 };
+    }
+    if (d.action === "pickUp" || d.action === "release") {
+      if (lane !== "team") throw fail("failed-precondition", "Owner-only messages can't be picked up.", "not-allowed");
+      if (d.action === "pickUp") {
+        if (msg.assignee && msg.assignee !== w.uid) throw fail("failed-precondition", "Someone already picked this up.", "taken");
+        await msgRef(lane, id).update({ assignee: w.uid, pickedUpAt: TS(at), updatedAt: TS(at) });
+        await event(lane, id, w.uid, "picked up", { event: "pickUp", value: w.uid }, msg);
+      } else {
+        if (msg.assignee !== w.uid || !msg.pickedUpAt) throw fail("permission-denied", "Only the person who picked it up can let it go.", "not-allowed");
+        await msgRef(lane, id).update({ assignee: null, pickedUpAt: FieldValue.delete(), updatedAt: TS(at) });
+        await event(lane, id, w.uid, "let go", { event: "release", value: null }, msg);
+      }
+      await log(w, d.action, { lane, id, ref: msg.ref });
+      return { ok: true, assignee: d.action === "pickUp" ? w.uid : null };
     }
     if (d.action === "assign") {
       if (lane !== "team") throw fail("failed-precondition", "Owner-only messages can't be assigned.", "not-allowed");
@@ -223,13 +273,14 @@ function build(deps = {}) {
         const owner = await ownerUid();
         if (to !== owner && !(await inboxAdmins(main)).includes(to)) throw fail("invalid-argument", "They don't have the inbox.", "bad-input", { field: "value" });
       }
-      await msgRef(lane, id).update({ assignee: to, updatedAt: TS(at) });
+      await msgRef(lane, id).update({ assignee: to, updatedAt: TS(at), ...(msg.pickedUpAt ? { pickedUpAt: FieldValue.delete() } : {}) });
       await event(lane, id, w.uid, to ? "assigned" : "unassigned", { event: "assign", value: to }, msg);
       await log(w, "assign", { lane, id, ref: msg.ref, details: { to } });
       return { ok: true, assignee: to };
     }
     if (d.action === "escalate") {
       if (lane !== "team") throw fail("failed-precondition", "It's already owner only.", "not-allowed");
+      if (msg.firstReplyAt) await C.dropReply(id, msg);   // escalation is neutral for Gears (gearsPaid moves with the message) but leaves the reply numbers
       const notes = await notesOf("team", id).get();
       const batch = db.batch();
       const moved = { ...msg, lane: "owner", assignee: null, escalatedBy: w.uid, updatedAt: TS(at) };
@@ -274,17 +325,30 @@ function build(deps = {}) {
       if (!r.sent) throw fail("unavailable", r.reason === "bad-address" ? "There's no email address to reply to." : "The email didn't send. Try again in a moment.", r.reason === "bad-address" ? "no-address" : "provider");
     }
     const at = now();
+    // Oldest first is judged before this reply lands (the oldest waiting team-lane message at that moment)
+    const oldest = d.lane === "team" && msg.firstReplyAt == null ? (await C.oldestWaiting()) === d.id : false;
     await notesOf(d.lane, d.id).add({ kind: "reply", by: w.uid, from: M.replyFrom(d.from), text, at: TS(at), expireAt: msg.expireAt, ...(d.manual === true ? { manual: true } : {}) });
-    const first = msg.firstReplyAt == null;
-    await msgRef(d.lane, d.id).update({ status: d.markWaiting === true ? "waiting" : "open", updatedAt: TS(at), ...(first ? { firstReplyAt: TS(at) } : {}) });
+    // the first reply is decided once: only the call that finds firstReplyAt empty sets it (and firstReplyBy), so two at once can't both be paid
+    let first = false;
+    await db.runTransaction(async (tx) => {
+      const cur = await tx.get(msgRef(d.lane, d.id));
+      if (!cur.exists) throw fail("not-found", "That message is gone.", "gone");
+      first = cur.get("firstReplyAt") == null;
+      tx.update(msgRef(d.lane, d.id), { status: d.markWaiting === true ? "waiting" : "open", updatedAt: TS(at), ...(first ? { firstReplyAt: TS(at), firstReplyBy: w.uid } : {}) });
+    });
+    let gearsEarned = 0;
     if (first) {
       const k = L.monthKey(ms(msg.createdAt) || at);
       await db.doc(`${BASE}/stats/${k}`).set({ answered: FieldValue.increment(1) }, { merge: true });
       if (d.lane === "team") await db.doc(`${BASE}/statsTeam/${k}`).set({ answered: FieldValue.increment(1) }, { merge: true });
+      const c = await C.onFirstReply({ lane: d.lane, id: d.id, msg, uid: w.uid, at, oldest });
+      await msgRef(d.lane, d.id).update({ firstReplyMeta: c.meta, ...(c.gearsPaid && (c.gearsPaid.amount || c.gearsPaid.capped) ? { gearsPaid: c.gearsPaid } : {}) });
+      if (c.gearsPaid && (c.gearsPaid.amount || c.gearsPaid.capped)) await credit(d.lane, d.id, msg, { by: w.uid, amount: c.gearsPaid.amount, parts: c.gearsPaid.parts, capped: c.gearsPaid.capped, cap: c.gearsPaid.cap, ledgerIds: c.gearsPaid.ledgerIds });
+      gearsEarned = c.gearsPaid ? c.gearsPaid.amount : 0;
     }
     if (msg.sender && msg.sender.uid) await outbox(`hotline-reply-${d.id}-${at}`, { type: "contact-reply", audience: "uids", uids: [msg.sender.uid], subject: { kind: "hotline", id: d.id, lane: d.lane }, payload: { ref: msg.ref }, streamId: null, week: null });
     await log(w, "reply", { lane: d.lane, id: d.id, ref: msg.ref, details: { from: d.from, manual: d.manual === true } });
-    return { sent: true, manual: d.manual === true };
+    return { sent: true, manual: d.manual === true, gears: gearsEarned };
   }
 
   async function settings(request) {
@@ -331,7 +395,7 @@ function build(deps = {}) {
     return { ok: true };   // the same answer counted or not, so the limit tells nobody anything
   }
 
-  return { loadMain, send, action, note, reply, settings, deflect };
+  return { loadMain, send, action, note, reply, settings, deflect, credit: C };
 }
 
 // The deployed callables. RESEND_API_KEY is bound only when functions/.env says HOTLINE_EMAIL=on (a secret that doesn't exist yet would stop the
@@ -352,6 +416,9 @@ module.exports = function hotline({ adminLogEntry }) {
     contactReply: onCall({ secrets: mail }, (request) => H().reply(request)),
     contactSettings: onCall((request) => H().settings(request)),
     contactDeflect: onCall({ secrets: [SALT] }, (request) => H().deflect(request)),
+    // Talk Back Part B (talk-back.md §9b, §9f): spam that held pays (daily), and the Clear desk check (21:00 Central)
+    inboxSpamHold: onSchedule({ schedule: "15 4 * * *", timeZone: "America/Chicago", timeoutSeconds: 300 }, async () => { const r = await H().credit.spamHold(); console.log(`inboxSpamHold: ${r.due} due, ${r.held} held, ${r.paid} paid, ${r.skipped} skipped`); }),
+    inboxDeskCheck: onSchedule({ schedule: "0 21 * * *", timeZone: "America/Chicago", timeoutSeconds: 300 }, async () => { const r = await H().credit.deskCheck(); console.log(`inboxDeskCheck ${r.day}: ${r.clear ? "clear" : `${r.waiting} waiting`}, streak ${r.streak}${r.bonus ? `, Clear desk paid to ${r.bonus.paid.length}` : ""}`); }),
   };
 };
 module.exports.build = build;

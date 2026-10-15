@@ -458,14 +458,17 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     return { roster: rows, openApplications: open.size, settings: await loadSettings(db), activity, lockouts };
   });
 
-  // ---------- crewSaveSettings (owner only): the settings card on /admin/crew ----------
+  // ---------- crewSaveSettings (owner only; the inbox values: owner and A2+): the settings card on /admin/crew ----------
   // Validates every field; anything not sent is left alone. Gears values, the YouTube boost (the activity rules are crewSetRules only),
-  // the check-in fallback, the recruit and vouch caps, application timings and the Twitch sync switch.
+  // the check-in fallback, the recruit and vouch caps, application timings, the Twitch sync switch, and the Hotline Boom inbox values
+  // (talk-back.md §9g: owner and Overseers and up; everything else is the owner's).
+  const INBOX_LIMITS = { reply: [0, 100], fast: [0, 100], fastHours: [1, 168], oldest: [0, 100], spam: [0, 100], spamHoldDays: [1, 30], spamDailyCap: [0, 50], desk: [0, 100], deskMinHandled: [1, 50], deskStaleHours: [1, 168], boombot: [0, 100], dailyCap: [0, 500], operatorMin: [1, 100] };
   const crewSaveSettings = onCall(async (request) => {
     const uid = S.requireAuth(request);
     const w = await S.who(uid);
-    if (!w.isOwner) throw fail("permission-denied", "Only the owner changes the crew settings.", "notOwner");
     const d = request.data || {};
+    const onlyInbox = Object.keys(d).length > 0 && Object.keys(d).every((k) => k === "inbox");
+    if (!w.isOwner && !(onlyInbox && S.a2plus(w))) throw fail("permission-denied", onlyInbox ? "Only the owner or an Overseer changes the inbox values." : "Only the owner changes the crew settings.", "notOwner");
     const patch = {};
     const int = (v, min, max, field) => { if (!Number.isInteger(v) || v < min || v > max) throw fail("invalid-argument", `${field} must be a whole number from ${min} to ${max}.`, "field", { field }); return v; };
     const bool = (v, field) => { if (typeof v !== "boolean") throw fail("invalid-argument", `${field} must be on or off.`, "field", { field }); return v; };
@@ -487,6 +490,15 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     if (d.vouchCap !== undefined) patch.vouchCap = int(d.vouchCap, 1, 10, "vouchCap");
     if (d.appExpiryDays !== undefined) patch.appExpiryDays = int(d.appExpiryDays, 7, 365, "appExpiryDays");
     if (d.reapplyDays !== undefined) patch.reapplyDays = int(d.reapplyDays, 0, 365, "reapplyDays");
+    if (d.inbox !== undefined) {
+      if (!d.inbox || typeof d.inbox !== "object") throw fail("invalid-argument", "inbox must be an object.", "field", { field: "inbox" });
+      for (const [k, v] of Object.entries(d.inbox)) {
+        if (k in INBOX_LIMITS) patch[`inbox.${k}`] = int(v, INBOX_LIMITS[k][0], INBOX_LIMITS[k][1], k);
+        else if (k === "operatorAccuracy") { if (typeof v !== "number" || !(v >= 0 && v <= 1)) throw fail("invalid-argument", "operatorAccuracy must be from 0 to 1.", "field", { field: k }); patch["inbox.operatorAccuracy"] = Math.round(v * 100) / 100; }
+        else if (k === "operatorAward") patch["inbox.operatorAward"] = bool(v, k);
+        else throw fail("invalid-argument", `${k} isn't an inbox value.`, "field", { field: k });
+      }
+    }
     if (!Object.keys(patch).length) throw fail("invalid-argument", "Nothing to save.", "args");
     const before = await loadSettings(db);
     await db.doc(paths.settings()).update(patch);
@@ -499,6 +511,29 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     }
     await db.collection("adminLog").add(await adminLogEntry(db, { feature: "crew", action: "crewSettings", itemPath: paths.settings(), itemTitle: "Crew settings", actorUid: uid, actorName: w.name, changes }));
     return { ok: true, settings: after };
+  });
+
+  // ---------- gearsAdjust (owner and A2+): a Gears correction (talk-back.md §9c, §9e "Remove credit"; mod-machina.md adminLog gearsAdjust) ----------
+  // { uid, amount (a whole number, not 0, -1000..1000), reason (3..200 characters), reverses?: [ledger ids] } -> one "adjust" ledger row
+  // (adjust:{ref}:{uid}; ref = the reversed ids, else the time), the boards rebuilt, adminLog gearsAdjust with before / after totals.
+  const gearsAdjust = onCall(async (request) => {
+    const uid = S.requireAuth(request);
+    const w = await S.who(uid);
+    if (!(w.isOwner || S.a2plus(w))) throw fail("permission-denied", "Only the owner or an Overseer adjusts Gears.", "notAllowed");
+    const d = request.data || {};
+    if (typeof d.uid !== "string" || !d.uid) throw fail("invalid-argument", "Whose Gears?", "field", { field: "uid" });
+    if (d.uid === uid && !w.isOwner) throw fail("permission-denied", "Ask the owner to adjust your own Gears.", "self");
+    const amount = Number(d.amount);
+    if (!Number.isInteger(amount) || amount === 0 || Math.abs(amount) > 1000) throw fail("invalid-argument", "The amount is a whole number, not 0, up to 1,000 either way.", "field", { field: "amount" });
+    const reason = typeof d.reason === "string" ? d.reason.trim() : "";
+    if (reason.length < 3 || reason.length > 200) throw fail("invalid-argument", "Write a reason (3 to 200 characters).", "field", { field: "reason" });
+    const reverses = Array.isArray(d.reverses) ? d.reverses.filter((x) => typeof x === "string" && /^[A-Za-z0-9_:-]{1,200}$/.test(x)).slice(0, 10) : [];
+    const before = (await db.collection(`${paths.settings()}/gears`).where("uid", "==", d.uid).get()).docs.reduce((t, x) => t + (x.get("amount") || 0), 0);
+    const ref = reverses.length ? reverses.join("+").slice(0, 180) : `m${Date.now()}`;
+    const r = await (gears || require("./gears").makeGears({ db })).adjustGears({ uid: d.uid, amount, reason, by: { uid, name: w.name }, ref, reverses });
+    if (!r.adjusted) throw fail("failed-precondition", r.reason === "done" ? "That correction was already made." : "They aren't on the crew.", r.reason);
+    await db.collection("adminLog").add(await adminLogEntry(db, { feature: "crew", action: "gearsAdjust", itemPath: `${paths.settings()}/gears/${r.key}`, itemTitle: "Gears adjustment", actorUid: uid, actorName: w.name, reason, changes: { gears: { before, after: before + amount } }, details: { uid: d.uid, amount, reverses } }));
+    return { ok: true, key: r.key, total: before + amount };
   });
 
   // ---------- crewNightly (03:30 Central) ----------
@@ -544,5 +579,5 @@ module.exports = function crewCore({ adminLogEntry, gears = null } = {}) {
     console.log(`crewNightly: ${r.expired} applications expired, ${r.flagged} newly ready to promote, ${r.served} service badges, ${r.reliability.people} reliability records, ${r.reliability.locked} newly locked, ${r.backToActive} back to Active`);
   });
 
-  return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewSaveSettings, crewNightly };
+  return { crewApply, crewVouch, crewUnvouch, crewConcern, crewQueue, crewWaive, crewDecide, crewPromote, crewSetStatus, crewExcuse, crewStrike, crewSaveProfile, crewMe, crewAdminOverview, crewSaveSettings, gearsAdjust, crewNightly };
 };

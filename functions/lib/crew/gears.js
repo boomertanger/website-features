@@ -7,13 +7,19 @@
 //
 // Phase 1 sources: task, recruit, recruitCheckin, queueReview, academy. Phase 3 (the Mod Deck, lib/crew/duty.js) adds duty, showed and takeover, and Chat Games (lib/chatGames) adds chatGame (+5 for hosting, key chatGame:{runId}:{uid}) and cardSuggest (+2 for an approved card, key cardSuggest:{cardId}:{uid}), whose ledger ids are given exactly by the caller
 // (extra.key, e.g. duty:{streamId}:{uid}:lead:{room}) so a retry can never pay twice.
+// Talk Back Part B (docs/specs/talk-back.md §9) adds the Hotline Boom inbox sources (inboxReply, inboxFast, inboxOldest, inboxSpam, inboxDesk,
+// inboxBoombot; keys ${source}:${ref}:${uid} given by lib/hotline/credit.js, rows labelled "Hotline reply", "Fast reply", "Oldest first",
+// "Spam cleared", "Clear desk", "Added to BOOMBOT" and nothing else) and adjustGears: a correction row (source "adjust", amount below or above
+// zero, a reason, who made it, and the ledger ids it reverses), keyed adjust:{ref}:{uid} so it can't be applied twice. Boards net it out.
 // Never earn Gears: timeouts, bans, deleted messages, raw message counts (they would reward spam).
 const admin = require("firebase-admin");
 const L = require("./logic");
 const { SITE_ID, paths, loadSettings } = require("./settings");
 const { dayKey } = require("../arcade/logic");
 
-const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage", "duty", "showed", "takeover", "chatGame", "cardSuggest"];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
+const INBOX_SOURCES = ["inboxReply", "inboxFast", "inboxOldest", "inboxSpam", "inboxDesk", "inboxBoombot"];
+const INBOX_LABELS = { inboxReply: "Hotline reply", inboxFast: "Fast reply", inboxOldest: "Oldest first", inboxSpam: "Spam cleared", inboxDesk: "Clear desk", inboxBoombot: "Added to BOOMBOT" };
+const SOURCES = ["task", "recruit", "recruitCheckin", "queueReview", "academy", "earlySignup", "labReview", "bugTriage", "duty", "showed", "takeover", "chatGame", "cardSuggest", ...INBOX_SOURCES];   // earlySignup: Scream Planner (+3 for a seat request within 48 h of publish); labReview: Feature Lab (+3 to the admin who first moves an idea out of Submitted); bugTriage: Bug Zapper (+3 to the admin who first moves a report out of Open)
 const NEVER = ["timeout", "ban", "deletedMessage", "messages", "messageCount"];
 const safe = (s) => String(s).replace(/[^A-Za-z0-9_-]+/g, "-").slice(0, 100);
 const ms = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
@@ -54,6 +60,30 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     return snap.docs.filter((d) => d.get("source") === source && d.get("month") === m).length;
   };
 
+  /**
+   * A Gears adjustment (adminLog gearsAdjust is the caller's): one ledger row, source "adjust", amount ≠ 0 (a reversal is negative), with the
+   * reason, who made it and the ledger ids it reverses. key: adjust:{ref}:{uid}, so the same correction never lands twice. Not for alumni.
+   */
+  async function adjustGears({ uid, amount, reason, by = null, ref, reverses = [] }) {
+    const n = Math.trunc(Number(amount));
+    if (!uid || ref == null || !n || Math.abs(n) > 1000) return { adjusted: false, reason: "badAmount" };
+    const key = gearKey("adjust", ref, uid), at = now();
+    const out = await db.runTransaction(async (tx) => {
+      const [ledger, roster] = await Promise.all([tx.get(db.doc(paths.gear(key))), tx.get(db.doc(paths.roster(uid)))]);
+      if (ledger.exists) return { adjusted: false, reason: "done" };
+      if (!roster.exists) return { adjusted: false, reason: "notCrew" };
+      tx.set(db.doc(paths.gear(key)), { uid, source: "adjust", ref: String(ref), amount: n, label: "Adjustment", reason: String(reason || "").slice(0, 200), by, reverses: reverses.slice(0, 10), month: monthOf(at), atMs: at, at: Timestamp.fromMillis(at) });
+      return { adjusted: true, amount: n, key };
+    });
+    if (out.adjusted) { try { await rebuildBoards(at); } catch (err) { console.error("crew: board rebuild failed", err); } }
+    return out;
+  }
+  /** Inbox Gears paid to uid on the America/Chicago day of `at` (the daily cap, talk-back.md §9b). */
+  async function inboxToday(uid, at = now()) {
+    const day = dayKey(at);
+    const snap = await gearsCol().where("uid", "==", uid).get();
+    return snap.docs.filter((d) => INBOX_SOURCES.includes(d.get("source")) && dayKey(d.get("atMs") || 0) === day).reduce((t, d) => t + (d.get("amount") || 0), 0);
+  }
   const grantTask = async (uid, taskId, amount) => grantGears(uid, "task", taskId, amount);
   /** Feature Lab review: the admin who first moves an idea out of Submitted, +3 (gearsValues.triage), once per idea (the ledger key is source:ideaId:uid). */
   const grantLabReview = async (uid, ideaId) => grantGears(uid, "labReview", ideaId, (await loadSettings(db)).gearsValues.triage);
@@ -86,6 +116,7 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     const ids = [...onBoard.keys()];
     const profiles = ids.length ? await db.getAll(...ids.map((u) => db.doc(`sites/${SITE_ID}/profiles/${u}`))) : [];
     const handleOf = new Map(profiles.map((p, i) => [ids[i], p.exists ? p.get("handle") || null : null]));   // the profile's handle is current; the roster copy can go stale
+    const reversed = new Set(ledger.docs.flatMap((d) => (d.get("source") === "adjust" ? d.get("reverses") || [] : [])));
     const rowsFor = (inRange) => {
       const by = new Map();
       const work = new Map();
@@ -99,15 +130,17 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
       for (const d of ledger.docs) {
         const g = d.data();
         if (!onBoard.has(g.uid) || !inRange(g)) continue;
-        const row = by.get(g.uid) || { gears: 0, recruits: 0 };
+        const row = by.get(g.uid) || { gears: 0, recruits: 0, inboxReplies: 0 };
         row.gears += g.amount || 0;
         if (g.source === "recruit") row.recruits++;
+        if (g.source === "inboxReply" && !reversed.has(d.id)) row.inboxReplies++;   // first replies (talk-back.md §9e); a reply reversed as spam drops out
         by.set(g.uid, row);
       }
       return [...onBoard.entries()].map(([uid, r]) => {
-        const row = by.get(uid) || { gears: 0, recruits: 0 };
-        return { uid, handle: handleOf.get(uid) || r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: (work.get(uid) || {}).duties || 0, hours: Math.round(((work.get(uid) || {}).minutes || 0) / 6) / 10, rooms: [], recruits: row.recruits, staff: r.track === "admin" };
-      }).filter((r) => r.gears > 0 || r.recruits > 0)
+        const row = by.get(uid) || { gears: 0, recruits: 0, inboxReplies: 0 };
+        // inboxReplies: admins only (mods never work the inbox: the board shows "—"); null for mods
+        return { uid, handle: handleOf.get(uid) || r.handle || null, track: r.track === "admin" ? "admin" : "mod", grade: r.grade, gears: row.gears, duties: (work.get(uid) || {}).duties || 0, hours: Math.round(((work.get(uid) || {}).minutes || 0) / 6) / 10, rooms: [], recruits: row.recruits, inboxReplies: r.track === "admin" ? row.inboxReplies : null, staff: r.track === "admin" };
+      }).filter((r) => r.gears > 0 || r.recruits > 0 || r.inboxReplies > 0)
         .sort((a, b) => b.gears - a.gears || b.recruits - a.recruits || String(a.handle).localeCompare(String(b.handle)))
         .map((r, i) => ({ ...r, place: i + 1 }));
     };
@@ -122,7 +155,7 @@ function makeGears({ db = admin.firestore(), now = () => Date.now() } = {}) {
     return boards;
   }
 
-  return { grantGears, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview, grantLabReview, grantBugTriage, grantAcademy, rebuildBoards };
+  return { grantGears, adjustGears, inboxToday, grantTask, grantRecruit, grantRecruitCheckin, grantQueueReview, grantLabReview, grantBugTriage, grantAcademy, rebuildBoards };
 }
 
-module.exports = { makeGears, gearKey, SOURCES, NEVER };
+module.exports = { makeGears, gearKey, SOURCES, NEVER, INBOX_SOURCES, INBOX_LABELS };

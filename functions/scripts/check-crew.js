@@ -401,7 +401,8 @@ async function main() {
   assert.equal(all.rows[0].uid, "w2");                                                                   // 4 + 100 + 5 Gears
   assert.equal(all.rows.find((r) => r.uid === "m1").gears, 70);
   assert.equal(all.rows.find((r) => r.uid === "w2").recruits, 10);
-  assert.equal(Object.keys(all.rows[0]).sort().join(), "duties,gears,grade,handle,hours,place,recruits,rooms,staff,track,uid");   // nothing private
+  assert.equal(Object.keys(all.rows[0]).sort().join(), "duties,gears,grade,handle,hours,inboxReplies,place,recruits,rooms,staff,track,uid");   // nothing private
+  assert.ok(all.rows.filter((r) => r.track === "mod").every((r) => r.inboxReplies === null), "the Inbox column is admins only (mods show a dash)");
   const month = (await db.doc(paths.board("month")).get()).data();
   assert.match(month.period, /^[0-9]{4}-[0-9]{2}$/);
   assert.ok(month.rows.some((r) => r.uid === "m1"));
@@ -867,6 +868,29 @@ async function main() {
   const settingsLog = logs.filter((e) => e.action === "crewSettings").pop();
   assert.equal(settingsLog.changes.vouchCap.after, 4); assert.equal(settingsLog.changes["gearsValues.dutyCaptainPerHour"].before, 12);
   await boss("crewSaveSettings", { vouchCap: 3, youtubeBoost: 1.5, gearsValues: { dutyCaptainPerHour: 12 } });   // put them back
+  // the inbox values (talk-back.md §9g): owner and A2+, validated; anything else stays the owner's
+  assert.equal(await reason(as("w1")("crewSaveSettings", { inbox: { reply: 5 } })), "notOwner");
+  assert.equal(await reason(as("ov")("crewSaveSettings", { inbox: { reply: 5 }, vouchCap: 4 })), "notOwner", "an Overseer can only send the inbox values");
+  assert.equal(await reason(boss("crewSaveSettings", { inbox: { bogus: 1 } })), "field");
+  assert.equal(await reason(boss("crewSaveSettings", { inbox: { operatorAccuracy: 2 } })), "field");
+  const inb = await as("ov")("crewSaveSettings", { inbox: { reply: 5, operatorAccuracy: 0.85 } });
+  assert.equal(inb.settings.inbox.reply, 5); assert.equal(inb.settings.inbox.operatorAccuracy, 0.85); assert.equal(inb.settings.inbox.dailyCap, 30, "the rest keep their defaults");
+  await boss("crewSaveSettings", { inbox: { reply: 4, operatorAccuracy: 0.9 } });
+  // gearsAdjust (owner and A2+): a reason, a whole number, never your own (unless owner); one ledger row, logged
+  assert.equal(await reason(as("w1")("gearsAdjust", { uid: "m1", amount: -2, reason: "Test" })), "notAllowed");
+  assert.equal(await reason(as("ov")("gearsAdjust", { uid: "ov", amount: 5, reason: "Me" })), "self");
+  assert.equal(await reason(boss("gearsAdjust", { uid: "m1", amount: 0, reason: "Zero" })), "field");
+  assert.equal(await reason(boss("gearsAdjust", { uid: "m1", amount: 1.5, reason: "Half" })), "field");
+  assert.equal(await reason(boss("gearsAdjust", { uid: "m1", amount: -2, reason: "x" })), "field");
+  const m1Adj0 = (await db.collection(paths.settings() + "/gears").where("uid", "==", "m1").get()).docs.reduce((t, d) => t + d.get("amount"), 0);
+  const adj = await as("ov")("gearsAdjust", { uid: "m1", amount: -2, reason: "Paid twice by mistake", reverses: ["task:t1:m1"] });
+  assert.equal(adj.total, m1Adj0 - 2);
+  const adjRow = (await db.doc(paths.gear(adj.key)).get()).data();
+  assert.equal(adjRow.source, "adjust"); assert.equal(adjRow.amount, -2); assert.equal(adjRow.reason, "Paid twice by mistake"); assert.deepEqual(adjRow.reverses, ["task:t1:m1"]);
+  assert.equal(await reason(as("ov")("gearsAdjust", { uid: "m1", amount: -2, reason: "Paid twice by mistake", reverses: ["task:t1:m1"] })), "done", "the same correction never lands twice");
+  assert.equal((await db.doc(paths.board("all")).get()).data().rows.find((r) => r.uid === "m1").gears, m1Adj0 - 2, "the boards net it out");
+  const adjLog = logs.filter((e) => e.action === "gearsAdjust").pop();
+  assert.equal(adjLog.reason, "Paid twice by mistake"); assert.deepEqual(adjLog.changes.gears, { before: m1Adj0, after: m1Adj0 - 2 });
   console.log("check-crew: ok");
 }
 main().catch((e) => { console.error(e); process.exit(1); });
