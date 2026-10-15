@@ -29,7 +29,8 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 18 | Service Hub | In progress (docs and manifests) | Service Hub |
 | 19 | Base Camp (/base-camp, /base-camp/newfoundland, /base-camp/skipper, /base-camp/mail-call; Kind Words and the Skipper Cam; spec [docs/specs/base-camp.md](specs/base-camp.md)) | Built on staging (Oct 11, 2026); tests pending | Community services |
 | 20 | Creator Climb (/climb: follower growth across every platform, members as their own climb; spec [docs/specs/creator-climb.md](specs/creator-climb.md)) | Built (Oct 15, 2026); staging deploy and history import in progress | Community services |
-| 21 | Traffic Pulse (/admin/pulse: the site's private, cookieless analytics per service; spec [docs/specs/traffic-pulse.md](specs/traffic-pulse.md)) | In progress (Oct 15, 2026) | Admin tools |
+| 21 | Traffic Pulse (/admin/pulse: the site's private, cookieless analytics per service; spec [docs/specs/traffic-pulse.md](specs/traffic-pulse.md)) | In progress (Oct 15, 2026) |
+| 22 | The Playbook (/admin/playbook: the owner's private living plan, reviewed monthly through a Claude chat; spec [docs/specs/playbook.md](specs/playbook.md)) | In progress (Oct 15, 2026) | Planning | Admin tools |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -302,6 +303,15 @@ Boom Alerts isn't built yet: alerts are written to `notifyOutbox` as `pulse-aler
 
 Later (spec §1): the weekly email report (after Resend), A/B experiments, BOOMBOT insights, a custom funnel builder, a traffic panel inside Service Hub's detail dialog, a Night Watch embed of the /admin card, site search terms.
 
+### 22. The Playbook
+Goal: owner-only living reference pages that hold the plan (strategy, assumptions, open questions, decisions), one page per service or plan, reviewed each month through a Claude chat: copy a review prompt, talk it through, paste the reply back as one update.
+
+Spec: [docs/specs/playbook.md](specs/playbook.md) (confirmed Oct 15, 2026). **All Playbook text lives in Firestore, never in this repo.** The seed and the approved mockup are private and gitignored (`functions/scripts/data/playbook.json`, `playbook-mockup.html`, and every `playbook-*.json` export).
+
+Status: **In progress (Oct 15, 2026).** Parts: 1 docs; 2 rules, the `playbookAdmin` callable and the `playbookReviewTick` scheduler; 3 the Markdown renderer (`marked` + `DOMPurify`, pinned, browser only) with the six fenced blocks; 4 /admin/playbook and the owner-only /admin card; 5 `seed-playbook.js`, `export-playbook.js` and the Service Hub manifest (adminTool, off /services); 6 the test plan; 7 design-system §8.
+
+Later (spec, out of scope for v1): sharing pages with admins, image uploads, a visual block editor, the reminder by email or push (with Boom Alerts).
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -399,6 +409,13 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Confirm the four Cloud Scheduler jobs exist and are ENABLED (pulseRollup every 15 min, pulseDaily 00:30, pulseCfPull hourly, pulseReport Monday 06:00 and the 1st 06:30, America/Los_Angeles).
 - [ ] Each redirect domain adds its own `ref` tag (e.g. boomertanger.live → `ref=dom-live`).
 - [ ] **Export Squarespace visit history before cancelling** (monthly visit totals for the optional "old site" baseline; deadline Jul 1, 2027).
+
+### The Playbook in production
+- [ ] Deploy firestore.rules to production first (the `playbook` match: owner reads, no client writes), on its own.
+- [ ] Deploy `playbookAdmin` and `playbookReviewTick` only (never a full `--only functions`); confirm both served revisions and that the Cloud Scheduler job exists and is ENABLED (the 1st, 06:00 America/Los_Angeles).
+- [ ] Export the Playbook from staging with `export-playbook.js` (writes only to the gitignored data folder).
+- [ ] Seed production with `seed-playbook.js --project prod` as a dry run, check the counts, then `--apply`.
+- [ ] Until then the Playbook is used on staging only.
 
 ### Squarespace switch-off cleanup
 - [ ] After the Squarespace Code Blocks are off: delete shared/memberspace-helper.js, the features/ folders (bug-zapper, cloud-stash, feature-lab, member-welcome-banner, site-nav-login, _template) and the MemberSpace mentions in README.md, site/README.md and firestore.rules.
