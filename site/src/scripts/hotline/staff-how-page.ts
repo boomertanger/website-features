@@ -5,7 +5,7 @@ import { stripTags } from "./staff-art";
 export const V = { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9 };
 export const v = (k: keyof typeof V | "operatorAccuracyPct") => `<span data-v="${k}">${k === "operatorAccuracyPct" ? Math.round(V.operatorAccuracy * 100) : V[k]}</span>`;
 
-export const NAV: [string, string][] = [["s-desk", "Your desk"], ["s-journey", "A message's journey"], ["s-answer", "Answering well"], ["s-escalate", "When to escalate"], ["s-spam", "Spam and tidying"], ["s-gears", "Gears for inbox work"], ["s-seen", "Being seen"], ["s-rules", "House rules"]];
+export const NAV: [string, string][] = [["s-desk", "Your desk"], ["s-journey", "A message's journey"], ["s-answer", "Answering well"], ["s-escalate", "When to escalate"], ["s-spam", "Spam and tidying"], ["s-gears", "Gears for inbox work"], ["s-seen", "Being seen"], ["s-rules", "House rules"], ["s-try", "Try it"], ["s-faq", "Ask BOOMBOT"]];
 export const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
 
 export const JOURNEY: [string, string, string][] = [

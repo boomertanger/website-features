@@ -14,8 +14,9 @@ import { onAuth, type AuthState } from "../../lib/auth";
 import { auth } from "../../lib/firebase";
 import { db, doc, getDoc, SITE_ID } from "../../lib/db";
 import { isProduction } from "../../lib/env.js";
+import { initTryDesk } from "./staff-try";
 
-export const DEFAULTS = { reply: 4, fast: 2, fastHours: 24, oldest: 1, spam: 1, spamHoldDays: 7, spamDailyCap: 5, desk: 5, deskMinHandled: 3, deskStaleHours: 48, dailyCap: 30, operatorMin: 5, operatorAccuracy: 0.9 };
+import { V as DEFAULTS } from "./staff-how-page";   // crew/main.inbox's defaults
 export type Values = typeof DEFAULTS;
 const host = document.querySelector<HTMLElement>("[data-hb-access]");
 const root = document.querySelector<HTMLElement>("[data-sh]");
@@ -101,6 +102,7 @@ function wire() {
   initFlipCards(root as unknown as Document);
   const flow = root.querySelector<HTMLElement>("[data-sh-flow]"); if (flow) initFlow(flow);
   journeyTravel();
+  initTryDesk(root);
   root.querySelectorAll<HTMLElement>("[data-sh-try]").forEach((a) => { a.hidden = !document.getElementById("s-try"); });
 }
 

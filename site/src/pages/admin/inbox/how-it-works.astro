@@ -4,7 +4,8 @@
 // Static: nothing secret on it, so the name check is explained without its rules. No Talk back strip (it's under /admin).
 // Frame: the hero (the desk scene, two .bt-tag counts from inboxStats), then TocLayout's chapters: 01 Your desk (two stage cards), 02 A message's journey (.ai-jr--5),
 // 03 Answering well, 04 When to escalate, 05 Spam and tidying, 06 Gears for inbox work (the values from crew/main.inbox, the flow), 07 Being seen (four .bt-flip medals),
-// 08 House rules (.bt-placard), and the closing "Open the inbox". Every number marked data-v is filled from crew/main.inbox by staff-how.ts (the defaults below
+// 08 House rules (.bt-placard), 09 Try it (the pretend desk, scripts/hotline/staff-try.ts), 10 Ask BOOMBOT (data/help/hotline-inbox.json,
+// the help-file format) and the closing "Open the inbox". Every number marked data-v is filled from crew/main.inbox by staff-how.ts (the defaults below
 // until then, and if it can't be read), the reply time from hotline/main.replyTime. It describes the inbox as it works today, email still off included.
 import HotlineLayout from "../../../layouts/HotlineLayout.astro";
 import TocLayout from "../../../components/TocLayout.astro";
@@ -12,9 +13,13 @@ import Mascot from "../../../components/Mascot.astro";
 import artwork from "../../../../../shared/assets/mascot.svg?raw";
 import { deskScene, stageTeam, stageOwner, jrIcon, factIcon, mascotShapes } from "../../../scripts/hotline/staff-art";
 import "../../../styles/hotline-staff-how.css";
+import { boombotIcon } from "../../../../../shared/ui/arcade.js";
+import HELP from "../../../data/help/hotline-inbox.json";
 
 import { V, v, NAV, chapter, JOURNEY, ESCALATE, MEDALS, labelOf, RULES } from "../../../scripts/hotline/staff-how-page";
 const MASCOT = mascotShapes(artwork);
+// Ask BOOMBOT reads the staff help file (site/src/data/help/hotline-inbox.json, the help-file format)
+const FAQS = HELP as { id: string; q: string; a: string; keys: string[] }[];
 ---
 <HotlineLayout title="Working the inbox" description="The Hotline Boom staff guide: what's yours to answer, answering well, when to escalate, spam and tidying, and how inbox work earns Gears." section="staffhow">
   <div class="hb-hw hb-sh" data-sh>
@@ -140,6 +145,30 @@ const MASCOT = mascotShapes(artwork);
             <ol class="bt-placard-list">
               {RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
             </ol>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-try" aria-labelledby="h-s-try">
+          <Fragment set:html={chapter(9, "s-try", "Try it: work a pretend desk", "Four sample messages. Handle each one and see what it would pay. Nothing is saved or sent.")} />
+          <div class="hb-sh-try" data-try>
+            <div class="hb-sh-try-list" data-try-list aria-live="polite"></div>
+            <aside class="hb-sh-tally" data-try-tally aria-label="Your pretend Gears"></aside>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-faq" aria-labelledby="h-s-faq">
+          <Fragment set:html={chapter(10, "s-faq", "Ask BOOMBOT", "Quick answers about working the inbox.")} />
+          <div class="hb-hw-faqhead"><span set:html={boombotIcon("hb-sh-bb-head")} /><p><b>BOOMBOT</b> answers from the inbox's help text. Anything else, ask Boomertanger.</p></div>
+          <div class="bt-chat">
+            {FAQS.map((f, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`hb-sh-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{f.q}</button>
+                <div class="bt-chat-a" id={`hb-sh-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${f.q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`hb-sh-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{f.a}</span></div>
+                </div>
+              </>
+            ))}
           </div>
         </section>
 

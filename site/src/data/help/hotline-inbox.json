@@ -1,0 +1,74 @@
+[
+  {
+    "id": "why-no-pay",
+    "q": "Why didn't my reply pay?",
+    "a": "Only the first staff reply on a team-lane message pays. Nothing pays on a message you sent yourself, on an owner-lane message, or once you've reached today's 30-Gear inbox cap. Boomertanger never earns inbox Gears. The message's history always says what was paid, or why not.",
+    "keys": ["didn't pay", "no gears", "not paid", "why no", "reply pay", "credit", "nothing paid", "earn"]
+  },
+  {
+    "id": "two-at-once",
+    "q": "What if two of us reply at once?",
+    "a": "The server decides once. Whoever's reply lands first is the first reply and gets the Gears. The other reply still sends.",
+    "keys": ["two of us", "same time", "at once", "both replied", "twice", "first reply"]
+  },
+  {
+    "id": "email-off",
+    "q": "Why can't the site send my reply?",
+    "a": "Email isn't switched on yet. Write the reply and press Send reply: the box then offers Open in my email (your reply, filled in) and Mark as replied. Send it from your email app, then mark it replied so the inbox records it, and your Gears with it.",
+    "keys": ["email", "send reply", "mark as replied", "open in my email", "mailto", "can't send", "didn't send"]
+  },
+  {
+    "id": "pick-up",
+    "q": "What does Pick up do?",
+    "a": "It assigns the message to you so the others know you've got it, and \"Picked up by\" shows on the row. If you can't finish, Let it go frees it again. Picking up pays nothing on its own: whoever sends the first reply gets the Gears.",
+    "keys": ["pick up", "picked up", "let it go", "claim", "assign", "mine"]
+  },
+  {
+    "id": "escalate",
+    "q": "Does escalating hurt me?",
+    "a": "Never. Owner only is neutral: no Gears gained or lost, a reply you were already paid for stays paid, and the message leaves your reply-time numbers. It's one way, so the message leaves the team inbox for good. When in doubt, escalate.",
+    "keys": ["escalate", "owner only", "move to owner", "hurt", "lose gears", "boomertanger only"]
+  },
+  {
+    "id": "hidden",
+    "q": "Why can't I see some messages?",
+    "a": "Lines 4 to 6 (Business, Private matter, Report a person), anything ticked \"Only Boomertanger should read this\", and team-line messages that name someone on the crew go to Boomertanger only. The site's rules keep them from everyone else, not even as a count.",
+    "keys": ["can't see", "missing", "hidden", "owner lane", "private", "business", "report", "where did it go"]
+  },
+  {
+    "id": "spam-pending",
+    "q": "Why is my spam Gear pending?",
+    "a": "A spam mark pays after 7 days if it still holds, up to 5 a day. If the mark is undone in that time, nothing is paid; if Boomertanger un-spams it, it also counts against your Accuracy. Messages the site marks spam by itself never pay anyone.",
+    "keys": ["spam", "pending", "7 days", "spam gear", "held", "accuracy", "undo"]
+  },
+  {
+    "id": "close-pay",
+    "q": "Does closing without a reply pay?",
+    "a": "Only the oldest-first Gear, when it was the oldest message waiting. Otherwise nothing, and that's fine for a thank-you or a duplicate. A real question needs a reply.",
+    "keys": ["close", "done no reply", "no reply needed", "thank you", "duplicate", "tidy", "tidied"]
+  },
+  {
+    "id": "daily-cap",
+    "q": "What's the daily cap?",
+    "a": "30 inbox Gears per person per day, reset at midnight Central. Over the cap your replies still send; they just don't pay, and the history says the cap was reached.",
+    "keys": ["cap", "daily", "limit", "30", "max", "midnight", "too many"]
+  },
+  {
+    "id": "clear-desk",
+    "q": "How does Clear desk work?",
+    "a": "Every day at 9 PM Central the inbox checks for team-lane messages waiting more than 48 hours without a reply. None means a clear day. 7 clear days in a row pay +5 Gears to everyone who handled at least 3 messages that week, then a new count starts.",
+    "keys": ["clear desk", "streak", "clear day", "team bonus", "pips", "9 pm", "48 hours"]
+  },
+  {
+    "id": "operator",
+    "q": "How is Operator of the Month chosen?",
+    "a": "On the 1st, from the month just ended: first replies, plus half a point per spam mark that held and one per oldest-first pick. You need at least 5 first replies and 90% spam accuracy. A tie goes to the faster median reply. The winner gets a trophy and a card on /crew.",
+    "keys": ["operator", "award", "month", "trophy", "winner", "chosen", "qualify"]
+  },
+  {
+    "id": "remove-credit",
+    "q": "Can credit be taken away?",
+    "a": "Yes. Boomertanger can use Remove credit on a message's credit line, which opens Adjust Gears on /admin/crew filled in; a reason is always required. Overseers and up can make adjustments there too, never on their own Gears. Credit is also reversed automatically when a paid message is later marked spam.",
+    "keys": ["remove credit", "taken away", "reversed", "adjust", "adjustment", "lost gears", "minus"]
+  }
+]
