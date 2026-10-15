@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Creator Climb spec and mockup (H1-D Summit camp, P1 Night lamps, members, crossover); the spec now matches the repo: peak viewers are the combined Control Room peak shown as "all platforms" beside the imported 577 (no per-platform peak exists), completeSignup records members/{uid}.signInMethod for the sign-up breakdown (older members count as unknown), and joined members are counted by joinedAt
 - chore: ignore functions/scripts/data/climb-history.json (Creator Climb's private follower history stays local)
 - chore(service-hub): functions/scripts/verdict-sample.js gives a Vault game a sample members' verdict on staging (three sample-member ratings through the rating trigger; --clean removes them)
 - feat(vault): C1 twin dials on game pages: Boomer's score ("Not played yet" before he scores it) beside the members' verdict from public/serviceVerdicts (dashed below 3 ratings), Rate it scrolls to the strip; on phones the poster is exactly as tall as the two stacked dials
