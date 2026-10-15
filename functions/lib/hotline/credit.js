@@ -172,7 +172,7 @@ function makeCredit({ db, now = () => Date.now(), gears, base, ownerUid, inboxAd
   /** Operator of the Month (§9e) for month ym: score, the minimum, accuracy, ties to the lower median reply time. */
   async function operatorFor(ym) {
     const v = await values();
-    if (v.operatorAward === false) return { off: true, winner: null };
+    if (v.operatorAward === false) return { off: true, winner: null, min: v.operatorMin };
     const snap = await statsRef(ym).get();
     const per = (snap.exists && snap.get("perStaff")) || {};
     const owner = await ownerUid();
@@ -180,10 +180,10 @@ function makeCredit({ db, now = () => Date.now(), gears, base, ownerUid, inboxAd
       const marks = (s.spamHeld || 0) + (s.spamOverturned || 0);
       const accuracy = marks ? (s.spamHeld || 0) / marks : 1;
       const med = median(Object.values(s.minutes || {}));
-      return { uid, replies: s.replies || 0, spamHeld: s.spamHeld || 0, oldest: s.oldest || 0, accuracy, medianMinutes: med, score: (s.replies || 0) + 0.5 * (s.spamHeld || 0) + (s.oldest || 0) };
+      return { uid, replies: s.replies || 0, spamHeld: s.spamHeld || 0, oldest: s.oldest || 0, closed: s.closed || 0, tidied: (s.spamHeld || 0) + (s.closed || 0), accuracy, medianMinutes: med, score: (s.replies || 0) + 0.5 * (s.spamHeld || 0) + (s.oldest || 0) };
     }).filter((r) => r.replies >= v.operatorMin && r.accuracy >= v.operatorAccuracy);
     rows.sort((a, b) => b.score - a.score || (a.medianMinutes ?? Infinity) - (b.medianMinutes ?? Infinity) || String(a.uid).localeCompare(String(b.uid)));
-    return { off: false, winner: rows[0] || null, candidates: rows.length };
+    return { off: false, winner: rows[0] || null, candidates: rows.length, min: v.operatorMin };
   }
 
   return { earns, oldestWaiting, onFirstReply, onClose, dropReply, reverse, onSpamMark, onSpamOverturned, spamHold, deskCheck, operatorFor, monthOf, median };

@@ -33,7 +33,8 @@ export interface Me {
 export interface PublicMember { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; status: string; favourites: Chat[]; /** Optional one-line "in their own words" (plain text, max 90 chars), published only when the member set one. */ quote?: string }
 export interface BoardRow { uid: string; handle: string | null; track: "mod" | "admin"; grade: number; gears: number; duties: number; hours: number; rooms: string[]; recruits: number; inboxReplies?: number | null; staff: boolean; place: number }
 export interface Board { period: string | null; rows: BoardRow[] }
-export interface Award { month: string; topGear: { uid: string; handle: string | null; gears?: number } | null; fanFavourite: { uid: string; handle: string | null; votes?: number } | null }
+export interface Award { month: string; topGear: { uid: string; handle: string | null; gears?: number } | null; fanFavourite: { uid: string; handle: string | null; votes?: number } | null;
+  operator?: { uid: string; handle: string | null; replies?: number; tidied?: number; oldest?: number; medianMinutes?: number | null } | null; operatorOff?: boolean; operatorMin?: number }
 
 export const crewMe = () => call<Me>("crewMe");
 export const crewCall = <T = any>(name: string, data: unknown = {}) => call<T>(name, data);
@@ -49,6 +50,6 @@ export async function board(id: "month" | "season" | "all"): Promise<Board> {
 /** Every monthly award, newest first: this month's winners and the Hall of Fame. */
 export async function awards(): Promise<Award[]> {
   const snap = await getDocs(collection(db, `${ROOT}/awards`));
-  return snap.docs.map((d) => ({ month: d.id, topGear: d.get("topGear") ?? null, fanFavourite: d.get("fanFavourite") ?? null }) as Award).sort((a, b) => b.month.localeCompare(a.month));
+  return snap.docs.map((d) => ({ month: d.id, topGear: d.get("topGear") ?? null, fanFavourite: d.get("fanFavourite") ?? null, operator: d.get("operator") ?? null, operatorOff: d.get("operatorOff") === true, operatorMin: d.get("operatorMin") ?? undefined }) as Award).sort((a, b) => b.month.localeCompare(a.month));
 }
 export const monthLabel = (ym: string) => new Date(Date.UTC(+ym.slice(0, 4), +ym.slice(5, 7) - 1, 1)).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });

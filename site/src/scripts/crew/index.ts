@@ -47,6 +47,12 @@ const gradeName = (m?: PublicMember) => (m ? gradeInfo(m.track, m.grade).name : 
 /** The first of next month as "November 1": the awards for a month are made on the 1st after it. */
 const nextFirst = () => { const d = new Date(); const n = new Date(d.getFullYear(), d.getMonth() + 1, 1); return dayLabel(`${n.getFullYear()}-${String(n.getMonth() + 1).padStart(2, "0")}-01`); };
 
+/** The plain score line: "14 first replies, 6 tidied, 5 oldest first. Median reply 5 h." */
+function operatorLine(o: NonNullable<Award["operator"]>) {
+  const parts = [`${num(o.replies || 0)} first repl${o.replies === 1 ? "y" : "ies"}`, o.tidied ? `${num(o.tidied)} tidied` : "", o.oldest ? `${num(o.oldest)} oldest first` : ""].filter(Boolean);
+  const m = o.medianMinutes, med = m == null ? "" : ` Median reply ${m < 60 ? `${Math.max(1, Math.round(m))} min` : m < 48 * 60 ? `${Math.round(m / 60)} h` : `${Math.round(m / 1440)} days`}.`;
+  return `${parts.join(", ")}.${med}`;
+}
 function renderAwards(awards: Award[], members: PublicMember[]) {
   const el = $("[data-cs-awards]");
   el.removeAttribute("aria-busy");
@@ -63,6 +69,10 @@ function renderAwards(awards: Award[], members: PublicMember[]) {
     a?.topGear
       ? { c: "gold", ic: "⚙️", t: "Top Gear", sub: month, rows: [["Winner", winner(a.topGear)], ["Why", a.topGear.gears ? `${num(a.topGear.gears)} Gears, the most on the crew.` : "The most Gears on the crew."]], tag: "Picks a game for a stream" }
       : { c: "gold", ic: "⚙️", t: "Top Gear", sub: a ? `${month} · no winner` : month, rows: a ? [["This month", "Nobody earned a Gear."], ["How", "Whoever earns the most Gears in a month."]] : [["How", "Whoever earns the most Gears in a month, picked automatically on the 1st."], ["Prize", "A trophy, a shout-out and a game for a stream"]], tag: a ? "Next one is on the 1st" : "Starts the 1st" },
+    // Operator of the Month (talk-back.md §9e, O1): the staff award, a gold coin with a phone face until commissioned art arrives
+    a?.operator
+      ? { c: "gold", ic: "☎️", t: "Operator of the Month", sub: month, rows: [["Winner", winner(a.operator)], ["Why", operatorLine(a.operator)]], tag: "The staff award" }
+      : { c: "gold", ic: "☎️", t: "Operator of the Month", sub: a ? `${month} · no winner` : month, rows: a && !a.operatorOff ? [["This month", `No Operator this month (nobody reached ${a.operatorMin || 5} first replies).`], ["How", "The staff member who answers the Hotline Boom inbox best."]] : [["How", "The staff member who answers the Hotline Boom inbox best, picked automatically on the 1st."], ["Prize", "A trophy and a shout-out on stream"]], tag: a ? "Next one is on the 1st" : "Starts the 1st" },
     a?.fanFavourite
       ? { c: "primary", ic: "🕯️", t: "Fan Favourite", sub: month, rows: [["Winner", winner(a.fanFavourite)], ["Why", a.fanFavourite.votes ? `Chosen by ${num(a.fanFavourite.votes)} members.` : "Chosen by the members."]], tag: `${monthName(opens.slice(0, 7))} vote opens ${dayLabel(opens)}` }
       : { c: "primary", ic: "🕯️", t: "Fan Favourite", sub: a ? `${month} · no winner` : month, rows: [["How", "Members vote in the last 5 days of each month."], ["Prize", "A trophy and a shout-out on stream"]], tag: `Vote opens ${dayLabel(opens)}` },
@@ -118,6 +128,7 @@ function renderFame(awards: Award[]) {
   for (const a of [...awards].sort((x, y) => x.month.localeCompare(y.month))) {
     const when = `${monthShort(a.month)} ${a.month.slice(0, 4)}`;
     if (a.topGear) items.push({ name: a.topGear.handle, k: "Top Gear", when, emoji: "⚙️" });
+    if (a.operator) items.push({ name: a.operator.handle, k: "Operator of the Month", when, emoji: "☎️" });
     if (a.fanFavourite) items.push({ name: a.fanFavourite.handle, k: "Fan Favourite", when, emoji: "🕯️" });
   }
   const shown = items.slice(-6);

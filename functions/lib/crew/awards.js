@@ -3,7 +3,10 @@
 //
 //   fanFavouriteBallot()             -> { open, month, closesAt, candidates, canVote, reason, myVote }
 //   fanFavouriteVote({ uid })        one vote per member; results stay hidden until the month closes
-//   crewMonthlyAwards (1st 00:05 Central) -> awards/{yyyy-mm} for the month just ended, two 150 XP trophies
+//   crewMonthlyAwards (1st 00:05 Central) -> awards/{yyyy-mm} for the month just ended, two 150 XP trophies, and Operator of the Month
+// (Talk Back Part B, docs/specs/talk-back.md §9e): the staff award from hotline/main/inboxStats/{yyyy-mm} (lib/hotline/credit.js operatorFor:
+// score = first replies + 0.5 per spam mark that held + 1 per oldest first, at least crew/main.inbox.operatorMin first replies and
+// operatorAccuracy, ties to the lower median reply time; operatorAward false switches it off), awards/{ym}.operator, trophy kind crew-operator.
 // Ballot = crew in good standing who are not admins (admins race but never win crew awards), with at least 2 counted duties
 // that month once the activity rules are on (phase 3 part 7); before that "at least 2 duties that month" is "Active that month". Voters = members at least 14 days old with a
 // Night Shift check-in that month (the stream check-in fallback); crew can't vote.
@@ -137,13 +140,25 @@ module.exports = function crewAwards({ adminLogEntry, now = () => Date.now() } =
       out[key] = { uid: win.uid, handle: c.handle, ...extra };
       await S.activity("crew-award", `${c.handle ? `@${c.handle}` : "A crew member"} won ${name} for ${label}`, c.handle ? `@${c.handle}` : null, { award: kind, month: ym });
     }
+    // Operator of the Month: staff only (admins on the roster, not alumni); the owner never earns inbox numbers
+    out.operator = null;
+    const op = await require("../hotline/credit").makeCredit({ db, now, base: `sites/${SITE_ID}/hotline/main`, ownerUid: async () => (await db.doc(`sites/${SITE_ID}`).get()).get("ownerUid") || null }).operatorFor(ym);
+    const ro = op.winner ? await db.doc(paths.roster(op.winner.uid)).get() : null;
+    if (op.winner && ro && ro.exists && ro.get("status") !== "alumni") {
+      const w = op.winner, handle = (await S.handlesOf([w.uid])).get(w.uid) || ro.get("handle") || null;
+      await grant.grantTrophy(w.uid, { kind: "crew-operator", place: 1, label: `Operator of the Month · ${label}`, period: ym, ref: ym });
+      out.operator = { uid: w.uid, handle, replies: w.replies, tidied: w.tidied, oldest: w.oldest, spamHeld: w.spamHeld, medianMinutes: w.medianMinutes, score: w.score };
+      await S.activity("crew-award", `${handle ? `@${handle}` : "A crew member"} won Operator of the Month for ${label}`, handle ? `@${handle}` : null, { award: "crew-operator", month: ym });
+    }
+    if (op.off) out.operatorOff = true;
+    out.operatorMin = op.min;   // the /crew card's "nobody reached N first replies"
     await ref.set({ ...out, ranAt: Timestamp.fromMillis(at) }, { merge: true });
     return out;
   }
 
   const crewMonthlyAwards = onSchedule({ schedule: "5 0 1 * *", timeZone: WEEK_TZ, timeoutSeconds: 300 }, async () => {
     const r = await runAwards();
-    console.log(`crewMonthlyAwards ${r.month}: ${r.skipped ? "already run" : `Top Gear ${r.topGear?.handle || r.topGear?.uid || "none"}, Fan Favourite ${r.fanFavourite?.handle || r.fanFavourite?.uid || "none"}`}`);
+    console.log(`crewMonthlyAwards ${r.month}: ${r.skipped ? "already run" : `Top Gear ${r.topGear?.handle || r.topGear?.uid || "none"}, Fan Favourite ${r.fanFavourite?.handle || r.fanFavourite?.uid || "none"}, Operator ${r.operator?.handle || r.operator?.uid || "none"}`}`);
   });
 
   return { fanFavouriteBallot, fanFavouriteVote, crewMonthlyAwards };

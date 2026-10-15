@@ -613,8 +613,17 @@ async function main() {
   awClock = Date.UTC(Y, M, 1, 12);                                                                                            // the 1st of next month (past 00:05 Central)
   const xpOf = async (uid) => (await db.doc(`${S}/profiles/${uid}`).get()).get("xp") || 0;
   const [xpTop, xpFan] = [await xpOf(bestUid), await xpOf("w1")];
+  // Operator of the Month (talk-back.md §9e): ov qualifies (6 first replies, accuracy 1); w2 has more replies but 2 of 3 spam marks overturned
+  await db.doc(`${S}/hotline/main/inboxStats/${ym}`).set({ perStaff: {
+    ov: { replies: 6, fast: 4, oldest: 2, closed: 1, spamHeld: 2, spamOverturned: 0, minutes: { a: 60, b: 120, c: 30 } },
+    w2: { replies: 9, oldest: 0, spamHeld: 1, spamOverturned: 2, minutes: { d: 10 } },
+    boss: { replies: 30, minutes: { e: 5 } },
+    a9: { replies: 4, spamHeld: 0, minutes: { f: 5 } } } });
   await AW.crewMonthlyAwards.run({});
   const award = (await db.doc(paths.award(ym)).get()).data();
+  assert.equal(award.operator.uid, "ov", "the owner never wins; under 90% accuracy or 5 replies never wins");
+  assert.equal(award.operator.score, 6 + 0.5 * 2 + 2); assert.equal(award.operator.tidied, 3); assert.equal(award.operator.medianMinutes, 60);
+  assert.equal((await db.doc(`${S}/profiles/ov/trophies/crew-operator-${ym}`).get()).get("label"), `Operator of the Month · ${AWM.monthLabel(ym)}`);
   assert.equal(award.topGear.uid, bestUid); assert.equal(award.topGear.gears, bestGears);
   assert.equal(award.fanFavourite.uid, "w1"); assert.equal(award.fanFavourite.votes, 2);
   assert.equal(award.votesCast, 3); assert.equal(award.ballot.includes("ov"), false);
@@ -627,16 +636,16 @@ async function main() {
   assert.equal((await trophy("w1", "crew-fan-favourite")).get("kind"), "crew-fan-favourite");
   assert.ok(await xpOf(bestUid) - xpTop >= 150);
   const awardLogs = (await db.collection("activityLog").get()).docs.filter((d) => d.get("type") === "crew-award");
-  assert.equal(awardLogs.length, 2);
+  assert.equal(awardLogs.length, 3);
   assert.match(awardLogs.map((d) => d.get("summary")).join("|"), /won Top Gear for/);
   await AW.crewMonthlyAwards.run({});                                                                                         // a rerun changes nothing
-  assert.equal((await db.collection("activityLog").get()).docs.filter((d) => d.get("type") === "crew-award").length, 2);
+  assert.equal((await db.collection("activityLog").get()).docs.filter((d) => d.get("type") === "crew-award").length, 3);
   // a month with no Gears and no votes awards nobody
   awClock = Date.UTC(Y, M + 1, 1, 12);
   await AW.crewMonthlyAwards.run({});
   const emptyMonth = new Date(Date.UTC(Y, M, 1)).toISOString().slice(0, 7);
   const empty = (await db.doc(paths.award(emptyMonth)).get()).data();
-  assert.equal(empty.topGear, null); assert.equal(empty.fanFavourite, null);
+  assert.equal(empty.topGear, null); assert.equal(empty.fanFavourite, null); assert.equal(empty.operator, null, "no Operator under the minimum");
 
   // ---------- part 2e: Twitch moderator sync (off) and the platform to-do list ----------
   const PM = require("../lib/crew/platform");

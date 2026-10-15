@@ -11,7 +11,7 @@
     { "uid": "p-lou", "handle": "lanternlou", "track": "mod", "grade": 1, "status": "active", "favourites": ["twitch"], "quote": "New here. Still learning the ropes." }
   ],
   "awards": [
-    { "month": "2026-09", "topGear": { "uid": "p-jay", "handle": "cryptjay", "gears": 412 }, "fanFavourite": { "uid": "p-kat", "handle": "nightowlkat", "votes": 63 } },
+    { "month": "2026-09", "topGear": { "uid": "p-jay", "handle": "cryptjay", "gears": 412 }, "fanFavourite": { "uid": "p-kat", "handle": "nightowlkat", "votes": 63 }, "operator": { "uid": "p-raven", "handle": "ravenrx", "replies": 14, "tidied": 6, "oldest": 5, "medianMinutes": 300 } },
     { "month": "2026-08", "topGear": { "uid": "p-kat", "handle": "nightowlkat", "gears": 377 }, "fanFavourite": { "uid": "p-salem", "handle": "salemspooks", "votes": 51 } },
     { "month": "2026-07", "topGear": { "uid": "p-raven", "handle": "ravenrx", "gears": 301 }, "fanFavourite": { "uid": "p-vex", "handle": "vex", "votes": 44 } }
   ],

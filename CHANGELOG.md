@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Operator of the Month: the staff award in the 1st-of-the-month run (score = first replies + 0.5 per spam mark that held + oldest first; the minimum, 90% accuracy, ties to the lower median reply), awards/{ym}.operator, a crew-operator trophy and a crew-award event; a gold ☎️ medal on /crew between Top Gear and Fan Favourite, and in the Hall of Fame
 - Talk Back Part B on the crew pages: /crew/board Inbox column (first replies, a dash for crew who don't work the inbox); /admin/crew Hotline Boom inbox values (owner and Overseers and up) and the Adjust Gears form (gearsAdjust; Remove credit opens it filled in)
 - Talk Back Part B on /admin/inbox: Pick up on rows and in the action row (Picked up by, Let it go), the credit line in the history (paid, capped, spam pending, reversed; Remove credit for the owner; How Gears work here), the This month staff cards with Clear desk pips, the Desk clear moment, the gray Marked / Spam stamp with Undo, Gears named in the reply toast; kit: .bt-stamp--gray
 - Talk Back Part B backend: inbox Gears (first reply, fast, oldest first, spam that held, Clear desk; daily cap 30), first reply decided in a transaction, spam reversal, Pick up / Let it go, gearsAdjust, crew inbox settings, the board's inboxReplies, inboxStats, inboxSpamHold and inboxDeskCheck, inbox-sample.js
