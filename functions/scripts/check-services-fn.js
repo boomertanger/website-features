@@ -288,6 +288,32 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "retired", "a hidden Vault game is retired");
   await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: true }, { title: "Silent Hill 2", hidden: false });
   assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "live", "and back when it shows again");
+  // reconcile-vault-services.js (reconcileVault): games the trigger never saw get items; the dry run writes nothing; ratings and an admin's retire stay
+  await wdb.doc(`${SITE}/vaultGames/old-one`).set({ title: "Old One", status: "finished", review: { score: 8 } });
+  await wdb.doc(`${SITE}/vaultGames/old-two`).set({ title: "Old Two", status: "wishlist", hidden: false });
+  await wdb.doc(`${SITE}/vaultGames/old-hidden`).set({ title: "Old Hidden", hidden: true });
+  await wdb.doc(`${SITE}/vaultGames/silent-hill-2`).set({ title: "Silent Hill 2", hidden: false });
+  await wdb.doc(`${BASE}/items/vault-gone`).set({ id: "vault-gone", type: "vaultGame", name: "Gone", status: "live", source: { vault: "gone" } });
+  await wdb.doc(`${BASE}/ratings/vault-gone__fan`).set({ serviceId: "vault-gone", uid: "fan", value: "like" });
+  let rv = await hub.reconcileVault();
+  assert.deepEqual(rv.changes.map((c) => `${c.change}:${c.id}`).sort(), ["create:vault-old-one", "create:vault-old-two", "retire:vault-gone"], "two creates and a retire (the hidden game gets nothing)");
+  assert.equal(rv.applied, false); assert.equal(await get(`${BASE}/items/vault-old-one`), null, "the dry run writes nothing");
+  rv = await hub.reconcileVault({ apply: true });
+  assert.equal(rv.applied, true);
+  assert.equal((await get(`${BASE}/items/vault-old-one`)).status, "live"); assert.equal((await get(`${BASE}/items/vault-old-one`)).name, "Old One");
+  assert.equal((await get(`${BASE}/items/vault-gone`)).status, "retired", "a deleted game's item is retired, never deleted");
+  assert.ok(await get(`${BASE}/ratings/vault-gone__fan`), "ratings are never deleted");
+  assert.ok((await get(`${SITE}/public/services`)).services.some((r) => r.id === "vault-old-one"), "the views are rebuilt");
+  // an admin's retire (retiredFrom set) stays; a renamed game renames it anyway; the item's hidden flag is never touched
+  await wdb.doc(`${BASE}/items/vault-old-two`).update({ status: "retired", retiredFrom: "live", hidden: true });
+  await wdb.doc(`${SITE}/vaultGames/old-two`).update({ title: "Old Two: Remastered" });
+  rv = await hub.reconcileVault({ apply: true });
+  assert.deepEqual(rv.changes.map((c) => `${c.change}:${c.id}`), ["rename:vault-old-two"]); assert.deepEqual(rv.kept, [{ id: "vault-old-two", kept: "admin-retired" }]);
+  const ot = await get(`${BASE}/items/vault-old-two`);
+  assert.equal(ot.status, "retired"); assert.equal(ot.name, "Old Two: Remastered"); assert.equal(ot.hidden, true);
+  assert.deepEqual((await hub.reconcileVault()).changes, [], "a second run has nothing to do");
+  const { projectAllowed } = require("./reconcile-vault-services");
+  assert.ok(projectAllowed("boomertanger-staging") && !projectAllowed("boomertanger-prod") && projectAllowed("boomertanger-prod", "boomertanger-prod"), "staging, or a project allowed on purpose");
   // a stream reaching Ended: rateable for 14 days
   const ended = clock - 1000;
   await hub.onStreamEnded("dry-run", { state: "live" }, { state: "ended", title: "Dry run", actualEnd: realFs.Timestamp.fromMillis(ended) });

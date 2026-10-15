@@ -352,6 +352,53 @@ function build(deps = {}) {
     if (bump && bump.status === "live" && hooks && hooks.onBumps) await hooks.onBumps([bump]);
     return { id, version, status };
   }
+  // ---------------------------------------------------------------------------------------------- Vault games → vaultGame items
+  // One plan for scripts/reconcile-vault-services.js (and the trigger). Who retired an item: the game (hidden or deleted) leaves no retiredFrom;
+  // serviceAdmin's retire always sets retiredFrom, and the game never brings that one back. serviceAdmin's hide is the item's own hidden flag,
+  // which nothing here touches. Never deletes an item or a rating.
+  const vaultGames = db.collection(`sites/${SITE_ID}/vaultGames`);
+  const vaultVisible = (g) => !!g && g.hidden !== true;
+  /** What vault-<slug> needs for this game (null when deleted): { change: create | revive | rename | retire | null, kept?: "admin-retired" }. */
+  function vaultPlan(slug, game, item) {
+    const name = (game && game.title) || slug;
+    if (vaultVisible(game)) {
+      if (!item) return { change: "create", name };
+      if (item.status === "retired") {
+        if (item.retiredFrom === undefined) return { change: "revive", name, from: item.name };
+        return item.name !== name ? { change: "rename", name, from: item.name, kept: "admin-retired" } : { change: null, kept: "admin-retired" };
+      }
+      return item.name !== name ? { change: "rename", name, from: item.name } : { change: null };
+    }
+    if (item && item.status !== "retired") return { change: "retire", name: item.name };
+    return { change: null };
+  }
+  async function vaultWrite(slug, plan, at) {
+    const id = `vault-${slug}`, ref = R.item(id);
+    if (plan.change === "create") await ref.set({ ...blankItem(at), id, name: plan.name, type: "vaultGame", area: "Watch", blurb: "", version: "1.0", status: "live", audience: "everyone", routes: [], link: `/games/${slug}`, sections: {}, checks: [], talkBack: "skip", help: null, videoTag: `#bt-${id}`, source: { vault: slug }, versionHistory: [{ version: "1.0", at: ts(at) }] });
+    else if (plan.change === "revive") await ref.update({ name: plan.name, status: "live", updatedAt: ts(at) });
+    else if (plan.change === "rename") await ref.update({ name: plan.name, updatedAt: ts(at) });
+    else if (plan.change === "retire") await ref.update({ status: "retired", updatedAt: ts(at) });
+  }
+  /** Every Vault game against every vaultGame item. apply false: the plan only. apply true: writes it, then rebuilds the views once. */
+  async function reconcileVault({ apply = false } = {}) {
+    const [gs, is] = await Promise.all([vaultGames.get(), R.items.where("type", "==", "vaultGame").get()]);
+    const games = new Map(gs.docs.map((d) => [d.id, d.data()]));
+    const items = new Map(is.docs.map((d) => [String(d.id).replace(/^vault-/, ""), d.data()]));
+    const slugs = [...new Set([...games.keys(), ...items.keys()])].sort();
+    const changes = [], kept = [];
+    for (const slug of slugs) {
+      const plan = vaultPlan(slug, games.get(slug) || null, items.get(slug) || null);
+      if (plan.kept) kept.push({ id: `vault-${slug}`, kept: plan.kept });
+      if (plan.change) changes.push({ slug, id: `vault-${slug}`, change: plan.change, name: plan.name, ...(plan.from && plan.from !== plan.name ? { from: plan.from } : {}), plan });
+    }
+    if (apply && changes.length) {
+      const at = now();
+      for (const c of changes) await vaultWrite(c.slug, c.plan, at);
+      await rebuildViews();
+    }
+    const visible = [...games.values()].filter(vaultVisible).length;
+    return { applied: apply && changes.length > 0, games: games.size, visible, items: items.size, changes: changes.map(({ plan, ...c }) => c), kept };
+  }
   async function onVaultGame(slug, before, after) {
     const vis = (g) => !!g && g.hidden !== true;
     if (before && after && vis(before) === vis(after) && before.title === after.title) return { skipped: true };
@@ -451,7 +498,7 @@ function build(deps = {}) {
       await onStreamEnded(event.params.streamId, data(event.data && event.data.before), data(event.data && event.data.after));
     }),
   };
-  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, onStreamEnded, recountLinks, refs: R };
+  return { functions, detail, syncManifests, syncTick, rebuildViews, ratingWritten, testCreated, onArcadeGame, onVaultGame, reconcileVault, onStreamEnded, recountLinks, refs: R };
 }
 
 module.exports = { build, accessHeaders, realSecret };

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(service-hub): functions/scripts/reconcile-vault-services.js lines Service Hub's Vault game items up with the Vault (create, revive, rename, retire; dry run by default, staging only unless allowed, never deletes an item or a rating, keeps an admin's retire or hide)
 - docs: Talk Back Part A staging results (test plan Results section; ROADMAP: Part A tested on staging, Parts B and C next)
 - fix(hotline): Talk Back page paths are stored without a trailing slash ("/" stays "/"; sub-pages kept exactly), and the inbox's Open the page falls back to the service's first route if a path is missing
 - feat(service-hub): the strip label and thank-you toast name the service ("Rate {service}" at 420px and up, "Rate it" below; "Thanks! That's your rating for all of {service}…"), since ratings are per service, not per page
