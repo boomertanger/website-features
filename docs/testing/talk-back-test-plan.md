@@ -42,3 +42,18 @@ Accounts: **Owner** (boomertanger@gmail.com), an **inbox admin** (Overseer A2, f
 23. `sites/boomertanger/hotline/main/teamMessages/<id>` for A4: `kind: "question"`, `context: { serviceId, section, path, title }` (the path with no query), `boombotShown: ["who-sees"]`.
 24. `hotline/main/serviceStats/<yyyy-mm>`: `byService.bug-zapper.questions`, `.feedback`, `.boombot`; no text, uid or email anywhere in it. The owner-only message from C19 is **not** counted here; it is in `stats/<yyyy-mm>.byService` (owner only).
 25. As a member (not an admin), reading `serviceStats` from the console is denied; as a site admin it's allowed.
+
+## Results (Oct 14, 2026)
+
+Run on staging by the owner, with @gbo (inbox admin) and a visitor.
+
+- **Passed:** A1-A11, A14, B15, B17, C18, C19, D24.
+- **Not run yet** (low risk: the same code as Hotline Boom's tests, or covered by `scripts/check-hotline.js`): A12 (too many), A13 (line off), B16 (old messages), C20 (name check), C21 (the hint), C22 (empty), D23 (the stored fields), D25 (serviceStats rules).
+- **Found and fixed:** page paths are now stored without a trailing slash, so `/bug-zapper/` and `/bug-zapper` are one path and sub-pages are kept exactly (commit "Talk Back: page paths without a trailing slash", `42a529a`; contactSend redeployed). Messages sent before it keep their old path.
+- **Not a bug:** in B15, Open the page went to /bug-zapper because A4 and A6 were sent from /bug-zapper, not /bug-zapper/how-it-works (the stored path and the page title both say so).
+- **Also changed during testing:**
+  - the compact page strip, V5 "Talk word pill" + S1 (`03e399a`);
+  - the strip label: "Rate it" on phones, "Rate {service}" at 420px and up (`5becc34`, after the short-lived "Rate page" label in `3e92be0`);
+  - the rating toast names the service: "Thanks! That's your rating for all of {service}. Only Boomer and the admins see ratings." (`5becc34`);
+  - dialogs no longer jump to the top on close: openModal's scroll lock saves and restores the scroll position, and tapping outside no longer falls through to the page (`6b3611a`).
+- In A1, A6 and A11 the strip now has one **Talk** pill instead of Ask a question and Give feedback; Feedback is chosen inside the dialog.

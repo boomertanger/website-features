@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Talk Back Part A staging results (test plan Results section; ROADMAP: Part A tested on staging, Parts B and C next)
 - fix(hotline): Talk Back page paths are stored without a trailing slash ("/" stays "/"; sub-pages kept exactly), and the inbox's Open the page falls back to the service's first route if a path is missing
 - feat(service-hub): the strip label and thank-you toast name the service ("Rate {service}" at 420px and up, "Rate it" below; "Thanks! That's your rating for all of {service}…"), since ratings are per service, not per page
 - feat(service-hub): the page strip's label is "Rate this page" (420px and up), "Rate page" (340-419px) or "Rate it" (below 340px), by container width
