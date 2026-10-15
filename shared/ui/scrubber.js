@@ -82,9 +82,9 @@ export function scrubber(el, opts) {
     return best;
   }
   let dragging = false, moved = false;
-  const onDown = (e) => { if (e.button !== undefined && e.button !== 0) return; dragging = true; moved = false; track.setPointerCapture?.(e.pointerId); track.classList.add("is-dragging"); go(nearest(e.clientX), "tap"); };
+  const onDown = (e) => { if (e.button !== undefined && e.button !== 0) return; dragging = true; moved = false; try { track.setPointerCapture?.(e.pointerId); } catch { /* a synthetic or already-released pointer */ } track.classList.add("is-dragging"); go(nearest(e.clientX), "tap"); };
   const onMove = (e) => { if (!dragging) return; moved = true; go(nearest(e.clientX), "drag"); };
-  const onUp = (e) => { if (!dragging) return; dragging = false; track.classList.remove("is-dragging"); track.releasePointerCapture?.(e.pointerId); };
+  const onUp = (e) => { if (!dragging) return; dragging = false; track.classList.remove("is-dragging"); try { track.releasePointerCapture?.(e.pointerId); } catch { /* not captured */ } };
   const onKey = (e) => {
     const k = e.key, step = e.shiftKey ? 3 : 1;
     let i = null;

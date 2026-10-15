@@ -2,7 +2,7 @@
 // /base-camp: the story of Boomertanger (docs/specs/base-camp.md "Page 1"; mockup docs/design/mockups/base-camp.html, round 4: W1, H1 The climb,
 // playing cards, E1 stage cards). A story page in the full frame: the BASECAMP bar, TocLayout rail, the hero (the climb: five waypoints link to the
 // chapters, the mascot and the painted sleeping Skipper by the fire), then five ghost-numbered chapters: 01 The personality behind the pixels,
-// 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (five stops, the story panel, Then and now), 04 His
+// 02 Get to know Boomer (three playing cards that turn over), 03 Blueprint behind the boom (five stops, the story panel, The rise, replayed), 04 His
 // edge (Top 5 as E1 stage cards), 05 Base Camp and beyond (trails, the Mail Call teaser, Ask BOOMBOT), and the closing call.
 // Public text: src/data/base-camp.json. The Fan Club text (card backs, stop stories, chapter 5's paragraph) loads in the browser from
 // sites/boomertanger/memberContent/base-camp for members only (scripts/base-camp/story.ts); the page HTML carries none of it.
@@ -21,8 +21,7 @@ const chapter = (i: number) => {
   const c = CH[i], n = String(i + 1).padStart(2, "0");
   return `<header class="bt-chapter bt-chapter--ghost" data-n="${n}"><p class="bt-chapter-eyebrow" aria-hidden="true">${n} · Chapter</p><h2 class="bt-chapter-title" id="h-${c.id}">${c.title}</h2>${c.lede ? `<p class="bt-chapter-lede">${c.lede}</p>` : ""}</header>`;
 };
-const fmt = (n: number) => n.toLocaleString("en-US");
-const then = data.then;
+const RP = data.replay;
 const PLATS = [["twitch", "Twitch"], ["tiktok", "TikTok"], ["youtube", "YouTube"]] as const;
 const CRANE = `<svg class="bc-crane" viewBox="0 0 16 16" aria-hidden="true" focusable="false"><path d="M3 15 V3 H14 M3 3 L7 7 M10 3 V8"/><path d="M8.5 8 h3 v2 h-3 Z"/><line x1="1" y1="15" x2="6" y2="15"/></svg>`;
 const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true"><path d="M3 8h9M8 4l4 4-4 4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
@@ -89,19 +88,21 @@ const ARROW = `<svg viewBox="0 0 16 16" width="14" height="14" aria-hidden="true
             </ol>
           </div>
           <div data-bc-stop aria-live="polite"></div>
-          <h3 class="bt-heading bc-sub">Then and now</h3>
-          <div class="bc-then" data-bc-then>
-            <div class="bc-then-col">
-              <div class="bc-then-top"><span class="bt-label">Then</span><span class="bt-badge bt-badge--gray">{then.date}</span></div>
-              <div class="bc-big">{fmt(then.total)}<small>followers across platforms</small></div>
-              <ul class="bc-plats">{PLATS.map(([k, label]) => <li data-plat={k}><Fragment set:html={platformTile(k)} /><span class="bt-sr-only">{label}</span><span class="bc-plat-bar"><i style={`--w:${((then[k] / then.tiktok) * 100).toFixed(1)}%`}></i></span><b>{fmt(then[k])}</b></li>)}</ul>
-            </div>
-            <div class="bc-arrow" aria-hidden="true">→</div>
-            <div class="bc-then-col is-now">
-              <div class="bc-then-top"><span class="bt-label">Today</span><span class="bt-badge bt-badge--gold">Live count</span></div>
-              <div class="bc-big"><span data-bc-now aria-live="off">0</span><small>followers right now</small></div>
-              <ul class="bc-plats">{PLATS.map(([k, label]) => <li data-plat={k} hidden><Fragment set:html={platformTile(k)} /><span class="bt-sr-only">{label}</span><span class="bc-plat-bar"><i></i></span><b></b></li>)}</ul>
-              <div><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-bc-replay>Play the climb again</button></div>
+          <div class="bc-rp-wrap" data-bc-replay-wrap hidden>
+            <h3 class="bt-heading bc-sub">{RP.title}</h3>
+            <div class="bc-rp" data-bc-replay>
+              <div class="bc-rp-top">
+                <div>
+                  <div class="bc-rp-when"><span class="bc-rp-month" data-rp-month></span><span class="bt-badge bt-badge--gray" data-rp-era hidden></span></div>
+                  <div class="bc-rp-total"><span data-rp-total aria-live="off">0</span><small data-rp-sub></small></div>
+                </div>
+                <button type="button" class="bt-btn bt-btn--primary" data-rp-play aria-pressed="false"><span aria-hidden="true" data-rp-play-ic>▶</span> <span data-rp-play-l>{RP.play}</span></button>
+              </div>
+              <ul class="bc-rp-bars">{PLATS.map(([k, label]) => <li data-rp-bar={k}><Fragment set:html={platformTile(k)} /><span class="bc-rp-pname">{label}</span><span class="bc-rp-bar" aria-hidden="true"><i></i></span><b>—</b></li>)}</ul>
+              <div class="bc-rp-story" data-rp-story aria-live="polite"><p></p></div>
+              <div data-rp-scrub></div>
+              <div class="bc-rp-foot"><a class="bc-rp-link" href={RP.link.href}>{RP.link.label} <span aria-hidden="true">→</span></a></div>
+              <div class="bc-rp-flare" data-rp-flare aria-hidden="true"><b></b><span></span></div>
             </div>
           </div>
         </section>

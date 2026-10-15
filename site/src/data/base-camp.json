@@ -33,7 +33,34 @@
     { "key": "build", "ic": "🏗", "title": "The build", "yr": "2026", "tease": "Stream schedule paused, a website took shape, and {all-10000.value} anyway.", "teaseNoData": "Stream schedule paused, and a website took shape.", "tag": { "building": "Under construction", "back": "Back on air" } }
   ],
   "stopsLock": { "title": "Read the whole climb", "text": "Every stop on the trail, from Newfoundland to the build, is in the Fan Club. It's free." },
-  "then": { "date": "September 30, 2025", "total": 5753, "twitch": 514, "tiktok": 4688, "youtube": 552 },
+  "replay": {
+    "_about": "The rise, replayed (Addendum 3): every number and date comes from sites/boomertanger/public/climb; {…} are filled on the page (site/src/scripts/base-camp/climb.ts). Lines are keyed by month (YYYY-MM), milestone id or today. 125, 443, 577 and 22 are fixed facts.",
+    "title": "The rise, replayed",
+    "play": "Play the climb",
+    "stop": "Stop",
+    "monthSub": "followers on {day}, the month's last reading",
+    "todaySub": "followers right now",
+    "today": "Today",
+    "label": "Follower history, January 2025 to today",
+    "link": { "label": "See every stream day on Creator Climb", "href": "/climb" },
+    "lines": {
+      "2025-01": "This is where the data starts: {2025-01.all} followers.",
+      "2025-05": "The night before the Granny Gauntlet: {2025-05.all} followers.",
+      "tiktok-1000": "TikTok passes {value} on {day}, {days since 2025-06-02} days after the Gauntlet's first stream. It was at 125 on June 2.",
+      "2025-06": "{2025-06.all} by the end of June, more than {floor(2025-06.all / 2025-05.all)} times May's {2025-05.all}. A new TikTok layout and the Granny Gauntlet did that.",
+      "2025-08": "On August 8 he started streaming on YouTube. The channel already had 443 subscribers.",
+      "2025-09": "{all-5000.value} combined on {all-5000.day}. That month also set records: 577 peak viewers on TikTok and 22 subs gifted in one Twitch stream.",
+      "2026-01": "{2026-01.all} to start 2026. Then the scheduled streams pause so Boomer can build boomertanger.com.",
+      "all-10000": "{value} across all three on {day}, with the schedule still paused.",
+      "today": "Today: {totals.all} and counting."
+    },
+    "flares": [
+      { "id": "tiktok-1000", "tone": "gold", "label": "TikTok {value}" },
+      { "id": "all-5000", "tone": "gold", "label": "{value} combined" },
+      { "id": "all-10000", "tone": "lime", "label": "{value} combined", "big": true, "note": "Stage 5, The build" }
+    ],
+    "ticks": ["2025-01", "2025-06", "2026-01", "2026-07", "today"]
+  },
   "edge": [
     { "title": "He loves horror. It gets him every time.", "text": "Games, movies, the slow build and the jump. He's a lifelong fan and he still screams. That's the fun of it.", "scene": "scream", "tone": "blood" },
     { "title": "Indie horror is home.", "text": "Small studios, strange games, and the Granny Gauntlet that blew the channel up in June 2025.", "scene": "games", "tone": "gold", "go": { "label": "See what he's playing", "href": "/games" } },

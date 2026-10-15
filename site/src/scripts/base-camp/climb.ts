@@ -3,6 +3,8 @@
 //   loadClimb()              → Climb | null (null: the doc doesn't exist yet, or it couldn't be read; callers hide what needs it)
 //   fill(text, climb, ctx?)  → the text with every {…} filled, or null when one can't be filled (callers drop that sentence or line)
 //     {totals.all} · {YYYY-MM.all} (that month's last reading) · {<milestone id>.value} / {<milestone id>.day} · {value} / {day} (ctx milestone)
+//     {days since YYYY-MM-DD} (from that date to the ctx milestone's day) · {floor(A / B)} (A and B are any of the keys above)
+//   fillParts(...)           the same, as [text, isValue] pieces, so a page can set the values in bold without writing HTML from text
 //   dropUnfilled(text, climb) → the text with each sentence that has a placeholder it can't fill left out
 //   backOnAir(climb)         → true once the "Back on air" era has a start date on or before today (the stage 5 tag turns lime by itself)
 export interface Milestone { id: string; platform: string; value: number; day: string }
@@ -39,8 +41,18 @@ export const longDate = (d: string) => UTC(d).toLocaleDateString("en-US", { mont
 export const shortDate = (d: string) => UTC(d).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
 export const monthName = (m: string) => UTC(`${m}-15`).toLocaleDateString("en-US", { month: "long", year: "numeric", timeZone: "UTC" });
 
+/** A placeholder's number (for floor()), or null. */
+function num(key: string, c: Climb, ctx?: Milestone): number | null {
+  const v = value(key, c, ctx);
+  const n = v == null ? NaN : Number(v.replace(/,/g, ""));
+  return Number.isFinite(n) ? n : null;
+}
 /** One placeholder's value, or null. */
 function value(key: string, c: Climb, ctx?: Milestone): string | null {
+  const since = /^days since (\d{4}-\d{2}-\d{2})$/.exec(key);
+  if (since) return ctx ? fmt(Math.round((UTC(ctx.day).getTime() - UTC(since[1]).getTime()) / 864e5)) : null;
+  const fl = /^floor\((.+)\/(.+)\)$/.exec(key);
+  if (fl) { const a = num(fl[1].trim(), c, ctx), b = num(fl[2].trim(), c, ctx); return a != null && b ? fmt(Math.floor(a / b)) : null; }
   if (key === "totals.all") return typeof c.totals.all === "number" ? fmt(c.totals.all) : null;
   if (ctx && key === "value") return fmt(ctx.value);
   if (ctx && key === "day") return longDate(ctx.day);
@@ -49,6 +61,19 @@ function value(key: string, c: Climb, ctx?: Milestone): string | null {
   const ms = /^([a-z]+-\d+)\.(value|day)$/.exec(key);
   if (ms) { const x = c.milestones.find((y) => y.id === ms[1]); return x ? (ms[2] === "value" ? fmt(x.value) : longDate(x.day)) : null; }
   return null;
+}
+export function fillParts(text: string, c: Climb, ctx?: Milestone): [string, boolean][] | null {
+  const out: [string, boolean][] = [];
+  let last = 0, ok = true;
+  for (const m of text.matchAll(/\{([^{}]+)\}/g)) {
+    out.push([text.slice(last, m.index), false]);
+    const v = value(m[1].trim(), c, ctx);
+    if (v == null) ok = false;
+    out.push([v ?? "", true]);
+    last = (m.index ?? 0) + m[0].length;
+  }
+  out.push([text.slice(last), false]);
+  return ok ? out.filter(([t]) => t) : null;
 }
 export function fill(text: string, c: Climb, ctx?: Milestone): string | null {
   let ok = true;

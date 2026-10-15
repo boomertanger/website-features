@@ -2,8 +2,7 @@
 // journey's line, BOOMBOT's chat), the playing cards (tap turns one over; a holo sheen follows the pointer), the five stops (hover lights the line,
 // a click or Enter picks the stop the story panel tells; at 900px and narrower the row scrolls sideways and the picked stop is scrolled into
 // view; stage 5 "The build" fills its line and its Fan Club panel from public/climb's all-10000 milestone, and its tag turns from "Under
-// construction" to "Back on air" once Creator Climb's Back on air era has started: climb.ts), Then and now (September 30, 2025 rolls up to today's live total from
-// sites/boomertanger/public/socials when it's seen; a platform with no count is hidden; none at all leaves the 2025 total alone, with its date),
+// construction" to "Back on air" once Creator Climb's Back on air era has started: climb.ts), The rise, replayed (replay.ts, from public/climb only),
 // the E1 stage cards (stage.ts), and the Fan Club parts from memberContent/base-camp (member.ts): card backs, the full stop stories and chapter
 // 5's paragraph for members, lock cards for everyone else. Member text is escaped and never written into the page HTML at build time.
 import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
@@ -13,6 +12,7 @@ import { initStageCards } from "./stage";
 import { esc, lockCard, RM } from "./ui";
 import { suitSvg } from "./story-art";
 import { loadClimb, fill, dropUnfilled, backOnAir, type Climb } from "./climb";
+import { initReplay } from "./replay";
 import data from "../../data/base-camp.json";
 
 const page = document.querySelector<HTMLElement>("[data-bc-story]");
@@ -104,49 +104,6 @@ function init(root: HTMLElement) {
     if (sel === stops.indexOf(li)) showStop();
   });
 
-  // ---- Then and now ----
-  void thenAndNow(root);
-}
-
-const fmt = (n: number) => n.toLocaleString("en-US");
-type Plat = "twitch" | "tiktok" | "youtube";
-async function thenAndNow(root: HTMLElement) {
-  const box = root.querySelector<HTMLElement>("[data-bc-then]");
-  if (!box) return;
-  let now: Partial<Record<Plat, number>> = {};
-  try {
-    const { db, doc, getDoc, SITE_ID } = await import("../../lib/db");
-    const s = await getDoc(doc(db, "sites", SITE_ID, "public", "socials"));
-    const d = s.exists() ? s.data() : {};
-    const num = (v: unknown) => (typeof v === "number" && Number.isFinite(v) && v >= 0 ? v : undefined);
-    now = { twitch: num(d?.twitch?.followers), tiktok: num(d?.tiktok?.followers), youtube: num(d?.youtube?.subscribers) };
-  } catch (err) { console.warn("base camp: couldn't read the follower counts", err); }
-  const plats = (["twitch", "tiktok", "youtube"] as Plat[]).filter((k) => now[k] !== undefined);
-  if (!plats.length) return;   // all missing: the 2025 total stays on its own, labelled with its date
-  const total = plats.reduce((s, k) => s + (now[k] as number), 0);
-  const max = Math.max(...plats.map((k) => now[k] as number), data.then.tiktok, data.then.twitch, data.then.youtube);
-  box.querySelectorAll<HTMLElement>(".is-now [data-plat]").forEach((li) => {
-    const k = li.dataset.plat as Plat, v = now[k];
-    li.hidden = v === undefined;
-    if (v !== undefined) { li.querySelector("b")!.textContent = fmt(v); li.querySelector<HTMLElement>("i")!.dataset.w = `${((v / max) * 100).toFixed(1)}%`; }
-  });
-  box.querySelectorAll<HTMLElement>(".bc-then-col:not(.is-now) [data-plat] i").forEach((i) => {
-    const k = (i.closest("[data-plat]") as HTMLElement).dataset.plat as Plat;
-    i.style.setProperty("--w", `${((data.then[k] / max) * 100).toFixed(1)}%`);
-  });
-  const big = box.querySelector<HTMLElement>("[data-bc-now]")!;
-  big.dataset.count = String(total);
-  big.textContent = fmt(total);
-  box.classList.add("has-now");
-  const roll = () => {
-    const bars = [...box.querySelectorAll<HTMLElement>(".is-now [data-plat] i")];
-    if (RM()) { bars.forEach((b) => b.style.setProperty("--w", b.dataset.w || "0%")); big.textContent = fmt(total); return; }
-    bars.forEach((b) => { b.style.setProperty("--w", "0%"); requestAnimationFrame(() => requestAnimationFrame(() => b.style.setProperty("--w", b.dataset.w || "0%"))); });
-    const from = data.then.total, t0 = performance.now(), dur = 1400;
-    const step = (t: number) => { const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3); big.textContent = fmt(Math.round(from + (total - from) * e)); if (k < 1) requestAnimationFrame(step); };
-    requestAnimationFrame(step);
-  };
-  box.querySelector("[data-bc-replay]")?.addEventListener("click", roll);
-  const io = new IntersectionObserver((es) => { if (es.some((e) => e.isIntersecting)) { io.disconnect(); roll(); } }, { threshold: 0.4 });
-  io.observe(box);
+  // ---- The rise, replayed (public/climb only) ----
+  initReplay(root);
 }

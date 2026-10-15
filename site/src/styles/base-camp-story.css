@@ -1,6 +1,6 @@
 /* site/src/styles/base-camp-story.css — /base-camp's own look (docs/specs/base-camp.md "Page 1"; mockup docs/design/mockups/base-camp.html, round 4):
    the hero H1 "The climb" and its waypoints, chapter 1's mascot card, chapter 2's playing cards (a restyled kit .bt-flip), chapter 3's journey
-   selection, story panel and the Then and now counter, chapter 4's five stage-card scenes (the E1 chrome is in base-camp.css), and chapter 5's
+   selection, story panel and The rise, replayed, chapter 4's five stage-card scenes (the E1 chrome is in base-camp.css), and chapter 5's
    trail cards. Loads after base-camp.css. Tokens only; container queries; reduced motion at the end. */
 
 /* ---------- Hero H1 "The climb": words left, the mountain right; the five purple waypoints are links to the chapters ---------- */
@@ -110,28 +110,61 @@
 .bt-root:not(#_) .bc-story-side { display: flex; flex-direction: column; gap: 8px; align-items: flex-end; }
 @container bt (max-width: 640px) { .bt-root:not(#_) .bc-story { grid-template-columns: minmax(0, 1fr); padding: 16px; } .bt-root:not(#_) .bc-story-side { align-items: flex-start; } }
 
-/* Then and now: September 30, 2025 rolls up to today's live total (public/socials) */
-.bt-root:not(#_) .bc-then { display: grid; grid-template-columns: minmax(0, 1fr) 44px minmax(0, 1fr); gap: 12px; align-items: stretch; }
-.bt-root:not(#_) .bc-then:not(.has-now) { grid-template-columns: minmax(0, 1fr); max-width: 460px; }
-.bt-root:not(#_) .bc-then:not(.has-now) :is(.bc-arrow, .is-now) { display: none; }
-.bt-root:not(#_) .bc-then-col { display: flex; flex-direction: column; gap: 10px; padding: 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
-.bt-root:not(#_) .bc-then-col.is-now { border-color: rgba(var(--bt-gold-rgb), 0.45); background: radial-gradient(80% 90% at 100% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-surface); }
-.bt-root:not(#_) .bc-then-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
-.bt-root:not(#_) .bc-big { font-size: 40px; font-weight: 900; line-height: 1; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.bt-root:not(#_) .is-now .bc-big { color: var(--bt-title); }
-.bt-root:not(#_) .bc-big small { display: block; margin-top: 4px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 600; letter-spacing: 0; }
-.bt-root:not(#_) .bc-plats { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
-.bt-root:not(#_) .bc-plats li { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; align-items: center; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
-.bt-root:not(#_) .bc-plats b { color: var(--bt-text); font-variant-numeric: tabular-nums; }
-.bt-root:not(#_) .bc-plat-bar { position: relative; height: 6px; border-radius: 3px; background: var(--bt-surface-2); overflow: hidden; }
-.bt-root:not(#_) .bc-plat-bar i { position: absolute; inset: 0 auto 0 0; border-radius: 3px; background: var(--bt-title); width: var(--w, 0%); transition: width 1.2s cubic-bezier(.3, .7, .2, 1); }
-.bt-root:not(#_) .bc-arrow { display: grid; place-items: center; color: var(--bt-title); font-size: 26px; font-weight: 900; }
+/* The rise, replayed (Addendum 3; replay.ts): reads public/climb only. Era tints and flares are gold, lime and gray only; the thumb and the
+   track are the kit's .bt-scrubber. Reduced motion: no rolling (replay.ts), no flares or sparks, no bar or tint transitions. */
 .bt-root:not(#_) .bc-pi { width: 22px; height: 22px; display: grid; place-items: center; border-radius: 6px; color: var(--bt-on-brand); overflow: hidden; }
 .bt-root:not(#_) .bc-pi svg { width: 14px; height: 14px; fill: currentColor; }
 .bt-root:not(#_) .bc-pi--twitch { background: var(--bt-brand-twitch); }
 .bt-root:not(#_) .bc-pi--tiktok { background: var(--bt-brand-tiktok); box-shadow: inset 0 0 0 1px var(--bt-brand-tiktok-edge); }
 .bt-root:not(#_) .bc-pi--youtube { background: var(--bt-brand-youtube); }
-@container bt (max-width: 640px) { .bt-root:not(#_) .bc-then { grid-template-columns: minmax(0, 1fr); } .bt-root:not(#_) .bc-arrow { transform: rotate(90deg); height: 28px; } }
+.bt-root:not(#_) .bc-rp-wrap { display: flex; flex-direction: column; gap: 14px; }
+.bt-root:not(#_) .bc-rp-wrap[hidden] { display: none; }
+.bt-root:not(#_) .bc-rp { position: relative; display: flex; flex-direction: column; gap: 16px; padding: 22px; border: 1px solid var(--bt-border-2); border-radius: 22px; background: radial-gradient(90% 100% at 0% 0%, var(--bc-rp-tint, transparent), transparent 70%), var(--bt-surface); overflow: hidden; transition: background 0.6s; }
+.bt-root:not(#_) .bc-rp[data-era="gray"] { --bc-rp-tint: color-mix(in srgb, var(--bt-gray) 16%, transparent); }
+.bt-root:not(#_) .bc-rp[data-era="gold"] { --bc-rp-tint: color-mix(in srgb, var(--bt-title) 14%, transparent); }
+.bt-root:not(#_) .bc-rp[data-era="plain"] { --bc-rp-tint: color-mix(in srgb, var(--bt-text) 8%, transparent); }
+.bt-root:not(#_) .bc-rp[data-era="lime"] { --bc-rp-tint: color-mix(in srgb, var(--bt-lime) 14%, transparent); }
+.bt-root:not(#_) .bc-rp-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+.bt-root:not(#_) .bc-rp-when { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.bt-root:not(#_) .bc-rp-month { font-size: var(--bt-text-lg); font-weight: 900; }
+.bt-root:not(#_) .bc-rp-total { margin-top: 6px; font-size: 56px; font-weight: 900; line-height: 1; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; color: var(--bt-title); }
+.bt-root:not(#_) .bc-rp-total small { display: block; margin-top: 6px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; letter-spacing: 0; }
+.bt-root:not(#_) .bc-rp-bars { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .bc-rp-bars li { display: grid; grid-template-columns: 24px 70px minmax(0, 1fr) 70px; gap: 10px; align-items: center; font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bc-rp-bars b { color: var(--bt-text); font-variant-numeric: tabular-nums; text-align: right; }
+.bt-root:not(#_) .bc-rp-bar { position: relative; height: 10px; border-radius: 5px; background: var(--bt-surface-2); overflow: hidden; }
+.bt-root:not(#_) .bc-rp-bar i { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); border-radius: 5px; background: var(--bt-title); transition: width 0.45s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .bc-rp-bars li.is-none i { width: 0; }
+.bt-root:not(#_) .bc-rp-bars li.is-none b { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bc-rp-story { display: grid; grid-template-columns: 4px minmax(0, 1fr); gap: 12px; min-height: 64px; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--bt-bg) 45%, var(--bt-surface)); }
+.bt-root:not(#_) .bc-rp-story::before { content: ""; border-radius: 2px; background: var(--bt-title); }
+.bt-root:not(#_) .bc-rp-story p { margin: 0; line-height: 1.55; }
+.bt-root:not(#_) .bc-rp-story.is-quiet p { color: var(--bt-text-muted); }
+.bt-root:not(#_) .bc-rp-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px; }
+.bt-root:not(#_) .bc-rp-link { color: var(--bt-primary-soft); font-size: var(--bt-text-sm); font-weight: 800; text-decoration: none; }
+.bt-root:not(#_) .bc-rp-link:hover { text-decoration: underline; }
+/* flares: gold for TikTok 1,000 and 5,000 combined, lime (with sparks) for 10,000 combined */
+.bt-root:not(#_) .bc-rp-flare { --c: var(--bt-title); position: absolute; left: 50%; top: 42%; z-index: 4; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 14px 22px; border: 1px solid color-mix(in srgb, var(--c) 60%, transparent); border-radius: 18px; background: color-mix(in srgb, var(--bt-bg) 88%, var(--c)); box-shadow: 0 0 40px color-mix(in srgb, var(--c) 40%, transparent); opacity: 0; transform: translate(-50%, -50%); pointer-events: none; }
+.bt-root:not(#_) .bc-rp-flare[data-tone="lime"] { --c: var(--bt-lime); }
+.bt-root:not(#_) .bc-rp-flare b { font-size: 26px; font-weight: 900; line-height: 1.1; color: var(--c); }
+.bt-root:not(#_) .bc-rp-flare span { color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; }
+.bt-root:not(#_) .bc-rp-flare.is-on { animation: bc-rp-flare 2.2s cubic-bezier(0.3, 1.4, 0.4, 1) forwards; }
+.bt-root:not(#_) .bc-rp-flare.is-big { box-shadow: 0 0 70px color-mix(in srgb, var(--c) 45%, transparent); }
+.bt-root:not(#_) .bc-rp-flare.is-big b { font-size: 40px; }
+@keyframes bc-rp-flare { 0% { opacity: 0; transform: translate(-50%, -50%) scale(0.6); } 15% { opacity: 1; transform: translate(-50%, -50%) scale(1.04); } 25% { transform: translate(-50%, -50%) scale(1); } 80% { opacity: 1; } 100% { opacity: 0; transform: translate(-50%, -60%) scale(0.98); } }
+.bt-root:not(#_) .bc-rp-spark { position: absolute; left: 50%; top: 40%; z-index: 3; width: 7px; height: 7px; border-radius: 2px; background: var(--bt-title); pointer-events: none; opacity: 0; animation: bc-rp-spark 1.4s ease-out forwards; }
+.bt-root:not(#_) .bc-rp-spark[data-tone="lime"] { background: var(--bt-lime); }
+.bt-root:not(#_) .bc-rp-spark[data-tone="gray"] { background: var(--bt-gray); }
+@keyframes bc-rp-spark { 0% { opacity: 1; transform: translate(0, 0) rotate(0); } 100% { opacity: 0; transform: translate(var(--dx), var(--dy)) rotate(260deg); } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bc-rp { padding: 16px; }
+  .bt-root:not(#_) .bc-rp-top { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .bc-rp-total { font-size: 42px; }
+  .bt-root:not(#_) .bc-rp-bars li { grid-template-columns: 22px minmax(0, 1fr) 56px; }
+  .bt-root:not(#_) .bc-rp-pname { display: none; }
+  .bt-root:not(#_) .bc-rp-flare b { font-size: 20px; }
+  .bt-root:not(#_) .bc-rp-flare.is-big b { font-size: 28px; }
+}
 
 /* ---------- Chapter 4: the five stage-card scenes (E1 chrome in base-camp.css) ---------- */
 .bt-root:not(#_) .g-lamp0 { stop-color: rgba(var(--bt-lamp-rgb), 0.38); } .bt-root:not(#_) .g-lamp1 { stop-color: rgba(var(--bt-lamp-rgb), 0); }
@@ -248,6 +281,8 @@
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .bc-jrwrap .ai-jr.bc-jr5 li.is-on { transform: none; }
   .bt-root:not(#_) :is(.bc-jrwrap .ai-jr.bc-jr5::after, .bc-jr5 li.is-glow) { transition: none; }
-  .bt-root:not(#_) :is(.bc-pcard, .bc-pcard *, .bc-plat-bar i, .bc-mascot-card .bt-mascot, .s-wp circle) { animation: none !important; transition: none !important; }
+  .bt-root:not(#_) :is(.bc-rp-flare, .bc-rp-spark) { display: none; }
+  .bt-root:not(#_) :is(.bc-rp, .bc-rp-bar i) { transition: none; }
+  .bt-root:not(#_) :is(.bc-pcard, .bc-pcard *, .bc-mascot-card .bt-mascot, .s-wp circle) { animation: none !important; transition: none !important; }
   .bt-root:not(#_) .bc-hand .bc-pcard:nth-child(n) { transform: none; }
 }
