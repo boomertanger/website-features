@@ -655,7 +655,7 @@ async function act(m: Msg, body: Record<string, unknown>, ok: string) {
   catch (err) { toast(messageFor(err, "That didn't save. Try again."), { kind: "error" }); paint(); }
   finally { S.busy = false; }
 }
-/** Mark spam: the gray Marked / Spam stamp, and Undo in the toast for 5 seconds (back to the status it had). */
+/** Mark spam: the gray Marked / Spam stamp, and Undo in the toast for 10 seconds (back to the status it had). */
 async function markSpam(m: Msg) {
   if (S.busy) return;
   S.busy = true;
@@ -665,7 +665,7 @@ async function markSpam(m: Msg) {
     S.spamStamp = true;
     const pending = m.lane === "team" && !S.owner && m.sender.uid !== S.uid;
     toast(pending ? `Marked as spam. ${gearsWord(S.vals.spam)} pending for ${S.vals.spamHoldDays} days.` : "Marked as spam.", {
-      ms: 5000, action: { label: "Undo", onClick: () => void act(m, { action: "status", value: prev }, "Back in the inbox. No Gear pending.") },
+      ms: 10000, action: { label: "Undo", onClick: () => void act(m, { action: "status", value: prev }, "Back in the inbox. No Gear pending.") },
     } as any);
     await refresh(true, before);
   } catch (err) { toast(messageFor(err, "That didn't save. Try again."), { kind: "error" }); paint(); }

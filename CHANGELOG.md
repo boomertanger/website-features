@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Inbox: spam Undo lasts 10 seconds (was 5); talk-back.md §9f and the test plan (G38-G39) updated
 - Fix: Remove credit lands on Adjust Gears: /admin/crew?adjust=…#adjust fills the form in once the page is shown, scrolls the section into view below the sticky tabs (no smooth scroll under reduced motion; once more after late content settles) and focuses the reason
 - Talk Back Part B fixes from the staging run: /admin/inbox counts a message as waiting (Desk clear, Pick up) only until its first reply, like the 21:00 desk check; inbox-sample.js writes its cleanup record and reserves its refs before it starts (a run that stops halfway can be cleaned), drops undefined adminLog fields, and marks its replies Waiting
 - Docs: Talk Back test plan Part B (@gbo is the inbox admin), Part B in hotline-boom.md, mod-machina.md (inbox Gears sources, gearsAdjust, Operator of the Month), design system 8ab, Hotline Boom 1.2, ROADMAP (Part B built on staging; Part C next) and the production checklist

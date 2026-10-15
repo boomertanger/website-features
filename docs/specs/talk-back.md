@@ -156,7 +156,7 @@ Picking up, assigning, status changes, notes, closing without a reply, the spam 
 
 - **Clear day:** a daily check at 21:00 Central finds no team-lane message with status `new` or `open`, no `firstReplyAt`, older than 48 h. Waiting, done, spam, escalated and owner-lane messages don't count.
 - **Streak** in the strip; 7 clear days pays the team bonus and starts a new count.
-- **Moments:** clearing the last waiting message shows the mascot with an empty desk, a lime `.bt-stamp--lime .bt-stamp--sm` "Desk / Clear", the title "Desk clear" and the streak line; it plays only when you clear the last one (opening an empty inbox later shows the calm empty state). "Desk clear" (the inbox-zero empty state gets this celebration). Marking spam gets a small gray "Marked / Spam" stamp with Undo in the toast for 5 seconds; replying slams Hotline Boom's "Hotline / Replied" stamp and the toast names the Gears earned.
+- **Moments:** clearing the last waiting message shows the mascot with an empty desk, a lime `.bt-stamp--lime .bt-stamp--sm` "Desk / Clear", the title "Desk clear" and the streak line; it plays only when you clear the last one (opening an empty inbox later shows the calm empty state). "Desk clear" (the inbox-zero empty state gets this celebration). Marking spam gets a small gray "Marked / Spam" stamp with Undo in the toast for 10 seconds (5 in the mockup; lengthened after the staging tests, Oct 15, 2026); replying slams Hotline Boom's "Hotline / Replied" stamp and the toast names the Gears earned.
 - What counts as spam vs rude-but-real, and "done, no reply needed" (thank-yous, duplicates), are taught in Part C, not enforced.
 
 ### 9g. Data

@@ -86,8 +86,8 @@ Hand-run checks for Talk Back Part B on staging: Pick up, the credit line, the T
 
 ## G. Spam
 
-38. **Mark spam.** @gbo opens a fresh visitor message and sets the status to **Spam**. Expect the gray **Marked / Spam** stamp, and the toast "Marked as spam. 1 Gear pending for 7 days." with **Undo** for 5 seconds. History: "1 Gear pending: it pays in 7 days if it stays spam."
-39. **Undo.** Tap **Undo** within 5 s. Expect "Back in the inbox. No Gear pending.", the message back in its old status, and the pending line now reads "No Gear pending: it isn't spam any more."
+38. **Mark spam.** @gbo opens a fresh visitor message and sets the status to **Spam**. Expect the gray **Marked / Spam** stamp, and the toast "Marked as spam. 1 Gear pending for 7 days." with **Undo** for 10 seconds. History: "1 Gear pending: it pays in 7 days if it stays spam."
+39. **Undo.** Tap **Undo** within 10 s. Expect "Back in the inbox. No Gear pending.", the message back in its old status, and the pending line now reads "No Gear pending: it isn't spam any more."
 40. **Spam after a paid reply.** Mark the F30 message spam. Expect a gray history line "**7 Gears reversed** from @gbo: marked as spam." (an `adjust` row with reason "Marked as spam"), and @gbo's total on /crew/board drops by 7.
 41. **Spam that held** (the sample script, or wait 7 days). `inboxSpamHold` runs daily at 04:15 Central and pays 1 Gear for each mark that has stood for 7 days, at most 5 a day per person. The pending line then reads "Spam held. 1 Gear paid to @gbo." The owner un-spamming someone's mark before then pays nothing and counts against their Accuracy.
 
