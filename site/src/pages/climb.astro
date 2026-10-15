@@ -125,7 +125,7 @@ const lock = (ic: string, t: string, p: string) => `<div class="bt-lock-card cc-
           </ol>
           <div class="cc-notes">
             <div class="cc-note"><b>2025 and 2026 so far are imported</b>From the old growth pages and Boomer's stream sheet, checked and tidied: totals are always the platforms added up.</div>
-            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams still count (from Boomer's own stream sheet), and nothing between the last sheet entry and the first automatic reading is guessed.</div>
+            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams kept going and are all counted, from Boomer's own stream log.</div>
             <div class="cc-note"><b>YouTube rounds</b>Above 1,000 YouTube only shares rounded subscriber counts, so its line moves in small steps.</div>
             <div class="cc-note"><b>Streams count the next morning</b>A stream joins its month once it has ended. After-shows aren't counted.</div>
             <div class="cc-note"><b>Members are their own number</b>Site members are counted from launch and never added to the follower total, because most members also follow on a platform. The owner and test accounts are left out.</div>
@@ -140,7 +140,7 @@ const lock = (ic: string, t: string, p: string) => `<div class="bt-lock-card cc-
                 <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cc-ans-${f.id}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{f.q}</button>
                 <div class="bt-chat-a" id={`cc-ans-${f.id}`} role="region" aria-label={`BOOMBOT's answer: ${f.q}`} hidden={i !== 0}>
                   <span class="bt-chat-av" set:html={boombotIcon(`cc-bb-${i}`)} />
-                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{f.a}</span></div>
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text" data-cc-live={(f as { live?: string }).live}>{f.a}</span></div>
                 </div>
               </>
             ))}

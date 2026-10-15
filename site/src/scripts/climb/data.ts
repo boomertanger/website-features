@@ -1,6 +1,6 @@
 // Creator Climb, the page's data (docs/specs/creator-climb.md §5, §8, §9): public/climb for everyone and, for members, climb/main/months, both
 // through live listeners (scripts/live/cg-watch.ts: one listener per doc or query, let go while the tab is hidden). Series for the charts, the
-// labels, and the members' own sums (records, pace) are worked out here from what those documents hold; nothing is invented for the gap.
+// labels, and the members' own sums (records, pace) are worked out here from what those documents hold; nothing is invented between readings.
 //   ?as=member on localhost and staging (never production) previews the members' view while signed out: the month docs are made from
 //   public/climb's month-ends (one reading per month, no streams or hours), so the layout can be checked without real member data.
 import { isProduction } from "../../lib/env.js";
@@ -104,11 +104,12 @@ export function readingSeries(months: Map<string, MonthDoc>): Record<Platform, P
     for (const k of PLATFORMS) {
       const pts = (m.points[k] || []).slice();
       const end = m.imported?.monthEnd?.[k];
-      if (end != null && (!pts.length || pts[pts.length - 1].v !== end)) {
-        const last = pts[pts.length - 1];
+      const imps = pts.filter((x) => x.s === "import"), lastImp = imps[imps.length - 1];
+      if (end != null && (!lastImp || lastImp.v !== end)) {
         const lastDayOfMonth = new Date(Date.UTC(Number(key.slice(0, 4)), Number(key.slice(5, 7)), 0)).toISOString().slice(0, 10);
-        const day = m.imported?.lastReadingDay || lastDayOfMonth;
-        pts.push({ d: last && last.d > day ? last.d : day, v: end, s: "import" });
+        const day0 = m.imported?.lastReadingDay || lastDayOfMonth;
+        const day = lastImp && lastImp.d > day0 ? lastImp.d : day0;
+        if (!pts.some((x) => x.d === day)) { pts.push({ d: day, v: end, s: "import" }); pts.sort((a, b) => (a.d < b.d ? -1 : 1)); }
       }
       out[k].push(...pts);
     }
@@ -136,7 +137,6 @@ export function combinedSeries(p: Public, per: Record<Platform, Point[]>): SPoin
   return firstFull ? [...early, ...out] : out;
 }
 export const toS = (pts: Point[]): SPoint[] => pts.map((r) => ({ t: ms(r.d), v: r.v, src: r.s === "import" ? "import" : "live" }));
-export function gapsOf(p: Public) { return p.gaps.map((g) => ({ from: ms(g.from), to: g.to ? ms(g.to) : todayMs() })); }
 export function erasOf(p: Public) {
   return p.eras.filter((e) => e.from).map((e) => ({ from: ms(e.from!), to: e.to ? ms(e.to) + DAY : todayMs(), label: e.label }));
 }

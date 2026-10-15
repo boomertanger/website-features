@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(climb): no gap band on /climb: the lines connect across stretches without readings (no hatched band, no line breaks, no "not tracked" month chip; public/climb.gaps and the kit's optional gaps stay); "The build" note and BOOMBOT's "What happened in 2026?" (the 10,000 date filled from public/climb, plain answer for Talk Back); fix: the members' reading line no longer re-adds an imported month-end on a later collector day
 feat(climb): Twitch and YouTube lines use their brand colours (--cc-twitch-brand #9146ff, --cc-youtube-brand #ff0000), on data marks only; the stage cards' hover and focus border is neutral, never a platform colour
 docs: Creator Climb spec §8, §10, §11 match the repo: the settings live on the climb/main doc itself (admins read it, no client writes; it holds the left-out accounts, the import and lastRebuild), points are stored as { d, v, s }
 docs: the Creator Climb mockup is now the repo-safe copy (month-end totals only; no per-day points, streams, hours or likes from Boomer's stream sheet, which is members-only detail)

@@ -10,7 +10,7 @@ import { drawScene } from "./scene";
 import {
   PLATFORMS, NAME, COLOR, type Platform, type Key, type Public, type MonthDoc, type SPoint,
   ms, fmt, monthLabel, dayLabel, todayMs, escapeHtml as esc, previewMember, watchPublic, watchMonths, previewMonths,
-  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, gapsOf, erasOf, eraOf, allMilestones, records, pace,
+  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, erasOf, eraOf, allMilestones, records, pace,
 } from "./data";
 
 const root = document.querySelector<HTMLElement>("[data-cc]");
@@ -80,7 +80,7 @@ function bigOpts() {
   const keys: (Platform | "all")[] = ["all", ...PLATFORMS];
   const series = keys.filter((k) => S.on.has(k)).map((k) => ({ key: k, label: NAME[k], points: src[k], color: COLOR[k], width: k === "all" ? 3.5 : undefined, icon: iconHtml(k) }));
   const days = r[2];
-  return { series, t0, t1, eras: erasOf(p), gaps: gapsOf(p), zero: true, monthly: !S.member, label: "Followers over time. Use the left and right arrow keys to step through readings.",
+  return { series, t0, t1, eras: erasOf(p), zero: true, monthly: !S.member, label: "Followers over time. Use the left and right arrow keys to step through readings.",
     empty: days ? `No readings in the last ${days} days yet. The morning collector adds one every day.` : "No readings yet." };
 }
 function controls() {
@@ -185,17 +185,6 @@ function crossover() {
 }
 
 // ---------------------------------------------------------------------------------------------- 05 month by month
-function gapChip(p: Public) {
-  const g = p.gaps[0];
-  if (!g) return null;
-  const a = new Date(ms(g.from)); a.setUTCMonth(a.getUTCMonth() + 1);
-  const endMs = g.to ? ms(g.to) : todayMs();
-  const b = new Date(endMs); if (g.to) b.setUTCMonth(b.getUTCMonth() - 1);
-  if (a > b) return null;
-  const sameYear = a.getUTCFullYear() === b.getUTCFullYear();
-  const m = (d: Date, y: boolean) => d.toLocaleDateString("en-US", { month: "short", ...(y ? { year: "numeric" } : {}), timeZone: "UTC" });
-  return { label: `${m(a, !sameYear)}–${m(b, true)}: not tracked`, after: g.from.slice(0, 7) };
-}
 const box = (l: string, v: string, sub = "") => `<div class="cc-statbox"><span class="bt-label">${l}</span><span class="bt-stat"><span class="bt-stat-value">${v}</span></span>${sub ? `<small>${sub}</small>` : ""}</div>`;
 const likesText = (n: number) => (n >= 1e6 ? `${(n / 1e6).toFixed(2).replace(/\.?0+$/, "")}M` : n >= 1e3 ? `${fmt(n / 1000)}K` : fmt(n));
 function months() {
@@ -204,11 +193,9 @@ function months() {
   const keys = [...S.months.keys()].filter((k) => Object.keys(S.months!.get(k)!.monthEnd || {}).length).sort();
   if (!keys.length) { $("[data-cc-months]")!.innerHTML = ""; $("[data-cc-report]")!.innerHTML = `<p class="cc-vs">No month reports yet.</p>`; return; }
   if (!S.month || !keys.includes(S.month)) S.month = keys[keys.length - 1];
-  const gc = gapChip(p);
   const chips: string[] = [];
   for (const k of keys) {
     chips.push(`<button type="button" class="bt-chip bt-chip--small${k === S.month ? " is-active" : ""}" aria-pressed="${k === S.month}" data-month="${k}">${monthLabel(k)}</button>`);
-    if (gc && k === gc.after) chips.push(`<button type="button" class="bt-chip bt-chip--small" disabled>${gc.label}</button>`);
   }
   $("[data-cc-months]")!.innerHTML = chips.reverse().join("");
   const key = S.month, M = S.months.get(key)!;
@@ -289,6 +276,19 @@ function flips() {
 }
 
 // ---------------------------------------------------------------------------------------------- drawing
+/** BOOMBOT answers with a live fact (help JSON "live"): {milestone:<id>} becomes that milestone's date from public/climb; without it the plain answer stays. */
+function liveAnswers(p: Public) {
+  root!.querySelectorAll<HTMLElement>("[data-cc-live]").forEach((el) => {
+    const tpl = el.dataset.ccLive || "";
+    let ok = true;
+    const text = tpl.replace(/\{milestone:([a-z0-9-]+)\}/g, (_, id: string) => {
+      const m = p.milestones.find((x) => x.id === id);
+      if (!m) { ok = false; return ""; }
+      return new Date(ms(m.day)).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric", timeZone: "UTC" });
+    });
+    if (ok) el.textContent = text;
+  });
+}
 function draw() {
   const p = S.pub;
   root!.dataset.viewer = S.member ? "member" : "visitor";
@@ -300,7 +300,7 @@ function draw() {
   if (!S.member && S.range !== "all") S.range = "all";
   hero(p);
   drawScene($("[data-cc-scene]")!, p, { onScrub: (q) => { S.scrub = q; hero(p); } });
-  controls(); drawBig(); membersChart(); memberBreakdown(); milestones(); stages(); crossover(); months(); goals(); flips();
+  liveAnswers(p); controls(); drawBig(); membersChart(); memberBreakdown(); milestones(); stages(); crossover(); months(); goals(); flips();
 }
 
 let stopMonths: (() => void) | null = null;
