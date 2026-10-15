@@ -147,3 +147,43 @@ Mockup: `docs/design/mockups/base-camp-mail-call.html`.
 - Service manifest for base-camp-mail-call.
 
 **Later:** a list of past Mail Call streams with VOD links; a mail counter; letter of the month.
+
+
+## Addendum 3: The rise and "The rise, replayed" (confirmed Oct 15, 2026; option B)
+
+Mockup: `docs/design/mockups/base-camp-rise.html` (the repo copy has the Fan Club panel text removed).
+
+**Depends on:** Creator Climb on staging (`docs/specs/creator-climb.md`) with `sites/boomertanger/public/climb` written: `totals { all, twitch, tiktok, youtube }`, `monthEnd[] { month, day, all, twitch?, tiktok?, youtube? }`, `milestones[] { id, platform, value, day }`, `eras[]`, `members`. Base Camp reads it and never writes it. **Base Camp hard-codes no follower numbers.**
+
+**Journey (chapter 03), option B**
+- Stage 4 "The rise", label "2024 to 2025". Its Fan Club panel now ends "…and in August he started streaming on YouTube." (was "added YouTube").
+- New stage 5. Card (public): label "2026", title "The build", line "Stream schedule paused, a website took shape, and {all-10000.value} anyway." Tag: "Under construction" (gold, small crane icon) until `public/climb.eras` contains an era named "Back on air"; then "Back on air" (lime). No code change at launch.
+- Stage 5 panel (Fan Club, member file, numbers and date filled from milestone all-10000): the text is in the gitignored member file (`functions/scripts/data/base-camp-member.json`, `stops.build`), never in the repo; it uses `{all-10000.value}` and `{all-10000.day}`, filled on the page from public/climb.
+- Five stages: desktop one row; at 900px and narrower the row scrolls sideways (scroll-snap, the selected stage scrolled into view), keeping the horizontal line and numbers.
+
+**The rise, replayed (replaces "Then and now")**
+- Public. Hidden entirely if `public/climb` doesn't exist.
+- Steps: every `monthEnd` month from Jan 2025, then **Today** (`totals`). No gap steps: months with no reading are skipped, and the curve connects the last month-end straight to Today (follower counts only change on stream days, and nothing has changed since the last stream).
+- Scrubber: `role="slider"`, value text like "June 2025: 2,584 followers"; drag, tap, arrow keys, Home, End. Track shows the total curve (connected through to Today), era bands with names, milestone dots (10,000 larger, lime), the Today point and a purple thumb. Ticks: Jan 2025, Jun 2025, Jan 2026, Jul 2026, Today.
+- **Play the climb** steps through in about 10 s and lands on Today; any touch on the track stops it.
+- Display: month and era name; big rolling total with "followers on {day}, the month's last reading" (Today: "followers right now"); three platform bars (official icons; a dash and no bar where a platform has no value); the story line.
+- Flares going forward only, gold/lime/gray: TikTok 1,000; 5,000 combined; 10,000 combined is the big one (lime, sparks) and also lights the stage 5 card.
+- No gap or "paused" segment. Never invent values for months without a reading; just skip them.
+- Link: "See every stream day on Creator Climb →" to /climb.
+- Reduced motion: no rolling, no flares; values still change; Play steps without animation.
+- Kit: new `.bt-scrubber` (track, bands, dots, thumb, keyboard + value text) in bt-ui with a UI kit page entry.
+
+**Story lines** (public, in `site/src/data/base-camp.json`, keyed by month or milestone id; `{…}` filled from public/climb; four fixed facts stay as plain text):
+- 2025-01: "This is where the data starts: {2025-01.all} followers."
+- 2025-05: "The night before the Granny Gauntlet: {2025-05.all} followers."
+- tiktok-1000: "TikTok passes {value} on {day}, {days since 2025-06-02} days after the Gauntlet's first stream. It was at 125 on June 2." (125 = fixed fact)
+- 2025-06: "{2025-06.all} by the end of June, more than {floor(2025-06.all / 2025-05.all)} times May's {2025-05.all}. A new TikTok layout and the Granny Gauntlet did that."
+- 2025-08: "On August 8 he started streaming on YouTube. The channel already had 443 subscribers." (443 = fixed fact)
+- 2025-09: "{all-5000.value} combined on {all-5000.day}. That month also set records: 577 peak viewers on TikTok and 22 subs gifted in one Twitch stream." (577, 22 = fixed facts)
+- 2026-01: "{2026-01.all} to start 2026. Then the scheduled streams pause so Boomer can build boomertanger.com."
+- all-10000: "{value} across all three on {day}, with the schedule still paused."
+- today: "Today: {totals.all} and counting."
+
+**Expected values to check on staging** (public/climb wins if different; report it): month ends 2025-01 = 161, 2025-05 = 207, 2025-06 = 2,584, 2025-09 = 5,769 (515 / 4,701 / 553), 2026-01 = 7,648, 2026-05 = 9,498 (May 13: 615 / 8,120 / 763), 2026-06 = 9,691 (Jun 20), 2026-07 = 10,266 (Jul 28), 2026-08 = 10,685 (Aug 17), 2026-09 = 10,924 (Sep 7: 653 / 9,450 / 821); milestones tiktok-1000 = 2025-06-10, all-5000 = 2025-09-08, all-10000 = 2026-07-19 (Jul 19 reading 634 / 8,750 / 802 = 10,186). No streams since Sep 7, 2026, so Today should equal the Sep 7 reading until the next stream.
+
+**Removed:** "Then and now", its Sept 30, 2025 numbers and the socials fallback.

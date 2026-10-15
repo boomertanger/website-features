@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Base Camp Addendum 3, "The rise" and "The rise, replayed" (option B): stage 5 "The build", the replay from public/climb replacing "Then and now", the .bt-scrubber kit piece; mockup base-camp-rise.html (Fan Club text removed)
 - feat(climb): At this pace shows no date when the goal is more than 24 months away ("YouTube goal: more than two years away at this pace"; the rows stay; the chart keeps the solid line and the goal line, no projection or arrival dot); the paused text gets its comma ("There are 3, and the last one is …")
 - feat(climb): /climb falls back to a YouTube goal of 1,000 when none is set (the same fallback as the footer and the collector), so the goal meter and At this pace work without a setting; other platforms still have no goal unless one is set
 - feat(climb): the Twitch and YouTube brand colours come from the kit tokens (--bt-brand-twitch #9146ff, --bt-brand-youtube #ff0033, YouTube's current red) instead of new hex values; design-system §8ae and spec §13 updated
