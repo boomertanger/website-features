@@ -285,6 +285,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Decide whether the public mailing address on the legal pages should be a PO box or registered agent.
 - [ ] Finish the TikTok app review: privacy and terms live, domain verified, Web URL = homepage, redirect https://boomertanger.com/auth/tiktok/callback, sandbox demo video on boomertanger.com, then submit. Set TIKTOK_CLIENT_SECRET for production and press Connect TikTok.
 - [ ] Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to `none` on production (serviceSyncTick declares both on every project; production is public and needs no Cloudflare Access headers; docs/specs/service-hub.md §3b).
+- [ ] Deploy onVaultGameService before the Vault import on production, or run reconcile-vault-services.js --apply once after it (`--allow-project <prod id>`; dry run first). On staging the first 78 games were imported before the trigger existed and had no Service Hub item until the reconcile (Oct 15, 2026); serviceSyncTick's Vault guard now catches that drift within 15 minutes.
 - [ ] Workstreams 8, 10 and 11 done.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.

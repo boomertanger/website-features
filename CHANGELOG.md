@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: launch checklist: deploy onVaultGameService before the production Vault import, or run reconcile-vault-services.js --apply once after it
 - feat(service-hub): serviceSyncTick's Vault guard: visible Vault games vs live vaultGame items (count queries only); when the gap moves it reconciles once and logs a warning
 - fix(service-hub): onVaultGameService creates a missing Vault game item on any edit (games added before the trigger heal) and never undoes an admin's retire or hide
 - feat(service-hub): functions/scripts/reconcile-vault-services.js lines Service Hub's Vault game items up with the Vault (create, revive, rename, retire; dry run by default, staging only unless allowed, never deletes an item or a rating, keeps an admin's retire or hide)
