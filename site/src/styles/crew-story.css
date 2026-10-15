@@ -87,5 +87,6 @@
   .bt-root:not(#_) :is(.cs-who, .cs-card) { transition: none; }
   .bt-root:not(#_) .cs-lineup:hover .cs-who, .bt-root:not(#_) .cs-card:is(:hover, :focus-within) { transform: none; }
 }
-/* the awards row holds five medals since Operator of the Month (talk-back.md §9e): one row on wide screens, the kit's two columns under 900px */
-@container bt (min-width: 901px) { .bt-root:not(#_) .bt-flip-grid.cs-awards { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+/* the awards row holds five medals since Operator of the Month (talk-back.md §9e): one row above 1024px, three columns to 901px, the kit's two below */
+@container bt (min-width: 1025px) { .bt-root:not(#_) .bt-flip-grid.cs-awards { grid-template-columns: repeat(5, minmax(0, 1fr)); } }
+@container bt (min-width: 901px) and (max-width: 1024px) { .bt-root:not(#_) .bt-flip-grid.cs-awards { grid-template-columns: repeat(3, minmax(0, 1fr)); } }

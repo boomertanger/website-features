@@ -61,7 +61,7 @@ export function badgeCardHtml(b: BadgeDoc, opts: { collName?: string; held?: Hel
   return `<button type="button" class="${cls}" style="--c:var(--bt-${tone})" data-id="${esc(b.id)}" data-coll="${esc(b.collection)}" data-rar="${r}"${opts.pulse ? ` data-pulse="${esc(opts.pulse)}"` : ""}${hidden ? " hidden" : ""} aria-label="${esc(label)}"><span class="bt-flip-in">
     <span class="bt-flip-face" aria-hidden="true"><span class="tr-src" title="${s.t}">${s.ic}</span><span class="tr-flags">${flags}</span>${front}</span>
     <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">
-      <span class="bt-flip-k">${secret ? "Secret badge" : "How to earn"}</span><span class="bt-flip-v">${secret ? "The name and how to earn it stay hidden until it's yours. Follow the hint." : esc(b.how)}</span>
+      <span class="bt-flip-k">${secret ? "Secret badge" : "How to earn"}</span><span class="bt-flip-v">${secret ? "Hidden until it's yours. Follow the hint." : esc(b.how)}</span>
       <span class="bt-flip-k">Earned by</span><span class="bt-flip-v">${s.ic} ${s.t}${comingSoon ? " · coming soon" : ""}</span>
       <span class="bt-flip-k">Collection</span><span class="bt-flip-v">${esc(collName)}${pct ? ` · held by ${pct}` : ""}</span>
       <span class="tr-card-xp">${rarityBadge(r)}<span>${xp ? `+${xp} XP` : "No XP"}</span></span>

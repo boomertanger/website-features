@@ -328,8 +328,9 @@
   .bt-root:not(#_) .tr-rank.is-here b::after { content: " · example"; color: var(--bt-lamp); }
 }
 @container bt (max-width: 420px) {
-  .bt-root:not(#_) .tr-card { height: 262px; }
+  .bt-root:not(#_) .tr-card { height: 276px; }
   .bt-root:not(#_) .tr-card .bt-flip-face { padding: 14px 10px; }
+  .bt-root:not(#_) .tr-card .bt-flip-v { margin-bottom: 3px; line-height: 1.35; }   /* the back's XP line stays inside the card */
   .bt-root:not(#_) .tr-case-row { gap: 8px; }
 }
 @media (prefers-reduced-motion: reduce) {

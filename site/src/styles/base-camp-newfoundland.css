@@ -504,3 +504,5 @@
 .bt-root:not(#_) .c-tmark:is(:hover, :focus-visible) .tbox { fill: var(--bt-primary-bg); stroke: var(--bt-primary); }
 
 .bt-root:not(#_) .pz-shag { fill: none; stroke: color-mix(in srgb, var(--bt-rank-3) 22%, var(--bt-bg)); stroke-width: 1.6; stroke-linecap: round; opacity: 0.7; }
+/* the medal and famous-people backs at phone widths (two narrow columns) */
+@container bt (max-width: 420px) { .bt-root:not(#_) :is(.nl-medals, .nl-famous) .bt-flip { height: 248px; } }

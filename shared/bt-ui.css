@@ -434,7 +434,9 @@
 /* .is-spotlight: the card a deep link points to. Ring and glow on both faces (whichever is showing), pulsing twice, then steady. */
 .bt-root:not(#_) .bt-flip.is-spotlight .bt-flip-face { box-shadow: 0 0 0 2px var(--bt-title), 0 0 22px color-mix(in srgb, var(--bt-gold) 45%, transparent); animation: bt-flip-spot 0.9s ease-in-out 2; }
 @keyframes bt-flip-spot { 0%, 100% { box-shadow: 0 0 0 2px var(--bt-title), 0 0 22px color-mix(in srgb, var(--bt-gold) 45%, transparent); } 50% { box-shadow: 0 0 0 4px var(--bt-title), 0 0 44px color-mix(in srgb, var(--bt-gold) 75%, transparent); } }
-.bt-root:not(#_) .bt-flip-face--back { border-color: color-mix(in srgb, var(--c) 55%, transparent); background: radial-gradient(80% 70% at 50% 100%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), var(--bt-surface); transform: rotateY(180deg); }
+/* the back holds two label/value pairs and a tag in the same fixed height: tighter spacing, and `safe center` so a long back loses its
+   bottom, never its first label */
+.bt-root:not(#_) .bt-flip-face--back { justify-content: safe center; gap: 4px; padding: 14px 14px 12px; border-color: color-mix(in srgb, var(--c) 55%, transparent); background: radial-gradient(80% 70% at 50% 100%, color-mix(in srgb, var(--c) 18%, transparent), transparent 70%), var(--bt-surface); transform: rotateY(180deg); }
 .bt-root:not(#_) .bt-flip-medal { position: relative; width: 84px; height: 84px; display: grid; place-items: center; overflow: hidden; border-radius: 50%; font-size: 34px; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--c) 70%, var(--bt-text) 10%), color-mix(in srgb, var(--c) 30%, var(--bt-bg)) 70%); box-shadow: 0 0 0 4px var(--bt-bg), 0 0 0 6px color-mix(in srgb, var(--c) 70%, transparent), 0 0 26px color-mix(in srgb, var(--c) 40%, transparent); }
 .bt-root:not(#_) .bt-flip-medal::after { content: ""; position: absolute; inset: -20%; background: linear-gradient(115deg, transparent 40%, color-mix(in srgb, var(--bt-logo-shine) 55%, transparent) 50%, transparent 60%); transform: translateX(-100%); }
 .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-medal::after { animation: bt-flip-shine 0.8s ease-out; }
@@ -443,7 +445,7 @@
 .bt-root:not(#_) .bt-flip-sub { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
 .bt-root:not(#_) .bt-flip-hint { position: absolute; bottom: 10px; color: var(--bt-text-faint); font-size: var(--bt-text-2xs); letter-spacing: 0.06em; text-transform: uppercase; }
 .bt-root:not(#_) .bt-flip-k { color: var(--bt-text-faint); font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; }
-.bt-root:not(#_) .bt-flip-v { margin-bottom: 8px; color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.45; }
+.bt-root:not(#_) .bt-flip-v { margin-bottom: 4px; color: var(--bt-text); font-size: var(--bt-text-md); line-height: 1.35; }
 .bt-root:not(#_) .bt-flip-tag { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border: 1px solid color-mix(in srgb, var(--c) 45%, transparent); border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--c) 14%, transparent); color: var(--c); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; }
 
 .bt-root:not(#_) .bt-placard { overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: repeating-linear-gradient(180deg, color-mix(in srgb, var(--bt-text) 1.2%, transparent) 0 1px, transparent 1px 4px), var(--bt-surface); }
@@ -487,6 +489,9 @@
 
 @container bt (max-width: 900px) {
   .bt-root:not(#_) .bt-flip-grid { grid-template-columns: 1fr 1fr; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .bt-flip { height: 260px; }   /* two ~140px columns at 320: the back's two pairs and its tag need the room */
 }
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .bt-placard-list { grid-template-columns: minmax(0, 1fr); }
