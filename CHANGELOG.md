@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(kit): numbers that move and the focus map, for Traffic Pulse: .bt-delta (lime better, gold worse, gray flat; the arrow shows direction; screen readers hear "up, worse"; lowerIsBetter flips the colour, never the arrow), .bt-spark, .bt-kpi (built on .bt-stat; empty; the gold tick) in shared/ui/kpi.js; .bt-quadrant with .bt-quadrant-lanes under 640px in shared/ui/quadrant.js (keyboard-focusable bubbles; .bt-lanes is already the week-lanes timeline); .bt-chart gains the previous period (compare), an area, on-air bands (eras tone live) and numbered note pins; all on the UI kit page
 - docs: Traffic Pulse spec (confirmed Oct 15, 2026) and mockup (H1 Monitor, L1 Triage, F1 Scatter); ROADMAP workstream 21 with the later phases and the production checklist (Squarespace visit history exported before cancelling); foundation.md notes Traffic Pulse replaces trackEvent and Feature Pulse
 - fix(nav): Creator Climb shows in the Community menu on desktop and in the phone More sheet: "climb" was in nav.js's Community group but not in site.json's modules, and nav.js only shows pages whose module is on (or ALWAYS_ON); both menus read the same filtered list
 - feat(site): the PREVIEW bar (staging and localhost only, never production) ends with the short commit SHA of the build, "build 77271e3" (CF_PAGES_COMMIT_SHA on Cloudflare Pages, git locally)

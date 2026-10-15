@@ -5774,3 +5774,83 @@
   .bt-root:not(#_) .bt-scrubber-thumb { transition: none; }
 }
 /* ================= END .bt-scrubber ================= */
+/* ================= Numbers that move: .bt-delta, .bt-spark, .bt-kpi (shared/ui/kpi.js; docs/specs/traffic-pulse.md §8) =================
+   .bt-delta--better (lime) / --worse (gold) / --flat (gray): the arrow shows the direction, the colour whether that's good (lowerIsBetter
+   flips the colour, never the arrow). Screen readers hear "up, worse". Never colour alone.
+   .bt-spark: .bt-spark-line (gold), .bt-spark-area, .bt-spark-prev (gray dashed: the previous period).
+   .bt-kpi: a tile built on .bt-stat: .bt-kpi-top (.bt-kpi-label + a delta), the .bt-stat value, a spark. .is-empty: a dash; .is-tick: the value
+   flashes gold once (a record, a goal hit). Reduced motion: no lift, no flash. */
+.bt-root:not(#_) .bt-delta { display: inline-flex; align-items: center; gap: 3px; padding: 2px 7px; border-radius: var(--bt-radius-full); font-size: var(--bt-text-xs); font-weight: 700; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bt-root:not(#_) .bt-delta > [aria-hidden] { font-size: 0.8em; }
+.bt-root:not(#_) .bt-delta--better { color: var(--bt-lime); background: var(--bt-lime-bg); }
+.bt-root:not(#_) .bt-delta--worse { color: var(--bt-gold); background: var(--bt-gold-bg); }
+.bt-root:not(#_) .bt-delta--flat { color: var(--bt-gray); background: var(--bt-gray-bg); }
+.bt-root:not(#_) .bt-spark { display: block; width: 100%; height: auto; aspect-ratio: 6 / 1; overflow: visible; }
+.bt-root:not(#_) .bt-spark-line { fill: none; stroke: var(--bt-title); stroke-width: 1.6; stroke-linejoin: round; vector-effect: non-scaling-stroke; }
+.bt-root:not(#_) .bt-spark-area { fill: rgba(var(--bt-gold-rgb), 0.1); stroke: none; }
+.bt-root:not(#_) .bt-spark-prev { fill: none; stroke: var(--bt-gray); stroke-width: 1.2; stroke-dasharray: 3 3; opacity: 0.55; vector-effect: non-scaling-stroke; }
+.bt-root:not(#_) .bt-kpi { position: relative; display: grid; gap: 4px; min-width: 0; padding: 12px 14px; overflow: hidden; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); transition: border-color 0.15s, transform 0.15s; }
+.bt-root:not(#_) .bt-kpi:hover { border-color: var(--bt-border-2); transform: translateY(-1px); }
+.bt-root:not(#_) .bt-kpi-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; min-width: 0; }
+.bt-root:not(#_) .bt-kpi-label { overflow: hidden; color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 600; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root:not(#_) .bt-kpi .bt-stat { gap: 4px; }
+.bt-root:not(#_) .bt-kpi .bt-stat-value { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; color: var(--bt-text); }
+.bt-root:not(#_) .bt-kpi .bt-stat-unit { font-size: var(--bt-text-sm); font-weight: 700; }
+.bt-root:not(#_) .bt-kpi.is-empty .bt-stat-value { color: var(--bt-text-faint); }
+.bt-root:not(#_) .bt-kpi.is-tick .bt-stat-value { animation: bt-kpi-tick 0.9s ease-out; }
+@keyframes bt-kpi-tick { 0% { color: var(--bt-title); text-shadow: 0 0 14px rgba(var(--bt-gold-rgb), 0.8); } 100% { color: var(--bt-text); text-shadow: none; } }
+@container bt (max-width: 640px) { .bt-root:not(#_) .bt-kpi .bt-stat-value { font-size: 22px; } }
+
+/* ================= The focus map: .bt-quadrant + .bt-quadrant-lanes (shared/ui/quadrant.js; docs/specs/traffic-pulse.md §4, §8 F1) =================
+   Four groups by data-q: expand lime, fix gold, spotlight blue, rethink gray (zones tinted faintly, names in their colour). Bubbles
+   (.bt-quadrant-dot) are buttons: hover and focus grow them, focus rings them in purple. Under 640px .bt-quadrant-wrap shows the lanes instead
+   of the scatter. (.bt-quadrant-lanes, not .bt-lanes: that's the week-lanes timeline.) */
+.bt-root:not(#_) .bt-quadrant-wrap { --q-expand: var(--bt-lime); --q-fix: var(--bt-gold); --q-spotlight: var(--bt-blue); --q-rethink: var(--bt-gray); min-width: 0; }
+.bt-root:not(#_) .bt-quadrant-wrap [data-q="expand"] { --c: var(--q-expand); }
+.bt-root:not(#_) .bt-quadrant-wrap [data-q="fix"] { --c: var(--q-fix); }
+.bt-root:not(#_) .bt-quadrant-wrap [data-q="spotlight"] { --c: var(--q-spotlight); }
+.bt-root:not(#_) .bt-quadrant-wrap [data-q="rethink"] { --c: var(--q-rethink); }
+.bt-root:not(#_) .bt-quadrant { position: relative; width: 100%; aspect-ratio: 4 / 3; }
+.bt-root:not(#_) .bt-quadrant svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.bt-root:not(#_) .bt-quadrant-zone { fill: color-mix(in srgb, var(--c) 7%, transparent); stroke: none; }
+.bt-root:not(#_) .bt-quadrant-split { stroke: var(--bt-border-2); stroke-dasharray: 4 4; }
+.bt-root:not(#_) .bt-quadrant-name { fill: var(--c); font-family: var(--bt-font); font-size: 12px; font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-quadrant-axis { fill: var(--bt-text-faint); font-family: var(--bt-font); font-size: 10px; font-weight: 600; }
+.bt-root:not(#_) .bt-quadrant-dot { cursor: pointer; outline: none; transform-box: fill-box; transform-origin: center; transition: transform 0.15s; }
+.bt-root:not(#_) .bt-quadrant-dot circle { fill: var(--c); fill-opacity: 0.85; stroke: var(--bt-bg); stroke-width: 2; }
+.bt-root:not(#_) .bt-quadrant-dot text { fill: var(--bt-text); font-family: var(--bt-font); font-size: 10.5px; font-weight: 600; paint-order: stroke; stroke: var(--bt-bg); stroke-width: 3px; pointer-events: none; }
+.bt-root:not(#_) .bt-quadrant-dot:is(:hover, :focus-visible) { transform: scale(1.15); }
+.bt-root:not(#_) .bt-quadrant-dot:focus-visible circle { stroke: var(--bt-primary); stroke-width: 3; }
+.bt-root:not(#_) .bt-quadrant-key { display: flex; flex-wrap: wrap; gap: 12px; color: var(--bt-text-muted); font-size: var(--bt-text-xs); }
+.bt-root:not(#_) .bt-quadrant-key i { display: inline-block; width: 9px; height: 9px; margin-right: 5px; border-radius: 50%; background: var(--c); }
+.bt-root:not(#_) .bt-quadrant-lanes { display: none; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+.bt-root:not(#_) .bt-quadrant-lane { display: grid; align-content: start; gap: 6px; padding: 10px; border: 1px solid var(--bt-border); border-top: 3px solid var(--c); border-radius: 10px; background: var(--bt-bg); }
+.bt-root:not(#_) .bt-quadrant-lane h4 { margin: 0; color: var(--c); font-size: var(--bt-text-xs); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-quadrant-lane p { margin: 0 0 2px; color: var(--bt-text-faint); font-size: 11.5px; line-height: 1.4; }
+.bt-root:not(#_) .bt-quadrant-lane button { display: flex; justify-content: space-between; gap: 8px; width: 100%; padding: 6px 8px; border: 0; border-radius: 8px; background: var(--bt-surface); color: var(--bt-text); font: inherit; font-size: var(--bt-text-sm); text-align: left; cursor: pointer; }
+.bt-root:not(#_) .bt-quadrant-lane button:is(:hover, :focus-visible) { background: var(--bt-primary-bg); outline: 1px solid var(--bt-primary); }
+.bt-root:not(#_) .bt-quadrant-lane button span { color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .bt-quadrant-empty { margin: 0; padding: 18px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-lg); color: var(--bt-text-muted); text-align: center; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-quadrant-wrap .bt-quadrant-scatter { display: none; }
+  .bt-root:not(#_) .bt-quadrant-wrap .bt-quadrant-lanes { display: grid; }
+}
+@container bt (max-width: 420px) { .bt-root:not(#_) .bt-quadrant-lanes { grid-template-columns: minmax(0, 1fr); } }
+
+/* ================= .bt-chart additions (Traffic Pulse): the previous period, an area, on-air bands and note pins =================
+   .bt-chart-compare (gray dashed, behind), .bt-chart-area (a soft fill in the series colour), .bt-chart-era--live (a red on-air tint),
+   .bt-chart-pin + .bt-chart-pin-line (blue numbered note pins, buttons; hover or focus shows the note), .bt-chart-tip-r--compare. */
+.bt-root:not(#_) .bt-chart-compare { fill: none; stroke: var(--bt-gray); stroke-width: 1.4; stroke-dasharray: 5 4; opacity: 0.8; }
+.bt-root:not(#_) .bt-chart-area { fill: color-mix(in srgb, var(--c, var(--bt-title)) 14%, transparent); stroke: none; }
+.bt-root:not(#_) .bt-chart-era.bt-chart-era--live { fill: rgba(var(--bt-red-rgb), 0.09); opacity: 1; }
+.bt-root:not(#_) .bt-chart-pin-line { stroke: var(--bt-blue); stroke-dasharray: 2 3; opacity: 0.7; }
+.bt-root:not(#_) .bt-chart-pin { position: absolute; z-index: 2; display: grid; place-items: center; width: 18px; height: 18px; margin-left: -9px; padding: 0; border: 2px solid var(--bt-blue); border-radius: 50%; background: var(--bt-bg); color: var(--bt-blue); font: 800 9px/1 var(--bt-font); cursor: pointer; }
+.bt-root:not(#_) .bt-chart-pin:is(:hover, :focus-visible) { background: var(--bt-blue); color: var(--bt-bg); outline: none; box-shadow: 0 0 0 2px var(--bt-primary); }
+.bt-root:not(#_) .bt-chart-tip-r--compare i { height: 0; border-top: 2px dashed var(--bt-gray); background: none; }
+.bt-root:not(#_) .bt-chart-tip-note { max-width: 32ch; color: var(--bt-text-muted); line-height: 1.45; }
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-kpi, .bt-quadrant-dot) { transition: none; }
+  .bt-root:not(#_) .bt-kpi:hover, .bt-root:not(#_) .bt-quadrant-dot:is(:hover, :focus-visible) { transform: none; }
+  .bt-root:not(#_) .bt-kpi.is-tick .bt-stat-value { animation: none; }
+}
+/* ================= END numbers that move, the focus map, .bt-chart additions ================= */

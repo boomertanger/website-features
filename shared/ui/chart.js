@@ -6,9 +6,15 @@
 // line through untracked time), pointer and keyboard (arrows, Home, End, Esc), has-focus to highlight one series (focusSeries), the mascot
 // empty state, --mini small multiples, and chartTable() for "Show as table". Redraws on resize (one shared ResizeObserver).
 //
-//   chart(el, { series, t0, t1, eras?, gaps?, zero?, mini?, monthly?, empty?, label?, notes? })
-//     series  [{ key, label, points: [{ t, v, src? }], color?, width?, dash?, icon? }]   t = ms (UTC); src "import" | "sample" | anything else
-//     t0, t1  the time range (ms); eras [{ from, to, label }] (ms); gaps [{ from, to }] (ms); zero: the value axis starts at 0
+//   chart(el, { series, t0, t1, eras?, gaps?, zero?, mini?, monthly?, empty?, label?, notes?, compare?, pins?, onPin? })
+//     series  [{ key, label, points: [{ t, v, src? }], color?, width?, dash?, icon?, area? }]   t = ms (UTC); src "import" | "sample" | anything
+//             else; area: a soft fill under the line in its colour
+//     t0, t1  the time range (ms); eras [{ from, to, label?, tone? }] (ms; tone "live": a red on-air tint, e.g. stream days, usually without a
+//             label); gaps [{ from, to }] (ms, optional: hatched, lines break across one longer than 20 days; without gaps lines connect);
+//             zero: the value axis starts at 0
+//     compare { label?, points: [{ t, v }] }  the previous period, already moved onto this period's dates: a gray dashed line behind the series,
+//             in the scale and in the tooltip ("Previous period" by default)
+//     pins    [{ t, title, date? }]   notes: blue numbered pins over the plot (buttons: hover, focus or tap shows the note); onPin(pin, i) on click
 //     mini    small multiple (4 / 3, fewer ticks, no icons); monthly: the tooltip and table say "September 2025" instead of a day
 //     empty   the empty state's sentence; label: the chart's accessible name; notes { import, sample } replace the two tooltip notes
 //   focusSeries(el, key | null)   dim every line but one (null: all back)
@@ -62,7 +68,9 @@ function draw(el, o) {
   const W = el.clientWidth, H = el.clientHeight;
   if (!W || !H) return;
   const mini = !!o.mini;
-  const pad = { l: mini ? 34 : 46, r: mini ? 10 : 34, t: o.eras && o.eras.length && !mini ? 22 : 10, b: 24 };
+  const pins = mini ? [] : (o.pins || []).filter((p) => p.t >= o.t0 && p.t <= o.t1);
+  const pad = { l: mini ? 34 : 46, r: mini ? 10 : 34, t: pins.length ? 30 : (o.eras || []).some((e) => e.label) && !mini ? 22 : 10, b: 24 };
+  const cmp = o.compare && o.compare.points ? o.compare.points.filter((p) => p.t >= o.t0 - 1 && p.t <= o.t1 + 1) : [];
   const series = (o.series || []).filter((s) => s.points && s.points.length);
   el.innerHTML = "";
   const inRange = (p) => p.t >= o.t0 && p.t <= o.t1;
@@ -75,7 +83,7 @@ function draw(el, o) {
   }
   const vis = series.map((s) => ({ ...s, points: s.points.filter((p) => p.t >= o.t0 - 1 && p.t <= o.t1 + 1) })).filter((s) => s.points.length);
   let lo = o.zero ? 0 : Infinity, hi = -Infinity;
-  vis.forEach((s) => s.points.forEach((p) => { lo = Math.min(lo, p.v); hi = Math.max(hi, p.v); }));
+  [...vis.flatMap((s) => s.points), ...cmp].forEach((p) => { lo = Math.min(lo, p.v); hi = Math.max(hi, p.v); });
   if (!o.zero) { const pv = Math.max((hi - lo) * 0.12, 2); lo = Math.max(0, lo - pv); hi += pv; } else hi = hi * 1.06 || 1;
   const step = niceStep(hi - lo, mini ? 3 : 4);
   lo = Math.floor(lo / step) * step; hi = Math.ceil(hi / step) * step;
@@ -87,8 +95,9 @@ function draw(el, o) {
   if (!mini) (o.eras || []).forEach((e) => {
     const a = Math.max(X(e.from), pad.l), b = Math.min(X(e.to), W - pad.r);
     if (b - a < 2) return;
-    h += `<rect class="bt-chart-era" x="${a}" y="${pad.t - 18}" width="${b - a}" height="${H - pad.b - pad.t + 18}" rx="6"/>`;
-    if (b - a > 70) h += `<text class="bt-chart-era-k" x="${a + 8}" y="${pad.t - 5}">${esc(e.label)}</text>`;
+    const top = e.label ? pad.t - 18 : pad.t;
+    h += `<rect class="bt-chart-era${e.tone ? ` bt-chart-era--${esc(e.tone)}` : ""}" x="${a}" y="${top}" width="${b - a}" height="${H - pad.b - top}" rx="${e.label ? 6 : 2}"/>`;
+    if (e.label && b - a > 70) h += `<text class="bt-chart-era-k" x="${a + 8}" y="${pad.t - 5}">${esc(e.label)}</text>`;
   });
   (o.gaps || []).forEach((g) => {
     const a = Math.max(X(g.from), pad.l), b = Math.min(X(g.to), W - pad.r);
@@ -123,8 +132,13 @@ function draw(el, o) {
     h += `<text class="bt-chart-xk" x="${x}" y="${H - 6}" text-anchor="${anchor}">${k}</text>`;
   });
   const sty = (s) => `--c:${s.color || "var(--bt-text-muted)"};${s.width ? `--w:${s.width};` : ""}${s.dash ? `--dash:${s.dash};` : ""}`;
+  // note pins: a dashed blue line down the plot (the numbered button sits on top, as HTML)
+  pins.forEach((p) => { const x = X(p.t); h += `<line class="bt-chart-pin-line" x1="${x}" x2="${x}" y1="${pad.t - 6}" y2="${H - pad.b}"/>`; });
+  // the previous period, behind this one
+  if (cmp.length > 1) h += `<path class="bt-chart-compare" d="${cmp.map((p, i) => `${i ? "L" : "M"}${X(p.t).toFixed(1)} ${Y(p.v).toFixed(1)}`).join("")}"/>`;
   vis.forEach((s) => {
     const d = s.points.map((p, i) => `${i && !breaksAt(o.gaps, s.points[i - 1], p) ? "L" : "M"}${X(p.t).toFixed(1)} ${Y(p.v).toFixed(1)}`).join("");
+    if (s.area && s.points.length > 1) h += `<path class="bt-chart-area" style="${sty(s)}" d="${d} L${X(s.points[s.points.length - 1].t).toFixed(1)} ${H - pad.b} L${X(s.points[0].t).toFixed(1)} ${H - pad.b}Z"/>`;
     h += `<path class="bt-chart-line" data-k="${esc(s.key)}" style="${sty(s)}" d="${d}"/>`;
   });
   const svg = document.createElementNS(NS, "svg");
@@ -171,6 +185,8 @@ function draw(el, o) {
       gh += `<circle class="bt-chart-dot" data-k="${esc(s.key)}" style="${sty(s)}" cx="${x}" cy="${Y(p.v)}" r="${s.width ? 5 : 4}"/>`;
       rows += `<div class="bt-chart-tip-r" style="${sty(s)}"><i></i><span>${esc(s.label || s.key)}</span><b>${fmt(p.v)}</b>${ch ? `<em data-up="${ch > 0}">${ch > 0 ? "+" : "−"}${fmt(Math.abs(ch))}</em>` : ""}</div>`;
     });
+    const cp = cmp.find((p) => p.t === t);
+    if (cp) rows += `<div class="bt-chart-tip-r bt-chart-tip-r--compare"><i></i><span>${esc(o.compare.label || "Previous period")}</span><b>${fmt(cp.v)}</b></div>`;
     g.innerHTML = gh;
     tip.innerHTML = `<b>${o.monthly ? monthLabel(t) : dayLabel(t)}</b>${rows}${imp ? `<small>${esc(notes.import)}</small>` : ""}${smp ? `<small>${esc(notes.sample)}</small>` : ""}`;
     tip.classList.add("is-on");
@@ -196,13 +212,41 @@ function draw(el, o) {
     else if (e.key === "Escape") hide();
   };
   el.onblur = hide;
+  // the note pins: numbered buttons; hover, focus or a tap shows the note in the tooltip
+  pins.forEach((p, i) => {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.className = "bt-chart-pin";
+    b.textContent = String(i + 1);
+    b.style.left = `${X(p.t)}px`;
+    b.style.top = `${pad.t - 20}px`;
+    const when = p.date || dayLabel(p.t);
+    b.setAttribute("aria-label", `Note ${i + 1}, ${when}: ${p.title}`);
+    const note = () => {
+      g.innerHTML = "";
+      tip.innerHTML = `<b>${esc(when)}</b><div class="bt-chart-tip-note">${esc(p.title)}</div>`;
+      tip.classList.add("is-on");
+      const tw = tip.offsetWidth, x = X(p.t);
+      tip.style.left = `${Math.max(0, Math.min(W - tw, x - tw / 2))}px`;
+      tip.style.top = `${pad.t + 4}px`;
+    };
+    b.addEventListener("pointerenter", note);
+    b.addEventListener("focus", note);
+    b.addEventListener("pointerleave", (e) => { if (e.pointerType === "mouse") hide(); });
+    b.addEventListener("blur", hide);
+    b.addEventListener("pointermove", (e) => e.stopPropagation());
+    b.addEventListener("keydown", (e) => e.stopPropagation());
+    b.addEventListener("click", (e) => { e.stopPropagation(); note(); if (o.onPin) o.onPin(p, i); });
+    el.appendChild(b);
+  });
 }
 
 /** "Show as table": every reading in the range, newest first, one column per series (a .bt-table in a scroll box). */
 export function chartTable(o) {
   const vis = (o.series || []).filter((s) => s.points && s.points.length);
   const times = [...new Set(vis.flatMap((s) => s.points.filter((p) => p.t >= o.t0 && p.t <= o.t1).map((p) => p.t)))].sort((a, b) => b - a);
-  const head = `<tr><th scope="col">${o.monthly ? "Month" : "Day"}</th>${vis.map((s) => `<th scope="col" class="bt-chart-num">${esc(s.label || s.key)}</th>`).join("")}</tr>`;
-  const body = times.map((t) => `<tr><td>${o.monthly ? monthLabel(t) : dayLabel(t)}</td>${vis.map((s) => { const p = s.points.find((x) => x.t === t); return `<td class="bt-chart-num">${p ? fmt(p.v) : ""}</td>`; }).join("")}</tr>`).join("");
+  const cmp = o.compare && o.compare.points ? o.compare.points : null;
+  const head = `<tr><th scope="col">${o.monthly ? "Month" : "Day"}</th>${vis.map((s) => `<th scope="col" class="bt-chart-num">${esc(s.label || s.key)}</th>`).join("")}${cmp ? `<th scope="col" class="bt-chart-num">${esc(o.compare.label || "Previous period")}</th>` : ""}</tr>`;
+  const body = times.map((t) => `<tr><td>${o.monthly ? monthLabel(t) : dayLabel(t)}</td>${vis.map((s) => { const p = s.points.find((x) => x.t === t); return `<td class="bt-chart-num">${p ? fmt(p.v) : ""}</td>`; }).join("")}${cmp ? (() => { const p = cmp.find((x) => x.t === t); return `<td class="bt-chart-num">${p ? fmt(p.v) : ""}</td>`; })() : ""}</tr>`).join("");
   return `<div class="bt-chart-table"><table class="bt-table"><thead>${head}</thead><tbody>${body}</tbody></table></div>`;
 }
