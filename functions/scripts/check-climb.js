@@ -2,14 +2,17 @@
 // functions/scripts/check-climb.js: checks for the Creator Climb core (lib/climb/build.js; docs/specs/creator-climb.md §3, §9, §10). No network.
 // Part 1 (always): validation, merging (collector / manual over import, corrections), streams that count, members, crossover, the gap, milestones.
 // Part 2 (only where functions/scripts/data/climb-history.json exists: the file is gitignored, so it is skipped elsewhere with a note): every
-// confirmed number in spec §10 against the real history.   npm run check
+// confirmed number in spec §10 against the real history, and (where functions/scripts/data/climb-sheet.csv exists, also gitignored) the
+// numbers with Boomer's stream sheet added (lib/climb/sheet.js).   npm run check
 const assert = require("assert/strict");
 const fs = require("fs");
 const path = require("path");
 const B = require("../lib/climb/build");
+const Sheet = require("../lib/climb/sheet");
 const { dayKey } = require("../lib/growth/collect");
 
 const HISTORY = path.join(__dirname, "data", "climb-history.json");
+const SHEET = path.join(__dirname, "data", "climb-sheet.csv");
 
 /** Builds every month in order (the previous calendar month's month-end feeds the next) and the public doc, as lib/climb/index.js does. */
 function buildAll({ imp, daily = [], corrections = [], streams = [], settings = {} }) {
@@ -73,12 +76,44 @@ function buildAll({ imp, daily = [], corrections = [], streams = [], settings = 
   assert.deepEqual(ms.map((m) => `${m.value}@${m.day}`), ["300@b", "400@e", "500@e", "600@e", "700@e", "800@e", "900@e", "1000@e"]);
 }
 
+// ---------------------------------------------------------------------------------------------- part 1b: the stream sheet (synthetic)
+{
+  const H = "Enter Stream Date,How many streams?,Enter Total Likes,Enter Total Hours Streamed,Enter Twitch Follower Count,Enter TikTok Follower Count,Enter YouTube Follower Count";
+  const rows = Sheet.parseSheet([H, '5/2/2026,1,"1,200",2.5,10,"1,000",5', "4/20/2026,1,10,1,9,900,4", "", '5/1/2026,2,,3,10,990,5'].join("\r\n"));
+  assert.deepEqual(rows.map((r) => r.day), ["2026-04-20", "2026-05-01", "2026-05-02"], "date order, blank lines skipped");
+  assert.deepEqual(rows[2], { row: 2, day: "2026-05-02", streams: 1, likes: 1200, hours: 2.5, twitch: 10, tiktok: 1000, youtube: 5 }, "quoted numbers with commas");
+  assert.equal(rows[1].likes, null, "empty likes stay empty");
+  assert.throws(() => Sheet.parseSheet(H.replace("How many streams?", "Streams") + "\n"), /row 1: unknown header "Streams"/);
+  assert.throws(() => Sheet.parseSheet([H, "5/2/2026,1,10,1,10,1000,5", "5/3/2026,1,10,1,ten,1000,5"].join("\n")), /row 3: twitch "ten" isn't a number/);
+  assert.throws(() => Sheet.parseSheet([H, "13/2/2026,1,10,1,10,1000,5"].join("\n")), /row 2: .* isn't a M\/D\/YYYY date/);
+  assert.throws(() => Sheet.parseSheet([H, "5/2/2026,1,10,1,10,1000"].join("\n")), /row 2: 6 cells/);
+  assert.throws(() => Sheet.parseSheet([H, "5/2/2026,1,10,1,10,1000,5", "5/2/2026,1,10,1,11,1001,5"].join("\n")), /row 3: 2026-05-02 is already on row 2/);
+  assert.throws(() => Sheet.parseSheet([H, "5/2/2026,1,10,1,,1000,5"].join("\n")), /row 2: no twitch follower count/);
+  // merging: rows on or before the history's last reading are ignored; sums per month; streams only before Back on air
+  const hist = { months: { "2026-04": { lastReadingDay: "2026-04-20", streams: 8, hours: 27, likes: 100, platforms: { twitch: { monthEnd: 9, points: [["2026-04-20", 9]] }, tiktok: { monthEnd: 900, points: [["2026-04-20", 900]] }, youtube: { monthEnd: 4, points: [["2026-04-20", 4]] } } } } };
+  const m = Sheet.mergeSheet(hist, rows);
+  assert.deepEqual([m.used, m.ignored, m.counted, m.after], [2, 1, 2, "2026-04-20"]);
+  const may = m.history.months["2026-05"];
+  assert.deepEqual([may.streams, may.hours, may.likes, may.lastReadingDay, may.platforms.tiktok.monthEnd], [3, 5.5, 1200, "2026-05-02", 1000]);
+  assert.deepEqual(may.platforms.twitch.points, [["2026-05-01", 10], ["2026-05-02", 10]]);
+  assert.equal(hist.months["2026-05"], undefined, "the history passed in is left alone");
+  assert.deepEqual(B.validateHistory(m.history), [], "the merged history validates");
+  const late = Sheet.mergeSheet(hist, rows, { backOnAir: "2026-05-02" }).history.months["2026-05"];
+  assert.deepEqual([late.streams, late.hours, late.likes], [2, 3, null], "a day on or after Back on air adds no streams, hours or likes");
+  // a collector reading wins over a sheet point on the same day
+  const imp = B.importMonths(m.history);
+  assert.equal(imp.months["2026-05"].points.twitch[0].s, "import", "sheet points are imported points");
+  const pts = B.mergePoints({ key: "2026-05", imported: imp.months["2026-05"], daily: [{ day: "2026-05-02", twitch: { followers: 12 } }], corrections: [] });
+  assert.deepEqual(pts.twitch[1], { d: "2026-05-02", v: 12, s: "collector" });
+}
+
 // ---------------------------------------------------------------------------------------------- part 2: the real history (local only)
 if (!fs.existsSync(HISTORY)) {
   console.log("check-climb: ok (synthetic only; functions/scripts/data/climb-history.json isn't on this machine, so the confirmed numbers were skipped)");
 } else {
   const h = JSON.parse(fs.readFileSync(HISTORY, "utf8"));
   assert.deepEqual(B.validateHistory(h), [], "the history file passes validation");
+  // the JSON alone (spec §10); the sheet's numbers are checked at the end
   const imp = B.importMonths(h);
   assert.equal(Object.keys(imp.months).length, 11, "11 imported months");
   assert.equal(Object.values(imp.months).reduce((a, m) => a + Object.values(m.points).reduce((b, p) => b + p.length, 0), 0), 330, "330 points");
@@ -118,5 +153,38 @@ if (!fs.existsSync(HISTORY)) {
   assert.equal(r2.M["2026-09"].gain.all, 1 + 10 + 0);
   assert.equal(r2.public.totals.all, 611 + 7960 + 740);
   assert.equal(r2.milestones.filter((m) => m.src !== "import").length, 0, "no new milestone yet");
-  console.log("check-climb: ok (synthetic, and the confirmed numbers from the real history)");
+  if (!fs.existsSync(SHEET)) {
+    console.log("check-climb: ok (synthetic, and the confirmed numbers from the real history; functions/scripts/data/climb-sheet.csv isn't on this machine, so the sheet's numbers were skipped)");
+  } else {
+    // §10 with Boomer's stream sheet (May 13 – Sep 7, 2026)
+    const ms = Sheet.mergeSheet(h, Sheet.parseSheet(fs.readFileSync(SHEET, "utf8")));
+    assert.deepEqual(B.validateHistory(ms.history), [], "the history with the sheet passes validation");
+    const si = B.importMonths(ms.history);
+    const sk = Object.keys(si.months);
+    assert.deepEqual([sk.length, sk[0], sk[sk.length - 1]], [16, "2025-06", "2026-09"], "16 imported months, June 2025 to September 2026");
+    assert.equal(Object.values(si.months).reduce((a, m) => a + Object.values(m.points).reduce((b, p) => b + p.length, 0), 0), 390, "390 points");
+    const s = buildAll({ imp: si, settings });
+    const srow = (k) => s.public.monthEnd.find((x) => x.month === k);
+    assert.deepEqual([srow("2026-09").all, srow("2026-09").twitch, srow("2026-09").tiktok, srow("2026-09").youtube], [10924, 653, 9450, 821], "Sep 2026 month end 10,924 = 653 + 9,450 + 821");
+    assert.equal(srow("2026-04").all, 9234, "April 2026 is unchanged");
+    const s10 = s.milestones.find((m) => m.id === "all-10000");
+    assert.equal(s10 && s10.day, "2026-07-19", "10,000 combined on Jul 19, 2026");
+    assert.equal(s.milestones.length, 35, "35 imported milestones");
+    assert.ok(s.milestones.every((m) => m.src === "import"), "all of them imported");
+    assert.deepEqual([s.M["2026-07"].streams, s.M["2026-07"].minutes / 60, s.M["2026-07"].likes], [11, 38.5, 1478000], "Jul 2026: 11 streams, 38.5 hours, 1,478,000 likes");
+    const sx = s.public.crossover;
+    assert.deepEqual(sx.span, { from: "2025-08", to: "2026-09" });
+    assert.deepEqual([sx.tiktok, sx.twitch, sx.youtube], [6167, 3.9, 6.1], "crossover Aug 2025 – Sep 2026: 3.9 / 6.1 per 100 TikTok over 6,167");
+    const sera = (id) => sx.eras.find((e) => e.era === id);
+    assert.deepEqual([sera("the-grind").twitch, sera("the-grind").youtube], [5.3, 6.9], "The grind");
+    assert.deepEqual([sera("the-build").twitch, sera("the-build").youtube], [2.4, 5.4], "The build, Feb – Sep 2026");
+    assert.deepEqual(s.public.gaps, [{ from: "2026-09-07", to: null }], "the gap starts at the last sheet row");
+    // the first staging collector reading (Sep 29) closes it
+    const s2 = buildAll({ imp: si, settings, daily: [{ day: "2026-09-29", twitch: { followers: 653 }, tiktok: { followers: 9455, source: "manual" }, youtube: { subscribers: 821 } }] });
+    assert.deepEqual(s2.public.gaps, [{ from: "2026-09-07", to: "2026-09-29" }]);
+    assert.deepEqual([s2.M["2026-09"].monthEnd.tiktok, s2.public.totals.all], [9455, 653 + 9455 + 821], "a collector reading after the last sheet row is September's month end (the imported 9,450 isn't added again)");
+    assert.deepEqual(s2.M["2026-09"].points.tiktok.slice(-2).map((x) => [x.d, x.v, x.s]), [["2026-09-07", 9450, "import"], ["2026-09-29", 9455, "manual"]]);
+    assert.equal(s2.milestones.filter((m) => m.src !== "import").length, 0, "nothing new to announce");
+    console.log("check-climb: ok (synthetic, the confirmed numbers from the real history, and with the stream sheet)");
+  }
 }

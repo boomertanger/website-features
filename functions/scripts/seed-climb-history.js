@@ -1,7 +1,10 @@
 #!/usr/bin/env node
 // functions/scripts/seed-climb-history.js: the one-time Creator Climb history import (docs/specs/creator-climb.md §3). Reads
-// functions/scripts/data/climb-history.json (GITIGNORED, never committed: the detail is members-only and the repo is public), validates it
-// (points in date order inside their month, nothing after lastReadingDay, the totals are the platforms added up), and with --apply writes:
+// functions/scripts/data/climb-history.json (GITIGNORED, never committed: the detail is members-only and the repo is public) and, when it is
+// there, Boomer's stream sheet functions/scripts/data/climb-sheet.csv (GITIGNORED too; lib/climb/sheet.js: exact headers, rows on or before
+// the history's last reading ignored, an unknown header or a bad row stops here with the row number; sheet streams, hours and likes count
+// only for days before the Back on air date), validates it all (points in date order inside their month, nothing after lastReadingDay, the
+// totals are the platforms added up), and with --apply writes:
 //   climb/main/months/{YYYY-MM}.imported   the imported points (src "import"), month-ends, starting balances, streams, hours, likes,
 //                                          highlights and notes. Re-running replaces the imported part only, never collector or manual points.
 //   climb/main.import                      combinedOnly (Jan–May 2025), the records, the eras from the file
@@ -15,8 +18,10 @@
 const fs = require("fs");
 const path = require("path");
 const B = require("../lib/climb/build");
+const Sheet = require("../lib/climb/sheet");
 
 const FILE = path.join(__dirname, "data", "climb-history.json");
+const SHEET = path.join(__dirname, "data", "climb-sheet.csv");
 const DEFAULT_LEFT_OUT = ["gbo"];   // the test member (spec §7); the owner is always left out
 
 function parseArgs(argv) {
@@ -39,13 +44,29 @@ async function main() {
   const args = parseArgs(process.argv.slice(2));
   const projectId = resolveProjectId(args.project);
   if (!fs.existsSync(FILE)) throw new Error(`No history file at ${FILE} (it's gitignored: copy it there first).`);
-  const history = JSON.parse(fs.readFileSync(FILE, "utf8"));
-  const problems = B.validateHistory(history);
-  if (problems.length) { console.error(`The history file has ${problems.length} problem(s); nothing written:\n- ${problems.join("\n- ")}`); process.exit(1); }
-  const imp = B.importMonths(history);
+  const json = JSON.parse(fs.readFileSync(FILE, "utf8"));
+  const jsonProblems = B.validateHistory(json);
+  if (jsonProblems.length) { console.error(`The history file has ${jsonProblems.length} problem(s); nothing written:\n- ${jsonProblems.join("\n- ")}`); process.exit(1); }
   const admin = require("firebase-admin");
   admin.initializeApp({ projectId });
   const db = admin.firestore();
+  const main0 = await db.doc("sites/boomertanger/climb/main").get();
+  const cur = main0.exists ? main0.data() : {};
+  // the stream sheet, when it's there: its rows become months (or extend the history's last month)
+  let history = json, sheetLine = "  sheet: none (functions/scripts/data/climb-sheet.csv isn't there)";
+  const sheetMonths = new Set();
+  if (fs.existsSync(SHEET)) {
+    const rows = Sheet.parseSheet(fs.readFileSync(SHEET, "utf8"));   // throws with the row number
+    const backOnAir = ((Array.isArray(cur.eras) ? cur.eras : []).find((e) => e.id === "back-on-air") || {}).from || null;
+    const m = Sheet.mergeSheet(json, rows, { backOnAir });
+    history = m.history;
+    const used = rows.filter((r) => !m.after || r.day > m.after);
+    used.forEach((r) => sheetMonths.add(r.day.slice(0, 7)));
+    sheetLine = `  sheet: ${rows.length} rows; ${m.used} used${used.length ? ` (${used[0].day} to ${used[used.length - 1].day})` : ""}, ${m.ignored} ignored (on or before ${m.after}); streams, hours and likes from ${m.counted} of them (${backOnAir ? `days before Back on air, ${backOnAir}` : "Back on air has no date yet: all of them"})`;
+  }
+  const problems = B.validateHistory(history);
+  if (problems.length) { console.error(`The history and the sheet together have ${problems.length} problem(s); nothing written:\n- ${problems.join("\n- ")}`); process.exit(1); }
+  const imp = B.importMonths(history);
   const { dayKey } = require("../lib/growth/collect");
   const climb = require("../lib/climb").build({ db, staging: /staging/i.test(projectId), adminLogEntry: async (_d, f) => f });
   const R = climb.refs;
@@ -55,12 +76,12 @@ async function main() {
   console.log(`${projectId} · ${keys.length} imported months (${keys[0]} to ${keys[keys.length - 1]}), ${points} points · validation ok${args.apply ? "" : " · DRY RUN (add --apply)"}`);
   for (const k of keys) {
     const m = imp.months[k];
-    console.log(`  ${k}  ${Object.entries(m.monthEnd).map(([p, v]) => `${p} ${fmt(v)} (${m.points[p].length} pts)${m.startingBalance[p] != null ? ` from ${fmt(m.startingBalance[p])}` : ""}`).join(", ")}  · total ${fmt(Object.values(m.monthEnd).reduce((a, v) => a + v, 0))}`);
+    const extra = [m.streams != null ? `${m.streams} streams` : null, m.hours != null ? `${m.hours} h` : null, m.likes != null ? `${fmt(m.likes)} likes` : null].filter(Boolean).join(", ");
+    console.log(`  ${k}${sheetMonths.has(k) ? " (sheet)" : ""}  ${Object.entries(m.monthEnd).map(([p, v]) => `${p} ${fmt(v)} (${m.points[p].length} pts)${m.startingBalance[p] != null ? ` from ${fmt(m.startingBalance[p])}` : ""}`).join(", ")}  · total ${fmt(Object.values(m.monthEnd).reduce((a, v) => a + v, 0))}${extra ? `  · ${extra}` : ""}`);
   }
+  console.log(sheetLine);
 
   // settings that are only set the first time
-  const main0 = await R.main.get();
-  const cur = main0.exists ? main0.data() : {};
   const settingsPatch = { import: { combinedOnly: imp.combinedOnly, records: imp.records, eras: imp.eras } };
   if (!Array.isArray(cur.eras) || !cur.eras.length) settingsPatch.eras = [...imp.eras.map((e) => ({ id: e.id, label: e.label, from: e.from || null, to: e.to || null, ...(e.note ? { note: e.note } : {}) })), { id: "back-on-air", label: "Back on air", from: null, to: null }];
   if (!Array.isArray(cur.excludeHandles)) {

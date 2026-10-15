@@ -83,15 +83,20 @@ function importMonths(h) {
 }
 
 // ---------------------------------------------------------------------------------------------- one month (§8, §9)
-/** Every reading of one platform in a month, in date order: the points, plus the imported month-end as its own reading when the chart missed it. */
+/**
+ * Every reading of one platform in a month, in date order: the points, plus the imported month-end as its own reading on lastReadingDay when
+ * the chart missed it. Compared with the last IMPORTED point only, so a month the collector carries on in (the sheet's last month) keeps its
+ * later collector readings, and the month-end is never added on a day that already has a reading.
+ */
 function readingsOf(month, p) {
   const pts = ((month.points || {})[p] || []).slice();
   const end = month.imported && month.imported.monthEnd ? month.imported.monthEnd[p] : null;
   if (num(end) != null) {
-    const last = pts[pts.length - 1];
-    if (!last || last.v !== end) {
-      const day = month.imported.lastReadingDay || lastDayOf(month.key);
-      pts.push({ d: last && last.d > day ? last.d : day, v: end, s: "import" });
+    const imps = pts.filter((x) => x.s === "import"), lastImp = imps[imps.length - 1];
+    if (!lastImp || lastImp.v !== end) {
+      const day0 = month.imported.lastReadingDay || lastDayOf(month.key);
+      const day = lastImp && lastImp.d > day0 ? lastImp.d : day0;
+      if (!pts.some((x) => x.d === day)) { pts.push({ d: day, v: end, s: "import" }); pts.sort((a, b) => (a.d < b.d ? -1 : 1)); }
     }
   }
   return pts;
