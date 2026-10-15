@@ -3,6 +3,7 @@
 //   hbIcon()       the W5 Dial-up wordmark icon, 40x40 (the wheel dials to the finger stop on power-on)
 //   HB_ICON        one copy for Astro components (the bar); scripts call hbIcon() for more
 //   phoneScene()   the /contact hero: the classic rotary desk phone in the V2 Bakelite look (hotline-boom-hero.html), ring marks and arcs
+//   phoneGroup()   the same phone as a <g class="hb-phone"> for another scene (the staff How it works desk)
 //   I, icon(k)     line and UI icons (24x24 strokes)
 //   dialSvg(lines), HOLE_A, DIAL_STOP   /contact/how-it-works hero H1: the big rotary dial (six holes, the plate, the finger stop)
 //   SCENES         /contact/how-it-works chapter 1: a small scene per line
@@ -30,19 +31,16 @@ const CORD = "M50.0 108.0 L49.7 108.9 L49.2 109.9 L48.6 110.8 L47.9 111.6 L47.0 
  *  body on a wide plinth with two feet, two cradle posts, a long handset with domed ends and cup rims, a two-tone coiled cord down the left,
  *  body and post highlights, a shadow under the handset; black glossy Bakelite with gold edges, the gold ring marks and purple arcs. The dial
  *  (purple ring, holes, gold plate, handset glyph, finger stop) is unchanged. Wrapped by the page in a <button class="hb-stage" aria-pressed>. */
-export function phoneScene(): string {
-  const u = uid("hbs");
-  return `<svg class="hb-scene" viewBox="0 0 300 220" aria-hidden="true" focusable="false">
-  <defs>
-    <radialGradient id="${u}g" cx="50%" cy="55%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
-    <linearGradient id="${u}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-body0"/><stop offset="1" class="g-body1"/></linearGradient>
-    <linearGradient id="${u}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-plinth0"/><stop offset=".7" class="g-body1"/><stop offset="1" class="g-plinth2"/></linearGradient>
-    <linearGradient id="${u}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-hand1"/></linearGradient>
-    <linearGradient id="${u}r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-ring0"/><stop offset="1" class="g-ring1"/></linearGradient>
-  </defs>
-  <ellipse class="glow" fill="url(#${u}g)" cx="150" cy="128" rx="150" ry="100"/>
-  <ellipse class="floor" cx="150" cy="214" rx="104" ry="6"/>
-  <rect class="foot" x="76" y="202" width="32" height="9" rx="3"/><rect class="foot" x="192" y="202" width="32" height="9" rx="3"/>
+/** The phone's own gradients (the body, the plinth, the handset, the dial ring), with ids from u. */
+function phoneDefs(u: string): string {
+  return `<linearGradient id="${u}b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-body0"/><stop offset="1" class="g-body1"/></linearGradient>
+  <linearGradient id="${u}p" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-plinth0"/><stop offset=".7" class="g-body1"/><stop offset="1" class="g-plinth2"/></linearGradient>
+  <linearGradient id="${u}h" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-hand0"/><stop offset="1" class="g-hand1"/></linearGradient>
+  <linearGradient id="${u}r" x1="0" y1="0" x2="0" y2="1"><stop offset="0" class="g-ring0"/><stop offset="1" class="g-ring1"/></linearGradient>`;
+}
+/** The phone itself (feet, plinth, cord, body, posts, dial, handset), drawn in a 300x220 box. */
+function phoneParts(u: string): string {
+  return `<rect class="foot" x="76" y="202" width="32" height="9" rx="3"/><rect class="foot" x="192" y="202" width="32" height="9" rx="3"/>
   <rect class="plinth" fill="url(#${u}p)" x="54" y="176" width="192" height="28" rx="9"/>
   <path class="plinth-hi" d="M66 182.5 H234"/>
   <path class="cord-shadow" d="${CORD}" transform="translate(1.6 1.6)"/>
@@ -68,10 +66,27 @@ export function phoneScene(): string {
     <ellipse class="cup-rim" cx="60" cy="102" rx="34" ry="6.5"/><ellipse class="cup-rim" cx="240" cy="102" rx="34" ry="6.5"/>
     <path class="hs-gloss" d="M98 57 C128 47 172 47 202 57"/>
     <path class="cup-gloss" d="M36 86 Q41 73 57 70 M216 86 Q221 73 237 70"/>
-  </g>
+  </g>`;
+}
+export function phoneScene(): string {
+  const u = uid("hbs");
+  return `<svg class="hb-scene" viewBox="0 0 300 220" aria-hidden="true" focusable="false">
+  <defs>
+    <radialGradient id="${u}g" cx="50%" cy="55%" r="50%"><stop offset="0" class="g-glow0"/><stop offset="1" class="g-glow1"/></radialGradient>
+    ${phoneDefs(u)}
+  </defs>
+  <ellipse class="glow" fill="url(#${u}g)" cx="150" cy="128" rx="150" ry="100"/>
+  <ellipse class="floor" cx="150" cy="214" rx="104" ry="6"/>
+  ${phoneParts(u)}
   <g class="rings"><path d="M30 40 L20 31"/><path d="M150 34 V21"/><path d="M270 40 L280 31"/></g>
   <g class="arcs"><path d="M12 58 q-9 16 0 32"/><path d="M288 58 q9 16 0 32"/></g>
 </svg>`;
+}
+/** The same phone as an SVG group for another scene (the staff How it works desk): <g class="hb-phone"> with its own gradients; attrs places it
+ *  (e.g. 'transform="translate(156 80) scale(.6)"'). Its colours are hotline.css's phone rules (:is(.hb-scene, .hb-phone)). */
+export function phoneGroup(attrs = ""): string {
+  const u = uid("hbp");
+  return `<g class="hb-phone" ${attrs}><defs>${phoneDefs(u)}</defs>${phoneParts(u)}</g>`;
 }
 
 export const I: Record<string, string> = {

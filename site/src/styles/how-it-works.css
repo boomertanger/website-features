@@ -201,6 +201,16 @@
 @container bt (max-width: 640px) {
   .bt-root:not(#_) .ai-jr.ai-jr--4::after { height: calc(var(--p) * (100% - 40px) / 3); }
 }
+/* The five-step journey (.ai-jr--5): the same line and circles in five columns above 900px (a message's journey on the staff inbox guide);
+   641 to 900px keeps the base three columns; phones keep the base vertical path with the fill re-measured for five steps. */
+@container bt (min-width: 901px) {
+  .bt-root:not(#_) .ai-jr.ai-jr--5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .bt-root:not(#_) .ai-jr.ai-jr--5::before { right: calc((100% - 40px) / 5 - 29px); }
+  .bt-root:not(#_) .ai-jr.ai-jr--5::after { width: calc(var(--p) * ((100% - 40px) / 5 + 10px)); }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .ai-jr.ai-jr--5::after { height: calc(var(--p) * (100% - 40px) / 4); }
+}
 .bt-root:not(#_) .ai-jr-v { margin-top: 4px; font-size: var(--bt-text-xs); font-weight: 800; color: var(--bt-text-faint); }
 .bt-root:not(#_) .ai-jr li.is-met:not(.is-on) .ai-jr-num, .bt-root:not(#_) .ai-jr[data-active] li.is-met:not(.is-on) .ai-jr-num { background: var(--bt-lime); }
 .bt-root:not(#_) .ai-jr li.is-met .ai-jr-v { color: var(--bt-lime); }

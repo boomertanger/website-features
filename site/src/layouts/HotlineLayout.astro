@@ -3,6 +3,7 @@
 // section "how" (/contact/how-it-works) brings its own frame (the hero in an .hb-wrap, then TocLayout).
 // section "inbox" (/admin/inbox) is staff only and not indexed: a skeleton shows while auth loads, visitors get a sign-in gate, everyone without the inbox a short "not yours" gate.
 // Display only: the rules and the callables do the real checking. scripts/hotline/inbox.ts sets [data-hb-access] = loading | join | denied | page.
+// section "staffhow" (/admin/inbox/how-it-works, the staff guide) has the same gate and brings its own frame like "how" (scripts/hotline/staff-how.ts sets the access).
 import BaseLayout from "./BaseLayout.astro";
 import HotlineBar from "../components/hotline/HotlineBar.astro";
 import "../styles/how-it-works.css";   // the How it works blocks (shared); before hotline.css so the scenes win ties
@@ -13,10 +14,22 @@ import "../styles/hotline-inbox.css";
 interface Props { title: string; description?: string; section?: string | null }
 const { title, description, section = null } = Astro.props;
 const inbox = section === "inbox";
+const staffHow = section === "staffhow";
 ---
-<BaseLayout title={title} description={description} noindex={inbox}>
+<BaseLayout title={title} description={description} noindex={inbox || staffHow}>
   <HotlineBar slot="bar" section={section} />
-  {section === "how" ? <slot /> : (
+  {staffHow ? (
+  <div data-hb-access="loading">
+    <div class="hb-ib-skel hb-wrap" aria-hidden="true"><span class="bt-skeleton hb-ib-sk-hero"></span><span class="bt-skeleton hb-ib-sk-list"></span></div>
+    <section class="hb-ib-gate hb-wrap" aria-labelledby="hb-gate-h">
+      <h1 class="bt-title" id="hb-gate-h">Staff only</h1>
+      <p data-gate-join>This guide is for Boomertanger and the admins who help with the Hotline Boom inbox. Sign in with your account.</p>
+      <p data-gate-denied>This guide is for Boomertanger and the admins who help with the Hotline Boom inbox. Want to reach them? Send a message instead.</p>
+      <div class="hb-ib-gate-acts"><a class="bt-btn bt-btn--primary" href="/account" data-signin="signin" data-gate-join>Sign in</a><a class="bt-btn bt-btn--secondary" href="/contact">Send a message</a></div>
+    </section>
+    <div class="hb-ib-slot"><slot /></div>
+  </div>
+  ) : section === "how" ? <slot /> : (
   <div class="hb-wrap">
     {inbox ? (
       <div data-hb-access="loading">

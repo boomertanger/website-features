@@ -70,36 +70,36 @@
 .bt-root:not(#_) .hb-scene { width: 100%; height: auto; overflow: visible; }
 .bt-root:not(#_) .hb-scene .g-glow0 { stop-color: var(--bt-primary); stop-opacity: 0.22; }
 .bt-root:not(#_) .hb-scene .g-glow1 { stop-color: var(--bt-primary); stop-opacity: 0; }
-.bt-root:not(#_) .hb-scene .g-body0 { stop-color: var(--hb-bk-body-0); }
-.bt-root:not(#_) .hb-scene .g-body1 { stop-color: var(--hb-bk-body-1); }
-.bt-root:not(#_) .hb-scene .g-plinth0 { stop-color: var(--hb-bk-plinth-0); }
-.bt-root:not(#_) .hb-scene .g-plinth2 { stop-color: rgb(var(--bt-ink-rgb)); }
-.bt-root:not(#_) .hb-scene .g-hand0 { stop-color: var(--hb-bk-hand-0); }
-.bt-root:not(#_) .hb-scene .g-hand1 { stop-color: var(--hb-bk-hand-1); }
-.bt-root:not(#_) .hb-scene .g-ring0 { stop-color: var(--hb-hand-0); }   /* the dial's purple ring, as before */
-.bt-root:not(#_) .hb-scene .g-ring1 { stop-color: var(--hb-ring-1); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-body0 { stop-color: var(--hb-bk-body-0); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-body1 { stop-color: var(--hb-bk-body-1); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-plinth0 { stop-color: var(--hb-bk-plinth-0); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-plinth2 { stop-color: rgb(var(--bt-ink-rgb)); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-hand0 { stop-color: var(--hb-bk-hand-0); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-hand1 { stop-color: var(--hb-bk-hand-1); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-ring0 { stop-color: var(--hb-hand-0); }   /* the dial's purple ring, as before */
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .g-ring1 { stop-color: var(--hb-ring-1); }
 .bt-root:not(#_) .hb-scene .floor { fill: rgb(var(--bt-ink-rgb)); opacity: 0.6; }
-.bt-root:not(#_) .hb-scene .foot { fill: var(--hb-bk-foot); }
-.bt-root:not(#_) .hb-scene :is(.plinth, .body, .post) { stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.5; }
-.bt-root:not(#_) .hb-scene .plinth-hi { fill: none; stroke: rgba(var(--bt-gold-rgb), 0.45); stroke-width: 1.3; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .body-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.11); stroke-width: 7; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .body-lo { fill: none; stroke: rgba(var(--bt-ink-rgb), 0.4); stroke-width: 7; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .post-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.14); stroke-width: 2; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .hs-shadow { fill: rgb(var(--bt-ink-rgb)); opacity: 0.4; }
-.bt-root:not(#_) .hb-scene .cord { fill: none; stroke: var(--hb-bk-cord); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.bt-root:not(#_) .hb-scene .cord-shadow { fill: none; stroke: rgb(var(--bt-ink-rgb)); opacity: 0.45; stroke-width: 2.4; }
-.bt-root:not(#_) .hb-scene .bezel { fill: var(--hb-bk-bezel); stroke: rgba(var(--bt-gold-rgb), 0.6); stroke-width: 1.4; }
-.bt-root:not(#_) .hb-scene .ring { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
-.bt-root:not(#_) .hb-scene .ring-shine { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.5); stroke-width: 2; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .holes circle { fill: var(--hb-hole); stroke: rgba(var(--bt-sheen-rgb), 0.2); stroke-width: 1; }
-.bt-root:not(#_) .hb-scene .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), 0.85); stroke-width: 1.4; }
-.bt-root:not(#_) .hb-scene .glyph { fill: var(--bt-title); }
-.bt-root:not(#_) .hb-scene .stop { stroke: var(--bt-title); stroke-width: 3.4; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .hs { fill: none; stroke-width: 20; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .cup { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
-.bt-root:not(#_) .hb-scene .cup-rim { fill: var(--hb-bk-rim); opacity: 0.85; }
-.bt-root:not(#_) .hb-scene .hs-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.6); stroke-width: 2.2; stroke-linecap: round; }
-.bt-root:not(#_) .hb-scene .cup-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.4); stroke-width: 1.8; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .foot { fill: var(--hb-bk-foot); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) :is(.plinth, .body, .post) { stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.5; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .plinth-hi { fill: none; stroke: rgba(var(--bt-gold-rgb), 0.45); stroke-width: 1.3; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .body-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.11); stroke-width: 7; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .body-lo { fill: none; stroke: rgba(var(--bt-ink-rgb), 0.4); stroke-width: 7; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .post-hi { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.14); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .hs-shadow { fill: rgb(var(--bt-ink-rgb)); opacity: 0.4; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .cord { fill: none; stroke: var(--hb-bk-cord); stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .cord-shadow { fill: none; stroke: rgb(var(--bt-ink-rgb)); opacity: 0.45; stroke-width: 2.4; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .bezel { fill: var(--hb-bk-bezel); stroke: rgba(var(--bt-gold-rgb), 0.6); stroke-width: 1.4; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .ring { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .ring-shine { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.5); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .holes circle { fill: var(--hb-hole); stroke: rgba(var(--bt-sheen-rgb), 0.2); stroke-width: 1; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .plate { fill: var(--hb-dial-plate); stroke: rgba(var(--bt-gold-rgb), 0.85); stroke-width: 1.4; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .glyph { fill: var(--bt-title); }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .stop { stroke: var(--bt-title); stroke-width: 3.4; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .hs { fill: none; stroke-width: 20; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .cup { stroke: rgba(var(--bt-ink-rgb), 0.35); stroke-width: 1; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .cup-rim { fill: var(--hb-bk-rim); opacity: 0.85; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .hs-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.6); stroke-width: 2.2; stroke-linecap: round; }
+.bt-root:not(#_) :is(.hb-scene, .hb-phone) .cup-gloss { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.4); stroke-width: 1.8; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .rings path { fill: none; stroke: var(--bt-title); stroke-width: 3; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .arcs path { fill: none; stroke: var(--bt-primary-soft); stroke-width: 3; stroke-linecap: round; }
 .bt-root:not(#_) .hb-scene .handset { transform-box: view-box; transform-origin: 150px 76px; animation: hb-rattle 6.5s ease-in-out 0.6s infinite; transition: transform 0.45s cubic-bezier(0.3, 1.4, 0.5, 1); }

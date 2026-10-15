@@ -409,7 +409,7 @@
                   .bt-flip-face (front: .bt-flip-medal, b, .bt-flip-sub, .bt-flip-hint) and
                   .bt-flip-face.bt-flip-face--back (.bt-flip-k labels, .bt-flip-v values, .bt-flip-tag).
                   Hover or focus turns it; a tap toggles .is-flipped (shared/ui/flip-card.js). Tones:
-                  --red --gold --teal --primary (or set --c). .bt-flip-grid lays out four (two at 900px).
+                  --red --gold --teal --primary --blue --pink (or set --c). .bt-flip-grid lays out four (two at 900px).
                   Reduced motion: it cross-fades to the back instead of turning.
                   .is-spotlight: the card a deep link points to (/trophies?badge=<id>): a gold ring and glow
                   that pulses twice and settles (the page removes it after ~2.4 s); reduced motion: a steady
@@ -426,6 +426,8 @@
 .bt-root:not(#_) .bt-flip--gold { --c: var(--bt-gold); }
 .bt-root:not(#_) .bt-flip--teal { --c: var(--bt-teal); }
 .bt-root:not(#_) .bt-flip--primary { --c: var(--bt-primary); }
+.bt-root:not(#_) .bt-flip--blue { --c: var(--bt-blue); }
+.bt-root:not(#_) .bt-flip--pink { --c: var(--bt-pink); }
 .bt-root:not(#_) .bt-flip-in { position: relative; display: block; height: 100%; transform-style: preserve-3d; transition: transform 0.6s cubic-bezier(.3, .7, .2, 1); }
 .bt-root:not(#_) .bt-flip:is(:hover, :focus-visible, .is-flipped) .bt-flip-in { transform: rotateY(180deg); }
 .bt-root:not(#_) .bt-flip:focus-visible { outline: none; }

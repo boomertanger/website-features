@@ -7,10 +7,11 @@ import { HB_ICON, icon } from "../../scripts/hotline/art";
 interface Props { section?: string | null }
 const { section = null } = Astro.props;
 const inbox = section === "inbox";
+const staffHow = section === "staffhow";   // the staff guide: the Staff only tag and a link back to the inbox
 ---
-<div class:list={["bt-sticky-bar hb-bar", { "hb-bar--inbox": inbox }]} data-hb-dock>
+<div class:list={["bt-sticky-bar hb-bar", { "hb-bar--inbox": inbox || staffHow }]} data-hb-dock>
   <div class="bt-topbar">
-    <a class="bt-wordmark bt-wordmark--power" href={inbox ? "/admin/inbox" : "/contact"} aria-label={inbox ? "Hotline Boom inbox" : "Hotline Boom"}>
+    <a class="bt-wordmark bt-wordmark--power" href={inbox || staffHow ? "/admin/inbox" : "/contact"} aria-label={inbox || staffHow ? "Hotline Boom inbox" : "Hotline Boom"}>
       <span class="bt-wordmark-icon" set:html={HB_ICON} />
       <span class="bt-wordmark-text" aria-hidden="true">HOTLINE <span class="bt-wordmark-accent">BOOM</span></span>
     </a>
@@ -22,6 +23,11 @@ const inbox = section === "inbox";
           <a href="/admin/inbox?tab=sources" data-tab="sources">Sources</a>
           <a href="/admin/inbox?tab=settings" data-tab="settings" hidden>Settings</a>
         </nav>
+      </>
+    ) : staffHow ? (
+      <>
+        <span class="bt-admin-tag bt-admin-tag--small hb-ib-staff"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z"/></svg>Staff only</span>
+        <div class="bt-topnav"><a class="bt-btn bt-btn--ghost bt-btn--sm hb-act" href="/admin/inbox" aria-label="Back to the inbox"><Fragment set:html={icon("back")} /><span class="bt-btn-label">Back to the inbox</span></a></div>
       </>
     ) : (
       <div class="bt-topnav">

@@ -1,0 +1,243 @@
+/* /admin/inbox/how-it-works, the Hotline Boom staff guide (docs/specs/talk-back.md §10; mockup docs/design/mockups/talk-back-inbox-how-it-works.html, H1 "The desk").
+   Scope hb-sh-. Only the page's own scenes and the small blocks it adds: the desk hero (scripts/hotline/staff-art.ts deskScene; its phone is the /contact hero's
+   Bakelite phone, coloured by hotline.css), the lane stage scenes, the journey's travelling envelope, the fact cards with drawn icons, the spam vs real columns,
+   the Gears table's numbers, and (chapter 09) the pretend desk. The frame comes from the kit and styles/how-it-works.css (.ai-*, .bt-chapter, .bt-flip,
+   .bt-placard, .bt-chat, .bt-table) and hotline.css (.hb-hw-hero, .hb-hw-stage, .hb-hw-note, .hb-hw-cta). Feature colours are declared once here; everything
+   else is a --bt-* token. Container queries only; reduced motion: every scene shows its finished state, still. */
+.bt-root:not(#_) {
+  --hb-sh-wall-0: #150f16;     /* the office wall, top to bottom */
+  --hb-sh-wall-1: #1f1720;
+  --hb-sh-top-0: #2c2129;      /* the desk top, back to front */
+  --hb-sh-top-1: #1c151b;
+  --hb-sh-edge: #120d12;       /* the desk's front edge */
+  --hb-sh-warm: #ffc45c;       /* the desk lamp's warm light */
+  --hb-sh-bulb: #ffd27a;
+  --hb-sh-arm: #3a2f38;        /* the lamp arm and shade */
+  --hb-sh-shade: #4a3b46;
+  --hb-sh-clock: #120d13;
+  --hb-sh-sil: #060508;        /* the silhouette and its headphones */
+  --hb-sh-band: #3a3040;
+  --hb-sh-cup: #241c2a;
+  --hb-sh-mug: #241e27;
+  --hb-sh-tray: #0f0b10;       /* the trays */
+  --hb-sh-tray-f: #0a080b;
+  --hb-sh-paper: #f2ece4;      /* envelopes and messages, front to back */
+  --hb-sh-paper-2: #e2dad1;
+  --hb-sh-paper-3: #cfc6bd;
+  --hb-sh-fold: #b9adb6;
+  --hb-sh-team-0: #2a1f33;     /* the team lane's lamp board */
+  --hb-sh-team-1: #16111a;
+  --hb-sh-lamp-off: #3a2c48;
+  --hb-sh-socket: #0d0a0e;
+  --hb-sh-safe-0: #2b2219;     /* the owner lane's safe */
+  --hb-sh-safe-1: #15110d;
+  --hb-sh-safe-dial: #1a140f;
+}
+
+/* ---------- the hero ---------- */
+.bt-root:not(#_) .hb-sh-hero { grid-template-columns: minmax(0, 1fr) minmax(300px, 520px); }
+.bt-root:not(#_) .hb-sh-scene { position: relative; }
+.bt-root:not(#_) .hb-sh-desk { display: block; width: 100%; height: auto; overflow: visible; border-radius: var(--bt-radius-xl); }
+.bt-root:not(#_) .hb-sh-stats { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+.bt-root:not(#_) .hb-sh-stats .bt-tag b { color: var(--bt-text); margin-left: 4px; }
+/* the scene: wall, neon, clock, lamp */
+.bt-root:not(#_) .hb-sh-desk .g-wall0 { stop-color: var(--hb-sh-wall-0); }
+.bt-root:not(#_) .hb-sh-desk .g-wall1 { stop-color: var(--hb-sh-wall-1); }
+.bt-root:not(#_) .hb-sh-desk .g-top0 { stop-color: var(--hb-sh-top-0); }
+.bt-root:not(#_) .hb-sh-desk .g-top1 { stop-color: var(--hb-sh-top-1); }
+.bt-root:not(#_) .hb-sh-desk .g-cone0 { stop-color: var(--hb-sh-warm); stop-opacity: 0.42; }
+.bt-root:not(#_) .hb-sh-desk .g-cone1 { stop-color: var(--hb-sh-warm); stop-opacity: 0.06; }
+.bt-root:not(#_) .hb-sh-desk .g-cone2 { stop-color: var(--hb-sh-warm); stop-opacity: 0; }
+.bt-root:not(#_) .hb-sh-desk .g-rim0 { stop-color: var(--hb-sh-warm); stop-opacity: 0; }
+.bt-root:not(#_) .hb-sh-desk .g-rim1 { stop-color: var(--hb-sh-warm); stop-opacity: 0.7; }
+.bt-root:not(#_) .hb-sh-desk .neon-box { fill: rgba(var(--bt-ink-rgb), 0.35); stroke: rgba(var(--bt-gold-rgb), 0.55); stroke-width: 1.5; }
+.bt-root:not(#_) .hb-sh-desk .neon-t { fill: var(--bt-title); font: 900 15px var(--bt-font); letter-spacing: 0.32em; text-anchor: middle; filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.9)); animation: hb-sh-neon 7s steps(1, end) infinite; }
+@keyframes hb-sh-neon { 0%, 61%, 64%, 100% { opacity: 1; } 62%, 63.5% { opacity: 0.35; } }
+.bt-root:not(#_) .hb-sh-desk .clk { fill: var(--hb-sh-clock); stroke: rgba(var(--bt-sheen-rgb), 0.18); stroke-width: 2; }
+.bt-root:not(#_) .hb-sh-desk .clk-c { fill: var(--bt-text-muted); }
+.bt-root:not(#_) .hb-sh-desk :is(.ticks line, .hand-h, .hand-m) { stroke: var(--bt-text-muted); stroke-width: 2; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-desk .hand-m { stroke-width: 1.5; transform-box: view-box; transform-origin: 0 0; animation: hb-sh-tick 12s steps(12, end) infinite; }
+@keyframes hb-sh-tick { to { transform: rotate(360deg); } }
+.bt-root:not(#_) .hb-sh-desk .cone { animation: hb-sh-flicker 9s steps(1, end) infinite; }
+@keyframes hb-sh-flicker { 0%, 33%, 35%, 100% { opacity: 1; } 34% { opacity: 0.55; } }
+.bt-root:not(#_) .hb-sh-desk .arm { fill: none; stroke: var(--hb-sh-arm); stroke-width: 4; stroke-linecap: round; stroke-linejoin: round; }
+.bt-root:not(#_) .hb-sh-desk .shade { fill: var(--hb-sh-shade); stroke: rgba(var(--bt-gold-rgb), 0.5); }
+.bt-root:not(#_) .hb-sh-desk .bulb { fill: var(--hb-sh-bulb); filter: drop-shadow(0 0 6px var(--hb-sh-warm)); }
+/* the silhouette in over-ear headphones, nodding, with a purple status light */
+.bt-root:not(#_) .hb-sh-desk .sil-body { fill: var(--hb-sh-sil); stroke: rgba(var(--bt-primary-rgb), 0.25); stroke-width: 1; }
+.bt-root:not(#_) .hb-sh-desk .sil-rim { fill: none; stroke-width: 2.5; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-desk .hp-band { fill: none; stroke: var(--hb-sh-band); stroke-width: 7; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-desk .hp-cup { fill: var(--hb-sh-cup); stroke: rgba(var(--bt-primary-rgb), 0.75); stroke-width: 1.6; }
+.bt-root:not(#_) .hb-sh-desk .hp-led { fill: var(--bt-primary-soft); filter: drop-shadow(0 0 4px var(--bt-primary)); animation: hb-sh-led 2.4s ease-in-out infinite; }
+@keyframes hb-sh-led { 50% { opacity: 0.35; } }
+.bt-root:not(#_) .hb-sh-desk .sil-head { transform-box: fill-box; transform-origin: 50% 100%; animation: hb-sh-bob 2.4s ease-in-out infinite; }
+@keyframes hb-sh-bob { 0%, 100% { transform: rotate(0); } 25% { transform: rotate(1.5deg) translateY(1px); } 75% { transform: rotate(-1.2deg); } }
+/* the desk, the phone's handset lifting as each envelope passes, the mug */
+.bt-root:not(#_) .hb-sh-desk .top { stroke: rgba(var(--bt-gold-rgb), 0.18); }
+.bt-root:not(#_) .hb-sh-desk .edge { fill: var(--hb-sh-edge); }
+.bt-root:not(#_) .hb-sh-desk .lip { stroke: rgba(var(--bt-gold-rgb), 0.3); }
+.bt-root:not(#_) .hb-sh-desk .hb-phone .handset { transform-box: fill-box; transform-origin: 50% 100%; animation: hb-sh-lift 12s ease-in-out infinite; }
+@keyframes hb-sh-lift { 0%, 5%, 11%, 29%, 35%, 53%, 59%, 100% { transform: none; } 7%, 31%, 55% { transform: translateY(-8px) rotate(-3deg); } 9%, 33%, 57% { transform: translateY(-3px) rotate(2deg); } }
+.bt-root:not(#_) .hb-sh-desk .mug-b { fill: var(--hb-sh-mug); stroke: rgba(var(--bt-gold-rgb), 0.45); stroke-width: 1.2; }
+.bt-root:not(#_) .hb-sh-desk .mug-h { fill: none; stroke: var(--hb-sh-mug); stroke-width: 6; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-desk .mug-hi { stroke: rgba(var(--bt-sheen-rgb), 0.12); stroke-width: 3; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-desk .steam { fill: none; stroke: rgba(var(--bt-sheen-rgb), 0.22); stroke-width: 2; stroke-linecap: round; animation: hb-sh-steam 4s ease-in-out infinite; }
+.bt-root:not(#_) .hb-sh-desk .steam.s2 { animation-delay: 2s; }
+@keyframes hb-sh-steam { 0% { opacity: 0; transform: translateY(6px); } 40% { opacity: 1; } 100% { opacity: 0; transform: translateY(-10px); } }
+/* the trays and the envelopes */
+.bt-root:not(#_) .hb-sh-desk .tr { fill: var(--hb-sh-tray); stroke-width: 1.5; }
+.bt-root:not(#_) .hb-sh-desk .tr-f { fill: var(--hb-sh-tray-f); }
+.bt-root:not(#_) .hb-sh-desk .tray-new .tr { stroke: rgba(var(--bt-primary-rgb), 0.7); }
+.bt-root:not(#_) .hb-sh-desk .tray-done .tr { stroke: rgba(var(--bt-gold-rgb), 0.6); animation: hb-sh-done 12s ease-in-out infinite; }
+@keyframes hb-sh-done { 0%, 74%, 94%, 100% { stroke: rgba(var(--bt-gold-rgb), 0.6); filter: none; } 78%, 90% { stroke: var(--bt-lime); filter: drop-shadow(0 0 6px var(--bt-lime)); } }
+.bt-root:not(#_) .hb-sh-desk .tl { font: 800 11px var(--bt-font); letter-spacing: 0.18em; text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-desk .tl-new { fill: var(--bt-primary-soft); }
+.bt-root:not(#_) .hb-sh-desk .tl-done { fill: var(--bt-title); }
+.bt-root:not(#_) .hb-sh-desk .pp { fill: var(--hb-sh-paper); }
+.bt-root:not(#_) .hb-sh-desk .pf { fill: none; stroke: var(--hb-sh-fold); stroke-width: 1.6; }
+.bt-root:not(#_) .hb-sh-desk .pk { fill: var(--bt-primary); }
+.bt-root:not(#_) .hb-sh-desk .pn { fill: var(--bt-text); font: 800 9px var(--bt-font); text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-desk .card { transform-box: view-box; transform-origin: 0 0; }
+.bt-root:not(#_) .hb-sh-desk .c1 { animation: hb-sh-c1 12s cubic-bezier(0.55, 0, 0.25, 1) infinite; }
+.bt-root:not(#_) .hb-sh-desk .c2 { animation: hb-sh-c2 12s cubic-bezier(0.55, 0, 0.25, 1) infinite; }
+.bt-root:not(#_) .hb-sh-desk .c3 { animation: hb-sh-c3 12s cubic-bezier(0.55, 0, 0.25, 1) infinite; }
+@keyframes hb-sh-c1 { 0%, 6% { transform: none; opacity: 1; } 16% { transform: translate(136px, -86px); } 25%, 92% { transform: translate(272px, 12px); opacity: 1; } 94% { opacity: 0; transform: translate(272px, 12px); } 95% { opacity: 0; transform: none; } 100% { opacity: 1; transform: none; } }
+@keyframes hb-sh-c2 { 0%, 30% { transform: none; opacity: 1; } 40% { transform: translate(136px, -86px); } 49%, 92% { transform: translate(276px, 8px); opacity: 1; } 94% { opacity: 0; transform: translate(276px, 8px); } 95% { opacity: 0; transform: none; } 100% { opacity: 1; transform: none; } }
+@keyframes hb-sh-c3 { 0%, 54% { transform: none; opacity: 1; } 64% { transform: translate(136px, -86px); } 73%, 92% { transform: translate(280px, 4px); opacity: 1; } 94% { opacity: 0; transform: translate(280px, 4px); } 95% { opacity: 0; transform: none; } 100% { opacity: 1; transform: none; } }
+.bt-root:not(#_) .hb-sh-desk .rm-only { display: none; }
+/* Desk / Clear slams in once the three are done */
+.bt-root:not(#_) .hb-sh-desk .cs-in { transform-box: fill-box; transform-origin: 50% 50%; opacity: 0; animation: hb-sh-cs 12s ease-out infinite; }
+@keyframes hb-sh-cs { 0%, 75% { opacity: 0; transform: scale(1.7) rotate(-14deg); } 78% { opacity: 1; transform: scale(0.94) rotate(-8deg); } 80%, 91% { opacity: 1; transform: scale(1) rotate(-8deg); } 94%, 100% { opacity: 0; transform: scale(1) rotate(-8deg); } }
+.bt-root:not(#_) .hb-sh-desk .cs-ring { fill: rgba(var(--bt-ink-rgb), 0.85); stroke: var(--bt-lime); stroke-width: 3; filter: drop-shadow(0 0 8px var(--bt-lime)); }
+.bt-root:not(#_) .hb-sh-desk .cs-s { fill: var(--bt-text-muted); font: 800 8px var(--bt-font); letter-spacing: 0.2em; text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-desk .cs-b { fill: var(--bt-lime); font: 900 13px var(--bt-font); letter-spacing: 0.06em; text-anchor: middle; }
+
+/* ---------- 01 the two lanes (stage cards; the card itself is hotline.css .hb-hw-stage) ---------- */
+.bt-root:not(#_) .hb-sh-stages { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.bt-root:not(#_) .hb-sh-art { border-radius: 12px; overflow: hidden; background: radial-gradient(70% 90% at 50% 100%, rgba(var(--bt-primary-rgb), 0.16), transparent 70%), var(--bt-bg); }
+.bt-root:not(#_) .hb-sh-stage.is-owner .hb-sh-art { background: radial-gradient(70% 90% at 50% 100%, rgba(var(--bt-gold-rgb), 0.14), transparent 70%), var(--bt-bg); }
+.bt-root:not(#_) .hb-sh-ln { display: block; width: 100%; height: auto; }
+.bt-root:not(#_) .hb-sh-ln .g-team0 { stop-color: var(--hb-sh-team-0); }
+.bt-root:not(#_) .hb-sh-ln .g-team1 { stop-color: var(--hb-sh-team-1); }
+.bt-root:not(#_) .hb-sh-ln .g-safe0 { stop-color: var(--hb-sh-safe-0); }
+.bt-root:not(#_) .hb-sh-ln .g-safe1 { stop-color: var(--hb-sh-safe-1); }
+.bt-root:not(#_) .hb-sh-ln .board { stroke: rgba(var(--bt-primary-rgb), 0.45); }
+.bt-root:not(#_) .hb-sh-ln .lampbg { fill: var(--hb-sh-socket); stroke: rgba(var(--bt-sheen-rgb), 0.12); }
+.bt-root:not(#_) .hb-sh-ln .lamp { fill: var(--hb-sh-lamp-off); transition: fill 0.3s, filter 0.3s; }
+.bt-root:not(#_) .hb-sh-ln--team .k1 .lamp { fill: var(--bt-primary); }
+.bt-root:not(#_) .hb-sh-ln .kn { fill: var(--bt-text-muted); font: 800 11px var(--bt-font); text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-ln .tray { fill: var(--hb-sh-tray); stroke: rgba(var(--bt-primary-rgb), 0.65); stroke-width: 1.5; }
+.bt-root:not(#_) .hb-sh-ln .tray-f { fill: var(--hb-sh-tray-f); }
+.bt-root:not(#_) .hb-sh-ln .pp rect { fill: var(--hb-sh-paper); }
+.bt-root:not(#_) .hb-sh-ln .p2 rect { fill: var(--hb-sh-paper-2); }
+.bt-root:not(#_) .hb-sh-ln .p3 rect { fill: var(--hb-sh-paper-3); }
+.bt-root:not(#_) .hb-sh-ln .pf { fill: none; stroke: var(--hb-sh-fold); stroke-width: 1.4; }
+.bt-root:not(#_) .hb-sh-ln .p1 { transform-box: view-box; transform-origin: 0 0; transition: transform 0.5s cubic-bezier(0.3, 0.7, 0.2, 1), opacity 0.3s 0.3s; }
+.bt-root:not(#_) .hb-sh-ln .av circle { fill: var(--bt-primary-bg); stroke: rgba(var(--bt-primary-rgb), 0.6); stroke-width: 1.5; transition: stroke 0.3s, filter 0.3s; }
+.bt-root:not(#_) .hb-sh-ln .av text { fill: var(--bt-primary-soft); font: 800 9px var(--bt-font); text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-ln .picked { opacity: 0; transform: translateY(6px); transition: opacity 0.3s 0.35s, transform 0.3s 0.35s; }
+.bt-root:not(#_) .hb-sh-ln .picked rect { fill: var(--bt-admin-tint); stroke: var(--bt-admin-accent); }
+.bt-root:not(#_) .hb-sh-ln .picked text { fill: var(--bt-admin-text); font: 800 9px var(--bt-font); text-anchor: middle; }
+.bt-root:not(#_) .hb-sh-ln .glamp { fill: rgba(var(--bt-gold-rgb), 0.55); }
+.bt-root:not(#_) .hb-sh-ln .gn { fill: var(--bt-title); font: 800 10px var(--bt-font); }
+.bt-root:not(#_) .hb-sh-ln .safe { stroke: rgba(var(--bt-gold-rgb), 0.7); stroke-width: 2; }
+.bt-root:not(#_) .hb-sh-ln .safe-in { fill: none; stroke: rgba(var(--bt-gold-rgb), 0.25); }
+.bt-root:not(#_) .hb-sh-ln .slot { fill: rgb(var(--bt-ink-rgb)); stroke: rgba(var(--bt-gold-rgb), 0.4); }
+.bt-root:not(#_) .hb-sh-ln .dial-o { fill: var(--hb-sh-safe-dial); stroke: rgba(var(--bt-gold-rgb), 0.7); stroke-width: 2; }
+.bt-root:not(#_) .hb-sh-ln .dial-i { fill: var(--hb-sh-safe-0); stroke: rgba(var(--bt-gold-rgb), 0.35); }
+.bt-root:not(#_) .hb-sh-ln .dial line { stroke: rgba(var(--bt-gold-rgb), 0.7); stroke-width: 1.5; }
+.bt-root:not(#_) .hb-sh-ln .dial .dial-p { stroke: var(--bt-title); stroke-width: 2.5; stroke-linecap: round; }
+.bt-root:not(#_) .hb-sh-ln .dial { transform-box: view-box; transform-origin: 0 0; transition: transform 0.8s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .hb-sh-ln .lock .shackle { fill: none; stroke: var(--bt-title); stroke-width: 2.5; }
+.bt-root:not(#_) .hb-sh-ln .lock .lbody { fill: var(--bt-title); }
+.bt-root:not(#_) .hb-sh-ln .lock .kh { fill: var(--hb-sh-safe-dial); }
+.bt-root:not(#_) .hb-sh-ln .lock { transform-box: view-box; transform-origin: 0 -7px; }
+.bt-root:not(#_) .hb-sh-ln .env-in rect { fill: var(--hb-sh-paper); }
+.bt-root:not(#_) .hb-sh-ln .env-in path { fill: none; stroke: var(--hb-sh-fold); stroke-width: 1.4; }
+.bt-root:not(#_) .hb-sh-ln .env-in { transform-box: view-box; transform-origin: 0 0; transition: transform 0.6s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.25s 0.45s; }
+.bt-root:not(#_) .hb-sh-ln .plate text { fill: rgba(var(--bt-gold-rgb), 0.7); font: 800 7px var(--bt-font); letter-spacing: 0.2em; text-anchor: middle; }
+/* hover, focus or a tap: the team lane's lamps light, the top message lifts to an admin and "Picked up" appears; the safe's dial spins, the padlock
+   rattles and an envelope drops into the slot */
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--team .lamp { fill: var(--bt-primary); filter: drop-shadow(0 0 5px rgba(var(--bt-primary-rgb), 0.9)); }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--team .p1 { transform: translate(-112px, 4px) scale(0.85); opacity: 0; }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--team .av0 circle { stroke: var(--bt-admin-accent); filter: drop-shadow(0 0 5px var(--bt-admin-accent)); }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--team .picked { opacity: 1; transform: none; }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--owner .dial { transform: rotate(250deg); }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--owner .lock { animation: hb-sh-shake 0.5s ease-in-out 0.2s; }
+.bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--owner .env-in { transform: translateY(30px); opacity: 0; }
+@keyframes hb-sh-shake { 25% { transform: rotate(-12deg); } 50% { transform: rotate(9deg); } 75% { transform: rotate(-5deg); } }
+
+/* ---------- 02 the journey: five stops (.ai-jr--5, how-it-works.css) and an envelope that travels the line once ---------- */
+.bt-root:not(#_) .hb-sh-jrwrap { position: relative; }
+.bt-root:not(#_) .hb-sh-jr-ic svg { width: 20px; height: 20px; }
+.bt-root:not(#_) .hb-sh-jr-env { position: absolute; z-index: 4; top: 2px; left: calc(29px + var(--p, 0) * ((100% - 40px) / 5 + 10px)); width: 26px; height: 20px; display: grid; place-items: center; border-radius: 5px; background: var(--hb-sh-paper); color: var(--bt-primary); opacity: 0; transform: translate(-50%, -50%); pointer-events: none; box-shadow: 0 6px 14px var(--bt-lift-shadow); transition: left 0.9s cubic-bezier(0.5, 0, 0.3, 1), opacity 0.3s; }
+.bt-root:not(#_) .hb-sh-jr-env svg { width: 16px; height: 16px; }
+.bt-root:not(#_) .hb-sh-jrwrap.is-travel .hb-sh-jr-env { opacity: 1; }
+
+/* ---------- 03-05 fact cards with drawn icons, the escalation note, spam vs real ---------- */
+.bt-root:not(#_) :is(.hb-sh-facts, .hb-sh-tidy) { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .hb-sh-facts--4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+.bt-root:not(#_) .hb-sh-tidy { margin-top: 14px; }
+.bt-root:not(#_) .hb-sh-fact { display: grid; align-content: start; gap: 8px; padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); transition: transform 0.25s ease, border-color 0.25s; }
+.bt-root:not(#_) .hb-sh-fact:hover { transform: translateY(-2px); border-color: var(--bt-border-2); }
+.bt-root:not(#_) .hb-sh-fact > b { font-size: var(--bt-text-base); }
+.bt-root:not(#_) .hb-sh-fact > span { color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .hb-sh-fact > span b { color: var(--bt-text); }
+.bt-root:not(#_) .hb-sh-fic { --c: var(--bt-gold); display: grid; place-items: center; width: 40px; height: 40px; border-radius: 12px; color: var(--c); background: color-mix(in srgb, var(--c) 14%, transparent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--c) 35%, transparent); }
+.bt-root:not(#_) .hb-sh-fic svg { width: 22px; height: 22px; }
+.bt-root:not(#_) .hb-sh-fic--red { --c: var(--bt-red); }
+.bt-root:not(#_) .hb-sh-fic--teal { --c: var(--bt-teal); }
+.bt-root:not(#_) .hb-sh-fic--primary { --c: var(--bt-primary-soft); }
+.bt-root:not(#_) .hb-sh-fic--lime { --c: var(--bt-lime); }
+.bt-root:not(#_) :is(.hb-sh-neutral, .hb-sh-bbline) { display: flex; align-items: flex-start; gap: 14px; margin-top: 14px; padding: 16px 18px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .hb-sh-neutral { border-color: color-mix(in srgb, var(--bt-teal) 40%, transparent); }
+.bt-root:not(#_) :is(.hb-sh-neutral, .hb-sh-bbline) p { margin: 0; color: var(--bt-text-muted); line-height: 1.55; }
+.bt-root:not(#_) :is(.hb-sh-neutral, .hb-sh-bbline) p b { color: var(--bt-text); }
+.bt-root:not(#_) :is(.hb-sh-neutral, .hb-sh-bbline) .hb-sh-fic { flex: none; }
+.bt-root:not(#_) .hb-sh-vs { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .hb-sh-vs-col { padding: 16px 18px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+.bt-root:not(#_) .hb-sh-vs-col.is-real { border-style: solid; border-color: color-mix(in srgb, var(--bt-teal) 40%, transparent); }
+.bt-root:not(#_) .hb-sh-vs-col ul { margin: 10px 0 0; padding-left: 18px; color: var(--bt-text-muted); line-height: 1.7; }
+
+/* ---------- 06 Gears: the table's numbers (.bt-table), never pays, the flow (.ai-flow in one row) ---------- */
+.bt-root:not(#_) .hb-sh-gt th[scope="row"] { color: var(--bt-text); font-size: var(--bt-text-base); font-weight: 700; letter-spacing: normal; text-transform: none; text-align: left; white-space: nowrap; }
+.bt-root:not(#_) .hb-sh-gt td { color: var(--bt-text-muted); }
+.bt-root:not(#_) .hb-sh-gt td.g { color: var(--bt-title); font-size: var(--bt-text-xl); font-weight: 900; font-variant-numeric: tabular-nums; white-space: nowrap; }
+.bt-root:not(#_) .hb-sh-never { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; margin: 14px 0 18px; }
+.bt-root:not(#_) .hb-sh-never .bt-label { margin-right: 4px; }
+.bt-root:not(#_) .hb-sh-flow .ai-node-ic svg { width: 28px; height: 28px; }
+.bt-root:not(#_) .hb-sh-flow .ai-node-ic .hb-sh-fic { width: auto; height: auto; background: none; box-shadow: none; }
+.bt-root:not(#_) .hb-sh-pay { border-color: rgba(var(--bt-gold-rgb), 0.35); }
+@container bt (min-width: 901px) {
+  .bt-root:not(#_) .ai-flow.hb-sh-flow { grid-template-rows: auto; }
+  .bt-root:not(#_) .ai-flow.hb-sh-flow > * { grid-row: 1; }
+}
+
+/* ---------- 07 ---------- */
+.bt-root:not(#_) .hb-sh-flips .bt-flip-medal { font-size: 34px; }
+
+/* ---------- sizes ---------- */
+@container bt (max-width: 1024px) {
+  .bt-root:not(#_) .hb-sh-facts--4 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@container bt (max-width: 900px) {
+  .bt-root:not(#_) .hb-sh-hero { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .hb-sh-scene { order: -1; }
+  .bt-root:not(#_) .hb-sh-jr-env { display: none; }
+}
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) :is(.hb-sh-stages, .hb-sh-facts, .hb-sh-facts--4, .hb-sh-tidy, .hb-sh-vs) { grid-template-columns: minmax(0, 1fr); }
+}
+
+/* ---------- reduced motion: the finished state, still ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .hb-sh-desk :is(.neon-t, .hand-m, .cone, .hp-led, .sil-head, .steam, .tray-done .tr, .card, .cs-in), .bt-root:not(#_) .hb-sh-desk .hb-phone .handset { animation: none; }
+  .bt-root:not(#_) .hb-sh-desk .card { display: none; }
+  .bt-root:not(#_) .hb-sh-desk .rm-only { display: inline; }
+  .bt-root:not(#_) .hb-sh-desk .cs-in { opacity: 1; transform: rotate(-8deg); }
+  .bt-root:not(#_) .hb-sh-desk .tray-done .tr { stroke: var(--bt-lime); }
+  .bt-root:not(#_) .hb-sh-desk .steam { opacity: 0.6; }
+  .bt-root:not(#_) :is(.hb-sh-ln .p1, .hb-sh-ln .picked, .hb-sh-ln .dial, .hb-sh-ln .env-in, .hb-sh-ln .lamp, .hb-sh-fact, .hb-sh-jr-env) { transition: none; }
+  .bt-root:not(#_) .hb-sh-stage:is(:hover, :focus-within, .is-on) .hb-sh-ln--owner .lock { animation: none; }
+  .bt-root:not(#_) .hb-sh-fact:hover { transform: none; }
+}

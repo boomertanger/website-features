@@ -1,0 +1,158 @@
+---
+// /admin/inbox/how-it-works, the staff guide to the Hotline Boom inbox (docs/specs/talk-back.md §10, Part C; mockup docs/design/mockups/talk-back-inbox-how-it-works.html,
+// hero H1 "The desk" with the quality pass). Owner and inbox admins only (HotlineLayout "staffhow" gates the rest; scripts/hotline/staff-how.ts decides, display only).
+// Static: nothing secret on it, so the name check is explained without its rules. No Talk back strip (it's under /admin).
+// Frame: the hero (the desk scene, two .bt-tag counts from inboxStats), then TocLayout's chapters: 01 Your desk (two stage cards), 02 A message's journey (.ai-jr--5),
+// 03 Answering well, 04 When to escalate, 05 Spam and tidying, 06 Gears for inbox work (the values from crew/main.inbox, the flow), 07 Being seen (four .bt-flip medals),
+// 08 House rules (.bt-placard), and the closing "Open the inbox". Every number marked data-v is filled from crew/main.inbox by staff-how.ts (the defaults below
+// until then, and if it can't be read), the reply time from hotline/main.replyTime. It describes the inbox as it works today, email still off included.
+import HotlineLayout from "../../../layouts/HotlineLayout.astro";
+import TocLayout from "../../../components/TocLayout.astro";
+import Mascot from "../../../components/Mascot.astro";
+import artwork from "../../../../../shared/assets/mascot.svg?raw";
+import { deskScene, stageTeam, stageOwner, jrIcon, factIcon, mascotShapes } from "../../../scripts/hotline/staff-art";
+import "../../../styles/hotline-staff-how.css";
+
+import { V, v, NAV, chapter, JOURNEY, ESCALATE, MEDALS, labelOf, RULES } from "../../../scripts/hotline/staff-how-page";
+const MASCOT = mascotShapes(artwork);
+---
+<HotlineLayout title="Working the inbox" description="The Hotline Boom staff guide: what's yours to answer, answering well, when to escalate, spam and tidying, and how inbox work earns Gears." section="staffhow">
+  <div class="hb-hw hb-sh" data-sh>
+    <div class="hb-wrap">
+      <section class="hb-hw-hero hb-sh-hero" aria-labelledby="h-hero">
+        <div>
+          <p class="hb-hw-kicker">Staff guide</p>
+          <h1 class="bt-title bt-title--hero" id="h-hero">Working the inbox</h1>
+          <p class="hb-hw-lede">Answer people. Keep the desk clear. Here's how the Hotline Boom inbox works, what's yours to answer, and how the work gets noticed.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/admin/inbox">Open the inbox</a><a class="bt-btn bt-btn--ghost" href="#s-try" data-sh-try hidden>Try a pretend desk</a></div>
+          <div class="hb-sh-stats" data-sh-stats hidden><span class="bt-tag" data-sh-replies-tag hidden>Team first replies this month <b data-sh-replies></b></span><span class="bt-tag" data-sh-streak-tag hidden>Clear desk <b data-sh-streak></b></span></div>
+        </div>
+        <div class="hb-sh-scene"><Fragment set:html={deskScene(MASCOT)} /></div>
+      </section>
+    </div>
+
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+        <section class="ai-sec" id="s-desk" aria-labelledby="h-s-desk">
+          <Fragment set:html={chapter(1, "s-desk", "Your desk", "Two lanes. You work one of them.")} />
+          <div class="hb-sh-stages">
+            <article class="hb-hw-stage hb-sh-stage" tabindex="0">
+              <div class="hb-sh-art"><Fragment set:html={stageTeam()} /></div>
+              <b>The team lane</b>
+              <p>Lines 1 to 3: Say hi, Feedback &amp; questions, and Account help. You, the other inbox admins and Boomertanger share these. Questions sent from feature pages land here with the page attached.</p>
+            </article>
+            <article class="hb-hw-stage hb-sh-stage is-owner" tabindex="0">
+              <div class="hb-sh-art"><Fragment set:html={stageOwner()} /></div>
+              <b>The owner lane</b>
+              <p>Lines 4 to 6 (Business, Private matter, Report a person), anything ticked "Only Boomertanger should read this", and team-line messages that name someone on the crew go straight to Boomertanger. You never see them, not even as a count.</p>
+            </article>
+          </div>
+          <p class="hb-hw-note">Who works the inbox: Boomertanger and the admin grades chosen in the inbox settings. Boomertanger answers too, but never earns inbox Gears.</p>
+        </section>
+
+        <section class="ai-sec" id="s-journey" aria-labelledby="h-s-journey">
+          <Fragment set:html={chapter(2, "s-journey", "A message's journey", "From the moment it arrives to Done.")} />
+          <div class="hb-sh-jrwrap" data-sh-jrwrap>
+          <ol class="ai-jr ai-jr--5 hb-sh-jr" data-journey data-sh-journey>
+            {JOURNEY.map(([k, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic hb-sh-jr-ic" aria-hidden="true" set:html={jrIcon(k)} /><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+          <span class="hb-sh-jr-env" aria-hidden="true" set:html={jrIcon("new")} />
+          </div>
+          <p class="hb-hw-note">If someone already <b>picked it up</b>, leave it to them. If you picked something up and can't finish, <b>Let it go</b> so it's free again.</p>
+        </section>
+
+        <section class="ai-sec" id="s-answer" aria-labelledby="h-s-answer">
+          <Fragment set:html={chapter(3, "s-answer", "Answering well", "Kind, specific, and soon.")} />
+          <div class="hb-sh-facts">
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("kind")} /><b>Be kind and specific</b><span>Answer the actual question. Open the page shows what they saw before you reply.</span></div>
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("fast")} /><b>Reply within a day</b><span>People are told to expect a reply in about <span data-sh-replytime>3 days</span>. A first reply within <Fragment set:html={v("fastHours")} /> hours earns the fast bonus.</span></div>
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("mail")} /><b>While email is off</b><span>Write the reply and press <b>Send reply</b>. The site can't send email yet, so the box then offers <b>Open in my email</b> (your reply, filled in) and <b>Mark as replied</b>. Send it from the line's address, then mark it replied so the inbox and your Gears know.</span></div>
+          </div>
+          <div class="hb-sh-bbline"><Fragment set:html={factIcon("bot", "primary")} /><p>When a message says <b>"BOOMBOT showed 2 answers; they sent it anyway"</b>, the page's help didn't cover it. Answer it properly: it may be worth adding to BOOMBOT's answers. The <b>Internal note</b> tab is for the team only and is never sent.</p></div>
+        </section>
+
+        <section class="ai-sec" id="s-escalate" aria-labelledby="h-s-escalate">
+          <Fragment set:html={chapter(4, "s-escalate", "When to escalate", "Some messages belong to Boomertanger. Owner only moves them, one way: the message leaves the team inbox at once and can't be moved back.")} />
+          <div class="hb-sh-facts hb-sh-facts--4">
+            {ESCALATE.map(([ic, t, d]) => <div class="hb-sh-fact"><Fragment set:html={factIcon(ic, "red")} /><b>{t}</b><span>{d}</span></div>)}
+          </div>
+          <div class="hb-sh-neutral"><Fragment set:html={factIcon("scales", "teal")} /><p><b>Escalating is always neutral.</b> No Gears gained or lost: a reply you were already paid for stays paid, and the message leaves your reply-time numbers. When in doubt, escalate.</p></div>
+        </section>
+
+        <section class="ai-sec" id="s-spam" aria-labelledby="h-s-spam">
+          <Fragment set:html={chapter(5, "s-spam", "Spam and tidying", "Keep the desk clear without throwing away real messages.")} />
+          <div class="hb-sh-vs">
+            <div class="hb-sh-vs-col"><span class="bt-badge bt-badge--gray"><span class="bt-badge-dot"></span>Spam</span><ul><li>Ads and links selling something, crypto offers</li><li>Scams and "you won" messages</li><li>Bot gibberish and copy-paste floods</li></ul></div>
+            <div class="hb-sh-vs-col is-real"><span class="bt-badge bt-badge--teal"><span class="bt-badge-dot"></span>Real, even if rude</span><ul><li>An angry or blunt complaint</li><li>A confused question full of typos</li><li>A one-word "hi"</li></ul></div>
+          </div>
+          <div class="hb-sh-tidy">
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("check", "lime")} /><b>Done, no reply needed</b><span>For a thank-you or a duplicate: set it to Done without replying. If it was the oldest waiting message, that still earns the oldest-first Gear.</span></div>
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("clock", "gold")} /><b>Spam, then 10 seconds</b><span>Setting a message to Spam shows a gray stamp and <b>Undo</b> for 10 seconds. The mark pays <Fragment set:html={v("spam")} /> Gear after <Fragment set:html={v("spamHoldDays")} /> days if it still holds (up to <Fragment set:html={v("spamDailyCap")} /> a day).</span></div>
+            <div class="hb-sh-fact"><Fragment set:html={factIcon("scales", "teal")} /><b>Accuracy</b><span>The share of your spam marks that held. If Boomertanger un-spams one, it pays nothing and counts against you. Messages the site marks spam itself (too many links) never pay anyone.</span></div>
+          </div>
+          <p class="hb-hw-note">A <b>clear day</b>: at 9 PM Central, no team-lane message has waited more than <Fragment set:html={v("deskStaleHours")} /> hours without a reply. Waiting, Done, spam and Owner only messages don't count against it.</p>
+        </section>
+
+        <section class="ai-sec" id="s-gears" aria-labelledby="h-s-gears">
+          <Fragment set:html={chapter(6, "s-gears", "Gears for inbox work", "Answering people and keeping the desk clear earn Gears. Moving messages around doesn't.")} />
+          <div class="bt-table-wrap">
+            <table class="bt-table hb-sh-gt">
+              <thead><tr><th scope="col">What you do</th><th scope="col">Gears</th><th scope="col">When it pays</th></tr></thead>
+              <tbody>
+                <tr><th scope="row">First staff reply</th><td class="g"><Fragment set:html={v("reply")} /></td><td>The first reply on a team-lane message, to whoever replied (not the assignee). Mark as replied counts.</td></tr>
+                <tr><th scope="row">Fast reply</th><td class="g">+<Fragment set:html={v("fast")} /></td><td>That first reply came within <Fragment set:html={v("fastHours")} /> hours of the message.</td></tr>
+                <tr><th scope="row">Oldest first</th><td class="g">+<Fragment set:html={v("oldest")} /></td><td>Your first reply, or a close with no reply needed, was on the oldest waiting message.</td></tr>
+                <tr><th scope="row">Spam that held</th><td class="g"><Fragment set:html={v("spam")} /></td><td>Still spam after <Fragment set:html={v("spamHoldDays")} /> days, up to <Fragment set:html={v("spamDailyCap")} /> a day.</td></tr>
+                <tr><th scope="row">Clear desk</th><td class="g">+<Fragment set:html={v("desk")} /></td><td>7 clear days in a row, for everyone who handled <Fragment set:html={v("deskMinHandled")} /> that week.</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="hb-hw-note"><b>The daily cap:</b> <Fragment set:html={v("dailyCap")} /> inbox Gears per person per day, reset at midnight Central. Over it, your replies still send; they just don't pay, and the message's history says so.</p>
+          <div class="hb-sh-never"><span class="bt-label">Never pays</span><span class="bt-tag">Picking up</span><span class="bt-tag">Assigning</span><span class="bt-tag">Status changes</span><span class="bt-tag">Notes</span><span class="bt-tag">The spam click itself</span><span class="bt-tag">Owner only</span><span class="bt-tag">Your own message</span><span class="bt-tag">Owner-lane messages</span></div>
+          <div class="ai-flow hb-sh-flow" data-sh-flow>
+            <div class="bt-card ai-node" data-role="act" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true" set:html={jrIcon("reply")} /></div><h3>You act</h3><p>Reply, close, or mark spam.</p></div>
+            <div class="ai-arr" data-links="act check" aria-hidden="true"><span>sent</span><i><b></b></i></div>
+            <div class="bt-card ai-node" data-role="check" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true" set:html={jrIcon("wait")} /></div><h3>The server checks</h3><p>First reply? Within <Fragment set:html={v("fastHours")} /> hours? The oldest waiting? Under today's <Fragment set:html={v("dailyCap")} />-Gear cap?</p></div>
+            <div class="ai-arr" data-links="check pay" aria-hidden="true"><span>decided</span><i><b></b></i></div>
+            <div class="bt-card ai-node hb-sh-pay" data-role="pay" tabindex="0"><div class="ai-node-top"><span class="bt-icon-tile--lg ai-node-ic" aria-hidden="true" set:html={factIcon("gear", "gold")} /></div><h3>Gears, pending, or nothing</h3><p>The message's history always says which, and why.</p></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="s-seen" aria-labelledby="h-s-seen">
+          <Fragment set:html={chapter(7, "s-seen", "Being seen", "Your work shows up in three places, plus a monthly award. Flip a medal.")} />
+          <div class="bt-flip-grid hb-sh-flips">
+            {MEDALS.map((m) => (
+              <button type="button" class={`bt-flip bt-flip--${m.tone}`} aria-label={labelOf(m)}>
+                <span class="bt-flip-in">
+                  <span class="bt-flip-face" aria-hidden="true"><span class="bt-flip-medal">{m.ic}</span><b>{m.t}</b><span class="bt-flip-sub">{m.sub}</span><span class="bt-flip-hint">Hover or tap</span></span>
+                  <span class="bt-flip-face bt-flip-face--back" aria-hidden="true">{m.back.map(([k, x]) => <><span class="bt-flip-k">{k}</span><span class="bt-flip-v" set:html={x} /></>)}<span class="bt-flip-tag">{m.tag}</span></span>
+                </span>
+              </button>
+            ))}
+          </div>
+          <p class="hb-hw-note">The <b>This month</b> strip at the top of the inbox shows each person's first replies, fast replies, median reply time, Tidied (spam that held plus closes) and Accuracy, the team's median reply time and the Clear desk pips.</p>
+        </section>
+
+        <section class="ai-sec" id="s-rules" aria-labelledby="h-s-rules">
+          <Fragment set:html={chapter(8, "s-rules", "House rules", "Six things that keep the inbox fair, kind and private.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>Inbox rules</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="hb-hw-cta" aria-labelledby="h-cta">
+          <Mascot decorative />
+          <div><h2 id="h-cta">Ready to work the desk?</h2><p>The oldest message is waiting. Pick it up.</p></div>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href="/admin/inbox">Open the inbox</a></div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</HotlineLayout>
+
+<script>
+  import "../../../scripts/hotline/staff-how";
+</script>
