@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- feat(service-hub): functions/scripts/backfill-service-verdicts.js fills public/serviceVerdicts once from the Vault game items' totals (dry run by default, staging only)
 - feat(service-hub): public/serviceVerdicts: onServiceRatingWritten keeps each Vault game's members' verdict (love, like, nope) public at 3+ member ratings and removes it below
 - feat(vault): every non-hidden game page rates the game itself: the compact strip is wired to vault-<slug> when the page loads (and follows the pager); the rating dialog asks "How do you rate this game?" here and on /services
 - feat(vault): the V3 ballot on every To play game page ("Want Boomer to stream this?", votes and the Most wanted rank, Play this, Boomer!; the owner sees the count and rank, no button); the Community pick banner keeps its credit, loses its button
