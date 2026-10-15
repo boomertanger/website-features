@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- fix(service-hub): onVaultGameService creates a missing Vault game item on any edit (games added before the trigger heal) and never undoes an admin's retire or hide
 - feat(service-hub): functions/scripts/reconcile-vault-services.js lines Service Hub's Vault game items up with the Vault (create, revive, rename, retire; dry run by default, staging only unless allowed, never deletes an item or a rating, keeps an admin's retire or hide)
 - docs: Talk Back Part A staging results (test plan Results section; ROADMAP: Part A tested on staging, Parts B and C next)
 - fix(hotline): Talk Back page paths are stored without a trailing slash ("/" stays "/"; sub-pages kept exactly), and the inbox's Open the page falls back to the service's first route if a path is missing

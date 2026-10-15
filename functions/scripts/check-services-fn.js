@@ -288,6 +288,24 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "retired", "a hidden Vault game is retired");
   await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: true }, { title: "Silent Hill 2", hidden: false });
   assert.equal((await get(`${BASE}/items/vault-silent-hill-2`)).status, "live", "and back when it shows again");
+  // a game that existed before the trigger: a review or status edit (title and visibility unchanged) creates its missing item
+  await hub.onVaultGame("before-trigger", { title: "Before Trigger", status: "wishlist" }, { title: "Before Trigger", status: "finished", review: { score: 9 } });
+  assert.equal((await get(`${BASE}/items/vault-before-trigger`)).status, "live", "an edit heals a game with no item");
+  assert.deepEqual(await hub.onVaultGame("before-trigger", { title: "Before Trigger", status: "finished" }, { title: "Before Trigger", status: "finished", review: { score: 10 } }), { skipped: true }, "once it has an item, a review edit is skipped again");
+  // an admin's retire (serviceAdmin sets retiredFrom) is never undone by the game; the item's hidden flag (an admin's hide) is never touched
+  await wdb.doc(`${BASE}/items/vault-before-trigger`).update({ status: "retired", retiredFrom: "live" });
+  await hub.onVaultGame("before-trigger", { title: "Before Trigger" }, { title: "Before Trigger (Director's Cut)" });
+  let bt = await get(`${BASE}/items/vault-before-trigger`);
+  assert.equal(bt.status, "retired", "an admin-retired item stays retired"); assert.equal(bt.name, "Before Trigger (Director's Cut)", "but follows the game's title");
+  await hub.onVaultGame("before-trigger", { title: "Before Trigger (Director's Cut)", hidden: true }, { title: "Before Trigger (Director's Cut)", hidden: false });
+  assert.equal((await get(`${BASE}/items/vault-before-trigger`)).status, "retired", "unhiding the game doesn't bring back what an admin retired");
+  await wdb.doc(`${BASE}/items/vault-silent-hill-2`).update({ hidden: true });
+  await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: false }, { title: "Silent Hill 2", hidden: true });
+  await hub.onVaultGame("silent-hill-2", { title: "Silent Hill 2", hidden: true }, { title: "Silent Hill 2", hidden: false });
+  bt = await get(`${BASE}/items/vault-silent-hill-2`);
+  assert.equal(bt.status, "live", "the game's own retire comes back"); assert.equal(bt.hidden, true, "an admin's hide stays");
+  await wdb.doc(`${BASE}/items/vault-silent-hill-2`).update({ hidden: false });
+  await wdb.doc(`${SITE}/vaultGames/before-trigger`).set({ title: "Before Trigger (Director's Cut)" });
   // reconcile-vault-services.js (reconcileVault): games the trigger never saw get items; the dry run writes nothing; ratings and an admin's retire stay
   await wdb.doc(`${SITE}/vaultGames/old-one`).set({ title: "Old One", status: "finished", review: { score: 8 } });
   await wdb.doc(`${SITE}/vaultGames/old-two`).set({ title: "Old Two", status: "wishlist", hidden: false });
@@ -308,7 +326,7 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   await wdb.doc(`${BASE}/items/vault-old-two`).update({ status: "retired", retiredFrom: "live", hidden: true });
   await wdb.doc(`${SITE}/vaultGames/old-two`).update({ title: "Old Two: Remastered" });
   rv = await hub.reconcileVault({ apply: true });
-  assert.deepEqual(rv.changes.map((c) => `${c.change}:${c.id}`), ["rename:vault-old-two"]); assert.deepEqual(rv.kept, [{ id: "vault-old-two", kept: "admin-retired" }]);
+  assert.deepEqual(rv.changes.map((c) => `${c.change}:${c.id}`), ["rename:vault-old-two"]); assert.ok(rv.kept.some((k) => k.id === "vault-old-two" && k.kept === "admin-retired"), "kept, not revived");
   const ot = await get(`${BASE}/items/vault-old-two`);
   assert.equal(ot.status, "retired"); assert.equal(ot.name, "Old Two: Remastered"); assert.equal(ot.hidden, true);
   assert.deepEqual((await hub.reconcileVault()).changes, [], "a second run has nothing to do");

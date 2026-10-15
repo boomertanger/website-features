@@ -12,7 +12,8 @@
 //                                      (adminLog "serviceHub"); and setTaskGears { test, problems } (owner and A2+ only) for crew/main.serviceTaskGears
 //   serviceDetail  admins              { serviceId }: the item, its version history, ratings by version and up to 100 comments, newest first (value, comment,
 //                                      version, date, hidden, the member's @handle from their profile, and a commentId: never an email or a uid)
-//   Triggers: an Arcade game (games/{id}) → an arcadeGame item; a Vault game (vaultGames/{slug}) → a vaultGame item (retired while hidden); a stream
+//   Triggers: an Arcade game (games/{id}) → an arcadeGame item; a Vault game (vaultGames/{slug}) → a vaultGame item (retired while hidden; any write creates
+//   a missing item, so a game added before the trigger existed heals on its next edit; an admin's manual retire or hide is never undone); a stream
 //   reaching Ended → a stream item rateable for 14 days; a rating or a test → the item's totals, my/{uid} and the summary row.
 //   §3a: a Bug Zapper report or a Feature Lab idea with a serviceId → the service's bugs.open / ideas.open (old and new service recounted when the serviceId
 //   or the status changes; hidden reports still count, only staff see the number).
@@ -353,7 +354,7 @@ function build(deps = {}) {
     return { id, version, status };
   }
   // ---------------------------------------------------------------------------------------------- Vault games → vaultGame items
-  // One plan for scripts/reconcile-vault-services.js (and the trigger). Who retired an item: the game (hidden or deleted) leaves no retiredFrom;
+  // One plan for the trigger, scripts/reconcile-vault-services.js and serviceSyncTick's guard. Who retired an item: the game (hidden or deleted) leaves no retiredFrom;
   // serviceAdmin's retire always sets retiredFrom, and the game never brings that one back. serviceAdmin's hide is the item's own hidden flag,
   // which nothing here touches. Never deletes an item or a rating.
   const vaultGames = db.collection(`sites/${SITE_ID}/vaultGames`);
@@ -400,15 +401,15 @@ function build(deps = {}) {
     return { applied: apply && changes.length > 0, games: games.size, visible, items: items.size, changes: changes.map(({ plan, ...c }) => c), kept };
   }
   async function onVaultGame(slug, before, after) {
-    const vis = (g) => !!g && g.hidden !== true;
-    if (before && after && vis(before) === vis(after) && before.title === after.title) return { skipped: true };
-    const id = `vault-${slug}`, at = now();
-    const ref = R.item(id), snap = await ref.get();
-    if (!vis(after)) { if (snap.exists && snap.get("status") !== "retired") { await ref.update({ status: "retired", updatedAt: ts(at) }); await rebuildViews(); } return { id, retired: true }; }
-    if (!snap.exists) await ref.set({ ...blankItem(at), id, name: after.title || slug, type: "vaultGame", area: "Watch", blurb: "", version: "1.0", status: "live", audience: "everyone", routes: [], link: `/games/${slug}`, sections: {}, checks: [], talkBack: "skip", help: null, videoTag: `#bt-${id}`, source: { vault: slug }, versionHistory: [{ version: "1.0", at: ts(at) }] });
-    else await ref.update({ name: after.title || slug, status: "live", updatedAt: ts(at) });
+    const id = `vault-${slug}`;
+    const snap = await R.item(id).get();
+    // an edit that changes neither the title nor visibility (a review, a status) only matters when the item is missing
+    if (snap.exists && before && after && vaultVisible(before) === vaultVisible(after) && before.title === after.title) return { skipped: true };
+    const plan = vaultPlan(slug, after, snap.exists ? snap.data() : null);
+    if (!plan.change) return { id, unchanged: true, ...(plan.kept ? { kept: plan.kept } : {}) };
+    await vaultWrite(slug, plan, now());
     await rebuildViews();
-    return { id };
+    return { id, change: plan.change };
   }
   async function onStreamEnded(streamId, before, after) {
     if (!after || after.state !== "ended" || (before && before.state === "ended")) return { skipped: true };
