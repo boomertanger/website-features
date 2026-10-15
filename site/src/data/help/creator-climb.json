@@ -1,0 +1,26 @@
+[
+  {
+    "id": "gap-2026",
+    "q": "Why is there a gap in 2026?",
+    "a": "Boomer paused scheduled streams in early 2026 to build this website. Surprise streams still happened and are counted. Nothing was recorded between April 20 and the first automatic reading, so the chart shades that stretch instead of guessing.",
+    "keys": ["gap", "2026", "missing", "paused", "not tracked", "hole", "empty"]
+  },
+  {
+    "id": "live",
+    "q": "Are these numbers live?",
+    "a": "Close to it. Every morning at 5 am Pacific the site reads Twitch, YouTube and TikTok and updates this page. TikTok is typed in by hand until TikTok approves the site's app.",
+    "keys": ["live", "real time", "update", "updated", "today", "current", "morning"]
+  },
+  {
+    "id": "new-follower",
+    "q": "What counts as a new follower?",
+    "a": "The change in a platform's total during the month, added up across platforms. When a platform is added (YouTube in August 2025), its existing followers are a starting balance, not new ones.",
+    "keys": ["new follower", "count", "counted", "growth", "gain", "starting balance"]
+  },
+  {
+    "id": "youtube-steps",
+    "q": "Why does YouTube move in steps?",
+    "a": "Above 1,000 subscribers YouTube only shares rounded counts, so its line climbs in small steps.",
+    "keys": ["youtube", "steps", "rounded", "rounding", "subscribers", "jumps"]
+  }
+]

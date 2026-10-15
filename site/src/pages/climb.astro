@@ -1,0 +1,164 @@
+---
+// /climb, Creator Climb (docs/specs/creator-climb.md §5-§6; mockup docs/design/mockups/creator-climb.html, hero H1-D Summit camp, colours P1
+// Night lamps). A story page: the hero (totals, platform chips, the summit scene you can scrub), then TocLayout chapters: the climb so far (the
+// .bt-chart and the Members chart), milestones, platforms, crossover, month by month, records and pace, how the numbers work, Ask BOOMBOT and
+// the closing call to action. Everything is filled by scripts/climb/page.ts from public/climb (anyone) and, for members, the climb months
+// (live listeners). Visitors see month-end numbers and lock cards; ?as=member previews the members' view on localhost and staging only.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TocLayout from "../components/TocLayout.astro";
+import Mascot from "../components/Mascot.astro";
+import { boombotIcon } from "../../../shared/ui/arcade.js";
+import HELP from "../data/help/creator-climb.json";
+import "../styles/creator-climb.css";
+
+const NAV: [string, string][] = [["ch-climb", "The climb so far"], ["ch-milestones", "Milestones"], ["ch-platforms", "Platforms"], ["ch-cross", "Crossover"], ["ch-months", "Month by month"], ["ch-records", "Records and pace"], ["ch-numbers", "How the numbers work"], ["ch-ask", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+const FAQS = HELP as { id: string; q: string; a: string; keys: string[] }[];
+const join = (label: string, title = "Join free to see every stream day") => `<a class="bt-btn bt-btn--primary" href="/account" data-signin="join" data-signin-title="${title}">${label}</a>`;
+const lock = (ic: string, t: string, p: string) => `<div class="bt-lock-card cc-only-visitor"><span class="bt-lock-card-ic" aria-hidden="true">${ic}</span><div><b>${t}</b><p>${p}</p></div>${join("Join free")}</div>`;
+---
+<BaseLayout title="Creator Climb" description="Every follower on Twitch, TikTok and YouTube since 2025, counted one stream at a time.">
+  <div class="cc" data-cc data-viewer="visitor">
+    <section class="cc-hero" aria-labelledby="cc-title">
+      <div class="cc-hero-in">
+        <div class="cc-hero-copy">
+          <h1 class="bt-title bt-title--hero" id="cc-title">Creator Climb</h1>
+          <p class="cc-hero-lede">Every follower on Twitch, TikTok and YouTube since 2025, counted one stream at a time.</p>
+          <div class="cc-totals">
+            <div class="cc-total"><span class="cc-total-n" data-cc-total>—</span><span class="cc-total-l">followers across three platforms</span></div>
+            <div class="cc-total cc-total--members" data-cc-members-total hidden><span class="cc-total-n" data-cc-members-n>—</span><span class="cc-total-l">members on boomertanger.com <span class="bt-tag cc-staging" data-cc-staging hidden>Staging</span></span></div>
+          </div>
+          <span class="cc-total-asof" data-cc-asof aria-live="polite"></span>
+          <div class="cc-plats" data-cc-plats></div>
+          <div class="cc-hero-cta">
+            <span class="cc-only-visitor"><Fragment set:html={join("Join free to see every stream day")} /></span>
+            <a class="bt-btn bt-btn--secondary" href="#ch-numbers">How the numbers work</a>
+          </div>
+        </div>
+        <div class="cc-hero-art"><div class="cc-scene" data-cc-scene></div></div>
+      </div>
+    </section>
+
+    <TocLayout items={NAV}>
+      <div class="cc-main">
+        <section class="cc-ch" id="ch-climb" aria-labelledby="h-ch-climb">
+          <Fragment set:html={chapter(1, "ch-climb", "The climb so far", "Month-end totals since January 2025. Hover or tap the line for the numbers on any day.")} />
+          <div class="bt-card cc-card">
+            <div class="cc-row">
+              <div class="cc-row" data-cc-series role="group" aria-label="Lines to show"></div>
+              <span class="cc-sp"></span>
+              <div class="cc-row" data-cc-range role="group" aria-label="Time range"></div>
+            </div>
+            <div class="bt-chart" data-cc-big></div>
+            <div class="cc-row">
+              <span class="bt-card-meta" data-cc-big-meta></span>
+              <span class="cc-sp"></span>
+              <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-cc-table aria-expanded="false" aria-controls="cc-big-table">Show as table</button>
+            </div>
+            <div class="bt-chart-table" id="cc-big-table" data-cc-big-table hidden></div>
+          </div>
+          <div class="bt-card cc-card">
+            <div class="cc-row"><span class="cc-pi" data-p="members" aria-hidden="true">★</span><b class="bt-card-title cc-card-t">Members on boomertanger.com</b><span class="cc-sp"></span><span class="bt-card-meta" data-cc-mem-meta></span></div>
+            <div class="bt-chart" data-cc-mem></div>
+          </div>
+          <div class="cc-only-member" data-cc-mem-break></div>
+          <Fragment set:html={lock("👥", "Member breakdowns are for members", "Join free to see who joined, how they signed up and which club they're in, month by month.")} />
+        </section>
+
+        <section class="cc-ch" id="ch-milestones" aria-labelledby="h-ch-milestones">
+          <Fragment set:html={chapter(2, "ch-milestones", "Milestones", "Spotted automatically: every 100 under 1,000, then every 1,000, on each platform and combined.")} />
+          <ol class="bt-path cc-path" data-cc-path></ol>
+          <div class="cc-row"><span class="bt-card-meta" data-cc-ms-count></span><span class="cc-sp"></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-cc-ms-all aria-expanded="false" aria-controls="cc-ms-list">Show all milestones</button></div>
+          <div class="cc-allms" id="cc-ms-list" data-cc-ms-list hidden></div>
+        </section>
+
+        <section class="cc-ch" id="ch-platforms" aria-labelledby="h-ch-platforms">
+          <Fragment set:html={chapter(3, "ch-platforms", "Platforms", "Where everyone is following from. TikTok carries the crowd; Twitch and YouTube are where the chat lives.")} />
+          <div class="cc-stages" data-cc-stages></div>
+        </section>
+
+        <section class="cc-ch" id="ch-cross" aria-labelledby="h-ch-cross">
+          <Fragment set:html={chapter(4, "ch-cross", "Crossover", "TikTok brings the crowd. Some of it follows Boomer to Twitch, YouTube and the site.")} />
+          <div class="bt-card cc-card cc-cross">
+            <div class="cc-cross-head"><span class="bt-label">For every 100 new TikTok followers</span><span class="bt-card-meta" data-cc-cross-span></span></div>
+            <div class="cc-flowviz" data-cc-flow></div>
+          </div>
+          <div class="bt-card cc-card">
+            <b class="bt-card-title cc-card-t">Streaming on schedule vs paused</b>
+            <div class="cc-eracmp" data-cc-eracmp></div>
+            <p class="cc-vs">Twitch rewards a regular schedule, so its share is the number to watch when streams are back on air. YouTube holds steadier while streams pause.</p>
+          </div>
+          <Fragment set:html={lock("🔀", "Month-by-month crossover is for members", "Join free to see how every month compares.")} />
+          <div class="bt-card cc-card cc-only-member">
+            <b class="bt-card-title cc-card-t">Each month</b>
+            <div class="cc-xrows" data-cc-xrows></div>
+          </div>
+          <div class="cc-note"><b>Moving together isn't proof</b>These numbers rise together; they can't show it's the same people. When members link their Twitch, YouTube and TikTok accounts, Crowd crossover (later) will show real movement for members, as counts only.</div>
+        </section>
+
+        <section class="cc-ch" id="ch-months" aria-labelledby="h-ch-months">
+          <Fragment set:html={chapter(5, "ch-months", "Month by month", "Streams, hours, new followers and the highlights, with every stream day on its own chart.")} />
+          <Fragment set:html={lock("🔒", "Month reports are for members", "Join free to see every month's streams, hours and stream-day charts.")} />
+          <div class="cc-only-member cc-report">
+            <div class="cc-months" data-cc-months role="group" aria-label="Month"></div>
+            <div class="bt-card cc-card" data-cc-report></div>
+          </div>
+        </section>
+
+        <section class="cc-ch" id="ch-records" aria-labelledby="h-ch-records">
+          <Fragment set:html={chapter(6, "ch-records", "Records and pace", "The best of the climb so far, and where it's heading.")} />
+          <div class="bt-card cc-card" data-cc-goals></div>
+          <Fragment set:html={lock("🏆", "Records and forecasts are for members", "Join free to see the biggest month, the best stream day and where the climb is heading.")} />
+          <div class="cc-only-member cc-recs">
+            <div class="bt-flip-grid" data-cc-flips></div>
+            <div class="bt-card cc-card cc-pace" data-cc-pace></div>
+          </div>
+        </section>
+
+        <section class="cc-ch" id="ch-numbers" aria-labelledby="h-ch-numbers">
+          <Fragment set:html={chapter(7, "ch-numbers", "How the numbers work", "Where each number comes from, and what it can't tell you.")} />
+          <ol class="cc-flow">
+            <li><span class="cc-flow-ic" aria-hidden="true">📡</span><div><b>The platforms</b><span>Twitch and YouTube report their counts. TikTok is typed in by hand until TikTok approves the app.</span></div></li>
+            <li><span class="cc-flow-ic" aria-hidden="true">⏰</span><div><b>Every morning</b><span>At 5 am Pacific the site reads all three and saves the day.</span></div></li>
+            <li><span class="cc-flow-ic" aria-hidden="true">🧗</span><div><b>The climb updates</b><span>Totals, new followers, milestones and stream counts are worked out again.</span></div></li>
+            <li><span class="cc-flow-ic" aria-hidden="true">👀</span><div><b>You see it here</b><span>The page shows the newest numbers as soon as they're saved.</span></div></li>
+          </ol>
+          <div class="cc-notes">
+            <div class="cc-note"><b>2025 and early 2026 are imported</b>They come from the old growth pages, checked and tidied: totals are always the platforms added up.</div>
+            <div class="cc-note"><b>The build</b>From February 2026 streaming paused while boomertanger.com was built. Surprise streams still count, and nothing between April 20 and the first automatic reading is guessed.</div>
+            <div class="cc-note"><b>YouTube rounds</b>Above 1,000 YouTube only shares rounded subscriber counts, so its line moves in small steps.</div>
+            <div class="cc-note"><b>Streams count the next morning</b>A stream joins its month once it has ended. After-shows aren't counted.</div>
+            <div class="cc-note"><b>Members are their own number</b>Site members are counted from launch and never added to the follower total, because most members also follow on a platform. The owner and test accounts are left out.</div>
+          </div>
+        </section>
+
+        <section class="cc-ch" id="ch-ask" aria-labelledby="h-ch-ask">
+          <Fragment set:html={chapter(8, "ch-ask", "Ask BOOMBOT", "Quick answers about the numbers.")} />
+          <div class="bt-chat">
+            {FAQS.map((f, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cc-ans-${f.id}`}><span class="bt-chat-qi" aria-hidden="true">Q{i + 1}</span>{f.q}</button>
+                <div class="bt-chat-a" id={`cc-ans-${f.id}`} role="region" aria-label={`BOOMBOT's answer: ${f.q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`cc-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{f.a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+          <div class="cc-cta">
+            <Mascot decorative />
+            <div>
+              <h3 class="bt-heading cc-only-visitor">Climb with us</h3><h3 class="bt-heading cc-only-member">Help with the next thousand</h3>
+              <p class="cc-only-visitor">Join free to see every stream day, month report and record.</p><p class="cc-only-member">Every follow on any platform shows up here the next morning.</p>
+            </div>
+            <div class="cc-hero-cta"><span class="cc-only-visitor"><Fragment set:html={join("Join free", "Join free to climb with us")} /></span><a class="bt-btn bt-btn--secondary" href="/schedule">See the schedule</a></div>
+          </div>
+        </section>
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/climb/page";
+</script>

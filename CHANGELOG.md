@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+feat(climb): the /climb page (H1-D Summit camp, P1 Night lamps): a hero scene you can scrub through the climb, the combined .bt-chart with eras and the crossover, month cards with notes, milestone flip medals, peak viewers beside the imported 577, pace to the next goal, members as their own climb (preview data for ?as=member), live listeners on public/climb, BOOMBOT help, reduced motion respected
 - feat(climb): Creator Climb backend: lib/climb (pure build core with crossover and members; climbRebuild on growthDaily writes; climbAdmin for notes, eras, goals, left-out accounts and corrections), the climb rules, seed-climb-history.js, check-climb.js; the collector adds the site-members block from Back on air and reads the shared YouTube goal; completeSignup records members/{uid}.signInMethod
 - feat(kit): .bt-chart, a line chart over time (shared/ui/chart.js: chart, focusSeries, chartTable): era bands, hatched gaps that lines never cross, line-end icons, a crosshair tooltip with changes and Imported / Sample notes, keyboard, mini, mascot empty state, "Show as table"; on the UI kit page
 - docs: Creator Climb spec and mockup (H1-D Summit camp, P1 Night lamps, members, crossover); the spec now matches the repo: peak viewers are the combined Control Room peak shown as "all platforms" beside the imported 577 (no per-platform peak exists), completeSignup records members/{uid}.signInMethod for the sign-up breakdown (older members count as unknown), and joined members are counted by joinedAt
