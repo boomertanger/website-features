@@ -1,5 +1,7 @@
 {
   "indexes": [
+    { "collectionGroup": "buffer", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "rolled", "order": "ASCENDING" }, { "fieldPath": "atMs", "order": "ASCENDING" } ] },
+    { "collectionGroup": "alerts", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "type", "order": "ASCENDING" }, { "fieldPath": "state", "order": "ASCENDING" } ] },
     { "collectionGroup": "questions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "votes", "order": "DESCENDING" }, { "fieldPath": "createdAt", "order": "ASCENDING" } ] },
     { "collectionGroup": "questions", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },
     { "collectionGroup": "teamMessages", "queryScope": "COLLECTION", "fields": [ { "fieldPath": "status", "order": "ASCENDING" }, { "fieldPath": "createdAt", "order": "DESCENDING" } ] },

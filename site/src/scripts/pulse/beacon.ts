@@ -98,6 +98,8 @@ export async function startPulse() {
   uid = signedIn ? s.user!.uid : null;
   staff = !!s.isAdmin || (s.roles || []).includes("mod");
   view(tag ? tag.slice(0, 40).toLowerCase().replace(/[^a-z0-9_-]/g, "") || null : null);
+  // the join path's "Started signup" step: signed in, signup not finished yet (once per browser session)
+  if (s.status === "needsSignup") { try { if (!sessionStorage.getItem("bt.pulse.su")) { sessionStorage.setItem("bt.pulse.su", "1"); push({ e: "cta", id: "signup-started" }); } } catch { /* fine */ } }
 
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "hidden") { if (visibleSince) { visibleMs += performance.now() - visibleSince; visibleSince = 0; } checkEngaged(); flush(); }

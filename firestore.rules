@@ -553,6 +553,17 @@ service cloud.firestore {
       // public/{docId} rule below. The months (every stream day, month reports) are for members: signed in with a members/{uid} doc, the
       // same condition as memberContent. The main doc (settings: eras, goals, notes, left-out accounts) and the corrections are for site
       // admins. climb/main/private/* (build state, rate limits): no client access at all.
+      // ---------- Traffic Pulse (docs/specs/traffic-pulse.md §2, §9) ----------
+      // Counts only (no IP, no uid, no user agent stored). Site admins read everything under pulse/main; every write goes through the lib/pulse
+      // Cloud Functions (and scripts/pulse-sample.js on staging). pulse/main/private/* (the daily salt, engine state): no client access at all.
+      match /pulse/{document=**} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /pulse/main/private/{doc} {
+        allow read, write: if false;
+      }
+
       match /climb/main {
         allow read: if hasSiteRole(siteId, 'admin');
         allow write: if false;

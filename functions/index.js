@@ -879,6 +879,10 @@ Object.assign(exports, require("./lib/goalTracker")({ adminLogEntry }));
 // milestones; climbAdmin (owner or site admin) edits notes, eras, goals, left-out accounts and corrections. Lives in lib/climb/.
 Object.assign(exports, require("./lib/climb").build({ adminLogEntry }).functions);
 
+// Traffic Pulse (docs/specs/traffic-pulse.md): pulseBeacon (HTTPS from the /p proxy), pulseRollup (15 min), pulseDaily (00:30 LA), pulseCfPull
+// (hourly), pulseReport (Mon 06:00, the 1st 06:30) and pulseAdmin (callable). Lives in lib/pulse/; never loads rewards/grant.js.
+Object.assign(exports, require("./lib/pulse").build({ adminLogEntry }).functions);
+
 // Mod Machina (docs/specs/mod-machina.md): the crew's roster, queue, Gears, tasks, Academy and awards.
 Object.assign(exports, require("./lib/crew")({ adminLogEntry }));
 
