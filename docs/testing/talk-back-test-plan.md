@@ -137,5 +137,16 @@ Hand-run checks for /admin/inbox/how-it-works on staging (talk-back.md §10). Ac
 56. **Live values.** As the owner, change First reply to 5 on /admin/crew (Hotline Boom inbox), reload the guide: chapter 06's table, the flow, the medal backs and the pretend desk all say 5. Put it back to 4.
 57. **Medals (07).** Four flip medals: Operator of the Month gold, Clear desk teal, Inbox column purple, Top Gear blue. Every back fits its card at 1280, 1024, 390 and 320.
 58. **Try it (09).** Reply to the personal message: the card shakes (not under reduced motion) and a hint says to use Owner only. Handle all four the right way: stamps (Replied, Replied, Spam, Owner), the progress bar fills, the tally counts up to 11 with "+1 pending" and a receipt (+6, +5, pending, ±0), then Desk clear with the mascot. Start over clears it. Nothing appears in the real inbox.
-59. **Ask BOOMBOT (10).** Twelve questions; the first is open; opening another closes it, after a moment of typing dots.
+59. **Ask BOOMBOT (10).** Fifteen questions; the first is open; opening another closes it, after a moment of typing dots.
 60. **Ways in.** The /admin/inbox hero has a ghost How it works (just the icon on phones). The /admin Hotline card has How it works. A credit line's "How Gears work here" lands on chapter 06, below the sticky bar. /admin/crew's inbox values link there too. /crew/how-it-works lists the two inbox rows in its Gears chapter. /contact/how-it-works says the Talk button on feature pages reaches line 2.
+
+## Part C results (Oct 15, 2026)
+
+Run on staging by the owner.
+
+- **Passed on staging:** 54, 55, 58, 60.
+- **Not run by hand** (low risk):
+  - 53: the gate is the same one the inbox uses.
+  - 56: the live values.
+  - 57: the medal backs, covered by the kit fix `228b859` ("Fix: medal backs fit their card").
+  - 59: Ask BOOMBOT.

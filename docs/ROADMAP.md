@@ -22,7 +22,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
-| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back built on staging, all three parts (Part A tested Oct 14, Part B tested Oct 15, Part C built Oct 15, 2026) | Community services |
+| 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back built and tested on staging (Oct 15, 2026), all three parts | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
 | 16 | Tech Stack (/tech-stack: the streaming setup, the wiring diagram, hardware, software, internet; spec [docs/specs/tech-stack.md](specs/tech-stack.md)) | Built; staging set-up pending | Community services |
 | 17 | Nav redesign once the remaining pages are built | Later | Site shell |
@@ -231,7 +231,7 @@ Part 2 (Talk Back): Hotline Boom part 2. Spec confirmed Oct 10, 2026, mockups ap
 4. Operator of the Month (the award run, the trophy, the ☎️ card on /crew).
 5. Docs.
 
-**Talk Back Part C: built on staging (Oct 15, 2026); test plan Part C in docs/testing/talk-back-test-plan.md.** `/admin/inbox/how-it-works`, the staff guide: the desk hero, ten chapters (the pretend desk and Ask BOOMBOT from `data/help/hotline-inbox.json` among them), and the ways in from the inbox, /admin, the credit line and /admin/crew. Site only: nothing to deploy. **Talk Back is built on staging, all three parts.** Next: Service Hub part 10's questions column and the first Ask pins on pages.
+**Talk Back Part C: built and tested on staging (Oct 15, 2026); results in docs/testing/talk-back-test-plan.md (Part C results).** `/admin/inbox/how-it-works`, the staff guide: the desk hero, ten chapters (the pretend desk and Ask BOOMBOT from `data/help/hotline-inbox.json` among them), and the ways in from the inbox, /admin, the credit line and /admin/crew. Site only: nothing to deploy. **Talk Back is built and tested on staging (Oct 15, 2026), all three parts.** Next: Service Hub part 10's questions column and the first Ask pins on pages.
 Depends on: Accounts, Boom Alerts (the alerts wait in notifyOutbox until it's built; replies fall back to "Open in my email" until Resend is set up).
 
 ### 16. Tech Stack
@@ -441,6 +441,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
   - Check that Cloud Scheduler has both inbox jobs.
   - No seeds: `crew/main.inbox` falls back to the defaults, and trophies describe themselves (no catalog entry for `crew-operator`).
   - Never run `inbox-sample.js` on production (it refuses).
+- [ ] Talk Back Part C (the staff guide at /admin/inbox/how-it-works) needs nothing at launch: it's site only, with no functions, rules or seeds of its own.
 
 ### 404 page in production
 - [ ] 404 page: confirm it works on production after the first production deploy (rules + reportBrokenLink + brokenLinkFix deployed to prod).
