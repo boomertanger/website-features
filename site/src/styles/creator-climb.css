@@ -205,11 +205,59 @@
 .bt-root:not(#_) .cc-cta p { margin: 6px 0 0; color: var(--bt-text-muted); }
 .bt-root:not(#_) .cc-cta .cc-hero-cta { margin: 0 0 0 auto; }
 
+/* ---- the /admin card (spec §7; tool page: a small ridge scene, green admin panels, nothing red) ---- */
+.bt-root:not(#_) .cc-admin { display: flex; flex-direction: column; gap: 16px; }
+.bt-root:not(#_) .cc-adm-hero { display: flex; align-items: center; gap: 18px; padding: 16px 20px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: radial-gradient(60% 120% at 100% 0%, var(--bt-gold-bg), transparent 70%), var(--bt-surface); }
+.bt-root:not(#_) .cc-adm-hero-t { flex: 1; min-width: 0; }
+.bt-root:not(#_) .cc-adm-hero-t p { margin: 4px 0 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cc-adm-hero .bt-badge { align-self: flex-start; }
+.bt-root:not(#_) .cc-adm-ridge { width: 160px; flex: none; }
+.bt-root:not(#_) .cc-adm-ridge svg { display: block; width: 100%; height: auto; }
+.bt-root:not(#_) .cc-adm-ridge .cc-ridge { stroke-width: 1.2; }
+.bt-root:not(#_) .cc-adm-rope { fill: none; stroke: var(--bt-gold); stroke-width: 1.4; stroke-dasharray: 3 3; }
+.bt-root:not(#_) .cc-adm-lamp { fill: var(--bt-gold); filter: drop-shadow(0 0 4px rgba(var(--bt-gold-rgb), 0.8)); transition: transform 0.3s; transform-box: fill-box; transform-origin: center; }
+.bt-root:not(#_) .cc-adm-hero:hover .cc-adm-lamp { transform: scale(1.5); }
+.bt-root:not(#_) .cc-adm-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+.bt-root:not(#_) .cc-adm-grid .bt-admin-panel { gap: 12px; transition: transform 0.2s, box-shadow 0.2s; }
+.bt-root:not(#_) .cc-adm-grid .bt-admin-panel:hover { transform: translateY(-2px); }
+.bt-root:not(#_) .cc-adm-grid .bt-card-title { margin: 0; color: var(--bt-admin-text); }
+.bt-root:not(#_) .cc-adm-grid .bt-card-meta { white-space: normal; margin: 0; }
+.bt-root:not(#_) .cc-adm-wide { grid-column: 1 / -1; }
+.bt-root:not(#_) .cc-form { display: flex; flex-direction: column; gap: 12px; }
+.bt-root:not(#_) .cc-form .bt-fine { margin: 0; }
+.bt-root:not(#_) .cc-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.bt-root:not(#_) .cc-fields .bt-field { margin: 0; }
+.bt-root:not(#_) .cc-srcs { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .cc-srcs li { display: flex; align-items: center; gap: 10px; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cc-src-t { flex: 1; min-width: 0; display: flex; flex-wrap: wrap; align-items: baseline; column-gap: 8px; }
+.bt-root:not(#_) .cc-src-t b { font-variant-numeric: tabular-nums; }
+.bt-root:not(#_) .cc-src-t span { color: var(--bt-text-muted); }
+.bt-root:not(#_) .cc-srcs li .bt-tag { flex: none; }
+.bt-root:not(#_) .cc-eras { display: flex; flex-direction: column; gap: 8px; }
+.bt-root:not(#_) .cc-era-row { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr) minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.bt-root:not(#_) .cc-era-row .bt-btn { padding-inline: 10px; }
+.bt-root:not(#_) .cc-left { display: flex; flex-wrap: wrap; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.bt-root:not(#_) .cc-left li { display: inline-flex; align-items: center; gap: 6px; padding: 4px 4px 4px 12px; border: 1px solid var(--bt-admin-panel-border); border-radius: var(--bt-radius-full); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .cc-left li.cc-left-owner { padding-right: 12px; color: var(--bt-text-muted); border-style: dashed; }
+.bt-root:not(#_) .cc-left button { width: 26px; height: 26px; display: grid; place-items: center; border: 0; border-radius: 50%; background: transparent; color: var(--bt-admin-text); cursor: pointer; font-size: 16px; line-height: 1; }
+.bt-root:not(#_) .cc-left button:hover { background: var(--bt-admin-tint); }
+.bt-root:not(#_) .cc-left button:focus-visible { outline: 2px solid var(--bt-admin-neon); outline-offset: 1px; }
+.bt-root:not(#_) .cc-left-in { flex: 1; min-width: 0; }
+.bt-root:not(#_) .cc-adm-empty { display: flex; align-items: center; gap: 14px; padding: 14px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-lg); }
+.bt-root:not(#_) .cc-adm-empty .bt-mascot { width: 48px; flex: none; }
+.bt-root:not(#_) .cc-adm-empty p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+.bt-root:not(#_) .cc-corr td.cc-num { white-space: nowrap; }
+.bt-root:not(#_) .cc-corr .cc-why { min-width: 14ch; }
+.bt-root:not(#_) .cc-saved { animation: cc-saved 0.9s ease-out; }
+@keyframes cc-saved { 0% { box-shadow: var(--bt-shadow-admin-inset), 0 0 0 0 var(--bt-admin-neon); } 100% { box-shadow: var(--bt-shadow-admin-inset), 0 0 0 10px transparent; } }
+
 /* ---- container widths ---- */
 @container bt (max-width: 1024px) {
   .bt-root:not(#_) .cc-hero-in { grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr); gap: 20px; }
 }
 @container bt (max-width: 640px) {
+  .bt-root:not(#_) .cc-adm-grid { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cc-adm-ridge { width: 96px; }
   .bt-root:not(#_) .cc-hero { padding: 26px var(--bt-gutter) 22px; }
   .bt-root:not(#_) .cc-hero-in { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
   .bt-root:not(#_) .cc-hero-copy { display: contents; }
@@ -244,9 +292,20 @@
   .bt-root:not(#_) .cc-cta .cc-hero-cta { width: 100%; margin: 0; }
   .bt-root:not(#_) .cc-path { grid-template-columns: repeat(var(--n), 92px); }
 }
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .cc-fields { grid-template-columns: minmax(0, 1fr); }
+  .bt-root:not(#_) .cc-era-row { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; }
+  .bt-root:not(#_) .cc-era-row > :first-child { grid-column: 1 / 3; }
+  .bt-root:not(#_) .cc-era-row > [name=to] { grid-column: 2 / 4; }
+  .bt-root:not(#_) .cc-era-row > .bt-btn { grid-column: 3; grid-row: 1; }
+  .bt-root:not(#_) .cc-adm-ridge { display: none; }
+}
 @media (prefers-reduced-motion: reduce) {
   .bt-root:not(#_) .cc :is(.cc-fire, .cc-fv-flow, .cc-flag, .bt-path-node i) { animation: none; }
   .bt-root:not(#_) .cc :is(.cc-climber, .cc-stage, .cc-spark-lit, .cc-spark-fill, .cc-flag, .cc-win, .cc-scrub-k) { transition: none; }
   .bt-root:not(#_) .cc-spark-lit { stroke-dashoffset: 0; }
   .bt-root:not(#_) .cc-spark-fill { opacity: 1; }
+  .bt-root:not(#_) .cc-admin :is(.cc-adm-lamp, .bt-admin-panel) { transition: none; }
+  .bt-root:not(#_) .cc-adm-grid .bt-admin-panel:hover { transform: none; }
+  .bt-root:not(#_) .cc-saved { animation: none; }
 }

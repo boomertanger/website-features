@@ -5,6 +5,7 @@
 //   public/climb's month-ends (one reading per month, no streams or hours), so the layout can be checked without real member data.
 import { isProduction } from "../../lib/env.js";
 import { watchDoc, watchQuery } from "../live/cg-watch";
+import { PLATFORM_ICONS } from "../../data/footer-icons.js";
 
 export const PLATFORMS = ["twitch", "tiktok", "youtube"] as const;
 export type Platform = (typeof PLATFORMS)[number];
@@ -44,6 +45,12 @@ export const dayLabel = (d: string) => new Date(ms(d)).toLocaleDateString("en-US
 export const todayMs = () => { const n = new Date(); return Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate()); };
 export const escapeHtml = (s: unknown) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c] as string));
 
+/** A platform's official icon (site/src/data/footer-icons.js), or the members star / the combined sigma. */
+export function iconHtml(k: Key) {
+  const path = (PLATFORM_ICONS as Record<string, string>)[k];
+  const inner = path ? `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}"/></svg>` : k === "members" ? "★" : "∑";
+  return `<span class="cc-pi" data-p="${k}" aria-hidden="true">${inner}</span>`;
+}
 /** ?as=member: localhost and staging only. */
 export const previewMember = () => !isProduction && new URLSearchParams(location.search).get("as") === "member";
 

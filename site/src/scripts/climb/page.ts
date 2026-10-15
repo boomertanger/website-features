@@ -6,12 +6,11 @@ import { chart, chartTable, focusSeries } from "../../../../shared/ui/chart.js";
 import { initChat } from "../../../../shared/ui/chat.js";
 import { initFlipCards } from "../../../../shared/ui/flip-card.js";
 import { onAuth, getAuthState, type AuthState } from "../../lib/auth";
-import { PLATFORM_ICONS } from "../../data/footer-icons.js";
 import { drawScene } from "./scene";
 import {
   PLATFORMS, NAME, COLOR, type Platform, type Key, type Public, type MonthDoc, type SPoint,
   ms, fmt, monthLabel, dayLabel, todayMs, escapeHtml as esc, previewMember, watchPublic, watchMonths, previewMonths,
-  monthEndSeries, readingSeries, combinedSeries, toS, gapsOf, erasOf, eraOf, allMilestones, records, pace,
+  iconHtml, monthEndSeries, readingSeries, combinedSeries, toS, gapsOf, erasOf, eraOf, allMilestones, records, pace,
 } from "./data";
 
 const root = document.querySelector<HTMLElement>("[data-cc]");
@@ -40,12 +39,6 @@ const S = {
   if (m && /^\d{4}-\d{2}$/.test(m)) S.month = m;
 }
 
-/** A platform's official icon (site/src/data/footer-icons.js), or the members star / the combined sigma. */
-export function iconHtml(k: Key) {
-  const path = (PLATFORM_ICONS as Record<string, string>)[k];
-  const inner = path ? `<svg viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="${path}"/></svg>` : k === "members" ? "★" : "∑";
-  return `<span class="cc-pi" data-p="${k}" aria-hidden="true">${inner}</span>`;
-}
 const per = (k: Key) => (k === "youtube" ? "subscribers" : k === "members" ? "members" : "followers");
 
 // ---------------------------------------------------------------------------------------------- the hero

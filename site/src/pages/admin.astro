@@ -11,6 +11,7 @@ import "../styles/feature-lab.css";   // the Feature Lab card (.fl-admin-card)
 import "../styles/bug-zapper.css";    // the Bug Zapper card (.bz-admin-card)
 import "../styles/cloud-stash.css";   // the Cloud Stash card (.cs-admin-card)
 import "../styles/broken-links.css";  // the Broken links card (.bl-admin-card; docs/specs/not-found.md)
+import "../styles/creator-climb.css"; // the Creator Climb card (.cc-admin; docs/specs/creator-climb.md §7)
 import Mascot from "../components/Mascot.astro";
 import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
 ---
@@ -29,6 +30,75 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
       <div class="bt-card-head"><h2 class="bt-card-title">Crew</h2><span class="bt-badge bt-badge--gray">Admins</span></div>
       <p class="bt-section-text">The Mod Machina roster, coverage map, promotions, queue decisions, to-do list and crew settings.</p>
     </a>
+  </div>
+  <div class="bt-zone" data-climb-card hidden>
+    <div class="cc-admin">
+      <div class="cc-adm-hero">
+        <div class="cc-adm-ridge" data-cca-ridge aria-hidden="true"></div>
+        <div class="cc-adm-hero-t"><h2 class="bt-card-title">Creator Climb</h2><p>Runs itself every morning. Everything here is optional, and every change is logged.</p></div>
+        <span class="bt-badge bt-badge--admin">Admins</span>
+      </div>
+      <div class="cc-adm-grid">
+        <section class="bt-admin-panel" aria-labelledby="cca-readings">
+          <div class="cc-row"><h3 class="bt-card-title" id="cca-readings">Readings</h3><span class="cc-sp"></span><button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-cca-rebuild>Rebuild now</button></div>
+          <ul class="cc-srcs" data-cca-srcs><li><div class="bt-skeleton" style="height:96px;width:100%"></div></li></ul>
+          <p class="bt-card-meta" data-cca-last></p>
+        </section>
+        <section class="bt-admin-panel" aria-labelledby="cca-notes">
+          <h3 class="bt-card-title" id="cca-notes">Month notes</h3>
+          <form class="cc-form" data-cca-notes novalidate>
+            <div class="cc-fields">
+              <div class="bt-field"><label class="bt-label" for="cca-month">Month</label><select class="bt-select" id="cca-month" name="month"></select></div>
+              <div class="bt-field"><label class="bt-label" for="cca-likes">Live likes (optional)</label><input class="bt-input" id="cca-likes" name="likes" inputmode="numeric" autocomplete="off" placeholder="Leave empty to hide" /></div>
+            </div>
+            <div class="bt-field"><label class="bt-label" for="cca-hl">Highlights, one per line (optional)</label><textarea class="bt-textarea" id="cca-hl" name="highlights" rows="4" maxlength="2400"></textarea></div>
+            <div class="cc-row"><span class="bt-card-meta">Milestones and records are added for you.</span><span class="cc-sp"></span><button type="submit" class="bt-btn bt-btn--admin bt-btn--sm">Save notes</button></div>
+          </form>
+        </section>
+        <section class="bt-admin-panel" aria-labelledby="cca-eras">
+          <h3 class="bt-card-title" id="cca-eras">Eras</h3>
+          <form class="cc-form" data-cca-eras novalidate>
+            <div class="cc-eras" data-cca-era-rows></div>
+            <p class="bt-fine bt-fine--left">Leave an end empty and the era runs until the next one starts ("Until launch"), or "Now" for the last one. Back on air starts on launch day.</p>
+            <div class="cc-row"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-cca-era-add>Add an era</button><span class="cc-sp"></span><button type="submit" class="bt-btn bt-btn--admin bt-btn--sm">Save eras</button></div>
+          </form>
+        </section>
+        <section class="bt-admin-panel" aria-labelledby="cca-goals">
+          <h3 class="bt-card-title" id="cca-goals">Goals</h3>
+          <form class="cc-form" data-cca-goals novalidate>
+            <div class="cc-fields">
+              <div class="bt-field"><label class="bt-label" for="cca-g-youtube">YouTube subscribers</label><input class="bt-input" id="cca-g-youtube" name="youtube" inputmode="numeric" autocomplete="off" placeholder="No goal" /></div>
+              <div class="bt-field"><label class="bt-label" for="cca-g-twitch">Twitch followers</label><input class="bt-input" id="cca-g-twitch" name="twitch" inputmode="numeric" autocomplete="off" placeholder="No goal" /></div>
+              <div class="bt-field"><label class="bt-label" for="cca-g-tiktok">TikTok followers</label><input class="bt-input" id="cca-g-tiktok" name="tiktok" inputmode="numeric" autocomplete="off" placeholder="No goal" /></div>
+              <div class="bt-field"><label class="bt-label" for="cca-g-all">Combined</label><input class="bt-input" id="cca-g-all" name="all" inputmode="numeric" autocomplete="off" placeholder="No goal" /></div>
+              <div class="bt-field"><label class="bt-label" for="cca-g-members">Members</label><input class="bt-input" id="cca-g-members" name="members" inputmode="numeric" autocomplete="off" placeholder="No goal" /></div>
+            </div>
+            <div class="cc-row"><span class="bt-card-meta">The YouTube goal is shared with the footer.</span><span class="cc-sp"></span><button type="submit" class="bt-btn bt-btn--admin bt-btn--sm">Save goals</button></div>
+          </form>
+        </section>
+        <section class="bt-admin-panel" aria-labelledby="cca-left">
+          <h3 class="bt-card-title" id="cca-left">Left out of member counts</h3>
+          <p class="bt-card-meta">The owner is always left out. Changes apply from the next reading.</p>
+          <ul class="cc-left" data-cca-left></ul>
+          <form class="cc-row" data-cca-left-form novalidate>
+            <input class="bt-input cc-left-in" name="handle" aria-label="Handle to leave out" autocomplete="off" autocapitalize="none" spellcheck="false" maxlength="21" placeholder="@handle" />
+            <button type="submit" class="bt-btn bt-btn--admin bt-btn--sm">Leave out</button>
+          </form>
+        </section>
+        <section class="bt-admin-panel cc-adm-wide" aria-labelledby="cca-corr">
+          <div class="cc-row"><h3 class="bt-card-title" id="cca-corr">Corrections</h3><span class="cc-sp"></span><button type="button" class="bt-btn bt-btn--admin bt-btn--sm" data-cca-corr-add aria-expanded="false" aria-controls="cca-corr-form">Add a correction</button></div>
+          <div class="cc-adm-empty" data-cca-corr-empty hidden><Mascot decorative /><p>No corrections. If a platform ever reports a wrong number, replace it here with a reason. The original stays in the log.</p></div>
+          <form class="cc-fields" id="cca-corr-form" data-cca-corr-form novalidate hidden>
+            <div class="bt-field"><label class="bt-label" for="cca-c-day">Day</label><input class="bt-input" id="cca-c-day" name="day" type="date" required /></div>
+            <div class="bt-field"><label class="bt-label" for="cca-c-p">Platform</label><select class="bt-select" id="cca-c-p" name="platform"><option value="tiktok">TikTok</option><option value="twitch">Twitch</option><option value="youtube">YouTube</option></select></div>
+            <div class="bt-field"><label class="bt-label" for="cca-c-v">Correct number</label><input class="bt-input" id="cca-c-v" name="value" inputmode="numeric" autocomplete="off" required /></div>
+            <div class="bt-field"><label class="bt-label" for="cca-c-r">Reason (required)</label><input class="bt-input" id="cca-c-r" name="reason" maxlength="300" autocomplete="off" placeholder="What was wrong" required /></div>
+            <div class="cc-row cc-adm-wide"><span class="cc-sp"></span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-cca-corr-cancel>Cancel</button><button type="submit" class="bt-btn bt-btn--admin bt-btn--sm">Save correction</button></div>
+          </form>
+          <div data-cca-corr-list></div>
+        </section>
+      </div>
+    </div>
   </div>
   <div class="bt-zone bt-when-admin" data-planner-card hidden>
     <div class="bt-card pc-card">
@@ -215,6 +285,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
   import "../scripts/admin/stash-card";
   import "../scripts/admin/services-card";
   import "../scripts/admin/broken-links-card";
+  import "../scripts/admin/climb-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
