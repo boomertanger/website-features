@@ -24,3 +24,6 @@ functions/scripts/data/tech-stack-member.json
 # raw media stay local while the repo is public
 functions/scripts/data/base-camp-member.json
 functions/scripts/data/skipper-media/
+
+# Creator Climb (docs/specs/creator-climb.md): the private follower history stays local while the repo is public
+functions/scripts/data/climb-history.json
