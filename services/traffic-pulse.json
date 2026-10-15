@@ -1,0 +1,20 @@
+{
+  "id": "traffic-pulse",
+  "name": "Traffic Pulse",
+  "type": "feature",
+  "area": "Admin",
+  "blurb": "The site's private, cookieless analytics: what's working, what's leaking and what to work on next.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "admins",
+  "routes": [
+    "/admin/pulse"
+  ],
+  "nav": null,
+  "testPlan": "docs/testing/traffic-pulse-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-traffic-pulse",
+  "sections": {},
+  "talkBack": "skip",
+  "help": null
+}
