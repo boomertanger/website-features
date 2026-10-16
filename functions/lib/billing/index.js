@@ -5,21 +5,27 @@
 //                  17 (users/{uid}/private/age, server side) need guardianOk: true. Refused with an active Stripe subscription.
 //   clubPortal     { origin } -> { url } of the Stripe customer portal (cancel at period end, update card, invoices).
 //   clubStatus     -> { receipts: [{ at, amount, currency, description, receiptUrl, refunded }], subscription } for My pass.
+//   billingWebhook HTTPS: Stripe's webhook (lib/billing/webhook.js). STRIPE_WEBHOOK_SECRET (the endpoint's signing secret) is bound only
+//                  when functions/.env.staging says STRIPE_WEBHOOK=on (a secret that doesn't exist yet would stop the deploy, the same way
+//                  HOTLINE_EMAIL works); until then it answers 503 and Stripe retries.
 //
 // Secret: STRIPE_SECRET_KEY (an sk_test_ key on staging; lib/billing/stripe.js refuses anything else). Params (functions/.env.staging,
 // public): STRIPE_PRICE_SUB, STRIPE_PRICE_MONTH, STRIPE_PORTAL_CONFIG. They're empty on any other project, so every callable answers
 // "Sub Club isn't open yet" there.
-const { onCall, HttpsError } = require("firebase-functions/v2/https");
+const { onCall, onRequest, HttpsError } = require("firebase-functions/v2/https");
 const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const { makeStripe } = require("./stripe");
 const { makeBilling, BillingError } = require("./core");
+const { makeWebhook } = require("./webhook");
 const { makeEntitlement } = require("../club/entitlement");
 
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_PRICE_SUB = defineString("STRIPE_PRICE_SUB", { default: "" });
 const STRIPE_PRICE_MONTH = defineString("STRIPE_PRICE_MONTH", { default: "" });
 const STRIPE_PORTAL_CONFIG = defineString("STRIPE_PORTAL_CONFIG", { default: "" });
+const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
+const webhookOnAtDeploy = process.env.STRIPE_WEBHOOK === "on";
 
 // Where Checkout and the portal may send people back to, per project (the same idea as lib/accounts TWITCH_REDIRECTS).
 const ORIGINS = {
@@ -43,6 +49,14 @@ function build(deps = {}) {
     portalConfig: deps.portalConfig ?? STRIPE_PORTAL_CONFIG.value(), origins: deps.origins || ORIGINS[projectId()] || [],
   }));
 
+  let W = null;
+  const webhook = () => (W ||= (() => {
+    const stripe = deps.stripe || makeStripe(STRIPE_SECRET_KEY.value());
+    const secret = deps.webhookSecret ?? STRIPE_WEBHOOK_SECRET.value();
+    return makeWebhook({ db, stripe, entitlement: makeEntitlement({ db, auth: deps.auth || admin.auth(), now }), now,
+      verify: deps.verify || ((raw, sig) => stripe.webhooks.constructEvent(raw, sig, secret)) });
+  })());
+
   const signedIn = (request) => { if (!request.auth) throw fail("unauthenticated", "Sign in first.", "signedOut"); return request.auth.uid; };
   const wrap = (fn) => async (request) => {
     const uid = signedIn(request);
@@ -58,8 +72,12 @@ function build(deps = {}) {
     clubCheckout: onCall({ secrets: [STRIPE_SECRET_KEY] }, wrap((uid, d) => billing().checkout(uid, { kind: d.kind, guardianOk: d.guardianOk === true, origin: d.origin }))),
     clubPortal: onCall({ secrets: [STRIPE_SECRET_KEY] }, wrap((uid, d) => billing().portal(uid, { origin: d.origin }))),
     clubStatus: onCall({ secrets: [STRIPE_SECRET_KEY] }, wrap((uid) => billing().status(uid))),
+    billingWebhook: onRequest({ secrets: webhookOnAtDeploy ? [STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET] : [STRIPE_SECRET_KEY] }, async (req, res) => {
+      if (!webhookOnAtDeploy && !deps.verify) { res.status(503).send("not configured"); return; }
+      await webhook().handle(req, res);
+    }),
   };
-  return { functions, helpers: { billing } };
+  return { functions, helpers: { billing, webhook } };
 }
 
 module.exports = (deps) => build(deps).functions;

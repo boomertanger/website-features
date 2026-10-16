@@ -5,7 +5,11 @@
 //
 // Sources live in sites/boomertanger/members/{uid}.club.sources, each written by its own part:
 //   twitch  { tier, gifted, since }        the Twitch check, EventSub and the sweep (lib/club/twitch.js); removed when the sub ends
-//   stripe  (billing, later)   gift { endsAt } (gifts, later)
+//   stripe  { kind: "sub" | "month", status, subscriptionId?, renewsAt?, endsAt?, cancelAt?, graceUntil?, monthEndsAt? }
+//                                          lib/billing (the Stripe webhook and clubBillingSweep; docs/specs/club-pass.md §13). Gold while
+//                                          a subscription is active or trialing, or past_due before graceUntil, or a one-month pass (or
+//                                          monthEndsAt, a month bought alongside) before its end
+//   gift { endsAt } (gifts, later)
 //   grant   { by, note, at, until? }       functions/scripts/club-grant.js (the owner and testing)
 //   crew    { grade }                      worked out HERE from the members doc's crewGrade / crewStatus (Mod Machina writes those):
 //                                          on the crew and not Paused or Alumni
@@ -30,10 +34,21 @@ const crewActive = (m) => m.crewGrade != null && !["paused", "alumni"].includes(
 const stable = (v) => JSON.stringify(v, (k, x) => (x && typeof x === "object" && !Array.isArray(x) ? Object.fromEntries(Object.entries(x).sort(([a], [b]) => (a < b ? -1 : 1))) : x));
 
 /** Is a stored source still giving gold? (gift and grant can end; the others are removed by their writers when they end) */
+/** Is a Stripe source giving gold at `at`? (docs/specs/club-pass.md §13) */
+function stripeLive(s, at) {
+  if (!s || s.ended) return false;
+  if ((msOf(s.monthEndsAt) ?? 0) > at) return true;
+  if (s.kind === "month") return (msOf(s.endsAt) ?? 0) > at;
+  if (s.status === "active" || s.status === "trialing") return true;
+  if (s.status === "past_due") return (msOf(s.graceUntil) ?? 0) > at;
+  return false;
+}
+
 function live(key, s, at) {
   if (!s || typeof s !== "object") return false;
   if (key === "gift") return (msOf(s.endsAt) ?? 0) > at;
   if (key === "grant") return s.until == null || (msOf(s.until) ?? 0) > at;
+  if (key === "stripe") return stripeLive(s, at);
   return true;
 }
 
@@ -105,4 +120,4 @@ function makeEntitlement({ db = admin.firestore(), auth = admin.auth(), now = Da
   return { recompute, setRoleClaims, setGrant };
 }
 
-module.exports = { makeEntitlement, computeClub, crewActive, SOURCES };
+module.exports = { makeEntitlement, computeClub, crewActive, stripeLive, SOURCES };

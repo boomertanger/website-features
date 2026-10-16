@@ -1198,6 +1198,13 @@ service cloud.firestore {
       allow write: if false;
     }
 
+    // Club Pass billing (docs/specs/club-pass.md §13): Stripe customers, subscriptions, the append-only ledger and the webhook's event
+    // records. Written only by functions/lib/billing (Admin SDK); no client reads or writes, ever. (Unmatched paths are denied anyway;
+    // this says so on purpose.)
+    match /billing/{document=**} {
+      allow read, write: if false;
+    }
+
     // Platform account -> uid: server only.
     match /platformLinks/{linkId} {
       allow read, write: if false;
