@@ -1,6 +1,7 @@
 // Control Room, Twitch EventSub (docs/specs/control-room.md §10, §14).
 //
-//   twitchEventSub   HTTPS (POST): Twitch's webhook for stream.online and stream.offline.
+//   twitchEventSub   HTTPS (POST): Twitch's webhook for stream.online and stream.offline, and (Club Pass, docs/specs/club-pass.md §12)
+//                    channel.subscribe, channel.subscription.message and channel.subscription.end.
 //
 // Set the secret yourself (it signs every message; nothing in the repo or the logs ever holds it):
 //   firebase functions:secrets:set TWITCH_EVENTSUB_SECRET --project staging
@@ -17,6 +18,10 @@
 // in live/main.eventSubRevoked. The effect of a notification is small and safe: when a stream is live on the site it records the
 // platform status in streams/{id}/private/control.twitch ({ status, at, offlineSince? }), which the controls' banners read. EventSub
 // never starts or stops a stream; liveTick's Helix poll stays the other source of truth.
+// Club Pass: a sub, resub or end for the broadcaster is handed to lib/club/twitch.js applyEvent (the Twitch user -> the linked member
+// through platformLinks; unlinked users are ignored), which updates club.twitch / sources.twitch and recomputes the pass. If that fails,
+// the message's seen-record is removed and Twitch gets a 500, so its retry is handled. Those subscriptions are created by
+// functions/scripts/club-eventsub.js once the broadcaster token is connected (Twitch needs channel:read:subscriptions for them).
 const crypto = require("crypto");
 const { onRequest } = require("firebase-functions/v2/https");
 const { defineSecret } = require("firebase-functions/params");
@@ -25,7 +30,9 @@ const { P } = require("./core");
 const TWITCH_EVENTSUB_SECRET = defineSecret("TWITCH_EVENTSUB_SECRET");
 const REPLAY_WINDOW_MS = 10 * 60 * 1000;
 const SEEN_TTL_MS = 24 * 60 * 60 * 1000;
-const TYPES = ["stream.online", "stream.offline"];
+const STREAM_TYPES = ["stream.online", "stream.offline"];
+const { TYPES: CLUB_TYPES } = require("../club/twitch");
+const TYPES = [...STREAM_TYPES, ...CLUB_TYPES];
 
 /** "sha256=<hex>" for a message: the value Twitch sends and this function expects. */
 const signMessage = (secret, messageId, timestamp, rawBody) =>
@@ -38,8 +45,11 @@ function signatureOk(secret, headers, rawBody) {
   return want.length === got.length && crypto.timingSafeEqual(want, got);
 }
 
-module.exports = function eventsub(ctx, { eventSubSecret = null } = {}) {
+module.exports = function eventsub(ctx, { eventSubSecret = null, clubSubs = null } = {}) {
   const { db, Timestamp, now } = ctx;
+  // Club Pass applies events with Firestore and Auth only (no Twitch call), so no Twitch secret is needed here.
+  let club = clubSubs;
+  const clubT = () => (club ||= require("../club/hooks").twitchSubs({ db, now }));
   const secretValue = () => (eventSubSecret != null ? eventSubSecret : TWITCH_EVENTSUB_SECRET.value());
 
   async function applyStatus(online, at) {
@@ -70,13 +80,23 @@ module.exports = function eventsub(ctx, { eventSubSecret = null } = {}) {
       return;
     }
     // From here every message is deduplicated by its id.
-    try { await db.doc(P.eventSubSeen(`eventsub_${String(id).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 120)}`)).create({ at: now(), type, expireAt: Timestamp.fromMillis(now() + SEEN_TTL_MS) }); }
+    const seenRef = db.doc(P.eventSubSeen(`eventsub_${String(id).replace(/[^A-Za-z0-9_-]/g, "_").slice(0, 120)}`));
+    try { await seenRef.create({ at: now(), type, expireAt: Timestamp.fromMillis(now() + SEEN_TTL_MS) }); }
     catch (err) { if (err.code === 6 || /ALREADY_EXISTS|already exists/i.test(String(err.message))) { res.status(200).send("duplicate"); return; } throw err; }
     if (type === "notification") {
       const sub = body.subscription || {}, ev = body.event || {};
       const cfg = (await db.doc(P.growthConfig).get()).data() || {};
       if (!TYPES.includes(sub.type)) { res.status(200).send("ignored"); return; }
       if (cfg.twitchBroadcasterId && String(ev.broadcaster_user_id) !== String(cfg.twitchBroadcasterId)) { res.status(200).send("ignored"); return; }
+      if (CLUB_TYPES.includes(sub.type)) {
+        try { const r = await clubT().applyEvent(sub.type, ev); res.status(200).send(r.applied ? "ok" : "ignored"); }
+        catch (err) {
+          console.error("twitchEventSub: Club Pass could not apply", sub.type, String((err && err.message) || err).slice(0, 160));
+          await seenRef.delete().catch(() => {});
+          res.status(500).send("error");
+        }
+        return;
+      }
       try { await applyStatus(sub.type === "stream.online", sent); }
       catch (err) { console.error("twitchEventSub: could not record the status", String((err && err.message) || err).slice(0, 160)); res.status(500).send("error"); return; }
       res.status(200).send("ok");

@@ -88,7 +88,7 @@ function planSubscriptions(existing, { callback = CALLBACK, broadcasterId, types
  * The whole run, with everything injectable for the check: { apply, projectId, fetchFn, readSecret(name), clientId, broadcasterId (or
  * a function returning it, may be null), login, log }. Never logs a secret or a token.
  */
-async function run({ apply = false, projectId, fetchFn = fetch, readSecret, clientId, getBroadcasterId, login = "boomertanger", log = console.log }) {
+async function run({ apply = false, projectId, fetchFn = fetch, readSecret, clientId, getBroadcasterId, login = "boomertanger", log = console.log, types = TYPES }) {
   if (projectId !== STAGING_PROJECT) throw new Error(`This script only runs on staging (${STAGING_PROJECT}); got "${projectId}".`);
   if (!clientId) throw new Error("No Twitch client ID: set TWITCH_CLIENT_ID or add it to functions/.env.");
   log(`Project: ${projectId}${apply ? "" : " (dry run: nothing is created or deleted; add --apply to do it)"}`);
@@ -125,7 +125,7 @@ async function run({ apply = false, projectId, fetchFn = fetch, readSecret, clie
   const mine = existing.filter((s) => s.transport && s.transport.callback === CALLBACK);
   log(`Subscriptions pointing at the callback: ${mine.length}`);
   for (const s of mine) log(`  ${s.type}  ${s.status}  ${s.id}`);
-  const plan = planSubscriptions(existing, { broadcasterId });
+  const plan = planSubscriptions(existing, { broadcasterId, types });   // types: club-eventsub.js passes the Club Pass ones
   for (const k of plan.keep) log(`Keep: ${k.type} (${k.status})`);
   for (const t of plan.create) log(`${apply ? "Creating" : "Would create"}: ${t}`);
   for (const r of plan.remove) log(`${apply ? "Deleting" : "Would delete"}: ${r.type} ${r.id} (${r.why}, ${r.status})`);

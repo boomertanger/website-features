@@ -35,6 +35,7 @@ function fakeDb() {
         docs.set(path, d);
       },
       async delete() { docs.delete(path); },
+      async create(v) { if (docs.has(path)) throw Object.assign(new Error("already exists"), { code: 6 }); docs.set(path, JSON.parse(JSON.stringify(v))); },
     };
   }
   return {
@@ -210,6 +211,33 @@ function fakeTwitch() {
     // a Twitch user with no site member doc is skipped
     await db.doc("users/u9").set({ linked: { twitch: { id: "333", login: "x" } } });
     assert.equal((await T.check("u9")).plan, null);
+  }
+  // ---------- the EventSub webhook hands Club Pass types to applyEvent ----------
+  {
+    const eventsub = require("../lib/live/eventsub");
+    const db = fakeDb(), seen = [];
+    let fail = false;
+    const clubSubs = { async applyEvent(type, ev) { if (fail) throw new Error("boom"); seen.push([type, ev.user_id]); return { applied: ev.user_id === "222" }; } };
+    const at = Date.now();
+    const ctx = { db, Timestamp: admin.firestore.Timestamp, now: () => at };
+    const { helpers } = eventsub(ctx, { eventSubSecret: "secret", clubSubs });
+    const send = async (type, msgType, id, extra = {}) => {
+      const body = JSON.stringify({ subscription: { type, status: "enabled" }, event: { broadcaster_user_id: "111", ...extra }, ...(msgType === "webhook_callback_verification" ? { challenge: "hi" } : {}) });
+      const ts = new Date(at).toISOString();
+      const headers = { "twitch-eventsub-message-id": id, "twitch-eventsub-message-timestamp": ts, "twitch-eventsub-message-type": msgType, "twitch-eventsub-message-signature": eventsub.signMessage("secret", id, ts, body) };
+      const res = { code: 0, out: "", status(c) { this.code = c; return this; }, set() { return this; }, send(x) { this.out = x; return this; } };
+      await helpers.handleTwitchEventSub({ method: "POST", headers, rawBody: Buffer.from(body) }, res);
+      return res;
+    };
+    assert.equal((await send("channel.subscribe", "webhook_callback_verification", "v1")).out, "hi", "club types verify");
+    assert.equal((await send("channel.subscribe", "notification", "n1", { user_id: "222", tier: "1000" })).out, "ok");
+    assert.equal((await send("channel.subscription.end", "notification", "n2", { user_id: "999" })).out, "ignored");
+    assert.equal((await send("channel.subscribe", "notification", "n1", { user_id: "222" })).out, "duplicate");
+    fail = true;
+    assert.equal((await send("channel.subscription.message", "notification", "n3", { user_id: "222" })).code, 500);
+    fail = false;
+    assert.equal((await send("channel.subscription.message", "notification", "n3", { user_id: "222" })).out, "ok", "Twitch's retry is handled");
+    assert.deepEqual(seen.map((x) => x[0]), ["channel.subscribe", "channel.subscription.end", "channel.subscription.message"]);
   }
   console.log("check-club: ok");
 })().catch((err) => { console.error(err); process.exit(1); });
