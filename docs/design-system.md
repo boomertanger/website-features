@@ -307,6 +307,12 @@ variants hide it, so switching is just the class:
   motion). Special moments only.
 - `.bt-chapter--ghost` (D4): no eyebrow; a huge outlined numeral from `data-n` ("01", "02"…)
   behind the title, with the title and lede offset to clear it; smaller at ≤ 640px.
+  Outlined numerals (this one, `.bt-placard-n`, `.bt-rank`) use an opaque fill plus
+  `paint-order: stroke fill`, never a transparent fill (a transparent fill strokes every contour,
+  so a glyph built from overlapping contours, like the 4 in "04", shows a seam). The stroke is
+  twice the visible width because the fill hides its inner half. `--bt-ghost-fill` sets the fill
+  where the numeral sits on something other than the page (`--bt-bg`; the placard defaults to
+  `--bt-surface`). `.bt-vote-rank` stays hollow: it sits over poster art and only shows 1 to 3.
 
 **Numbered prose sections: `.bt-prose--chapters`**, on the `<article class="bt-prose">` of a
 long Markdown page: a CSS counter numbers every `h2` with a D2 eyebrow ("01 · Section", gold
