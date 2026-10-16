@@ -2,7 +2,15 @@
 // functions/scripts/check-club.js: Club Pass Twitch counting (docs/specs/club-pass.md §12), with a fake Firestore and a fake Twitch.
 //   node functions/scripts/check-club.js
 const assert = require("assert/strict");
+const admin = require("firebase-admin");
 const { makeBroadcaster, authUrl, SCOPES } = require("../lib/twitchBroadcaster");
+const { makeEntitlement, computeClub } = require("../lib/club/entitlement");
+
+const FV = admin.firestore.FieldValue;
+function fakeAuth() {
+  const users = new Map();
+  return { users, async getUser(uid) { if (!users.has(uid)) throw Object.assign(new Error("no"), { code: "auth/user-not-found" }); return { customClaims: users.get(uid) }; }, async setCustomUserClaims(uid, c) { users.set(uid, JSON.parse(JSON.stringify(c))); } };
+}
 
 // ---------- a tiny in-memory Firestore (doc get / set (merge) / update / delete, runTransaction) ----------
 function fakeDb() {
@@ -14,7 +22,18 @@ function fakeDb() {
       path, id: path.split("/").pop(),
       async get() { return snap(path); },
       async set(v, o = {}) { docs.set(path, o.merge ? merge(docs.get(path), v) : JSON.parse(JSON.stringify(v))); },
-      async update(v) { if (!docs.has(path)) throw new Error(`no doc ${path}`); docs.set(path, merge(docs.get(path), v)); },
+      async update(v) {
+        if (!docs.has(path)) throw new Error(`no doc ${path}`);
+        const d = JSON.parse(JSON.stringify(docs.get(path)));
+        for (const [k, val] of Object.entries(v)) {              // dotted field paths; FieldValue.delete() removes
+          const parts = k.split("."), last = parts.pop();
+          let o = d; for (const p of parts) { if (!o[p] || typeof o[p] !== "object") o[p] = {}; o = o[p]; }
+          if (val && typeof val.isEqual === "function" && val.isEqual(FV.delete())) delete o[last];
+          else if (val && typeof val.isEqual === "function") o[last] = "(server time)";
+          else o[last] = JSON.parse(JSON.stringify(val));
+        }
+        docs.set(path, d);
+      },
       async delete() { docs.delete(path); },
     };
   }
@@ -72,6 +91,47 @@ function fakeTwitch() {
     assert.equal((await b.disconnect()).login, "boomertanger");
     assert.equal(db.docs.has("sites/boomertanger/private/twitchBroadcaster"), false);
     assert.ok(tw.calls.some((c) => c.includes("/revoke")));
+  }
+  // ---------- the entitlement ----------
+  {
+    const at = 5_000_000;
+    // pure
+    assert.equal(computeClub({ roles: [] }, at).club.plan, "fan");
+    assert.equal(computeClub({ roles: [], crewGrade: 2, crewStatus: "active" }, at).club.sources.crew.grade, 2);
+    assert.equal(computeClub({ roles: [], crewGrade: 2, crewStatus: "alumni" }, at).sub, false, "alumni aren't crew");
+    assert.equal(computeClub({ club: { sources: { grant: { until: at - 1 } } } }, at).sub, false, "an ended grant doesn't count");
+    assert.equal(computeClub({ club: { sources: { gift: { endsAt: at + 1 } } } }, at).sub, true);
+    assert.equal(computeClub({ roles: ["sub"] }, at).legacy, true, "the old staging sub role is left alone");
+    assert.equal(computeClub({ roles: ["sub"], club: { twitch: { linked: true } } }, at).legacy, true, "twitch info alone doesn't end the legacy role");
+    assert.equal(computeClub({ roles: ["sub"], club: { sources: {} } }, at).legacy, false);
+
+    const db = fakeDb(), auth = fakeAuth();
+    const E = makeEntitlement({ db, auth, now: () => at });
+    const m = "sites/boomertanger/members/u1";
+    await db.doc(m).set({ roles: ["mod"], joinedAt: 1 });
+    auth.users.set("u1", { roles: { boomertanger: ["mod"], other: ["x"] }, crewGrade: 2 });
+    assert.equal(await E.recompute("nobody"), null);
+    let r = await E.recompute("u1");
+    assert.equal(r.plan, "fan"); assert.equal(r.rolesChanged, false);
+    assert.deepEqual(db.docs.get(m).club.sources, {});
+    r = await E.recompute("u1");
+    assert.equal(r.changed, false, "nothing to write the second time");
+    r = (await E.setGrant("u1", { on: true, note: "test" })).after;
+    assert.equal(r.plan, "sub"); assert.equal(r.rolesChanged, true);
+    assert.deepEqual(db.docs.get(m).roles, ["mod", "sub"], "other roles untouched");
+    assert.deepEqual(auth.users.get("u1"), { roles: { boomertanger: ["mod", "sub"], other: ["x"] }, crewGrade: 2 }, "claims merged, the rest kept");
+    assert.equal(db.docs.get(m).rolesChangedBy.name, "Club Pass");
+    r = (await E.setGrant("u1", { on: false })).after;
+    assert.equal(r.plan, "fan"); assert.deepEqual(db.docs.get(m).roles, ["mod"]);
+    assert.deepEqual(auth.users.get("u1").roles.boomertanger, ["mod"]);
+    // crew counts
+    await db.doc(m).update({ crewGrade: 1, crewStatus: "active" });
+    assert.equal((await E.recompute("u1")).plan, "sub");
+    assert.equal(db.docs.get(m).club.sources.crew.grade, 1);
+    // legacy
+    await db.doc("sites/boomertanger/members/u2").set({ roles: ["sub"] });
+    assert.equal((await E.recompute("u2")).legacy, true);
+    assert.deepEqual(db.docs.get("sites/boomertanger/members/u2").roles, ["sub"], "legacy role kept");
   }
   console.log("check-club: ok");
 })().catch((err) => { console.error(err); process.exit(1); });

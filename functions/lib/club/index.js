@@ -8,15 +8,19 @@
 //                              twitchBroadcasterId when known) with both scopes, then stores it (lib/twitchBroadcaster.js). adminLog.
 //   clubBroadcasterStatus      owner: connected as, scopes, token health (asks Twitch). Never returns a token.
 //   clubBroadcasterDisconnect  owner: revokes and deletes the token. adminLog.
+//   clubOnCrewChange           trigger on sites/boomertanger/members/{uid}: when crewGrade or crewStatus changes, recompute the pass
+//                              (lib/club/entitlement.js; the crew source). Its own writes change neither, so it doesn't loop.
 //
 // adminLog feature "clubPass". No activityLog.
 const { onCall } = require("firebase-functions/v2/https");
+const { onDocumentWritten } = require("firebase-functions/v2/firestore");
 const { defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
 const accounts = require("../accounts");
 const { SITE_ID, fail, callerInfo } = require("../vault/common");
 const { makeBroadcaster, authUrl, BroadcasterError, SCOPES, DOC_PATH } = require("../twitchBroadcaster");
+const { makeEntitlement } = require("./entitlement");
 
 const FEATURE = "clubPass";
 const TWITCH_LOGIN = defineString("TWITCH_LOGIN");
@@ -110,13 +114,24 @@ function build(deps = {}) {
     return { ok: true, wasConnected: !!was };
   }
 
+  // ---------- the entitlement ----------
+  const entitlement = makeEntitlement({ db, auth: deps.auth || admin.auth(), now });
+  async function onCrewChange(event) {
+    const { siteId, uid } = event.params;
+    if (siteId !== SITE_ID || !event.data.after.exists) return;
+    const b = event.data.before.exists ? event.data.before.data() : {}, a = event.data.after.data();
+    if ((b.crewGrade ?? null) === (a.crewGrade ?? null) && (b.crewStatus ?? null) === (a.crewStatus ?? null)) return;
+    await entitlement.recompute(uid);
+  }
+
   const functions = {
     clubBroadcasterStart: onCall(startConnect),
     clubBroadcasterConnect: onCall({ secrets: SECRETS }, finishConnect),
     clubBroadcasterStatus: onCall({ secrets: SECRETS }, broadcasterStatus),
     clubBroadcasterDisconnect: onCall(disconnect),
+    clubOnCrewChange: onDocumentWritten("sites/{siteId}/members/{uid}", onCrewChange),
   };
-  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster } };
+  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster, entitlement, onCrewChange } };
 }
 
 module.exports = (deps) => build(deps).functions;
