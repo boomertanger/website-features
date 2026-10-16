@@ -264,6 +264,14 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
       <p class="bt-fine" data-yt-status role="status"></p>
     </div>
   </div>
+  <div class="bt-zone" data-tb-card hidden>
+    <div class="bt-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Twitch broadcaster</h2><span class="bt-badge bt-badge--gray" data-tb-badge>Owner only</span></div>
+      <p class="bt-section-text">Connect the Boomertanger Twitch account once and Twitch subs count on the site: a sub's Club Pass turns gold, and goes back to Fan Club when the sub ends. Sign in to Twitch as boomertanger and allow both permissions (reading subscribers, and moderators for Mod Machina later; the mod sync stays off).</p>
+      <div class="bt-row-center"><button type="button" class="bt-btn bt-btn--primary" data-tb-connect>Connect Twitch broadcaster</button><button type="button" class="bt-btn bt-btn--danger" data-tb-disconnect hidden>Disconnect</button></div>
+      <p class="bt-fine" data-tb-status role="status"></p>
+    </div>
+  </div>
   <div class="bt-zone" data-owner-tools hidden>
     <div class="bt-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Growth collector</h2><span class="bt-badge bt-badge--gray">Owner only</span></div>
@@ -305,6 +313,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
   import "../scripts/admin/climb-card";
   import "../scripts/admin/pulse-card";
   import { initYouTube } from "../scripts/admin/youtube-card";
+  import { initTwitchBroadcaster } from "../scripts/admin/twitch-card";
   import { whenReady } from "../lib/auth";
   import { messageFor } from "../lib/errors";
   import { startTikTok, tiktokReady } from "../lib/tiktok";
@@ -411,6 +420,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
     if (!isOwner) return;
     box.hidden = false;
     void initYouTube();
+    void initTwitchBroadcaster();
     const { call } = await import("../lib/call");
     try {
       const st = await call<{ configured: boolean; connected: boolean }>("tiktokStatus");

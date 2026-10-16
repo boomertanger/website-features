@@ -1,14 +1,15 @@
 // Twitch sign-in and linking: the authorization-code flow (docs/specs/accounts.md).
 // The browser goes to Twitch; Twitch returns to /auth/twitch/callback with a code,
 // and that page hands the code to the twitchAuth callable. The same callback page
-// serves both modes; sessionStorage carries the mode, a CSRF state and where to
+// serves all three modes (signin, link, and the owner's broadcaster connect for Club Pass, docs/specs/club-pass.md §12, whose
+// URL and state come from the clubBroadcasterStart callable); sessionStorage carries the mode, a CSRF state and where to
 // return afterwards.
 import { twitchClientId } from "../data/site.json";
 
 const KEY = "bt-twitch-flow";
 export const TWITCH_CALLBACK = "/auth/twitch/callback";
 
-export interface TwitchFlow { state: string; mode: "signin" | "link"; returnTo: string }
+export interface TwitchFlow { state: string; mode: "signin" | "link" | "broadcaster"; returnTo: string }
 
 export function startTwitch(mode: "signin" | "link", returnTo = location.pathname + location.search + location.hash) {
   const state = crypto.getRandomValues(new Uint32Array(4)).join("-");
@@ -40,4 +41,12 @@ export function takeTwitchFlow(): TwitchFlow | null {
 /** Only same-site paths are followed after sign-in. */
 export function safeReturn(path: string | null | undefined): string {
   return path && path.startsWith("/") && !path.startsWith("//") && !path.startsWith("/auth/") ? path : "/";
+}
+
+/** The owner's "Connect Twitch broadcaster" on /admin: the server makes the consent URL and keeps the state too (10 minutes). */
+export async function startBroadcaster(returnTo = "/admin") {
+  const { call } = await import("./call");
+  const { url, state } = await call<{ url: string; state: string }>("clubBroadcasterStart", { redirectUri: location.origin + TWITCH_CALLBACK });
+  try { sessionStorage.setItem(KEY, JSON.stringify({ state, mode: "broadcaster", returnTo } satisfies TwitchFlow)); } catch { /* the callback will say it expired */ }
+  location.assign(url);
 }

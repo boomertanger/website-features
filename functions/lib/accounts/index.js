@@ -489,3 +489,4 @@ module.exports.SITE_ID = SITE_ID;
 module.exports.TWITCH_CLIENT_ID = TWITCH_CLIENT_ID;        // (Mod Machina's Twitch moderator sync uses the same app)
 module.exports.TWITCH_CLIENT_SECRET = TWITCH_CLIENT_SECRET;
 module.exports.TERMS_VERSION_FALLBACK = TERMS_VERSION_FALLBACK;
+module.exports.TWITCH_REDIRECTS = TWITCH_REDIRECTS;  // (Club Pass's broadcaster connect returns through the same /auth/twitch/callback)

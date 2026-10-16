@@ -1,5 +1,5 @@
 ---
-// Twitch comes back here (both modes: sign in and link). The page swaps the code
+// Twitch comes back here (sign in, link, and the owner's broadcaster connect for Club Pass). The page swaps the code
 // for a sign-in (twitchAuth callable) and returns to where the member started.
 import BaseLayout from "../../../layouts/BaseLayout.astro";
 import AuthStatus from "../../../components/AuthStatus.astro";
@@ -29,10 +29,23 @@ import AuthStatus from "../../../components/AuthStatus.astro";
     const flow = takeTwitchFlow();
     // Don't leave the one-time code in the address bar or history.
     history.replaceState(null, "", TWITCH_CALLBACK);
-    const home = flow?.mode === "link" ? "/account#linked" : safeReturn(flow?.returnTo);
+    const home = flow?.mode === "link" ? "/account#linked" : flow?.mode === "broadcaster" ? "/admin" : safeReturn(flow?.returnTo);
     if (q.get("error")) return fail("Twitch sign-in was cancelled.", home, "Go back");
     if (!flow || !q.get("code") || q.get("state") !== flow.state) return fail("That Twitch sign-in expired. Please start again.", home, "Go back");
     const redirectUri = location.origin + TWITCH_CALLBACK;
+    // The owner's broadcaster connect (Club Pass, docs/specs/club-pass.md §12): the server checks its own copy of the state too.
+    if (flow.mode === "broadcaster") {
+      try {
+        const s = await whenReady();
+        if (!s.user) return fail("Sign in first, then connect Twitch from /admin.", "/admin", "Go to /admin");
+        msg.textContent = "Connecting the broadcaster's Twitch…";
+        await call("clubBroadcasterConnect", { code: q.get("code"), state: q.get("state"), redirectUri });
+        location.replace("/admin?twitch=connected");
+      } catch (err) {
+        fail(messageFor(err, "Connecting Twitch didn't work. Please try again."), "/admin", "Back to /admin");
+      }
+      return;
+    }
     try {
       if (flow.mode === "link") {
         const s = await whenReady();

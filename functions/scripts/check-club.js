@@ -1,0 +1,79 @@
+#!/usr/bin/env node
+// functions/scripts/check-club.js: Club Pass Twitch counting (docs/specs/club-pass.md §12), with a fake Firestore and a fake Twitch.
+//   node functions/scripts/check-club.js
+const assert = require("assert/strict");
+const { makeBroadcaster, authUrl, SCOPES } = require("../lib/twitchBroadcaster");
+
+// ---------- a tiny in-memory Firestore (doc get / set (merge) / update / delete, runTransaction) ----------
+function fakeDb() {
+  const docs = new Map();
+  const snap = (path) => { const d = docs.get(path); return { exists: d !== undefined, id: path.split("/").pop(), ref: doc(path), data: () => (d ? JSON.parse(JSON.stringify(d)) : undefined), get: (k) => k.split(".").reduce((o, p) => (o == null ? undefined : o[p]), d) }; };
+  const merge = (a, b) => { const out = { ...(a || {}) }; for (const [k, v] of Object.entries(b)) out[k] = v && typeof v === "object" && !Array.isArray(v) && out[k] && typeof out[k] === "object" && !Array.isArray(out[k]) ? merge(out[k], v) : v; return out; };
+  function doc(path) {
+    return {
+      path, id: path.split("/").pop(),
+      async get() { return snap(path); },
+      async set(v, o = {}) { docs.set(path, o.merge ? merge(docs.get(path), v) : JSON.parse(JSON.stringify(v))); },
+      async update(v) { if (!docs.has(path)) throw new Error(`no doc ${path}`); docs.set(path, merge(docs.get(path), v)); },
+      async delete() { docs.delete(path); },
+    };
+  }
+  return {
+    docs, doc,
+    collection(name) { return { async add(v) { const p = `${name}/${docs.size + 1}`; docs.set(p, v); return doc(p); } }; },
+    async runTransaction(fn) { return fn({ get: (r) => r.get(), set: (r, v, o) => r.set(v, o), update: (r, v) => r.update(v), delete: (r) => r.delete() }); },
+  };
+}
+
+// ---------- a fake Twitch ----------
+function fakeTwitch() {
+  const t = { calls: [], refreshOk: true, user: { login: "boomertanger", user_id: "111" }, scopes: [...SCOPES], valid: true };
+  t.fetch = async (url, init = {}) => {
+    const u = String(url);
+    t.calls.push(u);
+    const json = (status, body) => ({ ok: status < 300, status, json: async () => body, text: async () => JSON.stringify(body) });
+    if (u.startsWith("https://id.twitch.tv/oauth2/token")) {
+      const p = new URLSearchParams(String(init.body));
+      if (p.get("grant_type") === "refresh_token") return t.refreshOk ? json(200, { access_token: "acc-2", refresh_token: "ref-2", expires_in: 14400, scope: t.scopes }) : json(400, { message: "Invalid refresh token" });
+      return json(200, { access_token: "acc-1", refresh_token: "ref-1", expires_in: 14400, scope: t.scopes });
+    }
+    if (u.startsWith("https://id.twitch.tv/oauth2/validate")) return t.valid ? json(200, { ...t.user, scopes: t.scopes, expires_in: 14000 }) : json(401, {});
+    if (u.startsWith("https://id.twitch.tv/oauth2/revoke")) return json(200, {});
+    return json(404, {});
+  };
+  return t;
+}
+
+(async () => {
+  // ---------- the broadcaster token ----------
+  {
+    let clock = 1_000_000;
+    const db = fakeDb(), tw = fakeTwitch();
+    const b = makeBroadcaster({ db, fetchFn: tw.fetch, clientId: "cid", clientSecret: "sec", now: () => clock });
+    const url = new URL(authUrl({ clientId: "cid", redirectUri: "https://x/auth/twitch/callback", state: "s1" }));
+    assert.equal(url.searchParams.get("scope"), "channel:read:subscriptions channel:manage:moderators");
+    assert.equal(url.searchParams.get("force_verify"), "true");
+    assert.deepEqual(await b.status(), { connected: false });
+    await assert.rejects(b.token(), { code: "none" });
+    const t = await b.exchange({ code: "c", redirectUri: "https://x/auth/twitch/callback" });
+    assert.equal(t.login, "boomertanger"); assert.equal(t.twitchUserId, "111"); assert.equal(t.accessExpiresAt, clock + 14400 * 1000);
+    await b.store(t, { connectedBy: "owner" });
+    assert.equal(await b.token(), "acc-1", "a fresh token is used as is");
+    clock += 14400 * 1000 - 60 * 1000;                                  // under 5 minutes left: refresh
+    assert.equal(await b.token(), "acc-2");
+    assert.equal(db.docs.get("sites/boomertanger/private/twitchBroadcaster").refreshToken, "ref-2");
+    const st = await b.status({ validate: true });
+    assert.equal(st.connected, true); assert.equal(st.health.ok, true); assert.deepEqual(st.missingScopes, []);
+    assert.ok(!JSON.stringify(st).includes("acc-") && !JSON.stringify(st).includes("ref-"), "status never returns a token");
+    clock += 14400 * 1000;
+    tw.refreshOk = false;                                                // the owner revoked it on Twitch
+    await assert.rejects(b.token(), { code: "reconnect" });
+    assert.equal(db.docs.get("sites/boomertanger/private/twitchBroadcaster").health.ok, false);
+    assert.equal((await b.disconnect()).login, "boomertanger");
+    assert.equal(db.docs.has("sites/boomertanger/private/twitchBroadcaster"), false);
+    assert.ok(tw.calls.some((c) => c.includes("/revoke")));
+  }
+  console.log("check-club: ok");
+})().catch((err) => { console.error(err); process.exit(1); });
+
+module.exports = { fakeDb, fakeTwitch };

@@ -944,3 +944,7 @@ Object.assign(exports, require("./lib/skipperCam").build({ adminLogEntry }).func
 // The Playbook (docs/specs/playbook.md): playbookAdmin (owner only: savePage, flagAction, markReviewed, applyUpdate, restoreVersion; adminLog feature playbook,
 // ids only) and playbookReviewTick (the 1st, 06:00 America/Los_Angeles). Lives in lib/playbook/; loads nothing from rewards.
 Object.assign(exports, require("./lib/playbook").functions(adminLogEntry));
+
+// Club Pass (docs/specs/club-pass.md §11, §12): the broadcaster's Twitch token (clubBroadcasterStart, clubBroadcasterConnect,
+// clubBroadcasterStatus, clubBroadcasterDisconnect; owner only; adminLog feature clubPass). Lives in lib/club/; loads nothing from rewards.
+Object.assign(exports, require("./lib/club").build({ adminLogEntry }).functions);
