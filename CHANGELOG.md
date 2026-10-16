@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Playbook: open questions offer only Answer (text required) and can never be confirmed without an answer, on the server too (flagAction, applyUpdate, and an edit can't leave one confirmed without an answer); assumptions offer Confirm and Change (a corrected version, then confirmed); every flag has a pencil Edit for text, status and answer, keeping the replaced text on the flag and logging ids only
 - Playbook: Apply an update also takes a json code block or bare JSON with playbookUpdate at its top level (just the contents of Claude's code box), with a clearer message when there's none; the preview lists the pages it marks reviewed and warns when that would finish the first read-through; prompts copied during the first read-through ask Claude to mark only the pages gone through in that chat
 - docs: Talk Back Part C staging results (test plan Part C results, check 59 now counts 15 questions; ROADMAP: Talk Back built and tested on staging, all three parts; Part C needs nothing at launch)
 - The Playbook, part 7: design system 8ag: --pb-lamp is a lamp light, like the firefly (the Playbook hero only, never buttons, badges or text), reduced motion, the kit pieces it uses and the Markdown safety rules

@@ -91,8 +91,9 @@ async function rpc<T = any>(action: string, data: Record<string, unknown>): Prom
     if (data.op === "add") { const id = `f-${data.pageId}-p${now}`; S.flags.push({ id, pageId: String(data.pageId), status: (data.status as FlagStatus) || "open", text: String(data.text), order: S.flags.length + 1 }); return { id } as T; }
     if (!f) throw new Error("That flag doesn't exist.");
     if (data.op === "remove") S.flags = S.flags.filter((x) => x !== f);
-    if (data.op === "edit") f.text = String(data.text);
-    if (data.op === "confirm") { f.status = "confirmed"; decide(f.text, { pageId: f.pageId, flagId: f.id }); }
+    const needs = () => Object.assign(new Error("Open questions need an answer."), { details: { reason: "needs-answer" } });
+    if (data.op === "edit") { const st = (data.status as FlagStatus) || f.status, ans = data.answer === undefined ? f.answer : ((data.answer as string | null) || null); if (st === "confirmed" && f.status === "open" && !ans) throw needs(); f.text = String(data.text); f.status = st; f.answer = ans; }
+    if (data.op === "confirm") { if (f.status === "open") throw needs(); if (data.text) f.text = String(data.text); f.status = "confirmed"; decide(f.text, { pageId: f.pageId, flagId: f.id }); }
     if (data.op === "answer") { f.status = "confirmed"; f.answer = String(data.answer); decide(f.answer, { pageId: f.pageId, flagId: f.id }); }
     return { ok: true } as T;
   }
@@ -173,7 +174,7 @@ function flagsPageHtml(p: Page) {
     <section class="ai-sec pb-sec" id="ch-flags" aria-labelledby="h-ch-flags"><header class="bt-chapter bt-chapter--ghost" data-n="01"><p class="bt-chapter-eyebrow" aria-hidden="true">01 · Chapter</p><h2 class="bt-chapter-title" id="h-ch-flags">Every flag</h2></header>
       <div class="pb-filters"><div class="bt-sortbar" role="group" aria-label="Filter by status">${chip("todo", "To settle")}${chip("open", "Open")}${chip("assumed", "Assumed")}${chip("confirmed", "Confirmed")}${chip("all", "All")}</div>
       <label class="pb-filter-page"><span class="bt-label">Page</span><select class="bt-select" data-fpage><option value="all">Every page</option>${pages.map((x) => `<option value="${esc(x.id)}"${f.page === x.id ? " selected" : ""}>${esc(x.nav)}</option>`).join("")}</select></label></div>
-      ${list.length ? `<ul class="pb-flags">${list.map((x) => flagRowHtml(x, { pageLabel: pm.get(x.pageId)?.nav || x.pageId }).replace("</li>", `<div class="pb-flag-more"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-flag-edit="${esc(x.id)}">Edit</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-flag-remove="${esc(x.id)}">Remove</button></div></li>`)).join("")}</ul>`
+      ${list.length ? `<ul class="pb-flags">${list.map((x) => flagRowHtml(x, { pageLabel: pm.get(x.pageId)?.nav || x.pageId }).replace("</li>", `<div class="pb-flag-more"><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-flag-remove="${esc(x.id)}">Remove</button></div></li>`)).join("")}</ul>`
         : `<div class="bt-empty bt-empty--compact">${mascot()}<span class="bt-empty-title">Nothing here.</span><span>Try another filter.</span></div>`}
     </section>
     <section class="ai-sec pb-sec" id="ch-decisions" aria-labelledby="h-ch-decisions"><header class="bt-chapter bt-chapter--ghost" data-n="02"><p class="bt-chapter-eyebrow" aria-hidden="true">02 · Chapter</p><h2 class="bt-chapter-title" id="h-ch-decisions">The decisions log</h2></header>
@@ -268,6 +269,46 @@ function answerFlag(id: string) {
     catch (x) { err.textContent = messageFor(x, "That didn't save. Try again."); err.hidden = false; }
   });
 }
+/** Edit (the pencil, any flag): its text, status and answer. An open question can't be saved as confirmed without an answer. */
+function flagEditDialog(id: string) {
+  const f = S.flags.find((x) => x.id === id); if (!f) return;
+  const opt = (v: FlagStatus, l: string) => `<option value="${v}"${f.status === v ? " selected" : ""}>${l}</option>`;
+  const { modal, close } = openModal({ feature: "playbook", title: "Edit the flag", content: modalHeader("Edit the flag", "Fix a mistake. The text it replaces stays on the flag.") +
+    `<form class="bt-form" novalidate><label class="bt-field"><span class="bt-label">Text</span><textarea class="bt-textarea" name="text" rows="4" maxlength="2000">${esc(f.text)}</textarea><span class="bt-hint">One paragraph. Markdown is fine.</span></label>
+      <label class="bt-field"><span class="bt-label">Status</span><select class="bt-select" name="status">${opt("open", "Open question")}${opt("assumed", "Assumption")}${opt("confirmed", "Confirmed")}</select></label>
+      <label class="bt-field"><span class="bt-label">Answer</span><textarea class="bt-textarea" name="answer" rows="3" maxlength="2000">${esc(f.answer || "")}</textarea><span class="bt-hint">Leave it empty for no answer. An open question needs one before it can be confirmed.</span></label>
+      <p class="bt-error" role="alert" hidden></p><div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="submit" class="bt-btn bt-btn--primary">Save</button></div></form>` });
+  const form = modal.querySelector<HTMLFormElement>("form")!, err = modal.querySelector<HTMLElement>(".bt-error")!;
+  const val = (n: string) => (form.elements.namedItem(n) as HTMLTextAreaElement).value.trim();
+  (form.elements.namedItem("text") as HTMLTextAreaElement).focus();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); err.hidden = true;
+    const text = val("text"), status = val("status") as FlagStatus, answer = val("answer");
+    const fail = (m: string) => { err.textContent = m; err.hidden = false; };
+    if (!text || /\n\s*\n/.test(text)) return fail(text ? "Keep the text to one paragraph." : "Write the text first.");
+    if (answer && /\n\s*\n/.test(answer)) return fail("Keep the answer to one paragraph.");
+    if (status === "confirmed" && f.status === "open" && !answer) return fail("Open questions need an answer.");
+    try { await rpc("flagAction", { op: "edit", id, text, status, answer: answer || null }); close(); toast("Saved."); await refresh(); }
+    catch (x) { fail(messageFor(x, "That didn't save. Try again.")); }
+  });
+}
+/** Change (assumptions): type the corrected version, then it's confirmed and the correction goes in the decisions log. */
+function changeDialog(id: string) {
+  const f = S.flags.find((x) => x.id === id); if (!f) return;
+  const { modal, close } = openModal({ feature: "playbook", title: "Change and confirm", content: modalHeader("Change and confirm", "Correct the assumption, then it's confirmed and the corrected version goes in the decisions log.") +
+    `<form class="bt-form" novalidate><label class="bt-field"><span class="bt-label">The corrected version</span><textarea class="bt-textarea" rows="4" maxlength="2000">${esc(f.text)}</textarea><span class="bt-hint">One paragraph. Markdown is fine.</span></label><p class="bt-error" role="alert" hidden></p>
+      <div class="bt-modal-actions"><button type="button" class="bt-btn bt-btn--secondary" data-bt-close>Cancel</button><button type="submit" class="bt-btn bt-btn--primary">Confirm the change</button></div></form>` });
+  const form = modal.querySelector("form")!, err = modal.querySelector<HTMLElement>(".bt-error")!, ta = form.querySelector("textarea")!;
+  ta.focus(); ta.select();
+  form.addEventListener("submit", async (e) => {
+    e.preventDefault(); err.hidden = true;
+    const text = ta.value.trim();
+    if (!text || /\n\s*\n/.test(text)) { err.textContent = text ? "Keep it to one paragraph." : "Write the corrected version first."; err.hidden = false; return; }
+    if (text === f.text.trim()) { err.textContent = "That's the same text. Use Confirm instead, or change it first."; err.hidden = false; return; }
+    try { await rpc("flagAction", { op: "confirm", id, text }); close(); toast("Changed and confirmed. It's in the decisions log."); await refresh(); }
+    catch (x) { err.textContent = messageFor(x, "That didn't save. Try again."); err.hidden = false; }
+  });
+}
 function flagTextDialog(mode: "add" | "edit", ref: string) {
   const f = mode === "edit" ? S.flags.find((x) => x.id === ref) : null;
   const { modal, close } = openModal({ feature: "playbook", title: mode === "add" ? "Add a flag" : "Edit the flag", content: modalHeader(mode === "add" ? "Add a flag" : "Edit the flag") +
@@ -336,7 +377,7 @@ function applyDialog() {
     const found = findUpdate(modal.querySelector<HTMLTextAreaElement>("[data-reply]")!.value);
     if (!found) return say(`<p class="bt-notice bt-notice--error">No playbook-update found. Paste Claude's whole reply, or just the code block.</p>`);
     if ("error" in found) return say(`<p class="bt-notice bt-notice--error">${esc(found.error)} Nothing was saved.</p>`);
-    const v = checkUpdate(found.json, { pageIds: new Set(S.pages.map((p) => p.id)), flagIds: new Set(S.flags.map((f) => f.id)) });
+    const v = checkUpdate(found.json, { pageIds: new Set(S.pages.map((p) => p.id)), flagIds: new Set(S.flags.map((f) => f.id)), openIds: new Set(S.flags.filter((f) => f.status === "open").map((f) => f.id)) });
     if (v.ok === false) return say(`<p class="bt-notice bt-notice--error">${esc(v.message)} Nothing was saved.</p>`);
     update = v.value;
     let stored: Record<string, number> = {}; try { stored = JSON.parse(localStorage.getItem(PROMPT_KEY) || "{}").versions || {}; } catch { /* none */ }
@@ -408,7 +449,8 @@ function wire() {
     const fc = t.closest<HTMLButtonElement>("[data-flag-confirm]");
     if (fc) { fc.disabled = true; void rpc("flagAction", { op: "confirm", id: fc.dataset.flagConfirm }).then(async () => { toast("Confirmed. It's in the decisions log."); await refresh(); }, (x) => { toast(messageFor(x, "That didn't save."), { kind: "error" }); fc.disabled = false; }); return; }
     const fa = t.closest<HTMLElement>("[data-flag-answer]"); if (fa) { answerFlag(fa.dataset.flagAnswer!); return; }
-    const fe = t.closest<HTMLElement>("[data-flag-edit]"); if (fe) { flagTextDialog("edit", fe.dataset.flagEdit!); return; }
+    const fe = t.closest<HTMLElement>("[data-flag-edit]"); if (fe) { flagEditDialog(fe.dataset.flagEdit!); return; }
+    const fch = t.closest<HTMLElement>("[data-flag-change]"); if (fch) { changeDialog(fch.dataset.flagChange!); return; }
     const fd = t.closest<HTMLElement>("[data-flag-add]"); if (fd) { flagTextDialog("add", fd.dataset.flagAdd!); return; }
     const fr = t.closest<HTMLElement>("[data-flag-remove]");
     if (fr) { void confirmAction({ title: "Remove this flag?", message: "It's deleted for good. Settled flags are better confirmed or answered, so they stay in the decisions log.", confirmLabel: "Remove", busyLabel: "Removing…", feature: "playbook", onConfirm: async () => { await rpc("flagAction", { op: "remove", id: fr.dataset.flagRemove }); } }).then(async (yes: boolean) => { if (yes) { toast("Removed."); await refresh(); } }); return; }

@@ -30,7 +30,7 @@ const SCHEMA = `\`\`\`playbook-update
 const FIRST_READ = " This is my first read-through: set \"markReviewed\" only for pages we actually went through in this chat, never for the others.";
 const rules = (firstRead: boolean) => { const FIRST = firstRead ? FIRST_READ : ""; return `How to reply:
 1. Ask me about the open items one at a time, and wait for each answer. Assumptions can be confirmed or corrected together at the end.
-2. When we're done, reply with exactly one block in the format below. Leave out anything that doesn't change. A page's "body" is the full new Markdown (keep its \`## \` chapters and its fenced blocks: cards, steps, tiers, ladder, rules, flow). Use only the page and flag ids above. A flag's text is one paragraph. Mark each page we went through with "markReviewed": true.${FIRST}
+2. When we're done, reply with exactly one block in the format below. Leave out anything that doesn't change. A page's "body" is the full new Markdown (keep its \`## \` chapters and its fenced blocks: cards, steps, tiers, ladder, rules, flow). Use only the page and flag ids above. A flag's text is one paragraph. Settle an open question with "answer" (never "confirm"); "confirm" is for assumptions. Mark each page we went through with "markReviewed": true.${FIRST}
 3. Only if something already built on the site has to change, add a short prompt for Claude Code after the block. Otherwise don't.
 
 ${SCHEMA}`; };
@@ -105,7 +105,7 @@ export function findUpdate(reply: string): { json: unknown } | { error: string }
 
 const one = (s: unknown, max: number) => typeof s === "string" && s.trim().length > 0 && s.length <= max && !/\n\s*\n/.test(s.trim());
 /** The server's checks, in plain words (the server checks again). */
-export function checkUpdate(u: any, ctx: { pageIds: Set<string>; flagIds: Set<string> }): { ok: true; value: Update } | { ok: false; message: string } {
+export function checkUpdate(u: any, ctx: { pageIds: Set<string>; flagIds: Set<string>; openIds?: Set<string> }): { ok: true; value: Update } | { ok: false; message: string } {
   const no = (message: string) => ({ ok: false as const, message });
   if (!u || typeof u !== "object" || Array.isArray(u)) return no("The update isn't a JSON object.");
   if (u.playbookUpdate !== 1) return no('The update needs "playbookUpdate": 1.');
@@ -132,6 +132,8 @@ export function checkUpdate(u: any, ctx: { pageIds: Set<string>; flagIds: Set<st
       continue;
     }
     if (typeof f.id !== "string" || !ctx.flagIds.has(f.id)) return no(`${n} points at a flag that doesn't exist.`);
+    if (f.op === "confirm" && ctx.openIds?.has(f.id)) return no(`${n} confirms an open question. Open questions need an answer.`);
+    if (f.op === "edit" && f.status === "confirmed" && ctx.openIds?.has(f.id)) return no(`${n} confirms an open question. Open questions need an answer.`);
     if (f.op === "answer" && !one(f.answer, 2000)) return no(`${n}: the answer must be one paragraph.`);
     if (f.op === "edit" && !one(f.text, 2000)) return no(`${n}: the text must be one paragraph.`);
   }

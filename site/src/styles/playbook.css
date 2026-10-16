@@ -85,7 +85,8 @@
 .bt-root:not(#_) .pb-flag-body p { margin: 0; color: var(--bt-text); line-height: 1.5; }
 .bt-root:not(#_) .pb-flag-answer { color: var(--bt-text-muted); }
 .bt-root:not(#_) .pb-flag-page { color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
-.bt-root:not(#_) .pb-flag-acts { display: flex; gap: 6px; }
+.bt-root:not(#_) .pb-flag-acts { display: flex; align-items: center; gap: 6px; }
+.bt-root:not(#_) .pb-flag-edit { width: 32px; height: 32px; }
 .bt-root:not(#_) .pb-assumed-sum { margin: 0 0 12px; color: var(--bt-text-muted); }
 
 @container bt (max-width: 900px) {

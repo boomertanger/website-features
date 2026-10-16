@@ -4,8 +4,11 @@
 //   playbookAdmin       owner only, { action, ... }:
 //     savePage          { pageId, version, title, lede, body } -> { version }. Pinned: a page that moved past `version` is refused ("stale"). The old
 //                       title / lede / body go to pages/{id}/versions/{old version} (source "edit"); editedOnSite becomes true.
-//     flagAction        { op: confirm | answer | edit | add | remove, id?, pageId?, text?, answer?, status? }. Confirm adds a decision; Answer saves the
-//                       answer, confirms the flag and adds a decision (spec §4).
+//     flagAction        { op: confirm | answer | edit | add | remove, id?, pageId?, text?, answer?, status? }. Confirm settles an assumption (with text:
+//                       a corrected version, "Change") and adds a decision; an open question can't be confirmed, only answered ("needs-answer").
+//                       Answer saves the answer, confirms the flag and adds a decision (spec §4). Edit fixes any flag (text, status, answer); the text
+//                       it replaces is kept on the flag (history[]), and adminLog records ids and field names only. An edit can't leave an open
+//                       question confirmed without an answer.
 //     markReviewed      { pageId } -> lastReviewedAt; when every reviewable page is reviewed the first time, main.firstReadDone (spec §6). Also clears
 //                       the page from state.duePages.
 //     applyUpdate       { update, expect: { pageId: version }, force? } -> the `playbook-update` block (spec §5) in one transaction: every changed page
@@ -110,19 +113,38 @@ function build(deps = {}) {
     if (d.op === "edit") {
       const t = L.validateFlagText(d.text); if (!t.ok) throw fail("invalid-argument", t.message, t.reason, { field: t.field });
       if (d.status !== undefined && !L.STATUSES.includes(d.status)) throw fail("invalid-argument", "Unknown status.", "bad-input", { field: "status" });
-      await ref.update({ text: t.value, ...(d.status ? { status: d.status } : {}) });
-      await log(uid, "flagEdit", `${BASE}/flags/${d.id}`, { pageId: f.pageId });
-      return { ok: true };
+      let answer;   // undefined: unchanged; null: cleared
+      if (d.answer !== undefined) {
+        if (d.answer === null || (typeof d.answer === "string" && !d.answer.trim())) answer = null;
+        else { const a = L.validateFlagText(d.answer, "answer", L.LIMITS.answer); if (!a.ok) throw fail("invalid-argument", a.message, a.reason, { field: a.field }); answer = a.value; }
+      }
+      const status = d.status || f.status;
+      const hasAnswer = answer !== undefined ? !!answer : !!f.answer;
+      if (status === "confirmed" && f.status === "open" && !hasAnswer) throw fail("failed-precondition", "Open questions need an answer.", "needs-answer");
+      const patch = { text: t.value, status };
+      if (answer !== undefined) patch.answer = answer === null ? FieldValue.delete() : answer;
+      if (status === "confirmed" && f.status !== "confirmed") patch.settledAt = TS(at);
+      if (status !== "confirmed" && f.status === "confirmed") patch.settledAt = FieldValue.delete();
+      const changed = ["text", "status", "answer"].filter((k) => k === "answer" ? answer !== undefined && (answer || null) !== (f.answer || null) : patch[k] !== f[k]);
+      if (!changed.length) return { ok: true, changed: [] };
+      // the text it replaces stays on the flag (never in adminLog)
+      patch.history = FieldValue.arrayUnion({ text: f.text || "", status: f.status, answer: f.answer || null, at: TS(at) });
+      await ref.update(patch);
+      await log(uid, "flagEdit", `${BASE}/flags/${d.id}`, { pageId: f.pageId, fields: changed });
+      return { ok: true, changed };
     }
-    // confirm / answer: the flag is settled and a decision is recorded
-    let answer = null;
+    // confirm (assumptions only; with text, a corrected version first) / answer: the flag is settled and a decision is recorded
+    if (d.op === "confirm" && f.status === "open") throw fail("failed-precondition", "Open questions need an answer.", "needs-answer");
+    if (f.status === "confirmed") throw fail("failed-precondition", "That's already settled.", "settled");
+    let answer = null, text = null;
     if (d.op === "answer") { const t = L.validateFlagText(d.answer, "answer", L.LIMITS.answer); if (!t.ok) throw fail("invalid-argument", t.message, t.reason, { field: t.field }); answer = t.value; }
+    if (d.op === "confirm" && d.text !== undefined) { const t = L.validateFlagText(d.text); if (!t.ok) throw fail("invalid-argument", t.message, t.reason, { field: t.field }); if (t.value !== f.text) text = t.value; }
     const did = `d-${L.dateKey(at)}-${rid()}`, order = await nextOrder("decisions");
     const batch = db.batch();
-    batch.update(ref, { status: "confirmed", settledAt: TS(at), ...(answer ? { answer } : {}) });
-    batch.set(decisionRef(did), decisionDoc(answer || f.text, { pageId: f.pageId, flagId: d.id }, order, at));
+    batch.update(ref, { status: "confirmed", settledAt: TS(at), ...(answer ? { answer } : {}), ...(text ? { text, history: FieldValue.arrayUnion({ text: f.text || "", status: f.status, answer: null, at: TS(at) }) } : {}) });
+    batch.set(decisionRef(did), decisionDoc(answer || text || f.text, { pageId: f.pageId, flagId: d.id }, order, at));
     await batch.commit();
-    await log(uid, d.op === "answer" ? "flagAnswer" : "flagConfirm", `${BASE}/flags/${d.id}`, { pageId: f.pageId, decisionId: did });
+    await log(uid, d.op === "answer" ? "flagAnswer" : text ? "flagChange" : "flagConfirm", `${BASE}/flags/${d.id}`, { pageId: f.pageId, decisionId: did });
     return { ok: true, decisionId: did };
   }
 
@@ -168,7 +190,12 @@ function build(deps = {}) {
         const s = fById.get(f.id);
         if (!s || !s.exists) throw fail("invalid-argument", "A flag in the update no longer exists.", "unknown-flag");
         if (f.op === "remove") { tx.delete(flagRef(f.id)); continue; }
-        if (f.op === "edit") { tx.update(flagRef(f.id), { text: f.text, ...(f.status ? { status: f.status } : {}) }); continue; }
+        if (f.op === "confirm" && s.get("status") === "open") throw fail("failed-precondition", "Open questions need an answer.", "needs-answer");
+        if (f.op === "edit") {
+          if (f.status === "confirmed" && s.get("status") === "open" && !s.get("answer")) throw fail("failed-precondition", "Open questions need an answer.", "needs-answer");
+          tx.update(flagRef(f.id), { text: f.text, ...(f.status ? { status: f.status } : {}), history: FieldValue.arrayUnion({ text: s.get("text") || "", status: s.get("status"), answer: s.get("answer") || null, at: TS(at) }) });
+          continue;
+        }
         tx.update(flagRef(f.id), { status: "confirmed", settledAt: TS(at), ...(f.op === "answer" ? { answer: f.answer } : {}) });
         const did = `d-${L.dateKey(at)}-${rid()}`;
         tx.set(decisionRef(did), decisionDoc(f.op === "answer" ? f.answer : s.get("text") || "", { pageId: s.get("pageId") || null, flagId: f.id }, dOrder++, at));

@@ -64,7 +64,9 @@ async function main() {
   assert.equal(await why(P.admin(req("boss", { action: "savePage", pageId: "alpha", version: 1, title: "T", body: "Stale" }))), "stale", "a second tab's stale edit is refused");
   assert.equal(await why(P.admin(req("boss", { action: "savePage", pageId: "zzz", version: 1, title: "T", body: "B" }))), "not-found");
 
-  // flags: confirm adds a decision; answer saves the answer, confirms and adds a decision; add, edit, remove
+  // flags: an open question can't be confirmed, only answered; confirm (an assumption) adds a decision; answer saves the answer, confirms and adds a decision; add, edit, remove
+  assert.equal(await why(P.admin(req("boss", { action: "flagAction", op: "confirm", id: "f-alpha-1" }))), "needs-answer", "an open question needs an answer");
+  assert.equal((await get(`${B}/flags/f-alpha-1`)).status, "open");
   r = await P.admin(req("boss", { action: "flagAction", op: "confirm", id: "f-alpha-2" }));
   assert.equal((await get(`${B}/flags/f-alpha-2`)).status, "confirmed");
   let decs = await list(`${B}/decisions`);
@@ -78,13 +80,34 @@ async function main() {
   assert.equal((await get(`${B}/flags/${r.id}`)).status, "open");
   assert.equal(await why(P.admin(req("boss", { action: "flagAction", op: "add", pageId: "nope", text: "x" }))), "unknown-page");
   assert.equal(await why(P.admin(req("boss", { action: "flagAction", op: "edit", id: "f-beta-1", text: "one\n\ntwo" }))), "bad-input");
+  assert.equal(await why(P.admin(req("boss", { action: "flagAction", op: "edit", id: "f-beta-1", text: "Still open.", status: "confirmed" }))), "needs-answer", "an edit can't confirm an open question without an answer");
   await P.admin(req("boss", { action: "flagAction", op: "edit", id: "f-beta-1", text: "Edited made-up flag.", status: "assumed" }));
-  assert.equal((await get(`${B}/flags/f-beta-1`)).status, "assumed");
+  let fb = await get(`${B}/flags/f-beta-1`);
+  assert.equal(fb.status, "assumed"); assert.equal(fb.history.length, 1); assert.equal(fb.history[0].text, "A made-up flag.", "the old text stays on the flag");
+  // Change: an assumption confirmed in a corrected version; the decision carries the correction
+  await db.doc(`${B}/flags/f-beta-9`).set({ pageId: "beta", status: "assumed", text: "A made-up first guess.", order: 9 });
+  const rc = await P.admin(req("boss", { action: "flagAction", op: "confirm", id: "f-beta-9", text: "A made-up corrected guess." }));
+  const fc = await get(`${B}/flags/f-beta-9`);
+  assert.equal(fc.status, "confirmed"); assert.equal(fc.text, "A made-up corrected guess."); assert.equal(fc.history[0].text, "A made-up first guess.");
+  assert.equal((await get(`${B}/decisions/${rc.decisionId}`)).text, "A made-up corrected guess.");
+  assert.equal(await why(P.admin(req("boss", { action: "flagAction", op: "confirm", id: "f-beta-9" }))), "settled");
+  // fixing a mistake: a confirmed flag goes back to open (its answer cleared), then gets answered
+  await P.admin(req("boss", { action: "flagAction", op: "edit", id: "f-beta-9", text: "A made-up corrected guess.", status: "open", answer: null }));
+  assert.equal((await get(`${B}/flags/f-beta-9`)).status, "open"); assert.equal((await get(`${B}/flags/f-beta-9`)).settledAt, undefined);
+  await P.admin(req("boss", { action: "flagAction", op: "edit", id: "f-beta-9", text: "A made-up corrected guess.", status: "confirmed", answer: "A made-up answer." }));
+  assert.equal((await get(`${B}/flags/f-beta-9`)).answer, "A made-up answer.");
+  await db.doc(`${B}/flags/f-beta-9`).delete();
+  fb = null;
   await P.admin(req("boss", { action: "flagAction", op: "remove", id: r.id }));
   assert.equal((await db.doc(`${B}/flags/${r.id}`).get()).exists, false);
 
   // applyUpdate: one transaction, every changed page versioned, flag changes, decisions; stale refused unless forced; unknown ids refused
   assert.equal(await why(P.admin(req("boss", { action: "applyUpdate", update: { playbookUpdate: 1, pages: [{ id: "nope", body: "x" }] } }))), "unknown-page");
+  assert.equal(await why(P.admin(req("boss", { action: "applyUpdate", update: { playbookUpdate: 1, flags: [{ op: "confirm", id: "f-beta-1" }] } }))), "ok", "f-beta-1 is an assumption now");
+  await db.doc(`${B}/flags/f-beta-1`).set({ status: "assumed" }, { merge: true });
+  await db.doc(`${B}/flags/f-beta-8`).set({ pageId: "beta", status: "open", text: "A made-up open one.", order: 8 });
+  assert.equal(await why(P.admin(req("boss", { action: "applyUpdate", update: { playbookUpdate: 1, flags: [{ op: "confirm", id: "f-beta-8" }] } }))), "needs-answer", "an update can't confirm an open question either");
+  await db.doc(`${B}/flags/f-beta-8`).delete();
   const upd = { playbookUpdate: 1, pages: [{ id: "alpha", body: "## One\n\nUpdated.", markReviewed: true }, { id: "beta", markReviewed: true }], flags: [{ op: "confirm", id: "f-beta-1" }, { op: "add", pageId: "alpha", status: "assumed", text: "Made-up assumption." }], decisions: [{ text: "A made-up decision.", pageId: "beta" }] };
   assert.equal(await why(P.admin(req("boss", { action: "applyUpdate", update: upd, expect: { alpha: 1 } }))), "stale", "alpha moved to v2 since the prompt was copied");
   assert.equal((await get(`${B}/pages/alpha`)).body, "## One\n\nEdited.", "nothing saved");
@@ -95,7 +118,7 @@ async function main() {
   assert.equal(r.firstReadDone, true, "every reviewable page is reviewed (the flags page doesn't count)");
   assert.equal((await get(`${B}/pages/alpha/versions/2`)).source, "update");
   assert.equal((await get(`${B}/flags/f-beta-1`)).status, "confirmed");
-  assert.equal((await list(`${B}/decisions`)).length, 4, "the confirm and the decision");
+  assert.equal((await list(`${B}/decisions`)).length, 6, "the earlier confirms, then this confirm and the decision");
   assert.equal((await list(`${B}/flags`)).filter((f) => f.pageId === "alpha" && f.status === "assumed").length, 1);
   assert.equal((await get(B)).firstReadDone, true);
 

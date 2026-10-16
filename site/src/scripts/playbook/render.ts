@@ -133,15 +133,16 @@ export const chapterHead = (n: number, id: string, title: string) => `<header cl
 export const renderMarkdown = (src: string) => clean(md.parse(String(src || ""), { async: false }) as string);
 export const renderInline = (src: string) => clean(inline(src));
 
+const PENCIL = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M4 20h4L19 9l-4-4L4 16z"/><path d="M14 6l4 4"/></svg>`;
 const FLAG_TONE: Record<FlagStatus, [string, string]> = { open: ["blue", "Open question"], assumed: ["gold", "Assumed"], confirmed: ["lime", "Confirmed"] };
-/** One flag row: its status, its text (inline Markdown), the answer if there is one, and (unless settled) Confirm and Answer. */
+/** One flag row: its status, its text (inline Markdown), the answer if there is one, and its actions: an open question only Answer (it needs text);
+ *  an assumption Confirm and Change (a corrected version, then confirmed); every flag, settled or not, a small pencil Edit to fix mistakes. */
 export function flagRowHtml(f: Flag, { actions = true, pageLabel = "" }: { actions?: boolean; pageLabel?: string } = {}) {
   const [tone, label] = FLAG_TONE[f.status] || FLAG_TONE.open;
-  const settled = f.status === "confirmed";
   return `<li class="pb-flag pb-flag--${f.status}" data-flag="${esc(f.id)}">
     <span class="bt-badge bt-badge--${tone} pb-flag-st"><span class="bt-badge-dot"></span>${label}</span>
     <div class="pb-flag-body"><p>${renderInline(f.text)}</p>${f.answer ? `<p class="pb-flag-answer"><b>Answer:</b> ${renderInline(f.answer)}</p>` : ""}${pageLabel ? `<span class="pb-flag-page">${esc(pageLabel)}</span>` : ""}</div>
-    ${actions && !settled ? `<div class="pb-flag-acts"><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-flag-confirm="${esc(f.id)}">Confirm</button><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-flag-answer="${esc(f.id)}">Answer</button></div>` : ""}
+    ${actions ? `<div class="pb-flag-acts">${f.status === "open" ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-flag-answer="${esc(f.id)}">Answer</button>` : ""}${f.status === "assumed" ? `<button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-flag-confirm="${esc(f.id)}">Confirm</button><button type="button" class="bt-btn bt-btn--ghost bt-btn--sm" data-flag-change="${esc(f.id)}">Change</button>` : ""}<button type="button" class="bt-icon-btn pb-flag-edit" data-flag-edit="${esc(f.id)}" aria-label="Edit this flag" title="Edit">${PENCIL}</button></div>` : ""}
   </li>`;
 }
 
