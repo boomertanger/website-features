@@ -222,6 +222,18 @@ function init(root: HTMLElement) {
     if (!S.chosen) setPass(v.pass);
     renderPage(S.cur, false);
   });
+  // Arriving at /club-pass#ch-perks (My pass's See your perks / See what Sub Club adds): the anchor is the chapter, whose title sits
+  // above the board, so land on the board itself (its scroll-margin keeps the top edge in view and every tile shows). Again once the
+  // page has finished loading (fonts and images move it), unless the visitor has scrolled since. In-page links keep the chapter.
+  if (location.hash === "#ch-perks") {
+    const land = () => board.scrollIntoView({ block: "start", behavior: "auto" });
+    let moved = false;
+    requestAnimationFrame(land);
+    addEventListener("wheel", () => (moved = true), { once: true, passive: true });
+    addEventListener("touchmove", () => (moved = true), { once: true, passive: true });
+    addEventListener("keydown", () => (moved = true), { once: true });
+    if (document.readyState === "complete") setTimeout(land, 0); else addEventListener("load", () => { if (!moved) land(); }, { once: true });
+  }
   initChat(root as unknown as Document, { question: ".cp-q" });   // 09's letter cards: one open at a time, the typing moment   // the helpers take any element; their JS default (document) types the parameter
   bindAdmit(root as unknown as Document);
   aimSticker(root);

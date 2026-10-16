@@ -402,7 +402,9 @@
 .bt-root:not(#_) .cp-sc-credits div { animation: none; }
   .bt-root:not(#_) .cp-sc-credits div { top: 10%; }
 }
-.bt-root:not(#_) .cp-board { margin-top: 22px; padding: 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--pb-c, transparent) 10%, transparent), transparent 70%), linear-gradient(180deg, var(--cp-shade-8), var(--cp-shade-27)); transition: background .6s; }
+/* scroll-margin: arriving at /club-pass#ch-perks (My pass's See your perks) lands on the board itself, its top edge clear of the phones'
+   sticky chapter rail, the same 70px as .cp-ch (scripts/club-pass/page.ts scrolls it there) */
+.bt-root:not(#_) .cp-board { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 70px); margin-top: 22px; padding: 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--pb-c, transparent) 10%, transparent), transparent 70%), linear-gradient(180deg, var(--cp-shade-8), var(--cp-shade-27)); transition: background .6s; }
 .bt-root:not(#_) .cp-board[data-pass="fan"] { --pb-c: var(--bt-pass-fan); }
 .bt-root:not(#_) .cp-board[data-pass="sub"] { --pb-c: var(--bt-pass-sub); }
 .bt-root:not(#_) .cp-board-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; align-items: center; }

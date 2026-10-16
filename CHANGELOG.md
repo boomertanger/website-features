@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Club Pass: My pass's See your perks goes to the perk board (/club-pass#ch-perks), not the top of the page; Fan Club members get "See what Sub Club adds" (same place). Arriving there lands on the board itself with its top edge in view (scroll-margin 70px, clear of the phones' sticky chapter rail), so all 20 tiles show at 1366x768; the board still starts on the viewer's own pass.
 - Fixed: Club Pass My pass could say Twitch "Not linked" while Linked accounts showed it linked. Linked or not now always comes from users/{uid}.linked.twitch, the same data Linked accounts reads (site/src/lib/club-twitch.js); club.twitch only adds the sub result. The entitlement no longer writes a made-up club.twitch { linked: false } (it drops an old one), and unlinking removes club.twitch. functions/scripts/club-twitch-backfill.js (staging, dry run unless --apply) runs the sub check and recompute for every member with a Twitch link, and recomputes the owner.
 - Club Pass: the channel's own Twitch account is never checked for a sub (check, EventSub, sweep); My pass says "This is the channel's own Twitch account." An "owner" source makes the owner's pass always Sub Club, shown as Owner ("Gold, it's your channel."). Spec §12 updated.
 - docs: Club Pass Twitch counting test plan: steps 1 and 2 passed on staging; the live sub steps (3 to 7) are pending until a test Twitch account with a real sub is available; ROADMAP launch checklist item to run them before launch.

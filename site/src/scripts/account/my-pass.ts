@@ -111,7 +111,8 @@ function init(root: HTMLElement) {
   const giftBtn = () => PAY
     ? `<a class="bt-btn bt-btn--secondary" href="/club-pass" data-pulse="my-pass-gift">Gift a month · ${PRICE}</a>`
     : '<button class="bt-btn bt-btn--secondary" type="button" disabled>Gifts open soon</button>';
-  const perksBtn = (kind = "primary") => `<a class="bt-btn bt-btn--${kind}" href="/club-pass" data-pulse="my-pass-see-perks">See your perks</a>`;
+  // The perk board on /club-pass (it starts on the viewer's own pass). Fan Club: "See what Sub Club adds", same place.
+  const perksBtn = (kind = "primary", fan = false) => `<a class="bt-btn bt-btn--${kind}" href="/club-pass#ch-perks" data-pulse="my-pass-see-perks">${fan ? "See what Sub Club adds" : "See your perks"}</a>`;
   const head = (t: string) => `<div class="bt-card-head"><h3 class="bt-card-title">${t}</h3></div>`;
   const empty = (title: string, text: string) => `<div class="bt-empty bt-empty--compact"><span class="bt-empty-title">${title}</span><span>${text}</span></div>`;
   const lead = (v: View): Source => (["owner", "crew", "twitch", "stripe", "gift", "grant", "sub"] as Source[]).find((k) => v.sources.includes(k)) || "fan";
@@ -133,7 +134,7 @@ function init(root: HTMLElement) {
       owner: ["Gold, it's your channel.", "The owner's pass is always Sub Club."],
       crew: ["Gold, on the crew.", "Crew get Sub Club free for as long as they're on the crew."],
     } as Record<Source, [string, string]>)[k];
-    const cta = k === "fan" ? subBtn() + (v.twitch.linked
+    const cta = k === "fan" ? subBtn() + perksBtn("secondary", true) + (v.twitch.linked
         ? `<a class="bt-btn bt-btn--secondary" href="${esc(TWITCH_URL)}" target="_blank" rel="noopener" data-pulse="my-pass-sub-on-twitch">Sub on Twitch ↗</a>`
         : '<a class="bt-btn bt-btn--secondary" href="#linked" data-pulse="my-pass-link-twitch">Link Twitch</a>')
       : k === "crew" ? perksBtn() + '<a class="bt-btn bt-btn--secondary" href="/crew/hq">Crew HQ</a>'
