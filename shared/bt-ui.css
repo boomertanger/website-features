@@ -5869,7 +5869,8 @@
    .bt-pass          the club pass card (5 : 7.4). .bt-pass--sub is gold with a sheen. Children, all optional: .bt-pass-top (CLUB PASS),
                      the mascot (.bt-mascot or an img), .bt-pass-plan, .bt-pass-price, .bt-pass-name, .bt-pass-code (barcode), .bt-pass-foot.
                      Its text scales with the card (it is its own size container). .bt-pass--mini: only the mascot (plan cards, small spots).
-   .bt-plan          a plan card: .bt-plan-head (.bt-pass--mini, .bt-plan-name, .bt-plan-price), .bt-plan-list (li.is-soon: not built yet),
+   .bt-plan          a plan card: .bt-plan-head (.bt-pass--mini, .bt-plan-name), .bt-plan-price (in the head or on its own row), .bt-plan-list
+                     (a trailing .bt-badge sits at the row's end, e.g. a gold Soon; li.is-soon: a muted not-built-yet row),
                      .bt-plan-foot with one state: a Join button, .bt-plan-state ("You're in"; add .is-current to the card) or a disabled
                      button ("Opening soon"); .bt-plan-note under it. .bt-plan--sub is gold.
    .bt-spread        the magazine spread for story pages: data-tone="fan" | "sub" sets the accent. .bt-spread-page (.is-out / .is-in turn
@@ -5912,18 +5913,18 @@
 .bt-root:not(#_) .bt-plan-head { display: flex; align-items: center; gap: 14px; }
 .bt-root:not(#_) .bt-plan-head .bt-pass { width: 46px; flex: none; }
 .bt-root:not(#_) .bt-plan-name { margin: 0; font-size: var(--bt-text-2xl); font-weight: 900; line-height: 1.1; color: var(--c); }
-.bt-root:not(#_) .bt-plan-price { display: flex; align-items: baseline; gap: 6px; margin: 2px 0 0; }
-.bt-root:not(#_) .bt-plan-price b { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line-height: 1; color: var(--bt-text); }
+.bt-root:not(#_) .bt-plan-price { display: flex; align-items: baseline; gap: 6px; margin: 0; }
+.bt-root:not(#_) .bt-plan-price b { font-size: 34px; font-weight: 900; letter-spacing: -0.02em; line-height: 1.4; color: var(--bt-text); }
 .bt-root:not(#_) .bt-plan-price span { color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-plan-list { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
-.bt-root:not(#_) .bt-plan-list li { display: grid; grid-template-columns: 18px minmax(0, 1fr); gap: 8px; align-items: start; font-size: var(--bt-text-md); line-height: 1.45; color: var(--bt-text); }
+.bt-root:not(#_) .bt-plan-list li { display: grid; grid-template-columns: 18px minmax(0, 1fr) auto; gap: 8px; align-items: start; font-size: var(--bt-text-md); line-height: 1.45; color: var(--bt-text); }
 .bt-root:not(#_) .bt-plan-list li::before { content: "✓"; color: var(--c); font-weight: 900; }
 .bt-root:not(#_) .bt-plan-list li.is-soon { color: var(--bt-text-muted); }
 .bt-root:not(#_) .bt-plan-list li.is-soon::before { content: "◌"; color: var(--bt-text-faint); }
 .bt-root:not(#_) .bt-plan-foot { margin-top: auto; display: flex; flex-direction: column; gap: 8px; }
 .bt-root:not(#_) .bt-plan-foot .bt-btn { width: 100%; }
 .bt-root:not(#_) .bt-plan-state { display: flex; align-items: center; justify-content: center; gap: 8px; padding: 11px; border-radius: var(--bt-radius-sm); background: color-mix(in srgb, var(--c) 12%, transparent); color: var(--c); font-weight: 800; }
-.bt-root:not(#_) .bt-plan-note { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); text-align: center; }
+.bt-root:not(#_) .bt-plan-note { margin: 0; color: var(--bt-text-faint); font-size: var(--bt-text-sm); line-height: 1.45; text-align: center; }
 
 /* ---- .bt-spread ---- */
 .bt-root:not(#_) .bt-spread { --sp: var(--bt-pass-fan); container-type: inline-size; position: relative; overflow: hidden; min-height: 620px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 60% at 80% 30%, color-mix(in srgb, var(--sp) 12%, transparent), transparent 70%), linear-gradient(180deg, var(--bt-surface), var(--bt-bg)); outline: none; transition: background 0.6s; }
@@ -5994,7 +5995,6 @@
 
 /* ---- container widths (bt: 1024 / 640 / 420) ---- */
 @container bt (max-width: 640px) {
-  .bt-root:not(#_) .bt-pass-code { display: none; }
   .bt-root:not(#_) .bt-plan { padding: 18px; }
   .bt-root:not(#_) .bt-spread, .bt-root:not(#_) .bt-spread-page { min-height: 0; }
   .bt-root:not(#_) .bt-spread-body { grid-template-columns: 1fr; gap: 18px; padding: 20px 18px 6px; }

@@ -148,14 +148,15 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
             <article class="bt-plan" data-plan="fan">
               <div class="bt-plan-head">
                 <div class="bt-pass bt-pass--mini"><Mascot decorative /></div>
-                <div><h3 class="bt-plan-name">Fan Club</h3><p class="bt-plan-price"><b>Free</b><span>forever</span></p></div>
+                <div><h3 class="bt-plan-name">Fan Club</h3><p class="cp-plan-plus">Everything you need to hang out</p></div>
               </div>
+              <div class="bt-plan-price"><b>Free</b><span>forever</span></div>
               <ul class="bt-plan-list">
                 <li>Backstage streams and after-shows</li>
                 <li>Live badge drops, Chat Games and XP</li>
                 <li>Badges, levels and every Night Shift campaign</li>
                 <li>Vote on what Boomer plays next</li>
-                <li class="is-soon">The members-only merch shop (coming soon)</li>
+                <li>The members-only merch shop <span class="bt-badge bt-badge--gold">Soon</span></li>
               </ul>
               <div class="bt-plan-foot">
                 <span class="cp-when-visitor"><Fragment set:html={join("Join free", "Join free for your Fan Club pass", "plan-join-free")} /></span>
@@ -167,15 +168,15 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
             <article class="bt-plan bt-plan--sub" data-plan="sub">
               <div class="bt-plan-head">
                 <div class="bt-pass bt-pass--sub bt-pass--mini"><Mascot decorative /></div>
-                <div><h3 class="bt-plan-name">Sub Club</h3><p class="bt-plan-price"><b>{PRICE}</b><span>a month · cancel any time</span></p></div>
+                <div><h3 class="bt-plan-name">Sub Club</h3><p class="cp-plan-plus">Everything in Fan Club, plus</p></div>
               </div>
+              <div class="bt-plan-price"><b>{PRICE}</b><span>a month · cancel any time</span></div>
               <ul class="bt-plan-list">
-                <li>Everything in Fan Club</li>
+                <li>A Sub Club stream every month <span class="bt-badge bt-badge--gold">Soon</span></li>
+                <li>The new Boomertang edition, and boomgames.tv <span class="bt-badge bt-badge--gold">Soon</span></li>
                 <li>6 trophy-case pins and an animated frame</li>
-                <li class="is-soon">A Sub Club stream every month (coming soon)</li>
-                <li class="is-soon">The new Boomertang edition, and boomgames.tv (coming soon)</li>
-                <li class="is-soon">{CP.shopDiscount}% off in the merch shop (coming soon)</li>
-                <li class="is-soon">Your name in the credits, and the numbers note (coming soon)</li>
+                <li>{CP.shopDiscount}% off in the merch shop <span class="bt-badge bt-badge--gold">Soon</span></li>
+                <li>Your name in the credits, and the numbers note <span class="bt-badge bt-badge--gold">Soon</span></li>
               </ul>
               <div class="bt-plan-foot">
                 <span class="cp-when-notsub"><Fragment set:html={buy("Get Sub Club", "plan-get-sub-club")} /></span>
@@ -282,12 +283,12 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
             <div class="cp-hw-node cp-hw-node--gold"><span class="cp-hw-node-ic" aria-hidden="true">✨</span><div><b>Your pass turns gold</b><p>Sub Club perks switch on right away.</p></div></div>
             <div class="cp-hw-node"><span class="cp-hw-node-ic" aria-hidden="true">🔁</span><div><b>Renews monthly</b><p>Your pass and receipts on your account page.</p></div></div>
           </div>
-          <div class="bt-lock-card cp-teen">
+          <div class="bt-lock-card cp-hw-teen">
             <span class="bt-lock-card-ic" aria-hidden="true">🧑‍🧑‍🧒</span>
             <div><b>Under 18?</b><p>Checkout asks whether a parent or guardian is paying or has said yes. A gifted month needs no payment from you at all.</p></div>
           </div>
           {!PAY && (
-            <div class="bt-lock-card cp-teen">
+            <div class="bt-lock-card cp-hw-teen">
               <span class="bt-lock-card-ic" aria-hidden="true">⏳</span>
               <div><b>Sub Club opens soon</b><p>Payments switch on shortly after the site launches. Twitch subs count from day one.</p></div>
             </div>
@@ -391,15 +392,15 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
         <!-- 09 -->
         <section class="cp-ch" id="ch-ask" aria-labelledby="h-ch-ask">
           <Fragment set:html={chapter(9, "ch-ask", "Dear BOOMBOT", "The letters page. Tap a letter to read BOOMBOT's answer.")} />
-          <div class="bt-chat">
+          <div class="cp-letters">
             {LETTERS.map(([q, a], i) => (
-              <Fragment>
-                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cp-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">L{i + 1}</span>"{q}"</button>
-                <div class="bt-chat-a" id={`cp-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+              <div class="cp-letter">
+                <button type="button" class="cp-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cp-ans-${i}`}><small>Letter {i + 1}</small><b>"{q}"</b></button>
+                <div class="bt-chat-a cp-a" id={`cp-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
                   <span class="bt-chat-av" set:html={boombotIcon(`cp-bb-${i}`)} />
                   <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
                 </div>
-              </Fragment>
+              </div>
             ))}
           </div>
         </section>

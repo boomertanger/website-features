@@ -222,7 +222,7 @@ function init(root: HTMLElement) {
     if (!S.chosen) setPass(v.pass);
     renderPage(S.cur, false);
   });
-  initChat(root as unknown as Document);   // the helpers take any element; their JS default (document) types the parameter
+  initChat(root as unknown as Document, { question: ".cp-q" });   // 09's letter cards: one open at a time, the typing moment   // the helpers take any element; their JS default (document) types the parameter
   bindAdmit(root as unknown as Document);
   aimSticker(root);
 }

@@ -4,11 +4,13 @@
 // with BOOMBOT's eyes scanning and antenna blinking (.is-thinking). Skipped under reduced motion.
 //
 //   initChat(root)   wires every button.bt-chat-q (aria-controls -> its .bt-chat-a)
+//   initChat(root, { question: ".cp-q" })   the same behaviour for questions drawn another way (the /club-pass letter cards);
+//                    the answers are still .bt-chat-a bubbles
 
 const THINK_MS = 650;
 
-export function initChat(root = document) {
-  const questions = [...root.querySelectorAll(".bt-chat-q:not([data-chat-ready])")];
+export function initChat(root = document, { question = ".bt-chat-q" } = {}) {
+  const questions = [...root.querySelectorAll(`${question}:not([data-chat-ready])`)];
   if (!questions.length) return;
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   let typing = 0;
