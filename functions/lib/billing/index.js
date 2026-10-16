@@ -27,8 +27,9 @@ const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_PRICE_SUB = defineString("STRIPE_PRICE_SUB", { default: "" });
 const STRIPE_PRICE_MONTH = defineString("STRIPE_PRICE_MONTH", { default: "" });
 const STRIPE_PORTAL_CONFIG = defineString("STRIPE_PORTAL_CONFIG", { default: "" });
-const STRIPE_WEBHOOK_SECRET = defineSecret("STRIPE_WEBHOOK_SECRET");
 const webhookOnAtDeploy = process.env.STRIPE_WEBHOOK === "on";
+// Defined only when on: the Firebase CLI asks for every DEFINED secret at deploy, bound or not (lib/hotline does the same).
+const STRIPE_WEBHOOK_SECRET = webhookOnAtDeploy ? defineSecret("STRIPE_WEBHOOK_SECRET") : null;
 
 // Where Checkout and the portal may send people back to, per project (the same idea as lib/accounts TWITCH_REDIRECTS).
 const ORIGINS = {
@@ -55,7 +56,7 @@ function build(deps = {}) {
   let W = null;
   const webhook = () => (W ||= (() => {
     const stripe = deps.stripe || makeStripe(STRIPE_SECRET_KEY.value());
-    const secret = deps.webhookSecret ?? STRIPE_WEBHOOK_SECRET.value();
+    const secret = deps.webhookSecret ?? STRIPE_WEBHOOK_SECRET?.value();
     return makeWebhook({ db, stripe, entitlement: makeEntitlement({ db, auth: deps.auth || admin.auth(), now }), now,
       verify: deps.verify || ((raw, sig) => stripe.webhooks.constructEvent(raw, sig, secret)) });
   })());
