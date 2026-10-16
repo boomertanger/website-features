@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Club Pass, part 2: kit pieces .bt-pass (silver Fan Club, gold Sub Club, --mini), .bt-plan (Join free / You're in / Opening soon), .bt-spread (the magazine spread, shared/ui/spread.js) and .bt-admit (the tear-off ticket, shared/ui/admit.js); tokens --bt-pass-fan and --bt-pass-sub; UI Kit section; design-system §5 Club Pass pieces and §8ah
 - Club Pass, part 1: docs/specs/club-pass.md (confirmed Oct 15, 2026) and the approved mockup docs/design/mockups/club-pass.html; ROADMAP workstream 11 is now Club Pass (plans and billing), in progress, with the launch checklist items and the Boom Board full page line; the tear-off ticket is .bt-admit (.bt-ticket is the Scream Planner's)
 - Playbook: open questions offer only Answer (text required) and can never be confirmed without an answer, on the server too (flagAction, applyUpdate, and an edit can't leave one confirmed without an answer); assumptions offer Confirm and Change (a corrected version, then confirmed); every flag has a pencil Edit for text, status and answer, keeping the replaced text on the flag and logging ids only
 - Playbook: Apply an update also takes a json code block or bare JSON with playbookUpdate at its top level (just the contents of Claude's code box), with a clearer message when there's none; the preview lists the pages it marks reviewed and warns when that would finish the first read-through; prompts copied during the first read-through ask Claude to mark only the pages gone through in that chat
