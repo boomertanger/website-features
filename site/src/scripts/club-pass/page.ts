@@ -237,6 +237,15 @@ function aimSticker(root: HTMLElement) {
   const col = root.querySelector<HTMLElement>(".cp-lines--r"), pass = root.querySelector<HTMLElement>(".cp-star .bt-pass");
   if (!st || !aim || !arrow || !col || !pass) return;
   const place = () => {
+    if (root.clientWidth <= 640) {
+      // Phones (P1): the sticker starts at the column's left edge above 05 and slides right until the tip is over "Already", never past the column
+      st.style.marginRight = ""; st.style.marginLeft = "0px";
+      const a = arrow.getBoundingClientRect(), t = aim.getBoundingClientRect(), s = st.getBoundingClientRect(), c = col.getBoundingClientRect();
+      const move = Math.min(Math.max(0, t.left + t.width / 2 - (a.left + a.width * (29 / 50))), Math.max(0, c.right - s.right));
+      st.style.marginLeft = `${move}px`;
+      return;
+    }
+    st.style.marginLeft = "";
     st.style.marginRight = "0px";
     const a = arrow.getBoundingClientRect(), t = aim.getBoundingClientRect();
     const tip = a.left + a.width * (29 / 50), target = t.left + t.width / 2;   // the tip is at x=29 of the arrow's 50-wide viewBox

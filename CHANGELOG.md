@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Club Pass: the phone cover (640px and below) is P1 "Magazine cover" (docs/design/mockups/club-pass-phone-cover.html): cover lines 01-03 beside the hanging pass with the burst on its corner, the Twitch sticker over 05 (its arrow ends just above the 05 label), 05 and 07 full width, 09 Letters left off the phone cover, and the barcode small in the corner of 07, so the buttons sit where the mockup has them; wider than 640px nothing changes
 - Fixed: outlined numerals on Club Pass, Base Camp and the Game Vault Most wanted list no longer show overlapping-glyph seams.
 - Fixed: outlined kit numerals (ghost chapter numbers, placard, rank) no longer show overlapping-glyph seams, e.g. the 4 in 04.
 - Kit: .bt-spread at 640px and narrower hides the middle of its mast (on /club-pass, The perks · Issue 01) and shows the stamp at 86px with smaller text, as in the Club Pass mockup; the UI Kit page and design-system §5 describe the phone state

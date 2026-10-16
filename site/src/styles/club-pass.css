@@ -624,3 +624,43 @@
 .bt-root:not(#_) .cp-row-n { color: var(--bt-ghost-fill, var(--bt-bg)); -webkit-text-stroke-width: 2px; paint-order: stroke fill; }
 /* signed in, payments off: Pick your pass is the cover's one (purple) button */
 .bt-root:not(#_) .cp[data-viewer="visitor"] .cp-when-member { display: none; }
+
+/* ---- The phone cover (640px and below): P1 "Magazine cover" (docs/design/mockups/club-pass-phone-cover.html; spec §3). Cover lines 01-03
+   on the left, the hanging pass in a 136px column on the right with the burst on its corner; below them the Twitch sticker over 05,
+   then 05 and 07 full width; 09 Letters is left off the phone cover (it stays in the page, the rail and In this issue). The cover's
+   barcode moves into the bottom-right corner of the 07 block. Wider than 640px nothing here applies. ---- */
+.bt-root:not(#_) .cp-line .cp-line-code { display: none; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .cp-cover-grid { grid-template-columns: minmax(0, 1fr) 136px; gap: 0 12px; margin-top: 10px; align-items: start; }
+  .bt-root:not(#_) .cp-cover-grid > .cp-lines:not(.cp-lines--r) { grid-column: 1; grid-row: 1; gap: 12px; padding-top: 30px; }
+  .bt-root:not(#_) .cp-star { grid-column: 2; grid-row: 1; width: auto; justify-self: stretch; aspect-ratio: auto; }
+  .bt-root:not(#_) .cp-star .cp-hang--sub { position: relative; top: 0; left: auto; right: auto; width: 100%; }
+  .bt-root:not(#_) .cp-star .cp-hang .cp-strap { width: 20%; height: 34px; }
+  .bt-root:not(#_) .cp-star .cp-clip { width: 26%; height: 9px; margin: -2px auto -5px; }
+  .bt-root:not(#_) .cp-star .bt-pass { aspect-ratio: 5 / 7.2; gap: 4px; padding: 12px 8px 8px; border-radius: 12px; }
+  .bt-root:not(#_) .cp-star .bt-pass-top { margin-top: 8px; font-size: 7px; }
+  .bt-root:not(#_) .cp-star .bt-pass .bt-mascot { width: 36%; }
+  .bt-root:not(#_) .cp-star .bt-pass-plan { font-size: 15px; letter-spacing: 0.05em; white-space: nowrap; }
+  .bt-root:not(#_) .cp-star .bt-pass-price { font-size: 8px; }
+  .bt-root:not(#_) .cp-star .bt-pass-name { padding: 3px 6px; border-radius: 5px; font-size: 9px; }
+  .bt-root:not(#_) .cp-star .bt-pass-foot { display: none; }
+  .bt-root:not(#_) .cp-burst { width: 70px; right: -14px; bottom: -22px; }
+  .bt-root:not(#_) .cp-burst b { font-size: 16px; }
+  .bt-root:not(#_) .cp-burst small { font-size: 7px; }
+  .bt-root:not(#_) a.cp-line { gap: 2px; }
+  .bt-root:not(#_) .cp-line small { font-size: 9.5px; letter-spacing: 0.16em; }
+  .bt-root:not(#_) .cp-line b { font-size: 19px; line-height: 1.02; }
+  .bt-root:not(#_) .cp-line em { font-size: 12px; }
+  .bt-root:not(#_) .cp-lines--r { grid-column: 1 / -1; grid-row: 2; gap: 12px; margin-top: 2px; text-align: left; align-items: stretch; }
+  .bt-root:not(#_) .cp-lines--r a.cp-line { align-items: flex-start; }
+  .bt-root:not(#_) .cp-lines--r a.cp-line[href="#ch-ask"] { display: none; }
+  .bt-root:not(#_) a.cp-sticker { align-self: flex-start; align-items: flex-start; margin: 0 0 -4px; transform: rotate(-7deg); }   /* with the column gap, the arrow ends just above the 05 label, never on it */
+  .bt-root:not(#_) .cp-sticker-tag { padding: 6px 11px 7px; border-width: 2.5px; font-size: 14px; }
+  .bt-root:not(#_) .cp-sticker-arrow { width: 30px; height: 30px; margin: -3px 0 0 26px; }
+  .bt-root:not(#_) a.cp-line[href="#ch-money"] { position: relative; }
+  .bt-root:not(#_) .cp-line .cp-line-code { position: absolute; right: 0; bottom: 0; display: flex; align-items: center; gap: 6px; color: var(--bt-text-faint); font-size: 8px; font-weight: 700; letter-spacing: 0.1em; }
+  .bt-root:not(#_) .cp-line .cp-line-code i { width: 54px; height: 20px; background: repeating-linear-gradient(90deg, var(--bt-text) 0 2px, transparent 2px 4px, var(--bt-text) 4px 5px, transparent 5px 8px, var(--bt-text) 8px 11px, transparent 11px 12px); opacity: 0.6; }
+  .bt-root:not(#_) .cp-line .cp-line-code span { display: inline; max-width: none; color: inherit; font-size: inherit; line-height: 1; }
+  .bt-root:not(#_) .cp-cover-foot .cp-barcode { display: none; }
+  .bt-root:not(#_) .cp-cover-foot { margin-top: 14px; padding-top: 12px; }
+}

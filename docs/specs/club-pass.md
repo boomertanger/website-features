@@ -66,6 +66,10 @@ Display state on the page comes from the auth roles (display only). Rules and fu
    rules), **09 Dear BOOMBOT** (six letters, `.bt-chat` behaviour).
 8. **Back cover:** the gold "Admit one" ticket (`.bt-admit`); Join free tears off the stub.
 
+Phones (640px and below): mockup club-pass-phone-cover.html, P1 ("Magazine cover", approved Oct 16, 2026). Cover lines 01-03 on
+the left and the hanging pass in a 136px column on the right (the burst on its corner); below them the Twitch sticker over 05, then 05
+and 07 full width; 09 Letters is left off the phone cover only; the barcode sits small in the bottom-right corner of 07.
+
 Colors: Fan Club = silver (`--bt-rank-2`), Sub Club = gold (`--bt-title`) for passes, the board and
 stamps. Purple stays the only clickable color. Reduced motion keeps colors and drops movement.
 
