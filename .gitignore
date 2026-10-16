@@ -33,3 +33,6 @@ functions/scripts/data/climb-sheet.csv
 functions/scripts/data/playbook.json
 functions/scripts/data/playbook-mockup.html
 functions/scripts/data/playbook-*.json
+
+# Cloudflare Wrangler local state
+.wrangler/

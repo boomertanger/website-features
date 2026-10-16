@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Fixed: account page status messages ("Twitch is linked." and the like) no longer carry across tabs: switching tabs (click, arrow keys, a hash change or an in-page link) clears them, and coming back doesn't bring them back. functions/scripts/check-club.js now fails if any Club Pass code (grants, broadcaster connect/disconnect, the entitlement, Twitch checks) writes or loads a writer of the public activityLog (it logs to adminLog only). .wrangler/ is git-ignored.
 - Club Pass: arriving at /club-pass#ch-perks from My pass lands on the chapter heading (the ghost 02, Everything your pass opens and its lede in full, 16px under the top, or under the sticky chapter rail on phones) with the board right below: scroll-margin-top on #ch-perks (board scroll-margin removed).
 - Fixed (kit): the chapter rail (shared/ui/toc.js) now lights up the right stop when a page opens on a #chapter link; it ignored every scroll in the first 900 ms after the page opened.
 - Club Pass: My pass's See your perks goes to the perk board (/club-pass#ch-perks), not the top of the page; Fan Club members get "See what Sub Club adds" (same place). Arriving there lands on the board itself with its top edge in view (scroll-margin 70px, clear of the phones' sticky chapter rail), so all 20 tiles show at 1366x768; the board still starts on the viewer's own pass.

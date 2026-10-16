@@ -47,9 +47,14 @@ function showFor(s: AuthState) {
 
 // ---- tabs (hash-driven; #your-data opens Your data; no hash opens the first tab, My pass; /account/club lands on #club) ----
 const TAB_IDS = $$("[data-tab]").map((t) => t.dataset.tab!);
+let currentTab = "";
 function selectTab(id: string, focus = false) {
   if (id === "your-data") id = "data";
   if (!TAB_IDS.includes(id)) id = TAB_IDS[0];
+  // A status message ("Twitch is linked." and the like) belongs to the tab that produced it: a different tab (a click, the arrow
+  // keys, a hash change or an in-page link) clears it, and coming back doesn't bring it back.
+  if (id !== currentTab) say("ok", null);
+  currentTab = id;
   $$<HTMLAnchorElement>("[data-tab]").forEach((t) => {
     const on = t.dataset.tab === id;
     t.setAttribute("aria-selected", String(on));

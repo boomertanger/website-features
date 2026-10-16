@@ -13,8 +13,10 @@ function fakeAuth() {
 }
 
 // ---------- a tiny in-memory Firestore (doc get / set (merge) / update / delete, runTransaction) ----------
+const ALL_DBS = [];   // every fake Firestore the checks used: none may ever get an activityLog write (Club Pass logs to adminLog only)
 function fakeDb() {
   const docs = new Map();
+  ALL_DBS.push(docs);
   const snap = (path) => { const d = docs.get(path); return { exists: d !== undefined, id: path.split("/").pop(), ref: doc(path), data: () => (d ? JSON.parse(JSON.stringify(d)) : undefined), get: (k) => k.split(".").reduce((o, p) => (o == null ? undefined : o[p]), d) }; };
   const merge = (a, b) => { const out = { ...(a || {}) }; for (const [k, v] of Object.entries(b)) out[k] = v && typeof v === "object" && !Array.isArray(v) && out[k] && typeof out[k] === "object" && !Array.isArray(out[k]) ? merge(out[k], v) : v; return out; };
   function doc(path) {
@@ -294,6 +296,25 @@ function fakeTwitch() {
     const own = twitchView({ id: "111", login: "BoomerTanger" }, undefined, "boomertanger");
     assert.equal(own.own, true); assert.equal(own.sub, null); assert.equal(own.linked, true);
     assert.equal(twitchView({ id: "111", login: "renamed" }, { linked: true, own: true, sub: false }).own, true, "own from the server too");
+  }
+  // ---------- Club Pass never writes the public activityLog (grants, broadcaster connect/disconnect, the entitlement, Twitch checks) ----------
+  {
+    // 1. nothing above (grants, recompute, checks, EventSub, sweep, unlink) wrote one
+    for (const docs of ALL_DBS) for (const p of docs.keys()) assert.ok(!/^(sites\/[^/]+\/)?activity(Log)?\//.test(p), `Club Pass wrote to activityLog: ${p}`);
+    // 2. and no Club Pass source can: no activityLog in code (comments aside), and nothing loaded that writes one
+    const fs = require("fs"), path = require("path");
+    const root = path.join(__dirname, "..");
+    const files = [
+      ...fs.readdirSync(path.join(root, "lib", "club")).map((f) => path.join(root, "lib", "club", f)),
+      path.join(root, "lib", "twitchBroadcaster.js"),
+      ...fs.readdirSync(__dirname).filter((f) => /^club-.*\.js$/.test(f)).map((f) => path.join(__dirname, f)),
+    ];
+    const WRITERS = /require\(["'](\.\.\/)+(boards|crew\/activity|chatGames)/;
+    for (const f of files) {
+      const code = fs.readFileSync(f, "utf8").replace(/\/\*[\s\S]*?\*\//g, "").split(/\r?\n/).map((l) => l.replace(/(^|[^:"'`])\/\/.*$/, "$1")).join("\n");
+      assert.ok(!/activityLog/.test(code), `${path.relative(root, f)} mentions activityLog in code`);
+      assert.ok(!WRITERS.test(code), `${path.relative(root, f)} loads a module that writes activityLog`);
+    }
   }
   console.log("check-club: ok");
 })().catch((err) => { console.error(err); process.exit(1); });
