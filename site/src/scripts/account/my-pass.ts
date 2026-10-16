@@ -7,13 +7,17 @@
 //   club.twitch only adds the sub result). Nothing here writes.
 //   Payments off (site.json clubPass.payments false): every buy and gift button is a disabled Opening soon, Payments and Gifts
 //   show their empty states, and no renewal dates, receipts or gift rows.
+//   Billing (docs/specs/club-pass.md §13; payments on for staging only): club.sources.stripe gives the state (paid here, cancelled, payment
+//   failed with its grace date, a one-month pass, or paying twice with a Twitch sub); clubStatus gives the receipts and the next charge;
+//   Manage payment, Resume, Fix my card and Cancel the site subscription open Stripe's customer portal (clubPortal). Back from Checkout
+//   (?checkout=success) the page waits for the webhook, refreshes the ID token and redraws, so the gold moment plays.
 //   Twitch (docs/specs/club-pass.md §12): once the broadcaster token is connected (public/clubPass.twitchCounting), the Twitch card shows
 //   the sub result (tier, gifted, checked time) with Check again (clubLinkTwitch); before that, linked or not and "Twitch subs start
 //   counting soon." After a check the ID token is refreshed, so a pass that turned gold (or back) updates without a reload.
 //   The gold moment: the first time the tab is open while the pass is gold, the pass pops, confetti falls and the Welcome stamp
 //   lands (reduced motion: the stamp only); remembered per viewer in localStorage bt.club.goldSeen.<uid>.
 //   Off production, signed out, ?as=member previews Fan Club, ?as=sub Sub Club and ?as=crew (or a crew or admin role) the crew pass.
-import { onAuth, refresh, getAuthState, type AuthState } from "../../lib/auth";
+import { onAuth, refresh, getAuthState, whenReady, type AuthState } from "../../lib/auth";
 import { twitchView } from "../../lib/club-twitch.js";
 import { messageFor } from "../../lib/errors";
 import { isProduction } from "../../lib/env";
@@ -25,11 +29,15 @@ import previewMember from "../../data/preview-member.json";
 type Source = "fan" | "sub" | "twitch" | "stripe" | "gift" | "grant" | "crew" | "owner";
 interface Club {
   plan?: "fan" | "sub";
-  sources?: { stripe?: unknown; twitch?: unknown; gift?: unknown; grant?: unknown; crew?: unknown; owner?: unknown };
+  sources?: { stripe?: StripeSrc; twitch?: unknown; gift?: unknown; grant?: unknown; crew?: unknown; owner?: unknown };
   twitch?: { linked?: boolean; login?: string; own?: boolean; sub?: boolean; tier?: string | number | null; gifted?: boolean; checkedAt?: number };
 }
+interface StripeSrc { kind: "sub" | "month"; status?: string; renewsAt?: number; endsAt?: number; cancelAt?: number; graceUntil?: number; monthEndsAt?: number }
+interface Receipt { at: number; amount: number; currency: string; description: string; receiptUrl: string | null; refunded: boolean }
+interface Billing { receipts: Receipt[]; subscription: { status: string; renewsAt: number | null; cancelAt: number | null; amount: number | null; currency: string } | null }
+type Bill = "active" | "cancelled" | "failed" | "month" | "twice" | null;
 interface TwitchView { linked: boolean; login: string; own: boolean; tier: string; sub: boolean | null; gifted: boolean; checkedAt: number | null }
-interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: TwitchView; counting: boolean; preview: boolean }
+interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: TwitchView; counting: boolean; preview: boolean; stripe: StripeSrc | null; bill: Bill; billing: Billing | null }
 
 const root = document.querySelector<HTMLElement>("[data-mp]");
 if (root) init(root);
@@ -67,6 +75,26 @@ function init(root: HTMLElement) {
     return members.get(uid)!;
   }
 
+  const bills = new Map<string, Billing | null>(), billsLoading = new Set<string>();
+  function billingFor(uid: string): Billing | null {
+    if (!PAY) return null;
+    if (bills.has(uid)) return bills.get(uid)!;
+    if (!billsLoading.has(uid)) {
+      billsLoading.add(uid);
+      void import("../../lib/call").then(({ call }) => call<Billing>("clubStatus")).then((b) => b, (err) => { console.error("my pass: clubStatus", err); return null; })
+        .then((b) => { bills.set(uid, b); billsLoading.delete(uid); last = ""; void render(getAuthState()); });
+    }
+    return null;
+  }
+  /** The billing state from the Stripe source: failed (past_due), cancelled, paying twice (with a Twitch sub), active, or a month pass. */
+  function billOf(st: StripeSrc | null, sources: Source[]): Bill {
+    if (!st || !sources.includes("stripe")) return null;
+    if (st.kind === "month") return "month";
+    if (st.status === "past_due") return "failed";
+    if (st.cancelAt) return "cancelled";
+    return sources.includes("twitch") ? "twice" : "active";
+  }
+
   function sourcesOf(club: Club | null, sub: boolean, crew: boolean, owner: boolean): Source[] {
     const from = club?.sources ? (["owner", "twitch", "stripe", "gift", "grant", "crew"] as const).filter((k) => club.sources![k]) : [];
     if (from.length) return [...from];
@@ -90,6 +118,7 @@ function init(root: HTMLElement) {
         gold: !sources.includes("fan"), crew: sources.includes("crew"), sources,
         twitch: twitchView(s.account?.linked?.twitch ?? null, m.club?.twitch ?? null, CHANNEL),
         counting: m.counting, preview: false,
+        stripe: m.club?.sources?.stripe ?? null, bill: billOf(m.club?.sources?.stripe ?? null, sources), billing: billingFor(uid),
       };
     }
     if (isProduction || s.status !== "signedOut") return null;
@@ -101,7 +130,16 @@ function init(root: HTMLElement) {
     const tw = new URLSearchParams(location.search).get("twitch") || "";
     const twitch: TwitchView = twitchView(tw ? { id: "1", login: tw === "own" ? CHANNEL : "gbo_tv" } : null, tw && tw !== "linked" && tw !== "own" ? { linked: true, sub: tw === "sub", tier: "1", checkedAt: Date.now() } : null, CHANNEL);
     if (tw === "sub" && kind === "fan") sources.splice(0, 1, "twitch");
-    return { uid: `preview-${kind}`, handle: `@${previewMember.name.toLowerCase()}`, joined: new Date(), gold: kind !== "fan" || tw === "sub", crew: kind === "crew", sources, twitch, counting: tw === "sub" || tw === "nosub" || tw === "own", preview: true };
+    // ?bill=active | cancelled | failed | month | twice previews the billing states (sample dates and receipts).
+    const bq = new URLSearchParams(location.search).get("bill") || "";
+    const D = 86400000, t0 = Date.now();
+    const stripe: StripeSrc | null = ({ active: { kind: "sub", status: "active", renewsAt: t0 + 20 * D }, twice: { kind: "sub", status: "active", renewsAt: t0 + 20 * D },
+      cancelled: { kind: "sub", status: "active", cancelAt: t0 + 20 * D }, failed: { kind: "sub", status: "past_due", graceUntil: t0 + 6 * D }, month: { kind: "month", status: "paid", endsAt: t0 + 25 * D } } as Record<string, StripeSrc>)[bq] ?? null;
+    if (stripe) { if (kind === "fan") sources.splice(0, 1); sources.push("stripe"); if (bq === "twice" && !sources.includes("twitch")) sources.unshift("twitch"); }
+    const billing: Billing | null = stripe ? { receipts: [{ at: t0 - 10 * D, amount: 599, currency: "usd", description: bq === "month" ? "Sub Club, one month" : "Sub Club", receiptUrl: "#", refunded: false }, { at: t0 - 40 * D, amount: 599, currency: "usd", description: "Sub Club", receiptUrl: "#", refunded: false }],
+      subscription: stripe.kind === "sub" ? { status: stripe.status || "active", renewsAt: stripe.renewsAt ?? null, cancelAt: stripe.cancelAt ?? null, amount: 599, currency: "usd" } : null } : null;
+    return { uid: `preview-${kind}`, handle: `@${previewMember.name.toLowerCase()}`, joined: new Date(), gold: kind !== "fan" || tw === "sub" || !!stripe, crew: kind === "crew", sources, twitch, counting: tw === "sub" || tw === "nosub" || tw === "own", preview: true,
+      stripe, bill: billOf(stripe, sources), billing };
   }
 
   // ---------- the pieces ----------
@@ -112,6 +150,9 @@ function init(root: HTMLElement) {
   const giftBtn = () => '<button class="bt-btn bt-btn--secondary" type="button" disabled>Gifts open soon</button>';
   // The perk board on /club-pass (it starts on the viewer's own pass). Fan Club: "See what Sub Club adds", same place.
   const perksBtn = (kind = "primary", fan = false) => `<a class="bt-btn bt-btn--${kind}" href="/club-pass#ch-perks" data-pulse="my-pass-see-perks">${fan ? "See what Sub Club adds" : "See your perks"}</a>`;
+  const portalBtn = (label: string, kind = "primary") => `<button class="bt-btn bt-btn--${kind}" type="button" data-mp-portal data-pulse="my-pass-portal">${esc(label)}</button>`;
+  const day = (ms?: number | null) => (ms ? new Date(ms).toLocaleDateString(undefined, { month: "short", day: "numeric" }) : "");
+  const money = (cents: number | null | undefined, cur = "usd") => (cents == null ? PRICE : new Intl.NumberFormat(undefined, { style: "currency", currency: cur.toUpperCase() }).format(cents / 100));
   const head = (t: string) => `<div class="bt-card-head"><h3 class="bt-card-title">${t}</h3></div>`;
   const empty = (title: string, text: string) => `<div class="bt-empty bt-empty--compact"><span class="bt-empty-title">${title}</span><span>${text}</span></div>`;
   const lead = (v: View): Source => (["owner", "crew", "twitch", "stripe", "gift", "grant", "sub"] as Source[]).find((k) => v.sources.includes(k)) || "fan";
@@ -119,6 +160,13 @@ function init(root: HTMLElement) {
     const d = new Date(ms), today = new Date().toDateString() === d.toDateString();
     return `${today ? "today" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
   };
+
+  /** The banner over the hero: a failed payment (red) or paying twice. */
+  function banner(v: View) {
+    if (v.bill === "failed") return `<div class="mp-banner mp-banner--bad" role="status"><span aria-hidden="true">⚠️</span><div><b>Your payment didn't go through</b><small>Your pass stays gold until ${day(v.stripe?.graceUntil)}. Update your card to keep it.</small></div>${portalBtn("Fix my card")}</div>`;
+    if (v.bill === "twice") return `<div class="mp-banner" role="status"><span aria-hidden="true">💡</span><div><b>You're paying twice</b><small>Your Twitch sub already gives you Sub Club. Cancel the ${money(v.billing?.subscription?.amount)} here and your pass stays gold through Twitch.</small></div>${portalBtn("Cancel the site subscription", "secondary")}</div>`;
+    return "";
+  }
 
   function hero(v: View) {
     const k = lead(v);
@@ -140,15 +188,26 @@ function init(root: HTMLElement) {
       : k === "owner" ? perksBtn() + '<a class="bt-btn bt-btn--secondary" href="/admin">Admin tools</a>'
       : k === "gift" ? subBtn("Keep it gold") + perksBtn("secondary")
       : perksBtn() + giftBtn();
+    let [st2, line2, cta2] = [status, line, cta];
+    const S = v.stripe, amt = money(v.billing?.subscription?.amount, v.billing?.subscription?.currency);
+    if (v.bill && (k === "stripe" || (k === "twitch" && v.bill === "twice"))) {
+      [st2, line2, cta2] = ({
+        active: [`Gold, paid here. Renews ${day(S?.renewsAt)}.`, `${amt} a month. Cancel any time and keep gold until ${day(S?.renewsAt)}.`, portalBtn("Manage payment") + perksBtn("secondary")],
+        cancelled: [`Gold until ${day(S?.cancelAt)}, then Fan Club.`, `You cancelled. Nothing more will be charged. Changed your mind? Resume any time before ${day(S?.cancelAt)}.`, portalBtn("Resume Sub Club")],
+        failed: ["Still gold, but your payment didn't go through.", `Fix your card by ${day(S?.graceUntil)} to stay gold.`, portalBtn("Fix my card")],
+        month: ["Gold for one month.", `Your month ends ${day(S?.endsAt)}. Get Sub Club before then to stay gold.`, subBtn("Keep it gold") + perksBtn("secondary")],
+        twice: ["Gold, twice over.", "Your Twitch sub already covers Sub Club, and you also pay here.", portalBtn("Cancel the site subscription") + perksBtn("secondary")],
+      } as Record<NonNullable<Bill>, [string, string, string]>)[v.bill];
+    }
     const plan = v.gold ? "Sub Club" : "Fan Club";
     const facts = [v.joined ? `Member since ${month(v.joined)}` : "", v.handle, `${v.gold ? TOTAL : FAN} of ${TOTAL} perks`].filter(Boolean);
-    return `<div class="mp-hero${v.gold ? " is-gold" : ""}" data-mp-hero>
+    return banner(v) + `<div class="mp-hero${v.gold ? " is-gold" : ""}" data-mp-hero>
       <div class="mp-hero-scene"><div class="mp-hang"><span class="mp-strap"></span><span class="mp-clip"></span>
         <div class="bt-pass${v.gold ? " bt-pass--sub" : ""}" role="img" aria-label="Your ${plan} pass"><span class="bt-pass-top" aria-hidden="true">CLUB PASS</span>${M}<span class="bt-pass-plan" aria-hidden="true">${plan.toUpperCase()}</span><span class="bt-pass-price" aria-hidden="true">${v.gold ? "ALL ACCESS" : "FREE"}</span>${v.handle ? `<span class="bt-pass-name" aria-hidden="true">${esc(v.handle)}</span>` : ""}<span class="bt-pass-code"></span></div>
       </div></div>
-      <div><p class="mp-kick">My pass</p><h2 class="mp-plan">${plan}</h2><p class="mp-status">${status}<small>${line}</small></p>
+      <div><p class="mp-kick">My pass</p><h2 class="mp-plan">${plan}</h2><p class="mp-status">${esc(st2)}<small>${esc(line2)}</small></p>
         <div class="mp-facts">${facts.map((f) => `<span class="mp-chip">${esc(f)}</span>`).join("")}</div>
-        <div class="mp-cta">${cta}</div></div>
+        <div class="mp-cta">${cta2}</div></div>
     </div>`;
   }
 
@@ -157,7 +216,9 @@ function init(root: HTMLElement) {
       fan: ["🎟️", "Fan Club pass", "Free, no end date", false],
       sub: ["🎟️", "Sub Club pass", "Gold on your account", true],
       twitch: [TW, "Twitch sub", `${v.twitch.tier ? `Tier ${esc(v.twitch.tier)} · ` : ""}lasts as long as your Twitch sub${v.twitch.checkedAt ? ` · checked ${clock(v.twitch.checkedAt)}` : ""}`, true],
-      stripe: ["💳", "Paid here", `${PRICE} a month`, true],
+      stripe: ["💳", v.bill === "cancelled" ? "Paid here, cancelled" : v.bill === "month" ? "Paid here, one month" : "Paid here",
+        v.bill === "cancelled" ? `Gold until ${day(v.stripe?.cancelAt)} · no more charges` : v.bill === "failed" ? `Payment failed · fix by ${day(v.stripe?.graceUntil)}`
+        : v.bill === "month" ? `One month · ends ${day(v.stripe?.endsAt)}` : `${money(v.billing?.subscription?.amount)} a month${v.stripe?.renewsAt ? ` · renews ${day(v.stripe.renewsAt)}` : ""}`, true],
       gift: ["🎁", "Gift", "One month, never renews", true],
       grant: ["🎟️", "From Boomertanger", "Turned gold by the channel", true],
       owner: ["🎬", "Owner", "It's your channel, so it's always gold", true],
@@ -165,12 +226,25 @@ function init(root: HTMLElement) {
     };
     return `<div class="bt-card">${head(`Where your ${v.gold ? "gold" : "pass"} comes from`)}${v.sources.map((k) => {
       const [ic, t, d, g] = SRC[k];
-      return `<div class="mp-src"><span class="mp-src-ic${g ? " is-gold" : ""}${k === "twitch" ? " is-twitch" : ""}" aria-hidden="true">${ic}</span><div><b>${t}</b><small>${d}</small></div><span class="bt-pill-ok">Active</span></div>`;
+      const pill = k !== "stripe" ? '<span class="bt-pill-ok">Active</span>' : v.bill === "failed" ? '<span class="bt-pill-warn">Needs a new card</span>'
+        : v.bill === "cancelled" ? `<span class="bt-pill-warn">Ends ${day(v.stripe?.cancelAt)}</span>` : v.bill === "month" ? `<span class="bt-pill-warn">Ends ${day(v.stripe?.endsAt)}</span>` : '<span class="bt-pill-ok">Active</span>';
+      return `<div class="mp-src"><span class="mp-src-ic${g ? " is-gold" : ""}${k === "twitch" ? " is-twitch" : ""}" aria-hidden="true">${ic}</span><div><b>${t}</b><small>${d}</small></div>${pill}</div>`;
     }).join("")}${v.sources.length > 1 ? '<p class="bt-fine bt-fine--left mp-note">Any one of these keeps you gold.</p>' : ""}</div>`;
   }
 
   function payments(v: View) {
     const k = lead(v);
+    const B = v.billing, S = v.stripe;
+    if (B && (B.receipts.length || B.subscription) || S) {
+      const amt = money(B?.subscription?.amount, B?.subscription?.currency);
+      const next = v.bill === "active" || v.bill === "twice" ? `<div class="mp-next"><b>${amt}</b><span>next charge ${day(B?.subscription?.renewsAt ?? S?.renewsAt)}</span></div><div class="mp-row-actions">${portalBtn("Manage payment", "secondary")}</div>`
+        : v.bill === "cancelled" ? `<div class="mp-next"><b>No more charges</b><span>you cancelled · gold until ${day(S?.cancelAt)}</span></div><div class="mp-row-actions">${portalBtn("Resume Sub Club", "secondary")}</div>`
+        : v.bill === "failed" ? `<div class="mp-next"><b>${amt}</b><span>didn't go through · fix by ${day(S?.graceUntil)}</span></div><div class="mp-row-actions">${portalBtn("Fix my card")}</div>`
+        : v.bill === "month" ? `<div class="mp-next"><b>One month</b><span>gold until ${day(S?.endsAt)} · doesn't renew</span></div>` : "";
+      const rows = !B ? '<p class="bt-fine bt-fine--left mp-note">Loading your receipts…</p>' : B.receipts.length
+        ? `<span class="bt-label mp-receipts-label">Receipts</span><div class="mp-receipts">${B.receipts.map((r) => `<div class="mp-receipt"><span>${day(r.at)}</span><span>${esc(r.description)}${r.refunded ? " · refunded" : ""}</span><b>${money(r.amount, r.currency)}</b>${r.receiptUrl ? `<a href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">Receipt ↗</a>` : "<span></span>"}</div>`).join("")}</div>` : "";
+      return `<div class="bt-card">${head("Payments")}${next}${rows}<p class="bt-fine bt-fine--left mp-note">Manage payment opens Stripe's secure page. Your card never touches this site.</p></div>`;
+    }
     return `<div class="bt-card">${head("Payments")}${k === "owner" ? empty("Nothing to pay", "It's your channel.") : k === "crew" ? empty("Nothing to pay", "Crew passes are on the house.")
       : k === "twitch" && !v.sources.includes("stripe") ? empty("Nothing to pay here", "Your Twitch sub covers Sub Club.")
       : empty("No payments yet", "Receipts for Sub Club, gifts and tips show up here.")}</div>`;
@@ -280,6 +354,12 @@ function init(root: HTMLElement) {
     body.innerHTML = hero(v) + `<div class="mp-grid">${sources(v)}${payments(v)}${twitch(v)}${gifts()}${v.gold ? "" : upgrade()}${v.crew ? crewCard() : ""}</div>`;
     bindBoard();
     bindCheck();
+    body.querySelectorAll<HTMLButtonElement>("[data-mp-portal]").forEach((b) => b.addEventListener("click", async () => {
+      if (view?.preview) { b.textContent = "Preview: no portal"; return; }
+      const was = b.textContent; b.disabled = true; b.textContent = "Opening Stripe…";
+      try { const { openPortal } = await import("../../lib/checkout"); await openPortal(); }
+      catch (err) { b.disabled = false; b.textContent = was; const ok = document.querySelector<HTMLElement>("[data-page-err]"); if (ok) { ok.textContent = messageFor(err, "Couldn't open Stripe. Try again in a minute."); ok.hidden = false; } }
+    }));
     body.querySelectorAll<HTMLButtonElement>("[data-mp-buy]").forEach((b) => b.addEventListener("click", () => {
       if (view?.preview) { b.textContent = "Preview: no checkout"; return; }
       void import("../../lib/checkout").then((m) => m.startCheckout("sub"));
@@ -287,4 +367,28 @@ function init(root: HTMLElement) {
     goldMoment();
   }
   onAuth((s) => { void render(s); });
+
+  // ---------- back from Stripe Checkout (/account/club?checkout=success) ----------
+  // The webhook turns the pass gold a few seconds after payment: wait for members/{uid}.club.plan to say so (up to ~40 s), then refresh
+  // the ID token (the "sub" role) and redraw, so the gold moment plays here.
+  if (new URLSearchParams(location.search).get("checkout") === "success") {
+    history.replaceState(null, "", location.pathname + location.hash);
+    void (async () => {
+      const s = await whenReady();
+      if (!s.user) return;
+      const okEl = document.querySelector<HTMLElement>("[data-page-ok]");
+      const say = (t: string) => { if (okEl) { okEl.textContent = t; okEl.hidden = false; } };
+      say("Payment received. Turning your pass gold…");
+      const { db, doc, getDoc } = await import("../../lib/db");
+      let gold = false;
+      for (let i = 0; i < 20 && !gold; i++) {
+        try { gold = (await getDoc(doc(db, "sites", SITE_ID, "members", s.user.uid))).get("club.plan") === "sub"; } catch { /* try again */ }
+        if (!gold) await new Promise((r) => setTimeout(r, 2000));
+      }
+      members.delete(s.user.uid); bills.delete(s.user.uid); last = "";
+      await refresh({ forceToken: true }).catch(() => {});
+      await render(getAuthState());
+      say(gold ? "You're in Sub Club. Welcome!" : "Your payment went through. Your pass turns gold in a minute or two: reload this page then.");
+    })();
+  }
 }
