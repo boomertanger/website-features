@@ -161,3 +161,16 @@ Mockup: `docs/design/mockups/club-pass-my-pass.html` (hero H1, the hanging pass)
   Until billing and Twitch counting exist, it falls back to the auth claims (roles `sub`, crew grade)
   and the existing Twitch link. Receipts and the gift list come from the `clubStatus` callable (billing
   part); Check again calls `clubLinkTwitch` (Twitch part).
+
+## 12. Twitch counting — CONFIRMED (2026-10-16)
+- **Broadcaster token:** one token, connected once by the owner on `/admin` ("Connect Twitch broadcaster"), scopes
+  `channel:read:subscriptions` and `channel:manage:moderators`, stored server-only at `sites/boomertanger/private/twitchBroadcaster`
+  `{ accessToken, refreshToken, accessExpiresAt, scope, twitchUserId }` and refreshed automatically. Mod Machina's mod sync stays off.
+- **When a sub is checked:** when a member links Twitch, signs in with Twitch, or presses Check again on My pass (callable
+  `clubLinkTwitch`, rate limited 1 a minute and 20 a day per member); EventSub tells the site about new subs, resubs and ends; a daily
+  sweep rechecks every linked member.
+- **One entitlement module** recomputes each member's pass from all sources (twitch now; stripe, gift and crew later; grant for the
+  owner and testing): writes `members/{uid}.club` and adds or removes the "sub" role in the members doc and the custom claims, leaving
+  every other role untouched.
+- **Stored:** sub or not, tier, is_gift, checkedAt. Nothing else from Twitch; no payment data.
+- **Logs:** adminLog feature `clubPass` (connect, disconnect, grants). No activityLog.
