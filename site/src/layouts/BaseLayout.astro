@@ -80,9 +80,9 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
         (function () {
           var p = new URLSearchParams(location.search), b = document.body;
           var as = p.get("as"), live = p.get("live");
-          // ?as= roles: [data-auth, staff, crew, overseer, owner]. admin and owner preview the owner; a2 an A2 Overseer; crew (and the
+          // ?as= roles: [data-auth, staff, crew, overseer, owner]. sub is a member with Sub Club (/club-pass reads it); admin and owner preview the owner; a2 an A2 Overseer; crew (and the
           // Mod Deck's captain / lead / deckhand, the questions page's mod) a crew member such as a Warden or an Initiate.
-          var R = { visitor: ["visitor", 0, 0, 0, 0], member: ["member", 0, 0, 0, 0], admin: ["admin", 1, 1, 1, 1], owner: ["admin", 1, 1, 1, 1], a2: ["admin", 1, 1, 1, 0],
+          var R = { visitor: ["visitor", 0, 0, 0, 0], member: ["member", 0, 0, 0, 0], sub: ["member", 0, 0, 0, 0], admin: ["admin", 1, 1, 1, 1], owner: ["admin", 1, 1, 1, 1], a2: ["admin", 1, 1, 1, 0],
             crew: ["member", 1, 1, 0, 0], mod: ["member", 1, 1, 0, 0], captain: ["member", 1, 1, 0, 0], lead: ["member", 1, 1, 0, 0], deckhand: ["member", 1, 1, 0, 0] }[as];
           if (R) {
             var on = function (v) { return v ? "on" : "off"; };

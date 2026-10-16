@@ -1,0 +1,380 @@
+{
+  "_about": "Club Pass perks (docs/specs/club-pass.md §4): the 20 perks on /club-pass, in board order. plan: fan (Fan Club), fan+ (Fan Club, with more for Sub Club), sub (Sub Club only). soon: not built yet (it says Coming soon). head: *word* is the accent word. facts: exactly three; <b> is the only markup. scene: one of the page's scene drawings (scripts/club-pass/scenes.ts). serviceId: the Service Hub manifest it belongs to. Checked by scripts/check-club-pass.js.",
+  "perks": [
+    {
+      "id": "live",
+      "section": "watch",
+      "icon": "🎭",
+      "label": "Backstage",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Watch",
+      "head": "Get *backstage.*",
+      "dek": "Some streams never go to Twitch or YouTube. Backstage streams and after-shows play right here on the site, for members only.",
+      "facts": [
+        "<b>Backstage streams</b> on the site, members only",
+        "<b>After-shows</b> when the main stream wraps",
+        "<b>Studio time</b> each week: watch the YouTube series being recorded, chat on the breaks (coming soon)"
+      ],
+      "pull": "The show after the show.",
+      "scene": "curtain",
+      "serviceId": "live"
+    },
+    {
+      "id": "schedule",
+      "section": "watch",
+      "icon": "🗳️",
+      "label": "Game votes",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Watch",
+      "head": "*You* pick the games.",
+      "dek": "Every week the schedule opens to a vote. Suggest a horror game, vote for the ones you want, and watch the week fill up.",
+      "facts": [
+        "<b>Vote</b> on next week's games",
+        "<b>Suggest</b> any game from the Game Vault",
+        "See which streams are <b>backstage</b>"
+      ],
+      "pull": "Your vote. His nightmare.",
+      "scene": "ballot",
+      "serviceId": "schedule"
+    },
+    {
+      "id": "substream",
+      "section": "watch",
+      "icon": "🌙",
+      "label": "Sub Club stream",
+      "plan": "sub",
+      "soon": true,
+      "kicker": "Watch",
+      "head": "One night a month, *just us.*",
+      "dek": "Once a month, Boomer streams for Sub Club only: a smaller room, where chat gets more of his attention.",
+      "facts": [
+        "A <b>Sub Club-only</b> stream every month",
+        "Plays on the site, like Backstage",
+        "On the <b>schedule</b> ahead of time"
+      ],
+      "pull": "Small room. Big screams.",
+      "scene": "moon"
+    },
+    {
+      "id": "chatgames",
+      "section": "play",
+      "icon": "🎲",
+      "label": "Chat Games",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Play",
+      "head": "Don't just watch. *Play.*",
+      "dek": "Chat Games turn the stream into a game show. Ask a question, put Boomer in the Hot Seat, pick a side, call what happens next.",
+      "facts": [
+        "<b>Questions</b> and the <b>Hot Seat</b>",
+        "<b>Would You Rather</b>: pick a side, see the split",
+        "<b>Predictions</b>: call it, earn XP if you're right"
+      ],
+      "pull": "Called it.",
+      "scene": "cards",
+      "serviceId": "chat-games"
+    },
+    {
+      "id": "drops",
+      "section": "play",
+      "icon": "👁",
+      "label": "Badge drops",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Play",
+      "head": "Blink and it's *gone.*",
+      "dek": "During a stream a badge can drop at any moment. A gold banner lights up across the site, the fuse starts burning, and whoever claims it in time keeps it for good.",
+      "facts": [
+        "Claim from the <b>gold banner</b> on any page",
+        "Badges like <b>Jump Scare Witness</b> and <b>Boss Fight Believer</b>",
+        "Some drops are a <b>draw</b>: one winner"
+      ],
+      "pull": "Be there. Get the badge.",
+      "scene": "drop",
+      "serviceId": "live-drops"
+    },
+    {
+      "id": "contests",
+      "section": "play",
+      "icon": "🎟️",
+      "label": "Contests and drawings",
+      "plan": "fan+",
+      "soon": true,
+      "kicker": "Play",
+      "head": "Check in. *Win stuff.*",
+      "dek": "Drawings and contests run during streams, and only members who are checked into the stream can win. Show up, check in, and your name goes in the hat.",
+      "facts": [
+        "<b>Check in</b> to the stream to be eligible",
+        "<b>Drawings</b> and <b>contests</b> live on stream",
+        "Sub Club gets <b>extra Sub Club drawings</b> (planned)"
+      ],
+      "pull": "You have to be there to win.",
+      "scene": "raffle",
+      "serviceId": "contests"
+    },
+    {
+      "id": "nightshift",
+      "section": "play",
+      "icon": "🔥",
+      "label": "Night Shift",
+      "plan": "fan+",
+      "soon": false,
+      "kicker": "Play",
+      "head": "Every night has a *mission.*",
+      "dek": "Night Shift runs in seasons: daily and weekly tasks, a story that unlocks chapter by chapter, and a streak that keeps you coming back.",
+      "facts": [
+        "Dailies, weeklies and <b>season XP</b>",
+        "<b>Streak savers</b> cover a missed day",
+        "Sub Club adds <b>Sub Club campaigns</b> and a <b>third saver</b>"
+      ],
+      "pull": "Punch the clock.",
+      "scene": "flame",
+      "serviceId": "night-shift"
+    },
+    {
+      "id": "arcade",
+      "section": "play",
+      "icon": "🕹️",
+      "label": "Boom Arcade",
+      "plan": "fan",
+      "soon": true,
+      "kicker": "Play",
+      "head": "Horror puzzles, *made here.*",
+      "dek": "The Boom Arcade's point-and-click horror puzzle games are being built for members, with boards and badges. Members vote on what gets built next.",
+      "facts": [
+        "Point-and-click <b>horror puzzles</b>",
+        "Weekly <b>boards</b> and badges",
+        "Members <b>vote</b> on new games"
+      ],
+      "pull": "Insert coin. Don't look behind you.",
+      "scene": "arcade",
+      "serviceId": "boom-arcade"
+    },
+    {
+      "id": "boomgames",
+      "section": "play",
+      "icon": "📼",
+      "label": "boomgames.tv",
+      "plan": "sub",
+      "soon": true,
+      "kicker": "Play",
+      "head": "A horror library, *for Sub Club.*",
+      "dek": "boomgames.tv is the plan: a whole library of horror games for Sub Club. It gets built once the Arcade and the community grow enough to earn it.",
+      "facts": [
+        "A <b>horror game library</b> for Sub Club",
+        "Built as the <b>Arcade</b> and the community grow",
+        "Earn the <b>Arcade Regular</b> badge for early access to the first game"
+      ],
+      "pull": "Earned, not promised.",
+      "scene": "shelf"
+    },
+    {
+      "id": "techstack",
+      "section": "inside",
+      "icon": "🎛️",
+      "label": "Tech Stack",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Inside",
+      "head": "See how the *scares* get made.",
+      "dek": "Tech Stack shows the whole setup. Members get the deep cuts: what every cable does, how the mixer is routed, and how the setup changed over time.",
+      "facts": [
+        "<b>Inside the mixer</b>, socket by socket",
+        "<b>Pull the plug</b>: see what goes dark",
+        "The full <b>setup history</b>"
+      ],
+      "pull": "Every cable has a story.",
+      "scene": "mixer",
+      "serviceId": "tech-stack"
+    },
+    {
+      "id": "climb",
+      "section": "inside",
+      "icon": "📈",
+      "label": "Creator Climb",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Inside",
+      "head": "Watch the *climb.*",
+      "dek": "Creator Climb tracks follower growth on every platform. Members see every reading, the month reports, the records and the pace toward the goals.",
+      "facts": [
+        "<b>Every reading</b>, not just month-ends",
+        "<b>Month reports</b> and crossover by month",
+        "<b>Records</b> and <b>At this pace</b>"
+      ],
+      "pull": "Every follower counts.",
+      "scene": "climb",
+      "serviceId": "creator-climb"
+    },
+    {
+      "id": "goals",
+      "section": "inside",
+      "icon": "🗺️",
+      "label": "Goal Tracker",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Inside",
+      "head": "Help write the *comeback.*",
+      "dek": "The Goal Tracker lays out the plan for The Game Awards 2027, level by level, and shows exactly how you can help.",
+      "facts": [
+        "The whole <b>road</b>, level by level",
+        "<b>2027 goals</b> with live progress",
+        "<b>How you can help</b> at every step"
+      ],
+      "pull": "Next stop: The Game Awards.",
+      "scene": "road",
+      "serviceId": "goal-tracker"
+    },
+    {
+      "id": "numbers",
+      "section": "inside",
+      "icon": "📊",
+      "label": "Numbers note",
+      "plan": "sub",
+      "soon": true,
+      "kicker": "Inside",
+      "head": "The *real* numbers.",
+      "dek": "Once a month, a short note from Boomer on how the channel is really doing: what worked, what didn't, and what's next.",
+      "facts": [
+        "A <b>monthly note</b>, Sub Club only",
+        "Real numbers, plain words",
+        "What it means for the road"
+      ],
+      "pull": "No spin. Just the numbers.",
+      "scene": "bars"
+    },
+    {
+      "id": "boomertang",
+      "section": "inside",
+      "icon": "📰",
+      "label": "Boomertang",
+      "plan": "fan+",
+      "soon": true,
+      "kicker": "Inside",
+      "head": "Read *Boomertang.*",
+      "dek": "Boomertang is a monthly horror publication: twelve editions a year, out in the second week of each month, and each one stays alive with updates, comments, surveys and polls.",
+      "facts": [
+        "Sub Club reads the <b>new edition</b>; Fan Club reads <b>back issues</b>",
+        "<b>Vote</b>, take <b>surveys</b> and <b>comment</b> on editions you can read",
+        "It launches once the <b>community goals</b> hold for two months"
+      ],
+      "pull": "Twelve editions a year.",
+      "scene": "mag",
+      "serviceId": "horror-monthly"
+    },
+    {
+      "id": "rate",
+      "section": "you",
+      "icon": "⭐",
+      "label": "Rate and suggest",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "Your say",
+      "head": "Your vote *changes the site.*",
+      "dek": "Rate every page and feature, suggest ideas in Feature Lab, and report bugs in Bug Zapper. This site gets built with you.",
+      "facts": [
+        "<b>Rate</b> pages: Not for me, Like it, Love it",
+        "<b>Suggest</b> ideas and vote on others",
+        "<b>Report bugs</b> and watch them get zapped"
+      ],
+      "pull": "Built with you, not just for you.",
+      "scene": "stars",
+      "serviceId": "service-hub"
+    },
+    {
+      "id": "trophy",
+      "section": "you",
+      "icon": "🏅",
+      "label": "Trophy case",
+      "plan": "fan+",
+      "soon": false,
+      "kicker": "You",
+      "head": "Wear what you *earned.*",
+      "dek": "Your trophy case sits on your profile. Pin the badges you're proudest of, and let them do the talking.",
+      "facts": [
+        "Fan Club pins <b>3</b> badges",
+        "Sub Club pins <b>6</b>, with an <b>animated frame</b>",
+        "Badges, XP and your level are yours for good"
+      ],
+      "pull": "Show off a little.",
+      "scene": "trophy",
+      "serviceId": "trophy-room"
+    },
+    {
+      "id": "credits",
+      "section": "you",
+      "icon": "🎬",
+      "label": "Name in the credits",
+      "plan": "sub",
+      "soon": true,
+      "kicker": "You",
+      "head": "Your *name* in the credits.",
+      "dek": "Sub Club members are named in the credits of Building Boomertanger, the YouTube series about this site and the road to the awards.",
+      "facts": [
+        "Your handle in the <b>credits</b>",
+        "For as long as you're in Sub Club",
+        "The series is <b>coming soon</b>"
+      ],
+      "pull": "Roll credits.",
+      "scene": "credits"
+    },
+    {
+      "id": "texts",
+      "section": "you",
+      "icon": "📱",
+      "label": "Text alerts",
+      "plan": "sub",
+      "soon": true,
+      "kicker": "You",
+      "head": "Never miss the *scream.*",
+      "dek": "Sub Club members 18 and older can get a text the moment Boomer goes live.",
+      "facts": [
+        "<b>Go-live texts</b> to your phone",
+        "Choose what you get and when",
+        "<b>18 and older</b>, with a verified phone"
+      ],
+      "pull": "Your phone screams first.",
+      "scene": "phone"
+    },
+    {
+      "id": "merch",
+      "section": "you",
+      "icon": "👕",
+      "label": "Merch shop",
+      "plan": "fan+",
+      "soon": true,
+      "kicker": "You",
+      "head": "Members-only *merch.*",
+      "dek": "The shop is for members only: you need a pass just to browse. Sub Club gets 10% off everything for as long as you're in.",
+      "facts": [
+        "<b>Members only</b>: sign in to browse and buy",
+        "Sub Club gets <b>10% off</b> everything",
+        "Sub Club gets <b>early access</b> to new drops"
+      ],
+      "pull": "Wear the scream.",
+      "scene": "merch",
+      "serviceId": "shop"
+    },
+    {
+      "id": "mypass",
+      "section": "you",
+      "icon": "🪪",
+      "label": "Your account",
+      "plan": "fan",
+      "soon": false,
+      "kicker": "You",
+      "head": "Your pass, *your way.*",
+      "dek": "Your account page shows your pass, your Twitch link, and later the gifts you've sent and every receipt.",
+      "facts": [
+        "Your <b>pass</b> and what it includes",
+        "Your <b>Twitch link</b> and sub status",
+        "<b>Gifts</b> and <b>receipts</b> (with billing)"
+      ],
+      "pull": "All yours, in one place.",
+      "scene": "pass",
+      "serviceId": "account"
+    }
+  ]
+}

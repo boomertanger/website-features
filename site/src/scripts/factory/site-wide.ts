@@ -34,8 +34,9 @@ async function start(s: AuthState) {
 }
 
 const norm = (p: string) => (p.split(/[?#]/)[0].replace(/\/+$/, "") || "/").toLowerCase();
-/** Night Shift lives at /shift, but the site tour and the medal hunts keep their stored key, /factory (internal name). */
-const internal = (p: string) => p.replace(/^\/shift(?=\/|$)/, "/factory");
+/** Night Shift lives at /shift, but the site tour and the medal hunts keep their stored key, /factory (internal name). /club-pass
+ *  (Club Pass, docs/specs/club-pass.md) counts as the tour stop /club, which it replaced. */
+const internal = (p: string) => p.replace(/^\/shift(?=\/|$)/, "/factory").replace(/^\/club-pass(?=\/|$)/, "/club");
 const dayKey = (t = Date.now()) => new Intl.DateTimeFormat("en-CA", { timeZone: "America/Chicago" }).format(new Date(t));
 const store = {
   get: (k: string) => { try { return localStorage.getItem(k); } catch { return null; } },
@@ -100,7 +101,7 @@ async function clockItem(uid: string, live: boolean) {
 // ---------- site tour visits ----------
 async function visit(uid: string) {
   const seg = location.pathname.split("/").filter(Boolean)[0];
-  const section = internal(seg ? `/${seg.toLowerCase()}` : "/");
+  const section = internal(seg ? `/${seg.toLowerCase()}` : "/");   // /club-pass -> /club
   if (!VISIT_SECTIONS.includes(section)) return;
   const k = `ff-visit-${uid}-${section}`, today = dayKey();
   if (store.get(k) === today) return;

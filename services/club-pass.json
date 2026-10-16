@@ -1,0 +1,20 @@
+{
+  "id": "club-pass",
+  "name": "Club Pass",
+  "type": "page",
+  "area": "Community",
+  "blurb": "Fan Club and Sub Club, explained: every perk, what each pass costs and how to get one.",
+  "version": "0.1",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/club-pass"
+  ],
+  "nav": "club",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-club-pass",
+  "sections": {},
+  "talkBack": "note",
+  "help": null
+}

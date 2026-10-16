@@ -7,6 +7,12 @@
 /factory/    /shift/    301
 /factory/*    /shift/:splat    301
 
+# Club Pass (docs/specs/club-pass.md §3): the old placeholder /club and the How it works address both land on the one page.
+/club    /club-pass    301
+/club/    /club-pass    301
+/club-pass/how-it-works    /club-pass    301
+/club-pass/how-it-works/    /club-pass    301
+
 # Creator Climb (docs/specs/creator-climb.md §15): the old Squarespace growth pages.
 /growth-2025    /climb    301
 /growth-2025/    /climb    301

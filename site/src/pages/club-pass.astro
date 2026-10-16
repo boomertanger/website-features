@@ -1,0 +1,439 @@
+---
+// /club-pass, Club Pass (docs/specs/club-pass.md §3; mockup docs/design/mockups/club-pass.html, mockup 5 "the merged magazine"). A story page
+// told as a magazine: the cover (the gold pass as cover star, cover lines, the purple Twitch sticker aimed at "Already"), the ticker, then
+// TocLayout chapters: In this issue, 01 Pick your pass (.bt-plan), 02 the perk board and its .bt-spread, 03 the pass press, 04 Going gold,
+// 05 Twitch subs, 06 Gifts and tips, 07 Where your money goes, 08 The fine print (.bt-placard), 09 Dear BOOMBOT (.bt-chat), and the back
+// cover's .bt-admit ticket. scripts/club-pass/page.ts sets the viewer (visitor, Fan Club, or Sub Club from the "sub" role; ?as=member and
+// ?as=sub preview them off production) and runs the interactions. Payments are off (site.json clubPass.payments): every buy and gift button is
+// a disabled "Opening soon", renewal dates are hidden and there is no checkout code here. The perks come from src/data/club-pass.json.
+import BaseLayout from "../layouts/BaseLayout.astro";
+import TocLayout from "../components/TocLayout.astro";
+import Mascot from "../components/Mascot.astro";
+import { boombotIcon } from "../../../shared/ui/arcade.js";
+import site from "../data/site.json";
+import "../styles/club-pass.css";
+
+const CP = (site as any).clubPass as { payments: boolean; price: string; shopDiscount: number };
+const PRICE = `$${CP.price}`;
+const PAY = CP.payments;
+const issueMonth = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: site.timezone });
+
+const NAV: [string, string][] = [["ch-issue", "In this issue"], ["ch-pick", "Pick your pass"], ["ch-perks", "The perks"], ["ch-join", "Get your pass"], ["ch-pay", "Going gold"], ["ch-twitch", "Twitch subs"], ["ch-gift", "Gifts and tips"], ["ch-money", "Your money"], ["ch-rules", "The fine print"], ["ch-ask", "Dear BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+// Every buy and gift button: a disabled "Opening soon" while payments are off. No checkout code exists yet (billing is part 4).
+const buy = (label: string, pulse: string, extra = "") => PAY
+  ? `<button class="bt-btn bt-btn--primary${extra}" type="button" data-cp-buy="${pulse}" data-pulse="${pulse}">${label}</button>`
+  : `<button class="bt-btn bt-btn--secondary${extra}" type="button" disabled>Opening soon</button>`;
+const join = (label = "Join free", title = "Join free for your Fan Club pass", pulse = "join-free") => `<button class="bt-btn bt-btn--primary" type="button" data-signin="join" data-signin-title="${title}" data-pulse="${pulse}">${label}</button>`;
+const ROAD = ["Rebuild", "Relaunch", "Grow", "Break out", "Halloween", "The Game Awards"];
+const RULES: [string, string][] = [
+  ["Cancel any time", "Manage my pass opens Stripe's page, where you cancel or change your card. Sub Club lasts to the end of the month you paid for."],
+  ["If a payment fails", "You get 7 days and a reminder to fix your card before your pass goes back to Fan Club."],
+  ["No pay to win", "Sub Club gets more ways to earn XP, never more XP per task. Tips never show on leaderboards."],
+  ["Your progress is yours", "Leave Sub Club and you keep your badges, XP and level. Sub Club campaigns pause until you're back."],
+  ["Under 18?", "A parent or guardian has to say yes before you pay. Text alerts are for 18 and older."],
+  ["Questions about a charge", "Get in touch through the Hotline and the team will sort it out."],
+];
+const LETTERS: [string, string][] = [
+  ["Is Fan Club really free?", "Yes. No card, no trial. You need to be 13 or older, and that's it."],
+  ["I already sub on Twitch. Do I pay again?", "No. Link your Twitch account and your sub gives you Sub Club for as long as it lasts."],
+  ["I signed up with email. Can I still link Twitch?", "Yes. Open your account page and link Twitch there. If you sub, your pass turns gold."],
+  ["I'm 15. Can I join Sub Club?", "Yes, if a parent or guardian says yes first. Someone can also gift you a month. Text alerts stay off until you're 18."],
+  ["Does this site keep my card details?", "No. Stripe holds them. The site only learns that you paid and when your pass renews."],
+  ["Can I just say thanks without subscribing?", "Sure. Once tips open, you can leave one any time. Tips don't come with perks, and they never show on leaderboards."],
+];
+const TICKER = ["Backstage streams", "Live badge drops", "Chat Games", "Night Shift", "Your Twitch sub counts", "Gift a pass", "Boomertang", "Members-only merch", "Fan Club is free", `Sub Club ${PRICE}`];
+const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" focusable="false"><path d="M4 3 3 6.5V20h4.5v2.5H10l2.5-2.5H16l5-5V3H4Zm15 11-3 3h-4l-2.5 2.5V17H6.5V5H19v9Zm-3-6h-2v5h2V8Zm-5 0H9v5h2V8Z"/></svg>`;
+---
+<BaseLayout title="Club Pass" description={`Fan Club is free. Sub Club is ${PRICE} a month. Every perk, what each pass costs, and how to get one.`}>
+  <div class="cp" id="cp-root" data-viewer="visitor" data-pay={PAY ? "on" : "off"} data-price={PRICE} data-discount={CP.shopDiscount}>
+    <template id="cp-mascot-src"><Mascot decorative /></template>
+
+    <!-- ================= COVER ================= -->
+    <section class="cp-cover" aria-labelledby="cp-h1">
+      <div class="cp-cover-in">
+        <div class="cp-strip"><span><b>Issue 01</b> · {issueMonth}</span><span>Fan Club · Sub Club</span><span>{site.name}</span></div>
+        <h1 id="cp-h1" class="bt-title bt-title--hero cp-mast">CLUB PASS</h1>
+        <p class="cp-sub">Pick your pass</p>
+        <div class="cp-cover-grid">
+          <div class="cp-lines">
+            <a class="cp-line" href="#ch-pick" style="--i:0"><small>01 · Pick your pass</small><b>Free, or {PRICE} for gold</b><span>Two passes. One of them costs nothing.</span><em>Read →</em></a>
+            <a class="cp-line" href="#ch-perks" data-open="drops" style="--i:1"><small>02 · The perks</small><b>Blink and it's gone</b><span>Live badge drops, and 19 more perks, page by page.</span><em>Read →</em></a>
+            <a class="cp-line" href="#ch-join" style="--i:2"><small>03 · Joining</small><b>One minute. Zero dollars.</b><span>Your Fan Club pass works the moment you finish.</span><em>Read →</em></a>
+          </div>
+          <div class="cp-star">
+            <div class="cp-hang cp-hang--sub">
+              <span class="cp-strap"></span><span class="cp-clip"></span>
+              <div class="bt-pass bt-pass--sub">
+                <span class="bt-pass-top">CLUB PASS</span><Mascot decorative />
+                <span class="bt-pass-plan">SUB CLUB</span><span class="bt-pass-price">ALL ACCESS</span>
+                <span class="bt-pass-name" data-passname>YOUR NAME HERE</span>
+                <span class="bt-pass-code"></span><span class="bt-pass-foot">ISSUE 01</span>
+              </div>
+            </div>
+            <span class="cp-star-glow"></span>
+            <div class="cp-burst" role="img" aria-label={`Fan Club free, Sub Club ${PRICE} a month`}><span aria-hidden="true"><small>FAN CLUB</small><b>FREE</b><small>GOLD {PRICE}</small></span></div>
+          </div>
+          <div class="cp-lines cp-lines--r">
+            <a class="cp-sticker" href="#ch-twitch" aria-label="Twitch sub? Your Twitch sub counts here. Jump to Twitch subs." data-pulse="twitch-sticker">
+              <span class="cp-sticker-tag" aria-hidden="true">Twitch sub?!</span>
+              <svg class="cp-sticker-arrow" viewBox="0 0 50 50" aria-hidden="true" focusable="false"><path class="a1" d="M12 3 C 30 10, 36 26, 29 45"/><path class="a2" d="M18 36 L29 46 L39 33"/></svg>
+            </a>
+            <a class="cp-line" href="#ch-twitch" style="--i:3"><small>05 · Twitch</small><b><span class="cp-aim">Already</span> a sub? You're in.</b><span>Your Twitch sub counts here.</span><em>Read →</em></a>
+            <a class="cp-line" href="#ch-money" style="--i:4"><small>07 · Your money</small><b>Where your {PRICE} goes</b><span>Straight into the road to The Game Awards.</span><em>Read →</em></a>
+            <a class="cp-line" href="#ch-ask" style="--i:5"><small>09 · Letters</small><b>Dear BOOMBOT</b><span>Your questions, answered.</span><em>Read →</em></a>
+          </div>
+        </div>
+        <div class="cp-cover-foot">
+          <div class="cp-hero-cta">
+            <span class="cp-when-visitor"><Fragment set:html={join()} /></span>
+            <span class="cp-when-fan"><Fragment set:html={buy("Get Sub Club", "get-sub-club")} /></span>
+            <a class="bt-btn bt-btn--secondary" href="#ch-pick" data-pulse="pick-your-pass">Pick your pass</a>
+          </div>
+          <div class="cp-barcode" aria-hidden="true"><i></i><span>BT · 0001</span></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="cp-ticker" aria-hidden="true"><div class="cp-ticker-track">
+      {[...TICKER, ...TICKER].map((t) => <span>{t}</span>)}
+    </div></div>
+
+    <TocLayout items={NAV}>
+      <div class="cp-main">
+        <!-- Contents -->
+        <section class="cp-ch" id="ch-issue" aria-labelledby="h-ch-issue">
+          <header class="bt-chapter bt-chapter--bar">
+            <p class="bt-chapter-eyebrow">Contents</p>
+            <h2 class="bt-chapter-title" id="h-ch-issue">In this issue</h2>
+            <p class="bt-chapter-lede">Nine features: what your pass opens, and how to get it. Start anywhere.</p>
+          </header>
+          <div class="cp-toc">
+            <a class="cp-story" href="#ch-perks">
+              <span class="cp-story-tag">COVER STORY</span>
+              <div class="cp-fan" aria-hidden="true">
+                <div class="cp-mini"><small>P.01 · WATCH</small><b>Get <span>backstage.</span></b><i>🎭</i></div>
+                <div class="cp-mini"><small>P.13 · INSIDE</small><b>The <span>real</span> numbers.</b><i>📊</i></div>
+                <div class="cp-mini"><small>P.05 · PLAY</small><b>Blink and it's <span>gone.</span></b><i>👁</i></div>
+              </div>
+              <div class="cp-story-body"><small>02 · THE PERKS</small><b>Everything your pass opens</b><span>Twenty pages, one perk each. Light up a pass and watch the board turn silver or gold.</span><em>Read the cover story →</em></div>
+            </a>
+            <div class="cp-rows">
+              <a class="cp-row" href="#ch-pick"><span class="cp-row-n">01</span><span class="cp-row-t"><b>Pick your pass</b><span>Free, or {PRICE} for gold.</span></span><span class="cp-row-ic" aria-hidden="true">🎟️</span></a>
+              <a class="cp-row" href="#ch-join"><span class="cp-row-n">03</span><span class="cp-row-t"><b>Get your pass</b><span>One minute, zero dollars.</span></span><span class="cp-row-ic" aria-hidden="true">🔑</span></a>
+              <a class="cp-row" href="#ch-pay"><span class="cp-row-n">04</span><span class="cp-row-t"><b>Going gold</b><span>Feel the gold moment.</span></span><span class="cp-row-ic" aria-hidden="true">✨</span></a>
+              <a class="cp-row" href="#ch-twitch"><span class="cp-row-n">05</span><span class="cp-row-t"><b>Twitch subs</b><span>Already a sub? You're in.</span></span><span class="cp-row-ic" aria-hidden="true">🔗</span></a>
+              <a class="cp-row" href="#ch-gift"><span class="cp-row-n">06</span><span class="cp-row-t"><b>Gifts and tips</b><span>Give someone the gold.</span></span><span class="cp-row-ic" aria-hidden="true">🎁</span></a>
+              <a class="cp-row" href="#ch-money"><span class="cp-row-n">07</span><span class="cp-row-t"><b>Where your money goes</b><span>The road to The Game Awards.</span></span><span class="cp-row-ic" aria-hidden="true">🛣️</span></a>
+              <a class="cp-row" href="#ch-rules"><span class="cp-row-n">08</span><span class="cp-row-t"><b>The fine print</b><span>In big print.</span></span><span class="cp-row-ic" aria-hidden="true">📜</span></a>
+              <a class="cp-row" href="#ch-ask"><span class="cp-row-n">09</span><span class="cp-row-t"><b>Dear BOOMBOT</b><span>The letters page.</span></span><span class="cp-row-ic" aria-hidden="true">✉️</span></a>
+            </div>
+            <div class="cp-facts-strip"><div><b>20</b><span>perks</span></div><div><b>2</b><span>passes</span></div><div><b>1</b><span>goal: The Game Awards 2027</span></div></div>
+          </div>
+        </section>
+
+        <!-- 01 -->
+        <section class="cp-ch" id="ch-pick" aria-labelledby="h-ch-pick">
+          <Fragment set:html={chapter(1, "ch-pick", "Pick your pass")} />
+          <div class="cp-feature cp-feature--one">
+            <div>
+              <p class="cp-kick">Two passes</p>
+              <h3 class="cp-hl">Two passes. <span class="hi">One costs nothing.</span></h3>
+              <p class="cp-dek">Fan Club is free and opens most of the site. Sub Club is {PRICE} a month, opens everything, and puts your money straight into the road to The Game Awards.</p>
+            </div>
+          </div>
+          <div class="cp-plans">
+            <article class="bt-plan" data-plan="fan">
+              <div class="bt-plan-head">
+                <div class="bt-pass bt-pass--mini"><Mascot decorative /></div>
+                <div><h3 class="bt-plan-name">Fan Club</h3><p class="bt-plan-price"><b>Free</b><span>forever</span></p></div>
+              </div>
+              <ul class="bt-plan-list">
+                <li>Backstage streams and after-shows</li>
+                <li>Live badge drops, Chat Games and XP</li>
+                <li>Badges, levels and every Night Shift campaign</li>
+                <li>Vote on what Boomer plays next</li>
+                <li class="is-soon">The members-only merch shop (coming soon)</li>
+              </ul>
+              <div class="bt-plan-foot">
+                <span class="cp-when-visitor"><Fragment set:html={join("Join free", "Join free for your Fan Club pass", "plan-join-free")} /></span>
+                <div class="bt-plan-state cp-when-fan">✓ You're in</div>
+                <div class="bt-plan-state cp-when-sub">✓ Included in your pass</div>
+                <p class="bt-plan-note cp-when-visitor">13 or older. Takes a minute.</p>
+              </div>
+            </article>
+            <article class="bt-plan bt-plan--sub" data-plan="sub">
+              <div class="bt-plan-head">
+                <div class="bt-pass bt-pass--sub bt-pass--mini"><Mascot decorative /></div>
+                <div><h3 class="bt-plan-name">Sub Club</h3><p class="bt-plan-price"><b>{PRICE}</b><span>a month · cancel any time</span></p></div>
+              </div>
+              <ul class="bt-plan-list">
+                <li>Everything in Fan Club</li>
+                <li>6 trophy-case pins and an animated frame</li>
+                <li class="is-soon">A Sub Club stream every month (coming soon)</li>
+                <li class="is-soon">The new Boomertang edition, and boomgames.tv (coming soon)</li>
+                <li class="is-soon">{CP.shopDiscount}% off in the merch shop (coming soon)</li>
+                <li class="is-soon">Your name in the credits, and the numbers note (coming soon)</li>
+              </ul>
+              <div class="bt-plan-foot">
+                <span class="cp-when-notsub"><Fragment set:html={buy("Get Sub Club", "plan-get-sub-club")} /></span>
+                <div class="bt-plan-state cp-when-sub">✓ You're in</div>
+                <a class="bt-btn bt-btn--secondary cp-when-sub" href="/account" data-pulse="manage-pass">Manage my pass</a>
+                <p class="bt-plan-note cp-when-notsub">Got a Twitch sub? <a href="#ch-twitch">It counts.</a></p>
+              </div>
+            </article>
+          </div>
+          <div class="cp-more"><a class="bt-btn bt-btn--secondary" href="#ch-perks" data-pulse="compare-perks">Compare every perk</a></div>
+        </section>
+
+        <!-- 02 -->
+        <section class="cp-ch" id="ch-perks" aria-labelledby="h-ch-perks">
+          <Fragment set:html={chapter(2, "ch-perks", "Everything your pass opens", "Twenty perks. Light up a pass, tap a perk, or press Flip through and sit back.")} />
+          <div class="cp-board" data-cp-board data-pass="visitor">
+            <div class="cp-board-top">
+              <div class="cp-board-meter">
+                <div class="cp-board-meter-txt"><b data-cp-count>0 of 20</b><span data-cp-say>Pick a pass to light up the board.</span></div>
+                <div class="cp-board-bar"><i data-cp-bar></i></div>
+              </div>
+              <div class="cp-board-switch" role="group" aria-label="Light up a pass">
+                <button type="button" data-map="visitor" aria-pressed="true">No pass<small>visitor</small></button>
+                <button type="button" data-map="fan" aria-pressed="false">Fan Club<small>free</small></button>
+                <button type="button" data-map="sub" aria-pressed="false">Sub Club<small>{PRICE}</small></button>
+              </div>
+            </div>
+            <div class="cp-board-groups" data-cp-groups></div>
+            <p class="cp-board-hint">Tap any perk to read its page.</p>
+          </div>
+          <div class="bt-spread" data-cp-spread data-tone="fan" tabindex="0" aria-label="The perks, one page each. Use the left and right arrow keys to turn the page.">
+            <span class="bt-spread-progress" aria-hidden="true"></span><span class="bt-spread-sweep" aria-hidden="true"></span>
+            <div class="bt-spread-page" data-cp-page aria-live="polite"></div>
+          </div>
+        </section>
+
+        <!-- 03 -->
+        <section class="cp-ch" id="ch-join" aria-labelledby="h-ch-join">
+          <Fragment set:html={chapter(3, "ch-join", "Get your pass")} />
+          <div class="cp-feature">
+            <div>
+              <p class="cp-kick">Joining</p>
+              <h3 class="cp-hl">One minute. <span class="hi">Zero dollars.</span></h3>
+              <p class="cp-dek">Sign up with Google, Twitch or email, tell us your birth month and year, pick a handle, and you're in. Your Fan Club pass works the moment you finish.</p>
+            </div>
+            <div class="cp-artbox">
+              <div class="cp-hw-press" data-step="0" data-cp-press>
+                <span class="cp-flash" data-cp-flash></span>
+                <div class="cp-hw-steps" role="group" aria-label="Replay a step">
+                  <button class="bt-chip bt-chip--small" type="button" data-step-go="1">1 Join</button>
+                  <button class="bt-chip bt-chip--small" type="button" data-step-go="2">2 Fan Club</button>
+                  <button class="bt-chip bt-chip--small" type="button" data-step-go="3">3 Go gold</button>
+                  <button class="bt-chip bt-chip--small" type="button" data-step-go="play" aria-label="Play all">▶</button>
+                </div>
+                <span class="cp-hw-belt"></span>
+                <div class="cp-hw-station cp-hw-st1"><span class="cp-hw-arm"></span><span class="cp-hw-tag">Your name</span></div>
+                <div class="cp-hw-station cp-hw-st2"><span class="cp-hw-arm"></span><span class="cp-hw-tag">Club stamp</span></div>
+                <div class="cp-hw-station cp-hw-st3"><span class="cp-hw-arm"></span><span class="cp-hw-tag">Gold press</span></div>
+                <div class="cp-hw-rider" data-cp-rider>
+                  <div class="bt-pass" data-cp-rider-pass>
+                    <span class="bt-pass-top">CLUB PASS</span><Mascot decorative />
+                    <span class="bt-pass-plan" data-cp-rider-plan>FAN CLUB</span>
+                    <span class="bt-pass-name" data-passname>YOUR NAME HERE</span>
+                  </div>
+                </div>
+                <span class="cp-hw-burst" aria-hidden="true">✨</span>
+              </div>
+            </div>
+          </div>
+          <ol class="cp-journey">
+            <li class="is-now"><span class="cp-journey-dot" aria-hidden="true">🔑</span><div><b>Sign up your way</b><p>Google, Twitch or email. Pick Twitch if you sub there.</p></div></li>
+            <li><span class="cp-journey-dot" aria-hidden="true">🎂</span><div><b>Three quick steps</b><p>Birth month and year (13 or older), a handle, the terms.</p></div></li>
+            <li><span class="cp-journey-dot" aria-hidden="true">🎟️</span><div><b>Fan Club, done</b><p>Backstage, drops, Chat Games and badges open right away.</p></div></li>
+          </ol>
+          <div class="cp-more cp-when-visitor"><Fragment set:html={join("Join free", "Join free for your Fan Club pass", "join-chapter-join-free")} /></div>
+        </section>
+
+        <!-- 04 -->
+        <section class="cp-ch" id="ch-pay" aria-labelledby="h-ch-pay">
+          <Fragment set:html={chapter(4, "ch-pay", "Going gold")} />
+          <div class="cp-feature cp-feature--flip">
+            <div>
+              <p class="cp-kick">Sub Club</p>
+              <h3 class="cp-hl">Go gold for <span class="hi">{PRICE}.</span></h3>
+              <p class="cp-dek">Press Get Sub Club, pay on Stripe's secure page, and you're back on the site with a gold pass a few seconds later. It renews each month until you cancel.</p>
+            </div>
+            <div class="cp-goldmoment" data-cp-gold>
+              <div class="bt-pass" data-cp-gold-pass>
+                <span class="bt-pass-top">CLUB PASS</span><Mascot decorative />
+                <span class="bt-pass-plan" data-cp-gold-plan>FAN CLUB</span><span class="bt-pass-price" data-cp-gold-price>FREE</span>
+                <span class="bt-pass-name" data-passname>YOUR NAME HERE</span>
+                <span class="bt-pass-code"></span><span class="bt-pass-foot">ADMIT ONE</span>
+              </div>
+              <div>
+                <h3 class="bt-heading">The gold moment</h3>
+                <p>This is what happens the second your payment clears.</p>
+                <button class="bt-btn bt-btn--primary" type="button" data-cp-gold-btn data-pulse="gold-moment">Feel the gold moment</button>
+              </div>
+            </div>
+          </div>
+          <div class="cp-hw-flow">
+            <div class="cp-hw-node"><span class="cp-hw-node-ic" aria-hidden="true">🎟️</span><div><b>Press Get Sub Club</b><p>On Club Pass or your account page.</p></div></div>
+            <div class="cp-hw-node"><span class="cp-hw-node-ic" aria-hidden="true">🔒</span><div><b>Pay on Stripe</b><p>Your card goes to Stripe, never to this site.</p></div></div>
+            <div class="cp-hw-node cp-hw-node--gold"><span class="cp-hw-node-ic" aria-hidden="true">✨</span><div><b>Your pass turns gold</b><p>Sub Club perks switch on right away.</p></div></div>
+            <div class="cp-hw-node"><span class="cp-hw-node-ic" aria-hidden="true">🔁</span><div><b>Renews monthly</b><p>Your pass and receipts on your account page.</p></div></div>
+          </div>
+          <div class="bt-lock-card cp-teen">
+            <span class="bt-lock-card-ic" aria-hidden="true">🧑‍🧑‍🧒</span>
+            <div><b>Under 18?</b><p>Checkout asks whether a parent or guardian is paying or has said yes. A gifted month needs no payment from you at all.</p></div>
+          </div>
+          {!PAY && (
+            <div class="bt-lock-card cp-teen">
+              <span class="bt-lock-card-ic" aria-hidden="true">⏳</span>
+              <div><b>Sub Club opens soon</b><p>Payments switch on shortly after the site launches. Twitch subs count from day one.</p></div>
+            </div>
+          )}
+        </section>
+
+        <!-- 05 -->
+        <section class="cp-ch" id="ch-twitch" aria-labelledby="h-ch-twitch">
+          <Fragment set:html={chapter(5, "ch-twitch", "Twitch subs")} />
+          <div class="cp-feature">
+            <div>
+              <p class="cp-kick">Twitch</p>
+              <h3 class="cp-hl">Already a sub? <span class="hi">You're already in.</span></h3>
+              <p class="cp-dek">A Twitch sub to Boomertanger gives you Sub Club here for as long as it lasts. Prime and gifted subs count too, and you never pay twice.</p>
+              <div class="cp-hero-cta">
+                <span class="cp-when-visitor"><Fragment set:html={join("Join with Twitch", "Join with Twitch: your sub counts here", "link-twitch")} /></span>
+                <a class="bt-btn bt-btn--primary cp-when-fan" href="/account#linked" data-pulse="link-twitch">Link Twitch</a>
+              </div>
+            </div>
+            <div class="cp-artbox">
+              <span class="bt-platform-icon bt-platform-icon--twitch cp-twitch-tile" set:html={TWITCH_GLYPH} />
+              <span class="cp-link-dots" aria-hidden="true"></span>
+              <div class="cp-twitch-pass">
+                <div class="bt-pass bt-pass--sub"><span class="bt-pass-top">CLUB PASS</span><Mascot decorative /><span class="bt-pass-plan">SUB CLUB</span><span class="bt-pass-name" data-passname>YOUR NAME HERE</span></div>
+              </div>
+            </div>
+          </div>
+          <p class="cp-pull">Sub on Twitch, and your pass turns gold.</p>
+          <div class="cp-cols">
+            <p><b>Link once.</b> Sign in with Twitch, or link Twitch from your account page. The site only asks Twitch one thing: whether you sub to Boomertanger.</p>
+            <p><b>Checked every day.</b> When your sub renews, ends, or someone gifts you one, Twitch tells the site, and it double-checks daily.</p>
+            <p><b>Never pay twice.</b> If you sub on Twitch and also pay here, your account page says so and shows how to cancel the site subscription. Your pass stays gold through Twitch.</p>
+            <p><b>When it ends.</b> Your pass goes back to Fan Club. Your badges, XP and level stay.</p>
+          </div>
+        </section>
+
+        <!-- 06 -->
+        <section class="cp-ch" id="ch-gift" aria-labelledby="h-ch-gift">
+          <Fragment set:html={chapter(6, "ch-gift", "Gifts and tips")} />
+          <div class="cp-feature cp-feature--flip">
+            <div>
+              <p class="cp-kick">Giving</p>
+              <h3 class="cp-hl">Give someone <span class="hi">the gold.</span></h3>
+              <p class="cp-dek">Gift a month of Sub Club to any member for {PRICE}. It never renews, and if they already have Sub Club, their gift month starts after their current one.</p>
+            </div>
+            <div class="cp-gift">
+              <div class="cp-gift-box" aria-hidden="true"><Mascot decorative /></div>
+              <div class="cp-gift-form">
+                <h3 class="bt-heading">Gift a month · {PRICE}</h3>
+                <label class="bt-sr-only" for="cp-gift-handle">Their handle</label>
+                <input class="bt-input" id="cp-gift-handle" type="text" placeholder="Their handle, like @boomer" disabled={!PAY} />
+                <Fragment set:html={buy("Gift it", "gift-it")} />
+              </div>
+            </div>
+          </div>
+          <p class="cp-pull">Just want to say thanks? Leave a tip.</p>
+          <div class="cp-cols">
+            <p><b>Any amount from $2.</b> A tip goes straight into the road to The Game Awards. Tips open soon.</p>
+            <p><b>No strings.</b> Tips don't come with perks or XP, and they never show on a leaderboard. They're just a thank-you.</p>
+          </div>
+        </section>
+
+        <!-- 07 -->
+        <section class="cp-ch" id="ch-money" aria-labelledby="h-ch-money">
+          <Fragment set:html={chapter(7, "ch-money", "Where your money goes")} />
+          <div class="cp-feature cp-feature--one">
+            <div>
+              <p class="cp-kick">Your money</p>
+              <h3 class="cp-hl">Where your <span class="hi">{PRICE}</span> goes.</h3>
+              <p class="cp-dek">One goal: Content Creator of the Year at The Game Awards 2027. Every Sub Club month, gift and tip goes into the road there.</p>
+            </div>
+          </div>
+          <div class="cp-flow">
+            <div class="cp-flow-node cp-flow-node--in"><span class="cp-flow-big">{PRICE}</span><b>Your month</b><p>Paid through Stripe. Card details never touch this site.</p></div>
+            <div class="cp-flow-arrow" aria-hidden="true">➜</div>
+            <div class="cp-flow-node"><b>Fees and tax first</b><p>Stripe's card fee (2.9% + 30¢), and sales tax where the law asks for it.</p></div>
+            <div class="cp-flow-arrow" aria-hidden="true">➜</div>
+            <div class="cp-flow-node cp-flow-node--goal"><b>The rest builds the road</b>
+              <ul><li>The site and its tools</li><li>Games to stream</li><li>Boomertang and boomgames.tv</li></ul>
+              <div class="cp-road" role="list" aria-label="The road on the Goal Tracker">{ROAD.map((r) => <span role="listitem">{r}</span>)}</div>
+              <a href="/goals" data-pulse="goal-tracker">See the road on the Goal Tracker</a>
+            </div>
+          </div>
+          <p class="cp-pull">Every month moves the climb.</p>
+        </section>
+
+        <!-- 08 -->
+        <section class="cp-ch" id="ch-rules" aria-labelledby="h-ch-rules">
+          <Fragment set:html={chapter(8, "ch-rules", "The fine print")} />
+          <h3 class="cp-hl cp-hl--rules">The fine print, <span class="hi">in big print.</span></h3>
+          <div class="bt-placard cp-placard">
+            <div class="bt-placard-head"><i></i><b>Club rules</b><i></i></div>
+            <ol class="bt-placard-list">
+              {RULES.map(([t, d], i) => (
+                <li class="bt-placard-rule"><span class="bt-placard-n">{i + 1}</span><b>{t}</b><span>{i === 5 ? <Fragment>Get in touch through the <a href="/contact">Hotline</a> and the team will sort it out.</Fragment> : d}</span></li>
+              ))}
+            </ol>
+          </div>
+        </section>
+
+        <!-- 09 -->
+        <section class="cp-ch" id="ch-ask" aria-labelledby="h-ch-ask">
+          <Fragment set:html={chapter(9, "ch-ask", "Dear BOOMBOT", "The letters page. Tap a letter to read BOOMBOT's answer.")} />
+          <div class="bt-chat">
+            {LETTERS.map(([q, a], i) => (
+              <Fragment>
+                <button type="button" class="bt-chat-q" aria-expanded={i === 0 ? "true" : "false"} aria-controls={`cp-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">L{i + 1}</span>"{q}"</button>
+                <div class="bt-chat-a" id={`cp-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden={i !== 0}>
+                  <span class="bt-chat-av" set:html={boombotIcon(`cp-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </Fragment>
+            ))}
+          </div>
+        </section>
+      </div>
+    </TocLayout>
+
+    <!-- ================= BACK COVER ================= -->
+    <section class="cp-back" aria-labelledby="cp-back-h">
+      <div class="cp-back-in">
+        <h2 id="cp-back-h"><span class="cp-when-visitor">Your pass is <span class="cp-gold">waiting.</span></span><span class="cp-when-fan">Ready to go <span class="cp-gold">gold?</span></span><span class="cp-when-sub">See you <span class="cp-gold">backstage.</span></span></h2>
+        <p class="cp-back-dek cp-when-visitor">Fan Club is free and takes a minute. Sub Club is there whenever you want it.</p>
+        <p class="cp-back-dek cp-when-fan">{PRICE} a month, or link the Twitch sub you already have.</p>
+        <p class="cp-back-dek cp-when-sub">Your gold pass is working. Thanks for backing the climb.</p>
+        <div class="bt-admit cp-admit">
+          <span class="bt-admit-scissors" aria-hidden="true">✂</span>
+          <div class="bt-admit-main">
+            <small>Admit one</small>
+            <b class="cp-when-visitor">Fan Club · Free</b><b class="cp-when-fan">Sub Club · {PRICE}</b><b class="cp-when-sub">Sub Club · Gold</b>
+            <span class="cp-when-visitor">Backstage, drops, Chat Games, badges and the whole community.</span>
+            <span class="cp-when-fan">Everything you have, plus the gold-pass perks.</span>
+            <span class="cp-when-sub">Every perk on the board is yours.</span>
+            <div class="bt-admit-acts">
+              <span class="cp-when-visitor"><Fragment set:html={join("Join free", "Join free for your Fan Club pass", "back-join-free").replace("type=\"button\"", "type=\"button\" data-admit-tear")} /></span>
+              <span class="cp-when-fan"><Fragment set:html={buy("Get Sub Club", "back-get-sub-club")} /></span>
+              <a class="bt-btn bt-btn--secondary cp-when-fan" href="/account#linked" data-pulse="back-link-twitch">Link Twitch</a>
+              <a class="bt-btn bt-btn--secondary cp-when-sub" href="/schedule" data-pulse="back-schedule">See the schedule</a>
+            </div>
+          </div>
+          <div class="bt-admit-stub" aria-hidden="true"><Mascot decorative /><b>CLUB PASS</b><small>NO. 0001 · ISSUE 01</small></div>
+        </div>
+        <p class="cp-backline">Boomertanger isn't affiliated with Twitch or The Game Awards.</p>
+      </div>
+    </section>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../scripts/club-pass/page";
+</script>

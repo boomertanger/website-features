@@ -16,7 +16,7 @@ const MODULE_PAGES = {
   climb: { label: "Creator Climb", href: "/climb", icon: "climb", blurb: "Follower growth across every platform" },
   streams: { label: "Streams", href: "/streams", icon: "film", blurb: "Past streams, highlights and clips." },
   shop: { label: "Shop", href: "/shop", icon: "bag", blurb: "Merch and crew drops." },
-  club: { label: "Club", href: "/club", icon: "club", blurb: "Fan Club is free. Sub Club adds the extras." },
+  club: { label: "Club Pass", href: "/club-pass", icon: "club", blurb: "Fan Club and Sub Club, explained" },
   // Crew only (display only: the header and More sheet hide it with .bt-when-staff; /live/deck gates itself and the callables decide).
   deck: { label: "Mod Deck", href: "/live/deck", icon: "club", blurb: "Your seat, the chats and the tools", staff: true },
   // Later: not in site.json modules yet, so they stay out of the navigation until enabled.
