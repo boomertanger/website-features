@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: Club Pass Twitch counting test plan: steps 1 and 2 passed on staging; the live sub steps (3 to 7) are pending until a test Twitch account with a real sub is available; ROADMAP launch checklist item to run them before launch.
 - Club Pass, part 3 (testing): docs/testing/club-pass-twitch-test-plan.md: connect the broadcaster token, the EventSub subscriptions, link a test account, a real or gifted sub, Check again, the sweep, unlink, a grant, disconnect.
 - Club Pass, part 3 (My pass): the Twitch card shows the sub result (tier, gifted, when it was checked) with Check again (clubLinkTwitch), or No sub with Sub on Twitch; "Twitch subs start counting soon." shows only while no broadcaster token is connected (public/clubPass.twitchCounting). After a check the page refreshes the ID token and redraws, so the pass turns gold (or back) without a reload. A grant source shows as From Boomertanger. Previews: ?twitch=linked, sub or nosub. Account manifest 1.2.
 - Club Pass, part 3 (daily sweep): clubTwitchSweep (every day 05:30 America/Chicago) reads the channel's subscriber list once, page by page, compares it with every linked member, fixes any difference and recomputes their pass; it skips while no broadcaster token is connected.

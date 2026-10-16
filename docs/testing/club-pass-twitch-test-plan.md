@@ -10,6 +10,9 @@ You need:
 
 Hard-refresh each page before a step (Ctrl+Shift+R). The corner badge should show the latest build.
 
+**Status (Oct 16, 2026):** steps 1 and 2 passed on staging (the token is connected as boomertanger with both scopes; the three
+Club Pass EventSub subscriptions are enabled). Steps 3 to 7 are pending: they need a test Twitch account with a real sub.
+
 ## 1. Connect the broadcaster token
 1. As the owner, open `/admin`. Find the **Twitch broadcaster** card. It says **Not connected**.
 2. Press **Connect Twitch broadcaster**. Twitch opens and asks you to sign in.
@@ -30,14 +33,14 @@ Run the dry run again: the three types (`channel.subscribe`, `channel.subscripti
 `channel.subscription.end`) show **Keep ... (enabled)**. The Control Room's `stream.online` / `stream.offline`
 aren't touched.
 
-## 3. Link a test account (no sub yet)
+## 3. Link a test account (no sub yet) — pending (needs a test Twitch account with a real sub)
 1. In the second browser, sign in with the second site account (finish signup if asked).
 2. Open `/account#linked`, press **Link** next to Twitch, sign in to Twitch as the **test** account.
 3. Open `/account/club` (My pass). Expected: **Fan Club**; the Twitch card shows the test login, **No sub**,
    "No sub to Boomertanger found · checked today <time>", and **Sub on Twitch ↗** and **Check again**.
    The fine print says "Prime and gifted subs count too." (not "start counting soon").
 
-## 4. A real or gifted sub
+## 4. A real or gifted sub — pending (needs a test Twitch account with a real sub)
 Either sub from the test account, or, from the boomertanger Twitch account, **gift a sub** to the test account.
 Within a minute or two (EventSub), without pressing anything:
 1. Reload My pass. Expected: **Sub Club**, gold pass; the Twitch card says "Tier 1 gifted sub to Boomertanger"
@@ -45,13 +48,13 @@ Within a minute or two (EventSub), without pressing anything:
 2. The gold moment plays once (the pass pops, confetti, the Welcome to Sub Club stamp). Reload: it doesn't play again.
 3. Optional: other pages that check Sub Club (e.g. `/club-pass`) now treat the account as Sub Club.
 
-## 5. Check again
+## 5. Check again — pending (needs a test Twitch account with a real sub)
 1. On My pass press **Check again**. It says "Checking…", then the result line, and the pass stays right
    **without a reload**.
 2. Press it again within a minute. Expected: "You just checked. Try again in a minute."
 3. (Limit: 20 a day per member.)
 
-## 6. The daily sweep
+## 6. The daily sweep — pending (needs a test Twitch account with a real sub)
 It runs on its own every day at 05:30 America/Chicago. To run it now:
 1. Google Cloud console > Cloud Scheduler (project boomertanger-staging) > the job for **clubTwitchSweep**
    > **Force run**.
@@ -60,7 +63,7 @@ It runs on its own every day at 05:30 America/Chicago. To run it now:
 3. To see it fix something: when the gifted sub ends (or if EventSub missed an event), the next sweep shows
    `"fixed":1` and My pass goes back to Fan Club.
 
-## 7. Unlink
+## 7. Unlink — pending (needs a test Twitch account with a real sub)
 1. In the second browser, `/account#linked` > **Unlink** Twitch (the account needs another sign-in method).
 2. My pass: **Fan Club**, Twitch card **Not linked** with **Link Twitch**. The gold source is gone.
 

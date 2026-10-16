@@ -355,6 +355,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Then promote.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
+- [ ] Club Pass Twitch counting: run the live sub test (test plan steps 3 onward) before launch (docs/testing/club-pass-twitch-test-plan.md).
 - [ ] Turn on Tech Stack referral links (`site.json` modules `techStack.referrals: true`, with the Amazon Associates disclosure).
 
 ### Control Room and YouTube in production
