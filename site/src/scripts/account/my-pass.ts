@@ -106,11 +106,10 @@ function init(root: HTMLElement) {
 
   // ---------- the pieces ----------
   const subBtn = (label = "Get Sub Club") => PAY
-    ? `<a class="bt-btn bt-btn--primary" href="/club-pass" data-pulse="my-pass-get-sub-club">${label}</a>`
+    ? `<button class="bt-btn bt-btn--primary" type="button" data-mp-buy data-pulse="my-pass-get-sub-club">${esc(label)}</button>`
     : '<button class="bt-btn bt-btn--secondary" type="button" disabled>Sub Club opening soon</button>';
-  const giftBtn = () => PAY
-    ? `<a class="bt-btn bt-btn--secondary" href="/club-pass" data-pulse="my-pass-gift">Gift a month · ${PRICE}</a>`
-    : '<button class="bt-btn bt-btn--secondary" type="button" disabled>Gifts open soon</button>';
+  // Gifts are a later part: "Gifts open soon" even with payments on.
+  const giftBtn = () => '<button class="bt-btn bt-btn--secondary" type="button" disabled>Gifts open soon</button>';
   // The perk board on /club-pass (it starts on the viewer's own pass). Fan Club: "See what Sub Club adds", same place.
   const perksBtn = (kind = "primary", fan = false) => `<a class="bt-btn bt-btn--${kind}" href="/club-pass#ch-perks" data-pulse="my-pass-see-perks">${fan ? "See what Sub Club adds" : "See your perks"}</a>`;
   const head = (t: string) => `<div class="bt-card-head"><h3 class="bt-card-title">${t}</h3></div>`;
@@ -281,6 +280,10 @@ function init(root: HTMLElement) {
     body.innerHTML = hero(v) + `<div class="mp-grid">${sources(v)}${payments(v)}${twitch(v)}${gifts()}${v.gold ? "" : upgrade()}${v.crew ? crewCard() : ""}</div>`;
     bindBoard();
     bindCheck();
+    body.querySelectorAll<HTMLButtonElement>("[data-mp-buy]").forEach((b) => b.addEventListener("click", () => {
+      if (view?.preview) { b.textContent = "Preview: no checkout"; return; }
+      void import("../../lib/checkout").then((m) => m.startCheckout("sub"));
+    }));
     goldMoment();
   }
   onAuth((s) => { void render(s); });

@@ -1,5 +1,6 @@
 // /club-pass (docs/specs/club-pass.md §3): the viewer, the perk board and its spread, the pass press, the gold moment, the back cover's tear
-// and the cover's Twitch sticker. No reads beyond the auth state, no writes, no checkout (payments are off: site.json clubPass.payments).
+// and the cover's Twitch sticker. No reads beyond the auth state and no writes. With payments on (site.json clubPass.payments, or
+// paymentsStaging off production: src/lib/club-pay.js) every [data-cp-buy] button opens the pre-checkout dialog (src/lib/checkout.ts).
 //   The viewer: visitor, fan (a signed-up member) or sub (the "sub" role in the ID token). Off production, ?as=member previews Fan Club and
 //   ?as=sub Sub Club while signed out; a real signed-in member always wins. The perk board starts on the viewer's own pass ("No pass" for
 //   visitors).
@@ -235,6 +236,10 @@ function init(root: HTMLElement) {
     addEventListener("keydown", () => (moved = true), { once: true });
     if (document.readyState === "complete") setTimeout(land, 0); else addEventListener("load", () => { if (!moved) land(); }, { once: true });
   }
+  if (PAY) root.addEventListener("click", (ev) => {
+    if (!(ev.target as Element).closest("[data-cp-buy]")) return;
+    void import("../../lib/checkout").then((m) => m.startCheckout("sub"));
+  });
   initChat(root as unknown as Document, { question: ".cp-q" });   // 09's letter cards: one open at a time, the typing moment   // the helpers take any element; their JS default (document) types the parameter
   bindAdmit(root as unknown as Document);
   aimSticker(root);

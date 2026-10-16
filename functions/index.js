@@ -948,3 +948,7 @@ Object.assign(exports, require("./lib/playbook").functions(adminLogEntry));
 // Club Pass (docs/specs/club-pass.md §11, §12): the broadcaster's Twitch token (clubBroadcasterStart, clubBroadcasterConnect,
 // clubBroadcasterStatus, clubBroadcasterDisconnect; owner only; adminLog feature clubPass). Lives in lib/club/; loads nothing from rewards.
 Object.assign(exports, require("./lib/club").build({ adminLogEntry }).functions);
+
+// Club Pass billing (docs/specs/club-pass.md §13; Stripe TEST MODE on staging): clubCheckout, clubPortal, clubStatus. Lives in lib/billing/;
+// loads lib/club/entitlement.js and nothing from rewards.
+Object.assign(exports, require("./lib/billing").build({ adminLogEntry }).functions);

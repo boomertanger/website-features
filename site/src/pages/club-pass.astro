@@ -11,16 +11,18 @@ import TocLayout from "../components/TocLayout.astro";
 import Mascot from "../components/Mascot.astro";
 import { boombotIcon } from "../../../shared/ui/arcade.js";
 import site from "../data/site.json";
+import { paymentsOn } from "../lib/club-pay.js";
 import "../styles/club-pass.css";
 
-const CP = (site as any).clubPass as { payments: boolean; price: string; shopDiscount: number };
+const CP = (site as any).clubPass as { payments: boolean; paymentsStaging?: boolean; price: string; shopDiscount: number };
 const PRICE = `$${CP.price}`;
-const PAY = CP.payments;
+const PAY = paymentsOn(CP);   // staging: on (Stripe test mode); production: off until launch
 const issueMonth = new Date().toLocaleString("en-US", { month: "long", year: "numeric", timeZone: site.timezone });
 
 const NAV: [string, string][] = [["ch-issue", "In this issue"], ["ch-pick", "Pick your pass"], ["ch-perks", "The perks"], ["ch-join", "Get your pass"], ["ch-pay", "Going gold"], ["ch-twitch", "Twitch subs"], ["ch-gift", "Gifts and tips"], ["ch-money", "Your money"], ["ch-rules", "The fine print"], ["ch-ask", "Dear BOOMBOT"]];
 const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
-// Every buy and gift button: a disabled "Opening soon" while payments are off. No checkout code exists yet (billing is part 4).
+// Every buy button: a disabled "Opening soon" while payments are off; on, it opens the pre-checkout dialog (src/lib/checkout.ts).
+// Gifts stay "Gifts open soon" until the gifts part.
 const buy = (label: string, pulse: string, extra = "") => PAY
   ? `<button class="bt-btn bt-btn--primary${extra}" type="button" data-cp-buy="${pulse}" data-pulse="${pulse}">${label}</button>`
   : `<button class="bt-btn bt-btn--secondary${extra}" type="button" disabled>Opening soon</button>`;
@@ -339,8 +341,8 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
               <div class="cp-gift-form">
                 <h3 class="bt-heading">Gift a month · {PRICE}</h3>
                 <label class="bt-sr-only" for="cp-gift-handle">Their handle</label>
-                <input class="bt-input" id="cp-gift-handle" type="text" placeholder="Their handle, like @boomer" disabled={!PAY} />
-                <Fragment set:html={buy("Gift it", "gift-it")} />
+                <input class="bt-input" id="cp-gift-handle" type="text" placeholder="Their handle, like @boomer" disabled />
+                <button class="bt-btn bt-btn--secondary" type="button" disabled>Gifts open soon</button>
               </div>
             </div>
           </div>

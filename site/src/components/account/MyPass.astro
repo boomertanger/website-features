@@ -4,12 +4,13 @@
 // The mascot template is the art the script reuses on the pass and the crew card.
 import Mascot from "../Mascot.astro";
 import site from "../../data/site.json";
+import { paymentsOn } from "../../lib/club-pay.js";
 import "../../styles/my-pass.css";
 interface Props { selected?: boolean }
 const { selected = false } = Astro.props;
 ---
 <section class="bt-account-pane mp" role="tabpanel" id="pane-club" aria-labelledby="tab-club" hidden={!selected} data-mp
-  data-pay={site.clubPass.payments ? "on" : "off"} data-price={`$${site.clubPass.price}`} data-twitch={`https://www.twitch.tv/${site.twitchChannel}`} data-channel={site.twitchChannel}>
+  data-pay={paymentsOn(site.clubPass) ? "on" : "off"} data-price={`$${site.clubPass.price}`} data-twitch={`https://www.twitch.tv/${site.twitchChannel}`} data-channel={site.twitchChannel}>
   <template data-mp-mascot><Mascot decorative /></template>
   <div class="mp-body" data-mp-body></div>
 </section>
