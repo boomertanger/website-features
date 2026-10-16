@@ -19,7 +19,7 @@ Last updated: 2026-10-10. Every planning chat reads this file first and proposes
 | 8 | Accounts part 2b (security and data rights) | Later (before launch) | Accounts and security |
 | 9 | Mod Machina | Phase 1 tested on staging (Oct 7); phase 3 (the Mod Deck) built on staging (Oct 2026), real tests pending; phase 4 lives in Chat Games (5b) | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
-| 11 | Plans and billing (Fan Club, Sub Club) | Later (before launch) | Billing and plans |
+| 11 | Club Pass (plans and billing) | In progress (before launch) | Billing and plans |
 | 12 | Contests | Later | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back built and tested on staging (Oct 15, 2026), all three parts | Community services |
@@ -198,9 +198,12 @@ Status: Feature Lab is built on staging (spec `docs/specs/feature-lab.md`: /feat
 When ported, the 404 page's Report this broken link button opens Bug Zapper with the URL pre-filled (spec: docs/specs/not-found.md, Out of scope).
 Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 
-### 11. Plans and billing
+### 11. Club Pass (plans and billing)
 Goal: Fan Club (free) and Sub Club (paid) plans, payments, entitlements written by server webhooks, an append-only ledger.
 Must be done before launch.
+Spec: `docs/specs/club-pass.md` (confirmed Oct 15, 2026; mockup `docs/design/mockups/club-pass.html`).
+Status: **In progress: part 3 /club-pass page built; billing next.** Parts 1 to 3 (docs, the kit pieces `.bt-pass`, `.bt-plan`, `.bt-spread` and `.bt-admit`, and the /club-pass page with payments off) are on staging. Next: billing on staging (part 4), Twitch counting, gifts and /tip, /admin/members, the member home.
+- [ ] Boom Board full page (was planned at /club): plan its route with the member home (part 8).
 Kickoff: "Start workstream 11 (Plans and billing) from docs/ROADMAP.md."
 
 ### 12. Contests
@@ -340,6 +343,16 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to `none` on production (serviceSyncTick declares both on every project; production is public and needs no Cloudflare Access headers; docs/specs/service-hub.md §3b).
 - [ ] Deploy onVaultGameService before the Vault import on production, or run reconcile-vault-services.js --apply once after it (`--allow-project <prod id>`; dry run first). On staging the first 78 games were imported before the trigger existed and had no Service Hub item until the reconcile (Oct 15, 2026); serviceSyncTick's Vault guard now catches that drift within 15 minutes.
 - [ ] Workstreams 8, 10 and 11 done.
+
+### Club Pass at launch (docs/specs/club-pass.md §10)
+- [ ] Launch quietly first; promote only after payments are on.
+- [ ] Point Stripe's account form (business website) at /club-pass.
+- [ ] Minnesota sales tax: get the accountant's answer and register before payments switch on.
+- [ ] Set the live Stripe keys as secrets on production.
+- [ ] Set `clubPass.payments` to true in `site/src/data/site.json`.
+- [ ] Make one real $5.99 purchase and refund it.
+- [ ] Redirect boomertanger.club and boomertanger.plus to /club-pass.
+- [ ] Then promote.
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
 - [ ] Turn on Tech Stack referral links (`site.json` modules `techStack.referrals: true`, with the Amazon Associates disclosure).
