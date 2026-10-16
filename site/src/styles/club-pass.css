@@ -619,5 +619,8 @@
 .bt-root:not(#_) .cp-plan-plus { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; }
 /* the cover's button row sits flush in its footer (the mockup's inline margin: 0) */
 .bt-root:not(#_) .cp-cover-foot .cp-hero-cta { margin: 0; }
+/* In this issue: the outlined row numbers use an opaque fill (the page, --bt-bg) with the stroke drawn under it, so overlapping glyph
+   contours (the 4 in "04") show no seam (design-system.md, .bt-chapter--ghost). Hover still fills them gold. */
+.bt-root:not(#_) .cp-row-n { color: var(--bt-ghost-fill, var(--bt-bg)); -webkit-text-stroke-width: 2px; paint-order: stroke fill; }
 /* signed in, payments off: Pick your pass is the cover's one (purple) button */
 .bt-root:not(#_) .cp[data-viewer="visitor"] .cp-when-member { display: none; }

@@ -537,7 +537,8 @@
 .bt-root:not(#_) .vh-mw-list { gap: 8px; }
 .bt-root:not(#_) .vh-mw-row { display: grid; grid-template-columns: 34px 40px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 8px 10px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); }
 .bt-root:not(#_) .vh-mw-row .bt-cover { width: 40px; border-radius: 5px; }
-.bt-root:not(#_) .vh-mw-rank { color: transparent; font-size: 26px; font-weight: 900; text-align: center; -webkit-text-stroke: 1.5px var(--rk, var(--bt-text-faint)); }
+/* the outlined rank: an opaque fill (the row, --bt-bg) with the stroke drawn under it, so overlapping glyph contours (the 4) show no seam */
+.bt-root:not(#_) .vh-mw-rank { color: var(--bt-ghost-fill, var(--bt-bg)); font-size: 26px; font-weight: 900; text-align: center; -webkit-text-stroke: 3px var(--rk, var(--bt-text-faint)); paint-order: stroke fill; }
 .bt-root:not(#_) .vh-mw-row b { display: block; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .bt-root:not(#_) .vh-mw-row small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
 .bt-root:not(#_) .vh-mw-row .bt-btn svg { width: 14px; height: 14px; }
