@@ -11,7 +11,7 @@
     "/club-pass"
   ],
   "nav": "club",
-  "testPlan": null,
+  "testPlan": "docs/testing/club-pass-twitch-test-plan.md",
   "checks": [],
   "videoTag": "#bt-club-pass",
   "sections": {},
