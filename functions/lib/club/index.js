@@ -13,11 +13,14 @@
 //   clubLinkTwitch             signed-up member, 1 a minute and 20 a day (sites/boomertanger/rateLimits/clubTwitch_{uid}): "Check again"
 //                              on My pass. Get Broadcaster Subscriptions for their linked Twitch -> club.twitch, sources.twitch ->
 //                              recompute (lib/club/twitch.js). Returns { linked, counting, sub?, tier?, gifted?, checkedAt?, plan }.
+//   clubTwitchSweep            every day 05:30 America/Chicago: the channel's whole subscriber list once (paged), compared with every
+//                              linked member; fixes any difference and recomputes. Skips (logs) while no broadcaster token is connected.
 //   Connect and disconnect also set sites/boomertanger/public/clubPass.twitchCounting, which My pass reads.
 //
 // adminLog feature "clubPass". No activityLog.
 const { onCall } = require("firebase-functions/v2/https");
 const { onDocumentWritten } = require("firebase-functions/v2/firestore");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const crypto = require("crypto");
@@ -160,6 +163,17 @@ function build(deps = {}) {
     }
   }
 
+  async function runSweep() {
+    try {
+      const out = await subs().sweep();
+      console.log("clubTwitchSweep:", JSON.stringify(out));
+      return out;
+    } catch (err) {
+      if (err instanceof BroadcasterError) { console.warn(`clubTwitchSweep: skipped (${err.code}: ${err.message})`); return { skipped: err.code }; }
+      throw err;
+    }
+  }
+
   const functions = {
     clubBroadcasterStart: onCall({ secrets: SECRETS }, startConnect),
     clubBroadcasterConnect: onCall({ secrets: SECRETS }, finishConnect),
@@ -167,8 +181,9 @@ function build(deps = {}) {
     clubBroadcasterDisconnect: onCall({ secrets: SECRETS }, disconnect),
     clubOnCrewChange: onDocumentWritten("sites/{siteId}/members/{uid}", onCrewChange),
     clubLinkTwitch: onCall({ secrets: SECRETS }, linkTwitch),
+    clubTwitchSweep: onSchedule({ schedule: "30 5 * * *", timeZone: "America/Chicago", secrets: SECRETS, timeoutSeconds: 540 }, async () => { await runSweep(); }),
   };
-  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster, entitlement, onCrewChange, subs, linkTwitch, rateLimit } };
+  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster, entitlement, onCrewChange, subs, linkTwitch, rateLimit, runSweep } };
 }
 
 module.exports = (deps) => build(deps).functions;
