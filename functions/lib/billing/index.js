@@ -8,6 +8,7 @@
 //   billingWebhook HTTPS: Stripe's webhook (lib/billing/webhook.js). STRIPE_WEBHOOK_SECRET (the endpoint's signing secret) is bound only
 //                  when functions/.env.staging says STRIPE_WEBHOOK=on (a secret that doesn't exist yet would stop the deploy, the same way
 //                  HOTLINE_EMAIL works); until then it answers 503 and Stripe retries.
+//   clubBillingSweep  every day 05:45 America/Chicago (lib/billing/sweep.js): ends one-month passes and expired grace periods, recomputes.
 //
 // Secret: STRIPE_SECRET_KEY (an sk_test_ key on staging; lib/billing/stripe.js refuses anything else). Params (functions/.env.staging,
 // public): STRIPE_PRICE_SUB, STRIPE_PRICE_MONTH, STRIPE_PORTAL_CONFIG. They're empty on any other project, so every callable answers
@@ -18,6 +19,8 @@ const admin = require("firebase-admin");
 const { makeStripe } = require("./stripe");
 const { makeBilling, BillingError } = require("./core");
 const { makeWebhook } = require("./webhook");
+const { makeSweep } = require("./sweep");
+const { onSchedule } = require("firebase-functions/v2/scheduler");
 const { makeEntitlement } = require("../club/entitlement");
 
 const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
@@ -77,6 +80,10 @@ function build(deps = {}) {
       await webhook().handle(req, res);
     }),
   };
+  functions.clubBillingSweep = onSchedule({ schedule: "45 5 * * *", timeZone: "America/Chicago", timeoutSeconds: 540 }, async () => {
+    const out = await makeSweep({ db, entitlement: makeEntitlement({ db, auth: deps.auth || admin.auth(), now }), now }).run();
+    console.log("clubBillingSweep:", JSON.stringify(out));
+  });
   return { functions, helpers: { billing, webhook } };
 }
 
