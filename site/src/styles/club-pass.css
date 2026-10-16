@@ -94,7 +94,9 @@
 
 .bt-root:not(#_) .cp-hero-cta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 22px; align-items: center; }
 .bt-root:not(#_) .cp-hang { position: absolute; top: 7%; width: 30%; transform-origin: 50% 0; animation: cp-swing 5s ease-in-out infinite; }
+.bt-root:not(#_) .cp-hang--sub { right: 17%; }
 .bt-root:not(#_) .cp-strap { display: block; width: 18%; height: 12cqi; margin: 0 auto; border-radius: 0 0 4px 4px; }
+.bt-root:not(#_) .cp-hang--sub .cp-strap { background: repeating-linear-gradient(90deg, var(--cp-amber-1) 0 6px, var(--cp-amber-2) 6px 8px); }
 .bt-root:not(#_) .cp-clip { display: block; width: 22%; height: 12px; margin: -2px auto -6px; position: relative; z-index: 2; border-radius: 4px; background: linear-gradient(180deg, var(--cp-light-1), var(--cp-steel-1)); }
 .bt-root:not(#_) .cp-hang:hover,
 .bt-root:not(#_) .cp-hang:focus-within { animation-play-state: paused; }
@@ -146,6 +148,9 @@
   .bt-root:not(#_) .cp-journey::before { left: 27px; right: auto; top: 10px; bottom: 10px; width: 2px; height: auto; background: linear-gradient(180deg, var(--bt-title) 0 33%, var(--bt-border-2) 33%); }
   .bt-root:not(#_) .cp-journey li { flex-direction: row; text-align: left; align-items: flex-start; }
   .bt-root:not(#_) .cp-journey li > div { display: flex; flex-direction: column; gap: 4px; }
+}
+@container bt (max-width: 420px) {
+  .bt-root:not(#_) .cp-hang--sub { right: 12%; }
 }
 .bt-root:not(#_) .cp-hw-press { position: absolute; inset: 0; }
 .bt-root:not(#_) .cp-hw-belt { position: absolute; left: 4%; right: 4%; bottom: 20%; height: 12px; border-radius: 6px; background: repeating-linear-gradient(90deg, var(--bt-border) 0 14px, var(--cp-shade-18) 14px 18px); box-shadow: 0 6px 14px rgba(var(--bt-ink-rgb), .6); animation: cp-hw-belt 1.2s linear infinite paused; }
@@ -324,6 +329,7 @@
 .bt-root:not(#_) .cp-sub::after { transform: scaleX(-1); }
 .bt-root:not(#_) .cp-cover-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.1fr) minmax(0, 1fr); gap: 20px; align-items: center; margin-top: 18px; }
 .bt-root:not(#_) .cp-lines { display: flex; flex-direction: column; gap: 22px; }
+.bt-root:not(#_) .cp-lines--r { text-align: right; align-items: flex-end; }
 .bt-root:not(#_) a.cp-line { display: flex; flex-direction: column; gap: 3px; color: var(--bt-text); text-decoration: none; animation: cp-fade .6s backwards; animation-delay: calc(var(--i) * 120ms + 600ms); }
 .bt-root:not(#_) a.cp-line:hover { text-decoration: none; color: var(--bt-text); }
 .bt-root:not(#_) .cp-line small { color: var(--bt-title); font-size: var(--bt-text-xs); font-weight: 900; letter-spacing: .2em; text-transform: uppercase; }
@@ -530,6 +536,7 @@
   .bt-root:not(#_) .cp-sc-raffle i { animation: none; opacity: 1; transform: translate(calc(-50% + (var(--i) - 2) * 40px), -90px); }
 }
 .bt-root:not(#_) .cp-board-tile b { overflow-wrap: anywhere; }
+.bt-root:not(#_) .cp-lines--r { position: relative; }
 .bt-root:not(#_) a.cp-sticker { position: relative; z-index: 6; align-self: flex-end; display: flex; flex-direction: column; align-items: flex-end; gap: 0; margin: 0 0 -32px; text-decoration: none; transform: rotate(-9deg); transform-origin: 80% 60%; animation: cp-stick-in .7s 1.4s cubic-bezier(.3,1.6,.4,1) backwards, cp-wiggle 3.2s 2.4s ease-in-out infinite; }
 .bt-root:not(#_) .cp-sticker-tag { display: inline-block; padding: 10px 16px 11px; border: 3px solid var(--bt-text); border-radius: 14px 18px 12px 20px; background: var(--bt-primary); color: var(--bt-text); font-size: clamp(16px, 2.4cqi, 24px); font-weight: 900; letter-spacing: -0.01em; white-space: nowrap; box-shadow: 0 6px 0 rgba(var(--bt-ink-rgb), .45), 0 0 22px rgba(var(--bt-primary-rgb), .85), 0 0 48px rgba(var(--bt-primary-rgb), .45); animation: cp-glow 1.8s ease-in-out infinite; transition: transform .25s cubic-bezier(.3,1.6,.4,1), background .2s; }
 .bt-root:not(#_) .cp-sticker-arrow { width: 46px; height: 46px; margin: -6px 34px 0 0; overflow: visible; filter: drop-shadow(0 0 6px rgba(var(--bt-primary-rgb), .9)); }
@@ -563,8 +570,22 @@
   .bt-root:not(#_) .bt-title.bt-title--hero.cp-mast { font-size: 14cqi; }
 }
 
-/* ---- phones: the sticker can't leave its column, so its arrow hangs from the left end, where "Already" starts ---- */
-@container bt (max-width: 640px) {
-  .bt-root:not(#_) a.cp-sticker { align-self: flex-start; align-items: flex-start; }
-  .bt-root:not(#_) .cp-sticker-arrow { margin: -4px 0 0 12px; }
-}
+/* ---- the cover, as the mockup renders it ---- */
+/* "Pick your pass": in the mockup the kit's paragraph reset wins over .mz-sub, so it reads in normal case, bold, normal tracking. */
+.bt-root:not(#_) .cp-sub { margin: 0; letter-spacing: normal; text-transform: none; }
+/* The lanyard hangs from the top of the cover star, centred (the mockup's inline left: 25%). */
+.bt-root:not(#_) .cp-star .cp-hang--sub { left: 25%; right: auto; }
+/* The cover pass is not a size container here: everything in it is sized against the cover star (.cp-star, the size container),
+   with the mockup's clamps, so its proportions match the mockup at every width. */
+.bt-root:not(#_) .cp-star .bt-pass { container-type: normal; gap: 6px; padding: 14px 12px 10px; border-radius: 14px; }
+.bt-root:not(#_) .cp-star .bt-pass-top { margin-top: 10px; font-size: clamp(7px, 2.6cqi, 11px); letter-spacing: 0.22em; }
+.bt-root:not(#_) .cp-star .bt-pass .bt-mascot { width: 34%; margin: 2px 0; }
+.bt-root:not(#_) .cp-star .bt-pass-plan { font-size: clamp(14px, 7cqi, 30px); letter-spacing: 0.06em; white-space: normal; }
+.bt-root:not(#_) .cp-star .bt-pass-price { font-size: 10px; }
+.bt-root:not(#_) .cp-star .bt-pass-name { padding: 4px 8px; border-radius: 6px; font-size: clamp(9px, 3cqi, 13px); }
+.bt-root:not(#_) .cp-star .bt-pass-code { height: 14px; }
+.bt-root:not(#_) .cp-star .bt-pass-foot { font-size: clamp(7px, 2.6cqi, 11px); letter-spacing: 0.2em; }
+/* the cover's button row sits flush in its footer (the mockup's inline margin: 0) */
+.bt-root:not(#_) .cp-cover-foot .cp-hero-cta { margin: 0; }
+/* signed in, payments off: Pick your pass is the cover's one (purple) button */
+.bt-root:not(#_) .cp[data-viewer="visitor"] .cp-when-member { display: none; }

@@ -86,9 +86,11 @@ const TWITCH_GLYPH = `<svg width="30" height="30" viewBox="0 0 24 24" fill="curr
         </div>
         <div class="cp-cover-foot">
           <div class="cp-hero-cta">
+            {/* Visitors: Join free + Pick your pass. Signed in, payments off: Pick your pass is the one (purple) button; no "Opening soon" here. */}
             <span class="cp-when-visitor"><Fragment set:html={join()} /></span>
-            <span class="cp-when-fan"><Fragment set:html={buy("Get Sub Club", "get-sub-club")} /></span>
-            <a class="bt-btn bt-btn--secondary" href="#ch-pick" data-pulse="pick-your-pass">Pick your pass</a>
+            {PAY && <span class="cp-when-fan"><Fragment set:html={buy("Get Sub Club", "get-sub-club")} /></span>}
+            <a class:list={["bt-btn bt-btn--secondary", !PAY && "cp-when-visitor"]} href="#ch-pick" data-pulse="pick-your-pass">Pick your pass</a>
+            {!PAY && <a class="bt-btn bt-btn--primary cp-when-member" href="#ch-pick" data-pulse="pick-your-pass">Pick your pass</a>}
           </div>
           <div class="cp-barcode" aria-hidden="true"><i></i><span>BT · 0001</span></div>
         </div>
