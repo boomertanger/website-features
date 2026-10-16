@@ -1,0 +1,15 @@
+---
+// /account/club (docs/specs/club-pass.md §11): the account page's My pass tab. The tabs are hash-driven
+// (scripts/account/page.ts), so this address hands over to /account#club, keeping any ?as= preview.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import AuthStatus from "../../components/AuthStatus.astro";
+---
+<BaseLayout title="My pass" noindex>
+  <AuthStatus title="One moment" message="Opening your pass…">
+    <p class="bt-section-text"><a href="/account#club">Open My pass</a></p>
+  </AuthStatus>
+</BaseLayout>
+
+<script is:inline>
+  location.replace("/account" + location.search + "#club");
+</script>

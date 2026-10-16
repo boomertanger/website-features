@@ -202,7 +202,7 @@ Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 Goal: Fan Club (free) and Sub Club (paid) plans, payments, entitlements written by server webhooks, an append-only ledger.
 Must be done before launch.
 Spec: `docs/specs/club-pass.md` (confirmed Oct 15, 2026; mockup `docs/design/mockups/club-pass.html`).
-Status: **In progress: part 3 /club-pass page built; billing next.** Parts 1 to 3 (docs, the kit pieces `.bt-pass`, `.bt-plan`, `.bt-spread` and `.bt-admit`, and the /club-pass page with payments off) are on staging. Next: billing on staging (part 4), Twitch counting, gifts and /tip, /admin/members, the member home.
+Status: **In progress: part 2 My pass tab built; next Twitch counting.** The My pass account tab (spec §11, mockup `docs/design/mockups/club-pass-my-pass.html`) is on staging with payments off. Parts 1 to 3 (docs, the kit pieces `.bt-pass`, `.bt-plan`, `.bt-spread` and `.bt-admit`, and the /club-pass page with payments off) are on staging. Next: billing on staging (part 4), Twitch counting, gifts and /tip, /admin/members, the member home.
 - [ ] Boom Board full page (was planned at /club): plan its route with the member home (part 8).
 Kickoff: "Start workstream 11 (Plans and billing) from docs/ROADMAP.md."
 

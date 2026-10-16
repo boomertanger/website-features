@@ -1,13 +1,18 @@
 ---
-// The account page's A2 tabs and panes (docs/specs/accounts.md screen 10): Profile, Rewards
+// The account page's A2 tabs and panes (docs/specs/accounts.md screen 10): My pass (docs/specs/club-pass.md §11;
+// MyPass.astro, scripts/account/my-pass.ts; /account/club opens it), Profile, Rewards
 // (the Trophy Room, docs/specs/rewards.md §11; scripts/account/rewards.ts), Linked accounts, Sign-in methods, Privacy, Your data. /account renders it hidden until
 // a member is signed in (scripts/account/page.ts fills and drives it); the live UI kit
 // (/dev/ui-kit) renders it with preview, visible and static.
 import "../../styles/account-streams.css";
+import MyPass from "./MyPass.astro";
 interface Props { preview?: boolean }
 const { preview = false } = Astro.props;
+// My pass is the first tab; the UI kit's static preview opens on Profile (My pass is filled by its script).
+const first = preview ? "profile" : "club";
 
 const TABS = [
+  ["club", "My pass"],
   ["profile", "Profile"],
   ["rewards", "Rewards"],
   ["streams", "Streams"],
@@ -24,15 +29,17 @@ const PRIVACY = [
 ---
 <div class="bt-account-page" data-acct-when={preview ? undefined : "member"} hidden={!preview}>
   <nav class="bt-account-tabs" role="tablist" aria-label="Account sections">
-    {TABS.map(([id, label], i) => (
-      <a href={`#${id}`} role="tab" id={`tab-${id}`} aria-controls={`pane-${id}`} aria-selected={i === 0 ? "true" : "false"} data-tab={id}>{label}</a>
+    {TABS.map(([id, label]) => (
+      <a href={`#${id}`} role="tab" id={`tab-${id}`} aria-controls={`pane-${id}`} aria-selected={id === first ? "true" : "false"} data-tab={id}>{label}</a>
     ))}
   </nav>
   <div class="bt-account-panes">
     <div class="bt-notice bt-notice--error" role="alert" data-page-err hidden></div>
     <div class="bt-notice bt-notice--ok" role="status" data-page-ok hidden></div>
 
-    <section class="bt-account-pane" role="tabpanel" id="pane-profile" aria-labelledby="tab-profile">
+    <MyPass selected={first === "club"} />
+
+    <section class="bt-account-pane" role="tabpanel" id="pane-profile" aria-labelledby="tab-profile" hidden={first !== "profile"}>
       <div class="bt-card">
         <div class="bt-card-head"><h2 class="bt-card-title">Profile</h2></div>
         <div class="bt-set-row">

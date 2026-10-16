@@ -1,0 +1,97 @@
+/* My pass, the account page's first tab (docs/specs/club-pass.md §11; mockup docs/design/mockups/club-pass-my-pass.html, hero H1
+   "the hanging pass"). Feature CSS, mp- prefix only: the hero and its lanyard, the cards grid, the source rows, the mini perk board,
+   the crew card and the gold moment. Kit pieces come from shared/bt-ui.css untouched: .bt-pass (silver .bt-pass / gold .bt-pass--sub),
+   .bt-card, .bt-set-row, .bt-empty, .bt-stamp, .bt-btn, the pills, the mascot. Silver is Fan Club (--bt-pass-fan), gold Sub Club
+   (--bt-pass-sub); purple stays the only clickable colour. Colours: kit tokens, plus the lanyard and backdrop paint below, each raw
+   colour declared once. Container queries only (bt: 640); reduced motion keeps the colours and stops the movement. */
+.bt-root:not(#_) .mp {
+  --mp-shade-1: #120d0f;   /* hero backdrop */
+  --mp-shade-2: #26272b;   /* silver strap */
+  --mp-shade-3: #303136;
+  --mp-shade-4: #241d20;   /* a perk Fan Club doesn't have */
+  --mp-shade-5: #0b0809;
+  --mp-amber-1: #3a2a08;   /* gold strap */
+  --mp-amber-2: #4a360c;
+  --mp-light-1: #e9e6ef;   /* the clip */
+  --mp-steel-1: #8d8995;
+  --mp-silver: var(--bt-pass-fan);
+  --mp-gold: var(--bt-pass-sub);
+}
+
+.bt-root:not(#_) .mp-body { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+
+/* ---- hero ---- */
+.bt-root:not(#_) .mp-hero { --mp-c: var(--mp-silver); position: relative; overflow: hidden; display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 26px; align-items: center; padding: 22px 26px 24px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: radial-gradient(60% 90% at 12% 10%, color-mix(in srgb, var(--mp-c) 18%, transparent), transparent 70%), linear-gradient(180deg, var(--mp-shade-1), var(--bt-surface)); transition: background 0.6s; }
+.bt-root:not(#_) .mp-hero.is-gold { --mp-c: var(--mp-gold); border-color: color-mix(in srgb, var(--mp-gold) 40%, var(--bt-border)); }
+.bt-root:not(#_) .mp-hero-scene { position: relative; align-self: start; }
+.bt-root:not(#_) .mp-kick { margin: 0 0 6px; color: var(--mp-c); font-size: var(--bt-text-xs); font-weight: 900; letter-spacing: 0.22em; text-transform: uppercase; }
+.bt-root:not(#_) .mp-plan { margin: 0; font-size: clamp(30px, 5cqi, 44px); font-weight: 900; line-height: 1; letter-spacing: -0.03em; color: var(--mp-c); }
+.bt-root:not(#_) .mp-status { margin: 10px 0 0; max-width: 46ch; color: var(--bt-text); font-size: var(--bt-text-lg); line-height: 1.45; }
+.bt-root:not(#_) .mp-status small { display: block; margin-top: 4px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .mp-facts { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 12px; }
+.bt-root:not(#_) .mp-chip { padding: 4px 10px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); color: var(--bt-text-muted); font-size: var(--bt-text-xs); font-weight: 700; }
+.bt-root:not(#_) .mp-cta { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 16px; }
+
+/* the hanging pass: strap, clip and the kit's .bt-pass, with the slow swing */
+.bt-root:not(#_) .mp-hang { transform-origin: 50% 0; animation: mp-swing 5s ease-in-out infinite; }
+.bt-root:not(#_) .mp-hang:hover { animation-play-state: paused; }
+.bt-root:not(#_) .mp-strap { display: block; width: 20%; height: 26px; margin: 0 auto; border-radius: 0 0 3px 3px; background: repeating-linear-gradient(90deg, var(--mp-shade-2) 0 5px, var(--mp-shade-3) 5px 7px); }
+.bt-root:not(#_) .mp-hero.is-gold .mp-strap { background: repeating-linear-gradient(90deg, var(--mp-amber-1) 0 5px, var(--mp-amber-2) 5px 7px); }
+.bt-root:not(#_) .mp-clip { display: block; position: relative; z-index: 2; width: 26%; height: 9px; margin: -2px auto -5px; border-radius: 3px; background: linear-gradient(180deg, var(--mp-light-1), var(--mp-steel-1)); }
+
+/* ---- cards ---- */
+.bt-root:not(#_) .mp-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; align-items: start; }
+.bt-root:not(#_) .mp-grid > .bt-card { margin: 0; transition: border-color 0.25s, transform 0.3s cubic-bezier(0.3, 0.7, 0.2, 1); }
+.bt-root:not(#_) .mp-grid > .bt-card:hover { border-color: var(--bt-border-2); transform: translateY(-2px); }
+.bt-root:not(#_) .mp-wide { grid-column: 1 / -1; }
+.bt-root:not(#_) .mp-src { display: grid; grid-template-columns: 34px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 11px 0; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .mp-src:first-of-type { border-top: 0; }
+.bt-root:not(#_) .mp-src-ic { width: 34px; height: 34px; display: grid; place-items: center; border-radius: 9px; font-size: 17px; background: var(--bt-surface-2); box-shadow: inset 0 0 0 1px var(--bt-border-2); }
+.bt-root:not(#_) .mp-src-ic.is-gold { background: var(--bt-gold-bg); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--mp-gold) 60%, transparent); }
+.bt-root:not(#_) .mp-src-ic.is-twitch { color: var(--bt-brand-twitch); }
+.bt-root:not(#_) .mp-src b { display: block; font-size: var(--bt-text-base); }
+.bt-root:not(#_) .mp-src small { display: block; margin-top: 2px; color: var(--bt-text-faint); font-size: var(--bt-text-sm); }
+.bt-root:not(#_) .mp-row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.bt-root:not(#_) .mp-note { margin: 8px 0 0; }
+
+/* the mini perk board: Fan Club's 15 of 20, gold on hover or tap */
+.bt-root:not(#_) .mp-board { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: center; cursor: pointer; }
+.bt-root:not(#_) .mp-board-side { display: flex; flex-direction: column; gap: 10px; align-items: flex-start; cursor: auto; }
+.bt-root:not(#_) .mp-tiles { display: grid; grid-template-columns: repeat(10, minmax(0, 1fr)); gap: 5px; margin-top: 12px; }
+.bt-root:not(#_) .mp-tiles i { aspect-ratio: 1; display: grid; place-items: center; border: 1px solid color-mix(in srgb, var(--mp-silver) 40%, transparent); border-radius: 7px; background: color-mix(in srgb, var(--mp-silver) 8%, transparent); font-size: 14px; font-style: normal; transition: border-color 0.4s, background 0.4s, box-shadow 0.4s, filter 0.4s; transition-delay: calc(var(--i) * 40ms); }
+.bt-root:not(#_) .mp-tiles i.is-off { border-color: var(--mp-shade-4); background: var(--mp-shade-5); filter: grayscale(1) brightness(0.45); }
+.bt-root:not(#_) .mp-board.is-preview .mp-tiles i { border-color: color-mix(in srgb, var(--mp-gold) 55%, transparent); background: var(--bt-gold-bg); filter: none; box-shadow: 0 0 10px color-mix(in srgb, var(--mp-gold) 25%, transparent); }
+.bt-root:not(#_) .mp-count { color: var(--mp-silver); font-size: 34px; font-weight: 900; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; transition: color 0.4s; }
+.bt-root:not(#_) .mp-board.is-preview .mp-count { color: var(--mp-gold); }
+.bt-root:not(#_) .mp-count small { color: var(--bt-text-muted); font-size: var(--bt-text-md); font-weight: 700; letter-spacing: 0; }
+
+.bt-root:not(#_) .mp-crew { display: flex; align-items: center; gap: 14px; }
+.bt-root:not(#_) .mp-crew .bt-mascot { width: 54px; flex: none; }
+
+/* ---- the gold moment: the pass pops, confetti falls, the Welcome stamp lands ---- */
+.bt-root:not(#_) .mp-confetti { position: absolute; top: -10px; z-index: 5; width: 8px; height: 12px; border-radius: 2px; pointer-events: none; animation: mp-fall var(--d, 1.8s) cubic-bezier(0.3, 0.6, 0.4, 1) forwards; }
+.bt-root:not(#_) .mp-welcome { position: absolute; right: 18px; top: 16px; z-index: 6; }
+.bt-root:not(#_) .mp-hero.is-flash .bt-pass { animation: mp-pop 0.7s cubic-bezier(0.3, 1.6, 0.4, 1); }
+
+@keyframes mp-swing { 0%, 100% { transform: rotate(-2.4deg); } 50% { transform: rotate(2.4deg); } }
+@keyframes mp-fall { to { transform: translate(var(--dx), 360px) rotate(var(--r)); opacity: 0; } }
+@keyframes mp-pop { 0% { transform: scale(1); } 40% { transform: scale(1.12) rotate(-4deg); } 100% { transform: scale(1); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .mp-hang,
+  .bt-root:not(#_) .mp-confetti,
+  .bt-root:not(#_) .mp-hero.is-flash .bt-pass { animation: none; }
+  .bt-root:not(#_) .mp-tiles i,
+  .bt-root:not(#_) .mp-grid > .bt-card { transition: none; }
+  .bt-root:not(#_) .mp-grid > .bt-card:hover { transform: none; }
+}
+
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .mp-hero { grid-template-columns: 1fr; gap: 14px; padding: 18px; }
+  .bt-root:not(#_) .mp-hero-scene { width: 132px; justify-self: center; }
+  .bt-root:not(#_) .mp-grid { grid-template-columns: 1fr; }
+  .bt-root:not(#_) .mp-board { grid-template-columns: 1fr; }
+  .bt-root:not(#_) .mp-tiles { gap: 4px; }
+  .bt-root:not(#_) .mp-tiles i { border-radius: 5px; font-size: 11px; }
+  .bt-root:not(#_) .mp-welcome { right: 10px; top: 10px; }
+}

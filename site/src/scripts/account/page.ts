@@ -7,6 +7,7 @@ import {
   linkWithPopup, linkWithCredential, signOut,
 } from "firebase/auth";
 import { auth } from "../../lib/firebase";
+import { isProduction } from "../../lib/env";
 import { onAuth, refresh, sendVerification, getAuthState, type AuthState } from "../../lib/auth";
 import { call } from "../../lib/call";
 import { messageFor, reasonOf } from "../../lib/errors";
@@ -37,15 +38,18 @@ async function act(btn: HTMLButtonElement | null, fn: () => Promise<void>) {
 
 // ---- which section shows ----
 function showFor(s: AuthState) {
-  const which = s.status === "loading" ? "" : s.status === "signedOut" ? "signedOut" : s.status === "needsSignup" ? "needsSignup" : "member";
+  // Off production, signed out with an ?as= member role, the tabs show for the My pass preview (scripts/account/my-pass.ts);
+  // the other tabs stay unfilled.
+  const preview = !isProduction && s.status === "signedOut" && !!document.body.dataset.previewAuth && document.body.dataset.previewAuth !== "visitor";
+  const which = s.status === "loading" ? "" : preview ? "member" : s.status === "signedOut" ? "signedOut" : s.status === "needsSignup" ? "needsSignup" : "member";
   $$("[data-acct-when]").forEach((el) => { el.hidden = el.dataset.acctWhen !== which; });
 }
 
-// ---- tabs (hash-driven; #your-data opens Your data) ----
+// ---- tabs (hash-driven; #your-data opens Your data; no hash opens the first tab, My pass; /account/club lands on #club) ----
 const TAB_IDS = $$("[data-tab]").map((t) => t.dataset.tab!);
 function selectTab(id: string, focus = false) {
   if (id === "your-data") id = "data";
-  if (!TAB_IDS.includes(id)) id = "profile";
+  if (!TAB_IDS.includes(id)) id = TAB_IDS[0];
   $$<HTMLAnchorElement>("[data-tab]").forEach((t) => {
     const on = t.dataset.tab === id;
     t.setAttribute("aria-selected", String(on));

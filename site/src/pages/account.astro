@@ -1,8 +1,9 @@
 ---
 // Account page, A2 tabs (docs/design/mockups/accounts.html; docs/specs/accounts.md
-// screen 10): Profile, Rewards (the Trophy Room, scripts/account/rewards.ts), Linked accounts, Sign-in methods, Privacy, Your data. Phones:
-// the tabs are a swipeable pill row. Real account data only (the ?as= preview
-// doesn't apply here); scripts/account/page.ts fills and drives it.
+// screen 10): My pass (docs/specs/club-pass.md §11, scripts/account/my-pass.ts; /account/club opens it), Profile, Rewards (the
+// Trophy Room, scripts/account/rewards.ts), Linked accounts, Sign-in methods, Privacy, Your data. Phones:
+// the tabs are a swipeable pill row. Real account data only, except My pass, which off production previews with
+// ?as=member, ?as=sub or ?as=crew while signed out; scripts/account/page.ts fills and drives it.
 import BaseLayout from "../layouts/BaseLayout.astro";
 import AccountPanes from "../components/account/AccountPanes.astro";
 import TrophyOrder from "../components/trophies/TrophyOrder.astro";
@@ -36,6 +37,7 @@ import "../styles/trophies.css";
 
 <script>
   import "../scripts/account/page";
+  import "../scripts/account/my-pass";
   import "../scripts/account/rewards";
   import "../scripts/account/streams";
 </script>

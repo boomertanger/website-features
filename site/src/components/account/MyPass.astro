@@ -1,0 +1,15 @@
+---
+// My pass, the account page's first tab (docs/specs/club-pass.md §11; mockup docs/design/mockups/club-pass-my-pass.html, H1).
+// The pane is empty here: scripts/account/my-pass.ts fills it for the signed-in member (or the ?as= preview off production).
+// The mascot template is the art the script reuses on the pass and the crew card.
+import Mascot from "../Mascot.astro";
+import site from "../../data/site.json";
+import "../../styles/my-pass.css";
+interface Props { selected?: boolean }
+const { selected = false } = Astro.props;
+---
+<section class="bt-account-pane mp" role="tabpanel" id="pane-club" aria-labelledby="tab-club" hidden={!selected} data-mp
+  data-pay={site.clubPass.payments ? "on" : "off"} data-price={`$${site.clubPass.price}`} data-twitch={`https://www.twitch.tv/${site.twitchChannel}`}>
+  <template data-mp-mascot><Mascot decorative /></template>
+  <div class="mp-body" data-mp-body></div>
+</section>

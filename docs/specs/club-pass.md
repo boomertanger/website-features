@@ -135,3 +135,29 @@ spread, the perk board, the spread scenes, the press, the gold moment. Reused: T
 Quiet launch; Stripe's form pointing at /club-pass; Minnesota sales tax answer from the accountant;
 live Stripe keys as secrets; set `clubPass.payments` to true; one real $5.99 purchase and refund;
 .club and .plus redirects; then promote.
+
+## 11. My pass (account tab) — CONFIRMED (2026-10-16)
+Mockup: `docs/design/mockups/club-pass-my-pass.html` (hero H1, the hanging pass).
+- **Where:** the first tab of the account page (A2 tabs), before Profile. `/account/club` opens it; the
+  avatar menu gets "My pass". Phones: the first pill in the swipeable tab row. Signed-in members only.
+- **Hero:** the hanging pass (silver Fan Club / gold Sub Club with sheen; handle; swing, still under
+  reduced motion), kicker "My pass", plan name, a status line + one sentence, chips (Member since, handle,
+  "N of 20 perks"), and the state's buttons.
+- **Cards:** Where your gold comes from (one row per source: Fan Club pass, Twitch sub, Paid here,
+  Gift, Crew; each with its end or renewal and a pill), Payments (next charge, Manage payment = Stripe's
+  portal, receipts), Twitch (linked or not, sub found, Check again, Linked accounts), Gifts (given and
+  received, Gift a month). Fan Club adds "What Sub Club adds" (mini perk board 15 → 20 on hover/tap).
+  Crew adds a thank-you card.
+- **States:** Fan Club; Fan Club + Twitch linked, no sub; gold via Twitch; gold paid here; paying twice
+  (banner + "Cancel the site subscription"); gift ("Keep it gold"); crew; cancelled (gold until the end,
+  "Resume Sub Club"); payment failed (red banner, 7 days, "Fix my card"); payments not open (every buy
+  and gift button "Opening soon"; Twitch linking still works).
+- **Gold moment:** the first time the tab opens after the pass turns gold: the pass pops, confetti,
+  "Welcome to Sub Club" stamp (`.bt-stamp--sm`). Remembered per viewer in localStorage
+  (`bt.club.goldSeen.<uid>`, try/catch); reduced motion: the stamp only.
+- **Data:** the tab reads the member's own `sites/boomertanger/members/{uid}.club` summary (server-written
+  only): `{ plan, sources: { stripe?, twitch?, gift?, crew? }, renewsAt?, endsAt?, cancelAt?, graceUntil?,
+  twitch: { linked, login?, sub?, tier?, prime?, gifted?, checkedAt? }, gifts: { given, received } }`.
+  Until billing and Twitch counting exist, it falls back to the auth claims (roles `sub`, crew grade)
+  and the existing Twitch link. Receipts and the gift list come from the `clubStatus` callable (billing
+  part); Check again calls `clubLinkTwitch` (Twitch part).
