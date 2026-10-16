@@ -36,7 +36,7 @@ Display state on the page comes from the auth roles (display only). Rules and fu
 - `/club-pass`: one story page, the CLUB PASS magazine. `/club-pass/how-it-works` redirects (301) to it.
   At the domain switch: boomertanger.club → `/club-pass`, boomertanger.plus → `/club-pass#ch-pick`.
 - Nav: Community group, blurb "Fan Club and Sub Club, explained".
-- Later parts (mockups first, one at a time): `/tip`, `/account/club`, `/admin/members`, the member home
+- Later parts (mockups first, one at a time): `/tip`, `/admin/members`, the member home
   (its own addendum).
 
 ### /club-pass layout (mockup 5)
@@ -125,11 +125,11 @@ spread, the perk board, the spread scenes, the press, the gold moment. Reused: T
 `.bt-badge`, `.bt-chip`, `.bt-btn`, the mascot, BOOMBOT.
 
 ## 9. Parts
-1. Docs (this spec, the mockup, ROADMAP, CHANGELOG).
-2. Kit pieces.
-3. The `/club-pass` page (payments off), data file and check, redirect, nav entry, service manifest.
-4. Billing on staging (Stripe test mode), `/account/club`. 5. Twitch counting. 6. Gifts and `/tip`.
-7. `/admin/members`. 8. Member home (addendum first).
+1. The `/club-pass` page: docs (this spec, the mockup, ROADMAP, CHANGELOG), the kit pieces, the page (payments off), data file and
+   check, redirect, nav entry, service manifest. Done.
+2. My pass, the account tab at `/account/club` (§11). Done.
+3. Twitch counting. 4. Billing on staging (Stripe test mode). 5. Gifts and `/tip`. 6. `/admin/members`.
+7. Member home (addendum first).
 
 ## 10. Launch checklist additions
 Quiet launch; Stripe's form pointing at /club-pass; Minnesota sales tax answer from the accountant;
