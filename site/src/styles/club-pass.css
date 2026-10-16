@@ -573,6 +573,8 @@
 /* ---- the cover, as the mockup renders it ---- */
 /* "Pick your pass": in the mockup the kit's paragraph reset wins over .mz-sub, so it reads in normal case, bold, normal tracking. */
 .bt-root:not(#_) .cp-sub { margin: 0; letter-spacing: normal; text-transform: none; }
+/* The right-hand cover lines: every part (label, headline, description, Read) sits flush with the right edge (mockup: .mz-lines--r a.mz-line). */
+.bt-root:not(#_) .cp-lines--r a.cp-line { align-items: flex-end; }
 /* The lanyard hangs from the top of the cover star, centred (the mockup's inline left: 25%). */
 .bt-root:not(#_) .cp-star .cp-hang--sub { left: 25%; right: auto; }
 /* The cover pass is not a size container here: everything in it is sized against the cover star (.cp-star, the size container),
