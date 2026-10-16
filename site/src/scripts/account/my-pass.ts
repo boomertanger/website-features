@@ -5,24 +5,29 @@
 //   Twitch counting write it, the plan comes from the auth roles ("sub" = Sub Club), crew from the crew grade claim (roleFlags),
 //   and Twitch linked or not from users/{uid}.linked.twitch. Nothing here writes.
 //   Payments off (site.json clubPass.payments false): every buy and gift button is a disabled Opening soon, Payments and Gifts
-//   show their empty states, no renewal dates, receipts or gift rows, and the Twitch card shows only linked or not.
+//   show their empty states, and no renewal dates, receipts or gift rows.
+//   Twitch (docs/specs/club-pass.md §12): once the broadcaster token is connected (public/clubPass.twitchCounting), the Twitch card shows
+//   the sub result (tier, gifted, checked time) with Check again (clubLinkTwitch); before that, linked or not and "Twitch subs start
+//   counting soon." After a check the ID token is refreshed, so a pass that turned gold (or back) updates without a reload.
 //   The gold moment: the first time the tab is open while the pass is gold, the pass pops, confetti falls and the Welcome stamp
 //   lands (reduced motion: the stamp only); remembered per viewer in localStorage bt.club.goldSeen.<uid>.
 //   Off production, signed out, ?as=member previews Fan Club, ?as=sub Sub Club and ?as=crew (or a crew or admin role) the crew pass.
-import { onAuth, roleFlags, type AuthState } from "../../lib/auth";
+import { onAuth, roleFlags, refresh, getAuthState, type AuthState } from "../../lib/auth";
+import { messageFor } from "../../lib/errors";
 import { isProduction } from "../../lib/env";
 import { SITE_ID } from "../../lib/firebase";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import data from "../../data/club-pass.json";
 import previewMember from "../../data/preview-member.json";
 
-type Source = "fan" | "sub" | "twitch" | "stripe" | "gift" | "crew";
+type Source = "fan" | "sub" | "twitch" | "stripe" | "gift" | "grant" | "crew";
 interface Club {
   plan?: "fan" | "sub";
-  sources?: { stripe?: unknown; twitch?: unknown; gift?: unknown; crew?: unknown };
-  twitch?: { linked?: boolean; login?: string; tier?: string | number };
+  sources?: { stripe?: unknown; twitch?: unknown; gift?: unknown; grant?: unknown; crew?: unknown };
+  twitch?: { linked?: boolean; login?: string; sub?: boolean; tier?: string | number | null; gifted?: boolean; checkedAt?: number };
 }
-interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: { linked: boolean; login: string; tier: string } }
+interface TwitchView { linked: boolean; login: string; tier: string; sub: boolean | null; gifted: boolean; checkedAt: number | null }
+interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: TwitchView; counting: boolean; preview: boolean }
 
 const root = document.querySelector<HTMLElement>("[data-mp]");
 if (root) init(root);
@@ -39,26 +44,28 @@ function init(root: HTMLElement) {
   const reduced = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
   const month = (d: Date) => d.toLocaleDateString(undefined, { month: "short", year: "numeric" });
   let view: View | null = null;
+  let note = "";   // the Twitch card's last Check again message
 
   // ---------- the viewer ----------
-  const members = new Map<string, Promise<{ club: Club | null; joined: Date | null }>>();
+  const members = new Map<string, Promise<{ club: Club | null; joined: Date | null; counting: boolean }>>();
   function memberDoc(uid: string) {
     if (!members.has(uid)) members.set(uid, (async () => {
       try {
         const { db, doc, getDoc } = await import("../../lib/db");
         const snap = await getDoc(doc(db, "sites", SITE_ID, "members", uid));
         const d = snap.exists() ? snap.data() : {};
-        return { club: (d.club as Club | undefined) ?? null, joined: (d.joinedAt as { toDate?(): Date } | undefined)?.toDate?.() ?? null };
+        const pub = await getDoc(doc(db, "sites", SITE_ID, "public", "clubPass")).catch(() => null);
+        return { club: (d.club as Club | undefined) ?? null, joined: (d.joinedAt as { toDate?(): Date } | undefined)?.toDate?.() ?? null, counting: !!pub?.get("twitchCounting") };
       } catch (err) {
         console.error("my pass: couldn't read the member summary", err);
-        return { club: null, joined: null };
+        return { club: null, joined: null, counting: false };
       }
     })());
     return members.get(uid)!;
   }
 
   function sourcesOf(club: Club | null, sub: boolean, crew: boolean): Source[] {
-    const from = club?.sources ? (["twitch", "stripe", "gift", "crew"] as const).filter((k) => club.sources![k]) : [];
+    const from = club?.sources ? (["twitch", "stripe", "gift", "grant", "crew"] as const).filter((k) => club.sources![k]) : [];
     if (from.length) return [...from];
     if (crew) return sub ? ["sub", "crew"] : ["crew"];
     return sub ? ["sub"] : ["fan"];
@@ -75,7 +82,8 @@ function init(root: HTMLElement) {
       return {
         uid, handle: s.profile?.handle ? `@${s.profile.handle}` : "", joined: m.joined ?? s.profile?.joinedAt?.toDate?.() ?? null,
         gold: !sources.includes("fan"), crew: sources.includes("crew"), sources,
-        twitch: { linked: m.club?.twitch?.linked ?? !!link, login: m.club?.twitch?.login || link?.login || "", tier: m.club?.twitch?.tier ? String(m.club.twitch.tier) : "" },
+        twitch: { linked: !!link, login: link?.login || m.club?.twitch?.login || "", tier: m.club?.twitch?.tier ? String(m.club.twitch.tier) : "", sub: link && typeof m.club?.twitch?.sub === "boolean" ? m.club.twitch.sub : null, gifted: !!m.club?.twitch?.gifted, checkedAt: m.club?.twitch?.checkedAt ?? null },
+        counting: m.counting, preview: false,
       };
     }
     if (isProduction || s.status !== "signedOut") return null;
@@ -83,7 +91,11 @@ function init(root: HTMLElement) {
     const kind = as === "member" || as === "fan" ? "fan" : as === "sub" ? "sub" : ["crew", "mod", "captain", "lead", "deckhand", "admin", "owner", "a2"].includes(as) ? "crew" : null;
     if (!kind) return null;
     const sources: Source[] = kind === "fan" ? ["fan"] : kind === "sub" ? ["sub"] : ["crew"];
-    return { uid: `preview-${kind}`, handle: `@${previewMember.name.toLowerCase()}`, joined: new Date(), gold: kind !== "fan", crew: kind === "crew", sources, twitch: { linked: false, login: "", tier: "" } };
+    // ?twitch=linked | sub | nosub previews the Twitch card (sub and nosub as if counting were on).
+    const tw = new URLSearchParams(location.search).get("twitch") || "";
+    const twitch: TwitchView = tw ? { linked: true, login: "gbo_tv", tier: tw === "sub" ? "1" : "", sub: tw === "sub" ? true : tw === "nosub" ? false : null, gifted: false, checkedAt: tw === "linked" ? null : Date.now() } : { linked: false, login: "", tier: "", sub: null, gifted: false, checkedAt: null };
+    if (tw === "sub" && kind === "fan") sources.splice(0, 1, "twitch");
+    return { uid: `preview-${kind}`, handle: `@${previewMember.name.toLowerCase()}`, joined: new Date(), gold: kind !== "fan" || tw === "sub", crew: kind === "crew", sources, twitch, counting: tw === "sub" || tw === "nosub", preview: true };
   }
 
   // ---------- the pieces ----------
@@ -96,16 +108,22 @@ function init(root: HTMLElement) {
   const perksBtn = (kind = "primary") => `<a class="bt-btn bt-btn--${kind}" href="/club-pass" data-pulse="my-pass-see-perks">See your perks</a>`;
   const head = (t: string) => `<div class="bt-card-head"><h3 class="bt-card-title">${t}</h3></div>`;
   const empty = (title: string, text: string) => `<div class="bt-empty bt-empty--compact"><span class="bt-empty-title">${title}</span><span>${text}</span></div>`;
-  const lead = (v: View): Source => (["crew", "twitch", "stripe", "gift", "sub"] as Source[]).find((k) => v.sources.includes(k)) || "fan";
+  const lead = (v: View): Source => (["crew", "twitch", "stripe", "gift", "grant", "sub"] as Source[]).find((k) => v.sources.includes(k)) || "fan";
+  const clock = (ms: number) => {
+    const d = new Date(ms), today = new Date().toDateString() === d.toDateString();
+    return `${today ? "today" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
+  };
 
   function hero(v: View) {
     const k = lead(v);
     const [status, line] = ({
-      fan: ["Your free pass. It never expires.", PAY ? `Sub Club adds ${TOTAL - FAN} more perks and everything coming soon.` : "Sub Club opens soon, and Twitch subs will count too."],
+      fan: ["Your free pass. It never expires.", v.counting && v.twitch.sub === false ? "Your Twitch is linked, but no sub to Boomertanger was found."
+        : PAY ? `Sub Club adds ${TOTAL - FAN} more perks and everything coming soon.` : v.counting ? "Sub Club opens soon. Got a Twitch sub? It already counts." : "Sub Club opens soon, and Twitch subs will count too."],
       sub: ["Gold. Every perk is yours.", "Your pass stays gold for as long as your Sub Club lasts."],
       twitch: ["Gold through your Twitch sub.", "It stays gold for as long as your Twitch sub lasts."],
       stripe: ["Gold, paid here.", `${PRICE} a month. Cancel any time.`],
       gift: ["Gold, a gift.", "A gift month keeps your pass gold. Get Sub Club before it ends to stay gold."],
+      grant: ["Gold, from Boomertanger.", "Your pass was turned gold by the channel."],
       crew: ["Gold, on the crew.", "Crew get Sub Club free for as long as they're on the crew."],
     } as Record<Source, [string, string]>)[k];
     const cta = k === "fan" ? subBtn() + (v.twitch.linked
@@ -130,9 +148,10 @@ function init(root: HTMLElement) {
     const SRC: Record<Source, [string, string, string, boolean]> = {
       fan: ["🎟️", "Fan Club pass", "Free, no end date", false],
       sub: ["🎟️", "Sub Club pass", "Gold on your account", true],
-      twitch: [TW, "Twitch sub", `${v.twitch.tier ? `Tier ${esc(v.twitch.tier)} · ` : ""}lasts as long as your Twitch sub`, true],
+      twitch: [TW, "Twitch sub", `${v.twitch.tier ? `Tier ${esc(v.twitch.tier)} · ` : ""}lasts as long as your Twitch sub${v.twitch.checkedAt ? ` · checked ${clock(v.twitch.checkedAt)}` : ""}`, true],
       stripe: ["💳", "Paid here", `${PRICE} a month`, true],
       gift: ["🎁", "Gift", "One month, never renews", true],
+      grant: ["🎟️", "From Boomertanger", "Turned gold by the channel", true],
       crew: ["🛡️", "Crew pass", "Free while you're on the crew", true],
     };
     return `<div class="bt-card">${head(`Where your ${v.gold ? "gold" : "pass"} comes from`)}${v.sources.map((k) => {
@@ -150,10 +169,18 @@ function init(root: HTMLElement) {
 
   function twitch(v: View) {
     const icon = `<span class="bt-platform-icon bt-platform-icon--twitch" aria-hidden="true">${TW}</span>`;
-    const row = v.twitch.linked
-      ? `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>${esc(v.twitch.login || "Twitch")}</b><small>Linked to your account</small></div><span class="bt-pill-ok">Linked</span></div><div class="mp-row-actions"><a class="bt-btn bt-btn--ghost" href="#linked">Linked accounts</a></div>`
-      : `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>Not linked</b><small>Sub to Boomertanger on Twitch? Link it here so your sub can count.</small></div><a class="bt-btn bt-btn--secondary" href="#linked" data-pulse="my-pass-link-twitch">Link Twitch</a></div>`;
-    return `<div class="bt-card">${head("Twitch")}${row}<p class="bt-fine bt-fine--left mp-note">Twitch subs start counting soon.</p></div>`;
+    const t = v.twitch, name = esc(t.login || "Twitch");
+    const checkBtn = '<button class="bt-btn bt-btn--ghost" type="button" data-mp-check data-pulse="my-pass-check-again">Check again</button>';
+    const accounts = '<a class="bt-btn bt-btn--ghost" href="#linked">Linked accounts</a>';
+    const subLink = `<a class="bt-btn bt-btn--secondary" href="${esc(TWITCH_URL)}" target="_blank" rel="noopener" data-pulse="my-pass-sub-on-twitch">Sub on Twitch ↗</a>`;
+    const when = t.checkedAt ? ` · checked ${clock(t.checkedAt)}` : "";
+    let rows: string;
+    if (!t.linked) rows = `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>Not linked</b><small>${v.counting ? "Sub to Boomertanger on Twitch? Link it and your pass turns gold." : "Sub to Boomertanger on Twitch? Link it here so your sub can count."}</small></div><a class="bt-btn bt-btn--secondary" href="#linked" data-pulse="my-pass-link-twitch">Link Twitch</a></div>`;
+    else if (!v.counting || t.sub === null) rows = `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>${name}</b><small>Linked to your account${v.counting ? " · not checked yet" : ""}</small></div><span class="bt-pill-ok">Linked</span></div><div class="mp-row-actions">${v.counting ? checkBtn : ""}${accounts}</div>`;
+    else if (t.sub) rows = `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>${name}</b><small>Tier ${esc(t.tier || "1")}${t.gifted ? " gifted" : ""} sub to Boomertanger${when}</small></div><span class="bt-pill-ok">Sub found</span></div><div class="mp-row-actions">${checkBtn}${accounts}</div>`;
+    else rows = `<div class="bt-set-row">${icon}<div class="bt-set-row-main"><b>${name}</b><small>No sub to Boomertanger found${when}</small></div><span class="bt-pill-warn">No sub</span></div><div class="mp-row-actions">${subLink}${checkBtn}</div>`;
+    const fine = v.counting ? "Prime and gifted subs count too." : "Twitch subs start counting soon.";
+    return `<div class="bt-card">${head("Twitch")}${rows}<p class="bt-fine bt-fine--left mp-note" data-mp-note role="status">${esc(note || fine)}</p></div>`;
   }
 
   const gifts = () => `<div class="bt-card">${head("Gifts")}${empty("No gifts yet", "Give someone a month of Sub Club. It never renews.")}<div class="mp-row-actions">${giftBtn()}</div></div>`;
@@ -209,9 +236,30 @@ function init(root: HTMLElement) {
   // the tab opening (page.ts toggles the pane's hidden)
   new MutationObserver(() => goldMoment()).observe(root, { attributes: true, attributeFilter: ["hidden"] });
 
+  // ---------- Check again (clubLinkTwitch, 1 a minute) ----------
+  function bindCheck() {
+    const btn = body.querySelector<HTMLButtonElement>("[data-mp-check]");
+    if (!btn) return;
+    btn.addEventListener("click", async () => {
+      const line = body.querySelector<HTMLElement>("[data-mp-note]");
+      if (view?.preview) { if (line) line.textContent = "Preview: nothing checked."; return; }
+      btn.disabled = true; btn.textContent = "Checking…";
+      try {
+        const { call } = await import("../../lib/call");
+        const r = await call<{ sub?: boolean; counting?: boolean }>("clubLinkTwitch");
+        note = r.counting === false ? "" : r.sub ? "Sub found. Your pass is gold." : "Checked: no sub to Boomertanger found.";
+      } catch (err) { note = messageFor(err, "Couldn't check Twitch. Try again in a minute."); }
+      const uid = getAuthState().user?.uid;
+      if (uid) members.delete(uid);
+      last = "";
+      await refresh({ forceToken: true }).catch(() => {});   // the new claims: the pass (and every page) updates without a reload
+      await render(getAuthState());
+    });
+  }
+
   // ---------- render ----------
   let seq = 0, last = "";
-  onAuth(async (s) => {
+  async function render(s: AuthState) {
     const n = ++seq;
     const v = await viewOf(s);
     if (n !== seq) return;
@@ -221,6 +269,8 @@ function init(root: HTMLElement) {
     if (!v) { body.innerHTML = ""; return; }
     body.innerHTML = hero(v) + `<div class="mp-grid">${sources(v)}${payments(v)}${twitch(v)}${gifts()}${v.gold ? "" : upgrade()}${v.crew ? crewCard() : ""}</div>`;
     bindBoard();
+    bindCheck();
     goldMoment();
-  });
+  }
+  onAuth((s) => { void render(s); });
 }
