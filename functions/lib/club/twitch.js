@@ -11,6 +11,9 @@
 // club.sources.twitch { tier, gifted, since }. Nothing else from Twitch; no payment data. Who a Twitch user is comes from
 // platformLinks/twitch_{id} (one Twitch account links to one site account); unlinked Twitch users are ignored.
 // Without a connected broadcaster token (lib/twitchBroadcaster.js) check() records the link but no sub result (counting: false).
+// The channel's own Twitch account (the broadcaster's user id, or TWITCH_LOGIN when no token is connected) is never checked for a sub:
+// club.twitch { linked, login, own: true, checkedAt } and no twitch source (My pass: "This is the channel's own Twitch account.").
+// club.twitch is removed on unlink; whether Twitch is linked is always users/{uid}.linked.twitch.
 const admin = require("firebase-admin");
 const { BroadcasterError } = require("../twitchBroadcaster");
 
@@ -21,7 +24,7 @@ const TYPES = ["channel.subscribe", "channel.subscription.message", "channel.sub
 /** "1000" -> "1", "2000" -> "2", "3000" -> "3" (Twitch's tier strings). */
 const tierOf = (t) => { const n = Math.round(Number(t) / 1000); return n >= 1 && n <= 3 ? String(n) : "1"; };
 
-function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlement, now = Date.now }) {
+function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlement, now = Date.now, channelLogin = "boomertanger" }) {
   const FieldValue = admin.firestore.FieldValue;
   const memberRef = (uid) => db.doc(`sites/${SITE_ID}/members/${uid}`);
   const publicRef = db.doc(`sites/${SITE_ID}/public/clubPass`);
@@ -37,11 +40,12 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
   }
 
   /** Writes what Twitch said for one member (sub: null = unknown, no token) and recomputes. Skips non-members. */
-  async function record(uid, { login, sub, tier = null, gifted = false }) {
+  async function record(uid, { login, sub, tier = null, gifted = false, own = false }) {
     const ref = memberRef(uid), snap = await ref.get();
     if (!snap.exists) return null;
     const twitch = { linked: true, login: login || null, checkedAt: now() };
-    if (sub !== null) Object.assign(twitch, { sub: !!sub, tier: sub ? tier : null, gifted: sub ? !!gifted : false });
+    if (own) { twitch.own = true; sub = false; }
+    else if (sub !== null) Object.assign(twitch, { sub: !!sub, tier: sub ? tier : null, gifted: sub ? !!gifted : false });
     const patch = { "club.twitch": twitch };
     if (sub === true) patch["club.sources.twitch"] = { tier, gifted: !!gifted, since: snap.get("club.sources.twitch.since") || now() };
     if (sub === false) patch["club.sources.twitch"] = FieldValue.delete();
@@ -60,6 +64,11 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
     const user = await db.doc(`users/${uid}`).get();
     const tw = user.exists ? user.get("linked.twitch") : null;
     if (!tw?.id) return { ...(await unlink(uid)), linked: false, counting: true };
+    const bidKnown = await broadcasterId();
+    if ((bidKnown && String(tw.id) === bidKnown) || (!bidKnown && String(tw.login || "").toLowerCase() === channelLogin)) {
+      const r = await record(uid, { login: tw.login, own: true });
+      return { linked: true, login: tw.login, own: true, counting: !!bidKnown, plan: r?.plan ?? null };
+    }
     let token;
     try { token = await broadcaster.token(); } catch (err) {
       if (!(err instanceof BroadcasterError)) throw err;
@@ -75,7 +84,7 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
   async function unlink(uid) {
     const ref = memberRef(uid), snap = await ref.get();
     if (!snap.exists) return { plan: null };
-    await ref.update({ "club.twitch": { linked: false }, "club.sources.twitch": FieldValue.delete() });
+    await ref.update({ "club.twitch": FieldValue.delete(), "club.sources.twitch": FieldValue.delete() });
     const r = await entitlement.recompute(uid);
     return { plan: r?.plan ?? null };
   }
@@ -90,6 +99,7 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
     if (!TYPES.includes(type) || !ev.user_id) return { applied: false };
     const bid = await broadcasterId();
     if (bid && String(ev.broadcaster_user_id) !== bid) return { applied: false };
+    if (bid && String(ev.user_id) === bid) return { applied: false };   // the channel's own account
     const uid = await uidFor(ev.user_id);
     if (!uid) return { applied: false };
     const user = await db.doc(`users/${uid}`).get();
@@ -119,6 +129,7 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
       const uid = link.get("uid"), twitchId = link.id.slice("twitch_".length);
       if (!uid) continue;
       out.linked++;
+      if (twitchId === bid) { out.own = (out.own || 0) + 1; await check(uid); continue; }   // the channel's own account: never a sub
       const m = await memberRef(uid).get();
       if (!m.exists) continue;
       out.checked++;
@@ -135,7 +146,7 @@ function makeTwitchSubs({ db, fetchFn = fetch, clientId, broadcaster, entitlemen
   /** The public flag My pass reads: is a broadcaster token connected (so Twitch subs count)? */
   const setCounting = (on) => publicRef.set({ twitchCounting: !!on, updatedAt: now() }, { merge: true });
 
-  return { check, unlink, applyEvent, sweep, setCounting, lookup, TYPES };
+  return { check, unlink, applyEvent, sweep, setCounting, lookup, broadcasterId, TYPES };
 }
 
 module.exports = { makeTwitchSubs, tierOf, TYPES };

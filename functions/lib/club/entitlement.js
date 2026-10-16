@@ -9,9 +9,11 @@
 //   grant   { by, note, at, until? }       functions/scripts/club-grant.js (the owner and testing)
 //   crew    { grade }                      worked out HERE from the members doc's crewGrade / crewStatus (Mod Machina writes those):
 //                                          on the crew and not Paused or Alumni
+//   owner   {}                             worked out HERE: the member is sites/boomertanger.ownerUid. The owner's pass is always gold.
 // Any live source makes the plan "sub" (Sub Club); none makes it "fan". recompute writes the summary in the §11 shape
 //   club: { plan, sources, twitch: { linked, login?, sub?, tier?, gifted?, checkedAt? }, gifts: { given, received }, updatedAt }
-// (club.twitch and club.gifts are kept as their writers left them), and keeps the "sub" role in the members doc in step, leaving every
+// (club.twitch and club.gifts are kept as their writers left them; club.twitch is never made up here, so a missing one means "not
+// checked yet", never "not linked": whether Twitch is linked is users/{uid}.linked.twitch, the same field Linked accounts reads), and keeps the "sub" role in the members doc in step, leaving every
 // other role untouched. When the role changes it also sets the custom claims at once (the same merge mirrorMemberRoles does, so the
 // site can refresh the ID token straight away); mirrorMemberRoles then runs as usual for the role tag and the adminLog entry.
 // Legacy: a member with the old staging-only "sub" role and no club.sources yet is left alone (no write) until it becomes a grant
@@ -19,7 +21,8 @@
 const admin = require("firebase-admin");
 
 const SITE_ID = "boomertanger";
-const SOURCES = ["twitch", "stripe", "gift", "grant", "crew"];
+const SOURCES = ["twitch", "stripe", "gift", "grant", "crew", "owner"];
+const DERIVED = ["crew", "owner"];   // worked out here from other data, never stored by a writer
 const BY = { uid: null, name: "Club Pass" };
 
 const msOf = (v) => (v == null ? null : typeof v === "number" ? v : typeof v.toMillis === "function" ? v.toMillis() : null);
@@ -37,14 +40,16 @@ function live(key, s, at) {
 /**
  * Pure: the member doc's data -> { club, sub, legacy }. club is the new summary without updatedAt; sub whether the "sub" role belongs.
  */
-function computeClub(member, at) {
+function computeClub(member, at, { isOwner = false } = {}) {
   const old = member.club && typeof member.club === "object" ? member.club : null;
   const sources = {};
-  for (const k of SOURCES) if (k !== "crew" && old?.sources?.[k] && live(k, old.sources[k], at)) sources[k] = old.sources[k];
+  for (const k of SOURCES) if (!DERIVED.includes(k) && old?.sources?.[k] && live(k, old.sources[k], at)) sources[k] = old.sources[k];
   if (crewActive(member)) sources.crew = { grade: member.crewGrade };
+  if (isOwner) sources.owner = {};
   const sub = Object.keys(sources).length > 0;
   const legacy = !old?.sources && !sub && (member.roles || []).includes("sub");   // no source was ever written
-  const club = { plan: sub ? "sub" : "fan", sources, twitch: old?.twitch || { linked: false }, gifts: old?.gifts || { given: 0, received: 0 } };
+  const club = { plan: sub ? "sub" : "fan", sources, gifts: old?.gifts || { given: 0, received: 0 } };
+  if (old?.twitch && old.twitch.linked !== false) club.twitch = old.twitch;   // an old made-up { linked: false } is dropped
   return { club, sub, legacy };
 }
 
@@ -67,10 +72,10 @@ function makeEntitlement({ db = admin.firestore(), auth = admin.auth(), now = Da
   async function recompute(uid, { by = BY } = {}) {
     const at = now();
     const out = await db.runTransaction(async (tx) => {
-      const snap = await tx.get(memberRef(uid));
+      const [snap, site] = await Promise.all([tx.get(memberRef(uid)), tx.get(db.doc(`sites/${SITE_ID}`))]);
       if (!snap.exists) return null;
       const m = snap.data();
-      const { club, sub, legacy } = computeClub(m, at);
+      const { club, sub, legacy } = computeClub(m, at, { isOwner: site.exists && site.get("ownerUid") === uid });
       if (legacy) return { plan: "sub", changed: false, rolesChanged: false, legacy: true, roles: m.roles || [] };
       const roles = new Set(m.roles || []);
       const hadSub = roles.has("sub");

@@ -173,4 +173,10 @@ Mockup: `docs/design/mockups/club-pass-my-pass.html` (hero H1, the hanging pass)
   owner and testing): writes `members/{uid}.club` and adds or removes the "sub" role in the members doc and the custom claims, leaving
   every other role untouched.
 - **Stored:** sub or not, tier, is_gift, checkedAt. Nothing else from Twitch; no payment data.
+- **Owner:** an "owner" source, worked out from `sites/boomertanger.ownerUid` (never stored by a writer), makes the owner's pass
+  always Sub Club. My pass shows it as "Owner" with "Gold, it's your channel."
+- **The channel's own Twitch account:** a member whose linked Twitch is the Boomertanger channel itself is never checked for a sub
+  (not by the check, EventSub or the sweep). My pass's Twitch card says "This is the channel's own Twitch account."
+- **Linked or not** is always `users/{uid}.linked.twitch`, the same data Linked accounts shows; `club.twitch` only adds the sub
+  result (members who linked before Twitch counting have none until `functions/scripts/club-twitch-backfill.js` or the sweep runs).
 - **Logs:** adminLog feature `clubPass` (connect, disconnect, grants). No activityLog.

@@ -207,10 +207,49 @@ function fakeTwitch() {
     await T.check("u1");
     assert.equal(db.docs.get(m).club.plan, "sub");
     await T.unlink("u1");
-    assert.equal(db.docs.get(m).club.plan, "fan"); assert.equal(db.docs.get(m).club.twitch.linked, false);
+    assert.equal(db.docs.get(m).club.plan, "fan"); assert.equal(db.docs.get(m).club.twitch, undefined, "unlink removes club.twitch (linked or not is users/{uid}.linked.twitch)");
     // a Twitch user with no site member doc is skipped
     await db.doc("users/u9").set({ linked: { twitch: { id: "333", login: "x" } } });
     assert.equal((await T.check("u9")).plan, null);
+
+    // 4. the channel's own Twitch account is never checked for a sub
+    await db.doc("sites/boomertanger/members/own").set({ roles: [] });
+    await db.doc("users/own").set({ linked: { twitch: { id: "111", login: "boomertanger" } } });
+    await db.doc("platformLinks/twitch_111").set({ uid: "own", login: "boomertanger" });
+    tw.subs["111"] = { user_id: "111", tier: "3000", is_gift: false };   // Twitch lists the broadcaster as their own sub
+    const before = tw.calls.length;
+    r = await T.check("own");
+    assert.equal(r.own, true); assert.equal(r.sub, undefined);
+    assert.ok(!tw.calls.slice(before).some((c) => c.includes("user_id=111")), "no Get Broadcaster Subscriptions call for the channel itself");
+    const own = db.docs.get("sites/boomertanger/members/own").club;
+    assert.equal(own.twitch.own, true); assert.equal(own.sources.twitch, undefined); assert.equal(own.plan, "fan");
+    assert.equal((await T.applyEvent("channel.subscribe", { user_id: "111", broadcaster_user_id: "111", tier: "3000" })).applied, false);
+    const sw2 = await T.sweep();
+    assert.equal(sw2.own, 1); assert.equal(db.docs.get("sites/boomertanger/members/own").club.sources.twitch, undefined, "the sweep doesn't make the channel a sub");
+  }
+
+  // ---------- 2. club.twitch is never made up; 5. the owner is always gold ----------
+  {
+    const at = 7_000_000;
+    // 2: a member who linked Twitch before part 3 has no club.twitch: recompute doesn't invent { linked: false }, and drops an old one
+    assert.equal(computeClub({ roles: [] }, at).club.twitch, undefined);
+    assert.equal(computeClub({ roles: [], club: { sources: {}, twitch: { linked: false } } }, at).club.twitch, undefined);
+    assert.deepEqual(computeClub({ roles: [], club: { sources: {}, twitch: { linked: true, login: "a", sub: false } } }, at).club.twitch, { linked: true, login: "a", sub: false });
+    // 5: the owner
+    const o = computeClub({ roles: ["admin"] }, at, { isOwner: true });
+    assert.equal(o.club.plan, "sub"); assert.deepEqual(o.club.sources, { owner: {} });
+    assert.equal(computeClub({ roles: ["admin"], club: { sources: { owner: {} } } }, at).sub, false, "owner is worked out, never kept from storage");
+    const db = fakeDb(), auth = fakeAuth();
+    const E = makeEntitlement({ db, auth, now: () => at });
+    await db.doc("sites/boomertanger").set({ ownerUid: "boss" });
+    await db.doc("sites/boomertanger/members/boss").set({ roles: ["admin"] });
+    await db.doc("sites/boomertanger/members/someone").set({ roles: [] });
+    auth.users.set("boss", { roles: { boomertanger: ["admin"] } });
+    const r = await E.recompute("boss");
+    assert.equal(r.plan, "sub"); assert.deepEqual(db.docs.get("sites/boomertanger/members/boss").roles, ["admin", "sub"]);
+    assert.deepEqual(auth.users.get("boss").roles.boomertanger, ["admin", "sub"]);
+    assert.equal((await E.setGrant("boss", { on: false })).after.plan, "sub", "no grant needed: still gold");
+    assert.equal((await E.recompute("someone")).plan, "fan", "only the owner");
   }
   // ---------- the EventSub webhook hands Club Pass types to applyEvent ----------
   {
@@ -238,6 +277,23 @@ function fakeTwitch() {
     fail = false;
     assert.equal((await send("channel.subscription.message", "notification", "n3", { user_id: "222" })).out, "ok", "Twitch's retry is handled");
     assert.deepEqual(seen.map((x) => x[0]), ["channel.subscribe", "channel.subscription.end", "channel.subscription.message"]);
+  }
+  // ---------- 2. My pass's Twitch card uses the same link data as Linked accounts (site/src/lib/club-twitch.js, what the page imports) ----------
+  {
+    const { pathToFileURL } = require("url");
+    const { twitchView } = await import(pathToFileURL(require("path").join(__dirname, "..", "..", "site", "src", "lib", "club-twitch.js")).href);
+    const link = { id: "222", login: "gbo_tv" };
+    // the bug: linked before part 3, so club.twitch is missing or an old made-up { linked: false }
+    assert.equal(twitchView(link, undefined).linked, true);
+    assert.equal(twitchView(link, { linked: false }).linked, true, "users/{uid}.linked.twitch wins over club.twitch");
+    assert.equal(twitchView(link, { linked: false }).login, "gbo_tv");
+    assert.equal(twitchView(link, { linked: false, sub: true }).sub, null, "no sub result from a club.twitch that isn't linked");
+    assert.equal(twitchView(null, { linked: true, login: "x", sub: true }).linked, false, "unlinked in Linked accounts = not linked here");
+    assert.deepEqual(twitchView(link, { linked: true, sub: true, tier: "2", gifted: true, checkedAt: 5 }), { linked: true, login: "gbo_tv", own: false, sub: true, tier: "2", gifted: true, checkedAt: 5 });
+    // 4. the channel's own account
+    const own = twitchView({ id: "111", login: "BoomerTanger" }, undefined, "boomertanger");
+    assert.equal(own.own, true); assert.equal(own.sub, null); assert.equal(own.linked, true);
+    assert.equal(twitchView({ id: "111", login: "renamed" }, { linked: true, own: true, sub: false }).own, true, "own from the server too");
   }
   console.log("check-club: ok");
 })().catch((err) => { console.error(err); process.exit(1); });
