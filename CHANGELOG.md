@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Club Pass, part 4 (docs): docs/specs/club-pass.md §13 Billing (confirmed Oct 16, 2026): the two Sub Club products, clubCheckout with the under-18 and Twitch checks, billingWebhook and its ledger, grace, refunds and disputes, clubPortal, clubStatus, clubBillingSweep; staging only, test mode. ROADMAP: part 4 billing in progress.
 - Fixed: account page status messages ("Twitch is linked." and the like) no longer carry across tabs: switching tabs (click, arrow keys, a hash change or an in-page link) clears them, and coming back doesn't bring them back. functions/scripts/check-club.js now fails if any Club Pass code (grants, broadcaster connect/disconnect, the entitlement, Twitch checks) writes or loads a writer of the public activityLog (it logs to adminLog only). .wrangler/ is git-ignored.
 - Club Pass: arriving at /club-pass#ch-perks from My pass lands on the chapter heading (the ghost 02, Everything your pass opens and its lede in full, 16px under the top, or under the sticky chapter rail on phones) with the board right below: scroll-margin-top on #ch-perks (board scroll-margin removed).
 - Fixed (kit): the chapter rail (shared/ui/toc.js) now lights up the right stop when a page opens on a #chapter link; it ignored every scroll in the first 900 ms after the page opened.

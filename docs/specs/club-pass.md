@@ -180,3 +180,26 @@ Mockup: `docs/design/mockups/club-pass-my-pass.html` (hero H1, the hanging pass)
 - **Linked or not** is always `users/{uid}.linked.twitch`, the same data Linked accounts shows; `club.twitch` only adds the sub
   result (members who linked before Twitch counting have none until `functions/scripts/club-twitch-backfill.js` or the sweep runs).
 - **Logs:** adminLog feature `clubPass` (connect, disconnect, grants). No activityLog.
+
+## 13. Billing — CONFIRMED (2026-10-16)
+- **Products (Stripe test mode first):** "Sub Club" $5.99/month recurring; "Sub Club, one month" $5.99 one-time (30 days of gold, no
+  renewal). Customer portal: cancel at period end, update card, invoices; no plan switching. Created by a setup script; price and portal
+  ids live in `functions/.env.staging` (not secrets).
+- **clubCheckout({ kind: "sub" | "month", guardianOk? })** creates a Stripe Checkout session (one Stripe customer per member, metadata
+  uid) and returns its URL; success returns to `/account/club?checkout=success`, cancel to `/club-pass#ch-pick`. Refused when the member
+  already has an active Stripe subscription (use the portal instead). Members 13 to 17 (age band from `users/{uid}/private/age`, server
+  side) must send `guardianOk: true`, set by a checkbox in a short pre-checkout dialog (`openModal`); members gold through Twitch see a
+  "Your Twitch sub already gives you Sub Club" warning in the same dialog before continuing.
+- **billingWebhook** (HTTP, Stripe signature checked on the raw body, each event id handled once via `billing/main/events/{eventId}`):
+  checkout.session.completed, customer.subscription.created/updated/deleted, invoice.paid, invoice.payment_failed, charge.refunded,
+  charge.dispute.created. It writes `billing/main/customers/{uid}`, `subscriptions/{id}` and an append-only `ledger/{id}`, sets
+  `members/{uid}.club.sources.stripe { kind, status, renewsAt?, endsAt?, cancelAt?, graceUntil? }`, then recomputes the pass with
+  `lib/club/entitlement.js`.
+- **Failed payment:** the pass stays gold with graceUntil = first failure + 7 days; Stripe retries within that week and cancels the
+  subscription if all fail. Refund or dispute ends the Stripe source at once. One-month pass: endsAt = paid + 30 days.
+- **clubPortal** returns a Stripe customer portal URL (return to `/account/club`). **clubStatus** returns receipts (date, amount,
+  description, Stripe receipt link) for My pass. A daily **clubBillingSweep** (05:45 America/Chicago) ends one-month passes and expired
+  grace periods and recomputes.
+- `billing/**` is server only (deny-all rules). Card details never touch the site. Sales tax off on staging; Stripe Tax waits for the
+  accountant (launch checklist).
+- Payments switch on for staging only; production keeps "Opening soon".
