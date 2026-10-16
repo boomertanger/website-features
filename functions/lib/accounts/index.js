@@ -21,6 +21,7 @@ const { defineSecret, defineString } = require("firebase-functions/params");
 const admin = require("firebase-admin");
 const v = require("./validate");
 const factory = require("../factory/record");   // Fun Factory profile events: avatar, link
+const club = require("../club/hooks");           // Club Pass (docs/specs/club-pass.md §12): a Twitch sub counts after link / sign-in
 
 const SITE_ID = "boomertanger";
 const TERMS_VERSION_FALLBACK = "2026-09-28";   // sites/{siteId}.termsVersion wins (seed-site.js copies it from site.json)
@@ -289,6 +290,15 @@ module.exports = function accounts({ adminLogEntry }) {
 
   const twitchLinkData = (tw, now) => ({ id: tw.id, login: tw.login, displayName: tw.displayName, linkedAt: now });
 
+  // Club Pass: check the member's Twitch sub (or clear it) right after Twitch is linked, used to sign in, or unlinked. Best effort:
+  // a Twitch or token problem never fails the sign-in or the link (the daily sweep and EventSub catch up).
+  async function clubTwitch(uid, how) {
+    try {
+      const T = club.twitchSubs({ db, auth, clientId: TWITCH_CLIENT_ID.value(), clientSecret: TWITCH_CLIENT_SECRET.value() });
+      await (how === "unlink" ? T.unlink(uid) : T.check(uid));
+    } catch (err) { console.error(`twitchAuth: Club Pass ${how} check failed`, String((err && err.message) || err).slice(0, 160)); }
+  }
+
   // twitchAuth({ code, redirectUri, mode: "signin" | "link" })
   //   signin -> { token } (a Firebase custom token for the linked or a new account)
   //   link   -> { linked: { platform, login } } (requires auth)
@@ -315,6 +325,7 @@ module.exports = function accounts({ adminLogEntry }) {
         if (profile.exists && user.get("prefs.showLinked") === true) tx.update(r.profile, { "platforms.twitch": tw.login });
       });
       await factory.recordFactoryEvent(uid, "profile", { action: "link", platform: "twitch" }, "link-twitch");
+      await clubTwitch(uid, "link");
       return { linked: { platform: "twitch", login: tw.login } };
     }
 
@@ -357,6 +368,7 @@ module.exports = function accounts({ adminLogEntry }) {
       const [user, profile] = await Promise.all([r.user.get(), r.profile.get()]);
       if (profile.exists && user.get("prefs.showLinked") === true) batch.update(r.profile, { "platforms.twitch": tw.login });
       await batch.commit();
+      await clubTwitch(uid, "signin");   // an existing account (a brand-new one has no members doc until signup)
     }
     return { token: await auth.createCustomToken(uid) };
   });
@@ -364,7 +376,7 @@ module.exports = function accounts({ adminLogEntry }) {
   // ---------- unlinkPlatform({ platform }) ----------
   // Deletes the link and the stored platform id. Refused when Twitch is the only
   // way into the account (add a password or Google first).
-  const unlinkPlatform = onCall(async (request) => {
+  const unlinkPlatform = onCall({ secrets: [TWITCH_CLIENT_SECRET] }, async (request) => {
     const uid = requireAuth(request);
     if (request.data?.platform !== "twitch") throw fail("invalid-argument", "Only Twitch can be unlinked for now.", "platform");
     const record = await auth.getUser(uid);
@@ -381,6 +393,7 @@ module.exports = function accounts({ adminLogEntry }) {
       if (user.exists) tx.update(r.user, { "linked.twitch": FieldValue.delete() });
       if (profile.exists) tx.update(r.profile, { "platforms.twitch": FieldValue.delete() });
     });
+    await clubTwitch(uid, "unlink");
     return { ok: true };
   });
 

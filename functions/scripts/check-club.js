@@ -39,7 +39,19 @@ function fakeDb() {
   }
   return {
     docs, doc,
-    collection(name) { return { async add(v) { const p = `${name}/${docs.size + 1}`; docs.set(p, v); return doc(p); } }; },
+    collection(name) {
+      const filters = [];
+      const q = {
+        async add(v) { const p = `${name}/${docs.size + 1}`; docs.set(p, v); return doc(p); },
+        where(f, op, val) { filters.push([f, op, val]); return q; },
+        async get() {
+          const rows = [...docs.keys()].filter((p) => p.startsWith(`${name}/`) && p.split("/").length === name.split("/").length + 1).map(snap)
+            .filter((s) => filters.every(([f, op, val]) => { const x = typeof f === "string" ? s.get(f) : s.id; return op === ">=" ? x >= val : op === "<" ? x < val : op === "==" ? x === val : true; }));
+          return { docs: rows, size: rows.length };
+        },
+      };
+      return q;
+    },
     async runTransaction(fn) { return fn({ get: (r) => r.get(), set: (r, v, o) => r.set(v, o), update: (r, v) => r.update(v), delete: (r) => r.delete() }); },
   };
 }
@@ -132,6 +144,72 @@ function fakeTwitch() {
     await db.doc("sites/boomertanger/members/u2").set({ roles: ["sub"] });
     assert.equal((await E.recompute("u2")).legacy, true);
     assert.deepEqual(db.docs.get("sites/boomertanger/members/u2").roles, ["sub"], "legacy role kept");
+  }
+  // ---------- checking a sub, EventSub, unlink, the sweep ----------
+  {
+    let clock = 9_000_000;
+    const db = fakeDb(), auth = fakeAuth(), tw = fakeTwitch();
+    tw.subs = { "222": { user_id: "222", tier: "2000", is_gift: true } };
+    const base = tw.fetch;
+    tw.fetch = async (url, init) => {
+      const u = new URL(String(url));
+      if (u.pathname === "/helix/subscriptions") {
+        tw.calls.push(String(url));
+        const one = u.searchParams.get("user_id");
+        const data = one ? (tw.subs[one] ? [tw.subs[one]] : []) : Object.values(tw.subs);
+        return { ok: true, status: 200, json: async () => ({ data, pagination: {} }) };
+      }
+      return base(url, init);
+    };
+    const { makeTwitchSubs, tierOf } = require("../lib/club/twitch");
+    assert.equal(tierOf("1000"), "1"); assert.equal(tierOf("3000"), "3");
+    const b = makeBroadcaster({ db, fetchFn: tw.fetch, clientId: "cid", clientSecret: "sec", now: () => clock });
+    const E = makeEntitlement({ db, auth, now: () => clock });
+    const T = makeTwitchSubs({ db, fetchFn: tw.fetch, clientId: "cid", broadcaster: b, entitlement: E, now: () => clock });
+    const m = "sites/boomertanger/members/u1";
+    await db.doc(m).set({ roles: [] });
+    await db.doc("users/u1").set({ linked: { twitch: { id: "222", login: "gbo_tv" } } });
+    await db.doc("platformLinks/twitch_222").set({ uid: "u1", login: "gbo_tv" });
+    auth.users.set("u1", {});
+
+    let r = await T.check("u1");
+    assert.equal(r.counting, false, "no broadcaster token: linked, not counted");
+    assert.equal(db.docs.get(m).club.twitch.linked, true); assert.equal(db.docs.get(m).club.twitch.sub, undefined);
+    assert.equal(db.docs.get(m).club.plan, "fan");
+
+    await b.store({ accessToken: "acc", refreshToken: "ref", accessExpiresAt: clock + 3600000, scope: SCOPES, twitchUserId: "111", login: "boomertanger" });
+    r = await T.check("u1");
+    assert.deepEqual([r.counting, r.sub, r.tier, r.gifted, r.plan], [true, true, "2", true, "sub"]);
+    assert.ok(tw.calls.some((c) => c.includes("broadcaster_id=111") && c.includes("user_id=222")));
+    assert.deepEqual(db.docs.get(m).roles, ["sub"]); assert.deepEqual(auth.users.get("u1").roles.boomertanger, ["sub"]);
+    const stored = JSON.stringify(db.docs.get(m).club);
+    assert.ok(!/acc|ref/.test(stored), "no token on the member");
+
+    // EventSub: the sub ends, a stranger subs, the member resubs
+    assert.equal((await T.applyEvent("channel.subscription.end", { user_id: "222", broadcaster_user_id: "111", tier: "2000" })).applied, true);
+    assert.equal(db.docs.get(m).club.plan, "fan"); assert.deepEqual(db.docs.get(m).roles, []);
+    assert.equal(db.docs.get(m).club.sources.twitch, undefined);
+    assert.equal((await T.applyEvent("channel.subscribe", { user_id: "999", broadcaster_user_id: "111", tier: "1000" })).applied, false, "unlinked Twitch users are ignored");
+    assert.equal((await T.applyEvent("channel.subscribe", { user_id: "222", broadcaster_user_id: "555", tier: "1000" })).applied, false, "another channel is ignored");
+    await T.applyEvent("channel.subscription.message", { user_id: "222", broadcaster_user_id: "111", tier: "1000" });
+    assert.equal(db.docs.get(m).club.plan, "sub"); assert.equal(db.docs.get(m).club.twitch.tier, "1"); assert.equal(db.docs.get(m).club.twitch.gifted, false);
+
+    // the sweep: Twitch says no sub any more -> fixed
+    delete tw.subs["222"];
+    const sw = await T.sweep();
+    assert.deepEqual([sw.subscribers, sw.linked, sw.fixed], [0, 1, 1]);
+    assert.equal(db.docs.get(m).club.plan, "fan");
+    assert.equal((await T.sweep()).fixed, 0, "nothing to fix the second time");
+
+    // unlink
+    tw.subs["222"] = { user_id: "222", tier: "1000", is_gift: false };
+    await T.check("u1");
+    assert.equal(db.docs.get(m).club.plan, "sub");
+    await T.unlink("u1");
+    assert.equal(db.docs.get(m).club.plan, "fan"); assert.equal(db.docs.get(m).club.twitch.linked, false);
+    // a Twitch user with no site member doc is skipped
+    await db.doc("users/u9").set({ linked: { twitch: { id: "333", login: "x" } } });
+    assert.equal((await T.check("u9")).plan, null);
   }
   console.log("check-club: ok");
 })().catch((err) => { console.error(err); process.exit(1); });

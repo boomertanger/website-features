@@ -10,6 +10,10 @@
 //   clubBroadcasterDisconnect  owner: revokes and deletes the token. adminLog.
 //   clubOnCrewChange           trigger on sites/boomertanger/members/{uid}: when crewGrade or crewStatus changes, recompute the pass
 //                              (lib/club/entitlement.js; the crew source). Its own writes change neither, so it doesn't loop.
+//   clubLinkTwitch             signed-up member, 1 a minute and 20 a day (sites/boomertanger/rateLimits/clubTwitch_{uid}): "Check again"
+//                              on My pass. Get Broadcaster Subscriptions for their linked Twitch -> club.twitch, sources.twitch ->
+//                              recompute (lib/club/twitch.js). Returns { linked, counting, sub?, tier?, gifted?, checkedAt?, plan }.
+//   Connect and disconnect also set sites/boomertanger/public/clubPass.twitchCounting, which My pass reads.
 //
 // adminLog feature "clubPass". No activityLog.
 const { onCall } = require("firebase-functions/v2/https");
@@ -21,10 +25,12 @@ const accounts = require("../accounts");
 const { SITE_ID, fail, callerInfo } = require("../vault/common");
 const { makeBroadcaster, authUrl, BroadcasterError, SCOPES, DOC_PATH } = require("../twitchBroadcaster");
 const { makeEntitlement } = require("./entitlement");
+const { makeTwitchSubs } = require("./twitch");
 
 const FEATURE = "clubPass";
 const TWITCH_LOGIN = defineString("TWITCH_LOGIN");
 const STATE_TTL_MS = 10 * 60 * 1000;
+const LIMIT = { minuteMs: 60 * 1000, perDay: 20 };
 const SECRETS = [accounts.TWITCH_CLIENT_SECRET];
 
 function projectId() {
@@ -98,6 +104,7 @@ function build(deps = {}) {
       throw fail("failed-precondition", `Twitch didn't grant ${missing.join(" and ")}. Connect again and allow both.`, "scopes");
     }
     await broadcaster().store(t, { connectedBy: c.uid });
+    await subs().setCounting(true);
     await log(c, "broadcasterConnect", { login: t.login, scope: t.scope });
     return { ok: true, login: t.login };
   }
@@ -110,6 +117,7 @@ function build(deps = {}) {
   async function disconnect(request) {
     const c = await requireOwner(request);
     const was = await broadcaster().disconnect();
+    await subs().setCounting(false);
     if (was) await log(c, "broadcasterDisconnect", { login: was.login });
     return { ok: true, wasConnected: !!was };
   }
@@ -124,14 +132,43 @@ function build(deps = {}) {
     await entitlement.recompute(uid);
   }
 
+  // ---------- checking a sub ----------
+  let ts = null;
+  const subs = () => (ts ||= makeTwitchSubs({ db, fetchFn, clientId: clientId(), broadcaster: broadcaster(), entitlement, now }));
+  const limitRef = (uid) => db.doc(`sites/${SITE_ID}/rateLimits/clubTwitch_${uid}`);
+  /** 1 a minute and 20 a day (UTC days) per member. */
+  async function rateLimit(uid) {
+    const at = now(), day = new Date(at).toISOString().slice(0, 10);
+    await db.runTransaction(async (tx) => {
+      const s = await tx.get(limitRef(uid));
+      const d = s.exists ? s.data() : {};
+      const count = d.day === day ? d.dayCount || 0 : 0;
+      if (d.lastAt && at - d.lastAt < LIMIT.minuteMs) throw fail("resource-exhausted", "You just checked. Try again in a minute.", "rateLimited", { retryInMs: LIMIT.minuteMs - (at - d.lastAt) });
+      if (count >= LIMIT.perDay) throw fail("resource-exhausted", "That's enough checks for today. Twitch subs also update on their own.", "rateLimitedDay");
+      tx.set(limitRef(uid), { lastAt: at, day, dayCount: count + 1, expireAt: admin.firestore.Timestamp.fromMillis(at + 2 * 86400000) });
+    });
+  }
+  async function linkTwitch(request) {
+    if (!request.auth) throw fail("unauthenticated", "Sign in first.", "signedOut");
+    const uid = request.auth.uid;
+    if (!(await db.doc(`sites/${SITE_ID}/members/${uid}`).get()).exists) throw fail("failed-precondition", "Finish signing up first.", "needsSignup");
+    await rateLimit(uid);
+    try { return await subs().check(uid); }
+    catch (err) {
+      console.error("clubLinkTwitch: check failed", String((err && err.message) || err).slice(0, 160));
+      throw fail("unavailable", "Couldn't reach Twitch. Try again in a minute.", "twitch");
+    }
+  }
+
   const functions = {
-    clubBroadcasterStart: onCall(startConnect),
+    clubBroadcasterStart: onCall({ secrets: SECRETS }, startConnect),
     clubBroadcasterConnect: onCall({ secrets: SECRETS }, finishConnect),
     clubBroadcasterStatus: onCall({ secrets: SECRETS }, broadcasterStatus),
-    clubBroadcasterDisconnect: onCall(disconnect),
+    clubBroadcasterDisconnect: onCall({ secrets: SECRETS }, disconnect),
     clubOnCrewChange: onDocumentWritten("sites/{siteId}/members/{uid}", onCrewChange),
+    clubLinkTwitch: onCall({ secrets: SECRETS }, linkTwitch),
   };
-  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster, entitlement, onCrewChange } };
+  return { functions, helpers: { startConnect, finishConnect, broadcasterStatus, disconnect, broadcaster, entitlement, onCrewChange, subs, linkTwitch, rateLimit } };
 }
 
 module.exports = (deps) => build(deps).functions;
