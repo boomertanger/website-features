@@ -402,9 +402,7 @@
 .bt-root:not(#_) .cp-sc-credits div { animation: none; }
   .bt-root:not(#_) .cp-sc-credits div { top: 10%; }
 }
-/* scroll-margin: arriving at /club-pass#ch-perks (My pass's See your perks) lands on the board itself, its top edge clear of the phones'
-   sticky chapter rail, the same 70px as .cp-ch (scripts/club-pass/page.ts scrolls it there) */
-.bt-root:not(#_) .cp-board { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 70px); margin-top: 22px; padding: 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--pb-c, transparent) 10%, transparent), transparent 70%), linear-gradient(180deg, var(--cp-shade-8), var(--cp-shade-27)); transition: background .6s; }
+.bt-root:not(#_) .cp-board { margin-top: 22px; padding: 18px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 90% at 50% 0%, color-mix(in srgb, var(--pb-c, transparent) 10%, transparent), transparent 70%), linear-gradient(180deg, var(--cp-shade-8), var(--cp-shade-27)); transition: background .6s; }
 .bt-root:not(#_) .cp-board[data-pass="fan"] { --pb-c: var(--bt-pass-fan); }
 .bt-root:not(#_) .cp-board[data-pass="sub"] { --pb-c: var(--bt-pass-sub); }
 .bt-root:not(#_) .cp-board-top { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px 20px; align-items: center; }
@@ -577,6 +575,10 @@
 /* ---- page frame ---- */
 .bt-root:not(#_) .cp-main { display: flex; flex-direction: column; gap: 64px; min-width: 0; }
 .bt-root:not(#_) .cp-ch { scroll-margin-top: 70px; min-width: 0; }
+/* Arriving at /club-pass#ch-perks (My pass's See your perks): the chapter heading lands in full (the ghost "02" rises 18px above the
+   section) about 16px under whatever is stuck at the top, with the board right below. Phones: under the 53px sticky chapter rail. */
+.bt-root:not(#_) #ch-perks { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 18px + 16px); }
+@container bt (max-width: 640px) { .bt-root:not(#_) #ch-perks { scroll-margin-top: calc(var(--bt-sticky-top, 0px) + 53px + 18px + 16px); } }
 .bt-root:not(#_) .cp .bt-spread { margin-top: 16px; }
 .bt-root:not(#_) .cp-feature--one { grid-template-columns: minmax(0, 1fr); }
 .bt-root:not(#_) .cp-hl--rules { margin-top: 14px; }

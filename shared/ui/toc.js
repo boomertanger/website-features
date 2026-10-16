@@ -39,7 +39,9 @@ export function initToc(nav, { observe = true } = {}) {
     // Works for tall sections and for short targets like a Markdown page's h2s, which can
     // jump past any thin band in one scroll.
     const sections = links.map((a) => document.getElementById(decodeURIComponent(a.hash.slice(1))));
-    let frame = 0, clickedAt = 0;
+    // -Infinity, not 0: with 0 the first 900 ms after the page opened counted as "just clicked", so arriving on a #chapter link
+    // (the jump, and any landing script) never lit its stop until the visitor scrolled again.
+    let frame = 0, clickedAt = -Infinity;
     const pick = () => {
       frame = 0;
       if (performance.now() - clickedAt < 900) return;   // let a menu jump finish on the clicked stop
