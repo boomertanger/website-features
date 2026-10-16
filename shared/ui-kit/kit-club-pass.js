@@ -48,7 +48,7 @@ export function clubPassKitHtml({ mascotUrl }) {
       ${plan(m, { sub: true, foot: '<button class="bt-btn bt-btn--secondary" type="button" disabled>Opening soon</button><p class="bt-plan-note">Sub Club opens soon.</p>' })}
       ${plan(m, { sub: true, foot: '<button class="bt-btn bt-btn--primary" type="button">Get Sub Club</button>' })}
     </div>
-    <h3 class="kit-sub">.bt-spread: a Fan Club page, a Sub Club page (Coming soon), a long headline. ← → or Flip through turn the page; the arrow keys work when it has focus.</h3>
+    <h3 class="kit-sub">.bt-spread: a Fan Club page, a Sub Club page (Coming soon), a long headline. ← → or Flip through turn the page; the arrow keys work when it has focus. Phone (640px and narrower): one column with the art first, the mast's middle part hidden, the stamp at 86px.</h3>
     <div class="bt-spread" data-kit-spread data-tone="fan" tabindex="0" aria-label="Demo magazine spread"><span class="bt-spread-sweep" aria-hidden="true"></span><span class="bt-spread-progress" aria-hidden="true"></span><div class="bt-spread-page" aria-live="polite">${pageHtml(PAGES[0], 0)}</div></div>
     <h3 class="kit-sub">.bt-admit: the gold tear-off ticket. Join free tears off the stub (it grows back after a moment).</h3>
     <div class="bt-admit" data-kit-admit>

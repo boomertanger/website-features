@@ -5878,7 +5878,8 @@
                      (words in .w > span rise in; .w--hi is the accent word; --long for long words; shared/ui/spread.js spreadHead()),
                      .bt-spread-dek (drop cap), .bt-spread-facts, .bt-spread-art (.bt-spread-art-in holds the scene, a .bt-stamp sits
                      bottom right, .bt-spread-soon top left), .bt-spread-pull, .bt-spread-foot (.bt-spread-status, a call to action,
-                     .bt-spread-nav). .is-turning sweeps a gold line across; .is-playing runs the .bt-spread-progress line.
+                     .bt-spread-nav). .is-turning sweeps a gold line across; .is-playing runs the .bt-spread-progress line. At 640px and
+                     narrower: one column with the art first, the mast's middle part hidden and the stamp at 86px.
    .bt-admit         the gold "Admit one" tear-off ticket: .bt-admit-main (small, b, span, the buttons) and .bt-admit-stub; .is-torn tears
                      the stub away (shared/ui/admit.js: any [data-admit-tear] button inside). .bt-admit-scissors is optional.
    Container queries only (bt, 1024 / 640 / 420). Reduced motion: colour stays, movement stops (the torn stub just fades). */
@@ -6002,6 +6003,8 @@
   .bt-root:not(#_) .bt-spread-pull { margin: 4px 18px 0; }
   .bt-root:not(#_) .bt-spread-foot { padding: 14px 18px 18px; }
   .bt-root:not(#_) .bt-spread-status { min-width: 100%; }
+  .bt-root:not(#_) .bt-spread-mast > :nth-child(2) { display: none; }   /* the middle of the mast ("The perks · Issue 01") */
+  .bt-root:not(#_) .bt-spread-art > .bt-stamp { width: 86px; height: 86px; font-size: 10px; }
   .bt-root:not(#_) .bt-admit { grid-template-columns: minmax(0, 1fr) 110px; }
   .bt-root:not(#_) .bt-admit-main { padding: 18px; }
   .bt-root:not(#_) .bt-admit-stub { padding: 14px 8px; }
