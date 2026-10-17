@@ -5,6 +5,9 @@
 //   await B.checkout(uid, { kind, guardianOk, origin })   -> { url }     clubCheckout
 //   await B.portal(uid, { origin })                       -> { url }     clubPortal
 //   await B.status(uid)                                   -> { receipts, subscription }   clubStatus
+//     Receipts are the member's succeeded charges, each named and dated by the invoice it paid (matched through the payment intent):
+//     "Sub Club · 1 month" for a subscription invoice, "Sub Club · one month pass" for the one-time pass, dated by the invoice's own
+//     date (with a Stripe test clock, the clock's date), else the charge's. Flags: refunded, disputed.
 //
 // Server-only data (firestore.rules: billing/** deny-all):
 //   billing/main/customers/{uid}            { customerId, createdAt, testClock? }   one Stripe customer per member (metadata uid)
@@ -70,7 +73,8 @@ function makeBilling({ db, auth, stripe, entitlement, now = Date.now, prices = {
     const session = await stripe.checkout.sessions.create({
       customer, client_reference_id: uid, mode: kind === "sub" ? "subscription" : "payment",
       line_items: [{ price, quantity: 1 }], metadata,
-      ...(kind === "sub" ? { subscription_data: { metadata: { uid } } } : { payment_intent_data: { metadata, description: "Sub Club, one month" } }),
+      // The one-month pass gets an invoice too, so its receipt is named and dated like the monthly ones.
+      ...(kind === "sub" ? { subscription_data: { metadata: { uid } } } : { payment_intent_data: { metadata, description: "Sub Club · one month pass" }, invoice_creation: { enabled: true, invoice_data: { description: "Sub Club · one month pass", metadata } } }),
       success_url: `${origin}/account/club?checkout=success`, cancel_url: `${origin}/club-pass#ch-pick`,
       allow_promotion_codes: false,
     });
@@ -89,11 +93,24 @@ function makeBilling({ db, auth, stripe, entitlement, now = Date.now, prices = {
   async function status(uid) {
     const customer = await customerFor(uid, { create: false });
     if (!customer) return { receipts: [], subscription: null };
-    const [charges, subs] = await Promise.all([stripe.charges.list({ customer, limit: 24 }), stripe.subscriptions.list({ customer, status: "all", limit: 5 })]);
-    const receipts = (charges.data || []).filter((c) => c.status === "succeeded").map((c) => ({
-      at: c.created * 1000, amount: c.amount, currency: c.currency, description: c.description || (c.metadata?.kind === "month" ? "Sub Club, one month" : "Sub Club"),
-      receiptUrl: c.receipt_url || null, refunded: !!c.refunded, amountRefunded: c.amount_refunded || 0,
-    }));
+    const [charges, subs, invoices] = await Promise.all([
+      stripe.charges.list({ customer, limit: 30 }),
+      stripe.subscriptions.list({ customer, status: "all", limit: 5 }),
+      stripe.invoices.list({ customer, limit: 30, expand: ["data.payments"] }),
+    ]);
+    const idOf = (x) => (x && typeof x === "object" ? x.id : x) || null;
+    const invoiceByIntent = new Map();
+    for (const inv of invoices.data || []) for (const p of inv.payments?.data || []) { const pi = idOf(p.payment?.payment_intent); if (pi) invoiceByIntent.set(pi, inv); }
+    const receipts = (charges.data || []).filter((c) => c.status === "succeeded").map((c) => {
+      const inv = invoiceByIntent.get(idOf(c.payment_intent)) || null;
+      const month = c.metadata?.kind === "month" || inv?.metadata?.kind === "month";
+      const sub = !!(inv && (idOf(inv.parent?.subscription_details?.subscription) || idOf(inv.subscription)));
+      return {
+        at: (inv?.created ?? c.created) * 1000, amount: c.amount, currency: c.currency,
+        description: month ? "Sub Club · one month pass" : sub ? "Sub Club · 1 month" : "Sub Club",
+        receiptUrl: c.receipt_url || null, refunded: !!c.refunded, amountRefunded: c.amount_refunded || 0, disputed: !!c.disputed,
+      };
+    }).sort((a, b) => b.at - a.at);
     const sub = (subs.data || []).find((s) => ACTIVE.includes(s.status)) || null;
     const subscription = sub ? {
       status: sub.status, renewsAt: sub.cancel_at_period_end || sub.cancel_at ? null : periodEnd(sub),

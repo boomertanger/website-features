@@ -32,6 +32,7 @@ function fakeStripe() {
     },
     checkout: { sessions: { create: async (p) => { st.sessions.push(p); return { id: id("cs"), url: `https://checkout.stripe.test/${st.n}` }; } } },
     billingPortal: { sessions: { create: async (p) => { st.calls.push(["portal", p]); return { url: "https://billing.stripe.test/p" }; } } },
+    invoices: { list: async ({ customer }) => ({ data: Object.values(st.invoices || {}).filter((i) => i.customer === customer) }) },
     charges: {
       list: async ({ customer }) => ({ data: Object.values(st.charges).filter((c) => c.customer === customer) }),
       retrieve: async (cid) => st.charges[cid],
@@ -79,6 +80,7 @@ function fakeStripe() {
   assert.equal(db.docs.get(`billing/main/customerIndex/${cus}`).uid, "adult");
   await B.checkout("adult", { kind: "month", origin: ORIGIN });
   assert.equal(stripe.st.sessions.at(-1).mode, "payment");
+  assert.equal(stripe.st.sessions.at(-1).invoice_creation?.enabled, true, "the one-month pass gets an invoice");
   assert.equal(Object.keys(stripe.st.customers).length, 1, "the same customer again");
   // under 18
   await assert.rejects(B.checkout("teen", { kind: "sub", origin: ORIGIN }), { reason: "guardianRequired" }, "the under-18 refusal");
@@ -220,9 +222,26 @@ function fakeStripe() {
   assert.equal((await B.portal("adult", { origin: ORIGIN })).url, "https://billing.stripe.test/p");
   assert.equal(stripe.st.calls.find((c) => c[0] === "portal")[1].return_url, `${ORIGIN}/account/club`);
   await assert.rejects(B.portal("nobody", { origin: ORIGIN }), { reason: "noCustomer" });
-  stripe.st.charges.ch_3 = { id: "ch_3", object: "charge", customer: cus, amount: 599, currency: "usd", status: "succeeded", created: Math.floor(clock / 1000), description: null, metadata: { kind: "month" }, receipt_url: "https://pay.stripe.test/r" };
+  // receipts: named and dated by the invoice each charge paid (a test clock's date), not Stripe's "Subscription update" or the real time
+  const T = (d) => Math.floor(Date.UTC(2026, d[0], d[1], 5, 36) / 1000);
+  stripe.st.invoices = {
+    in_a: { id: "in_a", customer: cus, created: T([9, 17]), parent: { subscription_details: { subscription: "sub_9" } }, payments: { data: [{ payment: { payment_intent: "pi_a" } }] } },
+    in_b: { id: "in_b", customer: cus, created: T([10, 17]), parent: { subscription_details: { subscription: "sub_9" } }, payments: { data: [{ payment: { payment_intent: { id: "pi_b" } } }] } },
+    in_c: { id: "in_c", customer: cus, created: T([11, 3]), metadata: { kind: "month" }, payments: { data: [{ payment: { payment_intent: "pi_c" } }] } },
+  };
+  const realNow = Math.floor(Date.UTC(2026, 9, 17, 7) / 1000);
+  const charge = (id, pi, extra = {}) => ({ id, object: "charge", customer: cus, payment_intent: pi, amount: 599, currency: "usd", status: "succeeded", created: realNow, description: "Subscription update", metadata: {}, receipt_url: `https://pay.stripe.test/${id}`, ...extra });
+  stripe.st.charges = { r1: charge("r1", "pi_a", { description: "Subscription creation" }), r2: charge("r2", "pi_b"), r3: charge("r3", "pi_c", { description: null, metadata: { kind: "month" }, disputed: true }),
+    r4: charge("r4", "pi_none", { description: null, metadata: { kind: "month" }, refunded: true }), rf: charge("rf", "pi_f", { status: "failed" }) };
   const status = await B.status("adult");
-  assert.ok(status.receipts.some((x) => x.receiptUrl === "https://pay.stripe.test/r" && x.description === "Sub Club, one month"));
+  const byUrl = Object.fromEntries(status.receipts.map((x) => [x.receiptUrl.split("/").pop(), x]));
+  assert.equal(status.receipts.length, 4, "failed charges aren't receipts");
+  assert.equal(byUrl.r1.description, "Sub Club · 1 month"); assert.equal(byUrl.r2.description, "Sub Club · 1 month");
+  assert.equal(byUrl.r3.description, "Sub Club · one month pass"); assert.equal(byUrl.r4.description, "Sub Club · one month pass", "a pass without an invoice, by its metadata");
+  assert.equal(byUrl.r1.at, T([9, 17]) * 1000, "the invoice's own date"); assert.equal(byUrl.r2.at, T([10, 17]) * 1000, "each month its month");
+  assert.equal(byUrl.r4.at, realNow * 1000, "no invoice: the charge's date");
+  assert.equal(byUrl.r3.disputed, true); assert.equal(byUrl.r4.refunded, true); assert.equal(byUrl.r1.disputed, false);
+  assert.deepEqual(status.receipts.map((x) => x.at), [...status.receipts.map((x) => x.at)].sort((a, b) => b - a), "newest first");
   assert.deepEqual(await B.status("nobody"), { receipts: [], subscription: null });
 
   // ---------- nothing went to activityLog; no card data stored ----------
