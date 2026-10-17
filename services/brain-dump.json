@@ -4,7 +4,7 @@
   "type": "feature",
   "area": "Account",
   "blurb": "A private board for everything on your mind: capture it now, sort it later, check it off.",
-  "version": "1.0",
+  "version": "1.1",
   "status": "live",
   "audience": "members",
   "routes": [

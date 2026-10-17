@@ -2,7 +2,7 @@
 // /brain-dump/how-it-works: Brain Dump's story page (docs/specs/brain-dump.md §5; mockup docs/design/mockups/brain-dump-how-it-works.html,
 // picks H2 "Paper to board" and R1 "one chapter with a switch"). TocLayout and the shared How it works blocks (styles/how-it-works.css,
 // shared/ui/how-it-works.js): the hero (the paper planner sheet with the dark board wiping across it), 01 Why dump it (three stage cards
-// whose scenes play on hover, focus or tap), 02 How it works (the five-step journey and six tips), 03 Try it (the real engine on an
+// whose scenes play on hover, focus or tap), 02 How it works (the five-step journey and seven tips), 03 Try it (the real engine on an
 // in-memory practice board, never saved, with the Try this list and a stamp), 04 Made for your role (the kit pill switch: Mod / Admin /
 // Sub Club, use cases and example boards), 05 Private by design, 06 Good habits (the placard), 07 Ask BOOMBOT (help/brain-dump.json),
 // and the closing call to action by viewer. scripts/brain-dump/how.ts runs it; only the buttons and the role default depend on who's looking.
@@ -51,6 +51,7 @@ const TIPS = [
   ["↩️", "Undo, never “are you sure?”", "Deleting is instant. A message with Undo stays for 6 seconds."],
   ["➕", "Your own lists", "The last card adds one: name it, pick a color, Add category."],
   ["🖨️", "Print it", "It prints on a light page in two columns, like the paper sheet it started from."],
+  ["🎨", "Pick your look", "Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. Only you see it."],
 ] as const;
 const HABITS = [
   ["Capture fast, sort later", "The Inbox is there so you never have to decide where something goes in the moment."],
@@ -206,6 +207,7 @@ const FAQ = HELP.map((h) => [h.q, h.a] as const);
                   <div class="bt-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input class="bt-input bd-search-input" type="search" placeholder="Search the practice board…" aria-label="Search the practice board" /></div>
                   <button type="button" class="bt-chip bd-staronly" aria-pressed="false">★ Starred only</button>
                   <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary bd-clear">Clear checked</button>
+                  <div class="bd-lookpick"></div>
                 </div>
                 <div class="bd-grid"></div>
                 <div class="bt-sr-only bd-live" aria-live="polite"></div>

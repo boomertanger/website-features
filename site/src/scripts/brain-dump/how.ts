@@ -5,7 +5,7 @@
 import { onAuth, type AuthState } from "../../lib/auth";
 import { hasBrainDump } from "../../lib/brain-dump-access";
 import { isProduction } from "../../lib/env.js";
-import { mount, type BoardState } from "./engine";
+import { mount, DEFAULT_LOOK, type BoardState } from "./engine";
 import { initHowItWorks } from "../../../../shared/ui/how-it-works.js";
 import { initPillSwitch } from "../../../../shared/ui/pill-switch.js";
 import { stampHtml } from "../../../../shared/ui/stamp.js";
@@ -50,7 +50,7 @@ function init(root: HTMLElement) {
   };
   const board = mount(practiceEl, { initial: practice, on: onPractice, mascot });
   root.querySelector("[data-try-reset]")!.addEventListener("click", () => {
-    board.replace(practice());
+    board.replace({ ...practice(), look: board.state().look });   // Start over keeps the look picked here (memory only, never saved)
     quest = {};
     root.querySelectorAll(".bdh-quest li").forEach((li) => li.classList.remove("is-done"));
     slot.innerHTML = "";
@@ -90,7 +90,7 @@ function practice(): BoardState {
   const cat = (title: string, color: BoardState["categories"][number]["color"], size: BoardState["categories"][number]["size"], placeholder: string, items: [string, (0 | 1)?, (0 | 1)?][]) =>
     ({ id: "p-" + rid(), title, color, size, placeholder, items: items.map(([text, d, s]) => ({ id: "i-" + rid(), text, done: !!d, starred: !!s })) });
   return {
-    goal: "Example: get my week under control", goalDone: false, startDate: "",
+    goal: "Example: get my week under control", goalDone: false, startDate: "", look: DEFAULT_LOOK,
     inbox: { items: [{ id: "x1", text: "Example · Look into a better mic arm" }, { id: "x2", text: "Example · Ask about Sunday’s duty" }] },
     categories: [
       cat("I need to call", "ember", "sm", "Add someone to call…", [["Example · The vet, before Friday"]]),

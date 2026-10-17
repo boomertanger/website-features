@@ -78,6 +78,11 @@
 #brain-dump-hiw .bdh-tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
 @container bt (max-width: 900px) { #brain-dump-hiw .bdh-tips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
 @container bt (max-width: 420px) { #brain-dump-hiw .bdh-tips { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bdh-tip:last-child:nth-child(3n+1) { grid-column: 1 / -1; }   /* a lone last tip takes the row */
+@container bt (max-width: 900px) {
+  #brain-dump-hiw .bdh-tip:last-child:nth-child(3n+1) { grid-column: auto; }
+  #brain-dump-hiw .bdh-tip:last-child:nth-child(2n+1) { grid-column: 1 / -1; }
+}
 #brain-dump-hiw .bt-tile.bdh-tip { flex-direction: row; align-items: flex-start; gap: 12px; transition: border-color 0.2s, transform 0.2s; }
 #brain-dump-hiw .bt-tile.bdh-tip:hover { border-color: var(--bt-border-2); transform: translateY(-2px); }
 #brain-dump-hiw .bdh-tip-ic { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--bt-surface-2); font-size: 18px; }
