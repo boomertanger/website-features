@@ -5,9 +5,11 @@
 //                  17 (users/{uid}/private/age, server side) need guardianOk: true. Refused with an active Stripe subscription.
 //   clubPortal     { origin } -> { url } of the Stripe customer portal (cancel at period end, update card, invoices).
 //   clubStatus     -> { receipts: [{ at, amount, currency, description, receiptUrl, refunded }], subscription } for My pass.
-//   billingWebhook HTTPS: Stripe's webhook (lib/billing/webhook.js). STRIPE_WEBHOOK_SECRET (the endpoint's signing secret) is bound only
-//                  when functions/.env.staging says STRIPE_WEBHOOK=on (a secret that doesn't exist yet would stop the deploy, the same way
-//                  HOTLINE_EMAIL works); until then it answers 503 and Stripe retries.
+//   billingWebhook HTTPS: Stripe's webhook (lib/billing/webhook.js). STRIPE_WEBHOOK_SECRET (the endpoint's signing secret) is defined and
+//                  bound only on the projects in WEBHOOK_PROJECTS (the projects where that secret exists); anywhere else it answers 503.
+//                  Decided by project id, NOT by a .env flag: the deploy's discovery step loads this file without the .env files
+//                  (it knows GCLOUD_PROJECT), so a .env flag reads as off there and the secret goes unbound while the running function
+//                  sees it as on. Add "boomertanger-prod" at launch, once its secret is set.
 //   clubBillingSweep  every day 05:45 America/Chicago (lib/billing/sweep.js): ends one-month passes and expired grace periods, recomputes.
 //
 // Secret: STRIPE_SECRET_KEY (an sk_test_ key on staging; lib/billing/stripe.js refuses anything else). Params (functions/.env.staging,
@@ -27,8 +29,9 @@ const STRIPE_SECRET_KEY = defineSecret("STRIPE_SECRET_KEY");
 const STRIPE_PRICE_SUB = defineString("STRIPE_PRICE_SUB", { default: "" });
 const STRIPE_PRICE_MONTH = defineString("STRIPE_PRICE_MONTH", { default: "" });
 const STRIPE_PORTAL_CONFIG = defineString("STRIPE_PORTAL_CONFIG", { default: "" });
-const webhookOnAtDeploy = process.env.STRIPE_WEBHOOK === "on";
-// Defined only when on: the Firebase CLI asks for every DEFINED secret at deploy, bound or not (lib/hotline does the same).
+const WEBHOOK_PROJECTS = ["boomertanger-staging"];
+const webhookOnAtDeploy = WEBHOOK_PROJECTS.includes(projectId());
+// Defined only there: the Firebase CLI asks for every DEFINED secret at deploy, bound or not.
 const STRIPE_WEBHOOK_SECRET = webhookOnAtDeploy ? defineSecret("STRIPE_WEBHOOK_SECRET") : null;
 
 // Where Checkout and the portal may send people back to, per project (the same idea as lib/accounts TWITCH_REDIRECTS).

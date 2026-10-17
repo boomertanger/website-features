@@ -84,8 +84,7 @@ async function main() {
 
   const before = fs.existsSync(ENV_FILE) ? fs.readFileSync(ENV_FILE, "utf8") : "";
   const values = { ...ids };
-  if (!/^STRIPE_WEBHOOK=/m.test(before)) values.STRIPE_WEBHOOK = "off";
-  const after = mergeEnv(before || "# Staging-only function params (public values, not secrets): Club Pass billing, Stripe TEST MODE (functions/scripts/stripe-setup.js).\n# STRIPE_WEBHOOK=on binds the STRIPE_WEBHOOK_SECRET secret to billingWebhook: set it only once that secret exists.\n", values);
+  const after = mergeEnv(before || "# Staging-only function params (public values, not secrets): Club Pass billing, Stripe TEST MODE (functions/scripts/stripe-setup.js).\n", values);
   if (after === before) { console.log("functions/.env.staging: already up to date."); return; }
   if (!apply) { console.log("functions/.env.staging would become:\n" + after.replace(/^/gm, "    ")); return; }
   fs.writeFileSync(ENV_FILE, after);
