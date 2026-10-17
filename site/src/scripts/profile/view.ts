@@ -8,7 +8,7 @@ import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { initFlipCards } from "../../../../shared/ui/flip-card.js";
 import { whenReady } from "../../lib/auth";
 import { progress, PERSONA_ICONS } from "../../lib/rewards.js";
-import { badgeCardHtml, earnedLine, LIVE_SOURCES, type BadgeDoc, type Held } from "../trophies/card";
+import { badgeCardHtml, earnedLine, comingSoonOf, type BadgeDoc, type Held } from "../trophies/card";
 import { loadCatalog, loadHeld, loadProfile, loadTrophies, uidForHandle, type RewardProfile, type Trophy } from "../trophies/data";
 import { TR_CUP } from "../trophies/art";
 
@@ -80,7 +80,7 @@ async function main() {
     const groups = collections.map((c) => ({ c, list: badges.filter((b) => b.collection === c.id && held.has(b.id)) })).filter((g) => g.list.length);
     const groupHtml = groups.map(({ c, list }) => `<section class="tr-pf-group" aria-labelledby="pf-c-${esc(c.id)}">
         <h3 id="pf-c-${esc(c.id)}"><span aria-hidden="true">${esc(c.icon)}</span>${esc(c.name)} <small>${list.length}</small></h3>
-        <div class="tr-grid">${list.map((b) => badgeCardHtml(b, { collName: c.name, held: held.get(b.id) as Held, comingSoon: !LIVE_SOURCES.has(b.source), times: b.id === "beat-the-boss" ? profile.beatTheBoss : 0 })).join("")}</div>
+        <div class="tr-grid">${list.map((b) => badgeCardHtml(b, { collName: c.name, held: held.get(b.id) as Held, comingSoon: comingSoonOf(b), times: b.id === "beat-the-boss" ? profile.beatTheBoss : b.id === "prize-box-winner" ? profile.prizeWins : 0 })).join("")}</div>
       </section>`).join("");
 
     root.removeAttribute("aria-busy");

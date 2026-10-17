@@ -469,6 +469,56 @@ service cloud.firestore {
         allow delete: if request.auth != null && request.auth.uid == uid;
       }
 
+      // ---------- Prize Box (docs/specs/prize-box.md §6) ----------
+      // Written ONLY by Cloud Functions (functions/lib/prizeBox); every client write is false. The main doc holds the public settings
+      // (cooldown, claim window, I'm here seconds); private/settings (the mailing address) is the owner's. A contest is public once it
+      // leaves draft (drafts are admins only). An entry is the entrant's and the admins'; draws, codes and the mail log are admins only.
+      // A winner record is the winner's and the admins'; its private/claim (address, codes, the parent's OK) is the owner's alone. my/{uid}
+      // (the contests a member entered) is theirs. The public summary is sites/{siteId}/public/prizeBox (the public/{docId} rule below).
+      match /prizeBox/main {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /prizeBox/main/private/{docId} {
+        allow read: if isSiteOwner(siteId);
+        allow write: if false;
+      }
+      match /prizeBox/main/contests/{contestId} {
+        allow read: if resource.data.status != 'draft' || hasSiteRole(siteId, 'admin');
+        allow write: if false;
+        match /entries/{uid} {
+          allow read: if (request.auth != null && request.auth.uid == uid) || hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
+        match /draws/{drawId} {
+          allow read: if hasSiteRole(siteId, 'admin');
+          allow write: if false;
+        }
+      }
+      match /prizeBox/main/codes/{code} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /prizeBox/main/mailLog/{id} {
+        allow read: if hasSiteRole(siteId, 'admin');
+        allow write: if false;
+      }
+      match /prizeBox/main/winners/{winnerId} {
+        allow read: if (request.auth != null && resource.data.uid == request.auth.uid) || hasSiteRole(siteId, 'admin');
+        allow write: if false;
+        match /private/{docId} {
+          allow read: if isSiteOwner(siteId);
+          allow write: if false;
+        }
+      }
+      match /prizeBox/main/my/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid;
+        allow write: if false;
+      }
+      match /prizeBox/{document=**} {
+        allow read, write: if false;
+      }
+
       // Site membership (roles, joinedAt): the member and site admins.
       match /members/{uid} {
         allow read: if request.auth != null

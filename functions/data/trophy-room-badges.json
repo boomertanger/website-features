@@ -930,6 +930,22 @@
       "awardableBy": null
     },
     {
+      "id": "prize-box-winner",
+      "name": "Prize Box Winner",
+      "collection": "arcade",
+      "rarity": 3,
+      "source": "quest",
+      "how": "Win a Prize Box contest: a live Prize Wheel draw, a judged contest or a random draw. Each win counts on your profile.",
+      "emoji": "🎁",
+      "xp": 50,
+      "secret": null,
+      "limited": null,
+      "crewOnly": false,
+      "ladder": null,
+      "status": "active",
+      "awardableBy": null
+    },
+    {
       "id": "pocket-change-pal",
       "name": "Pocket Change Pal",
       "collection": "supporters",

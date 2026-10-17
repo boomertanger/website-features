@@ -29,6 +29,9 @@ export const SOURCES: Record<string, { ic: string; t: string }> = {
 /** Sources that can award badges today. The rest show a Coming soon flag until their feature
  *  ships (stream presence, contests, Night Shift, and paid support). Keep this the one list. */
 export const LIVE_SOURCES = new Set(["auto", "crew", "drop"]);
+/** Badges that can be earned today although their source as a whole is still Coming soon (Prize Box wins, among the contests and hunts). */
+export const LIVE_BADGES = new Set(["prize-box-winner"]);
+export const comingSoonOf = (b: { id: string; source: string }) => !LIVE_SOURCES.has(b.source) && !LIVE_BADGES.has(b.id);
 
 export const rarityBadge = (n: number) => `<span class="bt-badge bt-badge--${RARITY[n]?.tone ?? "gray"}">${levelBars(n, 5)}${RARITY[n]?.name ?? ""}</span>`;
 const fmtDay = (d: Date) => d.toLocaleDateString("en-US", { month: "short", day: "numeric" });

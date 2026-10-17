@@ -3,6 +3,22 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 3 (backend core): functions/lib/prizeBox, with logic.js (pure) and index.js. Data lives under sites/boomertanger/prizeBox/main (spec §6). firestore.rules denies by default and allows no client writes: drafts are hidden, entries are readable by the entrant and admins, and claims (private/claim) only by the owner. The public summary is public/prizeBox.
+  - **Callables:**
+    - prizeContestSave and prizeContestStatus (admins; the owner for live contests; delete is the one path: Cloudinary, then records, then the contest with its subcollections, then its activity events)
+    - prizeSettings (owner)
+    - prizeEntryParams (the upload gate first; private files under prize-box/entries/<contestId>/<uid>/, recorded with recordAssetCreated, feature prizeBox)
+    - prizeEnter, prizeWithdraw, prizeGetCode, prizeMailLog and prizeEntryReview
+    - prizeJudge (owner: places, or a random draw)
+    - prizeClaim (age check on the server: under 18 needs parentOk; mailed prizes are US only)
+    - prizeClaimAdmin (owner: show address, logged; set code; mark shipped; forfeit; forfeit and redraw)
+    - prizeEntryUrl (a 10-minute signed link) and prizeMine (/prizes/mine and a contest page's own state)
+  - **prizeTick** runs every 5 minutes: it opens and closes contests, sends reminders 24 h and 1 h before closing, sends a claim reminder, and expires claims with a redraw prompt.
+  - **Who can win:** never the owner, admins, mods or crew. Live draws have a cooldown setting (30 days).
+  - **Logs and alerts:** adminLog feature prizeBox. activityLog contest-winner only with showIfWin. notifyOutbox events prize-open, prize-reminder, prize-entry-received, prize-winner, prize-results, prize-claim-reminder and prize-shipped, with no private data.
+  - **Badge:** Prize Box Winner (prize-box-winner, Arcade and Contests, Rare, 50 XP, 🎁) in the catalog. profiles.prizeWins shows as ×n on profiles, and this badge doesn't show Coming soon.
+  - **Left out:** the "First stream here" and "stream streak" filters, because nothing stores a first stream or a stream streak yet.
+  - **Tests:** scripts/check-prize-box.js is in npm run check.
 - Prize Box, part 2 (kit): the F2 Prize Wheel, a color variant of the kit's .bt-wheel (prizeWheelHtml in shared/ui/wheel.js). It has 10 fan blades with one-arc edges (−7°, 0.11 of the chord), rounded tips, off-white edges, yellow pegs, the red paddle, the mascot on the hub, names along each blade's centerline, and hatched "Spin again" blades. wheelSpin now takes an onTick hook. A spin decided by the server ({ pickIndex, offset, spins, durationMs, startAt }) looks the same for every viewer, and late joiners join mid-spin or land on the result. New kit pieces:
   - shared/ui/wheel-sound.js: a synthesized tick, or prize-tick.mp3 once it exists; muted on the site with a sound button.
   - .bt-prizestand with shared/ui/prizestand.js: the wheel's post into the Prize Box; shake, lid off, gold beam, confetti, the winner card and the lime "It's you!".

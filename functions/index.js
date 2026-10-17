@@ -949,6 +949,18 @@ Object.assign(exports, require("./lib/playbook").functions(adminLogEntry));
 // clubBroadcasterStatus, clubBroadcasterDisconnect; owner only; adminLog feature clubPass). Lives in lib/club/; loads nothing from rewards.
 Object.assign(exports, require("./lib/club").build({ adminLogEntry }).functions);
 
+// Prize Box (docs/specs/prize-box.md §7): contests, entries (private Cloudinary uploads through the one delete path above), mail-in codes, judging and
+// random draws, claims and prizeTick (every 5 minutes). Lives in lib/prizeBox/; the live draw's callables join it in part 4. adminLog feature prizeBox.
+const prizeBoxModule = require("./lib/prizeBox").build({
+  adminLogEntry,
+  performAssetDeletion,
+  cloudinaryDelete,
+  recordAssetCreated,
+  cloudSecrets: CLOUDINARY_SECRETS,
+  cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+});
+Object.assign(exports, prizeBoxModule.functions);
+
 // Club Pass billing (docs/specs/club-pass.md §13; Stripe TEST MODE on staging): clubCheckout, clubPortal, clubStatus, billingWebhook. Lives in lib/billing/;
 // loads lib/club/entitlement.js and nothing from rewards.
 Object.assign(exports, require("./lib/billing").build({ adminLogEntry }).functions);

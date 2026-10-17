@@ -10,7 +10,7 @@ import { initFlipCards } from "../../../../shared/ui/flip-card.js";
 import { RARITY } from "../../../../shared/ui/medal.js";
 import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { progress } from "../../lib/rewards.js";
-import { badgeCardHtml, meStripHtml, LIVE_SOURCES } from "./card";
+import { badgeCardHtml, meStripHtml, comingSoonOf } from "./card";
 import { loadCatalog, loadHeld, ownProfile, isCrew, onMemberOrPreview } from "./data";
 import { toast } from "../../../../shared/ui/toast.js";
 
@@ -49,7 +49,7 @@ onMemberOrPreview(async (s) => {
 
     // Cards: built once, the chips show and hide them.
     let coll = colls.some((c) => c.id === DEFAULT_COLL) ? DEFAULT_COLL : "all", rar = 0;
-    grid.innerHTML = visible.map((b) => badgeCardHtml(b, { collName: names.get(b.collection), held: held.get(b.id) ?? null, member: true, comingSoon: !LIVE_SOURCES.has(b.source), hidden: coll !== "all" && b.collection !== coll, pulse: "badge-open" })).join("");
+    grid.innerHTML = visible.map((b) => badgeCardHtml(b, { collName: names.get(b.collection), held: held.get(b.id) ?? null, member: true, comingSoon: comingSoonOf(b), hidden: coll !== "all" && b.collection !== coll, pulse: "badge-open" })).join("");
     grid.removeAttribute("aria-busy");
     initFlipCards(grid);
     const cards = [...grid.querySelectorAll<HTMLElement>(".tr-card")];
