@@ -29,7 +29,7 @@ const SCENES: Record<string, (c: SceneCtx) => string> = {
   credits: (c) => `<div class="cp-sc-credits"><div><small>BUILDING BOOMERTANGER</small><b>Created by Boomertanger</b><small>SUB CLUB</small><b>@sample_one</b><b class="you">${esc(c.name)}</b><b>@sample_two</b><b>@sample_three</b></div></div>`,
   raffle: () => `<div class="cp-sc-center cp-sc-raffle"><span class="cp-sc-hat">🎩</span>${[0, 1, 2, 3, 4].map((i) => `<i style="--i:${i}">🎟️</i>`).join("")}</div><span class="cp-sc-check">✓ CHECKED IN</span>`,
   shelf: () => `<div class="cp-sc-center cp-sc-shelf">${["NIGHT 1", "THE HALL", "BASEMENT", "DOLLHOUSE", "STATIC"].map((t, i) => `<span style="--i:${i}">${t}</span>`).join("")}</div><span class="cp-sc-shelf-sign">BOOMGAMES.TV</span>`,
-  mag: () => `<div class="cp-sc-center cp-sc-mag"><small>NO. 01 · SAMPLE</small><b>BOOMER<br>TANG</b><span>The monthly horror edition</span></div>`,
+  mag: () => `<div class="cp-sc-center cp-sc-mag"><small>NO. 01 · SAMPLE</small><b>BOOMER<br>TANG</b><span>Horror gaming monthly</span></div>`,
   merch: (c) => `<div class="cp-sc-center cp-sc-tee">${c.mascot}</div><span class="cp-sc-tag">SUB CLUB<br><b>${esc(document.getElementById("cp-root")?.dataset.discount || "10")}% OFF</b></span>`,
   pass: (c) => `<div class="cp-sc-center cp-sc-pass"><div class="bt-pass${c.sub ? " bt-pass--sub" : ""}"><span class="bt-pass-top">CLUB PASS</span>${c.mascot}<span class="bt-pass-plan">${c.sub ? "SUB CLUB" : "FAN CLUB"}</span><span class="bt-pass-name">${esc(c.name)}</span></div></div>`,
 };

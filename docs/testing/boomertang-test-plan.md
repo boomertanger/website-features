@@ -62,8 +62,12 @@ the cover and contents show, and the pages show the sealed shell with its button
 1. Print No. 1's cover (or open it on a second screen) and scan the QR code with a phone. It opens `https://boomertanger.com/boomertang?ref=tang-cover`. Until the domain points at the new site, it lands on the live Squarespace site: that's expected, and it's re-checked at launch (spec §13).
 2. `/admin/pulse` → Ref tags lists `tang-cover` ("Boomertang cover QR"). It's seeded by `seed-boomertang.js`.
 
-## H. Odds and ends
+## H. Facts
+1. Boomer checks every fact tag on No. 1 against its source in The Index (Claude Code matched them; the editor confirms).
+
+## I. Odds and ends
 1. The Game Vault: `/games/granny`, `/games/granny-chapter-two` and `/games/granny-3` have the "In Boomertang" card linking to No. 1. Other games don't.
 2. Nav: Community → Boomertang. The footer's boomertang.com entry goes to `/boomertang`.
 3. Ask pins: The Map, Survive and Speed have the Ask pin next to the page title.
 4. Reduced motion (Windows: Settings → Accessibility → Visual effects → Animation effects off): nothing slides, flickers or slams.
+5. `/club-pass`: the Boomertang perk (no longer Coming soon). With No pass lit it reads "No. 1 is free to read", with Fan Club "Yours with Fan Club" (back issues), with Sub Club "Yours with your gold pass" (the newest issue first). A signed-in member gets Open it, which goes to `/boomertang`.

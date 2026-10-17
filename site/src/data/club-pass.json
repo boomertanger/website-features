@@ -1,5 +1,5 @@
 {
-  "_about": "Club Pass perks (docs/specs/club-pass.md §4): the 20 perks on /club-pass, in board order. plan: fan (Fan Club), fan+ (Fan Club, with more for Sub Club), sub (Sub Club only). soon: not built yet (it says Coming soon). head: *word* is the accent word. facts: exactly three; <b> is the only markup. scene: one of the page's scene drawings (scripts/club-pass/scenes.ts). serviceId: the Service Hub manifest it belongs to. Checked by scripts/check-club-pass.js.",
+  "_about": "Club Pass perks (docs/specs/club-pass.md §4): the 20 perks on /club-pass, in board order. plan: fan (Fan Club), fan+ (Fan Club, with more for Sub Club), sub (Sub Club only). soon: not built yet (it says Coming soon). head: *word* is the accent word. facts: exactly three; <b> is the only markup. scene: one of the page's scene drawings (scripts/club-pass/scenes.ts). serviceId: the Service Hub manifest it belongs to. passes (optional): the spread's status line for each pass (visitor, fan, sub: [bold line, line]) when the plan's default lines would be wrong, e.g. Boomertang's No. 1 is free to a visitor. Checked by scripts/check-club-pass.js.",
   "perks": [
     {
       "id": "live",
@@ -252,18 +252,24 @@
       "icon": "📰",
       "label": "Boomertang",
       "plan": "fan+",
-      "soon": true,
+      "soon": false,
+      "href": "/boomertang",
       "kicker": "Inside",
       "head": "Read *Boomertang.*",
-      "dek": "Boomertang is a monthly horror publication: twelve editions a year, out in the second week of each month, and each one stays alive with updates, comments, surveys and polls.",
+      "dek": "Boomertang is Boomer's horror gaming magazine: one issue a month, page by page, with the maps, the guides, the speedruns and Chat's Verdict. Each issue stays alive, with new editions when the games change.",
       "facts": [
-        "Sub Club reads the <b>new edition</b>; Fan Club reads <b>back issues</b>",
-        "<b>Vote</b>, take <b>surveys</b> and <b>comment</b> on editions you can read",
-        "It launches once the <b>community goals</b> hold for two months"
+        "<b>No. 1</b> is free for everyone, and so is any issue made public",
+        "Fan Club reads every <b>back issue</b>",
+        "Sub Club reads the <b>newest issue</b> first"
       ],
-      "pull": "Twelve editions a year.",
+      "passes": {
+        "visitor": ["No. 1 is free to read", "So is any issue made public. Join free for the back issues."],
+        "fan": ["Yours with Fan Club", "Every back issue. Sub Club reads the newest issue first."],
+        "sub": ["Yours with your gold pass", "The newest issue the day it's out, and every back issue."]
+      },
+      "pull": "One issue a month.",
       "scene": "mag",
-      "serviceId": "horror-monthly"
+      "serviceId": "boomertang"
     },
     {
       "id": "rate",

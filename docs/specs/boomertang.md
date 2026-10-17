@@ -33,7 +33,12 @@ Boomer's digital horror gaming magazine on boomertanger.com.
 
 - The Map deep links: `?floor=`, `?layer=`, `?pin=`. Survive deep links: `?room=`.
 - Nav: a temporary spot in the Community group (blurb "Horror gaming monthly"), flagged to move in the
-  planned nav regroup (ROADMAP). The Granny games' Game Vault pages link to the issue.
+  planned nav regroup (ROADMAP). The Granny games' Game Vault pages link to the issue: `issues.json`
+  `games` lists the Vault slugs an issue covers (No. 1: `granny`, `granny-chapter-two`, `granny-3`), and
+  those game pages get an "In Boomertang" card (Read the issue, `data-pulse="tang-from-vault"`) once the
+  issue is published. A draft's issue doc isn't readable, so before that nothing shows.
+- Footer: site.json's boomertang.com domain entry reads "Boomertang" and goes to `/boomertang` (until
+  the domain redirect at launch, §13).
 - Unknown issue or page: 404. A page dropped in a later edition redirects to that issue's contents.
 
 ## 3. Who reads what
@@ -122,6 +127,9 @@ ref list.
     (open / close / reopen; a closed poll's result is the final verdict).
   - `tangVote({ pollId, optionId })` (signed-in member; one vote per poll, changeable while open; one
     transaction moving `counts`; rate-limited like other member writes).
+  - `tangVote({ issueId, mine: true })`, the "my votes" mode: returns `{ votes: { [pollId]: optionId } }`,
+    the caller's own votes in that issue's polls, if they can read the issue. Votes are server only, so
+    Chat's Verdict asks for them to mark the member's picks.
 - These functions must not load `rewards/grant.js` or anything in `lib/live`, so deploying them never
   redeploys the rest.
 
@@ -143,7 +151,10 @@ All built from bt-ui; magazine pieces that other features could reuse go into th
   - Fan Club, newest issue: "Sub Club reads the newest issue first": opens when the next issue comes
     out; Sub Club is coming soon → Read back issues.
   - No member text is ever in the page.
-- **Cover, contents, cover story, The Family, The Map, Speed, The Index:** as in mockup 3.
+- **Cover, contents, cover story, The Family, The Map, Speed, The Index:** as in mockup 3. One change
+  on the cover: the members card reads "Fan Club members vote in Chat's Verdict and read every back
+  issue. Sub Club reads the newest issue first." The mockup's line (comments, the death map, new chapters
+  first) promised things that aren't built: comments are out of scope (§11), and there is no death map.
 - **Survive (S1 Room by room):** floor chips; rooms as cards (episode, one line, danger meter); tapping a
   room opens its guide under the row: the episode short, Boomer's steps, items and hiding spots from
   The Map, Watch the short, Show on the map.
@@ -198,7 +209,8 @@ Speedrun rules are summarized in Boomer's words with a link to speedrun.com, nev
 - Manifest `services/boomertang.json` (pages, sections; talkBack pins on The Map, Survive and Speed;
   rate on). The desk is an admin tool (skip).
 - `data-pulse` ids: `tang-read-issue`, `tang-join`, `tang-vote`, `tang-reveal`, `tang-watch-short`,
-  `tang-mode`. Ref `tang-cover` registered.
+  `tang-mode`, and `tang-from-vault` on the Game Vault card. Ref `tang-cover` registered (seeded by
+  `seed-boomertang.js` in the same shape /admin/pulse saves).
 - `"boomertang"` in site.json modules.
 
 ## 10. Testing
@@ -222,5 +234,7 @@ date), Chat Games results in Chat's Verdict, the mobile map layer.
 
 ## 13. At launch
 Deploy the `tang` rules, `tangAdmin`, `tangVote` and `updatePrefs` to production; seed No. 1's polls on
-production (dry run, then `--apply`); publish No. 1 from the desk; add the boomertang.com redirect to
+production (dry run, then `--apply`). The production seed creates No. 1 as a **draft** (it never
+publishes, and `currentIssueId` stays empty); the owner publishes it from the desk, which sets
+`currentIssueId`. Then: add the boomertang.com redirect to
 `/boomertang`; check the QR code scans to production.

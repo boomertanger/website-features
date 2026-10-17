@@ -77,13 +77,15 @@ stamps. Purple stays the only clickable color. Reduced motion keeps colors and d
 Each perk: `id`, `section` (watch, play, inside, you), `icon`, `label`, `plan` (`fan`, `fan+` = Fan
 Club with more for Sub Club, `sub`), `soon`, `kicker`, `head` (`*word*` marks the gold or silver
 highlight), `dek`, `facts[3]`, `pull`, `scene`, optional `serviceId`. Checked in the build by
-`scripts/check-club-pass.js` (unique ids, valid plan and scene, three facts, serviceId exists).
+`scripts/check-club-pass.js` (unique ids, valid plan and scene, three facts, serviceId exists). Optional `passes`: the spread's status
+line for each pass (`visitor`, `fan`, `sub`: two plain lines) where the plan's default lines would be wrong.
 
 Watch: Backstage (fan), Game votes (fan), Sub Club stream (sub, soon).
 Play: Chat Games (fan), Badge drops (fan), Contests and drawings (fan+, soon), Night Shift (fan+),
 Boom Arcade (fan, soon), boomgames.tv (sub, soon).
 Inside: Tech Stack (fan), Creator Climb (fan), Goal Tracker (fan), Numbers note (sub, soon),
-Boomertang (fan+, soon; Sub Club reads the new edition, Fan Club back issues).
+Boomertang (fan+, /boomertang; boomertang.md §3: No. 1 and any issue made public are free for everyone, Fan Club reads the back
+issues, Sub Club reads the newest issue first; its `passes` lines say so on each pass).
 You: Rate and suggest (fan), Trophy case (fan+: 3 pins / 6 + animated frame), Name in the credits
 (sub, soon), Text alerts (sub, soon, 18+), Merch shop (fan+, soon), Your account (fan).
 Copy is honest: anything not built carries Coming soon; no invented specs or claims.

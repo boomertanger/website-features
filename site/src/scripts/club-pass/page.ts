@@ -14,7 +14,7 @@ import data from "../../data/club-pass.json";
 import { scene } from "./scenes";
 
 type Pass = "visitor" | "fan" | "sub";
-interface Perk { id: string; section: string; icon: string; label: string; plan: "fan" | "fan+" | "sub"; soon: boolean; kicker: string; head: string; dek: string; facts: string[]; pull: string; scene: string; serviceId?: string; /** the perk's page, shown as Open it to someone whose pass has it (and only once it isn't soon) */ href?: string }
+interface Perk { id: string; section: string; icon: string; label: string; plan: "fan" | "fan+" | "sub"; soon: boolean; kicker: string; head: string; dek: string; facts: string[]; pull: string; scene: string; serviceId?: string; /** the perk's page, shown as Open it to someone whose pass has it (and only once it isn't soon) */ href?: string; /** the spread's status line per pass, when the plan's default would be wrong */ passes?: Partial<Record<Pass, [string, string]>> }
 
 const root = document.getElementById("cp-root");
 if (root) init(root);
@@ -138,6 +138,8 @@ function init(root: HTMLElement) {
   function setPass(v: Pass) { S.pass = v; $$("[data-map]", board).forEach((x) => x.setAttribute("aria-pressed", String(x.dataset.map === v))); light(); }
 
   function status(p: Perk): [string, string] {
+    const own = p.soon ? null : p.passes?.[S.pass];
+    if (own) return own;
     if (p.soon && has(p, S.pass)) return [`Coming soon${p.plan === "sub" ? " to Sub Club" : ""}`, "It's being built now. Your pass gets it the day it lands."];
     if (has(p, S.pass)) return [S.pass === "sub" && p.plan !== "fan" ? "Yours with your gold pass" : "Yours with Fan Club", p.plan === "fan+" && S.pass === "fan" ? "Sub Club adds more here." : "Included, nothing extra to pay."];
     if (S.pass === "visitor") return ["Join free to unlock", p.plan === "sub" ? "This one comes with Sub Club." : "This comes with the free Fan Club pass."];

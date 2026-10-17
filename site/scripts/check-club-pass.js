@@ -27,6 +27,13 @@ for (const [i, p] of perks.entries()) {
   if (typeof p.soon !== "boolean") fail(`${at}: soon must be true or false`);
   if (p.href !== undefined && (typeof p.href !== "string" || !/^\/[a-z0-9/-]*$/.test(p.href))) fail(`${at}: href must be a site path like /prizes`);
   if (p.href && p.soon) fail(`${at}: a soon perk has no page to open yet (drop href or soon)`);
+  if (p.passes !== undefined) {
+    if (!p.passes || typeof p.passes !== "object" || Array.isArray(p.passes)) fail(`${at}: passes must be an object`);
+    else for (const [k, v] of Object.entries(p.passes)) {
+      if (!["visitor", "fan", "sub"].includes(k)) fail(`${at}: passes.${k} must be visitor, fan or sub`);
+      else if (!Array.isArray(v) || v.length !== 2 || !v.every(text) || v.some((x) => /[<>]/.test(x))) fail(`${at}: passes.${k} must be two lines of plain text`);
+    }
+  }
   for (const k of ["icon", "label", "kicker", "head", "dek", "pull"]) if (!text(p[k])) fail(`${at}: ${k} is missing`);
   if (text(p.head) && !/\*[^*]+\*/.test(p.head)) fail(`${at}: head needs one *accent* word`);
   if (!Array.isArray(p.facts) || p.facts.length !== 3 || !p.facts.every(text)) fail(`${at}: facts must be exactly three lines`);
