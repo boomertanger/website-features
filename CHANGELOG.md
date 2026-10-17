@@ -3,6 +3,34 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 6 (pages):
+  - **The PRIZE BOX top bar (components/prize/PrizeBar.astro):** the power wordmark with PB_ICON (not a link), then Contests, My entries for members, and Admin in admin green for admins.
+  - **/prizes:** the story page with the full frame. The hero is the H2a prize stand: click for a demo spin with you on the yellow blade, the box bursts, nothing is saved. TocLayout and seven ghost-numbered chapters:
+    - Open now: contest cards from public/prizeBox, with hover scenes (the wheel turns, a pencil draws, an envelope opens)
+    - How it works: the five-step journey
+    - Three ways to win: a flow that lights a path
+    - Spin the wheel: the real F2 wheel
+    - Past winners: with the winner's OK
+    - Fair and square: the placard, six house rules
+    - Ask BOOMBOT
+
+    The closing call to action depends on who's viewing. Empty states use the mascot.
+  - **/prizes/<contest> (/prizes/view):** the hero header with the box scene, status and type badges, and the entry card in every state:
+    - the visitor lock card
+    - not eligible, with the reason
+    - the upload dropzone, a written entry, or the mail-in code
+    - entered, with Replace and Withdraw
+    - the code with the mailing address and the received tracker
+    - judging
+    - you won, with Claim my prize
+
+    The page also has How it works, the rules in short, the prizes, the time left and the entry count.
+  - **/prizes/<contest>/rules (/prizes/rules):** the official rules (marked + DOMPurify), from the new template site/src/data/prize-box/rules-template.md, which is marked "waiting for legal review".
+  - **/prizes/mine:** a tool page. Prizes to claim come first, with the days left (red at one day or less), then entries with their status and rejection reasons, codes, and past wins (codes show after claiming). Empty: the mascot. Visitors get the lock card.
+  - **The claim dialog (openModal):** a US address for mailed prizes, a parent's or guardian's OK for under-18s (checked on the server), the code once claimed, and the lime stamp.
+  - **Also:** help/prize-box.json; the Play nav entry "Prize Box: Contests, drawings and prizes" (with a gift icon in IconSprite); services/prize-box.json (/prizes, /prizes/view, /prizes/rules, /prizes/mine); rewrites for /prizes/:slug and /prizes/:slug/rules in site/public/_redirects; and pulse ids on the key buttons.
+  - **Fixes:** wheelSpin now marks a spin that starts a moment later as spinning when it begins.
+  - **Preview:** ?sample=1 (with &entry= and &mine=empty) shows sample data off production.
 - Prize Box, part 5 (live UI): scripts/live/prize-watch.ts is one viewer state machine shared by the banner and the /live card. It reads public/live.prizeDraw from the page's one listener, plus prizeMine { draw: true } once each time the draw moves (never polled). "Spinning" and "landed" come from the server's decided spins, so every viewer sees the same moment.
   - **The banner:** a new kit kind, .bt-live-banner[data-kind="prize"], site-wide and gold. Its states are on, spinning, picked (with I'm here and the countdown), won (lime, Claim my prize) and quiet. It's hidden on /live, /live/control and /live/obs, and ✕ hides it for the rest of the draw.
   - **The /live Prize Box card (prize-card.ts):** pool → round 1 → your slice → "It landed on you!" with I'm here → You won with Claim my prize. A small wheel plays the spins in step, muted, with a sound button.

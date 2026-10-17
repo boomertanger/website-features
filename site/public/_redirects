@@ -30,6 +30,15 @@
 /games/:slug    /games/view/   200
 /games/:slug/   /games/view/   200
 
+# Prize Box (docs/specs/prize-box.md §5): every /prizes/{contest} is the one client-rendered contest page (/prizes/view/) and every
+# /prizes/{contest}/rules the one rules page (/prizes/rules/); both read the slug from the address. /prizes/mine is a real page, matched first.
+/prizes/mine    /prizes/mine/  200
+/prizes/mine/   /prizes/mine/  200
+/prizes/:slug/rules    /prizes/rules/  200
+/prizes/:slug/rules/   /prizes/rules/  200
+/prizes/:slug    /prizes/view/  200
+/prizes/:slug/   /prizes/view/  200
+
 # Member profiles (docs/specs/rewards.md §11): every /u/{handle} is the one client-rendered profile
 # page (/u/view/, which reads the handle from the address).
 /u/:handle      /u/view/       200

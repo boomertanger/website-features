@@ -1,0 +1,139 @@
+---
+// /prizes: the Prize Box story page (docs/specs/prize-box.md §5; mockup docs/design/mockups/prize-box-pages.html, hero H2a "the box is the stand").
+// The full frame: the PRIZE BOX bar, the hero with the prize stand (click to spin a demo with you on the yellow blade; nothing is saved),
+// TocLayout's rail and ghost-numbered chapters: 01 Open now (stage cards with hover scenes: the wheel turns, a pencil draws, an envelope opens),
+// 02 How it works (the five-step journey), 03 Three ways to win (enter → picked → everyone sees), 04 Spin the wheel (the real F2 wheel),
+// 05 Past winners (only with the winner's OK, no medals), 06 Fair and square (the placard, six house rules), 07 Ask BOOMBOT (help/prize-box.json),
+// and the closing call to action (visitor: Join free; member: See the schedule). scripts/prizes/home.ts fills 01 and 05 from public/prizeBox.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import PrizeBar from "../../components/prize/PrizeBar.astro";
+import HELP from "../../data/help/prize-box.json";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { IC, chapter } from "../../scripts/prizes/icons";
+import "../../styles/how-it-works.css";
+import "../../styles/prize-box.css";
+
+const NAV: [string, string][] = [["open", "Open now"], ["how", "How it works"], ["ways", "Three ways to win"], ["try", "Spin the wheel"], ["winners", "Past winners"], ["fair", "Fair and square"], ["ask", "Ask BOOMBOT"]];
+const JOURNEY = [["🔎", "Find one", "Open contests are here and on the site banner."], ["✍️", "Enter", "Check in on stream, upload, or mail it in."], ["⏰", "Reminders", "A day and an hour before it closes."], ["🎡", "Winners picked", "On the wheel live, or judged by Boomer."], ["🎁", "Claim it", "Winners have 7 days to claim."]];
+const FLOW = [
+  ["You enter", [["a", IC.live, "Check in on stream", "Live draws"], ["b", IC.up, "Upload online", "Drawings, screenshots"], ["c", IC.mail, "Mail it in", "With your entry code"]]],
+  ["It's picked", [["a", IC.wheel, "The Prize Wheel", "Spun live at a break"], ["b c", IC.judge, "Boomer judges", "Favorites win"], ["b c", IC.dice, "Random draw", "From every entry"]]],
+  ["Everyone sees", [["a b c", IC.tv, "The reveal on stream", "Live or at the next stream"], ["a b c", IC.page, "Winners posted here", "With the winner's OK"], ["a b c", IC.badge, "A winner badge", "Prize Box Winner"]]],
+] as const;
+const RULES = [["Free to enter", "No purchase, ever. A free member account is all you need."], ["One entry each", "One entry per member per contest. Your own work only."], ["Picked before the spin", "The site picks and saves the result; the wheel shows it."], ["Crew can't win", "Mods and admins run contests; members win them."], ["Share the luck", "Win a live draw and you sit out live draws for 30 days."], ["7 days to claim", "Unclaimed prizes are drawn again."]];
+const FAQ = HELP.slice(0, 6).map((h) => [h.q, h.a] as const);
+---
+<BaseLayout title="Prize Box" description="Contests, drawings and prizes for the Boomertanger community: Prize Wheel draws on stream, drawing contests online and by mail, winners revealed live. Always free to enter.">
+  <PrizeBar slot="bar" section="contests" />
+  <div id="prize-box-root" class="bt-root pz">
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+
+        <section class="ai-hero pz-hero" aria-labelledby="h-hero">
+          <div class="pz-hero-grid">
+            <div>
+              <p class="ai-kicker">Play</p>
+              <h1 class="bt-title bt-title--hero" id="h-hero">Prize Box</h1>
+              <p class="pz-lede">Contests, drawings and prizes for the Boomertanger community. Spin-the-wheel draws on stream, drawing contests online and by mail, and winners revealed live. Always free to enter.</p>
+              <div class="ai-acts">
+                <a class="bt-btn bt-btn--primary bt-when-signed-in" href="#open" data-pulse="pb-see-open">See open contests</a>
+                <a class="bt-btn bt-btn--secondary bt-when-signed-in" href="#how">How it works</a>
+                <button type="button" class="bt-btn bt-btn--primary bt-when-visitor" data-signin="join" data-signin-title="Join free to enter contests" data-pulse="pb-join">Join free</button>
+                <a class="bt-btn bt-btn--secondary bt-when-visitor" href="#open">See open contests</a>
+              </div>
+              <div class="pz-facts" data-pz-facts></div>
+            </div>
+            <div class="pz-hero-stand">
+              <div class="pz-stand-host" data-pz-hero tabindex="0" role="button" aria-label="Spin the Prize Wheel (a demo: nothing is saved)" data-pulse="pb-hero-spin"></div>
+              <p class="pz-hint">Click the wheel to spin <span data-pz-sound></span></p>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="open" aria-labelledby="h-open">
+          <Fragment set:html={chapter(1, "open", "Open now", "Contests that are open or coming up. Pick one and get in.", " data-pz-open-lede")} />
+          <div class="pz-cards" data-pz-open aria-live="polite"><div class="pz-cards-wait bt-skeleton" aria-hidden="true"></div></div>
+        </section>
+
+        <section class="ai-sec" id="how" aria-labelledby="h-how">
+          <Fragment set:html={chapter(2, "how", "How it works", "Every contest runs the same five steps, whichever way you enter.")} />
+          <ol class="ai-jr ai-jr--5" data-journey>
+            {JOURNEY.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+        </section>
+
+        <section class="ai-sec" id="ways" aria-labelledby="h-ways">
+          <Fragment set:html={chapter(3, "ways", "Three ways to win", "How you enter decides how the winner is picked. Hover or tap a box to follow its path.")} />
+          <div class="pz-flow" data-pz-flow>
+            {FLOW.map(([label, boxes]) => (
+              <div class="pz-fcol"><span class="bt-label">{label}</span>
+                {boxes.map(([p, ic, t, s]) => <div class="pz-fbox" data-p={p} tabindex="0"><span class="pz-fic" set:html={ic} /><div>{t}<small>{s}</small></div></div>)}
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="try" aria-labelledby="h-try">
+          <Fragment set:html={chapter(4, "try", "Spin the wheel", "This is the real Prize Wheel. Put yourself on it and give it a spin; nothing is saved.")} />
+          <div class="bt-card pz-try">
+            <div class="pz-try-wheel" data-pz-try></div>
+            <div class="pz-try-side">
+              <p>You're on the yellow blade. The other names are sample members. On stream, the site picks the winner first and the wheel slows onto it, one click per peg.</p>
+              <p class="pz-res" data-pz-tryres aria-live="polite"></p>
+              <div class="ai-acts"><button type="button" class="bt-btn bt-btn--primary" data-pz-tryspin data-pulse="pb-try-spin">Spin the wheel</button><span data-pz-sound></span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="winners" aria-labelledby="h-winners">
+          <Fragment set:html={chapter(5, "winners", "Past winners", "Winners appear here once they say yes to being shown.")} />
+          <div class="pz-wall" data-pz-winners aria-live="polite"></div>
+        </section>
+
+        <section class="ai-sec" id="fair" aria-labelledby="h-fair">
+          <Fragment set:html={chapter(6, "fair", "Fair and square", "The house rules for every contest. Each contest has its full official rules too.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>House rules</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="ask" aria-labelledby="h-ask">
+          <Fragment set:html={chapter(7, "ask", "Ask BOOMBOT", "Quick answers from the help desk.")} />
+          <div class="pz-bot-intro"><span set:html={boombotIcon("pz-bb-intro")} /><span>BOOMBOT answers from the Prize Box help notes. Tap a question.</span></div>
+          <div class="bt-chat">
+            {FAQ.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded="false" aria-controls={`pz-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q</span>{q}</button>
+                <div class="bt-chat-a" id={`pz-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden>
+                  <span class="bt-chat-av" set:html={boombotIcon(`pz-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta" aria-labelledby="h-cta">
+          <Mascot decorative />
+          <h2 id="h-cta"><span class="bt-when-visitor">Your name could be on the wheel</span><span class="bt-when-signed-in">See you on the wheel</span></h2>
+          <p class="bt-when-visitor">Join free, check in on stream, and you're in the next draw.</p>
+          <p class="bt-when-signed-in">Check in on the next stream to be in the next Break Wheel.</p>
+          <div class="ai-acts">
+            <button type="button" class="bt-btn bt-btn--primary bt-when-visitor" data-signin="join" data-signin-title="Join free to enter contests" data-pulse="pb-cta-join">Join free</button>
+            <a class="bt-btn bt-btn--primary bt-when-signed-in" href="/schedule" data-pulse="pb-cta-schedule">See the schedule</a>
+          </div>
+        </section>
+
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/prizes/home";
+</script>

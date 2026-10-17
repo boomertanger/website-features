@@ -11,6 +11,7 @@ const MODULE_PAGES = {
   chatgames: { label: "Chat Games", href: "/live/chat-games", icon: "game", blurb: "Questions, Hot Seat and every live game" },
   factory: { label: "Night Shift", href: "/shift", icon: "shift", blurb: "Missions between streams. Keep your streak alive." },
   trophies: { label: "Trophy Room", href: "/trophies", icon: "trophy", blurb: "Every badge and trophy you've earned." },
+  prizes: { label: "Prize Box", href: "/prizes", icon: "gift", blurb: "Contests, drawings and prizes" },
   crew: { label: "Crew", href: "/crew", icon: "eye", blurb: "Meet the mods who keep the chats fun, or join them." },
   goals: { label: "Goals", href: "/goals", icon: "target", blurb: "What we're working toward together." },
   climb: { label: "Creator Climb", href: "/climb", icon: "climb", blurb: "Follower growth across every platform" },
@@ -31,8 +32,9 @@ const MODULE_PAGES = {
 };
 
 // Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md), /contact is
-// Hotline Boom (docs/specs/hotline-boom.md), /live/chat-games is How Chat Games work (docs/specs/chat-games.md §14a).
-const ALWAYS_ON = ["crew", "contact", "chatgames"];
+// Hotline Boom (docs/specs/hotline-boom.md), /live/chat-games is How Chat Games work (docs/specs/chat-games.md §14a), /prizes is the Prize Box
+// (docs/specs/prize-box.md §5).
+const ALWAYS_ON = ["crew", "contact", "chatgames", "prizes"];
 const STAFF_ONLY = ["deck"];   // on for everyone in the data, shown to staff only
 const enabled = new Set([...site.modules, ...ALWAYS_ON, ...STAFF_ONLY]);
 const isOn = (id) => enabled.has(id) && !!MODULE_PAGES[id];
@@ -41,7 +43,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 // Header groups (docs/specs/header-nav.md): three menus and Shop as a plain link.
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
-  { id: "play", label: "Play", pages: ["arcade", "chatgames", "factory", "trophies"] },
+  { id: "play", label: "Play", pages: ["arcade", "chatgames", "prizes", "factory", "trophies"] },
   { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "climb", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
 ];
 const PLAIN = ["shop"];

@@ -1,0 +1,34 @@
+---
+// The PRIZE BOX bar, on every Prize Box page (docs/specs/prize-box.md §2 "Top bar links"; design-system §5 "Feature bars" and §8aj; mockup
+// prize-box-wordmark.html, pick I2): the kit's .bt-topbar.bt-topbar--rows in a .bt-sticky-bar with the PRIZE BOX .bt-wordmark--power (PB_ICON:
+// the wheel on the box) and a .bt-topnav. Contests (/prizes) for everyone, My entries (/prizes/mine) for members (.bt-when-signed-in), and
+// Admin (/admin/prize-box) in admin green for admins (.bt-when-admin). The first link is the area's home, so the wordmark isn't a link; it keeps
+// tabindex="0" so the keyboard gets its power-on. Role links are in the HTML and shown by the body flags BaseLayout sets before first paint.
+import { PB_ICON } from "../../../../shared/ui/prize-box.js";
+import { ROW_CURRENT } from "../../lib/row-current.js";
+
+interface Props { section?: "contests" | "mine" | "admin" | null }
+const { section = null } = Astro.props;
+---
+<div class="bt-sticky-bar pz-dock" data-pz-dock>
+  <div class="bt-topbar bt-topbar--rows pz-bar">
+    <span class="bt-wordmark bt-wordmark--power" tabindex="0" aria-label="Prize Box">
+      <span class="bt-wordmark-icon" set:html={PB_ICON} />
+      <span class="bt-wordmark-text" aria-hidden="true">PRIZE<span class="bt-wordmark-accent">BOX</span></span>
+    </span>
+    <div class="bt-topnav">
+      <nav class="bt-seg-nav bt-seg-nav--scroll" aria-label="Prize Box">
+        <a href="/prizes" aria-current={section === "contests" ? "page" : undefined} data-pulse="pb-contests">Contests</a>
+        <a class="bt-when-signed-in" href="/prizes/mine" aria-current={section === "mine" ? "page" : undefined} data-pulse="pb-mine">My entries</a>
+      </nav>
+      <script is:inline set:html={ROW_CURRENT} />
+      <a class="bt-btn bt-btn--admin bt-btn--sm bt-when-admin pz-admin" href="/admin/prize-box" aria-current={section === "admin" ? "page" : undefined}><span class="bt-btn-label">Admin</span></a>
+    </div>
+  </div>
+</div>
+<script>
+  import { initPowerWordmarks } from "../../../../shared/ui/wordmark.js";
+  import { initStickyBar } from "../../../../shared/ui/sticky-bar.js";
+  const dock = document.querySelector<HTMLElement>("[data-pz-dock]");
+  if (dock) { initStickyBar(dock, { progress: !!document.querySelector(".tl-wrap") }); initPowerWordmarks(dock); }
+</script>

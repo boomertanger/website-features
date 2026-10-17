@@ -1,0 +1,22 @@
+---
+// /prizes/<contest>/rules: the contest's official rules (docs/specs/prize-box.md §5). site/public/_redirects rewrites every /prizes/:slug/rules here; the script
+// reads the slug from the address and renders the contest's rulesMd (Markdown, made from site/src/data/prize-box/rules-template.md in the builder) with the
+// Playbook's renderer rules: marked + DOMPurify, raw HTML shown as text. A contest without its own rules shows the template, marked as waiting for review.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrizeBar from "../../components/prize/PrizeBar.astro";
+import "../../styles/prize-box.css";
+---
+<BaseLayout title="Official rules · Prize Box" description="The official rules of a Prize Box contest.">
+  <PrizeBar slot="bar" section="contests" />
+  <div id="prize-box-root" class="bt-root pz">
+    <article class="pz-rules" data-pz-rules>
+      <a class="pz-crumb" href="/prizes" data-pz-rules-back>Prize Box</a>
+      <h1 class="bt-title" data-pz-rules-title>Official rules</h1>
+      <div class="bt-prose" data-pz-rules-body aria-live="polite"><p class="bt-skeleton" style="height:120px"></p></div>
+    </article>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/prizes/rules";
+</script>

@@ -1,0 +1,97 @@
+[
+  {
+    "id": "cost",
+    "q": "Does it cost anything to enter?",
+    "a": "No. Every Prize Box contest is free, and no purchase is ever needed. You just need a free member account.",
+    "keys": [
+      "free",
+      "cost",
+      "pay",
+      "purchase",
+      "price"
+    ]
+  },
+  {
+    "id": "wheel",
+    "q": "How do I get on the wheel?",
+    "a": "Check in when Boomer is live. Everyone checked in that stream is in the live draw, unless the contest asks for more, like holding a certain badge.",
+    "keys": [
+      "wheel",
+      "check in",
+      "live",
+      "draw",
+      "stream"
+    ]
+  },
+  {
+    "id": "outside-us",
+    "q": "Can I enter from outside the US?",
+    "a": "Yes. Digital prizes work anywhere and merch store codes work wherever the store ships. Prizes Boomer mails himself go to US addresses only.",
+    "keys": [
+      "country",
+      "outside",
+      "international",
+      "us",
+      "ship",
+      "address"
+    ]
+  },
+  {
+    "id": "random",
+    "q": "Is the wheel really random?",
+    "a": "Yes. The site picks the winner before the wheel moves and saves the pool, the pick and the time with the draw. The wheel just shows you the pick.",
+    "keys": [
+      "random",
+      "fair",
+      "rigged",
+      "pick"
+    ]
+  },
+  {
+    "id": "under-18",
+    "q": "I'm under 18. Can I win?",
+    "a": "Members 13 and up can enter. To claim a prize, a parent or guardian says OK first.",
+    "keys": [
+      "age",
+      "under 18",
+      "teen",
+      "parent",
+      "guardian"
+    ]
+  },
+  {
+    "id": "missed-here",
+    "q": "What if I miss the I'm here button?",
+    "a": "The wheel spins again among the others. Nothing changes for your account, and you're in the next draw as usual.",
+    "keys": [
+      "i'm here",
+      "missed",
+      "timeout",
+      "60 seconds"
+    ]
+  },
+  {
+    "id": "claim",
+    "q": "How do I claim a prize?",
+    "a": "Open My entries. Prizes to claim are at the top: tap one, fill in what it asks (a US address for mailed prizes), and you're done. You have 7 days.",
+    "keys": [
+      "claim",
+      "prize",
+      "my entries",
+      "address",
+      "code"
+    ]
+  },
+  {
+    "id": "mail-in",
+    "q": "How does a mail-in contest work?",
+    "a": "Get your entry code on the contest page, write it on the back of your entry and on the envelope, and mail it so it's postmarked by the deadline. The code links it to your account, so your name and address never need to be on it.",
+    "keys": [
+      "mail",
+      "envelope",
+      "code",
+      "postmark",
+      "pb"
+    ]
+  }
+]

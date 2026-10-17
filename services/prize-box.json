@@ -1,0 +1,27 @@
+{
+  "id": "prize-box",
+  "name": "Prize Box",
+  "type": "feature",
+  "area": "Play",
+  "blurb": "Contests, drawings and prizes: the Prize Wheel on stream, online and mail-in contests, winners and claims.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "everyone",
+  "routes": [
+    "/prizes",
+    "/prizes/view",
+    "/prizes/rules",
+    "/prizes/mine"
+  ],
+  "nav": "prizes",
+  "testPlan": null,
+  "checks": [],
+  "videoTag": "#bt-prize-box",
+  "sections": {},
+  "talkBack": "note",
+  "talkBackRoutes": {
+    "/prizes/mine": "rate",
+    "/prizes/rules": "skip"
+  },
+  "help": "site/src/data/help/prize-box.json"
+}

@@ -1,0 +1,19 @@
+---
+// /prizes/<contest>: every contest page is this one page (site/public/_redirects rewrites /prizes/:slug here; the script reads the slug from the address),
+// like the Game Vault's /games/view. docs/specs/prize-box.md §5; mockup prize-box-wheel-and-draw.html section 3. Drawn by scripts/prizes/contest.ts.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrizeBar from "../../components/prize/PrizeBar.astro";
+import "../../styles/prize-box.css";
+---
+<BaseLayout title="A contest · Prize Box" description="A Prize Box contest: how to enter, the prizes, the rules and the winners.">
+  <PrizeBar slot="bar" section="contests" />
+  <div id="prize-box-root" class="bt-root pz">
+    <div data-pz-contest aria-live="polite">
+      <div class="pz-head" aria-hidden="true"><div><span class="bt-skeleton" style="display:block;height:40px;width:60%"></span><span class="bt-skeleton" style="display:block;height:18px;width:80%;margin-top:12px"></span></div></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/prizes/contest";
+</script>

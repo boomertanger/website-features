@@ -294,7 +294,7 @@ function prizeSpin(box, { pickIndex, offset = 0.5, spins = 5, durationMs = 7800,
     setRot(p, deg, flap);
     if (t < 1) raf = requestAnimationFrame(frame); else finish();
   };
-  const begin = () => { if (!stopped) raf = requestAnimationFrame(frame); };
+  const begin = () => { if (stopped) return; p.box.dataset.state = "spinning"; raf = requestAnimationFrame(frame); };
   const wait = t0 - now();
   if (wait > 0) { p.box.dataset.state = "idle"; setRot(p, from); timer = setTimeout(begin, wait); } else begin();
   return () => { stopped = true; cancelAnimationFrame(raf); clearTimeout(timer); };

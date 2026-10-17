@@ -1,0 +1,31 @@
+---
+// /prizes/mine: My entries (docs/specs/prize-box.md §5; a tool page, design-system §8m). Members: a hero header with the small box scene, Prizes to claim
+// first, then your entries, codes and past wins (scripts/prizes/mine.ts, one prizeMine read); empty: the mascot and a link to the open contests.
+// Visitors and members mid-signup: the lock card.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrizeBar from "../../components/prize/PrizeBar.astro";
+import { PB_ICON } from "../../../../shared/ui/prize-box.js";
+import "../../styles/prize-box.css";
+---
+<BaseLayout title="My entries · Prize Box" description="Your Prize Box entries, codes and prizes.">
+  <PrizeBar slot="bar" section="mine" />
+  <div id="prize-box-root" class="bt-root pz">
+    <div class="pz-mine">
+      <header class="pz-mine-hero">
+        <div><h1 class="bt-title">My entries</h1><p>Your prizes to claim, your entries and codes, and everything you've won.</p></div>
+        <span class="bt-wordmark bt-wordmark--power pz-mine-scene" aria-hidden="true"><span class="bt-wordmark-icon" set:html={PB_ICON} /></span>
+      </header>
+      <div data-pz-when="loading"><span class="bt-skeleton" style="display:block;height:160px;border-radius:16px"></span></div>
+      <div data-pz-when="visitor" hidden>
+        <div class="bt-lock-card"><span class="bt-lock-card-ic" aria-hidden="true">🎁</span><div><b>Join free to see your entries</b><p>Members enter contests, keep track of their entries here and claim their prizes.</p></div><button type="button" class="bt-btn bt-btn--primary" data-signin="join" data-signin-title="Join free to enter contests" data-pulse="pb-join">Join free</button></div>
+      </div>
+      <div data-pz-when="page" hidden>
+        <div data-pz-mine class="pz-mine-list" aria-live="polite"><span class="bt-skeleton" style="display:block;height:160px;border-radius:16px"></span></div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/prizes/mine";
+</script>
