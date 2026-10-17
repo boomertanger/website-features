@@ -25,8 +25,13 @@ interface Props {
   noindex?: boolean;
   /** A page that stands on its own in link previews and search: "Title | Boomertanger" (the Game Vault's /games). */
   fullTitle?: boolean;
+  /** A Boomertang page (docs/specs/boomertang.md §8): loads the magazine fonts and sets the reader's Paper / Ink mode before first paint. */
+  magazine?: boolean;
 }
-const { title, description = site.tagline, overlayHeader = false, noindex = false, fullTitle = false } = Astro.props;
+const { title, description = site.tagline, overlayHeader = false, noindex = false, fullTitle = false, magazine = false } = Astro.props;
+// The magazine's type (Boomertang pages only): Bodoni Moda 400 / 800 with italics, Anton, Newsreader 400 / 600 with italics. The
+// fallback stacks are --tang-serif, --tang-condensed and --tang-text in bt-ui.css.
+const MAGAZINE_FONTS = "https://fonts.googleapis.com/css2?family=Anton&family=Bodoni+Moda:ital,opsz,wght@0,6..96,400;0,6..96,800;1,6..96,400;1,6..96,800&family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;1,6..72,400;1,6..72,600&display=swap";
 // The page strip (Service Hub §8a): the service whose manifest claims this route, if any (its talkBack value decides; TalkBackNote.astro).
 const stripService = manifestFor(Astro.url.pathname);
 const stripPlacement = stripService ? talkBackFor(stripService, Astro.url.pathname) : "skip";
@@ -50,6 +55,18 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    {magazine && <link href={MAGAZINE_FONTS} rel="stylesheet" />}
+    {magazine && (
+      <script is:inline>
+        // Boomertang's Paper / Ink (docs/specs/boomertang.md §5): the reader's last choice, on <html> before first paint. Signed in, it
+        // follows prefs.tangMode (scripts/boomertang/mode.ts keeps this copy in step); a visitor's lives only here. Paper is the default.
+        (function () {
+          var m = "paper";
+          try { m = localStorage.getItem("bt.tang.mode") === "ink" ? "ink" : "paper"; } catch (e) { /* blocked storage: paper */ }
+          document.documentElement.setAttribute("data-tang-mode", m);
+        })();
+      </script>
+    )}
   </head>
   <body class="bt-root bt-site" data-service={pulseService} data-live={site.liveState} data-auth="visitor" data-staff="off" data-crew="off" data-overseer="off" data-owner="off" data-auth-state="loading" data-env={firebaseEnv}>
     <script is:inline>

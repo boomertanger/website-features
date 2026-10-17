@@ -206,3 +206,15 @@
 
 /* The Stories demos: the details span both columns under the poster and the square (the caller's grid; the Vault does the same) */
 .bt-root:not(#_) [data-kit-stories] .bt-stories-details { grid-column: 1 / -1; }
+/* Boomertang pieces (kit-boomertang.js): sample sheets for the paper surface, the redact and the turn page */
+#bt-ui-kit .kit-tang-sheet { padding: 18px 20px; border-radius: 4px; }
+#bt-ui-kit .kit-tang-dark { padding: 18px 20px; border-radius: 4px; background: var(--bt-surface); display: grid; gap: 10px; justify-items: start; }
+#bt-ui-kit .kit-tang-sheet .bt-btn { margin-top: 6px; }
+#bt-ui-kit .kit-tang-kick { margin: 0 0 6px; font-size: 11px; font-weight: 900; letter-spacing: .3em; text-transform: uppercase; color: var(--bt-pp-head); }
+#bt-ui-kit .kit-tang-hed { margin: 0 0 10px; font-family: var(--tang-serif); font-style: italic; font-weight: 400; font-size: 40px; line-height: .95; color: var(--bt-pp-head); }
+#bt-ui-kit .kit-tang-hed em { font-family: var(--tang-condensed); font-style: normal; text-transform: uppercase; }
+#bt-ui-kit .kit-tang-body { margin: 0 0 10px; font-family: var(--tang-text); font-size: 16.5px; line-height: 1.55; }
+#bt-ui-kit .kit-tang-rule { padding-top: 10px; border-top: 1px solid var(--bt-pp-mark); }
+#bt-ui-kit .kit-tang-row { display: flex; flex-wrap: wrap; gap: 8px; margin: 8px 0 14px; }
+#bt-ui-kit .kit-tang-bars, #bt-ui-kit .kit-tang-turns { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; margin: 8px 0 18px; }
+#bt-ui-kit .kit-tang-bars .bt-issuebar.bt-issuebar { position: relative; top: auto; border-radius: 8px; border: 1px solid var(--bt-border); }

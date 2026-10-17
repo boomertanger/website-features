@@ -2128,6 +2128,18 @@
   --bt-brand-tiktok-edge: #333;
   --bt-brand-email: #3a3a44;
   --bt-on-brand: #fff;                                    /* letters on a brand tile */
+  /* Boomertang, the magazine (docs/specs/boomertang.md §8; design-system.md §8ak): the paper surface (.bt-surface--paper), its
+     printed gold for headings and its darker purple for links, the editorial red (hairlines, folio marks, drop caps, data marks;
+     never a button or anything clickable), the lamp's warm bulb light, and the magazine type (loaded only on Boomertang pages). */
+  --tang-paper: #f1ebdf;                                  /* the magazine's paper */
+  --tang-ink: #16110f;                                    /* printed ink on paper */
+  --tang-gold-ink: #7a5a10;                               /* gold headings printed on paper (gold = headings) */
+  --tang-link-ink: #5b2aa8;                               /* purple = clickable, dark enough for paper */
+  --tang-blood: #8c1d1d;                                  /* editorial marks only, never buttons */
+  --tang-lamp-rgb: 243, 217, 160;                         /* the newsstand lamp's warm bulb */
+  --tang-serif: "Bodoni Moda", "Didot", "Bodoni 72", Georgia, serif;
+  --tang-condensed: "Anton", "Oswald", "Impact", "Arial Narrow", sans-serif;
+  --tang-text: "Newsreader", Georgia, "Times New Roman", serif;
 }
 
 /* ---- Page root and frame ---- */
@@ -6155,3 +6167,101 @@
   .bt-root:not(#_) .bt-admit.is-torn .bt-admit-stub { transform: none; opacity: 0.35; }
 }
 /* ================= END Club Pass pieces ================= */
+/* ================= Boomertang pieces: .bt-surface--paper, .bt-factag, .bt-issuebar, .bt-turnpage, .bt-redact =================
+   (docs/specs/boomertang.md §6, §8; design-system.md §8ak; mockup docs/design/mockups/boomertang-granny.html). JS: shared/ui/magazine.js.
+   .bt-surface--paper  the magazine's paper: --tang-paper with --tang-ink. Its Ink variant (light text on near-black) is
+                       [data-mode="ink"] on the surface, or data-tang-mode="ink" on an ancestor (the reader's switch); the surface's
+                       own data-mode="paper" wins. Inside, the roles every piece reads: --bt-pp-bg, --bt-pp-text, --bt-pp-head
+                       (gold headings), --bt-pp-link (purple), --bt-pp-mark (the editorial red), --bt-pp-rule (hairlines),
+                       --bt-pp-tint (a hover wash).
+   .bt-factag          a trust tag, data-trust="off" (Official) | "ver" (Verified by Boomer, with .bt-factag-ver: "PC 1.3.4") |
+                       "com" (Community) | "fan" (Fan theory). A span, or a button / link when it opens its source. Readable on
+                       paper, ink and the dark site (each tone is at least 5:1).
+   .bt-issuebar        the sticky bar on every issue page: .bt-issuebar-mast (mini masthead), .bt-issuebar-line (the issue line),
+                       nav.bt-issuebar-nav (links, aria-current="page", .bt-issuebar-lock on pages the reader can't open) and
+                       .bt-issuebar-mode (Paper / Ink, two aria-pressed buttons). On phones the nav scrolls sideways and the mode
+                       switch stays.
+   .bt-turnpage        previous / next at the foot of a page: .bt-turnpage-prev and .bt-turnpage-next (links with small and b).
+                       Buttons and the arrow keys (initTurnPage), never swipe.
+   .bt-redact          blacked-out text with a reveal: .bt-redact-text spans inside; .is-revealed shows them (initRedact wires the
+                       [data-redact-toggle] button: Reveal / Cover it again). Covered text is hidden from screen readers too. */
+
+/* ---- .bt-surface--paper ---- */
+.bt-root:not(#_) .bt-surface--paper { --bt-pp-bg: var(--tang-paper); --bt-pp-text: var(--tang-ink); --bt-pp-head: var(--tang-gold-ink); --bt-pp-link: var(--tang-link-ink); --bt-pp-mark: var(--tang-blood); --bt-pp-rule: color-mix(in srgb, var(--tang-ink) 18%, transparent); --bt-pp-tint: color-mix(in srgb, var(--tang-link-ink) 7%, transparent); background: var(--bt-pp-bg); color: var(--bt-pp-text); color-scheme: light; }
+.bt-root:not(#_) .bt-surface--paper[data-mode="ink"],
+.bt-root:not(#_) [data-tang-mode="ink"] .bt-surface--paper:not([data-mode="paper"]),
+.bt-root:not(#_)[data-tang-mode="ink"] .bt-surface--paper:not([data-mode="paper"]),
+[data-tang-mode="ink"] .bt-root:not(#_) .bt-surface--paper:not([data-mode="paper"]) { --bt-pp-bg: color-mix(in srgb, var(--tang-ink) 55%, var(--bt-bg)); --bt-pp-text: color-mix(in srgb, var(--tang-paper) 92%, var(--bt-bg)); --bt-pp-head: var(--bt-title); --bt-pp-link: var(--bt-primary-soft); --bt-pp-mark: color-mix(in srgb, var(--tang-blood) 50%, var(--bt-text)); --bt-pp-rule: color-mix(in srgb, var(--bt-text) 12%, transparent); --bt-pp-tint: color-mix(in srgb, var(--bt-primary) 12%, transparent); color-scheme: dark; }
+/* kit buttons on paper: the secondary and ghost buttons take the paper's purple (primary is already purple with light text) */
+.bt-root:not(#_) .bt-surface--paper :is(.bt-btn--secondary, .bt-btn--ghost) { color: var(--bt-pp-link); border-color: color-mix(in srgb, var(--bt-pp-link) 55%, transparent); background: transparent; }
+.bt-root:not(#_) .bt-surface--paper :is(.bt-btn--secondary, .bt-btn--ghost):is(:hover, :focus-visible) { border-color: var(--bt-pp-link); background: var(--bt-pp-tint); color: var(--bt-pp-link); }
+.bt-root:not(#_) .bt-surface--paper a:not([class]) { color: var(--bt-pp-link); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+.bt-root:not(#_) .bt-surface--paper a:not([class]):focus-visible { outline: 2px solid var(--bt-pp-link); outline-offset: 2px; border-radius: 2px; }
+
+/* ---- .bt-factag (the tone is --bt-ft; on paper the surface's roles pick it) ---- */
+.bt-root:not(#_) .bt-factag { --bt-ft: var(--bt-text-muted); display: inline-flex; align-items: center; gap: 5px; margin: 0 0 0 4px; padding: 2px 6px; border: 1px solid currentColor; border-radius: 3px; background: none; color: var(--bt-ft); font: 800 10px/1.3 Inter, "Inter Fallback", system-ui, sans-serif; letter-spacing: .1em; text-transform: uppercase; vertical-align: middle; white-space: nowrap; text-decoration: none; }
+.bt-root:not(#_) .bt-factag[data-trust="off"] { --bt-ft: var(--bt-ft-off, var(--bt-lime)); }
+.bt-root:not(#_) .bt-factag[data-trust="ver"] { --bt-ft: var(--bt-ft-ver, var(--bt-title)); }
+.bt-root:not(#_) .bt-factag[data-trust="com"] { --bt-ft: var(--bt-ft-com, var(--bt-blue)); }
+.bt-root:not(#_) .bt-factag[data-trust="fan"] { --bt-ft: var(--bt-ft-fan, color-mix(in srgb, var(--tang-blood) 50%, var(--bt-text))); }
+.bt-root:not(#_) .bt-surface--paper { --bt-ft-off: color-mix(in srgb, var(--bt-lime) 42%, var(--tang-ink)); --bt-ft-ver: var(--tang-gold-ink); --bt-ft-com: color-mix(in srgb, var(--bt-blue) 62%, var(--tang-ink)); --bt-ft-fan: var(--tang-blood); }
+.bt-root:not(#_) .bt-surface--paper[data-mode="ink"],
+.bt-root:not(#_) [data-tang-mode="ink"] .bt-surface--paper:not([data-mode="paper"]),
+.bt-root:not(#_)[data-tang-mode="ink"] .bt-surface--paper:not([data-mode="paper"]),
+[data-tang-mode="ink"] .bt-root:not(#_) .bt-surface--paper:not([data-mode="paper"]) { --bt-ft-off: var(--bt-lime); --bt-ft-ver: var(--bt-title); --bt-ft-com: var(--bt-blue); --bt-ft-fan: color-mix(in srgb, var(--tang-blood) 50%, var(--bt-text)); }
+.bt-root:not(#_) .bt-factag-ver { padding-left: 5px; border-left: 1px solid color-mix(in srgb, currentColor 45%, transparent); font-variant-numeric: tabular-nums; letter-spacing: .04em; }
+.bt-root:not(#_) :is(button, a).bt-factag { cursor: pointer; transition: background-color .15s; }
+.bt-root:not(#_) :is(button, a).bt-factag:is(:hover, :focus-visible) { background: color-mix(in srgb, var(--bt-ft) 14%, transparent); outline: none; }
+.bt-root:not(#_) :is(button, a).bt-factag:focus-visible { box-shadow: 0 0 0 2px var(--bt-primary); }
+.bt-root:not(#_) :is(button, a).bt-factag[aria-expanded="true"] { background: color-mix(in srgb, var(--bt-ft) 18%, transparent); }
+
+/* ---- .bt-issuebar ---- */
+.bt-root:not(#_) .bt-issuebar { position: sticky; top: var(--bt-sticky-top, 0px); z-index: 5; min-width: 0; max-width: 100%; box-sizing: border-box; display: flex; align-items: center; gap: 14px; padding: 10px 24px; background: color-mix(in srgb, var(--bt-bg) 94%, transparent); -webkit-backdrop-filter: blur(6px); backdrop-filter: blur(6px); border-bottom: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-issuebar-mast { flex: none; font-family: var(--tang-serif); font-weight: 800; font-size: 15px; letter-spacing: .14em; color: var(--bt-title); text-decoration: none; }
+.bt-root:not(#_) a.bt-issuebar-mast:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 3px; border-radius: 3px; }
+.bt-root:not(#_) .bt-issuebar-line { flex: none; color: var(--bt-text-faint); font-size: var(--bt-text-sm); font-weight: 600; }
+.bt-root:not(#_) .bt-issuebar-nav { display: flex; gap: 4px; min-width: 0; margin-left: auto; overflow-x: auto; scrollbar-width: none; overscroll-behavior-x: contain; }
+.bt-root:not(#_) .bt-issuebar-nav::-webkit-scrollbar { display: none; }
+.bt-root:not(#_) .bt-issuebar-nav a { flex: none; display: inline-flex; align-items: center; gap: 5px; padding: 6px 9px; border-radius: 6px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; text-decoration: none; white-space: nowrap; }
+.bt-root:not(#_) .bt-issuebar-nav a:is(:hover, :focus-visible) { color: var(--bt-primary-soft); outline: 1px solid var(--bt-primary); }
+.bt-root:not(#_) .bt-issuebar-nav a[aria-current="page"] { color: var(--bt-title); }
+.bt-root:not(#_) .bt-issuebar-lock { width: 11px; height: 11px; flex: none; opacity: .8; }
+.bt-root:not(#_) .bt-issuebar-mode { flex: none; display: inline-flex; padding: 2px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-full); }
+.bt-root:not(#_) .bt-issuebar-mode button { padding: 5px 12px; border: 0; border-radius: var(--bt-radius-full); background: none; color: var(--bt-text-muted); font: inherit; font-size: var(--bt-text-sm); font-weight: 700; cursor: pointer; }
+.bt-root:not(#_) .bt-issuebar-mode button:is(:hover, :focus-visible) { color: var(--bt-text); outline: 1px solid var(--bt-primary); }
+.bt-root:not(#_) .bt-issuebar-mode button[aria-pressed="true"] { background: var(--bt-primary); color: var(--bt-text); }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-issuebar { flex-wrap: wrap; gap: 6px 10px; padding: 8px 12px; }
+  .bt-root:not(#_) .bt-issuebar-line { display: none; }
+  .bt-root:not(#_) .bt-issuebar-mode { margin-left: auto; }
+  .bt-root:not(#_) .bt-issuebar-nav { order: 3; width: 100%; margin-left: 0; }
+}
+
+/* ---- .bt-turnpage ---- */
+.bt-root:not(#_) .bt-turnpage { display: flex; justify-content: space-between; gap: 10px; padding: 18px 24px 28px; border-top: 1px solid var(--bt-border); }
+.bt-root:not(#_) .bt-turnpage :is(.bt-turnpage-prev, .bt-turnpage-next) { display: grid; gap: 2px; max-width: 48%; padding: 10px 14px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-md); color: inherit; text-decoration: none; transition: border-color .15s, transform .15s; }
+.bt-root:not(#_) .bt-turnpage :is(.bt-turnpage-prev, .bt-turnpage-next):is(:hover, :focus-visible) { border-color: var(--bt-primary); outline: none; }
+.bt-root:not(#_) .bt-turnpage :is(.bt-turnpage-prev, .bt-turnpage-next):focus-visible { box-shadow: 0 0 0 2px var(--bt-primary); }
+.bt-root:not(#_) .bt-turnpage-prev:hover { transform: translateX(-2px); }
+.bt-root:not(#_) .bt-turnpage-next { margin-left: auto; text-align: right; }
+.bt-root:not(#_) .bt-turnpage-next:hover { transform: translateX(2px); }
+.bt-root:not(#_) .bt-turnpage small { color: var(--bt-text-faint); font-size: var(--bt-text-xs); font-weight: 700; letter-spacing: .1em; text-transform: uppercase; }
+.bt-root:not(#_) .bt-turnpage b { color: var(--bt-primary-soft); font-family: var(--tang-serif); font-size: 18px; font-weight: 800; }
+.bt-root:not(#_) .bt-surface--paper .bt-turnpage { border-top-color: var(--bt-pp-rule); }
+.bt-root:not(#_) .bt-surface--paper .bt-turnpage :is(.bt-turnpage-prev, .bt-turnpage-next) { border-color: var(--bt-pp-rule); }
+.bt-root:not(#_) .bt-surface--paper .bt-turnpage :is(.bt-turnpage-prev, .bt-turnpage-next):is(:hover, :focus-visible) { border-color: var(--bt-pp-link); }
+.bt-root:not(#_) .bt-surface--paper .bt-turnpage small { color: color-mix(in srgb, var(--bt-pp-text) 62%, transparent); }
+.bt-root:not(#_) .bt-surface--paper .bt-turnpage b { color: var(--bt-pp-link); }
+
+/* ---- .bt-redact ---- */
+.bt-root:not(#_) .bt-redact { --bt-rd: var(--bt-text); position: relative; }
+.bt-root:not(#_) .bt-surface--paper .bt-redact { --bt-rd: var(--bt-pp-text); }
+.bt-root:not(#_) .bt-redact-text { border-radius: 2px; padding: 0 2px; background: var(--bt-rd); color: transparent; -webkit-box-decoration-break: clone; box-decoration-break: clone; user-select: none; transition: background-color .4s, color .4s; }
+.bt-root:not(#_) .bt-redact-text * { color: transparent; }
+.bt-root:not(#_) .bt-redact.is-revealed .bt-redact-text { background: color-mix(in srgb, var(--tang-blood) 12%, transparent); color: inherit; user-select: auto; }
+.bt-root:not(#_) .bt-redact.is-revealed .bt-redact-text * { color: inherit; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) :is(.bt-turnpage-prev, .bt-turnpage-next, .bt-redact-text, .bt-factag) { transition: none; transform: none; }
+}
+/* ================= END Boomertang pieces ================= */
