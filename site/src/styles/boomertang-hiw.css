@@ -1,0 +1,109 @@
+/* site/src/styles/boomertang-hiw.css — /boomertang/how-it-works (page CSS, tgh- scope; mockup docs/design/mockups/boomertang-how-it-works.html,
+   pick H2 The press). The shared story-page blocks come from how-it-works.css, the rail from TocLayout, the cover thumbnail and the trust tags
+   from boomertang.css and the kit. Tokens only: the --tang-* tokens and mixes of them and the kit's. Reduced motion: the finished stack. */
+/* .bt-root:not(#_) sets overflow: hidden (breaks the sticky rail) and a max-width; this matches its strength (as #brain-dump-hiw does) */
+#boomertang-hiw.bt-root { display: block; width: 100%; min-width: 0; box-sizing: border-box; max-width: none; margin: 0; padding: 0; border-radius: 0; overflow: visible; }
+
+/* ---------- hero H2 The press: pages fly in and stack, the cover drops on top, the Launch edition stamp lands ---------- */
+#boomertang-hiw .tgh-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 30px; align-items: center; }
+@container bt (max-width: 1024px) { #boomertang-hiw .tgh-hero { grid-template-columns: minmax(0, 1fr); } }
+#boomertang-hiw .tgh-hero .bt-title { margin: 6px 0 10px; }
+#boomertang-hiw .tgh-kick { margin: 0; font-family: var(--tang-serif); font-style: italic; font-size: 20px; color: var(--bt-title); }
+#boomertang-hiw .tgh-lede { max-width: 46ch; margin: 0 0 18px; font-size: 17px; line-height: 1.55; color: var(--bt-text-muted); }
+#boomertang-hiw .tgh-press { position: relative; justify-self: center; width: 100%; max-width: 520px; aspect-ratio: 5 / 4; }
+@container bt (max-width: 640px) { #boomertang-hiw .tgh-press { max-width: 300px; } }
+#boomertang-hiw .tgh-press::before { content: ""; position: absolute; inset: -6% -10%; background: radial-gradient(50% 50% at 50% 45%, rgba(var(--tang-lamp-rgb), .12), transparent 70%); pointer-events: none; }
+#boomertang-hiw .tgh-press .pg { position: absolute; left: 35%; top: 6%; width: 30%; aspect-ratio: 8.5 / 11; box-sizing: border-box; display: grid; align-content: start; gap: 6%; padding: 7% 8%; border-radius: 3px; background: var(--tang-paper); color: var(--tang-ink); box-shadow: 0 10px 24px var(--tg-shade); transform: translateX(var(--tx)) rotate(var(--tr)); animation: tgh-fly .7s cubic-bezier(.2, .8, .2, 1) both; }
+#boomertang-hiw .tgh-press .pg i { display: block; height: 4px; border-radius: 2px; background: currentColor; opacity: .18; }
+#boomertang-hiw .tgh-press .pg small { font-size: 9px; letter-spacing: .14em; text-transform: uppercase; opacity: .6; }
+#boomertang-hiw .tgh-press .pg.dark { background: var(--tg-night); color: var(--tg-cream-dim); }
+#boomertang-hiw .tgh-press .pg:nth-child(1) { --fx: -160%; --fr: -14deg; --tr: -9deg; --tx: -26%; animation-delay: .1s; }
+#boomertang-hiw .tgh-press .pg:nth-child(2) { --fx: 160%; --fr: 12deg; --tr: 7deg; --tx: 24%; animation-delay: .3s; }
+#boomertang-hiw .tgh-press .pg:nth-child(3) { --fx: -150%; --fr: -8deg; --tr: -4deg; --tx: -12%; animation-delay: .5s; }
+#boomertang-hiw .tgh-press .pg:nth-child(4) { --fx: 150%; --fr: 9deg; --tr: 3deg; --tx: 12%; animation-delay: .7s; }
+#boomertang-hiw .tgh-press .pg.cov { --tx: 0%; --tr: 0deg; z-index: 5; padding: 0; overflow: hidden; animation-name: tgh-drop; animation-delay: 1s; }
+#boomertang-hiw .tgh-press .pg.cov .tg-thumb { width: 100%; box-shadow: none; }
+#boomertang-hiw .tgh-press .seal { position: absolute; right: 8%; bottom: 6%; z-index: 6; transform: rotate(-10deg); animation: tgh-slam .45s 1.7s both; }
+@keyframes tgh-fly { from { transform: translateX(var(--fx)) rotate(var(--fr)); opacity: 0; } to { transform: translateX(var(--tx)) rotate(var(--tr)); opacity: 1; } }
+@keyframes tgh-drop { from { transform: translateY(-40%) scale(1.15); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes tgh-slam { from { transform: scale(1.8) rotate(-10deg); opacity: 0; } to { transform: rotate(-10deg); opacity: 1; } }
+
+/* ---------- 01: the stage cards' scenes (classes, so the colors are tokens) ---------- */
+#boomertang-hiw .ai-stage.tgh-stages { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+@container bt (max-width: 1024px) { #boomertang-hiw .ai-stage.tgh-stages { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bt (max-width: 420px) { #boomertang-hiw .ai-stage.tgh-stages { grid-template-columns: minmax(0, 1fr); } }
+#boomertang-hiw .tgh-sc { display: block; width: 100%; height: 112px; padding-top: 4px; background: var(--tg-night); }   /* above the icon tile (it sits at 118px) */
+#boomertang-hiw .tgh-sc :is(.bar, .rise, .slam, .fan) { transition: transform .6s cubic-bezier(.2, .8, .2, 1), opacity .4s; }
+#boomertang-hiw .tgh-sc .bar { fill: color-mix(in srgb, var(--tang-paper) 18%, var(--tg-night)); transform-box: fill-box; transform-origin: bottom; transform: scaleY(.15); }
+#boomertang-hiw .tgh-sc .bar.on { fill: var(--bt-title); }
+#boomertang-hiw .tgh-sc .cap { fill: color-mix(in srgb, var(--tang-paper) 55%, var(--tg-night)); font: 600 9px var(--bt-font); }
+#boomertang-hiw .tgh-sc :is(.back, .back2) { fill: color-mix(in srgb, var(--tang-ink) 70%, var(--bt-surface)); stroke: color-mix(in srgb, var(--tang-paper) 32%, var(--tg-night)); }
+#boomertang-hiw .tgh-sc .back2 { fill: color-mix(in srgb, var(--tang-gold-ink) 22%, var(--tg-night)); }
+#boomertang-hiw .tgh-sc .cov { fill: var(--tg-night); stroke: var(--bt-title); }
+#boomertang-hiw .tgh-sc .mast { fill: var(--bt-title); font: 800 7.5px var(--tang-serif); }
+#boomertang-hiw .tgh-sc .no { fill: var(--tg-cream); font: 400 11px var(--tang-condensed); }
+#boomertang-hiw .tgh-sc .paper { fill: var(--tang-paper); }
+#boomertang-hiw .tgh-sc .line { fill: var(--tang-ink); opacity: .2; }
+#boomertang-hiw .tgh-sc .ring { fill: none; stroke: var(--bt-lime); stroke-width: 3; }
+#boomertang-hiw .tgh-sc .stamp { fill: var(--bt-lime); font: 900 7px var(--bt-font); }
+#boomertang-hiw .tgh-sc .dept { fill: var(--tang-gold-ink); font: italic 8px var(--tang-serif); }
+#boomertang-hiw .tgh-sc .rise { transform: translateY(30px); opacity: .3; }
+#boomertang-hiw .tgh-sc .slam { transform-box: fill-box; transform-origin: center; transform: scale(1.8) rotate(-12deg); opacity: 0; }
+#boomertang-hiw .tgh-sc .fan { transform-box: fill-box; transform-origin: 50% 100%; }
+#boomertang-hiw .ai-part:is(:hover, :focus-visible, .is-playing) .tgh-sc .bar { transform: scaleY(1); }
+#boomertang-hiw .ai-part:is(:hover, :focus-visible, .is-playing) .tgh-sc .rise { transform: none; opacity: 1; }
+#boomertang-hiw .ai-part:is(:hover, :focus-visible, .is-playing) .tgh-sc .slam { transform: rotate(-12deg); opacity: 1; }
+#boomertang-hiw .ai-part:is(:hover, :focus-visible, .is-playing) .tgh-sc .fan.l { transform: rotate(-14deg); }
+#boomertang-hiw .ai-part:is(:hover, :focus-visible, .is-playing) .tgh-sc .fan.r { transform: rotate(14deg); }
+
+/* ---------- 03: the placard's tags, the working tag example ---------- */
+#boomertang-hiw .bt-placard-rule b .bt-factag { margin-left: 0; }
+#boomertang-hiw .tgh-try { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 16px; align-items: start; margin-top: 18px; }
+@container bt (max-width: 1024px) { #boomertang-hiw .tgh-try { grid-template-columns: minmax(0, 1fr); } }
+#boomertang-hiw .tgh-paper { padding: 20px 22px; border-radius: 4px; font-family: var(--tang-text); font-size: 17px; line-height: 1.65; }
+#boomertang-hiw .tgh-paper p { margin: 0 0 12px; }
+#boomertang-hiw .tgh-paper p.tgh-try-h { font: 800 12px/1.4 var(--bt-font); letter-spacing: .14em; text-transform: uppercase; opacity: .7; }
+#boomertang-hiw .tgh-paper .bt-factag[aria-expanded="true"] { background: var(--bt-pp-text); color: var(--bt-pp-bg); border-color: var(--bt-pp-text); }
+#boomertang-hiw .tgh-src { display: grid; gap: 6px; padding: 16px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
+#boomertang-hiw .tgh-src b { font-size: 15px; }
+#boomertang-hiw .tgh-src p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--bt-text-muted); }
+#boomertang-hiw .tgh-src .bt-factag { margin-left: 0; }
+#boomertang-hiw .tgh-src-hint { font-style: italic; }
+
+/* ---------- 04: who reads what ---------- */
+#boomertang-hiw .tgh-access { display: grid; gap: 12px; }
+#boomertang-hiw .tgh-accwrap { overflow-x: auto; }
+#boomertang-hiw .tgh-acc { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 14px; }
+#boomertang-hiw .tgh-acc :is(th, td) { padding: 10px 12px; border-bottom: 1px solid var(--bt-border); text-align: left; }
+#boomertang-hiw .tgh-acc th { font-size: 12px; font-weight: 700; color: var(--bt-text-faint); }
+#boomertang-hiw .tgh-acc td:first-child { font-family: var(--tang-serif); font-weight: 800; font-size: 16px; white-space: nowrap; }
+#boomertang-hiw .tgh-acc td:first-child .tg-sample { margin-left: 4px; padding: 1px 5px; border: 1px dashed currentColor; border-radius: 3px; font: 800 9px/1.3 var(--bt-font); letter-spacing: .1em; text-transform: uppercase; opacity: .7; }
+#boomertang-hiw .tgh-acc small { display: block; font: 600 11px/1.4 var(--bt-font); color: var(--bt-text-faint); }
+#boomertang-hiw .tgh-acc .y { font-weight: 700; color: var(--bt-text); }
+#boomertang-hiw .tgh-acc .n { color: var(--bt-text-faint); }
+#boomertang-hiw .tgh-acc .y::before { content: "✓ "; color: var(--bt-title); }
+#boomertang-hiw .tgh-acc .n::before { content: "🔒 "; font-size: 11px; }
+#boomertang-hiw .tgh-acc tr.is-new td { background: rgba(var(--bt-gold-rgb), .06); }
+#boomertang-hiw .tgh-acc tr.flash td { animation: tgh-row 1.2s; }
+@keyframes tgh-row { from { background: rgba(var(--bt-primary-rgb), .3); } }
+#boomertang-hiw .tgh-note { margin: 0; font-size: 12.5px; color: var(--bt-text-faint); }
+
+/* ---------- 05: Paper or Ink ---------- */
+#boomertang-hiw .tgh-pi { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 16px; align-items: start; }
+@container bt (max-width: 640px) { #boomertang-hiw .tgh-pi { grid-template-columns: minmax(0, 1fr); } }
+#boomertang-hiw .tgh-mini { padding: 18px 20px; border-radius: 4px; transition: background-color .35s, color .35s; }
+#boomertang-hiw .tgh-mini[data-mode="ink"] { border: 1px solid var(--bt-border-2); }
+#boomertang-hiw .tgh-mini h3 { margin: 0 0 6px; font-family: var(--tang-serif); font-style: italic; font-weight: 400; font-size: 34px; line-height: 1; color: var(--bt-pp-head); }
+#boomertang-hiw .tgh-mini h3 em { font-family: var(--tang-condensed); font-style: normal; text-transform: uppercase; }
+#boomertang-hiw .tgh-mini p { margin: 0; font-family: var(--tang-text); font-size: 16px; line-height: 1.6; }
+
+/* ---------- 06 and the call to action ---------- */
+#boomertang-hiw .tgh-bot-intro { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; color: var(--bt-text-muted); }
+#boomertang-hiw .tgh-bot-intro .bt-boombot { width: 44px; height: 44px; flex: none; }
+#boomertang-hiw .tgh-cta h2 em { font-family: var(--tang-condensed); font-style: normal; text-transform: uppercase; }
+#boomertang-hiw .tgh-cta h2 { font-family: var(--tang-serif); font-style: italic; font-weight: 400; }
+
+@media (prefers-reduced-motion: reduce) {
+  #boomertang-hiw .tgh-press :is(.pg, .seal) { animation: none !important; }
+  #boomertang-hiw .tgh-sc *, #boomertang-hiw .tgh-mini, #boomertang-hiw .tgh-acc tr.flash td { transition: none !important; animation: none !important; }
+}

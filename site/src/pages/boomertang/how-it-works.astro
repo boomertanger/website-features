@@ -1,0 +1,174 @@
+---
+// /boomertang/how-it-works: Boomertang's story page (docs/specs/boomertang.md §6 "How it works (H2 The press)"; mockup
+// docs/design/mockups/boomertang-how-it-works.html). The full story-page frame (design-system §8ak): TocLayout and the shared How it works
+// blocks (styles/how-it-works.css, shared/ui/how-it-works.js). The hero H2 The press: pages fly in and stack, the cover drops on top and a
+// Launch edition stamp lands (once, on load; reduced motion shows the finished stack). 01 A magazine, page by page (four stage cards with
+// scenes: Volume, Issue, Edition, Departments); 02 How an issue grows (the five-step journey); 03 Can you trust it? (the placard of the four
+// tags and a working tag example: tap a tag for its source); 04 Who reads what (a working "publish the next issue" table); 05 Paper or Ink
+// (the real switch: it sets your reading mode); 06 Ask BOOMBOT (help/boomertang.json); the closing call to action with the mascot.
+// scripts/boomertang/how.ts runs it.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import HELP from "../../data/help/boomertang.json";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import { factagHtml, TRUST } from "../../../../shared/ui/magazine.js";
+import { stampHtml } from "../../../../shared/ui/stamp.js";
+import { BUILT, issueHref, pageHref } from "../../lib/boomertang/issues";
+import { thumbHtml } from "../../lib/boomertang/cover.js";
+import "../../styles/how-it-works.css";
+import "../../styles/boomertang.css";
+import "../../styles/boomertang-hiw.css";
+
+const granny = BUILT.find((i) => i.id === "v1n1")!;
+const grannyHref = issueHref(granny);
+const NAV: [string, string][] = [["what", "A magazine, page by page"], ["grows", "How an issue grows"], ["trust", "Can you trust it?"], ["who", "Who reads what"], ["paper", "Paper or Ink"], ["ask", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede: string) => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2><p class="bt-chapter-lede">${lede}</p></header>`;
+
+// 01: the four stage cards, each with a small scene that plays on hover, focus or tap (drawn with classes; colors in boomertang-hiw.css)
+const STAGES = [
+  ["Volume", "A year of Boomertang. Vol. 1 starts with the launch issue.", "📚",
+    `<svg viewBox="0 0 160 100" class="tgh-sc">${Array.from({ length: 12 }, (_, i) => `<rect class="bar${i < 4 ? " on" : ""}" x="${14 + i * 11.5}" y="22" width="8" height="58" rx="2" style="transition-delay:${i * 40}ms"/>`).join("")}<text class="cap" x="80" y="94" text-anchor="middle">12 issues a volume</text></svg>`],
+  ["Issue", "One release, called No. 1, No. 2 and so on. Each has its own cover story.", "🗞️",
+    `<svg viewBox="0 0 160 100" class="tgh-sc"><rect class="back" x="56" y="16" width="48" height="66" rx="2"/><g class="rise"><rect class="cov" x="60" y="12" width="40" height="62" rx="2"/><text class="mast" x="80" y="26" text-anchor="middle">BOOMERTANG</text><text class="no" x="80" y="66" text-anchor="middle">No. 1</text></g></svg>`],
+  ["Edition", "An issue that gets updated keeps its number. The edition log says what changed and when.", "✍️",
+    `<svg viewBox="0 0 160 100" class="tgh-sc"><rect class="paper" x="44" y="14" width="56" height="72" rx="2"/><rect class="line" x="52" y="26" width="40" height="4"/><rect class="line" x="52" y="36" width="34" height="4"/><rect class="line" x="52" y="46" width="38" height="4"/><g class="slam"><circle class="ring" cx="104" cy="62" r="22"/><text class="stamp" x="104" y="60" text-anchor="middle">UPDATED</text><text class="stamp" x="104" y="70" text-anchor="middle">JAN 24</text></g></svg>`],
+  ["Departments", "The sections every issue has: Survive, Speed, Secrets, Chat's Verdict and The Index.", "🗂️",
+    `<svg viewBox="0 0 160 100" class="tgh-sc"><g class="fan l"><rect class="back2" x="58" y="20" width="44" height="62" rx="2"/></g><g class="fan r"><rect class="back" x="58" y="20" width="44" height="62" rx="2"/></g><rect class="paper" x="58" y="20" width="44" height="62" rx="2"/><text class="dept" x="80" y="40" text-anchor="middle">Survive</text><rect class="line" x="66" y="48" width="28" height="3"/><rect class="line" x="66" y="55" width="22" height="3"/></svg>`],
+] as const;
+const JOURNEY = [
+  ["📺", "Episode airs", "A new Granny series episode goes up on YouTube."],
+  ["🧪", "Boomer tests it", "He checks the trick on PC, version 1.3.4."],
+  ["🏷️", "The page gets it", "The fact goes in, with its tag and its source."],
+  ["🆕", "New edition", "The issue says \"updated Jan 24\" and what changed."],
+  ["🗳️", "Chat weighs in", "Members vote on it in Chat's Verdict."],
+] as const;
+const TAG_RULES: [keyof typeof TRUST, string][] = [
+  ["off", "From the game itself, its store pages or the developer."],
+  ["ver", "Boomer tried it himself, on PC version 1.3.4, usually on stream."],
+  ["com", "From wikis, speedrun.com and players. Likely right, not checked by Boomer."],
+  ["fan", "Fan ideas and fan names. Fun, but not in the games."],
+];
+// 03: the working tag example (the facts sourced for the Granny Issue; the third line is sample text)
+const src = Object.fromEntries(granny.sources.map((s) => [s.id, s]));
+const EXAMPLE = [
+  { id: "f1", text: "Granny came out on Android on November 24, 2017, made by one developer, DVloper.", trust: "off", source: "google-play", note: "The game's store page lists DVloper as the developer and the original release date. Checked Oct 15, 2026." },
+  { id: "f2", text: "Today it has nearly 500 million downloads.", trust: "com", source: "granny-wiki", note: "A fan-run wiki, founded in 2018. Good for history and item lists; Boomer double-checks anything he can test. Checked Oct 15, 2026." },
+  { id: "f3", text: "Sample text: a hiding spot Boomer tested on stream.", trust: "ver", source: "boomer-pc", note: "Tested on stream; the episode and timestamp are linked from the fact. Checked when the episode aired." },
+] as const;
+const indexHref = pageHref(granny, "the-index");
+const exampleJson = JSON.stringify(EXAMPLE.map((e) => ({ ...e, title: src[e.source]?.title || e.source, href: `${indexHref}#src-${e.source}`, version: src[e.source]?.version || "" }))).replace(/</g, "\\u003c");
+const hero = stampHtml({ kicker: "Launch", label: "No. 1", sub: "edition" });
+---
+<BaseLayout title="How Boomertang works" description="Boomer's horror gaming magazine, issue by issue and page by page: how an issue grows, how far to trust each fact, and who reads what." magazine>
+  <div id="boomertang-hiw" class="bt-root">
+    <template data-tang-mascot><Mascot decorative /></template>
+    <script is:inline type="application/json" data-tang-example set:html={exampleJson} />
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+
+        <section class="ai-hero tgh-hero" aria-labelledby="h-hero">
+          <div>
+            <p class="tgh-kick">Boomer's horror gaming magazine</p>
+            <h1 class="bt-title bt-title--hero" id="h-hero">How Boomertang works</h1>
+            <p class="tgh-lede">One issue a month, built from many pages: a cover, a contents page, big features and the sections you'll find in every issue. Every fact is tagged, so you know how far to trust it.</p>
+            <div class="ai-acts"><a class="bt-btn bt-btn--primary" href={grannyHref} data-pulse="tang-read-issue">Read the Granny Issue</a><a class="bt-btn bt-btn--secondary" href="/boomertang">See every issue</a></div>
+          </div>
+          <div class="tgh-press" aria-hidden="true" data-press>
+            <div class="pg"><small>Contents</small><i></i><i></i><i style="width:70%"></i><i></i></div>
+            <div class="pg dark"><small>The Map</small><i></i><i style="width:60%"></i></div>
+            <div class="pg"><small>Survive</small><i></i><i></i><i style="width:80%"></i></div>
+            <div class="pg"><small>The Index</small><i></i><i style="width:50%"></i><i></i></div>
+            <div class="pg cov" set:html={thumbHtml(granny)} />
+            <div class="seal" set:html={hero} />
+          </div>
+        </section>
+
+        <section class="ai-sec" id="what" aria-labelledby="h-what">
+          <Fragment set:html={chapter(1, "what", "A magazine, page by page", "Boomertang works like a print magazine, except every page has its own link, so it's easy to read on a phone and easy to share. Hover or tap the cards.")} />
+          <div class="ai-stage tgh-stages">
+            {STAGES.map(([t, d, ic, scene]) => (
+              <article class="bt-card ai-part bt-spotlight" tabindex="0">
+                <div class="ai-scene" aria-hidden="true" set:html={scene} />
+                <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{ic}</span>
+                <div class="ai-part-copy"><h3>{t}</h3><p>{d}</p></div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="grows" aria-labelledby="h-grows">
+          <Fragment set:html={chapter(2, "grows", "How an issue grows", "The Granny Issue isn't finished on launch day. It grows while the Granny series airs, and every change shows up in the edition log.")} />
+          <ol class="ai-jr ai-jr--5" data-journey>
+            {JOURNEY.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+        </section>
+
+        <section class="ai-sec" id="trust" aria-labelledby="h-trust">
+          <Fragment set:html={chapter(3, "trust", "Can you trust it?", "Every fact carries one of four tags. The Index at the back of each issue lists every source and when it was last checked.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>The four tags</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {TAG_RULES.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{i + 1}</span><b set:html={factagHtml({ trust: t })} /><span>{d}</span></li>)}
+            </ol>
+          </div>
+          <div class="tgh-try">
+            <div class="bt-surface--paper tgh-paper" data-mode="paper">
+              <p class="tgh-try-h">Try it: tap a tag</p>
+              {EXAMPLE.map((e) => <p>{e.text} <Fragment set:html={factagHtml({ trust: e.trust, version: e.trust === "ver" ? src[e.source]?.version || "" : "", sourceId: e.source, sourceTitle: src[e.source]?.title || "" })} /></p>)}
+            </div>
+            <div class="tgh-src" aria-live="polite" data-tag-source>
+              <span class="bt-label">Source</span>
+              <p class="tgh-src-hint">Tap a tag to see where the fact comes from.</p>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="who" aria-labelledby="h-who">
+          <Fragment set:html={chapter(4, "who", "Who reads what", "The Granny Issue is free for everyone. After that, Sub Club reads the newest issue first and Fan Club reads every back issue. Boomer can make any issue free.")} />
+          <div class="tgh-access" data-access>
+            <div class="tgh-accwrap"><table class="tgh-acc"><thead><tr><th scope="col">Issue</th><th scope="col">Visitors</th><th scope="col">Fan Club (free)</th><th scope="col">Sub Club</th></tr></thead><tbody data-access-rows></tbody></table></div>
+            <div class="ai-acts"><button type="button" class="bt-btn bt-btn--secondary" data-publish>Try it: publish No. 2</button><button type="button" class="bt-link-btn" data-publish-reset>Start over</button></div>
+            <p class="tgh-note">A pretend shelf: Nos. 2 to 4 are samples, and No. 3 shows an issue Boomer made free. Sub Club is coming soon.</p>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="paper" aria-labelledby="h-paper">
+          <Fragment set:html={chapter(5, "paper", "Paper or Ink", "Reading pages come on cream paper or near-black ink; your choice is remembered (on your account when you're signed in). The cover and The Map stay dark either way.")} />
+          <div class="tgh-pi">
+            <div class="bt-surface--paper tgh-mini"><h3>The <em>Family</em></h3><p>The games say less than you think. Here's what's on screen, what the wikis piece together, and <a href={pageHref(granny, "the-family")}>what fans simply made up</a>.</p></div>
+            <div class="bt-issuebar-mode" role="group" aria-label="Reading mode" data-mode-switch><button type="button" data-mode="paper" aria-pressed="true" data-pulse="tang-mode">Paper</button><button type="button" data-mode="ink" aria-pressed="false" data-pulse="tang-mode">Ink</button></div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="ask" aria-labelledby="h-ask">
+          <Fragment set:html={chapter(6, "ask", "Ask BOOMBOT", "Quick answers about the magazine. BOOMBOT knows the rules, not the secrets.")} />
+          <div class="tgh-bot-intro"><span set:html={boombotIcon("tgh-bb-intro")} /><span>BOOMBOT answers from Boomertang's help notes. Tap a question.</span></div>
+          <div class="bt-chat">
+            {HELP.map((h, i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded="false" aria-controls={`tgh-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q</span>{h.q}</button>
+                <div class="bt-chat-a" id={`tgh-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${h.q}`} hidden>
+                  <span class="bt-chat-av" set:html={boombotIcon(`tgh-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{h.a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta tgh-cta" aria-labelledby="h-cta">
+          <Mascot decorative />
+          <h2 id="h-cta">Start with <em>Granny</em></h2>
+          <p>The first issue is free for everyone: the story, the family, the map, the records and the secrets.</p>
+          <div class="ai-acts"><a class="bt-btn bt-btn--primary" href={grannyHref} data-pulse="tang-read-issue">Read the Granny Issue</a><button type="button" class="bt-btn bt-btn--secondary bt-when-visitor" data-signin="join" data-signin-title="Join free for every back issue" data-pulse="tang-join">Join free for back issues</button><a class="bt-btn bt-btn--secondary bt-when-signed-in" href="/boomertang#back-issues">Read back issues</a></div>
+        </section>
+
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/boomertang/how";
+</script>

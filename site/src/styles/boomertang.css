@@ -5,7 +5,7 @@
    .bt-issuebar, .bt-turnpage, .bt-redact, .bt-btn, .bt-card, .bt-lock-card, .bt-chip, the mascot. No raw colors: the paper, ink, gold, link,
    blood and lamp are the --tang-* tokens (bt-ui.css); everything else here is mixed from those and the kit tokens. Container queries only
    (bt: 1024 / 640 / 420); @media only for reduced motion. The cover and The Map stay dark in both modes. */
-#boomertang-root, .bt-portal[data-feature="boomertang"] {
+#boomertang-root, #boomertang-hiw, .bt-portal[data-feature="boomertang"] {
   --tg-night: color-mix(in srgb, var(--tang-ink) 45%, var(--bt-bg));      /* the dark behind the cover, the newsstand and The Map */
   --tg-cream: var(--tang-paper);                                          /* type printed on the dark cover */
   --tg-cream-dim: color-mix(in srgb, var(--tang-paper) 84%, var(--bt-bg));
@@ -38,8 +38,8 @@
 #boomertang-root .tg-meta { font-size: 12px; font-weight: 700; opacity: .7; }
 #boomertang-root .tg-h2 { margin: 6px 0 12px; font-family: var(--tang-serif); font-style: italic; font-weight: 400; font-size: clamp(34px, 4.6cqw, 64px); line-height: .95; color: var(--bt-pp-head, var(--bt-title)); }
 #boomertang-root .tg-h3 { margin: 18px 0 8px; font-family: var(--tang-serif); font-weight: 800; font-size: 24px; color: var(--bt-pp-head, var(--bt-title)); }
-#boomertang-root .tg-article p { font-family: var(--tang-text); font-size: 17.5px; line-height: 1.62; }
-#boomertang-root .tg-article a:not([class]) { color: var(--bt-pp-link); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
+:is(#boomertang-root, #boomertang-hiw) .tg-article p { font-family: var(--tang-text); font-size: 17.5px; line-height: 1.62; }
+:is(#boomertang-root, #boomertang-hiw) .tg-article a:not([class]) { color: var(--bt-pp-link); text-decoration: underline; text-underline-offset: 3px; font-weight: 600; }
 
 /* ---------- the cover (dark in both modes; cqw units from the cover's own width) ---------- */
 #boomertang-root .tg-coverwrap { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 28px; align-items: start; padding: 28px 24px; }
@@ -49,8 +49,8 @@
 #boomertang-root .tg-cover::after { content: ""; position: absolute; inset: 0; z-index: 1; pointer-events: none; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 55%, transparent) 0%, transparent 26%, transparent 55%, color-mix(in srgb, var(--bt-bg) 85%, transparent) 100%); }
 #boomertang-root .tg-cover > :not(.tg-art) { z-index: 2; }
 #boomertang-root .tg-mast { position: absolute; left: 3cqw; right: 3cqw; top: 1.6cqw; margin: 0; }
-#boomertang-root .tg-mast svg, #boomertang-root .tg-storyword svg, #boomertang-root .tg-band-mast svg, #boomertang-root .tg-thumb svg { display: block; width: 100%; height: auto; overflow: visible; }
-#boomertang-root :is(.tg-mast, .tg-band-mast, .tg-thumb .m) text { fill: var(--bt-title); }
+#boomertang-root .tg-mast svg, #boomertang-root .tg-storyword svg, #boomertang-root .tg-band-mast svg, :is(#boomertang-root, #boomertang-hiw) .tg-thumb svg { display: block; width: 100%; height: auto; overflow: visible; }
+:is(#boomertang-root, #boomertang-hiw) :is(.tg-mast, .tg-band-mast, .tg-thumb .m) text { fill: var(--bt-title); }
 #boomertang-root .tg-dateline { position: absolute; left: 4.5cqw; right: 4.5cqw; top: 20.6cqw; display: flex; justify-content: space-between; padding-top: 1.1cqw; border-top: 1px solid color-mix(in srgb, var(--tg-cream) 40%, transparent); font-weight: 700; font-size: 1.75cqw; letter-spacing: .22em; text-transform: uppercase; }
 #boomertang-root .tg-coverlines { position: absolute; left: 4.5cqw; top: 27cqw; width: 32cqw; display: grid; gap: 4.2cqw; }
 #boomertang-root .tg-coverlines--r { left: auto; right: 4.5cqw; top: 45cqw; width: 30cqw; text-align: right; }
@@ -83,15 +83,15 @@
 #boomertang-root .tg-phonelines b { margin-right: 6px; font-family: var(--tang-serif); font-size: 17px; color: var(--bt-title); }
 
 /* the placeholder art: no game imagery until the screenshot question is settled (spec §12); a dark room and a doorway's shape */
-#boomertang-root .tg-art { position: absolute; inset: 0; z-index: 0; display: block; background: radial-gradient(60% 50% at 50% 38%, color-mix(in srgb, var(--tang-paper) 16%, var(--tg-night)), var(--tg-night) 75%); }
-#boomertang-root .tg-art::before { content: ""; position: absolute; left: 32%; right: 32%; top: 22%; bottom: 23%; border-radius: 45% 45% 18% 18% / 30% 30% 10% 10%; background: color-mix(in srgb, var(--bt-bg) 55%, transparent); }
-#boomertang-root .tg-art::after { content: "Placeholder art"; position: absolute; left: 0; right: 0; bottom: 9%; text-align: center; font: 700 clamp(9px, 2.6cqw, 14px)/1 var(--bt-font); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--tang-paper) 45%, var(--tg-night)); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art { position: absolute; inset: 0; z-index: 0; display: block; background: radial-gradient(60% 50% at 50% 38%, color-mix(in srgb, var(--tang-paper) 16%, var(--tg-night)), var(--tg-night) 75%); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art::before { content: ""; position: absolute; left: 32%; right: 32%; top: 22%; bottom: 23%; border-radius: 45% 45% 18% 18% / 30% 30% 10% 10%; background: color-mix(in srgb, var(--bt-bg) 55%, transparent); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art::after { content: "Placeholder art"; position: absolute; left: 0; right: 0; bottom: 9%; text-align: center; font: 700 clamp(9px, 2.6cqw, 14px)/1 var(--bt-font); letter-spacing: .14em; text-transform: uppercase; color: color-mix(in srgb, var(--tang-paper) 45%, var(--tg-night)); }
 #boomertang-root .tg-cover .tg-art::after { top: 52%; bottom: auto; }
-#boomertang-root .tg-art--sample::before { display: none; }
-#boomertang-root .tg-art--sample { background: radial-gradient(60% 45% at 50% 42%, color-mix(in srgb, var(--tg-hue, var(--bt-blue)) 26%, transparent), transparent 70%), repeating-linear-gradient(115deg, color-mix(in srgb, var(--bt-text) 2%, transparent) 0 2px, transparent 2px 9px), var(--tg-night); }
-#boomertang-root .tg-art--sample::after { content: "Sample cover"; }
-#boomertang-root .tg-art--b { --tg-hue: var(--bt-gold); }
-#boomertang-root .tg-art--c { --tg-hue: var(--bt-red); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--sample::before { display: none; }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--sample { background: radial-gradient(60% 45% at 50% 42%, color-mix(in srgb, var(--tg-hue, var(--bt-blue)) 26%, transparent), transparent 70%), repeating-linear-gradient(115deg, color-mix(in srgb, var(--bt-text) 2%, transparent) 0 2px, transparent 2px 9px), var(--tg-night); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--sample::after { content: "Sample cover"; }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--b { --tg-hue: var(--bt-gold); }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--c { --tg-hue: var(--bt-red); }
 
 /* the cover's side cards */
 #boomertang-root .tg-side { display: grid; gap: 14px; align-content: start; }
@@ -164,17 +164,17 @@
 #boomertang-root .tg-empty b { display: block; margin-bottom: 3px; font-size: 15px; }
 #boomertang-root .tg-empty p { margin: 0; font-size: 13.5px; line-height: 1.5; color: var(--bt-text-muted); }
 /* the small covers */
-#boomertang-root .tg-thumb { position: relative; aspect-ratio: 8.5 / 11; overflow: hidden; border-radius: 3px; background: var(--tg-night); color: var(--tg-cream); box-shadow: 0 10px 24px var(--tg-shade), 0 0 0 1px color-mix(in srgb, var(--bt-text) 6%, transparent); container-type: inline-size; }
-#boomertang-root .tg-thumb::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 55%, transparent), transparent 30%, transparent 55%, color-mix(in srgb, var(--bt-bg) 85%, transparent)); }
-#boomertang-root .tg-thumb :is(.m, .s, .dl) { position: absolute; z-index: 2; left: 5cqw; right: 5cqw; }
-#boomertang-root .tg-thumb .m { top: 3cqw; }
-#boomertang-root .tg-thumb .dl { top: 22cqw; font: 800 5cqw/1 var(--bt-font); letter-spacing: .14em; text-transform: uppercase; }
-#boomertang-root .tg-thumb .s { bottom: 6cqw; }
-#boomertang-root .tg-thumb .s text { fill: var(--tg-cream); }
-#boomertang-root .tg-thumb .smp { position: absolute; z-index: 3; left: 5cqw; top: 33cqw; padding: 2cqw 3cqw; border: 1px dashed currentColor; border-radius: 2cqw; font: 800 6cqw/1 var(--bt-font); letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
-#boomertang-root .tg-thumb-lock { position: absolute; z-index: 3; right: 4cqw; top: 33cqw; display: grid; place-items: center; width: 18cqw; aspect-ratio: 1; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--bt-title) 60%, transparent); background: color-mix(in srgb, var(--bt-bg) 65%, transparent); color: var(--bt-title); }
-#boomertang-root .tg-thumb-lock svg { width: 50%; height: 50%; }
-#boomertang-root .tg-thumb .tg-art::after { display: none; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb { position: relative; aspect-ratio: 8.5 / 11; overflow: hidden; border-radius: 3px; background: var(--tg-night); color: var(--tg-cream); box-shadow: 0 10px 24px var(--tg-shade), 0 0 0 1px color-mix(in srgb, var(--bt-text) 6%, transparent); container-type: inline-size; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb::after { content: ""; position: absolute; inset: 0; z-index: 1; background: linear-gradient(180deg, color-mix(in srgb, var(--bt-bg) 55%, transparent), transparent 30%, transparent 55%, color-mix(in srgb, var(--bt-bg) 85%, transparent)); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb :is(.m, .s, .dl) { position: absolute; z-index: 2; left: 5cqw; right: 5cqw; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .m { top: 3cqw; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .dl { top: 22cqw; font: 800 5cqw/1 var(--bt-font); letter-spacing: .14em; text-transform: uppercase; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .s { bottom: 6cqw; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .s text { fill: var(--tg-cream); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .smp { position: absolute; z-index: 3; left: 5cqw; top: 33cqw; padding: 2cqw 3cqw; border: 1px dashed currentColor; border-radius: 2cqw; font: 800 6cqw/1 var(--bt-font); letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb-lock { position: absolute; z-index: 3; right: 4cqw; top: 33cqw; display: grid; place-items: center; width: 18cqw; aspect-ratio: 1; border-radius: 50%; border: 1px solid color-mix(in srgb, var(--bt-title) 60%, transparent); background: color-mix(in srgb, var(--bt-bg) 65%, transparent); color: var(--bt-title); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb-lock svg { width: 50%; height: 50%; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumb .tg-art::after { display: none; }
 
 /* ---------- the sealed page (L2 Sealed issue) ---------- */
 #boomertang-root .tg-sealed { display: grid; grid-template-columns: 260px minmax(0, 1fr); gap: 34px; align-items: start; color: var(--tg-cream-dim); }
@@ -229,7 +229,7 @@
 #boomertang-root .tg-spread--even { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
 @container bt (max-width: 1024px) { #boomertang-root .tg-spread { grid-template-columns: minmax(0, 1fr); gap: 26px; } }
 #boomertang-root .tg-photo { position: relative; margin: 0; }
-#boomertang-root .tg-art--photo { position: relative; display: block; aspect-ratio: 788 / 1136; container-type: inline-size; }
+:is(#boomertang-root, #boomertang-hiw) .tg-art--photo { position: relative; display: block; aspect-ratio: 788 / 1136; container-type: inline-size; }
 #boomertang-root .tg-photo figcaption { margin-top: 8px; font-size: 11.5px; line-height: 1.45; opacity: .75; }
 #boomertang-root .tg-cols { columns: 2 260px; column-gap: 32px; column-rule: 1px solid color-mix(in srgb, var(--bt-pp-mark) 25%, transparent); }
 #boomertang-root .tg-cols p { margin: 0 0 14px; break-inside: avoid-column; }
@@ -271,7 +271,7 @@
 #boomertang-root .tg-board th { padding: 8px 6px; border-bottom: 2px solid currentColor; font-size: 10.5px; letter-spacing: .14em; text-align: left; text-transform: uppercase; opacity: .65; }
 #boomertang-root .tg-board td { padding: 12px 6px; border-bottom: 1px solid var(--bt-pp-rule); }
 #boomertang-root .tg-board .time { font-family: var(--tang-serif); font-weight: 800; font-size: 26px; font-variant-numeric: tabular-nums; color: var(--bt-pp-head); }
-#boomertang-root .tg-article p.tg-boardnote { margin-top: 8px; font-family: var(--bt-font); font-size: 12px; opacity: .75; }
+:is(#boomertang-root, #boomertang-hiw) .tg-article p.tg-boardnote { margin-top: 8px; font-family: var(--bt-font); font-size: 12px; opacity: .75; }
 #boomertang-root .tg-rules { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); margin-top: 24px; border: 2px solid currentColor; }
 #boomertang-root .tg-rules > div { padding: 16px 18px; }
 #boomertang-root .tg-rules > div + div { border-left: 2px solid currentColor; }
@@ -347,7 +347,7 @@
 #boomertang-root .tg-best-bar span { position: relative; height: 12px; overflow: hidden; border-radius: 3px; background: color-mix(in srgb, var(--bt-text) 10%, transparent); }
 #boomertang-root .tg-best-bar i { position: absolute; inset: 0 auto 0 0; width: var(--w, 0%); background: var(--bt-title); }
 #boomertang-root .tg-best-lbl { margin-top: 6px; font-size: 11.5px; font-weight: 700; color: var(--bt-text-muted); }
-#boomertang-root .tg-article p.tg-wallfoot { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--tg-rule-dark); font: 400 13px/1.4 var(--bt-font); color: var(--bt-text-muted); }
+:is(#boomertang-root, #boomertang-hiw) .tg-article p.tg-wallfoot { position: relative; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px 26px; margin: 18px 0 0; padding-top: 14px; border-top: 1px solid var(--tg-rule-dark); font: 400 13px/1.4 var(--bt-font); color: var(--bt-text-muted); }
 #boomertang-root .tg-wallfoot b { margin-right: 6px; font-family: var(--tang-serif); font-size: 22px; color: var(--bt-title); }
 #boomertang-root .tg-logwrap { overflow-x: auto; }
 #boomertang-root .tg-log { width: 100%; border-collapse: collapse; font-size: 14px; }
@@ -428,10 +428,10 @@
 #boomertang-root .tg-pinpanel p { margin: 0; font-size: 14px; line-height: 1.55; color: var(--bt-text-muted); font-family: var(--bt-font); }
 #boomertang-root .tg-pinpanel .bt-factag { margin-left: 0; }
 #boomertang-root .tg-pinpanel .tg-sample { color: var(--bt-text-faint); }
-#boomertang-root .tg-thumbv { position: relative; display: grid; place-items: center; aspect-ratio: 9 / 16; max-height: 220px; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: 10px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--tang-paper) 12%, var(--tg-night)), var(--tg-night)); }
-#boomertang-root .tg-thumbv span { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--bt-text-faint); }
-#boomertang-root .tg-thumbv i { position: absolute; display: grid; place-items: center; width: 46px; height: 46px; border: 2px solid var(--bt-text); border-radius: 50%; background: color-mix(in srgb, var(--bt-bg) 60%, transparent); font-style: normal; color: var(--bt-text); }
-#boomertang-root .tg-thumbv iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumbv { position: relative; display: grid; place-items: center; aspect-ratio: 9 / 16; max-height: 220px; overflow: hidden; border: 1px solid var(--bt-border-2); border-radius: 10px; background: radial-gradient(circle at 50% 40%, color-mix(in srgb, var(--tang-paper) 12%, var(--tg-night)), var(--tg-night)); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumbv span { font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--bt-text-faint); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumbv i { position: absolute; display: grid; place-items: center; width: 46px; height: 46px; border: 2px solid var(--bt-text); border-radius: 50%; background: color-mix(in srgb, var(--bt-bg) 60%, transparent); font-style: normal; color: var(--bt-text); }
+:is(#boomertang-root, #boomertang-hiw) .tg-thumbv iframe { position: absolute; inset: 0; width: 100%; height: 100%; border: 0; }
 #boomertang-root .tg-mapapp .tg-map-loading { padding: 40px 0; text-align: center; }
 @media (prefers-reduced-motion: reduce) { #boomertang-root .tg-plan-svg .route { animation: none; } }
-#boomertang-root .tg-article p.tg-meta { margin: 8px 0 0; font: 700 12px/1.4 var(--bt-font); opacity: .7; }
+:is(#boomertang-root, #boomertang-hiw) .tg-article p.tg-meta { margin: 8px 0 0; font: 700 12px/1.4 var(--bt-font); opacity: .7; }

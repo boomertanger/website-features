@@ -1,0 +1,32 @@
+[
+  {
+    "id": "free",
+    "q": "Is Boomertang free?",
+    "a": "The Granny Issue is free for everyone. After that, Fan Club (free) reads every back issue and Sub Club reads the newest one first. Boomer can make any issue free.",
+    "keys": ["free", "cost", "price", "pay", "fan club", "sub club", "read", "access"]
+  },
+  {
+    "id": "newest",
+    "q": "Why can't I read the newest issue?",
+    "a": "The newest issue is Sub Club's first. It opens for Fan Club when the next issue comes out. Sub Club is coming soon.",
+    "keys": ["newest", "latest", "locked", "lock", "sealed", "members only", "can't read", "why"]
+  },
+  {
+    "id": "verified",
+    "q": "What does \"Verified by Boomer\" mean?",
+    "a": "Boomer tried it himself on PC, version 1.3.4, usually on stream. The fact links to the episode where he did it.",
+    "keys": ["verified", "tag", "tags", "trust", "official", "community", "fan theory", "source", "sources"]
+  },
+  {
+    "id": "changed",
+    "q": "Why did a page change?",
+    "a": "Issues grow while the series airs. Changes keep the same issue number and show up in the edition log, like \"updated Jan 24\".",
+    "keys": ["changed", "change", "update", "updated", "edition", "new", "different", "log"]
+  },
+  {
+    "id": "vote",
+    "q": "Can I vote in Chat's Verdict?",
+    "a": "Yes, if you're signed in as a member. One vote per poll, and you can change it until the poll closes.",
+    "keys": ["vote", "voting", "poll", "polls", "chat's verdict", "verdict", "change my vote"]
+  }
+]

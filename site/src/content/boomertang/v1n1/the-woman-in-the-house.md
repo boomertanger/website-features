@@ -22,7 +22,7 @@ Granny came out on Android on November 24, 2017, made by one person: Dennis Vuka
 
 In 2018 the game exploded on YouTube, with creators like Markiplier, DanTDM and Thinknoodles trapped in the same house as everyone else. {tag:com source=kym} A paid PC version arrived on Steam on November 20, 2018. It vanished from Steam in May 2022 and came back in June 2023. {tag:com source=granny-wiki}
 
-Today Granny has nearly 500 million downloads. {tag:com source=wikipedia} Millions of players later, the house still wins most nights.
+Today Granny has nearly 500 million downloads. {tag:com source=granny-wiki} Millions of players later, the house still wins most nights.
 
 This issue is about that house: every room, every hiding spot, every way out, and the family that lives in it. Everything marked {tag:ver source=boomer-pc} was tested on PC version 1.3.4.
 
