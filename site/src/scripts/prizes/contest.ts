@@ -13,17 +13,10 @@ import { stampHtml } from "../../../../shared/ui/stamp.js";
 import { messageFor, reasonOf } from "../../lib/errors";
 import { call, loadContest, STATUS, TYPE_WORD, METHOD_WORD, ENTRY_WORD, BEAT_WORD, miniCd, dateWord, dateTimeWord, placeWord, contestHref, sampleAsked, type Contest, type ContestMine } from "./data";
 import { openClaim } from "./claim";
+import { boxScene as scene } from "./icons";
 
 
 const slugFromUrl = () => { const parts = location.pathname.split("/").filter(Boolean); return parts[0] === "prizes" && parts[1] && parts[1] !== "view" ? decodeURIComponent(parts[1]) : new URLSearchParams(location.search).get("c") || (sampleAsked() ? "draw-boomers-nightmare" : ""); };
-const mascotSvg = () => { const t = document.getElementById("bt-mascot-tpl") as HTMLTemplateElement | null; const s = t && t.content.querySelector("svg"); return s ? s.innerHTML : ""; };
-const scene = () => `<svg class="pz-scene" viewBox="0 0 320 220" role="img" aria-label="The Prize Box, with the mascot peeking out"><defs><linearGradient id="pzBeam" x1="0" y1="1" x2="0" y2="0"><stop class="beam-a" offset="0"/><stop class="beam-b" offset="1"/></linearGradient></defs>
-  <ellipse class="pz-floor" cx="160" cy="204" rx="120" ry="10"/><path class="pz-beams" d="M84 112 L40 0 L280 0 L246 112 Z" fill="url(#pzBeam)"/>
-  <g class="bt-mascot pz-mas" transform="translate(108 34) scale(0.5)">${mascotSvg()}</g>
-  <rect class="wood" x="72" y="112" width="176" height="88" rx="4"/><path class="slat" d="M72 141 H248 M72 170 H248"/><path class="ribbon" d="M150 112 V200 M170 112 V200"/>
-  <path class="brass" d="M72 112 h16 v16 M248 112 h-16 v16 M72 200 h16 v-16 M248 200 h-16 v-16"/>
-  <g class="pz-lid"><rect class="wood" x="66" y="92" width="188" height="22" rx="3"/><path class="ribbon" d="M150 92 V114 M170 92 V114"/><path class="ribbon" d="M160 92 c-14 -18 -30 -10 -18 0 M160 92 c14 -18 30 -10 18 0"/></g>
-  <circle class="pz-spark" style="--d:0s" cx="64" cy="60" r="3"/><circle class="pz-spark" style="--d:.8s" cx="262" cy="46" r="2.5"/><circle class="pz-spark" style="--d:1.5s" cx="230" cy="88" r="2"/><circle class="pz-spark" style="--d:.4s" cx="96" cy="22" r="2"/></svg>`;
 const card = (title: string, body: string, extra = "") => `<div class="bt-card"${extra}><h2 class="bt-card-title">${title}</h2>${body}</div>`;
 const rulesLink = (c: Contest) => `<a class="bt-btn bt-btn--ghost" href="${contestHref(c)}/rules">Read the official rules</a>`;
 

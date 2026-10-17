@@ -1,0 +1,19 @@
+---
+// /admin/prize-box (docs/specs/prize-box.md §5; mockup docs/design/mockups/prize-box-pages.html, the admin page): a tool page for admins (design-system §8m):
+// the hero header with the box scene, four counters that jump to their tab, and Contests / Entries / Mail log / Draws / Claims (owner) / Settings (owner),
+// with the New contest builder (openModal). Drawn by scripts/prizes/admin.ts; every change goes through the prize* callables. Not in the header nav; the
+// PRIZE BOX bar's Admin link and the /admin card link here.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import PrizeBar from "../../components/prize/PrizeBar.astro";
+import "../../styles/prize-box.css";
+---
+<BaseLayout title="Prize Box admin" noindex>
+  <PrizeBar slot="bar" section="admin" />
+  <div id="prize-box-root" class="bt-root pz">
+    <div class="pz-ad" data-pz-admin aria-live="polite"><div class="bt-skeleton" style="height:160px;border-radius:16px"></div></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/prizes/admin";
+</script>

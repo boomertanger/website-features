@@ -11,7 +11,8 @@
     "/prizes",
     "/prizes/view",
     "/prizes/rules",
-    "/prizes/mine"
+    "/prizes/mine",
+    "/admin/prize-box"
   ],
   "nav": "prizes",
   "testPlan": null,
@@ -21,7 +22,8 @@
   "talkBack": "note",
   "talkBackRoutes": {
     "/prizes/mine": "rate",
-    "/prizes/rules": "skip"
+    "/prizes/rules": "skip",
+    "/admin/prize-box": "skip"
   },
   "help": "site/src/data/help/prize-box.json"
 }

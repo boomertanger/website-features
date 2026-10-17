@@ -3,6 +3,18 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 7 (admin): /admin/prize-box, a tool page for admins. It has the hero header with the box scene, four counters that jump to their tab (open contests, entries to review, envelopes not here yet, prizes to ship), and these tabs:
+  - **Contests:** View page, Edit, Publish / Back to draft, Open now, Close entries, Pick winners (judged) and Draw winners (random) for the owner, Mark done, Cancel, and Delete (owner, the one delete path). New contest opens the builder (openModal):
+    1. Template: Break Wheel, Online art, Mail-in art or Blank.
+    2. Details: title, dates or the draw beat, who can enter, how winners are picked, prizes with kinds and XP, Round 1 groups.
+    3. Rules and announcements: the rules start from the legal-review template; banner, Boom Alerts, feed and the Scream Planner tag.
+  - **Entries:** See the file (a 10-minute link), Accept, Reject with a reason.
+  - **Mail log:** look up a code, Mark received (late postmarks refused), unmatched envelopes with the mascot empty state.
+  - **Draws:** each live draw's record.
+  - **Claims (owner only):** the address hidden until Show address (logged), set a code, Mark shipped (the stamp and a toast), forfeit and redraw.
+  - **Settings (owner only):** the cooldown, claim window, I'm here seconds, and the mailing address (private).
+
+  Live contests are the owner's alone. A Prize Box card on /admin shows open contests, entries to review and prizes to ship. The manifest gains /admin/prize-box (no Talk Back strip there).
 - Prize Box, part 6 (pages):
   - **The PRIZE BOX top bar (components/prize/PrizeBar.astro):** the power wordmark with PB_ICON (not a link), then Contests, My entries for members, and Admin in admin green for admins.
   - **/prizes:** the story page with the full frame. The hero is the H2a prize stand: click for a demo spin with you on the yellow blade, the box bursts, nothing is saved. TocLayout and seven ghost-numbered chapters:

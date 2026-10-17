@@ -159,6 +159,14 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
       <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/inbox">Open the inbox</a><a class="bt-btn bt-btn--ghost bt-btn--sm" href="/admin/inbox/how-it-works">How it works</a></div>
     </div>
   </div>
+  <div class="bt-zone" data-pb-card hidden>
+    <div class="bt-card bz-admin-card">
+      <div class="bt-card-head"><h2 class="bt-card-title">Prize Box</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
+      <div class="bz-big-n"><b data-pb-open>…</b><span class="bt-meta">open contests · <b data-pb-review>…</b> entries to review · <b data-pb-ship>…</b> to ship</span></div>
+      <p class="bt-fine bt-fine--left">Every contest from start to finish: build it, review entries, log mail-in envelopes, look back at live draws and get prizes to winners. Live draws run from /live/control.</p>
+      <div class="bt-row-center"><a class="bt-btn bt-btn--admin bt-btn--sm" href="/admin/prize-box" data-pulse="pb-admin-open">Open the Prize Box</a></div>
+    </div>
+  </div>
   <div class="bt-zone" data-kw-card hidden>
     <div class="bt-card bz-admin-card">
       <div class="bt-card-head"><h2 class="bt-card-title">Kind words</h2><span class="bt-badge bt-badge--admin">Admins</span></div>
@@ -306,6 +314,7 @@ import { SHIELD_ICON } from "../../../shared/ui/admin-menu.js";
   import "../scripts/admin/hotline-card";
   import "../scripts/admin/playbook-card";
   import "../scripts/admin/kind-words-card";
+  import "../scripts/admin/prize-box-card";
   import "../scripts/admin/skipper-cam-card";
   import "../scripts/admin/stash-card";
   import "../scripts/admin/services-card";
