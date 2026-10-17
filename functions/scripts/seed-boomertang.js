@@ -65,8 +65,9 @@ async function main() {
       const ref = db.doc(`${BASE}/issues/${s.id}`);
       const pages = await ref.collection("pages").listDocuments();
       const polls = await db.collection(`${BASE}/polls`).where("issueId", "==", s.id).get();
-      say(`delete issues/${s.id}${pages.length ? ` and its ${pages.length} page(s)` : ""}${polls.size ? ` and ${polls.size} poll(s)` : ""}`);
-      plan.push(async () => { for (const p of pages) await p.delete(); for (const p of polls.docs) await db.recursiveDelete(p.ref); await ref.delete(); });
+      const votes = (await Promise.all(polls.docs.map((p) => db.collection(`${BASE}/pollVotes`).where("pollId", "==", p.id).get()))).flatMap((q) => q.docs);
+      say(`delete issues/${s.id}${pages.length ? ` and its ${pages.length} page(s)` : ""}${polls.size ? `, ${polls.size} poll(s) and ${votes.length} vote(s)` : ""}`);
+      plan.push(async () => { for (const p of pages) await p.delete(); for (const v of votes) await v.ref.delete(); for (const p of polls.docs) await db.recursiveDelete(p.ref); await ref.delete(); });
     }
     // the newest real published issue becomes the current one again
     const docs = await Promise.all(real.map((i) => db.doc(`${BASE}/issues/${i.id}`).get()));
