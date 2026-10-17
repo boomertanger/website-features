@@ -3,6 +3,14 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 5 (live UI): scripts/live/prize-watch.ts is one viewer state machine shared by the banner and the /live card. It reads public/live.prizeDraw from the page's one listener, plus prizeMine { draw: true } once each time the draw moves (never polled). "Spinning" and "landed" come from the server's decided spins, so every viewer sees the same moment.
+  - **The banner:** a new kit kind, .bt-live-banner[data-kind="prize"], site-wide and gold. Its states are on, spinning, picked (with I'm here and the countdown), won (lime, Claim my prize) and quiet. It's hidden on /live, /live/control and /live/obs, and ✕ hides it for the rest of the draw.
+  - **The /live Prize Box card (prize-card.ts):** pool → round 1 → your slice → "It landed on you!" with I'm here → You won with Claim my prize. A small wheel plays the spins in step, muted, with a sound button.
+  - **The owner's panel on /live/control (prize-panel.ts):** the launch prompt at the scheduled beat (a toast once), the Round 1 switch, Run the draw, and the offer to end a running Chat Game first. Then the pool counts, Spin round 1 / Spin for the winner, the I'm here meter, Respin without them, Done and See the draw record.
+  - **The stream view scene on /live/obs (prize-scene.ts), wide and tall:** the prize stand with the wheel, motion and sound on. The panel shows PRIZE BOX, the round chip, the contest and prize, the group list or name legend, the I'm here ring, and the winner reveal with the box burst. Every text is 32 px or larger. The stream view follows obsFeed, which now carries prizeDraw; the page still never starts Firebase.
+  - **Kit:** wheelPlay and spinEnd in shared/ui/wheel.js play chained spins from where the last one rested. CR_HEAD_ICONS gains gift. lib/prize-sound.ts finds site/public/sounds/prize-tick.mp3 at build time when it exists.
+  - **Previews:** ?prize=pool|round1|still|out|wheel|spinning|picked|waiting|won|wonme|nospin on any page, /live, /live/control and the /live/obs demo, never on production.
+  - **Feature CSS:** styles/prize-box-live.css (pz-).
 - Prize Box, part 4 (live draw backend): lib/prizeBox/draw.js is built by lib/live (like Chat Games), so its callables are lib/live functions. All are owner only except prizeHere, which only the picked member can call.
   - **prizeDrawStart:** the pool is snapshotted from presence (checked in, minus crew, admins, the owner, on-duty check-ins, the live cooldown and the contest's filters). The start is refused while a Chat Game runs, and one draw runs at a time (prizeBox/main.activeDraw).
   - **prizeDrawSpin:** Round 1 spins the group slices; a group with fewer than 2 members is Spin again. Round 2 puts 10 random members on the wheel, with Spin again blades when there are fewer. Under 2 members, there's no spin.

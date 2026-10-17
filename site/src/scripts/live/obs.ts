@@ -42,13 +42,14 @@ const FEED = `https://us-central1-${projectId}.cloudfunctions.net/obsFeed`;
 let mounted = false;
 let scenes: { render(view: ObsView): void } | null = null;
 let dropCall: ReturnType<typeof createDropCallout> | null = null;   // the live drop callout (drop-callout.ts), from the same feed
+let prizeScene: { render(d: ObsView["prizeDraw"] | null): void } | null = null;   // the Prize Box draw (prize-scene.ts), loaded the first time a draw is on
 
 /** The canvas is only put on the page once there is something to draw (a good key, or the staging demo). */
 async function mount() {
   if (mounted) return;
   mounted = true;
   // [data-cg-scene]: Chat Games' scene (shared/ui/chatgames.js mountScene, from obsFeed's chatGame); empty until a format ships
-  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div><div class="obs-cg-waitchip" data-cg-wait hidden></div><div class="obs-drop" data-obs-drop></div>` });
+  root.innerHTML = streamViewHtml({ shape, fit: false, label: "Stream view", sceneHtml: `<div class="obs-scene" data-obs-scene></div><div data-cg-scene></div><div class="obs-cg-waitchip" data-cg-wait hidden></div><div class="obs-drop" data-obs-drop></div><div class="pz-scene" data-pz-scene hidden></div>` });
   dropCall = createDropCallout(root.querySelector<HTMLElement>("[data-obs-drop]")!);
   scenes = (await import("./obs-scenes")).createScenes(root.querySelector<HTMLElement>("[data-obs-scene]")!, shape, params);
 }
@@ -58,7 +59,25 @@ async function show(view: ObsView) {
   setLook(document.body, view.look);
   scenes?.render(view);
   dropCall?.render(view.state === "off" || view.state === "starting" ? null : view.drop);
+  await showPrize(view);
   await showGame(view);
+}
+
+/* ---------------------------------------------------------------- the Prize Box draw (docs/specs/prize-box.md §4, §5): while a draw is on, its scene covers the
+   regular one (data-pb="on"); it stays 20 s after the winner's reveal leaves the feed, then the regular scene returns. */
+let pbTimer = 0;
+async function showPrize(view: ObsView) {
+  const d = view.state === "live" || view.state === "backstage" ? view.prizeDraw || null : null;
+  const el = root.querySelector<HTMLElement>("[data-pz-scene]");
+  if (!el) return;
+  if (d) {
+    clearTimeout(pbTimer); pbTimer = 0;
+    if (!prizeScene) prizeScene = (await import("./prize-scene")).createPrizeScene(el);
+    prizeScene.render(d);
+    root.dataset.pb = "on";
+    return;
+  }
+  if (prizeScene && root.dataset.pb === "on" && !pbTimer) pbTimer = window.setTimeout(() => { pbTimer = 0; prizeScene?.render(null); delete root.dataset.pb; }, 20000);
 }
 
 /* ---------------------------------------------------------------- Chat Games' scene (docs/specs/chat-games.md §3, §14) */
@@ -101,7 +120,7 @@ async function showGame(view: ObsView) {
 function delayFor(view: ObsView): number {
   if (view.state === "off" || view.state === "ended") return 10_000;
   if (view.state === "starting") return 2_000;
-  const moving = view.window?.open || view.scene === "break" || view.scene === "break-side" || view.scene === "brb";
+  const moving = view.window?.open || view.scene === "break" || view.scene === "break-side" || view.scene === "brb" || !!view.prizeDraw;
   return moving ? 1_000 : 2_000;
 }
 

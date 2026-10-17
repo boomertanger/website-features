@@ -25,6 +25,9 @@
 //     same moment, so they all see the same spin; a late joiner joins mid-spin, and after the end it just shows the result.
 //     now() is the clock (default Date.now; pass a server-corrected one). onTick() runs once per peg (the paddle kicks; play a
 //     sound there). Reduced motion (unless motion or data-motion="always"): no spin; it fades in on the result. Returns cancel().
+//     from (deg) is where it starts turning (default 0, at rest); wheelPlay passes the last spin's resting angle.
+//   wheelPlay(el, spins, { now, motion, onTick, onLand, onDone })   a draw's chained spins in order (the server's list: all but the last landed on
+//     Spin again), each from where the last rested; spins already over are skipped. spinEnd(spin, from) is where a spin rests.
 //   wheelShow(el, { pickIndex, offset })   put a Prize Wheel straight on a result (data-state landed)
 //   wheelReset(el)                         back to rest (data-state idle)
 import { escapeHtml as esc } from "./dom.js";
@@ -255,10 +258,17 @@ export function wheelReset(el) {
 }
 
 const easeOut = (t) => 1 - Math.pow(1 - t, 4);
-function prizeSpin(box, { pickIndex, offset = 0.5, spins = 5, durationMs = 7800, startAt = null, now = Date.now, motion = false, onTick = null, onDone = null } = {}) {
+/** Where a spin ends (deg, absolute) when it starts at "from": at least "spins" turns on, resting with "offset" of blade k under the paddle. */
+export function spinEnd({ pickIndex, offset = 0.5, spins = 5 }, from = 0) {
+  const k = ((Math.round(pickIndex) % BLADES) + BLADES) % BLADES, turns = Math.max(1, Math.round(spins));
+  let end = from - (((from % 360) + 360) % 360) + 360 * turns + prizeAngle(k, offset);
+  if (end - from < 360 * (turns - 0.5)) end += 360;
+  return end;
+}
+function prizeSpin(box, { pickIndex, offset = 0.5, spins = 5, durationMs = 7800, startAt = null, from = 0, now = Date.now, motion = false, onTick = null, onDone = null } = {}) {
   const p = prizeParts(box);
   const k = ((Math.round(pickIndex) % BLADES) + BLADES) % BLADES;
-  const end = 360 * Math.max(1, Math.round(spins)) + prizeAngle(k, offset);
+  const end = spinEnd({ pickIndex: k, offset, spins }, from);
   const t0 = startAt == null ? now() : Number(startAt);
   const dur = Math.max(1, Number(durationMs) || 7800);
   const finish = () => { setRot(p, end); p.box.dataset.state = "landed"; mark(p, k); if (onDone) onDone(k); };
@@ -271,13 +281,14 @@ function prizeSpin(box, { pickIndex, offset = 0.5, spins = 5, durationMs = 7800,
     return () => {};
   }
   let raf = 0, timer = 0, stopped = false, flap = 0;
-  let last = Math.floor((end * easeOut(Math.max(0, (now() - t0) / dur))) / STEP);
-  setRot(p, end * easeOut(Math.max(0, (now() - t0) / dur)));
+  const at = (t) => from + (end - from) * easeOut(t);
+  let last = Math.floor(at(Math.max(0, (now() - t0) / dur)) / STEP);
+  setRot(p, at(Math.max(0, (now() - t0) / dur)));
   p.box.dataset.state = "spinning";
   const frame = () => {
     if (stopped) return;
     const t = Math.min(1, Math.max(0, (now() - t0) / dur));
-    const deg = end * easeOut(t);
+    const deg = at(t);
     const peg = Math.floor(deg / STEP);
     if (peg !== last) { last = peg; flap = -20; tick(); } else flap *= 0.8;
     setRot(p, deg, flap);
@@ -285,6 +296,31 @@ function prizeSpin(box, { pickIndex, offset = 0.5, spins = 5, durationMs = 7800,
   };
   const begin = () => { if (!stopped) raf = requestAnimationFrame(frame); };
   const wait = t0 - now();
-  if (wait > 0) { p.box.dataset.state = "idle"; setRot(p, 0); timer = setTimeout(begin, wait); } else begin();
+  if (wait > 0) { p.box.dataset.state = "idle"; setRot(p, from); timer = setTimeout(begin, wait); } else begin();
   return () => { stopped = true; cancelAnimationFrame(raf); clearTimeout(timer); };
+}
+
+/**
+ * Plays the server's chained spins (a draw's spins: every one but the last landed on "Spin again"), in order, each starting where the last one rested.
+ * Spins already over are skipped straight to their resting angle, so a viewer who opens the page late sees the same wheel as everyone else.
+ * onLand(spin, index) runs as each spin lands (with spin.again for a Spin again); onDone(pickIndex) after the last. Returns cancel().
+ */
+export function wheelPlay(el, spins = [], { now = Date.now, motion = false, onTick = null, onLand = null, onDone = null } = {}) {
+  const list = (spins || []).filter((s) => s && Number.isFinite(s.pickIndex));
+  if (!list.length) return () => {};
+  let from = 0, i = 0, stop = () => {}, dead = false;
+  for (; i < list.length - 1 && now() >= list[i].startAt + list[i].durationMs; i++) from = spinEnd(list[i], from);   // already over: no animation
+  const next = () => {
+    if (dead) return;
+    const s = list[i], last = i === list.length - 1;
+    stop = wheelSpin(el, { ...s, from, now, motion, onTick, onDone: (k) => {
+      if (dead) return;
+      from = spinEnd(s, from);
+      if (onLand) { try { onLand(s, i); } catch { /* a listener never stops the wheel */ } }
+      if (last) { if (onDone) onDone(k); return; }
+      i++; next();
+    } });
+  };
+  next();
+  return () => { dead = true; stop(); };
 }

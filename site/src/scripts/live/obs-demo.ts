@@ -1,5 +1,5 @@
 // The staging-only demo of the stream view (docs/specs/control-room.md §8): /live/obs?demo=1&layout=wide|tall&scene=starting|stats|break|side|brb|ending&look=hull|crt&window=0
-// with sample data, no key and no request. &drop=open|closing|drawing|won|closed|until adds the live drop callout. Refused on production (obs.ts never calls this there: the page stays blank). Optional &guides=1 draws the
+// with sample data, no key and no request. &drop=open|closing|drawing|won|closed|until adds the live drop callout, &prize=pool|round1|spinning|picked|won|... the Prize Box scene. Refused on production (obs.ts never calls this there: the page stays blank). Optional &guides=1 draws the
 // platforms' phone UI guides on the tall layout, &bg=1 a stand-in for the game picture behind the transparent canvas. The numbers move on their own like a
 // real window: check-ins climb, first-ins arrive one by one, and the 5 minute window and the Be right back timer start over when they run out.
 import type { ObsView } from "./obs";
@@ -8,6 +8,7 @@ import raw from "../../data/preview-live-control.json";
 import { hsDemoAt, hsSampleDisplay, HS_LOOP } from "./hotseat-sample";
 import { stepAt, wyrSampleDisplay, predSampleDisplay, WYR_STEPS, PRED_STEPS, WAITING_SAMPLE } from "./choices-sample";
 import { sampleDrop } from "./drop-panel-preview";
+import { samplePrize } from "./prize-watch";
 
 const MIN = 60_000;
 const SCENES = ["starting", "stats", "break", "side", "brb", "ending"] as const;
@@ -18,6 +19,9 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
   const scene = (SCENES as readonly string[]).includes(asked) ? asked : "break";
   const look = params.get("look") === "crt" ? "crt" : "hull";
   const t0 = Date.now();
+  // &prize=pool|round1|still|spinning|picked|waiting|won|nospin: the Prize Box scene with a sample draw that starts now (prize-watch.ts samplePrize)
+  const pzStep = params.get("prize") || "";
+  const pzDemo = ["pool", "round1", "still", "out", "wheel", "spinning", "picked", "waiting", "won", "wonme", "nospin"].includes(pzStep) ? samplePrize(pzStep as Parameters<typeof samplePrize>[0], t0).draw : null;
   const crew = raw.streams[0].crew as any;
   const chats: ObsView["crew"]["chats"] = {};
   for (const [r, c] of Object.entries<any>(crew.chats)) chats[r] = { lead: c.lead, deckhands: c.deckhands };
@@ -68,6 +72,7 @@ export function runDemo(show: (v: ObsView) => Promise<void>, params: URLSearchPa
       nextStream: { title: "Granny Gauntlet", start: Date.now() + 26 * 3600_000 },
       // ?drop=open|closing|drawing|won|closed|until: the live drop callout (live drops part 5)
       drop: params.get("drop") && !ended ? sampleDrop(params.get("drop")!, t0, now) : null,
+      prizeDraw: pzDemo && !ended ? pzDemo : null,
     };
   };
   const tick = () => {

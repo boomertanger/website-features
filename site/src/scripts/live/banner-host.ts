@@ -1,7 +1,7 @@
 // The banner slot under the header ([data-live-banner] in BaseLayout): it holds up to two .bt-live-banner strips, the check-in's (site-banner.ts)
-// and a live drop's (drop-banner.ts). Each script owns its own strip and never touches the other's; when both show they stack, check-in first.
+// a live drop's (drop-banner.ts) and a Prize Box draw's (prize-banner.ts). Each script owns its own strip and never touches the others; they stack, check-in first.
 const host = () => document.querySelector<HTMLElement>("[data-live-banner]");
-export type BannerKind = "checkin" | "drop";
+export type BannerKind = "checkin" | "drop" | "prize";
 
 /** The strip a script put there before, or null. */
 export const bannerOf = (kind: BannerKind) => host()?.querySelector<HTMLElement>(`:scope > [data-banner-for="${kind}"]`) || null;

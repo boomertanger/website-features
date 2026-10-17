@@ -43,6 +43,17 @@ export interface PubLive {
   recruitRush?: { goal: number; count: number; reward: string; hitAt: number | null; /** A reward badge to drop: set while the goal is hit and no Rush drop has opened (docs/specs/live-drops.md §3). */ dropReady?: string };
   /** The live drop (docs/specs/live-drops.md §3): no uids; removed 60 s after it closes. */
   drop?: PubDrop | null;
+  /** The Prize Box live draw (docs/specs/prize-box.md §4): private/control.prizeDraw, copied by buildPublicLive (functions/lib/live/logic.js prizeDrawOf).
+   *  Handles only, never a uid. The spins are the server's decided spins, so every viewer animates the same wheel from startAt. */
+  prizeDraw?: PubPrizeDraw | null;
+}
+export interface PubPrizeSpin { pickIndex: number; offset: number; spins: number; durationMs: number; startAt: number; again: boolean }
+export interface PubPrizeDraw {
+  drawId: string; contestId: string | null; contestSlug: string | null; contestTitle: string | null; prizeTitle: string | null;
+  phase: "pool" | "round1" | "round2" | "here" | "noSpin" | "won"; round: 0 | 1 | 2; rounds: 1 | 2;
+  labels: (string | null)[] | null; groups: { label: string | null; count: number }[] | null; groupPick: { index: number; label: string | null; count: number } | null;
+  spins: PubPrizeSpin[]; picked: { handle: string; index: number } | null; hereUntil: number | null; hereSeconds: number;
+  winner: { handle: string } | null; pool: { checkedIn: number; crew: number; cooldown: number; filtered: number; inDraw: number } | null; respins: number;
 }
 
 /** public/live.drop. art is the badge art URL, or its emoji when it has no art yet. closesAt is null for a drop that runs until the stream ends. */

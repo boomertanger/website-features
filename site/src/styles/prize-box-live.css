@@ -1,0 +1,87 @@
+/* site/src/styles/prize-box-live.css — the Prize Box live draw's feature CSS (docs/specs/prize-box.md §5; mockup prize-box-wheel-and-draw.html section 2), prefix pz-:
+   the /live card (scripts/live/prize-card.ts), the owner's panel on /live/control (prize-panel.ts) and the stream view scene on /live/obs (prize-scene.ts).
+   The wheel, the stand and the banner are kit pieces (bt-ui.css "Prize Box pieces"). Tokens only: no raw colours. The card and the panel use container
+   queries; the stream view is a fixed canvas (canvas pixels, the 32 px floor, no queries). Reduced motion on the site: the I'm here pulse stops. */
+
+/* ---- the /live card ---- */
+.bt-root:not(#_) .pz-card { display: grid; grid-template-columns: 150px minmax(0, 1fr); gap: 18px; align-items: center; }
+.bt-root:not(#_) .pz-card:has(.pz-card-wheel[hidden]) { grid-template-columns: minmax(0, 1fr); }
+.bt-root:not(#_) .pz-card-wheel { width: 150px; }
+.bt-root:not(#_) .pz-card-body { display: grid; gap: 8px; justify-items: start; min-width: 0; }
+.bt-root:not(#_) .pz-card-body h3 { margin: 0; font-size: var(--bt-text-2xl); font-weight: 800; color: var(--bt-text); }
+.bt-root:not(#_) .pz-card-body p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-base); line-height: 1.5; }
+.bt-root:not(#_) .pz-card-body p b { color: var(--bt-text); }
+.bt-root:not(#_) .pz-card-body .bt-btn--block { width: 100%; }
+.bt-root:not(#_) .pz-card-sound { grid-column: 1 / -1; justify-self: end; }
+.bt-root:not(#_) .pz-card[data-kind="won"] .pz-card-body h3 { color: var(--bt-lime); }
+.bt-root:not(#_) .pz-card[data-kind="picked"] .pz-card-body h3 { color: var(--bt-title); }
+.bt-root:not(#_) .pz-myslice { display: inline-flex; align-items: center; gap: 8px; padding: 6px 12px; border-radius: 999px; background: var(--bt-surface-2); border: 1px solid var(--bt-border-2); font-weight: 700; font-size: var(--bt-text-md); color: var(--bt-text); }
+.bt-root:not(#_) .pz-myslice i { width: 14px; height: 14px; border-radius: 4px; background: var(--c); }
+.bt-root:not(#_) .pz-count { font-size: 34px; font-weight: 900; color: var(--bt-title); font-variant-numeric: tabular-nums; line-height: 1; }
+.bt-root:not(#_) .pz-here-btn { font-size: var(--bt-text-xl); padding: 16px 20px; animation: pz-beat 1s ease-in-out infinite; }
+@keyframes pz-beat { 50% { box-shadow: 0 0 0 8px rgba(var(--bt-primary-rgb), 0.18), 0 0 28px rgba(var(--bt-primary-rgb), 0.5); } }
+.bt-root:not(#_) .pz-small { margin: 0; font-size: var(--bt-text-md); color: var(--bt-text-faint); line-height: 1.55; }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .pz-card { grid-template-columns: 96px minmax(0, 1fr); gap: 12px; }
+  .bt-root:not(#_) .pz-card-wheel { width: 96px; }
+}
+
+/* ---- the /live/control panel (owner only) ---- */
+.bt-root:not(#_) .pz-cp { display: grid; gap: 14px; }
+.bt-root:not(#_) .pz-cp-head { display: flex; align-items: center; gap: 10px; }
+.bt-root:not(#_) .pz-cp-head svg { width: 22px; height: 22px; color: var(--bt-title); flex: none; }
+.bt-root:not(#_) .pz-cp-name { font-weight: 800; color: var(--bt-text); }
+.bt-root:not(#_) .pz-sp { flex: 1; }
+.bt-root:not(#_) .pz-cp-big { font-size: var(--bt-text-2xl); font-weight: 800; color: var(--bt-title); line-height: 1.2; overflow-wrap: anywhere; }
+.bt-root:not(#_) .pz-kv { display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; margin: 0; font-size: var(--bt-text-md); }
+.bt-root:not(#_) .pz-kv dt { color: var(--bt-text-muted); }
+.bt-root:not(#_) .pz-kv dd { margin: 0; font-weight: 700; font-variant-numeric: tabular-nums; text-align: right; }
+.bt-root:not(#_) .pz-kv .pz-kv-total { padding-top: 6px; border-top: 1px solid var(--bt-border); color: var(--bt-text); }
+.bt-root:not(#_) .pz-actions { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+.bt-root:not(#_) .pz-switchrow { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); font-size: var(--bt-text-md); }
+.bt-root:not(#_) .pz-switchrow small { display: block; color: var(--bt-text-faint); font-size: var(--bt-text-sm); margin-top: 2px; }
+.bt-root:not(#_) .pz-cg { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; }
+.bt-root:not(#_) .pz-meter-time .bt-meter-fill { transition: width 0.25s linear; }
+
+/* ---- the stream view scene (/live/obs, canvas pixels; the 32 px floor) ---- */
+.bt-root.bt-obs:not(#_) [data-obs][data-pb="on"] .obs-scene { visibility: hidden; }
+.bt-root.bt-obs:not(#_) .pz-scene { position: absolute; inset: 0; z-index: 5; pointer-events: none; }
+.bt-root.bt-obs:not(#_) .pz-scene[hidden] { display: none; }
+.bt-root.bt-obs:not(#_) .pz-svs { position: absolute; left: 80px; top: 150px; width: 920px; }
+html[data-shape="tall"] .bt-root.bt-obs:not(#_) .pz-svs { left: 80px; top: 120px; width: 920px; }
+.bt-root.bt-obs:not(#_) .pz-svp { left: 1060px; top: 90px; width: 790px; height: 900px; padding: 46px 52px; display: flex; flex-direction: column; gap: 22px; box-sizing: border-box; }
+html[data-shape="tall"] .bt-root.bt-obs:not(#_) .pz-svp { left: 60px; top: 1060px; width: 960px; height: 800px; }
+.bt-root.bt-obs:not(#_) .pz-sv-box { display: inline-grid; width: 52px; height: 52px; color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .pz-sv-box svg { width: 100%; height: 100%; }
+.bt-root.bt-obs:not(#_) .pz-sv-chip { margin-left: auto; font-size: 32px; font-weight: 800; color: var(--bt-text-muted); border: 2px solid var(--bt-border-2); border-radius: 999px; padding: 6px 22px; }
+.bt-root.bt-obs:not(#_) .pz-sv-title { font-size: 60px; font-weight: 900; line-height: 1.05; color: var(--bt-text); overflow-wrap: anywhere; }
+.bt-root.bt-obs:not(#_) .pz-sv-prize { font-size: 34px; color: var(--bt-text-muted); line-height: 1.3; }
+.bt-root.bt-obs:not(#_) .pz-sv-prize b { color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .pz-sv-k { font-size: 32px; font-weight: 800; color: var(--bt-text-faint); letter-spacing: 0.03em; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 26px; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend div { display: flex; align-items: center; gap: 14px; font-size: 32px; font-weight: 700; color: var(--bt-text); min-width: 0; transition: opacity 0.4s; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend i { width: 30px; height: 30px; border-radius: 8px; flex: none; background: var(--c); }
+.bt-root.bt-obs:not(#_) .pz-sv-legend em { margin-left: auto; font-style: normal; color: var(--bt-text-faint); font-variant-numeric: tabular-nums; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend.is-landed div:not(.is-win) { opacity: 0.3; }
+.bt-root.bt-obs:not(#_) .pz-sv-legend div.is-win span { color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .pz-sv-big { font-size: 84px; font-weight: 900; line-height: 1; color: var(--bt-title); text-shadow: 0 0 34px rgba(var(--bt-gold-rgb), 0.5); overflow-wrap: anywhere; }
+.bt-root.bt-obs:not(#_) .pz-sv-line { font-size: 34px; color: var(--bt-text-muted); line-height: 1.35; margin-top: 14px; }
+.bt-root.bt-obs:not(#_) .pz-sv-line b { color: var(--bt-text); }
+.bt-root.bt-obs:not(#_) .pz-sv-spin { font-size: 40px; font-weight: 800; color: var(--bt-text-muted); }
+.bt-root.bt-obs:not(#_) .pz-sv-here { display: flex; align-items: center; gap: 40px; }
+.bt-root.bt-obs:not(#_) .pz-sv-here .pz-sv-big { font-size: 72px; }
+.bt-root.bt-obs:not(#_) .pz-sv-here .bt-sv-ring { --bt-cr-live: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .pz-sv-win { display: flex; align-items: center; gap: 36px; }
+.bt-root.bt-obs:not(#_) .pz-sv-win > div { min-width: 0; }
+.bt-root.bt-obs:not(#_) .pz-sv-win .pz-sv-big { font-size: 68px; }
+.bt-root.bt-obs:not(#_) .pz-sv-win .bt-stamp { width: 210px; height: 210px; font-size: 32px; border-width: 5px; flex: none; }
+.bt-root.bt-obs:not(#_) .pz-sv-win .bt-stamp b { font-size: 44px; }
+.bt-root.bt-obs:not(#_) .pz-sv-foot { margin-top: auto; font-size: 32px; color: var(--bt-text-muted); line-height: 1.35; }
+.bt-root.bt-obs:not(#_) .pz-sv-foot b { color: var(--bt-title); }
+.bt-root.bt-obs:not(#_) .pz-svs .bt-prizestand-card b { font-size: 56px; }
+.bt-root.bt-obs:not(#_) .pz-svs .bt-prizestand-card span { font-size: 32px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_):not(.bt-obs) .pz-here-btn { animation: none; }
+}

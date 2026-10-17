@@ -34,6 +34,15 @@ export function prizeBoxKitHtml() {
       ${cell("You won: the lime It's you! card", `<div data-kit-pb-me>${prizeStandHtml({ labels: NAMES, landed: 5, offset: 0.5 })}</div>`)}
       ${cell("Winner card (someone else)", `<div data-kit-pb-other>${prizeStandHtml({ labels: NAMES, landed: 3, offset: 0.6 })}</div>`)}
     </div>
+    <h3 class="kit-sub">.bt-live-banner[data-kind="prize"]: the site-wide draw strip (scripts/live/prize-banner.ts), states on, spinning, picked, won, quiet</h3>
+    <div style="display:grid;gap:8px;grid-template-columns:minmax(0,1fr)">
+      ${[["on", "<b>Prize Box draw</b> starting. You're in it, one of 47.", '<a class="bt-btn bt-btn--secondary bt-btn--sm" href="#">Watch</a>'],
+        ["spinning", '<b>Prize Box:</b> round 2 is spinning. <span class="bt-live-banner-slice"><i style="--c:var(--bt-wheel-6)"></i>Your slice: yellow</span>', '<a class="bt-btn bt-btn--secondary bt-btn--sm" href="#">Watch</a>'],
+        ["picked", "<b>It landed on you.</b> Tap I'm here.", '<span class="bt-live-banner-cd"><b>52</b> s</span><button type="button" class="bt-btn bt-btn--primary bt-btn--sm">I\'m here</button>'],
+        ["won", "<b>You won</b> Break Wheel #1 (sample)!", '<a class="bt-btn bt-btn--primary bt-btn--sm" href="#">Claim my prize</a>'],
+        ["quiet", "<b>Prize Box:</b> round 1 picked Every beat tonight. Not you this time.", '<a class="bt-btn bt-btn--secondary bt-btn--sm" href="#">Watch</a>']]
+        .map(([st, t, b]) => `<div class="bt-live-banner" data-kind="prize" data-state="${st}" style="animation:none"><svg class="bt-live-banner-gift" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-4-5.5-2S9 8 12 8zm0 0c1.5-3 5-4 5.5-2S15 8 12 8z"/></svg><span class="bt-live-banner-txt">${t}</span><span class="bt-live-banner-sp"></span>${b}<button type="button" class="bt-live-banner-x" aria-label="Hide">✕</button></div>`).join("")}
+    </div>
     <h3 class="kit-sub">The PRIZE BOX wordmark (I2): at rest, and lit (.is-lit; hover or focus does the same; touch screens play it once on scroll-in)</h3>
     <div style="display:flex;flex-wrap:wrap;gap:32px;align-items:center;padding:8px 0">
       ${pbWordmarkHtml()}

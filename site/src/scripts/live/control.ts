@@ -25,6 +25,8 @@ import { initCrew, sampleCrew } from "./control-crew";
 import { initRush } from "./control-rush";
 import { initGames } from "./control-games";
 import { mountDropPanel, previewDropIo, type DropPanel } from "./drop-panel";
+import { mountPrizePanel, previewPrizePanelIo, type PrizePanel } from "./prize-panel";
+import { prizePreviewStep } from "./prize-watch";
 import { patchHTML } from "../../../../shared/ui/patch.js";
 
 const POLL_MS = 5000;
@@ -167,7 +169,7 @@ function grid() {
   return `<div class="lc-grid" data-owner="${owner ? 1 : 0}">`
     + (owner ? `<div class="lc-a-list" data-slot="rail"></div>` : "")
     + `<div class="lc-a-status" data-slot="status"></div><div class="lc-a-beats" data-slot="beats"></div><div class="lc-a-stage" data-slot="stage"></div><div class="lc-a-scene" data-slot="scene"></div>`
-    + `<div class="lc-a-launch"><div data-slot="launch"></div>${owner ? `<div data-drop-slot data-patch="own"></div><div data-slot="rush"></div>` : ""}</div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
+    + `<div class="lc-a-launch"><div data-slot="launch"></div>${owner ? `<div data-prize-slot data-patch="own"></div><div data-drop-slot data-patch="own"></div><div data-slot="rush"></div>` : ""}</div><div class="lc-a-game" data-slot="game"></div><div class="lc-a-crew" data-slot="crew"></div>`
     + (owner ? `<div class="lc-a-deck" data-slot="deck"></div>` : "")
     + `</div>`;
 }
@@ -267,6 +269,20 @@ function initDrops() {
   });
 }
 
+/* ------------------------------------------------------------------ the Prize Box draw (docs/specs/prize-box.md §4, §5): OWNER ONLY, like drops. The panel owns
+   [data-prize-slot] (its own listener and ticker); the page mounts it and lets it go when the grid is rebuilt. The Captain and admins never get it. */
+let prize: { el: HTMLElement; panel: PrizePanel } | null = null;
+function initPrize() {
+  if (ctx.role !== "owner") return;
+  const io = ctx.api.preview || prizePreviewStep() ? previewPrizePanelIo() : undefined;
+  ctx.after.push(() => {
+    const el = ctx.root.querySelector<HTMLElement>("[data-prize-slot]");
+    if (prize && prize.el === el) return;
+    prize?.panel.destroy(); prize = null;
+    if (el) prize = { el, panel: mountPrizePanel(el, { io }) };
+  });
+}
+
 /* ------------------------------------------------------------------ boot */
 function chrome(root: HTMLElement) {
   root.innerHTML = `<div data-slot="hero"></div><div class="lc-flags" data-slot="flags"></div><div class="lc-banners" data-slot="banners" aria-live="polite"></div><div data-lc-body></div>`;
@@ -312,6 +328,7 @@ onAccess(async (s, role) => {
   initRush(ctx);
   initGames(ctx);   // the launch panel's Chat Games tiles (replaces the placeholder tiles)
   initDrops();
+  initPrize();
   root.addEventListener("click", (e) => {
     const t = (e.target as HTMLElement).closest<HTMLElement>("[data-act], [data-look-pick] button");
     if (!t || !root.contains(t)) return;

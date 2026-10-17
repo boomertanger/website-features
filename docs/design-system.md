@@ -1104,6 +1104,7 @@ Built for `docs/specs/prize-box.md` §2 and §9 (mockups `prize-box-wheel-fan.ht
   - `prizeWheelHtml({ labels, text, landed, offset, motion, mascot, label })` draws 10 fan blades in `--bt-wheel-1` … `10` with yellow pegs, the red paddle and the mascot on the hub (the page's `#bt-mascot-tpl`). Names run along each blade's centerline. An empty label is a hatched "Spin again" blade. `text: false` draws a plain wheel for cards.
   - `wheelSpin(el, { pickIndex, offset, spins, durationMs, startAt, now, motion, onTick, onDone })` → cancel. It's the server's decided spin: everyone computes the same angle for the same moment (ease-out from `startAt`). A late joiner joins mid-spin or lands on the result. `onTick` runs once per peg, as the paddle kicks.
   - `wheelShow(el, { pickIndex, offset })` and `wheelReset(el)` put the wheel on a result or back at rest. `prizeAngle(k, offset)` is the resting angle.
+  - `wheelPlay(el, spins, { now, motion, onTick, onLand, onDone })` → cancel plays a draw's chained spins in order (every one but the last landed on Spin again), each from where the last one rested. Spins already over are skipped, so a late viewer sees the same wheel. `spinEnd(spin, from)` is where a spin rests.
   - `wheelSpin` without `pickIndex` is Hot Seat's spin. It now takes `onTick` too.
   - `data-state` is idle, spinning or landed. On landed the other blades dim and the winner gets a gold edge.
 - **Sound** (`wheel-sound.js`): `wheelSound({ muted, src })` gives `tick()`, `muted`, `setMuted()` and `unlock()`. The tick is synthesized until `site/public/sounds/prize-tick.mp3` exists; pass `src` only when it does. `soundButtonHtml({ muted })` and `bindSoundButton(button, snd)` are the toggle. Sound is muted on the site and on in the stream view.
@@ -1111,6 +1112,7 @@ Built for `docs/specs/prize-box.md` §2 and §9 (mockups `prize-box-wheel-fan.ht
   - `prizeStandHtml(wheelOpts)` draws it.
   - `standBurst(el, { title, line, note, me, motion, confetti })` plays the moment: shake, lid off, gold beam, confetti from the box and the winner card (`.bt-prizestand-card.is-in`; `.is-me` is the lime "It's you!").
   - `standReset(el)` puts it back.
+- **The draw banner `.bt-live-banner[data-kind="prize"]`** is the site-wide gold strip in the banner slot, after the check-in and drop strips. Its states are on, spinning (a moving sheen), picked ("It landed on you", with I'm here and the countdown), won (lime) and quiet. `.bt-live-banner-slice` is "Your slice" in its blade colour. It never shows on /live, /live/control or /live/obs.
 - **Wordmark icon `PB_ICON`** (`.bt-pb-icon`) is in `prize-box.js`, along with `pbWordmarkHtml()`, the PRIZE BOX power wordmark, which isn't a link. On power-on the wheel spins one and a half turns, the paddle ticks and the lid jolts.
 - **Colors:** `--bt-wheel-*` are decorative only, never a status. The wood is the `--pz-*` feature properties, declared once with the wheel tokens.
 - **Reduced motion:** no spin, shake or confetti; the result appears. The exception is `data-motion="always"` (`motion: true`), which the stream view uses.
@@ -1212,7 +1214,7 @@ Spec `docs/specs/club-pass.md` §8; mockup `docs/design/mockups/club-pass.html`;
 | `flag-card.js` | `flagCardHtml`, `flagsHtml`, `initFlags`: `.bt-flag-card` and `.bt-flags` |
 | `crew-notes.js` | `crewNotesHtml`, `initCrewNotes`, `NOTE_MAX`: `.bt-crew-notes` (not `.bt-notes`) |
 | `cue-card.js` | `cueCardHtml`, `cueEmptyHtml`, `initCueCards`: `.bt-cue-card` for Chat Games cues |
-| `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` (also the Prize Wheel: `prizeWheelHtml`, `wheelShow`, `wheelReset`, `prizeAngle`) · `choicesHtml`, `choiceHtml` (Chat Games pieces and Prize Box pieces, §5) |
+| `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` (also the Prize Wheel: `prizeWheelHtml`, `wheelShow`, `wheelReset`, `wheelPlay`, `spinEnd`, `prizeAngle`) · `choicesHtml`, `choiceHtml` (Chat Games pieces and Prize Box pieces, §5) |
 | `wheel-sound.js` · `prizestand.js` · `prize-box.js` | `wheelSound({ muted, src })`, `soundButtonHtml`, `bindSoundButton` · `prizeStandHtml`, `standBurst`, `standReset` · `PB_ICON`, `pbWordmarkHtml` (Prize Box pieces, §5) |
 | `firefly.js` | `FIREFLY_SVG`: the firefly drawing (§5 "Firefly") |
 | `zoomframe.js` | `zoomFrameHtml`, `initZoomFrame`: the pan and zoom viewport (§5 "Zoom frame") |

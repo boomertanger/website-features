@@ -5563,7 +5563,30 @@
 @keyframes bt-pb-tick { 50% { transform: rotate(-22deg); } }
 @keyframes bt-pb-jolt { 30% { transform: translateY(-3px); } 60% { transform: translateY(0); } }
 
+/* .bt-live-banner[data-kind="prize"]: the Prize Box draw strip in the banner slot (stacks after check-in and a drop). Gold like a drop. data-state on (gold)
+   | spinning (a moving gold sheen) | picked ("It landed on you": brighter gold, I'm here in purple, the countdown) | won (lime) | quiet (out of this one: surface).
+   .bt-live-banner-slice is "Your slice" with its blade colour (decorative); .bt-live-banner-gift the gold gift icon. */
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"] { background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.22), rgba(var(--bt-gold-rgb), 0.06)); border-bottom-color: rgba(var(--bt-gold-rgb), 0.55); gap: 6px 12px; padding-top: 8px; padding-bottom: 8px; }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"] b { color: var(--bt-text); }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="spinning"] { background: linear-gradient(100deg, rgba(var(--bt-gold-rgb), 0.08) 30%, rgba(var(--bt-gold-rgb), 0.3) 50%, rgba(var(--bt-gold-rgb), 0.08) 70%) 0 0 / 300% 100%; animation: bt-ban-drop 0.5s cubic-bezier(0.2, 1.2, 0.4, 1) both, bt-pz-sheen 2.4s linear infinite; }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="picked"] { background: linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.38), rgba(var(--bt-gold-rgb), 0.12)); }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="picked"] b { color: var(--bt-title); }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="won"] { background: linear-gradient(90deg, var(--bt-lime-bg), rgba(var(--bt-gold-rgb), 0.06)); border-bottom-color: color-mix(in srgb, var(--bt-lime) 55%, transparent); }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="won"] b { color: var(--bt-lime); }
+.bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="quiet"] { background: var(--bt-surface); border-bottom-color: var(--bt-border-2); }
+.bt-root:not(#_) .bt-live-banner-gift { width: 18px; height: 18px; flex: none; color: var(--bt-title); }
+.bt-root:not(#_) .bt-live-banner-slice { display: inline-flex; align-items: center; gap: 6px; margin-left: 4px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--bt-border-2); background: var(--bt-surface-2); font-weight: 700; font-size: var(--bt-text-sm); color: var(--bt-text); }
+.bt-root:not(#_) .bt-live-banner-slice i { width: 10px; height: 10px; border-radius: 3px; background: var(--c); }
+@keyframes bt-pz-sheen { to { background-position: -300% 0; } }
+@container bt (max-width: 640px) {
+  .bt-root:not(#_) .bt-live-banner[data-kind="prize"] { flex-wrap: nowrap; padding: 8px 40px 8px 10px; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="prize"] .bt-btn { width: auto; margin-top: 0; flex: none; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="prize"] .bt-live-banner-txt { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
+  .bt-root:not(#_) .bt-live-banner[data-kind="prize"] .bt-live-banner-slice { display: none; }
+}
+
 @media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-live-banner[data-kind="prize"][data-state="spinning"] { animation: none; }
   .bt-root:not(#_) .bt-wheel--prize:not([data-motion="always"]) .bt-wheel-rot { animation: none; }
   .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]) :is(.bt-prizestand-lid, .bt-prizestand-card) { transition: opacity 0.3s; }
   .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]).is-shake :is(.bt-prizestand-box, .bt-prizestand-lid) { animation: none; }

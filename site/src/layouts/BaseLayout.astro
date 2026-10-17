@@ -146,6 +146,10 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
       const startDrop = () => import("../scripts/live/drop-banner").then((m) => m.startDropBanner());
       if (!prodSite && new URLSearchParams(location.search).has("drop")) void startDrop();
       else setTimeout(() => onLive((p) => { if (p.drop) void startDrop(); }), 1500);
+      // The Prize Box banner (docs/specs/prize-box.md §5): its code loads only when public/live has a draw (preview: ?prize= on any page).
+      const startPrize = () => import("../scripts/live/prize-banner").then((m) => m.startPrizeBanner());
+      if (!prodSite && new URLSearchParams(location.search).has("prize")) void startPrize();
+      else setTimeout(() => onLive((p) => { if (p.prizeDraw) void startPrize(); }), 1500);
       import { paintNextLabels } from "../lib/offline-next";
       if (!new URLSearchParams(location.search).has("live")) setTimeout(() => void paintNextLabels(), 1500);
       // Traffic Pulse: the cookieless beacon (counts only), loaded once the page is idle; it skips previews, bots, GPC/DNT and opted-out members.
