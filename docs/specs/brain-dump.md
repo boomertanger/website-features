@@ -71,3 +71,41 @@ Mentioned once, not building: due dates or snooze, dragging items between cards,
 3. `/brain-dump`: engine port with the Firestore store, gating, account-menu item, help file, manifest, pulse ids, print.
 4. `/brain-dump/how-it-works`.
 5. design-system §8 "Brain Dump" entry; CHANGELOG.
+
+## 9. Looks and card sizes (addendum, confirmed Oct 17, 2026)
+
+Mockup: `docs/design/mockups/brain-dump-looks.html` (mockup 3 with Chalkboard; working board with the picker). Reference CSS: `brain-dump-looks-reference-v2.css` (the mockup's looks block, to adapt, not paste blindly). The mockup's inline script is the reference for the engine changes.
+
+### 9a. Card sizes
+- Three widths: **S** = a third (`sm`), **M** = half (`half`), **L** = full width (`wide`). Same `size` field as before; no data change.
+- Each category card has a size button (`.bd-size`, mono letter S / M / L) between the count and ✕. A tap cycles S → M → L → S, saves, and announces "Card size: Medium". Its label says what it is and what's next ("Card size: Large. Change to Small"). It hides at ≤ 640 px, where every card is full width. At 2 columns S and M look the same (known, fine).
+- The add-category card has a size radio group (S · a third, M · half, L · full width; default S; arrow keys) before "+ Add category".
+- Print hides the size button. Pulse id `card-size`.
+
+### 9b. Looks (a per-person setting)
+- Six looks: **Classic** (the original C1 tinted fill), **Neon**, **Control panel** (the Control Room hull look), **CRT TV**, **Post-it**, **Chalkboard**. New boards start on **Control panel**.
+- Stored on the board: new field `look` (`classic | neon | panel | crt | postit | chalk`); a missing or unknown value becomes `panel`. **Rules:** add `look` to the brainDump key list (a string in that list). Reset board and Undo keep the person's look.
+- Applied as `data-look` on the board root (Classic = no attribute) plus one CSS block per look, following the Control Room looks rule (design-system: a look restyles surfaces, frames, motion and decoration only; never color meaning, the heading ladder or what's clickable). The drag copy in the portal carries the same `data-look`. Category cards carry `data-color` (Post-it uses it).
+- **Picker:** in the toolbar after Clear checked: `button.bt-chip.bt-chip--menu` "🎨 Look: <name>" opening a `.bt-popover` menu (`role="menu"`, `menuitemradio` options with a small preview swatch each, a ✓ on the current one, and the note "Only changes how your board looks to you."). Opens with the current look focused; arrow keys, Home / End; Esc closes and returns focus; Tab or a click outside closes. Opening dispatches the site's `bt:overlay-open` and it closes when another overlay opens. It keeps itself on screen (on phones it shifts so it never runs off the left edge). Pulse ids `look-open`, `look-classic`, `look-neon`, `look-panel`, `look-crt`, `look-postit`, `look-chalk`.
+- **Neon:** near-black cards with a glowing edge and glowing title in the card's color.
+- **Control panel:** square panels on a faint grid, corner brackets and a status light before the title in the card's color, mono uppercase titles, the count as a readout; the Inbox light blinks gently; the goal card gets gold brackets.
+- **CRT TV:** each card a bubble TV (thick rounded bezel, two knobs, a lime power light), subtle scanlines, glowing text, the count as "CH 2/5"; the TVs switch on once when the page opens (`is-boot`, stagger by `--i`) and when the look is picked; none under reduced motion.
+- **Post-it:** each card color maps to its own yellow (ember → marigold, pink → lemon, gold → sunflower, lime → canary, teal → butter, blue → honey), dark pencil ink, a sticky strip, a curled corner, a slight tilt (smaller on M and L), and a pushpin in the card's original color. The Inbox is a ruled index card; the Big Goal is a canary note with two strips of tape. Declared colors: the six `--bd-note-*` yellows, `--bd-note-index` and `--bd-note-ink` (one custom property per unique color).
+- **Chalkboard:** a **black** slate (not green: green means admin on this site, and a look can't change color meaning) in a wooden frame around the whole board (12 px, 26 px at the bottom like a chalk ledge; 6 px / 16 px on phones), faint eraser smudges, cards as chalk-drawn boxes with slightly uneven corners, titles underlined in pastel chalk of each card's color, chalk-outlined checkboxes and counts, dashed chalk lines for the add fields, the goal written straight on the board with a chalk line under it. Declared colors: `--bd-chalk-slate`, `--bd-chalk`, `--bd-chalk-wood`, `--bd-chalk-wood-dark`. Print drops the frame.
+- Starred rows in Neon, Control panel, CRT TV and Chalkboard get only a faint gold tint (8%) and the filled star; no edge bar on the left.
+- No raw black or white: shadows, scanlines and sheen mix `--bt-bg` / `--bt-text` with transparent.
+- Contrast checked in all six looks: titles ≥ 4.74:1, items ≥ 7.43:1 (Chalkboard: titles 8.13, items 13.62).
+- Print: every look falls back to the plain light sheet.
+- **How it works:** the practice board shows the picker too (memory only, never saved); the "Try it" tips get one more tip: "🎨 Pick your look: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. Only you see it." Ask BOOMBOT gets one more answer: "Can I change how it looks?" → "Yes. Use 🎨 Look in the toolbar: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. It's saved on your board and only changes what you see."
+
+### 9c. Checked items drop to the bottom (always on; confirmed Oct 17, 2026)
+- In every category list, unchecked items come first and checked items after, each group keeping its own order. This is the order saved in the board document; there's no new field and no rules change.
+- **Check an item:** it moves to the top of the checked pile (the newest checked sits directly under the unchecked items).
+- **Uncheck an item:** it moves to the end of the unchecked items, just above the checked pile (not back to its exact old spot; deliberate, to keep it simple).
+- **New items** (the add line, and Move to… from the Inbox) land at the end of the unchecked items, above the checked pile.
+- **▲ / ▼** reorder within a group only: ▼ on the last unchecked item and ▲ on the first checked item are disabled, and the handler refuses a swap across groups.
+- **Loading** an existing board tidies any checked items found mid-list to the bottom, keeping their order (a stable partition, done in the load/migrate step and before rendering a list).
+- **Undo** (delete, Clear checked, Reset) restores items and the list is re-tidied, so checked items stay at the bottom.
+- **Motion:** the moved row slides to its new place (about 240 ms; a FLIP animation with the Web Animations API); none under reduced motion. The checkbox keeps focus after the move (without scrolling).
+- Search and Starred only re-apply after a move. The Inbox (no checkboxes), stars, counts and Clear checked are unchanged.
+- How it works: the example boards list checked items last (mockup data updated).

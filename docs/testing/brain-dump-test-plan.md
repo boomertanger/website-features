@@ -28,3 +28,19 @@ Already checked in headless Chromium on the mockups (Oct 17, 2026): 71 board che
 
 ## E. Print
 1. Print `/brain-dump` (or save as PDF): white page, two columns, light colored cards, no buttons.
+
+## F. Looks and card sizes
+1. A new board opens on Control panel. Open 🎨 Look and pick each one: Classic, Neon, Control panel, CRT TV (the TVs switch on), Post-it, Chalkboard (black slate in a wooden frame).
+2. Pick Post-it, hard refresh: still Post-it. Open the board on your phone: also Post-it.
+3. On your phone, open 🎨 Look: the menu fits on the screen.
+4. Tap a card's S / M / L button: it cycles a third, half and full width; refresh keeps it. Add a new category with M picked: it's half width.
+5. Reset board, then Undo: your look stays the same throughout.
+
+## G. Checked items drop to the bottom
+1. In a list with three items, check the first one: it slides to the bottom.
+2. Check another: it lands on top of the checked pile (above the first one you checked).
+3. Uncheck the bottom one: it moves up to just above the checked pile.
+4. Add a new item to that list: it appears above the checked items, not under them.
+5. The ▲ / ▼ buttons can't move a checked item above an unchecked one (they're greyed out at the line between them).
+6. Clear checked, then Undo: the checked items come back at the bottom.
+7. On your phone, check an item while scrolled partway down the board: the page doesn't jump.
