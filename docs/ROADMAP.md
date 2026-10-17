@@ -1,6 +1,9 @@
 # Boomertanger rebuild — roadmap
 
-Last updated: 2026-10-10. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+Last updated: 2026-10-17. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
+
+## Top priority
+- [ ] **Upgrade Cloud Functions from Node.js 20 before Oct 30, 2026 (deploys stop after that).** The deploy warns that Node.js 20 is decommissioned on 2026-10-30; after that no function can be deployed until `functions/package.json` moves to a newer Node runtime and `firebase-functions` is upgraded (breaking changes expected; plan and test on staging first).
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -202,7 +205,7 @@ Kickoff: "Start workstream 10 (Porting existing features) from docs/ROADMAP.md."
 Goal: Fan Club (free) and Sub Club (paid) plans, payments, entitlements written by server webhooks, an append-only ledger.
 Must be done before launch.
 Spec: `docs/specs/club-pass.md` (confirmed Oct 15, 2026; mockup `docs/design/mockups/club-pass.html`).
-Status: **In progress: part 4 billing in progress (staging, test mode).** Part 3 Twitch counting is built and on staging (the live sub test is pending; launch checklist). Parts 1 and 2 are on staging with payments off: part 1 the /club-pass page (docs, the kit pieces `.bt-pass`, `.bt-plan`, `.bt-spread` and `.bt-admit`, and the page), part 2 the My pass account tab at /account/club (spec §11, mockup `docs/design/mockups/club-pass-my-pass.html`). Part 3 Twitch counting (spec §12) is being built. Then, in order (spec §9): part 4 billing on staging (Stripe test mode), part 5 gifts and /tip, part 6 /admin/members, part 7 the member home.
+Status: **In progress: part 4 billing built and tested on staging; next part 5 gifts and /tip.** Parts 1 to 4 are on staging: part 1 the /club-pass page (docs, the kit pieces `.bt-pass`, `.bt-plan`, `.bt-spread` and `.bt-admit`, and the page), part 2 the My pass account tab at /account/club (spec §11), part 3 Twitch counting (spec §12; the live sub test is pending, launch checklist), part 4 billing in Stripe test mode (spec §13; results in docs/testing/club-pass-billing-test-plan.md, Oct 17, 2026). Then, in order (spec §9): part 5 gifts and /tip, part 6 /admin/members, part 7 the member home.
 - [ ] Boom Board full page (was planned at /club): plan its route with the member home (part 7).
 Kickoff: "Start workstream 11 (Plans and billing) from docs/ROADMAP.md."
 
@@ -219,6 +222,7 @@ Kickoff: "Start workstream 13 (Launch and legal) from docs/ROADMAP.md."
 Goal: the site's contact service: six lines on `/contact` (who reads each, which fields, which address replies), a private inbox at `/admin/inbox` for the owner and chosen admins (team lines only), and `/contact/how-it-works`.
 Spec: [docs/specs/hotline-boom.md](specs/hotline-boom.md) (confirmed Oct 9, 2026); mockups `docs/design/mockups/hotline-boom-contact.html` (Layout 3, W5), `hotline-boom-hero.html` (the /contact hero), `hotline-boom-inbox.html` (Split), `hotline-boom-how-it-works.html` (H1).
 Status: **Built on staging (parts 0-6); real tests pending (docs/testing/hotline-boom-test-plan.md).** Parts, one commit each:
+- [ ] HOTLINE_EMAIL uses the .env flag pattern that broke billingWebhook's secret binding; switch it to per-project binding before turning email on. (The deploy's discovery step loads the code without the .env files, so the flag reads as off there and RESEND_API_KEY would go unbound while the running function reads it as on; see WEBHOOK_PROJECTS in functions/lib/billing/index.js.)
 0. Docs: spec and mockups in, Boom Alerts topics, ROADMAP, design-system decisions.
 1. Kit: `.bt-reveal` + `shared/ui/reveal.js`, the `--bt-contact-privacy` token, the UI kit page.
 2. Backend: `contactSend`, `contactAction`, `contactNote`, `contactReply`, `contactSettings` (`functions/lib/hotline/`, Turnstile helper in `functions/lib/security/`), rules, indexes, TTL policies.
@@ -356,6 +360,11 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Production Firebase, secrets and scheduled jobs set up (staging values never carry over).
 - [ ] Twitch app: add the production redirect https://boomertanger.com/auth/twitch/callback.
 - [ ] Club Pass Twitch counting: run the live sub test (test plan steps 3 onward) before launch (docs/testing/club-pass-twitch-test-plan.md).
+- [ ] Stripe live mode retries: Smart Retries, 4 retries within 1 week, then cancel the subscription and leave the invoice past due (the same as test mode).
+- [ ] Decide whether Stripe Link stays on in live mode (in test mode it saved portal cards as Link entries and its phone check blocked test cards).
+- [ ] The live customer portal configuration (`functions/scripts/stripe-setup.js` creates it in test mode: cancel at period end, update card, invoices; no plan switching), with the live prices.
+- [ ] The live webhook endpoint at the production `billingWebhook` URL with the same 8 events, snapshot payloads, and the API version the code is checked against (pinned 2026-08-26.dahlia; checked against 2026-09-30.endive); set its `STRIPE_WEBHOOK_SECRET` and add the production project to `WEBHOOK_PROJECTS` in functions/lib/billing/index.js.
+- [ ] Billing secrets are defined for every project (`STRIPE_SECRET_KEY` is defined at module load), so before ANY production function deploy either set the live Stripe keys on production or bind `STRIPE_SECRET_KEY` per project the way `STRIPE_WEBHOOK_SECRET` is; otherwise the deploy stops asking for the secret.
 - [ ] Turn on Tech Stack referral links (`site.json` modules `techStack.referrals: true`, with the Amazon Associates disclosure).
 
 ### Control Room and YouTube in production
@@ -438,7 +447,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 ### Hotline Boom in production
 - [ ] Production Turnstile widget hostnames, and `TURNSTILE_SECRET_KEY` / `CONTACT_HASH_SALT` set on prod.
 - [ ] The Resend domain (Boom Alerts part 6) so replies send from the site.
-- [ ] Set HOTLINE_EMAIL=on in functions/.env once Boom Alerts sets RESEND_API_KEY, then redeploy the contact functions.
+- [ ] Set HOTLINE_EMAIL=on in functions/.env once Boom Alerts sets RESEND_API_KEY, then redeploy the contact functions (switch HOTLINE_EMAIL to per-project binding first: see Hotline Boom above).
 - [ ] Redirect rules on the other 11 domains add `?via=<domain>`.
 - [ ] A Privacy Policy line: what the form stores, the 2-year deletion, how the source question works.
 - [ ] The Squarespace contact page switched off.
