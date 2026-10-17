@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Fixed: a member's token claims and public role tag could keep a role the member doc no longer has. mirrorMemberRoles copied the roles from the write it was fired for, and Firestore can run those out of order: on staging @teentest paid and then disputed a second apart, the older write's run finished last, and the "sub" role came back into the claims and the role tag. It now sets them from the member doc as it is when it runs. @teentest's claims and role tag were repaired on staging.
 - Fixed: after Stripe Checkout, "Payment received. Turning your pass gold…" could stay on My pass for good (it stayed after a dispute turned the pass back to Fan Club). It is now always replaced: by "You're in Sub Club. Welcome!" once the pass is gold, or by "Still checking your payment. Refresh in a minute, or reach Account help on the Hotline." (linked to /contact?line=3) if it isn't gold after 30 seconds or ends up not gold. The message is written before the token refresh and redraw, so neither can leave it waiting.
 - Club Pass: a disputed payment's receipt on My pass says "· disputed", like "· refunded". (Confirmed on staging: @teentest's pass ended through charge.dispute.created; the ledger has checkout.session.completed then charge.dispute.created, -5.99, reason fraudulent.)
 - Club Pass: the failed-payment banner on My pass uses the gold warning style (like the Needs a new card pill) instead of a red outline; red stays for actions that destroy data.

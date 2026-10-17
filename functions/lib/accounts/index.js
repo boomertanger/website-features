@@ -450,7 +450,12 @@ module.exports = function accounts({ adminLogEntry }) {
     const { siteId, uid } = event.params;
     const before = event.data.before.exists ? (event.data.before.get("roles") || []) : [];
     const after = event.data.after.exists ? (event.data.after.get("roles") || []) : [];
-    if (event.data.after.exists) await syncRoleTag(siteId, uid, after);
+    // Triggers can run out of order: two writes a second apart (a Club Pass payment, then a dispute) and the older write's run can finish
+    // last. The claims and the role tag are therefore set from the member doc as it is NOW, never from this event's after, so a late run
+    // can't put old roles back. before/after only decide whether anything changed and what the adminLog entry says.
+    const current = await db.doc(`sites/${siteId}/members/${uid}`).get();
+    const nowRoles = current.exists ? (current.get("roles") || []) : [];
+    if (current.exists) await syncRoleTag(siteId, uid, nowRoles);
     // Mod Machina: crewGrade (1-4, or "A1"-"A3") and crewStatus ride along in the claims, written onto the
     // member doc by mirrorCrewRoster. Merged next to the roles, never replacing them.
     const crewBefore = { grade: event.data.before.get("crewGrade") ?? null, status: event.data.before.get("crewStatus") ?? null };
@@ -466,10 +471,11 @@ module.exports = function accounts({ adminLogEntry }) {
     }
     const claims = { ...(user.customClaims || {}) };
     const roleMap = { ...(claims.roles || {}) };
-    if (after.length) roleMap[siteId] = [...after].sort(); else delete roleMap[siteId];
+    const crewNow = { grade: current.exists ? current.get("crewGrade") ?? null : null, status: current.exists ? current.get("crewStatus") ?? null : null };
+    if (nowRoles.length) roleMap[siteId] = [...nowRoles].sort(); else delete roleMap[siteId];
     if (Object.keys(roleMap).length) claims.roles = roleMap; else delete claims.roles;
-    if (crewAfter.grade != null) claims.crewGrade = crewAfter.grade; else delete claims.crewGrade;
-    if (crewAfter.status != null) claims.crewStatus = crewAfter.status; else delete claims.crewStatus;
+    if (crewNow.grade != null) claims.crewGrade = crewNow.grade; else delete claims.crewGrade;
+    if (crewNow.status != null) claims.crewStatus = crewNow.status; else delete claims.crewStatus;
     await auth.setCustomUserClaims(uid, claims);
     await db.doc(`users/${uid}`).set({ claimsUpdatedAt: FieldValue.serverTimestamp() }, { merge: true });
     if (rolesSame) return;   // a crew-only change: no adminLog entry (the crew functions log their own)
