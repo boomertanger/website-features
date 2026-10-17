@@ -4,8 +4,40 @@ Spec: `docs/specs/club-pass.md` §13 (and §11 for My pass). Everything here is 
 (`https://staging.boomertanger.com`, Firebase `boomertanger-staging`) with Stripe in **test mode**: no real money moves.
 Production keeps "Opening soon".
 
-**Before you start:** the webhook endpoint exists in Stripe (test mode), `STRIPE_WEBHOOK_SECRET` is set, and `billingWebhook`
-has been redeployed with `STRIPE_WEBHOOK=on` (Claude does the redeploy). Hard-refresh each page (Ctrl+Shift+R).
+**Before you start:** the webhook endpoint exists in Stripe's **test mode of the main account** (not a Sandbox: the products "Sub Club"
+and "Sub Club, one month" must be in the same Product catalog), with the 8 events and snapshot payloads, and `STRIPE_WEBHOOK_SECRET`
+is set on staging. Stripe's failed-payment retries (Settings > Billing > Subscriptions and emails > Manage failed payments): Smart
+Retries, 4 retries within 1 week, then cancel the subscription and leave the invoice past due. Hard-refresh each page (Ctrl+Shift+R).
+
+## Results: staging, Oct 17, 2026
+| Step | Result |
+|---|---|
+| 1 Buy Sub Club | Passed (@fantest, test clock) |
+| 2 Declined card | Not run |
+| 3 Needs bank authentication | Not run |
+| 4 Manage payment, cancel, resume | Passed |
+| 5 One month | Passed |
+| 6 Under 18 | Passed: blocked without the box, allowed with it (@teentest) |
+| 7 A renewal | Passed: the Nov 17 invoice paid, renewsAt moved to Dec 17 |
+| 8 A failed renewal, Fix my card | Passed: past_due with a 7-day grace (still gold); after the card was fixed, Stripe's retry paid and the grace went |
+| 9 Grace runs out | Passed: 4 Smart Retries failed over about a week, Stripe cancelled, the pass went to Fan Club and the sub role left the claims |
+| 10 Refund | Passed: a full refund ended the pass at once |
+| 10 Dispute | Passed (@teentest, `4000 0000 0000 0259`): the ledger shows `checkout.session.completed` then `charge.dispute.created` (-5.99, fraudulent), and the pass ended |
+| 11 Paying twice | Not run |
+
+Found and fixed during the run (CHANGELOG, Oct 17): receipt names and dates; "No payments yet" while receipts were loading; the
+failed-payment banner is gold, not red; disputed receipts say so; the checkout return message no longer stays waiting; claims and the
+role tag could keep a removed role when two writes landed a second apart (mirrorMemberRoles).
+
+## Test-clock and card notes
+- **A renewal needs two advances.** At the period end Stripe creates the renewal invoice as a draft and charges it about an hour later, so
+  `--advance 31 --apply` stops just short; follow it with `--advance 0.1 --apply` (about 2.4 hours) to get past the charge.
+- **The site's 7-day grace runs on real time,** not the clock's (Stripe stamps events with the real time). With a test clock, the pass
+  ends when Stripe cancels after its retries (`customer.subscription.deleted`), not when the clock passes the grace date.
+- **Stripe Link blocks test cards in the portal.** When the portal recognises the email it saves cards through Link, whose phone check
+  doesn't work with test cards (and a Link entry doesn't behave like `0341`). Close the Link pop-up and add the card as a plain card,
+  or attach a Stripe test card through the API (`pm_card_visa`, `pm_card_chargeCustomerFail`) and make it the default for both the
+  customer and the subscription.
 
 ## Stripe's test cards
 Any future expiry date (e.g. 12/34), any 3-digit CVC, any ZIP.
@@ -62,20 +94,23 @@ As the 13-to-17 member, press **Get Sub Club**. The dialog has the box "I'm a pa
 As the test-clock member, buy Sub Club (step 1). Then:
 
     node functions/scripts/stripe-testclock.js --handle <tester> --advance 31 --apply
+    node functions/scripts/stripe-testclock.js --handle <tester> --advance 0.1 --apply
 
-After a minute, My pass shows the next renewal date a month later and a second receipt.
+After a minute, My pass shows the next renewal date a month later and a second receipt, dated by the clock.
 
 ## 8. A failed renewal and the 7 days of grace
 1. My pass > **Manage payment** > replace the card with `4000 0000 0000 0341`.
-2. Advance the clock past the renewal: `… --advance 31 --apply`.
-3. My pass: a **red banner** "Your payment didn't go through … stays gold until <date 7 days on>", **Fix my card**. The pass is
-   still gold.
-4. **Fix my card** > put `4242…` back. Stripe retries; the banner goes away (or advance the clock 2 days to make it retry now).
+2. Advance the clock past the renewal: `… --advance 31 --apply`, then `… --advance 0.1 --apply`.
+3. My pass: a **gold banner** "Your payment didn't go through … stays gold until <date 7 days on, real time>", **Fix my card**. The
+   pass is still gold.
+4. **Fix my card** > put `4242…` back as a plain card (see the Link note). Advance the clock just past Stripe's next retry
+   (`--status` shows it): the invoice is paid, the banner and the grace go.
 
 ## 9. Grace runs out
-Repeat step 8 but don't fix the card. Advance the clock 8 days or more (`--advance 8 --apply`). Stripe gives up and cancels: My pass is
-**Fan Club**. (If Stripe's retry schedule is longer than the week, `clubBillingSweep` ends it at 05:45 Chicago; to run it now: Google
-Cloud console > Cloud Scheduler > `firebase-schedule-clubBillingSweep-us-central1` > Force run.)
+Repeat step 8 but don't fix the card. Advance past the renewal, then about 8 more days in steps of 2 (`--advance 2 --apply`): each
+step shows one more failed retry. After the 4th retry Stripe cancels: My pass is **Fan Club** and the sub role is gone. (`clubBillingSweep`
+also ends an expired grace at 05:45 Chicago, by real time; to run it now: Google Cloud console > Cloud Scheduler >
+`firebase-schedule-clubBillingSweep-us-central1` > Force run.)
 
 ## 10. Refund and dispute
 In the Stripe dashboard (test mode) > Payments, open the test member's payment:
