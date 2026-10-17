@@ -370,7 +370,7 @@ const rateAs = async (uid, data) => { const before = await get(`${BASE}/ratings/
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "bug-zapper", value: "dislike" })), "commentNeeded");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "crew-admin", value: "like" })), "adminTool", "admin tools aren't rated");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "mod-deck", value: "like" })), "notOpen", "a crew service isn't open to a member");
-  assert.equal(await why(call("fan", "serviceRate", { serviceId: "contests", value: "like" })), "notOpen", "a planned service can't be rated");
+  assert.equal(await why(call("fan", "serviceRate", { serviceId: "horror-monthly", value: "like" })), "notOpen", "a planned service can't be rated");
   assert.equal(await why(call("fan", "serviceRate", { serviceId: "shop", value: "like" })), "notOpen", "a retired service can't be rated");
   const r1 = await rateAs("fan", { serviceId: "bug-zapper", value: "love" });
   assert.equal(r1.version, "1.1"); assert.equal(r1.changed, true);

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Fixed: check-services-fn failed after services/contests.json was retired; it used contests as its planned service. It now uses horror-monthly.
 - Fixed: dutyAutoConfirm failed every 15 minutes on staging with "The query requires an index". Its query (streams where state == ended and actualEnd within 1 to 14 days ago) needs state + actualEnd ascending, and only the descending index existed. firestore.indexes.json gains the index, deployed to staging.
 - Prize Box: the live spin no longer depends on each device's clock.
   - **Server:** the draw pointer carries serverNow (copied to public/live.prizeDraw), and obsFeed and prizeMine { draw: true } return serverNow.
