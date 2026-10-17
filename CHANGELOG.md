@@ -3,9 +3,10 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
-- Cloud Functions runtime: Node.js 20 → Node.js 24 (functions/package.json engines). Node.js 20 is decommissioned on Oct 30, 2026. Deploys need firebase-tools 14.27.0 or later (earlier versions stop at nodejs22).
+- Cloud Functions runtime: Node.js 20 → Node.js 24 (functions/package.json engines). Node.js 20 is decommissioned on Oct 30, 2026. Deploys need firebase-tools 14.27.0 or later (earlier versions stop at nodejs22). Deployed to staging Oct 17: all 302 functions (lib/live first, then 16 batches), each verified on nodejs24 and serving a new revision. No retries needed. Scheduler jobs, secret bindings and EventSub subscriptions unchanged; billingWebhook accepts a signed test event.
 - Cloud Functions libraries: firebase-functions 6.6.0 → 7.4.0 and firebase-admin 12.7.0 → 13.10.0, pinned exactly. No code changes: we use none of the removed APIs (functions.config(), the v1 Event type, the legacy FCM send calls). npm audit (production deps): 2 high and 7 moderate before, 0 high and 8 moderate after (the rest is a uuid chain that only firebase-admin 14 clears).
 - Fixed: check-services-fn failed after services/contests.json was retired; it used contests as its planned service. It now uses horror-monthly.
+- docs: CLAUDE.md notes the nodejs24 runtime and the pinned SDKs. ROADMAP marks the Node.js 20 upgrade done, adds "the production deploy is on nodejs24 (all functions)" to Before launch, and adds firebase-admin 14 as a later Code health item.
 - Fixed: dutyAutoConfirm failed every 15 minutes on staging with "The query requires an index". Its query (streams where state == ended and actualEnd within 1 to 14 days ago) needs state + actualEnd ascending, and only the descending index existed. firestore.indexes.json gains the index, deployed to staging.
 - Prize Box: the live spin no longer depends on each device's clock.
   - **Server:** the draw pointer carries serverNow (copied to public/live.prizeDraw), and obsFeed and prizeMine { draw: true } return serverNow.

@@ -84,6 +84,9 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 - MemberSpace (legacy Squarespace Code Blocks only; **cancelled Oct 9, 2026, no longer applicable to new work**: the new site never uses it): where old code still does, use `shared/memberspace-helper.js`, never `window.MemberSpace` directly.
   `memberInfo.id` is a NUMBER — `String()` it before writing to Firestore.
 - Firebase: modular imports only, via `shared/firebase-init.js`. Never compat scripts.
+- Cloud Functions run on **nodejs24** (all 2nd gen; `functions/package.json` engines `"24"`), with firebase-functions 7.4.0 and
+  firebase-admin 13.10.0 pinned exactly. Deploys need firebase-tools 14.27.0 or later. firebase-admin 14 (which drops the
+  `admin.firestore()` namespace) is a later ROADMAP item.
 - Client-side membership checks are visual only; real protection is Firestore rules /
   Cloud Functions.
 - Firestore rules and Cloud Functions deploy separately from git:

@@ -3,7 +3,7 @@
 Last updated: 2026-10-17. Every planning chat reads this file first and proposes an update to it when a workstream starts, finishes or changes. Status: **Done**, **In progress**, **Next**, **Later**.
 
 ## Top priority
-- [ ] **Upgrade Cloud Functions from Node.js 20 before Oct 30, 2026 (deploys stop after that).** The deploy warns that Node.js 20 is decommissioned on 2026-10-30; after that no function can be deployed until `functions/package.json` moves to a newer Node runtime and `firebase-functions` is upgraded (breaking changes expected; plan and test on staging first).
+- [x] **Upgrade Cloud Functions from Node.js 20 before Oct 30, 2026 (deploys stop after that).** Done on staging Oct 17, 2026: runtime nodejs24 (`functions/package.json` engines), firebase-functions 7.4.0 and firebase-admin 13.10.0 pinned, no code changes needed. All 302 functions are deployed and verified on nodejs24. Deploys need firebase-tools 14.27.0 or later. Production goes with the launch deploy (see "Before launch").
 
 ## Order at a glance
 | # | Workstream | Status | Chat |
@@ -359,6 +359,7 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to `none` on production (serviceSyncTick declares both on every project; production is public and needs no Cloudflare Access headers; docs/specs/service-hub.md §3b).
 - [ ] Deploy onVaultGameService before the Vault import on production, or run reconcile-vault-services.js --apply once after it (`--allow-project <prod id>`; dry run first). On staging the first 78 games were imported before the trigger existed and had no Service Hub item until the reconcile (Oct 15, 2026); serviceSyncTick's Vault guard now catches that drift within 15 minutes.
 - [ ] Workstreams 8, 10 and 11 done.
+- [ ] The production deploy is on nodejs24 (all functions). Check each function's runtime and its serving revision, not just ACTIVE.
 
 ### Brain Dump at launch
 - [ ] Deploy firestore.rules with the brainDump block to production.
@@ -510,5 +511,6 @@ Mod Machina phase 3 walk-throughs in docs/testing/control-room-test-plan.md:
 - [ ] W11 Activity rules
 
 ### Code health
+- [ ] Later: firebase-admin 14: migrate off the admin.firestore()/admin.auth() namespace, about 61 function files and 81 scripts. Version 14 removes the legacy namespace and drops Node 18/20. It also clears the remaining moderate npm audit findings (a uuid chain under firebase-admin 13).
 - [ ] UI kit page scrolls sideways at 390 px (older sections: Control Room, Scream Planner, Night Shift).
 - [ ] Clear the 78 older tsc errors across site features (factory, vault and others) so the type check is clean before launch.
