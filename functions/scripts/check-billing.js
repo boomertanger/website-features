@@ -124,6 +124,13 @@ function fakeStripe() {
   assert.equal(src.cancelAt, clock + 30 * DAY); assert.equal(src.renewsAt, undefined); assert.equal(M("adult").club.plan, "sub", "cancelled: gold until the end");
   await send(ev("customer.subscription.updated", subObj("sub_1", "active")));   // resumed
 
+  // API 2026-09-30.endive (the webhook endpoint's version) adds a "paused" status (flexible billing mode, an explicit pause; not offered
+  // in our portal): a paused subscription doesn't give gold, and resuming brings it back. The fields read here are the same as in dahlia.
+  await send(ev("customer.subscription.updated", subObj("sub_1", "paused", { status_details: { paused: { subscription: { type: "first_payment_failure" } } } })));
+  assert.equal(M("adult").club.plan, "fan", "paused: no gold");
+  await send(ev("customer.subscription.updated", subObj("sub_1", "active")));
+  assert.equal(M("adult").club.plan, "sub", "resumed: gold again");
+
   // invoice.payment_failed -> grace (first failure + 7 days), still gold; a second failure keeps the first date
   const inv = (extra) => ({ id: `in_${++n}`, object: "invoice", customer: cus, parent: { subscription_details: { subscription: "sub_1" } }, amount_due: 599, amount_paid: 599, currency: "usd", ...extra });
   const firstFail = clock;
