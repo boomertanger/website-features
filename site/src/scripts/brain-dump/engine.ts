@@ -77,7 +77,13 @@ export function defaultState(): BoardState {
   };
 }
 
-/** Any saved shape (this one, older ones, the prototype's) -> a board; missing or corrupt -> the default board. */
+/** Checked items to the bottom of the list, keeping each group's order (a stable partition, §9c). */
+export function partition(category: Category) {
+  category.items = [...category.items.filter((it) => !it.done), ...category.items.filter((it) => it.done)];
+}
+
+/** Any saved shape (this one, older ones, the prototype's) -> a board; missing or corrupt -> the default board. Checked items found
+ *  mid-list are tidied to the bottom (§9c). */
 export function migrate(raw: unknown): BoardState {
   const s = raw as any;
   if (!s || typeof s !== "object" || !Array.isArray(s.categories)) return defaultState();
@@ -96,6 +102,7 @@ export function migrate(raw: unknown): BoardState {
       };
     }),
   };
+  out.categories.forEach(partition);
   return out;
 }
 
@@ -169,11 +176,29 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     setStar(li, item.starred);
     return li;
   }
+  /* checked items always sit at the bottom of their list (§9c): unchecked first, then checked, each group in its own order */
+  /** Where the checked pile starts (the number of unchecked items). */
+  const boundary = (category: Category) => category.items.filter((it) => !it.done).length;
+  /** Moves rows inside `change`, then slides each moved row from where it was (FLIP, about 240 ms; none under reduced motion). */
+  function slide(list: Element, change: () => void) {
+    const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const before = new Map<Element, number>();
+    if (!reduced) list.querySelectorAll(".bd-item").forEach((li) => before.set(li, li.getBoundingClientRect().top));
+    change();
+    if (reduced) return;
+    list.querySelectorAll<HTMLElement>(".bd-item").forEach((li) => {
+      const t = before.get(li); if (t === undefined) return;
+      const dy = t - li.getBoundingClientRect().top;
+      if (Math.abs(dy) > 1 && li.animate) li.animate([{ transform: `translateY(${dy}px)` }, { transform: "none" }], { duration: 240, easing: "cubic-bezier(.2,.8,.2,1)" });
+    });
+  }
+  /** ▲ / ▼ move within a group only: disabled at the list's ends and at the line between unchecked and checked. */
   function refreshMoveButtons(card: HTMLElement) {
     const items = card.querySelectorAll(".bd-items > .bd-item");
     items.forEach((li, i) => {
-      li.querySelector<HTMLButtonElement>(".bd-up")!.disabled = i === 0;
-      li.querySelector<HTMLButtonElement>(".bd-down")!.disabled = i === items.length - 1;
+      const done = li.classList.contains("is-done"), prev = items[i - 1], next = items[i + 1];
+      li.querySelector<HTMLButtonElement>(".bd-up")!.disabled = !prev || prev.classList.contains("is-done") !== done;
+      li.querySelector<HTMLButtonElement>(".bd-down")!.disabled = !next || next.classList.contains("is-done") !== done;
     });
   }
   function updateCount(card: HTMLElement, category: Category) {
@@ -183,6 +208,7 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     el.setAttribute("aria-label", `${done} of ${category.items.length} done`);
   }
   function rebuildItems(card: HTMLElement, category: Category) {
+    partition(category);   // tidy before drawing (an Undo puts items back at their old index)
     const list = card.querySelector(".bd-items")!;
     list.innerHTML = "";
     category.items.forEach((it) => list.appendChild(itemEl(category.id, it)));
@@ -539,8 +565,9 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     const input = form.querySelector("input")!, text = input.value.replace(/\s+/g, " ").trim();
     if (!text || !category) return;
     const item: Item = { id: uid(), text, done: false, starred: false };
-    category.items.push(item);
-    card.querySelector(".bd-items")!.appendChild(itemEl(category.id, item));
+    category.items.splice(boundary(category), 0, item);   // above the checked pile
+    const listEl = card.querySelector(".bd-items")!;
+    listEl.insertBefore(itemEl(category.id, item), listEl.querySelector(".bd-item.is-done"));
     updateCount(card, category); refreshMoveButtons(card); updateStats(); save();
     input.value = ""; input.focus();
     applyFilters();
@@ -553,8 +580,19 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     if (target.classList.contains("bd-check")) {
       const card = target.closest<HTMLElement>(".bd-card")!, category = findCat(li.dataset.catId), item = findItem(category, li.dataset.itemId);
       if (!item || !category) return;
-      item.done = target.checked;
-      li.classList.toggle("is-done", item.done);
+      // checked: to the top of the checked pile; unchecked: to the end of the unchecked items (not its old spot, on purpose)
+      const list = li.parentElement!;
+      slide(list, () => {
+        category.items.splice(category.items.indexOf(item), 1);
+        item.done = target.checked;
+        const at = boundary(category);
+        category.items.splice(at, 0, item);
+        li.classList.toggle("is-done", item.done);
+        const others = Array.from(list.children).filter((x) => x !== li);
+        list.insertBefore(li, others[at] || null);
+      });
+      refreshMoveButtons(card); applyFilters();
+      target.focus({ preventScroll: true });   // the checkbox keeps focus, and the page doesn't jump
       updateCount(card, category); updateStats(); save();
       if (item.done) emit("check");
       return;
@@ -568,10 +606,11 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
       if (idx === -1) return;
       const thought = state.inbox.items.splice(idx, 1)[0];
       const newItem: Item = { id: thought.id, text: thought.text, done: false, starred: false };
-      targetCat.items.push(newItem);
+      targetCat.items.splice(boundary(targetCat), 0, newItem);   // above the checked pile
       li.remove(); updateInboxCount();
       const tc = cardFor(targetId)!;
-      tc.querySelector(".bd-items")!.appendChild(itemEl(targetId, newItem));
+      const tl = tc.querySelector(".bd-items")!;
+      tl.insertBefore(itemEl(targetId, newItem), tl.querySelector(".bd-item.is-done"));
       updateCount(tc, targetCat); refreshMoveButtons(tc); updateStats(); save(); applyFilters();
       say(`Moved to ${targetCat.title}`);
       emit("move");
@@ -671,7 +710,7 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
       if (!category) return;
       const i = category.items.findIndex((it) => it.id === li2.dataset.itemId);
       const up = ud.classList.contains("bd-up"), j = up ? i - 1 : i + 1;
-      if (i === -1 || j < 0 || j >= category.items.length) return;
+      if (i === -1 || j < 0 || j >= category.items.length || category.items[j].done !== category.items[i].done) return;   // never across the line
       [category.items[i], category.items[j]] = [category.items[j], category.items[i]];
       if (up) li2.parentNode!.insertBefore(li2, li2.previousElementSibling);
       else li2.parentNode!.insertBefore(li2.nextElementSibling!, li2);

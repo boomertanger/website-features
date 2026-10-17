@@ -94,7 +94,7 @@ function practice(): BoardState {
     inbox: { items: [{ id: "x1", text: "Example · Look into a better mic arm" }, { id: "x2", text: "Example · Ask about Sunday’s duty" }] },
     categories: [
       cat("I need to call", "ember", "sm", "Add someone to call…", [["Example · The vet, before Friday"]]),
-      cat("I need to email", "gold", "sm", "Add an email to send…", [["Example · Reply to the sponsor", 1], ["Example · Send the overlay invoice"]]),
+      cat("I need to email", "gold", "sm", "Add an email to send…", [["Example · Send the overlay invoice"], ["Example · Reply to the sponsor", 1]]),
       cat("Top priorities", "blue", "sm", "Add a top priority…", [["Example · Finish the stream schedule", 0, 1]]),
       cat("I want to make / create", "lime", "wide", "Add something to make…", [["Example · A Hot Seat question for Friday"]]),
     ],
