@@ -97,6 +97,7 @@ Production pages keep plain `@1` URLs (no loader, no GitHub lookup).
 | Footer L3 (added) | `footer-bg` (#040404, near-black) `footer-spot` (the spotlight cone, a radial gradient drawn 1000px wide from the top centre) · `hud-bg` `hud-edge` `hud-inset` (the game bar's HUD strip) · `shadow-splat` (a `drop-shadow()` under the splat in the spotlight) |
 | Accounts (added) | provider and platform brand colors, for their small tiles only: `brand-google` (#4285f4) on `brand-google-tile` (#fff), `brand-twitch` (#9146ff), `brand-youtube` (#ff0033), `brand-tiktok` (#111) with `brand-tiktok-edge` (#333), `brand-email` (#3a3a44) · `on-brand` (#fff, the letters on a tile) |
 | Boom Arcade (added) | `rank-1` … `rank-5`, one rank set for every board and the podium: 1 gold (`title`), 2 silver (#dfe4ee), 3 ember orange (#f0441c, the end of `title-gradient`), 4 dark graphite (mixed from `text-muted` and `surface-2`; numbers on it in `text-muted`), 5 pink (`pink`); never purple, which means clickable. `rank-silver` and `rank-bronze` stay as aliases of `rank-2` and `rank-3` · `lamp` (#ffd400, + `lamp-rgb`), the joystick's lamp, shared with Bug Zapper's bolt yellow (§8h) · `game-spot` (the blood-red spotlight behind game art) · `cycle-1` … `cycle-8` (#ff3b3b #ff8a1f #ffd400 #7ed957 #2fcf6a #1fc7a4 #1fb2d6 #4f7cff, "Spectrum"), the version cycle's stage colours on `.bt-cycle-wheel`: decorative only, never a status (§8h) |
+| Prize Box (added) | `wheel-1` … `wheel-10` (#7d68b0 #3d62ad #3f7bb0 #6cc4c4 #63b26a #d8cb63 #e4a04c #ec5b3f #e3433a #c47cb6), the Prize Wheel's blade colours: decorative only, never a status (§8aj) · `wheel-peg` (#f2c230) `wheel-peg-edge` `wheel-flap` (#e5321f, the paddle) `wheel-rim` `wheel-hub` (#f4f2ea, the off-white edges) · feature wood `--pz-wood` `--pz-wood-lid` `--pz-wood-edge` `--pz-rim` `--pz-post` (PB_ICON and the prize stand) |
 
 Game Vault kit pieces (added): `ease-glide` (the one glide curve for tilt, shelves, tokens and the command panel) · `glare` (the light a tilted cover catches: a little of `logo-shine`).
 
@@ -1097,6 +1098,23 @@ Built for `docs/specs/chat-games.md` §14 (Chat Games parts 2 to 5; mockups `con
   - `.bt-choices--two`: two options side by side with the OR badge (`.bt-choice-or`), stacked at 420 px.
   - Wording options: `unit` ("pick" → "12 picks"), `mark` (the correct option's note: "it happened", or "the winner" in the two-option layout) and `mineLabel` ("✓ Your pick", or "✓" in the two-option layout). Hot Seat's vote passes "vote", "the winner" and "✓ Your vote".
 
+### Prize Box pieces
+Built for `docs/specs/prize-box.md` §2 and §9 (mockups `prize-box-wheel-fan.html`, `prize-box-pages.html`, `prize-box-wordmark.html`; decisions §8aj). Every state is on the UI Kit page, in the section "Prize Box pieces". The CSS is one block in `bt-ui.css`, "Prize Box pieces".
+- **Prize Wheel `.bt-wheel.bt-wheel--prize`** is F2 Gentle fan, a color variant of `.bt-wheel` (Hot Seat keeps the plain wheel). Its functions are in `wheel.js`:
+  - `prizeWheelHtml({ labels, text, landed, offset, motion, mascot, label })` draws 10 fan blades in `--bt-wheel-1` … `10` with yellow pegs, the red paddle and the mascot on the hub (the page's `#bt-mascot-tpl`). Names run along each blade's centerline. An empty label is a hatched "Spin again" blade. `text: false` draws a plain wheel for cards.
+  - `wheelSpin(el, { pickIndex, offset, spins, durationMs, startAt, now, motion, onTick, onDone })` → cancel. It's the server's decided spin: everyone computes the same angle for the same moment (ease-out from `startAt`). A late joiner joins mid-spin or lands on the result. `onTick` runs once per peg, as the paddle kicks.
+  - `wheelShow(el, { pickIndex, offset })` and `wheelReset(el)` put the wheel on a result or back at rest. `prizeAngle(k, offset)` is the resting angle.
+  - `wheelSpin` without `pickIndex` is Hot Seat's spin. It now takes `onTick` too.
+  - `data-state` is idle, spinning or landed. On landed the other blades dim and the winner gets a gold edge.
+- **Sound** (`wheel-sound.js`): `wheelSound({ muted, src })` gives `tick()`, `muted`, `setMuted()` and `unlock()`. The tick is synthesized until `site/public/sounds/prize-tick.mp3` exists; pass `src` only when it does. `soundButtonHtml({ muted })` and `bindSoundButton(button, snd)` are the toggle. Sound is muted on the site and on in the stream view.
+- **Prize stand `.bt-prizestand`** (`prizestand.js`): H2a, the wheel on its post into the Prize Box.
+  - `prizeStandHtml(wheelOpts)` draws it.
+  - `standBurst(el, { title, line, note, me, motion, confetti })` plays the moment: shake, lid off, gold beam, confetti from the box and the winner card (`.bt-prizestand-card.is-in`; `.is-me` is the lime "It's you!").
+  - `standReset(el)` puts it back.
+- **Wordmark icon `PB_ICON`** (`.bt-pb-icon`) is in `prize-box.js`, along with `pbWordmarkHtml()`, the PRIZE BOX power wordmark, which isn't a link. On power-on the wheel spins one and a half turns, the paddle ticks and the lid jolts.
+- **Colors:** `--bt-wheel-*` are decorative only, never a status. The wood is the `--pz-*` feature properties, declared once with the wheel tokens.
+- **Reduced motion:** no spin, shake or confetti; the result appears. The exception is `data-motion="always"` (`motion: true`), which the stream view uses.
+
 ### Firefly (.bt-firefly)
 **`.bt-firefly`** (`shared/ui/firefly.js` `FIREFLY_SVG`; tokens `--bt-firefly` (the lamp), `--bt-firefly-shell`, `--bt-firefly-head`, `--bt-firefly-wing`): the firefly from the Tap the Splat footer game, now a kit piece shared with the 404 page's workshop (`docs/specs/not-found.md`). The drawing's parts (`.ff-wing`, `.ff-shell`, `.ff-head`, `.ff-lamp`) take the tokens anywhere; inside `.bt-firefly` (30 px, `position: absolute`, `pointer-events: none`, moved with `transform`) it gets the glow, the wing flap and the pulsing lamp. Reduced motion: no flap, no pulse. The footer game keeps its own wrapper (`.bt-tts-bug`, faster flap) around the same drawing. UI Kit section "Firefly".
 
@@ -1194,7 +1212,8 @@ Spec `docs/specs/club-pass.md` §8; mockup `docs/design/mockups/club-pass.html`;
 | `flag-card.js` | `flagCardHtml`, `flagsHtml`, `initFlags`: `.bt-flag-card` and `.bt-flags` |
 | `crew-notes.js` | `crewNotesHtml`, `initCrewNotes`, `NOTE_MAX`: `.bt-crew-notes` (not `.bt-notes`) |
 | `cue-card.js` | `cueCardHtml`, `cueEmptyHtml`, `initCueCards`: `.bt-cue-card` for Chat Games cues |
-| `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` · `choicesHtml`, `choiceHtml` (Chat Games pieces, §5) |
+| `qcard.js` · `seance.js` · `wheel.js` · `choice.js` | `qcardHtml`, `QCARD_CHIP`, `initQcards` · `seanceHtml`, `seanceDraw` · `wheelHtml`, `wheelSpin` (also the Prize Wheel: `prizeWheelHtml`, `wheelShow`, `wheelReset`, `prizeAngle`) · `choicesHtml`, `choiceHtml` (Chat Games pieces and Prize Box pieces, §5) |
+| `wheel-sound.js` · `prizestand.js` · `prize-box.js` | `wheelSound({ muted, src })`, `soundButtonHtml`, `bindSoundButton` · `prizeStandHtml`, `standBurst`, `standReset` · `PB_ICON`, `pbWordmarkHtml` (Prize Box pieces, §5) |
 | `firefly.js` | `FIREFLY_SVG`: the firefly drawing (§5 "Firefly") |
 | `zoomframe.js` | `zoomFrameHtml`, `initZoomFrame`: the pan and zoom viewport (§5 "Zoom frame") |
 | `chatgames.js` | `initChatGames({ call, toast, mascotHtml })` → `window.btChatGames = { openLaunch, end, mountPlay, mountScene, mountRun }`, `registerFormat(formatId, { launch, play, scene, run, waiting })`: Chat Games' one entry point (§8w) |

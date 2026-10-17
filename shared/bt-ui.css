@@ -5472,6 +5472,106 @@
   .bt-root:not(#_) .bt-wheel:not([data-motion="always"]) .bt-wheel-ptr { animation: none; }
 }
 /* ================= END .bt-seance and .bt-wheel ================= */
+/* ================= Prize Box pieces: .bt-wheel--prize, .bt-prizestand, .bt-pb-icon (docs/specs/prize-box.md §2, §9; design-system §8aj) =================
+   Mockups prize-box-wheel-fan.html (F2 Gentle fan), prize-box-pages.html (H2a), prize-box-wordmark.html (I2).
+   --bt-wheel-1 … 10   the Prize Wheel's blade colours: DECORATIVE ONLY, never a status (like --bt-cycle-*). The violet blade is well
+                       away from the clickable purple. Allowed on the stream view as decoration; its UI stays gold, lime and gray.
+   --bt-wheel-peg / -peg-edge / -flap / -rim / -hub   the yellow pegs, the red paddle, the black rim, the off-white edges and hub disc.
+   --pz-*              the Prize Box's wood (feature colours, declared once here; PB_ICON and the stand use them).
+   .bt-wheel--prize    shared/ui/wheel.js prizeWheelHtml() / wheelSpin({ pickIndex, … }). data-state idle · spinning · landed; on landed
+                       the other blades dim and the winning one gets a gold edge. .is-empty names say "Spin again" over a hatch.
+   .bt-prizestand      shared/ui/prizestand.js: the wheel on its post into the box. .is-shake, .is-burst (lid off, beam, confetti),
+                       .bt-prizestand-card.is-in (.is-me = the lime "It's you!" card).
+   .bt-pb-icon         shared/ui/prize-box.js PB_ICON, inside .bt-wordmark--power.
+   Reduced motion: no spin, shake or confetti (the wheel fades in on its result, the lid opens and the card appears), unless
+   data-motion="always" (the stream view is video, so the motion stays). */
+.bt-root {
+  --bt-wheel-1: #7d68b0; --bt-wheel-2: #3d62ad; --bt-wheel-3: #3f7bb0; --bt-wheel-4: #6cc4c4; --bt-wheel-5: #63b26a;
+  --bt-wheel-6: #d8cb63; --bt-wheel-7: #e4a04c; --bt-wheel-8: #ec5b3f; --bt-wheel-9: #e3433a; --bt-wheel-10: #c47cb6;
+  --bt-wheel-peg: #f2c230; --bt-wheel-peg-edge: #a8801a; --bt-wheel-flap: #e5321f; --bt-wheel-rim: #0c0a0b; --bt-wheel-hub: #f4f2ea;
+  --pz-wood: #3a2a22; --pz-wood-lid: #4a362b; --pz-wood-edge: #1d1410; --pz-rim: #0c0a0b; --pz-post: #2a2326;
+}
+
+.bt-root:not(#_) .bt-wheel.bt-wheel--prize { aspect-ratio: 740 / 780; user-select: none; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-rim { fill: var(--bt-wheel-rim); stroke: none; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-blade { stroke: var(--bt-wheel-hub); stroke-width: 3; stroke-linejoin: round; transition: opacity 0.5s; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hatch { pointer-events: none; transition: opacity 0.5s; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hatch-p .a { fill: rgba(var(--bt-ink-rgb), 0.35); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hatch-p .b { fill: rgba(var(--bt-sheen-rgb), 0.08); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-name { font-weight: 800; letter-spacing: 0.01em; fill: var(--bt-text); pointer-events: none; transition: opacity 0.5s; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-name.is-dark { fill: var(--bt-bg); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-name.is-empty { font-style: italic; font-weight: 700; opacity: 0.85; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-peg { fill: var(--bt-wheel-peg); stroke: var(--bt-wheel-peg-edge); stroke-width: 2; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hubdisc { fill: var(--bt-wheel-hub); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hubring { fill: none; stroke: var(--bt-wheel-rim); stroke-width: 5; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-hubface { fill: var(--bt-bg); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-flap { fill: var(--bt-wheel-flap); }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-flap-blade { fill: var(--bt-wheel-flap); stroke: color-mix(in srgb, var(--bt-wheel-flap) 60%, var(--bt-wheel-rim)); stroke-width: 2; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-flap-pin { fill: rgba(var(--bt-ink-rgb), 0.35); }
+.bt-root:not(#_) .bt-wheel--prize[data-state="landed"] .bt-wheel-blade:not(.is-win) { opacity: 0.26; }
+.bt-root:not(#_) .bt-wheel--prize[data-state="landed"] :is(.bt-wheel-name:not(.is-win), .bt-wheel-hatch) { opacity: 0.3; }
+.bt-root:not(#_) .bt-wheel--prize .bt-wheel-blade.is-win { stroke: var(--bt-title); stroke-width: 7; filter: drop-shadow(0 0 14px rgba(var(--bt-gold-rgb), 0.85)); }
+.bt-root:not(#_) .bt-wheel--prize.is-jump .bt-wheel-rot { animation: bt-wheel-jump 0.35s ease-out; }
+@keyframes bt-wheel-jump { from { opacity: 0.2; } to { opacity: 1; } }
+
+.bt-root:not(#_) .bt-prizestand { position: relative; container-type: inline-size; width: 100%; aspect-ratio: 520 / 440; }
+.bt-root:not(#_) .bt-prizestand > svg, .bt-root:not(#_) .bt-prizestand-confetti { position: absolute; inset: 0; width: 100%; height: 100%; }
+.bt-root:not(#_) .bt-prizestand-confetti { z-index: 4; pointer-events: none; }
+.bt-root:not(#_) .bt-prizestand-wheel { position: absolute; left: 25%; top: 1.4%; width: 50%; z-index: 1; }
+.bt-root:not(#_) .bt-prizestand-front { z-index: 2; pointer-events: none; }
+.bt-root:not(#_) .bt-prizestand .spot-a { stop-color: var(--bt-title); stop-opacity: 0.32; }
+.bt-root:not(#_) .bt-prizestand .spot-b { stop-color: var(--bt-title); stop-opacity: 0; }
+.bt-root:not(#_) .bt-prizestand .beam-a { stop-color: var(--bt-bulb); stop-opacity: 0.95; }
+.bt-root:not(#_) .bt-prizestand .beam-b { stop-color: var(--bt-title); stop-opacity: 0; }
+.bt-root:not(#_) .bt-prizestand .floor { fill: rgba(var(--bt-ink-rgb), 0.55); }
+.bt-root:not(#_) .bt-prizestand .post { fill: var(--pz-rim); stroke: var(--pz-post); stroke-width: 2; }
+.bt-root:not(#_) .bt-prizestand .wood { fill: var(--pz-wood); stroke: var(--pz-wood-edge); stroke-width: 3; }
+.bt-root:not(#_) .bt-prizestand-lid .wood { fill: var(--pz-wood-lid); }
+.bt-root:not(#_) .bt-prizestand .slat { fill: none; stroke: color-mix(in srgb, var(--pz-wood-edge) 55%, var(--pz-wood)); stroke-width: 3; }
+.bt-root:not(#_) .bt-prizestand .ribbon { fill: none; stroke: var(--bt-title); stroke-width: 6; }
+.bt-root:not(#_) .bt-prizestand .brass { fill: none; stroke: color-mix(in srgb, var(--bt-gold) 85%, var(--pz-wood)); stroke-width: 3; }
+.bt-root:not(#_) .bt-prizestand-beam { opacity: 0; transition: opacity 0.5s; }
+.bt-root:not(#_) .bt-prizestand.is-burst .bt-prizestand-beam { opacity: 0.9; }
+.bt-root:not(#_) .bt-prizestand-lid { transform-box: fill-box; transform-origin: center; transition: transform 0.7s cubic-bezier(0.2, 1.2, 0.4, 1), opacity 0.7s; }
+.bt-root:not(#_) .bt-prizestand.is-burst .bt-prizestand-lid { transform: translate(-46px, -150px) rotate(-38deg); opacity: 0; }
+.bt-root:not(#_) .bt-prizestand.is-shake :is(.bt-prizestand-box, .bt-prizestand-lid) { animation: bt-prizestand-shake 0.5s linear; }
+@keyframes bt-prizestand-shake { 0%, 100% { translate: 0 0; } 20% { translate: -3px 1px; } 40% { translate: 3px -1px; } 60% { translate: -2px -1px; } 80% { translate: 2px 1px; } }
+.bt-root:not(#_) .bt-prizestand-card { position: absolute; left: var(--bx); top: var(--by); z-index: 3; transform: translate(-50%, 0) scale(0.4); opacity: 0; display: grid; justify-items: center; gap: 2px; padding: 12px 18px; min-width: 46%; max-width: 92%; box-sizing: border-box; border: 2px solid var(--bt-title); border-radius: 14px; background: color-mix(in srgb, var(--bt-bg) 92%, transparent); box-shadow: 0 0 40px rgba(var(--bt-gold-rgb), 0.45); text-align: center; pointer-events: none; transition: transform 0.6s cubic-bezier(0.2, 1.5, 0.4, 1), opacity 0.3s; }
+.bt-root:not(#_) .bt-prizestand-card.is-in { opacity: 1; transform: translate(-50%, -122%) scale(1); }
+.bt-root:not(#_) .bt-prizestand-card b { font-size: clamp(18px, 5.6cqi, 30px); font-weight: 900; color: var(--bt-title); line-height: 1.1; overflow-wrap: anywhere; }
+.bt-root:not(#_) .bt-prizestand-card span { font-size: clamp(12px, 2.8cqi, 14px); font-weight: 700; color: var(--bt-text); }
+.bt-root:not(#_) .bt-prizestand-card small { font-size: clamp(11px, 2.4cqi, 12px); color: var(--bt-text-muted); }
+.bt-root:not(#_) .bt-prizestand-card.is-me { border-color: var(--bt-lime); box-shadow: 0 0 50px color-mix(in srgb, var(--bt-lime) 45%, transparent); }
+.bt-root:not(#_) .bt-prizestand-card.is-me b { color: var(--bt-lime); font-size: clamp(22px, 7cqi, 38px); }
+@container (max-width: 360px) { .bt-root:not(#_) .bt-prizestand-card { padding: 8px 12px; } .bt-root:not(#_) .bt-prizestand-card small { display: none; } }
+
+.bt-root:not(#_) .bt-pb-icon { width: 1.5em; height: 1.5em; flex: none; overflow: visible; }
+.bt-root:not(#_) .bt-wordmark .bt-pb-icon { width: 36px; height: 36px; }
+.bt-root:not(#_) .bt-pb-icon :is(.wheel, .flap, .lid) { transform-box: fill-box; }
+.bt-root:not(#_) .bt-pb-icon .post { fill: var(--pz-post); }
+.bt-root:not(#_) .bt-pb-icon .rim { fill: var(--pz-rim); }
+.bt-root:not(#_) .bt-pb-icon .hub { fill: var(--bt-wheel-hub); }
+.bt-root:not(#_) .bt-pb-icon .flap { fill: var(--bt-wheel-flap); transform-origin: 50% 0%; }
+.bt-root:not(#_) .bt-pb-icon .wood { fill: var(--pz-wood); stroke: var(--pz-wood-edge); stroke-width: 1.2; }
+.bt-root:not(#_) .bt-pb-icon .lid .wood { fill: var(--pz-wood-lid); stroke-width: 1; }
+.bt-root:not(#_) .bt-pb-icon .ribbon { fill: none; stroke: var(--bt-title); stroke-width: 1.6; }
+.bt-root:not(#_) .bt-pb-icon .wheel { transform-origin: center; transition: filter 0.3s; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-pb-icon .wheel { animation: bt-pb-spin 1.5s cubic-bezier(0.15, 0.7, 0.25, 1); filter: drop-shadow(0 0 3px rgba(var(--bt-gold-rgb), 0.6)); }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-pb-icon .flap { animation: bt-pb-tick 0.12s linear 8; }
+.bt-root:not(#_) .bt-wordmark--power:is(:hover, :focus-visible, .is-lit) .bt-pb-icon .lid { animation: bt-pb-jolt 0.5s 1.4s ease-out; }
+@keyframes bt-pb-spin { to { transform: rotate(540deg); } }
+@keyframes bt-pb-tick { 50% { transform: rotate(-22deg); } }
+@keyframes bt-pb-jolt { 30% { transform: translateY(-3px); } 60% { transform: translateY(0); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .bt-root:not(#_) .bt-wheel--prize:not([data-motion="always"]) .bt-wheel-rot { animation: none; }
+  .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]) :is(.bt-prizestand-lid, .bt-prizestand-card) { transition: opacity 0.3s; }
+  .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]).is-shake :is(.bt-prizestand-box, .bt-prizestand-lid) { animation: none; }
+  .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]).is-burst .bt-prizestand-lid { transform: none; opacity: 0; }
+  .bt-root:not(#_) .bt-prizestand:not([data-motion="always"]) .bt-prizestand-card.is-in { transform: translate(-50%, -122%); }
+  .bt-root:not(#_) .bt-pb-icon * { animation: none !important; }
+}
+/* ================= END Prize Box pieces ================= */
 
 /* ================= .bt-choice — one tappable option (docs/specs/chat-games.md §6, §7, §14; mockup chat-games-batch-1.html) =================
    shared/ui/choice.js choicesHtml() / choiceHtml(). Would You Rather A / B, Predictions 2 to 4, later Polls.

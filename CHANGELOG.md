@@ -3,6 +3,13 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 2 (kit): the F2 Prize Wheel, a color variant of the kit's .bt-wheel (prizeWheelHtml in shared/ui/wheel.js). It has 10 fan blades with one-arc edges (−7°, 0.11 of the chord), rounded tips, off-white edges, yellow pegs, the red paddle, the mascot on the hub, names along each blade's centerline, and hatched "Spin again" blades. wheelSpin now takes an onTick hook. A spin decided by the server ({ pickIndex, offset, spins, durationMs, startAt }) looks the same for every viewer, and late joiners join mid-spin or land on the result. New kit pieces:
+  - shared/ui/wheel-sound.js: a synthesized tick, or prize-tick.mp3 once it exists; muted on the site with a sound button.
+  - .bt-prizestand with shared/ui/prizestand.js: the wheel's post into the Prize Box; shake, lid off, gold beam, confetti, the winner card and the lime "It's you!".
+  - PB_ICON and pbWordmarkHtml in shared/ui/prize-box.js: the I2 PRIZE BOX power wordmark.
+  - The decorative --bt-wheel-* tokens and the --pz-* wood, declared once.
+
+  Reduced motion shows the result with no spin, shake or confetti, except on the stream view. The UI Kit page has a new Prize Box pieces section: idle, spinning (with Join late), landed, empty blades, round-1 groups, a plain wheel, the stand idle and burst, both winner cards, and the wordmark at rest and lit. The design system documents the pieces and their tokens.
 - Prize Box, part 1 (docs): docs/specs/prize-box.md (confirmed Oct 17, 2026) and four mockups: prize-box-wheel-and-draw.html, prize-box-wheel-fan.html, prize-box-pages.html and prize-box-wordmark.html. ROADMAP: workstream 12 is renamed "Prize Box (contests)" and is in progress, with a Prize Box launch checklist (rules, the prizeBox functions and prizeTick, the batched lib/live deploy, seed-badges.js, the owner's mailing address, the lawyer's review of the rules template). Design-system §8aj records:
   - the F2 fan-blade wheel;
   - the decorative --bt-wheel-* tokens (allowed on the stream view);
