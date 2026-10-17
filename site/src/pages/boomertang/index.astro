@@ -1,0 +1,39 @@
+---
+// /boomertang: the newsstand (docs/specs/boomertang.md §2, §6 "Newsstand (N2)"; mockup boomertang-newsstand.html, pick N2 The spread). The
+// band (masthead, "Boomer's horror gaming magazine", How Boomertang works), the latest cover beside its contents with a soft lamp glow, and
+// the back issues (at launch: the mascot's "No back issues yet"). Built for No. 1; scripts/boomertang/stand.ts redraws it from Firestore once
+// it knows the newest published issue and who's reading. boomertang.com redirects here at the domain switch.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { BUILT } from "../../lib/boomertang/issues";
+import { mastSvg } from "../../lib/boomertang/cover.js";
+import { spreadHtml } from "../../lib/boomertang/stand.js";
+import { qrSvg } from "../../lib/boomertang/qr.js";
+import "../../styles/boomertang.css";
+
+const first = BUILT.filter((i) => !i.sample).sort((a, b) => (b.vol - a.vol) || (b.no - a.no))[0];
+const qr = qrSvg();
+const spread = spreadHtml(first, { open: true, label: "Free for everyone" }, { qr });
+---
+<BaseLayout title="Boomertang" description="Boomer's horror gaming magazine: the Granny Issue and every issue after it, page by page." magazine>
+  <div id="boomertang-root" class="bt-root tg-stand">
+    <template data-tang-mascot><Mascot decorative /></template>
+    <template data-tang-qr set:html={qr} />
+    <header class="tg-band">
+      <h1 class="tg-band-mast"><span class="bt-sr-only">Boomertang</span><Fragment set:html={mastSvg()} /></h1>
+      <p>Boomer's horror gaming magazine</p>
+      <a class="bt-link-btn" href="/boomertang/how-it-works">How Boomertang works</a>
+    </header>
+    <div data-tang-spread><Fragment set:html={spread} /></div>
+    <div data-tang-back>
+      <section class="tg-back" aria-labelledby="back-issues">
+        <div class="tg-back-head"><h2 class="bt-heading" id="back-issues">Back issues</h2></div>
+        <div class="tg-empty"><Mascot decorative /><div><b>No back issues yet</b><p>No. 1 is the first one. When No. 2 comes out, No. 1 moves here, and it stays free for everyone.</p></div></div>
+      </section>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/boomertang/stand";
+</script>

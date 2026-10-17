@@ -1,0 +1,55 @@
+---
+// The frame of every Boomertang issue page (docs/specs/boomertang.md §2, §6): the issue bar (mini masthead, issue line, page nav with locks,
+// the Paper / Ink switch), the page (paper for reading pages; dark for the cover and The Map), the folio, and Turn the page. The reader's mode
+// is on <html> before first paint (BaseLayout magazine). scripts/boomertang/issue.ts wires the bar, the arrow keys, the locks, the sealed
+// page and the members-only text. Static HTML holds public text only; a members-only page ships as a sealed shell.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import { issueBarHtml, turnPageHtml } from "../../../../shared/ui/magazine.js";
+import { type Issue, pagesOf, pageHref, issueLine } from "../../lib/boomertang/issues";
+
+interface Props {
+  issue: Issue;
+  slug: string;
+  title: string;
+  description?: string;
+  /** The cover and The Map stay dark in both modes. */
+  dark?: boolean;
+  /** The folio's right side (the page's front matter "folio"). */
+  folio?: string;
+  /** A members-only page: the body comes from Firestore when this reader may read it. */
+  membersOnly?: boolean;
+  wide?: boolean;
+}
+const { issue, slug, title, description, dark = false, folio = "", membersOnly = false, wide = false } = Astro.props;
+const pages = pagesOf(issue);
+const at = pages.findIndex((p) => p.slug === slug);
+const prev = at > 0 ? pages[at - 1] : null, next = at >= 0 && at < pages.length - 1 ? pages[at + 1] : null;
+const free = (s: string) => issue.textInRepo || s === "cover" || s === "contents";
+const bar = issueBarHtml({
+  mastHref: "/boomertang",
+  line: issueLine(issue),
+  // members-only pages start locked; issue.ts opens them for a reader who can read the issue
+  pages: pages.map((p) => ({ href: pageHref(issue, p.slug), label: p.nav, current: p.slug === slug, locked: !free(p.slug) })),
+});
+const turn = turnPageHtml({ prev: prev ? { href: pageHref(issue, prev.slug), label: prev.nav } : null, next: next ? { href: pageHref(issue, next.slug), label: next.nav } : null });
+const row = issue.contents.find((r) => r.page === slug);
+const folioLeft = row ? `${row.n} · ${row.nav}` : slug === "contents" ? "Contents" : "Cover";
+const meta = JSON.stringify({ id: issue.id, vol: issue.vol, no: issue.no, title: issue.title, slug, inRepo: !!issue.textInRepo, membersOnly, pages: pages.map((p) => ({ slug: p.slug, nav: p.nav, n: p.n || "", kind: p.kind || "", href: pageHref(issue, p.slug), free: free(p.slug) })) }).replace(/</g, "\\u003c");
+---
+<BaseLayout title={title} description={description} magazine>
+  <div id="boomertang-root" class="bt-root tg-issue" data-issue={issue.id} data-slug={slug}>
+    <script is:inline type="application/json" data-tang-meta set:html={meta} />
+    <Fragment set:html={bar} />
+    <main class:list={["tg-sheet", dark ? "tg-dark" : "bt-surface--paper tg-page", wide && "tg-sheet--wide"]} id="tg-main">
+      {slug !== "cover" && (
+        <div class="tg-folio"><span>{folioLeft}</span><span>Boomertang · Vol. {issue.vol} · No. {issue.no}</span><span>{folio}</span></div>
+      )}
+      <slot />
+    </main>
+    <div class:list={["tg-turnwrap", !dark && "bt-surface--paper"]} data-turnpage><Fragment set:html={turn} /></div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/boomertang/issue";
+</script>

@@ -1,0 +1,42 @@
+---
+// /boomertang/vol-<v>/no-<n>: an issue's cover (docs/specs/boomertang.md §2, §6; mockup boomertang-granny.html "Cover"). The cover stays dark
+// in both modes. Beside it: the issue card (Open the issue), "This issue is alive" with the edition log (from Firestore: issues/{id}.editions,
+// filled in by scripts/boomertang/issue.ts) and the members card. On phones the cover lines move below the cover.
+import IssueShell from "../../../../components/boomertang/IssueShell.astro";
+import { BUILT, pageHref, type Issue } from "../../../../lib/boomertang/issues";
+import { coverHtml, phoneLinesHtml } from "../../../../lib/boomertang/cover.js";
+import { qrSvg } from "../../../../lib/boomertang/qr.js";
+import "../../../../styles/boomertang.css";
+
+export function getStaticPaths() {
+  return BUILT.map((issue) => ({ params: { vol: `vol-${issue.vol}`, no: `no-${issue.no}` }, props: { issue } }));
+}
+const { issue } = Astro.props as { issue: Issue };
+const cover = coverHtml(issue, { qr: issue.sample ? "" : qrSvg() });
+---
+<IssueShell issue={issue} slug="cover" title={`${issue.title} · Boomertang No. ${issue.no}`} description={issue.about} dark>
+  <div class="tg-coverwrap">
+    <h1 class="bt-sr-only">Boomertang, Vol. {issue.vol} · No. {issue.no}: {issue.title}</h1>
+    <Fragment set:html={cover} />
+    <Fragment set:html={phoneLinesHtml(issue)} />
+    <aside class="tg-side">
+      <div class="bt-card">
+        <h2 class="tg-side-h">{issue.title}</h2>
+        <p>{issue.about}</p>
+        <a class="bt-btn bt-btn--primary" href={pageHref(issue, "contents")} data-pulse="tang-read-issue">Open the issue</a>
+      </div>
+      {issue.alive && (
+        <div class="bt-card">
+          <span class="bt-label">This issue is alive</span>
+          <p>{issue.alive}</p>
+          <div class="tg-edlog" data-edlog><div><b>{issue.edition}</b><span>Updates show up here.</span></div></div>
+        </div>
+      )}
+      <div class="bt-card bt-when-visitor">
+        <span class="bt-label">Members</span>
+        <p>Fan Club members vote in Chat's Verdict and read every back issue. Sub Club reads the newest issue first.</p>
+        <button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-signin="join" data-signin-title="Join free for every back issue" data-pulse="tang-join">Join free</button>
+      </div>
+    </aside>
+  </div>
+</IssueShell>
