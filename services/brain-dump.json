@@ -8,7 +8,8 @@
   "status": "live",
   "audience": "members",
   "routes": [
-    "/brain-dump"
+    "/brain-dump",
+    "/brain-dump/how-it-works"
   ],
   "nav": null,
   "testPlan": "docs/testing/brain-dump-test-plan.md",

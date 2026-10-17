@@ -1,0 +1,320 @@
+---
+// /brain-dump/how-it-works: Brain Dump's story page (docs/specs/brain-dump.md §5; mockup docs/design/mockups/brain-dump-how-it-works.html,
+// picks H2 "Paper to board" and R1 "one chapter with a switch"). TocLayout and the shared How it works blocks (styles/how-it-works.css,
+// shared/ui/how-it-works.js): the hero (the paper planner sheet with the dark board wiping across it), 01 Why dump it (three stage cards
+// whose scenes play on hover, focus or tap), 02 How it works (the five-step journey and six tips), 03 Try it (the real engine on an
+// in-memory practice board, never saved, with the Try this list and a stamp), 04 Made for your role (the kit pill switch: Mod / Admin /
+// Sub Club, use cases and example boards), 05 Private by design, 06 Good habits (the placard), 07 Ask BOOMBOT (help/brain-dump.json),
+// and the closing call to action by viewer. scripts/brain-dump/how.ts runs it; only the buttons and the role default depend on who's looking.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import TocLayout from "../../components/TocLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import HELP from "../../data/help/brain-dump.json";
+import site from "../../data/site.json";
+import { paymentsOn } from "../../lib/club-pay.js";
+import { boombotIcon } from "../../../../shared/ui/arcade.js";
+import "../../styles/how-it-works.css";
+import "../../styles/brain-dump.css";
+import "../../styles/brain-dump-hiw.css";
+
+const PAY = paymentsOn((site as any).clubPass);
+const NAV: [string, string][] = [["why", "Why dump it"], ["how", "How it works"], ["try", "Try it"], ["roles", "Made for your role"], ["private", "Private by design"], ["habits", "Good habits"], ["ask", "Ask BOOMBOT"]];
+const chapter = (n: number, id: string, title: string, lede = "") => `<header class="bt-chapter bt-chapter--ghost" data-n="${String(n).padStart(2, "0")}"><p class="bt-chapter-eyebrow" aria-hidden="true">${String(n).padStart(2, "0")} · Chapter</p><h2 class="bt-chapter-title" id="h-${id}">${title}</h2>${lede ? `<p class="bt-chapter-lede">${lede}</p>` : ""}</header>`;
+
+// The buttons by viewer: data-for = access (has Brain Dump) | member (signed in, no Brain Dump) | visitor. Visitor shows until the page knows.
+const open = `<a class="bt-btn bt-btn--primary" href="/brain-dump" data-for="access" data-pulse="hiw-open" hidden>Open my Brain Dump</a>`;
+const join = `<button type="button" class="bt-btn bt-btn--primary" data-for="visitor" data-signin="join" data-signin-title="Join free, then add Sub Club for Brain Dump" data-pulse="hiw-join">Join free</button>`;
+const sub = PAY
+  ? `<button type="button" class="bt-btn bt-btn--primary" data-for="member" data-bd-buy data-pulse="get-sub-club" hidden>Get Sub Club</button>`
+  : `<a class="bt-btn bt-btn--primary" href="/club-pass" data-for="member" hidden>See Sub Club</a>`;
+const practice = `<a class="bt-btn bt-btn--secondary" href="#try">Try the practice board</a>`;
+
+const STAGES = [
+  ["💭", "Capture", "Get it out before it’s gone. One line in Quick capture, press Enter, and you’re back to what you were doing.", "⏱ About two seconds",
+    `<div class="bdh-sc"><span class="bdh-sc-field"><span>Call the dentist</span></span><span class="bdh-sc-drop"></span><span class="bdh-sc-tray"></span></div>`],
+  ["🗂️", "Sort", "File it when you have a minute. Each thought moves from the Inbox to the list it belongs on: call, email, schedule, make.", "📥 Inbox first, lists later",
+    `<div class="bdh-sc"><span class="bdh-sc-card"><i></i><u></u><u></u></span><span class="bdh-sc-move"></span><span class="bdh-sc-sel">Move to…</span></div>`],
+  ["✅", "Check off", "Tick it and watch the line strike through. The count on each card climbs as you go, and so does the total under your goal.", "📈 Progress you can see",
+    `<div class="bdh-sc"><div class="bdh-sc-list"><span class="bdh-sc-row"><b></b><u></u></span><span class="bdh-sc-row"><b></b><u></u></span><span class="bdh-sc-row"><b></b><u></u></span></div></div>`],
+] as const;
+const JOURNEY = [
+  ["💭", "Capture", "Type it in Quick capture and press Enter. It lands in the Inbox."],
+  ["🗂️", "Sort", "Pick a list from Move to… and the thought joins it."],
+  ["⭐", "Star", "Tap the star on what matters most. Starred only shows just those."],
+  ["✅", "Check off", "Tick the box. The line strikes through and the count goes up."],
+  ["🧹", "Clear", "Clear checked tidies the board. Changed your mind? Undo."],
+] as const;
+const TIPS = [
+  ["⠿", "Move a card", "Drag the six dots in a card’s corner. On a keyboard, focus the dots and press the arrow keys."],
+  ["✏️", "Rename anything", "Tap a card’s title or an item to edit it. Enter saves."],
+  ["↕️", "Reorder items", "The up and down arrows move an item within its card."],
+  ["↩️", "Undo, never “are you sure?”", "Deleting is instant. A message with Undo stays for 6 seconds."],
+  ["➕", "Your own lists", "The last card adds one: name it, pick a color, Add category."],
+  ["🖨️", "Print it", "It prints on a light page in two columns, like the paper sheet it started from."],
+] as const;
+const HABITS = [
+  ["Capture fast, sort later", "The Inbox is there so you never have to decide where something goes in the moment."],
+  ["Sort the Inbox once a day", "A minute after the stream or before bed. Empty Inbox, clear head."],
+  ["Keep three Top priorities", "If everything is a priority, nothing is. Star the rest instead."],
+  ["Clear checked once a week", "Enjoy the strike-throughs for a while, then tidy up. Undo has your back."],
+] as const;
+
+type Snap = { goal: string; cards: { t: string; c?: string; wide?: 1; inbox?: 1; items: [string, (0 | 1)?, (0 | 1)?][] }[] };
+type Role = { icon: string; title: string; line: string; cases: { h: string; before: string; after: string }[]; board: Snap };
+const ROLES: Record<"mod" | "admin" | "sub", Role> = {
+  mod: {
+    icon: "🛡️", title: "For mods", line: "Duties, the Academy and the swap board all go easier when nothing slips.",
+    cases: [
+      { h: "Catch it mid-shift", before: "A Chat Games card idea pops up while you’re running the Mod Deck, and it’s gone by the end of the stream.",
+        after: "One Quick capture and you’re back in the chat. After the stream, move it to <em>I want to make / create</em> and suggest it in the Chat Games pool. Approved cards earn Gears." },
+      { h: "Your next grade, one box at a time", before: "Your next grade’s requirements live in a page you never open.",
+        after: "Put them in <em>Top priorities</em>: the Academy modules left, your ride-alongs, your duties. Tick them off as they happen and watch the count climb." },
+      { h: "Never miss a seat", before: "On Friday night you realize you can’t make Saturday’s duty.",
+        after: "Capture it the moment you know. <em>I need to follow through</em> reminds you to drop it on the swap board at least 24 hours ahead, so it costs you nothing." },
+    ],
+    board: { goal: "Example: make the next grade by December", cards: [
+      { t: "Top priorities", c: "blue", items: [["Example · Academy module 5"], ["Example · Second ride-along with a Room Lead", 1], ["Example · Show up for every duty this month", 0, 1]] },
+      { t: "I want to make / create", c: "gold", items: [["Example · Hot Seat card: the scariest game you quit"], ["Example · Would You Rather: fog or total darkness?", 0, 1]] },
+      { t: "I need to follow through", c: "teal", items: [["Example · Drop Saturday’s seat on the swap board"]] },
+      { t: "I need to speak with", c: "blue", items: [["Example · A Room Lead about the timeout rule", 1]] },
+    ] },
+  },
+  admin: {
+    icon: "🧰", title: "For admins", line: "Lots of queues, one head. Keep the promises you made in each of them.",
+    cases: [
+      { h: "One list for every promise", before: "You said you’d come back to a Hotline Boom message, a Bug Zapper report, a Feature Lab idea and a Fun Factory review, each in its own tab.",
+        after: "Capture each promise as you make it, then sort them into <em>I need to follow through</em>. One list, cleared top to bottom." },
+      { h: "Fill the week", before: "Open seats and mods to check in with live in your head until Sunday.",
+        after: "<em>I need to schedule</em> holds the duties still to fill; <em>I need to speak with</em> holds the mods to check in with. Check them off as the seats fill." },
+      { h: "One goal per push", before: "Busy weeks blur together and nothing feels finished.",
+        after: "Put the push at the top as your Big Goal, so every list underneath serves it. The line under it shows how far along you are." },
+    ],
+    board: { goal: "Example: get open bug reports under 10", cards: [
+      { t: "I need to follow through", c: "teal", wide: 1, items: [["Example · Reply to Tuesday’s Account help message", 1], ["Example · Confirm the three new Bug Zapper reports", 0, 1], ["Example · Review two Fun Factory campaigns"]] },
+      { t: "I need to schedule", c: "lime", items: [["Example · Fill Sunday’s Room Lead seat", 0, 1], ["Example · Next week’s duties"]] },
+      { t: "I need to speak with", c: "blue", items: [["Example · Check in with the new Initiates"]] },
+    ] },
+  },
+  sub: {
+    icon: "⭐", title: "For Sub Club", line: "Seasons, votes and stream nights: keep track of what you’re chasing.",
+    cases: [
+      { h: "Chase the season", before: "You forget which Fun Factory campaigns you were halfway through.",
+        after: "Star the campaigns you’re chasing in <em>Top priorities</em> and keep your daily check-in streak in sight." },
+      { h: "Your game wish list", before: "You spotted a game in the Game Vault you want Boomer to play, and now you can’t remember which.",
+        after: "<em>What I want to do</em> holds the games to vote “Play this, Boomer!” for, <em>I want to look into</em> holds the ones you’re curious about. Your votes move them up Most wanted." },
+      { h: "Ready for stream night", before: "Hot Seat opens and your mind goes blank.",
+        after: "Keep your questions in <em>I want to make / create</em>, so you’re ready the moment Questions or Hot Seat opens. Spot a bug mid-stream? Capture it now, report it in Bug Zapper later." },
+    ],
+    board: { goal: "Example: finish this season’s story path", cards: [
+      { t: "Top priorities", c: "blue", items: [["Example · Daily check-in streak", 0, 1], ["Example · Story path, chapter 2", 1]] },
+      { t: "What I want to do", c: "lime", items: [["Example · Vote “Play this, Boomer!” for my top pick"], ["Example · Rate the last game Boomer finished", 1]] },
+      { t: "I want to make / create", c: "gold", wide: 1, items: [["Example · Hot Seat question: worst jump scare ever?", 0, 1], ["Example · A Would You Rather idea for next week"]] },
+      { inbox: 1, t: "Inbox", items: [["Example · Bug: the page jumped when I starred something"]] },
+    ] },
+  },
+};
+const TONE: Record<string, string> = { ember: "var(--bd-ember)", pink: "var(--bt-pink)", gold: "var(--bt-gold)", lime: "var(--bt-lime)", teal: "var(--bt-teal)", blue: "var(--bt-blue)" };
+const ROLE_IDS = ["mod", "admin", "sub"] as const;
+const FAQ = HELP.map((h) => [h.q, h.a] as const);
+---
+<BaseLayout title="How Brain Dump works" description="A private board for everything rattling around in your head: capture it in two seconds, sort it when you have a minute, watch the pile shrink.">
+  <div id="brain-dump-hiw" class="bt-root" data-viewer="visitor">
+    <template data-bd-mascot><Mascot decorative /></template>
+    <TocLayout items={NAV}>
+      <div class="ai-main">
+
+        <section class="ai-hero" aria-labelledby="h-hero">
+          <div class="bdh-hero">
+            <div>
+              <p class="ai-kicker">Brain Dump · How it works</p>
+              <h1 class="bt-title bt-title--hero" id="h-hero">How Brain Dump works</h1>
+              <p>Your private board for everything rattling around in your head. Capture it in two seconds, sort it when you have a minute, and watch the pile shrink.</p>
+              <div class="ai-acts"><Fragment set:html={open + join + sub + practice} /></div>
+            </div>
+            <div class="bdh-hscene bdh-h2" aria-hidden="true">
+              <div class="bdh-sheet bdh-sheet--paper">
+                <span class="g">My big goal: ______________</span>
+                <span>I need to call</span><span>I need to text</span><span>I need to email</span>
+                <span>I need to schedule</span><span>I need to follow through</span><span>I need to speak with</span>
+                <span class="w">I want to research / look into / learn about</span>
+                <span class="w">I want to make / create</span>
+              </div>
+              <div class="bdh-sheet bdh-sheet--board">
+                <span class="g">My big goal</span>
+                <span style="--bd-tone: var(--bd-ember)">I need to call</span><span style="--bd-tone: var(--bt-pink)">I need to text</span><span style="--bd-tone: var(--bt-gold)">I need to email</span>
+                <span style="--bd-tone: var(--bt-lime)">I need to schedule</span><span style="--bd-tone: var(--bt-teal)">I need to follow through</span><span style="--bd-tone: var(--bt-blue)">I need to speak with</span>
+                <span class="w" style="--bd-tone: var(--bd-ember)">I want to research / look into / learn about</span>
+                <span class="w" style="--bd-tone: var(--bt-gold)">I want to make / create</span>
+              </div>
+              <span class="bdh-wipe-edge"></span>
+              <Mascot decorative />
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="why" aria-labelledby="h-why">
+          <Fragment set:html={chapter(1, "why", "Why dump it", "Your head is a terrible place to keep a to-do list. Thoughts show up mid-stream, mid-shift and mid-sentence, and they leave just as fast.")} />
+          <div class="ai-stage bdh-stage">
+            {STAGES.map(([ic, t, d, chip, scene]) => (
+              <article class="bt-card ai-part bt-spotlight" tabindex="0">
+                <div class="ai-scene" aria-hidden="true" set:html={scene} />
+                <span class="bt-icon-tile--lg ai-part-ic" aria-hidden="true">{ic}</span>
+                <div class="ai-part-copy"><h3>{t}</h3><p>{d}</p><div class="ai-part-foot"><span class="ai-who-chip">{chip}</span></div></div>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="how" aria-labelledby="h-how">
+          <Fragment set:html={chapter(2, "how", "How it works", "Five moves. That’s the whole thing. Hover or tap a step.")} />
+          <ol class="ai-jr ai-jr--5" data-journey>
+            {JOURNEY.map(([ic, t, d], i) => <li tabindex="0"><span class="ai-jr-num" aria-hidden="true">{i + 1}</span><span class="ai-jr-ic" aria-hidden="true">{ic}</span><b>{t}</b><span class="ai-jr-t">{d}</span></li>)}
+          </ol>
+          <div class="bdh-tips">
+            {TIPS.map(([ic, t, d]) => <div class="bt-tile bdh-tip"><span class="bdh-tip-ic" aria-hidden="true">{ic}</span><div><b>{t}</b><p>{d}</p></div></div>)}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="try" aria-labelledby="h-try">
+          <Fragment set:html={chapter(3, "try", "Try it", "A practice board with a few examples on it. Play all you like: nothing here is saved, and your real board isn’t touched.")} />
+          <div class="bdh-try">
+            <aside class="bdh-quest">
+              <p class="bt-label">Try this</p>
+              <ol>
+                <li data-q="capture"><i aria-hidden="true">✓</i><span>Capture a thought in Quick capture.</span></li>
+                <li data-q="move"><i aria-hidden="true">✓</i><span>Move something out of the Inbox with Move to…</span></li>
+                <li data-q="check"><i aria-hidden="true">✓</i><span>Check something off.</span></li>
+              </ol>
+              <div class="bdh-stamp-slot" aria-live="polite"></div>
+            </aside>
+            <div class="bdh-try-board">
+              <div class="bdh-practice-tag"><span class="bt-tag">🧪 Practice board · not saved</span><button type="button" class="bt-btn bt-btn--sm bt-btn--ghost" data-try-reset>Start over</button></div>
+              <div class="bt-root bd-practice" data-bd-practice>
+                <section class="bd-goalcard" aria-label="Big goal">
+                  <div class="bd-goaltop"><span class="bt-label">My big goal</span><label class="bd-started">Started <input type="date" aria-label="Start date" /></label></div>
+                  <div class="bd-goalrow">
+                    <label class="bt-check"><input type="checkbox" class="bd-goal-check" aria-label="Big goal done" /></label>
+                    <div class="bd-goal" contenteditable="true" spellcheck="true" role="textbox" aria-label="Big goal" data-placeholder="What’s the big goal right now?"></div>
+                  </div>
+                  <div class="bd-stats"><span><b class="bd-stat-total">0</b> ideas on the board</span><span><b class="bd-stat-done">0</b> checked off</span><span><b class="bd-stat-starred">0</b> starred</span></div>
+                  <form class="bd-capture" aria-label="Quick capture">
+                    <input class="bt-input" type="text" placeholder="Jot it down, sort it later…" aria-label="Quick capture" autocomplete="off" enterkeyhint="done" />
+                    <button type="submit" class="bt-btn bt-btn--primary" aria-label="Capture"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="bd-btn-word">Capture</span></button>
+                  </form>
+                </section>
+                <div class="bd-toolbar">
+                  <div class="bt-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg><input class="bt-input bd-search-input" type="search" placeholder="Search the practice board…" aria-label="Search the practice board" /></div>
+                  <button type="button" class="bt-chip bd-staronly" aria-pressed="false">★ Starred only</button>
+                  <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary bd-clear">Clear checked</button>
+                </div>
+                <div class="bd-grid"></div>
+                <div class="bt-sr-only bd-live" aria-live="polite"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="roles" aria-labelledby="h-roles">
+          <Fragment set:html={chapter(4, "roles", "Made for your role", "Same board, different days. Pick yours to see where Brain Dump fits in.")} />
+          <div class="bt-pills bdh-roles-switch" data-n="3" role="group" aria-label="Choose a role" data-attr="role">
+            <button type="button" data-value="mod" aria-pressed="false">🛡️ Mod</button>
+            <button type="button" data-value="admin" aria-pressed="false">🧰 Admin</button>
+            <button type="button" data-value="sub" class="is-on" aria-pressed="true">⭐ Sub Club</button>
+          </div>
+          <div class="bdh-role-host" data-role="sub">
+            {ROLE_IDS.map((id) => {
+              const r = ROLES[id];
+              return (
+                <div class="bdh-role" data-role-panel={id} hidden={id !== "sub"}>
+                  <div>
+                    <div class="bdh-role-intro"><span class="bt-icon-tile--lg" aria-hidden="true">{r.icon}</span><div><b>{r.title}</b>{r.line}</div></div>
+                    <div class="bdh-cases">
+                      {r.cases.map((c) => <article class="bt-card bdh-case"><h3>{c.h}</h3><dl class="bdh-ba"><dt>Before</dt><dd>{c.before}</dd><dt>With it</dt><dd set:html={c.after} /></dl></article>)}
+                    </div>
+                  </div>
+                  <div class="bd-snap" role="group" aria-label={`Example board ${r.title.replace(/^For /, "for ")}`}>
+                    <div class="bd-snap-top"><span class="bt-label">Example board</span><span class="bt-tag">Example</span></div>
+                    <div class="bd-snap-goal"><span class="bd-box" aria-hidden="true"></span><div><small>My big goal</small>{r.board.goal}</div></div>
+                    <div class="bd-snap-grid">
+                      {r.board.cards.map((c) => (
+                        <div class:list={["bd-card", c.inbox && "bd-card--inbox", (c.wide || c.inbox) && "is-wide"]} style={c.inbox ? undefined : `--bd-tone:${TONE[c.c!]}`}>
+                          <div class="bd-card-head"><span class="bd-card-title">{c.t}</span><span class="bd-count">{c.inbox ? `${c.items.length} waiting` : `${c.items.filter((i) => i[1]).length}/${c.items.length}`}</span></div>
+                          <ul class="bd-items">
+                            {c.items.map((i) => (
+                              <li class:list={["bd-item", i[1] && "is-done", i[2] && "is-starred"]}>
+                                {!c.inbox && <span class="bd-box" aria-hidden="true">{i[1] ? "✓" : ""}</span>}
+                                <span class="bd-text">{i[0]}{i[1] ? <span class="bt-sr-only"> (done)</span> : null}</span>
+                                {i[2] ? <span class="bd-snap-star" aria-label="starred">★</span> : null}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </section>
+
+        <section class="ai-sec" id="private" aria-labelledby="h-private">
+          <Fragment set:html={chapter(5, "private", "Private by design", "One board, yours alone, on every device you sign in with.")} />
+          <div class="bdh-flow">
+            <div class="bdh-node"><span class="bdh-node-ic" aria-hidden="true">📱</span><b>Your phone</b>Same board</div>
+            <span class="bdh-link" aria-hidden="true"></span>
+            <div class="bdh-node bdh-node--you"><Mascot decorative /><b>Your board</b>Saved to your account</div>
+            <span class="bdh-link" aria-hidden="true"></span>
+            <div class="bdh-node"><span class="bdh-node-ic" aria-hidden="true">💻</span><b>Your PC</b>Same board</div>
+          </div>
+          <div class="bdh-wall"><span class="bdh-wall-ic" aria-hidden="true">🔒</span><div><b>Nobody else can open it.</b> Not other members, not mods, not admins. Your board isn’t shared, listed or shown anywhere on the site.</div></div>
+          <div class="bdh-facts">
+            <div><b>Saves as you go</b>About a second after you stop typing. A small “Saved” note tells you it worked.</div>
+            <div><b>Bad signal? Keep going</b>Your changes wait on your device and catch up when you’re back online.</div>
+            <div><b>If your access ends</b>Your board is kept as it is, and it’s there again when you come back.</div>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="habits" aria-labelledby="h-habits">
+          <Fragment set:html={chapter(6, "habits", "Good habits", "Four small rules that keep the board working for you.")} />
+          <div class="bt-placard">
+            <div class="bt-placard-head"><i aria-hidden="true"></i><b>Good habits</b><i aria-hidden="true"></i></div>
+            <ol class="bt-placard-list">
+              {HABITS.map(([t, d], i) => <li class="bt-placard-rule"><span class="bt-placard-n" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span><b>{t}</b><span>{d}</span></li>)}
+            </ol>
+          </div>
+        </section>
+
+        <section class="ai-sec" id="ask" aria-labelledby="h-ask">
+          <Fragment set:html={chapter(7, "ask", "Ask BOOMBOT", "Quick answers to the questions people ask most.")} />
+          <div class="bdh-bot-intro"><span set:html={boombotIcon("bdh-bb-intro")} /><span>BOOMBOT answers from Brain Dump’s help notes. Tap a question.</span></div>
+          <div class="bt-chat">
+            {FAQ.map(([q, a], i) => (
+              <>
+                <button type="button" class="bt-chat-q" aria-expanded="false" aria-controls={`bdh-ans-${i}`}><span class="bt-chat-qi" aria-hidden="true">Q</span>{q}</button>
+                <div class="bt-chat-a" id={`bdh-ans-${i}`} role="region" aria-label={`BOOMBOT's answer: ${q}`} hidden>
+                  <span class="bt-chat-av" set:html={boombotIcon(`bdh-bb-${i}`)} />
+                  <div class="bt-chat-bub"><small>BOOMBOT</small><span class="bt-chat-typing" aria-hidden="true"><i></i><i></i><i></i></span><span class="bt-chat-text">{a}</span></div>
+                </div>
+              </>
+            ))}
+          </div>
+        </section>
+
+        <section class="ai-cta" aria-labelledby="h-cta">
+          <Mascot decorative />
+          <h2 id="h-cta">Get it out of your head</h2>
+          <p data-for="access" hidden>Your board is ready. Dump the first thing on your mind.</p>
+          <p data-for="member" hidden>Brain Dump comes with Sub Club. Get it and your board is ready right away.</p>
+          <p data-for="visitor">Brain Dump comes with Sub Club. Join free first, then add Sub Club.</p>
+          <div class="ai-acts"><Fragment set:html={open + join + sub + practice} /></div>
+        </section>
+
+      </div>
+    </TocLayout>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/brain-dump/how";
+</script>

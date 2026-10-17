@@ -1,0 +1,188 @@
+/* site/src/styles/brain-dump-hiw.css — /brain-dump/how-it-works (page CSS, bdh- scope; mockup docs/design/mockups/brain-dump-how-it-works.html,
+   picks H2 "Paper to board" and R1 "one chapter with a switch"). The shared blocks come from how-it-works.css, the rail from TocLayout,
+   the board pieces (.bd-*) from brain-dump.css. Tokens only: the paper sheet's colors are mixed from the kit's tokens. */
+#brain-dump-hiw {
+  --bdh-paper: color-mix(in srgb, var(--bt-text) 86%, var(--bt-gold));          /* H2: the paper planner sheet the idea started from */
+  --bdh-paper-ink: color-mix(in srgb, var(--bt-bg) 78%, var(--bt-gold));        /* H2: pencil lines and handwriting on the paper */
+  --bdh-paper-rule: color-mix(in srgb, var(--bdh-paper) 72%, var(--bdh-paper-ink));   /* H2: the sheet's ruled lines and box edges */
+}
+/* .bt-root:not(#_) sets overflow: hidden (which breaks the sticky rail) and a max-width; this matches its strength. A size container has no
+   width of its own, so the roots fill their column. TocLayout's .tl-wrap does the page padding. */
+#brain-dump-hiw.bt-root { display: block; width: 100%; min-width: 0; box-sizing: border-box; max-width: none; margin: 0; padding: 0; border-radius: 0; overflow: visible; }
+#brain-dump-hiw .bd-practice.bt-root { display: block; width: 100%; min-width: 0; box-sizing: border-box; max-width: none; margin: 0; padding: 0; border-radius: 0; overflow: visible; background: transparent; }
+
+/* ---------- hero ---------- */
+#brain-dump-hiw .bdh-hero { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 24px; align-items: center; }
+#brain-dump-hiw .bdh-hero .bt-title { margin-top: 6px; }
+@container bt (max-width: 900px) { #brain-dump-hiw .bdh-hero { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bdh-hscene { position: relative; width: 100%; aspect-ratio: 520 / 360; }
+#brain-dump-hiw .bdh-hscene[hidden] { display: none; }
+
+/* H2 Paper to board: the paper sheet, and the same layout as the dark board wiping across it */
+#brain-dump-hiw .bdh-h2 .bdh-sheet { position: absolute; inset: 4% 2% 4% 2%; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: 18% repeat(2, minmax(0, 1fr)) 20% 20%; gap: 3%; padding: 3.5%; border-radius: 6px; }
+#brain-dump-hiw .bdh-sheet--paper { background: var(--bdh-paper); color: var(--bdh-paper-ink); box-shadow: 0 18px 40px -20px rgba(var(--bt-ink-rgb), 0.9); transform: rotate(-1.5deg); }
+#brain-dump-hiw .bdh-sheet--board { background: var(--bt-surface); border: 1px solid var(--bt-border-2); clip-path: inset(0 100% 0 0); animation: bdh-wipe 7s cubic-bezier(.6, .05, .3, 1) infinite; }
+#brain-dump-hiw .bdh-sheet > span { position: relative; overflow: hidden; display: block; padding: 6% 7%; border-radius: 4px; font-size: clamp(8px, 1.6cqw, 11px); font-weight: 700; line-height: 1.2; }
+#brain-dump-hiw .bdh-sheet .g { grid-column: 1 / -1; font-size: clamp(10px, 2.4cqw, 15px); font-weight: 800; }
+#brain-dump-hiw .bdh-sheet .w { grid-column: 1 / -1; }
+#brain-dump-hiw .bdh-sheet .h { grid-column: span 3; }
+#brain-dump-hiw .bdh-sheet--paper > span { border: 1px solid var(--bdh-paper-rule); font-style: italic; background: repeating-linear-gradient(180deg, transparent 0 13px, var(--bdh-paper-rule) 13px 14px); background-position: 0 18px; }
+#brain-dump-hiw .bdh-sheet--paper .g { border: 0; border-bottom: 2px solid var(--bdh-paper-ink); border-radius: 0; background: none; }
+#brain-dump-hiw .bdh-sheet--board > span { --bd-tone: var(--bt-gold); color: var(--bd-tone); background: color-mix(in srgb, var(--bd-tone) 14%, var(--bt-bg)); }
+#brain-dump-hiw .bdh-sheet--board .g { color: var(--bt-text); background: none; border-bottom: 1px dashed var(--bt-border-2); border-radius: 0; }
+#brain-dump-hiw .bdh-wipe-edge { position: absolute; top: 2%; bottom: 2%; left: 2%; width: 3px; border-radius: 3px; background: var(--bt-title); box-shadow: 0 0 16px 3px rgba(var(--bt-gold-rgb), 0.7); opacity: 0; animation: bdh-edge 7s cubic-bezier(.6, .05, .3, 1) infinite; }
+#brain-dump-hiw .bdh-h2 .bt-mascot { position: absolute; right: -2%; bottom: -6%; width: 17%; transform: rotate(-8deg); filter: drop-shadow(0 6px 10px rgba(var(--bt-ink-rgb), 0.8)); }
+@keyframes bdh-wipe { 0%, 12% { clip-path: inset(0 100% 0 0); } 42%, 88% { clip-path: inset(0 0 0 0); } 100% { clip-path: inset(0 0 0 100%); } }
+@keyframes bdh-edge { 0%, 12% { opacity: 0; left: 2%; } 14% { opacity: 1; } 42% { opacity: 1; left: 97%; } 46%, 100% { opacity: 0; left: 97%; } }
+
+
+/* ---------- chapter 1: stage cards ---------- */
+#brain-dump-hiw .ai-stage.bdh-stage { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+@container bt (max-width: 900px) { #brain-dump-hiw .ai-stage.bdh-stage { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bdh-stage .ai-scene { height: auto; aspect-ratio: 16 / 8; }
+#brain-dump-hiw .bdh-stage .ai-part-ic { top: auto; bottom: auto; margin: -32px 0 0 22px; position: relative; }
+#brain-dump-hiw .bdh-stage .ai-part-copy { padding-top: 14px; }
+#brain-dump-hiw .bdh-sc { position: absolute; inset: 0; }
+/* capture */
+#brain-dump-hiw .bdh-sc-field { position: absolute; left: 10%; right: 10%; top: 16%; height: 24%; display: flex; align-items: center; padding: 0 4%; border: 1px solid var(--bt-border-2); border-radius: 8px; background: var(--bt-bg); color: var(--bt-text); font-size: var(--bt-text-sm); white-space: nowrap; overflow: hidden; }
+#brain-dump-hiw .bdh-sc-field span { display: inline-block; overflow: hidden; width: 0; animation: bdh-type 4s steps(16, end) -1.9s infinite; }
+#brain-dump-hiw .bdh-sc-field::after { content: ""; width: 2px; height: 50%; margin-left: 1px; background: var(--bt-primary); animation: bdh-caret 0.8s steps(1) infinite; }
+#brain-dump-hiw .bdh-sc-tray { position: absolute; left: 30%; right: 30%; bottom: 10%; height: 26%; border: 1.5px dashed var(--bt-border-2); border-radius: 8px; }
+#brain-dump-hiw .bdh-sc-drop { position: absolute; left: 38%; width: 24%; top: 22%; height: 12%; border-radius: 99px; background: var(--bt-surface-2); border: 1px solid var(--bt-gold); opacity: 0; animation: bdh-drop 4s ease-in -2.6s infinite; }
+@keyframes bdh-type { 0% { width: 0; } 45%, 100% { width: 9.5em; } }
+@keyframes bdh-caret { 50% { opacity: 0; } }
+@keyframes bdh-drop { 0%, 50% { opacity: 0; transform: none; } 55% { opacity: 1; } 80%, 100% { opacity: 1; transform: translateY(330%); } }
+/* sort */
+#brain-dump-hiw .bdh-sc-card { position: absolute; right: 8%; top: 14%; width: 44%; height: 72%; padding: 5%; border-radius: 10px; --bd-tone: var(--bt-lime); background: color-mix(in srgb, var(--bd-tone) 14%, var(--bt-surface-2)); }
+#brain-dump-hiw .bdh-sc-card i { display: block; width: 66%; height: 7px; margin-bottom: 10px; border-radius: 3px; background: var(--bd-tone); }
+#brain-dump-hiw .bdh-sc-card u { display: block; height: 6px; margin-bottom: 8px; border-radius: 3px; background: color-mix(in srgb, var(--bt-text) 28%, transparent); }
+#brain-dump-hiw .bdh-sc-move { position: absolute; left: 8%; top: 40%; width: 30%; height: 14%; border-radius: 99px; background: var(--bt-surface-2); border: 1px solid var(--bt-lime); animation: bdh-move 4s cubic-bezier(.5, .1, .3, 1) -2s infinite; }
+#brain-dump-hiw .bdh-sc-sel { position: absolute; left: 8%; top: 16%; padding: 2px 8px; border: 1px solid var(--bt-border-2); border-radius: 6px; font-size: 10px; color: var(--bt-text-muted); background: var(--bt-bg); animation: bdh-sel 4s steps(1) -1s infinite; }
+@keyframes bdh-move { 0%, 30% { transform: none; } 65%, 100% { transform: translate(178%, -20%) scale(0.85); } }
+@keyframes bdh-sel { 0%, 15% { opacity: 0.5; } 16%, 60% { opacity: 1; border-color: var(--bt-primary); } 61%, 100% { opacity: 0.4; } }
+/* check off */
+#brain-dump-hiw .bdh-sc-list { position: absolute; left: 14%; right: 14%; top: 14%; display: flex; flex-direction: column; gap: 12%; height: 72%; padding: 5% 6%; border-radius: 10px; --bd-tone: var(--bt-teal); background: color-mix(in srgb, var(--bd-tone) 14%, var(--bt-surface-2)); }
+#brain-dump-hiw .bdh-sc-row { position: relative; display: flex; align-items: center; gap: 8px; }
+#brain-dump-hiw .bdh-sc-row b { width: 12px; height: 12px; flex: none; border: 1px solid var(--bt-border-2); border-radius: 3px; background: var(--bt-bg); animation: bdh-tick 4s steps(1) infinite; animation-delay: calc(var(--d) - 1.4s); }
+#brain-dump-hiw .bdh-sc-row u { position: relative; flex: 1; height: 6px; border-radius: 3px; background: color-mix(in srgb, var(--bt-text) 30%, transparent); }
+#brain-dump-hiw .bdh-sc-row u::after { content: ""; position: absolute; left: -4px; top: 2px; height: 2px; width: 0; background: var(--bt-text); animation: bdh-strike 4s ease-out infinite; animation-delay: calc(var(--d) - 1.4s); }
+#brain-dump-hiw .bdh-sc-row:nth-child(1) { --d: 0.3s; } #brain-dump-hiw .bdh-sc-row:nth-child(2) { --d: 1.1s; } #brain-dump-hiw .bdh-sc-row:nth-child(3) { --d: 1.9s; }
+/* scenes play only while their card is hovered or focused (specificity beats each shorthand above) */
+#brain-dump-hiw .ai-part .bdh-sc *, #brain-dump-hiw .ai-part .bdh-sc *::after { animation-play-state: paused; }
+#brain-dump-hiw .ai-part:is(:hover, :focus-within, .is-playing) .bdh-sc *, #brain-dump-hiw .ai-part:is(:hover, :focus-within, .is-playing) .bdh-sc *::after { animation-play-state: running; }
+@keyframes bdh-tick { 0%, 9% { background: var(--bt-bg); border-color: var(--bt-border-2); } 10%, 85% { background: var(--bt-primary); border-color: var(--bt-primary); } 86%, 100% { background: var(--bt-bg); } }
+@keyframes bdh-strike { 0%, 10% { width: 0; } 22%, 85% { width: calc(100% + 8px); } 86%, 100% { width: 0; } }
+
+
+/* ---------- chapter 2: the six tips (the five-step journey is the shared .ai-jr--5) ---------- */
+#brain-dump-hiw .bdh-tips { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 22px; }
+@container bt (max-width: 900px) { #brain-dump-hiw .bdh-tips { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@container bt (max-width: 420px) { #brain-dump-hiw .bdh-tips { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bt-tile.bdh-tip { flex-direction: row; align-items: flex-start; gap: 12px; transition: border-color 0.2s, transform 0.2s; }
+#brain-dump-hiw .bt-tile.bdh-tip:hover { border-color: var(--bt-border-2); transform: translateY(-2px); }
+#brain-dump-hiw .bdh-tip-ic { flex: none; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 10px; background: var(--bt-surface-2); font-size: 18px; }
+#brain-dump-hiw .bdh-tip b { display: block; margin-bottom: 3px; }
+#brain-dump-hiw .bdh-tip p { margin: 0; color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+
+/* ---------- chapter 3: Try it ---------- */
+#brain-dump-hiw .bdh-try { display: grid; grid-template-columns: 240px minmax(0, 1fr); gap: 18px; align-items: start; }
+@container bt (max-width: 900px) { #brain-dump-hiw .bdh-try { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bdh-quest { position: sticky; top: calc(var(--bt-sticky-top, 0px) + 16px); display: flex; flex-direction: column; gap: 10px; }
+@container bt (max-width: 900px) { #brain-dump-hiw .bdh-quest { position: static; } }
+#brain-dump-hiw .bdh-quest ol { display: flex; flex-direction: column; gap: 8px; margin: 0; padding: 0; list-style: none; }
+#brain-dump-hiw .bdh-quest li { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-md); background: var(--bt-bg); color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.4; transition: border-color 0.3s, background 0.3s, color 0.3s; }
+#brain-dump-hiw .bdh-quest li i { flex: none; width: 20px; height: 20px; display: grid; place-items: center; border-radius: 50%; border: 1.5px solid var(--bt-border-2); font-size: 11px; font-style: normal; font-weight: 900; color: transparent; }
+#brain-dump-hiw .bdh-quest li.is-done { border-color: color-mix(in srgb, var(--bt-lime) 45%, transparent); background: var(--bt-lime-bg); color: var(--bt-text); }
+#brain-dump-hiw .bdh-quest li.is-done i { border-color: var(--bt-lime); background: var(--bt-lime); color: var(--bt-bg); animation: bdh-pop 0.4s cubic-bezier(.3, 1.6, .4, 1); }
+@keyframes bdh-pop { from { transform: scale(0.3); } }
+#brain-dump-hiw .bdh-quest .bt-stamp { align-self: center; margin-top: 6px; }
+#brain-dump-hiw .bdh-practice-tag { display: inline-flex; align-items: center; gap: 8px; margin-bottom: 10px; color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
+#brain-dump-hiw .bdh-practice-tag .bt-btn { margin-left: auto; }
+#brain-dump-hiw .bdh-try-board { padding: 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: radial-gradient(70% 60% at 100% 0%, rgba(var(--bt-gold-rgb), 0.06), transparent 60%), var(--bt-bg); min-width: 0; }
+/* the practice board is the real engine's markup (.bd-practice; brain-dump.css styles it like /brain-dump), a little tighter */
+#brain-dump-hiw .bd-practice .bd-goalcard { margin-bottom: 12px; padding: 14px 16px; }
+#brain-dump-hiw .bd-practice .bd-goal { font-size: 21px; }
+#brain-dump-hiw .bd-practice .bd-toolbar { margin-bottom: 12px; }
+
+/* ---------- chapter 4: Made for your role (R1: one chapter, the kit's 3-way pill switch) ---------- */
+#brain-dump-hiw .bdh-roles-switch { max-width: 420px; margin-bottom: 18px; }
+#brain-dump-hiw .bdh-roles-switch button:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+#brain-dump-hiw .bdh-role { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+#brain-dump-hiw .bdh-role[hidden] { display: none; }
+@container bt (max-width: 900px) { #brain-dump-hiw .bdh-role { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bdh-role.is-in { animation: bdh-fade 0.35s ease; }
+@keyframes bdh-fade { from { opacity: 0; transform: translateY(6px); } }
+#brain-dump-hiw .bdh-role-intro { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; color: var(--bt-text-muted); }
+#brain-dump-hiw .bdh-role-intro .bt-icon-tile--lg { width: 52px; height: 52px; font-size: 26px; border-radius: 16px; }
+#brain-dump-hiw .bdh-role-intro b { display: block; color: var(--bt-text); font-size: var(--bt-text-lg); }
+#brain-dump-hiw .bdh-cases { display: flex; flex-direction: column; gap: 12px; }
+#brain-dump-hiw .bt-card.bdh-case { gap: 10px; padding: 16px 18px; transition: border-color 0.25s, transform 0.25s; }
+#brain-dump-hiw .bt-card.bdh-case:hover { border-color: var(--bt-border-2); transform: translateX(3px); }
+#brain-dump-hiw .bdh-case h3 { margin: 0; font-size: var(--bt-text-lg); font-weight: 800; }
+#brain-dump-hiw .bdh-ba { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 6px 10px; margin: 0; font-size: var(--bt-text-md); line-height: 1.5; }
+#brain-dump-hiw .bdh-ba dt { padding-top: 2px; font-size: var(--bt-text-2xs); font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; }
+#brain-dump-hiw .bdh-ba dd { margin: 0; }
+#brain-dump-hiw .bdh-ba dt:first-of-type { color: var(--bt-text-faint); }
+#brain-dump-hiw .bdh-ba dd:first-of-type { color: var(--bt-text-faint); text-decoration: line-through; text-decoration-color: color-mix(in srgb, var(--bt-text-faint) 60%, transparent); }
+#brain-dump-hiw .bdh-ba dt:last-of-type { color: var(--bt-lime); }
+#brain-dump-hiw .bdh-ba dd:last-of-type { color: var(--bt-text); }
+#brain-dump-hiw .bdh-ba em { font-style: normal; font-weight: 700; color: var(--bt-title); }
+
+
+/* snapshot board: the same cards, without controls */
+#brain-dump-hiw .bd-snap { display: flex; flex-direction: column; gap: 10px; padding: 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-bg); }
+#brain-dump-hiw .bd-snap-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+#brain-dump-hiw .bd-snap-goal { display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); font-size: var(--bt-text-lg); font-weight: 800; line-height: 1.25; }
+#brain-dump-hiw .bd-snap-goal small { display: block; margin-bottom: 4px; color: var(--bt-text-muted); font-size: var(--bt-text-2xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+#brain-dump-hiw .bd-snap-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@container bt (max-width: 420px) { #brain-dump-hiw .bd-snap-grid { grid-template-columns: minmax(0, 1fr); } }
+#brain-dump-hiw .bd-snap .bd-card { box-shadow: none; }
+#brain-dump-hiw .bd-snap .bd-card.is-wide { grid-column: 1 / -1; }
+#brain-dump-hiw .bd-snap .bd-card-head { padding: 10px 10px 4px 12px; }
+#brain-dump-hiw .bd-snap .bd-card-title { font-size: var(--bt-text-base); cursor: default; }
+#brain-dump-hiw .bd-snap .bd-items { padding: 0 8px 10px; }
+#brain-dump-hiw .bd-snap .bd-item { align-items: center; padding: 3px 4px; }
+#brain-dump-hiw .bd-snap .bd-text { font-size: var(--bt-text-md); padding: 2px; cursor: default; }
+#brain-dump-hiw .bd-snap .bd-box { flex: none; width: 15px; height: 15px; margin: 0 6px 0 2px; border: 1px solid var(--bt-border-2); border-radius: 4px; background: var(--bt-bg); display: grid; place-items: center; font-size: 10px; font-weight: 900; color: var(--bt-text); }
+#brain-dump-hiw .bd-snap .is-done .bd-box { background: var(--bt-primary); border-color: var(--bt-primary); }
+#brain-dump-hiw .bd-snap .bd-snap-star { flex: none; color: var(--bt-gold); font-size: 13px; margin-left: 4px; }
+#brain-dump-hiw .bd-snap .bd-card--inbox { --bd-tone: var(--bt-title); background: var(--bt-bg); border: 1.5px dashed var(--bt-border-2); color: var(--bt-text-muted); }
+
+/* ---------- chapter 5: private by design ---------- */
+#brain-dump-hiw .bdh-flow { display: grid; grid-template-columns: 1fr auto 1.2fr auto 1fr; align-items: center; gap: 10px; padding: 22px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); background: var(--bt-surface); }
+#brain-dump-hiw .bdh-node { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 16px 12px; border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-lg); background: var(--bt-bg); text-align: center; font-size: var(--bt-text-md); color: var(--bt-text-muted); transition: border-color 0.25s, box-shadow 0.25s; }
+#brain-dump-hiw .bdh-node b { color: var(--bt-text); font-size: var(--bt-text-base); }
+#brain-dump-hiw .bdh-node-ic { font-size: 26px; line-height: 1; }
+#brain-dump-hiw .bdh-node--you { border-color: rgba(var(--bt-gold-rgb), 0.55); box-shadow: 0 0 26px rgba(var(--bt-gold-rgb), 0.12); }
+#brain-dump-hiw .bdh-node--you .bt-mascot { width: 40px; }
+#brain-dump-hiw .bdh-link { position: relative; width: 56px; height: 2px; background: var(--bt-border-2); }
+#brain-dump-hiw .bdh-link::before, #brain-dump-hiw .bdh-link::after { content: ""; position: absolute; top: -3px; width: 8px; height: 8px; border-radius: 50%; background: var(--bt-title); box-shadow: 0 0 8px rgba(var(--bt-gold-rgb), 0.8); animation: bdh-sync 2.4s ease-in-out infinite; }
+#brain-dump-hiw .bdh-link::after { animation-direction: reverse; animation-delay: 1.2s; }
+@keyframes bdh-sync { 0% { left: -4px; opacity: 0; } 15% { opacity: 1; } 85% { opacity: 1; } 100% { left: calc(100% - 4px); opacity: 0; } }
+#brain-dump-hiw .bdh-flow:hover .bdh-node:not(.bdh-node--you) { border-color: rgba(var(--bt-gold-rgb), 0.45); }
+#brain-dump-hiw .bdh-wall { display: flex; align-items: center; gap: 14px; margin-top: 12px; padding: 14px 18px; border: 1px dashed var(--bt-border-2); border-radius: var(--bt-radius-lg); color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+#brain-dump-hiw .bdh-wall-ic { flex: none; width: 40px; height: 40px; display: grid; place-items: center; border-radius: 12px; background: var(--bt-surface-2); font-size: 20px; }
+#brain-dump-hiw .bdh-wall b { color: var(--bt-text); }
+#brain-dump-hiw .bdh-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin-top: 12px; }
+#brain-dump-hiw .bdh-facts > div { padding: 14px 16px; border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-bg); color: var(--bt-text-muted); font-size: var(--bt-text-md); line-height: 1.5; }
+#brain-dump-hiw .bdh-facts b { display: block; margin-bottom: 4px; color: var(--bt-text); }
+@container bt (max-width: 900px) {
+  #brain-dump-hiw .bdh-flow { grid-template-columns: minmax(0, 1fr); justify-items: stretch; }
+  #brain-dump-hiw .bdh-link { width: 2px; height: 30px; justify-self: center; }
+  #brain-dump-hiw .bdh-link::before, #brain-dump-hiw .bdh-link::after { left: -3px; animation-name: bdh-sync-v; }
+  #brain-dump-hiw .bdh-facts { grid-template-columns: minmax(0, 1fr); }
+}
+@keyframes bdh-sync-v { 0% { top: -4px; opacity: 0; } 15%, 85% { opacity: 1; } 100% { top: calc(100% - 4px); opacity: 0; } }
+
+/* ---------- Ask BOOMBOT + closing ---------- */
+#brain-dump-hiw .bdh-bot-intro { display: flex; align-items: center; gap: 14px; margin-bottom: 14px; color: var(--bt-text-muted); }
+#brain-dump-hiw .bdh-bot-intro .bt-boombot { width: 56px; height: 56px; }
+#brain-dump-hiw .ai-cta .bt-mascot { width: 72px; margin: 0 auto 10px; filter: drop-shadow(0 0 20px rgba(var(--bt-gold-rgb), 0.35)); }
+#brain-dump-hiw .ai-cta .bt-tag { margin: 0 auto 14px; }
+
+@media (prefers-reduced-motion: reduce) {
+  #brain-dump-hiw *, #brain-dump-hiw *::before, #brain-dump-hiw *::after { animation: none !important; transition: none !important; }
+  #brain-dump-hiw .bdh-sheet--board { clip-path: inset(0 0 0 48%); }
+  #brain-dump-hiw .bdh-wipe-edge { opacity: 1; left: 49%; }
+  #brain-dump-hiw .bdh-sc-field span { width: 9.5em; }
+}

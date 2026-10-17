@@ -40,134 +40,134 @@
 @keyframes bd-hop { 30% { transform: translateY(-10px) rotate(-4deg); } 60% { transform: translateY(0) rotate(2deg); } }
 
 /* ---------- goal card ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-goalcard { background: var(--bt-surface); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); padding: var(--bt-space-5) var(--bt-space-6); margin-bottom: var(--bt-space-4); }
-:is(#brain-dump-root, .bd-snap) .bd-goaltop { display: flex; align-items: center; justify-content: space-between; gap: var(--bt-space-3); flex-wrap: wrap; }
-:is(#brain-dump-root, .bd-snap) .bd-started { display: inline-flex; align-items: center; gap: 8px; font-family: var(--bd-mono); font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
-:is(#brain-dump-root, .bd-snap) .bd-started input { font: inherit; font-size: var(--bt-text-lg); color: var(--bt-text); background: var(--bt-bg); border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-sm); padding: 4px 8px; color-scheme: dark; }
-:is(#brain-dump-root, .bd-snap) .bd-started input:is(:focus, :focus-within) { outline: none; border-color: var(--bt-primary); box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22); }
-:is(#brain-dump-root, .bd-snap) .bd-goalrow { position: relative; display: flex; align-items: flex-start; gap: var(--bt-space-3); margin-top: var(--bt-space-3); }
-:is(#brain-dump-root, .bd-snap) .bd-goalrow .bt-check { margin-top: 7px; }
-:is(#brain-dump-root, .bd-snap) .bd-goalrow .bt-check input { width: 24px; height: 24px; border-radius: 6px; }
-:is(#brain-dump-root, .bd-snap) .bd-goal { flex: 1; min-width: 0; font-size: 28px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; color: var(--bt-text); outline: none; text-wrap: balance; overflow-wrap: anywhere; border-radius: 6px; }
-:is(#brain-dump-root, .bd-snap) .bd-goal:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; }
-:is(#brain-dump-root, .bd-snap) .bd-goal:empty::before { content: attr(data-placeholder); color: var(--bt-text-faint); }
-:is(#brain-dump-root, .bd-snap) .bd-goalrow.is-done .bd-goal { color: var(--bt-text-faint); text-decoration: line-through; text-decoration-thickness: 2px; }
-:is(#brain-dump-root, .bd-snap) .bd-stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: var(--bt-space-3); font-family: var(--bd-mono); font-size: var(--bt-text-sm); color: var(--bt-text-muted); font-variant-numeric: tabular-nums; }
-:is(#brain-dump-root, .bd-snap) .bd-stats b { color: var(--bt-text); font-weight: 700; }
-:is(#brain-dump-root, .bd-snap) .bd-capture { display: flex; gap: var(--bt-space-2); margin-top: var(--bt-space-4); padding-top: var(--bt-space-4); border-top: 1px dashed var(--bt-border-2); }
-:is(#brain-dump-root, .bd-snap) .bd-capture .bt-input { flex: 1; min-width: 0; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalcard { background: var(--bt-surface); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-xl); padding: var(--bt-space-5) var(--bt-space-6); margin-bottom: var(--bt-space-4); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goaltop { display: flex; align-items: center; justify-content: space-between; gap: var(--bt-space-3); flex-wrap: wrap; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-started { display: inline-flex; align-items: center; gap: 8px; font-family: var(--bd-mono); font-size: var(--bt-text-sm); color: var(--bt-text-muted); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-started input { font: inherit; font-size: var(--bt-text-lg); color: var(--bt-text); background: var(--bt-bg); border: 1px solid var(--bt-border-2); border-radius: var(--bt-radius-sm); padding: 4px 8px; color-scheme: dark; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-started input:is(:focus, :focus-within) { outline: none; border-color: var(--bt-primary); box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalrow { position: relative; display: flex; align-items: flex-start; gap: var(--bt-space-3); margin-top: var(--bt-space-3); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalrow .bt-check { margin-top: 7px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalrow .bt-check input { width: 24px; height: 24px; border-radius: 6px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goal { flex: 1; min-width: 0; font-size: 28px; font-weight: 800; line-height: 1.2; letter-spacing: -0.01em; color: var(--bt-text); outline: none; text-wrap: balance; overflow-wrap: anywhere; border-radius: 6px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goal:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 4px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goal:empty::before { content: attr(data-placeholder); color: var(--bt-text-faint); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalrow.is-done .bd-goal { color: var(--bt-text-faint); text-decoration: line-through; text-decoration-thickness: 2px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-stats { display: flex; flex-wrap: wrap; gap: 6px 18px; margin-top: var(--bt-space-3); font-family: var(--bd-mono); font-size: var(--bt-text-sm); color: var(--bt-text-muted); font-variant-numeric: tabular-nums; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-stats b { color: var(--bt-text); font-weight: 700; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-capture { display: flex; gap: var(--bt-space-2); margin-top: var(--bt-space-4); padding-top: var(--bt-space-4); border-top: 1px dashed var(--bt-border-2); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-capture .bt-input { flex: 1; min-width: 0; }
 
 /* celebration when the big goal is checked */
-:is(#brain-dump-root, .bd-snap) .bd-burst { position: absolute; left: 12px; top: 19px; width: 0; height: 0; pointer-events: none; }
-:is(#brain-dump-root, .bd-snap) .bd-burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 2px; background: var(--c); animation: bd-spark 0.8s cubic-bezier(.2,.7,.3,1) forwards; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-burst { position: absolute; left: 12px; top: 19px; width: 0; height: 0; pointer-events: none; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-burst i { position: absolute; left: -3px; top: -3px; width: 6px; height: 6px; border-radius: 2px; background: var(--c); animation: bd-spark 0.8s cubic-bezier(.2,.7,.3,1) forwards; }
 @keyframes bd-spark { from { transform: rotate(var(--a)) translateX(4px); opacity: 1; } to { transform: rotate(var(--a)) translateX(46px) scale(0.4); opacity: 0; } }
 
 /* ---------- toolbar ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bt-space-2); margin-bottom: var(--bt-space-5); }
-:is(#brain-dump-root, .bd-snap) .bd-toolbar .bt-search { flex: 1 1 240px; }
-:is(#brain-dump-root, .bd-snap) .bd-toolbar .bt-chip[aria-pressed="true"] { background: var(--bt-gold-bg); border-color: var(--bt-gold); color: var(--bt-text); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: var(--bt-space-2); margin-bottom: var(--bt-space-5); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-toolbar .bt-search { flex: 1 1 240px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-toolbar .bt-chip[aria-pressed="true"] { background: var(--bt-gold-bg); border-color: var(--bt-gold); color: var(--bt-text); }
 
 /* ---------- grid: 6 columns; 2 at 1024; 1 at 640 ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--bt-space-4); align-items: start; }
-:is(#brain-dump-root, .bd-snap) :is(.bd-card--sm, .bd-card--add) { grid-column: span 2; }
-:is(#brain-dump-root, .bd-snap) .bd-card--half { grid-column: span 3; }
-:is(#brain-dump-root, .bd-snap) .bd-card--wide { grid-column: span 6; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-grid { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: var(--bt-space-4); align-items: start; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) :is(.bd-card--sm, .bd-card--add) { grid-column: span 2; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--half { grid-column: span 3; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--wide { grid-column: span 6; }
 @container bt (max-width: 1024px) {
-  :is(#brain-dump-root, .bd-snap) .bd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  :is(#brain-dump-root, .bd-snap) :is(.bd-card--sm, .bd-card--half, .bd-card--add) { grid-column: span 1; }
-  :is(#brain-dump-root, .bd-snap) .bd-card--wide { grid-column: span 2; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) :is(.bd-card--sm, .bd-card--half, .bd-card--add) { grid-column: span 1; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--wide { grid-column: span 2; }
 }
 @container bt (max-width: 640px) {
   #brain-dump-root.bt-root { padding-left: 16px; padding-right: 16px; }
-  :is(#brain-dump-root, .bd-snap) .bd-grid { grid-template-columns: minmax(0, 1fr); gap: var(--bt-space-3); }
-  :is(#brain-dump-root, .bd-snap) :is(.bd-card--sm, .bd-card--half, .bd-card--add, .bd-card--wide) { grid-column: span 1; }
-  :is(#brain-dump-root, .bd-snap) .bd-goalcard { padding: var(--bt-space-4); }
-  :is(#brain-dump-root, .bd-snap) .bd-goal { font-size: 23px; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-grid { grid-template-columns: minmax(0, 1fr); gap: var(--bt-space-3); }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) :is(.bd-card--sm, .bd-card--half, .bd-card--add, .bd-card--wide) { grid-column: span 1; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goalcard { padding: var(--bt-space-4); }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-goal { font-size: 23px; }
 }
 @container bt (max-width: 420px) {
   #brain-dump-root .bd-scene { width: 104px; }
   #brain-dump-root .bd-scene .bt-mascot { width: 48px; }
   #brain-dump-root :is(.bd-thought, .bd-tray) { display: none; }
-  :is(#brain-dump-root, .bd-snap) .bd-capture .bt-btn .bd-btn-word { display: none; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-capture .bt-btn .bd-btn-word { display: none; }
 }
 
 /* ---------- category card (C1 tinted fill) ---------- */
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card { --bd-tone: var(--bt-gold); --bd-ink: color-mix(in srgb, var(--bd-tone) 22%, var(--bt-text)); position: relative; display: flex; flex-direction: column; min-width: 0; border-radius: var(--bt-radius-lg); background: color-mix(in srgb, var(--bd-tone) 13%, var(--bt-surface)); color: var(--bd-ink); box-shadow: 0 10px 22px -14px rgba(var(--bt-ink-rgb), 0.9), inset 0 1px 0 color-mix(in srgb, var(--bd-tone) 22%, transparent); transition: transform 0.18s ease, box-shadow 0.18s ease; }
-:is(#brain-dump-root, .bd-snap) .bd-card:is(:hover, :focus-within) { transform: translateY(-1px); box-shadow: 0 14px 26px -14px rgba(var(--bt-ink-rgb), 0.95), inset 0 1px 0 color-mix(in srgb, var(--bd-tone) 35%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card { --bd-tone: var(--bt-gold); --bd-ink: color-mix(in srgb, var(--bd-tone) 22%, var(--bt-text)); position: relative; display: flex; flex-direction: column; min-width: 0; border-radius: var(--bt-radius-lg); background: color-mix(in srgb, var(--bd-tone) 13%, var(--bt-surface)); color: var(--bd-ink); box-shadow: 0 10px 22px -14px rgba(var(--bt-ink-rgb), 0.9), inset 0 1px 0 color-mix(in srgb, var(--bd-tone) 22%, transparent); transition: transform 0.18s ease, box-shadow 0.18s ease; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card:is(:hover, :focus-within) { transform: translateY(-1px); box-shadow: 0 14px 26px -14px rgba(var(--bt-ink-rgb), 0.95), inset 0 1px 0 color-mix(in srgb, var(--bd-tone) 35%, transparent); }
 
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-head { display: flex; align-items: flex-start; gap: 6px; padding: 12px 12px 8px 8px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-title { flex: 1; min-width: 0; margin: 0; padding: 4px 2px; font-size: var(--bt-text-lg); font-weight: 800; line-height: 1.25; color: var(--bd-tone); outline: none; text-wrap: balance; overflow-wrap: anywhere; border-radius: 6px; cursor: text; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-title:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-count { flex: none; margin-top: 4px; padding: 2px 8px; border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bd-tone) 18%, transparent); font-family: var(--bd-mono); font-size: var(--bt-text-xs); font-weight: 700; line-height: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-head { display: flex; align-items: flex-start; gap: 6px; padding: 12px 12px 8px 8px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-title { flex: 1; min-width: 0; margin: 0; padding: 4px 2px; font-size: var(--bt-text-lg); font-weight: 800; line-height: 1.25; color: var(--bd-tone); outline: none; text-wrap: balance; overflow-wrap: anywhere; border-radius: 6px; cursor: text; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-card-title:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-count { flex: none; margin-top: 4px; padding: 2px 8px; border-radius: var(--bt-radius-full); background: color-mix(in srgb, var(--bd-tone) 18%, transparent); font-family: var(--bd-mono); font-size: var(--bt-text-xs); font-weight: 700; line-height: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; }
 
 /* small icon buttons inside cards: always visible, brighter on hover/focus/tap (never hidden behind :hover) */
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic { flex: none; display: inline-grid; place-items: center; width: var(--bd-hit); height: var(--bd-hit); padding: 0; border: 0; border-radius: 7px; background: none; color: inherit; opacity: 0.6; font-size: 16px; line-height: 1; cursor: pointer; transition: opacity 0.15s, background-color 0.15s, color 0.15s; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic svg { width: 16px; height: 16px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:is(:hover, :focus-visible, :active) { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 1px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:disabled { opacity: 0.18; cursor: default; background: none; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic.bd-x:is(:hover, :focus-visible, :active) { color: var(--bt-danger-text); background: var(--bt-danger-bg); }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-drag { cursor: grab; touch-action: none; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-drag:active { cursor: grabbing; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic { flex: none; display: inline-grid; place-items: center; width: var(--bd-hit); height: var(--bd-hit); padding: 0; border: 0; border-radius: 7px; background: none; color: inherit; opacity: 0.6; font-size: 16px; line-height: 1; cursor: pointer; transition: opacity 0.15s, background-color 0.15s, color 0.15s; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic svg { width: 16px; height: 16px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:is(:hover, :focus-visible, :active) { opacity: 1; background: color-mix(in srgb, currentColor 12%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 1px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic:disabled { opacity: 0.18; cursor: default; background: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-ic.bd-x:is(:hover, :focus-visible, :active) { color: var(--bt-danger-text); background: var(--bt-danger-bg); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-drag { cursor: grab; touch-action: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-drag:active { cursor: grabbing; }
 
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-items { list-style: none; margin: 0; padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item { display: flex; align-items: flex-start; gap: 4px; padding: 2px 2px 2px 4px; border-radius: 8px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item .bt-check { flex: none; padding: 7px 4px 0 2px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item .bt-check input { width: 20px; height: 20px; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-text { flex: 1; min-width: 0; padding: 6px 2px; font-size: 15px; line-height: 1.4; color: var(--bt-text); outline: none; overflow-wrap: anywhere; border-radius: 5px; cursor: text; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-text:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 0; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item.is-done .bd-text { text-decoration: line-through; text-decoration-thickness: 1.5px; opacity: 0.5; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item.is-starred { background: var(--bt-gold-bg); }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-acts { flex: none; display: flex; align-items: center; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-star.is-on { opacity: 1; color: var(--bt-gold); }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) :is(.bd-item, .bd-card).is-hidden { display: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-items { list-style: none; margin: 0; padding: 0 10px; display: flex; flex-direction: column; gap: 2px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item { display: flex; align-items: flex-start; gap: 4px; padding: 2px 2px 2px 4px; border-radius: 8px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item .bt-check { flex: none; padding: 7px 4px 0 2px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item .bt-check input { width: 20px; height: 20px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-text { flex: 1; min-width: 0; padding: 6px 2px; font-size: 15px; line-height: 1.4; color: var(--bt-text); outline: none; overflow-wrap: anywhere; border-radius: 5px; cursor: text; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-text:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 0; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item.is-done .bd-text { text-decoration: line-through; text-decoration-thickness: 1.5px; opacity: 0.5; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-item.is-starred { background: var(--bt-gold-bg); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-acts { flex: none; display: flex; align-items: center; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-star.is-on { opacity: 1; color: var(--bt-gold); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) :is(.bd-item, .bd-card).is-hidden { display: none; }
 
 /* the add line: a blank planner line inside the card */
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add { display: flex; gap: 6px; padding: 8px 12px 12px; margin-top: auto; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input { flex: 1; min-width: 0; font-size: var(--bt-text-lg); padding: 7px 10px; color: var(--bt-text); background: color-mix(in srgb, var(--bt-bg) 45%, transparent); border: 1px dashed color-mix(in srgb, var(--bd-tone) 45%, transparent); border-radius: var(--bt-radius-sm); outline: none; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input::placeholder { color: var(--bd-ink); opacity: 0.6; }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input:focus { border-style: solid; border-color: var(--bt-primary); box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22); }
-:is(#brain-dump-root, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add .bt-btn { padding: 7px 12px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add { display: flex; gap: 6px; padding: 8px 12px 12px; margin-top: auto; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input { flex: 1; min-width: 0; font-size: var(--bt-text-lg); padding: 7px 10px; color: var(--bt-text); background: color-mix(in srgb, var(--bt-bg) 45%, transparent); border: 1px dashed color-mix(in srgb, var(--bd-tone) 45%, transparent); border-radius: var(--bt-radius-sm); outline: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input::placeholder { color: var(--bd-ink); opacity: 0.6; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input:focus { border-style: solid; border-color: var(--bt-primary); box-shadow: 0 0 0 3px rgba(var(--bt-primary-rgb), 0.22); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add .bt-btn { padding: 7px 12px; }
 
 /* ---------- inbox ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-card--inbox { background: var(--bt-bg); border: 1.5px dashed var(--bt-border-2); box-shadow: none; color: var(--bt-text-muted); --bd-tone: var(--bt-title); }
-:is(#brain-dump-root, .bd-snap) .bd-card--inbox .bd-card-title { cursor: default; padding-left: 6px; }
-:is(#brain-dump-root, .bd-snap) .bd-inbox-sub { margin: -4px 14px 8px; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
-:is(#brain-dump-root, .bd-snap) .bd-card--inbox .bd-items { padding-bottom: 12px; }
-:is(#brain-dump-root, .bd-snap) .bd-card--inbox .bd-item { align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--bt-border); border-radius: 0; padding: 4px 0 4px 6px; }
-:is(#brain-dump-root, .bd-snap) .bd-card--inbox .bd-item:last-child { border-bottom: 0; }
-:is(#brain-dump-root, .bd-snap) .bd-move { flex: none; width: 13rem; }
-:is(#brain-dump-root, .bd-snap) .bd-move .bt-select { padding-top: 8px; padding-bottom: 8px; }
-:is(#brain-dump-root, .bd-snap) .bd-inbox-empty { display: flex; align-items: center; gap: 12px; padding: 4px 14px 16px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
-:is(#brain-dump-root, .bd-snap) .bd-inbox-empty .bt-mascot { width: 34px; flex: none; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox { background: var(--bt-bg); border: 1.5px dashed var(--bt-border-2); box-shadow: none; color: var(--bt-text-muted); --bd-tone: var(--bt-title); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox .bd-card-title { cursor: default; padding-left: 6px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-inbox-sub { margin: -4px 14px 8px; font-size: var(--bt-text-md); color: var(--bt-text-muted); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox .bd-items { padding-bottom: 12px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox .bd-item { align-items: center; flex-wrap: wrap; border-bottom: 1px solid var(--bt-border); border-radius: 0; padding: 4px 0 4px 6px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox .bd-item:last-child { border-bottom: 0; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-move { flex: none; width: 13rem; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-move .bt-select { padding-top: 8px; padding-bottom: 8px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-inbox-empty { display: flex; align-items: center; gap: 12px; padding: 4px 14px 16px; color: var(--bt-text-muted); font-size: var(--bt-text-md); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-inbox-empty .bt-mascot { width: 34px; flex: none; }
 @container bt (max-width: 420px) {
-  :is(#brain-dump-root, .bd-snap) .bd-card--inbox .bd-text { flex-basis: 100%; }
-  :is(#brain-dump-root, .bd-snap) .bd-move { flex: 1; width: auto; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--inbox .bd-text { flex-basis: 100%; }
+  :is(#brain-dump-root, .bd-practice, .bd-snap) .bd-move { flex: 1; width: auto; }
 }
 
 /* ---------- add-category card ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-card--add { background: transparent; border: 1.5px dashed var(--bt-border-2); box-shadow: none; padding: 14px; color: var(--bt-text-muted); }
-:is(#brain-dump-root, .bd-snap) .bd-card--add:hover { transform: none; }
-:is(#brain-dump-root, .bd-snap) .bd-card--add form { display: flex; flex-direction: column; gap: 12px; }
-:is(#brain-dump-root, .bd-snap) .bd-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
-:is(#brain-dump-root, .bd-snap) .bd-swatch { width: 32px; height: 32px; padding: 0; border-radius: 50%; border: 2px solid transparent; background: color-mix(in srgb, var(--bd-tone) 70%, var(--bt-surface)); cursor: pointer; box-shadow: inset 0 0 0 2px var(--bt-bg); }
-:is(#brain-dump-root, .bd-snap) .bd-swatch[aria-checked="true"] { border-color: var(--bt-text); }
-:is(#brain-dump-root, .bd-snap) .bd-swatch:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
-:is(#brain-dump-root, .bd-snap) .bd-card--add .bt-btn { align-self: flex-start; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--add { background: transparent; border: 1.5px dashed var(--bt-border-2); box-shadow: none; padding: 14px; color: var(--bt-text-muted); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--add:hover { transform: none; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--add form { display: flex; flex-direction: column; gap: 12px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-swatches { display: flex; flex-wrap: wrap; gap: 6px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-swatch { width: 32px; height: 32px; padding: 0; border-radius: 50%; border: 2px solid transparent; background: color-mix(in srgb, var(--bd-tone) 70%, var(--bt-surface)); cursor: pointer; box-shadow: inset 0 0 0 2px var(--bt-bg); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-swatch[aria-checked="true"] { border-color: var(--bt-text); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-swatch:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card--add .bt-btn { align-self: flex-start; }
 
 /* ---------- footer ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--bt-space-3); margin-top: var(--bt-space-8); font-size: var(--bt-text-md); color: var(--bt-text-faint); }
-:is(#brain-dump-root, .bd-snap) .bd-foot span { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
-:is(#brain-dump-root, .bd-snap) .bd-saved { font-family: var(--bd-mono); font-size: var(--bt-text-xs); font-style: normal; color: var(--bt-text-muted); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-foot { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--bt-space-3); margin-top: var(--bt-space-8); font-size: var(--bt-text-md); color: var(--bt-text-faint); }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-foot span { display: inline-flex; align-items: center; flex-wrap: wrap; gap: 8px; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-saved { font-family: var(--bd-mono); font-size: var(--bt-text-xs); font-style: normal; color: var(--bt-text-muted); }
 
 /* ---------- drag: the floating copy lives in a portal on <body> ---------- */
-:is(#brain-dump-root, .bd-snap) .bd-card.is-drag-source { opacity: 0.3; }
+:is(#brain-dump-root, .bd-practice, .bd-snap) .bd-card.is-drag-source { opacity: 0.3; }
 .bt-portal[data-feature="brain-dump"] { position: fixed; inset: 0; pointer-events: none; z-index: var(--bt-z-modal); background: transparent; border-radius: 0; overflow: visible; max-width: none; container-type: normal; }
 .bt-portal[data-feature="brain-dump"] .bd-ghost { position: fixed; margin: 0; pointer-events: none; opacity: 0.96; box-shadow: 0 24px 44px -16px rgba(var(--bt-ink-rgb), 0.95), 0 0 0 1px color-mix(in srgb, var(--bd-tone) 50%, transparent); transform-origin: 30px 20px; }
 body.bd-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
 
 @media (prefers-reduced-motion: reduce) {
-  #brain-dump-root *, .bd-snap *, .bt-portal[data-feature="brain-dump"] * { transition: none !important; animation: none !important; }
+  #brain-dump-root *, .bd-practice *, .bd-snap *, .bt-portal[data-feature="brain-dump"] * { transition: none !important; animation: none !important; }
   #brain-dump-root .bd-thought { opacity: 1; transform: translate(30px, -10px); }
   #brain-dump-root .bd-thought:nth-child(n+2) { display: none; }
 }
