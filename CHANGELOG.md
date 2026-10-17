@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Fixed: dutyAutoConfirm failed every 15 minutes on staging with "The query requires an index". Its query (streams where state == ended and actualEnd within 1 to 14 days ago) needs state + actualEnd ascending, and only the descending index existed. firestore.indexes.json gains the index, deployed to staging.
 - Prize Box: the live spin no longer depends on each device's clock.
   - **Server:** the draw pointer carries serverNow (copied to public/live.prizeDraw), and obsFeed and prizeMine { draw: true } return serverNow.
   - **Devices:** site/src/lib/server-clock.ts keeps the device's offset from the server clock. The best sample wins: a round trip, then a pointer that changed live, then the site's Date header as the fallback. The banner, the /live card, the owner's panel and the stream view spin from startAt and count down I'm here on the corrected clock.
