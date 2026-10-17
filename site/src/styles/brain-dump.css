@@ -1,7 +1,8 @@
 /* Brain Dump (docs/specs/brain-dump.md §4; mockup docs/design/mockups/brain-dump.html, card style C1 Tinted fill). Feature CSS, bd-
    prefix: the hero scene, the goal card and its celebration, the toolbar, the grid, the category / Inbox / add-category cards, the drag
    ghost, print. Kit pieces untouched: .bt-check, .bt-input, .bt-search, .bt-chip, .bt-btn, .bt-select, .bt-lock-card, .bt-toast, the
-   mascot. Tokens only; the one feature color is --bd-ember (the middle of the title gradient, card color "Ember"). Card colors are the six
+   mascot. Tokens only; the feature colors are --bd-ember (the middle of the title gradient, card color "Ember") and the looks' Post-it
+   and Chalkboard colors (--bd-note-*, --bd-chalk-*), each declared once below. The six looks (§9b) are one block each, near the end. Card colors are the six
    tones as tinted fills: color-mix(in srgb, tone 13%, var(--bt-surface)), never purple (clickable), red (delete) or green (admin).
    Container queries for layout (bt: 1024 two columns, 640 one); @media only for print and reduced motion, the only places !important is
    used. #brain-dump-root.bt-root overrides the kit's root overflow/max-width (overflow: hidden would break sticky; design-system §8). */
@@ -11,6 +12,19 @@
   --bd-hit: 32px;                                                   /* tap target for item controls */
   --bd-paper: Canvas;                                               /* print: the system's page colors (a light scheme) */
   --bd-print-ink: CanvasText;
+  /* looks (§9b): the only raw colors besides --bd-ember, one custom property per unique color */
+  --bd-note-marigold: #ffc046;   /* Post-it yellows: one per card color */
+  --bd-note-lemon: #fff59d;
+  --bd-note-sun: #ffe066;
+  --bd-note-canary: #fff176;
+  --bd-note-butter: #fff3b8;
+  --bd-note-honey: #ffd54f;
+  --bd-note-index: #fbf8ef;      /* the Inbox's index card */
+  --bd-note-ink: #2e2a1a;        /* pencil ink on the notes */
+  --bd-chalk-slate: #1b1f21;     /* the slate (black, not green: green means admin on this site) */
+  --bd-chalk: #f1eee4;           /* chalk white */
+  --bd-chalk-wood: #6e4b2e;      /* the frame */
+  --bd-chalk-wood-dark: #47301d; /* the frame's shadow side */
 }
 
 #brain-dump-root.bt-root { display: block; width: 100%; min-width: 0; box-sizing: border-box; padding: var(--bt-space-6) var(--bt-gutter) var(--bt-space-12); max-width: calc(var(--bt-content-max) + 2 * var(--bt-gutter)); margin: 0 auto; border-radius: 0; overflow: visible; }   /* a size container has no width of its own: fill the column (like #tp-root) */
@@ -172,6 +186,178 @@
 .bt-portal[data-feature="brain-dump"] { position: fixed; inset: 0; pointer-events: none; z-index: var(--bt-z-modal); background: transparent; border-radius: 0; overflow: visible; max-width: none; container-type: normal; }
 .bt-portal[data-feature="brain-dump"] .bd-ghost { position: fixed; margin: 0; pointer-events: none; opacity: 0.96; box-shadow: 0 24px 44px -16px rgba(var(--bt-ink-rgb), 0.95), 0 0 0 1px color-mix(in srgb, var(--bd-tone) 50%, transparent); transform-origin: 30px 20px; }
 body.bd-dragging { user-select: none; -webkit-user-select: none; cursor: grabbing; }
+
+/* ========== looks (docs/specs/brain-dump.md §9b; mockup docs/design/mockups/brain-dump-looks.html) ==========
+   data-look on the board root (Classic = no attribute), one block per look. The Control Room looks rule: a look restyles surfaces,
+   frames, motion and decoration only; never color meaning, the heading ladder or what is clickable. The practice board (.bd-practice)
+   and the drag copy in the portal wear the same look. Shadows, scanlines and sheen mix --bt-bg / --bt-text with transparent. */
+/* =================== L1 NEON: same shapes, cold black cards, glowing tone edges =================== */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-card { --bd-glow: color-mix(in srgb, var(--bd-tone) 75%, var(--bt-text)); background: linear-gradient(180deg, color-mix(in srgb, var(--bd-tone) 7%, var(--bt-bg)), var(--bt-bg) 70%); border: 1px solid color-mix(in srgb, var(--bd-tone) 55%, transparent); color: var(--bt-text); box-shadow: 0 0 22px -6px color-mix(in srgb, var(--bd-tone) 55%, transparent), inset 0 0 22px -12px color-mix(in srgb, var(--bd-tone) 70%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-card:is(:hover, :focus-within) { box-shadow: 0 0 30px -4px color-mix(in srgb, var(--bd-tone) 70%, transparent), inset 0 0 26px -10px color-mix(in srgb, var(--bd-tone) 80%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-card-title { color: var(--bd-glow); text-shadow: 0 0 12px color-mix(in srgb, var(--bd-tone) 80%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-count { background: transparent; border: 1px solid color-mix(in srgb, var(--bd-tone) 60%, transparent); color: var(--bd-glow); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-add-input { background: transparent; border-color: color-mix(in srgb, var(--bd-tone) 50%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="neon"] .bd-item:not(.is-starred) + .bd-item { box-shadow: 0 -1px 0 color-mix(in srgb, var(--bd-tone) 14%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="neon"] .bd-card--inbox { background: var(--bt-bg); border: 1.5px dashed color-mix(in srgb, var(--bt-title) 60%, transparent); box-shadow: 0 0 22px -8px rgba(var(--bt-gold-rgb), 0.5); }
+:is(#brain-dump-root, .bd-practice)[data-look="neon"] .bd-goalcard { background: radial-gradient(80% 120% at 0% 0%, rgba(var(--bt-gold-rgb), 0.1), transparent 60%), var(--bt-bg); border-color: rgba(var(--bt-gold-rgb), 0.45); box-shadow: 0 0 30px -10px rgba(var(--bt-gold-rgb), 0.5); }
+:is(#brain-dump-root, .bd-practice)[data-look="neon"] .bd-goal { text-shadow: 0 0 18px rgba(var(--bt-gold-rgb), 0.35); }
+
+/* =================== L2 CONTROL PANEL: the Control Room's hull panels =================== */
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] { background-image: linear-gradient(color-mix(in srgb, var(--bt-blue) 5%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--bt-blue) 5%, transparent) 1px, transparent 1px); background-size: 28px 28px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card { background-color: var(--bt-surface); background-image: linear-gradient(color-mix(in srgb, var(--bd-tone) 6%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--bd-tone) 6%, transparent) 1px, transparent 1px); background-size: 18px 18px; border: 1px solid color-mix(in srgb, var(--bd-tone) 32%, var(--bt-border)); border-radius: 4px; color: var(--bt-text); box-shadow: 0 10px 24px -16px color-mix(in srgb, var(--bt-bg) 95%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card:not(.bd-card--add)::before, :is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card:not(.bd-card--add)::after { content: ""; position: absolute; width: 12px; height: 12px; border: 0 solid var(--bd-tone); pointer-events: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card:not(.bd-card--add)::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card:not(.bd-card--add)::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card-head { align-items: center; margin-bottom: 6px; padding: 8px 8px 8px 6px; border-bottom: 1px solid color-mix(in srgb, var(--bd-tone) 28%, transparent); background: color-mix(in srgb, var(--bd-tone) 7%, var(--bt-bg)); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card-title { font-family: var(--bd-mono); font-size: var(--bt-text-md); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-card-title::before { content: ""; display: inline-block; width: 8px; height: 8px; margin: 0 9px 1px 0; border-radius: 50%; background: var(--bd-tone); box-shadow: 0 0 8px var(--bd-tone); vertical-align: middle; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-count { margin-top: 0; border-radius: 3px; background: var(--bt-bg); border: 1px solid color-mix(in srgb, var(--bd-tone) 35%, var(--bt-border)); color: var(--bd-tone); font-size: var(--bt-text-sm); letter-spacing: 0.08em; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-item { border-radius: 2px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-item + .bd-item { box-shadow: 0 -1px 0 color-mix(in srgb, var(--bt-text) 6%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="panel"] .bd-add-input { border-radius: 3px; border-style: solid; background: var(--bt-bg); border-color: color-mix(in srgb, var(--bd-tone) 25%, var(--bt-border)); font-family: var(--bd-mono); font-size: var(--bt-text-lg); }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-card--inbox { --bd-tone: var(--bt-title); background-color: var(--bt-bg); border-style: dashed; }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-card--inbox .bd-card-title::before { animation: bd-led 2.4s steps(1, end) infinite; }
+@keyframes bd-led { 0%, 60% { opacity: 1; } 61%, 100% { opacity: 0.35; } }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-card--add { border-radius: 4px; }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-goalcard { position: relative; border-radius: 4px; border-color: rgba(var(--bt-gold-rgb), 0.35); background-color: var(--bt-surface); background-image: linear-gradient(rgba(var(--bt-gold-rgb), 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(var(--bt-gold-rgb), 0.05) 1px, transparent 1px); background-size: 18px 18px; }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-goalcard::before, :is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-goalcard::after { content: ""; position: absolute; width: 16px; height: 16px; border: 0 solid var(--bt-title); }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-goalcard::before { top: -1px; left: -1px; border-width: 2px 0 0 2px; }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-goalcard::after { bottom: -1px; right: -1px; border-width: 0 2px 2px 0; }
+:is(#brain-dump-root, .bd-practice)[data-look="panel"] .bd-stats { padding: 6px 10px; border: 1px solid var(--bt-border); border-radius: 3px; background: var(--bt-bg); width: fit-content; }
+
+/* =================== L3 CRT: each card is a little bubble TV =================== */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-card:not(.bd-card--add) { --bd-glow: color-mix(in srgb, var(--bd-tone) 70%, var(--bt-text)); background: radial-gradient(120% 90% at 50% 40%, color-mix(in srgb, var(--bd-tone) 12%, var(--bt-bg)), var(--bt-bg) 75%); border: 10px solid var(--bt-surface-2); border-bottom-width: 24px; border-radius: 30px; color: var(--bt-text); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--bt-bg) 60%, transparent), inset 0 0 40px color-mix(in srgb, var(--bt-bg) 75%, transparent), 0 0 0 1px var(--bt-border-2), 0 14px 26px -14px color-mix(in srgb, var(--bt-bg) 95%, transparent); overflow: visible; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-card:not(.bd-card--add)::after { content: ""; position: absolute; inset: 0; z-index: 2; border-radius: 20px; pointer-events: none; background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--bt-bg) 15%, transparent) 0 1px, transparent 1px 3px), radial-gradient(110% 80% at 50% 10%, color-mix(in srgb, var(--bt-text) 5%, transparent), transparent 40%); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-card:not(.bd-card--add)::before { content: ""; position: absolute; right: 8px; bottom: -18px; width: 52px; height: 12px; pointer-events: none; background: radial-gradient(circle 5px at 6px 6px, var(--bt-border-2) 4px, transparent 5px), radial-gradient(circle 5px at 22px 6px, var(--bt-border-2) 4px, transparent 5px), radial-gradient(circle 3px at 44px 6px, var(--bt-lime) 2px, transparent 3px); filter: drop-shadow(0 0 2px color-mix(in srgb, var(--bt-lime) 50%, transparent)); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-card:not(.bd-card--add) > * { position: relative; z-index: 1; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-card-title { font-family: var(--bd-mono); font-size: var(--bt-text-md); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--bd-glow); text-shadow: 0 0 8px color-mix(in srgb, var(--bd-tone) 85%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-text { text-shadow: 0 0 6px color-mix(in srgb, var(--bd-tone) 35%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-count { background: transparent; color: var(--bd-glow); text-shadow: 0 0 6px var(--bd-tone); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-count::before { content: "CH "; opacity: 0.7; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="crt"] .bd-add-input { background: color-mix(in srgb, var(--bt-bg) 35%, transparent); font-family: var(--bd-mono); }
+:is(#brain-dump-root, .bd-practice)[data-look="crt"] .bd-card--inbox { --bd-tone: var(--bt-title); border-style: solid; }
+:is(#brain-dump-root, .bd-practice)[data-look="crt"] .bd-card--add { border-radius: 30px; }
+:is(#brain-dump-root, .bd-practice)[data-look="crt"] .bd-goalcard { position: relative; overflow: hidden; border: 12px solid var(--bt-surface-2); border-radius: 32px; background: radial-gradient(120% 100% at 50% 30%, rgba(var(--bt-gold-rgb), 0.08), var(--bt-bg) 70%); box-shadow: inset 0 0 50px color-mix(in srgb, var(--bt-bg) 80%, transparent), 0 0 0 1px var(--bt-border-2); }
+:is(#brain-dump-root, .bd-practice)[data-look="crt"] .bd-goalcard::after { content: ""; position: absolute; inset: 0; pointer-events: none; background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--bt-bg) 20%, transparent) 0 1px, transparent 1px 3px); }
+:is(#brain-dump-root, .bd-practice)[data-look="crt"] .bd-goal { text-shadow: 0 0 14px rgba(var(--bt-gold-rgb), 0.45); }
+/* power-on, once, when the page opens (.is-boot is added on load and removed after) */
+:is(#brain-dump-root, .bd-practice)[data-look="crt"].is-boot .bd-card:not(.bd-card--add) { animation: bd-crt-on 0.7s cubic-bezier(.2, .8, .2, 1) both; animation-delay: calc(var(--i, 0) * 50ms); }
+@keyframes bd-crt-on { 0% { transform: scale(1, 0.01); filter: brightness(4); } 45% { transform: scale(1, 0.02); filter: brightness(3); } 100% { transform: none; filter: none; } }
+
+/* =================== L4 POST-IT: sticky notes in a range of yellows, pinned with the card's color =================== */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="ember"] { --bd-note: var(--bd-note-marigold); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="pink"] { --bd-note: var(--bd-note-lemon); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="gold"] { --bd-note: var(--bd-note-sun); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="lime"] { --bd-note: var(--bd-note-canary); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="teal"] { --bd-note: var(--bd-note-butter); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card[data-color="blue"] { --bd-note: var(--bd-note-honey); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] { background-image: radial-gradient(circle at 1px 1px, var(--bt-surface-2) 1px, transparent 1.6px); background-size: 14px 14px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) { --bd-ink: var(--bd-note-ink); --tilt: -0.6deg; color: var(--bd-note-ink); border-radius: 2px 2px 3px 14px; background: linear-gradient(180deg, color-mix(in srgb, var(--bd-note) 90%, var(--bd-note-ink)) 0 16px, var(--bd-note) 16px, color-mix(in srgb, var(--bd-note) 94%, var(--bd-note-ink)) 100%); box-shadow: 0 1px 1px color-mix(in srgb, var(--bt-bg) 30%, transparent), 0 14px 18px -10px color-mix(in srgb, var(--bt-bg) 90%, transparent); transform: rotate(var(--tilt)); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-grid > .bd-card:nth-child(3n) { --tilt: 0.7deg; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-grid > .bd-card:nth-child(3n+1) { --tilt: -0.3deg; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-grid > .bd-card:nth-child(4n+2) { --tilt: 1deg; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-grid > .bd-card.bd-card--wide { --tilt: 0.2deg; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-grid > .bd-card.bd-card--half { --tilt: -0.4deg; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox):is(:hover, :focus-within) { transform: rotate(0deg) translateY(-2px); box-shadow: 0 2px 2px color-mix(in srgb, var(--bt-bg) 30%, transparent), 0 20px 24px -12px color-mix(in srgb, var(--bt-bg) 95%, transparent); }
+/* the pushpin carries the card's color */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add)::before { content: ""; position: absolute; z-index: 3; top: -7px; left: 50%; width: 16px; height: 16px; margin-left: -8px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, color-mix(in srgb, var(--bt-text) 75%, var(--bd-tone)) 0 18%, var(--bd-tone) 45%, color-mix(in srgb, var(--bd-tone) 55%, var(--bt-bg)) 100%); box-shadow: 0 3px 4px color-mix(in srgb, var(--bt-bg) 70%, transparent); pointer-events: none; }
+/* the curled corner */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox)::after { content: ""; position: absolute; left: 0; bottom: 0; width: 22px; height: 22px; border-radius: 0 0 0 14px; background: linear-gradient(45deg, transparent 50%, color-mix(in srgb, var(--bd-note) 78%, var(--bd-note-ink)) 50%); pointer-events: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) :is(.bd-card-title, .bd-text) { color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add) .bd-card-head { padding-top: 16px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-count { background: color-mix(in srgb, var(--bd-note-ink) 10%, transparent); color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-ic { color: var(--bd-note-ink); opacity: 0.7; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-ic:disabled { opacity: 0.22; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-star.is-on { color: var(--bd-note-ink); opacity: 1; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-item.is-starred { background: color-mix(in srgb, var(--bd-note-ink) 9%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-item.is-done .bd-text { opacity: 0.55; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bt-check input { border-color: color-mix(in srgb, var(--bd-note-ink) 55%, transparent); background: color-mix(in srgb, var(--bt-text) 55%, var(--bd-note)); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bt-check input:checked { background: var(--bt-primary); border-color: var(--bt-primary); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-add-input { color: var(--bd-note-ink); background: transparent; border: 0; border-bottom: 1.5px dashed color-mix(in srgb, var(--bd-note-ink) 40%, transparent); border-radius: 0; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-add-input::placeholder { color: var(--bd-note-ink); opacity: 0.55; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-add-input:focus { border-bottom-style: solid; border-color: var(--bt-primary); box-shadow: none; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-add .bt-btn { background: color-mix(in srgb, var(--bd-note-ink) 8%, transparent); border-color: color-mix(in srgb, var(--bd-note-ink) 30%, transparent); color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="postit"] .bd-card:not(.bd-card--add, .bd-card--inbox) .bd-add .bt-btn:hover { border-color: var(--bt-primary); color: var(--bt-primary); }
+/* the Inbox is a ruled index card */
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox { --bd-tone: var(--bt-pink); color: var(--bd-note-ink); border: 0; border-radius: 3px; background: linear-gradient(90deg, transparent 38px, color-mix(in srgb, var(--bt-pink) 55%, transparent) 38px 39.5px, transparent 39.5px), repeating-linear-gradient(180deg, transparent 0 27px, color-mix(in srgb, var(--bt-blue) 35%, transparent) 27px 28px), var(--bd-note-index); background-position: 0 0, 0 18px, 0 0; box-shadow: 0 14px 18px -10px color-mix(in srgb, var(--bt-bg) 90%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox :is(.bd-card-title, .bd-text, .bd-inbox-sub, .bd-count, .bd-inbox-empty) { color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-card-head, :is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-inbox-sub, :is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-items { padding-left: 46px; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-count { background: color-mix(in srgb, var(--bd-note-ink) 8%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-item { border-bottom-color: transparent; }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-card--inbox .bd-ic { color: var(--bd-note-ink); }
+/* the goal is a big canary note held up with tape */
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard { position: relative; color: var(--bd-note-ink); border: 0; border-radius: 3px; background: linear-gradient(180deg, color-mix(in srgb, var(--bd-note-canary) 92%, var(--bd-note-ink)) 0 18px, var(--bd-note-canary) 18px); box-shadow: 0 16px 22px -12px color-mix(in srgb, var(--bt-bg) 95%, transparent); transform: rotate(-0.4deg); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard::before, :is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard::after { content: ""; position: absolute; top: -10px; width: 92px; height: 24px; background: color-mix(in srgb, var(--bt-text) 40%, transparent); box-shadow: 0 1px 2px color-mix(in srgb, var(--bt-bg) 25%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard::before { left: 18px; transform: rotate(-5deg); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard::after { right: 18px; transform: rotate(4deg); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard :is(.bt-label, .bd-started, .bd-stats, .bd-goal) { color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard .bd-stats b { color: var(--bd-note-ink); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard .bd-goal:empty::before { color: color-mix(in srgb, var(--bd-note-ink) 55%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard .bd-started input { color-scheme: light; color: var(--bd-note-ink); background: color-mix(in srgb, var(--bt-text) 45%, var(--bd-note-canary)); border-color: color-mix(in srgb, var(--bd-note-ink) 30%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard .bt-check input { border-color: color-mix(in srgb, var(--bd-note-ink) 55%, transparent); background: color-mix(in srgb, var(--bt-text) 55%, var(--bd-note-canary)); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalcard .bt-check input:checked { background: var(--bt-primary); border-color: var(--bt-primary); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-goalrow.is-done .bd-goal { color: color-mix(in srgb, var(--bd-note-ink) 50%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="postit"] .bd-capture { border-top-color: color-mix(in srgb, var(--bd-note-ink) 25%, transparent); }
+
+/* ---------- the look picker ---------- */
+:is(#brain-dump-root, .bd-practice) .bd-lookpick { position: relative; }
+:is(#brain-dump-root, .bd-practice) .bt-popover.bd-look-pop { right: 0; top: calc(100% + 6px); min-width: 230px; gap: 2px; padding: 8px; }
+:is(#brain-dump-root, .bd-practice) .bt-popover.bd-look-pop[hidden] { display: none; }
+:is(#brain-dump-root, .bd-practice) .bd-lookpick .bd-look-opt { display: flex; align-items: center; gap: 12px; width: 100%; padding: 8px 10px; border: 0; border-radius: var(--bt-radius-md); background: none; color: var(--bt-text); font: inherit; font-size: var(--bt-text-md); font-weight: 600; text-align: left; cursor: pointer; }
+:is(#brain-dump-root, .bd-practice) .bd-lookpick .bd-look-opt:is(:hover, :focus-visible) { background: var(--bt-primary-bg); outline: none; box-shadow: inset 2px 0 0 var(--bt-primary); }
+:is(#brain-dump-root, .bd-practice) .bd-lookpick .bd-look-opt[aria-checked="true"]::after { content: "✓"; margin-left: auto; color: var(--bt-primary-soft); font-weight: 900; }
+:is(#brain-dump-root, .bd-practice) .bd-lookpick .bd-look-note { margin: 6px 10px 2px; color: var(--bt-text-faint); font-size: var(--bt-text-xs); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw { flex: none; position: relative; width: 34px; height: 24px; border-radius: 5px; overflow: hidden; }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="classic"] { background: linear-gradient(90deg, color-mix(in srgb, var(--bd-ember) 16%, var(--bt-surface)) 0 50%, color-mix(in srgb, var(--bt-teal) 16%, var(--bt-surface)) 50%); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="neon"] { background: var(--bt-bg); border: 1px solid var(--bt-pink); box-shadow: 0 0 8px color-mix(in srgb, var(--bt-pink) 70%, transparent), inset 0 0 8px color-mix(in srgb, var(--bt-pink) 50%, transparent); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="panel"] { border-radius: 2px; background-color: var(--bt-surface); background-image: linear-gradient(color-mix(in srgb, var(--bt-blue) 25%, transparent) 1px, transparent 1px), linear-gradient(90deg, color-mix(in srgb, var(--bt-blue) 25%, transparent) 1px, transparent 1px); background-size: 6px 6px; border: 1px solid var(--bt-blue); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="crt"] { border: 4px solid var(--bt-surface-2); border-bottom-width: 7px; border-radius: 8px; background: repeating-linear-gradient(0deg, color-mix(in srgb, var(--bt-bg) 40%, transparent) 0 1px, transparent 1px 3px), radial-gradient(circle, color-mix(in srgb, var(--bt-teal) 45%, var(--bt-bg)), var(--bt-bg)); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="postit"] { overflow: visible; border-radius: 2px 2px 2px 6px; background: linear-gradient(180deg, var(--bd-note-honey) 0 6px, var(--bd-note-canary) 6px); transform: rotate(-4deg); }
+
+/* =================== L5 CHALKBOARD: a black slate in a wooden frame, everything drawn in chalk =================== */
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] { border: 12px solid var(--bd-chalk-wood); border-bottom-width: 26px; border-image: linear-gradient(160deg, var(--bd-chalk-wood), var(--bd-chalk-wood-dark)) 1; background-color: var(--bd-chalk-slate); background-image: radial-gradient(60% 40% at 18% 22%, color-mix(in srgb, var(--bd-chalk) 5%, transparent), transparent 70%), radial-gradient(45% 30% at 82% 64%, color-mix(in srgb, var(--bd-chalk) 4%, transparent), transparent 70%), radial-gradient(30% 20% at 40% 90%, color-mix(in srgb, var(--bd-chalk) 3%, transparent), transparent 70%); box-shadow: inset 0 0 60px color-mix(in srgb, var(--bt-bg) 70%, transparent); }
+@container bt (max-width: 640px) { :is(#brain-dump-root, .bd-practice)[data-look="chalk"] { border-width: 6px 6px 16px; } }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-card:not(.bd-card--add) { --bd-chalk-tone: color-mix(in srgb, var(--bd-tone) 55%, var(--bd-chalk)); background: color-mix(in srgb, var(--bd-chalk) 2%, transparent); color: var(--bd-chalk); border: 2px solid color-mix(in srgb, var(--bd-chalk) 55%, transparent); border-radius: 14px 4px 12px 5px / 5px 12px 4px 14px; box-shadow: 0 0 6px color-mix(in srgb, var(--bd-chalk) 12%, transparent), inset 0 0 10px color-mix(in srgb, var(--bd-chalk) 5%, transparent); }
+.bt-portal[data-feature="brain-dump"][data-look="chalk"] .bd-card { background: var(--bd-chalk-slate); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-card:not(.bd-card--add):is(:hover, :focus-within) { border-color: color-mix(in srgb, var(--bd-chalk) 80%, transparent); box-shadow: 0 0 10px color-mix(in srgb, var(--bd-chalk) 18%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-card-title { color: var(--bd-chalk-tone); letter-spacing: 0.02em; text-shadow: 0 0 1px var(--bd-chalk-tone), 0 0 6px color-mix(in srgb, var(--bd-chalk-tone) 35%, transparent); text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; text-decoration-color: color-mix(in srgb, var(--bd-chalk-tone) 55%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-text { color: var(--bd-chalk); text-shadow: 0 0 1px color-mix(in srgb, var(--bd-chalk) 70%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-count { background: transparent; border: 1.5px solid color-mix(in srgb, var(--bd-chalk-tone) 60%, transparent); border-radius: 50% 45% 55% 40%; color: var(--bd-chalk-tone); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-ic { color: var(--bd-chalk); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bt-check input:not(:checked) { background: transparent; border: 1.5px solid color-mix(in srgb, var(--bd-chalk) 70%, transparent); border-radius: 3px 5px 2px 4px; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-item.is-done .bd-text { text-decoration-color: var(--bd-chalk); opacity: 0.55; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-item.is-starred { background: color-mix(in srgb, var(--bt-gold) 8%, transparent); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-star.is-on { color: color-mix(in srgb, var(--bt-gold) 70%, var(--bd-chalk)); }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-add-input { color: var(--bd-chalk); background: transparent; border: 0; border-bottom: 1.5px dashed color-mix(in srgb, var(--bd-chalk) 40%, transparent); border-radius: 0; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-add-input::placeholder { color: var(--bd-chalk); opacity: 0.45; }
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"])[data-look="chalk"] .bd-add-input:focus { border-bottom-style: solid; border-color: var(--bt-primary); box-shadow: none; }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-card.bd-card--inbox { --bd-tone: var(--bt-title); border-style: dashed; border-color: color-mix(in srgb, var(--bd-chalk) 45%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-card--add { border: 2px dashed color-mix(in srgb, var(--bd-chalk) 30%, transparent); border-radius: 12px 4px 10px 5px; }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-goalcard { background: transparent; border: 0; border-bottom: 2px solid color-mix(in srgb, var(--bd-chalk) 30%, transparent); border-radius: 0; padding-left: 4px; padding-right: 4px; }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-goalcard :is(.bt-label, .bd-started, .bd-stats) { color: color-mix(in srgb, var(--bd-chalk) 75%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-goalcard .bd-stats b { color: var(--bd-chalk); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-goal { color: var(--bd-chalk); font-size: 32px; text-shadow: 0 0 1px var(--bd-chalk), 0 0 10px color-mix(in srgb, var(--bd-chalk) 25%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-goalrow .bt-check input:not(:checked) { background: transparent; border: 2px solid color-mix(in srgb, var(--bd-chalk) 75%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-hero .bt-title { filter: drop-shadow(0 0 6px color-mix(in srgb, var(--bd-chalk) 18%, transparent)); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-hero .bt-subtitle, :is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-hero .bt-label { color: color-mix(in srgb, var(--bd-chalk) 70%, transparent); }
+:is(#brain-dump-root, .bd-practice)[data-look="chalk"] .bd-foot { color: color-mix(in srgb, var(--bd-chalk) 60%, transparent); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="chalk"] { border: 3px solid var(--bd-chalk-wood); border-radius: 3px; background: radial-gradient(circle at 30% 30%, color-mix(in srgb, var(--bd-chalk) 10%, transparent), transparent 60%), var(--bd-chalk-slate); }
+:is(#brain-dump-root, .bd-practice) .bd-look-sw[data-sw="chalk"]::after { content: ""; position: absolute; left: 4px; right: 6px; top: 7px; height: 2px; border-radius: 2px; background: var(--bd-chalk); box-shadow: 0 5px 0 -0.5px color-mix(in srgb, var(--bd-chalk) 60%, transparent); transform: rotate(-3deg); }
+@media print { :is(#brain-dump-root, .bd-practice)[data-look="chalk"] { border: 0; background: none; box-shadow: none; } }
+
+/* starred rows: a faint gold tint (no edge bar) in the cooler looks */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"]):is([data-look="neon"], [data-look="panel"], [data-look="crt"]) .bd-item.is-starred { background: color-mix(in srgb, var(--bt-gold) 8%, transparent); }
+
+/* print and reduced motion: the looks fall back to the plain sheet and stay still */
+@media print {
+  :is(#brain-dump-root, .bd-practice)[data-look] .bd-card::before, :is(#brain-dump-root, .bd-practice)[data-look] .bd-card::after, :is(#brain-dump-root, .bd-practice)[data-look] .bd-goalcard::before, :is(#brain-dump-root, .bd-practice)[data-look] .bd-goalcard::after { display: none; }
+  :is(#brain-dump-root, .bd-practice)[data-look] .bd-card { border-width: 1px !important; border-radius: 6px !important; }
+  :is(#brain-dump-root, .bd-practice)[data-look] .bd-card-head { background: none !important; }
+  :is(#brain-dump-root, .bd-practice)[data-look] :is(.bd-card-title, .bd-text, .bd-count) { color: var(--bd-print-ink) !important; text-shadow: none !important; }
+}
+@media (prefers-reduced-motion: reduce) {
+  :is(#brain-dump-root, .bd-practice)[data-look] .bd-card, :is(#brain-dump-root, .bd-practice)[data-look] .bd-card-title::before { animation: none !important; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   #brain-dump-root *, .bd-practice *, .bd-snap *, .bt-portal[data-feature="brain-dump"] * { transition: none !important; animation: none !important; }

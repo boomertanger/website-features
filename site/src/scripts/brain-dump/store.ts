@@ -25,13 +25,14 @@ function readLocal(uid: string): Local | null {
 }
 function writeLocal(uid: string, l: Local) { try { localStorage.setItem(keyFor(uid), JSON.stringify(l)); } catch { /* blocked storage: the server copy still saves */ } }
 
-/** The document exactly as the rules accept it (seven keys; updatedAt is added as the server's time). */
+/** The document exactly as the rules accept it (eight keys with look, §9b; updatedAt is added as the server's time). */
 function toDoc(s: BoardState) {
   return {
     v: 1,
     goal: String(s.goal || "").slice(0, LIMITS.goal),
     goalDone: !!s.goalDone,
     startDate: String(s.startDate || "").slice(0, 10),
+    look: s.look,
     inbox: { items: s.inbox.items.slice(0, LIMITS.inbox).map((it) => ({ id: it.id, text: it.text })) },
     categories: s.categories.slice(0, LIMITS.categories).map((c) => ({
       id: c.id, title: c.title, color: c.color, size: c.size, placeholder: c.placeholder,

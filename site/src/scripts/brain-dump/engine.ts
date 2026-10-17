@@ -13,14 +13,18 @@
 // Undo instead of confirmations (kit toast with an Undo action, 6 s, one at a time). Item, title and goal edits commit on focusout (blur
 // doesn't bubble); Enter commits. Paste is plain text. Dragging a card uses pointer events with a floating copy in a portal on <body>.
 // The rules' limits are kept here too, so a save can't be refused: at most 40 categories, 300 Inbox items, a goal of 300 characters.
+//
+// Card sizes and looks (§9, mockup docs/design/mockups/brain-dump-looks.html): each card's S / M / L button cycles its size; the
+// toolbar's 🎨 Look picker (in .bd-lookpick, when the page has one) sets state.look, shown as data-look on the root (Classic = none).
 import { toast } from "../../../../shared/ui/toast.js";
 
 export type Color = "ember" | "pink" | "gold" | "lime" | "teal" | "blue";
 export type Size = "sm" | "wide" | "half";
+export type Look = "classic" | "neon" | "panel" | "crt" | "postit" | "chalk";
 export interface Item { id: string; text: string; done: boolean; starred: boolean }
 export interface InboxItem { id: string; text: string }
 export interface Category { id: string; title: string; color: Color; size: Size; placeholder: string; items: Item[] }
-export interface BoardState { goal: string; goalDone: boolean; startDate: string; inbox: { items: InboxItem[] }; categories: Category[] }
+export interface BoardState { goal: string; goalDone: boolean; startDate: string; look: Look; inbox: { items: InboxItem[] }; categories: Category[] }
 export interface BoardStore { save(state: BoardState): void }
 export interface MountOpts { initial?: () => unknown; store?: BoardStore | null; on?: (ev: string) => void; mascot?: string }
 export interface BoardApi { state(): BoardState; replace(s: unknown): void; isEditing(): boolean; setSaved(text: string): void }
@@ -35,6 +39,11 @@ const SIZES: Size[] = ["sm", "half", "wide"];
 const SIZE_NAME: Record<Size, string> = { sm: "Small", half: "Medium", wide: "Large" };
 const SIZE_LETTER: Record<Size, string> = { sm: "S", half: "M", wide: "L" };
 const SIZE_HINT: Record<Size, string> = { sm: "a third", half: "half", wide: "full width" };
+// looks (§9b): a per-person setting saved on the board; data-look on the board root (Classic = no attribute), one CSS block per look
+export const LOOKS: [Look, string][] = [["classic", "Classic"], ["neon", "Neon"], ["panel", "Control panel"], ["crt", "CRT TV"], ["postit", "Post-it"], ["chalk", "Chalkboard"]];
+export const DEFAULT_LOOK: Look = "panel";
+const isLook = (v: unknown): v is Look => LOOKS.some(([id]) => id === v);
+const lookName = (v: Look) => LOOKS.find(([id]) => id === v)?.[1] || v;
 
 const ICON = {
   grip: '<svg viewBox="0 0 16 16" aria-hidden="true"><g fill="currentColor"><circle cx="5.5" cy="3.5" r="1.4"/><circle cx="10.5" cy="3.5" r="1.4"/><circle cx="5.5" cy="8" r="1.4"/><circle cx="10.5" cy="8" r="1.4"/><circle cx="5.5" cy="12.5" r="1.4"/><circle cx="10.5" cy="12.5" r="1.4"/></g></svg>',
@@ -52,7 +61,7 @@ const cat = (title: string, color: Color, size: Size, placeholder: string): Cate
 
 export function defaultState(): BoardState {
   return {
-    goal: "", goalDone: false, startDate: todayISO(), inbox: { items: [] },
+    goal: "", goalDone: false, startDate: todayISO(), look: DEFAULT_LOOK, inbox: { items: [] },
     categories: [
       cat("I need to call", "ember", "sm", "Add someone to call…"),
       cat("I need to text", "pink", "sm", "Add someone to text…"),
@@ -76,6 +85,7 @@ export function migrate(raw: unknown): BoardState {
     goal: typeof s.goal === "string" ? s.goal.slice(0, LIMITS.goal) : "",
     goalDone: !!s.goalDone,
     startDate: typeof s.startDate === "string" && s.startDate ? s.startDate.slice(0, 10) : todayISO(),
+    look: isLook(s.look) ? s.look : DEFAULT_LOOK,   // missing (a board from before looks) or unknown -> Control panel
     inbox: { items: (Array.isArray(s.inbox?.items) ? s.inbox.items : []).filter((it: any) => it && typeof it.text === "string").map((it: any) => ({ id: String(it.id || uid()), text: it.text })) },
     categories: s.categories.filter((c: any) => c && typeof c === "object").map((c: any) => {
       const color: Color = LEGACY[c.color] || (COLORS.includes(c.color) ? c.color : "gold");
@@ -195,6 +205,7 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     card.className = `bd-card bd-card--${category.size}`;
     card.dataset.catId = category.id;
     card.style.setProperty("--bd-tone", TONE[category.color]);
+    card.dataset.color = category.color;   // Post-it maps each color to its own yellow
     card.innerHTML =
       '<header class="bd-card-head">' +
         '<button type="button" class="bd-ic bd-drag" data-pulse="drag-card"></button>' +
@@ -332,6 +343,70 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     startDate.value = state.startDate || todayISO();
   }
 
+  /* ---------- look picker (§9b: per person, saved on the board) ---------- */
+  // Set up once here. Reset board and Undo only repaint through applyLook(); they never build the picker again.
+  const lookWrap = root.querySelector<HTMLElement>(".bd-lookpick");
+  let lookBtn: HTMLElement | null = null, lookPop: HTMLElement | null = null;
+  const reducedMotion = () => matchMedia("(prefers-reduced-motion: reduce)").matches;
+  /** CRT TV: the TVs switch on once, staggered (none under reduced motion). */
+  function boot() {
+    if (reducedMotion()) return;
+    root.querySelectorAll<HTMLElement>(".bd-grid > .bd-card").forEach((c, i) => c.style.setProperty("--i", String(i)));
+    root.classList.remove("is-boot"); void root.offsetWidth; root.classList.add("is-boot");
+    setTimeout(() => root.classList.remove("is-boot"), 1600);
+  }
+  function applyLook(animate: boolean) {
+    if (state.look === "classic") delete root.dataset.look; else root.dataset.look = state.look;
+    if (lookBtn && lookPop) {
+      lookBtn.querySelector("b")!.textContent = lookName(state.look);
+      lookPop.querySelectorAll<HTMLElement>("[data-look-v]").forEach((o) => o.setAttribute("aria-checked", String(o.dataset.lookV === state.look)));
+    }
+    if (animate && state.look === "crt") boot();
+  }
+  if (lookWrap) {
+    lookWrap.innerHTML =
+      '<button type="button" class="bt-chip bt-chip--menu bd-look-btn" aria-haspopup="menu" aria-expanded="false" data-pulse="look-open"><span aria-hidden="true">🎨</span> Look: <b></b></button>' +
+      '<div class="bt-popover bd-look-pop" role="menu" aria-label="Board look" hidden>' +
+      LOOKS.map(([id, name]) => `<button type="button" class="bd-look-opt" role="menuitemradio" aria-checked="false" data-look-v="${id}" data-pulse="look-${id}"><span class="bd-look-sw" data-sw="${id}" aria-hidden="true"></span><span>${name}</span></button>`).join("") +
+      '<p class="bd-look-note">Only changes how your board looks to you.</p></div>';
+    const btn = lookWrap.querySelector<HTMLElement>(".bd-look-btn")!, pop = lookWrap.querySelector<HTMLElement>(".bd-look-pop")!;
+    lookBtn = btn; lookPop = pop;
+    const optEls = () => Array.from(pop.querySelectorAll<HTMLElement>(".bd-look-opt"));
+    const SOURCE = "brain-dump-look";
+    const openLook = () => {
+      document.dispatchEvent(new CustomEvent("bt:overlay-open", { detail: { source: SOURCE } }));   // closes any nav panel, the account menu or the More sheet
+      pop.hidden = false; btn.setAttribute("aria-expanded", "true");
+      // keep it on screen: it opens under the button's right edge and shifts if that would run off either side (phones)
+      pop.style.right = "0px"; pop.style.left = "auto";
+      const r = pop.getBoundingClientRect(), vw = document.documentElement.clientWidth;
+      if (r.left < 8) pop.style.right = `${r.left - 8}px`;
+      else if (r.right > vw - 8) pop.style.right = `${r.right - (vw - 8)}px`;
+      (pop.querySelector<HTMLElement>('[aria-checked="true"]') || optEls()[0]).focus();
+    };
+    const closeLook = (focusBtn: boolean) => {
+      if (pop.hidden) return;
+      pop.hidden = true; btn.setAttribute("aria-expanded", "false");
+      if (focusBtn) btn.focus();
+    };
+    btn.addEventListener("click", () => { if (pop.hidden) openLook(); else closeLook(false); });
+    pop.addEventListener("click", (e) => {
+      const o = (e.target as Element).closest<HTMLElement>(".bd-look-opt"); if (!o) return;
+      const v = o.dataset.lookV;
+      if (isLook(v) && v !== state.look) { state.look = v; save(); applyLook(true); say(`Look: ${lookName(v)}`); }
+      closeLook(true);
+    });
+    pop.addEventListener("keydown", (e) => {
+      const list = optEls(), i = list.indexOf(document.activeElement as HTMLElement);
+      if (e.key === "Escape") { e.preventDefault(); closeLook(true); return; }
+      if (e.key === "Tab") { closeLook(false); return; }
+      const n = ({ ArrowDown: i + 1, ArrowUp: i - 1, Home: 0, End: list.length - 1 } as Record<string, number>)[e.key];
+      if (n === undefined) return;
+      e.preventDefault(); list[(n + list.length) % list.length].focus();
+    });
+    document.addEventListener("pointerdown", (e) => { if (!lookWrap.contains(e.target as Node)) closeLook(false); });
+    document.addEventListener("bt:overlay-open", (e) => { if ((e as CustomEvent).detail?.source !== SOURCE) closeLook(false); });
+  }
+
   /* ---------- editable text: plain-text paste (gap 2), Enter commits ---------- */
   root.addEventListener("paste", (e) => {
     const t = (e.target as Element).closest?.("[contenteditable]");
@@ -406,6 +481,7 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     ghost.removeAttribute("data-cat-id");
     ghost.querySelectorAll("[contenteditable]").forEach((n) => n.removeAttribute("contenteditable"));
     ghost.style.cssText += `;left:${rect.left}px;top:${rect.top}px;width:${rect.width}px;height:${rect.height}px;`;
+    if (root.dataset.look) portal.dataset.look = root.dataset.look; else delete portal.dataset.look;   // the copy wears the board's look
     portal.appendChild(ghost);
     card.classList.add("is-drag-source");
     document.body.classList.add("bd-dragging");
@@ -677,20 +753,22 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
       rebuildGrid(); updateStats(); save();
     });
   });
+  // Reset board: keep the look, reset the state, repaint, save, and the Undo toast. Nothing else (the picker is set up once, above).
   root.querySelector(".bd-reset")?.addEventListener("click", () => {
     const previous = JSON.parse(JSON.stringify(state)) as BoardState;
-    state = defaultState();
-    paintHeader(); rebuildGrid(); updateStats(); save();
-    showToast("Board reset", () => { state = previous; paintHeader(); rebuildGrid(); updateStats(); save(); });
+    state = { ...defaultState(), look: state.look };
+    paintHeader(); rebuildGrid(); updateStats(); applyLook(false); save();
+    showToast("Board reset", () => { state = { ...previous, look: state.look }; paintHeader(); rebuildGrid(); updateStats(); applyLook(false); save(); });
   });
 
-  paintHeader(); rebuildGrid(); updateStats();
+  paintHeader(); rebuildGrid(); updateStats(); applyLook(false);
+  if (state.look === "crt") requestAnimationFrame(boot);
 
   let savedTimer = 0;
   return {
     state: () => state,
     /** Another device's save: redraw everything from it (never saves back). */
-    replace(s: unknown) { state = migrate(s); paintHeader(); rebuildGrid(); updateStats(); },
+    replace(s: unknown) { state = migrate(s); paintHeader(); rebuildGrid(); updateStats(); applyLook(false); },
     /** Something editable on the board has focus (so a remote change waits). */
     isEditing: () => { const a = document.activeElement; return !!a && root.contains(a) && (a.matches("[contenteditable], input, select") || !!a.closest("form")); },
     setSaved(text: string) {
