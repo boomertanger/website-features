@@ -41,7 +41,7 @@ function init(root: HTMLElement) {
   if (turn) initTurnPage(turn);
 
   // the public page's own blocks are already in the HTML
-  wireBlocks(root, { issueId: meta.id, slug: meta.slug, hrefFor });
+  wireBlocks(root, { issueId: meta.id, slug: meta.slug, hrefFor, sources });
 
   // ---- who's reading, and what this issue gives them ----
   let tang: TangState | null = null;
@@ -93,7 +93,7 @@ function init(root: HTMLElement) {
         const { meta: pm, html } = renderPage(md, { issue, sources, hrefFor });
         body.innerHTML = clean(pageHeadHtml(pm, { bignum: pm.hedStyle === "bignum" }) + html);
         body.hidden = false; sealed.hidden = true;
-        wireBlocks(body, { issueId: meta.id, slug: meta.slug, hrefFor });
+        wireBlocks(body, { issueId: meta.id, slug: meta.slug, hrefFor, sources });
         return;
       } catch (err) { console.warn("boomertang: couldn't render the page", err); }
     }
