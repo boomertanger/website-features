@@ -1,0 +1,35 @@
+{
+  "_about": "The Map for Boomertang No. 1 (docs/specs/boomertang.md §4d). PLACEHOLDER LAYOUT: the rooms are the mockup's plan, not the real house; they get traced from Boomer's drawing. Every pin text is sample text. Coordinates are in the 800 x 480 plan. PC 1.3.4 is the default version; the mobile layer comes later.",
+  "placeholder": true,
+  "version": "PC 1.3.4",
+  "size": [800, 480],
+  "floors": [
+    { "id": "base", "label": "Basement", "rooms": [[40, 40, 330, 220, "Basement"], [370, 40, 390, 220, "Garage"], [40, 260, 330, 180, "Sauna"], [370, 260, 390, 180, "Spider cellar"]] },
+    { "id": "main", "label": "Main floor", "rooms": [[40, 40, 250, 200, "Kitchen"], [290, 40, 230, 200, "Foyer"], [520, 40, 240, 200, "Bedroom 1"], [40, 240, 250, 200, "Living room"], [290, 240, 230, 200, "Secret closet"], [520, 240, 240, 200, "Meat locker"]] },
+    { "id": "upper", "label": "Upstairs", "rooms": [[40, 40, 220, 170, "Bedroom"], [260, 40, 200, 170, "Bathroom"], [460, 40, 300, 170, "Teddy closet"], [40, 210, 420, 120, "Hallway"], [460, 210, 300, 230, "Balcony"], [40, 330, 420, 110, "Weapon locker"]] },
+    { "id": "attic", "label": "Attic", "rooms": [[60, 60, 300, 180, "Attic room"], [360, 60, 380, 180, "Attic"], [60, 240, 680, 200, "Crawlspace"]] },
+    { "id": "out", "label": "Outside", "rooms": [[40, 40, 720, 160, "Yard"], [40, 200, 360, 240, "Sewer"], [400, 200, 360, 240, "Spider cellar exit"]] }
+  ],
+  "layers": [
+    { "id": "hide", "label": "Hiding spots and tricks", "tone": "lime", "on": true },
+    { "id": "items", "label": "Items (preset 1)", "tone": "blue", "on": false },
+    { "id": "creak", "label": "Creaking floors", "tone": "gold", "on": false, "count": "Sample" },
+    { "id": "route", "label": "Fastest route (door)", "tone": "title", "on": true, "count": "1:13" },
+    { "id": "deaths", "label": "Boomer's deaths", "tone": "red", "on": false, "count": "Sample" }
+  ],
+  "areas": {
+    "creak": [{ "floor": "base", "x": 300, "y": 150, "w": 70, "h": 40 }, { "floor": "base", "x": 560, "y": 300, "w": 60, "h": 40 }],
+    "deaths": [{ "floor": "base", "x": 330, "y": 200, "r": 34 }, { "floor": "base", "x": 560, "y": 120, "r": 22 }, { "floor": "base", "x": 150, "y": 330, "r": 28 }],
+    "route": [{ "floor": "base", "d": "M120 400 L120 300 L330 300 L330 150 L480 150 L480 90 L720 90" }]
+  },
+  "pins": [
+    { "id": "p1", "layer": "hide", "floor": "base", "x": 520, "y": 140, "room": "garage", "title": "Hide in the car", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 7: the garage", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p2", "layer": "hide", "floor": "base", "x": 640, "y": 210, "room": "garage", "title": "Under the garage table", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 7: the garage", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p3", "layer": "hide", "floor": "base", "x": 200, "y": 360, "room": "sauna", "title": "Behind the sauna door", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 8: the sauna", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p4", "layer": "items", "floor": "base", "x": 160, "y": 120, "room": "basement", "title": "Pressure tank", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 9: the basement", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p5", "layer": "hide", "floor": "main", "x": 160, "y": 180, "room": "kitchen", "title": "Kitchen cupboards", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 12: the kitchen", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p6", "layer": "hide", "floor": "main", "x": 630, "y": 330, "room": "meat", "title": "The meat locker lure", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 13: outside", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p7", "layer": "hide", "floor": "upper", "x": 350, "y": 130, "room": "bath", "title": "Under the bathroom sink", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 11: bedrooms and attic", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true },
+    { "id": "p8", "layer": "items", "floor": "upper", "x": 600, "y": 330, "room": "balcony", "title": "The bell drop", "text": "Boomer's tip for this spot, from the episode.", "episode": "Season 1, Episode 10: foyer and balcony", "tag": "ver", "source": "boomer-pc", "platform": "pc", "sample": true }
+  ]
+}

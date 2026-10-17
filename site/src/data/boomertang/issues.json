@@ -1,0 +1,111 @@
+{
+  "_about": "Boomertang issues (docs/specs/boomertang.md §4a). Public metadata only, drafts included. textInRepo: the issue's pages are Markdown in site/src/content/boomertang/<id>/ (always public; its access switch is locked on). Without it the text is members-only, in gitignored files under functions/scripts/data/boomertang/<id>/, seeded into Firestore. sample: true marks test issues: built off production only, seeded on staging with --samples. Sources: url is null until it's filled in (The Index shows the title without a link). Facts on No. 1 were sourced Oct 15, 2026.",
+  "issues": [
+    {
+      "id": "v1n1",
+      "vol": 1,
+      "no": 1,
+      "title": "The Granny Issue",
+      "edition": "Launch edition",
+      "year": 2027,
+      "textInRepo": true,
+      "cover": {
+        "word": "GRANNY",
+        "style": "s2",
+        "kicker": "Cover story",
+        "dek": "The horror escape that became a global sensation",
+        "stamp": { "small": "Verified on PC", "big": "1.3.4" },
+        "linesLeft": [
+          { "head": "The Family Tree", "line": "What's canon, what's fan fiction, and who's really in that house" },
+          { "head": "Every Hiding Spot", "line": "Mapped room by room, layer by layer" },
+          { "head": "1:13", "line": "Inside the fastest escape on PC", "big": true }
+        ],
+        "linesRight": [
+          { "head": "The Gauntlet", "line": "Three games. Zero deaths. One very long night." },
+          { "head": "She Hears Everything", "line": "How a quiet game went global" }
+        ],
+        "phoneLines": [
+          { "head": "The Family Tree", "line": "What's canon, what's fan fiction" },
+          { "head": "Every Hiding Spot", "line": "Mapped room by room" },
+          { "head": "1:13", "line": "Inside the fastest escape on PC" },
+          { "head": "The Gauntlet", "line": "Three games. Zero deaths." }
+        ],
+        "barcode": "VOL 1 · NO 1 · 2027",
+        "alt": "Boomertang, Volume 1, Number 1: the Granny Issue cover"
+      },
+      "about": "Everything about the original Granny on PC: the story behind it, the family, every room, the records and the secrets. Free to read for everyone.",
+      "alive": "It keeps growing while the Granny series airs. New chapters, poll results and corrections show up here.",
+      "contents": [
+        { "n": "01", "page": "the-woman-in-the-house", "nav": "Cover story", "title": "The Woman in the House", "line": "How one developer working alone made the horror escape the whole world played.", "kind": "Cover story" },
+        { "n": "02", "page": "the-family", "nav": "The Family", "title": "The Family", "line": "Granny, Grandpa, Slendrina: what the games say, and what fans made up.", "kind": "Lore" },
+        { "n": "03", "page": "the-map", "nav": "The Map", "title": "The Map", "line": "Every hiding spot, item, creak and route, with the video for each one.", "kind": "Interactive" },
+        { "n": "04", "page": "survive", "nav": "Survive", "title": "Survive", "line": "How to win, room by room, alongside every episode of the series.", "kind": "Guide" },
+        { "n": "05", "page": "speed", "nav": "Speed", "title": "Speed", "line": "The records, the rules, the routes to the door, the car and the sewer.", "kind": "Speedrunning" },
+        { "n": "06", "page": "secrets", "nav": "Secrets", "title": "Secrets", "line": "Glitches, the teddy ending and the extra day.", "kind": "Secrets" },
+        { "n": "07", "page": "the-gauntlet", "nav": "The Gauntlet", "title": "The Gauntlet", "line": "Three Granny games, back to back, without dying.", "kind": "Event" },
+        { "n": "08", "page": "chats-verdict", "nav": "Chat's Verdict", "title": "Chat's Verdict", "line": "Polls, predictions and what the community really thinks.", "kind": "Community" },
+        { "n": "09", "page": "the-index", "nav": "The Index", "title": "The Index", "line": "Every source we used, and how much to trust it.", "kind": "Sources" }
+      ],
+      "sources": [
+        { "id": "steam", "group": "Official", "title": "Granny on Steam", "url": null, "trust": "off", "checkedAt": "2026-10-15", "note": "The PC version, release date, official description" },
+        { "id": "google-play", "group": "Official", "title": "Granny on Google Play", "url": null, "trust": "off", "checkedAt": "2026-10-15", "note": "The mobile version, the developer company and contact" },
+        { "id": "dvloper", "group": "Official", "title": "DVloper on YouTube and X", "url": null, "trust": "off", "checkedAt": "2026-10-15", "note": "Official trailers and announcements" },
+        { "id": "src-granny-pc", "group": "Speedrunning", "title": "speedrun.com: Granny (PC)", "url": null, "trust": "com", "checkedAt": "2026-10-15", "note": "Leaderboards, rules, guides, forums" },
+        { "id": "src-granny-series", "group": "Speedrunning", "title": "speedrun.com: the Granny series", "url": null, "trust": "com", "checkedAt": "2026-10-15", "note": "Chapter Two and Granny 3, for the Gauntlet" },
+        { "id": "granny-wiki", "group": "Fan wikis", "title": "Granny Wiki (Fandom)", "url": null, "trust": "com", "checkedAt": "2026-10-15", "note": "Items, versions, history; founded by fans in 2018" },
+        { "id": "slendrina-wiki", "group": "Fan wikis", "title": "Slendrina Wiki (Fandom)", "url": null, "trust": "fan", "checkedAt": "2026-10-15", "note": "The family tree; mixes canon and fan names" },
+        { "id": "wikipedia", "group": "Reference and press", "title": "Wikipedia: Granny series", "url": null, "trust": "com", "checkedAt": "2026-10-15", "note": "A neutral summary with links to press" },
+        { "id": "kym", "group": "Reference and press", "title": "Know Your Meme", "url": null, "trust": "com", "checkedAt": "2026-10-15", "note": "Memes, mods and YouTube culture" },
+        { "id": "boomer-pc", "group": "Tested by Boomer", "title": "Boomer, on PC 1.3.4", "url": null, "trust": "ver", "version": "PC 1.3.4", "checkedAt": "2026-10-15", "note": "What Boomer tested himself on the PC version" }
+      ]
+    },
+    {
+      "id": "v1n2",
+      "vol": 1,
+      "no": 2,
+      "sample": true,
+      "title": "Sample issue No. 2",
+      "edition": "Sample edition",
+      "year": 2027,
+      "cover": { "word": "SAMPLE", "style": "s2", "kicker": "Cover story", "dek": "Sample text: a back issue for testing", "linesLeft": [], "linesRight": [], "phoneLines": [], "barcode": "VOL 1 · NO 2 · SAMPLE", "alt": "Boomertang sample issue No. 2 cover", "art": "a" },
+      "about": "Sample text: a sample back issue, seeded on staging only, for testing who reads what.",
+      "contents": [
+        { "n": "01", "page": "the-feature", "nav": "The feature", "title": "The Feature", "line": "Sample text: the cover story of a test issue.", "kind": "Cover story" },
+        { "n": "02", "page": "the-guide", "nav": "The guide", "title": "The Guide", "line": "Sample text: a department page of a test issue.", "kind": "Guide" }
+      ],
+      "sources": []
+    },
+    {
+      "id": "v1n3",
+      "vol": 1,
+      "no": 3,
+      "sample": true,
+      "title": "Sample issue No. 3",
+      "edition": "Sample edition",
+      "year": 2027,
+      "cover": { "word": "SAMPLE", "style": "s2", "kicker": "Cover story", "dek": "Sample text: a public back issue for testing", "linesLeft": [], "linesRight": [], "phoneLines": [], "barcode": "VOL 1 · NO 3 · SAMPLE", "alt": "Boomertang sample issue No. 3 cover", "art": "b" },
+      "about": "Sample text: a sample back issue the owner made public, seeded on staging only.",
+      "contents": [
+        { "n": "01", "page": "the-feature", "nav": "The feature", "title": "The Feature", "line": "Sample text: the cover story of a test issue.", "kind": "Cover story" },
+        { "n": "02", "page": "the-guide", "nav": "The guide", "title": "The Guide", "line": "Sample text: a department page of a test issue.", "kind": "Guide" }
+      ],
+      "sources": []
+    },
+    {
+      "id": "v1n4",
+      "vol": 1,
+      "no": 4,
+      "sample": true,
+      "title": "Sample issue No. 4",
+      "edition": "Sample edition",
+      "year": 2027,
+      "cover": { "word": "SAMPLE", "style": "s2", "kicker": "Cover story", "dek": "Sample text: the newest issue, for testing", "linesLeft": [], "linesRight": [], "phoneLines": [], "barcode": "VOL 1 · NO 4 · SAMPLE", "alt": "Boomertang sample issue No. 4 cover", "art": "c" },
+      "about": "Sample text: the newest sample issue (Sub Club reads it first), seeded on staging only.",
+      "contents": [
+        { "n": "01", "page": "the-feature", "nav": "The feature", "title": "The Feature", "line": "Sample text: the cover story of a test issue.", "kind": "Cover story" },
+        { "n": "02", "page": "the-guide", "nav": "The guide", "title": "The Guide", "line": "Sample text: a department page of a test issue.", "kind": "Guide" }
+      ],
+      "sources": []
+    }
+  ]
+}

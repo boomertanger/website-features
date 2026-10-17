@@ -36,3 +36,8 @@ functions/scripts/data/playbook-*.json
 
 # Cloudflare Wrangler local state
 .wrangler/
+
+# Boomertang (docs/specs/boomertang.md §4a): members-only issue text and the sample issues' text stay local while the repo is public
+# (seeded by functions/scripts/seed-boomertang.js); the build's "sources to re-check" list is regenerated on every build
+functions/scripts/data/boomertang/
+site/src/data/boomertang/recheck.generated.json

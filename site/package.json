@@ -9,9 +9,9 @@
   },
   "scripts": {
     "dev": "astro dev",
-    "build": "node scripts/check-tech-stack.js && node scripts/check-club-pass.js && node scripts/check-services.js && astro build",
+    "build": "node scripts/check-tech-stack.js && node scripts/check-club-pass.js && node scripts/check-services.js && node scripts/check-boomertang.js && astro build",
     "preview": "astro preview",
-    "check": "node scripts/check-tech-stack.js && node scripts/check-club-pass.js && node scripts/check-services.js",
+    "check": "node scripts/check-tech-stack.js && node scripts/check-club-pass.js && node scripts/check-services.js && node scripts/check-boomertang.js",
     "check:tech-stack": "node scripts/check-tech-stack.js",
     "check:services": "node scripts/check-services.js",
     "test:bars": "node tests/bars.mjs"
@@ -23,6 +23,7 @@
     "marked": "18.0.14"
   },
   "devDependencies": {
-    "playwright-core": "^1.57.0"
+    "playwright-core": "^1.57.0",
+    "qrcode-generator": "2.0.4"
   }
 }
