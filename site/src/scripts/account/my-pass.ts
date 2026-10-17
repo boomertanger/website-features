@@ -163,9 +163,9 @@ function init(root: HTMLElement) {
     return `${today ? "today" : d.toLocaleDateString(undefined, { month: "short", day: "numeric" })} ${d.toLocaleTimeString(undefined, { hour: "numeric", minute: "2-digit" })}`;
   };
 
-  /** The banner over the hero: a failed payment (red) or paying twice. */
+  /** The banner over the hero: a failed payment or paying twice. Both gold (warning); red is only for actions that destroy data. */
   function banner(v: View) {
-    if (v.bill === "failed") return `<div class="mp-banner mp-banner--bad" role="status"><span aria-hidden="true">⚠️</span><div><b>Your payment didn't go through</b><small>Your pass stays gold until ${day(v.stripe?.graceUntil)}. Update your card to keep it.</small></div>${portalBtn("Fix my card")}</div>`;
+    if (v.bill === "failed") return `<div class="mp-banner" role="status"><span aria-hidden="true">⚠️</span><div><b>Your payment didn't go through</b><small>Your pass stays gold until ${day(v.stripe?.graceUntil)}. Update your card to keep it.</small></div>${portalBtn("Fix my card")}</div>`;
     if (v.bill === "twice") return `<div class="mp-banner" role="status"><span aria-hidden="true">💡</span><div><b>You're paying twice</b><small>Your Twitch sub already gives you Sub Club. Cancel the ${money(v.billing?.subscription?.amount)} here and your pass stays gold through Twitch.</small></div>${portalBtn("Cancel the site subscription", "secondary")}</div>`;
     return "";
   }

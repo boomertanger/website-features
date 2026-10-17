@@ -54,12 +54,12 @@
 .bt-root:not(#_) .mp-row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
 .bt-root:not(#_) .mp-note { margin: 8px 0 0; }
 
-/* billing (docs/specs/club-pass.md §13): the banner over the hero (a failed payment, red; paying twice), the next charge, receipts */
+/* billing (docs/specs/club-pass.md §13): the banner over the hero (a failed payment or paying twice: the gold warning style, like the
+   kit's .bt-pill-warn; red is only for actions that destroy data), the next charge, receipts */
 .bt-root:not(#_) .mp-banner { display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px; padding: 12px 16px; border: 1px solid color-mix(in srgb, var(--mp-gold) 45%, transparent); border-radius: var(--bt-radius-lg); background: var(--bt-gold-bg); }
 .bt-root:not(#_) .mp-banner b { display: block; }
 .bt-root:not(#_) .mp-banner small { color: var(--bt-text-muted); font-size: var(--bt-text-sm); }
 .bt-root:not(#_) .mp-banner > div { flex: 1; min-width: 200px; }
-.bt-root:not(#_) .mp-banner--bad { border-color: color-mix(in srgb, var(--bt-red) 50%, transparent); background: color-mix(in srgb, var(--bt-red) 10%, transparent); }
 .bt-root:not(#_) .mp-next { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; margin: 4px 0 10px; }
 .bt-root:not(#_) .mp-next b { font-size: 26px; font-weight: 900; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
 .bt-root:not(#_) .mp-next span { color: var(--bt-text-muted); font-size: var(--bt-text-md); }
