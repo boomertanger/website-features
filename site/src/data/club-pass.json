@@ -101,7 +101,8 @@
       "icon": "🎟️",
       "label": "Contests and drawings",
       "plan": "fan+",
-      "soon": true,
+      "soon": false,
+      "href": "/prizes",
       "kicker": "Play",
       "head": "Check in. *Win stuff.*",
       "dek": "Drawings and contests run during streams, and only members who are checked into the stream can win. Show up, check in, and your name goes in the hat.",
@@ -112,7 +113,7 @@
       ],
       "pull": "You have to be there to win.",
       "scene": "raffle",
-      "serviceId": "contests"
+      "serviceId": "prize-box"
     },
     {
       "id": "nightshift",

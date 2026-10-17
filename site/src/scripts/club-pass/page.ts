@@ -14,7 +14,7 @@ import data from "../../data/club-pass.json";
 import { scene } from "./scenes";
 
 type Pass = "visitor" | "fan" | "sub";
-interface Perk { id: string; section: string; icon: string; label: string; plan: "fan" | "fan+" | "sub"; soon: boolean; kicker: string; head: string; dek: string; facts: string[]; pull: string; scene: string; serviceId?: string }
+interface Perk { id: string; section: string; icon: string; label: string; plan: "fan" | "fan+" | "sub"; soon: boolean; kicker: string; head: string; dek: string; facts: string[]; pull: string; scene: string; serviceId?: string; /** the perk's page, shown as Open it to someone whose pass has it (and only once it isn't soon) */ href?: string }
 
 const root = document.getElementById("cp-root");
 if (root) init(root);
@@ -145,6 +145,7 @@ function init(root: HTMLElement) {
   }
   function cta(p: Perk) {
     if (S.viewer === "visitor" && S.pass === "visitor") return `<button class="bt-btn bt-btn--primary" type="button" data-signin="join" data-signin-title="Join free for your Fan Club pass" data-pulse="spread-join-free">Join free</button>`;
+    if (p.href && !p.soon && has(p, S.pass) && S.viewer !== "visitor") return `<a class="bt-btn bt-btn--secondary" href="${esc(p.href)}" data-pulse="spread-open-perk">Open it</a>`;
     if (S.viewer !== "sub" && !has(p, S.pass)) return PAY ? `<button class="bt-btn bt-btn--primary" type="button" data-cp-buy="spread-get-sub-club" data-pulse="spread-get-sub-club">Get Sub Club</button>` : `<button class="bt-btn bt-btn--secondary" type="button" disabled>Sub Club opening soon</button>`;
     return "";
   }

@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box: the old "contests" placeholder is gone. services/contests.json was removed, and the Club Pass perk "Contests and drawings" now points at prize-box: serviceId prize-box, no longer "soon", and a new optional perk `href` (/prizes). Someone whose pass has the perk gets an Open it button on its page. check-club-pass validates href, and a perk can't have both href and soon. The Service Hub's "contests" item is retired by an admin's Sync now on /admin/services; the automatic sync only lists it as missing.
 - Prize Box, part 8 (testing):
   - **functions/scripts/prize-sample.js:** staging only (it refuses production), a dry run unless --apply, and --clean --apply removes everything it made, which is marked sample: true. It writes four "(sample)" contests (a scheduled Break Wheel, an open written contest with entries, an open mail-in with codes, a late envelope and an unmatched one, and a finished contest with two winners) and five sample members with no passwords. It grants no badges, XP, feed posts or alerts.
   - **On staging:** apply, clean (nothing left) and apply again were run, so the sample is there to test with.

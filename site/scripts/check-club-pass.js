@@ -25,6 +25,8 @@ for (const [i, p] of perks.entries()) {
   if (!PLANS.includes(p.plan)) fail(`${at}: plan must be one of ${PLANS.join(", ")}`);
   if (!SCENES.includes(p.scene)) fail(`${at}: unknown scene "${p.scene}"`);
   if (typeof p.soon !== "boolean") fail(`${at}: soon must be true or false`);
+  if (p.href !== undefined && (typeof p.href !== "string" || !/^\/[a-z0-9/-]*$/.test(p.href))) fail(`${at}: href must be a site path like /prizes`);
+  if (p.href && p.soon) fail(`${at}: a soon perk has no page to open yet (drop href or soon)`);
   for (const k of ["icon", "label", "kicker", "head", "dek", "pull"]) if (!text(p[k])) fail(`${at}: ${k} is missing`);
   if (text(p.head) && !/\*[^*]+\*/.test(p.head)) fail(`${at}: head needs one *accent* word`);
   if (!Array.isArray(p.facts) || p.facts.length !== 3 || !p.facts.every(text)) fail(`${at}: facts must be exactly three lines`);
