@@ -428,10 +428,46 @@ service cloud.firestore {
         && exists(/databases/$(database)/documents/sites/$(siteId)/profiles/$(request.auth.uid));
     }
 
+    // Brain Dump (docs/specs/brain-dump.md §2): who has a board. Sub Club is the "sub" role, which lib/club/entitlement.js grants for
+    // every Club Pass source (Twitch, Stripe, a grant, active crew, the owner); admins; crew by the server-written claims (crewGrade set,
+    // crewStatus not paused or alumni: the same rule as the site's roleFlags); the owner last, so its read only happens when nothing
+    // else matched. site/src/lib/brain-dump-access.ts is the same rule on the client.
+    function hasBrainDump(siteId) {
+      return hasSiteRole(siteId, 'sub')
+        || hasSiteRole(siteId, 'admin')
+        || (request.auth.token.get('crewGrade', null) != null
+            && !(request.auth.token.get('crewStatus', '') in ['paused', 'alumni']))
+        || isSiteOwner(siteId);
+    }
+
+    // A Brain Dump board as the browser writes it: exactly these keys, the server's time, and the size limits.
+    function isValidBrainDump() {
+      let d = request.resource.data;
+      return d.keys().hasOnly(['v', 'goal', 'goalDone', 'startDate', 'inbox', 'categories', 'updatedAt'])
+        && d.keys().hasAll(['v', 'goal', 'goalDone', 'startDate', 'inbox', 'categories', 'updatedAt'])
+        && d.v == 1
+        && d.updatedAt == request.time
+        && d.goal is string && d.goal.size() <= 300
+        && d.goalDone is bool
+        && d.startDate is string && d.startDate.size() <= 10
+        && d.inbox is map && d.inbox.keys().hasOnly(['items']) && d.inbox.items is list && d.inbox.items.size() <= 300
+        && d.categories is list && d.categories.size() <= 40;
+    }
+
     // Site settings (name, tagline, socials, modules, ownerUid): public.
     match /sites/{siteId} {
       allow read: if true;
       allow write: if false;
+
+      // Brain Dump (docs/specs/brain-dump.md §2): one private board per person. A RECORDED NARROW EXCEPTION to "writes go through Cloud
+      // Functions" (design-system.md §8): these are the member's own private notes, nothing else reads them, and no XP or counts depend
+      // on them, so the browser writes the whole document directly. Only the board's owner, and only while they have Brain Dump; nobody
+      // else (admins included) reads it through the site. Losing access keeps the document untouched. Deletes: the board's owner only.
+      match /brainDump/{uid} {
+        allow read: if request.auth != null && request.auth.uid == uid && hasBrainDump(siteId);
+        allow create, update: if request.auth != null && request.auth.uid == uid && hasBrainDump(siteId) && isValidBrainDump();
+        allow delete: if request.auth != null && request.auth.uid == uid;
+      }
 
       // Site membership (roles, joinedAt): the member and site admins.
       match /members/{uid} {

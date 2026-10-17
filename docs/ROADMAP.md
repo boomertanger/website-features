@@ -181,6 +181,7 @@ Goal: App Check, a signup challenge (Turnstile), rate limits, download my data, 
 Must be done before launch.
 Account deletion also removes:
 - Delete a member's Service Hub ratings and tests (`sites/boomertanger/services/main/ratings` and `tests` where uid is theirs, and `my/{uid}`; docs/specs/service-hub.md §4).
+- Deleting an account also deletes `sites/boomertanger/brainDump/{uid}` (Brain Dump, docs/specs/brain-dump.md §2).
 Kickoff: "Start workstream 8 (Accounts part 2b) from docs/ROADMAP.md."
 
 ### 9. Mod Machina
@@ -325,6 +326,7 @@ Goal: one private, categorized brain-dump board per person (a Big Goal, quick ca
 Spec: [docs/specs/brain-dump.md](specs/brain-dump.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/brain-dump.html` (the reference engine; card style C1 Tinted fill) and `docs/design/mockups/brain-dump-how-it-works.html` (H2 + R1); test plan [docs/testing/brain-dump-test-plan.md](testing/brain-dump-test-plan.md).
 Status: **In progress (Oct 17, 2026).** Parts: 1 docs; 2 rules (`sites/boomertanger/brainDump/{uid}`, a recorded narrow exception: direct client writes of the member's own private notes) and the staging rules deploy; 3 /brain-dump (the engine with a Firestore store, gating, account-menu item, help file, manifest, pulse ids, print); 4 /brain-dump/how-it-works; 5 design-system §8. No Cloud Functions.
 Later (spec §7, not now): due dates or snooze, dragging items between cards, an export-as-text backup.
+- [ ] Proper rules tests for `brainDump/{uid}` with `@firebase/rules-unit-testing` once Java 21 is installed (this machine has Java 1.8). Until then `functions/scripts/brain-dump-rules-check.js` checks the rules on staging with throwaway test users.
 
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.

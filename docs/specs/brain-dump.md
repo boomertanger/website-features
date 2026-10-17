@@ -7,9 +7,10 @@ Mockups (approved, working, sample data only): `docs/design/mockups/brain-dump.h
 **Keep it simple.** No statuses, tags, due dates, nested lists or item dragging between cards. Glenn asked for none of these.
 
 ## 1. Who and where
-- `/brain-dump` (tool page): one private board per person. Access: Sub Club, crew (mods), admins and the owner. Until billing ships, that means crew, admins and the owner (plus the staging-only Sub Club test role, if the repo has one).
-- `/brain-dump/how-it-works` (story page): public. The closing call to action changes by viewer: has access → **Open my Brain Dump**; signed-in member without access → "Brain Dump comes with Sub Club. Sub Club isn't open yet…" (no buy button until billing exists); visitor → **Join free** (opens E1).
-- Not in the header nav groups (it's personal). An account-menu item "Brain Dump" for people with access. `/brain-dump` without access: visitors get `.bt-lock-card` opening E1; members get `.bt-lock-card` "Comes with Sub Club" with a link to How it works.
+- `/brain-dump` (tool page): one private board per person. Access: Sub Club (the "sub" role, which Club Pass grants for every pass source), crew (an active crew grade), admins and the owner. firestore.rules `hasBrainDump()` and `site/src/lib/brain-dump-access.ts` hold the same rule.
+- `/brain-dump/how-it-works` (story page): public. The closing call to action changes by viewer: has access → **Open my Brain Dump**; signed-in member without access → "Brain Dump comes with Sub Club. Get it and your board is ready right away." with **Get Sub Club** and **Try the practice board**; visitor → "Brain Dump comes with Sub Club. Join free first, then add Sub Club." with **Join free** (opens E1) and **Try the practice board**.
+- **Get Sub Club** is the site's existing Sub Club upsell: the pre-checkout dialog in `site/src/lib/checkout.ts` (`startCheckout`), the same as on /club-pass and My pass. Where payments are off (production until launch, `site/src/lib/club-pay.js`) it is a **See Sub Club** link to /club-pass instead; never "opening soon".
+- Not in the header nav groups (it's personal). An account-menu item "Brain Dump" for people with access. `/brain-dump` without access: visitors get `.bt-lock-card` opening E1; members get `.bt-lock-card` "Brain Dump comes with Sub Club." with **Get Sub Club** and a link to How it works.
 - The board's hero has a "How it works" link (`.bt-link-btn`).
 
 ## 2. Data
@@ -46,7 +47,7 @@ Celebration: checking the Big Goal bursts gold sparks and the hero mascot hops (
 
 ## 5. How it works (`/brain-dump/how-it-works`, story page, picks H2 + R1)
 TocLayout rail, ghost chapters, the real mascot and BOOMBOT. Copy as in the mockup:
-- Hero H2 "Paper to board": the paper planner sheet with the dark board wiping across it (a still half-wipe under reduced motion); title "How Brain Dump works"; buttons by viewer plus "Try the practice board".
+- Hero H2 "Paper to board": the paper planner sheet with the dark board wiping across it (a still half-wipe under reduced motion); title "How Brain Dump works"; buttons by viewer (a member without access gets **Get Sub Club**) plus "Try the practice board".
 - 01 Why dump it: three stage cards (Capture, Sort, Check off) with scenes that play on hover, focus or tap, resting on a meaningful still frame.
 - 02 How it works: the five-step journey (`.ai-jr--5`): Capture, Sort, Star, Check off, Clear; then six tips.
 - 03 Try it: the real engine mounted with an in-memory store (never saved; says so), example items, a "Try this" list (capture, move, check off) that lights up, a stamp when all three are done, Start over.
@@ -54,7 +55,7 @@ TocLayout rail, ghost chapters, the real mascot and BOOMBOT. Copy as in the mock
 - 05 Private by design: phone ↔ your board ↔ PC flow; "Nobody else can open it"; three facts (saves as you go, bad signal, access ends).
 - 06 Good habits: the placard (capture fast, sort once a day, three Top priorities, clear checked weekly).
 - 07 Ask BOOMBOT: from `site/src/data/help/brain-dump.json`.
-- Closing call to action by viewer.
+- Closing call to action by viewer (§1).
 
 ## 6. Help file, manifest, pulse ids
 - `site/src/data/help/brain-dump.json`: the seven Ask BOOMBOT answers from the mockup (who can see it, where it saves, deleted by mistake, moving a card, own lists, Sub Club ends, printing), in the existing help-file format.
