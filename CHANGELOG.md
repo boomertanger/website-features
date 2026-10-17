@@ -3,6 +3,12 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 8 (testing):
+  - **functions/scripts/prize-sample.js:** staging only (it refuses production), a dry run unless --apply, and --clean --apply removes everything it made, which is marked sample: true. It writes four "(sample)" contests (a scheduled Break Wheel, an open written contest with entries, an open mail-in with codes, a late envelope and an unmatched one, and a finished contest with two winners) and five sample members with no passwords. It grants no badges, XP, feed posts or alerts.
+  - **On staging:** apply, clean (nothing left) and apply again were run, so the sample is there to test with.
+  - **docs/testing/prize-box-test-plan.md:** every state, the live draw end to end, claims, /prizes/mine and a phone pass.
+  - **ROADMAP:** Prize Box is built on staging with real tests pending. The launch checklist (from part 1) covers the rules, every prizeBox function and prizeTick, the batched lib/live deploy, seed-badges.js on production, the owner's mailing address on /admin and the lawyer's review of the rules template. A Later line covers the "First stream here" and "stream streak" filters, left out for lack of data.
+  - **services/prize-box.json** links the test plan.
 - Prize Box, part 7 (admin): /admin/prize-box, a tool page for admins. It has the hero header with the box scene, four counters that jump to their tab (open contests, entries to review, envelopes not here yet, prizes to ship), and these tabs:
   - **Contests:** View page, Edit, Publish / Back to draft, Open now, Close entries, Pick winners (judged) and Draw winners (random) for the owner, Mark done, Cancel, and Delete (owner, the one delete path). New contest opens the builder (openModal):
     1. Template: Break Wheel, Online art, Mail-in art or Blank.

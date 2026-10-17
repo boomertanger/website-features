@@ -15,7 +15,7 @@
     "/admin/prize-box"
   ],
   "nav": "prizes",
-  "testPlan": null,
+  "testPlan": "docs/testing/prize-box-test-plan.md",
   "checks": [],
   "videoTag": "#bt-prize-box",
   "sections": {},

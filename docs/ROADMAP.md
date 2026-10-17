@@ -23,7 +23,7 @@ Last updated: 2026-10-17. Every planning chat reads this file first and proposes
 | 9 | Mod Machina | Phase 1 tested on staging (Oct 7); phase 3 (the Mod Deck) built on staging (Oct 2026), real tests pending; phase 4 lives in Chat Games (5b) | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
 | 11 | Club Pass (plans and billing) | In progress (before launch) | Billing and plans |
-| 12 | Prize Box (contests) (/prizes, the live Prize Wheel draw, /admin/prize-box; spec [docs/specs/prize-box.md](specs/prize-box.md)) | In progress (Oct 17, 2026) | Community services |
+| 12 | Prize Box (contests) (/prizes, the live Prize Wheel draw, /admin/prize-box; spec [docs/specs/prize-box.md](specs/prize-box.md)) | Built on staging; real tests pending (Oct 17, 2026) | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back built and tested on staging (Oct 15, 2026), all three parts | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
@@ -215,7 +215,7 @@ Kickoff: "Start workstream 11 (Plans and billing) from docs/ROADMAP.md."
 Goal: Prize Box runs every contest from start to finish: entry rules, deadlines, reminders, picking winners (a live Prize Wheel spin on stream, judging, or a random draw), announcing them and getting prizes to them. Entries come from stream check-ins, online uploads or mail-in. Contests are built from /admin with no code changes.
 Spec: [docs/specs/prize-box.md](specs/prize-box.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/prize-box-wheel-and-draw.html` (the wheel and the live draw), `prize-box-wheel-fan.html` (fan blades; pick F2 Gentle fan), `prize-box-pages.html` (/prizes hero H2a and /admin/prize-box) and `prize-box-wordmark.html` (pick I2); test plan `docs/testing/prize-box-test-plan.md`.
 Depends on: Badges (Trophy Room), the Control Room's presence and beats, Cloud Stash (uploads); the official rules need legal review.
-Status: **In progress (Oct 17, 2026).** Parts: 1 docs; 2 kit (the `.bt-wheel` color variant, wheel-sound.js, `.bt-prizestand`, PB_ICON); 3 backend core (lib/prizeBox, rules, prizeTick, the badge); 4 the live draw backend (and the public/live shape change); 5 live UI (/live/control panel, /live/obs scene, /live card, the gold banner); 6 pages (/prizes, /prizes/[slug], rules, /prizes/mine, the claim dialog); 7 /admin/prize-box; 8 testing and the sample script.
+Status: **Built on staging; real tests pending (Oct 17, 2026).** All eight parts are on staging (functions, rules and the badge deployed; sample data from functions/scripts/prize-sample.js); the owner, live-stream and phone checks are in the test plan. Parts: 1 docs; 2 kit (the `.bt-wheel` color variant, wheel-sound.js, `.bt-prizestand`, PB_ICON); 3 backend core (lib/prizeBox, rules, prizeTick, the badge); 4 the live draw backend (and the public/live shape change); 5 live UI (/live/control panel, /live/obs scene, /live card, the gold banner); 6 pages (/prizes, /prizes/[slug], rules, /prizes/mine, the claim dialog); 7 /admin/prize-box; 8 testing and the sample script.
 Kickoff: "Continue workstream 12 (Prize Box) from docs/ROADMAP.md."
 
 ### 13. Launch and legal
@@ -328,6 +328,7 @@ Goal: one private, categorized brain-dump board per person (a Big Goal, quick ca
 Spec: [docs/specs/brain-dump.md](specs/brain-dump.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/brain-dump.html` (the reference engine; card style C1 Tinted fill) and `docs/design/mockups/brain-dump-how-it-works.html` (H2 + R1); test plan [docs/testing/brain-dump-test-plan.md](testing/brain-dump-test-plan.md).
 Status: **Built on staging; real tests pending (Oct 17, 2026).** All five parts are done: 1 docs; 2 rules (`sites/boomertanger/brainDump/{uid}`, a recorded narrow exception: direct client writes of the member's own private notes) and the staging rules deploy; 3 /brain-dump (the engine with a Firestore store, gating, account-menu item, help file, manifest, pulse ids, print); 4 /brain-dump/how-it-works; 5 design-system §8. No Cloud Functions.
 Later (spec §7, not now): due dates or snooze, dragging items between cards, an export-as-text backup.
+- [ ] Prize Box filters "First stream here" and "stream streak N+" (spec §3): left out because nothing stores a member's first stream or a stream streak (the site works the streak out on the account page). Add them once a server-side record of both exists.
 - [ ] Proper rules tests for `brainDump/{uid}` with `@firebase/rules-unit-testing` once Java 21 is installed (this machine has Java 1.8). Until then `functions/scripts/brain-dump-rules-check.js` checks the rules on staging with throwaway test users.
 
 ## Night Shift hooks
