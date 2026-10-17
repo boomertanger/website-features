@@ -968,3 +968,8 @@ Object.assign(exports, prizeBoxModule.functions);
 // Club Pass billing (docs/specs/club-pass.md §13; Stripe TEST MODE on staging): clubCheckout, clubPortal, clubStatus, billingWebhook. Lives in lib/billing/;
 // loads lib/club/entitlement.js and nothing from rewards.
 Object.assign(exports, require("./lib/billing").build({ adminLogEntry }).functions);
+
+// Boomertang, the magazine (docs/specs/boomertang.md §5): tangAdmin (owner: publish, setAccess, addEdition, poll) and tangVote (members:
+// Chat's Verdict). Lives in lib/boomertang/; adminLog feature boomertang, activityLog type tang-issue. Loads nothing from rewards or lib/live,
+// so these two deploy on their own.
+Object.assign(exports, require("./lib/boomertang").build({ adminLogEntry }).functions);

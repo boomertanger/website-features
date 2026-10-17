@@ -440,6 +440,23 @@ service cloud.firestore {
         || isSiteOwner(siteId);
     }
 
+    // Boomertang (docs/specs/boomertang.md §3, §5): who reads an issue. The owner and admins always (drafts too); otherwise a published
+    // issue, and then: public issues to everyone; members-only issues to members (a members doc), except the newest issue
+    // (tang/main.currentIssueId), which only Sub Club reads first (hasBrainDump's sub path: the "sub" role). functions/lib/boomertang/logic.js
+    // canRead() is the same rule.
+    function isTangStaff(siteId) {
+      return hasSiteRole(siteId, 'admin') || isSiteOwner(siteId);
+    }
+    function canReadTangIssue(siteId, issueId, issue) {
+      return isTangStaff(siteId)
+        || (issue.status == 'published'
+            && (issue.get('access', 'members') == 'public'
+                || (request.auth != null
+                    && exists(/databases/$(database)/documents/sites/$(siteId)/members/$(request.auth.uid))
+                    && (issueId != get(/databases/$(database)/documents/sites/$(siteId)/tang/main).data.get('currentIssueId', '')
+                        || hasSiteRole(siteId, 'sub')))));
+    }
+
     // A Brain Dump board as the browser writes it: exactly these keys, the server's time, and the size limits.
     function isValidBrainDump() {
       let d = request.resource.data;
@@ -469,6 +486,30 @@ service cloud.firestore {
         allow read: if request.auth != null && request.auth.uid == uid && hasBrainDump(siteId);
         allow create, update: if request.auth != null && request.auth.uid == uid && hasBrainDump(siteId) && isValidBrainDump();
         allow delete: if request.auth != null && request.auth.uid == uid;
+      }
+
+      // ---------- Boomertang (docs/specs/boomertang.md §5) ----------
+      // Written ONLY by Cloud Functions (functions/lib/boomertang: tangAdmin, tangVote) and the seed script; every client write is false.
+      // tang/main { currentIssueId } is public. An issue doc is public once published (owner and admins always: drafts). A page body
+      // (members-only text) and a poll follow the issue's reading rule (canReadTangIssue). Votes are server only.
+      match /tang/main {
+        allow read: if true;
+        allow write: if false;
+      }
+      match /tang/main/issues/{issueId} {
+        allow read: if resource.data.status == 'published' || isTangStaff(siteId);
+        allow write: if false;
+        match /pages/{slug} {
+          allow read: if canReadTangIssue(siteId, issueId, get(/databases/$(database)/documents/sites/$(siteId)/tang/main/issues/$(issueId)).data);
+          allow write: if false;
+        }
+      }
+      match /tang/main/polls/{pollId} {
+        allow read: if canReadTangIssue(siteId, resource.data.issueId, get(/databases/$(database)/documents/sites/$(siteId)/tang/main/issues/$(resource.data.issueId)).data);
+        allow write: if false;
+      }
+      match /tang/main/pollVotes/{voteId} {
+        allow read, write: if false;
       }
 
       // ---------- Prize Box (docs/specs/prize-box.md §6) ----------

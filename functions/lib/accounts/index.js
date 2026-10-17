@@ -218,16 +218,19 @@ module.exports = function accounts({ adminLogEntry }) {
     return { displayName };
   });
 
-  // ---------- updatePrefs({ showLinked, useProviderPhoto, reminders }) ----------
+  // ---------- updatePrefs({ showLinked, useProviderPhoto, reminders, tangMode }) ----------
   // Any subset of the three switches (all off by default). The public profile
   // follows: linked platform names only when showLinked is on, the provider photo
-  // only when useProviderPhoto is on (initials otherwise).
+  // only when useProviderPhoto is on (initials otherwise). tangMode is Boomertang's
+  // reading mode, "paper" or "ink" (docs/specs/boomertang.md §5): the one value that isn't a switch.
   const PREFS = ["showLinked", "useProviderPhoto", "reminders"];
+  const VALUE_PREFS = { tangMode: ["paper", "ink"] };
   const updatePrefs = onCall(async (request) => {
     const uid = requireAuth(request);
     const d = request.data || {};
     const keys = Object.keys(d);
-    if (!keys.length || keys.some((k) => !PREFS.includes(k) || typeof d[k] !== "boolean")) {
+    const okPref = (k) => (PREFS.includes(k) ? typeof d[k] === "boolean" : Object.hasOwn(VALUE_PREFS, k) && VALUE_PREFS[k].includes(d[k]));
+    if (!keys.length || keys.some((k) => !okPref(k))) {
       throw fail("invalid-argument", "Unknown setting.", "prefs");
     }
     const r = refs(uid);
