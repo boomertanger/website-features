@@ -133,6 +133,13 @@ async function main() {
       }
     }
   }
+  // ---- the cover QR's ref tag in Traffic Pulse (spec §9), the same shape /admin/pulse's refSave writes; kept if it's there ----
+  const tagRef = db.doc(`${SITE}/pulse/main/refs/tang-cover`);
+  if ((await tagRef.get()).exists) say("pulse refs/tang-cover: exists, kept");
+  else {
+    say("pulse refs/tang-cover: create (Boomertang cover QR, /boomertang)");
+    plan.push(() => tagRef.set({ tag: "tang-cover", label: "Boomertang cover QR", path: "/boomertang", by: { uid: null, name: "seed-boomertang" }, updatedAt: FieldValue.serverTimestamp() }));
+  }
   return run(plan, args.apply);
 }
 

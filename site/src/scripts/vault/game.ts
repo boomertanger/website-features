@@ -34,6 +34,7 @@ import { vaultIcon, I } from "./art";
 import { esc, badge, tag, hours, plural, votesText, longDate, shortDate, isEarly, metaLine, isPinned, UP_NEXT } from "./ui";
 import { isStaff, isAdmin } from "./gate";
 import { wantButton, initWants } from "./wants";
+import { BUILT, issueHref, issueLine } from "../../lib/boomertang/issues";
 
 const root = document.querySelector<HTMLElement>("[data-game]");
 
@@ -221,6 +222,19 @@ function stats(g: any) {
   return sec("📊", "On stream", `<div class="bt-stack" style="gap:8px"><div class="gv-stats"><div class="gv-stat"><b data-count-to="${t.count}">${t.count}</b><small>${t.count === 1 ? "stream" : "streams"}</small></div><div class="gv-stat"><b data-count-to="${h}" data-suffix=" h">${h} h</b><small>on stream</small></div><div class="gv-stat"><b>${t.first ? shortDate(t.first) : "–"}</b><small>first streamed</small></div><div class="gv-stat"><b>${t.last ? shortDate(t.last) : "–"}</b><small>last streamed</small></div></div>${t.legacy ? `<span class="gv-stats-note">Includes ${plural(t.legacy, "stream")} from before the site.</span>` : ""}</div>`);
 }
 
+/** The Boomertang issue that covers this game (issues.json `games`; docs/specs/boomertang.md §2), once it is published: a draft's
+ *  issue doc isn't readable, so the read fails quietly and nothing shows. Filled in after the page draws. */
+async function tangLink(slug: string) {
+  const box = root!.querySelector<HTMLElement>("[data-tang-link]");
+  const i = BUILT.find((x) => x.games?.includes(slug));
+  if (!box || !i) return;
+  try {
+    const snap = await getDoc(doc(db, "sites", SITE_ID, "tang", "main", "issues", i.id));
+    if (!snap.exists() || snap.get("status") !== "published") return;
+  } catch { return; }
+  box.innerHTML = sec("📰", "In Boomertang", `<p class="gv-about">Boomer's horror gaming magazine covers this game in ${esc(issueLine(i))}.</p><a class="bt-btn bt-btn--secondary bt-btn--sm" href="${issueHref(i)}" data-pulse="tang-from-vault">Read the issue</a>`);
+}
+
 function suggest(g: any) {
   if (g.cover) return "";
   return `<div class="gv-suggest"><span>No cover yet.</span><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-suggest>${I.image}Suggest a cover</button></div>`;
@@ -240,8 +254,9 @@ function render() {
   document.title = `${g.title} · Game Vault · Boomertanger`;
   const hiddenNote = g.hidden ? '<p class="gv-hidden-note">Hidden from the Vault. Only staff can see this page.</p>' : "";
   const top = [hiddenNote, pickBanner(g), suggest(g)].filter(Boolean).join("");
-  root!.innerHTML = `${hero(g)}${top ? `<div class="gv-body" style="padding-bottom:0">${top}</div>` : ""}<div class="gv-cols"><div class="gv-col">${review(g)}<div class="gv-every" data-every>${everyStream(g)}</div>${about(g)}${upNext()}</div><aside class="gv-col">${facts(g)}${where(g)}${stats(g)}</aside></div>`;
+  root!.innerHTML = `${hero(g)}${top ? `<div class="gv-body" style="padding-bottom:0">${top}</div>` : ""}<div class="gv-cols"><div class="gv-col">${review(g)}<div class="gv-every" data-every>${everyStream(g)}</div>${about(g)}${upNext()}</div><aside class="gv-col">${facts(g)}${where(g)}${stats(g)}<div data-tang-link></div></aside></div>`;
   initDials(root!);
+  tangLink(g.slug);
   initCountUp(root!);
   initTimelines(root!);
   initSpotlights(root!);

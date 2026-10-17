@@ -503,3 +503,4 @@
 #boomertang-root.tg-desk .tg-empty { margin: 0; }
 @media (prefers-reduced-motion: reduce) { #boomertang-root .tg-lamp :is(.glow, .bulb), #boomertang-root .tg-dstamp, #boomertang-root .tg-dlog div.is-new { animation: none; } }
 #boomertang-root .tg-note :is(.bt-select, .bt-input) { font-family: var(--bt-font); }
+#boomertang-root .tg-askpin { display: flex; justify-content: flex-end; margin: -6px 0 16px; }

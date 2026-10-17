@@ -8,7 +8,7 @@ export interface Source { id: string; group: string; title: string; url: string 
 export interface Row { n: string; page: string; nav: string; title: string; line: string; kind: string }
 export interface CoverLine { head: string; line: string; big?: boolean }
 export interface Issue {
-  id: string; vol: number; no: number; title: string; edition: string; year: number; textInRepo?: boolean; sample?: boolean;
+  id: string; vol: number; no: number; title: string; edition: string; year: number; textInRepo?: boolean; sample?: boolean; games?: string[];
   cover: { word: string; style: string; kicker: string; dek: string; stamp?: { small: string; big: string }; linesLeft: CoverLine[]; linesRight: CoverLine[]; phoneLines: CoverLine[]; barcode: string; alt: string; art?: string };
   about: string; alive?: string; contents: Row[]; sources: Source[]; dropped?: string[];
 }

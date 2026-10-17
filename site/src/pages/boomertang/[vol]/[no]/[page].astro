@@ -10,6 +10,8 @@ import { BUILT, pageFile, pageHref, sourcesOf, type Issue } from "../../../../li
 import { renderPage, pageHeadHtml, parsePage } from "../../../../lib/boomertang/render.js";
 import { thumbHtml } from "../../../../lib/boomertang/cover.js";
 import { LOCK_ICON } from "../../../../../../shared/ui/magazine.js";
+import { askPinHtml } from "../../../../../../shared/ui/talkback.js";
+import manifest from "../../../../../../services/boomertang.json";
 import "../../../../styles/boomertang.css";
 
 export function getStaticPaths() {
@@ -37,6 +39,8 @@ const dark = !!meta.wide;
 const others = issue.contents.filter((r) => r.page !== slug);
 // the contents page: the letter (public issues: from contents.md; members-only: from Firestore) and the rows
 const letter = isContents && page ? page.html : "";
+// Talk Back's Ask pins (services/boomertang.json sections: The Map, Survive, Speed)
+const pinLabel = (manifest.sections as Record<string, string>)[slug];
 ---
 {dropped ? (
   <html lang="en"><head><meta charset="utf-8" /><meta http-equiv="refresh" content={`0; url=${contentsHref}`} /><link rel="canonical" href={contentsHref} /><meta name="robots" content="noindex" /><title>Moved</title></head><body><a href={contentsHref}>This page moved to the issue's contents.</a></body></html>
@@ -64,6 +68,7 @@ const letter = isContents && page ? page.html : "";
   ) : page ? (
     <article class:list={["tg-article", `tg-article--${slug}`]}>
       <Fragment set:html={pageHeadHtml(meta, { bignum: meta.hedStyle === "bignum" })} />
+      {pinLabel && <div class="bt-section-head-tools tg-askpin" set:html={askPinHtml({ section: slug, label: pinLabel })} />}
       <Fragment set:html={page.html} />
     </article>
   ) : (

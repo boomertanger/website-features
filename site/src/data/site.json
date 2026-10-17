@@ -46,10 +46,10 @@
     { "domain": "boomertanger.club", "label": "Fan Club", "icon": "club", "href": "/club-pass" },
     { "domain": "boomertanger.plus", "label": "Sub Club", "icon": "plus", "href": "/club-pass#ch-pick" },
     { "domain": "boomertanger.shop", "label": "Merch store", "icon": "bag", "href": "/shop" },
-    { "domain": "boomertang.com", "label": "Horror Monthly", "icon": "news", "href": "#" }
+    { "domain": "boomertang.com", "label": "Boomertang", "icon": "news", "href": "/boomertang" }
   ],
-  "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. TODO: boomertang.com (Horror Monthly) is not built yet, so its href is #.",
-  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "climb", "streams", "shop", "club", "featurelab", "bugzapper", "techStack", "services", "baseCamp", "talkBack"],
+  "_todoDomains": "TODO: the footer shows the vanity domains but links to internal paths until the domain redirects exist in Cloudflare; then switch each href to https://<domain>. boomertang.com is Boomertang (/boomertang); Cloudflare redirects the domain there at the switch (ROADMAP Boomertang at launch).",
+  "modules": ["live", "schedule", "games", "arcade", "factory", "trophies", "goals", "climb", "streams", "shop", "club", "featurelab", "bugzapper", "techStack", "services", "baseCamp", "talkBack", "boomertang"],
   "_aboutServiceModules": "Service Hub (docs/specs/service-hub.md §8a): services turns on /services in the Community menu and the Rate half of the page strip. talkBack (Talk Back, docs/specs/talk-back.md; on since Oct 14, 2026, Part A on staging) turns on the strip's Talk back half, the Ask pins and window.btTalkBack (scripts/hotline/talkback-loader.ts); off, open() resolves { result: \"off\" }. Keep it on for production. Both off: no strip.",
   "techStack": { "referrals": false },
   "clubPass": { "payments": false, "paymentsStaging": true, "price": "5.99", "shopDiscount": 10 },

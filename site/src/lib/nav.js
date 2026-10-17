@@ -27,8 +27,8 @@ const MODULE_PAGES = {
   contact: { label: "Contact", href: "/contact", icon: "mail", blurb: "Questions, feedback, business, private notes" },
   techStack: { label: "Tech Stack", href: "/tech-stack", icon: "rig", blurb: "The setup behind every stream" },
   baseCamp: { label: "Base Camp", href: "/base-camp", icon: "camp", blurb: "Who Boomer is and how it all started." },
-  // TODO: Horror Monthly (boomertang.com) has no page yet; site.json domains has the same "#" placeholder.
-  monthly: { label: "Horror Monthly", href: "#", icon: "news", blurb: "The monthly horror roundup." },
+  // Boomertang, the magazine (docs/specs/boomertang.md §2): a TEMPORARY spot in Community; it moves in the planned nav regroup (ROADMAP 17).
+  boomertang: { label: "Boomertang", href: "/boomertang", icon: "news", blurb: "Horror gaming monthly" },
 };
 
 // Pages that are on without being a site.json module: /crew is public (docs/specs/mod-machina.md), /contact is
@@ -44,7 +44,7 @@ const page = (id) => ({ id, ...MODULE_PAGES[id] });
 const GROUPS = [
   { id: "watch", label: "Watch", pages: ["live", "schedule", "streams", "games", "deck"] },
   { id: "play", label: "Play", pages: ["arcade", "chatgames", "prizes", "factory", "trophies"] },
-  { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "climb", "techStack", "services", "bugzapper", "featurelab", "contact", "monthly"] },
+  { id: "community", label: "Community", pages: ["baseCamp", "club", "crew", "goals", "climb", "techStack", "services", "bugzapper", "featurelab", "contact", "boomertang"] },
 ];
 const PLAIN = ["shop"];
 

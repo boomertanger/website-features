@@ -309,6 +309,7 @@
 .bt-root:not(#_) .gv-facts dd { margin: 0; color: var(--bt-text); }
 .bt-root:not(#_) .gv-where { display: flex; flex-wrap: wrap; gap: 8px; }
 .bt-root:not(#_) .gv-where .bt-btn { gap: 8px; }
+.bt-root:not(#_) .gv-col [data-tang-link]:empty { display: none; }
 .bt-root:not(#_) .gv-stats { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border: 1px solid var(--bt-border); border-radius: var(--bt-radius-lg); background: var(--bt-surface); }
 .bt-root:not(#_) .gv-stat { display: flex; flex-direction: column; gap: 3px; min-width: 0; padding: 14px 16px; }
 .bt-root:not(#_) .gv-stat:nth-child(even) { border-left: 1px solid var(--bt-border); }

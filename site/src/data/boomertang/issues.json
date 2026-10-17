@@ -1,5 +1,5 @@
 {
-  "_about": "Boomertang issues (docs/specs/boomertang.md §4a). Public metadata only, drafts included. textInRepo: the issue's pages are Markdown in site/src/content/boomertang/<id>/ (always public; its access switch is locked on). Without it the text is members-only, in gitignored files under functions/scripts/data/boomertang/<id>/, seeded into Firestore. sample: true marks test issues: built off production only, seeded on staging with --samples. Sources: url is null until it's filled in (The Index shows the title without a link). Facts on No. 1 were sourced Oct 15, 2026.",
+  "_about": "Boomertang issues (docs/specs/boomertang.md §4a). Public metadata only, drafts included. textInRepo: the issue's pages are Markdown in site/src/content/boomertang/<id>/ (always public; its access switch is locked on). Without it the text is members-only, in gitignored files under functions/scripts/data/boomertang/<id>/, seeded into Firestore. sample: true marks test issues: built off production only, seeded on staging with --samples. Sources: url is null until it's filled in (The Index shows the title without a link). games: the Game Vault slugs the issue covers (their game pages link to it once it is published). Facts on No. 1 were sourced Oct 15, 2026.",
   "issues": [
     {
       "id": "v1n1",
@@ -9,6 +9,7 @@
       "edition": "Launch edition",
       "year": 2027,
       "textInRepo": true,
+      "games": ["granny", "granny-chapter-two", "granny-3"],
       "cover": {
         "word": "GRANNY",
         "style": "s2",

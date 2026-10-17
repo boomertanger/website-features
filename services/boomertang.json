@@ -1,0 +1,31 @@
+{
+  "id": "boomertang",
+  "name": "Boomertang",
+  "type": "feature",
+  "area": "Community",
+  "blurb": "Boomer's horror gaming magazine: one issue a month, page by page.",
+  "version": "1.0",
+  "status": "building",
+  "audience": "everyone",
+  "routes": [
+    "/boomertang",
+    "/boomertang/how-it-works",
+    "/boomertang/[vol]/[no]",
+    "/boomertang/[vol]/[no]/[page]",
+    "/admin/boomertang"
+  ],
+  "nav": "boomertang",
+  "testPlan": "docs/testing/boomertang-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-boomertang",
+  "sections": {
+    "the-map": "The Map",
+    "survive": "Survive",
+    "speed": "Speed"
+  },
+  "talkBack": "pins",
+  "talkBackRoutes": {
+    "/admin/boomertang": "skip"
+  },
+  "help": "site/src/data/help/boomertang.json"
+}

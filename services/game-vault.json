@@ -4,7 +4,7 @@
   "type": "feature",
   "area": "Watch",
   "blurb": "Every horror game on the channel: covers, Boomer's score, when it was last played.",
-  "version": "1.3",
+  "version": "1.4",
   "status": "building",
   "audience": "everyone",
   "routes": [
