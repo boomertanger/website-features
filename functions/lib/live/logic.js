@@ -602,6 +602,28 @@ function chatGameSettledOf(s, nowMs) {
   return { runId: s.runId, title: typeof s.title === "string" ? s.title.slice(0, 120) : null, answer: s.answer.slice(0, 40), count: Number.isInteger(s.count) ? s.count : 0, at };
 }
 
+/** The Prize Box draw pointer for public/live (docs/specs/prize-box.md §4, §6): private/control.prizeDraw, written by lib/prizeBox/draw.js. Only these
+ *  fields leave, and only handles: never a uid. The spins are the server's decided spins, so every viewer animates the same wheel from startAt. */
+const PD_PHASES = ["pool", "round1", "round2", "here", "noSpin", "won"];
+const pdStr = (v, n) => (typeof v === "string" ? v.slice(0, n) : null);
+const pdNum = (v) => (Number.isFinite(v) ? v : null);
+function prizeDrawOf(p) {
+  if (!p || typeof p !== "object" || typeof p.drawId !== "string" || !p.drawId || !PD_PHASES.includes(p.phase)) return null;
+  const labels = Array.isArray(p.labels) ? p.labels.slice(0, 10).map((l) => pdStr(l, 60)) : null;
+  const pool = p.pool && typeof p.pool === "object" ? Object.fromEntries(["checkedIn", "crew", "cooldown", "filtered", "inDraw"].map((k) => [k, num(p.pool[k])])) : null;
+  return {
+    drawId: p.drawId, contestId: pdStr(p.contestId, 100), contestSlug: pdStr(p.contestSlug, 80), contestTitle: pdStr(p.contestTitle, 120), prizeTitle: pdStr(p.prizeTitle, 120),
+    phase: p.phase, round: p.round === 1 || p.round === 2 ? p.round : 0, rounds: p.rounds === 2 ? 2 : 1, labels,
+    groups: Array.isArray(p.groups) ? p.groups.slice(0, 10).map((g) => ({ label: pdStr(g && g.label, 40), count: num(g && g.count) })) : null,
+    groupPick: p.groupPick ? { index: num(p.groupPick.index), label: pdStr(p.groupPick.label, 40), count: num(p.groupPick.count) } : null,
+    spins: (Array.isArray(p.spins) ? p.spins : []).slice(0, 40).map((s) => ({ pickIndex: num(s.pickIndex), offset: pdNum(s.offset), spins: num(s.spins), durationMs: num(s.durationMs), startAt: num(s.startAt), again: s.again === true })),
+    picked: p.picked && typeof p.picked.handle === "string" ? { handle: p.picked.handle.slice(0, 40), index: num(p.picked.index) } : null,
+    hereUntil: pdNum(p.hereUntil), hereSeconds: num(p.hereSeconds),
+    winner: p.winner && typeof p.winner.handle === "string" ? { handle: p.winner.handle.slice(0, 40) } : null,
+    pool, respins: num(p.respins),
+  };
+}
+
 function buildPublicLive(input) {
   const { stream, window: win, viewers, peak, onDuty, chatGame, chatGameWaiting, chatGameSettled, look, nowMs } = input;
   const counters = Array.isArray(input.counters) ? sumShards(input.counters) : input.counters || { total: 0, byBeat: {}, byRoom: {} };
@@ -611,7 +633,7 @@ function buildPublicLive(input) {
   if (state === "off") {
     return { ...base, streamId: null, title: null, beat: null, beats: {}, window: { open: false, closesAt: null, beat: null },
       counts: { total: 0, byBeat: {}, byRoom: {} }, viewers: { total: 0, byPlatform: {} }, peak: 0, game: null, nextGame: null,
-      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null, chatGameWaiting: [], chatGameSettled: null, drop: null };
+      crew: { captain: null, chats: {}, onDuty: [], grades: [] }, deck: { rooms: {} }, firstIn: [], firstInBeat: null, chatGame: null, chatGameWaiting: [], chatGameSettled: null, drop: null, prizeDraw: null };
   }
   const sb = stream.beats || {};
   const beats = {};
@@ -664,6 +686,7 @@ function buildPublicLive(input) {
     chatGame: live ? chatGameOf(chatGame) : null,
     chatGameWaiting: live ? chatGameWaitingOf(chatGameWaiting) : [],
     chatGameSettled: live ? chatGameSettledOf(chatGameSettled, nowMs) : null,
+    prizeDraw: live ? prizeDrawOf(input.prizeDraw) : null,
     // a drop stays through Stop's grace and 60 s after close, so it isn't gated on live (drops-logic.publicDropOf; no uids)
     drop: DL.publicDropOf(input.drop, nowMs, input.dropClaims),
     ...(publicRush(input.rush, input.rush && input.rush.count) ? { recruitRush: publicRush(input.rush, input.rush.count) } : {}),

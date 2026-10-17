@@ -262,6 +262,8 @@ module.exports = function controls(ctx, { youtube = null, rng = Math.random, hoo
     // Chat Games (docs/specs/chat-games.md §3): open runs are voided, both pointers cleared, the night's results written to streams/{id}.chatGames
     // Live drops (docs/specs/live-drops.md §4): an open drop goes to closing (closedBy stop / autoEnd); dropSweep finishes it after the grace
     if (ctx.drops) { try { await ctx.drops.stopClose(s.id, { auto, actor }); } catch (err) { console.error("live: drop close at Stop failed", String((err && err.message) || err).slice(0, 140)); } }
+    // Prize Box (docs/specs/prize-box.md §4.8): a draw still running is void (it can be rerun later from the same pool snapshot)
+    if (ctx.prizeDraw) { try { await ctx.prizeDraw.onStreamEnd(s.id); } catch (err) { console.error("live: prize draw close at Stop failed", String((err && err.message) || err).slice(0, 140)); } }
     if (ctx.chatGames) { try { await ctx.chatGames.closeOut(s.id); } catch (err) { console.error("live: chat games close-out failed", String((err && err.message) || err).slice(0, 140)); } }
     await ctx.activity("stream-ended", `${s.title || "The stream"} has ended`, { streamId: s.id });
     return { sum, peak };

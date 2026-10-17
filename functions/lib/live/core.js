@@ -240,6 +240,7 @@ function makeCore({ db = admin.firestore(), adminLogEntry, now = Date.now } = {}
       grades: stream ? await ctx.crewGrades() : {}, firstIn: stream && stream.state === "live" ? firstInOf(control, stream) : [],
       rush: await ctx.rushFor(stream),
       drop: control.drop || null, dropClaims: await openDropClaims(control.drop),
+      prizeDraw: control.prizeDraw || null,
     });
     const hits = L.findSecrets(out, secrets);
     if (hits.length) { console.error("live: public/live not written, it would expose:", hits.join(", ")); return { wrote: false, id: stream ? stream.id : null, blocked: hits }; }

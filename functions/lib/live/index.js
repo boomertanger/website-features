@@ -11,13 +11,15 @@
 //                 Stop's afterEnd calls its closeOut and liveTick its sweep, through ctx.chatGames
 //   drops.js      dropOpen, dropAdjust, claimDrop, dropSweep (live drops, docs/specs/live-drops.md); Stop's afterEnd calls its stopClose
 //                 through ctx.drops, publishLive copies private/control.drop to public/live.drop
+//   prizeBox/draw.js (Prize Box live draw, docs/specs/prize-box.md §4): prizeDrawStart, prizeDrawSpin, prizeRespin, prizeDrawEnd, prizeHere, prizeHereTimeout;
+//                 Stop's afterEnd calls its onStreamEnd through ctx.prizeDraw, publishLive copies private/control.prizeDraw to public/live.prizeDraw
 //   controls.js   startStream, switchGame, stopStream, liveBeat, liveCheckInWindow, liveScene, liveAfterShow,
 //                 liveChecklist, liveObsKey, liveDeckKey, liveSettings
 // Pure rules are in logic.js (Part 2). `hooks` are for scripts/check-live-wiring.js (they are NOT exported as functions).
 const { makeCore } = require("./core");
 
 /** Builds everything. `deps` beyond adminLogEntry are for the checks (fake Google, clock, rng). */
-function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null, fetchFn = null, enqueue = null, sleep = undefined, twitchClientId = null, twitchClientSecret = null, twitchLogin = null, eventSubSecret = null, chatGamesEnqueue = null, dropRandomInt = undefined } = {}) {
+function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.random, grant = null, factory = null, fetchFn = null, enqueue = null, sleep = undefined, twitchClientId = null, twitchClientSecret = null, twitchLogin = null, eventSubSecret = null, chatGamesEnqueue = null, dropRandomInt = undefined, prizeEnqueue = null, prizeRand = undefined } = {}) {
   const ctx = makeCore({ adminLogEntry, now });
   const duty = require("../crew/duty")(ctx, { grant });
   ctx.duty = duty;                                                            // set before controls and feeds use it
@@ -31,8 +33,10 @@ function build({ adminLogEntry, youtube = null, now = Date.now, rng = Math.rando
   ctx.chatGames = chatGames;
   const drops = require("./drops")(ctx, { grant, randomInt: dropRandomInt });
   ctx.drops = drops;
-  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions, ...chatGames.functions, ...drops.functions };
-  const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush, chatGames, drops };
+  const prizeDraw = require("../prizeBox/draw")(ctx, { grant, enqueue: prizeEnqueue, rand: prizeRand });
+  ctx.prizeDraw = prizeDraw;
+  const functions = { ...controls.functions, ...checkin.functions, ...feeds.functions, ...eventsub.functions, ...duty.functions, ...flags.functions, ...rush.functions, ...chatGames.functions, ...drops.functions, ...prizeDraw.functions };
+  const hooks = { ctx, controls, checkin, feeds, eventsub, duty, rush, chatGames, drops, prizeDraw };
   return { functions, hooks };
 }
 

@@ -641,6 +641,7 @@ function build(deps = {}) {
     const c = await caller(request);
     if (!c.member) throw fail("failed-precondition", "Finish signing up first.", "needsSignup");
     const { contestId } = request.data || {};
+    if (request.data && request.data.draw === true) return { ok: true, ...(deps.drawMe ? await deps.drawMe(c.uid) : { draw: null }) };   // the /live card
     if (contestId) {
       const contest = await loadContest(contestId);
       if (!contest || (contest.status === "draft" && !c.isAdmin)) throw fail("not-found", "This contest isn't here.", "noContest");
@@ -716,7 +717,7 @@ function build(deps = {}) {
     return out;
   }
 
-  const secrets = deps.cloudSecrets;
+  const secrets = deps.cloudSecrets || [];   // the copy lib/live builds for the draw has no Cloudinary (its functions are never exported)
   const functions = {
     prizeContestSave: onCall(contestSave), prizeContestStatus: onCall({ secrets }, contestStatus), prizeSettings: onCall(settingsSave),
     prizeEntryParams: onCall({ secrets }, entryParams), prizeEnter: onCall({ secrets }, enter), prizeWithdraw: onCall({ secrets }, withdraw), prizeGetCode: onCall(getCode),

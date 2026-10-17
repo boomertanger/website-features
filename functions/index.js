@@ -914,7 +914,8 @@ Object.assign(exports, bugsModule.functions);
 
 // Control Room (docs/specs/control-room.md): the stream controls, check-ins and presence, the live feeds and ticks, Twitch
 // EventSub. Lives in lib/live/; it reuses the youtube module for ad hoc streams, after-shows and Start.
-Object.assign(exports, require("./lib/live")({ adminLogEntry, youtube: youtubeModule.hooks }));
+const liveModule = require("./lib/live").build({ adminLogEntry, youtube: youtubeModule.hooks });
+Object.assign(exports, liveModule.functions);
 
 // Hotline Boom (docs/specs/hotline-boom.md): the contact service's callables (contactSend, contactAction, contactNote, contactReply,
 // contactSettings, and Talk Back's contactDeflect, docs/specs/talk-back.md). Lives in lib/hotline/; the Turnstile check is lib/security/turnstile.js.
@@ -950,7 +951,8 @@ Object.assign(exports, require("./lib/playbook").functions(adminLogEntry));
 Object.assign(exports, require("./lib/club").build({ adminLogEntry }).functions);
 
 // Prize Box (docs/specs/prize-box.md §7): contests, entries (private Cloudinary uploads through the one delete path above), mail-in codes, judging and
-// random draws, claims and prizeTick (every 5 minutes). Lives in lib/prizeBox/; the live draw's callables join it in part 4. adminLog feature prizeBox.
+// random draws, claims and prizeTick (every 5 minutes). Lives in lib/prizeBox/; the live draw (lib/prizeBox/draw.js) is built by lib/live above and its
+// callables are lib/live functions. adminLog feature prizeBox.
 const prizeBoxModule = require("./lib/prizeBox").build({
   adminLogEntry,
   performAssetDeletion,
@@ -958,6 +960,8 @@ const prizeBoxModule = require("./lib/prizeBox").build({
   recordAssetCreated,
   cloudSecrets: CLOUDINARY_SECRETS,
   cloudCreds: () => ({ cloudName: CLOUDINARY_CLOUD_NAME.value(), apiKey: CLOUDINARY_API_KEY.value(), apiSecret: CLOUDINARY_API_SECRET.value() }),
+  drawTick: () => liveModule.hooks.prizeDraw.tick(),        // the I'm here timeout backstop
+  drawMe: (uid) => liveModule.hooks.prizeDraw.me(uid),     // the /live card's own state (prizeMine { draw: true })
 });
 Object.assign(exports, prizeBoxModule.functions);
 

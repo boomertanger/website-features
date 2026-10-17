@@ -224,6 +224,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
       stream: stream.state === "scheduled" ? { ...stream, state: "scheduled" } : { ...stream, beats: Object.fromEntries(Object.entries(stream.beats || {}).map(([k, b]) => [k, { ...b, checkins: counts.byBeat[k] != null ? counts.byBeat[k] : b.checkins || 0 }])) },
       window: control.window, counters: counts, viewers: control.viewers || {}, peak: control.peak || 0, onDuty: ctx.dutyHandles(stream), chatGame: control.chatGame || null, chatGameWaiting: control.chatGameWaiting || [], chatGameSettled: control.chatGameSettled || null, look: main.look, nowMs,
       rush: stream.state === "scheduled" ? null : await ctx.rushFor(stream),
+      prizeDraw: stream.state === "scheduled" ? null : control.prizeDraw || null,
       drop: stream.state === "scheduled" ? null : control.drop || null, dropClaims: stream.state === "scheduled" || !ctx.openDropClaims ? null : await ctx.openDropClaims(control.drop),
     });
     const scene = L.autoScene({ stream, window: control.window, pinned: control.pinned, nowMs });

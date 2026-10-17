@@ -3,6 +3,16 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 4 (live draw backend): lib/prizeBox/draw.js is built by lib/live (like Chat Games), so its callables are lib/live functions. All are owner only except prizeHere, which only the picked member can call.
+  - **prizeDrawStart:** the pool is snapshotted from presence (checked in, minus crew, admins, the owner, on-duty check-ins, the live cooldown and the contest's filters). The start is refused while a Chat Game runs, and one draw runs at a time (prizeBox/main.activeDraw).
+  - **prizeDrawSpin:** Round 1 spins the group slices; a group with fewer than 2 members is Spin again. Round 2 puts 10 random members on the wheel, with Spin again blades when there are fewer. Under 2 members, there's no spin.
+  - **Every spin is decided first:** { pickIndex, offset 0.2–0.8, spins 5–6, durationMs 7200–8400, startAt }, chained while it lands on Spin again, and saved with the draw.
+  - **prizeHere:** confirms the winner within 60 s. A double tap is harmless.
+  - **prizeRespin:** respins without the picked member. A missed I'm here window respins on its own, through the prizeHereTimeout Cloud Task, with prizeTick as the backstop.
+  - **prizeDrawEnd:** Done, or stop. Stop and the auto-end void a running draw, and it can be rerun later from the same pool snapshot.
+  - **The pointer:** streams/{id}/private/control.prizeDraw is copied to public/live.prizeDraw by buildPublicLive (prizeDrawOf: handles, counts and the decided spins only, never a uid). This changes the public/live shape, so every lib/live function was deployed together.
+  - **prizeMine { draw: true }** gives the /live card the viewer's own state.
+  - **Tests:** scripts/check-prize-draw.js is in npm run check.
 - Prize Box, part 3 (backend core): functions/lib/prizeBox, with logic.js (pure) and index.js. Data lives under sites/boomertanger/prizeBox/main (spec §6). firestore.rules denies by default and allows no client writes: drafts are hidden, entries are readable by the entrant and admins, and claims (private/claim) only by the owner. The public summary is public/prizeBox.
   - **Callables:**
     - prizeContestSave and prizeContestStatus (admins; the owner for live contests; delete is the one path: Cloudinary, then records, then the contest with its subcollections, then its activity events)
