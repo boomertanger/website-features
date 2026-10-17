@@ -13,6 +13,7 @@ import { setLook } from "../../../../shared/ui/control-room.js";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
 import type { PubLive } from "./model";
 import { createDropCallout } from "./drop-callout";
+import { noteRoundTrip } from "../../lib/server-clock";
 
 /** What obsFeed returns as `view` (functions/lib/live/feeds.js viewData): public/live plus the scene, the word and the Starting soon data. */
 export type ObsView = Omit<PubLive, "state"> & {
@@ -130,10 +131,12 @@ async function poll(key: string) {
     const ctl = new AbortController();
     const timer = setTimeout(() => ctl.abort(), 8_000);
     try {
+      const sentAt = Date.now();
       const res = await fetch(`${FEED}?k=${encodeURIComponent(key)}`, { signal: ctl.signal, cache: "no-store", referrerPolicy: "no-referrer" });
       if (res.status === 403) { root.replaceChildren(); return; }            // a wrong or revoked key: nothing at all, and no more asking
       const body = await res.json();
       if (!res.ok || !body?.ok) throw new Error("feed");
+      noteRoundTrip(body.serverNow, sentAt);   // the stream view's clock offset from the server (the Prize Box spin starts at the server's startAt)
       errors = 0;
       await show(body.view as ObsView);
       wait = delayFor(body.view as ObsView);

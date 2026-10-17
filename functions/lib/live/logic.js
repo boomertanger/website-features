@@ -620,7 +620,7 @@ function prizeDrawOf(p) {
     picked: p.picked && typeof p.picked.handle === "string" ? { handle: p.picked.handle.slice(0, 40), index: num(p.picked.index) } : null,
     hereUntil: pdNum(p.hereUntil), hereSeconds: num(p.hereSeconds),
     winner: p.winner && typeof p.winner.handle === "string" ? { handle: p.winner.handle.slice(0, 40) } : null,
-    pool, respins: num(p.respins),
+    pool, respins: num(p.respins), serverNow: pdNum(p.serverNow),
   };
 }
 

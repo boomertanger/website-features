@@ -3,6 +3,12 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box: the live spin no longer depends on each device's clock.
+  - **Server:** the draw pointer carries serverNow (copied to public/live.prizeDraw), and obsFeed and prizeMine { draw: true } return serverNow.
+  - **Devices:** site/src/lib/server-clock.ts keeps the device's offset from the server clock. The best sample wins: a round trip, then a pointer that changed live, then the site's Date header as the fallback. The banner, the /live card, the owner's panel and the stream view spin from startAt and count down I'm here on the corrected clock.
+  - **Checked:** with a device clock 45 s fast, the offset comes back within 0.3 s from the Date header and within 25 ms after a round trip.
+  - **Deploy:** the public/live shape changed, so every lib/live function was deployed together, then prizeMine.
+  - **Spec:** §4.5 notes how the clocks work.
 - docs: the Prize Box spec now lists what was approved after the build:
   - **§7:** the callables prizeEntryUrl and prizeMine (its contest and draw modes), the prizeHereTimeout task queue, and that the draw's callables deploy with lib/live.
   - **§5:** the owner's Settings tab on /admin/prize-box.

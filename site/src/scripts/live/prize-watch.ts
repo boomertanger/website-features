@@ -13,6 +13,7 @@ import { isProduction } from "../../lib/env.js";
 import { reasonOf } from "../../lib/errors";
 import { toast } from "./ui";
 import type { PubLive, PubPrizeDraw } from "./model";
+import { serverNow, noteRoundTrip, noteFresh, askEdge } from "../../lib/server-clock";
 
 export interface PrizeMe { drawId: string; inPool: boolean; inGroup: boolean; blade: number | null; picked: boolean; won: boolean; winnerId: string | null }
 export type PrizeKind = "visitor" | "signup" | "notIn" | "pool" | "round1" | "still" | "out" | "wheel" | "offWheel" | "spinning" | "picked" | "waiting" | "won" | "wonOther" | "noSpin";
@@ -31,7 +32,7 @@ export interface PrizeIo {
 export function realPrizeIo(): PrizeIo {
   return {
     preview: false,
-    async me() { const { call } = await import("../../lib/call"); const r = await call<{ draw: PrizeMe | null }>("prizeMine", { draw: true }); return r.draw || null; },
+    async me() { const { call } = await import("../../lib/call"); const sentAt = Date.now(); const r = await call<{ draw: PrizeMe | null; serverNow?: number }>("prizeMine", { draw: true }); noteRoundTrip(r.serverNow, sentAt); return r.draw || null; },
     async here(drawId) { const { call } = await import("../../lib/call"); return call("prizeHere", { drawId }); },
   };
 }
@@ -48,7 +49,7 @@ const SAMPLE_NAMES = ["@cryptkeeper", "@ghostlight", "@hexqueen", "@mothman", "@
 const SAMPLE_GROUPS = ["Everyone", "Night Shift top 50", "Every beat tonight", "Tap the Splat badge", "Everyone", "Members 90 days", null, "Night Shift top 10", "Beat the Boss badge", "Every beat tonight"];
 const ME = 5;
 /** A sample pointer for a preview step, with spins that start a moment after the page opens (so the wheel plays). Sample text only. */
-export function samplePrize(step: PreviewStep, t0 = Date.now()): { draw: PubPrizeDraw; me: PrizeMe } {
+export function samplePrize(step: PreviewStep, t0 = serverNow()): { draw: PubPrizeDraw; me: PrizeMe } {
   const spin = (pickIndex: number, startAt: number, again = false) => ({ pickIndex, offset: 0.45, spins: 5, durationMs: 7600, startAt, again });
   const landed = t0 - 9000, soon = t0 + 800;
   const r1 = ["pool", "round1", "still", "out"].includes(step);
@@ -89,8 +90,8 @@ export const hereRefusal = (err: unknown) => REFUSALS[reasonOf(err) || ""] || "T
 const lastSpin = (d: PubPrizeDraw) => (d.spins.length ? d.spins[d.spins.length - 1] : null);
 /** When the wheel stops (ms), or null when it isn't spinning for this phase. */
 export const landsAt = (d: PubPrizeDraw) => { const s = lastSpin(d); return s ? s.startAt + s.durationMs : null; };
-export const isSpinning = (d: PubPrizeDraw, now = Date.now()) => { const s = d.spins[0], end = landsAt(d); return !!s && !!end && now >= s.startAt - 2000 && now < end; };
-export const secondsLeft = (d: PubPrizeDraw, now = Date.now()) => (d.hereUntil ? Math.max(0, Math.ceil((d.hereUntil - now) / 1000)) : 0);
+export const isSpinning = (d: PubPrizeDraw, now = serverNow()) => { const s = d.spins[0], end = landsAt(d); return !!s && !!end && now >= s.startAt - 2000 && now < end; };
+export const secondsLeft = (d: PubPrizeDraw, now = serverNow()) => (d.hereUntil ? Math.max(0, Math.ceil((d.hereUntil - now) / 1000)) : 0);
 /** The blade colour for a blade index (the decorative wheel tokens). */
 export const bladeColor = (i: number | null) => (i == null ? "" : `var(--bt-wheel-${i + 1})`);
 const COLOR_NAMES = ["violet", "blue", "steel blue", "teal", "green", "yellow", "orange", "coral", "red", "pink"];
@@ -116,7 +117,7 @@ export function watchPrize({ io, feed, onAuthState, member, onView }: {
   }
   function derive(): PrizeView | null {
     if (!draw || !auth || auth.status === "loading") return null;
-    const now = Date.now(), spinning = isSpinning(draw, now);
+    const now = serverNow(), spinning = isSpinning(draw, now);
     let kind: PrizeKind;
     if (me && me.won) kind = "won";   // straight after I'm here, before public/live catches up
     else if (draw.phase === "won") kind = "wonOther";
@@ -138,13 +139,19 @@ export function watchPrize({ io, feed, onAuthState, member, onView }: {
     const key = v ? JSON.stringify([v.kind, keyOf(v.draw), v.spinning, v.busy, v.me && [v.me.blade, v.me.picked, v.me.won]]) : "";
     cur = v;
     clearTimeout(landTimer);
-    if (v && v.spinning) { const end = landsAt(v.draw); if (end) landTimer = window.setTimeout(emit, Math.max(50, end - Date.now() + 60)); }   // redraw when it lands
-    else if (v && v.draw.spins[0] && Date.now() < v.draw.spins[0].startAt - 2000) landTimer = window.setTimeout(emit, v.draw.spins[0].startAt - 2000 - Date.now() + 30);
+    if (v && v.spinning) { const end = landsAt(v.draw); if (end) landTimer = window.setTimeout(emit, Math.max(50, end - serverNow() + 60)); }   // redraw when it lands
+    else if (v && v.draw.spins[0] && serverNow() < v.draw.spins[0].startAt - 2000) landTimer = window.setTimeout(emit, v.draw.spins[0].startAt - 2000 - serverNow() + 30);
     if (key === lastKey) return;
     lastKey = key;
     onView(v);
   }
-  const apply = (p: PubLive) => { draw = io.sample ? io.sample() : p.prizeDraw || null; followMe(); emit(); };
+  let seenServerNow: number | null | undefined;
+  const apply = (p: PubLive) => {
+    draw = io.sample ? io.sample() : p.prizeDraw || null;
+    // the server clock: a pointer that changes while the page is open was written moments ago; the first one may be old, so it only asks the edge
+    if (draw && !io.sample) { askEdge(); const sn = (draw as any).serverNow ?? null; if (seenServerNow !== undefined && sn !== seenServerNow) noteFresh(sn); seenServerNow = sn; }
+    followMe(); emit();
+  };
   const offFeed = feed(apply);
   const offAuth = onAuthState((a) => { auth = a; followMe(); emit(); });
   if (io.sampleMe) me = io.sampleMe();

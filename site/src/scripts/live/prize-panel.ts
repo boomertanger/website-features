@@ -14,6 +14,7 @@ import { onLive } from "../../lib/live";
 import { esc, toast, messageFor, withBusy } from "./ui";
 import type { PubLive, PubPrizeDraw } from "./model";
 import { isSpinning, landsAt, prizePreviewStep, samplePrize, secondsLeft } from "./prize-watch";
+import { serverNow } from "../../lib/server-clock";
 
 interface SumContest { id: string; slug: string; title: string; type: string; status: string; beat: string | null; prizes: { title: string }[] }
 export interface PrizePanelIo {
@@ -102,7 +103,7 @@ export function mountPrizePanel(el: HTMLElement, { io = realPrizePanelIo() }: { 
     const html = crPanelHtml({ id: "lc-prize", cls: "lc-prize", title: "Prize Box", icon: "gift", bodyHtml: `<div class="pz-cp">${d ? drawHtml(d) : launchHtml()}</div>` });
     if (html !== lastKey) { lastKey = html; el.innerHTML = html; }
     clearTimeout(landTimer);
-    if (d && isSpinning(d)) { const end = landsAt(d); if (end) landTimer = window.setTimeout(draw, Math.max(50, end - Date.now() + 60)); }
+    if (d && isSpinning(d)) { const end = landsAt(d); if (end) landTimer = window.setTimeout(draw, Math.max(50, end - serverNow() + 60)); }
     // the launch prompt at the scheduled beat: a toast once per contest and beat
     if (!d && pub && pub.beat) {
       const due = contests.find((c) => c.type === "live" && c.status === "scheduled" && c.beat === pub!.beat);

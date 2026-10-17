@@ -54,6 +54,8 @@ export interface PubPrizeDraw {
   labels: (string | null)[] | null; groups: { label: string | null; count: number }[] | null; groupPick: { index: number; label: string | null; count: number } | null;
   spins: PubPrizeSpin[]; picked: { handle: string; index: number } | null; hereUntil: number | null; hereSeconds: number;
   winner: { handle: string } | null; pool: { checkedIn: number; crew: number; cooldown: number; filtered: number; inDraw: number } | null; respins: number;
+  /** The server clock when the pointer was written (lib/server-clock.ts uses it when it changes live). */
+  serverNow?: number | null;
 }
 
 /** public/live.drop. art is the badge art URL, or its emoji when it has no art yet. closesAt is null for a drop that runs until the stream ends. */

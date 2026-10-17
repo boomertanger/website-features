@@ -641,7 +641,7 @@ function build(deps = {}) {
     const c = await caller(request);
     if (!c.member) throw fail("failed-precondition", "Finish signing up first.", "needsSignup");
     const { contestId } = request.data || {};
-    if (request.data && request.data.draw === true) return { ok: true, ...(deps.drawMe ? await deps.drawMe(c.uid) : { draw: null }) };   // the /live card
+    if (request.data && request.data.draw === true) return { ok: true, serverNow: now(), ...(deps.drawMe ? await deps.drawMe(c.uid) : { draw: null }) };   // the /live card (serverNow: its clock offset)
     if (contestId) {
       const contest = await loadContest(contestId);
       if (!contest || (contest.status === "draft" && !c.isAdmin)) throw fail("not-found", "This contest isn't here.", "noContest");

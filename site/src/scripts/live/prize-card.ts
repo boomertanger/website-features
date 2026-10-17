@@ -13,6 +13,7 @@ import { isMember } from "./pub-ui";
 import { PRIZE_TICK_SRC } from "../../lib/prize-sound";
 import type { PubApi } from "./pub-data";
 import type { PubPrizeDraw } from "./model";
+import { serverNow } from "../../lib/server-clock";
 import { bladeColor, bladeName, landsAt, prizeIo, secondsLeft, watchPrize, type PrizeView } from "./prize-watch";
 
 const slice = (v: PrizeView) => (v.me && v.me.blade != null ? `<span class="pz-myslice"><i style="--c:${bladeColor(v.me.blade)}"></i>Your slice: ${esc(bladeName(v.me.blade))}</span>` : "");
@@ -63,8 +64,8 @@ export function mountPrizeCard(el: HTMLElement, api: PubApi): PrizeCard {
     playedKey = pk;
     if (!d.spins.length) { wheelReset(host); return; }
     const last = d.spins[d.spins.length - 1];
-    if (Date.now() >= (landsAt(d) || 0)) { wheelShow(host, { pickIndex: last.pickIndex, offset: last.offset }); return; }
-    stopSpin = wheelPlay(host, d.spins, { onTick: () => snd.tick() });
+    if (serverNow() >= (landsAt(d) || 0)) { wheelShow(host, { pickIndex: last.pickIndex, offset: last.offset }); return; }
+    stopSpin = wheelPlay(host, d.spins, { now: serverNow, onTick: () => snd.tick() });
   }
   const draw = (v: PrizeView | null) => {
     if (!v) { el.hidden = true; el.innerHTML = ""; wheelKey = ""; stopSpin(); return; }

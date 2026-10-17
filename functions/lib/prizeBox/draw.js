@@ -31,6 +31,8 @@ const ACTIVE = ["pool", "round1", "round2", "here", "noSpin"];
 module.exports = function makeDraw(ctx, { grant = null, enqueue = null, rand = undefined, core = null } = {}) {
   const { db, FieldValue, Timestamp, fail, now } = ctx;
   // The Prize Box core (awardWinner, standings, settings): grant only, no Cloudinary, so lib/live can build it.
+  // Spin times are the server's clock (startAt). Every viewer corrects its own clock by its offset from the server (site/src/lib/server-clock.ts),
+  // measured from obsFeed's and prizeMine's serverNow and this pointer's serverNow, so a device whose clock is wrong still spins in step.
   const pb = core || require("./index").build({ db, adminLogEntry: ctx.adminLogEntry, now, ...(grant ? { grant } : {}) }).hooks;
   const R = pb.R;
   const drawRef = (cid, id) => db.doc(`${pb.base}/contests/${cid}/draws/${id}`);
@@ -72,6 +74,7 @@ module.exports = function makeDraw(ctx, { grant = null, enqueue = null, rand = u
       hereUntil: d.here ? d.here.until : null, hereSeconds: d.hereSeconds,
       winner: d.result ? { handle: d.result.handle } : null,
       pool: d.counts, respins: (d.respins || []).length, updatedAt: now(),
+      serverNow: now(),   // the server clock when this pointer was written: a device that sees it change live can measure its own clock against it
     };
   }
   async function stage(streamId, contest, drawId, d) {

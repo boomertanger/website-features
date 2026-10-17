@@ -259,7 +259,7 @@ module.exports = function feeds(ctx, { controls, fetchFn = null, enqueue = null,
     if (req.method !== "GET") { send(res, 405, { ok: false, reason: "method" }); return; }
     const main = await ctx.mainDoc();
     if (!L.verifyKey(keyOf(req), main.obsKeyHash)) { send(res, 403, { ok: false, reason: "key" }); return; }
-    try { send(res, 200, { ok: true, view: await viewData() }); }
+    try { const view = await viewData(); send(res, 200, { ok: true, view, serverNow: now() }); }   // serverNow: the stream view corrects its clock with it (the Prize Box spin)
     catch (err) { console.error("obsFeed failed", String((err && err.message) || err).slice(0, 160)); send(res, 500, { ok: false, reason: "error" }); }
   }
   const obsFeed = onRequest({ cors: true }, handleObsFeed);

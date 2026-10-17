@@ -12,6 +12,7 @@ import { escapeHtml as esc } from "../../../../shared/ui/dom.js";
 import { PRIZE_TICK_SRC } from "../../lib/prize-sound";
 import type { PubPrizeDraw } from "./model";
 import { isSpinning, landsAt, secondsLeft } from "./prize-watch";
+import { serverNow } from "../../lib/server-clock";
 
 const GIFT = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="8" width="18" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-4-5.5-2S9 8 12 8zm0 0c1.5-3 5-4 5.5-2S15 8 12 8z"/></svg>';
 
@@ -58,8 +59,8 @@ export function createPrizeScene(el: HTMLElement) {
       spinKey = sk; stop();
       const last = d.spins.length ? d.spins[d.spins.length - 1] : null;
       if (!last) wheelReset(svs);
-      else if (Date.now() >= (landsAt(d) || 0)) wheelShow(svs, { pickIndex: last.pickIndex, offset: last.offset });
-      else stop = wheelPlay(svs, d.spins, { motion: true, onTick: () => snd.tick() });
+      else if (serverNow() >= (landsAt(d) || 0)) wheelShow(svs, { pickIndex: last.pickIndex, offset: last.offset });
+      else stop = wheelPlay(svs, d.spins, { now: serverNow, motion: true, onTick: () => snd.tick() });
     }
     // the winner: the box shakes, the lid blows off, gold light, confetti, the card rises (once per draw)
     if (d.phase === "won" && burstFor !== d.drawId) {
@@ -76,7 +77,7 @@ export function createPrizeScene(el: HTMLElement) {
     stand(d);
     const html = panel(d);
     if (svp.dataset.k !== html) { svp.dataset.k = html; svp.innerHTML = html; }
-    if (isSpinning(d)) { const end = landsAt(d); if (end) landTimer = window.setTimeout(() => render(cur), Math.max(50, end - Date.now() + 60)); }
+    if (isSpinning(d)) { const end = landsAt(d); if (end) landTimer = window.setTimeout(() => render(cur), Math.max(50, end - serverNow() + 60)); }
     if (!ticker) ticker = window.setInterval(() => {
       const x = cur; if (!x || x.phase !== "here" || isSpinning(x)) return;
       const s = secondsLeft(x), left = svp.querySelector("[data-pz-sv-left]"), ring = svp.querySelector<HTMLElement>(".bt-sv-ring");

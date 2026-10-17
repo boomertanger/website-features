@@ -77,7 +77,8 @@ const ctrl = async () => ((await get(`${S}/streams/s1/private/control`)) || {}).
   assert.equal((await get(`${BASE}/contests/${cid}`)).status, "drawing");
   assert.equal((await get(BASE)).activeDraw.drawId, drawId, "one draw at a time");
   let p = (await pub()).prizeDraw;
-  assert.equal(p.phase, "pool"); assert.equal(p.pool.inDraw, 7); assert.equal(p.contestTitle, "Break Wheel #1 (sample)");
+  assert.equal(p.phase, "pool"); assert.equal(p.pool.inDraw, 7);
+  assert.equal(p.serverNow, clock, "the pointer carries the server clock (devices correct their own with it)"); assert.equal(p.contestTitle, "Break Wheel #1 (sample)");
   const c2 = (await as("boss", "prizeContestSave", { ...contest, title: "Break Wheel #2 (sample)" })).id;
   await as("boss", "prizeContestStatus", { id: c2, action: "publish" });
   assert.equal(await why(as("boss", "prizeDrawStart", { contestId: c2 })), "busy");
@@ -133,6 +134,7 @@ const ctrl = async () => ((await get(`${S}/streams/s1/private/control`)) || {}).
   // the viewer's own state (prizeMine { draw: true })
   const picked = p.picked.handle;
   r = await as(picked, "prizeMine", { draw: true });
+  assert.equal(r.serverNow, clock, "prizeMine { draw: true } returns the server clock");
   assert.equal(r.draw.picked, true); assert.equal(r.draw.inPool, true); assert.equal(typeof r.draw.blade, "number");
   r = await as("recent", "prizeMine", { draw: true });
   assert.equal(r.draw.inPool, false, "the cooldown keeps them out");
