@@ -1,0 +1,83 @@
+---
+// /admin/boomertang: the Boomertang desk (docs/specs/boomertang.md §5, §6 "The desk (A1)"; mockup boomertang-how-it-works.html, pick A1). Owner
+// only: scripts/boomertang/desk.ts checks sites/{id}.ownerUid, and tangAdmin refuses everyone else. The hero (the desk lamp over a cover stack,
+// the Owner only badge); Issues (rows newest first: the cover, a status badge (Draft blue, Newest lime), the free-for-everyone switch (locked on
+// for an issue whose text is in the repo), Publish with confirmAction and the stamp moment, Preview for drafts; an issue's edition log under
+// it); Edition note (1 to 120 characters, the stamp on save); Chat's Verdict (Close poll / Reopen); Sources to re-check (from the build:
+// scripts/check-boomertang.js writes the list); the mascot's "No issue in the works" when there's no draft. Not in the header nav; a card on /admin.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import { BUILT, pageFile } from "../../lib/boomertang/issues";
+import { scanBlocks } from "../../lib/boomertang/render.js";
+import "../../styles/boomertang.css";
+
+// the polls (from each public issue's Chat's Verdict page; members-only issues' polls come with their pages later)
+const polls = BUILT.filter((i) => i.textInRepo).flatMap((i) => {
+  const md = pageFile(i, "chats-verdict");
+  const b = md ? scanBlocks(md).find((x) => x.name === "polls") : null;
+  return b ? (JSON.parse(b.text) as { id: string; question: string }[]).map((p) => ({ id: p.id, question: p.question, issueId: i.id, no: i.no })) : [];
+});
+// the build's "sources to re-check" list (gitignored; written by check-boomertang.js before every build)
+const RECHECK = import.meta.glob("../../data/boomertang/recheck.generated.json", { eager: true, import: "default" }) as Record<string, { builtAt: string; staleAfterDays: number; sources: { issueId: string; id: string; title: string; days: number; checkedAt: string }[] }>;
+const recheck = Object.values(RECHECK)[0] || null;
+const meta = JSON.stringify({ issues: BUILT.map((i) => ({ id: i.id, vol: i.vol, no: i.no, title: i.title, inRepo: !!i.textInRepo, sample: !!i.sample, cover: i.cover })), polls }).replace(/</g, "\\u003c");
+---
+<BaseLayout title="Boomertang desk" noindex magazine>
+  <div id="boomertang-root" class="bt-root tg-desk" data-desk="loading">
+    <script is:inline type="application/json" data-desk-meta set:html={meta} />
+    <template data-tang-mascot><Mascot decorative /></template>
+    <section class="tg-deskhero">
+      <div class="tg-lamp" aria-hidden="true">
+        <svg viewBox="0 0 120 100"><ellipse class="glow" cx="54" cy="70" rx="46" ry="12"/><path class="arm" d="M14 8 L34 30"/><path class="arm" d="M34 30 L22 56"/><path class="shade" d="M6 4 h20 l-6 10 h-8z"/><circle class="bulb" cx="16" cy="14" r="5"/><rect class="base" x="14" y="56" width="18" height="4" rx="2"/><rect class="pile" x="48" y="62" width="44" height="8" rx="1"/><rect class="pile2" x="50" y="54" width="40" height="8" rx="1"/><g transform="rotate(-6 64 43)"><rect class="cov" x="46" y="20" width="36" height="46" rx="2"/><text class="mast" x="64" y="32" text-anchor="middle">BOOMERTANG</text><text class="no" x="64" y="56" text-anchor="middle" data-desk-no>No. 1</text></g><rect class="table" x="0" y="70" width="120" height="4"/></svg>
+      </div>
+      <div>
+        <span class="bt-badge bt-badge--admin">Owner only</span>
+        <h1 class="bt-title">Boomertang desk</h1>
+        <p>Publish issues, choose who reads them, log what changed.</p>
+      </div>
+    </section>
+
+    <div class="tg-deskstate" data-state="loading" aria-hidden="true"><span class="bt-skeleton" style="height:220px"></span></div>
+    <section class="tg-deskstate" data-state="join"><div class="bt-lock-card"><span class="bt-lock-card-ic" aria-hidden="true">🔒</span><div><b>Owner only</b><p>The desk runs Boomertang. Sign in with the owner account.</p></div><button type="button" class="bt-btn bt-btn--primary" data-signin="signin">Sign in</button></div></section>
+    <section class="tg-deskstate" data-state="denied"><div class="bt-lock-card"><span class="bt-lock-card-ic" aria-hidden="true">🔒</span><div><b>Owner only</b><p>Only the owner runs the magazine. The issues are on the newsstand.</p></div><a class="bt-btn bt-btn--secondary" href="/boomertang">The newsstand</a></div></section>
+
+    <div class="tg-deskgrid tg-deskstate" data-state="page">
+      <div class="tg-deskcol">
+        <div class="bt-card tg-dcard">
+          <div class="tg-dcard-h"><h2 class="bt-heading">Issues</h2><small>Newest first</small></div>
+          <div class="tg-drows" data-desk-issues aria-live="polite"></div>
+        </div>
+        <div class="tg-empty" data-desk-empty hidden><Mascot decorative /><div><b>No issue in the works</b><p>Start the next issue in the content files and seed it to staging; it shows up here as a draft.</p></div></div>
+      </div>
+      <div class="tg-deskcol">
+        <div class="bt-card tg-dcard">
+          <div class="tg-dcard-h"><h2 class="bt-heading">Edition note</h2></div>
+          <p class="tg-dp">Say what changed. It shows in the issue's edition log with today's date.</p>
+          <form class="tg-note" data-desk-note>
+            <label class="bt-sr-only" for="tg-note-issue">Issue</label>
+            <select class="bt-select" id="tg-note-issue" data-desk-note-issue></select>
+            <label class="bt-sr-only" for="tg-note-text">What changed</label>
+            <input class="bt-input" id="tg-note-text" maxlength="120" required placeholder="e.g. Room guide: the attic added" autocomplete="off" />
+            <button type="submit" class="bt-btn bt-btn--primary bt-btn--sm">Add to the log</button>
+          </form>
+          <p class="tg-dp tg-dcount" data-desk-note-count>0 / 120</p>
+        </div>
+        <div class="bt-card tg-dcard">
+          <div class="tg-dcard-h"><h2 class="bt-heading">Chat's Verdict</h2><small>Polls</small></div>
+          <div data-desk-polls>{polls.map((p) => <div class="tg-dpoll" data-poll={p.id}><b>{p.question}</b><button type="button" class="bt-btn bt-btn--secondary bt-btn--sm" data-poll-op disabled>…</button><small data-poll-meta>No. {p.no}</small></div>)}</div>
+        </div>
+        <div class="bt-card tg-dcard">
+          <div class="tg-dcard-h"><h2 class="bt-heading">Sources to re-check</h2><small>From the last build</small></div>
+          <div class="tg-dok"><b>✓</b>Every tag has a source (the build checks it)</div>
+          {recheck && recheck.sources.length ? recheck.sources.map((s) => <div class="tg-dsrc"><span>{s.title}</span><small>{s.days} days</small><small>No. {s.issueId.split("n")[1]} · checked {s.checkedAt}</small></div>)
+            : <p class="tg-dp">Nothing to re-check: every source was checked in the last {recheck?.staleAfterDays ?? 30} days.</p>}
+          <p class="tg-dp tg-dfaint">Update the checked dates in the issue's sources (issues.json); the next build clears them from this list.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/boomertang/desk";
+</script>
