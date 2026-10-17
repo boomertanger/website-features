@@ -37,7 +37,8 @@ interface Receipt { at: number; amount: number; currency: string; description: s
 interface Billing { receipts: Receipt[]; subscription: { status: string; renewsAt: number | null; cancelAt: number | null; amount: number | null; currency: string } | null }
 type Bill = "active" | "cancelled" | "failed" | "month" | "twice" | null;
 interface TwitchView { linked: boolean; login: string; own: boolean; tier: string; sub: boolean | null; gifted: boolean; checkedAt: number | null }
-interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: TwitchView; counting: boolean; preview: boolean; stripe: StripeSrc | null; bill: Bill; billing: Billing | null }
+type BillingState = "off" | "loading" | "error" | "ok";
+interface View { uid: string; handle: string; joined: Date | null; gold: boolean; crew: boolean; sources: Source[]; twitch: TwitchView; counting: boolean; preview: boolean; stripe: StripeSrc | null; bill: Bill; billing: Billing | null; billingState: BillingState }
 
 const root = document.querySelector<HTMLElement>("[data-mp]");
 if (root) init(root);
@@ -76,15 +77,16 @@ function init(root: HTMLElement) {
   }
 
   const bills = new Map<string, Billing | null>(), billsLoading = new Set<string>();
-  function billingFor(uid: string): Billing | null {
-    if (!PAY) return null;
-    if (bills.has(uid)) return bills.get(uid)!;
+  /** clubStatus for this member, fetched once in the background; "loading" until it answers, "error" if it couldn't. */
+  function billingFor(uid: string): { billing: Billing | null; state: BillingState } {
+    if (!PAY) return { billing: null, state: "off" };
+    if (bills.has(uid)) { const b = bills.get(uid)!; return { billing: b, state: b ? "ok" : "error" }; }
     if (!billsLoading.has(uid)) {
       billsLoading.add(uid);
       void import("../../lib/call").then(({ call }) => call<Billing>("clubStatus")).then((b) => b, (err) => { console.error("my pass: clubStatus", err); return null; })
         .then((b) => { bills.set(uid, b); billsLoading.delete(uid); last = ""; void render(getAuthState()); });
     }
-    return null;
+    return { billing: null, state: "loading" };
   }
   /** The billing state from the Stripe source: failed (past_due), cancelled, paying twice (with a Twitch sub), active, or a month pass. */
   function billOf(st: StripeSrc | null, sources: Source[]): Bill {
@@ -118,7 +120,7 @@ function init(root: HTMLElement) {
         gold: !sources.includes("fan"), crew: sources.includes("crew"), sources,
         twitch: twitchView(s.account?.linked?.twitch ?? null, m.club?.twitch ?? null, CHANNEL),
         counting: m.counting, preview: false,
-        stripe: m.club?.sources?.stripe ?? null, bill: billOf(m.club?.sources?.stripe ?? null, sources), billing: billingFor(uid),
+        stripe: m.club?.sources?.stripe ?? null, bill: billOf(m.club?.sources?.stripe ?? null, sources), ...((b) => ({ billing: b.billing, billingState: b.state }))(billingFor(uid)),
       };
     }
     if (isProduction || s.status !== "signedOut") return null;
@@ -139,7 +141,7 @@ function init(root: HTMLElement) {
     const billing: Billing | null = stripe ? { receipts: [{ at: t0 - 10 * D, amount: 599, currency: "usd", description: bq === "month" ? "Sub Club, one month" : "Sub Club", receiptUrl: "#", refunded: false }, { at: t0 - 40 * D, amount: 599, currency: "usd", description: "Sub Club", receiptUrl: "#", refunded: false }],
       subscription: stripe.kind === "sub" ? { status: stripe.status || "active", renewsAt: stripe.renewsAt ?? null, cancelAt: stripe.cancelAt ?? null, amount: 599, currency: "usd" } : null } : null;
     return { uid: `preview-${kind}`, handle: `@${previewMember.name.toLowerCase()}`, joined: new Date(), gold: kind !== "fan" || tw === "sub" || !!stripe, crew: kind === "crew", sources, twitch, counting: tw === "sub" || tw === "nosub" || tw === "own", preview: true,
-      stripe, bill: billOf(stripe, sources), billing };
+      stripe, bill: billOf(stripe, sources), billing, billingState: PAY ? "ok" : "off" };
   }
 
   // ---------- the pieces ----------
@@ -235,13 +237,17 @@ function init(root: HTMLElement) {
   function payments(v: View) {
     const k = lead(v);
     const B = v.billing, S = v.stripe;
-    if (B && (B.receipts.length || B.subscription) || S) {
+    // Anyone with a Stripe customer sees their receipts whatever their plan, so never say "No payments yet" before clubStatus has
+    // answered (a cold start takes a few seconds), and never when it couldn't.
+    if (v.billingState === "loading") return `<div class="bt-card">${head("Payments")}<p class="bt-fine bt-fine--left mp-note">Loading your receipts…</p></div>`;
+    const failed = v.billingState === "error";
+    if (B && (B.receipts.length || B.subscription) || S || failed) {
       const amt = money(B?.subscription?.amount, B?.subscription?.currency);
       const next = v.bill === "active" || v.bill === "twice" ? `<div class="mp-next"><b>${amt}</b><span>next charge ${day(B?.subscription?.renewsAt ?? S?.renewsAt)}</span></div><div class="mp-row-actions">${portalBtn("Manage payment", "secondary")}</div>`
         : v.bill === "cancelled" ? `<div class="mp-next"><b>No more charges</b><span>you cancelled · gold until ${day(S?.cancelAt)}</span></div><div class="mp-row-actions">${portalBtn("Resume Sub Club", "secondary")}</div>`
         : v.bill === "failed" ? `<div class="mp-next"><b>${amt}</b><span>didn't go through · fix by ${day(S?.graceUntil)}</span></div><div class="mp-row-actions">${portalBtn("Fix my card")}</div>`
         : v.bill === "month" ? `<div class="mp-next"><b>One month</b><span>gold until ${day(S?.endsAt)} · doesn't renew</span></div>` : "";
-      const rows = !B ? '<p class="bt-fine bt-fine--left mp-note">Loading your receipts…</p>' : B.receipts.length
+      const rows = failed || !B ? '<p class="bt-fine bt-fine--left mp-note">Couldn't load your receipts right now. Refresh to try again.</p>' : B.receipts.length
         ? `<span class="bt-label mp-receipts-label">Receipts</span><div class="mp-receipts">${B.receipts.map((r) => `<div class="mp-receipt"><span>${day(r.at)}</span><span>${esc(r.description)}${r.refunded ? " · refunded" : ""}</span><b>${money(r.amount, r.currency)}</b>${r.receiptUrl ? `<a href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">Receipt ↗</a>` : "<span></span>"}</div>`).join("")}</div>` : "";
       return `<div class="bt-card">${head("Payments")}${next}${rows}<p class="bt-fine bt-fine--left mp-note">Manage payment opens Stripe's secure page. Your card never touches this site.</p></div>`;
     }
