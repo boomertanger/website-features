@@ -116,6 +116,13 @@ follow-up work? Read `docs/design-system.md` §8 ("Recorded decisions") first.
 - `window.btChatGames = { openLaunch, end, mountPlay, mountScene, mountRun }` is the only entry point other pages call.
 - A new format registers a handler in `functions/lib/chatGames` (`L.HANDLERS`), its UI with `registerFormat`, and adds a chapter to `/live/chat-games`.
 
+## Boomertang (the magazine, workstream 24)
+- Spec `docs/specs/boomertang.md`; design-system §8ak. Public issue text is Markdown in the repo; members-only issue text lives in
+  gitignored files under `functions/scripts/data/boomertang/` and is seeded, never committed (the repo is public).
+- `tangAdmin` and `tangVote` must not load `rewards/grant.js` or anything in `functions/lib/live`, so they deploy on their own
+  (`--only functions:tangAdmin,functions:tangVote,functions:updatePrefs`) without redeploying the rest.
+- No game screenshots or game art in the repo or on Cloudinary until the permission question is settled: placeholder art only.
+
 ## After every push to dev
 1. `git rev-parse HEAD`, and confirm it matches
    `git ls-remote https://github.com/boomertanger/website-features.git dev`.

@@ -35,6 +35,7 @@ Last updated: 2026-10-17. Every planning chat reads this file first and proposes
 | 21 | Traffic Pulse (/admin/pulse: the site's private, cookieless analytics per service; spec [docs/specs/traffic-pulse.md](specs/traffic-pulse.md)) | In progress (Oct 15, 2026) |
 | 22 | The Playbook (/admin/playbook: the owner's private living plan, reviewed monthly through a Claude chat; spec [docs/specs/playbook.md](specs/playbook.md)) | In progress (Oct 15, 2026) | Planning | Admin tools |
 | 23 | Brain Dump (/brain-dump: a private brain-dump board for Sub Club, crew and admins; /brain-dump/how-it-works; spec [docs/specs/brain-dump.md](specs/brain-dump.md)) | Built on staging; real tests pending (Oct 17, 2026) | Tools |
+| 24 | Boomertang (/boomertang: Boomer's horror gaming magazine, issue by issue, page by page; first issue Vol. 1 · No. 1, the Granny Issue; spec [docs/specs/boomertang.md](specs/boomertang.md)) | Building (Oct 17, 2026) | Boomertang |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -331,6 +332,14 @@ Later (spec §7, not now): due dates or snooze, dragging items between cards, an
 - [ ] Prize Box filters "First stream here" and "stream streak N+" (spec §3): left out because nothing stores a member's first stream or a stream streak (the site works the streak out on the account page). Add them once a server-side record of both exists.
 - [ ] Proper rules tests for `brainDump/{uid}` with `@firebase/rules-unit-testing` once Java 21 is installed (this machine has Java 1.8). Until then `functions/scripts/brain-dump-rules-check.js` checks the rules on staging with throwaway test users.
 
+### 24. Boomertang
+Goal: Boomer's digital horror gaming magazine. A volume is a year, an issue (No.) is one monthly release, and an edition is an updated version of an issue. Each issue is many pages on their own URLs, joined by the issue bar and Turn the page. The first issue is Vol. 1 · No. 1, The Granny Issue (Launch edition), public at go-live; regular monthly issues start once the Playbook's community proof goals are met.
+Spec: [docs/specs/boomertang.md](specs/boomertang.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/boomertang-granny.html` (the locked style), `boomertang-newsstand.html` (N2, L2), `boomertang-pages.html` (S1, X2, G2, V1) and `boomertang-how-it-works.html` (H2, A1). The repo copies use placeholder art until the screenshot question is settled.
+Status: **Building (Oct 17, 2026).** Parts: 1 docs; 2 kit (paper surface, fact tags, issue bar, Turn the page, redact); 3 content and the check; 4 backend (rules, tangAdmin, tangVote, updatePrefs tangMode, seed); 5 newsstand, issue shell and sealed page; 6 No. 1's pages; 7 The Map; 8 Survive, Secrets, The Gauntlet, Chat's Verdict; 9 How it works; 10 the desk; 11 wiring.
+- [ ] Nav: Boomertang sits in the Community group for now (blurb "Horror gaming monthly"); move it in the nav regroup (workstream 17).
+- [ ] Open items (spec §12): Boomer pastes the speedrun rules (summarized in his words, with a link); do game screenshots need permission (placeholders until settled); the optional DVloper interview; does Vol. 2 start in January or after 12 issues; update the Playbook's `tang` page.
+Later (spec §11, not now): the /admin writing editor, guest or crew writers, PDF or print, a "new issue" Boom Alert or email, comments, real Sub Club billing, speedrun.com API records, Chat Games results in Chat's Verdict, the mobile map layer.
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -371,6 +380,14 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Run seed-badges.js on production (dry run first) so the Prize Box Winner badge exists.
 - [ ] The owner sets the mailing address for mail-in contests on /admin/prize-box (private settings; never in the repo).
 - [ ] A lawyer reviews `site/src/data/prize-box/rules-template.md` (still marked "waiting for legal review"), including entrants outside the US, before the first real prize.
+
+### Boomertang at launch (docs/specs/boomertang.md §13)
+- [ ] Deploy firestore.rules with the `tang` block to production.
+- [ ] Deploy `tangAdmin`, `tangVote` and `updatePrefs` to production (they don't load rewards/grant.js or lib/live, so they deploy on their own).
+- [ ] Seed No. 1's polls on production with `functions/scripts/seed-boomertang.js` (dry run first, then `--apply`).
+- [ ] Publish No. 1 from the desk (/admin/boomertang).
+- [ ] Add the boomertang.com redirect to `/boomertang` (Cloudflare, at the domain switch).
+- [ ] Check that the cover's QR code scans to production (`https://boomertanger.com/boomertang?ref=tang-cover`).
 
 ### Club Pass at launch (docs/specs/club-pass.md §10)
 - [ ] Launch quietly first; promote only after payments are on.
