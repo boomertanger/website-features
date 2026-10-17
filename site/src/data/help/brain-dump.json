@@ -44,7 +44,7 @@
   {
     "id": "look",
     "q": "Can I change how it looks?",
-    "a": "Yes. Use 🎨 Look in the toolbar: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. It's saved on your board and only changes what you see.",
+    "a": "Yes. Use 🎨 Look in the toolbar: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. It’s saved on your board and only changes what you see.",
     "keys": ["look", "looks", "theme", "style", "color", "colors", "neon", "crt", "post-it", "postit", "chalkboard", "chalk", "panel", "classic", "change"]
   }
 ]

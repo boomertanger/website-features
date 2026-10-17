@@ -96,7 +96,7 @@ Mockup: `docs/design/mockups/brain-dump-looks.html` (mockup 3 with Chalkboard; w
 - No raw black or white: shadows, scanlines and sheen mix `--bt-bg` / `--bt-text` with transparent.
 - Contrast checked in all six looks: titles ≥ 4.74:1, items ≥ 7.43:1 (Chalkboard: titles 8.13, items 13.62).
 - Print: every look falls back to the plain light sheet.
-- **How it works:** the practice board shows the picker too (memory only, never saved); the "Try it" tips get one more tip: "🎨 Pick your look: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. Only you see it." Ask BOOMBOT gets one more answer: "Can I change how it looks?" → "Yes. Use 🎨 Look in the toolbar: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. It's saved on your board and only changes what you see."
+- **How it works:** the practice board shows the picker too (memory only, never saved); the "Try it" tips get one more tip: "🎨 Pick your look: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. Only you see it." Ask BOOMBOT gets one more answer: "Can I change how it looks?" → "Yes. Use 🎨 Look in the toolbar: Classic, Neon, Control panel, CRT TV, Post-it or Chalkboard. It’s saved on your board and only changes what you see."
 
 ### 9c. Checked items drop to the bottom (always on; confirmed Oct 17, 2026)
 - In every category list, unchecked items come first and checked items after, each group keeping its own order. This is the order saved in the board document; there's no new field and no rules change.

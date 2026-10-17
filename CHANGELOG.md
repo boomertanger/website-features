@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Brain Dump: the "Can I change how it looks?" answer uses a typographic ’ (It’s), like the other answers, in site/src/data/help/brain-dump.json and spec §9b. The How it works tip has no apostrophe.
 - docs: Brain Dump looks and card sizes. The spec gains §9 (9a card sizes S / M / L, 9b six looks: Classic, Neon, Control panel, CRT TV, Post-it and Chalkboard, per person, new boards on Control panel) and §9c (checked items drop to the bottom). New mockup docs/design/mockups/brain-dump-looks.html (v3, with the picker and Chalkboard), and test plan sections F and G.
 - Brain Dump rules: the board may carry look (classic | neon | panel | crt | postit | chalk; optional, so older boards still save). brain-dump-rules-check.js gains a Look group (a valid look and all six save; an unknown value and a non-string are refused): 23/23 on staging. Rules deployed to staging.
 - Brain Dump card sizes (§9a): every category card has an S / M / L button (a third, half, full width) between the count and ✕. A tap cycles it, saves and announces "Card size: Medium"; its label says what is next. It hides at 640 px and below, and in print. The add-category card has a size radio group (default S, arrow keys). Pulse id card-size.
