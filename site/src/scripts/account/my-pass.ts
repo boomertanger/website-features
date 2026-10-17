@@ -247,7 +247,7 @@ function init(root: HTMLElement) {
         : v.bill === "cancelled" ? `<div class="mp-next"><b>No more charges</b><span>you cancelled · gold until ${day(S?.cancelAt)}</span></div><div class="mp-row-actions">${portalBtn("Resume Sub Club", "secondary")}</div>`
         : v.bill === "failed" ? `<div class="mp-next"><b>${amt}</b><span>didn't go through · fix by ${day(S?.graceUntil)}</span></div><div class="mp-row-actions">${portalBtn("Fix my card")}</div>`
         : v.bill === "month" ? `<div class="mp-next"><b>One month</b><span>gold until ${day(S?.endsAt)} · doesn't renew</span></div>` : "";
-      const rows = failed || !B ? '<p class="bt-fine bt-fine--left mp-note">Couldn't load your receipts right now. Refresh to try again.</p>' : B.receipts.length
+      const rows = failed || !B ? "<p class='bt-fine bt-fine--left mp-note'>Couldn't load your receipts right now. Refresh to try again.</p>" : B.receipts.length
         ? `<span class="bt-label mp-receipts-label">Receipts</span><div class="mp-receipts">${B.receipts.map((r) => `<div class="mp-receipt"><span>${day(r.at)}</span><span>${esc(r.description)}${r.refunded ? " · refunded" : ""}${r.disputed ? " · disputed" : ""}</span><b>${money(r.amount, r.currency)}</b>${r.receiptUrl ? `<a href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">Receipt ↗</a>` : "<span></span>"}</div>`).join("")}</div>` : "";
       return `<div class="bt-card">${head("Payments")}${next}${rows}<p class="bt-fine bt-fine--left mp-note">Manage payment opens Stripe's secure page. Your card never touches this site.</p></div>`;
     }
@@ -375,26 +375,42 @@ function init(root: HTMLElement) {
   onAuth((s) => { void render(s); });
 
   // ---------- back from Stripe Checkout (/account/club?checkout=success) ----------
-  // The webhook turns the pass gold a few seconds after payment: wait for members/{uid}.club.plan to say so (up to ~40 s), then refresh
-  // the ID token (the "sub" role) and redraw, so the gold moment plays here.
+  // The webhook turns the pass gold a few seconds after payment. "Payment received. Turning your pass gold…" shows while we wait for
+  // members/{uid}.club.plan to say "sub" (checked every 2 s), and is ALWAYS replaced: by the welcome once it's gold, or, if it isn't gold
+  // after about 30 s (or ends up not gold, e.g. a dispute right after paying), by "Still checking…" with the way to Account help. The
+  // message is written before the token refresh and redraw, so neither can leave it waiting; the gold moment plays after the redraw.
   if (new URLSearchParams(location.search).get("checkout") === "success") {
     history.replaceState(null, "", location.pathname + location.hash);
+    const okEl = document.querySelector<HTMLElement>("[data-page-ok]");
+    const say = (html: string) => { if (okEl) { okEl.innerHTML = html; okEl.hidden = false; } };
+    const STILL = 'Still checking your payment. Refresh in a minute, or reach <a href="/contact?line=3">Account help on the Hotline</a>.';
+    const WELCOME = "You're in Sub Club. Welcome!";
+    say("Payment received. Turning your pass gold…");
+    let settled = false;
+    const settle = (html: string) => { settled = true; say(html); };
+    const deadline = setTimeout(() => { if (!settled) settle(STILL); }, 30000);
     void (async () => {
-      const s = await whenReady();
-      if (!s.user) return;
-      const okEl = document.querySelector<HTMLElement>("[data-page-ok]");
-      const say = (t: string) => { if (okEl) { okEl.textContent = t; okEl.hidden = false; } };
-      say("Payment received. Turning your pass gold…");
-      const { db, doc, getDoc } = await import("../../lib/db");
-      let gold = false;
-      for (let i = 0; i < 20 && !gold; i++) {
-        try { gold = (await getDoc(doc(db, "sites", SITE_ID, "members", s.user.uid))).get("club.plan") === "sub"; } catch { /* try again */ }
-        if (!gold) await new Promise((r) => setTimeout(r, 2000));
+      try {
+        const s = await whenReady();
+        if (!s.user) { settle(STILL); return; }
+        const { db, doc, getDoc } = await import("../../lib/db");
+        const plan = async () => { try { return (await getDoc(doc(db, "sites", SITE_ID, "members", s.user!.uid))).get("club.plan"); } catch { return null; } };
+        let gold = false;
+        for (let i = 0; i < 15 && !gold && !settled; i++) {
+          gold = (await plan()) === "sub";
+          if (!gold) await new Promise((r) => setTimeout(r, 2000));
+        }
+        if (!settled) settle(gold ? WELCOME : STILL);
+        members.delete(s.user.uid); bills.delete(s.user.uid); last = "";
+        await refresh({ forceToken: true }).catch(() => {});
+        await render(getAuthState());
+        if ((await plan()) !== "sub") say(STILL);   // gold, then not (a dispute or a refund right after paying)
+      } catch (err) {
+        console.error("my pass: after checkout", err);
+        say(STILL);
+      } finally {
+        clearTimeout(deadline);
       }
-      members.delete(s.user.uid); bills.delete(s.user.uid); last = "";
-      await refresh({ forceToken: true }).catch(() => {});
-      await render(getAuthState());
-      say(gold ? "You're in Sub Club. Welcome!" : "Your payment went through. Your pass turns gold in a minute or two: reload this page then.");
     })();
   }
 }
