@@ -3,6 +3,7 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Club Pass: a disputed payment's receipt on My pass says "· disputed", like "· refunded". (Confirmed on staging: @teentest's pass ended through charge.dispute.created; the ledger has checkout.session.completed then charge.dispute.created, -5.99, reason fraudulent.)
 - Club Pass: the failed-payment banner on My pass uses the gold warning style (like the Needs a new card pill) instead of a red outline; red stays for actions that destroy data.
 - Fixed: My pass could say "No payments yet" to a Fan Club member who has receipts. The Payments card showed its empty state while clubStatus was still answering (a few seconds on a cold start) whenever no Stripe source was active, e.g. after a subscription lapsed; with an active source it said "Loading your receipts…" instead, which is why it differed. Now it says "Loading your receipts…" for everyone until clubStatus answers, shows every receipt whatever the plan, and says it couldn't load them (not "No payments yet") if clubStatus fails.
 - Club Pass: receipts on My pass are named "Sub Club · 1 month" (monthly) and "Sub Club · one month pass" instead of Stripe's "Subscription creation / update", and dated by the invoice each payment paid (with a Stripe test clock, the clock's date), newest first; clubStatus also says which were disputed. The one-month pass now gets a Stripe invoice at checkout, so its receipt is named and dated the same way.

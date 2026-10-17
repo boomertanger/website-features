@@ -33,7 +33,7 @@ interface Club {
   twitch?: { linked?: boolean; login?: string; own?: boolean; sub?: boolean; tier?: string | number | null; gifted?: boolean; checkedAt?: number };
 }
 interface StripeSrc { kind: "sub" | "month"; status?: string; renewsAt?: number; endsAt?: number; cancelAt?: number; graceUntil?: number; monthEndsAt?: number }
-interface Receipt { at: number; amount: number; currency: string; description: string; receiptUrl: string | null; refunded: boolean }
+interface Receipt { at: number; amount: number; currency: string; description: string; receiptUrl: string | null; refunded: boolean; disputed?: boolean }
 interface Billing { receipts: Receipt[]; subscription: { status: string; renewsAt: number | null; cancelAt: number | null; amount: number | null; currency: string } | null }
 type Bill = "active" | "cancelled" | "failed" | "month" | "twice" | null;
 interface TwitchView { linked: boolean; login: string; own: boolean; tier: string; sub: boolean | null; gifted: boolean; checkedAt: number | null }
@@ -248,7 +248,7 @@ function init(root: HTMLElement) {
         : v.bill === "failed" ? `<div class="mp-next"><b>${amt}</b><span>didn't go through · fix by ${day(S?.graceUntil)}</span></div><div class="mp-row-actions">${portalBtn("Fix my card")}</div>`
         : v.bill === "month" ? `<div class="mp-next"><b>One month</b><span>gold until ${day(S?.endsAt)} · doesn't renew</span></div>` : "";
       const rows = failed || !B ? '<p class="bt-fine bt-fine--left mp-note">Couldn't load your receipts right now. Refresh to try again.</p>' : B.receipts.length
-        ? `<span class="bt-label mp-receipts-label">Receipts</span><div class="mp-receipts">${B.receipts.map((r) => `<div class="mp-receipt"><span>${day(r.at)}</span><span>${esc(r.description)}${r.refunded ? " · refunded" : ""}</span><b>${money(r.amount, r.currency)}</b>${r.receiptUrl ? `<a href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">Receipt ↗</a>` : "<span></span>"}</div>`).join("")}</div>` : "";
+        ? `<span class="bt-label mp-receipts-label">Receipts</span><div class="mp-receipts">${B.receipts.map((r) => `<div class="mp-receipt"><span>${day(r.at)}</span><span>${esc(r.description)}${r.refunded ? " · refunded" : ""}${r.disputed ? " · disputed" : ""}</span><b>${money(r.amount, r.currency)}</b>${r.receiptUrl ? `<a href="${esc(r.receiptUrl)}" target="_blank" rel="noopener">Receipt ↗</a>` : "<span></span>"}</div>`).join("")}</div>` : "";
       return `<div class="bt-card">${head("Payments")}${next}${rows}<p class="bt-fine bt-fine--left mp-note">Manage payment opens Stripe's secure page. Your card never touches this site.</p></div>`;
     }
     return `<div class="bt-card">${head("Payments")}${k === "owner" ? empty("Nothing to pay", "It's your channel.") : k === "crew" ? empty("Nothing to pay", "Crew passes are on the house.")
