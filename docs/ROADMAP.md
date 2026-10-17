@@ -23,7 +23,7 @@ Last updated: 2026-10-17. Every planning chat reads this file first and proposes
 | 9 | Mod Machina | Phase 1 tested on staging (Oct 7); phase 3 (the Mod Deck) built on staging (Oct 2026), real tests pending; phase 4 lives in Chat Games (5b) | Community services |
 | 10 | Porting Bug Zapper, Feature Lab, Cloud Stash + Night Watch | Later (before launch) | Feature ports |
 | 11 | Club Pass (plans and billing) | In progress (before launch) | Billing and plans |
-| 12 | Contests | Later | Community services |
+| 12 | Prize Box (contests) (/prizes, the live Prize Wheel draw, /admin/prize-box; spec [docs/specs/prize-box.md](specs/prize-box.md)) | In progress (Oct 17, 2026) | Community services |
 | 13 | Launch and legal | Later | Launch and legal |
 | 14 | Hotline Boom (contact) | Built on staging (parts 0-6); Talk Back built and tested on staging (Oct 15, 2026), all three parts | Community services |
 | 15 | 404 page ("the workshop": the firefly-lit basement, Did you mean, Report this broken link; spec [docs/specs/not-found.md](specs/not-found.md)) | Done on staging (tested Oct 2026) | Site shell |
@@ -211,10 +211,12 @@ Status: **In progress: part 4 billing built and tested on staging; next part 5 g
 - [ ] Boom Board full page (was planned at /club): plan its route with the member home (part 7).
 Kickoff: "Start workstream 11 (Plans and billing) from docs/ROADMAP.md."
 
-### 12. Contests
-Goal: contests with entry pools by badge (e.g. only Tap the Splat badge holders), official rules per contest, fair draws (can be drawn live on stream).
-Depends on: Badges; official rules need legal review.
-Kickoff: "Start workstream 12 (Contests) from docs/ROADMAP.md."
+### 12. Prize Box (contests)
+Goal: Prize Box runs every contest from start to finish: entry rules, deadlines, reminders, picking winners (a live Prize Wheel spin on stream, judging, or a random draw), announcing them and getting prizes to them. Entries come from stream check-ins, online uploads or mail-in. Contests are built from /admin with no code changes.
+Spec: [docs/specs/prize-box.md](specs/prize-box.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/prize-box-wheel-and-draw.html` (the wheel and the live draw), `prize-box-wheel-fan.html` (fan blades; pick F2 Gentle fan), `prize-box-pages.html` (/prizes hero H2a and /admin/prize-box) and `prize-box-wordmark.html` (pick I2); test plan `docs/testing/prize-box-test-plan.md`.
+Depends on: Badges (Trophy Room), the Control Room's presence and beats, Cloud Stash (uploads); the official rules need legal review.
+Status: **In progress (Oct 17, 2026).** Parts: 1 docs; 2 kit (the `.bt-wheel` color variant, wheel-sound.js, `.bt-prizestand`, PB_ICON); 3 backend core (lib/prizeBox, rules, prizeTick, the badge); 4 the live draw backend (and the public/live shape change); 5 live UI (/live/control panel, /live/obs scene, /live card, the gold banner); 6 pages (/prizes, /prizes/[slug], rules, /prizes/mine, the claim dialog); 7 /admin/prize-box; 8 testing and the sample script.
+Kickoff: "Continue workstream 12 (Prize Box) from docs/ROADMAP.md."
 
 ### 13. Launch and legal
 Goal: production Firebase setup, domains and redirects for all 12 domains, custom email sending domain, final privacy and terms, the TikTok app review, go-live on main.
@@ -336,7 +338,7 @@ Activity types (and automatic badges) that wait for another workstream. Tick one
 - [x] Bug Zapper activities and the Bug Finder badge (a confirmed report): porting (10). Done: the bugs Night Shift type (report, confirmed) is on, and the first confirmed status (Confirmed, In progress or Fixed) grants Bug Finder.
 - [x] Feature Lab activities and The Architect badge (an idea that ships): porting (10). Done: the lab Night Shift type (post, vote, shipped) is on, and the first move to Shipped grants The Architect.
 - [ ] Moderation activities and crew awards by mods: Mod Machina (9).
-- [ ] Contests: Contests (12).
+- [ ] Contests: Prize Box (12): the contest-winner activity and the Prize Box Winner badge.
 - [ ] Polls, comments, shout-outs, clips and Discord: not planned yet.
 
 Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** section listing what it can reward (activity types, automatic badges) and the event it fires, so the hook is built with the feature. It also adds or updates its **Service Hub manifest** in `services/` (type, area, routes, version bump when it changes, talkBack note / pins (sections) / rate / skip); `npm run check` warns about pages no manifest claims (CLAUDE.md "New feature checklist").
@@ -359,6 +361,14 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 
 ### Brain Dump at launch
 - [ ] Deploy firestore.rules with the brainDump block to production.
+
+### Prize Box at launch (docs/specs/prize-box.md)
+- [ ] Deploy firestore.rules with the prizeBox block to production.
+- [ ] Deploy every prizeBox function and the scheduled prizeTick to production.
+- [ ] The live draw changes the public/live shape: deploy every lib/live function together first, then the rest in batches of about 15 with 3-minute pauses (CLAUDE.md), and confirm each serves the new revision.
+- [ ] Run seed-badges.js on production (dry run first) so the Prize Box Winner badge exists.
+- [ ] The owner sets the mailing address for mail-in contests on /admin/prize-box (private settings; never in the repo).
+- [ ] A lawyer reviews `site/src/data/prize-box/rules-template.md` (still marked "waiting for legal review"), including entrants outside the US, before the first real prize.
 
 ### Club Pass at launch (docs/specs/club-pass.md §10)
 - [ ] Launch quietly first; promote only after payments are on.

@@ -2026,3 +2026,25 @@ Spec `docs/specs/brain-dump.md` (confirmed Oct 17, 2026); mockups `docs/design/m
 - **Print is light:** a two-column sheet on `Canvas` / `CanvasText` (the system's page colors, so there are no raw colors), with the buttons and the site chrome left off. Print and reduced motion are the only `@media` in the feature, and the only places it uses `!important`.
 - **How it works** uses hero H2 "Paper to board" (the paper sheet's colors are mixed from tokens: `--bdh-paper*` in `brain-dump-hiw.css`) and roles R1 (one chapter with the kit's 3-way `.bt-pills[data-n="3"]`). The practice board is the real engine with no store (`.bd-practice`), so it never saves.
 - **A feature root needs `#<feature>-root.bt-root` to beat the kit's root rule.** `.bt-root:not(#_)` gives every root `overflow: hidden`, which breaks `position: sticky` inside it, and a max-width. A nested root is also a size container with no width of its own, so it collapses to 0 px unless you set it. Override at the same strength: `#x-root.bt-root { display: block; width: 100%; min-width: 0; box-sizing: border-box; overflow: visible; max-width: …; }` (see `#brain-dump-root`, `#brain-dump-hiw`, `#tp-root`).
+
+### 8aj. Prize Box
+Spec `docs/specs/prize-box.md` (confirmed Oct 17, 2026); mockups `docs/design/mockups/prize-box-wheel-and-draw.html` (the Prize Wheel and the live draw), `prize-box-wheel-fan.html` (fan-blade variations), `prize-box-pages.html` (/prizes and /admin/prize-box) and `prize-box-wordmark.html` (the wordmark). The mockups inline an older kit; their `.pb-wheel`, `.fw` and `.pz-` classes are drawings, not class names to ship. **Recorded decisions:**
+- **The Prize Wheel is F2 Gentle fan,** a color variant of the kit's `.bt-wheel` (Hot Seat keeps the plain one). It has 10 fan blades, and each edge is one circular arc from hub to rim. The hub end is turned −7° and the curve depth is 0.11 of the chord. Blade tips are rounded, with a thin off-white edge. Yellow pegs sit at the blade gaps, the red paddle kicks on each peg, and the mascot sits on the hub. Names follow each blade's centerline. An empty blade says "Spin again" with a hatch. The wheel is software only; Boomer's physical wheel is retired.
+- **`--bt-wheel-1` … `--bt-wheel-10` are decorative tokens,** like the cycle wheel's `--bt-cycle-*`: blade colors only, never a status. The tokens also include `--bt-wheel-peg`, `--bt-wheel-peg-edge`, `--bt-wheel-flap`, `--bt-wheel-rim` and `--bt-wheel-hub`. The violet blade (#7d68b0) is well away from the clickable purple. They're allowed on the stream view as decoration; the stream view's own UI stays gold, lime and gray.
+- **The prize stand is H2a.** The wheel's post runs down into the Prize Box, so the box is the stand (`.bt-prizestand`, `shared/ui/prizestand.js`). On a confirmed winner:
+  - the box shakes;
+  - the lid blows off;
+  - gold light pours out;
+  - confetti bursts;
+  - a winner card rises, lime "It's you!" for the winner.
+
+  It's used on the /prizes hero and the stream view. With reduced motion on the site, there's no spin, shake or confetti: the lid opens and the card appears. The stream view keeps the motion, as the Control Room does.
+- **The wordmark is I2, "Wheel on the box".** It's `.bt-wordmark--power` PRIZE plus accent BOX, with `PB_ICON` (`shared/ui/prize-box.js`, like `MM_ICON`): a tiny prize stand.
+  - **Power-on** (hover, focus or `.is-lit`): the wheel spins one and a half turns, the paddle ticks, and the lid jolts as it lands. BOX rests purple and lights gold.
+  - **Touch screens** play it once on scroll-in.
+  - **Reduced motion:** color and glow only.
+  - **Wood colors:** the icon's wood colors are feature custom properties declared once (`--pz-wood`, `--pz-wood-lid`, `--pz-wood-edge`, `--pz-rim`, `--pz-post`).
+- **Top bar:** Contests (/prizes) for everyone, My entries for members, and Admin in admin green for admins. The first link is the home, so the wordmark isn't a link.
+- **Sound:** one tick per peg. `shared/ui/wheel-sound.js` synthesizes it with Web Audio until `site/public/sounds/prize-tick.mp3` exists. It's muted by default on the site, with a sound button, and on in the stream view.
+- **Live draws are owner only.** The Captain and admins can't start, respin or confirm one. The server decides every spin before anything animates (`{ pickIndex, offset, spins, durationMs, startAt }`), so every viewer sees the same spin, and late joiners jump to the result.
+- **Where prizes can go:** store-code and digital prizes go worldwide, wherever the store ships, and no address is collected. Mailed prizes go to US addresses only. Codes and addresses are owner-only, and the winner sees them only after claiming.

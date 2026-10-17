@@ -1,0 +1,79 @@
+# Prize Box (workstream 12, Contests)
+
+Confirmed Oct 17, 2026. Mockups: `docs/design/mockups/prize-box-wheel-and-draw.html` (the Prize Wheel and the live draw), `prize-box-wheel-fan.html` (the fan-blade wheel variations; pick F2), `prize-box-pages.html` (/prizes and /admin/prize-box; hero pick H2a), `prize-box-wordmark.html` (wordmark icon pick I2).
+
+## 1. What it is
+
+Prize Box runs every Boomertanger contest from start to finish: entry rules, deadlines, reminders, picking winners (a live Prize Wheel spin, judging, or a random draw), announcing them, and getting prizes to them. Entries come from stream check-ins, the site (online uploads) or by mail. New contests are created and managed from /admin with no code changes. It replaces the old "Contests" name for workstream 12 in docs/ROADMAP.md.
+
+## 2. Decisions (recorded)
+
+- **Wheel:** software only (Boomer's physical wheel is retired). Style **F2 Gentle fan**: 10 fan blades, each edge one circular arc from hub to rim (hub end turned −7°, curve depth 0.11 of the chord), rounded blade tips, a thin off-white edge, yellow pegs at the blade gaps, the red paddle flapper, the mascot on the hub. Names follow each blade's centerline.
+- **Colors:** decorative tokens `--bt-wheel-1` … `--bt-wheel-10` (#7d68b0 #3d62ad #3f7bb0 #6cc4c4 #63b26a #d8cb63 #e4a04c #ec5b3f #e3433a #c47cb6) plus `--bt-wheel-peg`, `--bt-wheel-peg-edge`, `--bt-wheel-flap`, `--bt-wheel-rim`, `--bt-wheel-hub`. Decorative only, never a status, like the cycle wheel (design-system §8). The violet blade is #7d68b0, well away from the clickable purple. Allowed on the stream view as decoration (the stream view's own UI stays gold, lime and gray).
+- **Prize stand (H2a):** the wheel's post runs down into the Prize Box, so the box is the stand. When a winner is confirmed the box shakes, the lid blows off, gold light pours out, confetti bursts and a winner card rises from the box (lime "It's you!" when the viewer is the winner). Used on the /prizes hero and the stream view. Reduced motion on the site: no shake, spin or confetti; the lid opens and the card appears. The stream view keeps the motion (as the Control Room does).
+- **Wordmark (I2):** the top bar of every Prize Box page uses `.bt-wordmark--power` PRIZE + accent BOX with the I2 icon, a tiny prize stand: the F2 wheel on the Prize Box. Power-on (hover, focus, `.is-lit`): the wheel spins one and a half turns, the paddle ticks, the lid jolts as it lands; BOX rests purple and lights gold. Touch screens play it once on scroll-in (`initPowerWordmarks`). Reduced motion: colour and glow only. The icon's wood colours are feature custom properties declared once (`--pz-wood #3a2a22`, `--pz-wood-lid #4a362b`, `--pz-wood-edge #1d1410`, `--pz-rim #0c0a0b`, `--pz-post #2a2326`); the wheel uses `--bt-wheel-*`.
+- **Top bar links:** Contests (/prizes) for everyone; My entries (/prizes/mine) for members; Admin (/admin/prize-box, admin green) for admins. The first link is the area's home, so the wordmark is not a link.
+- **Sound:** one tick per peg. Built-in synthesized tick (Web Audio) until Boomer records his wheel; then `site/public/sounds/prize-tick.mp3` replaces it when that file exists. Plays on the stream view (Streamlabs browser source: "Control audio via OBS" on). On the site it starts muted, with a sound button.
+- **Live draws are owner only.** The Captain and admins can't start, respin or confirm a draw.
+- **Prizes:** kinds `digital` (keys, codes; anywhere), `storeCode` (a free-item or discount code for the merch drop-ship store; works wherever the store ships; no address collected), `mailed` (Boomer mails it; US addresses only), `badgeXp` (badge and/or XP only). Codes and addresses are owner-only and shown to the winner only after claiming.
+- **Legal:** the official rules start from a template (`site/src/data/prize-box/rules-template.md`, marked "waiting for legal review") that a lawyer reviews before the first real prize, including entrants outside the US. Free to enter, no purchase necessary, members 13+, under 18 needs a parent's or guardian's OK to claim.
+- **Who can win:** never the owner, admins or crew (existing rewards rule). Live draws: a 30-day cooldown after a live-draw win (setting).
+
+## 3. Contest types
+
+| Type | Entry | Winner picked by |
+|---|---|---|
+| `live` | Members checked in to the current stream (presence docs), plus optional filters | The Prize Wheel at a chosen beat (Break 1, Break 2) |
+| `online` | One upload (JPG, PNG, WebP up to 10 MB, private Cloudinary file) or text per member, replaceable until the deadline | Judged by Boomer (places), or a random draw |
+| `mail` | Member gets an entry code online (PB-XXXX), writes it on the drawing and envelope, mails it postmarked by the deadline; the owner or an admin logs it | Judged or a random draw |
+
+Eligibility filters (any type): holds a badge, Night Shift top N, member for N days, checked in at every beat (live), stream streak N+ (live). Crew, admins, the owner and anyone in the cooldown are always left out.
+
+## 4. The live draw
+
+1. **Scheduled** at a beat when the contest is built. At that beat the /live/control launch panel shows "Run the draw" (owner only). A draw can't start while a Chat Game runs; the panel offers to end the game first. One draw at a time.
+2. **Pool:** checked in this stream, minus crew/admins/owner, minus cooldown, plus the contest's filters. The pool is snapshotted into the draw.
+3. **Round 1 (optional):** up to 10 group slices (set in the contest; a group may repeat to change odds; a group with fewer than 2 eligible members becomes "Spin again"). The server picks the slice.
+4. **Round 2:** 10 random members of the (group's) pool are put on the wheel. Fewer than 10: the empty blades say "Spin again" and land as a re-pick. Fewer than 2: no spin.
+5. **The spin is decided first.** The server writes `{ round, labels, pickIndex, offset (0.2–0.8 of the blade), spins (5–6 turns), durationMs (7200–8400), startAt }` to the pointer; every viewer animates the same spin from `startAt`; late joiners jump to the result.
+6. **"I'm here":** the winner has 60 s (setting) to tap I'm here on /live (or the banner). If time runs out the server respins among the rest automatically. The owner can also "Respin without them".
+7. **Winner confirmed:** the box bursts on the stream view, /live and the winner's screen; the winner badge is granted; activity and alerts go out; the claim window (7 days) opens.
+8. If the stream ends mid-draw, the draw is void and can be rerun later from the same pool snapshot.
+
+## 5. Pages
+
+- **/prizes** (story page, Play nav group, blurb "Contests, drawings and prizes"; full frame): hero **H2a** (the wheel on the Prize Box; click to spin a demo with "@you"/the viewer on the yellow blade; nothing saved), TocLayout rail, ghost-numbered chapters: 01 Open now (stage cards with hover scenes: wheel turns, pencil draws, envelope opens), 02 How it works (5-step journey line), 03 Three ways to win (flow: enter → picked → everyone sees), 04 Spin the wheel (working F2 wheel), 05 Past winners (handles, contest, prize, date; only with the winner's OK; no medal visuals), 06 Fair and square (the placard, six house rules), 07 Ask BOOMBOT (from `site/src/data/help/prize-box.json`), closing call to action (visitor: Join free; member: See the schedule).
+- **/prizes/[slug]**: hero header with the small box scene, status and type badges, entry card states (visitor lock card → E1; not eligible with the reason; open; entered with replace/withdraw; mail-in code + mailing address + received tracker; judging; winners), How it works steps, the rules in short, prizes, time left (`.bt-mini-cd`), entry count. The winner's claim dialog opens here (openModal).
+- **/prizes/[slug]/rules**: the official rules.
+- **/prizes/mine** (tool page, members; visitors see the lock card): hero header with the small box scene; Prizes to claim first (each opens the claim dialog; days left), then your entries by contest with their status (submitted, accepted, rejected with the reason, withdrawn, received, judged), your mail-in codes with the received tracker, and past wins. Empty state with the mascot and a link to open contests.
+- **/live**: the Prize Box card (pool → round 1 → your slice → "It landed on you!" + I'm here → You won + Claim my prize) and the gold site-wide banner (`.bt-live-banner[data-kind="drop"]` style, a "prize" kind; hidden on /live, /live/control, /live/obs).
+- **/live/control**: the Prize Box panel (owner only): due badge, pool counts (checked in, crew left out, cooldown left out, in the draw), Round 1 switch, Spin round 1 / Spin for the winner, Respin without them, the I'm here meter, Done, See the draw record.
+- **/live/obs** (stream view, wide and tall): the wheel on the Prize Box, the panel (PRIZE BOX, round chip, contest, prize, legend or group list, the I'm here ring, the winner reveal), gold/lime/gray only.
+- **/admin/prize-box** (tool page): hero header with the box scene, four counters that jump to tabs (open contests, entries to review, envelopes not here yet, prizes to ship), tabs Contests / Entries / Mail log / Draws / Claims (owner only). New contest builder (openModal): 1 Template (Break Wheel, Online art, Mail-in art, Blank), 2 Details (title, opens, closes or draw beat, who can enter, how winners are picked, prizes with kinds, Round 1 groups for live), 3 Rules and announcements (rules from the template; banner, Boom Alerts, feed post, Scream Planner tag). Entries: accept / reject with a reason. Mail log: code lookup + postmark date → Mark received; unmatched envelopes (mascot empty state). Draws: the record of each draw. Claims: address hidden until "Show address" (logged), store/digital codes owner-only, Mark shipped (stamp + toast). A card on /admin.
+
+## 6. Data (sites/boomertanger/prizeBox/main/)
+
+- `main` doc: settings `{ cooldownDays: 30, claimDays: 7, hereSeconds: 60 }`; `private/settings` (owner only): `{ mailingAddress }` (never in the repo).
+- `contests/{id}`: `{ slug, title, blurb, type, status (draft|scheduled|open|closed|judging|drawing|won|done|cancelled), audience: "members", eligibility, opensAt, closesAt, draw: { streamId?, beat }, method (wheel|judge|random), winnersCount, prizes: [{ place, title, kind }], round1: [{ group, params }] , rulesMd, announce: { banner, alerts, feed, plannerTag }, counts, createdBy, updatedAt }`. Public read when status is not draft; writes only through functions.
+- `contests/{id}/entries/{uid}`: `{ kind (upload|text|mail), assetId?, text?, title?, code? (mail), receivedAt?, postmarkedOn?, status (submitted|accepted|rejected|withdrawn|received), rejectReason?, showIfWin (default true), createdAt, updatedAt }`. Read: the entrant and admins. `codes/{code}` → `{ contestId, uid }` (admins).
+- `contests/{id}/draws/{drawId}`: pool snapshot (uids + handles), round-1 slices and pick, round-2 labels and pick, respins (with reasons), times, result, by. Admins read.
+- `winners/{id}` (`<contestId>_<place>` or `<drawId>`): `{ contestId, uid, handle, place, prize, kind, status (pending|claimed|shipped|forfeited), claimBy, claimedAt, shippedAt }`. Read: the winner and admins. `winners/{id}/private/claim` (owner only): `{ address?, code?, parentOk?, tracking? }`.
+- `public/prizeBox` (public): open and upcoming contests (summary), past winners (handles, contest, prize title, date; only `showIfWin`), counts.
+- Live pointer: `streams/{id}/private/control.prizeDraw` → copied to `public/live.prizeDraw` by `buildPublicLive` with no uids (handles only).
+- Cloudinary: uploads private under `prize-box/entries/<contestId>/<uid>`, recorded with `recordAssetCreated()` (feature key `prizeBox`); viewed through 10-minute signed links; `uploadGate` first.
+
+## 7. Functions (lib/prizeBox)
+
+Callables: `prizeContestSave`, `prizeContestStatus` (admins; owner for live contests), `prizeSettings` (owner), `prizeEntryParams` (uploadGate, signed private params), `prizeEnter`, `prizeWithdraw`, `prizeGetCode` (mail), `prizeMailLog` (admins), `prizeEntryReview` (admins), `prizeDrawStart`, `prizeDrawSpin`, `prizeRespin`, `prizeDrawEnd` (owner), `prizeHere` (the picked member), `prizeJudge` (owner), `prizeClaim` (the winner; age check on the server for under 18), `prizeClaimAdmin` (owner: show address (logged), set code, mark shipped, forfeit and redraw). Scheduled: `prizeTick` every 5 minutes (open/close, reminders 24 h and 1 h before closing, claim expiry → redraw prompt, here-timeouts as a backstop to a Cloud Task). Deletes through one function (Cloudinary first, then records, then the item with subcollections, then its activity events). adminLog feature `prizeBox`; activityLog `contest-winner` (only with `showIfWin`); Boom Alerts through `notifyOutbox` (`prize-open`, `prize-reminder`, `prize-entry-received`, `prize-winner`, `prize-results`, `prize-claim-reminder`, `prize-shipped`), no private data in payloads. Badge **Prize Box Winner** (`prize-box-winner`, Arcade and Contests, Rare, 50 XP, 🎁 placeholder, a `prizeWins` count on the profile shown as ×n) through `grantBadge`.
+
+## 8. Edge cases
+
+Stream ends mid-draw (void, rerun from the snapshot) · winner misses I'm here (auto respin) · winner deletes their account or misses the claim window (forfeit, redraw prompt) · late postmark (rejected under the rules) · envelope with no or unknown code (unmatched list) · inappropriate upload (rejected with a reason) · uploads paused by Cloud Stash (its message) · one entry per member, replaceable until the deadline · under 18 needs a parent's OK at claim · judging ties placed by hand · a draw can't overlap a Chat Game · empty and tiny pools (no spin under 2).
+
+## 9. Kit
+
+New: the `.bt-wheel` color variant (fan blades, pegs, paddle, `onTick` hook in `wheelSpin`, deterministic spins from `{ pickIndex, offset, spins, durationMs, startAt }`), the `--bt-wheel-*` tokens, `shared/ui/wheel-sound.js`, and `.bt-prizestand` (`shared/ui/prizestand.js`: the wheel on the box, shake, lid, beam, confetti canvas, winner card). Also `PB_ICON` (the I2 wordmark icon, in `shared/ui/prize-box.js`, like `MM_ICON`). Reused: `.bt-title--hero`, `.bt-toc`, `.bt-chapter--ghost`, `.bt-card`, `.bt-badge`, `.bt-mini-cd`, `.bt-placard`, `.bt-chat` + BOOMBOT, `.bt-lock-card`, `.bt-dropzone`, `.bt-thumb`, `.bt-stamp`, `.bt-pills`, `.bt-live-banner`, `.bt-streamview`, `.bt-sv-*`, `.bt-meter`, `openModal()`, `confirmAction()`, admin buttons. The journey line, flow and stage-card scenes follow how-it-works.css.
+
+## 10. Later
+
+Sub Club-only contests (billing + legal), community-vote judging, entries from YouTube/TikTok chat (account linking), a public fair-draw receipt page, shipping labels, Boomer's recorded click sound, W2/W3-style looks as switchable wheel looks.

@@ -3,6 +3,13 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- Prize Box, part 1 (docs): docs/specs/prize-box.md (confirmed Oct 17, 2026) and four mockups: prize-box-wheel-and-draw.html, prize-box-wheel-fan.html, prize-box-pages.html and prize-box-wordmark.html. ROADMAP: workstream 12 is renamed "Prize Box (contests)" and is in progress, with a Prize Box launch checklist (rules, the prizeBox functions and prizeTick, the batched lib/live deploy, seed-badges.js, the owner's mailing address, the lawyer's review of the rules template). Design-system §8aj records:
+  - the F2 fan-blade wheel;
+  - the decorative --bt-wheel-* tokens (allowed on the stream view);
+  - the H2a prize stand and burst;
+  - the I2 wordmark;
+  - live draws owner only;
+  - store-code prizes worldwide, mailed prizes US only.
 - Brain Dump, part 5 (docs): design-system §8ai Brain Dump records:
   - the C1 tinted card colors and the tone mapping (never purple, red or green);
   - direct client writes as a narrow exception (private notes, protected by the rules);
