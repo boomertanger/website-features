@@ -122,6 +122,13 @@
 :is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-star.is-on { opacity: 1; color: var(--bt-gold); }
 :is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) :is(.bd-item, .bd-card).is-hidden { display: none; }
 
+/* the size button (S / M / L, §9a) and the add card's size picker; on one column every card is full width, so the button hides */
+:is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"]) .bd-ic.bd-size { width: 28px; font-family: var(--bd-mono); font-size: var(--bt-text-xs); font-weight: 800; }
+@container bt (max-width: 640px) { :is(#brain-dump-root, .bd-practice) .bd-ic.bd-size { display: none; } }
+:is(#brain-dump-root, .bd-practice) .bd-sizes { display: flex; flex-wrap: wrap; gap: 6px; }
+:is(#brain-dump-root, .bd-practice) .bd-sizes .bt-chip[aria-checked="true"] { background: var(--bt-primary-bg); border-color: var(--bt-primary); color: var(--bt-text); }
+:is(#brain-dump-root, .bd-practice) .bd-sizes .bt-chip:focus-visible { outline: 2px solid var(--bt-primary); outline-offset: 2px; }
+
 /* the add line: a blank planner line inside the card */
 :is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add { display: flex; gap: 6px; padding: 8px 12px 12px; margin-top: auto; }
 :is(#brain-dump-root, .bd-practice, .bt-portal[data-feature="brain-dump"], .bd-snap) .bd-add-input { flex: 1; min-width: 0; font-size: var(--bt-text-lg); padding: 7px 10px; color: var(--bt-text); background: color-mix(in srgb, var(--bt-bg) 45%, transparent); border: 1px dashed color-mix(in srgb, var(--bd-tone) 45%, transparent); border-radius: var(--bt-radius-sm); outline: none; }
@@ -178,7 +185,7 @@ body.bd-dragging { user-select: none; -webkit-user-select: none; cursor: grabbin
   html, body, body.bt-root, #brain-dump-root { background: var(--bd-paper) !important; color: var(--bd-print-ink) !important; color-scheme: light !important; }
   body:has(#brain-dump-root) :is(.bt-site-header, .bt-tabbar, .bt-site-footer, .bt-preview-chip, .bt-account-banner, .sv-strip-zone, .bt-toast-host) { display: none !important; }
   #brain-dump-root.bt-root { padding: 0; max-width: none; --bt-text: var(--bd-print-ink); --bt-text-muted: var(--bd-print-ink); --bt-text-faint: var(--bd-print-ink); }
-  #brain-dump-root :is(.bd-toolbar, .bd-capture, .bd-foot, .bd-card--add, .bd-add, .bd-drag, .bd-x, .bd-star:not(.is-on), .bd-ud, .bd-move, .bd-scene, .bt-lock-card) { display: none !important; }
+  #brain-dump-root :is(.bd-toolbar, .bd-capture, .bd-foot, .bd-card--add, .bd-add, .bd-drag, .bd-size, .bd-x, .bd-star:not(.is-on), .bd-ud, .bd-move, .bd-scene, .bt-lock-card) { display: none !important; }
   #brain-dump-root .bd-goalcard { background: none; border: 1px solid color-mix(in srgb, var(--bd-print-ink) 35%, var(--bd-paper)); }
   #brain-dump-root .bd-card { background: color-mix(in srgb, var(--bd-tone) 20%, var(--bd-paper)) !important; color: var(--bd-print-ink); box-shadow: none !important; border: 1px solid color-mix(in srgb, var(--bd-tone) 60%, var(--bd-print-ink)); transform: none !important; break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   #brain-dump-root .bd-card-title { color: var(--bd-print-ink); }

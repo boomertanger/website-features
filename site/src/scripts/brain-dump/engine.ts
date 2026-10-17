@@ -30,7 +30,11 @@ export const COLORS: Color[] = ["ember", "pink", "gold", "lime", "teal", "blue"]
 const COLOR_NAMES: Record<Color, string> = { ember: "Ember", pink: "Pink", gold: "Gold", lime: "Lime", teal: "Teal", blue: "Blue" };
 const TONE: Record<Color, string> = { ember: "var(--bd-ember)", pink: "var(--bt-pink)", gold: "var(--bt-gold)", lime: "var(--bt-lime)", teal: "var(--bt-teal)", blue: "var(--bt-blue)" };
 const LEGACY: Record<string, Color> = { coral: "ember", plum: "pink", moss: "lime", sage: "teal", sky: "blue" };
-const SIZES: Size[] = ["sm", "wide", "half"];
+// card sizes (§9a): S a third, M half, L full width; the size button cycles in this order
+const SIZES: Size[] = ["sm", "half", "wide"];
+const SIZE_NAME: Record<Size, string> = { sm: "Small", half: "Medium", wide: "Large" };
+const SIZE_LETTER: Record<Size, string> = { sm: "S", half: "M", wide: "L" };
+const SIZE_HINT: Record<Size, string> = { sm: "a third", half: "half", wide: "full width" };
 
 const ICON = {
   grip: '<svg viewBox="0 0 16 16" aria-hidden="true"><g fill="currentColor"><circle cx="5.5" cy="3.5" r="1.4"/><circle cx="10.5" cy="3.5" r="1.4"/><circle cx="5.5" cy="8" r="1.4"/><circle cx="10.5" cy="8" r="1.4"/><circle cx="5.5" cy="12.5" r="1.4"/><circle cx="10.5" cy="12.5" r="1.4"/></g></svg>',
@@ -174,7 +178,14 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     category.items.forEach((it) => list.appendChild(itemEl(category.id, it)));
     refreshMoveButtons(card); updateCount(card, category);
   }
+  function paintSize(card: HTMLElement, category: Category) {
+    const b = card.querySelector<HTMLElement>(".bd-size")!, next = SIZES[(SIZES.indexOf(category.size) + 1) % SIZES.length];
+    b.textContent = SIZE_LETTER[category.size];
+    b.setAttribute("aria-label", `Card size: ${SIZE_NAME[category.size]}. Change to ${SIZE_NAME[next]}`);
+    b.title = `Size: ${SIZE_NAME[category.size]} (tap to change)`;
+  }
   function labelCard(card: HTMLElement, category: Category) {
+    paintSize(card, category);
     card.querySelector(".bd-drag")!.setAttribute("aria-label", `Move ${category.title}. Drag, or press the arrow keys.`);
     card.querySelector(".bd-cat-del")!.setAttribute("aria-label", `Delete ${category.title}`);
     card.setAttribute("aria-label", category.title);
@@ -189,6 +200,7 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
         '<button type="button" class="bd-ic bd-drag" data-pulse="drag-card"></button>' +
         '<h2 class="bd-card-title" contenteditable="true" spellcheck="true" role="textbox" aria-label="Category name"></h2>' +
         '<span class="bd-count"></span>' +
+        '<button type="button" class="bd-ic bd-size" data-pulse="card-size"></button>' +
         `<button type="button" class="bd-ic bd-x bd-cat-del" aria-label="Delete category">${ICON.x}</button>` +
       "</header>" +
       '<ul class="bd-items"></ul>' +
@@ -257,27 +269,36 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
       `<input class="bt-input" id="bd-newcat-${mountId}" type="text" placeholder="Name a new category…" autocomplete="off" enterkeyhint="done" maxlength="120">` +
       '<div class="bd-swatches" role="radiogroup" aria-label="Card color">' +
       COLORS.map((c) => `<button type="button" class="bd-swatch" role="radio" data-color="${c}" aria-checked="${c === selected}" tabindex="${c === selected ? 0 : -1}" aria-label="${COLOR_NAMES[c]}" style="--bd-tone:${TONE[c]}"></button>`).join("") +
+      '</div><div class="bd-sizes" role="radiogroup" aria-label="Card size">' +
+      SIZES.map((z) => `<button type="button" class="bt-chip bt-chip--small" role="radio" data-size="${z}" aria-checked="${z === "sm"}" tabindex="${z === "sm" ? 0 : -1}">${SIZE_LETTER[z]} · ${SIZE_HINT[z]}</button>`).join("") +
       '</div><button type="submit" class="bt-btn bt-btn--sm bt-btn--secondary" data-pulse="add-category">+ Add category</button></form>';
-    const sw = card.querySelector<HTMLElement>(".bd-swatches")!;
-    const pick = (b: HTMLElement) => {
-      sw.querySelectorAll<HTMLElement>(".bd-swatch").forEach((s) => { s.setAttribute("aria-checked", "false"); s.tabIndex = -1; });
-      b.setAttribute("aria-checked", "true"); b.tabIndex = 0;
+    const sw = card.querySelector<HTMLElement>(".bd-swatches")!, sz = card.querySelector<HTMLElement>(".bd-sizes")!;
+    // a radio group: a click picks, the arrow keys move and pick (the swatches and the sizes work the same way)
+    const radios = (group: HTMLElement, sel: string) => {
+      const pick = (b: HTMLElement) => {
+        group.querySelectorAll<HTMLElement>(sel).forEach((s) => { s.setAttribute("aria-checked", "false"); s.tabIndex = -1; });
+        b.setAttribute("aria-checked", "true"); b.tabIndex = 0;
+      };
+      group.addEventListener("click", (e) => { const b = (e.target as Element).closest<HTMLElement>(sel); if (b) pick(b); });
+      group.addEventListener("keydown", (e) => {
+        if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
+        e.preventDefault();
+        const all = Array.from(group.children) as HTMLElement[], i = all.indexOf(document.activeElement as HTMLElement);
+        const n = all[(i + (e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1) + all.length) % all.length];
+        pick(n); n.focus();
+      });
+      return pick;
     };
-    sw.addEventListener("click", (e) => { const b = (e.target as Element).closest<HTMLElement>(".bd-swatch"); if (b) pick(b); });
-    sw.addEventListener("keydown", (e) => {
-      if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(e.key)) return;
-      e.preventDefault();
-      const all = Array.from(sw.children) as HTMLElement[], i = all.indexOf(document.activeElement as HTMLElement);
-      const n = all[(i + (e.key === "ArrowLeft" || e.key === "ArrowUp" ? -1 : 1) + all.length) % all.length];
-      pick(n); n.focus();
-    });
+    const pick = radios(sw, ".bd-swatch");
+    radios(sz, "[data-size]");
     card.querySelector("form")!.addEventListener("submit", (e) => {
       e.preventDefault();
       const input = card.querySelector<HTMLInputElement>("input")!, name = input.value.replace(/\s+/g, " ").trim();
       if (!name) { input.focus(); return; }
       if (state.categories.length >= LIMITS.categories) { showToast(`A board holds up to ${LIMITS.categories} categories. Delete one to add another.`, null, "info"); return; }
       const color = sw.querySelector<HTMLElement>('[aria-checked="true"]')!.dataset.color as Color;
-      const c = cat(name, color, "sm", "Add something…");
+      const size = sz.querySelector<HTMLElement>('[aria-checked="true"]')!.dataset.size as Size;
+      const c = cat(name, color, size, "Add something…");
       state.categories.push(c);
       save();
       grid.insertBefore(cardEl(c), card);
@@ -587,6 +608,16 @@ export function mount(root: HTMLElement, opts: MountOpts = {}): BoardApi {
     if (del) {
       const li3 = del.closest<HTMLElement>(".bd-item")!;
       if (li3.dataset.catId) deleteItem(li3); else deleteInboxItem(li3);
+      return;
+    }
+    const szb = el.closest(".bd-size");
+    if (szb) {
+      const sc = szb.closest<HTMLElement>(".bd-card")!, scat = findCat(sc.dataset.catId);
+      if (!scat) return;
+      sc.classList.remove(`bd-card--${scat.size}`);
+      scat.size = SIZES[(SIZES.indexOf(scat.size) + 1) % SIZES.length];
+      sc.classList.add(`bd-card--${scat.size}`);
+      paintSize(sc, scat); save(); say(`Card size: ${SIZE_NAME[scat.size]}`);
       return;
     }
     const cdel = el.closest(".bd-cat-del");
