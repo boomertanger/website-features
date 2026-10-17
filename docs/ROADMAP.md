@@ -34,6 +34,7 @@ Last updated: 2026-10-17. Every planning chat reads this file first and proposes
 | 20 | Creator Climb (/climb: follower growth across every platform, members as their own climb; spec [docs/specs/creator-climb.md](specs/creator-climb.md)) | Built (Oct 15, 2026); staging deploy and history import in progress | Community services |
 | 21 | Traffic Pulse (/admin/pulse: the site's private, cookieless analytics per service; spec [docs/specs/traffic-pulse.md](specs/traffic-pulse.md)) | In progress (Oct 15, 2026) |
 | 22 | The Playbook (/admin/playbook: the owner's private living plan, reviewed monthly through a Claude chat; spec [docs/specs/playbook.md](specs/playbook.md)) | In progress (Oct 15, 2026) | Planning | Admin tools |
+| 23 | Brain Dump (/brain-dump: a private brain-dump board for Sub Club, crew and admins; /brain-dump/how-it-works; spec [docs/specs/brain-dump.md](specs/brain-dump.md)) | In progress (Oct 17, 2026) | Tools |
 
 Why this order: Game Vault → Scream Planner → Control Room → Stream Library is one chain built around the stream object. The Vault supplies the games, the Planner creates the stream objects for next week, the Control Room plays them (start, stop, games played), and the Library stores them. Building the Vault first means no free-text game names to clean up later. The Trophy Room (badges, trophies, XP) comes before Mod Machina and Contests because both depend on it, and the Arcade needs it for pitching; Night Shift is built on it. Security (2b), the ports and billing must all be done before launch; billing brings the paid Sub Club.
 
@@ -319,6 +320,12 @@ Status: **In progress (Oct 15, 2026).** Parts: 1 docs; 2 rules, the `playbookAdm
 
 Later (spec, out of scope for v1): sharing pages with admins, image uploads, a visual block editor, the reminder by email or push (with Boom Alerts).
 
+### 23. Brain Dump
+Goal: one private, categorized brain-dump board per person (a Big Goal, quick capture into an Inbox, color-coded checklist cards, starring, reordering, drag-to-rearrange cards, Undo instead of confirmations), plus its How it works story page. A rebuild of the "Bump Board" prototype in bt-ui.
+Spec: [docs/specs/brain-dump.md](specs/brain-dump.md) (confirmed Oct 17, 2026); mockups `docs/design/mockups/brain-dump.html` (the reference engine; card style C1 Tinted fill) and `docs/design/mockups/brain-dump-how-it-works.html` (H2 + R1); test plan [docs/testing/brain-dump-test-plan.md](testing/brain-dump-test-plan.md).
+Status: **In progress (Oct 17, 2026).** Parts: 1 docs; 2 rules (`sites/boomertanger/brainDump/{uid}`, a recorded narrow exception: direct client writes of the member's own private notes) and the staging rules deploy; 3 /brain-dump (the engine with a Firestore store, gating, account-menu item, help file, manifest, pulse ids, print); 4 /brain-dump/how-it-works; 5 design-system §8. No Cloud Functions.
+Later (spec §7, not now): due dates or snooze, dragging items between cards, an export-as-text backup.
+
 ## Night Shift hooks
 Activity types (and automatic badges) that wait for another workstream. Tick one off when that workstream adds its hook into the Trophy Room's grant functions.
 - [x] Live drops: built on staging Oct 2026 (workstream 7, docs/specs/live-drops.md); drop badges are granted through grant() with the quiet flag and count toward stream presence.
@@ -347,6 +354,9 @@ Rule: every future feature spec gets a **"Night Shift and Trophy Room hooks"** s
 - [ ] Set CF_ACCESS_CLIENT_ID and CF_ACCESS_CLIENT_SECRET to `none` on production (serviceSyncTick declares both on every project; production is public and needs no Cloudflare Access headers; docs/specs/service-hub.md §3b).
 - [ ] Deploy onVaultGameService before the Vault import on production, or run reconcile-vault-services.js --apply once after it (`--allow-project <prod id>`; dry run first). On staging the first 78 games were imported before the trigger existed and had no Service Hub item until the reconcile (Oct 15, 2026); serviceSyncTick's Vault guard now catches that drift within 15 minutes.
 - [ ] Workstreams 8, 10 and 11 done.
+
+### Brain Dump at launch
+- [ ] Deploy firestore.rules with the brainDump block to production.
 
 ### Club Pass at launch (docs/specs/club-pass.md §10)
 - [ ] Launch quietly first; promote only after payments are on.
