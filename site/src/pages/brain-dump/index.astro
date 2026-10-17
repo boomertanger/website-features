@@ -1,0 +1,94 @@
+---
+// /brain-dump (docs/specs/brain-dump.md; mockup docs/design/mockups/brain-dump.html, card style C1 Tinted fill): one private
+// brain-dump board per person, for Sub Club, crew, admins and the owner. A tool page: the hero with a small mascot scene, the goal card
+// with Quick capture, the toolbar, the grid (the Inbox first, the categories, the add-category card last), Undo toasts. The board itself
+// is drawn by scripts/brain-dump/engine.ts once scripts/brain-dump/page.ts knows who is looking; without access, a lock card.
+import BaseLayout from "../../layouts/BaseLayout.astro";
+import Mascot from "../../components/Mascot.astro";
+import site from "../../data/site.json";
+import { paymentsOn } from "../../lib/club-pay.js";
+import "../../styles/brain-dump.css";
+
+const PAY = paymentsOn((site as any).clubPass);
+const subButton = PAY
+  ? `<button type="button" class="bt-btn bt-btn--primary" data-bd-buy data-pulse="get-sub-club">Get Sub Club</button>`
+  : `<a class="bt-btn bt-btn--primary" href="/club-pass">See Sub Club</a>`;
+---
+<BaseLayout title="Brain Dump" description="A private board for everything on your mind: capture it now, sort it later, check it off.">
+  <div id="brain-dump-root" class="bt-root">
+    <template data-bd-mascot><Mascot decorative /></template>
+
+    <header class="bd-hero">
+      <div>
+        <p class="bt-label"><svg viewBox="0 0 16 16" aria-hidden="true"><path d="M4.5 7V5a3.5 3.5 0 017 0v2M3.5 7h9v7h-9z" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linejoin="round"/></svg>Private · only you see this board</p>
+        <h1 class="bt-title">Brain Dump</h1>
+        <p class="bt-subtitle">Get it out of your head. Sort it later. <a class="bt-link-btn" href="/brain-dump/how-it-works" data-pulse="how-it-works">How it works</a></p>
+      </div>
+      <div class="bd-scene" aria-hidden="true">
+        <span class="bd-thought"></span><span class="bd-thought"></span><span class="bd-thought"></span>
+        <Mascot decorative />
+        <span class="bd-tray"></span>
+      </div>
+    </header>
+
+    <div data-bd-when="loading" aria-hidden="true">
+      <div class="bt-skeleton-row"><span class="bt-skeleton" style="width:100%;height:160px;border-radius:16px"></span></div>
+    </div>
+
+    <div class="bt-lock-card" data-bd-when="visitor" hidden>
+      <span class="bt-lock-card-ic" aria-hidden="true">🧠</span>
+      <div><b>Brain Dump comes with Sub Club.</b><p>Join free first, then add Sub Club. <a class="bt-link-btn" href="/brain-dump/how-it-works">How it works</a></p></div>
+      <button type="button" class="bt-btn bt-btn--primary" data-signin="join" data-signin-title="Join free, then add Sub Club for Brain Dump">Join free</button>
+    </div>
+
+    <div class="bt-lock-card" data-bd-when="locked" hidden>
+      <span class="bt-lock-card-ic" aria-hidden="true">🧠</span>
+      <div><b>Brain Dump comes with Sub Club.</b><p>Get it and your board is ready right away. <a class="bt-link-btn" href="/brain-dump/how-it-works">How it works</a></p></div>
+      <Fragment set:html={subButton} />
+    </div>
+
+    <div data-bd-when="board" data-bd-board hidden>
+      <section class="bd-goalcard" aria-label="Big goal">
+        <div class="bd-goaltop">
+          <span class="bt-label">My big goal</span>
+          <label class="bd-started">Started <input type="date" aria-label="Start date" /></label>
+        </div>
+        <div class="bd-goalrow">
+          <label class="bt-check"><input type="checkbox" class="bd-goal-check" aria-label="Big goal done" data-pulse="goal-done" /></label>
+          <div class="bd-goal" contenteditable="true" spellcheck="true" role="textbox" aria-label="Big goal" data-placeholder="What’s the big goal right now?"></div>
+        </div>
+        <div class="bd-stats" aria-live="off">
+          <span><b class="bd-stat-total">0</b> ideas on the board</span>
+          <span><b class="bd-stat-done">0</b> checked off</span>
+          <span><b class="bd-stat-starred">0</b> starred</span>
+        </div>
+        <form class="bd-capture" aria-label="Quick capture">
+          <input class="bt-input" type="text" placeholder="Jot it down, sort it later…" aria-label="Quick capture" autocomplete="off" enterkeyhint="done" />
+          <button type="submit" class="bt-btn bt-btn--primary" data-pulse="capture" aria-label="Capture"><svg viewBox="0 0 16 16" width="16" height="16" aria-hidden="true"><path d="M8 3v10M3 8h10" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg><span class="bd-btn-word">Capture</span></button>
+        </form>
+      </section>
+
+      <div class="bd-toolbar">
+        <div class="bt-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+          <input class="bt-input bd-search-input" type="search" placeholder="Search everything on the board…" aria-label="Search the board" />
+        </div>
+        <button type="button" class="bt-chip bd-staronly" aria-pressed="false" data-pulse="starred-only">★ Starred only</button>
+        <button type="button" class="bt-btn bt-btn--sm bt-btn--secondary bd-clear" data-pulse="clear-checked">Clear checked</button>
+      </div>
+
+      <div class="bd-grid"></div>
+
+      <footer class="bd-foot">
+        <span>Saved to your account. Only you can see this board. <em class="bd-saved" aria-live="polite"></em></span>
+        <button type="button" class="bt-btn bt-btn--sm bt-btn--danger bd-reset" data-pulse="reset-board">Reset board</button>
+      </footer>
+
+      <div class="bt-sr-only bd-live" aria-live="polite"></div>
+    </div>
+  </div>
+</BaseLayout>
+
+<script>
+  import "../../scripts/brain-dump/page";
+</script>

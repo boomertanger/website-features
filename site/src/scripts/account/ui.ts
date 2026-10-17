@@ -9,6 +9,7 @@
 //   [data-verify-banner]   verify-your-email banner: resend, or add an email (Twitch)
 // Signed out (or previewing with ?as=), the static preview content stays as built.
 import { onAuth, whenReady, signOut, sendVerification, type AuthState } from "../../lib/auth";
+import { hasBrainDump } from "../../lib/brain-dump-access";
 import { escapeHtml } from "../../../../shared/ui/dom.js";
 
 import { CONTINUE_KEY } from "../../lib/auth-keys";
@@ -32,6 +33,9 @@ function avatarHtml(s: AuthState) {
   if (a?.type === "photo" && a.url) return `<img src="${escapeHtml(a.url)}" alt="" referrerpolicy="no-referrer" />`;
   return escapeHtml(a?.initials || (s.profile?.displayName || "?").slice(0, 2).toUpperCase());
 }
+// The avatar menu's Brain Dump item: only for people who have it (the same rule as firestore.rules hasBrainDump()).
+onAuth((s) => { document.querySelectorAll<HTMLElement>("[data-bd-menu]").forEach((el) => { el.hidden = !hasBrainDump(s); }); });
+
 onAuth((s) => {
   if (!s.user || !s.profile || (s.status !== "verified" && s.status !== "unverified")) return;
   document.querySelectorAll<HTMLElement>("[data-me]").forEach((el) => {

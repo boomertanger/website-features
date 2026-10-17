@@ -11,10 +11,10 @@ import site from "../../data/site.json";
 import { manifestById } from "../../lib/service-manifests";
 import "../../styles/services-dialogs.css";
 
-interface Props { service: string }
+interface Props { service: string; placement?: "note" | "pins" | "rate" | "skip" }
 const m = manifestById(Astro.props.service);
 const modules: string[] = site.modules;
-const placement = m?.talkBack || "skip";
+const placement = Astro.props.placement || m?.talkBack || "skip";   // BaseLayout passes the route's value (manifest talkBackRoutes)
 const rate = !!m && modules.includes("services") && placement !== "skip" && m.status === "live" && m.type !== "adminTool";
 const talk = !!m && modules.includes("talkBack") && (placement === "note" || placement === "pins");
 const open = !!m && ["everyone", "members"].includes(m.audience);

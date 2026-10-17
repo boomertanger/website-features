@@ -18,4 +18,5 @@ One JSON file per service on the site and stream (`<id>.json`), the single regis
 | `videoTag` | `#bt-<id>`: put it in a YouTube description to link the video |
 | `sections` | `{ "slug": "Label" }`: the sections that get an Ask pin (at most 3 per page to start; `{}` unless talkBack is `pins`) |
 | `talkBack` | the page strip: `note` (the strip: Rate it and Talk back), `pins` (the strip plus Ask pins on `sections`), `rate` (the strip with only the Rate half: no Ask / Feedback, no pins), `skip` (no strip) |
+| `talkBackRoutes` | optional `{ "/route": "rate" }`: a different strip on one of its routes (note, rate or skip; e.g. a tool page "rate" while its How it works keeps `talkBack`) |
 | `help` | path to `site/src/data/help/<id>.json` (BOOMBOT's answers), or `null` |

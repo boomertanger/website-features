@@ -1,0 +1,23 @@
+{
+  "id": "brain-dump",
+  "name": "Brain Dump",
+  "type": "feature",
+  "area": "Account",
+  "blurb": "A private board for everything on your mind: capture it now, sort it later, check it off.",
+  "version": "1.0",
+  "status": "live",
+  "audience": "members",
+  "routes": [
+    "/brain-dump"
+  ],
+  "nav": null,
+  "testPlan": "docs/testing/brain-dump-test-plan.md",
+  "checks": [],
+  "videoTag": "#bt-brain-dump",
+  "sections": {},
+  "talkBack": "note",
+  "talkBackRoutes": {
+    "/brain-dump": "rate"
+  },
+  "help": "site/src/data/help/brain-dump.json"
+}

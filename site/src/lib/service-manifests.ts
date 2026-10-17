@@ -2,7 +2,8 @@
 // to render the page strip (TalkBackNote.astro). Routes in the manifests are page paths; a dynamic segment ("/crew/academy/[slug]") matches any
 // one segment. Pages the strip always skips (spec §8a): /auth/*, /admin/*, /live/obs, /live/control and its checklist, checkout, 404 and errors.
 const files = import.meta.glob("../../../services/*.json", { eager: true, import: "default" });
-export interface Manifest { id: string; name: string; type: string; status: string; audience: string; version: string; routes: string[]; talkBack: "note" | "pins" | "rate" | "skip"; checks?: string[] }
+export type TalkBack = "note" | "pins" | "rate" | "skip";
+export interface Manifest { id: string; name: string; type: string; status: string; audience: string; version: string; routes: string[]; talkBack: TalkBack; talkBackRoutes?: Record<string, TalkBack>; checks?: string[] }
 const all = Object.values(files) as Manifest[];
 
 const clean = (p: string) => (p.length > 1 ? p.replace(/\/+$/, "") : p) || "/";
@@ -25,3 +26,9 @@ export function serviceIdFor(pathname: string): string {
   return m ? m.id : "unassigned";
 }
 export const manifestById = (id: string): Manifest | null => all.find((m) => m.id === id) || null;
+/** The page strip on this path: the manifest's talkBackRoutes entry for it (e.g. a tool page "rate", its How it works "note"), else its talkBack. */
+export function talkBackFor(m: Manifest, pathname: string): TalkBack {
+  const p = clean(pathname.replace(/\/index\.html$/, "").replace(/\.html$/, ""));
+  const hit = Object.entries(m.talkBackRoutes || {}).find(([r]) => clean(r) === p);
+  return hit ? hit[1] : m.talkBack;
+}

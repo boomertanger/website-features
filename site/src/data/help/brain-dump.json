@@ -1,0 +1,44 @@
+[
+  {
+    "id": "who-sees",
+    "q": "Who can see my board?",
+    "a": "Only you. Other members, mods and admins can’t open it, and it isn’t listed or shown anywhere on the site.",
+    "keys": ["see", "private", "who", "mods", "admins", "share", "public", "visible"]
+  },
+  {
+    "id": "where-saves",
+    "q": "Where does it save?",
+    "a": "To your account, about a second after you stop typing. Open Brain Dump on your phone or your PC and it’s the same board.",
+    "keys": ["save", "saved", "saves", "sync", "phone", "pc", "computer", "device", "account"]
+  },
+  {
+    "id": "undo",
+    "q": "I deleted something by mistake.",
+    "a": "Tap Undo in the message at the bottom of the screen. It stays for 6 seconds. If you do something else first, Undo switches to that newer action.",
+    "keys": ["undo", "deleted", "delete", "mistake", "oops", "restore", "back"]
+  },
+  {
+    "id": "move-card",
+    "q": "How do I move a card?",
+    "a": "Drag the six dots in the card’s corner. On a keyboard, focus the dots and press the arrow keys. The Inbox always stays first.",
+    "keys": ["move", "card", "drag", "reorder", "order", "rearrange", "dots", "keyboard"]
+  },
+  {
+    "id": "own-lists",
+    "q": "Can I add my own lists?",
+    "a": "Yes. The last card on the board adds one: type a name, pick a color and press Add category. Tap any card’s title to rename it.",
+    "keys": ["add", "list", "lists", "category", "categories", "new", "rename", "color", "own"]
+  },
+  {
+    "id": "sub-ends",
+    "q": "What if my Sub Club ends?",
+    "a": "Your board is kept exactly as it is. It’s there again when you come back.",
+    "keys": ["sub club", "ends", "cancel", "lapse", "expire", "lose", "kept", "come back"]
+  },
+  {
+    "id": "print",
+    "q": "Can I print it?",
+    "a": "Yes. It prints on a light page in two columns, like the paper planner sheet it started from. The buttons are left off.",
+    "keys": ["print", "printing", "paper", "pdf", "sheet"]
+  }
+]

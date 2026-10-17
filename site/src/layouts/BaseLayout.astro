@@ -12,7 +12,7 @@ import PreviewChip from "../components/PreviewChip.astro";
 import AccountBanners from "../components/account/AccountBanners.astro";
 import Mascot from "../components/Mascot.astro";
 import TalkBackNote from "../components/services/TalkBackNote.astro";
-import { manifestFor, serviceIdFor } from "../lib/service-manifests";
+import { manifestFor, serviceIdFor, talkBackFor } from "../lib/service-manifests";
 import site from "../data/site.json";
 import { isProduction, firebaseEnv } from "../lib/env.js";
 
@@ -29,6 +29,7 @@ interface Props {
 const { title, description = site.tagline, overlayHeader = false, noindex = false, fullTitle = false } = Astro.props;
 // The page strip (Service Hub §8a): the service whose manifest claims this route, if any (its talkBack value decides; TalkBackNote.astro).
 const stripService = manifestFor(Astro.url.pathname);
+const stripPlacement = stripService ? talkBackFor(stripService, Astro.url.pathname) : "skip";
 // Traffic Pulse (docs/specs/traffic-pulse.md §3A): the service this page counts under, from the manifests ("unassigned" when none claims it).
 const pulseService = serviceIdFor(Astro.url.pathname);
 const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : `${site.name}: ${site.tagline}`;
@@ -115,7 +116,7 @@ const pageTitle = title ? `${title}${fullTitle ? " | " : " · "}${site.name}` : 
       <slot name="bar" />
       <main id="main" class="bt-site-main" tabindex="-1">
         <slot />
-        {stripService && stripService.talkBack !== "skip" && <TalkBackNote service={stripService.id} />}
+        {stripService && stripPlacement !== "skip" && <TalkBackNote service={stripService.id} placement={stripPlacement} />}
       </main>
       <SiteFooter />
     </div>

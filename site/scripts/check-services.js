@@ -95,6 +95,14 @@ for (const f of files) {
   if (m.talkBack === "pins" && (!secs || !Object.keys(secs).length)) fail(`${where}: talkBack "pins" needs at least one section`);
   if (m.talkBack === "pins" && secs && Object.keys(secs).length > 3) fail(`${where}: at most 3 Ask pins per page to start (spec §8a)`);
   if (m.talkBack !== "pins" && secs && Object.keys(secs).length) fail(`${where}: sections are only for talkBack "pins"`);
+  if ("talkBackRoutes" in m) {
+    const tr = m.talkBackRoutes;
+    if (typeof tr !== "object" || tr === null || Array.isArray(tr)) fail(`${where}: talkBackRoutes must be an object { route: talkBack }`);
+    else for (const [r, v] of Object.entries(tr)) {
+      if (!Array.isArray(m.routes) || !m.routes.includes(r)) fail(`${where}: talkBackRoutes "${r}" isn't one of its routes`);
+      if (!TALKBACK.includes(v) || v === "pins") fail(`${where}: talkBackRoutes "${r}" must be note, rate or skip (pins use the manifest's talkBack and sections)`);
+    }
+  }
   if (m.id) { if (ids.has(m.id)) fail(`${where}: id "${m.id}" is also in ${ids.get(m.id)}`); else ids.set(m.id, f); }
   if (!Array.isArray(m.routes)) { if ("routes" in m) fail(`${where}: routes must be a list`); continue; }
   for (const r of m.routes) {
