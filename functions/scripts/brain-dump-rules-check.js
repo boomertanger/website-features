@@ -100,6 +100,10 @@ const CHECKS = [
   ["4 Bad writes", "301 Inbox items", "deny", (t) => write(t.sub, USERS.sub.uid, board({ inbox: { items: Array.from({ length: 301 }, (_, i) => ({ id: `i${i}`, text: "x" })) } }))],
   ["4 Bad writes", "v: 2", "deny", (t) => write(t.sub, USERS.sub.uid, board({ v: 2 }))],
   ["4 Bad writes", "goal at the limit (300 characters) still saves", "allow", (t) => write(t.sub, USERS.sub.uid, board({ goal: "x".repeat(300) }))],
+  ["5 Look", "a valid look (chalk) saves", "allow", (t) => write(t.sub, USERS.sub.uid, board({ look: "chalk" }))],
+  ["5 Look", "each of the six looks saves", "allow", async (t) => { for (const look of ["classic", "neon", "panel", "crt", "postit", "chalk"]) if ((await write(t.sub, USERS.sub.uid, board({ look }))) !== "allow") return "deny"; return "allow"; }],
+  ["5 Look", "an unknown look (green)", "deny", (t) => write(t.sub, USERS.sub.uid, board({ look: "green" }))],
+  ["5 Look", "a look that isn't a string", "deny", (t) => write(t.sub, USERS.sub.uid, board({ look: 3 }))],
   ["1 Own board", "sub user deletes their own board", "allow", (t) => del(t.sub, USERS.sub.uid)],
 ];
 

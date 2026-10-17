@@ -443,8 +443,10 @@ service cloud.firestore {
     // A Brain Dump board as the browser writes it: exactly these keys, the server's time, and the size limits.
     function isValidBrainDump() {
       let d = request.resource.data;
-      return d.keys().hasOnly(['v', 'goal', 'goalDone', 'startDate', 'inbox', 'categories', 'updatedAt'])
+      // look (§9b, the person's board look) is optional, so a board saved before looks existed still saves.
+      return d.keys().hasOnly(['v', 'goal', 'goalDone', 'startDate', 'look', 'inbox', 'categories', 'updatedAt'])
         && d.keys().hasAll(['v', 'goal', 'goalDone', 'startDate', 'inbox', 'categories', 'updatedAt'])
+        && (!('look' in d) || d.look in ['classic', 'neon', 'panel', 'crt', 'postit', 'chalk'])
         && d.v == 1
         && d.updatedAt == request.time
         && d.goal is string && d.goal.size() <= 300
