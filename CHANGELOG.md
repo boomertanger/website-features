@@ -3,6 +3,11 @@
 All notable changes, one entry per tagged release.
 
 ## [Unreleased]
+- docs: the Prize Box spec now lists what was approved after the build:
+  - **§7:** the callables prizeEntryUrl and prizeMine (its contest and draw modes), the prizeHereTimeout task queue, and that the draw's callables deploy with lib/live.
+  - **§5:** the owner's Settings tab on /admin/prize-box.
+  - **§7a Site plumbing:** the /prizes rewrites in _redirects, the gift icon in IconSprite.astro and cr-panel.js, and the ×n win count on the trophy card and profile.
+  - **§3:** the "stream streak" and "First stream here" filters are not built yet, for lack of data.
 - Prize Box: the old "contests" placeholder is gone. services/contests.json was removed, and the Club Pass perk "Contests and drawings" now points at prize-box: serviceId prize-box, no longer "soon", and a new optional perk `href` (/prizes). Someone whose pass has the perk gets an Open it button on its page. check-club-pass validates href, and a perk can't have both href and soon. The Service Hub's "contests" item is retired by an admin's Sync now on /admin/services; the automatic sync only lists it as missing.
 - Prize Box, part 8 (testing):
   - **functions/scripts/prize-sample.js:** staging only (it refuses production), a dry run unless --apply, and --clean --apply removes everything it made, which is marked sample: true. It writes four "(sample)" contests (a scheduled Break Wheel, an open written contest with entries, an open mail-in with codes, a late envelope and an unmatched one, and a finished contest with two winners) and five sample members with no passwords. It grants no badges, XP, feed posts or alerts.
